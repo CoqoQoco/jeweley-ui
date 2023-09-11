@@ -14,6 +14,8 @@ export default {
   userAccount: 'จัดการบัญชีผู้ใช้',
   systemAdmin: 'ผู้ดูเเลระบบ',
 
+  detail: 'รายละเอียด',
+
   //lodog
   logout: 'ออกจากระบบ'
 }

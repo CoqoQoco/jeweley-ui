@@ -24,7 +24,7 @@
           <span v-else class="base-color">{{ $t(`${item.displayName}`) }}</span>
         </span>
         <span v-if="index < arrShowPath.length - 1" class="icon-arrow">
-          <i class="bi bi-chevron-right"></i>
+          <i class="bi bi-chevron-right base-color"></i>
         </span>
       </div>
     </div>
@@ -116,9 +116,9 @@ export default {
   height: 50px;
   display: flex;
   align-items: center;
-  .base-color {
-    color: var(--base-font-color);
-  }
+}
+.base-color {
+  color: var(--base-font-color);
 }
 
 .route-name {

@@ -3,12 +3,28 @@
     <div class="form-container">
       <form>
         <div class="data-container">
-          <h6>1. {{ $t('view.pickinglist.dataTitle') }} <i class="bi bi-card-list"></i></h6>
+          <div class="header-btn-edit">
+            <h6>1. {{ $t('view.pickinglist.dataTitle') }} <i class="bi bi-card-list"></i></h6>
+            <button
+              :class="`${isEdit ? `btn-success` : `btn-main`}`"
+              class="btn btn-sm btn-lock"
+              type="button"
+              @click="onUnlock"
+            >
+              <span><i :class="`${isEdit ? `bi bi-unlock` : `bi bi-lock`}`"></i></span>
+            </button>
+          </div>
           <div class="data-input-container">
             <div class="input-container">
               <div>
                 <label>{{ $t('view.pickinglist.title.wo') }}</label>
-                <input type="text" class="form-control box-input" v-model="form.wo" required />
+                <input
+                  type="text"
+                  class="form-control box-input"
+                  v-model="form.wo"
+                  required
+                  :disabled="isLock"
+                />
               </div>
               <div>
                 <label>{{ $t('view.pickinglist.title.nowo') }}</label>
@@ -17,6 +33,7 @@
                   min="1"
                   class="form-control box-input"
                   v-model="form.nowo"
+                  :disabled="isLock"
                   required
                 />
               </div>
@@ -26,6 +43,7 @@
                   type="date"
                   class="form-control box-input"
                   v-model="form.requestDate"
+                  :disabled="isLock"
                   required
                 />
               </div>
@@ -35,7 +53,13 @@
             <div class="input-container">
               <div>
                 <label>{{ $t('view.pickinglist.title.mold') }}</label>
-                <input type="text" class="form-control box-input" v-model="form.mold" required />
+                <input
+                  type="text"
+                  class="form-control box-input"
+                  v-model="form.mold"
+                  :disabled="isLock"
+                  required
+                />
               </div>
               <div>
                 <label>{{ $t('view.pickinglist.title.productNumber') }}</label>
@@ -43,6 +67,7 @@
                   type="text"
                   class="form-control box-input"
                   v-model="form.productNumber"
+                  :disabled="isLock"
                   required
                 />
               </div>
@@ -52,6 +77,7 @@
                   type="text"
                   class="form-control box-input"
                   v-model="form.customerNumber"
+                  :disabled="isLock"
                   required
                 />
               </div>
@@ -60,7 +86,11 @@
           <div class="data-input-remark-container">
             <div class="input-container">
               <label>{{ $t('view.pickinglist.title.remark') }}</label>
-              <textarea class="box-text-area" v-model="form.remark"></textarea>
+              <textarea
+                class="form-control box-text-area"
+                v-model="form.remark"
+                :disabled="!isEdit"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -75,7 +105,7 @@
                 <span @click="deleteImage(index)" class="delete-icon">&#10006;</span>
               </div>
             </div>
-            <div class="select-continer">
+            <div v-if="isEdit" class="select-continer">
               <input
                 type="file"
                 multiple
@@ -96,7 +126,13 @@
               <div class="input-container">
                 <div>
                   <label>{{ $t('view.pickinglist.title.pc') }}</label>
-                  <input type="text" class="form-control" v-model="form.pc" required />
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="form.pc"
+                    :disabled="!isEdit"
+                    required
+                  />
                 </div>
                 <div>
                   <label>{{ $t('view.pickinglist.title.quantity') }}</label>
@@ -105,6 +141,7 @@
                     min="1"
                     class="form-control"
                     v-model="form.quantity"
+                    :disabled="!isEdit"
                     required
                   />
                 </div>
@@ -115,6 +152,7 @@
                     min="0"
                     class="form-control"
                     v-model="form.readyMade"
+                    :disabled="!isEdit"
                     required
                   />
                 </div>
@@ -125,12 +163,20 @@
                     min="0"
                     class="form-control"
                     v-model="form.semireadyMade"
+                    :disabled="!isEdit"
                     required
                   />
                 </div>
                 <div>
                   <label>{{ $t('view.pickinglist.title.cast') }}</label>
-                  <input type="number" min="0" class="form-control" v-model="form.cast" required />
+                  <input
+                    type="number"
+                    min="0"
+                    class="form-control"
+                    v-model="form.cast"
+                    :disabled="!isEdit"
+                    required
+                  />
                 </div>
               </div>
             </div>
@@ -140,9 +186,11 @@
           <div class="title">
             <h6>4. {{ $t('view.pickinglist.component') }} <i class="bi bi-gem"></i></h6>
             <button
-              class="btn btn-sm btn-warning btn-add-components"
+              class="btn btn-sm btn-add-components"
+              :class="`${isEdit ? `btn-warning` : `btn-secondary`}`"
               @click="onAddMat"
               type="button"
+              :disabled="!isEdit"
             >
               <span class="mr-1"><i class="bi bi-plus"></i></span>
               <!-- <span class="mr-1"><i class="bi bi-gem"></i></span> -->
@@ -167,8 +215,10 @@
                     <td>{{ data.qty }}</td>
                     <td>
                       <button
-                        class="btn btn-sm btn-danger"
+                        class="btn btn-sm"
+                        :class="`${isEdit ? `btn-danger` : `btn-secondary`}`"
                         type="button"
+                        :disabled="!isEdit"
                         @click="deletMatItem(index)"
                       >
                         <i class="bi bi-trash-fill"></i>
@@ -184,9 +234,35 @@
           </div>
         </div>
         <div class="btn-container">
-          <button class="btn btn-sm btn-main float-right btn-custom-summit">
-            <span class="mr-1"><i class="bi bi-gem"></i></span> <span>สร้างใบจ่าย-รับคืนงาน</span>
-          </button>
+          <div v-if="isNew" class="float-right">
+            <button v-if="isNew" class="btn btn-sm btn-main btn-custom-summit" type="submit">
+              <span class="mr-1"><i class="bi bi-gem"></i></span> <span>สร้างใบจ่าย-รับคืนงาน</span>
+            </button>
+          </div>
+          <div v-else class="float-right">
+            <button class="btn btn-sm btn-info btn-custom-summit mr-2" type="button">
+              <span class="mr-1"><i class="bi bi-printer"></i></span>
+              <span>พิมพ์เอกสาร</span>
+            </button>
+            <button
+              v-if="isEdit"
+              :class="`${isEdit ? `btn-danger` : `btn-secondary`}`"
+              class="btn btn-sm btn-custom-summit mr-2"
+              type="button"
+            >
+              <span class="mr-1"><i class="bi bi-trash-fill"></i></span>
+              <span>ลบใบจ่าย-รับคืนงาน</span>
+            </button>
+            <button
+              v-if="isEdit"
+              :class="`${isEdit ? `btn-warning` : `btn-secondary`}`"
+              class="btn btn-sm btn-custom-summit"
+              type="submit"
+            >
+              <span class="mr-1"><i class="bi bi-gem"></i></span>
+              <span>เเก้ไขใบจ่าย-รับคืนงาน</span>
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -204,6 +280,10 @@ export default {
   },
   data() {
     return {
+      id: null,
+      isNew: true,
+      isLock: false,
+      isEdit: true,
       imageUrls: [],
       isShowModal: false,
       form: {
@@ -265,6 +345,18 @@ export default {
     },
     closeModal() {
       this.isShowModal = false
+    },
+    onUnlock() {
+      this.isEdit = !this.isEdit
+    }
+  },
+  created() {
+    this.id = this.$route.params.id
+    if (this.id) {
+      //console.log(this.id)
+      this.isNew = false
+      this.isLock = true
+      this.isEdit = false
     }
   }
 }
@@ -303,7 +395,17 @@ export default {
       //height: 5px;
     }
   }
-
+  .header-btn-edit {
+    display: flex;
+    justify-content: space-between;
+  }
+  .btn-lock {
+    height: 25px;
+    i {
+      font-size: 10px;
+      vertical-align: top;
+    }
+  }
   .upload-container {
     border: 1px solid white;
     border-radius: 5px;
@@ -436,6 +538,7 @@ export default {
   }
   .btn-custom-summit {
     height: 40px;
+    width: 180px;
   }
 }
 </style>

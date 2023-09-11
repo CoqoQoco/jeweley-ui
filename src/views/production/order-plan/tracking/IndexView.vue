@@ -41,7 +41,11 @@
           <tbody style="max-height: calc(100vh - 260px)">
             <tr v-for="(item, index) in data" :key="index">
               <td class="td-action">
-                <button class="btn btn-sm btn-warning mr-2" title="ดูรายละเอียด">
+                <button
+                  class="btn btn-sm btn-warning mr-2"
+                  title="ดูรายละเอียด"
+                  @click="onView(item)"
+                >
                   <i class="bi bi-gem"></i>
                 </button>
                 <button class="btn btn-sm btn-main" title="ลบใบจ่าย">
@@ -656,6 +660,12 @@ export default {
     },
     formatDate(date) {
       return formatDate(date)
+    },
+
+    // ----- push ----- ///
+    onView(item) {
+      console.log(item)
+      this.$router.push(`pickinglist-tag/${item.wo}-${item.woNumber}`)
     }
   }
 }

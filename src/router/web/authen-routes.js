@@ -3,6 +3,7 @@
 import Layout from '@/layout/web/LayoutDashboard.vue'
 import Dashboard from '@/views/dashboard/WelcomePage.vue'
 import PickingList from '@/views/production/order-plan/picking-list/PickingListView.vue'
+//import PickingListDetail from '@/views/production/order-plan/detail/IndexView.vue'
 import PickingListTrack from '@/views/production/order-plan/tracking/IndexView.vue'
 
 // ----- test ----- //
@@ -138,6 +139,18 @@ const routes = [
             th: 'ติดตามงานผลิต'
           },
           minorShow: true
+        }
+      },
+      {
+        path: '/pickinglist-tag/:id',
+        name: 'pickinglist-tag-view',
+        component: PickingList,
+        meta: {
+          Displayname: {
+            en: 'Pickinglist Tag Detail',
+            th: 'รายละเอียดงานผลิต'
+          },
+          minorShow: false
         }
       }
       // {
