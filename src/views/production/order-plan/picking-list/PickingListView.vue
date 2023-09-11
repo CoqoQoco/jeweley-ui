@@ -140,11 +140,12 @@
           <div class="title">
             <h6>4. {{ $t('view.pickinglist.component') }} <i class="bi bi-gem"></i></h6>
             <button
-              class="btn btn-sm btn-primary btn-add-components"
+              class="btn btn-sm btn-warning btn-add-components"
               @click="onAddMat"
               type="button"
             >
-              <span class="mr-1"><i class="bi bi-plus-square"></i></span>
+              <span class="mr-1"><i class="bi bi-plus"></i></span>
+              <!-- <span class="mr-1"><i class="bi bi-gem"></i></span> -->
               <span>เพิ่มส่วนประกอบ</span>
             </button>
           </div>
@@ -183,7 +184,9 @@
           </div>
         </div>
         <div class="btn-container">
-          <button class="btn btn-sm btn-success float-right">สร้างใบจ่าย/รับคืนงาน</button>
+          <button class="btn btn-sm btn-main float-right btn-custom-summit">
+            <span class="mr-1"><i class="bi bi-gem"></i></span> <span>สร้างใบจ่าย-รับคืนงาน</span>
+          </button>
         </div>
       </form>
     </div>
@@ -428,7 +431,11 @@ export default {
     }
   }
   .btn-container {
-    padding-bottom: 30px;
+    padding-bottom: 40px;
+    margin-top: 20px;
+  }
+  .btn-custom-summit {
+    height: 40px;
   }
 }
 </style>

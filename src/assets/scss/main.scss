@@ -16,8 +16,10 @@ html {
     font-family: ChakraPetch-Regular, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
+    color: $base-sub-color;
+    //color: $base-font-color;
     font-size: 12px;
+    
 }
 .app-container {
     padding: 20px 20px 10px 20px;
