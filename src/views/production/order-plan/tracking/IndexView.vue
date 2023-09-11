@@ -3,7 +3,7 @@
     <div class="search-container">
       <div class="search-box">
         <input type="text" placeholder="คำค้นหาใบจ่าย-รับคืนงาน..." v-model="search" />
-        <span class="bi bi-gem"></span>
+        <span class="bi bi-gem" style="color: var(--base-font-color)"></span>
       </div>
       <!-- <div>
         <input
@@ -24,53 +24,556 @@
         </button>
       </div>
     </div>
-    <div class="table-container">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th></th>
-            <!-- <th>ตัวอย่าง</th> -->
-            <th>เลขที่ W.O.</th>
-            <th>ลำดับ W.O.</th>
-            <th>เเม่พิมพ์</th>
-            <th>วันสร้างใบงาน</th>
-            <th>รหัสสินค้า</th>
-            <th>รหัสลูกค้า</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, index) in data" :key="index">
-            <td class="td-action">
-              <button class="btn btn-sm btn-warning mr-2" title="ดูรายละเอียด">
-                <i class="bi bi-gem"></i>
-              </button>
-              <button class="btn btn-sm btn-main" title="ลบใบจ่าย">
-                <i class="bi bi-trash-fill"></i>
-              </button>
-            </td>
-            <!-- <td></td> -->
-            <td>{{ item.wo }}</td>
-            <td>{{ item.woNumber }}</td>
-            <td>{{ item.mold }}</td>
-            <td>{{ formatDate(item.requestDate) }}</td>
-            <td>{{ item.productNumber }}</td>
-            <td>{{ item.customerNumber }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-if="!data.length" class="nodata-container">
-        <label>ไม่มีส่วนประกอบ</label>
-      </div>
-    </div>
+    <tableMain>
+      <template v-slot:table>
+        <table class="table-main">
+          <thead>
+            <tr>
+              <th class="td-action"></th>
+              <th>เลขที่ W.O.</th>
+              <th>ลำดับ W.O.</th>
+              <th>เเม่พิมพ์</th>
+              <th>วันสร้างใบงาน</th>
+              <th>รหัสสินค้า</th>
+              <th>รหัสลูกค้า</th>
+            </tr>
+          </thead>
+          <tbody style="max-height: calc(100vh - 260px)">
+            <tr v-for="(item, index) in data" :key="index">
+              <td class="td-action">
+                <button class="btn btn-sm btn-warning mr-2" title="ดูรายละเอียด">
+                  <i class="bi bi-gem"></i>
+                </button>
+                <button class="btn btn-sm btn-main" title="ลบใบจ่าย">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </td>
+              <td>{{ item.wo }}</td>
+              <td>{{ item.woNumber }}</td>
+              <td>{{ item.mold }}</td>
+              <td>{{ formatDate(item.requestDate) }}</td>
+              <td>{{ item.productNumber }}</td>
+              <td>{{ item.customerNumber }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </template>
+    </tableMain>
   </div>
 </template>
 
 <script>
 import { formatDate, formatDateTime } from '@/utils/moment'
+import tableMain from '@/components/table/TableView.vue'
 export default {
+  components: { tableMain },
   data() {
     return {
       data: [
+        {
+          id: 1,
+          wo: 6606015,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
+        {
+          id: 1,
+          wo: 6606003,
+          woNumber: 30,
+          mold: 'R/9640',
+          requestDate: new Date(),
+          productNumber: 'R09640DI3',
+          customerNumber: 'THI001'
+        },
         {
           id: 1,
           wo: 6606003,
@@ -159,44 +662,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-input {
-  font-size: 10px;
-}
-label {
-  font-size: 10px;
-}
-table {
-  font-size: 12px;
-  margin-bottom: 5px;
-}
-table thead {
-  background-color: var(--base-font-color);
-  color: var(--base-color);
-  font-size: 12px;
-  height: 42px;
-  border-collapse: collapse; /* รวมเส้นกรอบของตาราง */
-}
-/* สร้างรูปแบบสำหรับ th และ td */
-table th,
-table td {
-  padding: 5px;
-  vertical-align: middle;
-  border: 1px solid var(--base-color); /* สร้างเส้นกรอบ 1 พิกเซล */
-}
-table th {
-  padding-left: 5px;
-}
-table td {
-  padding: 5px;
-  vertical-align: middle;
-  //height: 5px;
-}
-button i {
-  font-size: 12px;
-}
-
-.table-container {
-}
 .nodata-container {
   text-align: center;
   color: var(--base-sub-color);
@@ -214,7 +679,7 @@ button i {
   //background-color: var(--base--color);
   border: 1px solid var(--base-color);
   //padding: 20px;
-  padding: 20px;
+  padding: 10px;
 }
 .search-box {
   display: flex;
@@ -233,13 +698,14 @@ button i {
   font-size: 12px;
   width: 270px;
 }
-.search-box .bi-search {
-  font-size: 15px;
-  //margin-left: 5px;
-  cursor: pointer;
-}
+// .search-box .bi-search {
+//   font-size: 15px;
+//   //margin-left: 5px;
+//   cursor: pointer;
+//   color: var(--base-font-color);
+// }
 .td-action {
-  width: 100px;
+  width: 90px;
   text-align: center;
 }
 .input-search-box {

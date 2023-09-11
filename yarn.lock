@@ -1691,6 +1691,13 @@
   optionalDependencies:
     "fsevents" "~2.3.2"
 
+"vue-awesome-paginate@^1.1.46":
+  "integrity" "sha512-hjwAJLd2N54j0uuGgqmlTdhZw8NBFQpFiShjGrvxsA0DnvmOQjM18GEor+Ieigz6nE8VA4hQerIDBQjf4lsacg=="
+  "resolved" "https://registry.npmjs.org/vue-awesome-paginate/-/vue-awesome-paginate-1.1.46.tgz"
+  "version" "1.1.46"
+  dependencies:
+    "vue" "^3.2.25"
+
 "vue-axios@^3.5.2":
   "integrity" "sha512-GP+dct7UlAWkl1qoP3ppw0z6jcSua5/IrMpjB5O8bh089iIiJ+hdxPYH2NPEpajlYgkW5EVMP95ttXWdas1O0g=="
   "resolved" "https://registry.npmjs.org/vue-axios/-/vue-axios-3.5.2.tgz"
