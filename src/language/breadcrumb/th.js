@@ -5,10 +5,9 @@ export default {
   importProductExcel: 'นำเข้าใบผลิตสินค้า',
 
   //production
-  mold: 'เเม่พิมพ์ [ออกแบบ/ผลิต]',
-  pickingList: 'สร้างใบจ่าย/รับคืนงาน',
-  pickinglistTag: 'ติดตามงานผลิต',
-  productionReport: 'รายงานการผลิต',
+  planMold: 'ออกเเบบเเม่พิมพ์',
+  planOrder: 'สร้างใบจ่าย-รับคืนงาน',
+  planTracking: 'ติดตามงานผลิต',
 
   //setting
   userAccount: 'จัดการบัญชีผู้ใช้',

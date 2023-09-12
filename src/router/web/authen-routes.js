@@ -98,7 +98,7 @@ const routes = [
     meta: {
       Displayname: {
         en: 'Production Plan',
-        th: 'ใบจ่าย-รับคืน'
+        th: 'งานผลิต'
       },
       classIcon: 'bi bi-vector-pen',
       majorShow: true,
@@ -106,48 +106,48 @@ const routes = [
     },
     children: [
       {
-        path: '/picking-list',
-        name: 'picking-list',
-        component: PickingList,
+        path: '/plan-mold',
+        name: 'plan-mold',
+        component: Dashboard,
         meta: {
           Displayname: {
-            en: 'Picking List',
-            th: 'สร้างใบจ่าย/รับคืนงาน'
+            en: 'Plan Mold',
+            th: 'ออกเเบบเเม่พิมพ์'
           },
           minorShow: true
         }
       },
-      // {
-      //   path: '/mold',
-      //   name: 'mold',
-      //   component: Dashboard,
-      //   meta: {
-      //     Displayname: {
-      //       en: 'Mold',
-      //       th: 'เเม่พิมพ์ [ออกแบบ/ผลิต]'
-      //     },
-      //     minorShow: true
-      //   }
-      // },
       {
-        path: '/pickinglist-tag',
-        name: 'pickinglist-tag',
+        path: '/plan-order',
+        name: 'plan-order',
+        component: PickingList,
+        meta: {
+          Displayname: {
+            en: 'Plan Order',
+            th: 'สร้างใบจ่าย-รับคืนงาน'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/plan-tracking',
+        name: 'plan-tracking',
         component: PickingListTrack,
         meta: {
           Displayname: {
-            en: 'Pickinglist Tag',
+            en: 'Plan Tracking',
             th: 'ติดตามงานผลิต'
           },
           minorShow: true
         }
       },
       {
-        path: '/pickinglist-tag/:id',
-        name: 'pickinglist-tag-view',
+        path: '/plan-tracking/:id',
+        name: 'plan-tracking-view',
         component: PickingList,
         meta: {
           Displayname: {
-            en: 'Pickinglist Tag Detail',
+            en: 'Plan Detail',
             th: 'รายละเอียดงานผลิต'
           },
           minorShow: false

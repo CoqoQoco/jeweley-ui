@@ -1,10 +1,13 @@
 <template>
   <div class="page-container">
-    <div class="table-contianer"><slot name="table"></slot></div>
+    <div class="table-contianer">
+      <slot name="table"></slot>
+      <div v-if="isData" class="no-data">---- ไม่มีข้อมูล ----</div>
+    </div>
     <div class="paginate-contianer">
       <div class="item-view">
         <label class="mr-2">ดูข้อมูลต่อหน้า</label>
-        <select class="select-item-view" v-model="itemPerPageSelect">
+        <select class="select-item-view" v-model="itemPerPageSelect" @change="onSelectItenPerPage">
           <option v-for="option in itemPerPage" :key="option.value" :value="option.value">
             {{ option.text }}
           </option>
@@ -12,7 +15,7 @@
       </div>
       <vue-awesome-paginate
         :total-items="50"
-        :items-per-page="5"
+        :items-per-page="itemPerPageSelect"
         :max-pages-shown="3"
         v-model="currentPage"
         :on-click="onClickHandler"
@@ -26,7 +29,7 @@
       >
       <div class="total-view">
         <label class="mr-2">ทั้งหมด</label>
-        <label class="mr-2">350</label>
+        <label class="mr-2">{{ total }}</label>
         <label>ข้อมูล</label>
       </div>
     </div>
@@ -35,20 +38,37 @@
 
 <script>
 export default {
+  props: {
+    isData: {
+      type: Boolean,
+      required: true,
+      default: () => false
+    },
+    //  pagination ///
+    total: {
+      type: Number,
+      required: true,
+      default: () => 0
+    }
+  },
   data() {
     return {
       currentPage: 1,
       itemPerPage: [
-        { text: '20', value: 20 },
+        { text: '10', value: 10 },
+        { text: '30', value: 30 },
         { text: '50', value: 50 },
         { text: '100', value: 100 }
       ],
-      itemPerPageSelect: 20
+      itemPerPageSelect: 10
     }
   },
   methods: {
     onClickHandler(page) {
       console.log(page)
+    },
+    onSelectItenPerPage() {
+      console.log(this.itemPerPageSelect)
     }
   }
 }
@@ -85,6 +105,9 @@ export default {
       padding: 2px 10px 2px 10px !important;
       vertical-align: middle !important;
       border: 1px solid var(--base-color); /* สร้างเส้นกรอบ 1 พิกเซล */
+      word-wrap: break-word;
+      //white-space: nowrap;
+      //text-overflow: ellipsis;
     }
     button {
       height: 30px !important;
@@ -93,6 +116,13 @@ export default {
       }
     }
   }
+}
+.no-data {
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--base-sub-color);
+  text-align: center;
 }
 
 .paginate-contianer {
