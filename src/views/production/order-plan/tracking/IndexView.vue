@@ -699,14 +699,14 @@ export default {
   padding: 2px 5px;
   margin-right: 10px;
   border: 1px solid var(--base-font-color);
-  width: 300px;
+  //width: 300px;
 }
 .search-box input {
   border: none;
   outline: none;
   padding: 5px;
   font-size: 12px;
-  width: 270px;
+  //width: 270px;
 }
 // .search-box .bi-search {
 //   font-size: 15px;

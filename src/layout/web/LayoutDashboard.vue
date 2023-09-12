@@ -9,13 +9,13 @@
         </div>
         <div class="show-version">V.{{ version }}</div> -->
         <img
-          src="https://placekitten.com/400/400"
+           src="@/assets/duangkaew-logo.png"
           class="avatar"
           :class="{ 'hidden-avatar': !isShowSidenav }"
         />
-        <div class="employee-container" :class="{ 'hidden-avatar': !isShowSidenav }">
+        <!-- <div class="employee-container" :class="{ 'hidden-avatar': !isShowSidenav }">
           <label class="employee-name">JEWELRY MANAGEMENT</label>
-        </div>
+        </div> -->
       </div>
 
       <!-- ขีดเส้น -->
@@ -35,7 +35,7 @@
           <span class="menu-toggle bi bi-justify" @click="isShowSidenav = !isShowSidenav"></span>
           <Breadcrumb />
         </div>
-        <div class="logo-and-search">
+        <!-- <div class="logo-and-search">
           <div class="logo">
             <img src="@/assets/duangkaew-logo.png" alt="Logo Image" />
           </div>
@@ -43,7 +43,7 @@
             <input type="text" placeholder="ค้นหา ..." />
             <span class="bi bi-search"></span>
           </div>
-        </div>
+        </div> -->
         <!-- <UserProfile></UserProfile> -->
       </nav>
       <!-- 2.2. Router Render -->
@@ -212,11 +212,11 @@ export default {
   .avatar {
     text-align: center;
     vertical-align: middle;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 1px solid var(--base-font-color);
-    border-style: ridge;
+    width: 100px;
+    height: 100px;
+    //border-radius: 50%;
+    //border: 1px solid var(--base-font-color);
+    //border-style: ridge;
     opacity: 1; /* เริ่มต้นเป็นรูปแสดงออกมา */
     transition:
       opacity 0.5s ease-in-out,
