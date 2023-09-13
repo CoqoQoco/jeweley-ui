@@ -1,11 +1,18 @@
 <template>
   <div class="app-container">
+    <pageTitle
+      title="สร้างใบจ่าย-รับคืนงาน"
+      description="หน้าสร้างใบจ่าย-รับคืนงาน เเละรายละเอียดต่างๆ"
+      :isShowBtnClose="false"
+    >
+    </pageTitle>
     <div class="form-container">
       <form>
         <div class="data-container">
           <div class="header-btn-edit">
             <h6>1. {{ $t('view.pickinglist.dataTitle') }} <i class="bi bi-card-list"></i></h6>
             <button
+              v-if="!isNew"
               :class="`${isEdit ? `btn-success` : `btn-main`}`"
               class="btn btn-sm btn-lock"
               type="button"
@@ -271,11 +278,13 @@
 </template>
 
 <script>
+import pageTitle from '@/components/custom/PageTitle.vue'
 import ModalAddMat from './components/ModalAddMat.vue'
 //import UploadImg from '@/components/btn-import/UploadImages.vue'
 export default {
   components: {
     //UploadImg
+    pageTitle,
     ModalAddMat
   },
   data() {
@@ -364,9 +373,10 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
-  padding: 20px 150px 20px 150px;
+  //padding: 20px 150px 20px 150px;
 }
 .form-container {
+  padding: 0px 10px 0px 10px;
   //border: 1px solid white;
   //border-radius: 5px;
   //box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
@@ -498,6 +508,7 @@ export default {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr; /* แบ่งหน้าจอออกเป็นสองส่วนเท่าๆ กัน */
         gap: 50px; /* ระยะห่างระหว่างส่วน */
+        //margin-bottom: 10px;
       }
       .box-input {
         width: calc(100% - 20px);

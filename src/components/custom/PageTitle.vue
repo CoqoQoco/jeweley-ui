@@ -47,8 +47,8 @@ export default {
     };
   },
   watch: {
-    isShowTitle(value) {
-      this.$store.commit("isShowTitle", value);
+    isShowTitle() {
+      //this.$store.commit("isShowTitle", value);
     },
   },
   methods: {
@@ -57,7 +57,7 @@ export default {
     },
   },
   mounted() {
-    this.$store.commit("isShowTitle", true);
+    //this.$store.commit("isShowTitle", true);
   },
 };
 </script>

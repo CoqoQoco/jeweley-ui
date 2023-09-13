@@ -325,7 +325,7 @@ button {
     // border-bottom-left-radius: 15px;
     // border-bottom-right-radius: 15px;
 
-    //font-size: 20px;
+    //font-size: 15px;
     color: var(--base-color);
     //font-weight: 400;
     transition-duration: 0.5s;

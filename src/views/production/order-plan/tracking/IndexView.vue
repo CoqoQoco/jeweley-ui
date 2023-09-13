@@ -28,7 +28,7 @@
 <script>
 import { formatDate, formatDateTime } from '@/utils/moment'
 //import tableMain from '@/components/table/HtmlTable.vue'
-import tableMain from './components/TableMain.vue'
+import tableMain from './components/tablemain.vue'
 import pageTitle from '@/components/custom/PageTitle.vue'
 export default {
   components: { tableMain, pageTitle },
