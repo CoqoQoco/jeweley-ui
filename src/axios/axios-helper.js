@@ -1,6 +1,6 @@
 import axios from 'axios'
 import get from 'lodash/get'
-import swAlert from '@/js/alert.js'
+import swAlert from '@/js/alert/sweetAlerts.js'
 
 import router from '@/router'
 

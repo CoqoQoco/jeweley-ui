@@ -8,7 +8,7 @@
     >
     </pageTitle>
     <div class="form-container">
-      <form>
+      <form @submit.prevent="onSubmitPlan">
         <div class="data-container">
           <div class="header-btn-edit">
             <h6>1. {{ $t('view.pickinglist.dataTitle') }} <i class="bi bi-card-list"></i></h6>
@@ -137,7 +137,7 @@
                   <input
                     type="text"
                     class="form-control"
-                    v-model="form.pc"
+                    v-model="form.qtyUnit"
                     :disabled="!isEdit"
                     required
                   />
@@ -148,7 +148,7 @@
                     type="number"
                     min="1"
                     class="form-control"
-                    v-model="form.quantity"
+                    v-model="form.qry"
                     :disabled="!isEdit"
                     required
                   />
@@ -159,7 +159,7 @@
                     type="number"
                     min="0"
                     class="form-control"
-                    v-model="form.readyMade"
+                    v-model="form.qtyFinish"
                     :disabled="!isEdit"
                     required
                   />
@@ -170,7 +170,7 @@
                     type="number"
                     min="0"
                     class="form-control"
-                    v-model="form.semireadyMade"
+                    v-model="form.qtySemiFinish"
                     :disabled="!isEdit"
                     required
                   />
@@ -181,7 +181,7 @@
                     type="number"
                     min="0"
                     class="form-control"
-                    v-model="form.cast"
+                    v-model="form.qtyCast"
                     :disabled="!isEdit"
                     required
                   />
@@ -219,12 +219,12 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(data, index) in form.components" :key="index">
-                    <td>{{ data.name }}</td>
-                    <td>{{ data.size }}</td>
-                    <td>{{ data.qty }}</td>
-                    <td>{{ data.qty }}</td>
-                    <td>{{ data.qty }}</td>
+                  <tr v-for="(data, index) in form.material" :key="index">
+                    <td>{{ data.material }}</td>
+                    <td>{{ data.materialType }}</td>
+                    <td>{{ data.materialSize }}</td>
+                    <td>{{ data.materialQty }}</td>
+                    <td>{{ data.materialRemark }}</td>
                     <td style="text-align: center">
                       <button
                         class="btn btn-sm"
@@ -239,7 +239,7 @@
                   </tr>
                 </tbody>
               </table>
-              <div v-if="!form.components.length" class="nodata-container">
+              <div v-if="!form.material.length" class="nodata-container">
                 <label>ไม่มีส่วนประกอบ</label>
               </div>
             </div>
@@ -283,9 +283,11 @@
 </template>
 
 <script>
+import { formatISOString } from '@/utils/date'
 import pageTitle from '@/components/custom/PageTitle.vue'
 import ModalAddMat from './components/ModalAddMat.vue'
 import loading from '@/components/overlay/loading-overlay.vue'
+import api from '@/axios/axios-config.js'
 //import UploadImg from '@/components/btn-import/UploadImages.vue'
 export default {
   components: {
@@ -311,12 +313,12 @@ export default {
         productNumber: null,
         customerNumber: null,
         remark: null,
-        pc: 'PC',
-        quantity: 1,
-        readyMade: 0,
-        semireadyMade: 0,
-        cast: 0,
-        components: []
+        qtyUnit: 'PC',
+        qry: 1,
+        qtyFinish: 0,
+        qtySemiFinish: 0,
+        qtyCast: 0,
+        material: []
       }
     }
   },
@@ -342,7 +344,7 @@ export default {
       this.imageUrls.splice(index, 1)
     },
     deletMatItem(index) {
-      this.form.components.splice(index, 1)
+      this.form.material.splice(index, 1)
     },
 
     // ---- Components Method ----//
@@ -352,7 +354,7 @@ export default {
     },
     AddMat(item) {
       //console.log(item);
-      this.form.components.push(item)
+      this.form.material.push(item)
 
       // this.form.components = this.form.components.length
       //   ? [this.form.components, ...item]
@@ -365,6 +367,43 @@ export default {
     },
     onUnlock() {
       this.isEdit = !this.isEdit
+    },
+
+    // ------ Api ------
+    async onSubmitPlan() {
+      try {
+        //console.log('submit')
+        this.isLoading = true
+        const param = {
+          wo: this.form.wo,
+          woNumber: this.form.woNumber,
+          requestDate: formatISOString(this.form.requestDate),
+
+          mold: this.form.mold,
+          productNumber: this.form.productNumber,
+          customerNumber: this.form.customerNumber,
+
+          remark: this.form.remark,
+
+          qty: this.form.qty,
+          qtyFinish: this.form.qtyFinish,
+          qtySemiFinish: this.form.qtySemiFinish,
+          qtyCast: this.form.qtyCast,
+          qtyUnit: this.form.qtyUnit,
+
+          material: [...this.form.material]
+        }
+
+        console.log(param)
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanCreate', param)
+        if (res) {
+          console.log(res)
+        }
+
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+      }
     }
   },
   created() {

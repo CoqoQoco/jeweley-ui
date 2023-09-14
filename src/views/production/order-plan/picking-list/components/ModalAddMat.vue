@@ -1,6 +1,6 @@
 <template>
   <div class="app-container-modal">
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="250px">
+    <modal :showModal="isShowModal" @closeModal="closeModal" width="450px">
       <template v-slot:title>
         <h5>เพิ่มส่วนประกอบ</h5>
       </template>
@@ -10,18 +10,32 @@
           <input
             type="text"
             class="form-control"
-            v-model="form.name"
+            v-model="form.material"
             placeholder="WG1-5, YG1-10 ..."
+          />
+          <label>ประเภท</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.materialType"
+            placeholder="แหวน จี้ ต่างหู ..."
           />
           <label>ขนาด</label>
           <input
             type="text"
             class="form-control"
-            v-model="form.size"
+            v-model="form.materialSize"
             placeholder="W-DIA, Y-DIA ..."
           />
           <label>จำนวน</label>
-          <input type="number" min="1" class="form-control" v-model="form.qty" />
+          <input type="text" class="form-control" v-model="form.materialQty" />
+          <label>หมายเหตุ</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.materialRemark"
+            placeholder="อื่นๆ ..."
+          />
         </div>
       </template>
       <template v-slot:action>
@@ -48,9 +62,11 @@ export default {
   data() {
     return {
       form: {
-        name: null,
-        size: null,
-        qty: 1
+        material: null,
+        materialType: null,
+        materialSize: null,
+        materialQty: null,
+        materialRemark: null
       }
     }
   },
@@ -65,9 +81,11 @@ export default {
     },
     onclearForm() {
       this.form = {
-        name: null,
-        size: null,
-        qty: 1
+        material: null,
+        materialType: null,
+        materialSize: null,
+        materialQty: null,
+        materialRemark: null
       }
     }
   }
@@ -81,9 +99,10 @@ h5 {
 }
 input {
   font-size: 12px;
+  margin-top: 5px;
 }
 label {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 300;
   margin: 5px 0px 0px 0px;
 }

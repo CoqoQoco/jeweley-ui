@@ -3,14 +3,12 @@
   <div>
     <loading
       :active="isLoadingActive"
-      :loader="spinner"
       :height="25"
       :width="25"
       :is-full-page="fullPage"
       :can-cancel="true"
       :z-index="1100"
       :color="'#921313'"
-      :transition="fade"
     >
       <template v-slot:after>
         <div v-if="timeCounting > seconds" class="cancel-loading-container">

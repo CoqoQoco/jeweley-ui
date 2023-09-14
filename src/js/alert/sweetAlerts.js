@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2'
 //import { i18n } from '@/plugins/i18n/config.js'
-import { i18n } from '@/plugins/i18n/config.js'
+//import { i18n } from '@/plugins/i18n/config.js'
 
 export function warning(msg, title, callback) {
   let titleShow = null
@@ -8,7 +8,7 @@ export function warning(msg, title, callback) {
   if (title) {
     titleShow = title
   } else {
-    titleShow = i18n.global.t('dashboard')
+    titleShow = "คำเตือน"
   }
 
   Swal.fire({
@@ -16,7 +16,8 @@ export function warning(msg, title, callback) {
     html: msg,
     icon: 'warning',
     allowOutsideClick: false,
-    confirmButtonText: 'Ok'
+    confirmButtonText: 'ตกลง',
+    confirmButtonColor: '#FFC21B'
   }).then(() => {
     if (callback) callback()
   })
@@ -62,7 +63,8 @@ export function error(msg, title, callback, stacktrace) {
     html: errorTemplate,
     icon: 'error',
     allowOutsideClick: false,
-    confirmButtonText: 'Close'
+    confirmButtonColor: '#921313', // เปลี่ยนสีปุ่ม Confirm
+    confirmButtonText: 'ปิด'
   }).then(() => {
     if (callback) callback()
   })
@@ -82,7 +84,7 @@ export function error(msg, title, callback, stacktrace) {
 }
 
 export default {
-  //error,
+  error,
   //success,
   //info,
   warning

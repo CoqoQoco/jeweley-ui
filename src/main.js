@@ -1,3 +1,6 @@
+import App from './App.vue'
+import router from './router'
+
 import './assets/scss/core.scss'
 
 // Theme & Styles
@@ -18,6 +21,9 @@ import VueAwesomePaginate from 'vue-awesome-paginate'
 //import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 // Theme & Styles
+
+import './axios/axios-helper'
+
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
@@ -26,9 +32,6 @@ import 'sweetalert2/dist/sweetalert2.min.css'
 
 import 'vue-awesome-paginate/dist/style.css'
 //import 'bootstrap/dist/css/bootstrap.css'
-
-import App from './App.vue'
-import router from './router'
 
 //import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 
