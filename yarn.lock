@@ -1755,7 +1755,7 @@
   dependencies:
     "sweetalert2" "11.x"
 
-"vue@*", "vue@^2.6.14 || ^3.3.0", "vue@^3.0.0", "vue@^3.0.0 || ^2.0.0", "vue@^3.0.0-0 || ^2.6.0", "vue@^3.0.0-0 || ^2.7.0", "vue@^3.0.2", "vue@^3.2.0", "vue@^3.2.25", "vue@^3.3.4", "vue@> 3.0.0", "vue@3.3.4":
+"vue@*", "vue@^2.6.14 || ^3.3.0", "vue@^3.0.0", "vue@^3.0.0 || ^2.0.0", "vue@^3.0.0-0 || ^2.6.0", "vue@^3.0.0-0 || ^2.7.0", "vue@^3.0.0-beta.13", "vue@^3.0.2", "vue@^3.2.0", "vue@^3.2.25", "vue@^3.3.4", "vue@> 3.0.0", "vue@3.3.4":
   "integrity" "sha512-VTyEYn3yvIeY1Py0WaYGZsXnz3y5UnGi62GjVEqvEGPl6nxbOrCXbVOTQWBEJUqAyTUk2uJ5JLVnYJ6ZzGbrSw=="
   "resolved" "https://registry.npmjs.org/vue/-/vue-3.3.4.tgz"
   "version" "3.3.4"
@@ -1770,6 +1770,11 @@
   "integrity" "sha512-TH89uZrxGjaDvkaYAISvj8+k6Bf1rUKFillc8oJirs5XZEPiwM1ELKZQ786wz0rfPqkSHHny2lqqUCK7Rw+LcQ=="
   "resolved" "https://registry.npmjs.org/vue3-apexcharts/-/vue3-apexcharts-1.4.4.tgz"
   "version" "1.4.4"
+
+"vue3-loading-overlay@^0.0.0":
+  "integrity" "sha512-Ly/sOMF+YTPDlVSsL4D8dTasT9A/PW+JlhFaY+sabOJXpafedxD1ADZbpT89XaM2QavRzfmq4s0nhcbr5I7BRQ=="
+  "resolved" "https://registry.npmjs.org/vue3-loading-overlay/-/vue3-loading-overlay-0.0.0.tgz"
+  "version" "0.0.0"
 
 "webpack-sources@^3.2.3":
   "integrity" "sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w=="

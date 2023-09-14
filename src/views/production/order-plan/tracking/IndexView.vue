@@ -21,17 +21,17 @@
         </button>
       </div>
     </div>
-    <tableMain v-model:modelValue="data"></tableMain>
+    <tableMainData v-model:modelValue="data"></tableMainData>
   </div>
 </template>
 
 <script>
 import { formatDate, formatDateTime } from '@/utils/moment'
 //import tableMain from '@/components/table/HtmlTable.vue'
-import tableMain from './components/tablemain.vue'
+import tableMainData from './components/TableMain.vue'
 import pageTitle from '@/components/custom/PageTitle.vue'
 export default {
-  components: { tableMain, pageTitle },
+  components: { tableMainData, pageTitle },
   data() {
     return {
       data: [

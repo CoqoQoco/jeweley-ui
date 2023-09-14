@@ -6,10 +6,10 @@
           <thead>
             <tr>
               <th class="td-action"></th>
-              <th>เลขที่ W.O.</th>
-              <th>ลำดับ W.O.</th>
-              <th>เเม่พิมพ์</th>
-              <th>วันสร้างใบงาน</th>
+              <th style="width: 100px">เลขที่ W.O.</th>
+              <th style="width: 100px">ลำดับ W.O.</th>
+              <th style="width: 200px">เเม่พิมพ์</th>
+              <th style="width: 200px">วันสร้างใบงาน</th>
               <th>รหัสสินค้า</th>
               <th>รหัสลูกค้า</th>
             </tr>
@@ -28,10 +28,10 @@
                   <i class="bi bi-trash-fill"></i>
                 </button>
               </td>
-              <td>{{ item.wo }}</td>
-              <td>{{ item.woNumber }}</td>
-              <td>{{ item.mold }}</td>
-              <td>{{ formatDate(item.requestDate) }}</td>
+              <td style="width: 100px">{{ item.wo }}</td>
+              <td style="width: 100px">{{ item.woNumber }}</td>
+              <td style="width: 200px">{{ item.mold }}</td>
+              <td style="width: 200px">{{ formatDate(item.requestDate) }}</td>
               <td>{{ item.productNumber }}</td>
               <!-- <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
                 {{ item.customerNumber }}

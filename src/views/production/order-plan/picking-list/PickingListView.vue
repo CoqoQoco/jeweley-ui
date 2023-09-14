@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <loading :isLoading="isLoading"></loading>
     <pageTitle
       title="สร้างใบจ่าย-รับคืนงาน"
       description="หน้าสร้างใบจ่าย-รับคืนงาน เเละรายละเอียดต่างๆ"
@@ -210,9 +211,11 @@
                 <thead>
                   <tr>
                     <th>รายการ</th>
-                    <th>ขนาด</th>
-                    <th>จำนวน</th>
-                    <th>ลบรายการ</th>
+                    <th>ประเภท</th>
+                    <th style="width: 100px">ขนาด/น้ำหนัก</th>
+                    <th style="width: 100px">จำนวน</th>
+                    <th>หมายเหตุ</th>
+                    <th style="width: 60px"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,7 +223,9 @@
                     <td>{{ data.name }}</td>
                     <td>{{ data.size }}</td>
                     <td>{{ data.qty }}</td>
-                    <td>
+                    <td>{{ data.qty }}</td>
+                    <td>{{ data.qty }}</td>
+                    <td style="text-align: center">
                       <button
                         class="btn btn-sm"
                         :class="`${isEdit ? `btn-danger` : `btn-secondary`}`"
@@ -280,15 +285,18 @@
 <script>
 import pageTitle from '@/components/custom/PageTitle.vue'
 import ModalAddMat from './components/ModalAddMat.vue'
+import loading from '@/components/overlay/loading-overlay.vue'
 //import UploadImg from '@/components/btn-import/UploadImages.vue'
 export default {
   components: {
     //UploadImg
     pageTitle,
-    ModalAddMat
+    ModalAddMat,
+    loading
   },
   data() {
     return {
+      isLoading: false,
       id: null,
       isNew: true,
       isLock: false,
@@ -396,13 +404,38 @@ export default {
   table {
     font-size: 12px;
     margin-bottom: 5px;
-    th {
-      padding-left: 5px;
+    border: 1px solid var(--base-color);
+    thead {
+      background-color: var(--base-font-color);
+      color: var(--base-color);
+      //font-size: 12px;
+      height: 42px;
+      border-collapse: collapse; /* รวมเส้นกรอบของตาราง */
+      //width: calc(100% - 15px);
     }
+    tbody {
+      //display: block;
+      //overflow: auto;
+    }
+    tbody tr {
+      //display: table;
+      width: 100%;
+      table-layout: fixed; /* even columns width , fix width of table too*/
+    }
+    th,
     td {
-      padding: 5px;
-      vertical-align: middle;
-      //height: 5px;
+      padding: 2px 10px 2px 10px !important;
+      vertical-align: middle !important;
+      border: 1px solid var(--base-color); /* สร้างเส้นกรอบ 1 พิกเซล */
+      word-wrap: break-word;
+      //white-space: nowrap;
+      //text-overflow: ellipsis;
+    }
+    button {
+      height: 30px !important;
+      i {
+        font-size: 10px;
+      }
     }
   }
   .header-btn-edit {
