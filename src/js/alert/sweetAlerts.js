@@ -8,7 +8,7 @@ export function warning(msg, title, callback) {
   if (title) {
     titleShow = title
   } else {
-    titleShow = "คำเตือน"
+    titleShow = 'คำเตือน'
   }
 
   Swal.fire({
@@ -82,11 +82,71 @@ export function error(msg, title, callback, stacktrace) {
     }
   }
 }
+export function success(msg, title, callback) {
+  let titleShow = null
+  let msgShow = null
+  if (title) titleShow = title
+  else titleShow = 'สำเร็จ'
+  if (msg) msgShow = msg
+  else msgShow = ''
+  Swal.fire({
+    title: titleShow,
+    html: msgShow,
+    icon: 'success',
+    allowOutsideClick: false,
+    confirmButtonText: 'ตกลง',
+    confirmButtonColor: '#921313'
+  }).then(() => {
+    if (callback) callback()
+  })
+}
+export function info(msg, title, callback) {
+  let titleShow = null
+  if (title) titleShow = title
+  else titleShow = 'รายละเอียด'
+  Swal.fire({
+    title: titleShow,
+    html: msg,
+    icon: 'info',
+    allowOutsideClick: false,
+    confirmButtonText: 'Ok'
+  }).then(() => {
+    if (callback) callback()
+  })
+}
+export function confirmSubmit(msg, title, callback, buttonInfo, icon) {
+  const showDenyButton = buttonInfo && buttonInfo.denyText ? true : false
+
+  let titleShow = null
+  if (title) titleShow = title
+  else titleShow = 'ยืนยันทำรายการ'
+
+  let msgShow = null
+  if (msg) msgShow = msg
+  else msgShow = ''
+
+  Swal.fire({
+    title: titleShow,
+    html: msgShow,
+    icon: icon ? icon : 'warning',
+    allowOutsideClick: false,
+    showCancelButton: true,
+    showDenyButton: showDenyButton,
+    denyButtonText: buttonInfo && buttonInfo.denyText,
+    confirmButtonText: buttonInfo && buttonInfo.confirmText ? buttonInfo.confirmText : 'ยืนยัน',
+    confirmButtonColor: '#921313',
+    cancelButtonText: buttonInfo && buttonInfo.cancelText ? buttonInfo.cancelText : 'ยกเลิก',
+    cancelButtonColor: '#FFC21B'
+  }).then((res) => {
+    if (!res.isDismissed) callback(res)
+  })
+}
 
 export default {
   error,
-  //success,
-  //info,
-  warning
+  success,
+  info,
+  warning,
+  confirmSubmit
   //submit,
 }

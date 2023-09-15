@@ -9,7 +9,7 @@
         </div>
         <div class="show-version">V.{{ version }}</div> -->
         <img
-           src="@/assets/duangkaew-logo.png"
+          src="@/assets/duangkaew-logo.png"
           class="avatar"
           :class="{ 'hidden-avatar': !isShowSidenav }"
         />
@@ -61,7 +61,7 @@ import Breadcrumb from '@/components/layout/BreadcrumbName.vue'
 export default {
   components: { SlideBar, Breadcrumb },
   data() {
-    return { isShowSidenav: true }
+    return { isShowSidenav: false }
   },
   watch: {}
 }

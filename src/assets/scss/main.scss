@@ -43,7 +43,11 @@ button.btn-main {
 button.btn-main:hover {
     color: white;
 }
-input[type="text"]{
+input[type="text"],
+input[type="number"]{
+    font-size: 12px !important;
+}
+textarea{
     font-size: 12px !important;
 }
 

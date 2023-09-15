@@ -2,9 +2,9 @@
 
 import Layout from '@/layout/web/LayoutDashboard.vue'
 import Dashboard from '@/views/dashboard/WelcomePage.vue'
-import PickingList from '@/views/production/order-plan/picking-list/PickingListView.vue'
+import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
 //import PickingListDetail from '@/views/production/order-plan/detail/IndexView.vue'
-import PickingListTrack from '@/views/production/order-plan/tracking/IndexView.vue'
+import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -120,7 +120,7 @@ const routes = [
       {
         path: '/plan-order',
         name: 'plan-order',
-        component: PickingList,
+        component: PlanOrder,
         meta: {
           Displayname: {
             en: 'Plan Order',
@@ -130,21 +130,21 @@ const routes = [
         }
       },
       {
-        path: '/plan-tracking',
-        name: 'plan-tracking',
-        component: PickingListTrack,
+        path: '/plan-order-tracking',
+        name: 'plan-order-tracking',
+        component: PlanOrderTracking,
         meta: {
           Displayname: {
-            en: 'Plan Tracking',
+            en: 'Plan Order Tracking',
             th: 'ติดตามงานผลิต'
           },
           minorShow: true
         }
       },
       {
-        path: '/plan-tracking/:id',
-        name: 'plan-tracking-view',
-        component: PickingList,
+        path: '/plan-order-tracking/:id',
+        name: 'plan-order-tracking-detail',
+        component: PlanOrder,
         meta: {
           Displayname: {
             en: 'Plan Detail',
