@@ -7,7 +7,7 @@ import PickingList from '@/views/production/order-plan/picking-list/PickingListV
 import PickingListTrack from '@/views/production/order-plan/tracking/IndexView.vue'
 
 // ----- test ----- //
-import TestAPI from '@/views/test-api/ViewTest.vue'
+//import TestAPI from '@/views/test-api/ViewTest.vue'
 
 //import MoldDesign from '@/views/production/order-plan/mold-design/MoldView.vue'
 //import PickingList from '@/views/production/order-plan/picking-list/PickingListView.vue'
@@ -189,7 +189,7 @@ const routes = [
       {
         path: '/logout',
         name: 'logout',
-        component: TestAPI,
+        component: Dashboard,
         meta: {
           Displayname: {
             en: 'Logout',

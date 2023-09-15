@@ -28,6 +28,7 @@ html {
 button {
     font-family: inherit;
     font-size: inherit;
+    //height: 32px !important;
     /* ใช้ฟอนต์จาก #app */
     /* สไตล์อื่น ๆ ที่คุณต้องการใช้งานในปุ่ม */
 }
@@ -41,5 +42,8 @@ button.btn-main {
 // }
 button.btn-main:hover {
     color: white;
+}
+input[type="text"]{
+    font-size: 12px !important;
 }
 

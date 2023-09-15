@@ -1,0 +1,59 @@
+@import "./variable.scss";
+
+// ----- table ---- //
+.p-datatable{
+    font-size: 12px !important;
+}
+.p-datatable thead th {
+    background-color: $base-font-color !important;
+    color: #ffffff;
+    //font-weight: bold;
+}
+.p-datatable .p-column-header-content {
+    color: #ffffff !important;
+}
+.p-datatable-tbody > tr > td {
+    padding: 3px 10px 3px 10px !important;
+}
+.p-paginator{
+    font-size: 12px !important;
+    padding: 5px;
+    .p-dropdown{
+        height: 25px !important;
+    }
+    .p-dropdown-label{
+        font-size: 12px !important;
+    }
+    .p-inputtext{
+        padding: 3px 0px 0px 10px !important;
+    }
+}
+
+// ---- drop down ----
+.p-dropdown-item {
+    font-size: 12px !important;
+    padding: 5px !important;
+}
+
+
+// ----- Calendar ----- //
+.p-calendar{
+    height: 32px;
+    .p-calendar-w-btn, 
+    .p-datepicker-trigger {
+        background-color: $base-font-color !important;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    input{
+        font-size: 12px !important;
+        padding: 10px !important;
+    }
+    svg{
+        width: 15px;
+        height: 15px;
+    }
+}
+.p-datepicker-calendar{
+    font-size: 12px !important;
+}

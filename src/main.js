@@ -11,6 +11,7 @@ import { createPinia } from 'pinia'
 import { i18n } from './plugins/i18n/config'
 import { VueApexCharts } from './plugins/apexcharts/config'
 import VueSweetalert2 from 'vue-sweetalert2'
+import PrimeVue from 'primevue/config'
 // const i18n = createI18n({
 //   // something vue-i18n options here ...
 // })
@@ -33,6 +34,8 @@ import 'sweetalert2/dist/sweetalert2.min.css'
 import 'vue-awesome-paginate/dist/style.css'
 //import 'bootstrap/dist/css/bootstrap.css'
 
+import 'primevue/resources/themes/lara-light-indigo/theme.css'
+
 //import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 
 //App.config.productionTip = false
@@ -44,6 +47,7 @@ app.use(i18n)
 app.use(VueApexCharts)
 app.use(VueSweetalert2)
 app.use(VueAwesomePaginate)
+app.use(PrimeVue)
 
 // Make BootstrapVue available throughout your project
 //App.use(BootstrapVue)
