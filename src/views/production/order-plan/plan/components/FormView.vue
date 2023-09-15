@@ -242,9 +242,9 @@
       <div class="zone-container-btn">
         <div class="row form-group">
           <div class="col-md-12 flex-btn">
-            <button class="btn btn-sm btn-info mr-2" type="button" @click="onTest">
+            <!-- <button class="btn btn-sm btn-info mr-2" type="button" @click="onTest">
               <span class="mr-1"><i class="bi bi-gem"></i></span> <span>ทดสอบ</span>
-            </button>
+            </button> -->
             <button class="btn btn-sm btn-main" type="submit">
               <span class="mr-1"><i class="bi bi-gem"></i></span> <span>สร้างใบจ่าย-รับคืนงาน</span>
             </button>
@@ -280,53 +280,53 @@ export default {
       isLoading: false,
       isLock: false,
       isShowModal: false,
-      //   form: {
-      //     wo: null,
-      //     nowo: null,
-      //     requestDate: new Date().toISOString().substr(0, 10),
-      //     mold: null,
-      //     productNumber: null,
-      //     customerNumber: null,
-      //     remark: null,
-      //     qtyUnit: 'PC',
-      //     qry: 1,
-      //     qtyFinish: 0,
-      //     qtySemiFinish: 0,
-      //     qtyCast: 0,
-      //     material: [],
-      //     imageUrls: []
-      //     },
       form: {
-        wo: '6606003',
-        nowo: 1,
+        wo: null,
+        nowo: null,
         requestDate: new Date().toISOString().substr(0, 10),
-        mold: 'R/9640, RING DIAMOND 9K',
-        productNumber: 'R09640D13',
-        customerNumber: 'THI001',
-        remark: 'ทองขาว 9K ทอง 9K',
+        mold: null,
+        productNumber: null,
+        customerNumber: null,
+        remark: null,
         qtyUnit: 'PC',
-        qry: 15,
+        qry: 1,
         qtyFinish: 0,
         qtySemiFinish: 0,
-        qtyCast: 15,
-        material: [
-          {
-            material: '1580R',
-            materialType: 'WG1-5',
-            materialSize: '9K',
-            materialQty: '10',
-            materialRemark: '-'
-          },
-          {
-            material: '1560R',
-            materialType: 'YG1-10',
-            materialSize: '9K',
-            materialQty: '10',
-            materialRemark: '-'
-          }
-        ],
+        qtyCast: 0,
+        material: [],
         imageUrls: []
       },
+      // form: {
+      //   wo: '6606003',
+      //   nowo: 1,
+      //   requestDate: new Date().toISOString().substr(0, 10),
+      //   mold: 'R/9640, RING DIAMOND 9K',
+      //   productNumber: 'R09640D13',
+      //   customerNumber: 'THI001',
+      //   remark: 'ทองขาว 9K ทอง 9K',
+      //   qtyUnit: 'PC',
+      //   qry: 15,
+      //   qtyFinish: 0,
+      //   qtySemiFinish: 0,
+      //   qtyCast: 15,
+      //   material: [
+      //     {
+      //       material: '1580R',
+      //       materialType: 'WG1-5',
+      //       materialSize: '9K',
+      //       materialQty: '10',
+      //       materialRemark: '-'
+      //     },
+      //     {
+      //       material: '1560R',
+      //       materialType: 'YG1-10',
+      //       materialSize: '9K',
+      //       materialQty: '10',
+      //       materialRemark: '-'
+      //     }
+      //   ],
+      //   imageUrls: []
+      // },
       fileImage: []
     }
   },

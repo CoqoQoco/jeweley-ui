@@ -1,10 +1,10 @@
 import axios from 'axios'
 
 // ------ URL Config docker -----
-//const jewelryUrl = 'http://localhost:2001/'
+const jewelryUrl = 'http://localhost:2001/'
 
 //test build
-const jewelryUrl = 'https://localhost:49163/'
+//const jewelryUrl = 'https://localhost:49163/'
 
 // ----- GET API ----- //
 const get = async function (url, params, optionsConfig) {

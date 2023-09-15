@@ -1,0 +1,15 @@
+version: '3'
+services:
+  jewelry-ui:
+    build:
+      context: . # The path to your Vue.js app's directory
+    ports:
+      - '8080:80' # Map port 8080 on the host to port 80 in the container
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '80:80' # Map port 80 on the host to port 80 in the container
+    volumes:
+      - ./nginx/nginx.conf /etc/nginx/nginx.conf
+    depends_on:
+      - vuejs-app
