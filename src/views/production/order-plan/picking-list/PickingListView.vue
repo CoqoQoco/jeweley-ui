@@ -283,7 +283,7 @@
 </template>
 
 <script>
-import { formatISOString } from '@/utils/date'
+import { formatISOString } from '@/utils/moment'
 import pageTitle from '@/components/custom/PageTitle.vue'
 import ModalAddMat from './components/ModalAddMat.vue'
 import loading from '@/components/overlay/loading-overlay.vue'
@@ -394,7 +394,7 @@ export default {
           material: [...this.form.material]
         }
 
-        console.log(param)
+        //console.log(param)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanCreate', param)
         if (res) {
           console.log(res)
@@ -422,6 +422,11 @@ export default {
 .app-container {
   //padding: 20px 150px 20px 150px;
 }
+label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--base-font-color);
+}
 .form-container {
   padding: 0px 10px 0px 10px;
   //border: 1px solid white;
@@ -435,9 +440,6 @@ export default {
     color: var(--base-font-color);
   }
   input {
-    font-size: 12px;
-  }
-  label {
     font-size: 12px;
   }
   table {
