@@ -1,7 +1,10 @@
 import axios from 'axios'
 
 // ------ URL Config docker -----
-const jewelryUrl = 'http://localhost:2001/'
+//const jewelryUrl = 'http://localhost:2001/'
+
+// ------ url local docker test ------
+const jewelryUrl = 'http://192.168.1.35:2001/'
 
 //test build
 //const jewelryUrl = 'https://localhost:49163/'
