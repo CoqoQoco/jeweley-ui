@@ -242,6 +242,9 @@
       <div class="zone-container-btn">
         <div class="row form-group">
           <div class="col-md-12 flex-btn">
+            <button class="btn btn-sm btn-info mr-2" type="button" @click="onTest">
+              <span class="mr-1"><i class="bi bi-gem"></i></span> <span>ทดสอบ</span>
+            </button>
             <button class="btn btn-sm btn-main" type="submit">
               <span class="mr-1"><i class="bi bi-gem"></i></span> <span>สร้างใบจ่าย-รับคืนงาน</span>
             </button>
@@ -277,30 +280,68 @@ export default {
       isLoading: false,
       isLock: false,
       isShowModal: false,
+      //   form: {
+      //     wo: null,
+      //     nowo: null,
+      //     requestDate: new Date().toISOString().substr(0, 10),
+      //     mold: null,
+      //     productNumber: null,
+      //     customerNumber: null,
+      //     remark: null,
+      //     qtyUnit: 'PC',
+      //     qry: 1,
+      //     qtyFinish: 0,
+      //     qtySemiFinish: 0,
+      //     qtyCast: 0,
+      //     material: [],
+      //     imageUrls: []
+      //     },
       form: {
-        wo: null,
-        nowo: null,
+        wo: '6606003',
+        nowo: 1,
         requestDate: new Date().toISOString().substr(0, 10),
-        mold: null,
-        productNumber: null,
-        customerNumber: null,
-        remark: null,
+        mold: 'R/9640, RING DIAMOND 9K',
+        productNumber: 'R09640D13',
+        customerNumber: 'THI001',
+        remark: 'ทองขาว 9K ทอง 9K',
         qtyUnit: 'PC',
-        qry: 1,
+        qry: 15,
         qtyFinish: 0,
         qtySemiFinish: 0,
-        qtyCast: 0,
-        material: [],
+        qtyCast: 15,
+        material: [
+          {
+            material: '1580R',
+            materialType: 'WG1-5',
+            materialSize: '9K',
+            materialQty: '10',
+            materialRemark: '-'
+          },
+          {
+            material: '1560R',
+            materialType: 'YG1-10',
+            materialSize: '9K',
+            materialQty: '10',
+            materialRemark: '-'
+          }
+        ],
         imageUrls: []
-      }
+      },
+      fileImage: []
     }
   },
   methods: {
     // ------ private ------ //
     previewImages() {
-      console.log(this.$refs.file)
+      //console.log(e.target.files[0])
+      //console.log(this.$refs.file)
       const temFiles = this.$refs.file
       const files = temFiles.files
+      //console.log(files)
+
+      this.fileImage.push(files)
+      //this.fileImage = Array.from(temFiles.files)
+      //console.log(this.fileImage)
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
@@ -313,9 +354,22 @@ export default {
         }
       }
     },
+    onTest() {
+      for (const item of this.fileImage) {
+        console.log(item)
+
+        const fileList = item
+        for (let i = 0; i < fileList.length; i++) {
+          const file = fileList[i]
+          console.log(file)
+          console.log(file.name)
+        }
+      }
+    },
     deleteImage(index) {
       this.form.imageUrls.splice(index, 1)
-      console.log(this.form.imageUrls)
+      this.fileImage.splice(index, 1)
+      //console.log(this.form.imageUrls)
     },
     deletMatItem(index) {
       this.form.material.splice(index, 1)
@@ -350,7 +404,8 @@ export default {
         qtySemiFinish: 0,
         qtyCast: 0,
         material: [],
-        imageUrls: []
+        imageUrls: [],
+        images: []
       }
     },
 
@@ -360,6 +415,7 @@ export default {
         `W.O. ${this.form.wo}-${this.form.nowo} `,
         'ยืนยันสร้างใบจ่าย-รับคืน',
         async () => {
+          //console.log('call submitPlan')
           await this.submitPlan()
         },
         null,
@@ -368,11 +424,11 @@ export default {
     },
     async submitPlan() {
       try {
-        //console.log('submit')
+        //console.log('submitPlan')
         this.isLoading = true
         const param = {
           wo: this.form.wo,
-          woNumber: this.form.woNumber,
+          woNumber: this.form.nowo,
           requestDate: formatISOString(this.form.requestDate),
 
           mold: this.form.mold,
@@ -388,11 +444,72 @@ export default {
           qtyUnit: this.form.qtyUnit,
 
           material: [...this.form.material]
+          //images: new FormData()()
         }
 
+        param.images
         //console.log(param)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanCreate', param)
         if (res) {
+          if (this.form.imageUrls.length) {
+            //console.log('upload image')
+            await this.uploadImage()
+          } else {
+            swAlert.success(
+              `W.O. ${this.form.wo}-${this.form.nowo} `,
+              'สร้างใบจ่าย-รับคืน สำเร็จ',
+              () => {
+                this.onResetPage()
+              },
+              null,
+              null
+            )
+          }
+        }
+
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async uploadImage() {
+      try {
+        let params = new FormData()
+        params.append('wo', this.form.wo)
+        params.append('woNumber', this.form.nowo)
+
+        //test
+        //console.log(this.fileImage[0])
+        //params.append('images', this.fileImage[0].file)
+
+        for (const item of this.fileImage) {
+          //console.log(item)
+
+          const fileList = item
+          for (let i = 0; i < fileList.length; i++) {
+            params.append('images', fileList[i])
+            //params.append(`images-${i + 1}`, fileList[i])
+            const file = fileList[i]
+            //console.log(file)
+            console.log(file.name)
+          }
+        }
+
+        let options = {
+          headers: {
+            'Content-Type': `multipart/form-data`
+          }
+        }
+
+        const res = await api.jewelry.post(
+          'ProductionPlan/ProductionPlanCreateImage',
+          params,
+          options
+        )
+
+        if (res) {
+          console.log(res)
           swAlert.success(
             `W.O. ${this.form.wo}-${this.form.nowo} `,
             'สร้างใบจ่าย-รับคืน สำเร็จ',
@@ -403,9 +520,8 @@ export default {
             null
           )
         }
-
-        this.isLoading = false
       } catch (error) {
+        console.log(error)
         this.isLoading = false
       }
     }

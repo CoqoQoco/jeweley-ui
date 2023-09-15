@@ -9,7 +9,7 @@
         </div>
         <div class="show-version">V.{{ version }}</div> -->
         <img
-          src="@/assets/duangkaew-logo.png"
+           src="@/assets/duangkaew-logo.png"
           class="avatar"
           :class="{ 'hidden-avatar': !isShowSidenav }"
         />

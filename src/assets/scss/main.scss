@@ -18,7 +18,7 @@ html {
     -moz-osx-font-smoothing: grayscale;
     color: $base-sub-color;
     //color: $base-font-color;
-    font-size: 12px;
+    font-size: 14px;
     
 }
 .app-container {
@@ -45,9 +45,9 @@ button.btn-main:hover {
 }
 input[type="text"],
 input[type="number"]{
-    font-size: 12px !important;
+    font-size: 14px !important;
 }
 textarea{
-    font-size: 12px !important;
+    font-size: 14px !important;
 }
 

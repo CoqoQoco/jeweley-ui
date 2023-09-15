@@ -7,7 +7,7 @@ export default {
   //production
   planMold: 'ออกเเบบเเม่พิมพ์',
   planOrder: 'สร้างใบจ่าย-รับคืนงาน',
-  planTracking: 'ติดตามงานผลิต',
+  planOrderTracking: 'ติดตามงานผลิต',
 
   //setting
   userAccount: 'จัดการบัญชีผู้ใช้',

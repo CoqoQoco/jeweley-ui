@@ -249,7 +249,8 @@ export default {
 
 .main-menu-wrapper:hover {
   //transform: translateY(0%) translateZ(0) scale(1.1);
-  background-color: #fefefe;
+  //background-color: #fefefe;
+  color: var(--base-font-color)
   //border-bottom: 1px solid transparent;
 }
 
