@@ -92,7 +92,7 @@
                 <input
                   type="text"
                   class="form-control"
-                  v-model="form.product"
+                  v-model="form.productDetail"
                   :disabled="isLock"
                   required
                 />
@@ -101,13 +101,23 @@
             <div class="row form-group">
               <div class="col-md-12">
                 <label>{{ $t('view.pickinglist.title.remark') }}</label>
-                <textarea class="form-control" v-model="form.remark" :disabled="isLock" style="height: 189px;"> </textarea>
+                <textarea
+                  class="form-control"
+                  v-model="form.remark"
+                  :disabled="isLock"
+                  style="height: 189px"
+                >
+                </textarea>
               </div>
             </div>
           </div>
           <div class="col-md-6">
             <label>รูปสินค้า</label>
-            <uploadImage :hight="imageConatinerHight"></uploadImage>
+            <uploadImage
+              :reset="isResetImage"
+              :hight="imageConatinerHight"
+              @onImportFile="onImportFile"
+            ></uploadImage>
           </div>
         </div>
         <!-- <div class="row form-group">
@@ -177,7 +187,7 @@
               type="number"
               min="1"
               class="form-control"
-              v-model="form.qry"
+              v-model="form.qty"
               :disabled="isLock"
               required
             />
@@ -325,54 +335,56 @@ export default {
       isLoading: false,
       isLock: false,
       isShowModal: false,
+      isResetImage: false,
       imageConatinerHight: '400px',
-      form: {
-        wo: null,
-        nowo: null,
-        requestDate: new Date().toISOString().substr(0, 10),
-        mold: null,
-        productNumber: null,
-        customerNumber: null,
-        remark: null,
-        qtyUnit: 'PC',
-        qry: 1,
-        qtyFinish: 0,
-        qtySemiFinish: 0,
-        qtyCast: 0,
-        material: [],
-        imageUrls: []
-      },
       // form: {
-      //   wo: '6606003',
-      //   nowo: 1,
+      //   wo: null,
+      //   nowo: null,
       //   requestDate: new Date().toISOString().substr(0, 10),
-      //   mold: 'R/9640, RING DIAMOND 9K',
-      //   productNumber: 'R09640D13',
-      //   customerNumber: 'THI001',
-      //   remark: 'ทองขาว 9K ทอง 9K',
+      //   mold: null,
+      //   productNumber: null,
+      //   customerNumber: null,
+      //   remark: null,
       //   qtyUnit: 'PC',
-      //   qry: 15,
+      //   qry: 1,
       //   qtyFinish: 0,
       //   qtySemiFinish: 0,
-      //   qtyCast: 15,
-      //   material: [
-      //     {
-      //       material: '1580R',
-      //       materialType: 'WG1-5',
-      //       materialSize: '9K',
-      //       materialQty: '10',
-      //       materialRemark: '-'
-      //     },
-      //     {
-      //       material: '1560R',
-      //       materialType: 'YG1-10',
-      //       materialSize: '9K',
-      //       materialQty: '10',
-      //       materialRemark: '-'
-      //     }
-      //   ],
-      //   imageUrls: []
+      //   qtyCast: 0,
+      //   material: [],
+      //   image: ""
       // },
+      form: {
+        wo: '6606001',
+        nowo: 1,
+        requestDate: new Date().toISOString().substr(0, 10),
+        mold: 'R/9640, RING DIAMOND 9K',
+        productNumber: 'R09640D13',
+        productDetail: 'RING DIAMOND 9K',
+        customerNumber: 'THI001',
+        remark: 'ทองขาว 9K ทอง 9K',
+        qtyUnit: 'PC',
+        qty: 15,
+        qtyFinish: 0,
+        qtySemiFinish: 0,
+        qtyCast: 15,
+        material: [
+          {
+            material: '1580R',
+            materialType: 'WG1-5',
+            materialSize: '9K',
+            materialQty: '10',
+            materialRemark: '-'
+          },
+          {
+            material: '1560R',
+            materialType: 'YG1-10',
+            materialSize: '9K',
+            materialQty: '10',
+            materialRemark: '-'
+          }
+        ],
+        image: ''
+      },
       fileImage: []
     }
   },
@@ -455,6 +467,12 @@ export default {
       }
     },
 
+    //components
+    onImportFile(e) {
+      //console.log(e)
+      this.form.image = e
+    },
+
     // ------ Api ------ //
     onSubmitPlan() {
       swAlert.confirmSubmit(
@@ -472,45 +490,89 @@ export default {
       try {
         //console.log('submitPlan')
         this.isLoading = true
-        const param = {
-          wo: this.form.wo,
-          woNumber: this.form.nowo,
-          requestDate: formatISOString(this.form.requestDate),
+        // const param = {
+        //   wo: this.form.wo,
+        //   woNumber: this.form.nowo,
+        //   requestDate: formatISOString(this.form.requestDate),
 
-          mold: this.form.mold,
-          productNumber: this.form.productNumber,
-          customerNumber: this.form.customerNumber,
+        //   mold: this.form.mold,
+        //   productNumber: this.form.productNumber,
+        //   customerNumber: this.form.customerNumber,
 
-          remark: this.form.remark,
+        //   remark: this.form.remark,
 
-          qty: this.form.qty,
-          qtyFinish: this.form.qtyFinish,
-          qtySemiFinish: this.form.qtySemiFinish,
-          qtyCast: this.form.qtyCast,
-          qtyUnit: this.form.qtyUnit,
+        //   qty: this.form.qty,
+        //   qtyFinish: this.form.qtyFinish,
+        //   qtySemiFinish: this.form.qtySemiFinish,
+        //   qtyCast: this.form.qtyCast,
+        //   qtyUnit: this.form.qtyUnit,
 
-          material: [...this.form.material]
-          //images: new FormData()()
+        //   material: [...this.form.material],
+        //   Images: new FormData(),
+        // }
+
+        let params = new FormData()
+        params.append('wo', this.form.wo)
+        params.append('woNumber', this.form.nowo)
+        params.append('requestDate', formatISOString(this.form.requestDate))
+        params.append('mold', this.form.mold)
+        params.append('productNumber', this.form.productNumber)
+        params.append('productDetail', this.form.productDetail)
+        params.append('customerNumber', this.form.customerNumber)
+        params.append('remark', this.form.remark)
+        params.append('qty', this.form.qty)
+        params.append('qtyFinish', this.form.qtyFinish)
+        params.append('qtySemiFinish', this.form.qtySemiFinish)
+        params.append('qtyCast', this.form.qtyCast)
+        params.append('qtyUnit', this.form.qtyUnit)
+
+        //https://tutorial.eyehunts.com/js/javascript-formdata-append-array/
+        params.append('material', JSON.stringify(this.form.material))
+
+        //Chat GPT
+        // this.form.material.forEach((value, index) => {
+        //   // เพิ่มข้อมูลในรูปแบบ key-value โดยกำหนด key เป็น "myArray[]" เพื่อระบุว่าเป็นอาร์เรย์
+        //   params.append(`material[${index}]`, value)
+        // })
+
+        //console.log(this.form.image)
+        params.append('images', this.form.image)
+
+        let options = {
+          headers: {
+            'Content-Type': `multipart/form-data`
+          }
         }
 
-        param.images
-        //console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanCreate', param)
+        //console.log(params)
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanCreate', params, options)
+
         if (res) {
-          if (this.form.imageUrls.length) {
-            //console.log('upload image')
-            await this.uploadImage()
-          } else {
-            swAlert.success(
-              `W.O. ${this.form.wo}-${this.form.nowo} `,
-              'สร้างใบจ่าย-รับคืน สำเร็จ',
-              () => {
-                this.onResetPage()
-              },
-              null,
-              null
-            )
-          }
+          this.isResetImage = !this.isResetImage
+          swAlert.success(
+            `W.O. ${this.form.wo}-${this.form.nowo} `,
+            'สร้างใบจ่าย-รับคืน สำเร็จ',
+            () => {
+              this.onResetPage()
+              this.$router.push('/')
+            },
+            null,
+            null
+          )
+          // if (this.form.imageUrls.length) {
+          //   //console.log('upload image')
+          //   await this.uploadImage()
+          // } else {
+          //   swAlert.success(
+          //     `W.O. ${this.form.wo}-${this.form.nowo} `,
+          //     'สร้างใบจ่าย-รับคืน สำเร็จ',
+          //     () => {
+          //       this.onResetPage()
+          //     },
+          //     null,
+          //     null
+          //   )
+          // }
         }
 
         this.isLoading = false
@@ -518,6 +580,13 @@ export default {
         console.log(error)
         this.isLoading = false
       }
+    },
+    validateSubmitPlan() {
+      let res = 'success'
+      if (!this.form.material.length) {
+        res = 'กรุณาระบุส่วนประกอบ ใบจ่าย-รับคืน'
+      }
+      return res
     },
     async uploadImage() {
       try {
@@ -557,8 +626,8 @@ export default {
         if (res) {
           console.log(res)
           swAlert.success(
-            `W.O. ${this.form.wo}-${this.form.nowo} `,
-            'สร้างใบจ่าย-รับคืน สำเร็จ',
+            null,
+            '',
             () => {
               this.onResetPage()
             },

@@ -4,7 +4,13 @@
       <div class="row form-group">
         <div class="col-md-4">
           <div class="upload-btn">
-            <input class="hidden-input" type="file" accept=".jpg, .png" @change="onImportIamge" />
+            <input
+              class="hidden-input"
+              type="file"
+              ref="fileInput"
+              accept=".jpg, .png"
+              @change="onImportIamge"
+            />
             <button class="btn btn-sm btn-warning btn-upload-custom" type="button">
               เลือกรูปภาพ
             </button>
@@ -40,12 +46,21 @@ export default {
   props: {
     hight: {
       type: String
+    },
+    reset: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
       name: '',
       imgUrl: ''
+    }
+  },
+  watch: {
+    reset() {
+      this.clearFileInput()
     }
   },
   methods: {
@@ -63,6 +78,11 @@ export default {
         //emit
         this.$emit('onImportFile', e.target.files[0])
       }
+    },
+    clearFileInput() {
+      console.log('reset')
+      const fileInput = this.$refs.fileInput
+      fileInput.value = ''
     }
   }
 }
@@ -77,11 +97,11 @@ export default {
 
   display: grid;
 }
-.upload-header{
-    padding: 10px;
-    height: 55px;
-    background-color: var(--base-color);
-    //vertical-align: middle;
+.upload-header {
+  padding: 10px;
+  height: 55px;
+  background-color: var(--base-color);
+  //vertical-align: middle;
 }
 .hidden-input {
   opacity: 0;
