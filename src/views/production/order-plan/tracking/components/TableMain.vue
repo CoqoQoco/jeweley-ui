@@ -45,7 +45,8 @@
 
     <!--  ----- prime ng table ----- -->
     <DataTable
-      :value="data"
+      :totalRecords="data.total"
+      :value="data.data"
       class="p-datatable-sm custom-table"
       scrollable
       scrollHeight="calc(100vh - 320px)"
@@ -54,11 +55,12 @@
       :reorderableColumns="true"
       @columnReorder="onColReorder"
       @rowReorder="onRowReorder"
-      paginator
-      :rows="10"
+      :paginator="true"
+      @page="handlePageChange"
+      :rows="take"
       :rowsPerPageOptions="[10, 20, 50, 100]"
-      paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-      currentPageReportTemplate="{first} to {last} of {totalRecords}"
+      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+      :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
       <Column style="width: 100px; text-align: center">
         <template #body>
@@ -74,7 +76,7 @@
       <Column field="woNumber" header="ลำดับ W.O."></Column>
       <Column field="mold" header="เเม่พิมพ์"></Column>
       <Column header="หมายเลขสินค้า" field="productNumber"></Column>
-      <Column header="หมายเลขลูกค้า" field="customerNumber" ></Column>
+      <Column header="หมายเลขลูกค้า" field="customerNumber"></Column>
       <Column header="วันสร้างใบงาน" field="requestDate">
         <template #body="prop">
           {{ formatDateTime(prop.data.requestDate) }}
@@ -125,10 +127,10 @@ export default {
       isLoading: false,
 
       // table
-      total: 0,
-      take: 0, //all
+      totalRecords: 100,
+      take: 10, //all
       skip: 0,
-      data: []
+      data: {}
     }
   },
   computed: {
@@ -151,6 +153,10 @@ export default {
     onRowReorder(event) {
       this.products = event.value
       //this.$toast.add({ severity: 'success', summary: 'Rows Reordered', life: 3000 })
+    },
+    handlePageChange(e) {
+      console.log('page change')
+      console.log(e)
     },
 
     // ------ helper ------//
@@ -176,14 +182,15 @@ export default {
           }
         }
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanSearch', param)
-
         if (res) {
-          this.data = [...res.data]
+          //this.data = [...res.data]
+          this.data = { ...res }
         }
         console.log(this.data)
 
         this.isLoading = false
       } catch (error) {
+        console.log(error)
         this.isLoading = false
       }
     }

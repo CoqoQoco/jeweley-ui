@@ -3,6 +3,7 @@
     <loading :isLoading="isLoading"></loading>
     <form @submit.prevent="onSubmitPlan">
       <div class="zone-container">
+        <!-- Title -->
         <div class="row form-group">
           <div class="col-md-12">
             <div class="flex-header">
@@ -13,73 +14,111 @@
             </div>
           </div>
         </div>
+        <!-- PRODUCT -->
         <div class="row form-group">
-          <div class="col-md-4">
-            <label>{{ $t('view.pickinglist.title.wo') }}</label>
-            <input type="text" class="form-control" v-model="form.wo" required :disabled="isLock" />
+          <div class="col-md-6">
+            <div class="row form-group">
+              <div class="col-md-6">
+                <div class="row form-group">
+                  <div class="col-md-8">
+                    <label>{{ $t('view.pickinglist.title.wo') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="form.wo"
+                      required
+                      :disabled="isLock"
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label>ลำดับ</label>
+                    <input
+                      type="number"
+                      min="1"
+                      class="form-control"
+                      v-model="form.nowo"
+                      :disabled="isLock"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label>{{ $t('view.pickinglist.title.mold') }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.mold"
+                  :disabled="isLock"
+                  required
+                />
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-6">
+                <label>{{ $t('view.pickinglist.title.customerNumber') }}</label>
+                <input
+                  type="text"
+                  class="form-control box-input"
+                  v-model="form.customerNumber"
+                  :disabled="isLock"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label>วันส่งงานลูกค้า</label>
+                <Calendar
+                  class="w-100"
+                  v-model="form.requestDate"
+                  showIcon
+                  :disabled="isLock"
+                  required
+                />
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-6">
+                <label>{{ $t('view.pickinglist.title.productNumber') }}</label>
+                <input
+                  type="text"
+                  class="form-control box-input"
+                  v-model="form.productNumber"
+                  :disabled="isLock"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label>รายละเอียดสินค้า</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.product"
+                  :disabled="isLock"
+                  required
+                />
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-12">
+                <label>{{ $t('view.pickinglist.title.remark') }}</label>
+                <textarea class="form-control" v-model="form.remark" :disabled="isLock" style="height: 189px;"> </textarea>
+              </div>
+            </div>
           </div>
-          <div class="col-md-4">
-            <label>{{ $t('view.pickinglist.title.nowo') }}</label>
-            <input
-              type="number"
-              min="1"
-              class="form-control"
-              v-model="form.nowo"
-              :disabled="isLock"
-              required
-            />
-          </div>
-          <div class="col-md-4">
-            <label>{{ $t('view.pickinglist.title.requestDate') }}</label>
-            <Calendar
-              class="w-100"
-              v-model="form.requestDate"
-              showIcon
-              :disabled="isLock"
-              required
-            />
+          <div class="col-md-6">
+            <label>รูปสินค้า</label>
+            <uploadImage :hight="imageConatinerHight"></uploadImage>
           </div>
         </div>
-        <div class="row form-group">
-          <div class="col-md-4">
-            <label>{{ $t('view.pickinglist.title.mold') }}</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="form.mold"
-              :disabled="isLock"
-              required
-            />
-          </div>
-          <div class="col-md-4">
-            <label>{{ $t('view.pickinglist.title.productNumber') }}</label>
-            <input
-              type="text"
-              class="form-control box-input"
-              v-model="form.productNumber"
-              :disabled="isLock"
-              required
-            />
-          </div>
-          <div class="col-md-4">
-            <label>{{ $t('view.pickinglist.title.customerNumber') }}</label>
-            <input
-              type="text"
-              class="form-control box-input"
-              v-model="form.customerNumber"
-              :disabled="isLock"
-              required
-            />
-          </div>
-        </div>
-        <div class="row form-group">
+        <!-- <div class="row form-group">
           <div class="col-md-12">
             <label>{{ $t('view.pickinglist.title.remark') }}</label>
             <textarea class="form-control" v-model="form.remark" :disabled="isLock"> </textarea>
           </div>
-        </div>
+        </div> -->
       </div>
-      <div class="zone-container">
+      <!-- รูปสินค้า -->
+      <!-- <div class="zone-container">
         <div class="row form-group">
           <div class="col-md-12">
             <div class="flex-header">
@@ -118,14 +157,15 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
+      <!-- จำนวนการผลิต -->
       <div class="zone-container">
         <div class="row form-group">
           <div class="col-md-12">
             <div class="flex-header">
               <label style="font-weight: 700">
                 <span class="mr-2"><i class="bi bi-card-list"></i></span>
-                <span>ส่วนที่ 3 ระบุจำนวนการผลิตใบจ่าย-รับคืน</span>
+                <span>ส่วนที่ 2 ระบุจำนวนการผลิตใบจ่าย-รับคืน</span>
               </label>
             </div>
           </div>
@@ -187,6 +227,7 @@
           </div>
         </div>
       </div>
+      <!-- ส่วนประกอบการผลิต -->
       <div class="zone-container">
         <div class="row form-group">
           <div class="col-md-12">
@@ -194,7 +235,7 @@
               <div class="flex-header">
                 <label style="font-weight: 700">
                   <span class="mr-2"><i class="bi bi-card-list"></i></span>
-                  <span>ส่วนที่ 4 ระบุส่วนประกอบในการผลิต</span>
+                  <span>ส่วนที่ 3 ระบุส่วนประกอบในการผลิต</span>
                 </label>
               </div>
               <div>
@@ -239,6 +280,7 @@
           </div>
         </div>
       </div>
+      <!-- ยืนยัน, เเก้ไข -->
       <div class="zone-container-btn">
         <div class="row form-group">
           <div class="col-md-12 flex-btn">
@@ -266,6 +308,8 @@ import api from '@/axios/axios-config.js'
 import loading from '@/components/overlay/loading-overlay.vue'
 import swAlert from '@/js/alert/sweetAlerts.js'
 
+import UploadImage from '@/components/prime-vue/UploadImage.vue'
+
 import ModalAddMat from '../components/ModalAddMaterial.vue'
 export default {
   components: {
@@ -273,13 +317,15 @@ export default {
     Calendar,
     ModalAddMat,
     DataTable,
-    Column
+    Column,
+    UploadImage
   },
   data() {
     return {
       isLoading: false,
       isLock: false,
       isShowModal: false,
+      imageConatinerHight: '400px',
       form: {
         wo: null,
         nowo: null,
@@ -534,6 +580,12 @@ label {
   color: var(--base-font-color);
   font-weight: 400;
 }
+textarea {
+  min-height: 35px !important;
+}
+.form-group {
+  margin-bottom: 5px;
+}
 .zone-container {
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -625,5 +677,9 @@ label {
   text-align: center;
   margin-top: 5px;
   color: var(--base-sub-color);
+}
+.product-container {
+  //margin-bottom: 10px;
+  display: grid;
 }
 </style>
