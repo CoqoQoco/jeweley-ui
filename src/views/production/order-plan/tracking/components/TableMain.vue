@@ -1,47 +1,6 @@
 <template>
   <div class="table-container">
     <loading :isLoading="isLoading"></loading>
-    <!-- <tableMain :isData="isData" :total="total">
-      <template v-slot:table>
-        <table class="table-main">
-          <thead>
-            <tr>
-              <th class="td-action"></th>
-              <th style="width: 100px">เลขที่ W.O.</th>
-              <th style="width: 100px">ลำดับ W.O.</th>
-              <th style="width: 200px">เเม่พิมพ์</th>
-              <th style="width: 200px">วันสร้างใบงาน</th>
-              <th>รหัสสินค้า</th>
-              <th>รหัสลูกค้า</th>
-            </tr>
-          </thead>
-          <tbody style="max-height: calc(100vh - 330px)">
-            <tr v-for="(item, index) in modelValue" :key="index">
-              <td class="td-action">
-                <button
-                  class="btn btn-sm btn-warning mr-2"
-                  title="ดูรายละเอียด"
-                  @click="onView(item)"
-                >
-                  <i class="bi bi-gem"></i>
-                </button>
-                <button class="btn btn-sm btn-main" title="ลบใบจ่าย">
-                  <i class="bi bi-trash-fill"></i>
-                </button>
-              </td>
-              <td style="width: 100px">{{ item.wo }}</td>
-              <td style="width: 100px">{{ item.woNumber }}</td>
-              <td style="width: 200px">{{ item.mold }}</td>
-              <td style="width: 00px">{{ formatDate(item.requestDate) }}</td>
-              <td>{{ item.productNumber }}</td>
-              <td>
-                {{ item.customerNumber }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </template>
-    </tableMain> -->
 
     <!--  ----- prime ng table ----- -->
     <DataTable
@@ -65,14 +24,15 @@
       <Column style="width: 80px">
         <template #body="slotProps">
           <div class="col-btn-container">
-            <div
+            <!-- <div
               class="btn btn-sm btn-warning w-50 mr-1"
               title="ดูรายละเอียด"
               @click="onView(item)"
+              disabled
             >
               <i class="bi bi-gem"></i>
-            </div>
-            <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf>
+            </div> -->
+            <pdf class="btn btn-sm btn-info w-100" :modelValue="slotProps.data"></pdf>
           </div>
         </template>
       </Column>
@@ -83,6 +43,18 @@
       </Column>
       <!-- <Column field="woNumber" header="ลำดับ"></Column> -->
       <Column field="mold" header="เเม่พิมพ์"></Column>
+      <Column field="status" header="สถานะใบงาน" style="min-width: 100px">
+        <template #body="slotProps">
+          <!-- <div class="btn btn-sm btn-danger"></div> -->
+          <div
+            class="btn btn-sm"
+            :class="getStatusSeverity(slotProps.data.status)"
+            @click="onUpdateStatus(slotProps)"
+          >
+            {{ slotProps.data.statusNavigation.nameTh }}
+          </div>
+        </template>
+      </Column>
       <Column field="tbtProductionPlanImage" header="รูปสินค้า">
         <template #body="slotProps">
           <div class="image-container">
@@ -119,7 +91,7 @@
           <DataTable
             class="expnad-table-container"
             :value="slotProps.data.tbtProductionPlanMaterial"
-            showgridlines
+            showGridlines
           >
             <Column header="รายการ" field="material"></Column>
             <Column header="ประเภท" field="materialType"></Column>
@@ -131,6 +103,13 @@
         </div>
       </template>
     </DataTable>
+    <modalUpdateStatus
+      :isShowModal="isShowUpdateStatusModal"
+      :modelValue="modelUpdateStatus"
+      :masterStatus="masterStatus"
+      @closeModal="closeModalUpdatestatus"
+      @fetchData="fetchDataByupdateStatus"
+    ></modalUpdateStatus>
   </div>
 </template>
 <script>
@@ -141,6 +120,7 @@ import loading from '@/components/overlay/loading-overlay.vue'
 //prime table
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+//import Tag from 'primevue/tag'
 import api from '@/axios/axios-config.js'
 //import ColumnGroup from 'primevue/columngroup' // optional
 //import Row from 'primevue/row'
@@ -148,13 +128,17 @@ import api from '@/axios/axios-config.js'
 import imagePreview from '@/components/image/PreviewImage.vue'
 import pdf from '@/components/pdf-make/SavePDFOrderPlan.vue'
 
+import modalUpdateStatus from '../components/ModalUpdateStatus.vue'
+
 export default {
   components: {
     DataTable,
     Column,
     loading,
     imagePreview,
-    pdf
+    pdf,
+    //Tag,
+    modalUpdateStatus
     //ColumnGroup,
     //Row
   },
@@ -172,6 +156,7 @@ export default {
     return {
       isLoading: false,
       isLoadingImage: false,
+      isShowUpdateStatusModal: false,
       orderplan: 'ORDERPLAN',
 
       // table
@@ -182,7 +167,12 @@ export default {
       expnadData: [],
 
       //test
-      urlImg: null
+      urlImg: null,
+
+      modelUpdateStatus: {},
+
+      //master
+      masterStatus: []
     }
   },
   computed: {
@@ -209,6 +199,24 @@ export default {
     handlePageChange(e) {
       console.log('page change')
       console.log(e)
+    },
+
+    // ----- tag ------ //
+    getStatusSeverity(status) {
+      switch (status) {
+        case 9999:
+          return 'btn-danger'
+        case 100:
+          return 'btn-success'
+        case 10:
+          return 'btn-info'
+        case 50:
+        case 60:
+        case 70:
+        case 80:
+        case 90:
+          return 'btn-warning'
+      }
     },
 
     // ------ helper ------//
@@ -276,9 +284,39 @@ export default {
           return null
         }
       }
+    },
+    async fetchMaterStatus() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
+        if (res) {
+          //this.data = [...res.data]
+          this.masterStatus = [...res]
+        }
+        //console.log(this.data)
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+
+    // ----- update status ----- //
+    closeModalUpdatestatus() {
+      this.isShowUpdateStatusModal = false
+    },
+    onUpdateStatus(item) {
+      this.isShowUpdateStatusModal = true
+      this.modelUpdateStatus = { ...item }
+    },
+    async fetchDataByupdateStatus() {
+      //console.log(e)
+      this.isShowUpdateStatusModal = false
+      await this.fetchData()
     }
   },
   async created() {
+    await this.fetchMaterStatus()
     await this.fetchData()
   },
   async mounted() {
@@ -308,7 +346,7 @@ export default {
   text-decoration: none !important;
 }
 .image-container {
-  //height: 150px;
+  //height: 100px;
   //width: 150px;
 }
 .expnad-table-container {
@@ -321,5 +359,8 @@ export default {
 .col-btn-container {
   display: flex;
   justify-content: center;
+}
+.status-container {
+  //width: 100%;
 }
 </style>

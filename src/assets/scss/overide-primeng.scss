@@ -33,6 +33,13 @@
 .p-dropdown-item {
     font-size: $base-font-size !important;
     padding: 5px !important;
+    height: 35px !important; 
+}
+.p-dropdown {
+    height: 35px !important;
+}
+.p-dropdown-label {
+    padding: 5px !important;
 }
 
 

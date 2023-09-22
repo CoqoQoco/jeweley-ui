@@ -1,7 +1,7 @@
 <template>
   <div class="image-container">
     <!-- <img class="image-preview" :src="urlImage" alt="PreviewImage" /> -->
-    <Image class="image-preview" :src="urlImage" alt="Image" width="100" height="100" preview />
+    <Image class="image-preview" :src="urlImage" alt="Image" width="60" height="60" preview />
     <!-- <Avatar :image="urlImage" size="xlarge" shape="square" /> -->
   </div>
 </template>
