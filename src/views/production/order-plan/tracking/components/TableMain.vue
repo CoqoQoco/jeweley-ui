@@ -47,14 +47,13 @@
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
+      v-model:expandedRows="expnadData"
+      dataKey="id"
       class="p-datatable-sm custom-table"
       scrollable
       scrollHeight="calc(100vh - 320px)"
-      resizableColumns
       columnResizeMode="expand"
-      :reorderableColumns="true"
-      @columnReorder="onColReorder"
-      @rowReorder="onRowReorder"
+      resizableColumns
       :paginator="true"
       @page="handlePageChange"
       :rows="take"
@@ -62,33 +61,71 @@
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
-      <Column style="width: 100px; text-align: center">
+      <Column expander style="width: 10px" />
+      <Column style="width: 120px; text-align: center">
         <template #body>
-          <button class="btn btn-sm btn-warning mr-2" title="ดูรายละเอียด" @click="onView(item)">
+          <div class="btn btn-sm btn-warning w-50 mr-1" title="ดูรายละเอียด" @click="onView(item)">
             <i class="bi bi-gem"></i>
-          </button>
-          <button class="btn btn-sm btn-main" title="ลบใบจ่าย">
+          </div>
+          <div class="btn btn-sm btn-danger w-50" title="ลบใบจ่าย">
             <i class="bi bi-trash-fill"></i>
-          </button>
+          </div>
         </template>
       </Column>
-      <Column field="wo" header="เลขที่ W.O."></Column>
-      <Column field="woNumber" header="ลำดับ W.O."></Column>
+      <Column field="wo" header="W.O.">
+        <template #body="slotProps">
+          {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
+        </template>
+      </Column>
+      <!-- <Column field="woNumber" header="ลำดับ"></Column> -->
       <Column field="mold" header="เเม่พิมพ์"></Column>
-      <Column header="หมายเลขสินค้า" field="productNumber"></Column>
-      <Column header="หมายเลขลูกค้า" field="customerNumber"></Column>
-      <Column header="วันสร้างใบงาน" field="requestDate">
-        <template #body="prop">
-          {{ formatDateTime(prop.data.requestDate) }}
+      <Column field="tbtProductionPlanImage" header="รูปสินค้า">
+        <template #body="slotProps">
+          <div class="image-container">
+            <loading :isLoading="isLoadingImage"></loading>
+            <!-- <img :src="fetchIamge(slotProps)" alt="Preview Image" /> -->
+            <imagePreview
+              :imageName="slotProps.data.tbtProductionPlanImage[0].path"
+              :type="orderplan"
+            ></imagePreview>
+          </div>
         </template>
       </Column>
-      <Column header="หมายเหตุ" field="remark">
+      <Column header="หมายเลขสินค้า" field="productNumber"></Column>
+      <Column header="รายละเอียดสินค้า" field="productDetail"></Column>
+      <Column header="หมายเลขลูกค้า" field="customerNumber"></Column>
+      <Column header="วันส่งงานลูกค้า" field="requestDate">
+        <template #body="prop">
+          {{ formatDate(prop.data.requestDate) }}
+        </template>
+      </Column>
+      <!-- <Column header="หมายเหตุ" field="remark">
         <template #body="prop">
           <td class="custom-remark">
             <label>{{ prop.data.remark }}</label>
           </td>
         </template>
-      </Column>
+      </Column> -->
+      <template #expansion="slotProps">
+        <div class="p-3">
+          <!-- <h6 style="color: var(--base-font-color)">
+            <span class="mr-2"><i class="bi bi-gem"></i></span>
+            <span>ส่วนประกอบสินค้า</span>
+          </h6> -->
+          <DataTable
+            class="expnad-table-container"
+            :value="slotProps.data.tbtProductionPlanMaterial"
+            showgridlines
+          >
+            <Column header="รายการ" field="material"></Column>
+            <Column header="ประเภท" field="materialType"></Column>
+            <Column header="รูปร่าง" field="materialShape"></Column>
+            <Column header="ขนาด" field="materialSize"></Column>
+            <Column header="จำนวน" field="materialQty"></Column>
+            <Column header="หมายเหตุ" field="materialRemark"></Column>
+          </DataTable>
+        </div>
+      </template>
     </DataTable>
   </div>
 </template>
@@ -104,11 +141,14 @@ import api from '@/axios/axios-config.js'
 //import ColumnGroup from 'primevue/columngroup' // optional
 //import Row from 'primevue/row'
 
+import imagePreview from '@/components/image/PreviewImage.vue'
+
 export default {
   components: {
     DataTable,
     Column,
-    loading
+    loading,
+    imagePreview
     //ColumnGroup,
     //Row
   },
@@ -125,12 +165,18 @@ export default {
   data() {
     return {
       isLoading: false,
+      isLoadingImage: false,
+      orderplan: 'ORDERPLAN',
 
       // table
       totalRecords: 100,
       take: 10, //all
       skip: 0,
-      data: {}
+      data: {},
+      expnadData: [],
+
+      //test
+      urlImg: null
     }
   },
   computed: {
@@ -171,13 +217,12 @@ export default {
     async fetchData() {
       try {
         this.isLoading = true
-
         const param = {
           take: this.take,
           skip: this.skip,
           search: {
-            start: formatISOString(this.formValue.start),
-            end: formatISOString(this.formValue.end),
+            start: this.formValue.start ? formatISOString(this.formValue.start) : null,
+            end: this.formValue.end ? formatISOString(this.formValue.end) : null,
             text: this.formValue.text
           }
         }
@@ -186,17 +231,52 @@ export default {
           //this.data = [...res.data]
           this.data = { ...res }
         }
-        console.log(this.data)
-
+        //console.log(this.data)
         this.isLoading = false
       } catch (error) {
         console.log(error)
         this.isLoading = false
       }
+    },
+    async fetchIamge(item) {
+      //console.log(item.data.tbtProductionPlanImage[0].path)
+
+      if (item.data.tbtProductionPlanImage && item.data.tbtProductionPlanImage.length) {
+        try {
+          const param = {
+            imageName: item.data.tbtProductionPlanImage[0].path
+          }
+
+          // let options = {
+          //   headers: {
+          //     'Content-Type': `application/json`
+          //   }
+          // }
+          const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
+          //console.log(res)
+
+          // const blob = await res.blob()
+          // const objectUrl = URL.createObjectURL(blob)
+          // //this.dataSrc = objectUrl
+          // console.log(objectUrl)
+
+          //const data = await res.json()
+          //const response = `data:image/jpeg;base64,${res}`
+          const response = `data:image/png;base64,${res}`
+          //console.log(response)
+          return response
+        } catch (error) {
+          console.log(error)
+          return null
+        }
+      }
     }
   },
-  created() {
-    //console.log(this.modelValue.length)
+  async created() {
+    await this.fetchData()
+  },
+  async mounted() {
+    //this.fetchData()
   }
 }
 </script>
@@ -215,5 +295,21 @@ export default {
 .custom-remark {
   white-space: nowrap !important;
   text-overflow: ellipsis !important;
+}
+
+.btn-link:hover {
+  color: var(--base-color) !important;
+  text-decoration: none !important;
+}
+.image-container {
+  //height: 150px;
+  //width: 150px;
+}
+.expnad-table-container {
+  .p-datatable thead th {
+    background-color: var(--base-color) !important;
+    color: #ffffff;
+    //font-weight: bold;
+  }
 }
 </style>

@@ -9,7 +9,7 @@
         </div>
         <div class="show-version">V.{{ version }}</div> -->
         <img
-           src="@/assets/duangkaew-logo.png"
+          src="@/assets/duangkaew-logo.png"
           class="avatar"
           :class="{ 'hidden-avatar': !isShowSidenav }"
         />
@@ -23,7 +23,7 @@
 
       <!-- Side Menu -->
       <div class="sidebar-wrapper">
-        <SlideBar></SlideBar>
+        <SlideBar :class="{ 'hidden-SlideBar': !isShowSidenav }"></SlideBar>
       </div>
     </div>
 
@@ -84,6 +84,15 @@ export default {
   transition-duration: 0.5s;
   z-index: 1;
   border-right: 1px solid var(--base-font-color); /* เพิ่มเส้นขอบด้านขวา */
+
+  .inactive-main {
+    opacity: 0;
+    transition: 0.5s;
+    transform: translateX(-100%);
+  }
+  //opacity: 0;
+  //transition: 0.5s;
+  //transform: translateX(-100%);
 }
 .sidebar-wrapper {
   //border-top: 1px solid var(--base-color);
@@ -116,10 +125,18 @@ export default {
 //----- Main -----
 #main {
   transition-duration: 0.5s;
+
+  //opacity: 0;
+  //transition: 0.5s;
+  //transform: translateX(-100%);
 }
 .inactive-main {
   margin-left: 0;
   width: 100%;
+
+  //opacity: 0;
+  //transition: 0.5s;
+  //transform: translateX(-100%);
 }
 .active-main {
   margin-left: 230px;
@@ -273,5 +290,10 @@ export default {
     color: var(--base-color);
     font-size: 10px;
   }
+}
+.hidden-SlideBar {
+  opacity: 0;
+  transition: 0.5s;
+  transform: translateX(-100%); /* เลื่อนรูปไปทางซ้าย */
 }
 </style>

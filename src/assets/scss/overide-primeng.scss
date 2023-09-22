@@ -2,7 +2,7 @@
 
 // ----- table ---- //
 .p-datatable{
-    font-size: 14px !important;
+    font-size: $base-font-size !important;
 }
 .p-datatable thead th {
     background-color: $base-font-color !important;
@@ -16,13 +16,13 @@
     padding: 3px 10px 3px 10px !important;
 }
 .p-paginator{
-    font-size: 14px !important;
+    font-size: $base-font-size !important;
     padding: 5px;
     .p-dropdown{
         height: 25px !important;
     }
     .p-dropdown-label{
-        font-size: 14px !important;
+        font-size: $base-font-size !important;
     }
     .p-inputtext{
         padding: 1px 0px 0px 10px !important;
@@ -31,7 +31,7 @@
 
 // ---- drop down ----
 .p-dropdown-item {
-    font-size: 14px !important;
+    font-size: $base-font-size !important;
     padding: 5px !important;
 }
 
@@ -48,7 +48,7 @@
        
     }
     input{
-        font-size: 14px !important;
+        font-size: $base-font-size !important;
         padding: 10px !important;
     }
     svg{
@@ -57,5 +57,5 @@
     }
 }
 .p-datepicker-calendar{
-    font-size: 14px !important;
+    font-size: $base-font-size !important;
 }

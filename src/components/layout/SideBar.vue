@@ -80,7 +80,7 @@
                   <button class="btn-link btn-sub-menu" :href="href" @click="navigate">
                     <span class="">
                       <i class="bi bi-arrow-return-right"></i>
-                       {{ showMenuName(subMenu) }}
+                      {{ showMenuName(subMenu) }}
                     </span>
                   </button>
                 </router-link>
@@ -250,7 +250,7 @@ export default {
 .main-menu-wrapper:hover {
   //transform: translateY(0%) translateZ(0) scale(1.1);
   //background-color: #fefefe;
-  color: var(--base-font-color)
+  color: var(--base-font-color);
   //border-bottom: 1px solid transparent;
 }
 
@@ -302,6 +302,10 @@ export default {
   text-align: left;
   text-decoration: none;
   color: var(--base-font-color);
+}
+.btn-link:hover {
+  color: var(--base-font-color) !important;
+  text-decoration: none !important;
 }
 
 .btn-main-menu {
