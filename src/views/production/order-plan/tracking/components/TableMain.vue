@@ -62,13 +62,17 @@
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
       <Column expander style="width: 10px" />
-      <Column style="width: 120px; text-align: center">
-        <template #body>
-          <div class="btn btn-sm btn-warning w-50 mr-1" title="ดูรายละเอียด" @click="onView(item)">
-            <i class="bi bi-gem"></i>
-          </div>
-          <div class="btn btn-sm btn-danger w-50" title="ลบใบจ่าย">
-            <i class="bi bi-trash-fill"></i>
+      <Column style="width: 80px">
+        <template #body="slotProps">
+          <div class="col-btn-container">
+            <div
+              class="btn btn-sm btn-warning w-50 mr-1"
+              title="ดูรายละเอียด"
+              @click="onView(item)"
+            >
+              <i class="bi bi-gem"></i>
+            </div>
+            <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf>
           </div>
         </template>
       </Column>
@@ -142,13 +146,15 @@ import api from '@/axios/axios-config.js'
 //import Row from 'primevue/row'
 
 import imagePreview from '@/components/image/PreviewImage.vue'
+import pdf from '@/components/pdf-make/SavePDFOrderPlan.vue'
 
 export default {
   components: {
     DataTable,
     Column,
     loading,
-    imagePreview
+    imagePreview,
+    pdf
     //ColumnGroup,
     //Row
   },
@@ -311,5 +317,9 @@ export default {
     color: #ffffff;
     //font-weight: bold;
   }
+}
+.col-btn-container {
+  display: flex;
+  justify-content: center;
 }
 </style>

@@ -280,6 +280,7 @@
               </Column>
               <Column field="material" header="รายการ"></Column>
               <Column field="materialType" header="ประเภท"></Column>
+              <Column field="materialShape" header="รูปร่าง"></Column>
               <Column field="materialSize" header="ขนาด/น้ำหนัก"></Column>
               <Column field="materialQty" header="จำนวน"></Column>
               <Column field="materialRemark" header="หมายเหตุ"></Column>
@@ -371,6 +372,7 @@ export default {
           {
             material: '1580R',
             materialType: 'WG1-5',
+            materialShape: 'OV',
             materialSize: '9K',
             materialQty: '10',
             materialRemark: '-'
@@ -378,6 +380,7 @@ export default {
           {
             material: '1560R',
             materialType: 'YG1-10',
+            materialShape: 'OV',
             materialSize: '9K',
             materialQty: '10',
             materialRemark: '-'

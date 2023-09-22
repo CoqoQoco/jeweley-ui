@@ -20,6 +20,13 @@
             v-model="form.materialType"
             placeholder="แหวน จี้ ต่างหู ..."
           />
+          <label>รูปร่าง</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.materialShape"
+            placeholder="OV ..."
+          />
           <label>ขนาด</label>
           <input
             type="text"
