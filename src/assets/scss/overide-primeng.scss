@@ -34,12 +34,25 @@
     font-size: $base-font-size !important;
     padding: 5px !important;
     height: 35px !important; 
+    width: 100% !important; 
 }
 .p-dropdown {
     height: 35px !important;
+    padding-left: 5px;
+    width: 100% !important;
+    margin-top: 5px !important;
+    .p-dropdown-clear-icon{
+        right: 2.5rem !important;
+        top: 1.2rem;
+    }
+    svg {
+            width: 10px !important;
+            height: 10px !important;
+        }
 }
 .p-dropdown-label {
     padding: 5px !important;
+    font-size: $base-font-size !important;
 }
 
 

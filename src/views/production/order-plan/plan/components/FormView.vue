@@ -55,7 +55,7 @@
               </div>
             </div>
             <div class="row form-group">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <label>{{ $t('view.pickinglist.title.customerNumber') }}</label>
                 <input
                   type="text"
@@ -65,7 +65,18 @@
                   required
                 />
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
+                <label>ประเภทลุกค้า</label>
+                <Dropdown
+                  v-model="form.customerType"
+                  :options="masterCustomer"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                  :showClear="form.customerType ? true : false"
+                  required
+                />
+              </div>
+              <div class="col-md-4">
                 <label>วันส่งงานลูกค้า</label>
                 <Calendar
                   class="w-100"
@@ -77,7 +88,7 @@
               </div>
             </div>
             <div class="row form-group">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <label>{{ $t('view.pickinglist.title.productNumber') }}</label>
                 <input
                   type="text"
@@ -87,15 +98,38 @@
                   required
                 />
               </div>
-              <div class="col-md-6">
-                <label>รายละเอียดสินค้า</label>
+              <div class="col-md-4">
+                <label>ชื่อสินค้า</label>
                 <input
                   type="text"
                   class="form-control"
-                  v-model="form.productDetail"
+                  v-model="form.productName"
                   :disabled="isLock"
                   required
                 />
+              </div>
+              <div class="col-md-4">
+                <label>ประเภทสินค้า</label>
+                <Dropdown
+                  v-model="form.productType"
+                  :options="masterProduct"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                  required
+                  :showClear="form.productType ? true : false"
+                />
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-12">
+                <label>รายละเอียดสินค้า</label>
+                <textarea
+                  class="form-control"
+                  v-model="form.productDetail"
+                  :disabled="isLock"
+                  style="height: 94px"
+                >
+                </textarea>
               </div>
             </div>
             <div class="row form-group">
@@ -105,7 +139,7 @@
                   class="form-control"
                   v-model="form.remark"
                   :disabled="isLock"
-                  style="height: 189px"
+                  style="height: 92px"
                 >
                 </textarea>
               </div>
@@ -169,7 +203,7 @@
         </div>
       </div> -->
       <!-- จำนวนการผลิต -->
-      <div class="zone-container">
+      <!-- <div class="zone-container">
         <div class="row form-group">
           <div class="col-md-12">
             <div class="flex-header">
@@ -236,7 +270,7 @@
             />
           </div>
         </div>
-      </div>
+      </div> -->
       <!-- ส่วนประกอบการผลิต -->
       <div class="zone-container">
         <div class="row form-group">
@@ -245,7 +279,7 @@
               <div class="flex-header">
                 <label style="font-weight: 700">
                   <span class="mr-2"><i class="bi bi-card-list"></i></span>
-                  <span>ส่วนที่ 3 ระบุส่วนประกอบในการผลิต</span>
+                  <span>ส่วนที่ 2 ระบุส่วนประกอบในการผลิต</span>
                 </label>
               </div>
               <div>
@@ -305,7 +339,15 @@
         </div>
       </div>
     </form>
-    <ModalAddMat :isShowModal="isShowModal" @closeModal="closeModal" @onAdd="AddMat"></ModalAddMat>
+    <ModalAddMat
+      :isShowModal="isShowModal"
+      :masterGold="masterGold"
+      :masterGoldSize="masterGoldSize"
+      :masterGem="masterGem"
+      :masterGemShape="masterGemShape"
+      @closeModal="closeModal"
+      @onAdd="AddMat"
+    ></ModalAddMat>
   </div>
 </template>
 
@@ -322,6 +364,7 @@ import swAlert from '@/js/alert/sweetAlerts.js'
 import UploadImage from '@/components/prime-vue/UploadImage.vue'
 
 import ModalAddMat from '../components/ModalAddMaterial.vue'
+import Dropdown from 'primevue/dropdown'
 export default {
   components: {
     loading,
@@ -329,7 +372,8 @@ export default {
     ModalAddMat,
     DataTable,
     Column,
-    UploadImage
+    UploadImage,
+    Dropdown
   },
   data() {
     return {
@@ -337,58 +381,35 @@ export default {
       isLock: false,
       isShowModal: false,
       isResetImage: false,
-      imageConatinerHight: '400px',
-      // form: {
-      //   wo: null,
-      //   nowo: null,
-      //   requestDate: new Date().toISOString().substr(0, 10),
-      //   mold: null,
-      //   productNumber: null,
-      //   customerNumber: null,
-      //   remark: null,
-      //   qtyUnit: 'PC',
-      //   qry: 1,
-      //   qtyFinish: 0,
-      //   qtySemiFinish: 0,
-      //   qtyCast: 0,
-      //   material: [],
-      //   image: ""
-      // },
+      imageConatinerHight: '435px',
       form: {
-        wo: '6606001',
-        nowo: 1,
+        wo: '',
+        nowo: null,
         requestDate: new Date().toISOString().substr(0, 10),
-        mold: 'R/9640, RING DIAMOND 9K',
-        productNumber: 'R09640D13',
-        productDetail: 'RING DIAMOND 9K',
-        customerNumber: 'THI001',
-        remark: 'ทองขาว 9K ทอง 9K',
-        qtyUnit: 'PC',
-        qty: 15,
+        mold: '',
+        productNumber: '',
+        productName: '',
+        productDetail: '',
+        productType: '',
+        customerNumber: '',
+        customerType: '',
+        remark: '',
+        qtyUnit: '',
+        qty: 1,
         qtyFinish: 0,
         qtySemiFinish: 0,
-        qtyCast: 15,
-        material: [
-          {
-            material: '1580R',
-            materialType: 'WG1-5',
-            materialShape: 'OV',
-            materialSize: '9K',
-            materialQty: '10',
-            materialRemark: '-'
-          },
-          {
-            material: '1560R',
-            materialType: 'YG1-10',
-            materialShape: 'OV',
-            materialSize: '9K',
-            materialQty: '10',
-            materialRemark: '-'
-          }
-        ],
+        qtyCast: 0,
+        material: [],
         image: ''
       },
-      fileImage: []
+      fileImage: [],
+
+      masterProduct: [],
+      masterCustomer: [],
+      masterGold: [],
+      masterGoldSize: [],
+      masterGem: [],
+      masterGemShape: []
     }
   },
   methods: {
@@ -493,36 +514,22 @@ export default {
       try {
         //console.log('submitPlan')
         this.isLoading = true
-        // const param = {
-        //   wo: this.form.wo,
-        //   woNumber: this.form.nowo,
-        //   requestDate: formatISOString(this.form.requestDate),
-
-        //   mold: this.form.mold,
-        //   productNumber: this.form.productNumber,
-        //   customerNumber: this.form.customerNumber,
-
-        //   remark: this.form.remark,
-
-        //   qty: this.form.qty,
-        //   qtyFinish: this.form.qtyFinish,
-        //   qtySemiFinish: this.form.qtySemiFinish,
-        //   qtyCast: this.form.qtyCast,
-        //   qtyUnit: this.form.qtyUnit,
-
-        //   material: [...this.form.material],
-        //   Images: new FormData(),
-        // }
 
         let params = new FormData()
         params.append('wo', this.form.wo)
         params.append('woNumber', this.form.nowo)
         params.append('requestDate', formatISOString(this.form.requestDate))
         params.append('mold', this.form.mold)
+
         params.append('productNumber', this.form.productNumber)
+        params.append('productName', this.form.productName)
         params.append('productDetail', this.form.productDetail)
+        params.append('productType', this.form.productType)
+
         params.append('customerNumber', this.form.customerNumber)
+        params.append('customerType', this.form.customerType)
         params.append('remark', this.form.remark)
+
         params.append('qty', this.form.qty)
         params.append('qtyFinish', this.form.qtyFinish)
         params.append('qtySemiFinish', this.form.qtySemiFinish)
@@ -642,7 +649,95 @@ export default {
         console.log(error)
         this.isLoading = false
       }
+    },
+
+    // ----- master -------//
+    async fetchMasterProductType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterProductType')
+        if (res) {
+          this.masterProduct = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterCustomerType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterCustomerType')
+        if (res) {
+          this.masterCustomer = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGold() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGold')
+        if (res) {
+          this.masterGold = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGoldSize() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGoldSize')
+        if (res) {
+          this.masterGoldSize = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGem() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGem')
+        if (res) {
+          this.masterGem = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGemShape() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGemShape')
+        if (res) {
+          this.masterGemShape = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
     }
+  },
+  async created() {
+    await this.fetchMasterProductType()
+    await this.fetchMasterCustomerType()
+    await this.fetchMasterGold()
+    await this.fetchMasterGoldSize()
+    await this.fetchMasterGem()
+    await this.fetchMasterGemShape()
   }
 }
 </script>
@@ -651,6 +746,7 @@ export default {
 label {
   color: var(--base-font-color);
   font-weight: 400;
+  margin: 5px 0px 0px 0px;
 }
 textarea {
   min-height: 35px !important;

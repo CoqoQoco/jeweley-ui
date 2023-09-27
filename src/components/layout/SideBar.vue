@@ -250,7 +250,7 @@ export default {
 .main-menu-wrapper:hover {
   //transform: translateY(0%) translateZ(0) scale(1.1);
   //background-color: #fefefe;
-  color: var(--base-font-color);
+  //color: var(--base-font-color);
   //border-bottom: 1px solid transparent;
 }
 
@@ -307,6 +307,10 @@ export default {
   color: var(--base-font-color) !important;
   text-decoration: none !important;
 }
+.btn-link:focus {
+  color: var(--base-font-color) !important;
+  text-decoration: none !important;
+}
 
 .btn-main-menu {
   padding: 0.75rem 1rem;
@@ -331,7 +335,7 @@ button {
     // border-bottom-right-radius: 15px;
 
     //font-size: 15px;
-    color: var(--base-color);
+    color: var(--base-color) !important;
     //font-weight: 400;
     transition-duration: 0.5s;
     background-color: var(--base-font-color);

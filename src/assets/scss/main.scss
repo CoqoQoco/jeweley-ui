@@ -43,6 +43,9 @@ button.btn-main {
 button.btn-main:hover {
     color: white;
 }
+input{
+    margin-top: 5px !important;
+}
 input[type="text"],
 input[type="number"]{
     font-size: $base-font-size !important;
