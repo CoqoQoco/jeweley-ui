@@ -88,7 +88,8 @@
             <span class="mr-2"><i class="bi bi-gem"></i></span>
             <span>ส่วนประกอบสินค้า</span>
           </h6> -->
-          <DataTable
+          <tableExpand v-model:formValue="slotProps.data"></tableExpand>
+          <!-- <DataTable
             class="expnad-table-container"
             :value="slotProps.data.tbtProductionPlanMaterial"
             showGridlines
@@ -99,7 +100,7 @@
             <Column header="ขนาด" field="materialSize"></Column>
             <Column header="จำนวน" field="materialQty"></Column>
             <Column header="หมายเหตุ" field="materialRemark"></Column>
-          </DataTable>
+          </DataTable> -->
         </div>
       </template>
     </DataTable>
@@ -129,6 +130,7 @@ import imagePreview from '@/components/image/PreviewImage.vue'
 import pdf from '@/components/pdf-make/SavePDFOrderPlan.vue'
 
 import modalUpdateStatus from '../components/ModalUpdateStatus.vue'
+import tableExpand from '../components/TableExpnad.vue'
 
 export default {
   components: {
@@ -138,9 +140,10 @@ export default {
     imagePreview,
     pdf,
     //Tag,
-    modalUpdateStatus
+    modalUpdateStatus,
     //ColumnGroup,
     //Row
+    tableExpand
   },
   props: {
     modelValue: {

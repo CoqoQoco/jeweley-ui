@@ -161,116 +161,7 @@
           </div>
         </div> -->
       </div>
-      <!-- รูปสินค้า -->
-      <!-- <div class="zone-container">
-        <div class="row form-group">
-          <div class="col-md-12">
-            <div class="flex-header">
-              <label style="font-weight: 700">
-                <span class="mr-2"><i class="bi bi-image"></i></span>
-                <span>ส่วนที่ 2 รูปส่วนประกอบต่างๆ ใบจ่าย-รับคืน</span>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="row form-group">
-          <div class="col-md-12">
-            <div class="select-preview-container">
-              <div class="preveiw-container" v-if="form.imageUrls.length">
-                <div
-                  class="image-container"
-                  v-for="(imageUrl, index) in form.imageUrls"
-                  :key="index"
-                >
-                  <img :src="imageUrl" alt="Preview" class="preview-image" />
-                  <span @click="deleteImage(index)" class="delete-icon">&#10006;</span>
-                </div>
-              </div>
-              <div v-if="!isLock" class="select-continer">
-                <input
-                  type="file"
-                  multiple
-                  name="file"
-                  class="hidden-input"
-                  @change="previewImages"
-                  ref="file"
-                  accept=".jpg, .png"
-                />
-                <i class="bi bi-plus-circle" style="font-size: 30px"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
-      <!-- จำนวนการผลิต -->
-      <!-- <div class="zone-container">
-        <div class="row form-group">
-          <div class="col-md-12">
-            <div class="flex-header">
-              <label style="font-weight: 700">
-                <span class="mr-2"><i class="bi bi-card-list"></i></span>
-                <span>ส่วนที่ 2 ระบุจำนวนการผลิตใบจ่าย-รับคืน</span>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="row form-group">
-          <div class="col-md-2">
-            <label>{{ $t('view.pickinglist.title.quantity') }}</label>
-            <input
-              type="number"
-              min="1"
-              class="form-control"
-              v-model="form.qty"
-              :disabled="isLock"
-              required
-            />
-          </div>
-          <div class="col-md-2">
-            <label>{{ $t('view.pickinglist.title.readyMade') }}</label>
-            <input
-              type="number"
-              min="0"
-              class="form-control"
-              v-model="form.qtyFinish"
-              :disabled="isLock"
-              required
-            />
-          </div>
-          <div class="col-md-2">
-            <label>{{ $t('view.pickinglist.title.semireadyMade') }}</label>
-            <input
-              type="number"
-              min="0"
-              class="form-control"
-              v-model="form.qtySemiFinish"
-              :disabled="isLock"
-              required
-            />
-          </div>
-          <div class="col-md-2">
-            <label>{{ $t('view.pickinglist.title.cast') }}</label>
-            <input
-              type="number"
-              min="0"
-              class="form-control"
-              v-model="form.qtyCast"
-              :disabled="isLock"
-              required
-            />
-          </div>
-          <div class="col-md-4">
-            <label>{{ $t('view.pickinglist.title.pc') }}</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="form.qtyUnit"
-              :disabled="isLock"
-              required
-            />
-          </div>
-        </div>
-      </div> -->
+
       <!-- ส่วนประกอบการผลิต -->
       <div class="zone-container">
         <div class="row form-group">
@@ -312,12 +203,32 @@
                   </button>
                 </template>
               </Column>
-              <Column field="material" header="รายการ"></Column>
-              <Column field="materialType" header="ประเภท"></Column>
-              <Column field="materialShape" header="รูปร่าง"></Column>
-              <Column field="materialSize" header="ขนาด/น้ำหนัก"></Column>
-              <Column field="materialQty" header="จำนวน"></Column>
-              <Column field="materialRemark" header="หมายเหตุ"></Column>
+              <Column field="gold.code" header="ประเภททอง">
+                <template #body="prop">
+                  {{ `${prop.data.gold.code}: ${prop.data.gold.nameTh}` }}
+                </template>
+              </Column>
+              <Column field="goldSize.code" header="ขนาดทอง">
+                <template #body="prop">
+                  {{ `${prop.data.goldSize.nameTh}` }}
+                </template>
+              </Column>
+              <Column field="gem.code" header="ประเภทพลอย">
+                <template #body="prop">
+                  {{ `${prop.data.gem.code}: ${prop.data.gem.nameTh}` }}
+                </template>
+              </Column>
+              <Column field="gemShape.code" header="รูปร่างพลอย">
+                <template #body="prop">
+                  {{ `${prop.data.gemShape.code}: ${prop.data.gemShape.nameTh}` }}
+                </template>
+              </Column>
+              <Column field="gemSize" header="ขนาดพลอย"> </Column>
+              <Column field="gemQty" header="จำนวน">
+                <template #body="prop">
+                  {{ `${prop.data.gemQty}  ${prop.data.gemUnit}` }}
+                </template>
+              </Column>
             </DataTable>
           </div>
           <div v-if="!form.material.length" class="col-md-12 flex-no-mat-add">
@@ -385,22 +296,20 @@ export default {
       form: {
         wo: '',
         nowo: null,
-        requestDate: new Date().toISOString().substr(0, 10),
         mold: '',
-        productNumber: '',
-        productName: '',
-        productDetail: '',
-        productType: '',
+
         customerNumber: '',
         customerType: '',
+        requestDate: new Date().toISOString().substr(0, 10),
+
+        productNumber: '',
+        productName: '',
+        productType: '',
+
+        productDetail: '',
         remark: '',
-        qtyUnit: '',
-        qty: 1,
-        qtyFinish: 0,
-        qtySemiFinish: 0,
-        qtyCast: 0,
-        material: [],
-        image: ''
+
+        material: []
       },
       fileImage: [],
 
@@ -514,27 +423,25 @@ export default {
       try {
         //console.log('submitPlan')
         this.isLoading = true
+        console.log(this.form)
 
         let params = new FormData()
         params.append('wo', this.form.wo)
         params.append('woNumber', this.form.nowo)
-        params.append('requestDate', formatISOString(this.form.requestDate))
         params.append('mold', this.form.mold)
+
+        params.append('customerNumber', this.form.customerNumber)
+        params.append('customerType', this.form.customerType.code)
+        params.append('requestDate', formatISOString(this.form.requestDate))
 
         params.append('productNumber', this.form.productNumber)
         params.append('productName', this.form.productName)
-        params.append('productDetail', this.form.productDetail)
-        params.append('productType', this.form.productType)
+        params.append('productType', this.form.productType.code)
 
-        params.append('customerNumber', this.form.customerNumber)
-        params.append('customerType', this.form.customerType)
+        params.append('productDetail', this.form.productDetail)
         params.append('remark', this.form.remark)
 
-        params.append('qty', this.form.qty)
-        params.append('qtyFinish', this.form.qtyFinish)
-        params.append('qtySemiFinish', this.form.qtySemiFinish)
-        params.append('qtyCast', this.form.qtyCast)
-        params.append('qtyUnit', this.form.qtyUnit)
+        params.append('images', this.form.image)
 
         //https://tutorial.eyehunts.com/js/javascript-formdata-append-array/
         params.append('material', JSON.stringify(this.form.material))
@@ -546,7 +453,6 @@ export default {
         // })
 
         //console.log(this.form.image)
-        params.append('images', this.form.image)
 
         let options = {
           headers: {
@@ -738,6 +644,26 @@ export default {
     await this.fetchMasterGoldSize()
     await this.fetchMasterGem()
     await this.fetchMasterGemShape()
+
+    //test
+    this.form = {
+      wo: '6606003',
+      nowo: 1,
+      mold: 'R/9640',
+
+      customerNumber: 'THI001',
+      customerType: '',
+      requestDate: new Date().toISOString().substr(0, 10),
+
+      productNumber: 'R09640DI3',
+      productName: 'Ring Diamond 9K',
+      productType: '',
+
+      productDetail: 'งานขาย',
+      remark: 'งานขาย งานขาย งานขาย งานขาย',
+
+      material: []
+    }
   }
 }
 </script>
