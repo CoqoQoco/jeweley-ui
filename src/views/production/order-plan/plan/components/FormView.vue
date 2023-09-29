@@ -192,12 +192,12 @@
           <div class="col-md-12">
             <DataTable :value="form.material" class="p-datatable-sm">
               <Column style="width: 100px; text-align: center">
-                <template #body>
+                <template #body="prop">
                   <button
                     class="btn btn-sm btn-main"
                     title="ลบส่วนประกอบ"
                     type="button"
-                    @click="deletMatItem(index)"
+                    @click="deletMatItem(prop.data)"
                   >
                     <i class="bi bi-trash-fill"></i>
                   </button>
@@ -238,7 +238,7 @@
               <!-- <Column field="gemSize" header="ขนาดพลอย"> </Column> -->
               <Column field="gemQty" header="จำนวนพลอย">
                 <template #body="prop">
-                  {{ `${prop.data.gemQty ?? '-'}  ${prop.data.gemUnit ?? ''}` }}
+                  {{ `${prop.data.gemQty ?? '-'}  ${prop.data.gemQty ? prop.data.gemUnit : ''}` }}
                 </template>
               </Column>
               <Column field="gemQty" header="น้ำหนักพลอย">
@@ -252,7 +252,11 @@
               </Column>
               <Column field="gemQty" header="จำนวนเพชร">
                 <template #body="prop">
-                  {{ `${prop.data.diamondQty ?? '-'}  ${prop.data.diamondUnit ?? ''}` }}
+                  {{
+                    `${prop.data.diamondQty ?? '-'}  ${
+                      prop.data.diamondQty ? prop.data.diamondUnit : ''
+                    }`
+                  }}
                 </template>
               </Column>
               <Column field="gemQty" header="น้ำหนักเพชร">
@@ -407,7 +411,9 @@ export default {
       this.fileImage.splice(index, 1)
       //console.log(this.form.imageUrls)
     },
-    deletMatItem(index) {
+    deletMatItem(item) {
+      const index = this.form.material.indexOf(item)
+      //console.log(index)
       this.form.material.splice(index, 1)
     },
     showAddMat() {
@@ -682,7 +688,7 @@ export default {
       }
     }
   },
-   mounted() {
+  mounted() {
     this.fetchMasterProductType()
     this.fetchMasterCustomerType()
     this.fetchMasterGold()

@@ -241,7 +241,7 @@ export default {
       this.$emit('closeModal')
     },
     onSubmit() {
-      console.log(this.form)
+      //console.log(this.form)
       this.$emit('onAdd', this.form)
       this.onclearForm()
       this.closeModal()
