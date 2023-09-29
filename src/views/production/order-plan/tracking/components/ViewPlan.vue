@@ -16,10 +16,13 @@
 </template>
 
 <script>
-import loading from '@/components/overlay/loading-overlay.vue'
+import { defineAsyncComponent } from 'vue'
+
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pdf = defineAsyncComponent(() => import('@/components/pdf-make/SavePDFOrderPlan.vue'))
+
 import api from '@/axios/axios-config.js'
-import pageTitle from '@/components/custom/PageTitle.vue'
-import pdf from '@/components/pdf-make/SavePDFOrderPlan.vue'
 export default {
   components: { loading, pageTitle, pdf },
   data() {

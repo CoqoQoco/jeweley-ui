@@ -11,8 +11,12 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
+
+//import pageTitle from '@/components/custom/PageTitle.vue'
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+
 import formView from './components/FormView.vue'
-import pageTitle from '@/components/custom/PageTitle.vue'
 export default {
   components: {
     pageTitle,

@@ -123,9 +123,11 @@
   </div>
 </template>
 <script>
+import { defineAsyncComponent } from 'vue'
 //import tableMain from '@/components/table/HtmlTable.vue'
 import { formatDate, formatDateTime, formatISOString } from '@/utils/moment'
-import loading from '@/components/overlay/loading-overlay.vue'
+
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 //prime table
 import DataTable from 'primevue/datatable'
@@ -135,7 +137,7 @@ import api from '@/axios/axios-config.js'
 //import ColumnGroup from 'primevue/columngroup' // optional
 //import Row from 'primevue/row'
 
-import imagePreview from '@/components/image/PreviewImage.vue'
+const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 //import pdf from '@/components/pdf-make/SavePDFOrderPlan.vue'
 
 import modalUpdateStatus from '../components/ModalUpdateStatus.vue'

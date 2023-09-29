@@ -1,11 +1,20 @@
 //import settingRoutes from './setting-routes.js'
 
-import Layout from '@/layout/web/LayoutDashboard.vue'
-import Dashboard from '@/views/dashboard/WelcomePage.vue'
-import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
-//import PickingListDetail from '@/views/production/order-plan/detail/IndexView.vue'
-import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
-import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
+const Layout = () => import('@/layout/web/LayoutDashboard.vue')
+//import Layout from '@/layout/web/LayoutDashboard.vue'
+
+const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+//import Dashboard from '@/views/dashboard/WelcomePage.vue'
+
+const PlanOrder = () => import('@/views/production/order-plan/plan/IndexView.vue')
+//import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
+
+const PlanOrderTracking = () => import('@/views/production/order-plan/tracking/IndexView.vue')
+//import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
+
+const PlanOrderTrackingView = () =>
+  import('@/views/production/order-plan/tracking/components/ViewPlan.vue')
+//import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'

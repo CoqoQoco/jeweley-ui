@@ -57,11 +57,14 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
+
 import { formatDate, formatDateTime } from '@/utils/moment'
 import Calendar from 'primevue/calendar'
 //import tableMain from '@/components/table/HtmlTable.vue'
 import tableMainData from './components/TableMain.vue'
-import pageTitle from '@/components/custom/PageTitle.vue'
+//import pageTitle from '@/components/custom/PageTitle.vue'
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 export default {
   components: { tableMainData, pageTitle, Calendar },
   data() {

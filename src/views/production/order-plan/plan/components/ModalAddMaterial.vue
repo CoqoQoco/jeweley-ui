@@ -153,7 +153,11 @@
 </template>
 
 <script>
-import modal from '@/components/modal/ModalView.vue'
+import { defineAsyncComponent } from 'vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+//import modal from '@/components/modal/ModalView.vue'
+
 import Dropdown from 'primevue/dropdown'
 export default {
   components: { modal, Dropdown },

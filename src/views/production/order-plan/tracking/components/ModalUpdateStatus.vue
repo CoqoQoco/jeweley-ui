@@ -53,8 +53,10 @@
 </template>
 
 <script>
-import modal from '@/components/modal/ModalView.vue'
-import loading from '@/components/overlay/loading-overlay.vue'
+import { defineAsyncComponent } from 'vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 //import Tag from 'primevue/tag'
 import Dropdown from 'primevue/dropdown'
 import api from '@/axios/axios-config.js'
