@@ -86,9 +86,9 @@ export default {
       }
     }
   },
-  async created() {
+  created() {
     //console.log(this.formValue)
-    await this.fetchData()
+    this.fetchData()
   }
 }
 </script>

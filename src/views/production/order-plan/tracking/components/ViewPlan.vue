@@ -67,12 +67,12 @@ export default {
       }
     }
   },
-  async mounted() {
+  mounted() {
     const url = window.location.href
     const id = url.split('/').slice(-1)[0]
 
-    await this.fetchData(id)
-    await this.fetchDataMat(id)
+    this.fetchData(id)
+    this.fetchDataMat(id)
   }
 }
 </script>

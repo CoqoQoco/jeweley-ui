@@ -339,9 +339,9 @@ export default {
       //this.$router.push({ name: 'plan-order-tracking-detail', params: { id: 123 } })
     }
   },
-  async created() {
-    await this.fetchMaterStatus()
-    await this.fetchData()
+  created() {
+    this.fetchMaterStatus()
+    this.fetchData()
   },
   async mounted() {
     //this.fetchData()
