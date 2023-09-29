@@ -4,7 +4,7 @@
     <label class="txt-title">
       ยินดีต้อนรับสู่เครื่องมือบริหารเเละจัดการ ผลิต/จัดเก็บ/ขาย/บริการ สินค้า
     </label>
-    <label class="txt-title"> Version 1.0.0 (develop) </label>
+    <label class="txt-title"> Version 0.0.01</label>
   </div>
   <div>
     <label class="txt-foot float-right mr-2">@บริษัท ดวงแก้วจิวเวลรี่ แมนูแฟคเจอเรอร์</label>
@@ -12,6 +12,8 @@
 </template>
 
 <script>
+//import { version } from 'vue';
+
 export default {}
 </script>
 
