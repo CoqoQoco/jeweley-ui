@@ -66,14 +66,13 @@
                 />
               </div>
               <div class="col-md-4">
-                <label>ประเภทลุกค้า</label>
+                <label>ชื่อลูกค้า</label>
                 <Dropdown
                   v-model="form.customerType"
                   :options="masterCustomer"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   :showClear="form.customerType ? true : false"
-                  required
                 />
               </div>
               <div class="col-md-4">
@@ -197,6 +196,7 @@
                   <button
                     class="btn btn-sm btn-main"
                     title="ลบส่วนประกอบ"
+                    type="button"
                     @click="deletMatItem(index)"
                   >
                     <i class="bi bi-trash-fill"></i>
@@ -205,28 +205,68 @@
               </Column>
               <Column field="gold.code" header="ประเภททอง">
                 <template #body="prop">
-                  {{ `${prop.data.gold.code}: ${prop.data.gold.nameTh}` }}
+                  <div v-if="prop.data.gold?.code">
+                    {{ `${prop.data.gold?.code}: ${prop.data.gold?.nameTh}` }}
+                  </div>
+                  <div v-else>-</div>
                 </template>
               </Column>
-              <Column field="goldSize.code" header="ขนาดทอง">
+              <Column field="goldSize.code" header="เปอร์เซ็นทอง">
                 <template #body="prop">
-                  {{ `${prop.data.goldSize.nameTh}` }}
+                  <div v-if="prop.data.goldSize?.code">
+                    {{ `${prop.data.goldSize?.nameTh}` }}
+                  </div>
+                  <div v-else>-</div>
                 </template>
               </Column>
               <Column field="gem.code" header="ประเภทพลอย">
                 <template #body="prop">
-                  {{ `${prop.data.gem.code}: ${prop.data.gem.nameTh}` }}
+                  <div v-if="prop.data.gem?.code">
+                    {{ `${prop.data.gem?.code}: ${prop.data.gem?.nameTh}` }}
+                  </div>
+                  <div v-else>-</div>
                 </template>
               </Column>
-              <Column field="gemShape.code" header="รูปร่างพลอย">
+              <Column field="gemShape.code" header="รูปร่าง/ขนาด พลอย">
                 <template #body="prop">
-                  {{ `${prop.data.gemShape.code}: ${prop.data.gemShape.nameTh}` }}
+                  <div v-if="prop.data.gemShape?.code">
+                    {{ `${prop.data.gemShape?.code}: ${prop.data.gemShape?.nameTh}` }}
+                  </div>
+                  <div v-else>-</div>
                 </template>
               </Column>
-              <Column field="gemSize" header="ขนาดพลอย"> </Column>
-              <Column field="gemQty" header="จำนวน">
+              <!-- <Column field="gemSize" header="ขนาดพลอย"> </Column> -->
+              <Column field="gemQty" header="จำนวนพลอย">
                 <template #body="prop">
-                  {{ `${prop.data.gemQty}  ${prop.data.gemUnit}` }}
+                  {{ `${prop.data.gemQty ?? '-'}  ${prop.data.gemUnit ?? ''}` }}
+                </template>
+              </Column>
+              <Column field="gemQty" header="น้ำหนักพลอย">
+                <template #body="prop">
+                  {{
+                    `${prop.data.gemWeight ?? '-'}  ${
+                      prop.data.gemWeight ? prop.data.gemWeightUnit : ''
+                    }`
+                  }}
+                </template>
+              </Column>
+              <Column field="gemQty" header="จำนวนเพชร">
+                <template #body="prop">
+                  {{ `${prop.data.diamondQty ?? '-'}  ${prop.data.diamondUnit ?? ''}` }}
+                </template>
+              </Column>
+              <Column field="gemQty" header="น้ำหนักเพชร">
+                <template #body="prop">
+                  {{
+                    `${prop.data.diamondWeight ?? '-'}  ${
+                      prop.data.diamondWeight ? prop.data.diamondWeightUnit : ''
+                    }`
+                  }}
+                </template>
+              </Column>
+              <Column field="diamondQuality" header="คุณภาพเพชร">
+                <template #body="prop">
+                  {{ `${prop.data.diamondQuality ?? '-'}` }}
                 </template>
               </Column>
             </DataTable>
@@ -470,7 +510,7 @@ export default {
             'สร้างใบจ่าย-รับคืน สำเร็จ',
             () => {
               this.onResetPage()
-              this.$router.push('/')
+              this.$router.push('/plan-order-tracking')
             },
             null,
             null
@@ -646,24 +686,24 @@ export default {
     await this.fetchMasterGemShape()
 
     //test
-    this.form = {
-      wo: '6606003',
-      nowo: 1,
-      mold: 'R/9640',
+    // this.form = {
+    //   wo: '6606003',
+    //   nowo: 1,
+    //   mold: 'R/9640',
 
-      customerNumber: 'THI001',
-      customerType: '',
-      requestDate: new Date().toISOString().substr(0, 10),
+    //   customerNumber: 'THI001',
+    //   customerType: '',
+    //   requestDate: new Date().toISOString().substr(0, 10),
 
-      productNumber: 'R09640DI3',
-      productName: 'Ring Diamond 9K',
-      productType: '',
+    //   productNumber: 'R09640DI3',
+    //   productName: 'Ring Diamond 9K',
+    //   productType: '',
 
-      productDetail: 'งานขาย',
-      remark: 'งานขาย งานขาย งานขาย งานขาย',
+    //   productDetail: 'งานขาย',
+    //   remark: 'งานขาย งานขาย งานขาย งานขาย',
 
-      material: []
-    }
+    //   material: []
+    // }
   }
 }
 </script>

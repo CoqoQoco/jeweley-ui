@@ -12,6 +12,7 @@
                 <h6>เพิ่มส่วนประกอบ</h6>
               </div>
             </div> -->
+            <div><label class="title">ระบุข้อมูลทอง</label></div>
             <div class="row form-group">
               <div class="col-md-6">
                 <label>ประเภททอง</label>
@@ -20,23 +21,22 @@
                   :options="masterGold"
                   optionLabel="description"
                   class="w-full md:w-14rem"
-                  required
-                  :showClear="form.gold ? true : false"
+                  :showClear="form.gold?.code ? true : false"
                 />
               </div>
               <div class="col-md-6">
-                <label>ขนาดทอง</label>
+                <label>เปอร์เซ็นทอง</label>
                 <Dropdown
                   v-model="form.goldSize"
                   :options="masterGoldSize"
                   optionLabel="description"
                   class="w-full md:w-14rem"
-                  required
-                  :showClear="form.goldSize ? true : false"
+                  :showClear="form.goldSize?.code ? true : false"
                 />
               </div>
             </div>
             <div class="line"></div>
+            <div><label class="title">ระบุข้อมูลพลอย</label></div>
             <div class="row form-group">
               <div class="col-md-6">
                 <label>ประเภทพลอย</label>
@@ -45,8 +45,7 @@
                   :options="masterGem"
                   optionLabel="description"
                   class="w-full md:w-14rem"
-                  required
-                  :showClear="form.gem ? true : false"
+                  :showClear="form.gem?.code ? true : false"
                 />
               </div>
               <div class="col-md-6">
@@ -56,36 +55,90 @@
                   :options="masterGemShape"
                   optionLabel="description"
                   class="w-full md:w-14rem"
-                  required
-                  :showClear="form.gemShape ? true : false"
+                  :showClear="form.gemShape?.code ? true : false"
                 />
               </div>
             </div>
             <div class="row form-group">
               <div class="col-md-3">
                 <label>จำนวน</label>
+                <input type="number" class="form-control box-input" v-model="form.gemQty" min="1" />
+              </div>
+              <div class="col-md-3">
+                <label>หน่วย</label>
+                <input type="text" class="form-control box-input" v-model="form.gemUnit" />
+              </div>
+              <div class="col-md-6">
+                <label>ขนาด</label>
+                <input type="text" class="form-control box-input" v-model="form.gemSize" />
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-3">
+                <label>น้ำหนัก</label>
+                <input type="text" class="form-control box-input" v-model="form.gemWeight" />
+              </div>
+              <div class="col-md-3">
+                <label>หน่วย</label>
+                <input
+                  type="text"
+                  class="form-control box-input"
+                  v-model="form.gemWeightUnit"
+                  disabled
+                />
+              </div>
+              <!-- <div class="col-md-6">
+                <label>ขนาด</label>
+                <input type="text" class="form-control box-input" v-model="form.gemSize" />
+              </div> -->
+            </div>
+            <div class="line"></div>
+            <div><label class="title">ระบุข้อมูลเพชร</label></div>
+            <div class="row form-group">
+              <div class="col-md-3">
+                <label>จำนวน</label>
                 <input
                   type="number"
                   class="form-control box-input"
-                  v-model="form.gemQty"
+                  v-model="form.diamondQty"
                   min="1"
-                  required
                 />
               </div>
               <div class="col-md-3">
                 <label>หน่วย</label>
-                <input type="text" class="form-control box-input" v-model="form.gemUnit" required />
+                <input type="text" class="form-control box-input" v-model="form.diamondUnit" />
               </div>
               <div class="col-md-6">
-                <label>ขนาด</label>
-                <input type="text" class="form-control box-input" v-model="form.gemSize" required />
+                <label>คุณภาพ</label>
+                <input type="text" class="form-control box-input" v-model="form.diamondQuality" />
               </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-3">
+                <label>น้ำหนัก</label>
+                <input type="text" class="form-control box-input" v-model="form.diamondWeight" />
+              </div>
+              <div class="col-md-3">
+                <label>หน่วย</label>
+                <input
+                  type="text"
+                  class="form-control box-input"
+                  v-model="form.diamondWeightUnit"
+                  disabled
+                />
+              </div>
+              <!-- <div class="col-md-6">
+                <label>ขนาด</label>
+                <input type="text" class="form-control box-input" v-model="form.gemSize" />
+              </div> -->
             </div>
             <div class="line"></div>
             <div class="row form-group">
               <div class="col-md-12">
                 <div class="btn-container">
-                  <button class="btn btn-sm btn-main" @click="onSubmit">ตกลง</button>
+                  <button class="btn btn-sm btn-main" type="submit">
+                    <span class="mr-2"><i class="bi bi-gem"></i></span><span>เพิ่มส่วนประกอบ</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -137,13 +190,44 @@ export default {
   data() {
     return {
       form: {
-        gold: null,
-        goldSize: null,
-        gem: null,
-        gemShape: null,
-        gemQty: 1,
-        gemUnit: null,
-        gemSize: null
+        gold: {
+          id: null,
+          code: null,
+          nameTh: null,
+          nameEn: null,
+          description: null
+        },
+        goldSize: {
+          id: null,
+          code: null,
+          nameTh: null,
+          nameEn: null,
+          description: null
+        },
+        gem: {
+          id: null,
+          code: null,
+          nameTh: null,
+          nameEn: null,
+          description: null
+        },
+        gemShape: {
+          id: null,
+          code: null,
+          nameTh: null,
+          nameEn: null,
+          description: null
+        },
+        gemQty: null,
+        gemUnit: 'pcs',
+        gemWeight: null,
+        gemWeightUnit: 'ct.',
+        gemSize: null,
+        diamondQty: null,
+        diamondUnit: 'pcs',
+        diamondQuality: null,
+        diamondWeight: null,
+        diamondWeightUnit: 'ct.'
       }
     }
   },
@@ -153,7 +237,7 @@ export default {
       this.$emit('closeModal')
     },
     onSubmit() {
-      //console.log(this.form)
+      console.log(this.form)
       this.$emit('onAdd', this.form)
       this.onclearForm()
       this.closeModal()
@@ -164,9 +248,16 @@ export default {
         goldSize: null,
         gem: null,
         gemShape: null,
-        gemQty: 1,
-        gemUnit: null,
-        gemSize: null
+        gemQty: null,
+        gemUnit: 'pcs',
+        gemSize: null,
+        gemWeight: null,
+        gemWeightUnit: 'ct.',
+        diamondQty: null,
+        diamondUnit: 'pcs',
+        diamondQuality: null,
+        diamondWeight: null,
+        diamondWeightUnit: 'ct.'
       }
     }
   }
@@ -176,6 +267,8 @@ export default {
 <style lang="scss" scoped>
 h5 {
   padding: 10px 0px 0px 10px;
+  font-size: 21px;
+  font-weight: 600;
   color: var(--base-font-color);
 }
 input {
@@ -196,5 +289,15 @@ label {
   margin-top: 10px;
   display: grid;
   place-items: end;
+}
+.title {
+  font-size: 21px;
+  //padding: 0px 10px 0px 10px;
+  font-weight: 600;
+  width: 100%;
+  //background-color: var(--base-color);
+}
+.form-group {
+  margin-bottom: 5px;
 }
 </style>

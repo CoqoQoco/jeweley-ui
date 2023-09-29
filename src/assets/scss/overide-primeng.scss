@@ -60,17 +60,24 @@
 // ----- Calendar ----- //
 .p-calendar{
     height: 35px;
+    margin-top: 5px !important;
+    //margin: 0px !important;
+    //padding: 0px !important;
     .p-calendar-w-btn, 
     .p-datepicker-trigger {
         background-color: $base-font-color !important;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
         border-color: $base-font-color !important;
+        //height: 35px !important;
+        //padding-top: 500px !important;
+        //font-size: 10px !important;
        
     }
     input{
         font-size: $base-font-size !important;
         padding: 10px !important;
+        margin: 0px !important;
     }
     svg{
         width: 15px;

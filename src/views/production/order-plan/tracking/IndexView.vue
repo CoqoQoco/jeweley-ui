@@ -107,6 +107,7 @@ export default {
 
 <style lang="scss" scoped>
 label {
+  margin-bottom: 0px;
   font-size: 12px;
   font-weight: 700;
   color: var(--base-font-color);

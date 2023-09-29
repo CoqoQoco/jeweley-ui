@@ -3,8 +3,8 @@
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="550px">
       <template v-slot:title>
-        <div class="p-2">
-          <h5>เเก้ไขสถานะใบงาน {{ `${modelValue.data.wo}-${modelValue.data.woNumber}` }}</h5>
+        <div class="p-2 mt-2">
+          <h5>เเก้ไขสถานะใบงาน: {{ `${modelValue.data.wo}-${modelValue.data.woNumber}` }}</h5>
         </div>
       </template>
       <template v-slot:content>
@@ -37,7 +37,16 @@
         </div>
       </template>
       <template v-slot:action>
-        <div><button class="btn btn-sm btn-main" @click="onSubmit">ตกลง</button></div>
+        <div>
+          <button
+            class="btn btn-sm"
+            :class="[this.newStatus ? `btn-main` : `btn-secondary`]"
+            @click="onSubmit"
+            :disabled="!this.newStatus"
+          >
+            ตกลง
+          </button>
+        </div>
       </template>
     </modal>
   </div>
@@ -52,7 +61,7 @@ import api from '@/axios/axios-config.js'
 export default {
   components: { modal, Dropdown, loading },
   data() {
-    return { isLoading: false, newStatus: '' }
+    return { isLoading: false, newStatus: null }
   },
   props: {
     modelValue: {
@@ -72,6 +81,7 @@ export default {
   },
   methods: {
     closeModal() {
+      this.newStatus = ''
       this.$emit('closeModal')
     },
     async onSubmit() {
@@ -105,7 +115,9 @@ export default {
         case 60:
         case 70:
         case 80:
+        case 85:
         case 90:
+        case 95:
           return 'bg-warning'
       }
     }
@@ -126,7 +138,7 @@ label {
   display: grid;
 }
 .old-text-status {
-  color: #ffff;
+  color: black;
   display: grid;
   place-content: center;
   border-radius: 5px;

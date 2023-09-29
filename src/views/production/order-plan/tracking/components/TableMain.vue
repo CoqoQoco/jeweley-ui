@@ -20,7 +20,7 @@
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
-      <Column expander style="width: 10px" />
+      <!-- <Column expander style="width: 10px" /> -->
       <Column style="width: 80px">
         <template #body="slotProps">
           <div class="col-btn-container">
@@ -32,7 +32,10 @@
             >
               <i class="bi bi-gem"></i>
             </div> -->
-            <pdf class="btn btn-sm btn-info w-100" :modelValue="slotProps.data"></pdf>
+            <!-- <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf> -->
+            <button class="btn btn-sm btn btn-main" @click="viewplan(slotProps.data)">
+              <i class="bi bi-search"></i>
+            </button>
           </div>
         </template>
       </Column>
@@ -48,6 +51,7 @@
           <!-- <div class="btn btn-sm btn-danger"></div> -->
           <div
             class="btn btn-sm"
+            style="width: 100px"
             :class="getStatusSeverity(slotProps.data.status)"
             @click="onUpdateStatus(slotProps)"
           >
@@ -67,9 +71,14 @@
           </div>
         </template>
       </Column>
-      <Column header="หมายเลขสินค้า" field="productNumber"></Column>
-      <Column header="รายละเอียดสินค้า" field="productDetail"></Column>
-      <Column header="หมายเลขลูกค้า" field="customerNumber"></Column>
+      <Column header="รหัสสินค้า" field="productNumber"></Column>
+      <!-- <Column header="รายละเอียดสินค้า" field="productDetail"></Column> -->
+      <Column header="รหัสลูกค้า" field="customerNumber"></Column>
+      <Column header="วันสร้างใบสินค้า" field="createDate">
+        <template #body="prop">
+          {{ formatDate(prop.data.createDate) }}
+        </template>
+      </Column>
       <Column header="วันส่งงานลูกค้า" field="requestDate">
         <template #body="prop">
           {{ formatDate(prop.data.requestDate) }}
@@ -127,7 +136,7 @@ import api from '@/axios/axios-config.js'
 //import Row from 'primevue/row'
 
 import imagePreview from '@/components/image/PreviewImage.vue'
-import pdf from '@/components/pdf-make/SavePDFOrderPlan.vue'
+//import pdf from '@/components/pdf-make/SavePDFOrderPlan.vue'
 
 import modalUpdateStatus from '../components/ModalUpdateStatus.vue'
 import tableExpand from '../components/TableExpnad.vue'
@@ -138,7 +147,7 @@ export default {
     Column,
     loading,
     imagePreview,
-    pdf,
+    //pdf,
     //Tag,
     modalUpdateStatus,
     //ColumnGroup,
@@ -217,7 +226,9 @@ export default {
         case 60:
         case 70:
         case 80:
+        case 85:
         case 90:
+        case 95:
           return 'btn-warning'
       }
     },
@@ -316,6 +327,14 @@ export default {
       //console.log(e)
       this.isShowUpdateStatusModal = false
       await this.fetchData()
+    },
+
+    // ---- view plan ---- //
+    viewplan(item) {
+      //console.log(item.id)
+      const id = item.id
+      window.open(`/plan-order-tracking/${id}`, '_blank')
+      //this.$router.push({ name: 'plan-order-tracking-detail', params: { id: 123 } })
     }
   },
   async created() {

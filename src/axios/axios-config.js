@@ -7,7 +7,7 @@ import axios from 'axios'
 //const jewelryUrl = 'http://192.168.1.35:2001/'
 
 //test build
-const jewelryUrl = 'https://localhost:49155/'
+const jewelryUrl = 'https://localhost:49153/'
 
 // ----- GET API ----- //
 const get = async function (url, params, optionsConfig) {

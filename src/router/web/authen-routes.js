@@ -5,6 +5,7 @@ import Dashboard from '@/views/dashboard/WelcomePage.vue'
 import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
 //import PickingListDetail from '@/views/production/order-plan/detail/IndexView.vue'
 import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
+import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -144,7 +145,7 @@ const routes = [
       {
         path: '/plan-order-tracking/:id',
         name: 'plan-order-tracking-detail',
-        component: PlanOrder,
+        component: PlanOrderTrackingView,
         meta: {
           Displayname: {
             en: 'Plan Detail',
