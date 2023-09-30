@@ -67,13 +67,20 @@
               </div>
               <div class="col-md-4">
                 <label>ชื่อลูกค้า</label>
-                <Dropdown
+                <input
+                  type="text"
+                  class="form-control box-input"
+                  v-model="form.customerType"
+                  :disabled="isLock"
+                  required
+                />
+                <!-- <Dropdown
                   v-model="form.customerType"
                   :options="masterCustomer"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   :showClear="form.customerType ? true : false"
-                />
+                /> -->
               </div>
               <div class="col-md-4">
                 <label>วันส่งงานลูกค้า</label>
@@ -116,6 +123,28 @@
                   class="w-full md:w-14rem"
                   required
                   :showClear="form.productType ? true : false"
+                />
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-4">
+                <label>จำนวนสินค้า</label>
+                <input
+                  type="number"
+                  class="form-control box-input"
+                  v-model="form.productQty"
+                  :disabled="isLock"
+                  required
+                />
+              </div>
+              <div class="col-md-4">
+                <label>หน่วย</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.productQtyUnit"
+                  :disabled="isLock"
+                  required
                 />
               </div>
             </div>
@@ -268,6 +297,11 @@
                   }}
                 </template>
               </Column>
+              <Column field="diamondSize" header="ขนาดเพชร">
+                <template #body="prop">
+                  {{ `${prop.data.diamondSize ?? '-'}` }}
+                </template>
+              </Column>
               <Column field="diamondQuality" header="คุณภาพเพชร">
                 <template #body="prop">
                   {{ `${prop.data.diamondQuality ?? '-'}` }}
@@ -354,6 +388,8 @@ export default {
         productNumber: '',
         productName: '',
         productType: '',
+        productQty: '',
+        productQtyUnit: '',
 
         productDetail: '',
         remark: '',
@@ -482,12 +518,17 @@ export default {
         params.append('mold', this.form.mold)
 
         params.append('customerNumber', this.form.customerNumber)
-        params.append('customerType', this.form.customerType.code)
+        params.append('customerType', this.form.customerType)
         params.append('requestDate', formatISOString(this.form.requestDate))
 
         params.append('productNumber', this.form.productNumber)
         params.append('productName', this.form.productName)
         params.append('productType', this.form.productType.code)
+
+        //console.log(productQty);
+
+        params.append('productQty', this.form.productQty)
+        params.append('productQtyUnit', this.form.productQtyUnit)
 
         params.append('productDetail', this.form.productDetail)
         params.append('remark', this.form.remark)
@@ -690,7 +731,7 @@ export default {
   },
   mounted() {
     this.fetchMasterProductType()
-    this.fetchMasterCustomerType()
+    //this.fetchMasterCustomerType()
     this.fetchMasterGold()
     this.fetchMasterGoldSize()
     this.fetchMasterGem()

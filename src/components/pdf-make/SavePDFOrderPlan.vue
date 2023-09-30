@@ -66,6 +66,7 @@ export default {
         'น้ำหนักพลอย',
         'จำนวนเพชร',
         'น้ำหนักเพชร',
+        'ขนาดเพชร',
         'คุณภาพเพชร'
       ]
       body.push(title)
@@ -80,6 +81,7 @@ export default {
           `${item.gemWeight ?? ``} ${item.gemWeightUnit ?? ``}`,
           `${item.diamondQty ?? ``} ${item.diamondUnit ?? ``}`,
           `${item.diamondWeight ?? ``} ${item.diamondWeightUnit ?? ``}`,
+          `${item.diamondSize ?? `-`}`,
           `${item.diamondQuality ?? `-`}`
         ]
         body.push(row)
@@ -110,7 +112,7 @@ export default {
         margin: [20, 0, 20, 10],
         table: {
           headerRows: 1,
-          widths: [60, '*', '*', 60, '*', '*', '*', '*', '*'],
+          widths: [60, '*', '*', 60, '*', '*', '*', '*', '*', '*'],
           body: this.buildTableBody(data)
         }
       }
@@ -122,15 +124,15 @@ export default {
       pdfMake.vfs = vfs // 2. set vfs pdf font
       pdfMake.fonts = {
         // download default Roboto font from cdnjs.com
-        Roboto: {
-          normal:
-            'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
-          bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
-          italics:
-            'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
-          bolditalics:
-            'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
-        },
+        // Roboto: {
+        //   normal:
+        //     'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
+        //   bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
+        //   italics:
+        //     'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
+        //   bolditalics:
+        //     'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+        // },
         THSarabunNew: {
           normal: 'THSarabunNew.ttf',
           bold: 'THSarabunNew Bold.ttf',
@@ -272,9 +274,9 @@ export default {
                   {
                     border: [false, false, false, false],
                     stack: [
-                      { text: 'ประเภทสินค้า', style: 'title' },
+                      { text: 'จำนวนสินค้า', style: 'title' },
                       {
-                        text: this.modelValue.productTypeNavigation.nameTh,
+                        text: `${this.modelValue.productQty} ${this.modelValue.productQtyUnit}`,
                         style: 'desc'
                       }
                     ]
@@ -302,14 +304,24 @@ export default {
                     stack: [
                       { text: 'ชื่อลูกค้า', style: 'title' },
                       {
-                        text: this.modelValue.customerTypeNavigation.nameTh,
+                        text: this.modelValue.customerType,
                         style: 'desc'
                       }
                     ]
                   },
                   //remark
                   {
-                    colSpan: 2,
+                    border: [false, false, false, false],
+                    stack: [
+                      { text: 'ประเภทสินค้า', style: 'title' },
+                      {
+                        text: this.modelValue.productTypeNavigation.nameTh,
+                        style: 'desc'
+                      }
+                    ]
+                  },
+                  {
+                    //colSpan: 2,
                     border: [false, false, false, false],
                     stack: [
                       { text: 'หมายเหตุ', style: 'title' },
@@ -318,8 +330,7 @@ export default {
                         style: 'desc'
                       }
                     ]
-                  },
-                  ''
+                  }
                 ]
               ]
             },

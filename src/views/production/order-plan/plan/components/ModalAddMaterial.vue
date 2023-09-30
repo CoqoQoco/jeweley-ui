@@ -109,8 +109,8 @@
                 <input type="text" class="form-control box-input" v-model="form.diamondUnit" />
               </div>
               <div class="col-md-6">
-                <label>คุณภาพ</label>
-                <input type="text" class="form-control box-input" v-model="form.diamondQuality" />
+                <label>ขนาด</label>
+                <input type="text" class="form-control box-input" v-model="form.diamondSize" />
               </div>
             </div>
             <div class="row form-group">
@@ -127,10 +127,10 @@
                   disabled
                 />
               </div>
-              <!-- <div class="col-md-6">
-                <label>ขนาด</label>
-                <input type="text" class="form-control box-input" v-model="form.gemSize" />
-              </div> -->
+              <div class="col-md-6">
+                <label>คุณภาพ</label>
+                <input type="text" class="form-control box-input" v-model="form.diamondQuality" />
+              </div>
             </div>
             <div class="line"></div>
             <div class="row form-group">
@@ -231,7 +231,8 @@ export default {
         diamondUnit: 'pcs',
         diamondQuality: null,
         diamondWeight: null,
-        diamondWeightUnit: 'ct.'
+        diamondWeightUnit: 'ct.',
+        diamondSize: null
       }
     }
   },
@@ -261,7 +262,8 @@ export default {
         diamondUnit: 'pcs',
         diamondQuality: null,
         diamondWeight: null,
-        diamondWeightUnit: 'ct.'
+        diamondWeightUnit: 'ct.',
+        diamondSize: null
       }
     }
   }
