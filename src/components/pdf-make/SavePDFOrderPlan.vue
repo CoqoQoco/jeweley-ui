@@ -60,6 +60,7 @@ export default {
       const title = [
         'ประเภททอง',
         'เปอร์เซ็นทอง',
+        'จำนวนทอง',
         'ประเภทพลอย',
         'รูปร่าง/ขนาด พลอย',
         'จำนวนพลอย',
@@ -75,6 +76,7 @@ export default {
         const row = [
           `${item.goldNavigation?.code ?? ``} - ${item.goldNavigation?.nameEn ?? ``}`,
           `${item.goldSizeNavigation?.nameEn ?? `-`}`,
+          `${item.goldQty ?? `-`}`,
           `${item.gemNavigation?.code ?? ``} - ${item.gemNavigation?.nameEn ?? ``}`,
           `${item.gemShapeNavigation?.code ?? ``} - ${item.gemSize ?? ``}`,
           `${item.gemQty ?? ``} ${item.gemUnit ?? ``}`,
@@ -108,11 +110,11 @@ export default {
     },
     table(data) {
       return {
-        fontSize: 10,
+        fontSize: 9,
         margin: [20, 0, 20, 40],
         table: {
           headerRows: 1,
-          widths: [60, '*', '*', 60, '*', '*', '*', '*', '*', '*'],
+          widths: [60, '*', '*', '*', 60, '*', '*', '*', '*', '*', '*'],
           body: this.buildTableBody(data)
         }
       }

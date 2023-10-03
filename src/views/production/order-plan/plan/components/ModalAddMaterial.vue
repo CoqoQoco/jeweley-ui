@@ -24,7 +24,7 @@
                   :showClear="form.gold?.code ? true : false"
                 />
               </div>
-              <div class="col-md-6">
+              <div class="col-md-3">
                 <label>เปอร์เซ็นทอง</label>
                 <Dropdown
                   v-model="form.goldSize"
@@ -32,6 +32,15 @@
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   :showClear="form.goldSize?.code ? true : false"
+                />
+              </div>
+              <div class="col-md-3">
+                <label>จำนวนทอง</label>
+                <input
+                  type="number"
+                  min="1"
+                  class="form-control box-input"
+                  v-model="form.goldQty"
                 />
               </div>
             </div>
@@ -208,6 +217,7 @@ export default {
           nameEn: null,
           description: null
         },
+        goldQty: null,
         gem: {
           id: null,
           code: null,
@@ -251,6 +261,7 @@ export default {
       this.form = {
         gold: null,
         goldSize: null,
+        goldQty: null,
         gem: null,
         gemShape: null,
         gemQty: null,

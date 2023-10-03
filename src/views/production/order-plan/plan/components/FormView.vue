@@ -248,6 +248,11 @@
                   <div v-else>-</div>
                 </template>
               </Column>
+              <Column field="goldQty" header="จำนวนทอง">
+                <template #body="prop">
+                  {{ `${prop.data.goldQty ?? '-'}` }}
+                </template>
+              </Column>
               <Column field="gem.code" header="ประเภทพลอย">
                 <template #body="prop">
                   <div v-if="prop.data.gem?.code">
