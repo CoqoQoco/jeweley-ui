@@ -92,7 +92,7 @@
         </div>
         <div class="row form-group">
           <div class="col-md-5">
-            <label>รายละเอียดสินค้า</label>
+            <label class="label-subject txt-title">รายละเอียดสินค้า</label>
             <textarea
               class="form-control"
               v-model="form.productDetail"
@@ -102,7 +102,7 @@
             </textarea>
           </div>
           <div class="col-md-5">
-            <label>{{ $t('view.pickinglist.title.remark') }}</label>
+            <label class="label-subject txt-title">{{ $t('view.pickinglist.title.remark') }}</label>
             <textarea class="form-control" v-model="form.remark" style="height: 70px"> </textarea>
           </div>
           <div class="col-md-2 zone-container-btn">
@@ -114,6 +114,111 @@
         </div>
       </form>
     </div>
+    <div class="data-container">
+      <div class="row form-group">
+        <div class="col-md-12">
+          <DataTable :value="mat" class="p-datatable-sm">
+            <Column style="width: 100px; text-align: center">
+              <template #body="prop">
+                <button
+                  class="btn btn-sm btn-main"
+                  title="ลบส่วนประกอบ"
+                  type="button"
+                  @click="onDeletMatItem(prop.data)"
+                >
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </template>
+            </Column>
+            <Column field="goldNavigation" header="ประเภททอง">
+              <template #body="prop">
+                <div v-if="prop.data.goldNavigation?.code">
+                  {{ `${prop.data.goldNavigation?.code}: ${prop.data.goldNavigation?.nameTh}` }}
+                </div>
+                <div v-else>-</div>
+              </template>
+            </Column>
+            <Column field="goldSizeNavigation" header="เปอร์เซ็นทอง">
+              <template #body="prop">
+                <div v-if="prop.data.goldSizeNavigation?.code">
+                  {{ `${prop.data.goldSizeNavigation?.nameTh}` }}
+                </div>
+                <div v-else>-</div>
+              </template>
+            </Column>
+            <Column field="goldQty" header="จำนวนทอง">
+              <template #body="prop">
+                {{ `${prop.data.goldQty ?? '-'}` }}
+              </template>
+            </Column>
+            <Column field="gemNavigation" header="ประเภทพลอย">
+              <template #body="prop">
+                <div v-if="prop.data.gemNavigation?.code">
+                  {{ `${prop.data.gemNavigation?.code}: ${prop.data.gemNavigation?.nameTh}` }}
+                </div>
+                <div v-else>-</div>
+              </template>
+            </Column>
+            <Column field="gemShapeNavigation.code" header="รูปร่าง/ขนาด พลอย">
+              <template #body="prop">
+                <div v-if="prop.data.gemShapeNavigation?.code">
+                  {{
+                    `${prop.data.gemShapeNavigation?.code}: ${prop.data.gemShapeNavigation?.nameTh} ${prop.data.gemSize}`
+                  }}
+                </div>
+                <div v-else>-</div>
+              </template>
+            </Column>
+            <!-- <Column field="gemSize" header="ขนาดพลอย"> </Column> -->
+            <Column field="gemQty" header="จำนวนพลอย">
+              <template #body="prop">
+                {{ `${prop.data.gemQty ?? '-'}  ${prop.data.gemQty ? prop.data.gemUnit : ''}` }}
+              </template>
+            </Column>
+            <Column field="gemQty" header="น้ำหนักพลอย">
+              <template #body="prop">
+                {{
+                  `${prop.data.gemWeight ?? '-'}  ${
+                    prop.data.gemWeight ? prop.data.gemWeightUnit : ''
+                  }`
+                }}
+              </template>
+            </Column>
+            <Column field="gemQty" header="จำนวนเพชร">
+              <template #body="prop">
+                {{
+                  `${prop.data.diamondQty ?? '-'}  ${
+                    prop.data.diamondQty ? prop.data.diamondUnit : ''
+                  }`
+                }}
+              </template>
+            </Column>
+            <Column field="gemQty" header="น้ำหนักเพชร">
+              <template #body="prop">
+                {{
+                  `${prop.data.diamondWeight ?? '-'}  ${
+                    prop.data.diamondWeight ? prop.data.diamondWeightUnit : ''
+                  }`
+                }}
+              </template>
+            </Column>
+            <Column field="diamondSize" header="ขนาดเพชร">
+              <template #body="prop">
+                {{ `${prop.data.diamondSize ?? '-'}` }}
+              </template>
+            </Column>
+            <Column field="diamondQuality" header="คุณภาพเพชร">
+              <template #body="prop">
+                {{ `${prop.data.diamondQuality ?? '-'}` }}
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+        <div v-if="!mat.length" class="col-md-12 flex-no-mat-add">
+          <label>ไม่มีส่วนประกอบ</label>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -121,6 +226,9 @@
 import { defineAsyncComponent } from 'vue'
 import { formatDate, formatDateTime, formatISOString } from '@/utils/moment'
 import moment from 'moment'
+
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 import Calendar from 'primevue/calendar'
@@ -130,12 +238,17 @@ import api from '@/axios/axios-config.js'
 import swAlert from '@/js/alert/sweetAlerts.js'
 //import api from '@/axios/axios-config.js'
 export default {
-  components: { loading, Calendar },
+  components: { loading, Calendar, DataTable, Column },
   props: {
     modelValue: {
       type: Object,
       required: true,
       default: () => {}
+    },
+    modelMatValue: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
   computed: {
@@ -152,6 +265,10 @@ export default {
       //this.skip = 0
       this.form = { ...value }
       await this.fetchImageData()
+    },
+    async modelMatValue(value) {
+      //console.log(value)
+      this.mat = [...value]
     }
   },
   data() {
@@ -182,7 +299,7 @@ export default {
         //console.log
         switch (this.type) {
           case 'ORDERPLAN': {
-            console.log(this.form)
+            //console.log(this.form)
             const param = {
               imageName: this.form.tbtProductionPlanImage[0].path
             }
@@ -233,7 +350,38 @@ export default {
         }
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateHeader', params)
         if (res) {
-          this.$emit('fetchData')
+          this.$emit('headerFetchData')
+        }
+
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+      }
+    },
+    onDeletMatItem(item) {
+      swAlert.confirmSubmit(
+        `${item.goldNavigation.code}-${item.goldNavigation.nameTh}, จำนวน ${item.goldQty}`,
+        'ยืนยันลบส่วนประกอบ',
+        async () => {
+          await this.DeletMatItem(item)
+        },
+        null,
+        null
+      )
+    },
+    async DeletMatItem(item) {
+      try {
+        this.isLoading = true
+
+        const params = {
+          planId: this.form.id,
+          wo: this.form.wo,
+          woNumber: this.form.woNumber,
+          materialId: item.id
+        }
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanDeleteMaterial', params)
+        if (res) {
+          this.$emit('matFetchData')
         }
 
         this.isLoading = false
@@ -242,15 +390,7 @@ export default {
       }
     }
   },
-  created() {
-    // if (this.modelValue) {
-    //   //this.form.requestDate = formatISOString(this.model.requestDate)
-    //   console.log(this.modelValue)
-    //   console.log(this.modelValue.requestDate)
-    //   this.form.requestDate = this.modelValue.requestDate
-    //   console.log(this.form.requestDate)
-    // }
-  }
+  created() {}
 }
 </script>
 
@@ -304,5 +444,10 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+}
+.flex-no-mat-add {
+  text-align: center;
+  margin-top: 5px;
+  color: var(--base-sub-color);
 }
 </style>
