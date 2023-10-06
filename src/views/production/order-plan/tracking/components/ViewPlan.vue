@@ -8,9 +8,10 @@
       isShowRightSlot
     >
       <template v-slot:rightSlot>
-        <pdf class="btn btn-sm btn-warning w-50" :modelValue="data" :matValue="mat"></pdf>
+        <pdf class="btn btn-sm btn-info w-50" :modelValue="data" :matValue="mat"></pdf>
       </template>
     </pageTitle>
+    <FromHeader :modelValue="data" @fetchData="allFetchData"></FromHeader>
     <div class="data-container"></div>
   </div>
 </template>
@@ -22,11 +23,12 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const pdf = defineAsyncComponent(() => import('@/components/pdf-make/SavePDFOrderPlan.vue'))
 
+import FromHeader from '../components/FromHeder.vue'
 import api from '@/axios/axios-config.js'
 export default {
-  components: { loading, pageTitle, pdf },
+  components: { loading, pageTitle, pdf, FromHeader },
   data() {
-    return { isLoading: false, data: {}, mat: [] }
+    return { isLoading: false, data: {}, mat: [], id: null }
   },
   methods: {
     // ----- api ------ //
@@ -65,14 +67,18 @@ export default {
         console.log(error)
         this.isLoading = false
       }
+    },
+    allFetchData() {
+      this.fetchData(this.id)
+      this.fetchDataMat(this.id)
     }
   },
   mounted() {
     const url = window.location.href
-    const id = url.split('/').slice(-1)[0]
+    this.id = url.split('/').slice(-1)[0]
 
-    this.fetchData(id)
-    this.fetchDataMat(id)
+    this.fetchData(this.id)
+    this.fetchDataMat(this.id)
   }
 }
 </script>

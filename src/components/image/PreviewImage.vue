@@ -1,7 +1,18 @@
 <template>
   <div class="image-container">
     <!-- <img class="image-preview" :src="urlImage" alt="PreviewImage" /> -->
-    <Image class="image-preview" :src="urlImage" alt="Image" width="60" height="60" preview />
+    <Image
+      v-if="urlImage"
+      class="image-preview"
+      :src="urlImage"
+      alt="Image"
+      width="60"
+      height="60"
+      preview
+    />
+    <div v-else class="spinner-border" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
     <!-- <Avatar :image="urlImage" size="xlarge" shape="square" /> -->
   </div>
 </template>

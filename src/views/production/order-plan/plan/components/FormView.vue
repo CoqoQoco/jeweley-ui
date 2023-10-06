@@ -89,6 +89,7 @@
                   v-model="form.requestDate"
                   showIcon
                   :disabled="isLock"
+                  showButtonBar
                   required
                 />
               </div>
