@@ -212,6 +212,18 @@
                 {{ `${prop.data.diamondQuality ?? '-'}` }}
               </template>
             </Column>
+            <template #footer>
+              <div class="col-md-12">
+                <button
+                  class="btn btn-sm btn-warning ml-2"
+                  type="button"
+                  @click="onShowModalAddMaterial"
+                >
+                  <span class="mr-1"><i class="bi bi-gem"></i></span>
+                  <span>เพิ่มส่วนประกอบ</span>
+                </button>
+              </div>
+            </template>
           </DataTable>
         </div>
         <div v-if="!mat.length" class="col-md-12 flex-no-mat-add">
@@ -236,6 +248,7 @@ import Calendar from 'primevue/calendar'
 //import Image from 'primevue/image'
 import api from '@/axios/axios-config.js'
 import swAlert from '@/js/alert/sweetAlerts.js'
+
 //import api from '@/axios/axios-config.js'
 export default {
   components: { loading, Calendar, DataTable, Column },
@@ -388,9 +401,17 @@ export default {
       } catch (error) {
         this.isLoading = false
       }
+    },
+
+    // ---------- add mat ------------- //
+    onShowModalAddMaterial() {
+      this.$emit('showModalAddMat')
     }
   },
-  created() {}
+  mounted() {
+    //this.fetchMasterProductType()
+    //this.fetchMasterCustomerType()
+  }
 }
 </script>
 

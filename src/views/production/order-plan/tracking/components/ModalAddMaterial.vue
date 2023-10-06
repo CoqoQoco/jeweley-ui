@@ -164,6 +164,8 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import swAlert from '@/js/alert/sweetAlerts.js'
+import api from '@/axios/axios-config.js'
+//import api from '@/axios/axios-config.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 //import modal from '@/components/modal/ModalView.vue'
@@ -178,6 +180,7 @@ export default {
     },
     modelValue: {
       type: Object,
+      required: true,
       default: () => {}
     },
     masterGold: {
@@ -199,6 +202,11 @@ export default {
       type: Array,
       required: true,
       default: () => []
+    }
+  },
+  computed: {
+    model() {
+      return this.modelValue
     }
   },
   data() {
@@ -236,18 +244,22 @@ export default {
       }
     }
   },
-  watch: {},
   methods: {
     closeModal() {
       this.$emit('closeModal')
     },
     onSubmit() {
-      //console.log(this.form)
-
       if (this.form.gold.id) {
-        this.$emit('onAdd', this.form)
-        this.onclearForm()
-        this.closeModal()
+        swAlert.confirmSubmit(
+          ``,
+          'ยืนยันเพิ่มส่วนประกอบ',
+          async () => {
+            //console.log('call submitPlan')
+            await this.submit()
+          },
+          null,
+          null
+        )
       } else {
         swAlert.warning(
           `โปรดระบุประเภททอง-เงิน`,
@@ -285,6 +297,29 @@ export default {
         diamondWeight: null,
         diamondWeightUnit: 'ct.',
         diamondSize: null
+      }
+    },
+
+    // ------ api --------//
+    async submit() {
+      try {
+        this.isLoading = true
+
+        const params = {
+          id: this.model.id,
+          wo: this.model.wo,
+          woNumber: this.model.woNumber,
+          material: { ...this.form }
+        }
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateMaterial', params)
+        if (res) {
+          this.onclearForm()
+          this.$emit('matFetchData')
+        }
+
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
       }
     }
   }

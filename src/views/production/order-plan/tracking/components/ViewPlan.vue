@@ -19,8 +19,18 @@
       :modelMatValue="mat"
       @headerFetchData="headerFetchData"
       @matFetchData="matFetchData"
+      @showModalAddMat="onShowModalAddMaterial"
     ></FromHeader>
-    <div class="data-container"></div>
+    <modalAddMat
+      :isShowModal="isShowModal"
+      :masterGold="masterGold"
+      :masterGoldSize="masterGoldSize"
+      :masterGem="masterGem"
+      :masterGemShape="masterGemShape"
+      :modelValue="data"
+      @closeModal="closeModal"
+      @matFetchData="matFetchData"
+    ></modalAddMat>
   </div>
 </template>
 
@@ -32,11 +42,25 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTit
 const pdf = defineAsyncComponent(() => import('@/components/pdf-make/SavePDFOrderPlan.vue'))
 
 import FromHeader from '../components/FromHeder.vue'
+import modalAddMat from '../components/ModalAddMaterial.vue'
 import api from '@/axios/axios-config.js'
 export default {
-  components: { loading, pageTitle, pdf, FromHeader },
+  components: { loading, pageTitle, pdf, FromHeader, modalAddMat },
   data() {
-    return { isLoading: false, data: {}, mat: [], id: null, statusName: null }
+    return {
+      isLoading: false,
+      data: {},
+      mat: [],
+      id: null,
+      statusName: null,
+      isShowModal: false,
+      masterProduct: [],
+      masterCustomer: [],
+      masterGold: [],
+      masterGoldSize: [],
+      masterGem: [],
+      masterGemShape: []
+    }
   },
   methods: {
     // ----- tag ------ //
@@ -122,7 +146,96 @@ export default {
     },
     matFetchData() {
       //this.fetchData(this.id)
+      this.isShowModal = false
       this.fetchDataMat(this.id)
+    },
+
+    // ---------- add mat ------------- //
+    onShowModalAddMaterial() {
+      this.isShowModal = true
+    },
+    closeModal() {
+      this.isShowModal = false
+    },
+
+    // ----- master -------//
+    async fetchMasterProductType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterProductType')
+        if (res) {
+          this.masterProduct = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterCustomerType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterCustomerType')
+        if (res) {
+          this.masterCustomer = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGold() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGold')
+        if (res) {
+          this.masterGold = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGoldSize() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGoldSize')
+        if (res) {
+          this.masterGoldSize = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGem() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGem')
+        if (res) {
+          this.masterGem = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGemShape() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGemShape')
+        if (res) {
+          this.masterGemShape = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
     }
   },
   mounted() {
@@ -131,6 +244,11 @@ export default {
 
     this.fetchData(this.id)
     this.fetchDataMat(this.id)
+
+    this.fetchMasterGold()
+    this.fetchMasterGoldSize()
+    this.fetchMasterGem()
+    this.fetchMasterGemShape()
   }
 }
 </script>
