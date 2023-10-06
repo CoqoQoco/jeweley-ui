@@ -528,7 +528,7 @@ export default {
 
         params.append('productNumber', this.form.productNumber)
         params.append('productName', this.form.productName)
-        params.append('productType', this.form.productType.code)
+        params.append('productType', this.form.productType ? this.form.productType.code : '')
 
         //console.log(productQty);
 

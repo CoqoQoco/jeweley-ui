@@ -12,10 +12,10 @@
                 <h6>เพิ่มส่วนประกอบ</h6>
               </div>
             </div> -->
-            <div><label class="title">ระบุข้อมูลทอง</label></div>
+            <div><label class="title">ระบุข้อมูลทอง - เงิน</label></div>
             <div class="row form-group">
               <div class="col-md-6">
-                <label>ประเภททอง</label>
+                <label>ประเภททอง/เงิน</label>
                 <Dropdown
                   v-model="form.gold"
                   :options="masterGold"
@@ -35,7 +35,7 @@
                 />
               </div>
               <div class="col-md-3">
-                <label>จำนวนทอง</label>
+                <label>จำนวนทอง/เงิน</label>
                 <input
                   type="number"
                   min="1"
@@ -163,6 +163,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import swAlert from '@/js/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 //import modal from '@/components/modal/ModalView.vue'
@@ -210,28 +211,17 @@ export default {
           nameEn: null,
           description: null
         },
-        goldSize: {
-          id: null,
-          code: null,
-          nameTh: null,
-          nameEn: null,
-          description: null
-        },
+        goldSize: {},
+        // goldSize: {
+        //   id: null,
+        //   code: null,
+        //   nameTh: null,
+        //   nameEn: null,
+        //   description: null
+        // },
         goldQty: null,
-        gem: {
-          id: null,
-          code: null,
-          nameTh: null,
-          nameEn: null,
-          description: null
-        },
-        gemShape: {
-          id: null,
-          code: null,
-          nameTh: null,
-          nameEn: null,
-          description: null
-        },
+        gem: null,
+        gemShape: null,
         gemQty: null,
         gemUnit: 'pcs',
         gemWeight: null,
@@ -253,13 +243,33 @@ export default {
     },
     onSubmit() {
       //console.log(this.form)
-      this.$emit('onAdd', this.form)
-      this.onclearForm()
-      this.closeModal()
+
+      if (this.form.gold.id) {
+        this.$emit('onAdd', this.form)
+        this.onclearForm()
+        this.closeModal()
+      } else {
+        swAlert.warning(
+          `โปรดระบุประเภททอง-เงิน`,
+          null,
+          () => {
+            this.onResetPage()
+            this.$router.push('/plan-order-tracking')
+          },
+          null,
+          null
+        )
+      }
     },
     onclearForm() {
       this.form = {
-        gold: null,
+        gold: {
+          id: null,
+          code: null,
+          nameTh: null,
+          nameEn: null,
+          description: null
+        },
         goldSize: null,
         goldQty: null,
         gem: null,

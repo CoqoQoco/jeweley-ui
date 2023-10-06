@@ -28,7 +28,26 @@ export default {
   },
   data() {
     return {
-      urlImage: null
+      urlImage: null,
+      dotShort: '..............................................',
+      dotLong: '.............................................................'
+    }
+  },
+  computed: {
+    isGoldJob() {
+      let isGold = false
+      this.matValue.forEach((x) => {
+        if (
+          x.goldNavigation?.code === 'WG' ||
+          x.goldNavigation?.code === 'YG' ||
+          x.goldNavigation?.code === 'PG'
+        ) {
+          // ทำอะไรสักอย่างเมื่อ x.goldNavigation.code เท่ากับ 'SV'
+          isGold = true
+        }
+      })
+
+      return isGold
     }
   },
   methods: {
@@ -55,10 +74,10 @@ export default {
 
     //dynamic table for pdf make
     buildTableBody(data) {
-      console.log(data)
+      //console.log(data)
       let body = []
       const title = [
-        'ประเภททอง',
+        'ประเภททอง-เงิน',
         'เปอร์เซ็นทอง',
         'จำนวนทอง',
         'ประเภทพลอย',
@@ -79,10 +98,10 @@ export default {
           `${item.goldQty ?? `-`}`,
           `${item.gemNavigation?.code ?? ``} - ${item.gemNavigation?.nameEn ?? ``}`,
           `${item.gemShapeNavigation?.code ?? ``} - ${item.gemSize ?? ``}`,
-          `${item.gemQty ?? ``} ${item.gemUnit ?? ``}`,
-          `${item.gemWeight ?? ``} ${item.gemWeightUnit ?? ``}`,
-          `${item.diamondQty ?? ``} ${item.diamondUnit ?? ``}`,
-          `${item.diamondWeight ?? ``} ${item.diamondWeightUnit ?? ``}`,
+          `${item.gemQty ?? ``}`,
+          `${item.gemWeight ?? `-`} ${item.gemWeight ? item.gemWeightUnit : ``}`,
+          `${item.diamondQty ?? ``}`,
+          `${item.diamondWeight ?? `-`} ${item.diamondWeight ? item.diamondWeightUnit : ``}`,
           `${item.diamondSize ?? `-`}`,
           `${item.diamondQuality ?? `-`}`
         ]
@@ -111,10 +130,10 @@ export default {
     table(data) {
       return {
         fontSize: 9,
-        margin: [20, 0, 20, 40],
+        margin: [20, 0, 20, 20],
         table: {
           headerRows: 1,
-          widths: [60, '*', '*', '*', 60, '*', '*', '*', '*', '*', '*'],
+          widths: [60, '*', '*', 60, 50, '*', '*', '*', '*', '*', '*'],
           body: this.buildTableBody(data)
         }
       }
@@ -143,9 +162,2018 @@ export default {
         }
       }
 
+      // ----- set status from ------
+      const goldJobStatus = {
+        style: 'tableExample',
+        table: {
+          widths: [40, '*', '*', '*', '*'],
+          body: [
+            // header
+            [
+              {
+                colSpan: 5,
+                stack: [
+                  {
+                    text: `วันที่หล่องาน  ${this.dotShort}     เปอร์เซ็นทอง  WG${this.dotShort}  YG${this.dotShort}  PG${this.dotShort}`,
+                    style: 'title'
+                  }
+                ]
+              },
+              '',
+              '',
+              '',
+              ''
+            ],
+
+            // จ่ายเเต่ง
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายแต่ง',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // จ่ายขัดดิบ
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายขัดดิบ',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // จ่ายคัดพลอย
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายคัดพลอย',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้คัดพลอย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'คัดวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      }
+                      // {
+                      //   stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      // }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      }
+                      // {
+                      //   stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      // }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      }
+                      // {
+                      //   stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      // }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // จ่ายเจียพลอย
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายเจียพลอย',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                colSpan: 4,
+                stack: [
+                  {
+                    text: `วันที่: ${this.dotShort}      ชื่อช่าง: ${this.dotShort}`,
+                    style: 'descAction'
+                  }
+                ]
+              },
+              '',
+              '',
+              ''
+            ],
+
+            // จ่ายฝัง
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายฝัง',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                colSpan: 5,
+                style: 'tableExample',
+                table: {
+                  widths: ['*', '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [
+                          {
+                            text: 'เตยยอด: ........................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: 'หุ้มยอด/หัวเรือ: ..................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: 'เตยเล็ก: ........................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: 'เตยล้อม: ........................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [
+                          { text: 'เล็บเหยี่ยว: ........................', style: 'descAction' }
+                        ]
+                      },
+
+                      {
+                        stack: [
+                          { text: 'สี่เหลี่ยม: ........................', style: 'descAction' }
+                        ]
+                      },
+
+                      {
+                        stack: [{ text: 'ล้อม: ..................', style: 'descAction' }]
+                      },
+
+                      {
+                        stack: [{ text: 'ไร้หนาม: ..................', style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'อื่นๆ: ..................', style: 'descAction' }]
+                      },
+                      '',
+                      '',
+                      ''
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              '',
+              '',
+              ''
+            ],
+
+            // ตรวจ CVD
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'ตรวจ CVD',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                colSpan: 4,
+                stack: [
+                  {
+                    text: `ผู้ตรวจ: ${this.dotShort}      ตรวจวันที่: ${this.dotShort}`,
+                    style: 'descAction'
+                  }
+                ]
+              },
+              '',
+              '',
+              ''
+            ],
+
+            // จ่ายขัดชุบ
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายขัดชุบ',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: [10, '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: 'WG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'YG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'PG', style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // ตรวจ CVD
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'ตรวจ CVD',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                colSpan: 4,
+                stack: [
+                  {
+                    text: `ผู้ตรวจ: ${this.dotShort}      ตรวจวันที่: ${this.dotShort}`,
+                    style: 'descAction'
+                  }
+                ]
+              },
+              '',
+              '',
+              ''
+            ]
+          ]
+        },
+        layout: {
+          defaultBorder: false
+        },
+        margin: [0, 0, 0, 0]
+      }
+
+      const silerverStatus = {
+        style: 'tableExample',
+        table: {
+          widths: [40, '*', '*', '*', '*'],
+          body: [
+            // header
+            [
+              {
+                colSpan: 5,
+                stack: [
+                  {
+                    text: `วันที่หล่องาน  ${this.dotShort}`,
+                    style: 'title'
+                  }
+                ]
+              },
+              '',
+              '',
+              '',
+              ''
+            ],
+
+            // จ่ายเเต่ง
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายแต่ง',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // จ่ายขัดดิบ
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายขัดดิบ',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // จ่ายคัดพลอย
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายคัดพลอย',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้คัด', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'วันที่คัด', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      ''
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // จ่ายเจียพลอย
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายเจียพลอย',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                colSpan: 4,
+                stack: [
+                  {
+                    text: `วันที่: ${this.dotShort}      ชื่อช่าง: ${this.dotShort}`,
+                    style: 'descAction'
+                  }
+                ]
+              },
+              '',
+              '',
+              ''
+            ],
+
+            // จ่ายฝัง
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายฝัง',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                colSpan: 5,
+                style: 'tableExample',
+                table: {
+                  widths: ['*', '*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [
+                          {
+                            text: 'เตยยอด: ........................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: 'หุ้มยอด/หัวเรือ: ..................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: 'เตยเล็ก: ........................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: 'เตยล้อม: ........................',
+                            style: 'descAction'
+                          }
+                        ]
+                        //border: [false, false, false, true]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [
+                          { text: 'เล็บเหยี่ยว: ........................', style: 'descAction' }
+                        ]
+                      },
+
+                      {
+                        stack: [
+                          { text: 'สี่เหลี่ยม: ........................', style: 'descAction' }
+                        ]
+                      },
+
+                      {
+                        stack: [{ text: 'ล้อม: ..................', style: 'descAction' }]
+                      },
+
+                      {
+                        stack: [{ text: 'ไร้หนาม: ..................', style: 'descAction' }]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'อื่นๆ: ..................', style: 'descAction' }]
+                      },
+                      '',
+                      '',
+                      ''
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              '',
+              '',
+              ''
+            ],
+
+            // ตรวจ CVD
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'ตรวจ CVD',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                colSpan: 4,
+                stack: [
+                  {
+                    text: `ผู้ตรวจ: ${this.dotShort}      ตรวจวันที่: ${this.dotShort}`,
+                    style: 'descAction'
+                  }
+                ]
+              },
+              '',
+              '',
+              ''
+            ],
+
+            // จ่ายขัดชุบ
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'จ่ายขัดชุบ',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้จ่าย', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'จ่ายวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ชื่อช่าง${this.dotLong}`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: '',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                //colSpan: 2,
+                style: 'tableStatus',
+                table: {
+                  widths: [30, '*'],
+                  body: [
+                    //row 1
+                    [
+                      {
+                        stack: [{ text: 'ผู้รับ', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        stack: [{ text: 'รับวันที่', style: 'descAction' }]
+                      },
+                      {
+                        stack: [
+                          {
+                            text: this.dotShort,
+                            style: 'descAction'
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              {
+                colSpan: 3,
+                table: {
+                  widths: ['*', '*', '*'],
+                  body: [
+                    [
+                      {
+                        stack: [{ text: `จำนวน${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `น้ำหนัก${this.dotLong}`, style: 'descAction' }]
+                      },
+                      {
+                        stack: [{ text: `ขาด${this.dotLong}...`, style: 'descAction' }]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  defaultBorder: false
+                }
+              },
+              '',
+              ''
+            ],
+
+            // ตรวจ CVD
+            [
+              {
+                //colSpan: 4,
+                stack: [
+                  {
+                    text: 'ตรวจ CVD',
+                    style: 'titleAction'
+                  }
+                ]
+              },
+              {
+                colSpan: 4,
+                stack: [
+                  {
+                    text: `ผู้ตรวจ: ${this.dotShort}      ตรวจวันที่: ${this.dotShort}`,
+                    style: 'descAction'
+                  }
+                ]
+              },
+              '',
+              '',
+              ''
+            ]
+          ]
+        },
+        layout: {
+          defaultBorder: false
+        },
+        margin: [0, 0, 0, 0]
+      }
+
       const docDefinition = {
         pageSize: 'A4',
-        pageMargins: [10, 10, 10, 10],
+        pageMargins: [20, 10, 20, 10],
+
         //header: 'simple text',
         // header: {
         //   columns: [
@@ -157,7 +2185,7 @@ export default {
         //   fontSize: 25
         // },
         content: [
-          //header
+          // ------- header -------
           {
             columns: [
               'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
@@ -167,11 +2195,12 @@ export default {
             bold: true,
             fontSize: 15
           },
-          //detail
+
+          // ------- detail -------
           {
             style: 'tableExample',
             table: {
-              widths: [150, '*', '*', '*', '*'],
+              widths: [80, '*', '*', '*', '*'],
               body: [
                 //row 1
                 [
@@ -179,10 +2208,10 @@ export default {
                   {
                     rowSpan: 3,
                     image: this.urlImage,
-                    //fit: [100, 100],
-                    margin: [0, 0, 0, 0],
-                    width: 80,
-                    height: 80,
+                    //fit: [50, 50],
+                    margin: [0, 5, 0, 0],
+                    width: 70,
+                    height: 70,
                     border: [true, true, true, true],
                     alignment: 'center'
                   },
@@ -195,8 +2224,7 @@ export default {
                         text: this.modelValue.wo,
                         style: 'desc'
                       }
-                    ],
-                    border: [false, false, false, false]
+                    ]
                   },
                   //wo number
                   {
@@ -206,8 +2234,7 @@ export default {
                         text: this.modelValue.woNumber,
                         style: 'desc'
                       }
-                    ],
-                    border: [false, false, false, false]
+                    ]
                   },
                   //create date
                   {
@@ -217,8 +2244,7 @@ export default {
                         text: formatDate(this.modelValue.createDate),
                         style: 'desc'
                       }
-                    ],
-                    border: [false, false, false, false]
+                    ]
                   },
                   //send date
                   {
@@ -228,8 +2254,7 @@ export default {
                         text: formatDate(this.modelValue.requestDate),
                         style: 'desc'
                       }
-                    ],
-                    border: [false, false, false, false]
+                    ]
                   }
                 ],
                 //row 2
@@ -240,18 +2265,16 @@ export default {
                   {
                     //colSpan: 2,
                     margin: [5, 0, 0, 0],
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'เเม่พิมพ์', style: 'title' },
                       {
                         text: this.modelValue.mold,
-                        style: 'desc'
+                        style: 'title'
                       }
                     ]
                   },
                   //product code
                   {
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'รหัสสินค้า', style: 'title' },
                       {
@@ -263,7 +2286,6 @@ export default {
                   //product name
                   {
                     //colSpan: 2,
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'ชื่อสินค้า', style: 'title' },
                       {
@@ -274,12 +2296,11 @@ export default {
                   },
                   //product type
                   {
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'จำนวนสินค้า', style: 'title' },
                       {
                         text: `${this.modelValue.productQty} ${this.modelValue.productQtyUnit}`,
-                        style: 'desc'
+                        style: 'title'
                       }
                     ]
                   }
@@ -291,7 +2312,6 @@ export default {
                   //customer code
                   {
                     margin: [5, 0, 0, 0],
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'รหัสลูกค้า', style: 'title' },
                       {
@@ -302,7 +2322,6 @@ export default {
                   },
                   //customer type
                   {
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'ชื่อลูกค้า', style: 'title' },
                       {
@@ -313,7 +2332,6 @@ export default {
                   },
                   //remark
                   {
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'ประเภทสินค้า', style: 'title' },
                       {
@@ -324,7 +2342,6 @@ export default {
                   },
                   {
                     //colSpan: 2,
-                    border: [false, false, false, false],
                     stack: [
                       { text: 'หมายเหตุ', style: 'title' },
                       {
@@ -339,56 +2356,10 @@ export default {
             layout: {
               defaultBorder: false
             },
-            margin: [0, 0, 0, 10]
+            margin: [0, 0, 0, 5]
           },
-          // qty
-          // {
-          //   style: 'tableExample',
-          //   alignment: 'center',
-          //   margin: [50, 0, 50, 10],
-          //   table: {
-          //     widths: ['*', '*', '*', '*', '*'],
-          //     body: [
-          //       //row 1 titel
-          //       [
-          //         { text: 'ยอดสั่ง', style: 'title', border: [false, false, false, false] },
-          //         { text: 'สำเร็จรูป', style: 'title', border: [false, false, false, false] },
-          //         { text: 'กึ่งสำเร็จรูป', style: 'title', border: [false, false, false, false] },
-          //         { text: 'ต้องหล่อ', style: 'title', border: [false, false, false, false] },
-          //         { text: 'หน่วย', style: 'title', border: [false, false, false, false] }
-          //       ],
-          //       [
-          //         {
-          //           text: this.modelValue.qty,
-          //           style: 'desc',
-          //           alignment: 'center'
-          //         },
-          //         {
-          //           text: this.modelValue.qtyFinish,
-          //           style: 'desc',
-          //           alignment: 'center'
-          //         },
-          //         {
-          //           text: this.modelValue.qtySemiFinish,
-          //           style: 'desc',
-          //           alignment: 'center'
-          //         },
-          //         {
-          //           text: this.modelValue.qtyCast,
-          //           style: 'desc',
-          //           alignment: 'center'
-          //         },
-          //         {
-          //           text: this.modelValue.qtyUnit,
-          //           style: 'desc',
-          //           alignment: 'center'
-          //         }
-          //       ]
-          //     ]
-          //   }
-          // },
 
-          //product detail
+          // ------- product detail ---------
           {
             style: 'tableExample',
             table: {
@@ -412,899 +2383,16 @@ export default {
             layout: {
               defaultBorder: false
             },
-            margin: [20, 0, 20, 10]
+            margin: [20, 0, 10, 5]
           },
 
-          // product detail
-          // raw mat
+          // ------- product detail ---------
           this.table(this.matValue),
 
-          //action
-          {
-            style: 'tableExample',
-            table: {
-              widths: [40, 170, '*', '*', '*'],
-              body: [
-                //row 1
-                [
-                  {
-                    colSpan: 5,
-                    stack: [
-                      {
-                        text: 'วันที่หล่องาน ........................................                      เปอร์เซ็นทอง    WG ........................................ YG ........................................ PG ........................................',
-                        style: 'title'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  '',
-                  '',
-                  ''
-                ],
-                //จ่ายเเต่ง
-                [
-                  {
-                    //colSpan: 4,
-                    stack: [
-                      {
-                        text: 'จ่ายแต่ง',
-                        style: 'titleAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้จ่าย', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'จ่ายวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
-                [
-                  '',
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้รับ', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'รับวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
+          // ------ status ------
+          this.isGoldJob ? goldJobStatus : silerverStatus,
 
-                //จ่ายขัดดิบ
-                [
-                  {
-                    //colSpan: 4,
-                    stack: [
-                      {
-                        text: 'จ่ายขัดดิบ',
-                        style: 'titleAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้จ่าย', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'จ่ายวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
-                [
-                  '',
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้รับ', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'รับวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
-
-                //คัดพลอยพลอย
-                [
-                  {
-                    //colSpan: 4,
-                    stack: [
-                      {
-                        text: 'จ่ายคัดพลอย',
-                        style: 'titleAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้คัดพลอย', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'คัดวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
-
-                //จ่ายฝัง
-                [
-                  {
-                    //colSpan: 4,
-                    stack: [
-                      {
-                        text: 'จ่ายฝัง',
-                        style: 'titleAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้จ่าย', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'จ่ายวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง ......................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
-                [
-                  '',
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้รับ', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'รับวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ............................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
-                [
-                  {
-                    colSpan: 5,
-                    style: 'tableExample',
-                    table: {
-                      widths: ['*', '*', '*', '*', '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [
-                              {
-                                text: 'เตยยอด .........................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'หุ้มยอด/หัวเรือ .....................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'เตยเล็ก ...............................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'ล้อม ..............................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'เตยร่วม/มาคี .......................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  '',
-                  '',
-                  '',
-                  ''
-                ],
-                [
-                  {
-                    colSpan: 5,
-                    style: 'tableExample',
-                    table: {
-                      widths: ['*', '*', '*', '*', '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [
-                              {
-                                text: 'เล็บเหยี่ยว .....................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'สี่เหลี่ยม ...............................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'ล็อค ....................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'ไร้หนาม .........................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: 'อื่นๆ .....................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  '',
-                  '',
-                  '',
-                  ''
-                ],
-
-                //ตรวจ CVD
-                [
-                  {
-                    //colSpan: 4,
-                    stack: [
-                      {
-                        text: 'ตรวจ CVD',
-                        style: 'titleAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้ตรวจ', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ตรวจวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  '',
-                  ''
-                ],
-
-                //จ่ายขัดชุบ
-                [
-                  {
-                    //colSpan: 4,
-                    stack: [
-                      {
-                        text: 'จ่ายขัดชุบ',
-                        style: 'titleAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้จ่าย', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'จ่ายวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ชื่อช่าง .......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง .......................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ชื่อช่าง .......................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ],
-                [
-                  '',
-                  {
-                    //colSpan: 2,
-                    style: 'tableExample',
-                    table: {
-                      widths: [40, '*'],
-                      body: [
-                        //row 1
-                        [
-                          {
-                            stack: [{ text: 'ผู้รับ', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ],
-                        [
-                          {
-                            stack: [{ text: 'รับวันที่', style: 'descAction' }],
-                            border: [false, false, false, false]
-                          },
-                          {
-                            stack: [
-                              {
-                                text: '..........................................................',
-                                style: 'descAction'
-                              }
-                            ],
-                            border: [false, false, false, false]
-                          }
-                        ]
-                      ]
-                    },
-                    layout: {
-                      defaultBorder: false
-                    }
-                  },
-                  {
-                    colSpan: 3,
-                    stack: [
-                      {
-                        text: 'WG  จำนวน .....................................        น้ำหนัก ......................................      ขาด ...........................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'YG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ...........................................',
-                        style: 'descAction'
-                      },
-                      {
-                        text: 'PG  จำนวน ......................................        น้ำหนัก ......................................      ขาด ...........................................',
-                        style: 'descAction'
-                      }
-                    ],
-                    border: [false, false, false, false]
-                  },
-                  '',
-                  ''
-                ]
-
-                //หมายเหตุ
-              ]
-            },
-            layout: {
-              defaultBorder: false
-            },
-            margin: [0, 0, 0, 0]
-          },
-
-          //หมายเหตุ
+          // ------ remark -------
           {
             style: 'tableExample',
             table: {
@@ -1344,21 +2432,21 @@ export default {
             margin: [0, 0, 0, 0]
           },
           title: {
-            fontSize: 10,
+            fontSize: 9,
             bold: true
           },
           titleAction: {
-            fontSize: 10,
+            fontSize: 8,
             bold: true,
             decoration: 'underline', // เพิ่มขีดเส้นใต้ข้อความ
             decorationStyle: 'solid' // รูปแบบของขีดเส้น (solid, double, dashed, etc.)
           },
           desc: {
-            fontSize: 10
+            fontSize: 9
             //bold: true
           },
           descAction: {
-            fontSize: 10
+            fontSize: 7
             //bold: true
           }
         }
@@ -1372,19 +2460,6 @@ export default {
       //pdfMake.createPdf(docDefinition).open({}, window)
       //download
       //pdfMake.createPdf(docDefinition).download('coqo.pdf')
-
-      // pdfMake.createPdf(docDefinition).open({}, () => {
-      //   // หากต้องการกำหนดชื่อไฟล์ PDF ที่เปิด
-      //   const pdfWindow = pdfMake.createPdf(docDefinition)
-      //   pdfWindow.getBlob((blob) => {
-      //     const url = URL.createObjectURL(blob)
-      //     const a = document.createElement('a')
-      //     a.href = url
-      //     a.download = fileName
-      //     a.click()
-      //     URL.revokeObjectURL(url)
-      //   })
-      // })
     }
   }
 }

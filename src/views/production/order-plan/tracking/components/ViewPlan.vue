@@ -41,7 +41,7 @@ export default {
           //this.data = [...res.data]
           this.data = { ...res }
         }
-        console.log(this.data)
+        //console.log(this.data)
         this.isLoading = false
       } catch (error) {
         console.log(error)
@@ -59,7 +59,7 @@ export default {
           //this.data = [...res.data]
           this.mat = [...res]
         }
-        console.log(this.mat)
+        //console.log(this.mat)
         this.isLoading = false
       } catch (error) {
         console.log(error)
