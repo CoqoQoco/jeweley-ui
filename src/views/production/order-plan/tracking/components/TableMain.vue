@@ -174,8 +174,8 @@ export default {
       orderplan: 'ORDERPLAN',
 
       // table
-      totalRecords: 100,
-      take: 10, //all
+      totalRecords: 0,
+      take: 0, //all
       skip: 0,
       data: {},
       expnadData: [],
