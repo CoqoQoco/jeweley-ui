@@ -18,14 +18,14 @@
             <div class="row form-group">
               <div class="col-4">
                 <label class="label-subject txt-title">เลขที่ W.O.</label>
-                <div class="form-control bg-disable">{{ form.mold }}</div>
+                <div class="form-control bg-disable">{{ form.wo }}</div>
               </div>
               <div class="col-4">
                 <label class="label-subject txt-title">ลำดับ</label>
-                <div class="form-control bg-disable">{{ form.mold }}</div>
+                <div class="form-control bg-disable">{{ form.woNumber }}</div>
               </div>
               <div class="col-4">
-                <label class="label-subject txt-title">แม่พิพพ์</label>
+                <label class="label-subject txt-title">แม่พิมพ์</label>
                 <div class="form-control bg-disable">{{ form.mold }}</div>
               </div>
             </div>
