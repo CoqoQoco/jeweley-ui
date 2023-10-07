@@ -16,7 +16,7 @@
       :paginator="true"
       @page="handlePageChange"
       :rows="take"
-      :rowsPerPageOptions="[10, 20, 50, 100]"
+      :rowsPerPageOptions="[ 10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
@@ -175,7 +175,7 @@ export default {
 
       // table
       totalRecords: 0,
-      take: 0, //all
+      take: 10, //all
       skip: 0,
       data: {},
       expnadData: [],
@@ -248,7 +248,8 @@ export default {
       try {
         this.isLoading = true
         const param = {
-          take: this.take,
+          //take: this.take,
+          take: 0, //รอเเก้ lazy load
           skip: this.skip,
           search: {
             start: this.formValue.start ? formatISOString(this.formValue.start) : null,
