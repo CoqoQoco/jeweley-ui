@@ -236,7 +236,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import { formatDate, formatDateTime, formatISOString } from '@/utils/moment'
+import { formatDate, formatDateTime } from '@/utils/moment'
 import moment from 'moment'
 
 import DataTable from 'primevue/datatable'
@@ -347,11 +347,14 @@ export default {
       try {
         this.isLoading = true
 
+        //console.log(this.form.requestDate)
+        //console.log(new Date(this.form.requestDate))
+
         const params = {
           id: this.form.id,
           wo: this.form.wo,
           woNumber: this.form.woNumber,
-          requestDate: formatISOString(this.form.requestDate),
+          requestDate: this.form.requestDate,
 
           productQty: this.form.productQty,
           productQtyUnit: this.form.productQtyUnit,
@@ -361,6 +364,8 @@ export default {
           productDetail: this.form.productDetail,
           remark: this.form.remark
         }
+
+        console.log(params)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateHeader', params)
         if (res) {
           this.$emit('headerFetchData')

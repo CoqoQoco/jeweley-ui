@@ -21,6 +21,7 @@
       @matFetchData="matFetchData"
       @showModalAddMat="onShowModalAddMaterial"
     ></FromHeader>
+    <FromStatus @showModalAddUpdate="onShowModalStatus"></FromStatus>
     <modalAddMat
       :isShowModal="isShowModal"
       :masterGold="masterGold"
@@ -31,6 +32,12 @@
       @closeModal="closeModal"
       @matFetchData="matFetchData"
     ></modalAddMat>
+    <modalAddUpdateStatus
+      :isShowModal="isShowModalAddUpdateStatus"
+      :masterStatus="masterStatus"
+      :modelValue="data"
+      @closeModal="closeModalStatus"
+    ></modalAddUpdateStatus>
   </div>
 </template>
 
@@ -42,10 +49,20 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTit
 const pdf = defineAsyncComponent(() => import('@/components/pdf-make/SavePDFOrderPlan.vue'))
 
 import FromHeader from '../components/FromHeder.vue'
+import FromStatus from '../components/FromStatus.vue'
 import modalAddMat from '../components/ModalAddMaterial.vue'
+import modalAddUpdateStatus from '../components/ModalAddUpdateStatusDetail.vue'
 import api from '@/axios/axios-config.js'
 export default {
-  components: { loading, pageTitle, pdf, FromHeader, modalAddMat },
+  components: {
+    loading,
+    pageTitle,
+    pdf,
+    FromHeader,
+    modalAddMat,
+    FromStatus,
+    modalAddUpdateStatus
+  },
   data() {
     return {
       isLoading: false,
@@ -54,12 +71,14 @@ export default {
       id: null,
       statusName: null,
       isShowModal: false,
+      isShowModalAddUpdateStatus: false,
       masterProduct: [],
       masterCustomer: [],
       masterGold: [],
       masterGoldSize: [],
       masterGem: [],
-      masterGemShape: []
+      masterGemShape: [],
+      masterStatus: []
     }
   },
   methods: {
@@ -154,8 +173,14 @@ export default {
     onShowModalAddMaterial() {
       this.isShowModal = true
     },
+    onShowModalStatus() {
+      this.isShowModalAddUpdateStatus = true
+    },
     closeModal() {
       this.isShowModal = false
+    },
+    closeModalStatus() {
+      this.isShowModalAddUpdateStatus = false
     },
 
     // ----- master -------//
@@ -236,6 +261,21 @@ export default {
         console.log(error)
         this.isLoading = false
       }
+    },
+    async fetchMaterStatus() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
+        if (res) {
+          //this.data = [...res.data]
+          this.masterStatus = [...res]
+        }
+        //console.log(this.data)
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
     }
   },
   mounted() {
@@ -249,6 +289,7 @@ export default {
     this.fetchMasterGoldSize()
     this.fetchMasterGem()
     this.fetchMasterGemShape()
+    this.fetchMaterStatus()
   }
 }
 </script>
