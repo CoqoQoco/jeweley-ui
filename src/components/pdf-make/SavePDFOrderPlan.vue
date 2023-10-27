@@ -12,6 +12,7 @@ import { formatDate } from '@/utils/moment'
 import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import api from '@/axios/axios-config.js'
+import jsbarcode from 'jsbarcode'
 
 export default {
   props: {
@@ -131,13 +132,18 @@ export default {
       return {
         fontSize: 9,
         bold: true,
-        margin: [20, 0, 20, 20],
+        margin: [0, 0, 0, 20],
         table: {
           headerRows: 1,
           widths: [60, '*', '*', 60, 50, '*', '*', '*', '*', '*', '*'],
           body: this.buildTableBody(data)
         }
       }
+    },
+    textToBase64Barcode(text) {
+      var canvas = document.createElement('canvas')
+      jsbarcode(canvas, text, { format: 'CODE128', displayValue: false })
+      return canvas.toDataURL('image/png')
     },
 
     async generatePDF() {
@@ -2229,7 +2235,7 @@ export default {
                 [
                   //image
                   {
-                    rowSpan: 3,
+                    rowSpan: 2,
                     image: this.urlImage,
                     //fit: [50, 50],
                     margin: [0, 5, 0, 0],
@@ -2331,7 +2337,15 @@ export default {
                 //row 3
                 [
                   //image
-                  '',
+                  {
+                    image: this.textToBase64Barcode(this.modelValue.mold),
+                    //fit: [50, 50],
+                    margin: [0, 5, 0, 0],
+                    width: 80,
+                    height: 30,
+                    border: [false, false, false, false],
+                    alignment: 'center'
+                  },
                   //customer code
                   {
                     margin: [5, 0, 0, 0],
@@ -2406,7 +2420,7 @@ export default {
             layout: {
               defaultBorder: false
             },
-            margin: [20, 0, 10, 5]
+            margin: [0, 0, 0, 5]
           },
 
           // ------- product detail ---------
@@ -2465,7 +2479,7 @@ export default {
             decorationStyle: 'solid' // รูปแบบของขีดเส้น (solid, double, dashed, etc.)
           },
           desc: {
-            fontSize: 10
+            fontSize: 12
             //bold: true
           },
           descAction: {
