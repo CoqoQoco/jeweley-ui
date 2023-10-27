@@ -447,6 +447,7 @@ export default {
             '',
             async () => {
               this.closeModal()
+              this.$emit('fetchData')
             },
             null,
             null
@@ -491,6 +492,7 @@ export default {
             '',
             async () => {
               this.closeModal()
+              this.$emit('fetchData')
             },
             null,
             null
@@ -535,6 +537,7 @@ export default {
             '',
             async () => {
               this.closeModal()
+              this.$emit('fetchData')
             },
             null,
             null

@@ -11,7 +11,7 @@
         <div class="mr-2 p-1 w-50 text-center bg-dark text-white" style="height: 31px" disable>
           สถานะ : {{ statusName }}
         </div>
-        <pdf class="btn btn-sm btn-dark w-50" :modelValue="data" :matValue="mat"></pdf>
+        <pdf class="btn btn-sm btn-info w-50" :modelValue="data" :matValue="mat"></pdf>
       </template>
     </pageTitle>
     <FromHeader
@@ -21,7 +21,12 @@
       @matFetchData="matFetchData"
       @showModalAddMat="onShowModalAddMaterial"
     ></FromHeader>
-    <FromStatus @showModalAddUpdate="onShowModalStatus"></FromStatus>
+    <FromStatus
+      :modelValue="data"
+      :masterStatus="masterStatus"
+      @showModalAddUpdate="onShowModalStatus"
+      @fetchData="headerFetchData"
+    ></FromStatus>
     <modalAddMat
       :isShowModal="isShowModal"
       :masterGold="masterGold"
@@ -37,6 +42,7 @@
       :masterStatus="masterStatus"
       :modelValue="data"
       @closeModal="closeModalStatus"
+      @fetchData="headerFetchData"
     ></modalAddUpdateStatus>
   </div>
 </template>
