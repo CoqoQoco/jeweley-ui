@@ -9,6 +9,9 @@ export default {
   planOrder: 'สร้างใบจ่าย-รับคืนงาน',
   planOrderTracking: 'ติดตามงานผลิต',
 
+  //master
+  gem: 'ข้อมูลพลอย',
+
   //setting
   userAccount: 'จัดการบัญชีผู้ใช้',
   systemAdmin: 'ผู้ดูเเลระบบ',

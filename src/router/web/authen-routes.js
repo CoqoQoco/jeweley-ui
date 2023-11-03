@@ -5,6 +5,7 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 //import Dashboard from '@/views/dashboard/WelcomePage.vue'
+const Mold = () => import('@/views/production/order-plan/mold-design/MoldView.vue')
 
 const PlanOrder = () => import('@/views/production/order-plan/plan/IndexView.vue')
 //import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
@@ -15,6 +16,9 @@ const PlanOrderTracking = () => import('@/views/production/order-plan/tracking/I
 const PlanOrderTrackingView = () =>
   import('@/views/production/order-plan/tracking/components/ViewPlan.vue')
 //import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
+
+// ----- master ------ //
+const GemView = () => import('@/views/master/gem/GemView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -118,7 +122,7 @@ const routes = [
       {
         path: '/plan-mold',
         name: 'plan-mold',
-        component: Dashboard,
+        component: Mold,
         meta: {
           Displayname: {
             en: 'Plan Mold',
@@ -175,6 +179,35 @@ const routes = [
       //     minorShow: true
       //   }
       // }
+    ]
+  },
+  {
+    path: '/master',
+    component: Layout,
+    redirect: '/gem',
+    name: 'master',
+    meta: {
+      Displayname: {
+        en: 'Master Date',
+        th: 'จัดการข้อมูลกลาง'
+      },
+      classIcon: 'bi bi-vector-pen',
+      majorShow: true,
+      btsubLineShow: true
+    },
+    children: [
+      {
+        path: '/gem',
+        name: 'gem',
+        component: GemView,
+        meta: {
+          Displayname: {
+            en: 'Gem',
+            th: 'ข้อมูลพลอย'
+          },
+          minorShow: true
+        }
+      },
     ]
   },
 
