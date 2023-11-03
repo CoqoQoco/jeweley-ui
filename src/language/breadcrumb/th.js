@@ -10,7 +10,8 @@ export default {
   planOrderTracking: 'ติดตามงานผลิต',
 
   //master
-  gem: 'ข้อมูลพลอย',
+  masterGem: 'ข้อมูลพลอย',
+  masterGemShape: 'ข้อมูลรูปร่างพลอย',
 
   //setting
   userAccount: 'จัดการบัญชีผู้ใช้',

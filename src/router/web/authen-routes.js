@@ -19,6 +19,7 @@ const PlanOrderTrackingView = () =>
 
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/GemView.vue')
+const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -197,8 +198,8 @@ const routes = [
     },
     children: [
       {
-        path: '/gem',
-        name: 'gem',
+        path: '/master-gem',
+        name: 'master-gem',
         component: GemView,
         meta: {
           Displayname: {
@@ -208,6 +209,18 @@ const routes = [
           minorShow: true
         }
       },
+      {
+        path: '/master-gem-shape',
+        name: 'master-gem-shape',
+        component: GemShapeView,
+        meta: {
+          Displayname: {
+            en: 'Gem Shape',
+            th: 'ข้อมูลรูปร่างพลอย'
+          },
+          minorShow: true
+        }
+      }
     ]
   },
 
