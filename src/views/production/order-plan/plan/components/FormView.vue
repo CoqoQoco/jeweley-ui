@@ -67,20 +67,20 @@
               </div>
               <div class="col-md-4">
                 <label>ชื่อลูกค้า</label>
-                <input
+                <!-- <input
                   type="text"
                   class="form-control box-input"
                   v-model="form.customerType"
                   :disabled="isLock"
                   required
-                />
-                <!-- <Dropdown
+                /> -->
+                <Dropdown
                   v-model="form.customerType"
                   :options="masterCustomer"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
+                  class="md:w-14rem"
                   :showClear="form.customerType ? true : false"
-                /> -->
+                />
               </div>
               <div class="col-md-4">
                 <label>วันส่งงานลูกค้า</label>
@@ -229,7 +229,7 @@
                     type="button"
                     @click="deletMatItem(prop.data)"
                   >
-                    <i class="bi bi-trash-fill"></i>
+                    <i class="0"></i>
                   </button>
                 </template>
               </Column>
@@ -524,7 +524,7 @@ export default {
         params.append('mold', this.form.mold)
 
         params.append('customerNumber', this.form.customerNumber)
-        params.append('customerType', this.form.customerType)
+        params.append('customerType', this.form.customerType.code)
         params.append('requestDate', formatISOString(this.form.requestDate))
 
         params.append('productNumber', this.form.productNumber)
@@ -737,7 +737,7 @@ export default {
   },
   mounted() {
     this.fetchMasterProductType()
-    //this.fetchMasterCustomerType()
+    this.fetchMasterCustomerType()
     this.fetchMasterGold()
     this.fetchMasterGoldSize()
     this.fetchMasterGem()
