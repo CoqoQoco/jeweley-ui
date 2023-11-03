@@ -82,6 +82,7 @@ export default {
     clearFileInput() {
       console.log('reset')
       const fileInput = this.$refs.fileInput
+      this.$refs.fileInput.value = null
       fileInput.value = ''
     }
   }

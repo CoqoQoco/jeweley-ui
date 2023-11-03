@@ -3,11 +3,11 @@
     <!-- <img class="image-preview" :src="urlImage" alt="PreviewImage" /> -->
     <Image
       v-if="urlImage"
-      class="image-preview"
+      :class="borderShow ? `image-preview` : ``"
       :src="urlImage"
       alt="Image"
-      width="60"
-      height="60"
+      :width="width"
+      :height="height"
       preview
     />
     <div v-else class="spinner-border" role="status">
@@ -36,6 +36,18 @@ export default {
       type: String,
       required: true,
       default: () => ''
+    },
+    width: {
+      type: Number,
+      default: () => 60
+    },
+    height: {
+      type: Number,
+      default: () => 60
+    },
+    borderShow: {
+      type: Boolean,
+      default: () => true
     }
   },
   data() {
@@ -48,16 +60,30 @@ export default {
       try {
         //console.log
         switch (this.type) {
-          case 'ORDERPLAN': {
-            const param = {
-              imageName: this.imageName
-            }
-            const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
+          case 'ORDERPLAN':
+            {
+              const param = {
+                imageName: this.imageName
+              }
+              const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
 
-            if (res) {
-              this.urlImage = `data:image/png;base64,${res}`
+              if (res) {
+                this.urlImage = `data:image/png;base64,${res}`
+              }
             }
-          }
+            break
+          case 'MOLD':
+            {
+              const param = {
+                imageName: this.imageName
+              }
+              const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+
+              if (res) {
+                this.urlImage = `data:image/png;base64,${res}`
+              }
+            }
+            break
         }
       } catch (error) {
         console.log(error)

@@ -58,7 +58,7 @@ export default {
     },
     isShowActionPart: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   data() {
