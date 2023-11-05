@@ -85,10 +85,10 @@ export default {
         'รูปร่าง/ขนาด พลอย',
         'จำนวนพลอย',
         'น้ำหนักพลอย',
-        'จำนวนเพชร',
-        'น้ำหนักเพชร',
-        'ขนาดเพชร',
-        'คุณภาพเพชร'
+        'จำนวนเพชร/CZ',
+        'น้ำหนักเพชร/CZ',
+        'ขนาดเพชร/CZ',
+        'คุณภาพเพชร/CZ'
       ]
       body.push(title)
 
@@ -2246,7 +2246,7 @@ export default {
                   },
                   //wo
                   {
-                    margin: [5, 0, 0, 0],
+                    margin: [30, 0, 0, 0],
                     stack: [
                       { text: 'เลขที่ W.O.', style: 'title' },
                       {
@@ -2293,12 +2293,12 @@ export default {
                   //mode
                   {
                     //colSpan: 2,
-                    margin: [5, 0, 0, 0],
+                    margin: [30, 0, 0, 0],
                     stack: [
                       { text: 'เเม่พิมพ์', style: 'title' },
                       {
                         text: this.modelValue.mold,
-                        style: 'title'
+                        style: 'desc'
                       }
                     ]
                   },
@@ -2308,7 +2308,7 @@ export default {
                       { text: 'รหัสสินค้า', style: 'title' },
                       {
                         text: this.modelValue.productNumber,
-                        style: 'title'
+                        style: 'desc'
                       }
                     ]
                   },
@@ -2329,7 +2329,7 @@ export default {
                       { text: 'จำนวนสินค้า', style: 'title' },
                       {
                         text: `${this.modelValue.productQty} ${this.modelValue.productQtyUnit}`,
-                        style: 'title'
+                        style: 'desc'
                       }
                     ]
                   }
@@ -2338,7 +2338,7 @@ export default {
                 [
                   //image
                   {
-                    image: this.textToBase64Barcode(this.modelValue.mold),
+                    image: this.textToBase64Barcode(this.modelValue.productNumber),
                     //fit: [50, 50],
                     margin: [0, 5, 0, 0],
                     width: 80,
@@ -2348,7 +2348,7 @@ export default {
                   },
                   //customer code
                   {
-                    margin: [5, 0, 0, 0],
+                    margin: [30, 0, 0, 0],
                     stack: [
                       { text: 'รหัสลูกค้า', style: 'title' },
                       {
@@ -2363,7 +2363,7 @@ export default {
                       { text: 'ชื่อลูกค้า', style: 'title' },
                       {
                         text: this.modelValue.customerType,
-                        style: 'title'
+                        style: 'desc'
                       }
                     ]
                   },
@@ -2469,8 +2469,8 @@ export default {
             margin: [0, 0, 0, 0]
           },
           title: {
-            fontSize: 14,
-            bold: true
+            fontSize: 10
+            //bold: true
           },
           titleAction: {
             fontSize: 14,
@@ -2479,8 +2479,8 @@ export default {
             decorationStyle: 'solid' // รูปแบบของขีดเส้น (solid, double, dashed, etc.)
           },
           desc: {
-            fontSize: 12
-            //bold: true
+            fontSize: 14,
+            bold: true
           },
           descAction: {
             fontSize: 10

@@ -66,7 +66,7 @@
                 />
               </div>
               <div class="col-md-4">
-                <label>ชื่อลูกค้า</label>
+                <label>ประเภทลูกค้า</label>
                 <!-- <input
                   type="text"
                   class="form-control box-input"
@@ -101,8 +101,7 @@
                   type="text"
                   class="form-control box-input"
                   v-model="form.productNumber"
-                  :disabled="isLock"
-                  required
+                  :disabled="false"
                 />
               </div>
               <div class="col-md-4">
@@ -229,7 +228,7 @@
                     type="button"
                     @click="deletMatItem(prop.data)"
                   >
-                    <i class="0"></i>
+                    <i class="bi bi-trash-fill"></i>
                   </button>
                 </template>
               </Column>

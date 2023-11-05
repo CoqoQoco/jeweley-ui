@@ -102,7 +102,7 @@
               </div> -->
             </div>
             <div class="line"></div>
-            <div><label class="title">ระบุข้อมูลเพชร</label></div>
+            <div><label class="title">ระบุข้อมูลเพชร / CZ</label></div>
             <div class="row form-group">
               <div class="col-md-3">
                 <label>จำนวน</label>
