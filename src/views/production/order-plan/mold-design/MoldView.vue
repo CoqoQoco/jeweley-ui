@@ -15,7 +15,7 @@
       </template> -->
     </pageTitle>
     <form @submit.prevent="onSearch">
-      <div class="filter-container">
+      <div class="filter-container mb-3">
         <!-- first row -->
         <div class="row form-group">
           <div class="col-md-8">
@@ -24,7 +24,7 @@
               type="text"
               style="width: 30rem"
               class="form-control"
-              placeholder="คำค้นหา ... รหัส ประเภท"
+              placeholder="คำค้นหา ... รหัส ประเภท รายละเอียด"
               v-model="form.text"
             />
           </div>
@@ -57,41 +57,54 @@
         </div> -->
       </div>
     </form>
-    <DataView :value="data" :layout="layout" paginator :rows="8">
-      <template #grid="slotProps">
-        <div class="col-3 sm:col-6 lg:col-12 xl:col-4 p-2">
-          <div class="p-2 border-1 surface-border surface-card border-round">
-            <div class="flex flex-wrap align-items-center justify-content-between gap-2">
-              <div class="flex align-items-center gap-2">
-                <span><i class="bi bi-tags text-custom"></i></span>
-                <span class="font-semibold text-custom">{{ slotProps.data.category }}</span>
-              </div>
-            </div>
-            <div class="flex flex-column align-items-center gap-3">
-              <imagePreview
-                :imageName="slotProps.data.image"
-                type="MOLD"
-                :width="130"
-                :height="130"
-                :borderShow="false"
-              >
-              </imagePreview>
-              <div class="text-2xl font-bold">{{ slotProps.data.name }}</div>
-            </div>
-            <div class="flex align-items-center justify-content-between">
-              <div class="flex align-items-center ml-4">
-                <!-- <span><i class="bi bi-tags text-custom"></i></span> -->
-                <span class="font-semibold text-custom">
-                  <u class="">
-                    {{ slotProps.data.code }}
-                  </u>
-                </span>
-              </div>
-            </div>
+    <DataTable
+      :totalRecords="totalRecords"
+      :value="data"
+      dataKey="id"
+      class="p-datatable-sm custom-table"
+      scrollable
+      scrollHeight="calc(100vh - 320px)"
+      columnResizeMode="expand"
+      resizableColumns
+      :paginator="true"
+      @page="handlePageChange"
+      :rows="take"
+      :rowsPerPageOptions="[10, 20, 50, 100]"
+      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+      :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
+    >
+      <!-- <Column expander style="width: 10px" /> -->
+      <Column style="width: 200px">
+        <template #body="slotProps">
+          <div class="col-btn-container">
+            <!-- <div
+              class="btn btn-sm btn-warning w-50 mr-1"
+              title="ดูรายละเอียด"
+              @click="onView(item)"
+              disabled
+            >
+              <i class="bi bi-gem"></i>
+            </div> -->
+            <!-- <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf> -->
+            <button class="btn btn-sm btn btn-main" @click="viewplan(slotProps.data)">
+              <i class="bi bi-search"></i>
+            </button>
           </div>
-        </div>
-      </template>
-    </DataView>
+        </template>
+      </Column>
+      <Column header="รหัส" field="code"></Column>
+      <Column header="ประเภท" field="category"></Column>
+      <Column header="รายละเอียด" field="description"></Column>
+      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์">
+        <template #body="slotProps">
+          <div class="image-container">
+            <loading :isLoading="isLoadingImage"></loading>
+            <!-- <img :src="fetchIamge(slotProps)" alt="Preview Image" /> -->
+            <imagePreview :imageName="slotProps.data.image" type="MOLD"></imagePreview>
+          </div>
+        </template>
+      </Column>
+    </DataTable>
     <modalCreate
       :isShowModal="isShowModalAddMold"
       @closeModal="closeModalCreate"
@@ -104,10 +117,13 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-import DataView from 'primevue/dataview'
+//import DataView from 'primevue/dataview'
 //import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions'
 //import Card from 'primevue/card'
 import api from '@/axios/axios-config.js'
+
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
@@ -120,15 +136,18 @@ export default {
     pageTitle,
     loading,
     modalCreate,
-    DataView,
+    //DataView,
     //DataViewLayoutOptions
     //Card
-    imagePreview
+    imagePreview,
+    DataTable,
+    Column
   },
   data() {
     return {
       isLoading: false,
       isShowModalAddMold: false,
+      isLoadingImage: false,
       form: {
         text: null
       },
@@ -150,6 +169,10 @@ export default {
       this.form = {
         text: null
       }
+    },
+    handlePageChange(e) {
+      console.log('page change')
+      console.log(e)
     },
     // ------ modalAddMold ------- //
     showModalAddMold() {
@@ -223,21 +246,13 @@ label {
   font-weight: 700;
   color: var(--base-font-color);
 }
-.mold-card-container {
+.card-item-container {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  //align-items: center;
+}
+.col-btn-container {
+  display: flex;
   justify-content: center;
-  //flex-direction: column;
-  //width: 30rem;
-  //height: rem;
-  margin: 10px;
-}
-.card-body {
-  width: 20rem;
-  border: 1px solid #dddddd;
-  max-height: 200px;
-}
-.text-custom {
-  color: var(--base-font-color);
 }
 </style>
