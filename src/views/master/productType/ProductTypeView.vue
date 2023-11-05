@@ -2,8 +2,8 @@
   <div class="app-container">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
-      title="เเก้ไขปรับปรุง-เพิ่ม ข้อมูลพลอย"
-      description="หน้าเเก้ไขปรับปรุง-เพิ่ม ข้อมูลพลอย เเละรายละเอียดต่างๆ"
+      title="เเก้ไขปรับปรุง-เพิ่ม ข้อมูลประเภทสินค้า"
+      description="หน้าเเก้ไขปรับปรุง-เพิ่ม ข้อมูลประเภทสินค้า เเละรายละเอียดต่างๆ"
       :isShowBtnClose="false"
     >
     </pageTitle>
@@ -32,7 +32,7 @@
             </button>
             <button class="btn btn-sm btn-warning" type="button" @click="showModalAddGem">
               <span class="mr-2"><i class="bi bi-gem"></i></span>
-              <span>เพิ่มพลอย</span>
+              <span>เพิ่มประเภทสินค้า</span>
             </button>
           </div>
         </div>
@@ -162,7 +162,7 @@ export default {
       //console.log(e)
       swAlert.confirmSubmit(
         `${e.code} : ${e.nameTh}`,
-        `ยืนยันลบพลอย`,
+        `ยืนยันลบประเภทสินค้า`,
         async () => {
           //console.log('call submitPlan')
           await this.delete(e)
@@ -176,7 +176,7 @@ export default {
         this.isLoading = true
 
         const param = {
-          type: 'GEM',
+          type: 'PRODUCT-TYPE',
           id: e.id,
           code: e.code
         }
@@ -222,7 +222,7 @@ export default {
 
         const param = {
           search: {
-            type: 'GEM',
+            type: 'PRODUCT-TYPE',
             text: this.search.text ?? null
           }
         }

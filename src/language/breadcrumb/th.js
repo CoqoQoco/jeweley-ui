@@ -12,6 +12,8 @@ export default {
   //master
   masterGem: 'ข้อมูลพลอย',
   masterGemShape: 'ข้อมูลรูปร่างพลอย',
+  masterGoldSize: 'ข้อมูลขนาดทอง',
+  masterProductType: 'ข้อมูลประเภทสินค้า',
 
   //setting
   userAccount: 'จัดการบัญชีผู้ใช้',

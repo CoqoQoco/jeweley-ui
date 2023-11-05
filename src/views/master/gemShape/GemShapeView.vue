@@ -222,11 +222,12 @@ export default {
 
         const param = {
           search: {
+            type: 'GEM-SHAPE',
             text: this.search.text ?? null
           }
         }
 
-        const res = await api.jewelry.post('Master/SearchMasterGemShape', param)
+        const res = await api.jewelry.post('Master/SearchMaster', param)
         if (res) {
           //console.log(res)
           this.data = [...res]

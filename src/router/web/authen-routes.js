@@ -20,6 +20,8 @@ const PlanOrderTrackingView = () =>
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/GemView.vue')
 const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
+const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
+const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -217,6 +219,30 @@ const routes = [
           Displayname: {
             en: 'Gem Shape',
             th: 'ข้อมูลรูปร่างพลอย'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/master-gold-size',
+        name: 'master-gold-size',
+        component: GoldSizeView,
+        meta: {
+          Displayname: {
+            en: 'Gold Size',
+            th: 'ข้อมูลขนาดทอง'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/master-product-type',
+        name: 'master-product-type',
+        component: ProductTypeView,
+        meta: {
+          Displayname: {
+            en: 'Product Type',
+            th: 'ข้อมูลประเภทสินค้า'
           },
           minorShow: true
         }
