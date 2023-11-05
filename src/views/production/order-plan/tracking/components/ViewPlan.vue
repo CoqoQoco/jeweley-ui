@@ -20,6 +20,7 @@
       @headerFetchData="headerFetchData"
       @matFetchData="matFetchData"
       @showModalAddMat="onShowModalAddMaterial"
+      @showModalUpdateHeader="onShowModalUpdateHeader"
     ></FromHeader>
     <FromStatus
       :modelValue="data"
@@ -44,6 +45,14 @@
       @closeModal="closeModalStatus"
       @fetchData="headerFetchData"
     ></modalAddUpdateStatus>
+    <showModalUpdateHeader
+      :isShowModal="isShowModalUpdateHeader"
+      :modelValue="data"
+      :masterCustomerType="masterCustomer"
+      :masterProductType="masterProduct"
+      @closeModal="onCloseModalUpdateHeader"
+      @fetch="headerFetchDataByUpdate"
+    ></showModalUpdateHeader>
   </div>
 </template>
 
@@ -58,6 +67,7 @@ import FromHeader from '../components/FromHeder.vue'
 import FromStatus from '../components/FromStatus.vue'
 import modalAddMat from '../components/ModalAddMaterial.vue'
 import modalAddUpdateStatus from '../components/ModalAddUpdateStatusDetail.vue'
+import showModalUpdateHeader from '../components/ModalUpdateHeader.vue'
 import api from '@/axios/axios-config.js'
 export default {
   components: {
@@ -67,7 +77,8 @@ export default {
     FromHeader,
     modalAddMat,
     FromStatus,
-    modalAddUpdateStatus
+    modalAddUpdateStatus,
+    showModalUpdateHeader
   },
   data() {
     return {
@@ -78,8 +89,10 @@ export default {
       statusName: null,
       isShowModal: false,
       isShowModalAddUpdateStatus: false,
+      isShowModalUpdateHeader: false,
       masterProduct: [],
       masterCustomer: [],
+      //masterProductType:[],
       masterGold: [],
       masterGoldSize: [],
       masterGem: [],
@@ -189,6 +202,18 @@ export default {
       this.isShowModalAddUpdateStatus = false
     },
 
+    // ------ update -------- //
+    onShowModalUpdateHeader() {
+      this.isShowModalUpdateHeader = true
+    },
+    onCloseModalUpdateHeader() {
+      this.isShowModalUpdateHeader = false
+    },
+    headerFetchDataByUpdate() {
+      this.fetchData(this.id)
+      this.isShowModalUpdateHeader = false
+    },
+
     // ----- master -------//
     async fetchMasterProductType() {
       try {
@@ -296,6 +321,8 @@ export default {
     this.fetchMasterGem()
     this.fetchMasterGemShape()
     this.fetchMaterStatus()
+    this.fetchMasterCustomerType()
+    this.fetchMasterProductType()
   }
 }
 </script>

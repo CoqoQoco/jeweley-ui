@@ -2,7 +2,7 @@ import App from './App.vue'
 import router from './router'
 
 import './assets/scss/core.scss'
-import 'primeflex/primeflex.css'
+//import 'primeflex/primeflex.css'
 
 // Theme & Styles
 
