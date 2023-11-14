@@ -82,6 +82,12 @@
                 <input type="text" class="form-control" v-model="form.productName" required />
               </div>
             </div>
+            <div class="row form-group">
+              <div class="col-md-12">
+                <label>รหัสสินค้า</label>
+                <input type="text" class="form-control" v-model="form.productNumber" required />
+              </div>
+            </div>
             <!-- product type -->
             <div class="row form-group">
               <div class="col-md-12">
@@ -102,7 +108,7 @@
             <!-- product detail -->
             <div class="row form-group">
               <div class="col-md-12">
-                <label>ชื่อสินค้า</label>
+                <label>รายละเอียดสินค้า</label>
                 <textarea
                   class="form-control"
                   v-model="form.productDetail"
@@ -115,7 +121,7 @@
             <!-- remark -->
             <div class="row form-group">
               <div class="col-md-12">
-                <label>ชื่อสินค้า</label>
+                <label>หมายเหตุ</label>
                 <textarea class="form-control" v-model="form.remark" style="height: 70px">
                 </textarea>
               </div>
@@ -213,6 +219,7 @@ export default {
         productQty: null,
         productQtyUnit: null,
         productName: null,
+        productNumber: null,
         productType: null,
         productDetail: null
       }
@@ -269,6 +276,7 @@ export default {
           productQtyUnit: this.form.productQtyUnit,
 
           productName: this.form.productName,
+          productNumber: this.form.productNumber,
           productType: this.form.productType ? this.form.productType.code : null,
           productDetail: this.form.productDetail,
           remark: this.form.remark ?? null
@@ -312,6 +320,7 @@ export default {
         productQty: this.model.productQty,
         productQtyUnit: this.model.productQtyUnit,
         productName: this.model.productName,
+        productNumber: this.model.productNumber,
         productDetail: this.model.productDetail,
         remark: this.model.remark
       }
