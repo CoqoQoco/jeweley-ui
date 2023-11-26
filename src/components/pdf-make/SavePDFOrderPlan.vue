@@ -58,19 +58,17 @@ export default {
     async fetchIamge() {
       //console.log(item.data.tbtProductionPlanImage[0].path)
 
-      if (this.modelValue.tbtProductionPlanImage && this.modelValue.tbtProductionPlanImage.length) {
         try {
           const param = {
-            imageName: this.modelValue.tbtProductionPlanImage[0].path
+            imageName: `${this.modelValue.mold}-Mold.png`
           }
 
-          const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
+          const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
           this.urlImage = `data:image/png;base64,${res}`
         } catch (error) {
           console.log(error)
           return null
         }
-      }
     },
 
     //dynamic table for pdf make

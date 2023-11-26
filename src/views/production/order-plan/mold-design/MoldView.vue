@@ -91,7 +91,7 @@
           <div class="image-container">
             <loading :isLoading="isLoadingImage"></loading>
             <!-- <img :src="fetchIamge(slotProps)" alt="Preview Image" /> -->
-            <imagePreview :imageName="slotProps.data.image" type="MOLD"></imagePreview>
+            <imagePreview :imageName="slotProps.data.code" type="MOLD"></imagePreview>
           </div>
         </template>
       </Column>
