@@ -93,3 +93,28 @@
 .p-datepicker-calendar{
     font-size: $base-font-size !important;
 }
+
+//  --------- p-autocomplete p-component p-inputwrapper ----------
+.p-autocomplete{
+    height: 35px !important;
+    width: 100% !important;
+    .p-autocomplete.input{
+        width: 100% !important;
+    }
+    .p-autocomplete-loader{
+        margin-top: -0.1rem !important;
+    }
+    .p-component{
+        height: 35px !important;
+        width: 100% !important;
+    }
+}
+.p-autocomplete-panel{
+    margin-top: 5px !important;
+    width: 400px !important;
+    height: 400px !important;
+}
+.p-autocomplete-empty-message{
+    display: flex;
+    justify-content: center;
+}

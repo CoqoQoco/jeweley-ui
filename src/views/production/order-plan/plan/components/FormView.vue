@@ -45,13 +45,22 @@
               </div>
               <div class="col-md-6">
                 <label>{{ $t('view.pickinglist.title.mold') }}</label>
-                <input
+                <AutoComplete
+                  v-model="form.mold"
+                  :suggestions="itemMold"
+                  @complete="onSearchMold"
+                  placeholder="กรอกรหัสเเม่พิมพ์ ...."
+                  :class="val.isValMold === true ? `p-invalid` : ``"
+                  forceSelection
+                  @item-select="onSelectMold"
+                />
+                <!-- <input
                   type="text"
                   class="form-control"
                   v-model="form.mold"
                   :disabled="isLock"
                   required
-                />
+                /> -->
               </div>
             </div>
             <div class="row form-group">
@@ -174,12 +183,20 @@
             </div>
           </div>
           <div class="col-md-6">
-            <label>รูปสินค้า</label>
-            <uploadImage
+            <label>รูปเเม่พิมพ์</label>
+            <div class="image-container">
+              <div v-if="urlImage">
+                <img class="image-preview" :src="urlImage" alt="Image" preview />
+              </div>
+              <div v-else>
+                <img class="image-preview" src="@/assets/duangkaew-logo.png" alt="Image" preview />
+              </div>
+            </div>
+            <!-- <uploadImage
               :reset="isResetImage"
               :hight="imageConatinerHight"
               @onImportFile="onImportFile"
-            ></uploadImage>
+            ></uploadImage> -->
           </div>
         </div>
         <!-- <div class="row form-group">
@@ -351,6 +368,7 @@ import { defineAsyncComponent } from 'vue'
 import Calendar from 'primevue/calendar'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import AutoComplete from 'primevue/autocomplete'
 
 import { formatISOString } from '@/utils/moment'
 import api from '@/axios/axios-config.js'
@@ -361,7 +379,7 @@ import Dropdown from 'primevue/dropdown'
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue')) // Customize Report Config
 
 //import UploadImage from '@/components/prime-vue/UploadImage.vue'
-const UploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
+//const UploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
 
 import ModalAddMat from '../components/ModalAddMaterial.vue'
 export default {
@@ -371,8 +389,16 @@ export default {
     ModalAddMat,
     DataTable,
     Column,
-    UploadImage,
-    Dropdown
+    //UploadImage,
+    Dropdown,
+    AutoComplete
+  },
+  watch: {
+    'form.mold'() {
+      if (this.form.mold) {
+        this.val.isValMold = false
+      }
+    }
   },
   data() {
     return {
@@ -408,7 +434,13 @@ export default {
       masterGold: [],
       masterGoldSize: [],
       masterGem: [],
-      masterGemShape: []
+      masterGemShape: [],
+      itemMold: [],
+      urlImage: '',
+
+      val: {
+        isValMold: false
+      }
     }
   },
   methods: {
@@ -491,6 +523,21 @@ export default {
         images: []
       }
     },
+    validateForm() {
+      if (!this.form.mold) {
+        this.val = {
+          isValMold: true
+        }
+        return false
+      }
+
+      return true
+    },
+    onClearVal() {
+      this.val = {
+        isValMold: false
+      }
+    },
 
     //components
     onImportFile(e) {
@@ -499,17 +546,20 @@ export default {
     },
 
     // ------ Api ------ //
+
     onSubmitPlan() {
-      swAlert.confirmSubmit(
-        `W.O. ${this.form.wo}-${this.form.nowo} `,
-        'ยืนยันสร้างใบจ่าย-รับคืน',
-        async () => {
-          //console.log('call submitPlan')
-          await this.submitPlan()
-        },
-        null,
-        null
-      )
+      if (this.validateForm()) {
+        swAlert.confirmSubmit(
+          `W.O. ${this.form.wo}-${this.form.nowo} `,
+          'ยืนยันสร้างใบจ่าย-รับคืน',
+          async () => {
+            //console.log('call submitPlan')
+            await this.submitPlan()
+          },
+          null,
+          null
+        )
+      }
     },
     async submitPlan() {
       try {
@@ -586,6 +636,7 @@ export default {
           //     null
           //   )
           // }
+          this.onClearVal()
         }
 
         this.isLoading = false
@@ -651,6 +702,48 @@ export default {
       } catch (error) {
         console.log(error)
         this.isLoading = false
+      }
+    },
+    async onSearchMold(e) {
+      try {
+        //this.isLoading = true
+
+        const param = {
+          take: this.take,
+          skip: this.skip,
+          search: {
+            text: e.query ?? null
+          }
+        }
+
+        const res = await api.jewelry.post('Mold/SearchMold', param)
+        if (res) {
+          //console.log(res)
+          //this.data = [...res.data]
+          //this.totalRecords = res.total
+          //console.log(this.totalRecords)
+          this.itemMold = res.data.map((x) => `${x.code}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
+    },
+    async onSelectMold(e) {
+      //console.log(e.value)
+      try {
+        const param = {
+          imageName: `${e.value}-Mold.png`
+        }
+        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+
+        if (res) {
+          this.urlImage = `data:image/png;base64,${res}`
+        }
+        console.log(this.urlImage)
+      } catch (error) {
+        console.log(error)
       }
     },
 
@@ -764,6 +857,7 @@ export default {
     //   remark: 'งานขาย งานขาย งานขาย งานขาย',
     //   material: []
     // }
+    this.onClearVal()
   }
 }
 </script>
@@ -841,15 +935,20 @@ textarea {
   color: var(--base-font-color);
   //margin: 0px 0px 0px 10px;
 }
-.image-container {
-  display: inline-block;
-  position: relative;
+.image-preview {
+  max-width: 300px;
+  height: auto;
+  border: 1px solid var(--base-color);
+  border-radius: 8px;
+  object-fit: contain;
 }
-.preview-image {
-  height: 130px;
-  width: 130px;
-  margin-right: 5px;
-  border: 0.1px solid var(--base-color);
+.image-container {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--base-color);
+  border-radius: 8px;
+  height: 500px;
+  margin-top: 5px;
 }
 .delete-icon {
   position: absolute;
