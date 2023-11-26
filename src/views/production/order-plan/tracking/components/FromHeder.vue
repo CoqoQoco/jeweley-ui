@@ -338,9 +338,9 @@ export default {
           case 'ORDERPLAN': {
             //console.log(this.form)
             const param = {
-              imageName: this.form.tbtProductionPlanImage[0].path
+              imageName: `${this.form.mold}-Mold.png`
             }
-            const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
+            const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
 
             if (res) {
               this.urlImage = `data:image/png;base64,${res}`

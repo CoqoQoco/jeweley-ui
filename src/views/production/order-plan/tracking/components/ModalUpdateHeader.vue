@@ -12,7 +12,19 @@
             <div class="row form-group">
               <div class="col-md-12">
                 <label>เเม่พิมพ์</label>
-                <input type="text" class="form-control" v-model="form.mold" required />
+                <!-- <input type="text" class="form-control" v-model="form.mold" required /> -->
+                <div class="flex-group">
+                  <div class="w-25">{{ model.mold }}</div>
+                  <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+                  <AutoComplete
+                    v-model="form.mold"
+                    :suggestions="itemMold"
+                    @complete="onSearchMold"
+                    placeholder="กรอกรหัสเเม่พิมพ์ ...."
+                    :class="val.isValMold === true ? `p-invalid` : ``"
+                    forceSelection
+                  />
+                </div>
               </div>
             </div>
             <div class="row form-group">
@@ -160,9 +172,10 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
+import AutoComplete from 'primevue/autocomplete'
 
 export default {
-  components: { modal, loading, Calendar, Dropdown },
+  components: { modal, loading, Calendar, Dropdown, AutoComplete },
   props: {
     isShowModal: {
       type: Boolean,
@@ -197,7 +210,7 @@ export default {
   },
   watch: {
     async modelValue(value) {
-      console.log(value)
+      //console.log(value)
       this.form = {
         wo: value.wo,
         woNumber: value.woNumber,
@@ -222,6 +235,10 @@ export default {
         productNumber: null,
         productType: null,
         productDetail: null
+      },
+      itemMold: [],
+      val: {
+        isValMold: false
       }
     }
   },
@@ -246,16 +263,18 @@ export default {
       this.$emit('closeModal')
     },
     onSubmit() {
-      swAlert.confirmSubmit(
-        `${this.model.wo}-${this.model.woNumber}`,
-        `ยืนยันเเก้ไขใบงาน`,
-        async () => {
-          //console.log('call submitPlan')
-          await this.submit()
-        },
-        null,
-        null
-      )
+      if (this.validateForm()) {
+        swAlert.confirmSubmit(
+          `${this.model.wo}-${this.model.woNumber}`,
+          `ยืนยันเเก้ไขใบงาน`,
+          async () => {
+            //console.log('call submitPlan')
+            await this.submit()
+          },
+          null,
+          null
+        )
+      }
     },
     async submit() {
       try {
@@ -282,7 +301,7 @@ export default {
           remark: this.form.remark ?? null
         }
 
-        console.log(params)
+        //console.log(params)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateHeader', params)
         if (res) {
           //console.log(res)
@@ -294,6 +313,8 @@ export default {
               this.form.requestDate = null
               this.form.customerType = null
               this.form.productType = null
+
+              this.onClearVal()
 
               this.$emit('fetch')
             },
@@ -310,6 +331,32 @@ export default {
     onclear() {
       this.form.requestDate = null
     },
+    async onSearchMold(e) {
+      try {
+        //this.isLoading = true
+
+        const param = {
+          take: this.take,
+          skip: this.skip,
+          search: {
+            text: e.query ?? null
+          }
+        }
+
+        const res = await api.jewelry.post('Mold/SearchMold', param)
+        if (res) {
+          //console.log(res)
+          //this.data = [...res.data]
+          //this.totalRecords = res.total
+          //console.log(this.totalRecords)
+          this.itemMold = res.data.map((x) => `${x.code}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
+    },
     getValue() {
       //console.log('get')
       this.form = {
@@ -324,10 +371,26 @@ export default {
         productDetail: this.model.productDetail,
         remark: this.model.remark
       }
+    },
+    validateForm() {
+      if (!this.form.mold) {
+        this.val = {
+          isValMold: true
+        }
+        return false
+      }
+
+      return true
+    },
+    onClearVal() {
+      this.val = {
+        isValMold: false
+      }
     }
   },
   created() {
     //this.getValue()
+    this.onClearVal()
   },
   onMounted() {
     //this.getValue()
