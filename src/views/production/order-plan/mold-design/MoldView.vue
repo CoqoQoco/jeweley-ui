@@ -67,6 +67,7 @@
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
+      :lazy="true"
       @page="handlePageChange"
       :rows="take"
       :rowsPerPageOptions="[10, 20, 50, 100]"
@@ -74,24 +75,15 @@
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
       <!-- <Column expander style="width: 10px" /> -->
-      <Column style="width: 200px">
+      <!-- <Column style="width: 200px">
         <template #body="slotProps">
           <div class="col-btn-container">
-            <!-- <div
-              class="btn btn-sm btn-warning w-50 mr-1"
-              title="ดูรายละเอียด"
-              @click="onView(item)"
-              disabled
-            >
-              <i class="bi bi-gem"></i>
-            </div> -->
-            <!-- <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf> -->
             <button class="btn btn-sm btn btn-main" @click="viewplan(slotProps.data)">
               <i class="bi bi-search"></i>
             </button>
           </div>
         </template>
-      </Column>
+      </Column> -->
       <Column header="รหัส" field="code"></Column>
       <Column header="ประเภท" field="category"></Column>
       <Column header="รายละเอียด" field="description"></Column>
@@ -154,7 +146,7 @@ export default {
 
       //data grid
       totalRecords: 0,
-      take: 10, //all
+      take: 10, //0 all
       skip: 0,
       data: [],
 
@@ -171,8 +163,12 @@ export default {
       }
     },
     handlePageChange(e) {
-      console.log('page change')
-      console.log(e)
+      //console.log('page change')
+      //console.log(e)
+
+      this.skip = e.first
+      this.take = e.rows
+      this.fetchData()
     },
     // ------ modalAddMold ------- //
     showModalAddMold() {
@@ -194,6 +190,8 @@ export default {
         this.isLoading = true
 
         const param = {
+          take: this.take,
+          skip: this.skip,
           search: {
             text: this.form.text ?? null
           }
@@ -202,9 +200,9 @@ export default {
         const res = await api.jewelry.post('Mold/SearchMold', param)
         if (res) {
           //console.log(res)
-          this.data = [...res]
-          this.totalRecords = this.data.length
-          console.log(this.data)
+          this.data = [...res.data]
+          this.totalRecords = res.total
+          //console.log(this.totalRecords)
         }
         this.isLoading = false
       } catch (error) {
