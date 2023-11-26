@@ -84,10 +84,9 @@
           </div>
         </template>
       </Column> -->
-      <Column header="รหัส" field="code"></Column>
-      <Column header="ประเภท" field="category"></Column>
-      <Column header="รายละเอียด" field="description"></Column>
-      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์">
+      <Column header="รหัส" field="code" style="width: 200px"></Column>
+      <Column header="ประเภท" field="category" style="width: 200px"></Column>
+      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" style="width: 300px">
         <template #body="slotProps">
           <div class="image-container">
             <loading :isLoading="isLoadingImage"></loading>
@@ -96,6 +95,7 @@
           </div>
         </template>
       </Column>
+      <Column header="รายละเอียด" field="description"></Column>
     </DataTable>
     <modalCreate
       :isShowModal="isShowModalAddMold"
