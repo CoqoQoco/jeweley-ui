@@ -75,7 +75,7 @@ export default {
           case 'MOLD':
             {
               const param = {
-                imageName: this.imageName
+                imageName: `${this.imageName}-Mold.png`
               }
               const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
 

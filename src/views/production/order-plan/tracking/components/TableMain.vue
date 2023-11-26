@@ -14,9 +14,10 @@
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
+      lazy="true"
       @page="handlePageChange"
       :rows="take"
-      :rowsPerPageOptions="[ 10, 20, 50, 100]"
+      :rowsPerPageOptions="[10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
@@ -64,10 +65,7 @@
           <div class="image-container">
             <loading :isLoading="isLoadingImage"></loading>
             <!-- <img :src="fetchIamge(slotProps)" alt="Preview Image" /> -->
-            <imagePreview
-              :imageName="slotProps.data.tbtProductionPlanImage[0].path"
-              :type="orderplan"
-            ></imagePreview>
+            <imagePreview :imageName="slotProps.data.mold" :type="mold"></imagePreview>
           </div>
         </template>
       </Column>
@@ -172,6 +170,7 @@ export default {
       isLoadingImage: false,
       isShowUpdateStatusModal: false,
       orderplan: 'ORDERPLAN',
+      mold: 'MOLD',
 
       // table
       totalRecords: 0,
@@ -211,8 +210,9 @@ export default {
       //this.$toast.add({ severity: 'success', summary: 'Rows Reordered', life: 3000 })
     },
     handlePageChange(e) {
-      console.log('page change')
-      console.log(e)
+      this.skip = e.first
+      this.take = e.rows
+      this.fetchData()
     },
 
     // ----- tag ------ //
@@ -248,8 +248,8 @@ export default {
       try {
         this.isLoading = true
         const param = {
-          //take: this.take,
-          take: 0, //รอเเก้ lazy load
+          take: this.take,
+          //take: 0, //รอเเก้ lazy load
           skip: this.skip,
           search: {
             start: this.formValue.start ? formatISOString(this.formValue.start) : null,
