@@ -14,12 +14,12 @@
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
-      lazy="true"
+      :lazy="true"
       @page="handlePageChange"
       :rows="take"
       :rowsPerPageOptions="[10, 20, 50, 100]"
-      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
+      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
       <!-- <Column expander style="width: 10px" /> -->
       <Column style="width: 80px">

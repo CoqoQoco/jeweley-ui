@@ -164,7 +164,7 @@ import { defineAsyncComponent } from 'vue'
 import swAlert from '@/js/alert/sweetAlerts.js'
 import api from '@/axios/axios-config.js'
 import { formatDate, formatDateTime, formatISOString } from '@/utils/moment'
-import moment from 'moment'
+import moment from 'dayjs'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 //import modal from '@/components/modal/ModalView.vue'

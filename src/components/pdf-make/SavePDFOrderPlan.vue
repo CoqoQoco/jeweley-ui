@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div @click="generatePDF" title="พิมพ์เอกสาร">
+    <div @click="generatePDF" title="พิมพ์เเบบงานผลิต">
       <span class="mr-2"> <i class="bi bi-printer"></i></span>
-      <span>พิมพ์เอกสาร</span>
+      <span>พิมพ์เเบบงานผลิต</span>
     </div>
   </div>
 </template>

@@ -3,6 +3,7 @@
 // ----- table ---- //
 .p-datatable{
     font-size: $base-font-size !important;
+    //border: solid 1px #999999;
     .p-column-header-content{
 
     }
@@ -118,3 +119,15 @@
     display: flex;
     justify-content: center;
 }
+
+
+// -------- panel -------------- //
+// :deep(.p-panel-header) {
+//     border: 15px solid #dee2e6;
+//     padding: 3.25rem;
+//     background: #f8f9fa;
+//     //color: #343a40;
+//     border-top-right-radius: 6px;
+//     border-top-left-radius: 6px;
+// }
+

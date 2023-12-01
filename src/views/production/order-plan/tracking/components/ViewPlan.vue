@@ -24,6 +24,7 @@
     ></FromHeader>
     <FromStatus
       :modelValue="data"
+      :modelMatValue="mat"
       :masterStatus="masterStatus"
       @showModalAddUpdate="onShowModalStatus"
       @fetchData="headerFetchData"
@@ -41,9 +42,12 @@
     <modalAddUpdateStatus
       :isShowModal="isShowModalAddUpdateStatus"
       :masterStatus="masterStatus"
+      :masterGold="masterGold"
       :modelValue="data"
+      :modelMat="mat"
       @closeModal="closeModalStatus"
       @fetchData="headerFetchData"
+      @success="fetchStatusDetail"
     ></modalAddUpdateStatus>
     <showModalUpdateHeader
       :isShowModal="isShowModalUpdateHeader"
@@ -66,7 +70,7 @@ const pdf = defineAsyncComponent(() => import('@/components/pdf-make/SavePDFOrde
 import FromHeader from '../components/FromHeder.vue'
 import FromStatus from '../components/FromStatus.vue'
 import modalAddMat from '../components/ModalAddMaterial.vue'
-import modalAddUpdateStatus from '../components/ModalAddUpdateStatusDetail.vue'
+import modalAddUpdateStatus from '../components/ModalAddStatusDetail.vue'
 import showModalUpdateHeader from '../components/ModalUpdateHeader.vue'
 import api from '@/axios/axios-config.js'
 export default {
@@ -200,6 +204,10 @@ export default {
     },
     closeModalStatus() {
       this.isShowModalAddUpdateStatus = false
+    },
+    fetchStatusDetail() {
+      this.isShowModalAddUpdateStatus = false
+      this.fetchData(this.id)
     },
 
     // ------ update -------- //

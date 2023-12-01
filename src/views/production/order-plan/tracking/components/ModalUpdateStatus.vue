@@ -1,7 +1,7 @@
 <template>
   <div class="modal-container">
     <loading :isLoading="isLoading"></loading>
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="550px">
+    <modal :showModal="isShowModal" @closeModal="closeModal" width="550px" isShowActionPart>
       <template v-slot:title>
         <div class="p-2 mt-2">
           <h5>เเก้ไขสถานะใบงาน: {{ `${modelValue.data.wo}-${modelValue.data.woNumber}` }}</h5>

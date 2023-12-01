@@ -99,25 +99,27 @@
         <div class="row form-group">
           <div class="col-md-5">
             <label class="label-subject txt-title">รายละเอียดสินค้า</label>
+            <h5>{{ form.productDetail }}</h5>
             <!-- <h5>{{ form.productDetail }}</h5> -->
-            <textarea
+            <!-- <textarea
               class="form-control"
               v-model="form.productDetail"
               style="height: 70px; color: var(--base-font-color)"
               disabled
             >
-            </textarea>
+            </textarea> -->
           </div>
           <div class="col-md-5">
             <label class="label-subject txt-title">{{ $t('view.pickinglist.title.remark') }}</label>
             <!-- <h5>{{ form.remark }}</h5> -->
-            <textarea
+            <h5>{{ form.remark }}</h5>
+            <!-- <textarea
               class="form-control"
               v-model="form.remark"
               style="height: 70px; color: var(--base-font-color)"
               disabled
             >
-            </textarea>
+            </textarea> -->
           </div>
           <div class="col-md-2 zone-container-btn">
             <button class="btn btn-sm btn-warning" @click="onUpdateHeader">
@@ -129,9 +131,12 @@
       </div>
     </div>
     <div class="data-container">
+      <div class="mb-3 p-1 text-left" style="height: 31px; width: 450px" disable>
+        <h5 style="color: var(--base-font-color)">ส่วนประกอบงานผลิต</h5>
+      </div>
       <div class="row form-group">
         <div class="col-md-12">
-          <DataTable :value="mat" class="p-datatable-sm">
+          <DataTable :value="mat" class="p-datatable-sm" showGridlines>
             <Column style="width: 100px; text-align: center">
               <template #body="prop">
                 <button
@@ -232,6 +237,7 @@
                   class="btn btn-sm btn-warning ml-2"
                   type="button"
                   @click="onShowModalAddMaterial"
+                  style="width: 200px"
                 >
                   <span class="mr-1"><i class="bi bi-gem"></i></span>
                   <span>เพิ่มส่วนประกอบ</span>
@@ -251,7 +257,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { formatDate, formatDateTime } from '@/utils/moment'
-import moment from 'moment'
+import moment from 'dayjs'
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -462,7 +468,8 @@ export default {
 //   //     margin-top: 0px !important;
 //   //   }
 // }
-h4 {
+h4,
+h5 {
   color: var(--base-font-color);
 }
 .data-container {

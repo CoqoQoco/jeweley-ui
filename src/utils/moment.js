@@ -1,27 +1,27 @@
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 const formatDate = (date) => {
-  return moment(date).format('DD/MM/YYYY')
+  return dayjs(date).format('DD/MM/YYYY')
 }
 
 const formatDateTime = (date) => {
-  return moment(date).format('DD/MM/YYYY HH:mm:ss')
+  return dayjs(date).format('DD/MM/YYYY HH:mm:ss')
 }
 
 const formatISOString = (date) => {
-  return moment(date).toISOString(true)
+  return dayjs(date).toISOString(true)
 }
 
 const formatDateShortYear = (date) => {
-  return moment(date).format('DD/MM/YY')
+  return dayjs(date).format('DD/MM/YY')
 }
 
 const formatExcelReport = () => {
-  return moment().format('YYMMDD_HHmmss')
+  return dayjs().format('YYMMDD_HHmmss')
 }
 
 const formatOnlyTime = (date) => {
-  return moment(date).format('HH:mm')
+  return dayjs(date).format('HH:mm')
 }
 
 export {
