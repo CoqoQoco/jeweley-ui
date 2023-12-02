@@ -7,7 +7,11 @@ export default {
   //production
   planMold: 'ออกเเบบเเม่พิมพ์',
   planOrder: 'สร้างใบจ่าย-รับคืนงาน',
+  goldPickinkList: 'ใบผสมทอง',
   planOrderTracking: 'ติดตามงานผลิต',
+
+  //
+  customer: 'รายชื่อลูกค้า',
 
   //master
   masterGem: 'ข้อมูลพลอย',

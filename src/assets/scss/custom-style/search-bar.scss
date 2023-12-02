@@ -1,0 +1,24 @@
+@import "../variable.scss";
+
+.filter-container {
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background-color: #f7f7f7;
+    //background-color: var(--base-color);
+    padding: 10px;
+}
+.btn-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    margin-top: 10px;
+}
+
+.text-titel {
+    margin-bottom: 0px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--base-font-color);
+}

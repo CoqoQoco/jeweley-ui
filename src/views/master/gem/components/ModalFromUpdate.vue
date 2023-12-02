@@ -3,7 +3,7 @@
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="450px">
       <template v-slot:title>
-        <h5>เพิ่มพลอย</h5>
+        <h5>เเก้ไขพลอย</h5>
       </template>
       <template v-slot:content>
         <form @submit.prevent="onSubmit">

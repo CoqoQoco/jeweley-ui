@@ -2,8 +2,8 @@
   <div class="app-container">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
-      title="เเก้ไขปรับปรุง-เพิ่ม ข้อมูลขนาดทอง"
-      description="หน้าเเก้ไขปรับปรุง-เพิ่ม ข้อมูลขนาดทอง เเละรายละเอียดต่างๆ"
+      title="เเก้ไขปรับปรุง-เพิ่ม ขนาดทอง"
+      description="หน้าเเก้ไขปรับปรุง-เพิ่ม ขนาดทอง เเละรายละเอียดต่างๆ"
       :isShowBtnClose="false"
     >
     </pageTitle>
@@ -66,7 +66,7 @@
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
-      <Column style="width: 100px">
+      <Column style="width: 20px">
         <template #body="slotProps">
           <div class="col-btn-container">
             <!-- <div
@@ -78,8 +78,15 @@
               <i class="bi bi-gem"></i>
             </div> -->
             <!-- <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf> -->
-            <button class="btn btn-sm btn btn-main" @click="onDelete(slotProps.data)">
+            <!-- <button class="btn btn-sm btn btn-main" @click="onDelete(slotProps.data)">
               <i class="bi bi-trash-fill"></i>
+            </button> -->
+            <button
+              title="เเก้ไข"
+              class="btn btn-sm btn btn-main"
+              @click="onUpdate(slotProps.data)"
+            >
+              <i class="bi bi-pencil-fill"></i>
             </button>
           </div>
         </template>
@@ -99,17 +106,23 @@
           {{ slotProps.data.nameEn }}
         </template>
       </Column>
-      <Column header="วันสร้างข้อมูล" field="createDate">
+      <!-- <Column header="วันสร้างข้อมูล" field="createDate">
         <template #body="prop">
           {{ formatDate(prop.data.createDate) }}
         </template>
-      </Column>
+      </Column> -->
     </DataTable>
     <modalAddGem
       :isShowModal="isShowModalAddGem"
       @closeModal="closeModalAddGem"
       @fetch="onSearchByAdd"
     ></modalAddGem>
+    <modalUpdGem
+      :isShowModal="isShowModalUpdGem"
+      :modelMaster="dataUpd"
+      @closeModal="closeModalAddGem"
+      @fetch="onSearchByAdd"
+    ></modalUpdGem>
   </div>
 </template>
 
@@ -124,6 +137,7 @@ import { formatDate, formatDateTime } from '@/utils/moment'
 import swAlert from '@/js/alert/sweetAlerts.js'
 
 import modalAddGem from './components/ModalFormCreate.vue'
+import modalUpdGem from './components/ModalFromUpdate.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
@@ -133,17 +147,20 @@ export default {
     DataTable,
     Column,
     loading,
-    modalAddGem
+    modalAddGem,
+    modalUpdGem
   },
   data() {
     return {
       isLoading: false,
       isShowModalAddGem: false,
+      isShowModalUpdGem: false,
       // table
       totalRecords: 0,
       take: 10, //all
       skip: 0,
       data: [],
+      dataUpd: {},
 
       //search
       search: {
@@ -153,7 +170,7 @@ export default {
   },
   methods: {
     handlePageChange(e) {
-      console.log('page change')
+      //console.log('page change')
       console.log(e)
     },
 
@@ -162,7 +179,7 @@ export default {
       //console.log(e)
       swAlert.confirmSubmit(
         `${e.code} : ${e.nameTh}`,
-        `ยืนยันลบขนาดทอง`,
+        `ยืนยันลบ`,
         async () => {
           //console.log('call submitPlan')
           await this.delete(e)
@@ -176,7 +193,7 @@ export default {
         this.isLoading = true
 
         const param = {
-          type: 'GOLD-SIZE',
+          type: 'GEM',
           id: e.id,
           code: e.code
         }
@@ -206,7 +223,13 @@ export default {
     },
     onSearchByAdd() {
       this.isShowModalAddGem = false
+      this.isShowModalUpdGem = false
+      this.dataUpd = {}
       this.fetchMasterGem()
+    },
+    onUpdate(e) {
+      this.dataUpd = { ...e }
+      this.isShowModalUpdGem = true
     },
     // fetchData() {
     //   this.fetchMasterGem()
@@ -244,6 +267,8 @@ export default {
     },
     closeModalAddGem() {
       this.isShowModalAddGem = false
+      this.isShowModalUpdGem = false
+      this.dataUpd = {}
     },
 
     // ------ helper ------//

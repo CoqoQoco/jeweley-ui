@@ -3,7 +3,7 @@
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="450px">
       <template v-slot:title>
-        <h5>เพิ่มประเภทสินค้า</h5>
+        <h5>เเก้ไขประเภทสินค้า</h5>
       </template>
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
@@ -12,19 +12,27 @@
             <div class="row form-group">
               <div class="col-md-12">
                 <label>รหัส</label>
-                <input type="text" class="form-control" v-model="form.code" required />
+                <input type="text" class="form-control" v-model="model.code" required disabled />
               </div>
             </div>
             <div class="row form-group">
               <div class="col-md-12">
                 <label>ชื่อไทย</label>
-                <input type="text" class="form-control" v-model="form.nameTh" required />
+                <div class="flex-group">
+                  <div class="w-50">{{ model.nameTh }}</div>
+                  <div class="mr-2 ml-1"><i class="bi bi-arrow-right"></i></div>
+                  <input type="text" class="form-control" v-model="form.nameTh" required />
+                </div>
               </div>
             </div>
             <div class="row form-group">
               <div class="col-md-12">
                 <label>ชื่ออังกฤษ</label>
-                <input type="text" class="form-control" v-model="form.nameEn" required />
+                <div class="flex-group">
+                  <div class="w-50">{{ model.nameEn }}</div>
+                  <div class="mr-2 ml-1"><i class="bi bi-arrow-right"></i></div>
+                  <input type="text" class="form-control" v-model="form.nameEn" required />
+                </div>
               </div>
             </div>
             <div class="line"></div>
@@ -32,7 +40,7 @@
               <div class="col-md-12">
                 <div class="btn-container">
                   <button class="btn btn-sm btn-main" type="submit">
-                    <span class="mr-2"><i class="bi bi-gem"></i></span><span>เพิ่มพลอย</span>
+                    <span class="mr-2"><i class="bi bi-gem"></i></span><span>แก้ไขพลอย</span>
                   </button>
                 </div>
               </div>
@@ -60,13 +68,23 @@ export default {
     isShowModal: {
       type: Boolean,
       default: false
+    },
+    modelMaster: {
+      type: Object,
+      required: true,
+      default: () => {}
+    }
+  },
+  computed: {
+    model() {
+      return this.modelMaster
     }
   },
   data() {
     return {
       isLoading: false,
       form: {
-        code: null,
+        //code: null,
         nameTh: null,
         nameEn: null
       }
@@ -79,8 +97,8 @@ export default {
     },
     onSubmit() {
       swAlert.confirmSubmit(
-        `${this.form.code} : ${this.form.nameTh}`,
-        `ยืนยันเพิ่มประเภทสินค้า`,
+        `${this.model.code} : ${this.form.nameTh}`,
+        `ยืนยันเเก้ไขประเภทสินค้า`,
         async () => {
           //console.log('call submitPlan')
           await this.submit()
@@ -95,12 +113,13 @@ export default {
 
         const param = {
           type: 'PRODUCT-TYPE',
-          code: this.form.code,
+          id: this.model.id,
+          code: this.model.code,
           nameTh: this.form.nameTh,
           nameEn: this.form.nameEn
         }
 
-        const res = await api.jewelry.post('Master/CreateMasterModel', param)
+        const res = await api.jewelry.post('Master/UpdateMasterModel', param)
         if (res) {
           //console.log(res)
           swAlert.success(
@@ -122,7 +141,7 @@ export default {
     },
     onclear() {
       this.form = {
-        code: null,
+        //code: null,
         nameTh: null,
         nameEn: null
       }
@@ -160,5 +179,10 @@ label {
 .line {
   border-bottom: 1px solid var(--base-font-color);
   margin: 10px 20px;
+}
+.flex-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

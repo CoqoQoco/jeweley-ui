@@ -4,11 +4,13 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
 
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+const Customer = () => import('@/views/customer/IndexView.vue')
 //import Dashboard from '@/views/dashboard/WelcomePage.vue'
 const Mold = () => import('@/views/production/order-plan/mold-design/MoldView.vue')
 
 const PlanOrder = () => import('@/views/production/order-plan/plan/IndexView.vue')
 //import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
+const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
 
 const PlanOrderTracking = () => import('@/views/production/order-plan/tracking/IndexView.vue')
 //import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
@@ -64,48 +66,6 @@ const routes = [
     ]
   },
 
-  //----- Import Product -----
-  // {
-  //   path: '/import-product',
-  //   component: Layout,
-  //   redirect: '/import-product-excel',
-  //   name: 'import-product',
-  //   meta: {
-  //     Displayname: {
-  //       en: 'Import Product',
-  //       th: 'นำเข้าใบผลิตสินค้า'
-  //     },
-  //     classIcon: 'bi bi-file-earmark-excel',
-  //     majorShow: true
-  //     //btLineShow: true
-  //   },
-  //   children: [
-  //     {
-  //       path: '/import-product-excel',
-  //       name: 'import-product-excel',
-  //       component: ImportProductionFile,
-  //       meta: {
-  //         Displayname: {
-  //           en: 'import Excel',
-  //           th: 'นำเข้าใบงานผลิต'
-  //         },
-  //         minorShow: true
-  //       }
-  //     },
-  //     {
-  //       path: '/import-product-track',
-  //       name: 'import-product-track',
-  //       component: Dashboard,
-  //       meta: {
-  //         Displayname: {
-  //           en: 'import Track',
-  //           th: 'ติดตามใบงานผลิต'
-  //         },
-  //         minorShow: true
-  //       }
-  //     }
-  //   ]
-  // },
   //----- Mold && Picking List -----
   {
     path: '/production',
@@ -142,6 +102,18 @@ const routes = [
           Displayname: {
             en: 'Plan Order',
             th: 'สร้างใบจ่าย-รับคืนงาน'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/gold-pickink-list',
+        name: 'gold-pickink-list',
+        component: GoldPickinglist,
+        meta: {
+          Displayname: {
+            en: 'Gold Pickinglist',
+            th: 'ใบผสมทอง'
           },
           minorShow: true
         }
@@ -184,6 +156,38 @@ const routes = [
       // }
     ]
   },
+
+  // ------------------ customer -------------------
+  {
+    path: '/customer',
+    component: Layout,
+    redirect: '/customer',
+    name: 'customer',
+    meta: {
+      Displayname: {
+        en: 'Customer Data',
+        th: 'รายชื่อลูกค้า'
+      },
+      classIcon: 'bi bi-person-fill-gear',
+      majorShow: true
+    },
+    children: [
+      {
+        path: '/customer',
+        name: 'customer',
+        component: Customer,
+        meta: {
+          Displayname: {
+            en: 'Customer Data',
+            th: 'รายชื่อลูกค้า'
+          },
+          minorShow: false
+        }
+      }
+    ]
+  },
+
+  // --------------------- master data -----------------------------
   {
     path: '/master',
     component: Layout,
@@ -194,7 +198,7 @@ const routes = [
         en: 'Master Date',
         th: 'จัดการข้อมูลกลาง'
       },
-      classIcon: 'bi bi-vector-pen',
+      classIcon: 'bi bi-database',
       majorShow: true,
       btsubLineShow: true
     },

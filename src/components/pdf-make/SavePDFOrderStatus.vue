@@ -9,6 +9,7 @@
 
 <script>
 import { formatDate } from '@/utils/moment'
+import moment from 'dayjs'
 import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import api from '@/axios/axios-config.js'
@@ -620,7 +621,11 @@ export default {
           this.table(this.matValue),
 
           // ----------- status -------------- //
-          { text: 'สถานะการดำเนินงานผลิต', bold: true, fontSize: 14 },
+          {
+            text: `สถานะการดำเนินงานผลิต - ${moment().format('DD/MM/YYYY HH:mm:ss')}`,
+            bold: true,
+            fontSize: 14
+          },
           this.tableStatus(this.statusValue, this.statusMasterValue)
           //   { text: 'สถานะการดำเนินงานผลิต', bold: true, fontSize: 15 },
           //   {

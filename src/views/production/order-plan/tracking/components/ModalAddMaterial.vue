@@ -314,7 +314,7 @@ export default {
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateMaterial', params)
         if (res) {
           this.onclearForm()
-          this.$emit('FetchData')
+          this.$emit('matFetchData')
         }
 
         this.isLoading = false

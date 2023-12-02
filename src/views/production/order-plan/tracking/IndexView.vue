@@ -109,12 +109,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-label {
-  margin-bottom: 0px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--base-font-color);
-}
+ทฟรื
 .nodata-container {
   text-align: center;
   color: var(--base-sub-color);

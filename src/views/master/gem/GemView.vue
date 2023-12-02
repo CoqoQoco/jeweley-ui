@@ -66,7 +66,7 @@
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
     >
-      <Column style="width: 100px">
+      <Column style="width: 20px">
         <template #body="slotProps">
           <div class="col-btn-container">
             <!-- <div
@@ -106,11 +106,11 @@
           {{ slotProps.data.nameEn }}
         </template>
       </Column>
-      <Column header="วันสร้างข้อมูล" field="createDate">
+      <!-- <Column header="วันสร้างข้อมูล" field="createDate">
         <template #body="prop">
           {{ formatDate(prop.data.createDate) }}
         </template>
-      </Column>
+      </Column> -->
     </DataTable>
     <modalAddGem
       :isShowModal="isShowModalAddGem"
