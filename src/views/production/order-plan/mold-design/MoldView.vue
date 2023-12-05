@@ -84,6 +84,24 @@
           </div>
         </template>
       </Column> -->
+      <Column style="width: 80px">
+        <template #body="slotProps">
+          <div class="col-btn-container">
+            <!-- <div
+              class="btn btn-sm btn-warning w-50 mr-1"
+              title="ดูรายละเอียด"
+              @click="onView(item)"
+              disabled
+            >
+              <i class="bi bi-gem"></i>
+            </div> -->
+            <!-- <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf> -->
+            <button class="btn btn-sm btn btn-warning" @click="updateMold(slotProps.data)">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+        </template>
+      </Column>
       <Column header="รหัส" field="code" style="width: 20%"></Column>
       <Column header="ประเภท" field="category" style="width: 20%"></Column>
       <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" style="width: 20%">
@@ -103,6 +121,13 @@
       @fetch="fetchDataByCreate"
     >
     </modalCreate>
+    <modalUpdate
+      :isShowModal="isShowModalUpdateMold"
+      :modelValue="dataUpdate"
+      @closeModal="closeModalUpdate"
+      @fetch="fetchDataByCreate"
+    >
+    </modalUpdate>
   </div>
 </template>
 
@@ -123,11 +148,13 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 
 import modalCreate from './components/ModalCreate.vue'
+import modalUpdate from './components/ModalUpdate.vue'
 export default {
   components: {
     pageTitle,
     loading,
     modalCreate,
+    modalUpdate,
     //DataView,
     //DataViewLayoutOptions
     //Card
@@ -139,6 +166,7 @@ export default {
     return {
       isLoading: false,
       isShowModalAddMold: false,
+      isShowModalUpdateMold: false,
       isLoadingImage: false,
       form: {
         text: null
@@ -149,6 +177,7 @@ export default {
       take: 10, //0 all
       skip: 0,
       data: [],
+      dataUpdate: {},
 
       layout: 'grid',
       width: 200,
@@ -177,11 +206,19 @@ export default {
     closeModalCreate() {
       this.isShowModalAddMold = false
     },
+    closeModalUpdate() {
+      this.isShowModalUpdateMold = false
+    },
     fetchDataByCreate() {
       this.isShowModalAddMold = false
+      this.isShowModalUpdateMold = false
       this.fetchData()
     },
-    // ------ api -------- //
+    updateMold(data) {
+      //console.log(data)
+      this.dataUpdate = { ...data }
+      this.isShowModalUpdateMold = true
+    }, // ------ api -------- //
     onSearch() {
       this.fetchData()
     },
