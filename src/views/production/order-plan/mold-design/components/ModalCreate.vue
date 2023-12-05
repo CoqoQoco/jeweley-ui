@@ -41,7 +41,16 @@
                 <div class="row form-group">
                   <div class="col-md-12">
                     <label>ประเภท</label>
-                    <input type="text" class="form-control" v-model="form.category" required />
+                    <Dropdown
+                      v-model="form.category"
+                      :options="masterProduct"
+                      optionLabel="description"
+                      class="w-full md:w-14rem"
+                      :showClear="form.category ? true : false"
+                      :class="val.isValCategory === true ? `p-invalid` : ``"
+                      @change="onResetValDate('isValCategory')"
+                    />
+                    <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
                   </div>
                 </div>
                 <div class="row form-group">
@@ -80,13 +89,19 @@ import { defineAsyncComponent } from 'vue'
 import swAlert from '@/js/alert/sweetAlerts.js'
 import api from '@/axios/axios-config.js'
 
+import Dropdown from 'primevue/dropdown'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 //import modal from '@/components/modal/ModalView.vue'
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 //const UploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
 
 export default {
-  components: { modal, loading },
+  components: {
+    modal,
+    loading,
+    Dropdown
+  },
   props: {
     isShowModal: {
       type: Boolean,
@@ -102,12 +117,16 @@ export default {
       //imageConatinerHight: '435px',
       name: '',
       imgUrl: '',
+      masterProduct: [],
 
       form: {
         image: null,
         code: null,
         category: null,
         description: null
+      },
+      val: {
+        isValCategory: false
       }
     }
   },
@@ -134,16 +153,18 @@ export default {
       this.$emit('closeModal')
     },
     onSubmit() {
-      swAlert.confirmSubmit(
-        `${this.form.code}`,
-        `ยืนยันสร้างเเม่พิมพ์`,
-        async () => {
-          //console.log('call submitPlan')
-          await this.submit()
-        },
-        null,
-        null
-      )
+      if (this.VaidateForm()) {
+        swAlert.confirmSubmit(
+          `${this.form.code}`,
+          `ยืนยันสร้างเเม่พิมพ์`,
+          async () => {
+            //console.log('call submitPlan')
+            await this.submit()
+          },
+          null,
+          null
+        )
+      }
     },
     async submit() {
       try {
@@ -151,7 +172,9 @@ export default {
 
         let params = new FormData()
         params.append('code', this.form.code)
-        params.append('category', this.form.category)
+        console.log(this.form.category)
+        params.append('category', this.form.category.nameTh)
+        params.append('categoryCode', this.form.category.code)
         params.append('description', this.form.description)
         params.append('images', this.form.image)
 
@@ -190,10 +213,51 @@ export default {
         category: null,
         description: null
       }
+
+      this.val = {
+        isValCategory: false
+      }
+    },
+    VaidateForm() {
+      if (!this.form.category) {
+        this.val = {
+          isValCategory: true
+        }
+        return false
+      }
+
+      return true // pass
+    },
+    onResetValDate(index) {
+      //console.log(index)
+      if (index === 'isValCategory') {
+        if (this.form.category) {
+          this.val.isValCategory = false
+          //console.log(this.val.isValCategory)
+        }
+      }
+    },
+
+    // -------- master ---------- //
+    async fetchMasterProductType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterProductType')
+        if (res) {
+          this.masterProduct = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
     }
   },
   created() {
     //this.isResetImage =
+  },
+  mounted() {
+    this.fetchMasterProductType()
   }
 }
 </script>

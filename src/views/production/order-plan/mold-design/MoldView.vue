@@ -72,7 +72,7 @@
       :rows="take"
       :rowsPerPageOptions="[10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`{first} to {last} of {totalRecords}`"
+      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
       <!-- <Column expander style="width: 10px" /> -->
       <!-- <Column style="width: 200px">
@@ -84,9 +84,9 @@
           </div>
         </template>
       </Column> -->
-      <Column header="รหัส" field="code" style="width: 200px"></Column>
-      <Column header="ประเภท" field="category" style="width: 200px"></Column>
-      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" style="width: 300px">
+      <Column header="รหัส" field="code" style="width: 20%"></Column>
+      <Column header="ประเภท" field="category" style="width: 20%"></Column>
+      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" style="width: 20%">
         <template #body="slotProps">
           <div class="image-container">
             <loading :isLoading="isLoadingImage"></loading>
