@@ -393,7 +393,7 @@ export default {
 
       const docDefinition = {
         pageSize: 'A4',
-        pageMargins: [20, 10, 20, 10],
+        pageMargins: [20, 20, 20, 10],
 
         //header: 'simple text',
         // header: {
