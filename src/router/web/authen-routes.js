@@ -8,11 +8,11 @@ const Customer = () => import('@/views/customer/IndexView.vue')
 //import Dashboard from '@/views/dashboard/WelcomePage.vue'
 const Mold = () => import('@/views/production/order-plan/mold-design/MoldView.vue')
 
-const PlanOrder = () => import('@/views/production/order-plan/plan/IndexView.vue')
+const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
 //import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
 const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
 
-const PlanOrderTracking = () => import('@/views/production/order-plan/tracking/IndexView.vue')
+const PlanOrderTracking = () => import('@/views/production/tracking/IndexView.vue')
 //import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
 
 const PlanOrderTrackingView = () =>
@@ -89,7 +89,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Plan Mold',
-            th: 'ออกเเบบเเม่พิมพ์'
+            th: 'สร้างเเบบเเม่พิมพ์'
           },
           minorShow: true
         }

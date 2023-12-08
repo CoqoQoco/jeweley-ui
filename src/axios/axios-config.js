@@ -9,6 +9,12 @@ import axios from 'axios'
 //test build
 const jewelryUrl = 'https://localhost:49153/'
 
+//test build net core by kastrel
+//const jewelryUrl = 'http://localhost:5025/'
+
+//test production
+//const jewelryUrl = 'http://192.168.1.55:2001/'
+
 // ----- GET API ----- //
 const get = async function (url, params, optionsConfig) {
   try {

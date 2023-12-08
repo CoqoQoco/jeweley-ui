@@ -1,5 +1,18 @@
 @import "../variable.scss";
 
+:deep(.input-group-append) {
+    height: 40px;
+    padding-top: 5px;
+}
+
+.custom-table{
+    button {
+            i {
+                font-size: 12px;
+            }
+        }
+}
+
 .filter-container {
     border: 1px solid #dddddd;
     border-radius: 5px;
@@ -21,4 +34,13 @@
     font-size: 12px;
     font-weight: 700;
     color: var(--base-font-color);
+}
+.text-main-color {
+    color: var(--base-font-color);
+}
+
+.flex-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }

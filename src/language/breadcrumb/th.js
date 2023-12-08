@@ -5,7 +5,7 @@ export default {
   importProductExcel: 'นำเข้าใบผลิตสินค้า',
 
   //production
-  planMold: 'ออกเเบบเเม่พิมพ์',
+  planMold: 'สร้างเเบบเเม่พิมพ์',
   planOrder: 'สร้างใบจ่าย-รับคืนงาน',
   goldPickinkList: 'ใบผสมทอง',
   planOrderTracking: 'ติดตามงานผลิต',

@@ -3,7 +3,6 @@
 // ----- table ---- //
 .p-datatable{
     font-size: $base-font-size !important;
-    //border: solid 1px #999999;
     .p-column-header-content{
 
     }
@@ -11,7 +10,6 @@
 .p-datatable thead th {
     background-color: $base-font-color !important;
     color: #ffffff;
-    //font-weight: bold !important;
     .p-column-header-content {
         font-weight: 100 !important;
     }
