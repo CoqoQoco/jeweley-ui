@@ -16,7 +16,7 @@ const PlanOrderTracking = () => import('@/views/production/tracking/IndexView.vu
 //import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
 
 const PlanOrderTrackingView = () =>
-  import('@/views/production/order-plan/tracking/components/ViewPlan.vue')
+  import('@/views/production/plan-update/IndexView.vue')
 //import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
 
 // ----- master ------ //
@@ -131,7 +131,7 @@ const routes = [
         }
       },
       {
-        path: '/plan-order-tracking/:id',
+        path: '/plan-order-tracking-update/:id',
         name: 'plan-order-tracking-detail',
         component: PlanOrderTrackingView,
         meta: {

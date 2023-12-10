@@ -334,8 +334,11 @@
             <template #footer>
               <div class="d-flex justify-content-between">
                 <div>ทั้งหมด {{ this.form.material.length }} รายการ</div>
-                <div @click="onAddMaterial">
-                  <i class="bi bi-plus-square-fill"></i>
+                <div class="btn btn-sm btn-warning" @click="onAddMaterial">
+                  <spna class="text-center">
+                    <i class="bi bi-plus"></i>
+                  </spna>
+                  <!-- <span>เพิ่ม</span> -->
                 </div>
               </div>
             </template>

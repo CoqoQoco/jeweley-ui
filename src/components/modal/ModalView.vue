@@ -120,7 +120,7 @@ export default {
   position: absolute;
   top: 0;
   right: 0;
-  font-size: 24px;
+  font-size: 15px;
 }
 // Override Class
 // .k-animation-container {

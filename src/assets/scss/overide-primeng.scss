@@ -129,3 +129,33 @@
 //     border-top-left-radius: 6px;
 // }
 
+.p-tabmenu .p-tabmenu-nav {
+    background: none !important;
+    border: none !important;
+    border-width: 0 0 2px 0;
+}
+.p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link {
+    border: solid #dee2e6;
+    border-width: 0 0 0 0 !important;
+    border-color: transparent transparent #dee2e6 transparent;
+    background: none !important;
+    color: $base-font-color !important;
+    padding: 10px !important;
+    font-weight: 400 !important;
+    font-size: 14px !important;
+    border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+    transition: box-shadow 0.2s;
+    margin: 0 0 -2px 0;
+}
+.p-tabmenu .p-tabmenu-nav .p-tabmenuitem.p-highlight .p-menuitem-link {
+    background: $base-font-color !important;
+    border-color: none !important;
+    color: #ffffff !important;
+}
+.p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link:not(.p-disabled):focus {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: none !important;
+}
+

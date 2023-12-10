@@ -8,7 +8,7 @@
       dataKey="id"
       class="p-datatable-sm custom-table"
       scrollable
-      scrollHeight="calc(100vh - 350px)"
+      scrollHeight="calc(100vh - 310px)"
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
@@ -22,15 +22,15 @@
       <Column style="width: 80px">
         <template #body="slotProps">
           <div class="btn-action-container">
-            <button class="mr-1 btn btn-sm btn btn-outline-primary" title="โหมดดูรายละเอียด">
-              <i class="bi bi-search"></i>
-            </button>
             <button
               class="btn btn-sm btn btn-main"
               title="โหมดเเก้ไข"
               @click="viewplan(slotProps.data)"
             >
-              <i class="bi bi-pencil"></i>
+              <i class="bi bi-brush"></i>
+            </button>
+            <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
+              <i class="bi bi-clipboard2-data-fill"></i>
             </button>
           </div>
         </template>
@@ -271,7 +271,7 @@ export default {
     viewplan(item) {
       //console.log(item.id)
       const id = item.id
-      window.open(`/plan-order-tracking/${id}`, '_blank')
+      window.open(`/plan-order-tracking-update/${id}`, '_blank')
       //this.$router.push({ name: 'plan-order-tracking-detail', params: { id: 123 } })
     }
   },

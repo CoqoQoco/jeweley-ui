@@ -9,6 +9,7 @@ export default {
   planOrder: 'สร้างใบจ่าย-รับคืนงาน',
   goldPickinkList: 'ใบผสมทอง',
   planOrderTracking: 'ติดตามงานผลิต',
+  planOrderTrackingUpdate: 'ติดตามงานผลิต',
 
   //
   customer: 'รายชื่อลูกค้า',
@@ -24,6 +25,7 @@ export default {
   systemAdmin: 'ผู้ดูเเลระบบ',
 
   detail: 'รายละเอียด',
+  update: 'เเก้ไข',
 
   //lodog
   logout: 'ออกจากระบบ'

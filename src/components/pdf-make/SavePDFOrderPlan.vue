@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div @click="generatePDF" title="พิมพ์เเบบงานผลิต">
+    <div @click="generatePDF" title="พิมพ์เเบบใบสินค้า">
       <span class="mr-2"> <i class="bi bi-printer"></i></span>
-      <span>พิมพ์เเบบงานผลิต</span>
+      <span>พิมพ์เเบบใบสินค้า</span>
     </div>
   </div>
 </template>
 
 <script>
-import { formatDate } from '@/utils/moment'
+import { formatDate } from '@/services/utils/dayjs'
 import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import api from '@/axios/axios-config.js'

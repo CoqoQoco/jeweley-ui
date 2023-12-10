@@ -86,7 +86,11 @@ export default {
           }
         }
       } else {
-        nameString = 'breadcrumb.detail'
+        if (splitDisplayName.includes('update')) {
+          nameString = 'breadcrumb.update'
+        } else {
+          nameString = 'breadcrumb.detail'
+        }
       }
 
       return nameString
