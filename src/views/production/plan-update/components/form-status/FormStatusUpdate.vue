@@ -1,0 +1,546 @@
+<template>
+  <div class="form-container">
+    <loading :isLoading="isLoading"></loading>
+    <modal :showModal="isShow" @closeModal="onCloseModal" width="1200px">
+      <template v-slot:content>
+        <div class="form-content-container">
+          <div class="mb-2">
+            <span class="txt-title-modal">{{
+              `เเก้ไขสถานะการผลิต : ${getStatusName(modelMat.status)}`
+            }}</span>
+          </div>
+          <form v-if="showType === 1" @submit.prevent="onSubmit">
+            <div class="mb-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขข้อมูลจ่ายงาน</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">วันที่จ่ายงาน</span>
+                <div class="flex-group">
+                  <div class="w-25 txt-desc">{{ formatDate(modelMat.sendDate) }}</div>
+                  <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
+                  <Calendar
+                    class="w-100"
+                    :class="val.isValAssignDate === true ? `p-invalid` : ``"
+                    v-model="form.assignDate"
+                    dateFormat="dd/mm/yy"
+                    showIcon
+                    showButtonBar
+                  />
+                </div>
+              </div>
+              <div>
+                <span class="txt-title">ผู้จ่ายงาน</span>
+                <input type="text" class="form-control" v-model="form.assignBy" required />
+              </div>
+            </div>
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขข้อมูลรับงาน</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">วันที่รับงาน</span>
+                <div class="flex-group">
+                  <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
+                  <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
+                  <Calendar
+                    class="w-100"
+                    :class="val.isValReceiveDate === true ? `p-invalid` : ``"
+                    v-model="form.receiveDate"
+                    dateFormat="dd/mm/yy"
+                    showIcon
+                    showButtonBar
+                  />
+                </div>
+              </div>
+              <div>
+                <span class="txt-title">ผู้รับงาน</span>
+                <input type="text" class="form-control" v-model="form.receiveBy" required />
+              </div>
+            </div>
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขรายละเอียด</span>
+            </div>
+            <div class="form-content-row-grid-container">
+              <DataTable
+                class="p-datatable-sm"
+                showGridlines
+                v-model:editingRows="editingRows"
+                :value="mat"
+                editMode="row"
+                dataKey="id"
+                scrollable
+                @row-edit-save="onRowEditSave"
+                :pt="{
+                  table: { style: 'min-width: 50rem' },
+                  column: {
+                    bodycell: ({ state }) => ({
+                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                    })
+                  }
+                }"
+              >
+                <Column style="width: 20px">
+                  <template #body="prop">
+                    <div
+                      class="btn btn-sm btn-danger text-center w-100"
+                      @click="onDelGold(prop.data)"
+                    >
+                      <i class="bi bi-trash-fill"></i>
+                    </div>
+                  </template>
+                </Column>
+                <!-- <Column field="id" header="ID" style="width: 10%">
+                    <template #editor="{ data, field }">
+                      <input type="number" class="form-control" v-model="data[field]" disabled />
+                    </template>
+                  </Column> -->
+                <Column field="gold" header="ทอง" style="width: 100px">
+                  <template #editor="{ data, field }">
+                    <!-- <input type="text" class="form-control" v-model="data[field]" /> -->
+                    <Dropdown
+                      v-model="data[field]"
+                      :options="masterGold"
+                      optionLabel="code"
+                      optionValue="code"
+                      class="w-full md:w-14rem"
+                      placeholder="เลือกทอง"
+                    >
+                      <!-- :showClear="data[field] ? true : false" -->
+                      <!-- <template #option="slotProps">
+                          <Tag
+                            :value="slotProps.option.value"
+                            :severity="getStatusLabel(slotProps.option.value)"
+                          />
+                        </template> -->
+                    </Dropdown>
+                  </template>
+                </Column>
+                <Column field="goldQTYSend" header="จำนวนจ่าย" style="width: 100px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="goldWeightSend" header="น้ำหนักจ่าย" style="width: 100px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="goldQTYCheck" header="จำนวนรับ" style="width: 100px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="worker" header="ช่างรับงาน" style="min-width: 150px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="text"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="wages" header="ค่าแรงช่าง" style="width: 120px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      min="1"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column
+                  :rowEditor="true"
+                  style="width: 10%; min-width: 7rem"
+                  bodyStyle="text-align:center"
+                >
+                </Column>
+                <template #footer>
+                  <div class="d-flex justify-content-between">
+                    <div>ทั้งหมด {{ this.mat.length }} รายการ</div>
+                    <div @click="addMat">
+                      <i class="bi bi-plus-square-fill"></i>
+                    </div>
+                  </div>
+                </template>
+              </DataTable>
+            </div>
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขมูลเพิ่มเติม</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">หมายเหตุ - 1</span>
+                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
+                </textarea>
+              </div>
+              <div>
+                <span class="txt-title">หมายเหตุ - 2</span>
+                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
+                </textarea>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <button
+                class="btn btn-sm btn-dark btn-custom mr-2"
+                type="button"
+                @click="onCloseModal"
+              >
+                ยกเลิกเเก้ไขสถานะการผลิต
+              </button>
+              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+                ยืนยันเเก้ไขสถานะการผลิต
+              </button>
+            </div>
+          </form>
+        </div>
+      </template>
+    </modal>
+  </div>
+</template>
+
+<script>
+import { defineAsyncComponent } from 'vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
+import Dropdown from 'primevue/dropdown'
+import Calendar from 'primevue/calendar'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import moment from 'dayjs'
+
+import swAlert from '@/services/alert/sweetAlerts.js'
+import api from '@/axios/axios-config.js'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+// const interfaceMat = {
+//   gold: null,
+//   goldQTYSend: null,
+//   goldWeightSend: null,
+//   goldQTYCheck: null,
+//   goldWeightCheck: null,
+//   worker: null
+// }
+const interfaceForm = {
+  status: null,
+  assignDate: null,
+  assignBy: null,
+  receiveDate: null,
+  receiveBy: null,
+  assignTo: null,
+  wages: null,
+  remark1: null,
+  remark2: null
+}
+const interfaceVal = {
+  isValStatus: false,
+  isValAssignDate: false,
+  isValReceiveDate: false,
+  isValGemAssignDate: false,
+  isValCVDAssignDate: false
+}
+
+export default {
+  components: {
+    modal,
+    loading,
+    Calendar,
+    Dropdown,
+    DataTable,
+    Column
+  },
+  props: {
+    isShow: {
+      type: Boolean,
+      default: false
+    },
+    modelValue: {
+      type: Object,
+      required: true,
+      default: () => {}
+    },
+    modelMatValue: {
+      type: Object,
+      required: true,
+      default: () => {}
+    },
+    masterGold: {
+      type: Array,
+      required: true,
+      default: () => []
+    },
+    masterStatus: {
+      type: Array,
+      required: true,
+      default: () => []
+    }
+  },
+  computed: {
+    model() {
+      return this.modelValue
+    },
+    modelMat() {
+      return this.modelMatValue
+    },
+    modelMasterStatus() {
+      return this.masterStatus
+    }
+  },
+  watch: {
+    modelMatValue(value) {
+      console.log(value)
+      this.autoId = 0
+      if (value.tbtProductionPlanStatusDetail) {
+        this.mat = value.tbtProductionPlanStatusDetail.map((thing) => {
+          return {
+            id: ++this.autoId,
+            gold: thing.gold,
+            goldQTYSend: thing.goldQtySend,
+            goldWeightSend: thing.goldWeightSend,
+            goldQTYCheck: thing.goldQtyCheck,
+            goldWeightCheck: thing.goldWeightCheck,
+            worker: thing.worker,
+            wages: thing.wages
+          }
+        })
+      }
+
+      //console.log(this.mat)
+      this.onSelectType(value.status)
+      this.form = {
+        assignBy: value.sendName,
+        receiveBy: value.checkName,
+        remark1: value.remark1,
+        remark2: value.remark2
+      }
+    }
+  },
+  data() {
+    return {
+      // --- flag --- //
+      isLoading: false,
+      showType: 0,
+      autoId: 0,
+
+      // --- form --- //
+      form: {
+        ...interfaceForm
+      },
+      val: {
+        ...interfaceVal
+      },
+      mat: [],
+      editingRows: []
+    }
+  },
+  methods: {
+    // --- controller --- //
+    formatDateTime(date) {
+      return date ? formatDateTime(date) : ''
+    },
+    formatDate(date) {
+      return date ? formatDate(date) : ''
+    },
+    showDate(date) {
+      return date ? moment(date).format('DD/MM/yyyy') : ''
+    },
+    onCloseModal() {
+      this.$emit('closeModal')
+    },
+    onSelectType(status) {
+      if (status) {
+        if (status === 50 || status === 60 || status === 80 || status === 90) {
+          this.showType = 1
+        } else if (status === 70) {
+          this.showType = 2
+        } else if (status === 85) {
+          this.showType = 3
+        }
+      } else {
+        this.showType = 0
+      }
+    },
+    getStatusName(id) {
+      if (this.modelMasterStatus.length) {
+        const status = this.modelMasterStatus.filter((x) => x.id === id)
+        return status[0].nameTh
+      } else {
+        const status = this.masterStatusFetch.filter((x) => x.id === id)
+        return status[0].nameTh
+      }
+    },
+    onSubmit() {
+      swAlert.confirmSubmit(
+        ``,
+        '',
+        async () => {
+          this.submit()
+        },
+        null,
+        null
+      )
+    },
+
+    // ----------- Grid -------------------//
+    onRowEditSave(event) {
+      let { newData, index } = event
+      this.mat[index] = newData
+    },
+    onDelGold(item) {
+      const index = this.mat.indexOf(item)
+      this.mat.splice(index, 1)
+    },
+    addMat() {
+      const add = {
+        id: ++this.autoId,
+        gold: 'YG',
+        goldQTYSend: null,
+        goldWeightSend: null,
+        goldQTYCheck: null,
+        goldWeightCheck: null,
+        worker: null,
+        wages: null
+      }
+      this.mat.push(add)
+    },
+
+    // --- APIs --- //
+    // --- APIs --- //
+    async submit() {
+      try {
+        this.isLoading = true
+        const param = {
+          wo: this.model.wo,
+          woNumber: this.model.woNumber,
+          productionPlanId: this.model.id,
+          HeaderId: this.modelMat.id,
+
+          status: this.modelMat.status,
+          sendName: this.form.assignBy,
+          sendDate: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
+          checkName: this.form.receiveBy,
+          checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
+          remark1: this.form.remark1,
+          remark2: this.form.remark2,
+          golds: [...this.mat]
+        }
+
+        //console.log(param)
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
+        if (res) {
+          swAlert.success(
+            ``,
+            '',
+            () => {
+              this.form = {
+                ...interfaceForm
+              }
+              this.val = {
+                ...interfaceVal
+              }
+              this.mat = []
+              this.showType = 0
+              this.$emit('fetch')
+            },
+            null,
+            null
+          )
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+:deep(input) {
+  margin-top: 0px !important;
+}
+:deep(.p-dropdown) {
+  height: 35px !important;
+  padding-left: 5px;
+  width: 100% !important;
+  margin-top: 0px !important;
+}
+:deep(.p-calendar) {
+  height: 35px;
+  margin-top: 0px !important;
+}
+.form-content-container {
+  padding: 20px 20px;
+  overflow: auto;
+  //height: 650px;
+}
+.form-content-row-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  padding: 0px 30px;
+}
+.form-content-row-grid-container {
+  display: grid;
+  //grid-template-columns: 1fr;
+  //gap: 50px;
+  padding: 0px 30px;
+}
+.txt-title-part {
+  padding-left: 30px;
+  padding-top: 10px;
+  font-size: 14px;
+  color: var(--base-font-color);
+}
+.txt-title-modal {
+  padding: 30px;
+  font-size: 20px;
+  color: var(--base-font-color);
+}
+.txt-title {
+  font-size: 12px;
+}
+.flex-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+</style>

@@ -5,6 +5,7 @@
         :value="modelMatValue"
         class="p-datatable-sm"
         showGridlines
+        scrollable
         scrollHeight="calc(100vh - 280px)"
       >
         <Column style="width: 50px; text-align: center">
@@ -207,7 +208,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .data-container {
   border: 1px solid #dddddd;
   border-radius: 5px;

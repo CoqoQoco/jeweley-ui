@@ -6,7 +6,7 @@
       :value="data.data"
       v-model:expandedRows="expnadData"
       dataKey="id"
-      class="p-datatable-sm custom-table"
+      class="p-datatable-sm"
       scrollable
       scrollHeight="calc(100vh - 310px)"
       columnResizeMode="expand"

@@ -50,7 +50,27 @@
       >
       </FormMaterialAdd>
     </div>
-    <div v-if="tabCctive === 2">2222</div>
+    <div v-if="tabCctive === 2">
+      <FormStatus
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowFormStatusAdd="onShowFormStatusAdd"
+        @fetch="fetchFormStatus"
+      >
+      </FormStatus>
+      <FormStatusAdd
+        :isShow="isShowFormStatusAdd"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      >
+      </FormStatusAdd>
+    </div>
   </div>
 </template>
 
@@ -68,6 +88,8 @@ import FormHeader from './components/form-header/FormHeaderView.vue'
 import FormHeaderUpdate from './components/form-header/FormHeaderUpdate.vue'
 import FormMaterial from './components/form-material/FormMaterialView.vue'
 import FormMaterialAdd from './components/form-material/FormMaterialAdd.vue'
+import FormStatus from './components/form-status/FormStatusView.vue'
+import FormStatusAdd from './components/form-status/FormStatusAdd.vue'
 
 export default {
   components: {
@@ -77,7 +99,9 @@ export default {
     FormHeader,
     FormHeaderUpdate,
     FormMaterial,
-    FormMaterialAdd
+    FormMaterialAdd,
+    FormStatus,
+    FormStatusAdd
   },
   data() {
     return {
@@ -85,6 +109,7 @@ export default {
       isLoading: false,
       isShowFormHeaderUpdate: false,
       isShowFormMaterialAdd: false,
+      isShowFormStatusAdd: false,
 
       // --- data --- //
       data: {},
@@ -131,6 +156,21 @@ export default {
       this.fetchDataMat(this.id)
       this.isShowFormMaterialAdd = false
     },
+    onShowFormStatusAdd() {
+      this.isShowFormStatusAdd = true
+    },
+    onCloseFormStatusAdd() {
+      this.isShowFormStatusAdd = false
+    },
+    fetchFormStatus() {
+      this.isShowFormStatusAdd = false
+      this.fetchData(this.id)
+    },
+    fetchFormStatusAdd() {
+      this.isShowFormStatusAdd = false
+      this.fetchData(this.id)
+    },
+
     // --- APIs --- //
     async fetchData(id) {
       try {
