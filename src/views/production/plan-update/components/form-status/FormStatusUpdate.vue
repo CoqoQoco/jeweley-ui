@@ -1,7 +1,7 @@
 <template>
   <div class="form-container">
     <loading :isLoading="isLoading"></loading>
-    <modal :showModal="isShow" @closeModal="onCloseModal" width="1200px">
+    <modal :showModal="isShow" @closeModal="onCloseModal" width="1400px">
       <template v-slot:content>
         <div class="form-content-container">
           <div class="mb-2">
@@ -161,6 +161,16 @@
                     />
                   </template>
                 </Column>
+                <Column field="description" header="รายละเอียด" style="width: 150px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="text"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
                 <Column field="worker" header="ช่างรับงาน" style="min-width: 150px">
                   <template #editor="{ data, field }">
                     <input
@@ -228,6 +238,208 @@
               </button>
             </div>
           </form>
+          <form v-if="showType === 2" @submit.prevent="onSubmit">
+            <div class="mb-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขข้อมูลคัดพลอย</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">วันคัดพลอย</span>
+                <div class="flex-group">
+                  <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
+                  <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
+                  <Calendar
+                    class="w-100"
+                    :class="val.isValReceiveDate === true ? `p-invalid` : ``"
+                    v-model="form.receiveDate"
+                    dateFormat="dd/mm/yy"
+                    showIcon
+                    showButtonBar
+                  />
+                </div>
+              </div>
+              <div>
+                <span class="txt-title">ผู้คัดพลอย</span>
+                <input type="text" class="form-control" v-model="form.receiveBy" required />
+              </div>
+            </div>
+            <div class="mb-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขรายละเอียด</span>
+            </div>
+            <div class="form-content-row-grid-container">
+              <DataTable
+                class="p-datatable-sm"
+                showGridlines
+                v-model:editingRows="editingRows"
+                :value="mat"
+                editMode="row"
+                dataKey="id"
+                @row-edit-save="onRowEditSave"
+                :pt="{
+                  table: { style: 'min-width: 50rem' },
+                  column: {
+                    bodycell: ({ state }) => ({
+                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                    })
+                  }
+                }"
+              >
+                <Column style="width: 20px">
+                  <template #body="prop">
+                    <div
+                      class="btn btn-sm btn-danger text-center w-100"
+                      @click="onDelGold(prop.data)"
+                    >
+                      <i class="bi bi-trash-fill"></i>
+                    </div>
+                  </template>
+                </Column>
+                <Column field="gold" header="ทอง">
+                  <template #editor="{ data, field }">
+                    <Dropdown
+                      v-model="data[field]"
+                      :options="masterGold"
+                      optionLabel="code"
+                      optionValue="code"
+                      class="w-full md:w-14rem"
+                      placeholder="เลือกทอง"
+                    >
+                    </Dropdown>
+                  </template>
+                </Column>
+                <Column field="goldQTYCheck" header="จำนวน">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="goldWeightCheck" header="น้ำหนัก">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column
+                  :rowEditor="true"
+                  style="width: 10%; min-width: 8rem"
+                  bodyStyle="text-align:center"
+                ></Column>
+                <template #footer>
+                  <div class="d-flex justify-content-between">
+                    <div>ทั้งหมด {{ this.mat.length }} รายการ</div>
+                    <div @click="addMat">
+                      <i class="bi bi-plus-square-fill"></i>
+                    </div>
+                  </div>
+                </template>
+              </DataTable>
+            </div>
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขค่าเเรง</span>
+            </div>
+            <div class="form-content-row-price-container">
+              <div>
+                <span class="txt-title">ค่าเเรงคัดพลอย</span>
+                <input type="number" step="any" class="form-control" v-model="form.totalWages" />
+              </div>
+            </div>
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขข้อมูลเพิ่มเติม</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">หมายเหตุ - 1</span>
+                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
+                </textarea>
+              </div>
+              <div>
+                <span class="txt-title">หมายเหตุ - 2</span>
+                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
+                </textarea>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <button
+                class="btn btn-sm btn-dark btn-custom mr-2"
+                type="button"
+                @click="onCloseModal"
+              >
+                ยกเลิกเเก้ไขสถานะการผลิต
+              </button>
+              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+                ยืนยันเเก้ไขสถานะการผลิต
+              </button>
+            </div>
+          </form>
+          <form v-if="showType === 3" @submit.prevent="onSubmit">
+            <div class="mb-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขข้อมูลตรวจ CVD</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">วันตรวจ CVD</span>
+                <div class="flex-group">
+                  <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
+                  <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
+                  <Calendar
+                    class="w-100"
+                    :class="val.isValReceiveDate === true ? `p-invalid` : ``"
+                    v-model="form.receiveDate"
+                    dateFormat="dd/mm/yy"
+                    showIcon
+                    showButtonBar
+                  />
+                </div>
+              </div>
+              <div>
+                <span class="txt-title">ผู้ตรวจ CVD</span>
+                <input type="text" class="form-control" v-model="form.receiveBy" required />
+              </div>
+            </div>
+
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขข้อมูลเพิ่มเติม</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">หมายเหตุ - 1</span>
+                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
+                </textarea>
+              </div>
+              <div>
+                <span class="txt-title">หมายเหตุ - 2</span>
+                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
+                </textarea>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <button
+                class="btn btn-sm btn-dark btn-custom mr-2"
+                type="button"
+                @click="onCloseModal"
+              >
+                ยกเลิกเเก้ไขสถานะการผลิต
+              </button>
+              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+                ยืนยันเเก้ไขสถานะการผลิต
+              </button>
+            </div>
+          </form>
         </div>
       </template>
     </modal>
@@ -267,7 +479,8 @@ const interfaceForm = {
   assignTo: null,
   wages: null,
   remark1: null,
-  remark2: null
+  remark2: null,
+  totalWages: null
 }
 const interfaceVal = {
   isValStatus: false,
@@ -325,7 +538,7 @@ export default {
   },
   watch: {
     modelMatValue(value) {
-      console.log(value)
+      //onsole.log(value)
       this.autoId = 0
       if (value.tbtProductionPlanStatusDetail) {
         this.mat = value.tbtProductionPlanStatusDetail.map((thing) => {
@@ -336,6 +549,7 @@ export default {
             goldWeightSend: thing.goldWeightSend,
             goldQTYCheck: thing.goldQtyCheck,
             goldWeightCheck: thing.goldWeightCheck,
+            description: thing.description,
             worker: thing.worker,
             wages: thing.wages
           }
@@ -348,7 +562,8 @@ export default {
         assignBy: value.sendName,
         receiveBy: value.checkName,
         remark1: value.remark1,
-        remark2: value.remark2
+        remark2: value.remark2,
+        totalWages: value.wagesTotal
       }
     }
   },
@@ -459,6 +674,7 @@ export default {
           checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
           remark1: this.form.remark1,
           remark2: this.form.remark2,
+          totalWages: this.form.totalWages,
           golds: [...this.mat]
         }
 
@@ -522,6 +738,12 @@ export default {
   display: grid;
   //grid-template-columns: 1fr;
   //gap: 50px;
+  padding: 0px 30px;
+}
+.form-content-row-price-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 50px;
   padding: 0px 30px;
 }
 .txt-title-part {

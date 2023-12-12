@@ -15,7 +15,7 @@
               <div class="flex align-items-center gap-2">
                 <!-- <span class="font-bold">{{ `${data.statusNavigation.nameTh}` }}</span> -->
                 <h5 class="title" style="margin: 0px">{{ getStatusName(data.status) }}</h5>
-                <p class="description">{{ formatDateTime(data.createDate) }}</p>
+                <p class="description">{{ formatDateTime(data.updateDate) }}</p>
               </div>
             </template>
             <template #icons>
@@ -89,7 +89,7 @@
                       </div>
                     </template>
                   </Column>
-                  <Column field="goldWeightDiff" header="ขาด" style="width: 100px">
+                  <Column field="goldWeightDiff" header="ขาด" style="width: 120px">
                     <template #body="prop">
                       <div v-if="prop.data.goldWeightDiff">
                         {{
@@ -101,9 +101,19 @@
                       <div v-else>-</div>
                     </template>
                   </Column>
+                  <Column field="description" header="รายละเอียด" style="min-width: 120px">
+                    <template #editor="{ data, field }">
+                      <input
+                        type="text"
+                        :class="data[field] ? `` : `bg-warning`"
+                        class="form-control"
+                        v-model="data[field]"
+                      />
+                    </template>
+                  </Column>
                   <!-- <Column field="goldWeightDiffPercent" header="ทอง" style="width: 10%"> </Column> -->
                   <Column field="worker" header="ช่างรับงาน" style="min-width: 120px"> </Column>
-                  <Column field="wages" header="ค่าแรงช่าง" style="width: 100px">
+                  <Column field="wages" header="ค่าแรงช่าง" style="width: 120px">
                     <template #body="slotProps">
                       <div class="text-right">
                         {{
@@ -155,16 +165,27 @@
               <div class="flex align-items-center gap-2">
                 <!-- <span class="font-bold">{{ `${data.statusNavigation.nameTh}` }}</span> -->
                 <h5 class="title" style="margin: 0px">{{ getStatusName(data.status) }}</h5>
-                <p class="description">{{ formatDateTime(data.createDate) }}</p>
+                <p class="description">{{ formatDateTime(data.updateDate) }}</p>
               </div>
             </template>
             <template #icons>
-              <button class="p-panel-header-icon p-link mr-2" @click="onDelStatus(data.id)">
+              <button
+                class="p-panel-header-icon p-link mr-2"
+                @click="onUpdateStatus(data)"
+                title="เเก้ไข"
+              >
+                <span><i class="bi bi-brush text-warning"></i></span>
+              </button>
+              <button
+                class="p-panel-header-icon p-link mr-2"
+                @click="onDelStatus(data.id)"
+                title="ลบ"
+              >
                 <span><i class="bi bi-trash-fill text-danger"></i></span>
               </button>
             </template>
             <div>
-              <div class="status-remark-container">
+              <div class="status-gem-selection-container">
                 <!-- <div>
                   <p class="description">จ่ายงาน</p>
                   <p class="title">{{ data.sendName }}</p>
@@ -180,6 +201,14 @@
                 <div>
                   <p class="description">วันคัดพลอย</p>
                   <p class="title">{{ formatDate(data.checkDate) }}</p>
+                </div>
+                <div>
+                  <p class="description">ค่าเเรงคัดพลอย</p>
+                  <p class="title">
+                    {{
+                      data.wagesTotal ? Number(data.wagesTotal).toFixed(2).toLocaleString() : '0'
+                    }}
+                  </p>
                 </div>
               </div>
               <div v-if="data.tbtProductionPlanStatusDetail">
@@ -218,11 +247,22 @@
               <div class="flex align-items-center gap-2">
                 <!-- <span class="font-bold">{{ `${data.statusNavigation.nameTh}` }}</span> -->
                 <h5 class="title" style="margin: 0px">{{ getStatusName(data.status) }}</h5>
-                <p class="description">{{ formatDateTime(data.createDate) }}</p>
+                <p class="description">{{ formatDateTime(data.updateDate) }}</p>
               </div>
             </template>
             <template #icons>
-              <button class="p-panel-header-icon p-link mr-2" @click="onDelStatus(data.id)">
+              <button
+                class="p-panel-header-icon p-link mr-2"
+                @click="onUpdateStatus(data)"
+                title="เเก้ไข"
+              >
+                <span><i class="bi bi-brush text-warning"></i></span>
+              </button>
+              <button
+                class="p-panel-header-icon p-link mr-2"
+                @click="onDelStatus(data.id)"
+                title="ลบ"
+              >
                 <span><i class="bi bi-trash-fill text-danger"></i></span>
               </button>
             </template>
@@ -514,7 +554,7 @@ p {
   background-color: #f7f7f7;
   //padding: 10px;
   height: calc(100vh - 260px);
-  overflow: auto;
+  //overflow: auto;
 }
 .data-title-container {
   height: 50px;
@@ -527,6 +567,7 @@ p {
 .data-status-container {
   padding: 10px 10px;
   overflow: auto;
+  height: calc(100vh - 330px);
 }
 .data-title {
   font-size: 18px;
@@ -544,7 +585,13 @@ p {
 }
 .status-remark-container {
   display: grid;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.status-gem-selection-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
   margin-bottom: 10px;
 }
