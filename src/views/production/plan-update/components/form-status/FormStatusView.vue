@@ -3,7 +3,7 @@
     <!-- <loading :isLoading="isLoading"></loading> -->
     <div class="data-container">
       <div class="data-title-container mb-2">
-        <div class="data-title">
+        <div class="data-title-custom">
           <span>สถานะการผลิตล่าสุด : </span>
           <span>{{ getStatusName(model.status) }}</span>
         </div>
@@ -539,7 +539,7 @@ export default {
 :deep(.p-panel .p-panel-header) {
   border: 1px solid var(--base-color);
   padding: 10px;
-  background: var(--base-color);
+  background: var(--base-fon-color);
   color: #343a40;
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
@@ -558,7 +558,8 @@ p {
 }
 .data-title-container {
   height: 50px;
-  background-color: var(--base-color);
+  background-color: var(--base-font-color);
+  //color: #dddddd;
   display: flex;
   justify-content: space-between;
   //margin: 0;
@@ -572,6 +573,11 @@ p {
 .data-title {
   font-size: 18px;
   color: var(--base-font-color);
+  align-self: center;
+}
+.data-title-custom{
+  font-size: 18px;
+  color: #ffff;
   align-self: center;
 }
 .description {
