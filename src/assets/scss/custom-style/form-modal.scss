@@ -1,0 +1,67 @@
+:deep(input) {
+    margin-top: 0px !important;
+    height: 38px;
+}
+
+:deep(.p-dropdown) {
+    height: 38px !important;
+    padding-left: 5px;
+    width: 100% !important;
+    margin-top: 0px !important;
+}
+:deep(.input-group-append) {
+    height: 38px;
+    //padding-top: 5px;
+}
+
+.form-content-container {
+    //   border: 1px solid #dddddd;
+    //   border-radius: 5px;
+    //   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    //   background-color: #f7f7f7;
+    padding: 20px 20px;
+    overflow: auto;
+    height: 570px;
+}
+
+.form-content-row-one-columns-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 50px;
+    padding: 0px 30px;
+}
+.form-content-row-two-columns-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    padding: 0px 30px;
+}
+.form-content-row-tree-columns-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 50px;
+    padding: 0px 30px;
+}
+
+.txt-title-modal {
+    padding: 30px;
+    font-size: 20px;
+    color: var(--base-font-color);
+}
+
+.txt-title-part {
+    padding-left: 30px;
+    padding-top: 10px;
+    font-size: 14px;
+    color: var(--base-font-color);
+}
+
+.txt-title {
+    font-size: 12px;
+}
+.txt-required {
+    color: red;
+}
+.txt-main-color {
+    color: var(--base-font-color);
+}

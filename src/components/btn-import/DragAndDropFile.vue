@@ -70,7 +70,7 @@
 </template>
 
 <script>
-//import swAlert from '@/js/alert/sweetAlerts.js'
+//import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   data() {

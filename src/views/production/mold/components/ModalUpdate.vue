@@ -3,31 +3,19 @@
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
       <template v-slot:title>
-        <h5>สร้างเเม่พิมพ์</h5>
+        <h5>{{ `เเก้ไขเเม่พิมพ์ - ${model.code}` }}</h5>
       </template>
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
           <div class="form-container">
             <div class="row form-group">
-              <div class="col-md-7">
-                <div class="image-container">
-                  <div class="upload-btn">
-                    <input
-                      class="hidden-input"
-                      type="file"
-                      ref="fileInput"
-                      accept=".jpg, .png"
-                      @change="onSelectImg"
-                    />
-                    <button class="btn btn-sm btn-warning btn-upload-custom" type="button">
-                      เลือกรูปภาพ
-                    </button>
+              <div class="col-md-7 image-container">
+                <div class="image-box-container">
+                  <div v-if="urlImage">
+                    <img class="image-preview" :src="urlImage" alt="Image" preview />
                   </div>
-                  <div class="upload-preview">
-                    <div v-if="imgUrl">
-                      <img :src="imgUrl" alt="Preview" class="preview-image" />
-                      <!-- <i class="bi bi-x del-iamge-x"></i> -->
-                    </div>
+                  <div v-else class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
                   </div>
                 </div>
               </div>
@@ -35,22 +23,25 @@
                 <div class="row form-group">
                   <div class="col-md-12">
                     <label>รหัส</label>
-                    <input type="text" class="form-control" v-model="form.code" required />
+                    <input type="text" class="form-control" v-model="form.code" disabled required />
                   </div>
                 </div>
                 <div class="row form-group">
                   <div class="col-md-12">
                     <label>ประเภท</label>
-                    <Dropdown
-                      v-model="form.category"
-                      :options="masterProduct"
-                      optionLabel="description"
-                      class="w-full md:w-14rem"
-                      :showClear="form.category ? true : false"
-                      :class="val.isValCategory === true ? `p-invalid` : ``"
-                      @change="onResetValDate('isValCategory')"
-                    />
-                    <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
+                    <div class="flex-group">
+                      <div class="w-25">{{ model.category }}</div>
+                      <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+                      <Dropdown
+                        v-model="form.category"
+                        :options="masterProduct"
+                        optionLabel="description"
+                        class="w-full md:w-14rem"
+                        :showClear="form.category ? true : false"
+                        :class="val.isValCategory === true ? `p-invalid` : ``"
+                        @change="onResetValDate('isValCategory')"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div class="row form-group">
@@ -70,8 +61,9 @@
             <div class="row form-group">
               <div class="col-md-12">
                 <div class="btn-container">
-                  <button class="btn btn-sm btn-main" type="submit">
-                    <span class="mr-2"><i class="bi bi-gem"></i></span><span>สร้างเเม่พิมพ์</span>
+                  <button class="btn btn-sm btn-warning" type="submit">
+                    <span class="mr-2"><i class="bi bi-pencil"></i></span
+                    ><span>เเก้ไขเเม่พิมพ์</span>
                   </button>
                 </div>
               </div>
@@ -85,16 +77,13 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
-import swAlert from '@/js/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
-
 import Dropdown from 'primevue/dropdown'
 
+import api from '@/axios/axios-config.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-//import modal from '@/components/modal/ModalView.vue'
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
-//const UploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
 
 export default {
   components: {
@@ -106,19 +95,38 @@ export default {
     isShowModal: {
       type: Boolean,
       default: false
+    },
+    modelValue: {
+      type: Object,
+      required: true,
+      default: () => {}
+    }
+  },
+  computed: {
+    model() {
+      //console.log(this.modelValue)
+      return this.modelValue
+    }
+  },
+  watch: {
+    async modelValue(value) {
+      this.form = {
+        code: value.code,
+        description: value.description
+      }
+      //console.log(value)
+      await this.fetchImageData(value.code)
     }
   },
   data() {
     return {
+      // --- flag ---- //
       isLoading: false,
-
-      //image
-      //isResetImage: false,
-      //imageConatinerHight: '435px',
+      type: 'ORDERPLAN',
       name: '',
-      imgUrl: '',
-      masterProduct: [],
+      urlImage: '',
 
+      // ------- form ------ //
       form: {
         image: null,
         code: null,
@@ -127,36 +135,23 @@ export default {
       },
       val: {
         isValCategory: false
-      }
+      },
+
+      //  ------ master ------- //
+      masterProduct: []
     }
   },
   methods: {
-    // ------- import image -------//
-    onSelectImg(e) {
-      if (e.target.files[0]) {
-        this.name = e.target.files[0].name
-
-        //preview
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          this.imgUrl = event.target.result
-        }
-        reader.readAsDataURL(e.target.files[0])
-
-        //assign
-        this.form.image = e.target.files[0]
-      }
-    },
-
+    // --------- controller --------- //
     closeModal() {
-      this.onclear()
+      //this.onclear()
       this.$emit('closeModal')
     },
     onSubmit() {
       if (this.VaidateForm()) {
         swAlert.confirmSubmit(
           `${this.form.code}`,
-          `ยืนยันสร้างเเม่พิมพ์`,
+          `ยืนยันเเก้ไขเเม่พิมพ์`,
           async () => {
             //console.log('call submitPlan')
             await this.submit()
@@ -170,21 +165,14 @@ export default {
       try {
         this.isLoading = true
 
-        let params = new FormData()
-        params.append('code', this.form.code)
-        console.log(this.form.category)
-        params.append('category', this.form.category.nameTh)
-        params.append('categoryCode', this.form.category.code)
-        params.append('description', this.form.description)
-        params.append('images', this.form.image)
-
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
-          }
+        let params = {
+          code: this.form.code,
+          category: this.form.category.nameTh,
+          categoryCode: this.form.category.code,
+          description: this.form.description
         }
 
-        const res = await api.jewelry.post('Mold/CreateMold', params, options)
+        const res = await api.jewelry.post('Mold/UpdateMold', params)
         if (res) {
           //console.log(res)
           swAlert.success(
@@ -205,7 +193,7 @@ export default {
       }
     },
     onclear() {
-      this.$refs.fileInput.value = null
+      //this.$refs.fileInput.value = null
       this.imgUrl = ''
       this.form = {
         image: null,
@@ -238,6 +226,27 @@ export default {
       }
     },
 
+    // -------- APIs --------------- //
+    async fetchImageData(path) {
+      try {
+        //console.log
+        switch (this.type) {
+          case 'ORDERPLAN': {
+            const param = {
+              imageName: `${path}-Mold.png`
+            }
+            const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+
+            if (res) {
+              this.urlImage = `data:image/png;base64,${res}`
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
+
     // -------- master ---------- //
     async fetchMasterProductType() {
       try {
@@ -252,9 +261,6 @@ export default {
         this.isLoading = false
       }
     }
-  },
-  created() {
-    //this.isResetImage =
   },
   mounted() {
     this.fetchMasterProductType()
@@ -313,7 +319,7 @@ label {
   display: grid;
   place-items: center;
   //width: 20rem;
-  height: 22rem;
+  height: 24rem;
 }
 .preview-image {
   width: 20rem;
@@ -322,5 +328,27 @@ label {
   border: 1px solid var(--base-sub-color);
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   border-radius: 10px;
+}
+
+.image-preview {
+  max-width: 300px;
+  height: auto;
+  //border: 1px solid var(--base-color);
+  border-radius: 8px;
+  object-fit: contain;
+}
+.image-container {
+  display: grid;
+  place-items: center;
+  //height: 300px;
+}
+.image-box-container {
+  border: 1px solid var(--base-color);
+  border-radius: 8px;
+}
+.flex-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

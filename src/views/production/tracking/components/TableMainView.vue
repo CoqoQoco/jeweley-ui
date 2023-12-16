@@ -160,6 +160,7 @@ export default {
   },
   watch: {
     async formValue() {
+      //console.log(this.formValue)
       this.take = 10
       this.skip = 0
       await this.fetchData()
@@ -204,6 +205,7 @@ export default {
     async fetchData() {
       try {
         this.isLoading = true
+        //console.log(this.formValue)
         const param = {
           take: this.take,
           skip: this.skip,

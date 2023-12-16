@@ -44,7 +44,19 @@
           <div class="form-content-row-container">
             <div>
               <span class="txt-title">รหัสลุกค้า</span>
-              <input type="text" class="form-control" v-model="form.customerNumber" required />
+              <!-- <input type="text" class="form-control" v-model="form.customerNumber" required /> -->
+              <div class="flex-group">
+                <div class="w-25 txt-desc">{{ model.customerNumber }}</div>
+                <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
+                <AutoComplete
+                  v-model="form.customerNumber"
+                  :suggestions="modelCustomer"
+                  @complete="onSearchCustomer"
+                  placeholder="กรอกรหัสลูกค้า...."
+                  :class="val.isValCustomerNumber === true ? `p-invalid` : ``"
+                  forceSelection
+                />
+              </div>
             </div>
             <div>
               <span class="txt-title">ประเภทลูกค้า</span>
@@ -173,7 +185,8 @@ const interfaceIsValid = {
   isValMold: false,
   isValRequestDate: false,
   isValCustomerType: false,
-  isValProductType: false
+  isValProductType: false,
+  isValCustomerNumber: false
 }
 export default {
   components: {
@@ -232,7 +245,8 @@ export default {
       val: {
         ...interfaceIsValid
       },
-      modelMold: []
+      modelMold: [],
+      modelCustomer: []
     }
   },
   methods: {
@@ -311,6 +325,12 @@ export default {
         }
         return false
       }
+      if (!this.form.customerNumber) {
+        this.val = {
+          isValCustomerNumber: true
+        }
+        return false
+      }
 
       return true
     },
@@ -329,6 +349,26 @@ export default {
         const res = await api.jewelry.post('Mold/SearchMold', param)
         if (res) {
           this.modelMold = res.data.map((x) => `${x.code}`)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async onSearchCustomer(e) {
+      try {
+        //this.isLoading = true
+        const param = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null
+          }
+        }
+
+        const res = await api.jewelry.post('Customer/SearchCustomer', param)
+        if (res) {
+          this.modelCustomer = res.data.map((x) => `${x.code}`)
+          console.log(this.customerItemSearch)
         }
       } catch (error) {
         console.log(error)

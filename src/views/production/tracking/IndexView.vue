@@ -82,6 +82,7 @@ export default {
   },
   data() {
     return {
+      id: '',
       form: {},
       search: {
         start: null,
@@ -119,6 +120,21 @@ export default {
         end: null,
         text: null
       }
+    }
+  },
+  mounted() {
+    const url = window.location.href
+    this.id = url.split('/').slice(-1)[0]
+
+    if (this.id && this.id !== 'plan-order-tracking') {
+      //console.log(this.id)
+      this.search = {
+        start: null,
+        end: null,
+        text: this.id
+      }
+      this.formSearch = { ...this.search }
+      console.log(this.formSearch)
     }
   }
 }

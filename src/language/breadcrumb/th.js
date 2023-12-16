@@ -10,6 +10,10 @@ export default {
   goldPickinkList: 'ใบผสมทอง',
   planOrderTracking: 'ติดตามงานผลิต',
   planOrderTrackingUpdate: 'ติดตามงานผลิต',
+  planOrderTrackingView: 'ติดตามงานผลิต',
+  planGoldPicking: 'เบิกผสมทอง',
+  planMaterialPicking: 'เบิกวัตถุดิบ',
+  planCost: 'สรุปราคาผลิต',
 
   //
   customer: 'รายชื่อลูกค้า',
@@ -26,6 +30,8 @@ export default {
 
   detail: 'รายละเอียด',
   update: 'เเก้ไข',
+
+  reportProduction: 'รายงานผลิต',
 
   //lodog
   logout: 'ออกจากระบบ'

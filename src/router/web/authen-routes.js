@@ -6,17 +6,16 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 const Customer = () => import('@/views/customer/IndexView.vue')
 //import Dashboard from '@/views/dashboard/WelcomePage.vue'
-const Mold = () => import('@/views/production/order-plan/mold-design/MoldView.vue')
+const Mold = () => import('@/views/production/mold/MoldView.vue')
 
 const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
 //import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
-const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
+//const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
 
 const PlanOrderTracking = () => import('@/views/production/tracking/IndexView.vue')
 //import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
 
-const PlanOrderTrackingView = () =>
-  import('@/views/production/plan-update/IndexView.vue')
+const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
 //import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
 
 // ----- master ------ //
@@ -24,6 +23,8 @@ const GemView = () => import('@/views/master/gem/GemView.vue')
 const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
 const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
 const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
+
+const Report = () => import('@/views/report-production/ReportView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -106,18 +107,18 @@ const routes = [
           minorShow: true
         }
       },
-      {
-        path: '/gold-pickink-list',
-        name: 'gold-pickink-list',
-        component: GoldPickinglist,
-        meta: {
-          Displayname: {
-            en: 'Gold Pickinglist',
-            th: 'ใบผสมทอง'
-          },
-          minorShow: true
-        }
-      },
+      // {
+      //   path: '/gold-pickink-list',
+      //   name: 'gold-pickink-list',
+      //   component: GoldPickinglist,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Gold Pickinglist',
+      //       th: 'ใบผสมทอง'
+      //     },
+      //     minorShow: true
+      //   }
+      // },
       {
         path: '/plan-order-tracking',
         name: 'plan-order-tracking',
@@ -128,6 +129,18 @@ const routes = [
             th: 'ติดตามงานผลิต'
           },
           minorShow: true
+        }
+      },
+      {
+        path: '/plan-order-tracking-view/:id',
+        name: 'plan-order-tracking-view',
+        component: PlanOrderTracking,
+        meta: {
+          Displayname: {
+            en: 'Plan Order Tracking',
+            th: 'ติดตามงานผลิต'
+          },
+          minorShow: false
         }
       },
       {
@@ -157,6 +170,61 @@ const routes = [
     ]
   },
 
+  // ------ cost sheet -------
+  {
+    path: '/production-cost',
+    component: Layout,
+    redirect: '/production-cost-gold-picking',
+    name: 'production-cost-gold-picking',
+    meta: {
+      Displayname: {
+        en: 'Production Picking Material',
+        th: 'งานเบิกผลิต'
+      },
+      classIcon: 'bi bi-currency-exchange',
+      majorShow: true,
+      btsubLineShow: true
+    },
+    children: [
+      {
+        path: '/plan-gold-picking',
+        name: 'plan-gold-picking',
+        component: Report,
+        meta: {
+          Displayname: {
+            en: 'Gold Picking',
+            th: 'เบิกผสมทอง'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/plan-material-picking',
+        name: 'plan-material-picking',
+        component: Report,
+        meta: {
+          Displayname: {
+            en: 'Material Picking',
+            th: 'เบิกวัตถุดิบ'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/plan-cost',
+        name: 'plan-cost',
+        component: Report,
+        meta: {
+          Displayname: {
+            en: 'Plan Cost',
+            th: 'สรุปราคาผลิต'
+          },
+          minorShow: true
+        }
+      }
+    ]
+  },
+
   // ------------------ customer -------------------
   {
     path: '/customer',
@@ -180,6 +248,36 @@ const routes = [
           Displayname: {
             en: 'Customer Data',
             th: 'รายชื่อลูกค้า'
+          },
+          minorShow: false
+        }
+      }
+    ]
+  },
+
+  // ------------ Report -------------------
+  {
+    path: '/report-production',
+    component: Layout,
+    redirect: '/report-production',
+    name: 'report-production',
+    meta: {
+      Displayname: {
+        en: 'Report',
+        th: 'รายงานผลิต'
+      },
+      classIcon: 'bi bi-file-spreadsheet',
+      majorShow: true
+    },
+    children: [
+      {
+        path: '/report-production',
+        name: 'report-production',
+        component: Report,
+        meta: {
+          Displayname: {
+            en: 'Report',
+            th: 'รายงานผลิต'
           },
           minorShow: false
         }

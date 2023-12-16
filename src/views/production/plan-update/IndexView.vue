@@ -121,6 +121,7 @@ export default {
       masterGem: [],
       masterGemShape: [],
       masterStatus: [],
+      id: '',
 
       // --- tab --- //
       tabCctive: 0,

@@ -36,7 +36,15 @@
             <div class="form-header-left-row-container">
               <div>
                 <span class="title-text">รหัสลูกค้า</span>
-                <input type="text" class="form-control" v-model="form.customerNumber" required />
+                <!-- <input type="text" class="form-control" v-model="form.customerNumber" required /> -->
+                <AutoComplete
+                  v-model="form.customerNumber"
+                  :suggestions="customerItemSearch"
+                  @complete="onSearchCustomer"
+                  placeholder="กรอกรหัสลูกค้า ...."
+                  :class="val.isValCustomerNumber === true ? `p-invalid` : ``"
+                  forceSelection
+                />
               </div>
               <div>
                 <span class="title-text">ประเภทลูกค้า</span>
@@ -422,7 +430,8 @@ const interfaceMaterial = {
 const interfaceValid = {
   isValMold: false,
   isValCustomerType: false,
-  isValProductType: false
+  isValProductType: false,
+  isValCustomerNumber: false
 }
 export default {
   components: {
@@ -448,6 +457,11 @@ export default {
       if (this.form.productType) {
         this.val.isValProductType = false
       }
+    },
+    'form.customerNumber'() {
+      if (this.form.customerNumber) {
+        this.val.isValCustomerNumber = false
+      }
     }
   },
   data() {
@@ -466,6 +480,7 @@ export default {
       imageurl: '',
 
       // --- master --- //
+      customerItemSearch: [],
       moldItemSearch: [],
       masterCustomer: [],
       masterProduct: [],
@@ -512,6 +527,12 @@ export default {
         }
         return false
       }
+       if (!this.form.customerNumber) {
+        this.val = {
+          isValCustomerNumber: true
+        }
+        return false
+      }
 
       return true
     },
@@ -539,6 +560,26 @@ export default {
     },
 
     // --- APIs --- //
+    async onSearchCustomer(e) {
+      try {
+        //this.isLoading = true
+        const param = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null
+          }
+        }
+
+        const res = await api.jewelry.post('Customer/SearchCustomer', param)
+        if (res) {
+          this.customerItemSearch = res.data.map((x) => `${x.code}`)
+          console.log(this.customerItemSearch )
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
     async onSearchMold(e) {
       try {
         //this.isLoading = true

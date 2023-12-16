@@ -2,13 +2,13 @@
   <div>
     <div @click="generatePDF" title="พิมพ์รายละเอียดงานผลิต">
       <span class="mr-2"> <i class="bi bi-printer"></i></span>
-      <span>พิมพ์รายละเอียดงานผลิต</span>
+      <span>พิมพ์สถานะการผลิต</span>
     </div>
   </div>
 </template>
 
 <script>
-import { formatDate } from '@/utils/moment'
+import { formatDate } from '@/services/utils/dayjs'
 import moment from 'dayjs'
 import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
@@ -410,7 +410,7 @@ export default {
           {
             columns: [
               'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
-              { text: 'รายละเอียดงานผลิต', alignment: 'right' }
+              { text: 'รายละเอียดสถานะการผลิต', alignment: 'right' }
             ],
             margin: [0, 0, 0, 0],
             bold: true,
