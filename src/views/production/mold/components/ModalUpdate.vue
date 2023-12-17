@@ -33,7 +33,7 @@
                       @change="onSelectImg"
                     />
                     <button class="btn btn-sm btn-warning btn-upload-custom" type="button">
-                      เเเก้ไขรูปภาพ
+                      เลือกเเเก้ไขรูปภาพ
                     </button>
                   </div>
                   <div class="upload-preview">

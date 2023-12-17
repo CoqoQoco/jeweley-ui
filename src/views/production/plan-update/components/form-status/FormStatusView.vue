@@ -76,6 +76,19 @@
                     </template>
                   </Column>
                   <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 120px"> </Column>
+                  <Column field="wages" header="ค่าเเรงต่อชิ้น" style="width: 120px">
+                    <template #body="slotProps">
+                      <div class="text-right">
+                        {{
+                          `${
+                            slotProps.data.wages
+                              ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
+                              : Number(wages).toFixed(2).toLocaleString()
+                          }`
+                        }}
+                      </div>
+                    </template>
+                  </Column>
                   <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 120px">
                     <template #body="slotProps">
                       <div>
@@ -113,13 +126,13 @@
                   </Column>
                   <!-- <Column field="goldWeightDiffPercent" header="ทอง" style="width: 10%"> </Column> -->
                   <Column field="worker" header="ช่างรับงาน" style="min-width: 120px"> </Column>
-                  <Column field="wages" header="ค่าแรงช่าง" style="width: 120px">
+                  <Column field="totalWages" header="รวมค่าแรงช่าง" style="width: 120px">
                     <template #body="slotProps">
                       <div class="text-right">
                         {{
                           `${
                             slotProps.data.wages
-                              ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
+                              ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
                               : Number(wages).toFixed(2).toLocaleString()
                           }`
                         }}
@@ -135,7 +148,7 @@
                     <div class="d-flex justify-content-between">
                       <div>ทั้งหมด {{ data.tbtProductionPlanStatusDetail.length }} รายการ</div>
                       <div>
-                        รวมค่าแรงช่าง
+                        รวมค่าแรงทั้งหมด
                         {{
                           `${
                             data.wagesTotal
@@ -575,7 +588,7 @@ p {
   color: var(--base-font-color);
   align-self: center;
 }
-.data-title-custom{
+.data-title-custom {
   font-size: 18px;
   color: #ffff;
   align-self: center;

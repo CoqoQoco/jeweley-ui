@@ -1,7 +1,7 @@
 <template>
   <div class="form-container">
     <loading :isLoading="isLoading"></loading>
-    <modal :showModal="isShow" @closeModal="onCloseModal" width="1400px">
+    <modal :showModal="isShow" @closeModal="closeModal" width="1400px">
       <template v-slot:content>
         <div class="form-content-container">
           <div class="mb-2">
@@ -153,6 +153,20 @@
                       :class="data[field] ? `` : `bg-warning`"
                       class="form-control"
                       v-model="data[field]"
+                       @change="calTotalWages(data)"
+                    />
+                  </template>
+                </Column>
+                <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 100px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      min="1"
+                      step="any"
+                      class="form-control"
+                      v-model="data[field]"
+                      :disabled="!data.goldQTYCheck"
+                      @change="calTotalWages(data)"
                     />
                   </template>
                 </Column>
@@ -187,15 +201,15 @@
                     />
                   </template>
                 </Column>
-                <Column field="wages" header="ค่าแรงช่าง" style="min-width: 100px">
+                <Column field="totalWages" header="รวมค่าแรงช่าง" style="min-width: 100px">
                   <template #editor="{ data, field }">
                     <input
                       type="number"
                       min="1"
                       step="any"
-                      :class="data[field] ? `` : `bg-warning`"
                       class="form-control"
                       v-model="data[field]"
+                      disabled
                     />
                   </template>
                 </Column>
@@ -343,7 +357,7 @@
                 </template>
               </DataTable>
             </div>
-            <div class="mb-2 mt-2 txt-title-part">
+            <!-- <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>ระบุค่าเเรง</span>
             </div>
@@ -352,7 +366,7 @@
                 <span class="txt-title">ค่าเเรงคัดพลอย</span>
                 <input type="number" step="any" class="form-control" v-model="form.totalWages" />
               </div>
-            </div>
+            </div> -->
             <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>ระบุข้อมูลเพิ่มเติม</span>
@@ -551,7 +565,7 @@ export default {
   },
   methods: {
     // --- controller --- //
-    onCloseModal() {
+    closeModal() {
       this.form = {
         ...interfaceForm
       }
@@ -599,6 +613,10 @@ export default {
         null,
         null
       )
+    },
+    calTotalWages(data) {
+      data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
+      //console.log(data.totalWages)
     },
 
     // ----------- Grid -------------------//

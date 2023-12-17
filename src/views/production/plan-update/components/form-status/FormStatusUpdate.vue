@@ -147,6 +147,20 @@
                       :class="data[field] ? `` : `bg-warning`"
                       class="form-control"
                       v-model="data[field]"
+                      @change="calTotalWages(data)"
+                    />
+                  </template>
+                </Column>
+                <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 100px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      min="1"
+                      step="any"
+                      class="form-control"
+                      v-model="data[field]"
+                      :disabled="!data.goldQTYCheck"
+                      @change="calTotalWages(data)"
                     />
                   </template>
                 </Column>
@@ -181,15 +195,15 @@
                     />
                   </template>
                 </Column>
-                <Column field="wages" header="ค่าแรงช่าง" style="width: 120px">
+                <Column field="totalWages" header="รวมค่าแรงช่าง" style="width: 120px">
                   <template #editor="{ data, field }">
                     <input
                       type="number"
                       min="1"
                       step="any"
-                      :class="data[field] ? `` : `bg-warning`"
                       class="form-control"
                       v-model="data[field]"
+                      disabled
                     />
                   </template>
                 </Column>
@@ -551,7 +565,8 @@ export default {
             goldWeightCheck: thing.goldWeightCheck,
             description: thing.description,
             worker: thing.worker,
-            wages: thing.wages
+            wages: thing.wages,
+            totalWages: thing.totalWages
           }
         })
       }
@@ -559,8 +574,10 @@ export default {
       //console.log(this.mat)
       this.onSelectType(value.status)
       this.form = {
+        assignDate: value.sendDate ? new Date(value.sendDate) : null,
         assignBy: value.sendName,
         receiveBy: value.checkName,
+        receiveDate: value.checkDate ? new Date(value.checkDate) : null,
         remark1: value.remark1,
         remark2: value.remark2,
         totalWages: value.wagesTotal
@@ -632,6 +649,10 @@ export default {
         null
       )
     },
+    calTotalWages(data) {
+      data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
+      console.log(data.totalWages)
+    },
 
     // ----------- Grid -------------------//
     onRowEditSave(event) {
@@ -661,6 +682,7 @@ export default {
     async submit() {
       try {
         this.isLoading = true
+        //console.log(this.form.assignDate)
         const param = {
           wo: this.model.wo,
           woNumber: this.model.woNumber,
