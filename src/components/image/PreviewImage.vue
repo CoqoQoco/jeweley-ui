@@ -48,7 +48,21 @@ export default {
     borderShow: {
       type: Boolean,
       default: () => true
-    }
+    },
+    // fetch: {
+    //   type: Number,
+    //   required: true,
+    //   default: () => 0
+    // }
+  },
+  watch: {
+    // fetch(value) {
+    //   console.log(this.imageName)
+    //   console.log(value)
+    //   if (value > 0) {
+    //     //this.fetchImageData()
+    //   }
+    // }
   },
   data() {
     return {

@@ -2,20 +2,45 @@
   <div class="app-container-modal">
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
-      <template v-slot:title>
+      <!-- <template v-slot:title>
         <h5>{{ `เเก้ไขเเม่พิมพ์ - ${model.code}` }}</h5>
-      </template>
+      </template> -->
       <template v-slot:content>
+        <h5>{{ `เเก้ไขเเม่พิมพ์ - ${model.code}` }}</h5>
         <form @submit.prevent="onSubmit">
           <div class="form-container">
             <div class="row form-group">
-              <div class="col-md-7 image-container">
-                <div class="image-box-container">
-                  <div v-if="urlImage">
-                    <img class="image-preview" :src="urlImage" alt="Image" preview />
+              <!-- <div class="col-md-7">
+                <div class="image-container">
+                  <div v-if="!isShowUpdateImage" class="image-box-container">
+                    <div v-if="urlImage">
+                      <img class="image-preview" :src="urlImage" alt="Image" preview />
+                    </div>
+                    <div v-else class="spinner-border" role="status">
+                      <span class="sr-only">Loading...</span>
+                    </div>
                   </div>
-                  <div v-else class="spinner-border" role="status">
-                    <span class="sr-only">Loading...</span>
+                </div>
+              </div> -->
+              <div class="col-md-7">
+                <div class="image-container">
+                  <div class="upload-btn">
+                    <input
+                      class="hidden-input"
+                      type="file"
+                      ref="fileInput"
+                      accept=".jpg, .png"
+                      @change="onSelectImg"
+                    />
+                    <button class="btn btn-sm btn-warning btn-upload-custom" type="button">
+                      เเเก้ไขรูปภาพ
+                    </button>
+                  </div>
+                  <div class="upload-preview">
+                    <div v-if="urlImage">
+                      <img :src="urlImage" alt="Preview" class="preview-image" />
+                      <!-- <i class="bi bi-x del-iamge-x"></i> -->
+                    </div>
                   </div>
                 </div>
               </div>
@@ -62,7 +87,7 @@
               <div class="col-md-12">
                 <div class="btn-container">
                   <button class="btn btn-sm btn-warning" type="submit">
-                    <span class="mr-2"><i class="bi bi-pencil"></i></span
+                    <span class="mr-2"><i class="bi bi-brush"></i></span
                     ><span>เเก้ไขเเม่พิมพ์</span>
                   </button>
                 </div>
@@ -122,6 +147,7 @@ export default {
     return {
       // --- flag ---- //
       isLoading: false,
+      isShowUpdateImage: false,
       type: 'ORDERPLAN',
       name: '',
       urlImage: '',
@@ -143,6 +169,28 @@ export default {
   },
   methods: {
     // --------- controller --------- //
+    onSelectImg(e) {
+      this.isLoading = true
+      if (e.target.files[0]) {
+        //const maxSizeInBytes = 1024 * 1024 // 1 MB (ตั้งค่าตามที่ต้องการ)
+        // if (e.target.files[0].size > maxSizeInBytes) {
+        //   alert('ไฟล์ที่คุณเลือกมีขนาดเกินกำหนด (1 MB)')
+        //   return
+        // }
+        this.name = e.target.files[0].name
+
+        //preview
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          this.urlImage = event.target.result
+        }
+        reader.readAsDataURL(e.target.files[0])
+
+        //assign
+        this.form.image = e.target.files[0]
+      }
+      this.isLoading = false
+    },
     closeModal() {
       //this.onclear()
       this.$emit('closeModal')
@@ -165,14 +213,29 @@ export default {
       try {
         this.isLoading = true
 
-        let params = {
-          code: this.form.code,
-          category: this.form.category.nameTh,
-          categoryCode: this.form.category.code,
-          description: this.form.description
+        // let params = {
+        //   code: this.form.code,
+        //   category: this.form.category.nameTh,
+        //   categoryCode: this.form.category.code,
+        //   description: this.form.description,
+        //   Images: this.form.image ? this.form.image : null
+
+        // }
+
+        let params = new FormData()
+        params.append('code', this.form.code)
+        params.append('category', this.form.category.nameTh)
+        params.append('categoryCode', this.form.category.code)
+        params.append('description', this.form.description)
+        params.append('images', this.form.image ? this.form.image : null)
+
+        let options = {
+          headers: {
+            'Content-Type': `multipart/form-data`
+          }
         }
 
-        const res = await api.jewelry.post('Mold/UpdateMold', params)
+        const res = await api.jewelry.post('Mold/UpdateMold', params, options)
         if (res) {
           //console.log(res)
           swAlert.success(
@@ -280,6 +343,9 @@ label {
   font-weight: 300;
   margin: 5px 0px 0px 0px;
 }
+.form-container {
+  padding: 10px;
+}
 .form-group {
   margin-bottom: 5px;
 }
@@ -302,13 +368,13 @@ label {
   border: 1px solid var(--base-color);
   background-color: #ffff;
   padding: 0px;
-  display: grid;
+  //display: grid;
 }
 .hidden-input {
   opacity: 0;
   overflow: hidden;
   position: absolute;
-  width: 80%;
+  width: 100%;
   height: 35px;
 }
 .btn-upload-custom {
@@ -319,14 +385,14 @@ label {
   display: grid;
   place-items: center;
   //width: 20rem;
-  height: 24rem;
+  height: 22rem;
 }
 .preview-image {
   width: 20rem;
   height: 20rem;
   margin: 10px 0px;
-  border: 1px solid var(--base-sub-color);
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  //border: 1px solid var(--base-sub-color);
+  //box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   border-radius: 10px;
 }
 
@@ -339,11 +405,11 @@ label {
 }
 .image-container {
   display: grid;
-  place-items: center;
+  //place-items: center;
   //height: 300px;
 }
 .image-box-container {
-  border: 1px solid var(--base-color);
+  //border: 1px solid var(--base-color);
   border-radius: 8px;
 }
 .flex-group {

@@ -2,10 +2,11 @@
   <div class="app-container-modal">
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
-      <template v-slot:title>
+      <!-- <template v-slot:title>
         <h5>สร้างเเม่พิมพ์</h5>
-      </template>
+      </template> -->
       <template v-slot:content>
+        <h5>สร้างเเม่พิมพ์</h5>
         <form @submit.prevent="onSubmit">
           <div class="form-container">
             <div class="row form-group">
@@ -172,7 +173,6 @@ export default {
 
         let params = new FormData()
         params.append('code', this.form.code)
-        console.log(this.form.category)
         params.append('category', this.form.category.nameTh)
         params.append('categoryCode', this.form.category.code)
         params.append('description', this.form.description)
@@ -274,6 +274,9 @@ label {
   font-weight: 300;
   margin: 5px 0px 0px 0px;
 }
+.form-container {
+  padding: 10px;
+}
 .form-group {
   margin-bottom: 5px;
 }
@@ -302,7 +305,7 @@ label {
   opacity: 0;
   overflow: hidden;
   position: absolute;
-  width: 80%;
+  width: 100%;
   height: 35px;
 }
 .btn-upload-custom {

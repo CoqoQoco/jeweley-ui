@@ -1,21 +1,22 @@
 <template>
   <div class="app-container">
     <loading :isLoading="isLoading"></loading>
-    <pageTitle
-      title="ออกเเบบ สร้างเเม่พิมพ์"
-      description="ข้อมูลออกเเบบ สร้างเเม่พิมพ์ เเละรายละเอียดต่างๆ"
-      :isShowBtnClose="false"
-      isShowRightSlot
-    >
-      <!-- <template v-slot:rightSlot>
+
+    <form @submit.prevent="onSearch">
+      <div class="filter-container mb-3">
+        <pageTitle
+          title="ออกเเบบ สร้างเเม่พิมพ์"
+          description="ข้อมูลออกเเบบ สร้างเเม่พิมพ์ เเละรายละเอียดต่างๆ"
+          :isShowBtnClose="false"
+          isShowRightSlot
+        >
+          <!-- <template v-slot:rightSlot>
         <div class="mr-2 p-1 w-50 text-center bg-dark text-white" style="height: 31px" disable>
           สถานะ : {{ statusName }}
         </div>
         <pdf class="btn btn-sm btn-info w-50" :modelValue="data" :matValue="mat"></pdf>
       </template> -->
-    </pageTitle>
-    <form @submit.prevent="onSearch">
-      <div class="filter-container mb-3">
+        </pageTitle>
         <!-- first row -->
         <div class="row form-group">
           <div class="col-md-8">
@@ -97,7 +98,7 @@
             </div> -->
             <!-- <pdf class="btn btn-sm btn-info" :modelValue="slotProps.data"></pdf> -->
             <button class="btn btn-sm btn btn-warning" @click="updateMold(slotProps.data)">
-              <i class="bi bi-pencil"></i>
+              <i class="bi bi-brush"></i>
             </button>
           </div>
         </template>
@@ -141,6 +142,7 @@ import api from '@/axios/axios-config.js'
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+//import Image from 'primevue/image'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
@@ -161,6 +163,7 @@ export default {
     imagePreview,
     DataTable,
     Column
+    //Image
   },
   data() {
     return {
@@ -168,6 +171,7 @@ export default {
       isShowModalAddMold: false,
       isShowModalUpdateMold: false,
       isLoadingImage: false,
+      countFetchImage: 0,
       form: {
         text: null
       },
@@ -212,6 +216,7 @@ export default {
     fetchDataByCreate() {
       this.isShowModalAddMold = false
       this.isShowModalUpdateMold = false
+      this.countFetchImage = ++this.countFetchImage
       this.fetchData()
     },
     updateMold(data) {
@@ -220,12 +225,13 @@ export default {
       this.isShowModalUpdateMold = true
     }, // ------ api -------- //
     onSearch() {
+      this.countFetchImage = ++this.countFetchImage
       this.fetchData()
     },
     async fetchData() {
       try {
         this.isLoading = true
-
+        this.data = []
         const param = {
           take: this.take,
           skip: this.skip,
@@ -245,6 +251,24 @@ export default {
       } catch (error) {
         console.log(error)
         this.isLoading = false
+      }
+    },
+    async fetchImageData(item) {
+      try {
+        console.log(item)
+        const param = {
+          imageName: `${item}-Mold.png`
+        }
+        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+
+        console.log(res)
+        if (res) {
+          return `data:image/png;base64,${res}`
+        } else {
+          return ''
+        }
+      } catch (error) {
+        console.log(error)
       }
     }
   },

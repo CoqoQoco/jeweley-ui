@@ -86,7 +86,7 @@
               class="btn btn-sm btn btn-main"
               @click="onUpdate(slotProps.data)"
             >
-              <i class="bi bi-pencil-fill"></i>
+              <i class="bi bi-brush"></i>
             </button>
           </div>
         </template>

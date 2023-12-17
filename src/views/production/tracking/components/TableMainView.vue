@@ -205,6 +205,7 @@ export default {
     async fetchData() {
       try {
         this.isLoading = true
+        this.data = {}
         //console.log(this.formValue)
         const param = {
           take: this.take,
