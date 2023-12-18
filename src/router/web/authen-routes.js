@@ -234,9 +234,9 @@ const routes = [
     meta: {
       Displayname: {
         en: 'Customer Data',
-        th: 'รายชื่อลูกค้า'
+        th: 'ข้อมูลลูกค้า'
       },
-      classIcon: 'bi bi-person-fill-gear',
+      classIcon: 'bi bi-person-lines-fill',
       majorShow: true
     },
     children: [
@@ -247,9 +247,52 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Customer Data',
-            th: 'รายชื่อลูกค้า'
+            th: 'ข้อมูลลูกค้า'
           },
           minorShow: false
+        }
+      }
+    ]
+  },
+
+  // ------ worker-------
+  {
+    path: '/worker',
+    component: Layout,
+    redirect: '/worker',
+    name: 'worker',
+    meta: {
+      Displayname: {
+        en: 'Woker',
+        th: 'ข้อมูลพนักงาน'
+      },
+      classIcon: 'bi bi-person-gear',
+      majorShow: true,
+      btsubLineShow: true
+    },
+    children: [
+      {
+        path: '/worker-name',
+        name: 'worker-name',
+        component: Report,
+        meta: {
+          Displayname: {
+            en: 'Worker Name',
+            th: 'ข้อมูลพนักงาน (ช่าง)'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/worker-salary',
+        name: 'worker-salary',
+        component: Report,
+        meta: {
+          Displayname: {
+            en: 'Worker Salary',
+            th: 'รายงานค่าเเรงช่าง'
+          },
+          minorShow: true
         }
       }
     ]
