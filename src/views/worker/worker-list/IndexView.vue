@@ -33,7 +33,6 @@
                 type="text"
                 v-model.trim="form.text"
                 placeholder="พิมพ์บางอย่างเพื่อค้นหา"
-                required
               />
               <div class="input-group-append">
                 <span class="input-group-text">
@@ -41,6 +40,18 @@
                 </span>
               </div>
             </div>
+          </div>
+          <div>
+            <span class="text-title">
+              <span>สถานะ</span>
+              <!-- <span class="text-required"> *</span> -->
+            </span>
+            <Dropdown
+              v-model="form.active"
+              :options="masterActive"
+              optionLabel="description"
+              :showClear="form.active ? true : false"
+            />
           </div>
           <div class="btn-container">
             <button type="submit" class="btn btn-sm btn-main mr-2">
@@ -55,16 +66,23 @@
               </span>
               <span>ล้างคำค้นหา</span>
             </button>
-            <!-- <button type="button" @click="onShowFormAddCustomer" class="btn btn-sm btn-warning">
+            <button type="button" @click="onShowFormAddWorker" class="btn btn-sm btn-warning">
               <span class="mr-2">
                 <i class="bi bi-plus"></i>
               </span>
-              <span>เพิ่มข้อมูลลูกค้า</span>
-            </button> -->
+              <span>เพิ่มข้อมูลพนักงาน</span>
+            </button>
           </div>
         </div>
       </form>
     </div>
+    <TableMain :formValue="formValue"></TableMain>
+    <FormCreate
+      :isShow="isShowFormAddWorker"
+      :masterWorkerProductionType="masterWorkerProductionType"
+      @closeModal="onCloseFormAddWorker"
+      @fetch="onFetchFormAddWorker"
+    ></FormCreate>
   </div>
 </template>
 
@@ -76,11 +94,15 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTit
 
 import Dropdown from 'primevue/dropdown'
 
+import FormCreate from './components/FormCreate.vue'
+import TableMain from './components/TableMainView.vue'
+
 import api from '@/axios/axios-config.js'
 
 const interfaceForm = {
   type: null,
-  text: null
+  text: null,
+  active: { id: 0, description: 'เลือกทั้งหมด' }
 }
 const interfaceIsValid = {
   isValWorkerProductionType: false
@@ -89,7 +111,9 @@ export default {
   components: {
     loading,
     pageTitle,
-    Dropdown
+    Dropdown,
+    FormCreate,
+    TableMain
   },
   watch: {
     'form.type'() {
@@ -102,23 +126,55 @@ export default {
     return {
       // --- flag --- //
       isLoading: false,
+      isShowFormAddWorker: false,
 
       // --- form --- //
       form: {
         ...interfaceForm
       },
+      formValue: {
+        type: null,
+        text: null,
+        active: 0
+      },
       val: {
         ...interfaceIsValid
       },
-      masterWorkerProductionType: []
+      masterWorkerProductionType: [],
+      masterActive: [
+        { id: 0, description: 'เลือกทั้งหมด' },
+        { id: 1, description: 'เลือกเปิดใช้งาน' },
+        { id: 2, description: 'เลือกปิดใช้งาน' }
+      ]
     }
   },
   methods: {
     // --- controller ---//
-    onSearch() {},
+    onSearch() {
+      console.log(this.form)
+      this.formValue = {
+        type: this.form.type?.id,
+        text: this.form.text,
+        active: this.form.active?.id
+      }
+    },
     onClear() {
       this.form = {
         ...interfaceForm
+      }
+    },
+    onShowFormAddWorker() {
+      this.isShowFormAddWorker = true
+    },
+    onCloseFormAddWorker() {
+      this.isShowFormAddWorker = false
+    },
+    onFetchFormAddWorker() {
+      this.isShowFormAddWorker = false
+      this.formValue = {
+        type: this.form.type?.id,
+        text: this.form.text,
+        active: this.form.active?.id
       }
     },
 
@@ -148,7 +204,7 @@ export default {
 
 .search-bar-container {
   display: grid;
-  grid-template-columns: 2fr 2fr 4fr;
+  grid-template-columns: 2fr 2fr 2fr 4fr;
   gap: 10px;
   margin-bottom: 10px;
 }
