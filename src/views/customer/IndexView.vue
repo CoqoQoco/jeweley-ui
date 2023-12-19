@@ -12,7 +12,7 @@
       <form @submit.prevent="onSearch">
         <div class="search-bar-container">
           <div>
-            <span class="text-titel">ค้นหาลูกค้า</span>
+            <span class="text-title">ค้นหาลูกค้า</span>
             <div class="input-group input-group-inner">
               <input
                 id="inputStockID"

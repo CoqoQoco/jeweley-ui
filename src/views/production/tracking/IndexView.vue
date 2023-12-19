@@ -12,7 +12,7 @@
         </div>
         <div class="search-bar-container">
           <div>
-            <span class="text-titel">วันที่สร้างใบจ่าย-รับคืน</span>
+            <span class="text-title">วันที่สร้างใบจ่าย-รับคืน</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
@@ -32,7 +32,7 @@
             </div>
           </div>
           <div>
-            <span class="text-titel">คำค้นหา</span>
+            <span class="text-title">คำค้นหา</span>
             <div class="input-group input-group-inner">
               <input
                 ref="inputText"

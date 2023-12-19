@@ -18,6 +18,9 @@ export default {
   //
   customer: 'รายชื่อลูกค้า',
 
+  //worker
+  workerName: 'ข้อมูลพนักงาน (ช่าง)',
+
   //master
   masterGem: 'ข้อมูลพลอย',
   masterGemShape: 'ข้อมูลรูปร่างพลอย',

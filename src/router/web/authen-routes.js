@@ -18,6 +18,9 @@ const PlanOrderTracking = () => import('@/views/production/tracking/IndexView.vu
 const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
 //import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
 
+//worker
+const WorkerList = () => import('@/views/worker/worker-list/IndexView.vue')
+
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/GemView.vue')
 const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
@@ -274,7 +277,7 @@ const routes = [
       {
         path: '/worker-name',
         name: 'worker-name',
-        component: Report,
+        component: WorkerList,
         meta: {
           Displayname: {
             en: 'Worker Name',

@@ -160,7 +160,7 @@ export default {
           {
             style: 'tableExample',
             table: {
-              widths: [80, '*', '*', '*', '*'],
+              widths: [80, 160, '*', '*', '*'],
               body: [
                 //row 1
                 [
@@ -285,7 +285,11 @@ export default {
                     stack: [
                       { text: 'รหัสลูกค้า', style: 'title' },
                       {
-                        text: this.modelValue.customerNumber,
+                        text: ` ${
+                          this.modelValue.customerName
+                            ? `${this.modelValue.customerNumber} : ${this.modelValue.customerName}`
+                            : this.modelValue.customerNumber
+                        }`,
                         style: 'desc'
                       }
                     ]
@@ -293,9 +297,9 @@ export default {
                   //customer type
                   {
                     stack: [
-                      { text: 'ชื่อลูกค้า', style: 'title' },
+                      { text: 'ประเภทลูกค้า', style: 'title' },
                       {
-                        text: this.modelValue.customerTypeNavigation.nameTh,
+                        text: `${this.modelValue.customerTypeName}`,
                         style: 'desc'
                       }
                     ]
@@ -305,7 +309,7 @@ export default {
                     stack: [
                       { text: 'ประเภทสินค้า', style: 'title' },
                       {
-                        text: this.modelValue.productTypeNavigation.nameTh,
+                        text: this.modelValue.productType,
                         style: 'desc'
                       }
                     ]

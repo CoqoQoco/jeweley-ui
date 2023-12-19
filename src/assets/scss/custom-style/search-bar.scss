@@ -29,11 +29,14 @@
     margin-top: 10px;
 }
 
-.text-titel {
+.text-title {
     margin-bottom: 0px;
     font-size: 12px;
     font-weight: 700;
     color: var(--base-font-color);
+}
+.text-required {
+    color: red;
 }
 .text-main-color {
     color: var(--base-font-color);
