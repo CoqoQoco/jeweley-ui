@@ -125,7 +125,19 @@
                     </template>
                   </Column>
                   <!-- <Column field="goldWeightDiffPercent" header="ทอง" style="width: 10%"> </Column> -->
-                  <Column field="worker" header="ช่างรับงาน" style="min-width: 120px"> </Column>
+                  <Column field="worker" header="ช่างรับงาน" style="min-width: 120px">
+                    <template #body="slotProps">
+                      <div class="text-center">
+                        {{
+                          `${
+                            slotProps.data.worker
+                              ? `${slotProps.data.worker} - ${slotProps.data.workerName}`
+                              : null
+                          }`
+                        }}
+                      </div>
+                    </template>
+                  </Column>
                   <Column field="totalWages" header="รวมค่าแรงช่าง" style="width: 120px">
                     <template #body="slotProps">
                       <div class="text-right">

@@ -61,7 +61,7 @@
             <div>
               <span class="txt-title">ประเภทลูกค้า</span>
               <div class="flex-group">
-                <div class="w-25 txt-desc">{{ model.customerTypeNavigation.nameTh }}</div>
+                <div class="w-25 txt-desc">{{ model.customerTypeName }}</div>
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
                 <Dropdown
                   v-model="form.customerType"
@@ -88,7 +88,7 @@
             <div>
               <span class="txt-title">ประเภทสินค้า</span>
               <div class="flex-group">
-                <div class="w-25 txt-desc">{{ model.productTypeNavigation.nameTh }}</div>
+                <div class="w-25 txt-desc">{{ model.productTypeName}}</div>
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
                 <Dropdown
                   v-model="form.productType"

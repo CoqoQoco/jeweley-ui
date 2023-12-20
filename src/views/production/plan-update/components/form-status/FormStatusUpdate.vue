@@ -57,7 +57,7 @@
               </div>
               <div>
                 <span class="txt-title">ผู้รับงาน</span>
-                <input type="text" class="form-control" v-model="form.receiveBy" required />
+                <input type="text" class="form-control" v-model="form.receiveBy" />
               </div>
             </div>
             <div class="mb-2 mt-2 txt-title-part">
@@ -185,14 +185,34 @@
                     />
                   </template>
                 </Column>
-                <Column field="worker" header="ช่างรับงาน" style="min-width: 150px">
+                <Column field="workers" header="ช่างรับงาน" style="min-width: 150px">
                   <template #editor="{ data, field }">
-                    <input
+                    <!-- <input
                       type="text"
                       :class="data[field] ? `` : `bg-warning`"
                       class="form-control"
                       v-model="data[field]"
-                    />
+                    /> -->
+                    <AutoComplete
+                      v-model="data[field]"
+                      :suggestions="workerItemSearch"
+                      @complete="onSearchWorker"
+                      placeholder="กรอกรหัส/ชื่อช่าง...."
+                      :class="data[field] ? `` : `bg-warning`"
+                      optionLabel="code"
+                      forceSelection
+                    >
+                      <template #option="slotProps">
+                        <div class="flex align-options-center">
+                          <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
+                        </div>
+                      </template>
+                    </AutoComplete>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.workers">
+                      {{ `${slotProps.data.workers.code} - ${slotProps.data.workers.nameTh}` }}
+                    </div>
                   </template>
                 </Column>
                 <Column field="totalWages" header="รวมค่าแรงช่าง" style="width: 120px">
@@ -470,6 +490,7 @@ import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import AutoComplete from 'primevue/autocomplete'
 import moment from 'dayjs'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
@@ -511,7 +532,8 @@ export default {
     Calendar,
     Dropdown,
     DataTable,
-    Column
+    Column,
+    AutoComplete
   },
   props: {
     isShow: {
@@ -551,24 +573,28 @@ export default {
     }
   },
   watch: {
-    modelMatValue(value) {
+    async modelMatValue(value) {
       //onsole.log(value)
       this.autoId = 0
       if (value.tbtProductionPlanStatusDetail) {
-        this.mat = value.tbtProductionPlanStatusDetail.map((thing) => {
-          return {
-            id: ++this.autoId,
-            gold: thing.gold,
-            goldQTYSend: thing.goldQtySend,
-            goldWeightSend: thing.goldWeightSend,
-            goldQTYCheck: thing.goldQtyCheck,
-            goldWeightCheck: thing.goldWeightCheck,
-            description: thing.description,
-            worker: thing.worker,
-            wages: thing.wages,
-            totalWages: thing.totalWages
-          }
-        })
+        this.mat = await Promise.all(
+          value.tbtProductionPlanStatusDetail.map(async (thing) => {
+            return {
+              id: ++this.autoId,
+              gold: thing.gold,
+              goldQTYSend: thing.goldQtySend,
+              goldWeightSend: thing.goldWeightSend,
+              goldQTYCheck: thing.goldQtyCheck,
+              goldWeightCheck: thing.goldWeightCheck,
+              description: thing.description,
+              workers: await this.onSearchWorkerByCode(thing.worker),
+              worker: thing.worker,
+              wages: thing.wages,
+              totalWages: thing.totalWages
+            }
+          })
+        )
+        //console.log(this.mat)
       }
 
       //console.log(this.mat)
@@ -599,7 +625,8 @@ export default {
         ...interfaceVal
       },
       mat: [],
-      editingRows: []
+      editingRows: [],
+      workerItemSearch: []
     }
   },
   methods: {
@@ -683,6 +710,13 @@ export default {
       try {
         this.isLoading = true
         //console.log(this.form.assignDate)
+        this.mat = this.mat.map((item) => {
+          return {
+            ...item,
+            worker: item.workers?.code
+          }
+        })
+
         const param = {
           wo: this.model.wo,
           woNumber: this.model.woNumber,
@@ -725,6 +759,61 @@ export default {
       } catch (error) {
         this.isLoading = false
         console.log(error)
+      }
+    },
+    async onSearchWorker(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null,
+            type: this.form.status,
+            active: 1
+          }
+        }
+        const res = await api.jewelry.post('Worker/Search', params)
+        if (res) {
+          //console.log(res)
+          this.workerItemSearch = [...res.data]
+          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
+    },
+    async onSearchWorkerByCode(e) {
+      try {
+        if (e === null) {
+          return null
+        }
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            code: e,
+            text: null,
+            type: null,
+            active: 0
+          }
+        }
+        const res = await api.jewelry.post('Worker/Search', params)
+        if (res) {
+          //console.log(res.data[0])
+          return res.data[0]
+        } else {
+          return null
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
       }
     }
   }
