@@ -678,7 +678,7 @@ export default {
     },
     calTotalWages(data) {
       data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
-      console.log(data.totalWages)
+      //console.log(data.totalWages)
     },
 
     // ----------- Grid -------------------//
@@ -704,7 +704,6 @@ export default {
       this.mat.push(add)
     },
 
-    // --- APIs --- //
     // --- APIs --- //
     async submit() {
       try {

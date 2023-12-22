@@ -27,6 +27,15 @@
                 <span><i class="bi bi-brush text-warning"></i></span>
               </button>
               <button
+                v-if="data.status === 80"
+                :disabled="!checkNull(data.tbtProductionPlanStatusDetail)"
+                class="p-panel-header-icon p-link mr-2"
+                title="พิมพ์สลิป"
+                @click="onShowPrintEmbedBill(data)"
+              >
+                <span><i class="bi bi-printer text-info"></i></span>
+              </button>
+              <button
                 class="p-panel-header-icon p-link mr-2"
                 @click="onDelStatus(data.id)"
                 title="ลบ"
@@ -368,6 +377,12 @@
       @closeModal="onCloseFormStatusUpdate"
       @fetch="fetchFormStatusUpdate"
     ></FormStatusUpdate>
+    <PrintEnbedBill
+      :isShow="isShowPrintEmbedBill"
+      :modelValue="model"
+      :modelValueStatus="embedDataPrint"
+      @closeModal="onClosePrintEmbedBill"
+    ></PrintEnbedBill>
   </div>
 </template>
 
@@ -389,13 +404,16 @@ import moment from 'dayjs'
 import api from '@/axios/axios-config.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
+import PrintEnbedBill from './FormPrintEmbedBill.vue'
+
 export default {
   components: {
     pdf,
     Panel,
     DataTable,
     Column,
-    FormStatusUpdate
+    FormStatusUpdate,
+    PrintEnbedBill
   },
   props: {
     modelValue: {
@@ -435,9 +453,11 @@ export default {
       // --- flag --- //
       wages: 0,
       isShowFormStatusUpdate: false,
+      isShowPrintEmbedBill: false,
 
       // --- form --- //
-      matStatusItemUpdate: {}
+      matStatusItemUpdate: {},
+      embedDataPrint: {}
     }
   },
   methods: {
@@ -497,6 +517,14 @@ export default {
     fetchFormStatusUpdate() {
       this.isShowFormStatusUpdate = false
       this.$emit('fetch')
+    },
+    onShowPrintEmbedBill(data) {
+      //console.log(data)
+      this.embedDataPrint = { ...data }
+      this.isShowPrintEmbedBill = true
+    },
+    onClosePrintEmbedBill() {
+      this.isShowPrintEmbedBill = false
     },
 
     // --- APIs --- //
