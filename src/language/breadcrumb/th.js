@@ -20,6 +20,7 @@ export default {
 
   //worker
   workerName: 'ข้อมูลพนักงาน (ช่าง)',
+  workerDailyWages: 'ตรวจสอบค่าเเรง',
 
   //master
   masterGem: 'ข้อมูลพลอย',

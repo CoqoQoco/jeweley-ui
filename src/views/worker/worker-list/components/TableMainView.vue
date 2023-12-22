@@ -17,6 +17,19 @@
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
+      <Column field="" header="" style="width: 80px">
+        <template #body="slotProps">
+          <div class="btn-action-container">
+            <button
+              class="btn btn-sm btn btn-main"
+              title="ตรวจสอบค่าเเรง"
+              @click="viewWorkerWages(slotProps.data)"
+            >
+              <i class="bi bi-wallet2"></i>
+            </button>
+          </div>
+        </template>
+      </Column>
       <Column field="code" header="รหัสพนักงาน"> </Column>
       <Column field="typeName" header="แผนก"> </Column>
       <Column field="nameTh" header="ชื่อพนักงาน (TH)"> </Column>
@@ -84,6 +97,10 @@ export default {
     },
     formatDate(date) {
       return formatDate(date)
+    },
+    viewWorkerWages(item) {
+      const id = item.code
+      window.open(`/worker-daily-wages/${id}`, '_blank')
     },
 
     // --- APIs --- //

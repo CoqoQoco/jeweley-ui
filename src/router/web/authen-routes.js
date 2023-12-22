@@ -20,6 +20,7 @@ const PlanOrderTrackingView = () => import('@/views/production/plan-update/Index
 
 //worker
 const WorkerList = () => import('@/views/worker/worker-list/IndexView.vue')
+const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/IndexView.vue')
 
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/GemView.vue')
@@ -284,6 +285,18 @@ const routes = [
             th: 'ข้อมูลพนักงาน (ช่าง)'
           },
           minorShow: true
+        }
+      },
+      {
+        path: '/worker-daily-wages/:id',
+        name: 'worker-daily-wages',
+        component: WorkerDailyWages,
+        meta: {
+          Displayname: {
+            en: 'Worker Wages',
+            th: 'ตรวจสอบค่าเเรงช่าง'
+          },
+          minorShow: false
         }
       },
       {
