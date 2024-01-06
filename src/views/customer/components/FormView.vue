@@ -148,8 +148,8 @@ export default {
   }
 }
 </script>
-
 <style lang="scss" scoped>
+$custom-height: calc(100vh - 240px);
 :deep(.p-panel .p-panel-header) {
   border: 1px solid var(--base-color);
   padding: 10px;
@@ -165,7 +165,8 @@ export default {
   background-color: #f7f7f7;
   //padding: 20px 20px;
   //overflow: auto;
-  height: calc(100vh - 240px);
+  //height: $custom-height;
+  //height: calc(100vh - 240px);
 }
 .title-container {
   height: 50px;
@@ -179,7 +180,7 @@ export default {
 }
 .content-container {
   margin: 10px 20px;
-  height: 410px;
+  //height: calc(100vh - 280px);
   //border: 1px solid #dddddd;
   overflow: auto;
 }
