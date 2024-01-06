@@ -155,7 +155,7 @@
           >
             <Column :rowEditor="true" style="min-width: 100px" bodyStyle="text-align:center">
             </Column>
-            <Column style="width: 10px">
+            <Column style="min-width: 60px">
               <template #body="prop">
                 <div class="btn btn-danger text-center w-100" @click="onDelMaterial(prop.data)">
                   <i class="bi bi-trash-fill"></i>
@@ -235,6 +235,32 @@
                   :showClear="data[field] ? true : false"
                 >
                 </Dropdown>
+              </template>
+            </Column>
+            <!-- <Column field="gemSize" header="ขนาดพลอย" style="min-width: 150px">
+              <template #body="slotProps">
+                <span>{{ slotProps.data.gemSize?.description }}</span>
+              </template>
+              <template #editor="{ data, field }">
+                <Dropdown
+                  v-model="data[field]"
+                  :options="masterGemShape"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                  placeholder="เลือกรูปร่าง"
+                  :showClear="data[field] ? true : false"
+                >
+                </Dropdown>
+              </template>
+            </Column> -->
+            <Column field="gemSize" header="ขนาดพลอย" style="min-width: 100px">
+              <template #editor="{ data, field }">
+                <input
+                  type="text"
+                  :class="data[field] ? `` : `bg-warning`"
+                  class="form-control"
+                  v-model="data[field]"
+                />
               </template>
             </Column>
             <Column field="gemQty" header="จำนวน" style="min-width: 100px">
@@ -527,7 +553,7 @@ export default {
         }
         return false
       }
-       if (!this.form.customerNumber) {
+      if (!this.form.customerNumber) {
         this.val = {
           isValCustomerNumber: true
         }
@@ -574,7 +600,7 @@ export default {
         const res = await api.jewelry.post('Customer/SearchCustomer', param)
         if (res) {
           this.customerItemSearch = res.data.map((x) => `${x.code}`)
-          console.log(this.customerItemSearch )
+          console.log(this.customerItemSearch)
         }
       } catch (error) {
         console.log(error)

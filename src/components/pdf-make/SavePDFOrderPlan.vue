@@ -309,7 +309,7 @@ export default {
                     stack: [
                       { text: 'ประเภทสินค้า', style: 'title' },
                       {
-                        text: this.modelValue.productType,
+                        text: this.modelValue.productTypeName,
                         style: 'desc'
                       }
                     ]

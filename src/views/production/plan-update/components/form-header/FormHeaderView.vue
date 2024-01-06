@@ -61,7 +61,7 @@
             <span class="txt-desc">{{ getCustomerType(model.customerType) }}</span>
           </div>
         </div>
-        <div class="data-txt-deatail-conatiner mb-2">
+        <div class="data-txt-deatail-conatiner-customer mb-2">
           <div class="d-flex flex-column">
             <span class="txt-title">รหัสสินค้า</span>
             <span class="txt-desc">{{ model.productNumber ? model.productNumber : '-' }}</span>
@@ -247,8 +247,8 @@ export default {
   padding: 0px 0px 0px 30px;
   font-size: 20px;
 }
-.data-txt-deatail-conatiner-customer{
-   display: grid;
+.data-txt-deatail-conatiner-customer {
+  display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   gap: 10px;
   padding: 0px 0px 0px 30px;
