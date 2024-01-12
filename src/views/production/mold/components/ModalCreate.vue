@@ -56,11 +56,17 @@
                 </div>
                 <div class="row form-group">
                   <div class="col-md-12">
+                    <label>ช่างขึ้นพิมพ์</label>
+                    <input type="text" class="form-control" v-model="form.moldBy" />
+                  </div>
+                </div>
+                <div class="row form-group">
+                  <div class="col-md-12">
                     <label>คำอธิบาย</label>
                     <textarea
                       class="form-control"
                       v-model="form.description"
-                      style="height: 13.8rem"
+                      style="height: 9.3rem"
                       required
                     />
                   </div>
@@ -175,6 +181,7 @@ export default {
         params.append('code', this.form.code)
         params.append('category', this.form.category.nameTh)
         params.append('categoryCode', this.form.category.code)
+        params.append('moldBy', this.form.moldBy)
         params.append('description', this.form.description)
         params.append('images', this.form.image)
 

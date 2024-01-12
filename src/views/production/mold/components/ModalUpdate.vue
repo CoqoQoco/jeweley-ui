@@ -71,6 +71,12 @@
                 </div>
                 <div class="row form-group">
                   <div class="col-md-12">
+                    <label>ช่างขึ้นพิมพ์</label>
+                    <input type="text" class="form-control" v-model="form.moldBy" />
+                  </div>
+                </div>
+                <div class="row form-group">
+                  <div class="col-md-12">
                     <label>คำอธิบาย</label>
                     <textarea
                       class="form-control"
@@ -137,6 +143,7 @@ export default {
     async modelValue(value) {
       this.form = {
         code: value.code,
+        moldBy: value.moldBy,
         description: value.description
       }
       //console.log(value)
@@ -227,6 +234,7 @@ export default {
         params.append('category', this.form.category.nameTh)
         params.append('categoryCode', this.form.category.code)
         params.append('description', this.form.description)
+        params.append('moldBy', this.form.moldBy)
         params.append('images', this.form.image ? this.form.image : null)
 
         let options = {

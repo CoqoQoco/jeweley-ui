@@ -80,7 +80,7 @@
                 <input type="number" min="1" class="form-control" v-model="form.gemQty" />
               </div>
               <div>
-                <span class="txt-title">ขนาด</span>
+                <span class="txt-title">หน่วย</span>
                 <input type="text" class="form-control" v-model="form.gemUnit" />
               </div>
             </div>
@@ -116,7 +116,7 @@
                 <input type="number" min="1" class="form-control" v-model="form.diamondQty" />
               </div>
               <div>
-                <span class="txt-title">ขนาด</span>
+                <span class="txt-title">หน่วย</span>
                 <input type="text" class="form-control" v-model="form.diamondUnit" />
               </div>
             </div>

@@ -103,9 +103,9 @@
           </div>
         </template>
       </Column>
-      <Column header="รหัส" field="code" style="width: 20%"></Column>
-      <Column header="ประเภท" field="category" style="width: 20%"></Column>
-      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" style="width: 20%">
+      <Column header="รหัส" field="code"></Column>
+      <Column header="ประเภท" field="category" ></Column>
+      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" >
         <template #body="slotProps">
           <div class="image-container">
             <loading :isLoading="isLoadingImage"></loading>
@@ -114,6 +114,7 @@
           </div>
         </template>
       </Column>
+        <Column header="ช่างขึ้นพิมพ์" field="moldBy"></Column>
       <Column header="รายละเอียด" field="description"></Column>
     </DataTable>
     <modalCreate
