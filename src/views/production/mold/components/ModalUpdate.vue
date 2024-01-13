@@ -81,7 +81,7 @@
                     <textarea
                       class="form-control"
                       v-model="form.description"
-                      style="height: 13.8rem"
+                      style="height: 9.3rem"
                       required
                     />
                   </div>
