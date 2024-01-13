@@ -192,7 +192,11 @@
                     />
                   </template>
                 </Column>
-                <Column field="workers" header="ช่างรับงาน" style="min-width: 150px">
+                <Column
+                  field="workers"
+                  :header="form.status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
+                  style="min-width: 150px"
+                >
                   <template #editor="{ data, field }">
                     <!-- <input
                       type="text"
@@ -219,6 +223,43 @@
                   <template #body="slotProps">
                     <div v-if="slotProps.data.workers">
                       {{ `${slotProps.data.workers.code} - ${slotProps.data.workers.nameTh}` }}
+                    </div>
+                  </template>
+                </Column>
+                <Column
+                  v-if="form.status === 90"
+                  field="workersSub"
+                  header="ช่างชุบ"
+                  style="min-width: 150px"
+                >
+                  <template #editor="{ data, field }">
+                    <!-- <input
+                      type="text"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    /> -->
+                    <AutoComplete
+                      v-model="data[field]"
+                      :suggestions="workerItemSearch"
+                      @complete="onSearchWorker"
+                      placeholder="กรอกรหัส/ชื่อช่าง...."
+                      :class="data[field] ? `` : `bg-warning`"
+                      optionLabel="code"
+                      forceSelection
+                    >
+                      <template #option="slotProps">
+                        <div class="flex align-options-center">
+                          <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
+                        </div>
+                      </template>
+                    </AutoComplete>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.workersSub">
+                      {{
+                        `${slotProps.data.workersSub.code} - ${slotProps.data.workersSub.nameTh}`
+                      }}
                     </div>
                   </template>
                 </Column>
@@ -493,6 +534,7 @@ const interfaceMat = {
   goldQTYCheck: null,
   goldWeightCheck: null,
   workers: null,
+  workersSub: null,
   description: null,
   wages: null
 }
@@ -656,6 +698,7 @@ export default {
         goldQTYCheck: null,
         goldWeightCheck: null,
         worker: null,
+        workerSub: null,
         wages: null
       }
       this.matAssign.push(add)
@@ -668,7 +711,8 @@ export default {
         this.matAssign = this.matAssign.map((item) => {
           return {
             ...item,
-            worker: item.workers?.code
+            worker: item.workers?.code,
+            workerSub: item.workersSub?.code
           }
         })
         const param = {

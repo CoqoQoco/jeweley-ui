@@ -134,13 +134,35 @@
                     </template>
                   </Column>
                   <!-- <Column field="goldWeightDiffPercent" header="ทอง" style="width: 10%"> </Column> -->
-                  <Column field="worker" header="ช่างรับงาน" style="min-width: 120px">
+                  <Column
+                    field="worker"
+                    :header="data.status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
+                    style="min-width: 120px"
+                  >
                     <template #body="slotProps">
                       <div class="text-center">
                         {{
                           `${
                             slotProps.data.worker
                               ? `${slotProps.data.worker} - ${slotProps.data.workerName}`
+                              : null
+                          }`
+                        }}
+                      </div>
+                    </template>
+                  </Column>
+                  <Column
+                    v-if="data.status === 90"
+                    field="workerSub"
+                    header="ช่างชุบ"
+                    style="min-width: 120px"
+                  >
+                    <template #body="slotProps">
+                      <div class="text-center">
+                        {{
+                          `${
+                            slotProps.data.workerSub
+                              ? `${slotProps.data.workerSub} - ${slotProps.data.workerSubName}`
                               : null
                           }`
                         }}
