@@ -45,14 +45,33 @@
           </div>
           <div>
             <span class="text-title">เลือกวันที่ตรวจสอบ</span>
-            <div>
+            <div class="flex-group">
+              <Calendar
+                class="w-100"
+                v-model="form.requestDateStart"
+                :max-date="form.requestDateEnd"
+                :class="val.isValRequestDateStart === true ? `p-invalid` : ``"
+                showIcon
+                placeholder="เริ่มต้น"
+              />
+              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+              <Calendar
+                class="w-100"
+                v-model="form.requestDateEnd"
+                :min-date="form.requestDateStart"
+                :class="val.isValRequestDateEnd === true ? `p-invalid` : ``"
+                showIcon
+                placeholder="สิ้นสุด"
+              />
+            </div>
+            <!-- <div>
               <Calendar
                 v-model="form.requestDate"
                 :class="val.isValRequestDate === true ? `p-invalid` : ``"
                 showIcon
                 showButtonBar
               />
-            </div>
+            </div> -->
           </div>
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
@@ -166,10 +185,16 @@
       </div>
     </div>
     <div v-if="isShowDataTable">
-      <div class="btn-container">
-        <button class="btn btn-sm btn-info mr-2" style="width: 200px" @click="generatePDF">
+      div class="btn-container">
+        <button class="btn btn-sm btn-info mr-2" style="width: 200px" @click="generatePDF('success')">
           <span><i class="bi bi-printer"></i></span>
-          <span class="ml-2">พิมพ์สลิป</span>
+          <span class="ml-2">พิมพ์สลิปสถานะติดตาม</span>
+        </button>
+      </div>
+      <div class="btn-container">
+        <button class="btn btn-sm btn-info mr-2" style="width: 200px" @click="generatePDF('wating')">
+          <span><i class="bi bi-printer"></i></span>
+          <span class="ml-2">พิมพ์สลิปสถานะสำเร็จ</span>
         </button>
       </div>
     </div>
@@ -195,10 +220,12 @@ import { formatISOString, formatDate } from '@/services/utils/dayjs'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 
 const interfaceForm = {
-  requestDate: null
+  requestDateStart: null,
+  requestDateEnd: null
 }
 const interfaceValid = {
-  isValRequestDate: false
+  isValRequestDateStart: false,
+  isValRequestDateEnd: false
 }
 export default {
   components: {
@@ -218,9 +245,14 @@ export default {
     }
   },
   watch: {
-    'form.requestDate'() {
-      if (this.form.requestDate) {
-        this.val.isValRequestDate = false
+    'form.requestDateStart'() {
+      if (this.form.requestDateStart) {
+        this.val.isValRequestDateStart = false
+      }
+    },
+    'form.requestDateEnd'() {
+      if (this.form.requestDateEnd) {
+        this.val.isValRequestDateEnd = false
       }
     }
   },
@@ -259,9 +291,15 @@ export default {
       }
     },
     validateForm() {
-      if (!this.form.requestDate) {
+      if (!this.form.requestDateStart) {
         this.val = {
-          isValRequestDate: true
+          isValRequestDateStart: true
+        }
+        return false
+      }
+      if (!this.form.requestDateEnd) {
+        this.val = {
+          isValRequestDateEnd: true
         }
         return false
       }
@@ -308,7 +346,8 @@ export default {
         //console.log(this.query)
 
         const params = {
-          requestDate: formatISOString(this.form.requestDate),
+          requestDateStart: formatISOString(this.form.requestDateStart),
+          requestDateEnd: formatISOString(this.form.requestDateEnd),
           code: this.data.code
         }
         const res = await api.jewelry.post('Worker/SearchWorkerWages', params)
@@ -526,7 +565,7 @@ export default {
     },
 
     // --- PDF --- //
-    async generatePDF() {
+    async generatePDF(e) {
       pdfMake.vfs = vfs
       pdfMake.fonts = {
         THSarabunNew: {
@@ -585,22 +624,23 @@ export default {
           },
 
           // pay table
+          
           {
             columns: ['สถานะสำเร็จ'],
             //bold: true,
             fontSize: 15,
             margin: [0, 15, 0, 0]
           },
-          this.tablePay(),
+          this.tablePay()
 
           // wating table
-          {
-            columns: ['สถานะติดตามระหว่างผลิต'],
-            //bold: true,
-            fontSize: 15,
-            margin: [0, 15, 0, 0]
-          },
-          this.tableWaiting()
+          // {
+          //   columns: ['สถานะติดตามระหว่างผลิต'],
+          //   //bold: true,
+          //   fontSize: 15,
+          //   margin: [0, 15, 0, 0]
+          // },
+          // this.tableWaiting()
         ],
         defaultStyle: {
           font: 'THSarabunNew'
@@ -634,7 +674,7 @@ export default {
 
 .info-bar-container {
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr;
+  grid-template-columns: 2fr 2fr 3fr 3fr;
   gap: 10px;
   margin-bottom: 10px;
 }

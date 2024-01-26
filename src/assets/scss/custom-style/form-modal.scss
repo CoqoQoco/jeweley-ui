@@ -1,12 +1,16 @@
 :deep(input) {
     margin-top: 0px !important;
-    height: 38px;
+    height: 35px;
 }
 
 :deep(.p-dropdown) {
     height: 38px !important;
     padding-left: 5px;
     width: 100% !important;
+    margin-top: 0px !important;
+}
+:deep(.p-calendar) {
+    height: 35px;
     margin-top: 0px !important;
 }
 :deep(.input-group-append) {
@@ -27,19 +31,26 @@
 .form-content-row-one-columns-container {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 50px;
+    gap: 20px;
     padding: 0px 30px;
 }
 .form-content-row-two-columns-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 50px;
+    gap: 20px;
     padding: 0px 30px;
 }
 .form-content-row-tree-columns-container {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 50px;
+    gap: 20px;
+    padding: 0px 30px;
+}
+
+.form-content-row-four-columns-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 20px;
     padding: 0px 30px;
 }
 
@@ -59,6 +70,13 @@
     padding-top: 10px;
     font-size: 14px;
     color: var(--base-font-color);
+}
+
+.form-content-row-grid-container {
+    display: grid;
+    //grid-template-columns: 1fr;
+    //gap: 50px;
+    padding: 0px 30px;
 }
 
 .txt-title {

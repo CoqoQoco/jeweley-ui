@@ -22,6 +22,9 @@ const PlanOrderTrackingView = () => import('@/views/production/plan-update/Index
 const WorkerList = () => import('@/views/worker/worker-list/IndexView.vue')
 const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/IndexView.vue')
 
+//production-cost
+const GoldCost = () => import('@/views/production-cost/goldCost/IndexView.vue')
+
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/GemView.vue')
 const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
@@ -191,9 +194,9 @@ const routes = [
     },
     children: [
       {
-        path: '/plan-gold-picking',
-        name: 'plan-gold-picking',
-        component: Report,
+        path: '/gold-cost-picking',
+        name: 'gold-cost-picking',
+        component: GoldCost,
         meta: {
           Displayname: {
             en: 'Gold Picking',

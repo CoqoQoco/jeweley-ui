@@ -15,6 +15,9 @@ export default {
   planMaterialPicking: 'เบิกวัตถุดิบ',
   planCost: 'สรุปราคาผลิต',
 
+  //production-cost
+  goldCostPicking: 'เบิกผสมทอง',
+
   //
   customer: 'รายชื่อลูกค้า',
 
