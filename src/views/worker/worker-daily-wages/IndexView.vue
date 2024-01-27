@@ -52,6 +52,7 @@
                 :max-date="form.requestDateEnd"
                 :class="val.isValRequestDateStart === true ? `p-invalid` : ``"
                 showIcon
+                dateFormat="dd/mm/yy"
                 placeholder="เริ่มต้น"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -61,6 +62,7 @@
                 :min-date="form.requestDateStart"
                 :class="val.isValRequestDateEnd === true ? `p-invalid` : ``"
                 showIcon
+                dateFormat="dd/mm/yy"
                 placeholder="สิ้นสุด"
               />
             </div>
@@ -99,6 +101,7 @@
         <ColumnGroup type="header">
           <Row>
             <Column header="เลขที่ใบงาน"></Column>
+            <Column header="วันที่ส่งงาน"></Column>
             <Column header="รหัสสินค้า"></Column>
             <Column header="สถานะ"></Column>
             <Column header="เเผนกงาน"></Column>
@@ -114,6 +117,11 @@
         <Column field="wo">
           <template #body="slotProps">
             {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
+          </template>
+        </Column>
+        <Column field="jobDate">
+          <template #body="slotProps">
+            {{ `${formatDate(slotProps.data.jobDate)}` }}
           </template>
         </Column>
         <Column field="productNumber"></Column>
@@ -167,7 +175,7 @@
             <Column :footer="`จำวนวน  ${dataWages.items.length}  รายการ`" :colspan="4" />
             <Column footer="รวมจำนวนรับ" :colspan="3" footerStyle="text-align:right" />
             <Column :footer="dataWages.totalGoldQtyCheck" />
-            <Column footer="รวมราคา" :colspan="2" footerStyle="text-align:right" />
+            <Column footer="รวมราคา" :colspan="3" footerStyle="text-align:right" />
             <Column
               :footer="
                 dataWages.totalWages
@@ -185,14 +193,20 @@
       </div>
     </div>
     <div v-if="isShowDataTable">
-      div class="btn-container">
-        <button class="btn btn-sm btn-info mr-2" style="width: 200px" @click="generatePDF('success')">
+      <div class="btn-container">
+        <!-- <button
+          class="btn btn-sm btn-info mr-2"
+          style="width: 200px"
+          @click="generatePDF('success')"
+        >
           <span><i class="bi bi-printer"></i></span>
           <span class="ml-2">พิมพ์สลิปสถานะติดตาม</span>
-        </button>
-      </div>
-      <div class="btn-container">
-        <button class="btn btn-sm btn-info mr-2" style="width: 200px" @click="generatePDF('wating')">
+        </button> -->
+        <button
+          class="btn btn-sm btn-info mr-2"
+          style="width: 200px"
+          @click="generatePDF('wating')"
+        >
           <span><i class="bi bi-printer"></i></span>
           <span class="ml-2">พิมพ์สลิปสถานะสำเร็จ</span>
         </button>
@@ -343,11 +357,13 @@ export default {
       try {
         this.isLoading = true
 
-        //console.log(this.query)
+        //console.log(this.form)
 
         const params = {
-          requestDateStart: formatISOString(this.form.requestDateStart),
-          requestDateEnd: formatISOString(this.form.requestDateEnd),
+          //requestDateStart: formatISOString(this.form.requestDateStart),
+          //requestDateEnd: formatISOString(this.form.requestDateEnd),
+          requestDateStart: this.form.requestDateStart,
+          requestDateEnd: this.form.requestDateEnd,
           code: this.data.code
         }
         const res = await api.jewelry.post('Worker/SearchWorkerWages', params)
@@ -596,7 +612,12 @@ export default {
           {
             columns: [
               `พนักงาน: ${this.data.code} - ${this.data.nameTh}`,
-              { text: `วันที่: ${formatDate(this.dataWages.wagesDate)}`, alignment: 'right' }
+              {
+                text: `วันที่: ${formatDate(this.dataWages.wagesDateStart)} - ${formatDate(
+                  this.dataWages.wagesDateEnd
+                )}`,
+                alignment: 'right'
+              }
             ],
             //bold: true,
             fontSize: 14,
@@ -624,7 +645,7 @@ export default {
           },
 
           // pay table
-          
+
           {
             columns: ['สถานะสำเร็จ'],
             //bold: true,

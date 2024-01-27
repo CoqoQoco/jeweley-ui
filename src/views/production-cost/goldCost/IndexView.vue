@@ -59,7 +59,17 @@
       :masterGoldSize="masterGoldSize"
       @fetch="fetchFormAddGoldCost"
       @closeModal="onCloseFormAddGoldCost"
-    ></FormCreate>
+    >
+    </FormCreate>
+    <FormUpdate
+      :isShow="isShowFormUpdateGoldCost"
+      :masterGold="masterGold"
+      :masterGoldSize="masterGoldSize"
+      :modelValue="modelUpdate"
+      @fetch="fetchFormUpdateGoldCost"
+      @closeModal="onCloseFormUpdateGoldCost"
+    >
+    </FormUpdate>
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -127,6 +137,7 @@ import Column from 'primevue/column'
 import api from '@/axios/axios-config.js'
 
 import FormCreate from './components/FormCreate.vue'
+import FormUpdate from './components/FormUpdate.vue'
 
 const interfaceForm = {
   text: null
@@ -137,19 +148,22 @@ export default {
     pageTitle,
     FormCreate,
     DataTable,
-    Column
+    Column,
+    FormUpdate
   },
   data() {
     return {
       // --- flag --- //
       isLoading: false,
       isShowFormAddGoldCost: false,
+      isShowFormUpdateGoldCost: false,
       // --- form --- //
       form: {
         ...interfaceForm
       },
       masterGold: [],
       masterGoldSize: [],
+      modelUpdate: {},
 
       // table
       totalRecords: 0,
@@ -175,8 +189,21 @@ export default {
       this.isShowFormAddGoldCost = false
       this.fetchData()
     },
-    UpdateCost() {},
+    UpdateCost(e) {
+      this.modelUpdate = { ...e }
+      this.onShowFormUpdateGoldCost()
+    },
     VieweCost() {},
+    onShowFormUpdateGoldCost() {
+      this.isShowFormUpdateGoldCost = true
+    },
+    onCloseFormUpdateGoldCost() {
+      this.isShowFormUpdateGoldCost = false
+    },
+    fetchFormUpdateGoldCost() {
+      this.isShowFormUpdateGoldCost = false
+      this.fetchData()
+    },
 
     // ----- table -------- //
     handlePageChange(e) {
