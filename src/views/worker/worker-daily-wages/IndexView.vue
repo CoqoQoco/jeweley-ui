@@ -360,10 +360,10 @@ export default {
         //console.log(this.form)
 
         const params = {
-          //requestDateStart: formatISOString(this.form.requestDateStart),
-          //requestDateEnd: formatISOString(this.form.requestDateEnd),
-          requestDateStart: this.form.requestDateStart,
-          requestDateEnd: this.form.requestDateEnd,
+          requestDateStart: formatISOString(this.form.requestDateStart),
+          requestDateEnd: formatISOString(this.form.requestDateEnd),
+          //requestDateStart: this.form.requestDateStart,
+          //requestDateEnd: this.form.requestDateEnd,
           code: this.data.code
         }
         const res = await api.jewelry.post('Worker/SearchWorkerWages', params)
@@ -398,7 +398,7 @@ export default {
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', '*', '*', '*', 50, 50, 50],
+          widths: ['*', '*', '*', '*', '*', 50, 50, 50],
           body: this.buildTablePayBody(),
           layout: {
             defaultBorder: false
@@ -409,6 +409,7 @@ export default {
     buildTablePayBody() {
       let body = []
       const title = [
+        this.setTableRow(`วันที่`, `title`),
         this.setTableRow(`เลขที่ใบงาน`, `title`),
         this.setTableRow(`รหัสสินค้า`, `title`),
         this.setTableRow(`แผนก`, `title`),
@@ -428,6 +429,7 @@ export default {
       payItem.forEach((item) => {
         totalGoldQtyCheck += item.goldQtyCheck
         const row = [
+          this.setTableRow(`${formatDate(item.jobDate)}`, `row`),
           this.setTableRow(`${item.wo}-${item.woNumber}`, `row`),
           this.setTableRow(`${item.productNumber}`, `row`),
           this.setTableRow(`${item.statusName}`, `row`),
@@ -447,6 +449,7 @@ export default {
 
       //footer
       const footer = [
+        this.setTableRow(``, `foot-right`),
         this.setTableRow(``, `foot-right`),
         this.setTableRow(``, `foot-right`),
         this.setTableRow(``, `foot-right`),
@@ -471,7 +474,7 @@ export default {
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', '*', '*', '*', 50, 50, 50],
+          widths: ['*', '*', '*', '*', '*', 50, 50, 50],
           body: this.buildTableWatingBody(),
           layout: {
             defaultBorder: false
