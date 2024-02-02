@@ -3,7 +3,7 @@
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShow" @closeModal="closeModal" width="1000px">
       <template v-slot:content>
-        <div class="mb-3 txt-title-custom-modal">
+        <div class="txt-title-custom-modal">
           <span><i class="bi bi-clipboard-data"></i></span>
           <span> ข้อมูลผสมทอง</span>
         </div>
@@ -1312,13 +1312,16 @@ export default {
   color: var(--base-font-color);
 }
 .txt-title-custom-modal {
-  padding-left: 30px;
+  padding: 10px 10px;
+  margin: 0px 25px;
   font-size: 20px;
-  color: var(--base-font-color);
+  color: #ffff;
+  background-color: var(--base-font-color);
+  border-radius: 5px 5px 0px 0px;
 }
 .header-container {
   border: 1px solid #dddddd;
-  border-radius: 5px;
+  //border-radius: 5px;
 
   box-shadow: rgba(0, 0, 0, 0.24) 0px 11px 8px;
   background-color: #f7f7f7;

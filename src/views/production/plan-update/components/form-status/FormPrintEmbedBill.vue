@@ -116,7 +116,7 @@ export default {
       return {
         fontSize: 13,
         //bold: true,
-        margin: [10, 10, 0, 0],
+        margin: [5, 10, 0, 0],
         table: {
           headerRows: 1,
           widths: ['*', 50, 50, 70, 70],
@@ -242,7 +242,13 @@ export default {
 
       try {
         const docDefinition = {
-          pageSize: 'A4',
+          //pageSize: 'A2',
+          //pageSize: 'FOLIO',
+          //pageSize: { width: 648, height: 792 },
+          pageSize: {
+            width: 648,
+            height: 'auto'
+          },
           pageMargins: [20, 20, 20, 10],
           content: [
             // --- header --- //
@@ -269,7 +275,7 @@ export default {
                         { text: dayjs().format('DD/MM/YYYY HH:mm:ss'), alignment: 'right' }
                       ],
                       //bold: true,
-                      fontSize: 15,
+                      fontSize: 13,
                       border: [false, false, false, true]
                     }
                   ]
@@ -278,7 +284,7 @@ export default {
               layout: {
                 defaultBorder: false
               },
-              margin: [0, 0, 0, 15]
+              margin: [0, 0, 0, 5]
             },
 
             // --- data --- //
@@ -324,7 +330,7 @@ export default {
                           [
                             //wo
                             {
-                              margin: [30, 0, 0, 0],
+                              margin: [10, 0, 0, 0],
                               stack: [
                                 { text: 'เลขที่ W.O.', style: 'title' },
                                 {
@@ -441,7 +447,7 @@ export default {
                     {
                       stack: [{ text: '', style: 'boldText' }],
                       border: [true, true, true, true],
-                      margin: [0, 0, 0, 30]
+                      margin: [0, 0, 0, 20]
                     },
                     {},
                     {
@@ -464,7 +470,7 @@ export default {
               fontSize: 10
             },
             desc: {
-              fontSize: 15,
+              fontSize: 13,
               bold: true
             },
             boldText: {
