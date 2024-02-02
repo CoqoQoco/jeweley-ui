@@ -183,6 +183,7 @@ export default {
         case 10:
           return 'bg-dark bg-gradient'
         case 50:
+        case 55:
         case 60:
         case 70:
         case 80:

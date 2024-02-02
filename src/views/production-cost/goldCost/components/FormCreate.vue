@@ -98,13 +98,25 @@
               <span class="txt-title">
                 <span>เบิกทองหลอม</span>
               </span>
-              <input type="number" min="0" class="form-control" v-model="form.meltWeight" />
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                v-model="form.meltWeight"
+              />
             </div>
             <div>
               <span class="txt-title">
                 <span>คืนทองหลอม</span>
               </span>
-              <input type="number" min="0" class="form-control" v-model="form.returnMeltWeight" />
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                v-model="form.returnMeltWeight"
+              />
             </div>
             <div>
               <span class="txt-title">
@@ -112,6 +124,7 @@
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.returnMeltScrapWeight"
@@ -125,6 +138,7 @@
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.meltWeightLoss"
@@ -137,6 +151,7 @@
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.meltWeightOver"
@@ -148,6 +163,7 @@
           <div class="txt-title-part mt-2">
             <span>เบิกทองหล่อ (โปรดระบุน้ำหนัก)</span>
           </div>
+
           <div class="form-content-row-four-columns-container">
             <div>
               <span class="txt-title">
@@ -167,13 +183,25 @@
               <span class="txt-title">
                 <span>เบิกทองหล่อ</span>
               </span>
-              <input type="number" min="0" class="form-control" v-model="form.castWeight" />
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                v-model="form.castWeight"
+              />
             </div>
             <div>
               <span class="txt-title">
                 <span>เบิกพลอยเพชร</span>
               </span>
-              <input type="number" min="0" class="form-control" v-model="form.gemWeight" />
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                v-model="form.gemWeight"
+              />
             </div>
           </div>
           <div class="form-content-row-four-columns-container">
@@ -181,25 +209,33 @@
               <span class="txt-title">
                 <span>คืนทองหล่อ</span>
               </span>
-              <input type="number" min="0" class="form-control" v-model="form.returnCastWeight" />
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                v-model="form.returnCastWeight"
+              />
             </div>
-            <div>
+            <!-- <div>
               <span class="txt-title">
                 <span>คืนตัวเรือน</span>
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.returnCastBodyWeight"
               />
-            </div>
+            </div> -->
             <div>
               <span class="txt-title">
                 <span>คืนขี้เบ้า</span>
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.returnCastScrapWeight"
@@ -211,6 +247,7 @@
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.returnCastPowderWeight"
@@ -224,6 +261,7 @@
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.castWeightLoss"
@@ -236,12 +274,148 @@
               </span>
               <input
                 type="number"
+                step="any"
                 min="0"
                 class="form-control"
                 v-model="form.castWeightOver"
                 :disabled="form.castWeightLoss > 0"
               />
             </div>
+          </div>
+          <div class="txt-title-part mt-2">
+            <span>คืนตัวเรือน</span>
+          </div>
+          <div class="form-content-row-one-columns-container mt-1">
+            <DataTable
+              class="p-datatable-sm"
+              showGridlines
+              dataKey="id"
+              v-model:editingRows="editingRows"
+              :value="form.items"
+              editMode="row"
+              scrollable
+              resizableColumns
+              @row-edit-save="onRowEditSave"
+              :pt="{
+                table: { style: 'min-width: 50rem' },
+                column: {
+                  bodycell: ({ state }) => ({
+                    style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                  })
+                }
+              }"
+            >
+              <ColumnGroup type="header">
+                <Row>
+                  <Column header=""></Column>
+                  <Column header="WO ตัวเรือน"></Column>
+                  <Column header="น้ำหนักคืนตัวเรือน"></Column>
+                  <Column header="รายละเอียด"></Column>
+                  <Column header=""></Column>
+                </Row>
+              </ColumnGroup>
+              <Column style="width: 30px">
+                <template #body="prop">
+                  <div
+                    class="btn btn-sm btn-danger text-center w-100"
+                    @click="onDelItem(prop.data)"
+                  >
+                    <i class="bi bi-trash-fill"></i>
+                  </div>
+                </template>
+              </Column>
+              <Column field="productionPlan" style="min-width: 150px">
+                <template #editor="{ data, field }">
+                  <!-- <input
+                      type="text"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    /> -->
+                  <AutoComplete
+                    v-model="data[field]"
+                    :suggestions="productItemSearch"
+                    @complete="onSearchProductionPlanId"
+                    placeholder="กรอก WO/WO No. ตัวเรือน"
+                    :class="data[field] ? `` : `p-invalid`"
+                    optionLabel="woText"
+                    forceSelection
+                  >
+                    <template #option="slotProps">
+                      <div class="flex align-options-center">
+                        <div>{{ `${slotProps.option.wo}-${slotProps.option.woNumber}` }}</div>
+                      </div>
+                    </template>
+                  </AutoComplete>
+                </template>
+                <template #body="slotProps">
+                  <div v-if="slotProps.data.productionPlan">
+                    {{
+                      `${slotProps.data.productionPlan.wo}-${slotProps.data.productionPlan.woNumber}`
+                    }}
+                  </div>
+                  <div v-else>โปรดระบุ WO/WO No. ตัวเรือน</div>
+                  <!-- <input type="text" class="form-control" v-model="form.bookNo" required /> -->
+                </template>
+              </Column>
+              <Column field="returnWeight" header="น้ำหนักคืนตัวเรือน" style="width: 30px">
+                <template #editor="{ data, field }">
+                  <input
+                    type="number"
+                    min="1"
+                    step="any"
+                    class="form-control text-right"
+                    v-model="data[field]"
+                  />
+                </template>
+                <template #body="slotProps">
+                  <div class="text-right">
+                    {{ `${slotProps.data.returnWeight ?? `0`}` }}
+                  </div>
+                </template>
+              </Column>
+              <Column field="remark" header="รายละเอียด" style="min-width: 150px">
+                <template #editor="{ data, field }">
+                  <input
+                    type="text"
+                    :class="data[field] ? `` : ``"
+                    class="form-control"
+                    v-model="data[field]"
+                  />
+                </template>
+              </Column>
+              <Column :rowEditor="true" bodyStyle="text-align:center"> </Column>
+              <ColumnGroup type="footer">
+                <Row>
+                  <Column
+                    footer="รวมน้ำหนักคืนตัวเรือน"
+                    footerStyle="text-align:right"
+                    :colspan="2"
+                  />
+                  <Column :footer="onSumBodyReturn()" footerStyle="text-align:right" />
+                  <Column :colspan="2">
+                    <template #footer>
+                      <div class="d-flex justify-content-end">
+                        <!-- <div>
+                          ทั้งหมด {{ this.form.items ? this.form.items.length : `0` }} รายการ
+                        </div> -->
+                        <div @click="addItems">
+                          <i class="bi bi-plus-square-fill"></i>
+                        </div>
+                      </div>
+                    </template>
+                  </Column>
+                </Row>
+              </ColumnGroup>
+              <!-- <template #footer>
+                <div class="d-flex justify-content-between">
+                  <div>ทั้งหมด {{ this.form.items ? this.form.items.length : `0` }} รายการ</div>
+                  <div @click="addItems">
+                    <i class="bi bi-plus-square-fill"></i>
+                  </div>
+                </div>
+              </template> -->
+            </DataTable>
           </div>
 
           <div class="txt-title-part mt-2">
@@ -294,8 +468,11 @@ const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vu
 
 import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
-//import DataTable from 'primevue/datatable'
-//import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Row from 'primevue/row'
+import ColumnGroup from 'primevue/columngroup' // optional
+import AutoComplete from 'primevue/autocomplete'
 
 import api from '@/axios/axios-config.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
@@ -317,15 +494,15 @@ const interfaceForm = {
   castWeight: null,
   gemWeight: null,
   returnCastWeight: null,
-  returnCastBodyWeight: null,
+  //returnCastBodyWeight: null,
   returnCastScrapWeight: null,
   returnCastPowderWeight: null,
   castWeightLoss: null,
   castWeightOver: null,
   remark: null,
   assignBy: null,
-  receiveBy: null
-  //data: []
+  receiveBy: null,
+  items: []
 }
 const interfaceIsValid = {
   isValAssignDate: false,
@@ -339,9 +516,12 @@ export default {
     modal,
     loading,
     Dropdown,
-    Calendar
-    //DataTable,
-    //Column
+    Calendar,
+    DataTable,
+    Column,
+    AutoComplete,
+    Row,
+    ColumnGroup
   },
   props: {
     isShow: {
@@ -396,7 +576,8 @@ export default {
       },
 
       // ----- table -------- //
-      editingRows: []
+      editingRows: [],
+      productItemSearch: []
     }
   },
   methods: {
@@ -405,6 +586,7 @@ export default {
       this.form = {
         ...interfaceForm
       }
+      this.form.items = []
       this.val = {
         ...interfaceIsValid
       }
@@ -455,15 +637,31 @@ export default {
     // ----------- Grid -------------------//
     onRowEditSave(event) {
       let { newData, index } = event
-      this.form.data[index] = newData
+      // if (!newData.productionPlanId) {
+      //   console.log("can't be null")
+      // }
+      this.form.items[index] = newData
     },
-    addDetail() {
+    addItems() {
       const add = {
         id: ++this.autoId,
-        data: new Date(),
-        detail: null
+        productionPlanId: null,
+        returnWeight: 0
       }
-      this.form.data.push(add)
+      this.form.items.push(add)
+    },
+    onDelItem(item) {
+      const index = this.form.items.indexOf(item)
+      this.form.items.splice(index, 1)
+    },
+    onSumBodyReturn() {
+      let sum = 0
+      if (this.form.items) {
+        this.form.items.forEach((x) => {
+          sum += x.returnWeight
+        })
+      }
+      return sum
     },
 
     // ------ helper ----- //
@@ -475,7 +673,16 @@ export default {
     async submit() {
       try {
         this.isLoading = true
-        //console.log(this.form)
+        //console.log(this.form.items)
+
+        this.form.items = this.form.items.map((x) => {
+          return {
+            ...x,
+            productionPlanId: x.productionPlan
+              ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
+              : null
+          }
+        })
 
         const params = {
           ...this.form,
@@ -485,7 +692,7 @@ export default {
           meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
           castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null
         }
-        console.log(params)
+        //console.log(params)
 
         const res = await api.jewelry.post('ProductionPlanCost/CreateGoldCost', params)
         if (res) {
@@ -497,6 +704,7 @@ export default {
               this.form = {
                 ...interfaceForm
               }
+              this.form.items = []
               this.val = {
                 ...interfaceIsValid
               }
@@ -512,6 +720,34 @@ export default {
       } catch (error) {
         console.log(error)
         this.isLoading = false
+      }
+    },
+    async onSearchProductionPlanId(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null
+            //type: this.form.status,
+            //active: 1
+          }
+        }
+        const res = await api.jewelry.post(
+          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
+          params
+        )
+        if (res) {
+          //console.log(res)
+          this.productItemSearch = [...res.data]
+          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
       }
     }
   }

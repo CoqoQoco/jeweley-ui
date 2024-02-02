@@ -53,6 +53,12 @@
     gap: 20px;
     padding: 0px 30px;
 }
+.form-content-row-five-columns-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 0px 30px;
+}
 
 .txt-title-modal {
     padding: 30px;

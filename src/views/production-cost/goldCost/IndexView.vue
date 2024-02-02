@@ -28,8 +28,40 @@
               </div>
             </div>
           </div>
-          <div></div>
-          <div></div>
+          <div>
+            <!-- <span class="text-title">ค้นหาใบผสมทอง</span>
+            <div class="input-group input-group-inner">
+              <input
+                id="inputStockID"
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.text"
+                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+              />
+              <div class="input-group-append">
+                <span class="input-group-text">
+                  <i class="bi bi-upc-scan text-main-color"></i>
+                </span>
+              </div>
+            </div> -->
+          </div>
+          <div>
+            <!-- <span class="text-title">ค้นหาใบผสมทอง</span>
+            <div class="input-group input-group-inner">
+              <input
+                id="inputStockID"
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.text"
+                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+              />
+              <div class="input-group-append">
+                <span class="input-group-text">
+                  <i class="bi bi-upc-scan text-main-color"></i>
+                </span>
+              </div>
+            </div> -->
+          </div>
           <div class="btn-container">
             <button type="submit" class="btn btn-sm btn-main mr-2">
               <span class="mr-2">
@@ -70,6 +102,14 @@
       @closeModal="onCloseFormUpdateGoldCost"
     >
     </FormUpdate>
+    <FormView
+      :isShow="isShowFormViewGoldCost"
+      :masterGold="masterGold"
+      :masterGoldSize="masterGoldSize"
+      :modelValue="modelUpdate"
+      @closeModal="onCloseFormViewGoldCost"
+    >
+    </FormView>
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -101,15 +141,15 @@
             <button
               class="ml-1 btn btn-sm btn btn-dark"
               title="โหมดดูรายละเอียด"
-              @click="VieweCost(slotProps.data)"
+              @click="ViewCost(slotProps.data)"
             >
               <i class="bi bi-clipboard2-data-fill"></i>
             </button>
           </div>
         </template>
       </Column>
-      <Column field="no" header="เลขที่" style="width: 80px"> </Column>
       <Column field="bookNo" header="เล่มที่" style="width: 80px"> </Column>
+      <Column field="no" header="เลขที่" style="width: 80px"> </Column>
       <Column header="วันที่ออกใบเบิก" field="requestDate" style="width: 100px">
         <template #body="prop">
           {{ formatDate(prop.data.assignDate) }}
@@ -138,6 +178,7 @@ import api from '@/axios/axios-config.js'
 
 import FormCreate from './components/FormCreate.vue'
 import FormUpdate from './components/FormUpdate.vue'
+import FormView from './components/FormView.vue'
 
 const interfaceForm = {
   text: null
@@ -149,7 +190,8 @@ export default {
     FormCreate,
     DataTable,
     Column,
-    FormUpdate
+    FormUpdate,
+    FormView
   },
   data() {
     return {
@@ -157,6 +199,7 @@ export default {
       isLoading: false,
       isShowFormAddGoldCost: false,
       isShowFormUpdateGoldCost: false,
+      isShowFormViewGoldCost: false,
       // --- form --- //
       form: {
         ...interfaceForm
@@ -193,7 +236,10 @@ export default {
       this.modelUpdate = { ...e }
       this.onShowFormUpdateGoldCost()
     },
-    VieweCost() {},
+    ViewCost(e) {
+      this.modelUpdate = { ...e }
+      this.isShowFormViewGoldCost = true
+    },
     onShowFormUpdateGoldCost() {
       this.isShowFormUpdateGoldCost = true
     },
@@ -203,6 +249,9 @@ export default {
     fetchFormUpdateGoldCost() {
       this.isShowFormUpdateGoldCost = false
       this.fetchData()
+    },
+    onCloseFormViewGoldCost() {
+      this.isShowFormViewGoldCost = false
     },
 
     // ----- table -------- //
