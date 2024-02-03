@@ -119,7 +119,7 @@ export default {
         margin: [5, 10, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', 50, 50, 50, 50, 50, 50],
+          widths: ['*', 40, 40, 40, 50, 50, 40],
           body: this.buildTablePriceBody(data),
           layout: {
             defaultBorder: false
@@ -191,6 +191,7 @@ export default {
     setTablePriceTitleTextRight(text) {
       return {
         text: text,
+        fontSize: 12,
         bold: true,
         alignment: 'right',
         border: [false, false, false, true]
