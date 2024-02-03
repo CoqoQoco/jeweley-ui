@@ -119,7 +119,7 @@ export default {
         margin: [5, 10, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', 50, 50, 70, 70],
+          widths: ['*', 50, 50, 50, 70, 70],
           body: this.buildTablePriceBody(data),
           layout: {
             defaultBorder: false
@@ -133,9 +133,10 @@ export default {
       let body = []
       //const title = ['รายละเอียด', 'น้ำหนักรับ', 'จำนวน', 'ราคาต่อหน่วย', 'ราคา']
       const title = [
-        this.setTablePriceTitle('รายละเอียด [ช่างรับงาน]'),
+        this.setTablePriceTitle('รายละเอียด'),
+        this.setTablePriceTitleTextRight('น้ำหนักจ่าย'),
         this.setTablePriceTitleTextRight('น้ำหนักรับ'),
-        this.setTablePriceTitleTextRight('จำนวน'),
+        this.setTablePriceTitleTextRight('จำนวนหน่วย'),
         this.setTablePriceTitleTextRight('ราคาต่อหน่วย'),
         this.setTablePriceTitleTextRight('ราคา')
       ]
@@ -148,9 +149,8 @@ export default {
       data.values.forEach((item) => {
         total += item.totalWages
         const row = [
-          this.setTablePriceRow(
-            `${item.description ?? ''} [${item.worker ?? ''} ${item.workerName ?? ''}]`
-          ),
+          this.setTablePriceRow(`${item.description ?? ''} [${item.worker ?? ''}]`),
+          this.setTablePriceRowTextRight(item.goldWeightSend),
           this.setTablePriceRowTextRight(item.goldWeightCheck),
           this.setTablePriceRowTextRight(item.goldQtyCheck),
           this.setTablePriceRowTextRight(
@@ -165,6 +165,7 @@ export default {
 
       //footer
       const footer = [
+        this.setTablePriceFooter(''),
         this.setTablePriceFooter(''),
         this.setTablePriceFooter(''),
         this.setTablePriceFooter(''),
@@ -242,13 +243,13 @@ export default {
 
       try {
         const docDefinition = {
-          //pageSize: 'A2',
+          pageSize: 'A4',
           //pageSize: 'FOLIO',
-          //pageSize: { width: 648, height: 792 },
-          pageSize: {
-            width: 648,
-            height: 'auto'
-          },
+          //pageSize: { width: 648, height: 396 },
+          // pageSize: {
+          //   width: 400,
+          //   height: 'auto'
+          // },
           pageMargins: [20, 20, 20, 10],
           content: [
             // --- header --- //
