@@ -119,7 +119,7 @@ export default {
         margin: [5, 10, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', 50, 50, 50, 70, 70],
+          widths: ['*', 50, 50, 50, 50, 50],
           body: this.buildTablePriceBody(data),
           layout: {
             defaultBorder: false
@@ -291,7 +291,7 @@ export default {
             // --- data --- //
             {
               table: {
-                widths: [80, '*'],
+                widths: [70, '*'],
                 body: [
                   //row 1
                   [
