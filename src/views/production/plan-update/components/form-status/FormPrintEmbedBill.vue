@@ -245,13 +245,13 @@ export default {
         const docDefinition = {
           //pageSize: 'A4',
           pageSize: {
-            width: 595.28,
+            width: 575.28,
             height: 'auto'
           },
           //pageOrientation: 'landscape',
           //pageSize: 'FOLIO',
           //pageSize: { width: 648, height: 396 },
-          pageMargins: [20, 20, 20, 10],
+          pageMargins: [10, 10, 10, 10],
           content: [
             // --- header --- //
             {
