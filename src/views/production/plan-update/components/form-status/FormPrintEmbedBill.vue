@@ -119,7 +119,7 @@ export default {
         margin: [5, 10, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', 50, 50, 50, 50, 50],
+          widths: ['*', 50, 50, 50, 50, 50, 50],
           body: this.buildTablePriceBody(data),
           layout: {
             defaultBorder: false
@@ -134,6 +134,7 @@ export default {
       //const title = ['รายละเอียด', 'น้ำหนักรับ', 'จำนวน', 'ราคาต่อหน่วย', 'ราคา']
       const title = [
         this.setTablePriceTitle('รายละเอียด'),
+        this.setTablePriceTitleTextRight('จำนวนจ่าย'),
         this.setTablePriceTitleTextRight('น้ำหนักจ่าย'),
         this.setTablePriceTitleTextRight('น้ำหนักรับ'),
         this.setTablePriceTitleTextRight('จำนวนหน่วย'),
@@ -150,6 +151,7 @@ export default {
         total += item.totalWages
         const row = [
           this.setTablePriceRow(`${item.description ?? ''} [${item.worker ?? ''}]`),
+          this.setTablePriceRowTextRight(item.goldQtySend),
           this.setTablePriceRowTextRight(item.goldWeightSend),
           this.setTablePriceRowTextRight(item.goldWeightCheck),
           this.setTablePriceRowTextRight(item.goldQtyCheck),
@@ -165,6 +167,7 @@ export default {
 
       //footer
       const footer = [
+        this.setTablePriceFooter(''),
         this.setTablePriceFooter(''),
         this.setTablePriceFooter(''),
         this.setTablePriceFooter(''),
