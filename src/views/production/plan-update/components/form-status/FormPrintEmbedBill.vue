@@ -243,14 +243,14 @@ export default {
 
       try {
         const docDefinition = {
-          pageSize: 'A4',
-          pageOrientation: 'landscape',
+          //pageSize: 'A4',
+          pageSize: {
+            width: 595.28,
+            height: 'auto'
+          },
+          //pageOrientation: 'landscape',
           //pageSize: 'FOLIO',
           //pageSize: { width: 648, height: 396 },
-          // pageSize: {
-          //   width: 400,
-          //   height: 'auto'
-          // },
           pageMargins: [20, 20, 20, 10],
           content: [
             // --- header --- //
