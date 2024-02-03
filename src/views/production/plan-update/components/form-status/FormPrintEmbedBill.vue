@@ -244,6 +244,7 @@ export default {
       try {
         const docDefinition = {
           pageSize: 'A4',
+          pageOrientation: 'landscape',
           //pageSize: 'FOLIO',
           //pageSize: { width: 648, height: 396 },
           // pageSize: {
