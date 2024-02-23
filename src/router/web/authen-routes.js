@@ -31,7 +31,7 @@ const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
 const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
 const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
 
-const Report = () => import('@/views/report-production/ReportView.vue')
+const Report = () => import('@/views/report-production/IndexView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
