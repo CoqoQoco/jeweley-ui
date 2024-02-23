@@ -91,7 +91,10 @@
         :paginator="true"
         :lazy="true"
         @page="handlePageChange"
+        @sort="handlePageChangeSort"
         :rows="take"
+        removableSort
+        sortMode="multiple"
         :rowsPerPageOptions="[10, 20, 50, 100]"
         paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
         :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
@@ -101,27 +104,47 @@
             <button icon="bi bi-filetype-csv" label="Export" @click="exportCSV($event)" />
           </div>
         </template> -->
-        <Column header="วันสร้างใบสินค้า" field="createDate" style="min-width: 150px">
+        <Column header="วันสร้างใบสินค้า" sortable field="createDate" style="min-width: 150px">
           <template #body="prop">
             {{ formatDate(prop.data.createDate) }}
           </template>
         </Column>
-        <Column field="wo" header="W.O." style="min-width: 150px">
+        <Column field="wo" sortable header="W.O." style="min-width: 150px">
           <template #body="slotProps">
             {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
           </template>
         </Column>
-        <Column header="เเม่พิมพ์" field="mold" style="min-width: 150px"></Column>
-        <Column header="รหัสสินค้า" field="productNumber" style="min-width: 150px"></Column>
-        <Column header="ชื่อสินค้า" field="productName" style="min-width: 150px"></Column>
-        <Column header="ประเภทสินค้า" field="productTypeName" style="min-width: 150px"></Column>
-        <Column header="จำนวน" field="productQty" style="min-width: 150px"></Column>
-        <Column header="หน่วย" field="productQtyUnit" style="min-width: 150px"></Column>
-        <Column header="รหัสลูกค้า" field="customerNumber" style="min-width: 150px"></Column>
-        <Column header="ชื่อลูกค้า" field="customerName" style="min-width: 150px"></Column>
-        <Column header="ประเภทลูกค้า" field="customerTypeName" style="min-width: 150px"></Column>
+        <Column header="เเม่พิมพ์" sortable field="mold" style="min-width: 150px"></Column>
+        <Column
+          header="รหัสสินค้า"
+          field="productNumber"
+          sortable
+          style="min-width: 150px"
+        ></Column>
+        <Column header="ชื่อสินค้า" field="productName" sortable style="min-width: 150px"></Column>
+        <Column
+          header="ประเภทสินค้า"
+          field="productTypeName"
+          sortable
+          style="min-width: 150px"
+        ></Column>
+        <Column header="จำนวน" field="productQty" sortable style="min-width: 150px"></Column>
+        <Column header="หน่วย" field="productQtyUnit" sortable style="min-width: 150px"></Column>
+        <Column
+          header="รหัสลูกค้า"
+          field="customerNumber"
+          sortable
+          style="min-width: 150px"
+        ></Column>
+        <Column header="ชื่อลูกค้า" field="customerName" sortable style="min-width: 150px"></Column>
+        <Column
+          header="ประเภทลูกค้า"
+          field="customerTypeName"
+          sortable
+          style="min-width: 150px"
+        ></Column>
         <!-- <Column header="วันส่งงานลูกค้า" field="requestDate" style="min-width: 150px"></Column> -->
-        <Column header="วันส่งงานลูกค้า" field="requestDate" style="min-width: 150px">
+        <Column header="วันส่งงานลูกค้า" field="requestDate" sortable style="min-width: 150px">
           <template #body="prop">
             {{ formatDate(prop.data.requestDate) }}
           </template>
@@ -184,6 +207,8 @@ export default {
       totalRecords: 0,
       take: 10, //all
       skip: 0,
+      //sort: [{ field: 'id', dir: 'asc' }],
+      sort: [],
       data: {},
       dataExcel: {},
       expnadData: [],
@@ -213,6 +238,19 @@ export default {
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
+      this.sort = e.multiSortMeta.map((item) => {
+        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
+      })
+      //console.log(e)
+      this.fetchData()
+    },
+    handlePageChangeSort(e) {
+      this.skip = e.first
+      this.take = e.rows
+      this.sort = e.multiSortMeta.map((item) => {
+        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
+      })
+      //console.log(e.multiSortMeta)
       this.fetchData()
     },
 
@@ -290,6 +328,7 @@ export default {
         const param = {
           take: this.take,
           skip: this.skip,
+          sort: this.sort,
           search: {
             createStart: this.form.start ? formatISOString(this.form.start) : null,
             createEnd: this.form.end ? formatISOString(this.form.end) : null,
@@ -361,10 +400,12 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/search-bar.scss';
+@import '@/assets/scss/custom-style/table-data.scss';
 .search-bar-container {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 2fr;
   gap: 10px;
   margin-bottom: 10px;
 }
+
 </style>

@@ -13,6 +13,11 @@
 .p-datatable .p-column-header-content {
     color: #ffffff !important;
 }
+:deep(.p-datatable .p-sortable-column .p-sortable-column-icon) {
+    color: #ffffff !important;
+    margin-left: 0.5rem;
+}
+
 .p-datatable-tbody>tr>td {
     padding: 3px 10px 3px 10px !important;
 }
