@@ -8,7 +8,7 @@
           <span> ข้อมูลผสมทอง</span>
         </div>
         <div class="header-container">
-          <div class="form-content-row-five-columns-container mb-2">
+          <div class="form-content-row-four-columns-container mb-2">
             <div class="d-flex flex-column">
               <span class="txt-data-title">เล่มที่</span>
               <span class="txt-data-desc">{{ form.bookNo }}</span>
@@ -22,6 +22,12 @@
               <span class="txt-data-desc">{{ formatDate(form.assignDate) }}</span>
             </div>
             <div class="d-flex flex-column">
+              <span class="txt-data-title">หมายเลขลำดับ</span>
+              <span class="txt-data-desc">{{ form.runningNumber }}</span>
+            </div>
+          </div>
+          <div class="form-content-row-four-columns-container">
+            <div class="d-flex flex-column">
               <span class="txt-data-title">ประเภททอง</span>
               <span class="txt-data-desc">{{
                 form.gold ? `${form.gold?.code}:${form.gold?.nameTh}` : ``
@@ -33,8 +39,6 @@
                 form.goldSize ? `${form.goldSize?.nameTh}` : ``
               }}</span>
             </div>
-          </div>
-          <div class="form-content-row-one-columns-container">
             <div class="d-flex flex-column">
               <span class="txt-data-title">สูตรผสมทอง</span>
               <span class="txt-data-desc">{{ form.goldReceipt }}</span>
@@ -355,6 +359,7 @@ export default {
         remark: value.remark,
         assignBy: value.assignBy,
         receiveBy: value.receiveBy,
+        runningNumber: value.runningNumber,
         items: await Promise.all(
           value.items.map(async (x) => {
             const res = await this.onSearchProductionPlanIdByCode(x.productionPlanId)
@@ -628,7 +633,7 @@ export default {
           {
             columns: [
               {
-                text: `เล่มที่: ${this.form.bookNo}  เลขที่: ${this.form.no}`,
+                text: `เล่มที่: ${this.form.bookNo}  เลขที่: ${this.form.no}  ลำดับ: ${this.form.runningNumber}`,
                 style: 'boldText'
               },
               {
@@ -1265,6 +1270,13 @@ export default {
 .form-content-custom-columns-container {
   display: grid;
   grid-template-columns: 1fr 1fr 4fr;
+  gap: 10px;
+  padding: 0px 30px;
+  margin-top: 5px;
+}
+.form-content-row-one-custom-columns-container {
+  display: grid;
+  grid-template-columns: 1fr 5fr;
   gap: 10px;
   padding: 0px 30px;
   margin-top: 5px;
