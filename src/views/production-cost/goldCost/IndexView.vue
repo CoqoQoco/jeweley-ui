@@ -150,6 +150,7 @@
       </Column>
       <Column field="bookNo" header="เล่มที่" style="width: 80px"> </Column>
       <Column field="no" header="เลขที่" style="width: 80px"> </Column>
+      <Column field="runningNumber" header="หมายเลขลำดับ" style="width: 100px"> </Column>
       <Column header="วันที่ออกใบเบิก" field="requestDate" style="width: 100px">
         <template #body="prop">
           {{ formatDate(prop.data.assignDate) }}

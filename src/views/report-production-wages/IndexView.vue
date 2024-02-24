@@ -37,7 +37,7 @@
               />
             </div>
           </div>
-          <div>
+          <!-- <div>
             <span class="text-title">หมายเลขใบผสมทอง</span>
             <div class="input-group input-group-inner">
               <input
@@ -52,7 +52,8 @@
                 </span>
               </div>
             </div>
-          </div>
+          </div> -->
+          <div></div>
           <div></div>
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
@@ -99,54 +100,75 @@
         paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
         :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
       >
-        <!-- <template #header>
-          <div style="text-align: left">
-            <button icon="bi bi-filetype-csv" label="Export" @click="exportCSV($event)" />
-          </div>
-        </template> -->
-        <Column header="วันสร้างใบสินค้า" sortable field="createDate" style="min-width: 150px">
-          <template #body="prop">
-            {{ formatDate(prop.data.createDate) }}
-          </template>
-        </Column>
-        <Column field="wo" sortable header="W.O." style="min-width: 150px">
+        <Column field="wo" header="เลขที่ใบงาน" sortable style="min-width: 150px">
           <template #body="slotProps">
             {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
           </template>
         </Column>
-        <Column header="เเม่พิมพ์" sortable field="mold" style="min-width: 150px"></Column>
+        <Column header="วันที่ส่งงาน" sortable field="jobDate" style="min-width: 150px">
+          <template #body="prop">
+            {{ formatDate(prop.data.jobDate) }}
+          </template>
+        </Column>
         <Column
           header="รหัสสินค้า"
+          sortable
           field="productNumber"
-          sortable
           style="min-width: 150px"
         ></Column>
-        <Column header="ชื่อสินค้า" field="productName" sortable style="min-width: 150px"></Column>
+        <Column header="ช่าง" sortable field="workerCode" style="min-width: 150px">
+          <template #body="slotProps">
+            {{ `${slotProps.data.workerCode}-${slotProps.data.workerName}` }}
+          </template>
+        </Column>
+        <Column header="เเผนกงาน" sortable field="statusName" style="min-width: 150px"></Column>
+        <Column header="รายละเอียด" sortable field="desc" style="min-width: 150px">
+          <template #body="slotProps">
+            {{
+              `${slotProps.data.gold} ${
+                slotProps.data.description ? `[${slotProps.data.description}]` : ``
+              }`
+            }}
+          </template>
+        </Column>
+        <Column header="จำนวนจ่าย" sortable field="goldQtySend" style="min-width: 150px"></Column>
         <Column
-          header="ประเภทสินค้า"
-          field="productTypeName"
+          header="น้ำหนักจ่าย"
           sortable
+          field="goldWeightSend"
           style="min-width: 150px"
         ></Column>
-        <Column header="จำนวน" field="productQty" sortable style="min-width: 150px"></Column>
-        <Column header="หน่วย" field="productQtyUnit" sortable style="min-width: 150px"></Column>
+        <Column header="จำนวนรับ" sortable field="goldQtyCheck" style="min-width: 150px"></Column>
         <Column
-          header="รหัสลูกค้า"
-          field="customerNumber"
+          header="น้ำหนักรับ"
           sortable
+          field="goldWeightCheck"
           style="min-width: 150px"
         ></Column>
-        <Column header="ชื่อลูกค้า" field="customerName" sortable style="min-width: 150px"></Column>
-        <Column
-          header="ประเภทลูกค้า"
-          field="customerTypeName"
-          sortable
-          style="min-width: 150px"
-        ></Column>
-        <!-- <Column header="วันส่งงานลูกค้า" field="requestDate" style="min-width: 150px"></Column> -->
-        <Column header="วันส่งงานลูกค้า" field="requestDate" sortable style="min-width: 150px">
-          <template #body="prop">
-            {{ formatDate(prop.data.requestDate) }}
+        <Column header="ราคาต่อหน่วย" sortable field="wages" style="min-width: 150px">
+          <template #body="slotProps">
+            <div>
+              {{
+                `${
+                  slotProps.data.wages
+                    ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
+                    : Number(0).toFixed(2).toLocaleString()
+                }`
+              }}
+            </div>
+          </template>
+        </Column>
+        <Column header="ราคา" sortable field="detotalWagessc" style="min-width: 150px">
+          <template #body="slotProps">
+            <div>
+              {{
+                `${
+                  slotProps.data.totalWages
+                    ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
+                    : Number(0).toFixed(2).toLocaleString()
+                }`
+              }}
+            </div>
           </template>
         </Column>
       </DataTable>
@@ -336,7 +358,7 @@ export default {
             woText: this.form.text
           }
         }
-        const res = await api.jewelry.post('ProductionPlan/ReportProductionPlan', param)
+        const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
         if (res) {
           this.data = { ...res }
           this.isShowTable = true
@@ -357,10 +379,10 @@ export default {
           search: {
             createStart: this.form.start ? formatISOString(this.form.start) : null,
             createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            woText: this.form.text
+            Text: this.form.text
           }
         }
-        const res = await api.jewelry.post('ProductionPlan/ReportProductionPlan', param)
+        const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
         if (res) {
           //this.dataExcel = { ...res }
           //this.isShowTable = true
@@ -368,18 +390,22 @@ export default {
 
           const dataExcel = res.data.map((item) => {
             return {
-              วันที่สร้างใบสินค้า: formatDate(item.createDate),
-              'W.O.': `${item.wo}-${item.woNumber}`,
-              เเม่พิมพ์: item.mold,
+              เลขที่ใบงาน: `${item.wo}-${item.woNumber}`,
+              วันที่ส่งงาน: formatDate(item.jobDate),
               รหัสสินค้า: item.productNumber,
-              ชื่อสินค้า: item.productName,
-              ประเภทสินค้า: item.productTypeName,
-              จำนวน: item.productQty,
-              หน่วย: item.productQtyUnit,
-              รหัสลูกค้า: item.customerNumber,
-              ชื่อลูกค้า: item.customerName,
-              ประเภทลูกค้า: item.customerTypeName,
-              วันส่งงานลูกค้า: formatDate(item.requestDate)
+              ช่าง: `${item.workerCode}-${item.workerName}`,
+              เเผนกงาน: item.statusName,
+              รายละเอียด: `${item.gold} ${item.description ? `[${item.description}]` : ``}`,
+              จำนวนจ่าย: item.goldQtySend,
+              น้ำหนักจ่าย: item.goldWeightSend,
+              จำนวนรับ: item.goldQtyCheck,
+              น้ำหนกรับ: item.goldWeightCheck,
+              ราคาต่อหน่วย: item.wages
+                ? Number(item.wages).toFixed(2).toLocaleString()
+                : Number(0).toFixed(2).toLocaleString(),
+              ราคา: item.totalWages
+                ? Number(item.totalWages).toFixed(2).toLocaleString()
+                : Number(0).toFixed(2).toLocaleString()
             }
           })
           this.exportWithCustomColumnCSV(

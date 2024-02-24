@@ -32,6 +32,7 @@ const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
 const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
 
 const Report = () => import('@/views/report-production/IndexView.vue')
+const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -340,6 +341,34 @@ const routes = [
           Displayname: {
             en: 'Report',
             th: 'รายงานผลิต'
+          },
+          minorShow: false
+        }
+      }
+    ]
+  },
+  {
+    path: '/report-production-worker-wages',
+    component: Layout,
+    redirect: '/report-production-worker-wages',
+    name: 'report-production-worker-wages',
+    meta: {
+      Displayname: {
+        en: 'Wages Report',
+        th: 'รายงานค่าเเรง'
+      },
+      classIcon: 'bi bi-file-spreadsheet',
+      majorShow: true
+    },
+    children: [
+      {
+        path: '/report-production-worker-wages',
+        name: 'report-production-worker-wages',
+        component: ReportProductionWages,
+        meta: {
+          Displayname: {
+            en: 'Wages Report',
+            th: 'รายงานค่าเเรง'
           },
           minorShow: false
         }
