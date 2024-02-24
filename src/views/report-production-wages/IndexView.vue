@@ -158,7 +158,7 @@
             </div>
           </template>
         </Column>
-        <Column header="ราคา" sortable field="detotalWagessc" style="min-width: 150px">
+        <Column header="ราคา" sortable field="totalWages" style="min-width: 150px">
           <template #body="slotProps">
             <div>
               {{
