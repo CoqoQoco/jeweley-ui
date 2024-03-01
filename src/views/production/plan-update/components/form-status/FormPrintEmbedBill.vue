@@ -141,7 +141,7 @@ export default {
     // --- table --- //
     tablePrice(data) {
       return {
-        fontSize: 13,
+        fontSize: 11,
         //bold: true,
         margin: [5, 5, 0, 0],
         table: {
@@ -324,6 +324,7 @@ export default {
             {
               table: {
                 widths: [70, '*'],
+                margin: [0, 0, 0, 0],
                 body: [
                   //row 1
                   [
@@ -358,6 +359,7 @@ export default {
                     {
                       table: {
                         widths: ['*', '*', '*', 80],
+                        margin: [0, 0, 0, 0],
                         body: [
                           //row 1
                           [
@@ -501,10 +503,10 @@ export default {
           },
           styles: {
             title: {
-              fontSize: 10
+              fontSize: 11
             },
             desc: {
-              fontSize: 13,
+              fontSize: 11,
               bold: true
             },
             boldText: {
