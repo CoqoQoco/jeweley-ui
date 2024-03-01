@@ -7,7 +7,7 @@
         </div>
         <div class="btn-gold-wrapper">
           <div v-for="(data, index) in groupGold" :key="index">
-            <div class="btn-gold" @click="generatePDF(data)">{{ data.gold }}</div>
+            <div class="btn-gold" @click="generatePDF(data)">{{ data.key }}</div>
           </div>
         </div>
       </template>
@@ -56,22 +56,49 @@ export default {
     groupGold() {
       //console.log(this.modelValueStatus)
 
+      // group data by gold and worker
       const groupedData = this.modelValueStatus.tbtProductionPlanStatusDetail.reduce(
         (groups, item) => {
-          //console.log(groups)
-          //console.log(item)
-          const group = groups.find((g) => g.gold === item.gold)
+          //console.log('groups', groups)
+          //console.log('item', item)
+          const group = groups.find(
+            (g) => g.key === `${item.gold} - [${item.worker}:${item.workerName}]`
+          )
+          //console.log('group', group)
 
           if (group) {
             group.values.push(item)
           } else {
-            groups.push({ gold: item.gold, values: [item] })
+            //groups.push({ gold: `${item.gold} - ${item.workerName}`, values: [item] })
+            groups.push({
+              key: `${item.gold} - [${item.worker}:${item.workerName}]`,
+              gold: item.gold,
+              worker: `${item.worker} - ${item.workerName}`,
+              values: [item]
+            })
           }
 
           return groups
         },
         []
       )
+
+      // const groupedData = this.modelValueStatus.tbtProductionPlanStatusDetail.reduce(
+      //   (groups, item) => {
+      //     //console.log(groups)
+      //     //console.log(item)
+      //     const group = groups.find((g) => g.gold === item.gold)
+
+      //     if (group) {
+      //       group.values.push(item)
+      //     } else {
+      //       groups.push({ gold: item.gold, values: [item] })
+      //     }
+
+      //     return groups
+      //   },
+      //   []
+      // )
       //console.log(groupedData)
       return groupedData
     }
@@ -116,7 +143,7 @@ export default {
       return {
         fontSize: 13,
         //bold: true,
-        margin: [5, 10, 0, 0],
+        margin: [5, 5, 0, 0],
         table: {
           headerRows: 1,
           widths: ['*', 40, 40, 40, 50, 50, 40],
@@ -330,7 +357,7 @@ export default {
                     //data
                     {
                       table: {
-                        widths: ['*', '*', 80, 80],
+                        widths: ['*', '*', '*', 80],
                         body: [
                           //row 1
                           [
@@ -348,7 +375,7 @@ export default {
 
                             //สินค้า
                             {
-                              margin: [30, 0, 0, 0],
+                              margin: [0, 0, 0, 0],
                               stack: [
                                 { text: 'สินค้า', style: 'title' },
                                 {
@@ -361,9 +388,10 @@ export default {
                             //ผู้รับงาน
                             {
                               stack: [
-                                { text: 'ผู้รับงาน', style: 'title' },
+                                { text: 'ช่างรับงาน', style: 'title' },
                                 {
-                                  text: this.modelValueStatus.checkName,
+                                  //text: this.modelValueStatus.checkName,
+                                  text: `${data.worker}`,
                                   style: 'desc'
                                 }
                               ]
