@@ -201,6 +201,7 @@
                 min="0"
                 class="form-control"
                 v-model="form.gemWeight"
+                disabled
               />
             </div>
           </div>
@@ -217,18 +218,46 @@
                 v-model="form.returnCastWeight"
               />
             </div>
-            <!-- <div>
+
+            <div>
               <span class="txt-title">
-                <span>คืนตัวเรือน</span>
+                <span>คืนเเม่พิมพ์</span>
               </span>
               <input
                 type="number"
                 step="any"
                 min="0"
                 class="form-control"
-                v-model="form.returnCastBodyWeight"
+                v-model="form.returnCastMoldWeight"
               />
-            </div> -->
+            </div>
+            <div>
+              <span class="txt-title">
+                <span>คืนตัวเรือนเสีย</span>
+              </span>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                v-model="form.returnCastBodyBrokenWeight"
+              />
+            </div>
+            <div>
+              <span class="txt-title">
+                <span>รวมคืนตัวเรือน</span>
+              </span>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                disabled
+                :value="onSumBodyReturn()"
+              />
+            </div>
+          </div>
+          <div class="form-content-row-four-columns-container">
             <div>
               <span class="txt-title">
                 <span>คืนขี้เบ้า</span>
@@ -253,8 +282,6 @@
                 v-model="form.returnCastPowderWeight"
               />
             </div>
-          </div>
-          <div class="form-content-row-four-columns-container">
             <div>
               <span class="txt-title">
                 <span>น้ำหนักขาด</span>
@@ -309,6 +336,7 @@
                 <Row>
                   <Column header=""></Column>
                   <Column header="WO ตัวเรือน"></Column>
+                  <Column header="จำนวนคืนตัวเรือน"></Column>
                   <Column header="น้ำหนักคืนตัวเรือน"></Column>
                   <Column header="รายละเอียด"></Column>
                   <Column header=""></Column>
@@ -358,6 +386,22 @@
                   <!-- <input type="text" class="form-control" v-model="form.bookNo" required /> -->
                 </template>
               </Column>
+              <Column field="returnQTY" header="จำนวนคืนตัวเรือน" style="width: 30px">
+                <template #editor="{ data, field }">
+                  <input
+                    type="number"
+                    min="1"
+                    step="any"
+                    class="form-control text-right"
+                    v-model="data[field]"
+                  />
+                </template>
+                <template #body="slotProps">
+                  <div class="text-right">
+                    {{ `${slotProps.data.returnQTY ?? `0`}` }}
+                  </div>
+                </template>
+              </Column>
               <Column field="returnWeight" header="น้ำหนักคืนตัวเรือน" style="width: 30px">
                 <template #editor="{ data, field }">
                   <input
@@ -390,7 +434,7 @@
                   <Column
                     footer="รวมน้ำหนักคืนตัวเรือน"
                     footerStyle="text-align:right"
-                    :colspan="2"
+                    :colspan="3"
                   />
                   <Column :footer="onSumBodyReturn()" footerStyle="text-align:right" />
                   <Column :colspan="2">
@@ -494,6 +538,8 @@ const interfaceForm = {
   castWeight: null,
   gemWeight: null,
   returnCastWeight: null,
+  returnCastMoldWeight: null,
+  returnCastBodyBrokenWeight: null,
   //returnCastBodyWeight: null,
   returnCastScrapWeight: null,
   returnCastPowderWeight: null,

@@ -45,14 +45,13 @@
             </div>
           </div>
         </div>
-        <div class="line"></div>
+        <!-- <div class="line"></div>
         <div class="form-content-data-custom-columns-container mt-2">
           <div>
             <div class="txt-data-title-main-color">
               <span><i class="bi bi-card-checklist"></i></span>
               <span> เบิกทองหลอม</span>
             </div>
-            <!-- <small class="ml-4">{{ `วันที่เบิกหลอม: ${formatDate(form.meltDate)}` }}</small> -->
           </div>
           <div class="font-weight-bold">รายการ</div>
           <div class="font-weight-bold text-right">น้ำหนัก</div>
@@ -62,36 +61,38 @@
             <small>{{ `วันที่เบิกหลอม: ${formatDate(form.meltDate)}` }}</small>
           </div>
           <div class="text-main font-weight-bold">เบิกหลอม</div>
-          <div class="text-main font-weight-bold text-right">{{ form.meltWeight ?? `0` }}</div>
+          <div class="text-main font-weight-bold text-right">
+            {{ form.meltWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+          </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">คืนทองหลอม</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.returnMeltWeight ?? `0` }}
+            {{ form.returnMeltWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">คืนขี้เบ้า</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.returnMeltScrapWeight ?? `0` }}
+            {{ form.returnMeltScrapWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">น้ำหนักขาด</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.meltWeightLoss ?? `0` }}
+            {{ form.meltWeightLoss?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">น้้ำหนักเกิน</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.meltWeightOver ?? `0` }}
+            {{ form.meltWeightOver?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
-        </div>
+        </div> -->
         <div class="line"></div>
         <div class="form-content-data-custom-columns-container mt-2">
           <div>
@@ -109,55 +110,80 @@
             <small>{{ `วันที่เบิกหล่อ: ${formatDate(form.castDate)}` }}</small>
           </div>
           <div class="text-main font-weight-bold">เบิกหล่อ</div>
-          <div class="text-main font-weight-bold text-right">{{ form.castWeight ?? `0` }}</div>
+          <div class="text-main font-weight-bold text-right">
+            {{ form.castWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+          </div>
         </div>
-        <div class="form-content-data-custom-columns-container">
+        <!-- <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">เบิกพลอยเพชร</div>
           <div class="text-main font-weight-bold text-right">
             {{ form.gemWeight ?? `0` }}
           </div>
-        </div>
-        <div class="form-content-data-custom-columns-container">
+        </div> -->
+        <!-- <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">เบิกพลอยเพชร</div>
           <div class="text-main font-weight-bold text-right">
             {{ form.gemWeight ?? `0` }}
           </div>
-        </div>
+        </div> -->
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">คืนทองหล่อ</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.returnCastWeight ?? `0` }}
+            {{ form.returnCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">คืนขี้เบ้า</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.returnCastScrapWeight ?? `0` }}
+            {{ form.returnCastScrapWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+          </div>
+        </div>
+        <div class="form-content-data-custom-columns-container">
+          <div></div>
+          <div class="text-main font-weight-bold">คืนเเม่พิมพ์</div>
+          <div class="text-main font-weight-bold text-right">
+            {{ form.returnCastMoldWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+          </div>
+        </div>
+        <div class="form-content-data-custom-columns-container">
+          <div></div>
+          <div class="text-main font-weight-bold">คืนตัวเรือน</div>
+          <div class="text-main font-weight-bold text-right">
+            {{ form.returnCastBodyWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+          </div>
+        </div>
+        <div class="form-content-data-custom-columns-container">
+          <div></div>
+          <div class="text-main font-weight-bold">คืนตัวเรือนเสีย</div>
+          <div class="text-main font-weight-bold text-right">
+            {{
+              form.returnCastBodyBrokenWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
+            }}
           </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">คืนผงทอง</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.returnCastPowderWeight ?? `0` }}
+            {{ form.returnCastPowderWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">น้ำหนักขาด</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.castWeightLoss ?? `0` }}
+            {{ form.castWeightLoss?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
         </div>
         <div class="form-content-data-custom-columns-container">
           <div></div>
           <div class="text-main font-weight-bold">น้้ำหนักเกิน</div>
           <div class="text-main font-weight-bold text-right">
-            {{ form.castWeightOver ?? `0` }}
+            {{ form.castWeightOver?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
           </div>
         </div>
         <div class="line"></div>
@@ -171,7 +197,8 @@
           </div>
           <div class="font-weight-bold">รายการ</div>
           <div class="font-weight-bold text-right">น้ำหนัก</div>
-          <div class="font-weight-bold ml-4">รายละเอียด</div>
+          <div class="font-weight-bold ml-4">จำนวน</div>
+          <!-- <div class="font-weight-bold ml-4">รายละเอียด</div> -->
         </div>
         <div v-if="form.items.length">
           <div v-for="(item, index) in form.items" :key="index">
@@ -181,12 +208,26 @@
                 {{ `${item.productionPlan.wo}-${item.productionPlan.woNumber}` }}
               </div>
               <div class="text-main font-weight-bold text-right">
-                {{ item.returnWeight ?? `0` }}
+                {{ item.returnWeight.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
               </div>
-              <div class="ml-4">
+              <div class="text-main font-weight-bold ml-4">
+                {{ item.returnQTY.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+              <!-- <div class="ml-4">
                 <small>{{ item.remark }}</small>
-              </div>
+              </div> -->
             </div>
+          </div>
+          <div class="form-content-data-custom-columns-container">
+            <div></div>
+            <div class="font-weight-bold text-right">รวมน้ำหนักคืนตัวเรือน</div>
+            <div class="text-main font-weight-bold text-right">
+              {{ form.returnCastBodyWeight.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+            </div>
+            <div></div>
+            <!-- <div class="ml-4">
+                <small>{{ item.remark }}</small>
+              </div> -->
           </div>
         </div>
         <div v-else class="d-flex justify-content-center">
@@ -262,6 +303,8 @@ const interfaceForm = {
   castWeight: null,
   gemWeight: null,
   returnCastWeight: null,
+  returnCastMoldWeight: null,
+  returnCastBodyBrokenWeight: null,
   returnCastBodyWeight: null,
   returnCastScrapWeight: null,
   returnCastPowderWeight: null,
@@ -351,7 +394,9 @@ export default {
         castWeight: value.castWeight,
         gemWeight: value.gemWeight,
         returnCastWeight: value.returnCastWeight,
-        //returnCastBodyWeight: value.returnCastBodyWeight,
+        returnCastMoldWeight: value.returnCastMoldWeight,
+        returnCastBodyBrokenWeight: value.returnCastBodyBrokenWeight,
+        returnCastBodyWeight: value.returnCastBodyWeightTotal,
         returnCastScrapWeight: value.returnCastScrapWeight,
         returnCastPowderWeight: value.returnCastPowderWeight,
         castWeightLoss: value.castWeightLoss,
@@ -370,6 +415,7 @@ export default {
                 ...res
               },
               returnWeight: x.returnWeight,
+              returnQTY: x.returnQTY,
               remark: x.remark
             }
           })
@@ -398,7 +444,10 @@ export default {
 
       // ----- table -------- //
       editingRows: [],
-      productItemSearch: []
+      productItemSearch: [],
+      defaultDisplay: {
+        emptyValue: 0
+      }
     }
   },
   methods: {
@@ -720,157 +769,157 @@ export default {
           },
 
           // --- รายการเบิกทองหลอม --- //
-          {
-            columns: ['รายการเบิกทองหลอม'],
-            //bold: true,
-            fontSize: 15,
-            margin: [0, 0, 0, 0]
-          },
-          {
-            style: 'tableExample',
-            table: {
-              widths: [120, 180, 50, '*'],
-              body: [
-                //titel
-                [
-                  {
-                    text: `วันที่: ${this.formatDate(this.form.meltDate)}`,
-                    style: 'title',
-                    border: [false, false, false, false]
-                    //colSpan: 4,
-                    //alignment: 'center'
-                  },
-                  {
-                    text: `รายการ`,
-                    style: 'title',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `น้ำหนัก`,
-                    style: 'title',
-                    alignment: 'right',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: ``,
-                    style: 'title',
-                    border: [false, false, false, false]
-                  }
-                ],
-                //เบิกทองหลอม
-                [
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `เบิกหลอม`,
-                    style: 'boldText',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `${this.form.meltWeight ?? `0`}`,
-                    style: 'boldText',
-                    alignment: 'right',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  }
-                ],
-                [
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `คืนทองหลอม`,
-                    style: 'boldText',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `${this.form.returnMeltWeight ?? `0`}`,
-                    style: 'boldText',
-                    alignment: 'right',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  }
-                ],
-                [
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `คืนขี้เบ้า`,
-                    style: 'boldText',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `${this.form.returnMeltScrapWeight ?? `0`}`,
-                    style: 'boldText',
-                    alignment: 'right',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  }
-                ],
-                [
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `น้ำหนักขาด`,
-                    style: 'boldText',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `${this.form.meltWeightLoss ?? `0`}`,
-                    style: 'boldText',
-                    alignment: 'right',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  }
-                ],
-                [
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `น้้ำหนักเกิน`,
-                    style: 'boldText',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `${this.form.meltWeightOver ?? `0`}`,
-                    style: 'boldText',
-                    alignment: 'right',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  }
-                ]
-              ],
-              layout: {
-                defaultBorder: false
-              },
-              //border: [false, false, false, false],
-              margin: [0, 0, 0, 0]
-            }
-          },
+          // {
+          //   columns: ['รายการเบิกทองหลอม'],
+          //   //bold: true,
+          //   fontSize: 15,
+          //   margin: [0, 0, 0, 0]
+          // },
+          // {
+          //   style: 'tableExample',
+          //   table: {
+          //     widths: [120, 180, 50, '*'],
+          //     body: [
+          //       //titel
+          //       [
+          //         {
+          //           text: `วันที่: ${this.formatDate(this.form.meltDate)}`,
+          //           style: 'title',
+          //           border: [false, false, false, false]
+          //           //colSpan: 4,
+          //           //alignment: 'center'
+          //         },
+          //         {
+          //           text: `รายการ`,
+          //           style: 'title',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `น้ำหนัก`,
+          //           style: 'title',
+          //           alignment: 'right',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: ``,
+          //           style: 'title',
+          //           border: [false, false, false, false]
+          //         }
+          //       ],
+          //       //เบิกทองหลอม
+          //       [
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `เบิกหลอม`,
+          //           style: 'boldText',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `${this.form.meltWeight ?? `0`}`,
+          //           style: 'boldText',
+          //           alignment: 'right',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         }
+          //       ],
+          //       [
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `คืนทองหลอม`,
+          //           style: 'boldText',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `${this.form.returnMeltWeight ?? `0`}`,
+          //           style: 'boldText',
+          //           alignment: 'right',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         }
+          //       ],
+          //       [
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `คืนขี้เบ้า`,
+          //           style: 'boldText',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `${this.form.returnMeltScrapWeight ?? `0`}`,
+          //           style: 'boldText',
+          //           alignment: 'right',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         }
+          //       ],
+          //       [
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `น้ำหนักขาด`,
+          //           style: 'boldText',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `${this.form.meltWeightLoss ?? `0`}`,
+          //           style: 'boldText',
+          //           alignment: 'right',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         }
+          //       ],
+          //       [
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `น้้ำหนักเกิน`,
+          //           style: 'boldText',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: `${this.form.meltWeightOver ?? `0`}`,
+          //           style: 'boldText',
+          //           alignment: 'right',
+          //           border: [false, false, false, false]
+          //         },
+          //         {
+          //           text: ``,
+          //           border: [false, false, false, false]
+          //         }
+          //       ]
+          //     ],
+          //     layout: {
+          //       defaultBorder: false
+          //     },
+          //     //border: [false, false, false, false],
+          //     margin: [0, 0, 0, 0]
+          //   }
+          // },
 
           // --- รายการเบิกทองหล่อ --- //
           {
@@ -922,7 +971,9 @@ export default {
                     border: [false, false, false, false]
                   },
                   {
-                    text: `${this.form.castWeight ?? `0`}`,
+                    text: `${
+                      this.form.castWeight?.toFixed(2) ?? this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
                     style: 'boldText',
                     alignment: 'right',
                     border: [false, false, false, false]
@@ -932,27 +983,27 @@ export default {
                     border: [false, false, false, false]
                   }
                 ],
-                [
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `เบิกพลอยเพชร`,
-                    style: 'boldText',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: `${this.form.gemWeight ?? `0`}`,
-                    style: 'boldText',
-                    alignment: 'right',
-                    border: [false, false, false, false]
-                  },
-                  {
-                    text: ``,
-                    border: [false, false, false, false]
-                  }
-                ],
+                // [
+                //   {
+                //     text: ``,
+                //     border: [false, false, false, false]
+                //   },
+                //   {
+                //     text: `เบิกพลอยเพชร`,
+                //     style: 'boldText',
+                //     border: [false, false, false, false]
+                //   },
+                //   {
+                //     text: `${this.form.gemWeight ?? `0`}`,
+                //     style: 'boldText',
+                //     alignment: 'right',
+                //     border: [false, false, false, false]
+                //   },
+                //   {
+                //     text: ``,
+                //     border: [false, false, false, false]
+                //   }
+                // ],
                 [
                   {
                     text: ``,
@@ -964,7 +1015,10 @@ export default {
                     border: [false, false, false, false]
                   },
                   {
-                    text: `${this.form.returnCastWeight ?? `0`}`,
+                    text: `${
+                      this.form.returnCastWeight?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
                     style: 'boldText',
                     alignment: 'right',
                     border: [false, false, false, false]
@@ -985,7 +1039,82 @@ export default {
                     border: [false, false, false, false]
                   },
                   {
-                    text: `${this.form.returnCastScrapWeight ?? `0`}`,
+                    text: `${
+                      this.form.returnCastScrapWeight?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
+                    style: 'boldText',
+                    alignment: 'right',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: ``,
+                    border: [false, false, false, false]
+                  }
+                ],
+                [
+                  {
+                    text: ``,
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: `คืนเเม่พิมพ์`,
+                    style: 'boldText',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: `${
+                      this.form.returnCastMoldWeight?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
+                    style: 'boldText',
+                    alignment: 'right',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: ``,
+                    border: [false, false, false, false]
+                  }
+                ],
+                [
+                  {
+                    text: ``,
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: `คืนตัวเรือน`,
+                    style: 'boldText',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: `${
+                      this.form.returnCastBodyWeight?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
+                    style: 'boldText',
+                    alignment: 'right',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: ``,
+                    border: [false, false, false, false]
+                  }
+                ],
+                [
+                  {
+                    text: ``,
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: `คืนตัวเรือนเสีย`,
+                    style: 'boldText',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: `${
+                      this.form.returnCastBodyBrokenWeight?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
                     style: 'boldText',
                     alignment: 'right',
                     border: [false, false, false, false]
@@ -1006,7 +1135,10 @@ export default {
                     border: [false, false, false, false]
                   },
                   {
-                    text: `${this.form.returnCastPowderWeight ?? `0`}`,
+                    text: `${
+                      this.form.returnCastPowderWeight?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
                     style: 'boldText',
                     alignment: 'right',
                     border: [false, false, false, false]
@@ -1027,7 +1159,10 @@ export default {
                     border: [false, false, false, false]
                   },
                   {
-                    text: `${this.form.castWeightLoss ?? `0`}`,
+                    text: `${
+                      this.form.castWeightLoss?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
                     style: 'boldText',
                     alignment: 'right',
                     border: [false, false, false, false]
@@ -1048,7 +1183,10 @@ export default {
                     border: [false, false, false, false]
                   },
                   {
-                    text: `${this.form.castWeightOver ?? `0`}`,
+                    text: `${
+                      this.form.castWeightOver?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
                     style: 'boldText',
                     alignment: 'right',
                     border: [false, false, false, false]
@@ -1058,17 +1196,27 @@ export default {
                     border: [false, false, false, false]
                   }
                 ]
-              ]
+              ],
+              layout: {
+                paddingTop: function (i) {
+                  return i === 1
+                },
+                paddingBottom: function (i) {
+                  return i === 1
+                },
+                margin: [0, 0, 0, 0]
+              },
+              margin: [0, 0, 0, 0]
             }
           },
 
           // --- รายการคืนตัวเรือน --- //
-          {
-            columns: ['รายการคืนตัวเรือน'],
-            //bold: true,
-            fontSize: 15,
-            margin: [0, 0, 0, 0]
-          },
+          // {
+          //   columns: ['รายการคืนตัวเรือน'],
+          //   //bold: true,
+          //   fontSize: 15,
+          //   margin: [0, 0, 0, 0]
+          // },
           {
             style: 'tableExample',
             table: {
@@ -1077,8 +1225,8 @@ export default {
                 //titel
                 [
                   {
-                    text: ``,
-                    style: 'title',
+                    text: `รายการคืนตัวเรือน`,
+                    fontSize: 15,
                     border: [false, false, false, false]
                     //colSpan: 4,
                     //alignment: 'center'
@@ -1102,13 +1250,49 @@ export default {
                     //alignment: 'center'
                   },
                   {
-                    text: `รายละเอียด`,
+                    text: `จำนวน`,
                     style: 'title',
                     border: [false, false, false, false]
                   }
                 ],
                 //ตัวเรือน
-                ...this.buildReturnBody()
+                ...this.buildReturnBody(),
+                [
+                  {
+                    text: ``,
+                    fontSize: 15,
+                    border: [false, false, false, false]
+                    //colSpan: 4,
+                    //alignment: 'center'
+                  },
+                  {
+                    text: `รวมคืนตัวเรือน`,
+                    style: 'boldText',
+                    alignment: 'right',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: `${
+                      this.form.returnCastBodyWeight?.toFixed(2) ??
+                      this.defaultDisplay.emptyValue.toFixed(2)
+                    }`,
+                    style: 'boldText',
+                    alignment: 'right',
+                    border: [false, false, false, false]
+                  },
+                  {
+                    text: ``,
+                    style: 'title',
+                    border: [false, false, false, false]
+                    //colSpan: 4,
+                    //alignment: 'center'
+                  },
+                  {
+                    text: ``,
+                    style: 'title',
+                    border: [false, false, false, false]
+                  }
+                ]
               ]
             }
           },
@@ -1130,41 +1314,6 @@ export default {
             },
             margin: [0, 0, 0, 10]
           },
-
-          // ---- รายละเอียดอื่่นๆ ---- //
-          //   {
-          //     columns: [
-          //       {
-          //         stack: [
-          //           { text: 'รายละเอียดอื่นๆ', style: 'title' },
-          //           {
-          //             text: this.form.remark,
-          //             style: 'desc'
-          //           }
-          //         ]
-          //       }
-          //     ],
-          //     margin: [0, 0, 0, 0]
-          //   },
-
-          //underline
-          //   {
-          //     table: {
-          //       widths: ['*'],
-          //       body: [
-          //         [
-          //           {
-          //             columns: [],
-          //             border: [false, false, false, true]
-          //           }
-          //         ]
-          //       ]
-          //     },
-          //     layout: {
-          //       defaultBorder: false
-          //     },
-          //     margin: [0, 0, 0, 10]
-          //   },
 
           // ---- sign ---- //
           {
@@ -1209,11 +1358,11 @@ export default {
             fontSize: 10
           },
           desc: {
-            fontSize: 15,
+            fontSize: 11,
             bold: true
           },
           boldText: {
-            fontSize: 15,
+            fontSize: 11,
             bold: true
           }
         }
@@ -1236,7 +1385,7 @@ export default {
               border: [false, false, false, false]
             },
             {
-              text: `${x.returnWeight ?? `0`}`,
+              text: `${x.returnWeight?.toFixed(2) ?? this.defaultDisplay.emptyValue.toFixed(2)}`,
               style: 'boldText',
               alignment: 'right',
               border: [false, false, false, false]
@@ -1246,7 +1395,7 @@ export default {
               border: [false, false, false, false]
             },
             {
-              text: `${x.remark ?? `-`}`,
+              text: `${x.returnQTY?.toFixed(2) ?? this.defaultDisplay.emptyValue.toFixed(2)}`,
               //style: 'boldText',
               border: [false, false, false, false]
             }
@@ -1292,6 +1441,13 @@ export default {
 .form-content-data-custom-columns-container {
   display: grid;
   grid-template-columns: 4fr 4fr 1fr 3fr;
+  gap: 10px;
+  padding: 0px 30px;
+  margin-top: 5px;
+}
+.form-content-data-custom-body-columns-container {
+  display: grid;
+  grid-template-columns: 4fr 4fr 1fr 1fr 3fr;
   gap: 10px;
   padding: 0px 30px;
   margin-top: 5px;
