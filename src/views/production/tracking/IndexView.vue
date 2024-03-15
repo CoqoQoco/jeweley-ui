@@ -49,6 +49,27 @@
               </div>
             </div>
           </div>
+          <div>
+            <span class="text-title">สถานะงานผลิต</span>
+            <!-- <Dropdown
+              v-model="search.status"
+              :options="masterStatus"
+              optionLabel="nameTh"
+              optionValue="id"
+              placeholder="เลือกสถานะงาน"
+              class="w-full md:w-14rem"
+            /> -->
+            <div>
+              <MultiSelect
+                v-model="search.status"
+                :options="masterStatus"
+                optionLabel="nameTh"
+                optionValue="id"
+                class="w-full md:w-14rem"
+              />
+            </div>
+            <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
+          </div>
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span><i class="bi bi-search"></i></span>
@@ -62,7 +83,7 @@
         </div>
       </div>
     </form>
-    <tableMain v-model:formValue="formSearch"></tableMain>
+    <tableMain v-model:formValue="formSearch" v-model:masterStatusValue="masterStatus"></tableMain>
   </div>
 </template>
 
@@ -73,12 +94,17 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTit
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import Calendar from 'primevue/calendar'
+//import Dropdown from 'primevue/dropdown'
+import MultiSelect from 'primevue/multiselect'
 import tableMain from './components/TableMainView.vue'
+
+import api from '@/axios/axios-config.js'
 export default {
   components: {
     tableMain,
     pageTitle,
-    Calendar
+    Calendar,
+    MultiSelect
   },
   data() {
     return {
@@ -87,9 +113,11 @@ export default {
       search: {
         start: null,
         end: null,
-        text: null
+        text: null,
+        status: null
       },
-      formSearch: {}
+      formSearch: {},
+      masterStatus: []
     }
   },
   methods: {
@@ -118,9 +146,27 @@ export default {
       this.search = {
         start: null,
         end: null,
-        text: null
+        text: null,
+        status: null
+      }
+    },
+    async fetchMaterStatus() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
+        if (res) {
+          this.masterStatus = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
       }
     }
+  },
+  created() {
+    this.fetchMaterStatus()
+    //this.fetchData()
   },
   mounted() {
     const url = window.location.href
@@ -145,7 +191,7 @@ export default {
 
 .search-bar-container {
   display: grid;
-  grid-template-columns: 400px 350px auto;
+  grid-template-columns: 400px 300px 300px auto;
   gap: 10px;
   margin-bottom: 10px;
 }

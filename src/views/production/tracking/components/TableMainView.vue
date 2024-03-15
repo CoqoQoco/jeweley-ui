@@ -127,6 +127,10 @@ export default {
     formValue: {
       type: Object,
       default: () => {}
+    },
+    masterStatusValue: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -147,15 +151,18 @@ export default {
       //test
       urlImg: null,
 
-      modelUpdateStatus: {},
+      modelUpdateStatus: {}
 
       //master
-      masterStatus: []
+      //masterStatus: []
     }
   },
   computed: {
     isData() {
       return this.modelValue.length ? false : true
+    },
+    masterStatus() {
+      return this.masterStatusValue
     }
   },
   watch: {
@@ -179,6 +186,7 @@ export default {
         case 9999:
           return 'bg-danger bg-gradient'
         case 100:
+        case 95:
           return 'bg-success bg-gradient'
         case 10:
           return 'bg-dark bg-gradient'
@@ -189,7 +197,6 @@ export default {
         case 80:
         case 85:
         case 90:
-        case 95:
           return 'bg-primary bg-gradient text-light'
       }
     },
@@ -214,9 +221,12 @@ export default {
           search: {
             start: this.formValue.start ? formatISOString(this.formValue.start) : null,
             end: this.formValue.end ? formatISOString(this.formValue.end) : null,
-            text: this.formValue.text
+            text: this.formValue.text,
+            status: this.formValue.status ? [...this.formValue.status] : null
           }
         }
+
+        console.log(param)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanSearch', param)
         if (res) {
           this.data = { ...res }
@@ -280,7 +290,7 @@ export default {
     }
   },
   created() {
-    this.fetchMaterStatus()
+    //this.fetchMaterStatus()
     this.fetchData()
   },
   async mounted() {

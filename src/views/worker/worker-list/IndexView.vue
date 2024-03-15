@@ -76,13 +76,20 @@
         </div>
       </form>
     </div>
-    <TableMain :formValue="formValue"></TableMain>
+    <TableMain :formValue="formValue" @updateWorker="onShowFormUpdateWorker"></TableMain>
     <FormCreate
       :isShow="isShowFormAddWorker"
       :masterWorkerProductionType="masterWorkerProductionType"
       @closeModal="onCloseFormAddWorker"
       @fetch="onFetchFormAddWorker"
     ></FormCreate>
+    <FormUpdate
+      :isShow="isShowFormAUpdateWorker"
+      :masterWorkerProductionType="masterWorkerProductionType"
+      :modelValue="modelUpdate"
+      @closeModal="onCloseFormUpdateWorker"
+      @fetch="onFetchFormAddWorker"
+    ></FormUpdate>
   </div>
 </template>
 
@@ -95,6 +102,7 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTit
 import Dropdown from 'primevue/dropdown'
 
 import FormCreate from './components/FormCreate.vue'
+import FormUpdate from './components/FormUpdate.vue'
 import TableMain from './components/TableMainView.vue'
 
 import api from '@/axios/axios-config.js'
@@ -113,6 +121,7 @@ export default {
     pageTitle,
     Dropdown,
     FormCreate,
+    FormUpdate,
     TableMain
   },
   watch: {
@@ -127,6 +136,7 @@ export default {
       // --- flag --- //
       isLoading: false,
       isShowFormAddWorker: false,
+      isShowFormAUpdateWorker: false,
 
       // --- form --- //
       form: {
@@ -145,7 +155,8 @@ export default {
         { id: 0, description: 'เลือกทั้งหมด' },
         { id: 1, description: 'เลือกเปิดใช้งาน' },
         { id: 2, description: 'เลือกปิดใช้งาน' }
-      ]
+      ],
+      modelUpdate: {}
     }
   },
   methods: {
@@ -171,11 +182,20 @@ export default {
     },
     onFetchFormAddWorker() {
       this.isShowFormAddWorker = false
+      this.isShowFormAUpdateWorker = false
       this.formValue = {
         type: this.form.type?.id,
         text: this.form.text,
         active: this.form.active?.id
       }
+    },
+    onShowFormUpdateWorker(item) {
+      this.modelUpdate = { ...item }
+      //console.log('onShowFormUpdateWorker: ', item)
+      this.isShowFormAUpdateWorker = true
+    },
+    onCloseFormUpdateWorker() {
+      this.isShowFormAUpdateWorker = false
     },
 
     // --- APIs --- //

@@ -3,8 +3,8 @@
     <loading :isLoading="isLoading"> </loading>
     <div class="filter-container">
       <pageTitle
-        title="รายงานผลิต"
-        description="รายงานผลิต เเละรายละเอียดต่างๆ"
+        title="รายงานค่าเเรง"
+        description="รายงานค่าเเรง เเละรายละเอียดต่างๆ"
         :isShowBtnClose="false"
         isShowRightSlot
       >
@@ -53,7 +53,23 @@
               </div>
             </div>
           </div> -->
-          <div></div>
+          <div>
+            <span class="text-title">คำค้นหา</span>
+            <div class="input-group input-group-inner">
+              <input
+                id="inputStockID"
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.text"
+                placeholder="ชื่อช่าง, รหัสช่าง, หมายเลขใบงาน ....."
+              />
+              <!-- <div class="input-group-append">
+                <span class="input-group-text">
+                  <i class="bi bi-upc-scan text-main-color"></i>
+                </span>
+              </div> -->
+            </div>
+          </div>
           <div></div>
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
@@ -355,7 +371,7 @@ export default {
           search: {
             createStart: this.form.start ? formatISOString(this.form.start) : null,
             createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            woText: this.form.text
+            text: this.form.text
           }
         }
         const res = await api.jewelry.post('Worker/ReportWorkerWages', param)

@@ -27,6 +27,13 @@
             >
               <i class="bi bi-wallet2"></i>
             </button>
+            <button
+              class="btn btn-sm btn btn-main ml-2"
+              title="เเก้ไขข้อมูลพนักงาน"
+              @click="UpdateWorker(slotProps.data)"
+            >
+              <i class="bi bi-pencil"></i>
+            </button>
           </div>
         </template>
       </Column>
@@ -101,6 +108,9 @@ export default {
     viewWorkerWages(item) {
       const id = item.code
       window.open(`/worker-daily-wages/${id}`, '_blank')
+    },
+    UpdateWorker(item) {
+      this.$emit('updateWorker', item)
     },
 
     // --- APIs --- //

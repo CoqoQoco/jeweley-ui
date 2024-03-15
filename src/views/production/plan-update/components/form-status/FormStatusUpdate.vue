@@ -661,6 +661,62 @@
               </button>
             </div>
           </form>
+          <form v-if="showType === 5" @submit.prevent="onSubmit">
+            <div class="mb-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ข้อมูลประเมินราคา</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">วันประเมินราคา</span>
+                <div class="flex-group">
+                  <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
+                  <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
+                  <Calendar
+                    class="w-100"
+                    :class="val.isValReceiveDate === true ? `p-invalid` : ``"
+                    v-model="form.receiveDate"
+                    dateFormat="dd/mm/yy"
+                    showIcon
+                    showButtonBar
+                  />
+                </div>
+              </div>
+              <div>
+                <span class="txt-title">ผู้ประเมินราคา</span>
+                <input type="text" class="form-control" v-model="form.receiveBy" required />
+              </div>
+            </div>
+
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขข้อมูลเพิ่มเติม</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">หมายเหตุ - 1</span>
+                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
+                </textarea>
+              </div>
+              <div>
+                <span class="txt-title">หมายเหตุ - 2</span>
+                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
+                </textarea>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <button
+                class="btn btn-sm btn-dark btn-custom mr-2"
+                type="button"
+                @click="onCloseModal"
+              >
+                ยกเลิกเเก้ไขสถานะการผลิต
+              </button>
+              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+                ยืนยันเเก้ไขสถานะการผลิต
+              </button>
+            </div>
+          </form>
         </div>
       </template>
     </modal>
@@ -842,6 +898,8 @@ export default {
           this.showType = 3
         } else if (status === 55) {
           this.showType = 4
+        } else if (status === 95) {
+          this.showType = 5
         }
       } else {
         this.showType = 0

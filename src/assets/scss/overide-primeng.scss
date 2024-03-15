@@ -1,125 +1,121 @@
-@import "./variable.scss";
+@import './variable.scss';
 
 // ----- table ---- //
-.p-datatable{
-    font-size: $base-font-size !important;
-    .p-column-header-content{
-
-    }
+.p-datatable {
+  font-size: $base-font-size !important;
+  .p-column-header-content {
+  }
 }
 .p-datatable thead th {
-    background-color: $base-font-color !important;
-    color: #ffffff;
-    .p-column-header-content {
-        font-weight: 100 !important;
-    }
+  background-color: $base-font-color !important;
+  color: #ffffff;
+  .p-column-header-content {
+    font-weight: 100 !important;
+  }
 }
 .p-datatable .p-column-header-content {
-    color: #ffffff !important;
+  color: #ffffff !important;
 }
 .p-datatable-tbody > tr > td {
-    padding: 3px 10px 3px 10px !important;
+  padding: 3px 10px 3px 10px !important;
 }
-.p-paginator{
+.p-paginator {
+  font-size: $base-font-size !important;
+  padding: 5px;
+  .p-dropdown {
+    height: 25px !important;
+    width: 100px !important;
+  }
+  .p-dropdown-label {
     font-size: $base-font-size !important;
-    padding: 5px;
-    .p-dropdown{
-        height: 25px !important;
-        width: 100px !important;
-    }
-    .p-dropdown-label{
-        font-size: $base-font-size !important;
-    }
-    .p-inputtext{
-        padding: 1px 0px 0px 10px !important;
-    }
+  }
+  .p-inputtext {
+    padding: 1px 0px 0px 10px !important;
+  }
 }
 
 // ---- drop down ----
 .p-dropdown-item {
-    font-size: $base-font-size !important;
-    padding: 5px !important;
-    height: 35px !important; 
-    width: 100% !important; 
+  font-size: $base-font-size !important;
+  padding: 5px !important;
+  height: 35px !important;
+  width: 100% !important;
 }
 .p-dropdown {
-    height: 35px !important;
-    padding-left: 5px;
-    width: 100% !important;
-    margin-top: 5px !important;
-    .p-dropdown-clear-icon{
-        right: 2.5rem !important;
-        top: 1.2rem;
-    }
-    svg {
-            width: 10px !important;
-            height: 10px !important;
-        }
+  height: 35px !important;
+  padding-left: 5px;
+  width: 100% !important;
+  margin-top: 5px !important;
+  .p-dropdown-clear-icon {
+    right: 2.5rem !important;
+    top: 1.2rem;
+  }
+  svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
 }
 .p-dropdown-label {
-    padding: 5px !important;
-    font-size: $base-font-size !important;
+  padding: 5px !important;
+  font-size: $base-font-size !important;
 }
-
 
 // ----- Calendar ----- //
-.p-calendar{
-    height: 35px;
-    margin-top: 5px !important;
-    width: 100% !important;
-    
-    //margin: 0px !important;
-    //padding: 0px !important;
-    .p-calendar-w-btn, 
-    .p-datepicker-trigger {
-        background-color: $base-font-color !important;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-color: $base-font-color !important;
-        //height: 35px !important;
-        //padding-top: 500px !important;
-        //font-size: 10px !important;
-       
-    }
-    input{
-        font-size: $base-font-size !important;
-        padding: 10px !important;
-        margin: 0px !important;
-    }
-    svg{
-        width: 15px;
-        height: 15px;
-    }
-}
-.p-datepicker-calendar{
+.p-calendar {
+  height: 35px;
+  margin-top: 5px !important;
+  width: 100% !important;
+
+  //margin: 0px !important;
+  //padding: 0px !important;
+  .p-calendar-w-btn,
+  .p-datepicker-trigger {
+    background-color: $base-font-color !important;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-color: $base-font-color !important;
+    //height: 35px !important;
+    //padding-top: 500px !important;
+    //font-size: 10px !important;
+  }
+  input {
     font-size: $base-font-size !important;
+    padding: 10px !important;
+    margin: 0px !important;
+  }
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+.p-datepicker-calendar {
+  font-size: $base-font-size !important;
 }
 
 //  --------- p-autocomplete p-component p-inputwrapper ----------
-.p-autocomplete{
+.p-autocomplete {
+  height: 35px !important;
+  width: 100% !important;
+  .p-autocomplete.input {
+    width: 100% !important;
+  }
+  .p-autocomplete-loader {
+    margin-top: -0.1rem !important;
+  }
+  .p-component {
     height: 35px !important;
     width: 100% !important;
-    .p-autocomplete.input{
-        width: 100% !important;
-    }
-    .p-autocomplete-loader{
-        margin-top: -0.1rem !important;
-    }
-    .p-component{
-        height: 35px !important;
-        width: 100% !important;
-    }
+  }
 }
-.p-autocomplete-panel{
-    margin-top: 5px !important;
-    width: 400px !important;
-    height: 400px !important;
+.p-autocomplete-panel {
+  margin-top: 5px !important;
+  width: 400px !important;
+  height: 400px !important;
 }
-.p-autocomplete-empty-message{
-    display: flex;
-    justify-content: center;
+.p-autocomplete-empty-message {
+  display: flex;
+  justify-content: center;
 }
-
 
 // -------- panel -------------- //
 // :deep(.p-panel-header) {
@@ -132,32 +128,51 @@
 // }
 
 .p-tabmenu .p-tabmenu-nav {
-    background: none !important;
-    border: none !important;
-    border-width: 0 0 2px 0;
+  background: none !important;
+  border: none !important;
+  border-width: 0 0 2px 0;
 }
 .p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link {
-    border: solid #dee2e6;
-    border-width: 0 0 0 0 !important;
-    border-color: transparent transparent #dee2e6 transparent;
-    background: none !important;
-    color: $base-font-color !important;
-    padding: 10px !important;
-    font-weight: 400 !important;
-    font-size: 14px !important;
-    border-top-right-radius: 6px;
-    border-top-left-radius: 6px;
-    transition: box-shadow 0.2s;
-    margin: 0 0 -2px 0;
+  border: solid #dee2e6;
+  border-width: 0 0 0 0 !important;
+  border-color: transparent transparent #dee2e6 transparent;
+  background: none !important;
+  color: $base-font-color !important;
+  padding: 10px !important;
+  font-weight: 400 !important;
+  font-size: 14px !important;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  transition: box-shadow 0.2s;
+  margin: 0 0 -2px 0;
 }
 .p-tabmenu .p-tabmenu-nav .p-tabmenuitem.p-highlight .p-menuitem-link {
-    background: $base-font-color !important;
-    border-color: none !important;
-    color: #ffffff !important;
+  background: $base-font-color !important;
+  border-color: none !important;
+  color: #ffffff !important;
 }
 .p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link:not(.p-disabled):focus {
-    outline: 0 none;
-    outline-offset: 0;
-    box-shadow: none !important;
+  outline: 0 none;
+  outline-offset: 0;
+  box-shadow: none !important;
 }
 
+// --------- MultiSelect ------------ //
+.p-multiselect {
+  width: 100% !important;
+  margin-top: 5px !important;
+}
+.p-multiselect .p-multiselect-label.p-placeholder {
+  /* color: #6c757d; */
+  // margin-top: 0px !important;
+  height: 35px !important;
+  width: 100% !important;
+}
+.p-multiselect .p-multiselect-label {
+  padding: 5px !important;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}

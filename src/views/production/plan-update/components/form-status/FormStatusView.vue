@@ -452,6 +452,78 @@
               </div>
             </div>
           </panel>
+          <panel v-if="onCheckStatus(data.status) === 5" toggleable class="mt-2">
+            <template #header>
+              <div class="flex align-items-center gap-2">
+                <!-- <span class="font-bold">{{ `${data.statusNavigation.nameTh}` }}</span> -->
+                <h5 class="title" style="margin: 0px">{{ getStatusName(data.status) }}</h5>
+                <p class="description">{{ formatDateTime(data.updateDate) }}</p>
+              </div>
+            </template>
+            <template #icons>
+              <button
+                class="p-panel-header-icon p-link mr-2"
+                @click="onUpdateStatus(data)"
+                title="เเก้ไข"
+              >
+                <span><i class="bi bi-brush text-warning"></i></span>
+              </button>
+              <button
+                class="p-panel-header-icon p-link mr-2"
+                @click="onDelStatus(data.id)"
+                title="ลบ"
+              >
+                <span><i class="bi bi-trash-fill text-danger"></i></span>
+              </button>
+            </template>
+            <div>
+              <div class="status-remark-container">
+                <!-- <div>
+                  <p class="description">จ่ายงาน</p>
+                  <p class="title">{{ data.sendName }}</p>
+                </div>
+                <div>
+                  <p class="description">วันจ่ายงาน</p>
+                  <p class="title">{{ formatDate(data.sendDate) }}</p>
+                </div> -->
+                <div>
+                  <p class="description">ผู้ประเมินราคา</p>
+                  <p class="title">{{ data.checkName }}</p>
+                </div>
+                <div>
+                  <p class="description">วันประเมินราคา</p>
+                  <p class="title">{{ formatDate(data.checkDate) }}</p>
+                </div>
+              </div>
+              <!-- <div v-if="data.tbtProductionPlanStatusDetail">
+                <DataTable
+                  :value="data.tbtProductionPlanStatusDetail"
+                  class="p-datatable-sm"
+                  showGridlines
+                >
+                  <Column field="gold" header="ทอง" style="width: 20%"> </Column>
+                  <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 20%"> </Column>
+                  <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 20%"> </Column>
+                  <template #footer>
+                    <div class="d-flex justify-content-between">
+                      <div>ทั้งหมด {{ data.tbtProductionPlanStatusDetail.length }} รายการ</div>
+                      <i class="bi bi-plus-square-fill"></i>
+                    </div>
+                  </template>
+                </DataTable>
+              </div> -->
+              <div class="status-remark-container mt-3">
+                <div>
+                  <p class="description">หมายเหตุ - 1</p>
+                  <p class="title">{{ `${data.remark1 ? data.remark1 : '---'}` }}</p>
+                </div>
+                <div>
+                  <p class="description">หมายเหตุ - 2</p>
+                  <p class="title">{{ `${data.remark2 ? data.remark2 : '---'}` }}</p>
+                </div>
+              </div>
+            </div>
+          </panel>
         </div>
       </div>
     </div>
@@ -587,6 +659,8 @@ export default {
         return 3
       } else if (status === 55) {
         return 4
+      } else if (status === 95) {
+        return 5
       }
     },
     checkNull(item) {
