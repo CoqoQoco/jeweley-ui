@@ -482,7 +482,8 @@ export default {
       body.push(title)
 
       //body
-      const payItem = this.dataWages.items.filter((x) => x.wagesStatus === 100)
+      //const payItem = this.dataWages.items.filter((x) => x.wagesStatus === 100)
+      const payItem = [...this.dataWages.items]
       //console.log(this.dataWages)
       let totalGoldQtyCheck = 0
       payItem.forEach((item) => {
