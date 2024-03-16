@@ -235,9 +235,9 @@
           <span class="ml-2">พิมพ์สลิปสถานะสำเร็จ</span>
         </button>
         <button
-          class="btn btn-sm btn-info mr-2"
+          class="btn btn-sm btn-danger mr-2"
           style="width: 200px"
-          @click="generateStatusPDF('wating')"
+          @click="onGenerateStatusPDF('wating')"
         >
           <span><i class="bi bi-printer"></i></span>
           <span class="ml-2">พิมพ์สลิปติดตามงาน</span>
@@ -312,6 +312,7 @@ export default {
       // --- form --- //
       data: {},
       dataWages: {},
+      dataActiveStatus: {},
       form: {
         interfaceForm
       },
@@ -413,6 +414,30 @@ export default {
             this.isShowDataTable = false
             this.isShowNoDataTable = true
           }
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    },
+    async searchActiveStatus() {
+      try {
+        this.isLoading = true
+
+        //console.log(this.form)
+
+        const params = {
+          requestDateStart: formatISOString(this.form.requestDateStart),
+          requestDateEnd: formatISOString(this.form.requestDateEnd),
+          //requestDateStart: this.form.requestDateStart,
+          //requestDateEnd: this.form.requestDateEnd,
+          code: this.data.code
+        }
+        const res = await api.jewelry.post('Worker/SearchWorkerActiveStatus', params)
+        if (res) {
+          this.dataActiveStatus = { ...res }
+          console.log(this.dataWages)
         }
         this.isLoading = false
       } catch (error) {
@@ -530,8 +555,8 @@ export default {
       body.push(title)
 
       //body
-      //const payItem = this.dataWages.items.filter((x) => x.wagesStatus === 100)
-      const payItem = [...this.dataWages.items]
+      const payItem = this.dataWages.items.filter((x) => x.status === x.statusActive)
+      //const payItem = [...this.dataActiveStatus.items]
       //console.log(this.dataWages)
       let totalGoldQtyCheck = 0
       let totalGoldQtyWeightCheck = 0
@@ -789,7 +814,9 @@ export default {
 
       pdfMake.createPdf(docDefinition).open()
     },
-    async generateStatusPDF() {
+    //onGenerateStatusPDF() { },
+    async onGenerateStatusPDF() {
+      //this.searchActiveStatus()
       pdfMake.vfs = vfs
       pdfMake.fonts = {
         THSarabunNew: {
