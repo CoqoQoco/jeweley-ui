@@ -756,7 +756,8 @@ export default {
           sum += x.returnWeight
         })
       }
-      return sum
+      // return .toFixed(2)
+      return sum.toFixed(2)
     },
 
     // ------ helper ----- //
