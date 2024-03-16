@@ -101,6 +101,7 @@
         <ColumnGroup type="header">
           <Row>
             <Column header="เลขที่ใบงาน"></Column>
+            <Column header="สถานะใบงาน"></Column>
             <Column header="วันที่ส่งงาน"></Column>
             <Column header="รหัสสินค้า"></Column>
             <Column header="สถานะ"></Column>
@@ -119,6 +120,7 @@
             {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
           </template>
         </Column>
+        <Column field="statusActiveName"></Column>
         <Column field="jobDate">
           <template #body="slotProps">
             {{ `${formatDate(slotProps.data.jobDate)}` }}
@@ -196,7 +198,7 @@
         </Column>
         <ColumnGroup type="footer">
           <Row>
-            <Column :footer="`จำวนวน  ${dataWages.items.length}  รายการ`" :colspan="4" />
+            <Column :footer="`จำวนวน  ${dataWages.items.length}  รายการ`" :colspan="5" />
             <Column footer="รวมจำนวนรับ" :colspan="3" footerStyle="text-align:right" />
             <Column :footer="dataWages.totalGoldQtyCheck" />
             <Column footer="รวมราคา" :colspan="3" footerStyle="text-align:right" />
