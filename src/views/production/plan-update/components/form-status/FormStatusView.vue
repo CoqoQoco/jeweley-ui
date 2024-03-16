@@ -276,6 +276,40 @@
                   <Column field="gold" header="ทอง" style="width: 20%"> </Column>
                   <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 20%"> </Column>
                   <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 20%"> </Column>
+                  <Column
+                    field="worker"
+                    header="ช่างคัดพลอย"
+                    style="width: 20%"
+                  >
+                    <template #body="slotProps">
+                      <div class="text-center">
+                        {{
+                          `${
+                            slotProps.data.worker
+                              ? `${slotProps.data.worker} - ${slotProps.data.workerName}`
+                              : null
+                          }`
+                        }}
+                      </div>
+                    </template>
+                  </Column>
+                  <Column
+                    field="workerSub"
+                    header="ช่างคัดเพชร"
+                    style="width: 20%"
+                  >
+                    <template #body="slotProps">
+                      <div class="text-center">
+                        {{
+                          `${
+                            slotProps.data.workerSub
+                              ? `${slotProps.data.workerSub} - ${slotProps.data.workerSubName}`
+                              : null
+                          }`
+                        }}
+                      </div>
+                    </template>
+                  </Column>
                   <template #footer>
                     <div class="d-flex justify-content-between">
                       <div>ทั้งหมด {{ data.tbtProductionPlanStatusDetail.length }} รายการ</div>

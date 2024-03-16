@@ -54,14 +54,14 @@
             </div>
           </div> -->
           <div>
-            <span class="text-title">คำค้นหา</span>
+            <span class="text-title">หมายเลขใบงาน</span>
             <div class="input-group input-group-inner">
               <input
                 id="inputStockID"
                 :class="['form-control bg-input']"
                 type="text"
-                v-model.trim="form.text"
-                placeholder="ชื่อช่าง, รหัสช่าง, หมายเลขใบงาน ....."
+                v-model.trim="form.woText"
+                placeholder="หมายเลขใบงาน....."
               />
               <!-- <div class="input-group-append">
                 <span class="input-group-text">
@@ -70,7 +70,24 @@
               </div> -->
             </div>
           </div>
-          <div></div>
+          <div>
+            <span class="text-title">คำค้นหา</span>
+            <div class="input-group input-group-inner">
+              <input
+                id="inputStockID"
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.text"
+                placeholder="ชื่อช่าง, รหัสช่าง,รหัสสินค้า ....."
+              />
+              <!-- <div class="input-group-append">
+                <span class="input-group-text">
+                  <i class="bi bi-upc-scan text-main-color"></i>
+                </span>
+              </div> -->
+            </div>
+          </div>
+
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span><i class="bi bi-search"></i></span>
@@ -118,7 +135,7 @@
       >
         <Column field="wo" header="เลขที่ใบงาน" sortable style="min-width: 150px">
           <template #body="slotProps">
-            {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
+            {{ `${slotProps.data.wo}${slotProps.data.woNumber}` }}
           </template>
         </Column>
         <Column header="วันที่ส่งงาน" sortable field="jobDate" style="min-width: 150px">
@@ -208,6 +225,7 @@ import api from '@/axios/axios-config.js'
 
 const interfaceForm = {
   text: null,
+  woText: null,
   start: null,
   end: null
 }
@@ -371,7 +389,8 @@ export default {
           search: {
             createStart: this.form.start ? formatISOString(this.form.start) : null,
             createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            text: this.form.text
+            text: this.form.text,
+            woText: this.form.woText
           }
         }
         const res = await api.jewelry.post('Worker/ReportWorkerWages', param)

@@ -140,10 +140,34 @@
             }}
           </template>
         </Column>
-        <Column field="goldQtySend"></Column>
-        <Column field="goldWeightSend"></Column>
-        <Column field="goldQtyCheck"></Column>
-        <Column field="goldWeightCheck"></Column>
+        <Column field="goldQtySend">
+          <template #body="slotProps">
+            {{
+              slotProps.data.status === 70
+                ? slotProps.data.goldQtyCheck
+                : slotProps.data.goldQtySend
+            }}
+          </template>
+        </Column>
+        <Column field="goldWeightSend">
+          <template #body="slotProps">
+            {{
+              slotProps.data.status === 70
+                ? slotProps.data.goldWeightCheck
+                : slotProps.data.goldWeightSend
+            }}
+          </template>
+        </Column>
+        <Column field="goldQtyCheck">
+          <template #body="slotProps">
+            {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldQtyCheck }}
+          </template>
+        </Column>
+        <Column field="goldWeightCheck">
+          <template #body="slotProps">
+            {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldWeightCheck }}
+          </template></Column
+        >
         <Column field="wages">
           <template #body="slotProps">
             <div>
@@ -209,6 +233,14 @@
         >
           <span><i class="bi bi-printer"></i></span>
           <span class="ml-2">พิมพ์สลิปสถานะสำเร็จ</span>
+        </button>
+        <button
+          class="btn btn-sm btn-info mr-2"
+          style="width: 200px"
+          @click="generateStatusPDF('wating')"
+        >
+          <span><i class="bi bi-printer"></i></span>
+          <span class="ml-2">พิมพ์สลิปติดตามงาน</span>
         </button>
       </div>
     </div>
@@ -467,6 +499,77 @@ export default {
 
       return body
     },
+    tableStatus() {
+      return {
+        fontSize: 13,
+        //bold: true,
+        margin: [0, 0, 0, 0],
+        table: {
+          headerRows: 1,
+          widths: ['*', '*', '*', '*', '*', 50, 50],
+          body: this.buildTableStatusBody(),
+          layout: {
+            defaultBorder: false
+          }
+        }
+      }
+    },
+    buildTableStatusBody() {
+      let body = []
+      const title = [
+        this.setTableRow(`วันที่`, `title`),
+        this.setTableRow(`เลขที่ใบงาน`, `title`),
+        this.setTableRow(`รหัสสินค้า`, `title`),
+        this.setTableRow(`แผนก`, `title`),
+        this.setTableRow(`รายละเอียด`, `title`),
+        this.setTableRow(`จำนวน`, `title-right`),
+        this.setTableRow(`น้ำหนักจ่าย`, `title-right`)
+      ]
+
+      //title
+      body.push(title)
+
+      //body
+      //const payItem = this.dataWages.items.filter((x) => x.wagesStatus === 100)
+      const payItem = [...this.dataWages.items]
+      //console.log(this.dataWages)
+      let totalGoldQtyCheck = 0
+      let totalGoldQtyWeightCheck = 0
+      payItem.forEach((item) => {
+        totalGoldQtyCheck += item.status === 70 ? item.goldQtyCheck : item.goldQtySend
+        totalGoldQtyWeightCheck += item.status === 70 ? item.goldWeightCheck : item.goldWeightSend
+        const row = [
+          this.setTableRow(`${formatDate(item.jobDate)}`, `row`),
+          this.setTableRow(`${item.wo}-${item.woNumber}`, `row`),
+          this.setTableRow(`${item.productNumber}`, `row`),
+          this.setTableRow(`${item.statusName}`, `row`),
+          this.setTableRow(`[${item.gold}] ${item.description ?? ``}`, `row`),
+          this.setTableRow(
+            `${item.status === 70 ? item.goldQtyCheck : item.goldQtySend ?? ``}`,
+            `row-right`
+          ),
+          this.setTableRow(
+            `${item.status === 70 ? item.goldWeightCheck : item.goldWeightSend ?? ``}`,
+            `row-right`
+          )
+        ]
+        body.push(row)
+      })
+
+      //footer
+      const footer = [
+        this.setTableRow(``, `foot-right`),
+        this.setTableRow(``, `foot-right`),
+        this.setTableRow(``, `foot-right`),
+        this.setTableRow(``, `foot-right`),
+        this.setTableRow(`รวม`, `foot-right`),
+        this.setTableRow(`${totalGoldQtyCheck}`, `foot-right`),
+        this.setTableRow(`${totalGoldQtyWeightCheck}`, `foot-right`)
+      ]
+      body.push(footer)
+
+      return body
+    },
     tableWaiting() {
       return {
         fontSize: 13,
@@ -584,7 +687,7 @@ export default {
     },
 
     // --- PDF --- //
-    async generatePDF(e) {
+    async generatePDF() {
       pdfMake.vfs = vfs
       pdfMake.fonts = {
         THSarabunNew: {
@@ -656,6 +759,108 @@ export default {
             margin: [0, 15, 0, 0]
           },
           this.tablePay()
+
+          // wating table
+          // {
+          //   columns: ['สถานะติดตามระหว่างผลิต'],
+          //   //bold: true,
+          //   fontSize: 15,
+          //   margin: [0, 15, 0, 0]
+          // },
+          // this.tableWaiting()
+        ],
+        defaultStyle: {
+          font: 'THSarabunNew'
+        },
+        styles: {
+          title: {
+            fontSize: 10
+          },
+          desc: {
+            fontSize: 15,
+            bold: true
+          },
+          boldText: {
+            //fontSize: 15,
+            bold: true
+          }
+        }
+      }
+
+      pdfMake.createPdf(docDefinition).open()
+    },
+    async generateStatusPDF() {
+      pdfMake.vfs = vfs
+      pdfMake.fonts = {
+        THSarabunNew: {
+          normal: 'THSarabunNew.ttf',
+          bold: 'THSarabunNew Bold.ttf',
+          italics: 'THSarabunNew Italic.ttf',
+          bolditalics: 'THSarabunNew BoldItalic.ttf'
+        }
+      }
+
+      const docDefinition = {
+        pageSize: 'A4',
+        pageMargins: [20, 20, 20, 10],
+        content: [
+          // --- header --- //
+          {
+            columns: [
+              'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
+              { text: 'ติดตามสถานะงาน', alignment: 'right' }
+            ],
+            bold: true,
+            fontSize: 15,
+            margin: [0, 0, 0, 0],
+            border: [false, false, false, true]
+          },
+
+          // --- worker info --- //
+          {
+            columns: [
+              `พนักงาน: ${this.data.code} - ${this.data.nameTh}`,
+              {
+                text: `วันที่: ${formatDate(this.dataWages.wagesDateStart)} - ${formatDate(
+                  this.dataWages.wagesDateEnd
+                )}`,
+                alignment: 'right'
+              }
+            ],
+            //bold: true,
+            fontSize: 14,
+            margin: [0, 0, 0, 0],
+            border: [false, false, false, true]
+          },
+
+          //underline
+          {
+            table: {
+              widths: ['*'],
+              body: [
+                [
+                  {
+                    columns: [],
+                    border: [false, false, false, true]
+                  }
+                ]
+              ]
+            },
+            layout: {
+              defaultBorder: false
+            },
+            margin: [0, 0, 0, 0]
+          },
+
+          // pay table
+
+          {
+            columns: ['ติดตามสถานะงาน'],
+            //bold: true,
+            fontSize: 15,
+            margin: [0, 15, 0, 0]
+          },
+          this.tableStatus()
 
           // wating table
           // {
