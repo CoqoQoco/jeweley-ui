@@ -12,6 +12,26 @@
       <form @submit.prevent="onSearch">
         <div class="search-bar-container">
           <div>
+            <span class="text-title">วันที่ออกใบเบิกผสมทอง</span>
+            <div class="flex-group">
+              <Calendar
+                class="w-100"
+                v-model="form.createStart"
+                :max-date="form.createEnd"
+                showIcon
+                placeholder="เริ่มต้น"
+              />
+              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+              <Calendar
+                class="w-100"
+                v-model="form.createEnd"
+                :min-date="form.createStart"
+                showIcon
+                placeholder="สิ้นสุด"
+              />
+            </div>
+          </div>
+          <div>
             <span class="text-title">ค้นหาใบผสมทอง</span>
             <div class="input-group input-group-inner">
               <input
@@ -29,39 +49,21 @@
             </div>
           </div>
           <div>
-            <!-- <span class="text-title">ค้นหาใบผสมทอง</span>
+            <span class="text-title">ค้นหาด้วยหมายเลขลำดับ</span>
             <div class="input-group input-group-inner">
               <input
-                id="inputStockID"
                 :class="['form-control bg-input']"
                 type="text"
-                v-model.trim="form.text"
-                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                v-model.trim="form.runningNumber"
               />
-              <div class="input-group-append">
+              <!-- <div class="input-group-append">
                 <span class="input-group-text">
                   <i class="bi bi-upc-scan text-main-color"></i>
                 </span>
-              </div>
-            </div> -->
+              </div> -->
+            </div>
           </div>
-          <div>
-            <!-- <span class="text-title">ค้นหาใบผสมทอง</span>
-            <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.text"
-                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div>
-            </div> -->
-          </div>
+
           <div class="btn-container">
             <button type="submit" class="btn btn-sm btn-main mr-2">
               <span class="mr-2">
@@ -171,9 +173,10 @@ import { defineAsyncComponent } from 'vue'
 
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import Calendar from 'primevue/calendar'
 
 import api from '@/axios/axios-config.js'
 
@@ -182,7 +185,10 @@ import FormUpdate from './components/FormUpdate.vue'
 import FormView from './components/FormView.vue'
 
 const interfaceForm = {
-  text: null
+  text: null,
+  runningNumber: null,
+  createStart: null,
+  createEnd: null
 }
 export default {
   components: {
@@ -192,7 +198,8 @@ export default {
     DataTable,
     Column,
     FormUpdate,
-    FormView
+    FormView,
+    Calendar
   },
   data() {
     return {
@@ -298,7 +305,10 @@ export default {
           take: this.take,
           skip: this.skip,
           search: {
-            text: this.form.text
+            text: this.form.text,
+            runningNumber: this.form.runningNumber,
+            createStart: this.form.createStart ? formatISOString(this.form.createStart) : null,
+            createEnd: this.form.createEnd ? formatISOString(this.form.createEnd) : null
           }
         }
         const res = await api.jewelry.post('ProductionPlanCost/ListGoldCost', param)
@@ -333,7 +343,7 @@ export default {
 
 .search-bar-container {
   display: grid;
-  grid-template-columns: 3fr 3fr 3fr 5fr;
+  grid-template-columns: 5fr 3fr 3fr 5fr;
   gap: 10px;
   margin-bottom: 10px;
 }
