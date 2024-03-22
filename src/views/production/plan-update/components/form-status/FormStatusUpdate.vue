@@ -119,6 +119,24 @@
                     </Dropdown>
                   </template>
                 </Column>
+                <Column field="requestDate" header="วันที่" style="min-width: 120px">
+                  <template #editor="{ data, field }">
+                    <div>
+                      <Calendar
+                        class="w-100"
+                        v-model="data[field]"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                      />
+                    </div>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.requestDate">
+                      {{ formatDate(slotProps.data.requestDate) }}
+                    </div>
+                  </template>
+                </Column>
                 <Column field="goldQTYSend" header="จำนวนจ่าย" style="width: 100px">
                   <template #editor="{ data, field }">
                     <input
@@ -382,6 +400,24 @@
                       placeholder="เลือกทอง"
                     >
                     </Dropdown>
+                  </template>
+                </Column>
+                <Column field="requestDate" header="วันที่">
+                  <template #editor="{ data, field }">
+                    <div>
+                      <Calendar
+                        class="w-100"
+                        v-model="data[field]"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                      />
+                    </div>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.requestDate">
+                      {{ formatDate(slotProps.data.requestDate) }}
+                    </div>
                   </template>
                 </Column>
                 <Column field="goldQTYCheck" header="จำนวน">
@@ -648,6 +684,24 @@
                     </Dropdown>
                   </template>
                 </Column>
+                <Column field="requestDate" header="วันที่">
+                  <template #editor="{ data, field }">
+                    <div>
+                      <Calendar
+                        class="w-100"
+                        v-model="data[field]"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                      />
+                    </div>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.requestDate">
+                      {{ formatDate(slotProps.data.requestDate) }}
+                    </div>
+                  </template>
+                </Column>
                 <Column field="goldQTYCheck" header="จำนวน">
                   <template #editor="{ data, field }">
                     <input
@@ -871,6 +925,7 @@ export default {
       return this.modelValue
     },
     modelMat() {
+      console.log('modelMatValue', this.modelMatValue)
       return this.modelMatValue
     },
     modelMasterStatus() {
@@ -897,7 +952,8 @@ export default {
               worker: thing.worker,
               workerSub: thing.workerSub,
               wages: thing.wages,
-              totalWages: thing.totalWages
+              totalWages: thing.totalWages,
+              requestDate: new Date(thing.requestDate)
             }
           })
         )

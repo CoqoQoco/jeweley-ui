@@ -177,7 +177,9 @@ export default {
       data.values.forEach((item) => {
         total += item.totalWages
         const row = [
-          this.setTablePriceRow(`${item.description ?? ''}`),
+          this.setTablePriceRow(
+            `${formatDate(item.requestDate)} ${item.description ? `[${item.description}]` : ``}`
+          ),
           this.setTablePriceRowTextRight(item.goldQtySend),
           this.setTablePriceRowTextRight(item.goldWeightSend),
           this.setTablePriceRowTextRight(item.goldWeightCheck),

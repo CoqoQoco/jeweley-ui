@@ -126,6 +126,26 @@
                     </Dropdown>
                   </template>
                 </Column>
+                <!-- column request date -->
+                <Column field="requestDate" header="วันที่" style="min-width: 120px">
+                  <template #editor="{ data, field }">
+                    <div>
+                      <Calendar
+                        class="w-100"
+                        v-model="data[field]"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                      />
+                    </div>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.requestDate">
+                      {{ formatDate(slotProps.data.requestDate) }}
+                    </div>
+                  </template>
+                </Column>
+
                 <Column field="goldQTYSend" header="จำนวนจ่าย">
                   <template #editor="{ data, field }">
                     <input
@@ -378,6 +398,24 @@
                     </Dropdown>
                   </template>
                 </Column>
+                <Column field="requestDate" header="วันที่">
+                  <template #editor="{ data, field }">
+                    <div>
+                      <Calendar
+                        class="w-100"
+                        v-model="data[field]"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                      />
+                    </div>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.requestDate">
+                      {{ formatDate(slotProps.data.requestDate) }}
+                    </div>
+                  </template>
+                </Column>
                 <Column field="goldQTYCheck" header="จำนวน">
                   <template #editor="{ data, field }">
                     <input
@@ -615,6 +653,24 @@
                     </Dropdown>
                   </template>
                 </Column>
+                <Column field="requestDate" header="วันที่">
+                  <template #editor="{ data, field }">
+                    <div>
+                      <Calendar
+                        class="w-100"
+                        v-model="data[field]"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                      />
+                    </div>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.requestDate">
+                      {{ formatDate(slotProps.data.requestDate) }}
+                    </div>
+                  </template>
+                </Column>
                 <Column field="goldQTYCheck" header="จำนวน">
                   <template #editor="{ data, field }">
                     <input
@@ -749,7 +805,7 @@ import AutoComplete from 'primevue/autocomplete'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-config.js'
-import { formatISOString } from '@/services/utils/dayjs'
+import { formatISOString, formatDate } from '@/services/utils/dayjs'
 
 const interfaceForm = {
   status: null,
@@ -943,6 +999,9 @@ export default {
         wages: null
       }
       this.matAssign.push(add)
+    },
+    formatDate(date) {
+      return date ? formatDate(date) : ''
     },
 
     // --- APIs --- //

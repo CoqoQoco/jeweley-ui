@@ -65,7 +65,7 @@ export default {
   },
   methods: {
     formatDate(date) {
-      return formatDate(date)
+      return date ? formatDate(date) : null
     },
     async fetchIamge() {
       //console.log(item.data.tbtProductionPlanImage[0].path)
@@ -198,7 +198,7 @@ export default {
             {
               text: [
                 { text: 'จ่ายงาน\n', ...styleTitle },
-                { text: `${data.sendName}`, ...styleDesc }
+                { text: `${data.sendName ?? ''}`, ...styleDesc }
               ]
             },
             {
@@ -210,13 +210,13 @@ export default {
             {
               text: [
                 { text: 'รับงาน\n', ...styleTitle },
-                { text: `${data.checkName}`, ...styleDesc }
+                { text: `${data.checkName ?? ''}`, ...styleDesc }
               ]
             },
             {
               text: [
                 { text: 'จ่ายวันที่\n', ...styleTitle },
-                { text: `${formatDate(data.checkDate)}`, ...styleDesc }
+                { text: `${data.checkDate ? formatDate(data.checkDate) : ''}`, ...styleDesc }
               ]
             }
           ]
@@ -271,6 +271,32 @@ export default {
             }
           ]
         }
+      } else if (data.status === 95) {
+        return {
+          ...style,
+          columns: [
+            {
+              text: [
+                { text: 'ผู้ประเมินราคา\n', ...styleTitle },
+                { text: `${data.checkName}`, ...styleDesc }
+              ]
+            },
+            {
+              text: [
+                { text: 'วันประเมินราคา\n', ...styleTitle },
+                { text: `${formatDate(data.checkDate)}`, ...styleDesc }
+              ]
+            },
+            {
+              text: [],
+              margin: [0, 0, 0, 0]
+            },
+            {
+              text: [],
+              margin: [0, 0, 0, 0]
+            }
+          ]
+        }
       }
     },
     tableGold(data) {
@@ -284,7 +310,7 @@ export default {
           ...style,
           table: {
             headerRows: 1,
-            widths: ['*', '*', '*', '*', '*', '*', 90],
+            widths: ['*', '*', '*', '*', '*', '*', '*', 90],
             body: this.buildTableGoldBody(data)
           }
         }
@@ -293,7 +319,7 @@ export default {
           ...style,
           table: {
             headerRows: 1,
-            widths: ['*', '*', '*'],
+            widths: ['*', '*', '*', '*', 90, 90],
             body: this.buildTableGoldBodyForGem(data)
           }
         }
@@ -304,6 +330,7 @@ export default {
       let body = []
       const title = [
         'ทอง',
+        'วันที่',
         'จำนวนจ่าย',
         'นำหนักจ่าย',
         'จำนวนรับ',
@@ -316,6 +343,7 @@ export default {
         data.tbtProductionPlanStatusDetail.forEach((item) => {
           const row = [
             `${item.gold ? item.gold : ''}`,
+            `${this.formatDate(item.requestDate)}`,
             `${item.goldQtySend ? item.goldQtySend : ''}`,
             `${item.goldWeightSend ? item.goldWeightSend : ''}`,
             `${item.goldQtyCheck ? item.goldQtyCheck : ''}`,
@@ -325,7 +353,7 @@ export default {
                 ? `${item.goldWeightDiff} (${item.goldWeightDiffPercent.toLocaleString()}%)`
                 : ''
             }`,
-            `${item.worker}`
+            `${item.worker}-${item.workerName}`
           ]
           body.push(row)
         })
@@ -335,14 +363,17 @@ export default {
     buildTableGoldBodyForGem(data) {
       //console.log(data)
       let body = []
-      const title = ['ทอง', 'จำนวนรับ', 'น้ำหนักรับ']
+      const title = ['ทอง', 'วันที่', 'จำนวนรับ', 'น้ำหนักรับ', 'ช่างคัดพลอย', 'ช่างคัดเพชร']
       body.push(title)
       if (!_.isEmpty(data.tbtProductionPlanStatusDetail)) {
         data.tbtProductionPlanStatusDetail.forEach((item) => {
           const row = [
             `${item.gold ? item.gold : ''}`,
+            `${this.formatDate(item.requestDate)}`,
             `${item.goldQtyCheck ? item.goldQtyCheck : ''}`,
-            `${item.goldWeightCheck ? item.goldWeightCheck : ''}`
+            `${item.goldWeightCheck ? item.goldWeightCheck : ''}`,
+            `${item.worker}-${item.workerName}`,
+            `${item.workerSub}-${item.workerSubName}`
           ]
           body.push(row)
         })

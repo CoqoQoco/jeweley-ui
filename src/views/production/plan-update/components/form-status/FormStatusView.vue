@@ -70,6 +70,13 @@
                   scrollable
                 >
                   <Column field="gold" header="ทอง" style="width: 120px"> </Column>
+                  <Column field="requestDate" header="วันที่" style="width: 120px">
+                    <template #body="slotProps">
+                      <div class="text-left">
+                        {{ formatDate(slotProps.data.requestDate) }}
+                      </div>
+                    </template>
+                  </Column>
                   <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 120px"> </Column>
                   <Column field="goldWeightSend" header="นำหนักจ่าย" style="width: 120px">
                     <template #body="slotProps">
@@ -274,13 +281,16 @@
                   showGridlines
                 >
                   <Column field="gold" header="ทอง" style="width: 20%"> </Column>
-                  <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 20%"> </Column>
-                  <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 20%"> </Column>
-                  <Column
-                    field="worker"
-                    header="ช่างคัดพลอย"
-                    style="width: 20%"
-                  >
+                  <Column field="requestDate" header="วันที่" style="width: 20%">
+                    <template #body="slotProps">
+                      <div class="text-left">
+                        {{ formatDate(slotProps.data.requestDate) }}
+                      </div>
+                    </template>
+                  </Column>
+                  <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 10%"> </Column>
+                  <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 10%"> </Column>
+                  <Column field="worker" header="ช่างคัดพลอย" style="width: 20%">
                     <template #body="slotProps">
                       <div class="text-center">
                         {{
@@ -293,11 +303,7 @@
                       </div>
                     </template>
                   </Column>
-                  <Column
-                    field="workerSub"
-                    header="ช่างคัดเพชร"
-                    style="width: 20%"
-                  >
+                  <Column field="workerSub" header="ช่างคัดเพชร" style="width: 20%">
                     <template #body="slotProps">
                       <div class="text-center">
                         {{
@@ -462,6 +468,13 @@
                   showGridlines
                 >
                   <Column field="gold" header="ทอง" style="width: 20%"> </Column>
+                  <Column field="requestDate" header="วันที่" style="width: 20%">
+                    <template #body="slotProps">
+                      <div class="text-left">
+                        {{ formatDate(slotProps.data.requestDate) }}
+                      </div>
+                    </template>
+                  </Column>
                   <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 20%"> </Column>
                   <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 20%"> </Column>
                   <template #footer>
