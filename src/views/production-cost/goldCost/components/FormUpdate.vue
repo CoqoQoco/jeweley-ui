@@ -855,7 +855,7 @@ export default {
           take: 0,
           skip: 0,
           search: {
-            text: productionPlanId
+            woText: productionPlanId
             //type: this.form.status,
             //active: 1
           }
