@@ -638,7 +638,8 @@ export default {
         if (res) {
           //console.log(res)
           //console.log(res.data[0])
-          return res.data[0]
+          //return res.data[0]
+          return res.data.find((x) => x.woText === productionPlanId)
           //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
         } else {
           return null
