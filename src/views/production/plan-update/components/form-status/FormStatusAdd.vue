@@ -45,7 +45,7 @@
                 <input type="text" class="form-control" v-model="form.assignBy" required />
               </div>
             </div>
-            <div class="mb-2 mt-2 txt-title-part">
+            <!-- <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>ระบุข้อมูลรับงาน</span>
             </div>
@@ -65,7 +65,7 @@
                 <span class="txt-title">ผู้รับงาน</span>
                 <input type="text" class="form-control" v-model="form.receiveBy" />
               </div>
-            </div>
+            </div> -->
             <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>ระบุรายละเอียด</span>

@@ -404,9 +404,9 @@ export default {
                             //รับวันที่
                             {
                               stack: [
-                                { text: 'วันที่รับงาน', style: 'title' },
+                                { text: '', style: 'title' },
                                 {
-                                  text: formatDate(this.modelValueStatus.checkDate),
+                                  text: '',
                                   style: 'desc'
                                 }
                               ]

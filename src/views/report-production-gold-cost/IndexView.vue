@@ -3,8 +3,8 @@
     <loading :isLoading="isLoading"> </loading>
     <div class="filter-container">
       <pageTitle
-        title="รายงานช่าง"
-        description="รายงานช่าง เเละรายละเอียดต่างๆ"
+        title="รายงานใบผสมทอง"
+        description="รายงานใบผสมทอง เเละรายละเอียดต่างๆ"
         :isShowBtnClose="false"
         isShowRightSlot
       >
@@ -13,7 +13,7 @@
         <div class="search-bar-container">
           <div>
             <div>
-              <span class="text-title">วันที่จ่ายงาน</span>
+              <span class="text-title">วันที่ออกใบผสมทอง</span>
               <span class="text-required"> *</span>
               <span></span>
             </div>
@@ -54,7 +54,7 @@
             </div>
           </div> -->
           <div>
-            <span class="text-title">หมายเลขใบงาน</span>
+            <span class="text-title">หมายเลขลำดับ</span>
             <div class="input-group input-group-inner">
               <input
                 id="inputStockID"
@@ -78,7 +78,7 @@
                 :class="['form-control bg-input']"
                 type="text"
                 v-model.trim="form.text"
-                placeholder="ชื่อช่าง, รหัสช่าง,รหัสสินค้า ....."
+                placeholder="พิมพ์บางอย่างเพื่อค้นหา ....."
               />
               <!-- <div class="input-group-append">
                 <span class="input-group-text">
@@ -97,12 +97,8 @@
               <span><i class="bi bi-x-circle"></i></span>
               <span class="ml-2">ล้างค้นหา</span>
             </button>
-            <button
-              class="btn btn-sm btn-primary"
-              type="button"
-              :disabled="!isShowTable"
-              @click="onExport($event)"
-            >
+            <!-- :disabled="!isShowTable" -->
+            <button class="btn btn-sm btn-primary" type="button" disabled @click="onExport($event)">
               <span><i class="bi bi-filetype-csv"></i></span>
               <span class="ml-2">ออกเอกสาร</span>
             </button>
@@ -133,90 +129,164 @@
         paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
         :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
       >
-        <Column field="wo" header="เลขที่ใบงาน" sortable style="min-width: 150px">
-          <template #body="slotProps">
-            {{ `${slotProps.data.wo}${slotProps.data.woNumber}` }}
-          </template>
+        <Column field="bookNo" sortable header="เล่มที่" style="min-width: 150px"> </Column>
+        <Column field="no" sortable header="เลขที่" style="min-width: 150px"> </Column>
+        <Column field="runningNumber" sortable header="หมายเลขลำดับ" style="min-width: 150px">
         </Column>
-        <Column header="วันที่ส่งงาน" sortable field="jobDate" style="min-width: 150px">
+        <Column header="วันที่ออกใบเบิก" sortable field="requestDate" style="min-width: 150px">
           <template #body="prop">
-            {{ formatDate(prop.data.jobDate) }}
+            {{ formatDate(prop.data.assignDate) }}
           </template>
         </Column>
-        <Column
-          header="รหัสสินค้า"
-          sortable
-          field="productNumber"
-          style="min-width: 150px"
-        ></Column>
-        <Column header="ช่าง" sortable field="workerCode" style="min-width: 150px">
+        <Column field="goldName" sortable header="ประเภททอง" style="min-width: 150px"> </Column>
+        <Column field="goldSizeName" sortable header="เปอร์เซ็นทอง" style="min-width: 150px">
+        </Column>
+        <Column field="goldReceipt" sortable header="สูตรผสมทอง" style="min-width: 150px"> </Column>
+        <Column field="assignBy" sortable header="ผู้เบิกทอง" style="min-width: 150px"> </Column>
+        <Column field="receiveBy" sortable header="ผู้รับทอง" style="min-width: 150px"> </Column>
+        <Column field="remark" sortable header="รายละเอียด" style="min-width: 150px"> </Column>
+        <Column field="castWeight" sortable header="เบิกหล่อ" style="min-width: 150px">
           <template #body="slotProps">
-            {{ `${slotProps.data.workerCode}-${slotProps.data.workerName}` }}
+            {{ `${slotProps.data.castWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)}` }}
           </template>
         </Column>
-        <Column header="เเผนกงาน" sortable field="statusName" style="min-width: 150px"></Column>
-        <Column header="รายละเอียด" sortable field="desc" style="min-width: 150px">
+        <Column field="castWeight" sortable header="คืนทองหล่อ" style="min-width: 150px">
           <template #body="slotProps">
             {{
-              `${slotProps.data.gold} ${
-                slotProps.data.description ? `[${slotProps.data.description}]` : ``
+              `${
+                slotProps.data.returnCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
               }`
             }}
           </template>
         </Column>
-        <Column header="จำนวนจ่าย" sortable field="goldQtySend" style="min-width: 150px"></Column>
-        <Column
-          header="น้ำหนักจ่าย"
-          sortable
-          field="goldWeightSend"
-          style="min-width: 150px"
-        ></Column>
-        <Column header="จำนวนรับ" sortable field="goldQtyCheck" style="min-width: 150px"></Column>
-        <Column
-          header="น้ำหนักรับ"
-          sortable
-          field="goldWeightCheck"
-          style="min-width: 150px"
-        ></Column>
-        <Column header="ราคาต่อหน่วย" sortable field="wages" style="min-width: 150px">
+        <Column field="castWeight" sortable header="คืนขี้เบ้า" style="min-width: 150px">
           <template #body="slotProps">
-            <div>
-              {{
-                `${
-                  slotProps.data.wages
-                    ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
-                    : Number(0).toFixed(2).toLocaleString()
-                }`
-              }}
-            </div>
+            {{
+              `${
+                slotProps.data.returnCastScrapWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`
+            }}
           </template>
         </Column>
-        <Column header="ราคา" sortable field="totalWages" style="min-width: 150px">
+        <Column field="castWeight" sortable header="คืนเเม่พิมพ์" style="min-width: 150px">
           <template #body="slotProps">
-            <div>
-              {{
-                `${
-                  slotProps.data.totalWages
-                    ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
-                    : Number(0).toFixed(2).toLocaleString()
-                }`
-              }}
-            </div>
+            {{
+              `${
+                slotProps.data.returnCastMoldWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`
+            }}
+          </template>
+        </Column>
+        <Column field="returnCastBodyWeight" sortable header="คืนตัวเรือน" style="min-width: 150px">
+          <template #body="slotProps">
+            {{
+              `${
+                slotProps.data.returnCastBodyWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`
+            }}
+          </template>
+        </Column>
+        <Column
+          field="returnCastBodyBrokenWeight"
+          sortable
+          header="คืนตัวเรือนเสีย"
+          style="min-width: 150px"
+        >
+          <template #body="slotProps">
+            {{
+              `${
+                slotProps.data.returnCastBodyBrokenWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`
+            }}
+          </template>
+        </Column>
+        <Column field="returnCastPowderWeight" sortable header="คืนผงทอง" style="min-width: 150px">
+          <template #body="slotProps">
+            {{
+              `${
+                slotProps.data.returnCastPowderWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`
+            }}
+          </template>
+        </Column>
+        <Column field="castWeightLoss" sortable header="น้ำหนักขาด" style="min-width: 150px">
+          <template #body="slotProps">
+            {{
+              `${slotProps.data.castWeightLoss?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)}`
+            }}
+          </template>
+        </Column>
+        <Column field="castWeightOver" sortable header="น้้ำหนักเกิน" style="min-width: 150px">
+          <template #body="slotProps">
+            {{
+              `${slotProps.data.castWeightOver?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)}`
+            }}
           </template>
         </Column>
         <ColumnGroup type="footer">
           <Row>
-            <Column footer="รวมทั้งหมด" :colspan="6" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldQtySend}`" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldWeightSend}`" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldQtyCheck}`" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldWeightCheck}`" footerStyle="text-align:left" />
-            <Column footer="" />
+            <Column footer="รวมทั้งหมด" :colspan="10" footerStyle="text-align:right" />
             <Column
               :footer="`${
-                summery.totalWages
-                  ? Number(summery.totalWages).toFixed(2).toLocaleString()
-                  : Number(0).toFixed(2).toLocaleString()
+                summery.totalCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalReturnCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalReturnCastScrapWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalReturnCastMoldWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalReturnCastBodyWeightTotal?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalReturnCastBodyBrokenWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalReturnCastPowderWeight?.toFixed(2) ??
+                defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalCastWeightLoss?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
+              }`"
+              footerStyle="text-align:left"
+            />
+            <Column
+              :footer="`${
+                summery.totalCastWeightOver?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
               }`"
               footerStyle="text-align:left"
             />
@@ -298,6 +368,9 @@ export default {
       },
       val: {
         ...interfaceIsValid
+      },
+      defaultDisplay: {
+        emptyValue: 0
       }
     }
   },
@@ -413,11 +486,11 @@ export default {
             createStart: this.form.start ? formatISOString(this.form.start) : null,
             createEnd: this.form.end ? formatISOString(this.form.end) : null,
             text: this.form.text,
-            woText: this.form.woText
+            runningNumber: this.form.woText
           }
         }
-        const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
-        const summery = await api.jewelry.post('Worker/ReportWorkerSummeryReportWages', param)
+        const res = await api.jewelry.post('ProductionPlanCost/Report', param)
+        const summery = await api.jewelry.post('ProductionPlanCost/SummeryReport', param)
         if (res) {
           this.data = { ...res }
           this.isShowTable = true
@@ -441,10 +514,10 @@ export default {
             createStart: this.form.start ? formatISOString(this.form.start) : null,
             createEnd: this.form.end ? formatISOString(this.form.end) : null,
             text: this.form.text,
-            woText: this.form.woText
+            runningNumber: this.form.woText
           }
         }
-        const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
+        const res = await api.jewelry.post('ProductionPlanCost/Report', param)
         if (res) {
           //this.dataExcel = { ...res }
           //this.isShowTable = true

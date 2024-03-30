@@ -209,14 +209,14 @@ export default {
             },
             {
               text: [
-                { text: 'รับงาน\n', ...styleTitle },
-                { text: `${data.checkName ?? ''}`, ...styleDesc }
+                { text: '', ...styleTitle },
+                { text: ``, ...styleDesc }
               ]
             },
             {
               text: [
-                { text: 'จ่ายวันที่\n', ...styleTitle },
-                { text: `${data.checkDate ? formatDate(data.checkDate) : ''}`, ...styleDesc }
+                { text: '', ...styleTitle },
+                { text: ``, ...styleDesc }
               ]
             }
           ]

@@ -39,7 +39,8 @@ export default {
   update: 'เเก้ไข',
 
   reportProduction: 'รายงานผลิต',
-  reportProductionWorkerWages: 'รายงานค่าเเรง',
+  reportProductionWorkerWages: 'รายงานช่าง',
+  reportProductionGoldCost: 'รายงานใบผสมทอง',
 
   //lodog
   logout: 'ออกจากระบบ'

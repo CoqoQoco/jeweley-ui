@@ -53,14 +53,14 @@
                   <p class="description">วันจ่ายงาน</p>
                   <p class="title">{{ formatDate(data.sendDate) }}</p>
                 </div>
-                <div>
+                <!-- <div>
                   <p class="description">รับงาน</p>
                   <p class="title">{{ data.checkName }}</p>
                 </div>
                 <div>
                   <p class="description">วันรับงาน</p>
                   <p class="title">{{ formatDate(data.checkDate) }}</p>
-                </div>
+                </div> -->
               </div>
               <div v-if="data.tbtProductionPlanStatusDetail">
                 <DataTable

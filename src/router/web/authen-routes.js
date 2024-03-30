@@ -32,6 +32,7 @@ const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
 const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
 
 const Report = () => import('@/views/report-production/IndexView.vue')
+const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
 // ----- test ----- //
@@ -348,6 +349,34 @@ const routes = [
     ]
   },
   {
+    path: '/report-production-gold-cost',
+    component: Layout,
+    redirect: '/report-production-gold-cost',
+    name: 'report-production-gold-costs',
+    meta: {
+      Displayname: {
+        en: 'Gold Cost Report',
+        th: 'รายงานใบผสมทอง'
+      },
+      classIcon: 'bi bi-file-spreadsheet',
+      majorShow: true
+    },
+    children: [
+      {
+        path: '/report-production-gold-cost',
+        name: 'report-production-gold-cost',
+        component: ReportProductionGoldCost,
+        meta: {
+          Displayname: {
+            en: 'Gold Cost Report',
+            th: 'รายงานใบผสมทอง'
+          },
+          minorShow: false
+        }
+      }
+    ]
+  },
+  {
     path: '/report-production-worker-wages',
     component: Layout,
     redirect: '/report-production-worker-wages',
@@ -355,7 +384,7 @@ const routes = [
     meta: {
       Displayname: {
         en: 'Wages Report',
-        th: 'รายงานค่าเเรง'
+        th: 'รายงานช่าง'
       },
       classIcon: 'bi bi-file-spreadsheet',
       majorShow: true
@@ -368,7 +397,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Wages Report',
-            th: 'รายงานค่าเเรง'
+            th: 'รายงานช่าง'
           },
           minorShow: false
         }
