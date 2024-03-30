@@ -204,6 +204,24 @@
             </div>
           </template>
         </Column>
+        <ColumnGroup type="footer">
+          <Row>
+            <Column footer="รวมทั้งหมด" :colspan="6" footerStyle="text-align:left" />
+            <Column :footer="`${summery.totalGoldQtySend}`" footerStyle="text-align:left" />
+            <Column :footer="`${summery.totalGoldWeightSend}`" footerStyle="text-align:left" />
+            <Column :footer="`${summery.totalGoldQtyCheck}`" footerStyle="text-align:left" />
+            <Column :footer="`${summery.totalGoldWeightCheck}`" footerStyle="text-align:left" />
+            <Column footer="" />
+            <Column
+              :footer="`${
+                summery.totalWages
+                  ? Number(summery.totalWages).toFixed(2).toLocaleString()
+                  : Number(0).toFixed(2).toLocaleString()
+              }`"
+              footerStyle="text-align:left"
+            />
+          </Row>
+        </ColumnGroup>
       </DataTable>
     </div>
   </div>
@@ -218,6 +236,8 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 import Calendar from 'primevue/calendar'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import Row from 'primevue/row'
+import ColumnGroup from 'primevue/columngroup' // optional
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
@@ -239,7 +259,9 @@ export default {
     loading,
     Calendar,
     DataTable,
-    Column
+    Column,
+    Row,
+    ColumnGroup
   },
   watch: {
     'form.start'() {
@@ -266,6 +288,7 @@ export default {
       //sort: [{ field: 'id', dir: 'asc' }],
       sort: [],
       data: {},
+      summery: {},
       dataExcel: {},
       expnadData: [],
 
@@ -394,9 +417,12 @@ export default {
           }
         }
         const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
+        const summery = await api.jewelry.post('Worker/ReportWorkerSummeryReportWages', param)
         if (res) {
           this.data = { ...res }
           this.isShowTable = true
+          //console.log('summery', summery)
+          this.summery = { ...summery }
         }
         this.isLoading = false
       } catch (error) {
