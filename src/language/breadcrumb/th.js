@@ -25,6 +25,9 @@ export default {
   workerName: 'ข้อมูลพนักงาน (ช่าง)',
   workerDailyWages: 'ตรวจสอบค่าเเรง',
 
+  //stock
+  stockGem: 'คลังวัตถุดิบพลอย',
+
   //master
   masterGem: 'ข้อมูลพลอย',
   masterGemShape: 'ข้อมูลรูปร่างพลอย',
