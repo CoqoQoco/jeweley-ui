@@ -353,9 +353,9 @@
                 <input type="text" class="form-control" v-model="form.receiveBy" />
               </div>
             </div>
-            <div class="mb-2 txt-title-part">
+            <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
-              <span>ระบุรายละเอียด</span>
+              <span>ระบุรายละเอียดทอง</span>
             </div>
             <div class="form-content-row-grid-container">
               <DataTable
@@ -508,6 +508,102 @@
                 </template>
               </DataTable>
             </div>
+
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>ระบุรายละเอียดพลอย</span>
+            </div>
+            <div class="form-content-row-grid-container">
+              <DataTable
+                class="p-datatable-sm"
+                showGridlines
+                v-model:editingRows="editingGemRows"
+                :value="gemAssign"
+                editMode="row"
+                dataKey="id"
+                @row-edit-save="onGemRowEditSave"
+                :pt="{
+                  table: { style: 'min-width: 50rem' },
+                  column: {
+                    bodycell: ({ state }) => ({
+                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                    })
+                  }
+                }"
+              >
+                <Column style="width: 20px">
+                  <template #body="prop">
+                    <div
+                      class="btn btn-sm btn-danger text-center w-100"
+                      @click="onDelGem(prop.data)"
+                    >
+                      <i class="bi bi-trash-fill"></i>
+                    </div>
+                  </template>
+                </Column>
+                <Column field="gem" header="พลอย">
+                  <template #editor="{ data, field }">
+                    <AutoComplete
+                      v-model="data[field]"
+                      :suggestions="gemItemSearch"
+                      @complete="onSearchGem"
+                      placeholder="กรอกรหัสพลอย...."
+                      :class="data[field] ? `` : `bg-warning`"
+                      optionLabel="name"
+                      forceSelection
+                      :minLength="4"
+                    >
+                      <template #option="slotProps">
+                        <div class="flex align-options-center">
+                          <div>{{ `${slotProps.option.name}` }}</div>
+                        </div>
+                      </template>
+                    </AutoComplete>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.gem">
+                      {{ `${slotProps.data.gem.name}` }}
+                    </div>
+                  </template>
+                </Column>
+                <Column field="QTY" header="จำนวน" style="width: 200px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="weight" header="น้ำหนัก" style="width: 200px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column
+                  :rowEditor="true"
+                  style="width: 10%; min-width: 8rem"
+                  bodyStyle="text-align:center"
+                ></Column>
+                <template #footer>
+                  <div class="d-flex justify-content-between">
+                    <div>ทั้งหมด {{ this.gemAssign.length }} รายการ</div>
+                    <div @click="addGem">
+                      <i class="bi bi-plus-square-fill"></i>
+                    </div>
+                  </div>
+                </template>
+              </DataTable>
+            </div>
+
             <!-- <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>ระบุค่าเเรง</span>
@@ -903,6 +999,7 @@ export default {
       isLoading: false,
       showType: 0,
       autoId: 0,
+      autoIdGem: 0,
 
       // --- form --- //
       form: {
@@ -914,7 +1011,10 @@ export default {
       tempMatAssign: [],
       matAssign: [],
       editingRows: [],
-      workerItemSearch: []
+      gemAssign: [],
+      editingGemRows: [],
+      workerItemSearch: [],
+      gemItemSearch: []
     }
   },
   methods: {
@@ -982,9 +1082,17 @@ export default {
       let { newData, index } = event
       this.matAssign[index] = newData
     },
+    onGemRowEditSave(event) {
+      let { newData, index } = event
+      this.gemAssign[index] = newData
+    },
     onDelGold(item) {
       const index = this.matAssign.indexOf(item)
       this.matAssign.splice(index, 1)
+    },
+    onDelGem(item) {
+      const index = this.gemAssign.indexOf(item)
+      this.gemAssign.splice(index, 1)
     },
     addMat() {
       const add = {
@@ -999,6 +1107,15 @@ export default {
         wages: null
       }
       this.matAssign.push(add)
+    },
+    addGem() {
+      const add = {
+        id: ++this.autoIdGem,
+        gem: null,
+        qty: null,
+        weight: null
+      }
+      this.gemAssign.push(add)
     },
     formatDate(date) {
       return date ? formatDate(date) : ''
@@ -1015,6 +1132,16 @@ export default {
             workerSub: item.workersSub?.code
           }
         })
+        this.gemAssign = this.gemAssign.map((item) => {
+          return {
+          
+            id: item.gem?.id,
+            code: item.gem?.code,
+            name: item.gem?.name,
+            QTY: item.QTY,
+            weight: item.weight
+          }
+        })
         const param = {
           wo: this.model.wo,
           woNumber: this.model.woNumber,
@@ -1028,7 +1155,8 @@ export default {
           remark1: this.form.remark1,
           remark2: this.form.remark2,
           totalWages: this.form.totalWages,
-          golds: [...this.matAssign]
+          golds: [...this.matAssign],
+          gems: [...this.gemAssign]
         }
         //console.log(param)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanAddStatusDetail', param)
@@ -1044,6 +1172,7 @@ export default {
                 ...interfaceVal
               }
               this.matAssign = [...this.tempMatAssign]
+              this.gemAssign = []
               this.showType = 0
               this.$emit('fetch')
             },
@@ -1074,6 +1203,29 @@ export default {
         if (res) {
           //console.log(res)
           this.workerItemSearch = [...res.data]
+          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
+    },
+    async onSearchGem(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null
+          }
+        }
+        const res = await api.jewelry.post('GemStock/Search', params)
+        if (res) {
+          //console.log(res)
+          this.gemItemSearch = [...res]
           //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
         }
         //this.isLoading = false

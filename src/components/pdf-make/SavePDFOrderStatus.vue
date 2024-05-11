@@ -171,6 +171,8 @@ export default {
           [
             this.buildDetailStausColumnsDetail(item),
             this.tableGold(item),
+            //this.tableGold(item),
+            this.tableGem(item),
             this.setRemark(item.remark1, 'หมายเหตุ - 1'),
             this.setRemark(item.remark2, 'หมายเหตุ - 2')
           ]
@@ -325,6 +327,25 @@ export default {
         }
       }
     },
+    tableGem(data) {
+      const style = {
+        fontSize: 9,
+        bold: true,
+        margin: [5, 0, 5, 5]
+      }
+      if ([50, 60, 80, 90].includes(data.status)) {
+        return {}
+      } else if (data.status === 70) {
+        return {
+          ...style,
+          table: {
+            headerRows: 1,
+            widths: ['*', 100, 100],
+            body: this.buildTableGoldBodyForGemDetail(data)
+          }
+        }
+      }
+    },
     buildTableGoldBody(data) {
       //console.log(data)
       let body = []
@@ -343,7 +364,7 @@ export default {
         data.tbtProductionPlanStatusDetail.forEach((item) => {
           const row = [
             `${item.gold ? item.gold : ''}`,
-            `${this.formatDate(item.requestDate)}`,
+            `${item.requestDate ? this.formatDate(item.requestDate) : ``}`,
             `${item.goldQtySend ? item.goldQtySend : ''}`,
             `${item.goldWeightSend ? item.goldWeightSend : ''}`,
             `${item.goldQtyCheck ? item.goldQtyCheck : ''}`,
@@ -353,7 +374,7 @@ export default {
                 ? `${item.goldWeightDiff} (${item.goldWeightDiffPercent.toLocaleString()}%)`
                 : ''
             }`,
-            `${item.worker}-${item.workerName}`
+            `${item.worker ? item.worker : ``}-${item.workerName ? item.workerName : ``}`
           ]
           body.push(row)
         })
@@ -369,11 +390,30 @@ export default {
         data.tbtProductionPlanStatusDetail.forEach((item) => {
           const row = [
             `${item.gold ? item.gold : ''}`,
-            `${this.formatDate(item.requestDate)}`,
+            `${item.requestDate ? this.formatDate(item.requestDate) : ``}`,
             `${item.goldQtyCheck ? item.goldQtyCheck : ''}`,
             `${item.goldWeightCheck ? item.goldWeightCheck : ''}`,
-            `${item.worker}-${item.workerName}`,
-            `${item.workerSub}-${item.workerSubName}`
+            `${item.worker ? item.worker : ''}-${item.workerName ? item.workerName : ''}`,
+            `${item.workerSub ? item.workerSub : ''}-${
+              item.workerSubName ? item.workerSubName : ''
+            }`
+          ]
+          body.push(row)
+        })
+      }
+      return body
+    },
+    buildTableGoldBodyForGemDetail(data) {
+      //console.log(data)
+      let body = []
+      const title = ['พลอย', 'จำนวน', 'น้ำหนัก']
+      body.push(title)
+      if (!_.isEmpty(data.tbtProductionPlanStatusGem)) {
+        data.tbtProductionPlanStatusGem.forEach((item) => {
+          const row = [
+            `${item.name ? item.name : ''}`,
+            `${item.qty ? item.qty : ''}`,
+            `${item.weight ? item.weight : ''}`
           ]
           body.push(row)
         })

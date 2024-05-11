@@ -63,6 +63,7 @@
         </template>
       </Column>
       <Column header="รหัสสินค้า" field="productNumber" style="min-width: 100px"></Column>
+      <Column header="จำนวนสินค้า" field="productQty" style="min-width: 100px"></Column>
       <Column header="รหัสลูกค้า" field="customerNumber" style="min-width: 100px"></Column>
       <Column header="วันสร้างใบสินค้า" field="createDate" style="min-width: 100px">
         <template #body="prop">

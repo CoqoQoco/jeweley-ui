@@ -265,14 +265,14 @@
                   <p class="description">วันคัดพลอย</p>
                   <p class="title">{{ formatDate(data.checkDate) }}</p>
                 </div>
-                <div>
+                <!-- <div>
                   <p class="description">ค่าเเรงคัดพลอย</p>
                   <p class="title">
                     {{
                       data.wagesTotal ? Number(data.wagesTotal).toFixed(2).toLocaleString() : '0'
                     }}
                   </p>
-                </div>
+                </div> -->
               </div>
               <div v-if="data.tbtProductionPlanStatusDetail">
                 <DataTable
@@ -297,7 +297,7 @@
                           `${
                             slotProps.data.worker
                               ? `${slotProps.data.worker} - ${slotProps.data.workerName}`
-                              : null
+                              : ''
                           }`
                         }}
                       </div>
@@ -310,7 +310,7 @@
                           `${
                             slotProps.data.workerSub
                               ? `${slotProps.data.workerSub} - ${slotProps.data.workerSubName}`
-                              : null
+                              : ''
                           }`
                         }}
                       </div>
@@ -319,6 +319,25 @@
                   <template #footer>
                     <div class="d-flex justify-content-between">
                       <div>ทั้งหมด {{ data.tbtProductionPlanStatusDetail.length }} รายการ</div>
+                      <!-- <div @click="addMat">
+                        <i class="bi bi-plus-square-fill"></i>
+                      </div> -->
+                    </div>
+                  </template>
+                </DataTable>
+              </div>
+              <div class="mt-2" v-if="data.tbtProductionPlanStatusGem">
+                <DataTable
+                  :value="data.tbtProductionPlanStatusGem"
+                  class="p-datatable-sm"
+                  showGridlines
+                >
+                  <Column field="name" header="พลอย" style="width: 20%"> </Column>
+                  <Column field="qty" header="จำนวน" style="width: 10%"> </Column>
+                  <Column field="weight" header="น้ำหนักรับ" style="width: 10%"> </Column>
+                  <template #footer>
+                    <div class="d-flex justify-content-between">
+                      <div>ทั้งหมด {{ data.tbtProductionPlanStatusGem.length }} รายการ</div>
                       <!-- <div @click="addMat">
                         <i class="bi bi-plus-square-fill"></i>
                       </div> -->

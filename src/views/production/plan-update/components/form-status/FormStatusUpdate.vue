@@ -359,7 +359,7 @@
             </div>
             <div class="mb-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
-              <span>เเก้ไขรายละเอียด</span>
+              <span>เเก้ไขรายละเอียดทอง</span>
             </div>
             <div class="form-content-row-grid-container">
               <DataTable
@@ -518,7 +518,102 @@
                 </template>
               </DataTable>
             </div>
-            <div class="mb-2 mt-2 txt-title-part">
+
+            <div class="mb-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>เเก้ไขรายละเอียดพลอย</span>
+            </div>
+            <div class="form-content-row-grid-container">
+              <DataTable
+                class="p-datatable-sm"
+                showGridlines
+                v-model:editingRows="editingGemRows"
+                :value="gem"
+                editMode="row"
+                dataKey="id"
+                @row-edit-save="onRowGemEditSave"
+                :pt="{
+                  table: { style: 'min-width: 50rem' },
+                  column: {
+                    bodycell: ({ state }) => ({
+                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                    })
+                  }
+                }"
+              >
+                <Column style="width: 20px">
+                  <template #body="prop">
+                    <div
+                      class="btn btn-sm btn-danger text-center w-100"
+                      @click="onDelGem(prop.data)"
+                    >
+                      <i class="bi bi-trash-fill"></i>
+                    </div>
+                  </template>
+                </Column>
+                <Column field="gem" header="พลอย">
+                  <template #editor="{ data, field }">
+                    <AutoComplete
+                      v-model="data[field]"
+                      :suggestions="gemItemSearch"
+                      @complete="onSearchGem"
+                      placeholder="กรอกรหัสพลอย...."
+                      :class="data[field] ? `` : `bg-warning`"
+                      optionLabel="name"
+                      forceSelection
+                      :minLength="4"
+                    >
+                      <template #option="slotProps">
+                        <div class="flex align-options-center">
+                          <div>{{ `${slotProps.option.name}` }}</div>
+                        </div>
+                      </template>
+                    </AutoComplete>
+                  </template>
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.gem">
+                      {{ `${slotProps.data.gem.name}` }}
+                    </div>
+                  </template>
+                </Column>
+                <Column field="qty" header="จำนวน" style="width: 200px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column field="weight" header="น้ำหนัก" style="width: 200px">
+                  <template #editor="{ data, field }">
+                    <input
+                      type="number"
+                      step="any"
+                      :class="data[field] ? `` : `bg-warning`"
+                      class="form-control"
+                      v-model="data[field]"
+                    />
+                  </template>
+                </Column>
+                <Column
+                  :rowEditor="true"
+                  style="width: 10%; min-width: 8rem"
+                  bodyStyle="text-align:center"
+                ></Column>
+                <template #footer>
+                  <div class="d-flex justify-content-between">
+                    <div>ทั้งหมด {{ this.gem.length }} รายการ</div>
+                    <div @click="addGem">
+                      <i class="bi bi-plus-square-fill"></i>
+                    </div>
+                  </div>
+                </template>
+              </DataTable>
+            </div>
+            <!-- <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>เเก้ไขค่าเเรง</span>
             </div>
@@ -527,7 +622,7 @@
                 <span class="txt-title">ค่าเเรงคัดพลอย</span>
                 <input type="number" step="any" class="form-control" v-model="form.totalWages" />
               </div>
-            </div>
+            </div> -->
             <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>เเก้ไขข้อมูลเพิ่มเติม</span>
@@ -936,6 +1031,8 @@ export default {
     async modelMatValue(value) {
       //onsole.log(value)
       this.autoId = 0
+      this.autoIdGem = 0
+
       if (value.tbtProductionPlanStatusDetail) {
         this.mat = await Promise.all(
           value.tbtProductionPlanStatusDetail.map(async (thing) => {
@@ -957,7 +1054,22 @@ export default {
             }
           })
         )
-        //console.log(this.mat)
+      }
+
+      if (value.tbtProductionPlanStatusGem) {
+        this.gem = await Promise.all(
+          value.tbtProductionPlanStatusGem.map(async (thing) => {
+            return {
+              id: ++this.autoIdGem,
+              name: thing.gem,
+              code: thing.code,
+              gemId: thing.index,
+              qty: thing.qty,
+              weight: thing.weight,
+              gem: await this.onSearchGemById(thing.id)
+            }
+          })
+        )
       }
 
       //console.log(this.mat)
@@ -979,6 +1091,7 @@ export default {
       isLoading: false,
       showType: 0,
       autoId: 0,
+      autoIdGem: 0,
 
       // --- form --- //
       form: {
@@ -989,7 +1102,10 @@ export default {
       },
       mat: [],
       editingRows: [],
-      workerItemSearch: []
+      gem: [],
+      editingGemRows: [],
+      workerItemSearch: [],
+      gemItemSearch: []
     }
   },
   methods: {
@@ -1053,6 +1169,10 @@ export default {
       let { newData, index } = event
       this.mat[index] = newData
     },
+    onRowGemEditSave(event) {
+      let { newData, index } = event
+      this.gem[index] = newData
+    },
     onDelGold(item) {
       const index = this.mat.indexOf(item)
       this.mat.splice(index, 1)
@@ -1071,6 +1191,19 @@ export default {
       }
       this.mat.push(add)
     },
+    onDelGem(item) {
+      const index = this.gem.indexOf(item)
+      this.gem.splice(index, 1)
+    },
+    addGem() {
+      const add = {
+        id: ++this.autoId,
+        gem: null,
+        qty: null,
+        weight: null
+      }
+      this.gem.push(add)
+    },
 
     // --- APIs --- //
     async submit() {
@@ -1082,6 +1215,15 @@ export default {
             ...item,
             worker: item.workers?.code,
             workerSub: item.workersSub?.code
+          }
+        })
+        this.gem = this.gem.map((item) => {
+          return {
+            id: item.gem?.id,
+            code: item.gem?.code,
+            name: item.gem?.name,
+            QTY: item.qty,
+            weight: item.weight
           }
         })
 
@@ -1099,7 +1241,8 @@ export default {
           remark1: this.form.remark1,
           remark2: this.form.remark2,
           totalWages: this.form.totalWages,
-          golds: [...this.mat]
+          golds: [...this.mat],
+          gems: [...this.gem]
         }
 
         //console.log(param)
@@ -1116,6 +1259,7 @@ export default {
                 ...interfaceVal
               }
               this.mat = []
+              this.gem = []
               this.showType = 0
               this.$emit('fetch')
             },
@@ -1177,6 +1321,58 @@ export default {
           return res.data[0]
         } else {
           return null
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
+    },
+    async onSearchGem(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null
+          }
+        }
+        const res = await api.jewelry.post('GemStock/Search', params)
+        if (res) {
+          //console.log(res)
+          this.gemItemSearch = [...res]
+          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
+    },
+    async onSearchGemById(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            id: e ?? null,
+            text: null
+          }
+        }
+        const res = await api.jewelry.post('GemStock/Search', params)
+        if (res) {
+          //console.log(res)
+          if (res) {
+            //console.log(res.data[0])
+            return res[0]
+          } else {
+            return null
+          }
+          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
         }
         //this.isLoading = false
       } catch (error) {

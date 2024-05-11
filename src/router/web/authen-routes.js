@@ -25,6 +25,9 @@ const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/IndexVi
 //production-cost
 const GoldCost = () => import('@/views/production-cost/goldCost/IndexView.vue')
 
+//stock
+const StockGem = () => import('@/views/stock/gem/IndexView.vue')
+
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/GemView.vue')
 const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
@@ -404,6 +407,38 @@ const routes = [
       }
     ]
   },
+
+  // --------------------- stock data -----------------------------
+  {
+    path: '/stock',
+    component: Layout,
+    redirect: '/stock-gem',
+    name: 'stock',
+    meta: {
+      Displayname: {
+        en: 'Stock Data',
+        th: 'คลังสินค้าเเละวัตถุดิบ'
+      },
+      classIcon: 'bi bi-database',
+      majorShow: true,
+      btsubLineShow: true
+    },
+    children: [
+      {
+        path: '/stock-gem',
+        name: 'stock-gem',
+        component: StockGem,
+        meta: {
+          Displayname: {
+            en: 'Stock Gem',
+            th: 'วัตถุดิบพลอย'
+          },
+          minorShow: true
+        }
+      },
+    ]
+  },
+
 
   // --------------------- master data -----------------------------
   {
