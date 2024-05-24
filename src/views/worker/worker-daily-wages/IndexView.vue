@@ -452,12 +452,12 @@ export default {
     // --- table --- //
     tablePay() {
       return {
-        fontSize: 13,
+        fontSize: 11,
         //bold: true,
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', '*', '*', '*', '*', 50, 50, 50],
+          widths: [60, 60, '*', 60, 60, 50, 50, 50],
           body: this.buildTablePayBody(),
           layout: {
             defaultBorder: false
@@ -529,12 +529,12 @@ export default {
     },
     tableStatus() {
       return {
-        fontSize: 13,
+        fontSize: 11,
         //bold: true,
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', '*', '*', '*', '*', 50, 50],
+          widths: [60, 60, '*', 60, 60, 50, 50, 50],
           body: this.buildTableStatusBody(),
           layout: {
             defaultBorder: false
