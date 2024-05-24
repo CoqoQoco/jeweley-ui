@@ -805,7 +805,7 @@ export default {
             fontSize: 10
           },
           desc: {
-            fontSize: 15,
+            fontSize: 13,
             bold: true
           },
           boldText: {
@@ -909,7 +909,7 @@ export default {
             fontSize: 10
           },
           desc: {
-            fontSize: 15,
+            fontSize: 13,
             bold: true
           },
           boldText: {
