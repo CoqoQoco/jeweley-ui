@@ -13,6 +13,7 @@ const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
 //const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
 
 const PlanOrderTracking = () => import('@/views/production/tracking/IndexView.vue')
+const PlanOrderTrackingWorker = () => import('@/views/production/tracking-worker/IndexView.vue')
 //import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
 
 const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
@@ -37,6 +38,10 @@ const ProductTypeView = () => import('@/views/master/productType/ProductTypeView
 const Report = () => import('@/views/report-production/IndexView.vue')
 const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
+
+// mold design
+const MoldDesign = () => import('@/views/mold/create/IndexView.vue')
+const MoldDesignView = () => import('@/views/mold/tracking/IndexView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -74,6 +79,49 @@ const routes = [
             th: 'หน้าแรก'
           },
           minorShow: false
+        }
+      }
+    ]
+  },
+
+  // --------- Mold Design ---------
+  {
+    path: '/mold',
+    component: Layout,
+    redirect: '/mold',
+    name: 'mold',
+    meta: {
+      Displayname: {
+        en: 'Mold Plan',
+        th: 'งานเเม่พิมพ์'
+      },
+      classIcon: 'bi bi-vector-pen',
+      majorShow: true,
+      btsubLineShow: true
+    },
+    children: [
+      {
+        path: '/create-mold',
+        name: 'create-mold',
+        component: MoldDesign,
+        meta: {
+          Displayname: {
+            en: 'Plan Mold',
+            th: 'สร้างเเบบเเม่พิมพ์'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/tracking-mold',
+        name: 'tracking-mold',
+        component: MoldDesignView,
+        meta: {
+          Displayname: {
+            en: 'Tracking Mold',
+            th: 'ติดตามเเบบเเม่พิมพ์'
+          },
+          minorShow: true
         }
       }
     ]
@@ -138,7 +186,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Plan Order Tracking',
-            th: 'ติดตามงานผลิต'
+            th: 'ติดตามงานผลิต (ปรับปรุง)'
           },
           minorShow: true
         }
@@ -165,6 +213,18 @@ const routes = [
             th: 'รายละเอียดงานผลิต'
           },
           minorShow: false
+        }
+      },
+      {
+        path: '/plan-order-worker-tracking',
+        name: 'plan-order-worker-tracking',
+        component: PlanOrderTrackingWorker,
+        meta: {
+          Displayname: {
+            en: 'Plan Order Worker Tracking',
+            th: 'ติดตามงานผลิต (ช่าง)'
+          },
+          minorShow: true
         }
       }
       // {
@@ -306,19 +366,19 @@ const routes = [
           },
           minorShow: false
         }
-      },
-      {
-        path: '/worker-salary',
-        name: 'worker-salary',
-        component: Report,
-        meta: {
-          Displayname: {
-            en: 'Worker Salary',
-            th: 'รายงานค่าเเรงช่าง'
-          },
-          minorShow: true
-        }
       }
+      // {
+      //   path: '/worker-salary',
+      //   name: 'worker-salary',
+      //   component: Report,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Worker Salary',
+      //       th: 'รายงานค่าเเรงช่าง'
+      //     },
+      //     minorShow: true
+      //   }
+      // }
     ]
   },
 
@@ -435,10 +495,9 @@ const routes = [
           },
           minorShow: true
         }
-      },
+      }
     ]
   },
-
 
   // --------------------- master data -----------------------------
   {

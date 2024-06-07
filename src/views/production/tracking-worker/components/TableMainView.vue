@@ -19,23 +19,7 @@
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
-      <Column style="width: 80px">
-        <template #body="slotProps">
-          <div class="btn-action-container">
-            <button
-              class="btn btn-sm btn btn-main"
-              title="โหมดเเก้ไข"
-              @click="viewplan(slotProps.data)"
-            >
-              <i class="bi bi-brush"></i>
-            </button>
-            <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
-              <i class="bi bi-clipboard2-data-fill"></i>
-            </button>
-          </div>
-        </template>
-      </Column>
-      <Column field="tbtProductionPlanImage" header="รูปสินค้า" style="min-width: 100px">
+      <Column field="image" header="รูปสินค้า" style="min-width: 100px">
         <template #body="slotProps">
           <div class="image-container">
             <loading :isLoading="isLoadingImage"></loading>
@@ -44,47 +28,67 @@
           </div>
         </template>
       </Column>
-      <Column field="wo" header="W.O." style="min-width: 150px">
+      <Column field="wo" header="เลขที่ใบงาน" style="min-width: 150px">
         <template #body="slotProps">
-          {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
+          {{ `${slotProps.data.wo}${slotProps.data.woNumber}` }}
         </template>
       </Column>
-      <Column field="mold" header="เเม่พิมพ์" style="min-width: 150px"></Column>
-      <Column field="status" header="สถานะใบงาน" style="min-width: 150px">
+      <Column field="status" header="สถานะงาน" style="min-width: 150px">
         <template #body="slotProps">
-          <div
-            class="custom-tag-status text-center"
-            style="width: 100px"
-            :class="getStatusSeverity(slotProps.data.status)"
-            @click="onUpdateStatus(slotProps)"
-          >
-            {{ slotProps.data.statusName }}
-          </div>
+          {{ slotProps.data.wagesStatus === 100 ? `สำเร็จ` : `ติดตามระหว่างผลิต` }}
         </template>
       </Column>
-      <Column header="สถานะใบงาน (วันที่)" field="lastUpdateStatus" style="min-width: 150px">
-        <template #body="prop">
-          <div class="notification">
-            <span>{{ formatDate(prop.data.lastUpdateStatus) }}</span>
-          </div>
+      <Column header="ช่าง" field="workerCode" style="min-width: 150px">
+        <template #body="slotProps">
+          {{ `${slotProps.data.workerCode}-${slotProps.data.workerName}` }}
         </template>
       </Column>
-      <Column header="วันส่งงานลูกค้า" field="requestDate" style="min-width: 150px">
+      <Column header="วันที่ส่งงาน" field="jobDate" style="min-width: 150px">
         <template #body="prop">
-          <div class="notification">
-            <span>{{ formatDate(prop.data.requestDate) }}</span>
-            <span v-if="prop.data.isOverPlan" class="overdue-tag">เกินกำหนด</span>
-          </div>
+          {{ formatDate(prop.data.jobDate) }}
         </template>
       </Column>
       <Column header="รหัสสินค้า" field="productNumber" style="min-width: 150px"></Column>
-      <Column header="จำนวนสินค้า" field="productQty" style="min-width: 150px"></Column>
-      <Column header="รหัสลูกค้า" field="customerNumber" style="min-width: 150px"></Column>
-      <Column header="วันสร้างใบสินค้า" field="createDate" style="min-width: 150px">
-        <template #body="prop">
-          {{ formatDate(prop.data.createDate) }}
+      <Column header="เเผนกงาน" field="statusName" style="min-width: 150px"></Column>
+      <Column header="รายละเอียด" field="desc" style="min-width: 150px">
+        <template #body="slotProps">
+          {{
+            `${slotProps.data.gold} ${
+              slotProps.data.description ? `[${slotProps.data.description}]` : ``
+            }`
+          }}
         </template>
       </Column>
+      <Column header="จำนวนจ่าย" field="goldQtySend" style="min-width: 150px"></Column>
+      <Column header="น้ำหนักจ่าย" field="goldWeightSend" style="min-width: 150px"></Column>
+      <Column header="จำนวนรับ" field="goldQtyCheck" style="min-width: 150px"></Column>
+      <Column header="น้ำหนักรับ" field="goldWeightCheck" style="min-width: 150px"></Column>
+      <!-- <Column header="ราคาต่อหน่วย" field="wages" style="min-width: 150px">
+        <template #body="slotProps">
+          <div>
+            {{
+              `${
+                slotProps.data.wages
+                  ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
+                  : Number(0).toFixed(2).toLocaleString()
+              }`
+            }}
+          </div>
+        </template>
+      </Column>
+      <Column header="ราคา" field="totalWages" style="min-width: 150px">
+        <template #body="slotProps">
+          <div>
+            {{
+              `${
+                slotProps.data.totalWages
+                  ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
+                  : Number(0).toFixed(2).toLocaleString()
+              }`
+            }}
+          </div>
+        </template>
+      </Column> -->
       <!-- <template #expansion="slotProps">
         <div class="p-3">
           <h6 style="color: var(--base-font-color)">
@@ -129,7 +133,7 @@ export default {
     DataTable,
     Column,
     loading,
-    imagePreview,
+    imagePreview
   },
   props: {
     modelValue: {
@@ -226,25 +230,21 @@ export default {
       try {
         this.isLoading = true
         this.data = {}
-        //console.log(this.formValue)
+        console.log(this.formValue)
         const param = {
           take: this.take,
           skip: this.skip,
+          sort: this.sort,
           search: {
-            start: this.formValue.start ? formatISOString(this.formValue.start) : null,
-            end: this.formValue.end ? formatISOString(this.formValue.end) : null,
-            sendStart: this.formValue.start ? formatISOString(this.formValue.sendStart) : null,
-            sendEnd: this.formValue.end ? formatISOString(this.formValue.sendEnd) : null,
-            text: this.formValue.text,
-            status: this.formValue.status ? [...this.formValue.status] : null,
-            isOverPlan: this.formValue.isOverPlan?.id
+            createStart: this.formValue?.start ? formatISOString(this.formValue.start) : null,
+            createEnd: this.formValue?.end ? formatISOString(this.formValue.end) : null,
+            text: this.formValue?.text
           }
         }
-
-        console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanSearch', param)
+        const res = await api.jewelry.post('Worker/TrackingWorkerRequest', param)
         if (res) {
           this.data = { ...res }
+          //console.log('summery', summery)
         }
         this.isLoading = false
       } catch (error) {
