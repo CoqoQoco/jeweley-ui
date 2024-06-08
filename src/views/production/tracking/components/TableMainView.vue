@@ -8,7 +8,7 @@
       dataKey="id"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 310px)"
+      scrollHeight="calc(100vh - 330px)"
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
