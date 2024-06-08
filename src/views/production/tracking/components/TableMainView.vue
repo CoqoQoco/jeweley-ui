@@ -233,8 +233,8 @@ export default {
           search: {
             start: this.formValue.start ? formatISOString(this.formValue.start) : null,
             end: this.formValue.end ? formatISOString(this.formValue.end) : null,
-            sendStart: this.formValue.start ? formatISOString(this.formValue.sendStart) : null,
-            sendEnd: this.formValue.end ? formatISOString(this.formValue.sendEnd) : null,
+            sendStart: this.formValue.sendStart ? formatISOString(this.formValue.sendStart) : null,
+            sendEnd: this.formValue.sendEnd ? formatISOString(this.formValue.sendEnd) : null,
             text: this.formValue.text,
             status: this.formValue.status ? [...this.formValue.status] : null,
             isOverPlan: this.formValue.isOverPlan?.id
