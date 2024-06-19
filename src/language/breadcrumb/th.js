@@ -46,6 +46,9 @@ export default {
   reportProductionWorkerWages: 'รายงานช่าง',
   reportProductionGoldCost: 'รายงานใบผสมทอง',
 
+  //mold
+  mold: 'แม่พิมพ์',
+
   //lodog
   logout: 'ออกจากระบบ'
 }

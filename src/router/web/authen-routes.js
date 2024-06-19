@@ -40,8 +40,9 @@ const ReportProductionGoldCost = () => import('@/views/report-production-gold-co
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
 // mold design
-const MoldDesign = () => import('@/views/mold/create/IndexView.vue')
-const MoldDesignView = () => import('@/views/mold/tracking/IndexView.vue')
+const MoldDesignList = () => import('@/views/mold/create-list/IndexView.vue')
+const MoldDesignCreate = () => import('@/views/mold/create-list/create/createView.vue')
+const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -88,7 +89,7 @@ const routes = [
   {
     path: '/mold',
     component: Layout,
-    redirect: '/mold',
+    redirect: 'design-lis',
     name: 'mold',
     meta: {
       Displayname: {
@@ -101,25 +102,37 @@ const routes = [
     },
     children: [
       {
-        path: '/create-mold',
-        name: 'create-mold',
-        component: MoldDesign,
+        path: 'design-list',
+        name: 'design-list',
+        component: MoldDesignList,
         meta: {
           Displayname: {
-            en: 'Plan Mold',
+            en: 'Design Mold',
             th: 'สร้างเเบบเเม่พิมพ์'
           },
           minorShow: true
         }
       },
       {
-        path: '/tracking-mold',
-        name: 'tracking-mold',
-        component: MoldDesignView,
+        path: 'design-create',
+        name: 'design-create',
+        component: MoldDesignCreate,
+        meta: {
+          Displayname: {
+            en: 'Create Mold',
+            th: 'สร้างเเบบเเม่พิมพ์'
+          },
+          minorShow: false
+        }
+      },
+      {
+        path: 'tracking',
+        name: 'tracking',
+        component: MoldDesiged,
         meta: {
           Displayname: {
             en: 'Tracking Mold',
-            th: 'ติดตามเเบบเเม่พิมพ์'
+            th: 'เเบบเเม่พิมพ์สำเร็จ'
           },
           minorShow: true
         }

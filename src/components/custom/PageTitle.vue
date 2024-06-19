@@ -13,10 +13,7 @@
     </div>
 
     <div v-if="isShowBtnClose" class="on-close-float">
-      <i
-        @click="onDeleteTitle"
-        class="cursor k-icon k-i-close text-secondary"
-      ></i>
+      <i @click="onDeleteTitle" class="cursor k-icon k-i-close text-secondary"></i>
     </div>
   </div>
 </template>
@@ -26,40 +23,40 @@ export default {
   props: {
     title: {
       type: String,
-      default: "",
+      default: ''
     },
     description: {
       type: String,
-      default: "",
+      default: ''
     },
     isShowRightSlot: {
       type: Boolean,
-      default: false,
+      default: false
     },
     isShowBtnClose: {
       type: Boolean,
-      default: true,
-    },
+      default: true
+    }
   },
   data() {
     return {
-      isShowTitle: true,
-    };
+      isShowTitle: true
+    }
   },
   watch: {
     isShowTitle() {
       //this.$store.commit("isShowTitle", value);
-    },
+    }
   },
   methods: {
     onDeleteTitle() {
-      this.isShowTitle = false;
-    },
+      this.isShowTitle = false
+    }
   },
   mounted() {
     //this.$store.commit("isShowTitle", true);
-  },
-};
+  }
+}
 </script>
 
 <style lang="scss" scoped>

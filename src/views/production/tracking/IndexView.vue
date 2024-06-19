@@ -218,8 +218,8 @@ export default {
       this.search = {
         start: null,
         end: null,
-        start: null,
-        end: null,
+        //start: null,
+        //end: null,
         sendStart: null,
         sendEnd: null,
         status: null,
