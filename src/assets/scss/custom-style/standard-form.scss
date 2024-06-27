@@ -1,0 +1,39 @@
+@import '../variable.scss';
+
+.filter-container {
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+  
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background-color: #f7f7f7;
+    //background-color: var(--base-color);
+    padding: 10px;
+    //margin-top: 10px;
+}
+.center-container {
+    display: grid;
+    place-items: center;
+    width: 100%;
+}
+.right-container {
+    display: grid;
+    place-items: right;
+    width: 100%;
+}   
+
+.form-four-col-container {
+    display: grid;
+    gap: 10px;
+    padding: 10px 0;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+
+.title-text {
+    color: var(--base-font-color);
+}
+.title-text-lg {
+    color: var(--base-font-color);
+    font-size: 17px;
+    font-weight: 700;
+}

@@ -50,5 +50,9 @@ export default {
   mold: 'แม่พิมพ์',
 
   //lodog
-  logout: 'ออกจากระบบ'
+  logout: 'ออกจากระบบ',
+
+
+   //all
+   create: 'สร้าง',
 }

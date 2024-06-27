@@ -1,0 +1,23 @@
+@import '../variable.scss';
+
+:deep(.input-group-append) {
+    height: 40px;
+    padding-top: 5px;
+}
+
+.btn-summit-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--base-font-color);
+    button{
+        width: 100px;
+    }
+}
+.flex-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+

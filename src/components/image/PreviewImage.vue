@@ -48,7 +48,7 @@ export default {
     borderShow: {
       type: Boolean,
       default: () => true
-    },
+    }
     // fetch: {
     //   type: Number,
     //   required: true,
@@ -92,6 +92,18 @@ export default {
                 imageName: `${this.imageName}-Mold.png`
               }
               const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+
+              if (res) {
+                this.urlImage = `data:image/png;base64,${res}`
+              }
+            }
+            break
+          case 'PLANMOLD':
+            {
+              const param = {
+                imageName: `${this.imageName}`
+              }
+              const res = await api.jewelry.get('FileExtension/GetPlanMoldImage', param)
 
               if (res) {
                 this.urlImage = `data:image/png;base64,${res}`

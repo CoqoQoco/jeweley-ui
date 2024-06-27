@@ -30,12 +30,12 @@
     <!-- 2.Main Workspace -->
     <div id="main" :class="[isShowSidenav ? 'active-main' : 'inactive-main']">
       <!-- 2.1. Navbar -->
-      <nav class="layout-header">
+      <!-- <nav class="layout-header">
         <div class="breadcrumb-wrapper">
           <span class="menu-toggle bi bi-justify" @click="isShowSidenav = !isShowSidenav"></span>
           <Breadcrumb />
         </div>
-        <!-- <div class="logo-and-search">
+        <div class="logo-and-search">
           <div class="logo">
             <img src="@/assets/duangkaew-logo.png" alt="Logo Image" />
           </div>
@@ -43,9 +43,9 @@
             <input type="text" placeholder="ค้นหา ..." />
             <span class="bi bi-search"></span>
           </div>
-        </div> -->
-        <!-- <UserProfile></UserProfile> -->
-      </nav>
+        </div>
+        <UserProfile></UserProfile>
+      </nav> -->
       <!-- 2.2. Router Render -->
       <div class="layout-content">
         <router-view :key="$route.fullPath"></router-view>
@@ -57,11 +57,16 @@
 
 <script>
 import SlideBar from '@/components/layout/SideBar.vue'
-import Breadcrumb from '@/components/layout/BreadcrumbName.vue'
+//import Breadcrumb from '@/components/layout/BreadcrumbName.vue'
 export default {
-  components: { SlideBar, Breadcrumb },
+  components: {
+    SlideBar
+    //Breadcrumb
+  },
   data() {
-    return { isShowSidenav: false }
+    return {
+      isShowSidenav: true
+    }
   },
   watch: {}
 }
@@ -102,7 +107,7 @@ export default {
   overflow-x: hidden;
 }
 .sidebar-wrapper:hover {
-  overflow-y: overlay;
+  //overflow-y: overlay;
   z-index: 300;
 }
 .sidebar-wrapper::-webkit-scrollbar {
@@ -202,7 +207,7 @@ export default {
   }
 }
 .layout-content {
-  padding-top: 50px;
+  //padding-top: 50px;
 }
 
 // Custom Style

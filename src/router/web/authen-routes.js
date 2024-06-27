@@ -41,7 +41,7 @@ const ReportProductionWages = () => import('@/views/report-production-wages/Inde
 
 // mold design
 const MoldDesignList = () => import('@/views/mold/create-list/IndexView.vue')
-const MoldDesignCreate = () => import('@/views/mold/create-list/create/createView.vue')
+const MoldDesignCreate = () => import('@/views/mold/create-design/IndexView.vue')
 const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
 
 // ----- test ----- //
@@ -102,9 +102,9 @@ const routes = [
     },
     children: [
       {
-        path: 'design-list',
-        name: 'design-list',
-        component: MoldDesignList,
+        path: 'design-create',
+        name: 'design-create',
+        component: MoldDesignCreate,
         meta: {
           Displayname: {
             en: 'Design Mold',
@@ -114,15 +114,15 @@ const routes = [
         }
       },
       {
-        path: 'design-create',
-        name: 'design-create',
-        component: MoldDesignCreate,
+        path: 'design-list',
+        name: 'design-list',
+        component: MoldDesignList,
         meta: {
           Displayname: {
-            en: 'Create Mold',
-            th: 'สร้างเเบบเเม่พิมพ์'
+            en: 'Plan Mold',
+            th: 'ติดตามแบบเเม่พิมพ์'
           },
-          minorShow: false
+          minorShow: true
         }
       },
       {
