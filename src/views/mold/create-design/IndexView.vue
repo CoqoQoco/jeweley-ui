@@ -6,7 +6,7 @@
     </div>
     <div id="step1" class="filter-container mt-2">
       <form @submit.prevent="onSubmit">
-        <div class="form-tree-col-container">
+        <div class="form-col-container">
           <div>
             <span class="title-text-lg">รหัสตั้งเเม่พิมพ์</span>
             <span class="txt-required"> *</span>
@@ -19,6 +19,12 @@
             />
           </div>
         </div>
+        <div class="form-col-container">
+          <div>
+            <span class="title-text">ขนาดพลอย</span>
+            <textarea class="form-control" v-model="form.remark" style="height: 2rem" />
+          </div>
+        </div>
         <div class="mt-2">
           <uploadImages
             title="รูปต้นเเบบเเม่พิมพ์ (ไม่เกิน 3 รูป)"
@@ -26,7 +32,7 @@
           ></uploadImages>
         </div>
         <div>
-          <div class="form-four-col-container">
+          <div class="form-col-container">
             <div>
               <span class="title-text">ขนาดพลอย</span>
               <input type="number" step="any" class="form-control" v-model="form.sizeGem" />
@@ -44,7 +50,7 @@
               <input type="number" step="any" class="form-control" v-model="form.qtyDiamond" />
             </div>
           </div>
-          <div class="form-four-col-container">
+          <div class="form-col-container">
             <div>
               <span class="title-text">น้ำหนักก่อนเเต่ง</span>
               <input
@@ -92,7 +98,8 @@ const interfaceForm = {
   sizeDiamond: '',
   qtyDiamond: '',
   qtyBeforeCasting: '',
-  qtyBeforeSend: ''
+  qtyBeforeSend: '',
+  remark:''
 }
 export default {
   components: {
@@ -142,6 +149,7 @@ export default {
         params.append('qtyDiamond', this.form.qtyDiamond)
         params.append('qtyBeforeCasting', this.form.qtyBeforeCasting)
         params.append('qtyBeforeSend', this.form.qtyBeforeSend)
+        params.append('remark', this.form.remark)
 
         //params.append('images', this.form.images)
 

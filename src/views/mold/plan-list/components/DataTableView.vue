@@ -18,10 +18,23 @@
       :rows="take"
       removableSort
       sortMode="multiple"
-      :rowsPerPageOptions="[10, 20, 50, 100]"
+      :rowsPerPageOptions="[10, 30]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
+      <Column style="width: 50px">
+        <template #body="slotProps">
+          <div class="center-container">
+            <button
+              class="btn btn-sm btn btn-main"
+              title="ตรวจสอบ"
+              @click="viewplan(slotProps.data)"
+            >
+              <i class="bi bi-brush"></i>
+            </button>
+          </div>
+        </template>
+      </Column>
       <Column header="วันตั้งเเม่พิมพ์" sortable field="createDate" style="min-width: 150px">
         <template #body="prop">
           {{ formatDate(prop.data.createDate) }}
@@ -47,7 +60,7 @@
         <template #body="slotProps">
           <div v-if="stringToArray(slotProps.data.image).length" class="box-image-show">
             <div v-for="(img, index) in stringToArray(slotProps.data.image)" :key="index">
-              <imagePreview :imageName="img" type="PLANMOLD" width="30" height="30" />
+              <imagePreview :imageName="img" type="PLANMOLD" :width="30" :height="30" />
             </div>
           </div>
         </template>
@@ -174,7 +187,7 @@ export default {
     stringToArray(str) {
       // ตัดช่องว่างหน้าและหลังสตริง
       str = str.trim()
-      console.log('stringToArray', str)
+      //console.log('stringToArray', str)
 
       // ถ้าไม่มีเครื่องหมายจุลภาค ให้คืนค่าเป็น array ที่มีสมาชิกเดียว
       if (!str.includes(',')) {
@@ -187,6 +200,12 @@ export default {
         .map((item) => item.trim())
         .filter((item) => item !== '')
       return res
+    },
+
+    // -------- event -------- //
+    viewplan(data) {
+      console.log('viewplan', data)
+      this.$router.push({ name: 'plan-data', params: { id: data.id } })
     }
   },
   created() {
@@ -203,22 +222,23 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-data-table';
 .box-status-show {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 5px;
   border-radius: 5px;
-  color: white;
+  color: var(--base-font-color);
   font-weight: bold;
   font-size: 12px;
   background-color: #f1c40f;
   width: 70%;
   height: 100%;
 }
-.box-image-show{
-    display: flex;
-    gap: 5px;
+.box-image-show {
+  display: flex;
+  gap: 5px;
 }
 </style>

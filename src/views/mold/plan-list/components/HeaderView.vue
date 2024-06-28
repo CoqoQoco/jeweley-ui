@@ -11,7 +11,7 @@
       </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
-      <div class="form-four-col-container">
+      <div class="form-col-container">
         <div>
           <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
           <input type="text" class="form-control" v-model="form.moldColde" />
@@ -110,7 +110,7 @@ export default {
       this.$emit('clear')
     },
     onCreate() {
-      this.$router.push({ name: 'mold-create' })
+      this.$router.push({ name: 'design-create' })
     }
   }
 }

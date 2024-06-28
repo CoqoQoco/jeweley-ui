@@ -40,8 +40,9 @@ const ReportProductionGoldCost = () => import('@/views/report-production-gold-co
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
 // mold design
-const MoldDesignList = () => import('@/views/mold/create-list/IndexView.vue')
 const MoldDesignCreate = () => import('@/views/mold/create-design/IndexView.vue')
+const MoldPlanList = () => import('@/views/mold/plan-list/IndexView.vue')
+const MoldPlanData = () => import('@/views/mold/plan-data/IndexView.vue')
 const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
 
 // ----- test ----- //
@@ -93,7 +94,7 @@ const routes = [
     name: 'mold',
     meta: {
       Displayname: {
-        en: 'Mold Plan',
+        en: 'Plan Design',
         th: 'งานเเม่พิมพ์'
       },
       classIcon: 'bi bi-vector-pen',
@@ -114,25 +115,85 @@ const routes = [
         }
       },
       {
-        path: 'design-list',
-        name: 'design-list',
-        component: MoldDesignList,
+        path: 'plan-list',
+        name: 'plan-list',
+        component: MoldPlanList,
         meta: {
           Displayname: {
-            en: 'Plan Mold',
+            en: 'Plan List',
             th: 'ติดตามแบบเเม่พิมพ์'
           },
           minorShow: true
         }
       },
       {
-        path: 'tracking',
-        name: 'tracking',
+        path: 'plan-data/:id',
+        name: 'plan-data',
+        component: MoldPlanData,
+        meta: {
+          Displayname: {
+            en: 'Plan Data',
+            th: 'ติดตามแบบเเม่พิมพ์'
+          },
+          minorShow: false
+        }
+      },
+      {
+        path: 'mold-list',
+        name: 'mold-list',
         component: MoldDesiged,
         meta: {
           Displayname: {
             en: 'Tracking Mold',
             th: 'เเบบเเม่พิมพ์สำเร็จ'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: 'picking-list-mold',
+        name: 'picking-list-mold',
+        component: MoldDesiged,
+        meta: {
+          Displayname: {
+            en: 'Picking Mold',
+            th: 'เบิกเม่พิมพ์สำเร็จ'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: 'picking-list-mold-summery',
+        name: 'picking-list-mold-summery',
+        component: MoldDesiged,
+        meta: {
+          Displayname: {
+            en: 'Picking Mold Summery',
+            th: 'ติดตามเบิกเม่พิมพ์สำเร็จ'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: 'report-plan-mold',
+        name: 'report-plan-mold',
+        component: MoldDesiged,
+        meta: {
+          Displayname: {
+            en: 'Picking Mold Summery',
+            th: 'รายงานแบบเเม่พิมพ์'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: 'report-picking-list-mold',
+        name: 'report-picking-list-mold',
+        component: MoldDesiged,
+        meta: {
+          Displayname: {
+            en: 'Picking Mold Summery',
+            th: 'รายงานเบิกเเม่พิมพ์'
           },
           minorShow: true
         }

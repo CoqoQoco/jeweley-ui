@@ -12,7 +12,8 @@
     >
       <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
         <div class="box-header-action">
-          <div>
+          <div class="d-flex">
+            <span><i class="bi bi-image mr-2 title-header"></i></span>
             <span class="title-header">{{ title }}</span>
           </div>
           <div>
@@ -221,6 +222,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+:deep(.p-fileupload-buttonbar) {
+  background-color: var(--base-color);
+}
 .box-header-action {
   display: flex;
   justify-content: space-between;
@@ -228,7 +232,7 @@ export default {
 }
 .title-header {
   font-size: 17px;
-  display: grid;
+  //display: grid;
   color: var(--base-font-color);
   font-weight: 700;
 }
