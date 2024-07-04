@@ -63,8 +63,8 @@ export default {
 // Custom
 .page-title-container {
   border-bottom: 1px solid var(--base-font-color);
-  padding-bottom: 8px;
-  margin-bottom: 12px;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
   position: relative;
 
   .title {

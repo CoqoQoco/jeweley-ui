@@ -105,6 +105,7 @@ export default {
   height: 100vh;
   overflow-y: hidden;
   overflow-x: hidden;
+  overflow: auto;
 }
 .sidebar-wrapper:hover {
   //overflow-y: overlay;

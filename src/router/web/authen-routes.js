@@ -9,6 +9,7 @@ const Customer = () => import('@/views/customer/IndexView.vue')
 const Mold = () => import('@/views/production/mold/MoldView.vue')
 
 const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
+const PlanGoldOrder = () => import('@/views/production/plan-gold/IndexView.vue')
 //import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
 //const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
 
@@ -34,6 +35,7 @@ const GemView = () => import('@/views/master/gem/GemView.vue')
 const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
 const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
 const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
+const ZillView = () => import('@/views/master/zill/IndexView.vue')
 
 const Report = () => import('@/views/report-production/IndexView.vue')
 const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
@@ -241,6 +243,19 @@ const routes = [
           minorShow: true
         }
       },
+      {
+        path: '/plan-gold-order',
+        name: 'gold-gold-picking',
+        component: PlanGoldOrder,
+        meta: {
+          Displayname: {
+            en: 'Plan Gold Order',
+            th: 'สร้างใบเบิกผสมทอง'
+          },
+          minorShow: true
+        }
+      },
+
       // {
       //   path: '/gold-pickink-list',
       //   name: 'gold-pickink-list',
@@ -633,6 +648,18 @@ const routes = [
           Displayname: {
             en: 'Product Type',
             th: 'ข้อมูลประเภทสินค้า'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/master-zill',
+        name: 'master-zull',
+        component: ZillView,
+        meta: {
+          Displayname: {
+            en: 'Zill',
+            th: 'ข้อมูลซิล'
           },
           minorShow: true
         }

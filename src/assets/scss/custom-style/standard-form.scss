@@ -27,6 +27,16 @@
     padding: 10px 0;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
+.submit-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding-top: 8px;
+    //border-top: 1px solid var(--base-font-color);
+    // button{
+    //     width: 200px;
+    // }
+}
 
 
 .title-text {
