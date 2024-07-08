@@ -4,7 +4,7 @@
     <div class="filter-container">
       <pageTitle
         title="สร้างใบเบิกผสมทอง"
-        description=""
+        description="สร้างใบเบิกผสมทอง ระบุข้อมูลทองเบิก ทองหล่อ ทองหลอม ตัวเรือน เเละคำอธิบายอื่นๆ"
         :isShowBtnClose="false"
         :isShowRightSlot="false"
       >
@@ -110,6 +110,8 @@
           </div>
         </div>
       </div>
+
+      <!-- ทองหลอม -->
       <div class="filter-container mt-2">
         <div class="title-text-lg">
           <span class="mr-2"><i class="bi bi-journal-text"></i></span>
@@ -194,8 +196,39 @@
               :disabled="form.meltWeightLoss > 0"
             />
           </div>
+          <div>
+            <span class="title-text">
+              <span>ซิล</span>
+              <small></small>
+            </span>
+            <AutoComplete
+              v-model="form.zill"
+              :suggestions="zillItemSearch"
+              @complete="onSearchZill"
+              placeholder="กรอกรหัสซิล ...."
+              forceSelection
+              @item-select="onSearchZill"
+              :min-length="3"
+              :disabled="!form.gold || !form.goldSize"
+            />
+          </div>
+          <div>
+            <span class="title-text">
+              <span>จำนวนซิล</span>
+            </span>
+            <input
+              type="number"
+              step="any"
+              min="0"
+              class="form-control"
+              v-model="form.zillQty"
+              :disabled="!form.gold || !form.goldSize || !form.zill"
+            />
+          </div>
         </div>
       </div>
+
+      <!-- ทองหล่อ -->
       <div class="filter-container mt-2">
         <div class="title-text-lg">
           <span class="mr-2"><i class="bi bi-journal-text"></i></span>
@@ -498,7 +531,9 @@
           </DataTable>
         </div>
       </div>
-      <div class="summit-container mt-2">
+
+      <!-- btn-submit -->
+      <div class="submit-container mt-2 pb-2">
         <button class="btn btn-sm btn-main mr-2" type="submit">
           <!-- <span><i class="bi bi-search mr-2"></i></span> -->
           <span>สร้างใบเบิกผสมทอง</span>
@@ -552,6 +587,8 @@ const interfaceForm = {
   remark: null,
   assignBy: null,
   receiveBy: null,
+  zill: null,
+  zillQty: null,
   items: []
 }
 const interfaceIsValid = {
@@ -592,7 +629,10 @@ export default {
 
       // ----- table -------- //
       editingRows: [],
-      productItemSearch: []
+      productItemSearch: [],
+
+      // ----- zill ---------//
+      zillItemSearch: []
     }
   },
   methods: {
@@ -680,9 +720,12 @@ export default {
         this.isLoading = true
         //console.log(this.form.items)
 
+        console.log()
+
         this.form.items = this.form.items.map((x) => {
           return {
             ...x,
+            id: x.productionPlan.id,
             productionPlanId: x.productionPlan
               ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
               : null
@@ -709,11 +752,11 @@ export default {
               this.form = {
                 ...interfaceForm
               }
-              this.form.items = []
+              this.form.items = null
               this.val = {
                 ...interfaceIsValid
               }
-              this.$emit('fetch')
+              this.$router.push('/plan-gold-tracking')
             },
             null,
             null
@@ -753,6 +796,35 @@ export default {
       } catch (error) {
         console.log(error)
         //this.isLoading = false
+      }
+    },
+    async onSearchZill(e) {
+      try {
+        this.isLoading = true
+
+        console.log('onSearchZill', e)
+
+        const param = {
+          take: 0,
+          skip: 0,
+          sort: [],
+          search: {
+            type: 'ZILL',
+            text: e.query ?? null,
+            goldCode: this.form.gold.code,
+            goldSizeCode: this.form.goldSize.code
+          }
+        }
+
+        const res = await api.jewelry.post('Master/ListMaster', param)
+        if (res) {
+          this.data = { ...res }
+          this.zillItemSearch = res.data.map((x) => `${x.code}`)
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
       }
     },
     async fetchMasterGold() {

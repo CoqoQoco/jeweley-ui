@@ -8,12 +8,15 @@
       dataKey="id"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 330px)"
+      scrollHeight="calc(100vh - 300px)"
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
       :lazy="true"
+      sortMode="multiple"
+      removableSort
       @page="handlePageChange"
+      @sort="handlePageChangeSort"
       :rows="take"
       :rowsPerPageOptions="[10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
@@ -29,9 +32,9 @@
             >
               <i class="bi bi-brush"></i>
             </button>
-            <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
+            <!-- <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
               <i class="bi bi-clipboard2-data-fill"></i>
-            </button>
+            </button> -->
           </div>
         </template>
       </Column>
@@ -40,17 +43,22 @@
           <div class="image-container">
             <loading :isLoading="isLoadingImage"></loading>
             <!-- <img :src="fetchIamge(slotProps)" alt="Preview Image" /> -->
-            <imagePreview :imageName="slotProps.data.mold" :type="mold"></imagePreview>
+            <imagePreview
+              :imageName="slotProps.data.mold"
+              :type="mold"
+              :width="30"
+              :height="30"
+            ></imagePreview>
           </div>
         </template>
       </Column>
-      <Column field="wo" header="W.O." style="min-width: 150px">
+      <Column field="wo" :sortable="false" header="W.O." style="min-width: 150px">
         <template #body="slotProps">
           {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
         </template>
       </Column>
-      <Column field="mold" header="เเม่พิมพ์" style="min-width: 150px"></Column>
-      <Column field="status" header="สถานะใบงาน" style="min-width: 150px">
+      <Column field="mold" sortable header="เเม่พิมพ์" style="min-width: 150px"></Column>
+      <Column field="status" sortable header="สถานะใบงาน" style="min-width: 150px">
         <template #body="slotProps">
           <div
             class="custom-tag-status text-center"
@@ -62,14 +70,19 @@
           </div>
         </template>
       </Column>
-      <Column header="สถานะใบงาน (วันที่)" field="lastUpdateStatus" style="min-width: 150px">
+      <Column
+        header="สถานะใบงาน (วันที่)"
+        sortable
+        field="lastUpdateStatus"
+        style="min-width: 150px"
+      >
         <template #body="prop">
           <div class="notification">
             <span>{{ formatDate(prop.data.lastUpdateStatus) }}</span>
           </div>
         </template>
       </Column>
-      <Column header="วันส่งงานลูกค้า" field="requestDate" style="min-width: 150px">
+      <Column header="วันส่งงานลูกค้า" sortable field="requestDate" style="min-width: 150px">
         <template #body="prop">
           <div class="notification">
             <span>{{ formatDate(prop.data.requestDate) }}</span>
@@ -77,10 +90,10 @@
           </div>
         </template>
       </Column>
-      <Column header="รหัสสินค้า" field="productNumber" style="min-width: 150px"></Column>
-      <Column header="จำนวนสินค้า" field="productQty" style="min-width: 150px"></Column>
-      <Column header="รหัสลูกค้า" field="customerNumber" style="min-width: 150px"></Column>
-      <Column header="วันสร้างใบสินค้า" field="createDate" style="min-width: 150px">
+      <Column header="รหัสสินค้า" sortable field="productNumber" style="min-width: 150px"></Column>
+      <Column header="จำนวนสินค้า" sortable field="productQty" style="min-width: 150px"></Column>
+      <Column header="รหัสลูกค้า" sortable field="customerNumber" style="min-width: 150px"></Column>
+      <Column header="วันสร้างใบสินค้า" sortable field="createDate" style="min-width: 150px">
         <template #body="prop">
           {{ formatDate(prop.data.createDate) }}
         </template>
@@ -129,7 +142,7 @@ export default {
     DataTable,
     Column,
     loading,
-    imagePreview,
+    imagePreview
   },
   props: {
     modelValue: {
@@ -157,7 +170,12 @@ export default {
       totalRecords: 0,
       take: 10, //all
       skip: 0,
+      //sortField: 'updateDate',
+      //sortOrder: -1, // หรือ -1 สำหรับ descending
+      //sort: [{ field: 'updateDate', dir: 'desc' }],
+      sort: [],
       data: {},
+      dataExcel: {},
       expnadData: [],
 
       //test
@@ -189,6 +207,14 @@ export default {
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
+      this.fetchData()
+    },
+    handlePageChangeSort(e) {
+      this.skip = e.first
+      this.take = e.rows
+      this.sort = e.multiSortMeta.map((item) => {
+        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
+      })
       this.fetchData()
     },
 
@@ -230,6 +256,7 @@ export default {
         const param = {
           take: this.take,
           skip: this.skip,
+          sort: this.sort,
           search: {
             start: this.formValue.start ? formatISOString(this.formValue.start) : null,
             end: this.formValue.end ? formatISOString(this.formValue.end) : null,
@@ -318,7 +345,7 @@ export default {
 @import '@/assets/scss/custom-style/table-data.scss';
 
 .custom-tag-status {
-  padding: 10px;
+  padding: 3px;
   --x: 50%;
   --y: 50%;
   position: relative;

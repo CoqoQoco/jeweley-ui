@@ -1,3 +1,41 @@
+@import "../variable.scss";
+.p-datatable {
+    font-size: $base-font-size !important;
+}
+.p-datatable thead th {
+    background-color: $base-font-color !important;
+    color: #ffffff;
+    .p-column-header-content {
+        font-weight: 100 !important;
+    }
+}
+.p-datatable .p-column-header-content {
+    color: #ffffff !important;
+}
+:deep(.p-datatable .p-sortable-column .p-sortable-column-icon) {
+    color: #ffffff !important;
+    margin-left: 0.5rem;
+}
+
+.p-datatable-tbody>tr>td {
+    padding: 3px 10px 3px 10px !important;
+}
+.p-paginator {
+    font-size: $base-font-size !important;
+    padding: 5px;
+    .p-dropdown {
+        height: 25px !important;
+        width: 100px !important;
+    }
+    .p-dropdown-label {
+        font-size: $base-font-size !important;
+    }
+    .p-inputtext {
+        padding: 1px 0px 0px 10px !important;
+    }
+}
+
+
 
 .center-container {
     display: grid;

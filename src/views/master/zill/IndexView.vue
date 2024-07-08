@@ -2,7 +2,7 @@
   <div class="app-container">
     <loading :isLoading="isLoading"></loading>
     <headerView @create="onShowCreate" @search="onSearchFilter" @clear="onClearFilter"></headerView>
-    <dataTable ref="dataTableRef" v-model:modelForm="formSearch"></dataTable>
+    <dataTable class="mt-2" ref="dataTableRef" v-model:modelForm="formSearch"></dataTable>
     <modalCreate
       v-model:modelForm="formCreate"
       v-model:modelVal="valFormCreate"

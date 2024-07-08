@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-2">
+  <div>
     <loading :isLoading="isLoading"></loading>
     <DataTable
       :totalRecords="data.total"
@@ -8,8 +8,8 @@
       dataKey="id"
       ref="dt"
       class="p-datatable-sm"
-      :scrollable="false"
-      scrollHeight="calc(100vh - 290px)"
+      scrollable
+      scrollHeight="calc(100vh - 240px)"
       resizableColumns
       :paginator="true"
       :lazy="true"
@@ -18,7 +18,7 @@
       :rows="take"
       removableSort
       sortMode="multiple"
-      :rowsPerPageOptions="[10, 30]"
+      :rowsPerPageOptions="[10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
@@ -36,17 +36,17 @@
           </div>
         </template>
       </Column>
-      <Column field="code" header="รหัสซิล" style="min-width: 150px">
+      <Column field="code" header="รหัสซิล" sortable style="min-width: 150px">
         <template #body="slotProps">
           {{ slotProps.data.code }}
         </template>
       </Column>
-      <Column field="goldNameTH" header="ประเภททอง" style="min-width: 150px">
+      <Column field="goldNameTH" header="ประเภททอง" sortable style="min-width: 150px">
         <template #body="slotProps">
           {{ slotProps.data.goldNameTH }}
         </template>
       </Column>
-      <Column field="goldSizeNameTH" header="เปอร์เซ็นทอง" style="min-width: 150px">
+      <Column field="goldSizeNameTH" header="เปอร์เซ็นทอง" sortable style="min-width: 150px">
         <template #body="slotProps">
           {{ slotProps.data.goldSizeNameTH }}
         </template>
@@ -177,4 +177,6 @@ export default {
 }
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-data-table';
+</style>

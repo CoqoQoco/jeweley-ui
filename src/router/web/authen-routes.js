@@ -10,6 +10,7 @@ const Mold = () => import('@/views/production/mold/MoldView.vue')
 
 const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
 const PlanGoldOrder = () => import('@/views/production/plan-gold/IndexView.vue')
+const PlanGoldTracking = () => import('@/views/production/tracking-plan-gold/IndexView.vue')
 //import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
 //const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
 
@@ -255,19 +256,6 @@ const routes = [
           minorShow: true
         }
       },
-
-      // {
-      //   path: '/gold-pickink-list',
-      //   name: 'gold-pickink-list',
-      //   component: GoldPickinglist,
-      //   meta: {
-      //     Displayname: {
-      //       en: 'Gold Pickinglist',
-      //       th: 'ใบผสมทอง'
-      //     },
-      //     minorShow: true
-      //   }
-      // },
       {
         path: '/plan-order-tracking',
         name: 'plan-order-tracking',
@@ -315,19 +303,45 @@ const routes = [
           },
           minorShow: true
         }
+      },
+      {
+        path: '/plan-gold-tracking',
+        name: 'plan-gold-tracking',
+        component: PlanGoldTracking,
+        meta: {
+          Displayname: {
+            en: 'Plan Gold Tracking',
+            th: 'ติดตามงานเบิกผสมทอง'
+          },
+          minorShow: true
+        }
+      },
+
+      // report
+      {
+        path: '/report-production',
+        name: 'report-production',
+        component: Report,
+        meta: {
+          Displayname: {
+            en: 'Production Plan Report',
+            th: 'รายงานผลิต'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/report-production-plan-gold',
+        name: 'report-production-plan-gold',
+        component: ReportProductionGoldCost,
+        meta: {
+          Displayname: {
+            en: 'Plan Gold Report',
+            th: 'รายงานใบเบิกผสมทอง'
+          },
+          minorShow: true
+        }
       }
-      // {
-      //   path: '/production-report',
-      //   name: 'production-report',
-      //   component: Dashboard,
-      //   meta: {
-      //     Displayname: {
-      //       en: 'Production Report',
-      //       th: 'รายงานการผลิต'
-      //     },
-      //     minorShow: true
-      //   }
-      // }
     ]
   },
 
@@ -472,62 +486,6 @@ const routes = [
   },
 
   // ------------ Report -------------------
-  {
-    path: '/report-production',
-    component: Layout,
-    redirect: '/report-production',
-    name: 'report-production',
-    meta: {
-      Displayname: {
-        en: 'Report',
-        th: 'รายงานผลิต'
-      },
-      classIcon: 'bi bi-file-spreadsheet',
-      majorShow: true
-    },
-    children: [
-      {
-        path: '/report-production',
-        name: 'report-production',
-        component: Report,
-        meta: {
-          Displayname: {
-            en: 'Report',
-            th: 'รายงานผลิต'
-          },
-          minorShow: false
-        }
-      }
-    ]
-  },
-  {
-    path: '/report-production-gold-cost',
-    component: Layout,
-    redirect: '/report-production-gold-cost',
-    name: 'report-production-gold-costs',
-    meta: {
-      Displayname: {
-        en: 'Gold Cost Report',
-        th: 'รายงานใบผสมทอง'
-      },
-      classIcon: 'bi bi-file-spreadsheet',
-      majorShow: true
-    },
-    children: [
-      {
-        path: '/report-production-gold-cost',
-        name: 'report-production-gold-cost',
-        component: ReportProductionGoldCost,
-        meta: {
-          Displayname: {
-            en: 'Gold Cost Report',
-            th: 'รายงานใบผสมทอง'
-          },
-          minorShow: false
-        }
-      }
-    ]
-  },
   {
     path: '/report-production-worker-wages',
     component: Layout,
