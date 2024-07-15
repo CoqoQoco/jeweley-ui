@@ -74,6 +74,15 @@
         <Column field="size" header="ขนาด" style="min-width: 150px"> </Column>
         <Column field="shape" header="รูปร่าง" style="min-width: 150px"> </Column>
         <Column field="grade" header="เกรด" style="min-width: 150px"> </Column>
+        <Column field="price" header="ราคา" style="min-width: 150px">
+          <template #body="slotProps">
+            {{
+              slotProps.data.price
+                ? Number(slotProps.data.price).toFixed(2).toLocaleString()
+                : '0.00'
+            }}
+          </template>
+        </Column>
       </DataTable>
     </div>
   </div>

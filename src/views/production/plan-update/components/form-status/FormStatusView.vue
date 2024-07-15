@@ -333,6 +333,15 @@
                   showGridlines
                 >
                   <Column field="name" header="พลอย" style="width: 20%"> </Column>
+                  <Column field="price" header="ราคา" style="width: 10%">
+                    <template #body="slotProps">
+                      {{
+                        slotProps.data.price
+                          ? Number(slotProps.data.price).toFixed(2).toLocaleString()
+                          : '0.00'
+                      }}
+                    </template>
+                  </Column>
                   <Column field="qty" header="จำนวน" style="width: 10%"> </Column>
                   <Column field="weight" header="น้ำหนักรับ" style="width: 10%"> </Column>
                   <template #footer>

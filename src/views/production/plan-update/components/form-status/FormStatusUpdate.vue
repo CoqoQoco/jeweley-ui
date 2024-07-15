@@ -576,6 +576,20 @@
                     </div>
                   </template>
                 </Column>
+                <Column field="gem" header="ราคา" style="min-width: 150px">
+                  <template #editor="{ data, field }">
+                    {{
+                      data[field] ? Number(data[field].price).toFixed(2).toLocaleString() : '0.00'
+                    }}
+                  </template>
+                  <template #body="slotProps">
+                    {{
+                       slotProps.data && slotProps.data.gem
+                        ? Number(slotProps.data.gem.price).toFixed(2).toLocaleString()
+                        : '0.00'
+                    }}
+                  </template>
+                </Column>
                 <Column field="qty" header="จำนวน" style="width: 200px">
                   <template #editor="{ data, field }">
                     <input
