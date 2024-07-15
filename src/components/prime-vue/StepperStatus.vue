@@ -47,6 +47,7 @@ export default {
   computed: {
     activeTab() {
       //return index if active == true
+      console.log(this.eventsIdActive)
       return this.events.findIndex((event) => event.id === this.eventsIdActive)
     }
   },

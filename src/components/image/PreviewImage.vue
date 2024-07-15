@@ -32,6 +32,10 @@ export default {
       required: true,
       default: () => ''
     },
+    path: {
+      type: String,
+      default: () => ''
+    },
     type: {
       type: String,
       required: true,
@@ -74,6 +78,19 @@ export default {
       try {
         //console.log
         switch (this.type) {
+          case 'PATH':
+            {
+              const param = {
+                imageName: `${this.imageName}`,
+                path: this.path
+              }
+              const res = await api.jewelry.get('FileExtension/GetImage', param)
+
+              if (res) {
+                this.urlImage = `data:image/png;base64,${res}`
+              }
+            }
+            break
           case 'ORDERPLAN':
             {
               const param = {
@@ -103,7 +120,19 @@ export default {
               const param = {
                 imageName: `${this.imageName}`
               }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldImage', param)
+              const res = await api.jewelry.get('FileExtension/GetPlanMoldDesignImage', param)
+
+              if (res) {
+                this.urlImage = `data:image/png;base64,${res}`
+              }
+            }
+            break
+          case 'PLANMOLDRESIN':
+            {
+              const param = {
+                imageName: `${this.imageName}`
+              }
+              const res = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param)
 
               if (res) {
                 this.urlImage = `data:image/png;base64,${res}`

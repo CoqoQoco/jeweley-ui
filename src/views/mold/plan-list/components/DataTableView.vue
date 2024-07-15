@@ -22,16 +22,68 @@
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
-      <Column style="width: 50px">
+      <Column
+        header="สถานะปัจจุบัน/สถานะลำดับถัดไป"
+        sortable
+        field="status"
+        style="min-width: 180px"
+      >
         <template #body="slotProps">
-          <div class="center-container">
-            <button
-              class="btn btn-sm btn btn-main"
-              title="ตรวจสอบ"
-              @click="viewplan(slotProps.data)"
+          <div class="d-flex">
+            <div class="mr-2">
+              <button
+                class="btn btn-sm btn btn-main"
+                title="ตรวจสอบ"
+                @click="viewplan(slotProps.data)"
+              >
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+            <div
+              class="box-status-show mr-2"
+              :class="slotProps.data.status === 60 ? 'box-status-success' : 'box-status-show'"
             >
-              <i class="bi bi-brush"></i>
-            </button>
+              {{ slotProps.data.statusName }}
+            </div>
+            <div
+              v-if="getPermissonNext(slotProps.data)"
+              class="box-status-next"
+              @click="onShowCreatePlan(slotProps.data)"
+            >
+              <span> <i class="bi bi-brush mr-2"></i></span>
+              <span> {{ slotProps.data.nextStatusName }}</span>
+            </div>
+          </div>
+        </template>
+      </Column>
+      <!-- <Column header="สถานะลำดับถัดไป" sortable field="nextStatus" style="width: 180px">
+        <template #body="prop">
+          <div class="box-status-next">
+            {{ prop.data.nextStatusName }}
+          </div>
+        </template>
+      </Column> -->
+      <Column header="รหัสตั้งเเม่พิมพ์" field="moldCode" sortable style="min-width: 150px">
+      </Column>
+      <Column header="รหัสเเม่พิมพ์" field="code" sortable style="min-width: 150px"> </Column>
+      <Column
+        header="ประเภทเเม่พิมพ์"
+        field="catagoryName"
+        sortable
+        style="min-width: 150px"
+      ></Column>
+      <Column header="รูปเเม่พิมพ์" field="image" style="min-width: 150px">
+        <template #body="slotProps">
+          <div v-if="stringToArray(getImgUrl(slotProps.data)).length" class="box-image-show">
+            <div v-for="(img, index) in stringToArray(getImgUrl(slotProps.data))" :key="index">
+              <imagePreview
+                :imageName="img"
+                type="PATH"
+                :path="getImgPath(slotProps.data)"
+                :width="30"
+                :height="30"
+              />
+            </div>
           </div>
         </template>
       </Column>
@@ -50,29 +102,33 @@
           {{ formatDate(prop.data.updateDate) }}
         </template>
       </Column>
-      <Column
-        header="รหัสตั้งเเม่พิมพ์"
-        field="moldCode"
-        sortable
-        style="min-width: 150px"
-      ></Column>
-      <Column header="รูปตั้งเเม่พิมพ์" field="image" style="min-width: 150px">
-        <template #body="slotProps">
-          <div v-if="stringToArray(slotProps.data.image).length" class="box-image-show">
-            <div v-for="(img, index) in stringToArray(slotProps.data.image)" :key="index">
-              <imagePreview :imageName="img" type="PLANMOLD" :width="30" :height="30" />
-            </div>
-          </div>
-        </template>
-      </Column>
-      <Column header="สถานะ" field="statusName" style="min-width: 150px">
-        <template #body="prop">
-          <div class="box-status-show">
-            {{ prop.data.statusName }}
-          </div>
-        </template>
-      </Column>
     </DataTable>
+
+    <createResin
+      :isShow="isShow.isShowResinCreate"
+      :modelValue="update"
+      @closeModal="oncloseCreatePlan"
+    ></createResin>
+    <createCastingSilver
+      :isShow="isShow.isShowCastingSilverCreate"
+      :modelValue="update"
+      @closeModal="oncloseCreatePlan"
+    ></createCastingSilver>
+    <createCasting
+      :isShow="isShow.isShowCastingCreate"
+      :modelValue="update"
+      @closeModal="oncloseCreatePlan"
+    ></createCasting>
+    <createCutting
+      :isShow="isShow.isShowCuttingCreate"
+      :modelValue="update"
+      @closeModal="oncloseCreatePlan"
+    ></createCutting>
+    <createStore
+      :isShow="isShow.isShowStoreCreate"
+      :modelValue="update"
+      @closeModal="oncloseCreatePlan"
+    ></createStore>
   </div>
 </template>
 
@@ -88,12 +144,44 @@ import Column from 'primevue/column'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-config.js'
 
+const createResin = defineAsyncComponent(() =>
+  import('@/views/mold/components/create/ResinView.vue')
+)
+const createCastingSilver = defineAsyncComponent(() =>
+  import('@/views/mold/components/create/CastingOfSilverView.vue')
+)
+const createCasting = defineAsyncComponent(() =>
+  import('@/views/mold/components/create/CastingView.vue')
+)
+const createCutting = defineAsyncComponent(() =>
+  import('@/views/mold/components/create/CuttingView.vue')
+)
+const createStore = defineAsyncComponent(() =>
+  import('@/views/mold/components/create/StoreView.vue')
+)
+
+//const createResin = () => import('@views/mold/components/create/ResinView.vue')
+//import createResin from '@views/mold/components/create/ResinView.vue'
+
+const interfaceIsShow = {
+  isShowResinCreate: false,
+  isShowCastingSilverCreate: false,
+  isShowCastingCreate: false,
+  isShowCuttingCreate: false,
+  isShowStoreCreate: false
+}
+
 export default {
   components: {
     loading,
     DataTable,
     Column,
-    imagePreview
+    imagePreview,
+    createResin,
+    createCastingSilver,
+    createCasting,
+    createCutting,
+    createStore
   },
   props: {
     modelForm: {
@@ -113,6 +201,7 @@ export default {
   data() {
     return {
       isLoading: false,
+      isShow: { ...interfaceIsShow },
 
       //--------- table ---------//
       totalRecords: 0,
@@ -125,7 +214,10 @@ export default {
       data: {},
       dataExcel: {},
       expnadData: [],
-      form: null
+      form: null,
+
+      //--------- dataUpdate ---------//
+      update: {}
     }
   },
   methods: {
@@ -185,27 +277,95 @@ export default {
       return formatDate(date)
     },
     stringToArray(str) {
-      // ตัดช่องว่างหน้าและหลังสตริง
-      str = str.trim()
-      //console.log('stringToArray', str)
+      console.log('stringToArray', str)
+      if (str && typeof str === 'string') {
+        // ตัดช่องว่างหน้าและหลังสตริง
+        str = str.trim()
+        //console.log('stringToArray', str)
 
-      // ถ้าไม่มีเครื่องหมายจุลภาค ให้คืนค่าเป็น array ที่มีสมาชิกเดียว
-      if (!str.includes(',')) {
-        return str ? [str] : []
+        // ถ้าไม่มีเครื่องหมายจุลภาค ให้คืนค่าเป็น array ที่มีสมาชิกเดียว
+        if (!str.includes(',')) {
+          return str ? [str] : []
+        }
+
+        // แยกด้วยเครื่องหมายจุลภาค, ตัดช่องว่าง, และกรองค่าว่างออก
+        const res = str
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item !== '')
+        return res
+      } else {
+        return []
       }
-
-      // แยกด้วยเครื่องหมายจุลภาค, ตัดช่องว่าง, และกรองค่าว่างออก
-      const res = str
-        .split(',')
-        .map((item) => item.trim())
-        .filter((item) => item !== '')
-      return res
+    },
+    getImgUrl(data) {
+      switch (data.status) {
+        case 10:
+          return data.imgDesign ?? []
+        case 20:
+          return data.imgResin ?? []
+        case 30:
+          return data.imgCastingSilver ?? []
+        case 40:
+          return data.imgCasting ?? []
+        case 50:
+          return data.imgCutting ?? []
+        case 60:
+          return data.imgStore ?? []
+        default:
+          return []
+      }
+    },
+    getImgPath(data) {
+      switch (data.status) {
+        case 10:
+          return 'Images/MoldPlanDesign'
+        case 20:
+          return 'Images/MoldPlanResin'
+        case 30:
+          return 'Images/MoldPlanCastingSilver'
+        case 40:
+          return 'Images/MoldPlanCasting'
+        case 50:
+          return 'Images/MoldPlanCutting'
+        case 60:
+          return 'Images/Mold'
+        default:
+          return null
+      }
+    },
+    getPermissonNext(data) {
+      const allowNext = [10, 20, 30, 40, 50]
+      return allowNext.includes(data.status)
     },
 
     // -------- event -------- //
     viewplan(data) {
       console.log('viewplan', data)
       this.$router.push({ name: 'plan-data', params: { id: data.id } })
+    },
+    oncloseCreatePlan() {
+      this.isShow = { ...interfaceIsShow }
+      this.fetchData()
+    },
+    onShowCreatePlan(item) {
+      console.log('onShowCreatePlan', item)
+      this.update = { ...item }
+      if (item.nextStatus === 20) {
+        this.isShow.isShowResinCreate = true
+      }
+      if (item.nextStatus === 30) {
+        this.isShow.isShowCastingSilverCreate = true
+      }
+      if (item.nextStatus === 40) {
+        this.isShow.isShowCastingCreate = true
+      }
+      if (item.nextStatus === 50) {
+        this.isShow.isShowCuttingCreate = true
+      }
+      if (item.nextStatus === 60) {
+        this.isShow.isShowStoreCreate = true
+      }
     }
   },
   created() {
@@ -215,28 +375,13 @@ export default {
       this.fetchData()
     })
   },
-  mounted() {
-    //console.log('mounted', this.modelForm)
-    //this.fetchData()
-  }
+  
 }
 </script>
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
-.box-status-show {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 5px;
-  border-radius: 5px;
-  color: var(--base-font-color);
-  font-weight: bold;
-  font-size: 12px;
-  background-color: #f1c40f;
-  width: 70%;
-  height: 100%;
-}
+
 .box-image-show {
   display: flex;
   gap: 5px;

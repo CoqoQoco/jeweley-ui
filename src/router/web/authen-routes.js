@@ -44,6 +44,7 @@ const ReportProductionWages = () => import('@/views/report-production-wages/Inde
 
 // mold design
 const MoldDesignCreate = () => import('@/views/mold/create-design/IndexView.vue')
+//const MoldResinCreate = () => import('@/views/mold/components/ResinView.vue')
 const MoldPlanList = () => import('@/views/mold/plan-list/IndexView.vue')
 const MoldPlanData = () => import('@/views/mold/plan-data/IndexView.vue')
 const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
@@ -117,6 +118,14 @@ const routes = [
           minorShow: true
         }
       },
+      // {
+      //   path: 'resin-create/:id',
+      //   name: 'resin-create',
+      //   component: MoldResinCreate,
+      //   meta: {
+      //     minorShow: false
+      //   }
+      // },
       {
         path: 'plan-list',
         name: 'plan-list',
@@ -134,10 +143,6 @@ const routes = [
         name: 'plan-data',
         component: MoldPlanData,
         meta: {
-          Displayname: {
-            en: 'Plan Data',
-            th: 'ติดตามแบบเเม่พิมพ์'
-          },
           minorShow: false
         }
       },

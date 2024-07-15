@@ -8,8 +8,10 @@
       <form @submit.prevent="onSubmit">
         <div class="form-col-container">
           <div>
-            <span class="title-text-lg">รหัสตั้งเเม่พิมพ์</span>
-            <span class="txt-required"> *</span>
+            <div>
+              <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
+              <span class="txt-required"> *</span>
+            </div>
             <input
               type="text"
               class="form-control"
@@ -18,16 +20,68 @@
               required
             />
           </div>
+          <div>
+            <div>
+              <span class="title-text">ประเภท</span>
+              <span class="txt-required"> *</span>
+            </div>
+            <Dropdown
+              v-model="form.category"
+              :options="masterProduct"
+              optionLabel="description"
+              class="w-full md:w-14rem"
+              :showClear="form.category ? true : false"
+              :class="val.isValCategory === true ? `p-invalid` : ``"
+              @change="onResetValDate('isValCategory')"
+            />
+            <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
+          </div>
+          <div>
+            <span>
+              <span class="title-text">ออกเเบบโดย</span>
+              <span class="txt-required"> *</span>
+            </span>
+            <input type="ะำปะ" required class="form-control" v-model="form.designBy" />
+          </div>
         </div>
         <div class="form-col-container">
           <div>
-            <span class="title-text">ขนาดพลอย</span>
-            <textarea class="form-control" v-model="form.remark" style="height: 2rem" />
+            <div>
+              <span class="title-text">น้ำหนักรับ</span>
+              <span class="txt-required"> *</span>
+            </div>
+            <input
+              type="number"
+              step="any"
+              class="form-control"
+              required
+              v-model="form.qtyBeforeCasting"
+            />
+          </div>
+          <div>
+            <div>
+              <span class="title-text">น้ำหนักส่ง</span>
+              <span class="txt-required"> *</span>
+            </div>
+            <input
+              type="number"
+              step="any"
+              class="form-control"
+              required
+              v-model="form.qtyBeforeSend"
+            />
+          </div>
+          <div></div>
+        </div>
+        <div class="form-col-container">
+          <div>
+            <span class="title-text">รายละเอียด</span>
+            <textarea class="form-control" v-model="form.remark" style="height: 50px" />
           </div>
         </div>
         <div class="mt-2">
           <uploadImages
-            title="รูปต้นเเบบเเม่พิมพ์ (ไม่เกิน 3 รูป)"
+            title="รูปต้นเเบบเเม่พิมพ์ (ไม่เกิน 2 รูป)"
             @onUpdateFile="updateFile"
           ></uploadImages>
         </div>
@@ -50,23 +104,9 @@
               <input type="number" step="any" class="form-control" v-model="form.qtyDiamond" />
             </div>
           </div>
-          <div class="form-col-container">
-            <div>
-              <span class="title-text">น้ำหนักก่อนเเต่ง</span>
-              <input
-                type="number"
-                step="any"
-                class="form-control"
-                v-model="form.qtyBeforeCasting"
-              />
-            </div>
-            <div>
-              <span class="title-text">น้ำหนักก่อนส่ง</span>
-              <input type="number" step="any" class="form-control" v-model="form.qtyBeforeSend" />
-            </div>
-          </div>
         </div>
-        <div class="d-flex justify-content-end zone-container">
+        <div class="d-flex justify-content-end mt-3">
+          <!-- <button class="btn btn-sm btn-main mr-2" type="button" @click="onTest">TEST</button> -->
           <button class="btn btn-sm btn-main" type="submit">
             <span class="mr-2">
               <i class="bi bi-gem"></i>
@@ -87,37 +127,66 @@ import { eventStatus } from './interface/data.js'
 const stepperStatus = defineAsyncComponent(() => import('@/components/prime-vue/StepperStatus.vue'))
 const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/UploadImages.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
+import Dropdown from 'primevue/dropdown'
+
 import swAlert from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-config.js'
 
 const interfaceForm = {
   images: [],
-  moldCode: '',
-  sizeGem: '',
-  qtyGem: '',
-  sizeDiamond: '',
-  qtyDiamond: '',
-  qtyBeforeCasting: '',
-  qtyBeforeSend: '',
-  remark:''
+  moldCode: null,
+  sizeGem: null,
+  qtyGem: null,
+  sizeDiamond: null,
+  qtyDiamond: null,
+  qtyBeforeCasting: null,
+  qtyBeforeSend: null,
+  remark: null,
+  category: null,
+  designBy: null
+}
+const interfaceVal = {
+  isValCategory: false
 }
 export default {
   components: {
     stepperStatus,
     uploadImages,
-    loading
+    loading,
+    Dropdown
+  },
+  watch: {
+    'form.category'() {
+      if (this.form.category) {
+        this.val.isValCategory = false
+      }
+    },
   },
   data() {
     return {
       isLoading: false,
       events: [...eventStatus],
-      form: { ...interfaceForm }
+      form: { ...interfaceForm },
+      val: { ...interfaceVal },
+      masterProduct: []
     }
   },
   methods: {
     onSubmit() {
       console.log('submit', this.form)
-      this.submit()
+      if (this.VaidateForm()) {
+        swAlert.confirmSubmit(
+          `${this.form.moldCode}`,
+          `ยืนยันสร้างเเบบเเม่พิมพ์`,
+          async () => {
+            //console.log('call submitPlan')
+            await this.submit()
+          },
+          null,
+          null
+        )
+      }
     },
     onclear() {
       this.form = { ...interfaceForm }
@@ -125,12 +194,46 @@ export default {
     updateFile(files) {
       this.form.images = files
     },
+    onResetValDate(index) {
+      if (index === 'isValCategory') {
+        if (this.form.category) {
+          this.val.isValCategory = false
+        }
+      }
+    },
+    VaidateForm() {
+      if (!this.form.category) {
+        this.val = {
+          isValCategory: true
+        }
+        return false
+      }
+
+      return true // pass
+    },
+    onTest(){
+      this.$router.push({ name: 'plan-list' })
+    },
 
     // ------ Apis ------ //
+    async fetchMasterProductType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterProductType')
+        if (res) {
+          this.masterProduct = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
     async submit() {
       try {
         this.isLoading = true
 
+        console.log('this.form', this.form)
         // const param = {
         //   moldCode: this.form.moldCode,
         //   sizeGem: this.form.sizeGem,
@@ -147,9 +250,11 @@ export default {
         params.append('qtyGem', this.form.qtyGem)
         params.append('sizeDiamond', this.form.sizeDiamond)
         params.append('qtyDiamond', this.form.qtyDiamond)
-        params.append('qtyBeforeCasting', this.form.qtyBeforeCasting)
-        params.append('qtyBeforeSend', this.form.qtyBeforeSend)
+        params.append('qtySend', this.form.qtyBeforeCasting)
+        params.append('qtyReceive', this.form.qtyBeforeSend)
         params.append('remark', this.form.remark)
+        params.append('Catagory', this.form.category?.code)
+        params.append('designBy', this.form.designBy)
 
         //params.append('images', this.form.images)
 
@@ -172,7 +277,8 @@ export default {
             () => {
               this.onclear()
               //this.$router.go(-1)
-              this.$router.push({ name: 'design-list' })
+              this.$router.push({ name: 'plan-list' })
+              //this.$router.push({ name: 'design-create' })
             },
             null,
             null
@@ -185,6 +291,11 @@ export default {
         console.log(error)
       }
     }
+  },
+  created() {
+    this.$nextTick(() => {
+      this.fetchMasterProductType()
+    })
   }
 }
 </script>

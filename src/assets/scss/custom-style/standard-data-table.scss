@@ -42,3 +42,44 @@
     place-items: center;
     width: 100%;
 }
+
+.box-status-show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--base-font-color);
+    font-weight: bold;
+    font-size: 12px;
+    background-color: #f1c40f;
+    width: 120px;
+    height: 100%;
+  }
+  .box-status-success {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    background-color: #3c763d;
+    width: 120px;
+    height: 100%;
+  }
+  .box-status-next {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--base-color);
+    font-weight: bold;
+    font-size: 12px;
+    background-color: var(--base-font-color);
+    width: 120px;
+    height: 100%;
+    cursor: pointer;
+  }

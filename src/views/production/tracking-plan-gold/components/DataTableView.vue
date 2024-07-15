@@ -18,7 +18,7 @@
       :rows="take"
       removableSort
       sortMode="multiple"
-      :rowsPerPageOptions="[10, 30]"
+      :rowsPerPageOptions="[10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >

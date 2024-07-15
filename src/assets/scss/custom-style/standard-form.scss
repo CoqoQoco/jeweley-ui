@@ -10,6 +10,29 @@
     padding: 10px;
     //margin-top: 10px;
 }
+.filter-container-highlight {
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+  
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background-color: var(--base-font-color);
+    //background-color: var(--base-color);
+    padding: 10px;
+    //margin-top: 10px;
+}
+.filter-container-content {
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+  
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background-color: #f7f7f7;
+    //background-color: var(--base-color);
+    //padding: 10px;
+    //margin-top: 10px;
+    .title-text-highlight {
+        color: white;
+    }
+}
 .center-container {
     display: grid;
     place-items: center;
@@ -50,6 +73,9 @@
 .title-text {
     color: var(--base-font-color);
 }
+.title-text-white {
+    color: var(--base-color);
+}
 .title-text-lg {
     color: var(--base-font-color);
     font-size: 17px;
@@ -64,11 +90,62 @@
     border-radius: 5px 5px 0px 0px;
 }
 .desc-text {
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 700;
+}
+.desc-text-white {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+}
+.desc-text-sm {
+    font-size: 17px;
+    color: var(--base-color);
+    //font-weight: 700;
 }
 
 .line {
     border-top: 1px solid #dddddd;
     margin: 10px 10px;
+  }
+
+  .box-status-show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--base-font-color);
+    font-weight: bold;
+    font-size: 12px;
+    background-color: #f1c40f;
+    width: 120px;
+    height: 100%;
+  }
+  .box-status-success {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    background-color: #3c763d;
+    width: 120px;
+    height: 100%;
+  }
+  .box-status-next {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--base-color);
+    font-weight: bold;
+    font-size: 12px;
+    background-color: var(--base-font-color);
+    width: 120px;
+    height: 100%;
+    cursor: pointer;
   }

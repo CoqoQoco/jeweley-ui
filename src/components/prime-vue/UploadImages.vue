@@ -25,9 +25,12 @@
               <span><i class="bi bi-image"></i></span>
               <span class="ml-2">เลือกไฟล์</span>
             </button>
+            <!-- @click.prevent="clearCallback(clearCallback)" -->
             <button
+              ref="btnClear"
+              id="btnClear"
               :class="['btn btn-sm', !files || files.length === 0 ? 'btn-secondary' : 'btn-danger']"
-              @click.prevent="clearCallback(clearCallback)"
+              @click.prevent="executeClearCallback(clearCallback)"
               style="width: 100px"
               :disabled="!files || files.length === 0"
               v-if="isAllClear"
@@ -50,7 +53,7 @@
           </div>
         </div>
       </template>
-      <template #content="{ files, uploadedFiles, removeUploadedFileCallback, removeFileCallback }">
+      <template #content="{ files, removeFileCallback }">
         <div v-if="files.length > 0">
           <!-- <h5>Pending</h5> -->
           <div class="box-content">
@@ -66,8 +69,12 @@
                     height="150"
                   />
                 </div>
-                <span class="font-weight-bold">{{ truncateFileName(file.name, 5) }}</span>
-                <div>{{ formatSize(file.size) }}</div>
+                <div class="d-flex" style="font-size: 15px">
+                  <span class="">{{ truncateFileName(file.name, 8) }}</span>
+                  <span class="mr-1">,</span>
+                  <span> {{ formatSize(file.size) }}</span>
+                </div>
+                <!-- <div style="font-size: 15px">{{ formatSize(file.size) }}</div> -->
                 <!-- <Badge value="Pending" severity="warning" /> -->
                 <button
                   class="btn btn-sm btn-danger"
@@ -76,36 +83,6 @@
                   <i class="bi bi-x-circle"></i>
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="uploadedFiles.length > 0">
-          <h5>Completed</h5>
-          <div class="flex flex-wrap p-0 sm:p-5 gap-5">
-            <div
-              v-for="(file, index) of uploadedFiles"
-              :key="file.name + file.type + file.size"
-              class="card m-0 px-6 flex flex-column border-1 surface-border align-items-center gap-3"
-            >
-              <div>
-                <img
-                  role="presentation"
-                  :alt="file.name"
-                  :src="file.objectURL"
-                  width="100"
-                  height="50"
-                />
-              </div>
-              <span class="font-semibold">{{ file.name }}</span>
-              <div>{{ formatSize(file.size) }}</div>
-              <button
-                icon="pi pi-times"
-                @click="removeUploadedFileCallback(index)"
-                outlined
-                rounded
-                severity="danger"
-              />
             </div>
           </div>
         </div>
@@ -145,10 +122,21 @@ export default {
     },
     isAllClear: {
       type: Boolean,
-      default: () => false
+      default: () => true
+    },
+    countClearFiles: {
+      type: Number,
+      default: () => 0
     }
   },
-  watch: {},
+  watch: {
+    countClearFiles() {
+      console.log('clearFilesFunction', this.countClearFiles)
+      if (this.countClearFiles > 0) {
+        document.getElementById('btnClear').click()
+      }
+    }
+  },
   data() {
     return {
       isLoading: false,
@@ -158,6 +146,13 @@ export default {
     }
   },
   methods: {
+    executeClearCallback(clearCallback) {
+      // ดำเนินการล้างไฟล์ภายใน component
+      clearCallback()
+      this.totalSize = 0
+      this.totalSizePercent = 0
+      this.$emit('onUpdateFile', [])
+    },
     onRemoveTemplatingFile(file, removeFileCallback, index) {
       removeFileCallback(index)
       this.totalSize -= parseInt(this.formatSize(file.size))
@@ -213,10 +208,8 @@ export default {
     }
   },
   mounted() {
-    // ส่งฟังก์ชัน removeAllFiles ไปยัง parent component
-    if (typeof this.onRemoveAllFiles === 'function') {
-      this.onRemoveAllFiles(this.onRemoveAllFiles)
-    }
+    console.log('created: this.$refs.btnClear', this.$refs.btnClear)
+    this.$emit('btnClearRef', this.$refs.btnClear)
   }
 }
 </script>
