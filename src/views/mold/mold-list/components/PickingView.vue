@@ -28,7 +28,7 @@
                 <div class="d-flex flex-column">
                   <span class="title-text-white">ประเภท</span>
                   <span class="desc-text-white">{{
-                    `${form.categoryCode}:${form.category} `
+                    `${form.categoryCode ?? `Empty`}:${form.category} `
                   }}</span>
                 </div>
               </div>

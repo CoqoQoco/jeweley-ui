@@ -63,7 +63,7 @@
           <div class="form-col-container">
             <div>
               <div>
-                <span class="title-text">วันที่เบิก</span>
+                <span class="title-text">วันที่คืน</span>
                 <span class="txt-required"> *</span>
               </div>
               <Calendar
