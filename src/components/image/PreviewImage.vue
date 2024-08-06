@@ -60,23 +60,20 @@ export default {
     // }
   },
   watch: {
-    // fetch(value) {
-    //   console.log(this.imageName)
-    //   console.log(value)
-    //   if (value > 0) {
-    //     //this.fetchImageData()
-    //   }
-    // }
+    imageName: {
+      handler: 'fetchImageData',
+      immediate: true
+    }
   },
   data() {
     return {
-      urlImage: null
+      urlImage: null,
+      name: null
     }
   },
   methods: {
     async fetchImageData() {
       try {
-        //console.log
         switch (this.type) {
           case 'PATH':
             {
@@ -146,7 +143,7 @@ export default {
     }
   },
   async created() {
-    await this.fetchImageData()
+    //await this.fetchImageData()
   }
 }
 </script>

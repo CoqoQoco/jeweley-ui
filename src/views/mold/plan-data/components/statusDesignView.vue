@@ -26,7 +26,9 @@
           </div>
         </div>
       </div>
+
       <div class="col-8">
+        <!-- row 1  -->
         <div class="form-col-sm-container">
           <div class="d-flex flex-column">
             <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
@@ -45,7 +47,9 @@
             <span class="desc-text">{{ valueDesign?.workBy }}</span>
           </div>
         </div>
-        <div class="form-col-sm-container">
+
+        <!-- row 2  -->
+        <!-- <div class="form-col-sm-container">
           <div class="d-flex flex-column">
             <span class="title-text">ขนาดพลอย</span>
             <span class="desc-text">{{ valueDesign?.sizeGem }}</span>
@@ -62,9 +66,11 @@
             <span class="title-text">จำนวนเพชร</span>
             <span class="desc-text">{{ valueDesign?.qtyDiamond }}</span>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
+
+    <!-- remark -->
     <div class="form-col-sm-container contaianer-image">
       <div class="d-flex flex-column">
         <span class="title-text">รายละเอียด</span>

@@ -7,4 +7,9 @@ const eventStatus = [
   { header: 'จัดเก็บพิมพ์', id: 6 }
 ]
 
-export { eventStatus }
+const mateiralType = [
+  { header: 'พลอย', code: 'gem', id: 1 },
+  { header: 'เพชร', code: 'diamond', id: 2 },
+]
+
+export { eventStatus, mateiralType }

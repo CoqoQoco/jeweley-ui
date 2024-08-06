@@ -1,62 +1,59 @@
 <template>
   <div class="filter-container">
     <pageTitle
-      title="กระบวนการสร้างเเบบเเม่พิมพ์"
+      title="ติดตามงานเบิกเเม่พิมพ์"
       description=""
       :isShowBtnClose="false"
-      :isShowRightSlot="true"
+      :isShowRightSlot="false"
     >
-      <template #rightSlot>
-        <button class="btn btn-sm btn-main" @click="onCreate">สร้างเเบบเเม่พิมพ์ใหม่</button>
-      </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
         <div>
-          <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
-          <input type="text" class="form-control" v-model="form.moldColde" />
+          <span class="title-text">ค้นหา</span>
+          <input type="text" class="form-control" v-model="form.text" />
         </div>
         <div>
-          <span class="title-text">วันตั้งเเม่พิมพ์</span>
+          <span class="title-text">วันที่เบิก</span>
           <div class="flex-group">
             <Calendar
               class="w-100"
-              v-model="form.startCreate"
-              :max-date="form.endCreate"
+              v-model="form.checkOutDateStart"
+              :max-date="form.checkOutDateEnd"
               showIcon
               placeholder="เริ่มต้น"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
             <Calendar
               class="w-100"
-              v-model="form.endCreate"
-              :min-date="form.startCreate"
+              v-model="form.checkOutDateEnd"
+              :min-date="form.checkOutDateStart"
               showIcon
               placeholder="สิ้นสุด"
             />
           </div>
         </div>
         <div>
-          <span class="title-text">วันเเก้ไขเเม่พิมพ์ล่าสุด</span>
+          <span class="title-text">กำหนดคืน</span>
           <div class="flex-group">
             <Calendar
               class="w-100"
-              v-model="form.startUpdate"
-              :max-date="form.endUpdate"
+              v-model="form.returnDateStart"
+              :max-date="form.returnDateEnd"
               showIcon
               placeholder="เริ่มต้น"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
             <Calendar
               class="w-100"
-              v-model="form.endUpdate"
-              :min-date="form.startUpdate"
+              v-model="form.returnDateEnd"
+              :min-date="form.returnDateStart"
               showIcon
               placeholder="สิ้นสุด"
             />
           </div>
         </div>
-        <div></div>
+        <!-- <div></div> -->
       </div>
       <div class="btn-summit-container">
         <button class="btn btn-sm btn-main mr-2" type="submit">
@@ -107,11 +104,7 @@ export default {
       this.$emit('search', this.form)
     },
     onClear() {
-      //this.form = { ...this.modelForm }
       this.$emit('clear')
-    },
-    onCreate() {
-      this.$router.push({ name: 'design-create' })
     }
   }
 }

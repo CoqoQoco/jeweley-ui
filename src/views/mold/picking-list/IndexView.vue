@@ -14,11 +14,11 @@ import headerBar from './components/headerView.vue'
 import dataTable from './components/DataTableView.vue'
 
 const interfaceForm = {
-  moldColde: null,
-  startCreate: null,
-  endCreate: null,
-  startUpdate: null,
-  endUpdate: null
+  text: null,
+  checkOutDateStart: null,
+  checkOutDateEnd: null,
+  returnDateStart: null,
+  returnDateEnd: null
 }
 export default {
   components: {
@@ -36,6 +36,7 @@ export default {
     onSearchFilter(data) {
       console.log('onSearchFilter', data)
       this.search = { ...data }
+      this.shouldFetchData = true
     },
     onClearFilter() {
       console.log('onClearFilter')

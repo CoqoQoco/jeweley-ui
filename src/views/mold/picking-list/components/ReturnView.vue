@@ -1,0 +1,364 @@
+<template>
+  <div>
+    <loading :isLoading="isLoading"></loading>
+    <modal :showModal="isShow" @closeModal="closeModal">
+      <template v-slot:content>
+        <div class="title-text-lg-header">
+          <span>{{ `คืนเเม่พิมพ์ - ${model.mold}` }}</span>
+        </div>
+        <form @submit.prevent="onSubmit">
+          <div class="form-col-container">
+            <!-- image -->
+            <div class="image-container filter-container">
+              <div class="upload-preview">
+                <div v-if="urlImage">
+                  <img :src="urlImage" alt="Preview" class="preview-image" />
+                  <!-- <i class="bi bi-x del-iamge-x"></i> -->
+                </div>
+              </div>
+            </div>
+
+            <!-- data -->
+            <div>
+              <div class="form-col-container filter-container-highlight custom-continer-data">
+                <div class="d-flex flex-column">
+                  <span class="title-text-white">รหัส</span>
+                  <span class="desc-text-white">{{ form.code }}</span>
+                </div>
+                <div class="d-flex flex-column">
+                  <span class="title-text-white">ประเภท</span>
+                  <span class="desc-text-white">{{
+                    `${form.categoryCode}:${form.category} `
+                  }}</span>
+                </div>
+              </div>
+              <div class="filter-container custom-continer-data mt-2">
+                <div class="form-col-container">
+                  <div class="d-flex flex-column">
+                    <span class="title-text">วันที่เบิก</span>
+                    <span class="desc-text">{{ formatDate(form.checkOutDate) }}</span>
+                  </div>
+                  <div class="d-flex flex-column">
+                    <span class="title-text">ผู้เบิก</span>
+                    <span class="desc-text">{{ form.checkOutName }}</span>
+                  </div>
+                </div>
+                <div class="form-col-container">
+                  <div class="d-flex flex-column">
+                    <span class="title-text">กำหนดคืน</span>
+                    <span class="desc-text">{{ formatDate(form.returnDateSet) }}</span>
+                  </div>
+                  <div></div>
+                </div>
+                <div class="form-col-container">
+                  <div class="d-flex flex-column">
+                    <span class="title-text">เหุตผลการเบิก</span>
+                    <span class="desc-text">{{ form.checkOutDesc }}</span>
+                  </div>
+                  <div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-col-container">
+            <div>
+              <div>
+                <span class="title-text">วันที่เบิก</span>
+                <span class="txt-required"> *</span>
+              </div>
+              <Calendar
+                class="w-100"
+                :class="val.isValReturnDate === true ? `p-invalid` : ``"
+                v-model="form.returnDate"
+                dateFormat="dd/mm/yy"
+                showIcon
+                showButtonBar
+              />
+            </div>
+            <div>
+              <div>
+                <span class="title-text">ผู้คืน</span>
+                <span class="txt-required"> *</span>
+              </div>
+              <input type="text" required class="form-control" v-model="form.returnName" />
+            </div>
+            <div>
+              <div>
+                <span class="title-text">เหตุผลการคืน</span>
+                <!-- <span class="txt-required"> *</span> -->
+              </div>
+              <input type="text" class="form-control" v-model="form.returnDesc" />
+            </div>
+          </div>
+          <div class="d-flex justify-content-end mt-1">
+            <button class="btn btn-sm btn-main" type="submit">
+              <span class="mr-2">
+                <i class="bi bi-gem"></i>
+              </span>
+              <span>คืนเเม่พิมพ์</span>
+            </button>
+          </div>
+        </form>
+      </template>
+    </modal>
+  </div>
+</template>
+
+<script>
+import { defineAsyncComponent } from 'vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
+//import Dropdown from 'primevue/dropdown'
+import Calendar from 'primevue/calendar'
+
+import api from '@/axios/axios-config.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
+import { formatISOString, formatDate } from '@/services/utils/dayjs'
+
+const interfaceForm = {
+  returnName: null,
+  returnDate: new Date(),
+  returnDesc: null
+}
+const interfaceVal = {
+  isValReturnDate: false
+}
+
+export default {
+  components: {
+    modal,
+    loading,
+    //Dropdown,
+    Calendar
+  },
+  props: {
+    isShow: {
+      type: Boolean,
+      default: false
+    },
+    modelValue: {
+      type: Object,
+      required: true,
+      default: () => {}
+    }
+  },
+  computed: {
+    model() {
+      return this.modelValue
+    }
+  },
+  watch: {
+    async modelValue(value) {
+      console.log(value)
+      console.log(this.masterProduct)
+      this.form = {
+        ...this.form,
+
+        id: value.id,
+        code: value.mold,
+        moldBy: value.moldBy,
+        description: value.description,
+        category: value.category,
+        categoryCode: value.categoryCode,
+
+        checkOutName: value.checkOutName,
+        checkOutDate: value.checkOutDate,
+        checkOutDesc: value.checkOutDescription,
+        returnDateSet: value.returnDateSet
+      }
+      await this.fetchImageData(value.mold)
+    },
+    'form.returnDate'() {
+      if (this.form.returnDate) {
+        this.val.isValReturnDate = false
+      }
+    }
+  },
+  data() {
+    return {
+      isLoading: false,
+      type: 'ORDERPLAN',
+      form: { ...interfaceForm },
+      val: { ...interfaceVal },
+      masterProduct: [],
+
+      // image
+      urlImage: ''
+    }
+  },
+  methods: {
+    // ---------------- event ----------------
+    closeModal() {
+      //this.onclear()
+      this.$emit('closeModal')
+    },
+    onclear() {
+      //this.$refs.fileInput.value = null
+      this.imgUrl = ''
+      this.form = {
+        ...interfaceForm
+      }
+
+      this.$emit('fetch')
+    },
+    onSelectImg(e) {
+      this.isLoading = true
+      if (e.target.files[0]) {
+        //const maxSizeInBytes = 1024 * 1024 // 1 MB (ตั้งค่าตามที่ต้องการ)
+        // if (e.target.files[0].size > maxSizeInBytes) {
+        //   alert('ไฟล์ที่คุณเลือกมีขนาดเกินกำหนด (1 MB)')
+        //   return
+        // }
+        this.name = e.target.files[0].name
+
+        //preview
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          this.urlImage = event.target.result
+        }
+        reader.readAsDataURL(e.target.files[0])
+
+        //assign
+        this.form.image = e.target.files[0]
+      }
+      this.isLoading = false
+    },
+    VaidateForm() {
+      if (!this.form.returnDate) {
+        this.val = {
+          isValReturnDate: true
+        }
+        return false
+      }
+
+      return true // pass
+    },
+    onResetValDate(index) {
+      if (index === 'isValCheckOutDate') {
+        if (this.form.checkOutDate) {
+          this.val.isValCheckOutDate = false
+        }
+      }
+      if (index === 'isValReturnDateSet') {
+        if (this.form.returnDateSet) {
+          this.val.isValReturnDateSet = false
+        }
+      }
+    },
+    onSubmit() {
+      if (this.VaidateForm()) {
+        swAlert.confirmSubmit(
+          `${this.form.code}`,
+          `ยืนยันคืนเเม่พิมพ์`,
+          async () => {
+            //console.log('call submitPlan')
+            await this.submit()
+          },
+          null,
+          null
+        )
+      }
+    },
+
+    // ------helper function ------
+    formatDate(date) {
+      return formatDate(date)
+    },
+
+    // -------- APIs --------------- //
+    async fetchImageData(path) {
+      try {
+        //console.log
+        switch (this.type) {
+          case 'ORDERPLAN': {
+            const param = {
+              imageName: `${path}-Mold.png`
+            }
+            const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+
+            if (res) {
+              this.urlImage = `data:image/png;base64,${res}`
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async fetchMasterProductType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterProductType')
+        if (res) {
+          this.masterProduct = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async submit() {
+      try {
+        this.isLoading = true
+
+        let params = {
+          ...this.form,
+          mold: this.form.code,
+          returnDate: formatISOString(this.form.returnDate)
+        }
+
+        const res = await api.jewelry.post('StockMold/ReturnMold', params)
+        if (res) {
+          //console.log(res)
+          swAlert.success(
+            ``,
+            ``,
+            async () => {
+              this.onclear()
+              this.$emit('fetch')
+            },
+            null,
+            null
+          )
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    }
+  },
+  created() {
+    this.$nextTick(() => {
+      //this.fetchMasterProductType()
+    })
+    //this.fetchMasterProductType()
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+.image-container {
+  //border: 1px solid var(--base-color);
+  background-color: #ffff;
+  padding: 0px;
+}
+
+.upload-preview {
+  display: grid;
+  place-items: center;
+}
+.preview-image {
+  width: 20rem;
+  height: 20rem;
+  margin: 10px 0px;
+  border-radius: 10px;
+}
+.custom-continer-data {
+  padding: 20px 20px;
+}
+</style>

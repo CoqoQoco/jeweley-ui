@@ -108,6 +108,7 @@
       :isShow="isShow.isShowResinCreate"
       :modelValue="update"
       @closeModal="oncloseCreatePlan"
+      @refresh="refreshPage"
     ></createResin>
     <createCastingSilver
       :isShow="isShow.isShowCastingSilverCreate"
@@ -209,8 +210,8 @@ export default {
       skip: 0,
       //sortField: 'updateDate',
       //sortOrder: -1, // หรือ -1 สำหรับ descending
-      //sort: [{ field: 'updateDate', dir: 'desc' }],
-      sort: [],
+      sort: [{ field: 'updateDate', dir: 'desc' }],
+      //sort: [],
       data: {},
       dataExcel: {},
       expnadData: [],
@@ -346,7 +347,12 @@ export default {
     },
     oncloseCreatePlan() {
       this.isShow = { ...interfaceIsShow }
-      this.fetchData()
+      //this.fetchData()
+    },
+    refreshPage() {
+      setTimeout(() => {
+        window.location.reload()
+      }, 100) // ปรับเวลาตามความเหมาะสม
     },
     onShowCreatePlan(item) {
       console.log('onShowCreatePlan', item)
@@ -374,8 +380,7 @@ export default {
     this.$nextTick(() => {
       this.fetchData()
     })
-  },
-  
+  }
 }
 </script>
 

@@ -228,7 +228,10 @@ export default {
             '',
             () => {
               //this.onclear()
-              this.closeModal()
+              //this.closeModal()
+              this.countClearFiles++
+              this.onclear()
+              this.$emit('refresh')
             },
             null,
             null

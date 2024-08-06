@@ -42,6 +42,11 @@
     place-items: center;
     width: 100%;
 }
+.btn-action-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 .box-status-show {
     display: flex;
@@ -52,7 +57,7 @@
     color: var(--base-font-color);
     font-weight: bold;
     font-size: 12px;
-    background-color: #f1c40f;
+    background-color: #FFC21B;
     width: 120px;
     height: 100%;
   }
@@ -65,7 +70,7 @@
     color: white;
     font-weight: bold;
     font-size: 12px;
-    background-color: #3c763d;
+    background-color: #038387;
     width: 120px;
     height: 100%;
   }
