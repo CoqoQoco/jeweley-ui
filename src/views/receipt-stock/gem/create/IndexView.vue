@@ -6,31 +6,19 @@
       @search="onSearchFilter"
       @clear="onClearFilter"
     ></headerBar>
-    <dataTable v-model:modelForm="search" :headerHeight="headerHeight" class="mt-2"></dataTable>
   </div>
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
-
-//const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-
 import headerBar from './components/headerView.vue'
-import dataTable from './components/DataTableView.vue'
+//import dataTable from './components/DataTableView.vue'
 
-const interfaceForm = {
-  id: null,
-  code: null,
-  groupName: [],
-  grade: [],
-  shape: [],
-  size: []
-}
+const interfaceForm = {}
+
 export default {
   components: {
-    //pageTitle,
-    headerBar,
-    dataTable
+    headerBar
+    //dataTable
   },
   data() {
     return {
@@ -40,7 +28,6 @@ export default {
     }
   },
   methods: {
-    //  ---------------- event --------
     updateHeaderHeight() {
       if (this.$refs.headerBarRef) {
         this.headerHeight = this.$refs.headerBarRef.$el.offsetHeight

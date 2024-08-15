@@ -5,11 +5,12 @@
     padding-top: 5px;
 }
 
-.btn-summit-container {
+.btn-submit-container {
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
     padding-top: 8px;
+    margin-top: 5px;
     border-top: 1px solid var(--base-font-color);
     button{
         width: 100px;

@@ -1,3 +1,7 @@
+// -------------- routes --------------
+import mold from '../web/mold/mold-routes.js'
+import production from '../web/production/production-routes.js'
+import stockGem from '../web/stock/gem/stock-gem-routes.js'
 //import settingRoutes from './setting-routes.js'
 
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
@@ -5,31 +9,10 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 const Customer = () => import('@/views/customer/IndexView.vue')
-//import Dashboard from '@/views/dashboard/WelcomePage.vue'
-const Mold = () => import('@/views/production/mold/MoldView.vue')
-
-const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
-const PlanGoldOrder = () => import('@/views/production/plan-gold/IndexView.vue')
-const PlanGoldTracking = () => import('@/views/production/tracking-plan-gold/IndexView.vue')
-//import PlanOrder from '@/views/production/order-plan/plan/IndexView.vue'
-//const GoldPickinglist = () => import('@/views/production/gold-pickinglist/IndexView.vue')
-
-const PlanOrderTracking = () => import('@/views/production/tracking/IndexView.vue')
-const PlanOrderTrackingWorker = () => import('@/views/production/tracking-worker/IndexView.vue')
-//import PlanOrderTracking from '@/views/production/order-plan/tracking/IndexView.vue'
-
-const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
-//import PlanOrderTrackingView from '@/views/production/order-plan/tracking/components/ViewPlan.vue'
 
 //worker
 const WorkerList = () => import('@/views/worker/worker-list/IndexView.vue')
 const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/IndexView.vue')
-
-//production-cost
-const GoldCost = () => import('@/views/production-cost/goldCost/IndexView.vue')
-
-//stock
-const StockGem = () => import('@/views/stock/gem/IndexView.vue')
 
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/GemView.vue')
@@ -38,18 +21,7 @@ const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
 const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
 const ZillView = () => import('@/views/master/zill/IndexView.vue')
 
-const Report = () => import('@/views/report-production/IndexView.vue')
-const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
-
-// mold design
-const MoldDesignCreate = () => import('@/views/mold/create-design/IndexView.vue')
-//const MoldResinCreate = () => import('@/views/mold/components/ResinView.vue')
-const MoldPlanList = () => import('@/views/mold/plan-list/IndexView.vue')
-const MoldPlanData = () => import('@/views/mold/plan-data/IndexView.vue')
-const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
-const MoldList = () => import('@/views/mold/mold-list/IndexView.vue')
-const MoldpickingList = () => import('@/views/mold/picking-list/IndexView.vue')
 
 // ----- test ----- //
 //import TestAPI from '@/views/test-api/ViewTest.vue'
@@ -92,312 +64,12 @@ const routes = [
     ]
   },
 
-  // --------- Mold Design ---------
-  {
-    path: '/mold',
-    component: Layout,
-    redirect: 'design-lis',
-    name: 'mold',
-    meta: {
-      Displayname: {
-        en: 'Plan Design',
-        th: 'งานเเม่พิมพ์'
-      },
-      classIcon: 'bi bi-vector-pen',
-      majorShow: true,
-      btsubLineShow: true
-    },
-    children: [
-      {
-        path: 'design-create',
-        name: 'design-create',
-        component: MoldDesignCreate,
-        meta: {
-          Displayname: {
-            en: 'Design Mold',
-            th: 'สร้างเเบบเเม่พิมพ์'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: 'plan-list',
-        name: 'plan-list',
-        component: MoldPlanList,
-        meta: {
-          Displayname: {
-            en: 'Plan List',
-            th: 'ติดตามแบบเเม่พิมพ์'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: 'plan-data/:id',
-        name: 'plan-data',
-        component: MoldPlanData,
-        meta: {
-          minorShow: false
-        }
-      },
-      {
-        path: 'mold-list',
-        name: 'mold-list',
-        component: MoldList,
-        meta: {
-          Displayname: {
-            en: 'Tracking Mold',
-            th: 'เเบบเเม่พิมพ์สำเร็จ'
-          },
-          minorShow: true
-        }
-      },
-      // {
-      //   path: 'picking-list-mold',
-      //   name: 'picking-list-mold',
-      //   component: MoldDesiged,
-      //   meta: {
-      //     Displayname: {
-      //       en: 'Picking Mold',
-      //       th: 'เบิกเม่พิมพ์สำเร็จ'
-      //     },
-      //     minorShow: true
-      //   }
-      // },
-      {
-        path: 'picking-list-mold-summery',
-        name: 'picking-list-mold-summery',
-        component: MoldpickingList,
-        meta: {
-          Displayname: {
-            en: 'Picking Mold Summery',
-            th: 'ติดตามเบิกเเม่พิมพ์'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: 'report-plan-mold',
-        name: 'report-plan-mold',
-        component: MoldDesiged,
-        meta: {
-          Displayname: {
-            en: 'Picking Mold Summery',
-            th: 'รายงานแบบเเม่พิมพ์'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: 'report-picking-list-mold',
-        name: 'report-picking-list-mold',
-        component: MoldDesiged,
-        meta: {
-          Displayname: {
-            en: 'Picking Mold Summery',
-            th: 'รายงานเบิกเเม่พิมพ์'
-          },
-          minorShow: true
-        }
-      }
-    ]
-  },
-
-  //----- Mold && Picking List -----
-  {
-    path: '/production',
-    component: Layout,
-    redirect: '/mold',
-    name: 'prodution',
-    meta: {
-      Displayname: {
-        en: 'Production Plan',
-        th: 'งานผลิต'
-      },
-      classIcon: 'bi bi-vector-pen',
-      majorShow: true,
-      btsubLineShow: true
-    },
-    children: [
-      {
-        path: '/plan-mold',
-        name: 'plan-mold',
-        component: Mold,
-        meta: {
-          Displayname: {
-            en: 'Plan Mold',
-            th: 'สร้างเเบบเเม่พิมพ์'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/plan-order',
-        name: 'plan-order',
-        component: PlanOrder,
-        meta: {
-          Displayname: {
-            en: 'Plan Order',
-            th: 'สร้างใบจ่าย-รับคืนงาน'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/plan-gold-order',
-        name: 'gold-gold-picking',
-        component: PlanGoldOrder,
-        meta: {
-          Displayname: {
-            en: 'Plan Gold Order',
-            th: 'สร้างใบเบิกผสมทอง'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/plan-order-tracking',
-        name: 'plan-order-tracking',
-        component: PlanOrderTracking,
-        meta: {
-          Displayname: {
-            en: 'Plan Order Tracking',
-            th: 'ติดตามงานผลิต (ปรับปรุง)'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/plan-order-tracking-view/:id',
-        name: 'plan-order-tracking-view',
-        component: PlanOrderTracking,
-        meta: {
-          Displayname: {
-            en: 'Plan Order Tracking',
-            th: 'ติดตามงานผลิต'
-          },
-          minorShow: false
-        }
-      },
-      {
-        path: '/plan-order-tracking-update/:id',
-        name: 'plan-order-tracking-detail',
-        component: PlanOrderTrackingView,
-        meta: {
-          Displayname: {
-            en: 'Plan Detail',
-            th: 'รายละเอียดงานผลิต'
-          },
-          minorShow: false
-        }
-      },
-      {
-        path: '/plan-order-worker-tracking',
-        name: 'plan-order-worker-tracking',
-        component: PlanOrderTrackingWorker,
-        meta: {
-          Displayname: {
-            en: 'Plan Order Worker Tracking',
-            th: 'ติดตามงานผลิต (ช่าง)'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/plan-gold-tracking',
-        name: 'plan-gold-tracking',
-        component: PlanGoldTracking,
-        meta: {
-          Displayname: {
-            en: 'Plan Gold Tracking',
-            th: 'ติดตามงานเบิกผสมทอง'
-          },
-          minorShow: true
-        }
-      },
-
-      // report
-      {
-        path: '/report-production',
-        name: 'report-production',
-        component: Report,
-        meta: {
-          Displayname: {
-            en: 'Production Plan Report',
-            th: 'รายงานผลิต'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/report-production-plan-gold',
-        name: 'report-production-plan-gold',
-        component: ReportProductionGoldCost,
-        meta: {
-          Displayname: {
-            en: 'Plan Gold Report',
-            th: 'รายงานใบเบิกผสมทอง'
-          },
-          minorShow: true
-        }
-      }
-    ]
-  },
-
-  // ------ cost sheet -------
-  {
-    path: '/production-cost',
-    component: Layout,
-    redirect: '/production-cost-gold-picking',
-    name: 'production-cost-gold-picking',
-    meta: {
-      Displayname: {
-        en: 'Production Picking Material',
-        th: 'งานเบิกผลิต'
-      },
-      classIcon: 'bi bi-currency-exchange',
-      majorShow: true,
-      btsubLineShow: true
-    },
-    children: [
-      {
-        path: '/gold-cost-picking',
-        name: 'gold-cost-picking',
-        component: GoldCost,
-        meta: {
-          Displayname: {
-            en: 'Gold Picking',
-            th: 'เบิกผสมทอง'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/plan-material-picking',
-        name: 'plan-material-picking',
-        component: Report,
-        meta: {
-          Displayname: {
-            en: 'Material Picking',
-            th: 'เบิกวัตถุดิบ'
-          },
-          minorShow: true
-        }
-      },
-      {
-        path: '/plan-cost',
-        name: 'plan-cost',
-        component: Report,
-        meta: {
-          Displayname: {
-            en: 'Plan Cost',
-            th: 'สรุปราคาผลิต'
-          },
-          minorShow: true
-        }
-      }
-    ]
-  },
+  // --------- Mold Design 
+  ...mold,
+  // --------- Production 
+  ...production,
+  // --------- stock 
+  ...stockGem,
 
   // ------------------ customer -------------------
   {
@@ -509,37 +181,6 @@ const routes = [
             th: 'รายงานช่าง'
           },
           minorShow: false
-        }
-      }
-    ]
-  },
-
-  // --------------------- stock data -----------------------------
-  {
-    path: '/stock',
-    component: Layout,
-    redirect: '/stock-gem',
-    name: 'stock',
-    meta: {
-      Displayname: {
-        en: 'Stock Data',
-        th: 'คลังสินค้าเเละวัตถุดิบ'
-      },
-      classIcon: 'bi bi-database',
-      majorShow: true,
-      btsubLineShow: true
-    },
-    children: [
-      {
-        path: '/stock-gem',
-        name: 'stock-gem',
-        component: StockGem,
-        meta: {
-          Displayname: {
-            en: 'Stock Gem',
-            th: 'วัตถุดิบพลอย'
-          },
-          minorShow: true
         }
       }
     ]

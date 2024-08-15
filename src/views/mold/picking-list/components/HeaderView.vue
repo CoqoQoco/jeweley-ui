@@ -55,7 +55,7 @@
         </div>
         <!-- <div></div> -->
       </div>
-      <div class="btn-summit-container">
+      <div class="btn-submit-container">
         <button class="btn btn-sm btn-main mr-2" type="submit">
           <span><i class="bi bi-search mr-2"></i></span>
           <span>ค้นหา</span>
