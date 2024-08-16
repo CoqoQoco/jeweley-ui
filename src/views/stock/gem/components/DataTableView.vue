@@ -9,7 +9,7 @@
       ref="dt"
       class="p-datatable-sm"
       scrollable
-      :scrollHeight="`calc(100vh - ${headerHeightPx} - 90px)`"
+      scrollHeight="calc(100vh - 335px)"
       resizableColumns
       :paginator="true"
       :lazy="true"
@@ -18,7 +18,7 @@
       :rows="take"
       removableSort
       sortMode="multiple"
-      :rowsPerPageOptions="[10, 50, 100]"
+      :rowsPerPageOptions="[100, 200, 300]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
@@ -68,6 +68,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import Papa from 'papaparse'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-config.js'
@@ -83,6 +84,10 @@ export default {
       type: Object,
       default: () => ({})
     },
+    modelFormExport: {
+      type: Object,
+      default: () => ({})
+    },
     headerHeight: {
       type: Number,
       default: 0
@@ -93,6 +98,21 @@ export default {
       handler(val) {
         this.form = { ...val }
         this.fetchData()
+      },
+      deep: true
+    },
+    modelFormExport: {
+      handler(val) {
+        console.log('watch modelFormExport', val)
+        this.export = { ...val }
+        this.fetchDataExport()
+      },
+      deep: true
+    },
+    data: {
+      handler(val) {
+        console.log('watch data', val)
+        val.data && val.data.length > 0 ? this.$emit('export', true) : this.$emit('export', false)
       },
       deep: true
     }
@@ -110,7 +130,7 @@ export default {
 
       //--------- table ---------//
       totalRecords: 0,
-      take: 10, //all
+      take: 100, //all
       skip: 0,
       //sortField: 'updateDate',
       //sortOrder: -1, // หรือ -1 สำหรับ descending
@@ -119,7 +139,8 @@ export default {
       data: {},
       dataExcel: {},
       expnadData: [],
-      form: null
+      form: null,
+      export: null
     }
   },
   methods: {
@@ -163,6 +184,57 @@ export default {
         const res = await api.jewelry.post('StockGem/SearchData', params)
         if (res) {
           this.data = { ...res }
+          //this.$emit('export', true)
+        } else {
+          //this.$emit('export', true)
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    },
+    async fetchDataExport() {
+      try {
+        this.isLoading = true
+
+        console.log('fetchDataExport', this.form)
+        const params = {
+          take: 0,
+          skip: 0,
+          sort: [],
+          search: {
+            code: this.form.code ?? null,
+            groupName: this.form.groupName ?? null,
+            grade: this.form.grade ?? null,
+            shape: this.form.shape ?? null,
+            size: this.form.size ?? null
+          }
+        }
+        console.log('params', params)
+        const res = await api.jewelry.post('StockGem/SearchData', params)
+        if (res) {
+          const dataExcel = res.data.map((item) => {
+            return {
+              รหัส: item.code,
+              หมวดหมู่: item.groupName,
+              ขนาด: item.size,
+              รูปร่าง: item.shape,
+              เกรด: item.grade,
+              จำนวน: item.quantity ? Number(item.quantity).toFixed(3).toLocaleString() : '0.000',
+              ราคา: item.price ? Number(item.price).toFixed(2).toLocaleString() : '0.00',
+              ราคาต่อหน่วย: item.priceQty
+                ? Number(item.priceQty).toFixed(2).toLocaleString()
+                : '0.00',
+              หน่วย: item.unit,
+              รหัสหน่วย: item.unitCode,
+              หมายเหตุ: item.remark1
+            }
+          })
+          this.exportWithCustomColumnCSV(
+            dataExcel,
+            `เอกสารตรวจคลัง[${this.formatDateTime(new Date())}].csv`
+          )
         }
         this.isLoading = false
       } catch (error) {
@@ -199,6 +271,29 @@ export default {
       } else {
         return []
       }
+    },
+    exportWithCustomColumnCSV(data, filename) {
+      const utf8BOM = '\uFEFF'
+      const csv = Papa.unparse(data, {
+        quotes: false, //or array of booleans
+        quoteChar: '"',
+        escapeChar: '"',
+        delimiter: ',',
+        header: true,
+        newline: '\r\n',
+        skipEmptyLines: false, //other option is 'greedy', meaning skip delimiters, quotes, and whitespace.
+        columns: null //or array of strings
+      })
+      const csvData = utf8BOM + csv
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.setAttribute('href', url)
+      link.setAttribute('download', filename)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
 
     // -------- event -------- //
@@ -207,7 +302,7 @@ export default {
     console.log('created', this.modelForm)
     this.form = { ...this.modelForm }
     this.$nextTick(() => {
-      this.fetchData()
+      //this.fetchData()
     })
   }
 }

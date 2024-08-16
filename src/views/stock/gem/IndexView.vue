@@ -3,10 +3,18 @@
     <headerBar
       ref="headerBarRef"
       v-model:modelForm="form"
+      :isExport="isExport"
       @search="onSearchFilter"
+      @export="exportExcel"
       @clear="onClearFilter"
     ></headerBar>
-    <dataTable v-model:modelForm="search" :headerHeight="headerHeight" class="mt-2"></dataTable>
+    <dataTable
+      v-model:modelForm="search"
+      v-model:modelFormExport="exportData"
+      :headerHeight="headerHeight"
+      class="mt-2"
+      @export="exportExcelFlag"
+    ></dataTable>
   </div>
 </template>
 
@@ -36,7 +44,9 @@ export default {
     return {
       form: { ...interfaceForm },
       search: {},
-      headerHeight: 0
+      exportData: {},
+      headerHeight: 0,
+      isExport: false
     }
   },
   methods: {
@@ -53,6 +63,14 @@ export default {
     onClearFilter() {
       console.log('onClearFilter')
       this.form = { ...interfaceForm }
+    },
+    exportExcel(data) {
+      console.log('exportExcel', data)
+      this.exportData = { ...data }
+    },
+    exportExcelFlag(value) {
+      console.log('exportExcelFlag', value)
+      this.isExport = value
     }
   },
   mounted() {

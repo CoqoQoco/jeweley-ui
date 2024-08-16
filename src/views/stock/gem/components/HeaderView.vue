@@ -18,10 +18,13 @@
     </pageTitle>
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
+        <!-- code -->
         <div>
           <span class="title-text">รหัส</span>
           <input type="text" class="form-control" v-model="form.code" />
         </div>
+
+        <!-- groupName -->
         <div>
           <span class="title-text">หมวดหมู่</span>
           <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
@@ -34,6 +37,8 @@
             class="w-full md:w-14rem"
           />
         </div>
+
+        <!-- size -->
         <div>
           <span class="title-text">ขนาด</span>
           <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
@@ -46,6 +51,8 @@
             class="w-full md:w-14rem"
           />
         </div>
+
+        <!-- shape -->
         <div>
           <span class="title-text">รูปร่าง</span>
           <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
@@ -58,6 +65,8 @@
             class="w-full md:w-14rem"
           />
         </div>
+
+        <!-- grade -->
         <div>
           <span class="title-text">เกรด</span>
           <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
@@ -76,9 +85,19 @@
           <span><i class="bi bi-search mr-2"></i></span>
           <span>ค้นหา</span>
         </button>
-        <button class="btn btn-sm btn-secondary" type="button" @click="onClear">
+        <button class="btn btn-sm btn-secondary mr-2" type="button" @click="onClear">
           <span><i class="bi bi-x mr-2"></i></span>
           <span>ล้าง</span>
+        </button>
+        <button
+          :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
+          type="button"
+          style="width: 120px"
+          :disabled="!isExportData"
+          @click="onSubmitExport"
+        >
+          <span><i class="bi bi-filetype-csv"></i></span>
+          <span class="ml-2">ออกเอกสาร</span>
         </button>
       </div>
     </form>
@@ -120,6 +139,10 @@ export default {
     modelForm: {
       type: Object,
       default: () => ({})
+    },
+    isExport: {
+      type: Boolean,
+      default: false
     }
   },
   watch: {
@@ -128,6 +151,11 @@ export default {
         this.form = { ...val }
       },
       deep: true
+    }
+  },
+  computed: {
+    isExportData() {
+      return this.isExport
     }
   },
   data() {
@@ -147,6 +175,9 @@ export default {
     // ---------------- event
     onSubmit() {
       this.$emit('search', this.form)
+    },
+    onSubmitExport() {
+      this.$emit('export', true)
     },
     onClear() {
       this.$emit('clear')

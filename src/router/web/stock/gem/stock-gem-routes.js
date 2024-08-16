@@ -1,7 +1,9 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
+const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 
 const stockGem = () => import('@/views/stock/gem/IndexView.vue')
-const stockGemCreate = () => import('@/views/receipt-stock/gem/create/IndexView.vue')
+const stockGemInbound = () => import('@/views/receipt-stock/gem/inbound/IndexView.vue')
+//const stockGemCreate = () => import('@/views/receipt-stock/gem/create/IndexView.vue')
 
 const routes = [
   {
@@ -9,6 +11,7 @@ const routes = [
     component: Layout,
     redirect: '/stock-gem',
     name: 'stock',
+    sectionid: 'STOCK-GEM',
     meta: {
       Displayname: {
         en: 'Stock Raw Material',
@@ -20,9 +23,10 @@ const routes = [
     },
     children: [
       {
-        path: '/stock-gem',
-        name: 'stock-gem',
+        path: '/stock-gem-list',
+        name: 'stock-gem-list',
         component: stockGem,
+        menuId: 'List',
         meta: {
           Displayname: {
             en: 'Stock Gem',
@@ -33,16 +37,45 @@ const routes = [
         }
       },
       {
-        path: '/stock-gem-create',
-        name: 'stock-gem-create',
-        component: stockGemCreate,
+        path: '/stock-gem-transection',
+        name: 'stock-gem-transection',
+        component: Dashboard,
+        menuId: 'STOCK-GEM-TRANSECTION',
         meta: {
           Displayname: {
-            en: 'Stock Gem',
-            th: 'สร้างรหัสใหม่'
+            en: 'Transection',
+            th: 'รายการเคลื่อนไหว'
           },
           minorShow: true,
-          menuId: `stock-gem-create`
+          menuId: `stock-gem-transection`
+        }
+      },
+      {
+        path: '/stock-gem-inbound',
+        name: 'stock-gem-inbound',
+        component: stockGemInbound,
+        menuId: 'STOCK-GEM-INBOUND',
+        meta: {
+          Displayname: {
+            en: 'Inbound',
+            th: 'รับเข้าคลัง'
+          },
+          minorShow: true,
+          menuId: `stock-gem-inbound`
+        }
+      },
+      {
+        path: '/stock-gem-outbound',
+        name: 'stock-gem-outbound',
+        component: Dashboard,
+        menuId: 'STOCK-GEM-OUTBOUND',
+        meta: {
+          Displayname: {
+            en: 'Outbound',
+            th: 'จ่ายออกคลัง'
+          },
+          minorShow: true,
+          menuId: `stock-gem-outbound`
         }
       }
     ]
