@@ -1235,7 +1235,7 @@ export default {
             text: e.query ?? null
           }
         }
-        const res = await api.jewelry.post('GemStock/Search', params)
+        const res = await api.jewelry.post('StockGem/Search', params)
         if (res) {
           //console.log(res)
           this.gemItemSearch = [...res]
