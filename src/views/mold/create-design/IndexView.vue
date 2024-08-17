@@ -39,7 +39,7 @@
           </div>
           <div>
             <span>
-              <span class="title-text">ออกเเบบโดย</span>
+              <span class="title-text">ขึ้น CAD โดย</span>
               <span class="txt-required"> *</span>
             </span>
             <input type="ะำปะ" required class="form-control" v-model="form.designBy" />
