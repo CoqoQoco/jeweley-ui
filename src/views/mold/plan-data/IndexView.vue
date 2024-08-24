@@ -13,7 +13,7 @@
             <div :class="data.status === 60 ? 'box-status-success' : 'box-status-show'">
               {{ data.statusName }}
             </div>
-            <div v-if="data.status === 100" class="box-status-process ml-2" @click="onMelting">
+            <div v-if="data.status !== 100" class="box-status-process ml-2" @click="onMelting">
               <span><i class="bi bi-x-lg mr-2"></i></span>
               <span>หลอมเเม่พิมพ์</span>
             </div>
