@@ -14,7 +14,7 @@ import headerBar from './components/headerView.vue'
 import dataTable from './components/DataTableView.vue'
 
 const interfaceForm = {
-  moldColde: null,
+  moldCode: null,
   startCreate: null,
   endCreate: null,
   startUpdate: null,

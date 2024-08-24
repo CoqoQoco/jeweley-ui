@@ -29,7 +29,7 @@ export default {
     },
     background: {
       type: String,
-      default: '#FFC21B'
+      default: '#DAD4B5'
     },
     id: {
       type: String,

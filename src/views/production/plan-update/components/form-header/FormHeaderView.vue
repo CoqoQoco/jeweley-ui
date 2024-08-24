@@ -116,7 +116,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pdf = defineAsyncComponent(() => import('@/components/pdf-make/SavePDFOrderPlan.vue'))
+const pdf = defineAsyncComponent(() => import('@/components/pdf-make/FilePDFProductionPlanView.vue'))
 
 import moment from 'dayjs'
 import api from '@/axios/axios-config.js'

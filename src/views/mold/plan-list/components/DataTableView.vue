@@ -39,10 +39,7 @@
                 <i class="bi bi-search"></i>
               </button>
             </div>
-            <div
-              class="box-status-show mr-2"
-              :class="slotProps.data.status === 60 ? 'box-status-success' : 'box-status-show'"
-            >
+            <div class="box-status-show mr-2" :class="getBoxStatus(slotProps.data.status)">
               {{ slotProps.data.statusName }}
             </div>
             <div
@@ -246,6 +243,8 @@ export default {
       try {
         this.isLoading = true
 
+        console.log('fetchData req', this.form)
+
         const params = {
           take: this.take,
           skip: this.skip,
@@ -338,6 +337,21 @@ export default {
     getPermissonNext(data) {
       const allowNext = [10, 20, 30, 40, 50]
       return allowNext.includes(data.status)
+    },
+    getMeltingStatus(status) {
+      if (status === 500) {
+        return true
+      }
+      return false
+    },
+    getBoxStatus(status) {
+      if (status === 60) {
+        return 'box-status-success'
+      }
+      if (status === 500) {
+        return 'box-status-process'
+      }
+      return 'box-status-show'
     },
 
     // -------- event -------- //

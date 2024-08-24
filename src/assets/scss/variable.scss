@@ -1,10 +1,11 @@
 $base-color: #e0e0e0;
-$base-sub-color:#393939;
-$base-font-color:#921313;
+$base-sub-color: #393939;
+$base-font-color: #921313;
 $base-green: #038387;
-$base-warning: #FFC21B;
+$base-warning: #fabc3f;
 $base-red: #ff4d4d;
 
+//DAD4B5
 
 //font-size
 $base-font-size: 14px;
@@ -17,13 +18,12 @@ $base-font-size: 14px;
 // $size-lx: 1.75em;
 // $size-x: 2em;
 
-
 :root {
-    --base-color: #e0e0e0;
-    --base-sub-color: #393939;
-    --base-font-color: #921313;
-    --base-green: #038387;
-    --base-warning:#FFC21B;
-    --base-red: #ff4d4d;
-    --base-font-size: 14px;
+  --base-color: #e0e0e0;
+  --base-sub-color: #393939;
+  --base-font-color: #921313;
+  --base-green: #038387;
+  --base-warning: #ffc21b;
+  --base-red: #ff4d4d;
+  --base-font-size: 14px;
 }

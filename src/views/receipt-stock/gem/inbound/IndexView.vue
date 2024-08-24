@@ -1,60 +1,46 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
-    <div class="filter-container">
-      <pageTitle
-        title="สร้างใบรับเพชรเเละพลอย"
-        description="รับเพชรเเละพลอยเข้าคลัง ระบุรหัส จำนวน และรายละเอียดอื่นๆ"
-        :isShowBtnClose="false"
-        :isShowRightSlot="false"
-      >
-        <template #rightSlot> </template>
-      </pageTitle>
-      <div class="form-col-container">
-        <div>
-          <span class="title-text">สเเกนรหัส</span>
-          <scanInput
-            v-model.trim="formScan.code"
-            class="w-100"
-            :id="'inputListStockID'"
-            :funcForSingleItem="onScan"
-          />
-        </div>
-      </div>
-    </div>
+    <headerBar
+      ref="headerRef"
+      v-model:modelForm="formHeaderScan"
+      @scan="onScan"
+      @clear="onClearScan"
+    ></headerBar>
+    <dataTable v-model:modelFormScan="formDataScan" class="mt-2"></dataTable>
   </div>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const scanInput = defineAsyncComponent(() => import('@/components/custom/scanInput.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+//import { defineAsyncComponent } from 'vue'
+import headerBar from './components/HeaderView.vue'
+import dataTable from './components/DataTableView.vue'
 
 const interfaceFormScan = {
   code: null
 }
 export default {
   components: {
-    pageTitle,
-    loading,
-    scanInput
+    headerBar,
+    dataTable
   },
   data() {
     return {
       isLoading: false,
-      formScan: { ...interfaceFormScan }
+      formHeaderScan: { ...interfaceFormScan },
+      formDataScan: null
     }
   },
   methods: {
-    onScan(scan) {
-      console.log('onSubmitScan', scan)
+    onScan(data) {
+      console.log('onScan', data)
+      this.formDataScan = { ...data }
+    },
+    onClearScan() {
+      console.log('onClearScan')
+      this.formHeaderScan = { ...interfaceFormScan }
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-form.scss';
-@import '@/assets/scss/custom-style/standard-data-table';
-</style>
+<style lang="scss" scoped></style>

@@ -1,0 +1,259 @@
+<template>
+  <div>
+    <loading :isLoading="isLoading"></loading>
+    <form @submit.prevent="onSubmit">
+      <DataTable
+        :value="formSubmit.gems"
+        showGridlines
+        dataKey="id"
+        ref="dt"
+        class="p-datatable-sm"
+        scrollable
+        stripedRows
+        columnResizeMode="fit"
+        scrollHeight="calc(100vh - 160px)"
+      >
+        <Column style="width: 50px">
+          <template #body="slotProps">
+            <div class="table-btn-action-container">
+              <button
+                class="btn btn-sm btn btn-main"
+                title="ลบรายการ"
+                @click="onDelGem(slotProps.data)"
+                type="button"
+              >
+                <i class="bi bi-brush"></i>
+              </button>
+            </div>
+          </template>
+        </Column>
+        <Column field="code" header="รหัส" style="min-width: 100px"> </Column>
+        <Column field="groupName" header="หมวดหมู่" style="min-width: 100px"> </Column>
+        <Column field="size" header="ขนาด" style="min-width: 100px"> </Column>
+        <Column field="shape" header="รูปร่าง" style="min-width: 100px"> </Column>
+        <Column field="grade" header="เกรด" style="min-width: 100px"> </Column>
+        <Column field="quantity" header="จำนวนคงคลัง" style="min-width: 100px">
+          <template #body="slotProps">
+            {{
+              slotProps.data.quantity
+                ? Number(slotProps.data.quantity).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </template>
+        </Column>
+        <Column field="quantityOnProcess" header="จำนวนใช้งาน" style="min-width: 100px">
+          <template #body="slotProps">
+            {{
+              slotProps.data.quantity
+                ? Number(slotProps.data.quantity).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </template>
+        </Column>
+        <column field="receiveQty" header="จำนวนรับเข้า" style="width: 120px">
+          <template #body="slotProps">
+            <input
+              style="width: 120px; background-color: #dad4b5"
+              class="form-control"
+              type="number"
+              :min="minQty"
+              :max="slotProps.data.quantity"
+              required
+              v-model="slotProps.data.receiveQty"
+              @blur="onBlur(slotProps.data)"
+            />
+            <!-- @change="onChangeQty(slotProps.data)" -->
+          </template>
+        </column>
+        <ColumnGroup type="footer">
+          <Row>
+            <column footerStyle="background-color: #921313" :colspan="9">
+              <template #footer>
+                <div class="d-flex justify-content-between">
+                  <!-- text -->
+                  <div class="footer-text-container">
+                    <span>
+                      {{ `รวมทั้งหมด&nbsp;&nbsp;${formSubmit.gems.length}&nbsp;&nbsp;รายการ` }}
+                    </span>
+                  </div>
+
+                  <!-- btn submit -->
+                  <div>
+                    <button class="btn btn-sm btn-secondary mr-2" type="button">
+                      <span>ยกเลิกรายการ</span>
+                    </button>
+                    <button class="btn btn-sm btn-primary" type="submit">
+                      <span>ยืนยันรายการ</span>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </column>
+          </Row>
+        </ColumnGroup>
+      </DataTable>
+    </form>
+  </div>
+</template>
+
+<script>
+import { defineAsyncComponent } from 'vue'
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Row from 'primevue/row'
+import ColumnGroup from 'primevue/columngroup' // optional
+//import Papa from 'papaparse'
+
+//import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import api from '@/axios/axios-config.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
+
+const interfaceFormSubmit = {
+  gems: []
+}
+
+export default {
+  components: {
+    loading,
+    DataTable,
+    Column,
+    Row,
+    ColumnGroup
+  },
+  props: {
+    modelFormScan: {
+      type: Object,
+      default: () => ({})
+    }
+  },
+  watch: {
+    modelFormScan: {
+      handler(val) {
+        this.formScan = { ...val }
+        this.fetchScan()
+      },
+      deep: true
+    }
+  },
+  data() {
+    return {
+      isLoading: false,
+      data: [],
+      formScan: { ...this.modelFormScan },
+      formSubmit: { ...interfaceFormSubmit },
+      minQty: 0.001
+    }
+  },
+  methods: {
+    // ------------ APIs
+    async fetchScan() {
+      try {
+        this.isLoading = true
+
+        console.log('fetchScan req', this.form)
+        // new array
+        const params = this.createScanRequest(this.formScan)
+        console.log('params', params)
+
+        const res = await api.jewelry.post('ReceiptStockGem/Scan', params)
+        if (res) {
+          if (this.ValidateScan(res)) {
+            const newQty = 0
+            const newGems = {
+              ...res,
+              receiveQty: newQty.toFixed(3)
+            }
+            this.formSubmit.gems.push(newGems)
+            console.log('fetchScan res', this.formSubmit.gems)
+          }
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    },
+
+    // ------------ Events
+    onUpdateQty(item) {
+      console.log('onUpdateQty', item)
+      this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
+        if (gem.code === item.code) {
+          gem.receiveQty = item.receiveQty
+        }
+        return gem
+      })
+      console.log('onUpdateQty', this.formSubmit.gems)
+    },
+    onBlur(item) {
+      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
+      console.log('onBlur', item)
+      this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
+        if (gem.code === item.code) {
+          if (item.receiveQty && Number(item.receiveQty) > 0) {
+            gem.receiveQty = Number(item.receiveQty).toFixed(3)
+          }
+        }
+        return gem
+      })
+      console.log('onBlur', this.formSubmit.gems)
+      //this.onUpdateQty(item)
+    },
+    onDelGem(item) {
+      console.log('onDelGem', item)
+      this.formSubmit.gems = this.formSubmit.gems.filter((gem) => gem.code !== item.code)
+      console.log('onDelGem', this.formSubmit.gems)
+    },
+    // ------------ Helpers
+    createScanRequest(data) {
+      const scanRequest = {
+        scanType: 'S',
+        scans: []
+      }
+
+      if (data && data.code) {
+        // ถ้า code เป็น string เดียว
+        scanRequest.scans.push({ code: String(data.code) })
+      } else if (Array.isArray(data)) {
+        // ถ้า formScan เป็น array ของ objects ที่มี 'code'
+        scanRequest.scans = data
+          .filter((scan) => scan && scan.code)
+          .map((scan) => ({ code: String(scan.code) }))
+      }
+
+      return scanRequest
+    },
+    ValidateScan(data) {
+      let res = true
+      let errorMsg = ''
+
+      //check duplicate data in this.formSubmit.gems
+      const isDuplicate = this.formSubmit.gems.some((gem) => gem.code === data.code)
+      if (isDuplicate) {
+        res = false
+        errorMsg = 'รหัสซ้ำ กรุณาตรวจสอบ'
+      }
+
+      if (errorMsg) {
+        swAlert.warning(errorMsg, '')
+      }
+      return res
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.footer-text-container {
+  display: grid;
+  place-items: center;
+  color: white;
+}
+.table-btn-action-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

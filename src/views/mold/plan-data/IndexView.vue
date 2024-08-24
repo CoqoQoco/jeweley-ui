@@ -9,14 +9,19 @@
         :isShowRightSlot="true"
       >
         <template #rightSlot>
-          <div class="d-flex">
+          <div v-if="!getMeltingStatus(data.status)" class="d-flex">
             <div :class="data.status === 60 ? 'box-status-success' : 'box-status-show'">
               {{ data.statusName }}
             </div>
-            <!-- <div class="box-status-next" @click="goCreateResin">
-              <span><i class="bi bi-brush mr-2"></i></span>
-              <span> {{ data.nextStatusName }}</span>
-            </div> -->
+            <div v-if="data.status === 100" class="box-status-process ml-2" @click="onMelting">
+              <span><i class="bi bi-x-lg mr-2"></i></span>
+              <span>หลอมเเม่พิมพ์</span>
+            </div>
+          </div>
+          <div v-if="getMeltingStatus(data.status)" class="d-flex">
+            <div class="box-status-process">
+              {{ data.statusName }}
+            </div>
           </div>
         </template>
       </pageTitle>
@@ -48,6 +53,7 @@
           <div class="d-flex justify-content-between">
             <span>ส่วนประกอบเพชร/พลอย</span>
             <button
+              v-if="!getMeltingStatus(data.status)"
               class="btn btn-sm"
               :class="[this.data?.gems?.length ? 'btn-outline-warning' : 'btn-secondary']"
               :disabled="!this.data?.gems?.length"
@@ -64,7 +70,7 @@
             showGridlines
             v-model:editingRows="editingRows"
             :value="data.gems"
-            editMode="row"
+            :editMode="!getMeltingStatus(data.status) ? 'row' : ''"
             dataKey="id"
             @row-edit-save="onRowEditSave"
             :pt="{
@@ -76,8 +82,14 @@
               }
             }"
           >
-            <Column :rowEditor="true" style="width: 100px" bodyStyle="text-align:center"> </Column>
-            <Column style="width: 60px">
+            <Column
+              v-if="!getMeltingStatus(data.status)"
+              :rowEditor="true"
+              style="width: 100px"
+              bodyStyle="text-align:center"
+            >
+            </Column>
+            <Column v-if="!getMeltingStatus(data.status)" style="width: 60px">
               <template #body="prop">
                 <div class="btn btn-danger text-center w-100" @click="onDelGems(prop.data)">
                   <i class="bi bi-trash-fill"></i>
@@ -142,7 +154,11 @@
             <template #footer>
               <div class="d-flex justify-content-between">
                 <div>ทั้งหมด {{ this.data?.gems?.length }} รายการ</div>
-                <div class="btn btn-sm btn-warning" @click="onAddGems">
+                <div
+                  v-if="!getMeltingStatus(data.status)"
+                  class="btn btn-sm btn-warning"
+                  @click="onAddGems"
+                >
                   <span class="text-center">
                     <i class="bi bi-plus"></i>
                   </span>
@@ -246,6 +262,12 @@ export default {
         return 'พลอย'
       }
     },
+    getMeltingStatus(status) {
+      if (status === 500) {
+        return true
+      }
+      return false
+    },
 
     // --- datatable --- //
     onRowEditSave(event) {
@@ -288,6 +310,16 @@ export default {
       } else {
         swAlert.warning('กรุณากรอกข้อมูลให้ครบถ้วน')
       }
+    },
+    onMelting() {
+      swAlert.confirmSubmit(
+        'เเม่พิมพ์ที่ถูกหลอมจะไม่สามารถเเก้ไขหรือใช้งานได้อีก',
+        'หลอมเเม่พิมพ์',
+        async () => {
+          console.log('melting')
+          await this.fetchMelting()
+        }
+      )
     },
 
     // ----- APIs ----- //
@@ -356,6 +388,23 @@ export default {
         const res = await api.jewelry.get('Master/MasterGemShape')
         if (res) {
           this.masterGemShape = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMelting() {
+      try {
+        this.isLoading = true
+
+        const param = {
+          id: this.id
+        }
+        const res = await api.jewelry.post('Mold/PlanMelting', param)
+        if (res) {
+          this.fetchData()
         }
         this.isLoading = false
       } catch (error) {

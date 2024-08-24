@@ -14,7 +14,7 @@
       <div class="form-col-container">
         <div>
           <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
-          <input type="text" class="form-control" v-model="form.moldColde" />
+          <input type="text" class="form-control" v-model="form.moldCode" />
         </div>
         <div>
           <span class="title-text">วันตั้งเเม่พิมพ์</span>

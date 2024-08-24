@@ -15,7 +15,7 @@ import { defineAsyncComponent } from 'vue'
 
 //import pageTitle from '@/components/custom/PageTitle.vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-import formCreate from './components/formCreate.vue'
+import formCreate from './components/CreateView.vue'
 export default {
   components: {
     pageTitle,
