@@ -65,6 +65,17 @@
             </div>
           </div>
           <div>
+            <span class="text-title">กำหนดส่งงาน</span>
+            <Dropdown
+              v-model="search.isOverPlan"
+              :options="masterOverPlan"
+              optionLabel="description"
+              class="w-full md:w-14rem"
+            />
+          </div>
+        </div>
+        <div class="search-bar-custom-container">
+          <div>
             <span class="text-title">สถานะงานผลิต</span>
             <!-- <Dropdown
               v-model="search.status"
@@ -85,34 +96,34 @@
             </div>
             <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
           </div>
-        </div>
-        <div class="search-bar-container">
-          <div>
-            <span class="text-title">กำหนดส่งงาน</span>
-            <Dropdown
-              v-model="search.isOverPlan"
-              :options="masterOverPlan"
-              optionLabel="description"
-              class="w-full md:w-14rem"
-            />
-          </div>
-          <div></div>
-          <div></div>
 
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span><i class="bi bi-search"></i></span>
               <span class="ml-2">ค้นหา</span>
             </button>
-            <button class="btn btn-sm btn-dark" type="button" @click="onClear">
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear">
               <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ล้างค้นหา</span>
+              <span class="ml-2">ล้าง</span>
+            </button>
+            <button
+              :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
+              type="button"
+              :disabled="!isExportData"
+              @click="onExport"
+            >
+              <span><i class="bi bi-filetype-csv"></i></span>
+              <span class="ml-2">ออกเอกสาร</span>
             </button>
           </div>
         </div>
       </div>
     </form>
-    <tableMain v-model:formValue="formSearch" v-model:masterStatusValue="masterStatus"></tableMain>
+    <tableMain
+      v-model:formValue="formSearch"
+      v-model:formValueExport="formExport"
+      v-model:masterStatusValue="masterStatus"
+    ></tableMain>
   </div>
 </template>
 
@@ -151,11 +162,18 @@ export default {
         isOverPlan: { id: 0, description: 'ทั้งหมด' }
       },
       formSearch: {},
+      formExport:{},
       masterStatus: [],
       masterOverPlan: [
         { id: 0, description: 'ทั้งหมด' },
         { id: 1, description: 'เกินกำหนด' }
-      ]
+      ],
+      isExport: true
+    }
+  },
+  computed: {
+    isExportData() {
+      return this.isExport
     }
   },
   methods: {
@@ -180,6 +198,11 @@ export default {
     onSearch() {
       console.log(this.search)
       this.formSearch = { ...this.search }
+    },
+    onExport() {
+      console.log(this.search)
+      this.formExport = { ...this.search }
+
     },
     onClear() {
       this.search = {
@@ -240,6 +263,11 @@ export default {
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 2fr;
   gap: 10px;
-  margin-bottom: 10px;
+  //margin-bottom: 10px;
+}
+.search-bar-custom-container {
+  display: grid;
+  grid-template-columns: 6fr 2fr;
+  gap: 10px;
 }
 </style>

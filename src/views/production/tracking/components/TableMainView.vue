@@ -8,12 +8,13 @@
       dataKey="id"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 300px)"
+      scrollHeight="calc(100vh - 280px)"
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
       :lazy="true"
       sortMode="multiple"
+      stripedRows
       removableSort
       @page="handlePageChange"
       @sort="handlePageChangeSort"
@@ -133,6 +134,8 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 //prime table
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import Papa from 'papaparse'
+
 import api from '@/axios/axios-config.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
@@ -148,6 +151,10 @@ export default {
     modelValue: {
       type: Array,
       default: () => []
+    },
+    formValueExport: {
+      type: Object,
+      default: () => ({})
     },
     formValue: {
       type: Object,
@@ -181,7 +188,8 @@ export default {
       //test
       urlImg: null,
 
-      modelUpdateStatus: {}
+      modelUpdateStatus: {},
+      export: null
 
       //master
       //masterStatus: []
@@ -201,6 +209,14 @@ export default {
       this.take = 10
       this.skip = 0
       await this.fetchData()
+    },
+    formValueExport: {
+      handler(val) {
+        console.log('watch modelFormExport', val)
+        //this.export = { ...val }
+        this.fetchDataExport()
+      },
+      deep: true
     }
   },
   methods: {
@@ -245,6 +261,29 @@ export default {
     },
     formatDate(date) {
       return formatDate(date)
+    },
+    exportWithCustomColumnCSV(data, filename) {
+      const utf8BOM = '\uFEFF'
+      const csv = Papa.unparse(data, {
+        quotes: false, //or array of booleans
+        quoteChar: '"',
+        escapeChar: '"',
+        delimiter: ',',
+        header: true,
+        newline: '\r\n',
+        skipEmptyLines: false, //other option is 'greedy', meaning skip delimiters, quotes, and whitespace.
+        columns: null //or array of strings
+      })
+      const csvData = utf8BOM + csv
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.setAttribute('href', url)
+      link.setAttribute('download', filename)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     },
 
     // ----- Api ----- //
@@ -306,6 +345,54 @@ export default {
       } catch (error) {
         console.log(error)
         this.isLoading = false
+      }
+    },
+    async fetchDataExport() {
+      try {
+        this.isLoading = true
+
+        console.log('fetchDataExport', this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          sort: [],
+          search: {
+            start: this.formValue.start ? formatISOString(this.formValue.start) : null,
+            end: this.formValue.end ? formatISOString(this.formValue.end) : null,
+            sendStart: this.formValue.sendStart ? formatISOString(this.formValue.sendStart) : null,
+            sendEnd: this.formValue.sendEnd ? formatISOString(this.formValue.sendEnd) : null,
+            text: this.formValue.text,
+            status: this.formValue.status ? [...this.formValue.status] : null,
+            isOverPlan: this.formValue.isOverPlan?.id
+          }
+        }
+        console.log('params', params)
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanSearch', params)
+        if (res) {
+          const dataExcel = res.data.map((item) => {
+            return {
+              //WO: `${item.wo}-${item.woNumber}`,
+              WO: item.wo,
+              'WO No.': item.woNumber,
+              เเม่พิมพ์: item.mold,
+              สถานะใบงาน: item.statusName,
+              'สถานะใบงาน (วันที่)': formatDate(item.lastUpdateStatus),
+              วันส่งงานลูกค้า: formatDate(item.requestDate),
+              รหัสสินค้า: item.productNumber,
+              จำนวนสินค้า: item.productQty,
+              รหัสลูกค้า: item.customerNumber,
+              วันสร้างใบสินค้า: formatDate(item.createDate)
+            }
+          })
+          this.exportWithCustomColumnCSV(
+            dataExcel,
+            `เอกสารใบจ่ายข-รับคืนงาน[${this.formatDateTime(new Date())}].csv`
+          )
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
       }
     },
 
