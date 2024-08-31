@@ -50,35 +50,23 @@
             }}
           </template>
         </Column>
-        <column field="receiveQty" header="จำนวนรับเข้า" style="width: 100px">
+        <column field="issueQty" header="จำนวนจ่ายตัด" style="width: 100px">
           <template #body="slotProps">
             <input
               style="width: 100px; background-color: #dad4b5"
-              :style="slotProps.data.receiveQty > 0 ? 'background-color: #b5dad4' : ''"
+              :style="slotProps.data.issueQty > 0 ? 'background-color: #b5dad4' : ''"
               class="form-control"
+              :max="slotProps.data.quantity"
               type="number"
               step="any"
               required
-              v-model="slotProps.data.receiveQty"
+              v-model="slotProps.data.issueQty"
               @blur="onBlur(slotProps.data)"
             />
             <!-- @change="onChangeQty(slotProps.data)" -->
           </template>
         </column>
-        <column field="supplierCost" header="ราคาทุน" style="width: 100px">
-          <template #body="slotProps">
-            <input
-              style="width: 100px; background-color: #dad4b5"
-              :style="slotProps.data.supplierCost > 0 ? 'background-color: #b5dad4' : ''"
-              class="form-control"
-              type="number"
-              step="any"
-              required
-              v-model="slotProps.data.supplierCost"
-            />
-            <!-- @change="onChangeQty(slotProps.data)" -->
-          </template>
-        </column>
+
         <column field="remark" header="หมายเหตุ" style="width: 100px">
           <template #body="slotProps">
             <input
@@ -213,7 +201,7 @@ export default {
             const newQty = 0
             const newGems = {
               ...res,
-              receiveQty: newQty.toFixed(3)
+              issueQty: newQty.toFixed(3)
             }
             this.formSubmit.gems.push(newGems)
             console.log('fetchScan res', this.formSubmit.gems)
@@ -231,7 +219,7 @@ export default {
       console.log('onUpdateQty', item)
       this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
         if (gem.code === item.code) {
-          gem.receiveQty = item.receiveQty
+          gem.issueQty = item.issueQty
         }
         return gem
       })
@@ -242,8 +230,8 @@ export default {
       console.log('onBlur', item)
       this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
         if (gem.code === item.code) {
-          if (item.receiveQty && Number(item.receiveQty) > 0) {
-            gem.receiveQty = Number(item.receiveQty).toFixed(3)
+          if (item.issueQty && Number(item.issueQty) > 0) {
+            gem.issueQty = Number(item.issueQty).toFixed(3)
           }
         }
         return gem
@@ -306,11 +294,11 @@ export default {
       }
 
       //check mininum qty > 0
-      // const isQty = data.quantity <= 0
-      // if (isQty) {
-      //   res = false
-      //   errorMsg = `${data.code} --> จำนวนคงคลังเท่ากับ 0 `
-      // }
+      const isQty = data.quantity <= 0
+      if (isQty) {
+        res = false
+        errorMsg = `${data.code} --> จำนวนคงคลังเท่ากับ 0 `
+      }
 
       if (errorMsg) {
         swAlert.warning(errorMsg, '')
@@ -327,12 +315,12 @@ export default {
         errorMsg[0] = 'ไม่พบรายการเพชรที่ต้องการรับเข้าคลัง'
       }
 
-      //check all item.receiveQty > 0 in this.formSubmit.gems
-      const invalidGems = this.formSubmit.gems.filter((gem) => gem.receiveQty <= 0)
+      //check all item.issueQty > 0 in this.formSubmit.gems
+      const invalidGems = this.formSubmit.gems.filter((gem) => gem.issueQty <= 0)
       if (invalidGems.length > 0) {
         res = false
         invalidGems.forEach((gem) => {
-          errorMsg.push(`${gem.code} -- > จำนวนรับต้องมากกว่า 0 <br/>`)
+          errorMsg.push(`${gem.code} -- > จำนวนจ่ายตัดต้องมากกว่า 0 <br/>`)
         })
       }
 

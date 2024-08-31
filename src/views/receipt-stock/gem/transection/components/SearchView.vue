@@ -2,10 +2,10 @@
   <div class="filter-container">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
-      title="วัตถุดิบ เพชร/พลอย"
-      description=""
+      title="การเคลื่อนไหว เพชรเเละพลอย"
+      description="ตรวจรายการเคลื่อนไหว รับ/จ่าย ยืม/คืน เเละใบเบิก เพชรเเละพลอย"
       :isShowBtnClose="false"
-      :isShowRightSlot="true"
+      :isShowRightSlot="false"
     >
       <template #rightSlot>
         <div>
@@ -17,6 +17,56 @@
       </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
+      <div class="form-col-container">
+        <!-- requestDate -->
+        <div>
+          <span class="title-text">วันทำรายการ</span>
+          <div class="flex-group">
+            <Calendar
+              class="w-100"
+              v-model="form.requestDateStart"
+              :max-date="form.requestDateEnd"
+              dateFormat="dd/mm/yy"
+              showIcon
+              placeholder="เริ่มต้น"
+            />
+            <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+            <Calendar
+              class="w-100"
+              v-model="form.requestDateEnd"
+              :min-date="form.requestDateStart"
+              dateFormat="dd/mm/yy"
+              showIcon
+              placeholder="สิ้นสุด"
+            />
+          </div>
+        </div>
+
+        <div class="form-col-container">
+          <!-- type -->
+          <div>
+            <div>
+              <span class="title-text">เลือกประเภทการรับ</span>
+              <span class="txt-required"> *</span>
+            </div>
+            <MultiSelect
+              v-model="form.type"
+              :options="masterType"
+              filter
+              optionLabel="description"
+              optionValue="id"
+              class="w-full md:w-14rem"
+            />
+            <!-- :class="val.isType === true ? `p-invalid` : ``" -->
+          </div>
+
+          <!-- job/po -->
+          <div>
+            <span class="title-text">PO/JOB No.</span>
+            <input type="text" class="form-control" v-model="form.jobOrPo" />
+          </div>
+        </div>
+      </div>
       <div class="form-col-container">
         <!-- code -->
         <div>
@@ -38,20 +88,6 @@
           />
         </div>
 
-        <!-- size -->
-        <div>
-          <span class="title-text">ขนาด</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
-            v-model="form.size"
-            :options="sizeOptions"
-            filter
-            optionLabel="value"
-            optionValue="value"
-            class="w-full md:w-14rem"
-          />
-        </div>
-
         <!-- shape -->
         <div>
           <span class="title-text">รูปร่าง</span>
@@ -59,6 +95,20 @@
           <MultiSelect
             v-model="form.shape"
             :options="shapeOptions"
+            filter
+            optionLabel="value"
+            optionValue="value"
+            class="w-full md:w-14rem"
+          />
+        </div>
+
+        <!-- size -->
+        <div>
+          <span class="title-text">ขนาด</span>
+          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
+          <MultiSelect
+            v-model="form.size"
+            :options="sizeOptions"
             filter
             optionLabel="value"
             optionValue="value"
@@ -80,6 +130,13 @@
             class="w-full md:w-14rem"
           />
         </div>
+
+        <!-- supplier Name -->
+        <!-- <div>
+          <span class="title-text">ชื่อร้าน</span>
+          <input type="text" class="form-control" v-model="form.code" />
+        </div> -->
+
         <div></div>
         <div></div>
         <div></div>
@@ -105,14 +162,6 @@
         </button>
       </div>
     </form>
-
-    <createView
-      :isShow="isShow.isCreate"
-      :modelGroupName="groupOptions"
-      :masterGemShape="masterGemShape"
-      :masterGrade="masterGrade"
-      @closeModal="onCloseModal"
-    ></createView>
   </div>
 </template>
 
@@ -121,12 +170,11 @@ import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
-//import Calendar from 'primevue/calendar'
+import Calendar from 'primevue/calendar'
+//import Dropdown from 'primevue/dropdown'
 import MultiSelect from 'primevue/multiselect'
 
 import api from '@/axios/axios-config.js'
-
-import createView from './CreateView.vue'
 
 const interfaceIsShow = {
   isCreate: false
@@ -136,8 +184,8 @@ export default {
     pageTitle,
     MultiSelect,
     loading,
-    createView
-    //Calendar
+    Calendar
+    //Dropdown
   },
   props: {
     modelForm: {
@@ -147,6 +195,10 @@ export default {
     isExport: {
       type: Boolean,
       default: false
+    },
+    modelMasterType: {
+      type: Array,
+      default: () => []
     }
   },
   watch: {
@@ -160,6 +212,9 @@ export default {
   computed: {
     isExportData() {
       return this.isExport
+    },
+    masterType() {
+      return this.modelMasterType
     }
   },
   data() {
@@ -194,119 +249,86 @@ export default {
     },
 
     // ---------------- APIs
-    async fetchGroupOptions() {
+    async fetchMasterData(type) {
+      this.isLoading = true
       try {
-        this.isLoading = true
+        let params = null
+        let url = null
+        let res = null
 
-        const params = {
-          type: 'GROUPGEM',
-          Value: null
+        switch (type) {
+          case 'GROUPGEM':
+            params = {
+              type: 'GROUPGEM',
+              Value: null
+            }
+            url = 'StockGem/GroupGemData'
+            break
+          case 'SIZE':
+            params = {
+              type: 'SIZE',
+              Value: null
+            }
+            url = 'StockGem/GroupGemData'
+            break
+          case 'GRADE':
+            params = {
+              type: 'GRADE',
+              Value: null
+            }
+            url = 'StockGem/GroupGemData'
+            break
+          case 'SHAPE':
+            params = {
+              type: 'SHAPE',
+              Value: null
+            }
+            url = 'StockGem/GroupGemData'
+            break
+          case 'MASTERGEMSHAPE':
+            url = 'Master/MasterGemShape'
+            break
         }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
+
+        if (type === 'MASTERGEMSHAPE') {
+          res = await api.jewelry.get(url)
+        } else {
+          res = await api.jewelry.post(url, params)
+        }
+
         if (res) {
-          this.groupOptions = [...res]
+          console.log('res', res)
+          switch (type) {
+            case 'GROUPGEM':
+              this.groupOptions = [...res]
+              break
+            case 'SIZE':
+              this.sizeOptions = [...res]
+              break
+            case 'GRADE':
+              this.gradeOptions = [...res]
+              break
+            case 'SHAPE':
+              this.shapeOptions = [...res]
+              break
+            case 'MASTERGEMSHAPE':
+              this.masterGemShape = [...res]
+              break
+          }
         }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-    async fetchShapeOptions() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SHAPE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.shapeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-
-    async fetchSizeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SIZE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.sizeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-
-    async fetchGradeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'GRADE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.gradeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-    async fetchMasterGemShape() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGemShape')
-        if (res) {
-          this.masterGemShape = [...res]
-        }
-        this.isLoading = false
       } catch (error) {
         console.log(error)
-        this.isLoading = false
       }
-    },
-    async fetchMasterGoldGrade() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGrade = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
+      this.isLoading = false
     }
   },
   created() {
     this.$nextTick(() => {
-      this.fetchGroupOptions()
-      this.fetchSizeOption()
-      this.fetchGradeOption()
-      this.fetchShapeOptions()
-      this.fetchMasterGemShape()
-      this.fetchMasterGoldGrade()
+      this.fetchMasterData('GROUPGEM')
+      this.fetchMasterData('SIZE')
+      this.fetchMasterData('GRADE')
+      this.fetchMasterData('SHAPE')
+      this.fetchMasterData('MASTERGEMSHAPE')
     })
   }
 }

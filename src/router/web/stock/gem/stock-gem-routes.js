@@ -2,7 +2,9 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 
 const stockGem = () => import('@/views/stock/gem/IndexView.vue')
+const stockGemTransection = () => import('@/views/receipt-stock/gem/transection/IndexView.vue')
 const stockGemInbound = () => import('@/views/receipt-stock/gem/inbound/IndexView.vue')
+const stockGemOutbound = () => import('@/views/receipt-stock/gem/outbound/IndexView.vue')
 //const stockGemCreate = () => import('@/views/receipt-stock/gem/create/IndexView.vue')
 
 const routes = [
@@ -39,7 +41,7 @@ const routes = [
       {
         path: '/stock-gem-transection',
         name: 'stock-gem-transection',
-        component: Dashboard,
+        component: stockGemTransection,
         menuId: 'STOCK-GEM-TRANSECTION',
         meta: {
           Displayname: {
@@ -67,7 +69,7 @@ const routes = [
       {
         path: '/stock-gem-outbound',
         name: 'stock-gem-outbound',
-        component: Dashboard,
+        component: stockGemOutbound,
         menuId: 'STOCK-GEM-OUTBOUND',
         meta: {
           Displayname: {

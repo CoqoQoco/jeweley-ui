@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container">
     <pageTitle
-      title="ใบรับเพชรเเละพลอย"
-      description="รับเพชรเเละพลอยเข้าคลัง ระบุรหัส จำนวน และรายละเอียดอื่นๆ"
+      title="ใบจ่ายตัดเพชรเเละพลอย"
+      description="จ่ายตัดเพชรเเละพลอยออกคลัง ระบุรหัส จำนวน และรายละเอียดอื่นๆ"
       :isShowBtnClose="false"
       :isShowRightSlot="false"
     >

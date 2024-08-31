@@ -1,64 +1,65 @@
-
-@import "./variable.scss";
+@import './variable.scss';
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
 @font-face {
-    font-family: 'supermarket';
-    src: url('@/assets/fonts/supermarket.ttf') format('truetype');
-    /* ระบุพาธไปยังไฟล์ฟอนต์ที่เพิ่ม */
-    font-weight: normal;
-    font-style: normal;
+  font-family: 'supermarket';
+  src: url('@/assets/fonts/supermarket.ttf') format('truetype');
+  /* ระบุพาธไปยังไฟล์ฟอนต์ที่เพิ่ม */
+  font-weight: normal;
+  font-style: normal;
 }
 
 #app {
-    font-family: ChakraPetch-Regular, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: $base-sub-color;
-    //color: $base-font-color;
-    font-size: $base-font-size;
-    
+  font-family: ChakraPetch-Regular, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: $base-sub-color;
+  //color: $base-font-color;
+  font-size: $base-font-size;
 }
 .app-container {
-    padding: 10px 10px 10px 10px;
+  padding: 10px 10px 10px 10px;
 }
+// .center-container {
+//   display: grid;
+//   place-items: center;
+// }
 
 button {
-    font-family: inherit;
-    font-size: inherit;
-    //height: 32px !important;
-    /* ใช้ฟอนต์จาก #app */
-    /* สไตล์อื่น ๆ ที่คุณต้องการใช้งานในปุ่ม */
+  font-family: inherit;
+  font-size: inherit;
+  //height: 32px !important;
+  /* ใช้ฟอนต์จาก #app */
+  /* สไตล์อื่น ๆ ที่คุณต้องการใช้งานในปุ่ม */
 }
 button.btn-main {
-    background-color: $base-font-color;
-    color: white;
+  background-color: $base-font-color;
+  color: white;
 }
 button.btn-green {
-    background-color: $base-green;
-    color: white;
+  background-color: $base-green;
+  color: white;
 }
 // button.btn-view {
 //     background-color: $base-green;
 //     color: white;
 // }
 button.btn-main:hover {
-    color: white;
+  color: white;
 }
-input{
-    margin-top: 5px !important;
+input {
+  margin-top: 5px !important;
 }
-input[type="text"],
-input[type="number"]{
-    font-size: $base-font-size !important;
+input[type='text'],
+input[type='number'] {
+  font-size: $base-font-size !important;
 }
-textarea{
-    font-size: $base-font-size !important;
-}
-
-.text-main{
-    color: $base-font-color;
+textarea {
+  font-size: $base-font-size !important;
 }
 
+.text-main {
+  color: $base-font-color;
+}
