@@ -31,7 +31,7 @@
             </div>
             <div>
               <div>
-                <span class="title-text">น้ำหนักรับ</span>
+                <span class="title-text">น้ำหนักก่อนติดก้าน</span>
                 <span class="txt-required"> *</span>
               </div>
               <input
@@ -44,7 +44,7 @@
             </div>
             <div>
               <div>
-                <span class="title-text">น้ำหนักส่ง</span>
+                <span class="title-text">น้ำหนักหลังติดก่อน</span>
                 <span class="txt-required"> *</span>
               </div>
               <input

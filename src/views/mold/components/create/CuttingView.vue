@@ -37,7 +37,7 @@
             </div>
             <div>
               <span>
-                <span class="title-text">แต่งพิมพ์โดย</span>
+                <span class="title-text">ผ่าพิมพ์โดย</span>
                 <span class="txt-required"> *</span>
               </span>
               <input class="form-control" v-model="form.workBy" type="text" required />

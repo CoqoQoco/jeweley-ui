@@ -101,6 +101,7 @@
       <Column header="รหัส" sortable field="code" style="width: 150px"></Column>
       <Column header="ประเภท" sortable field="category" style="width: 150px"></Column>
       <Column header="ช่างขึ้นพิมพ์" sortable field="moldBy" style="width: 150px"></Column>
+      <Column header="แปลงแบบ" sortable field="reModelMold" style="width: 150px"></Column>
       <Column header="รายละเอียด" field="description"></Column>
     </DataTable>
 
