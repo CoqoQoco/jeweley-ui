@@ -27,11 +27,15 @@
             </div>
           </template>
         </Column>
-        <Column field="code" header="รหัส" style="min-width: 100px"> </Column>
-        <Column field="groupName" header="หมวดหมู่" style="min-width: 100px"> </Column>
-        <Column field="size" header="ขนาด" style="min-width: 100px"> </Column>
+
+        <Column field="name" header="รหัส" style="min-width: 100px"> </Column>
+
+        <!-- <Column field="code" header="รหัส" style="min-width: 100px"> </Column> -->
+        <!-- <Column field="groupName" header="หมวดหมู่" style="min-width: 100px"> </Column> -->
+        <!-- <Column field="size" header="ขนาด" style="min-width: 100px"> </Column>
         <Column field="shape" header="รูปร่าง" style="min-width: 100px"> </Column>
-        <Column field="grade" header="เกรด" style="min-width: 100px"> </Column>
+        <Column field="grade" header="เกรด" style="min-width: 100px"> </Column> -->
+
         <Column field="quantity" header="จำนวนคงคลัง" style="min-width: 100px">
           <template #body="slotProps">
             {{
@@ -50,6 +54,24 @@
             }}
           </template>
         </Column>
+        <Column field="quantityWeight" header="น้ำหนักคงคลัง" style="min-width: 100px">
+          <template #body="slotProps">
+            {{
+              slotProps.data.quantityWeight
+                ? Number(slotProps.data.quantityWeight).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </template>
+        </Column>
+        <Column field="quantityWeightOnProcess" header="น้ำหนักยืมคลัง" style="min-width: 100px">
+          <template #body="slotProps">
+            {{
+              slotProps.data.quantityWeightOnProcess
+                ? Number(slotProps.data.quantityWeightOnProcess).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </template>
+        </Column>
         <column field="receiveQty" header="จำนวนรับเข้า" style="width: 100px">
           <template #body="slotProps">
             <input
@@ -58,11 +80,27 @@
               class="form-control"
               type="number"
               step="any"
+               min="0"
               required
               v-model="slotProps.data.receiveQty"
-              @blur="onBlur(slotProps.data)"
+              @blur="onBlurReceiveQty(slotProps.data)"
             />
             <!-- @change="onChangeQty(slotProps.data)" -->
+          </template>
+        </column>
+        <column field="receiveQtyWeight" header="น้ำหนักรับเข้า" style="width: 100px">
+          <template #body="slotProps">
+            <input
+              style="width: 100px; background-color: #dad4b5"
+              :style="slotProps.data.receiveQtyWeight > 0 ? 'background-color: #b5dad4' : ''"
+              class="form-control"
+              type="number"
+              step="any"
+              min="0"
+              required
+              v-model="slotProps.data.receiveQtyWeight"
+              @blur="onBlurReceiveQtyWeight(slotProps.data)"
+            />
           </template>
         </column>
         <column field="supplierCost" header="ราคาทุน" style="width: 100px">
@@ -73,6 +111,7 @@
               class="form-control"
               type="number"
               step="any"
+               min="0"
               required
               v-model="slotProps.data.supplierCost"
             />
@@ -94,7 +133,7 @@
 
         <ColumnGroup type="footer">
           <Row>
-            <column footerStyle="background-color: #921313" :colspan="11">
+            <column footerStyle="background-color: #921313" :colspan="10">
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <!-- text -->
@@ -213,7 +252,9 @@ export default {
             const newQty = 0
             const newGems = {
               ...res,
-              receiveQty: newQty.toFixed(3)
+              receiveQty: newQty.toFixed(3),
+              receiveQtyWeight: newQty.toFixed(3),
+              supplierCost: newQty,
             }
             this.formSubmit.gems.push(newGems)
             console.log('fetchScan res', this.formSubmit.gems)
@@ -237,18 +278,32 @@ export default {
       })
       console.log('onUpdateQty', this.formSubmit.gems)
     },
-    onBlur(item) {
+    onBlurReceiveQty(item) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBlur', item)
+      console.log('onBlurReceiveQty', item)
       this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
         if (gem.code === item.code) {
-          if (item.receiveQty && Number(item.receiveQty) > 0) {
+          if (item.receiveQty && Number(item.receiveQty) >= 0) {
             gem.receiveQty = Number(item.receiveQty).toFixed(3)
           }
         }
         return gem
       })
-      console.log('onBlur', this.formSubmit.gems)
+      console.log('onBlurReceiveQty', this.formSubmit.gems)
+      //this.onUpdateQty(item)
+    },
+    onBlurReceiveQtyWeight(item) {
+      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
+      console.log('onBlurReceiveQtyWeight', item)
+      this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
+        if (gem.code === item.code) {
+          if (item.receiveQtyWeight && Number(item.receiveQtyWeight) >= 0) {
+            gem.receiveQtyWeight = Number(item.receiveQtyWeight).toFixed(3)
+          }
+        }
+        return gem
+      })
+      console.log('onBlurReceiveQtyWeight', this.formSubmit.gems)
       //this.onUpdateQty(item)
     },
     onDelGem(item) {
@@ -328,11 +383,11 @@ export default {
       }
 
       //check all item.receiveQty > 0 in this.formSubmit.gems
-      const invalidGems = this.formSubmit.gems.filter((gem) => gem.receiveQty <= 0)
+      const invalidGems = this.formSubmit.gems.filter((gem) => gem.receiveQty <= 0 && gem.receiveQtyWeight <= 0)
       if (invalidGems.length > 0) {
         res = false
         invalidGems.forEach((gem) => {
-          errorMsg.push(`${gem.code} -- > จำนวนรับต้องมากกว่า 0 <br/>`)
+          errorMsg.push(`${gem.code} -- > จำนวน/น้ำหนัก รับต้องมากกว่า 0 <br/>`)
         })
       }
 

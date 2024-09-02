@@ -27,11 +27,13 @@
             </div>
           </template>
         </Column>
-        <Column field="code" header="รหัส" style="min-width: 100px"> </Column>
+        <Column field="name" header="รหัส" style="min-width: 100px"> </Column>
+        <!-- <Column field="code" header="รหัส" style="min-width: 100px"> </Column>
         <Column field="groupName" header="หมวดหมู่" style="min-width: 100px"> </Column>
         <Column field="size" header="ขนาด" style="min-width: 100px"> </Column>
         <Column field="shape" header="รูปร่าง" style="min-width: 100px"> </Column>
-        <Column field="grade" header="เกรด" style="min-width: 100px"> </Column>
+        <Column field="grade" header="เกรด" style="min-width: 100px"> </Column> -->
+
         <Column field="quantity" header="จำนวนคงคลัง" style="min-width: 100px">
           <template #body="slotProps">
             {{
@@ -50,6 +52,25 @@
             }}
           </template>
         </Column>
+        <Column field="quantityWeight" header="น้ำหนักคงคลัง" style="min-width: 100px">
+          <template #body="slotProps">
+            {{
+              slotProps.data.quantityWeight
+                ? Number(slotProps.data.quantityWeight).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </template>
+        </Column>
+        <Column field="quantityWeightOnProcess" header="น้ำหนักยืมคลัง" style="min-width: 100px">
+          <template #body="slotProps">
+            {{
+              slotProps.data.quantityWeightOnProcess
+                ? Number(slotProps.data.quantityWeightOnProcess).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </template>
+        </Column>
+
         <column field="issueQty" header="จำนวนจ่ายตัด" style="width: 100px">
           <template #body="slotProps">
             <input
@@ -61,9 +82,24 @@
               step="any"
               required
               v-model="slotProps.data.issueQty"
-              @blur="onBlur(slotProps.data)"
+              @blur="onBlurIssueQty(slotProps.data)"
             />
             <!-- @change="onChangeQty(slotProps.data)" -->
+          </template>
+        </column>
+        <column field="issueQtyWeight" header="น้ำหนักจ่ายตัด" style="width: 100px">
+          <template #body="slotProps">
+            <input
+              style="width: 100px; background-color: #dad4b5"
+              :style="slotProps.data.issueQtyWeight > 0 ? 'background-color: #b5dad4' : ''"
+              class="form-control"
+              :max="slotProps.data.quantityWeight"
+              type="number"
+              step="any"
+              required
+              v-model="slotProps.data.issueQtyWeight"
+              @blur="onBlurIssueQtyWeight(slotProps.data)"
+            />
           </template>
         </column>
 
@@ -82,7 +118,7 @@
 
         <ColumnGroup type="footer">
           <Row>
-            <column footerStyle="background-color: #921313" :colspan="11">
+            <column footerStyle="background-color: #921313" :colspan="9">
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <!-- text -->
@@ -201,7 +237,8 @@ export default {
             const newQty = 0
             const newGems = {
               ...res,
-              issueQty: newQty.toFixed(3)
+              issueQty: newQty.toFixed(3),
+              issueQtyWeight: newQty.toFixed(3)
             }
             this.formSubmit.gems.push(newGems)
             console.log('fetchScan res', this.formSubmit.gems)
@@ -225,12 +262,12 @@ export default {
       })
       console.log('onUpdateQty', this.formSubmit.gems)
     },
-    onBlur(item) {
+    onBlurIssueQty(item) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
       console.log('onBlur', item)
       this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
         if (gem.code === item.code) {
-          if (item.issueQty && Number(item.issueQty) > 0) {
+          if (item.issueQty && Number(item.issueQty) >= 0) {
             gem.issueQty = Number(item.issueQty).toFixed(3)
           }
         }
@@ -294,10 +331,10 @@ export default {
       }
 
       //check mininum qty > 0
-      const isQty = data.quantity <= 0
+      const isQty = data.quantity <= 0 && data.quantityWeight <= 0
       if (isQty) {
         res = false
-        errorMsg = `${data.code} --> จำนวนคงคลังเท่ากับ 0 `
+        errorMsg = `${data.code} --> จำนวน/น้ำหนัก คงคลังเท่ากับ 0 `
       }
 
       if (errorMsg) {
@@ -316,11 +353,13 @@ export default {
       }
 
       //check all item.issueQty > 0 in this.formSubmit.gems
-      const invalidGems = this.formSubmit.gems.filter((gem) => gem.issueQty <= 0)
+      const invalidGems = this.formSubmit.gems.filter(
+        (gem) => gem.issueQty <= 0 && gem.issueQtyWeight <= 0
+      )
       if (invalidGems.length > 0) {
         res = false
         invalidGems.forEach((gem) => {
-          errorMsg.push(`${gem.code} -- > จำนวนจ่ายตัดต้องมากกว่า 0 <br/>`)
+          errorMsg.push(`${gem.code} -- > จำนวน/น้ำหนัก จ่ายตัดต้องมากกว่า 0 <br/>`)
         })
       }
 

@@ -3,6 +3,7 @@ const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
 const PlanGoldOrder = () => import('@/views/production/plan-gold/IndexView.vue')
 const PlanGoldTracking = () => import('@/views/production/tracking-plan-gold/IndexView.vue')
 const PlanOrderTracking = () => import('@/views/production/tracking/IndexView.vue')
+const PlanOrderTrackingStatus = () => import('@/views/production/tracking-status/IndexView.vue')
 const PlanOrderTrackingWorker = () => import('@/views/production/tracking-worker/IndexView.vue')
 const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
 const ReportProduction = () => import('@/views/report-production/IndexView.vue')
@@ -55,7 +56,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Plan Order Tracking',
-            th: 'ติดตามงานผลิต (ปรับปรุง)'
+            th: 'ติดตามงานผลิต'
           },
           minorShow: true
         }
@@ -67,7 +68,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Plan Order Tracking',
-            th: 'ติดตามงานผลิต'
+            th: 'ติดตามใบจ่าย-รับคืนงาน'
           },
           minorShow: false
         }
@@ -85,13 +86,25 @@ const routes = [
         }
       },
       {
-        path: '/plan-order-worker-tracking',
-        name: 'plan-order-worker-tracking',
+        path: '/plan-order-status-tracking',
+        name: 'plan-order-status-tracking',
+        component: PlanOrderTrackingStatus,
+        meta: {
+          Displayname: {
+            en: 'Plan Order Status Tracking',
+            th: 'ตรวจสอบสถานะงาน'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/plan-order-worker-status-tracking',
+        name: 'plan-order-worker-status-tracking',
         component: PlanOrderTrackingWorker,
         meta: {
           Displayname: {
-            en: 'Plan Order Worker Tracking',
-            th: 'ติดตามงานผลิต (ช่าง)'
+            en: 'Plan Order Worker Status Tracking',
+            th: 'ตรวจสอบสถานะช่าง'
           },
           minorShow: true
         }

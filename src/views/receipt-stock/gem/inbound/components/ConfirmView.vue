@@ -35,6 +35,8 @@
                 :class="val.isRequestDate === true ? `p-invalid` : ``"
                 v-model="form.requestDate"
                 dateFormat="dd/mm/yy"
+                showTime
+                hourFormat="24"
                 showIcon
                 showButtonBar
               />
@@ -62,7 +64,7 @@
           <div class="form-col-container mt-1">
             <div>
               <div>
-                <span class="title-text">PO No. / Job No.</span>
+                <span class="title-text">Invoice/Job No.</span>
                 <!-- <span class="txt-required"> *</span> -->
               </div>
               <input
@@ -244,6 +246,7 @@ export default {
             return {
               code: gem.code,
               receiveQty: gem.receiveQty,
+              receiveQtyWeight: gem.receiveQtyWeight,
               supplierCost: gem.supplierCost,
               remark: gem.remark
             }
@@ -253,12 +256,10 @@ export default {
 
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/InboundGem', params)
         if (res) {
-          swAlert.success('', `เลขที่ใบรับเพชรเเละพลอย: ${res}`, 
-          () => {
+          swAlert.success('', `เลขที่ใบรับเพชรเเละพลอย: ${res}`, () => {
             this.onClear()
             this.$emit('closeModal', 'confirm')
           })
-         
         }
       } catch (error) {
         console.log('error', error)

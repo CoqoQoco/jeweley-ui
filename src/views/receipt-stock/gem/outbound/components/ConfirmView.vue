@@ -35,6 +35,8 @@
                 :class="val.isRequestDate === true ? `p-invalid` : ``"
                 v-model="form.requestDate"
                 dateFormat="dd/mm/yy"
+                showTime
+                hourFormat="24"
                 showIcon
                 showButtonBar
               />
@@ -139,9 +141,7 @@ export default {
       isLoading: false,
       form: null,
       val: { ...interfaceIsVal },
-      masterType: [
-        { id: 4, description: 'จ่ายตัด' },
-      ]
+      masterType: [{ id: 4, description: 'จ่ายตัด' }]
     }
   },
   watch: {
@@ -197,6 +197,7 @@ export default {
     async submit() {
       this.isLoading = true
       try {
+        console.log('requestDate', this.form.requestDate)
         const params = {
           type: this.form.type,
           remark: this.form.remark,
@@ -206,6 +207,7 @@ export default {
             return {
               code: gem.code,
               issueQty: gem.issueQty,
+              issueQtyWeight: gem.issueQtyWeight,
               remark: gem.remark
             }
           })
@@ -214,8 +216,7 @@ export default {
 
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/OutboundGem', params)
         if (res) {
-          swAlert.success('', `เลขที่ใบจ่ายตัดเพชรเเละพลอย: ${res}`, 
-          () => {
+          swAlert.success('', `เลขที่ใบจ่ายตัดเพชรเเละพลอย: ${res}`, () => {
             this.onClear()
             this.$emit('closeModal', 'confirm')
           })

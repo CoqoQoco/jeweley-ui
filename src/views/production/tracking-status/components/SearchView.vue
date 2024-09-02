@@ -2,25 +2,17 @@
   <div class="filter-container">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
-      title="การเคลื่อนไหว เพชรเเละพลอย"
-      description="ตรวจรายการเคลื่อนไหว รับ/จ่าย ยืม/คืน เเละใบเบิก เพชรเเละพลอย"
+      title="ตรวจสอบสถานะงานผลิต"
+      description="ตรวจสอบ ติดตาม การดำเนินงาน รับ-จ่ายงาน เเต่ละเเผนก"
       :isShowBtnClose="false"
       :isShowRightSlot="false"
     >
-      <template #rightSlot>
-        <div>
-          <button class="btn btn-sm btn-main" @click="onShowCreate">
-            <i class="bi bi-pencil"></i>
-            <span class="ml-2">สร้างข้อมูลเพชรเเละพลอย</span>
-          </button>
-        </div>
-      </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
         <!-- requestDate -->
         <div>
-          <span class="title-text">วันทำรายการ</span>
+          <span class="title-text">วันที่</span>
           <div class="flex-group">
             <Calendar
               class="w-100"
@@ -42,105 +34,52 @@
           </div>
         </div>
 
-        <div class="form-col-container">
-          <!-- type -->
+        <!-- status -->
+        <div>
+          <span class="text-title">ประเภทงาน</span>
           <div>
-            <div>
-              <span class="title-text">เลือกประเภทการรับ</span>
-              <span class="txt-required"> *</span>
-            </div>
             <MultiSelect
-              v-model="form.type"
-              :options="masterType"
-              filter
-              optionLabel="description"
+              v-model="form.status"
+              :options="masterStatus"
+              optionLabel="nameTh"
               optionValue="id"
+              filter
               class="w-full md:w-14rem"
             />
-            <!-- :class="val.isType === true ? `p-invalid` : ``" -->
           </div>
-
-          <!-- job/po -->
-          <div>
-            <span class="title-text">Invoice/Job No.</span>
-            <input type="text" class="form-control" v-model="form.jobOrPo" />
-          </div>
+          <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
         </div>
       </div>
+
       <div class="form-col-container">
-        <!-- code -->
+        <!-- gold -->
         <div>
-          <span class="title-text">รหัส</span>
-          <input type="text" class="form-control" v-model="form.code" />
-        </div>
-
-        <!-- groupName -->
-        <div>
-          <span class="title-text">หมวดหมู่</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
+          <span class="title-text">ประเภททอง</span>
           <MultiSelect
-            v-model="form.groupName"
-            :options="groupOptions"
+            v-model="form.gold"
+            :options="goldMaster"
             filter
-            optionLabel="value"
-            optionValue="value"
+            optionLabel="description"
+            optionValue="code"
             class="w-full md:w-14rem"
           />
         </div>
 
-        <!-- shape -->
+        <!-- wo -->
         <div>
-          <span class="title-text">รูปร่าง</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
-            v-model="form.shape"
-            :options="shapeOptions"
-            filter
-            optionLabel="value"
-            optionValue="value"
-            class="w-full md:w-14rem"
-          />
+          <span class="title-text">เลขที่ใบงาน</span>
+          <input :class="['form-control']" type="text" v-model.trim="form.wo" />
         </div>
 
-        <!-- size -->
+        <!-- product no  -->
         <div>
-          <span class="title-text">ขนาด</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
-            v-model="form.size"
-            :options="sizeOptions"
-            filter
-            optionLabel="value"
-            optionValue="value"
-            class="w-full md:w-14rem"
-          />
-        </div>
-      </div>
-      <div class="form-col-container">
-        <!-- grade -->
-        <div>
-          <span class="title-text">เกรด</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
-            v-model="form.grade"
-            :options="gradeOptions"
-            filter
-            optionLabel="value"
-            optionValue="value"
-            class="w-full md:w-14rem"
-          />
+          <span class="title-text">รหัสสินค้า</span>
+          <input :class="['form-control']" type="text" v-model.trim="form.productNo" />
         </div>
 
-        <!-- supplier Name -->
-        <!-- <div>
-          <span class="title-text">ชื่อร้าน</span>
-          <input type="text" class="form-control" v-model="form.code" />
-        </div> -->
-
-        <div></div>
-        <div></div>
         <div></div>
       </div>
+
       <div class="btn-submit-container">
         <button class="btn btn-sm btn-main mr-2" type="submit">
           <span><i class="bi bi-search mr-2"></i></span>
@@ -182,8 +121,8 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
     loading,
+    MultiSelect,
     Calendar
     //Dropdown
   },
@@ -222,12 +161,9 @@ export default {
       isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow },
-      groupOptions: [],
-      gradeOptions: [],
-      shapeOptions: [],
-      sizeOptions: [],
-      masterGemShape: [],
-      masterGrade: []
+
+      masterStatus: [],
+      goldMaster: []
     }
   },
   methods: {
@@ -288,9 +224,15 @@ export default {
           case 'MASTERGEMSHAPE':
             url = 'Master/MasterGemShape'
             break
+          case 'STATUS':
+            url = 'ProductionPlan/GetProductionPlanStatus'
+            break
+          case 'GOLD':
+            url = 'Master/MasterGold'
+            break
         }
 
-        if (type === 'MASTERGEMSHAPE') {
+        if (type === 'MASTERGEMSHAPE' || type === 'STATUS' || type === 'GOLD') {
           res = await api.jewelry.get(url)
         } else {
           res = await api.jewelry.post(url, params)
@@ -314,6 +256,12 @@ export default {
             case 'MASTERGEMSHAPE':
               this.masterGemShape = [...res]
               break
+            case 'STATUS':
+              this.masterStatus = [...res]
+              break
+            case 'GOLD':
+              this.goldMaster = [...res]
+              break
           }
         }
       } catch (error) {
@@ -324,11 +272,8 @@ export default {
   },
   created() {
     this.$nextTick(() => {
-      this.fetchMasterData('GROUPGEM')
-      this.fetchMasterData('SIZE')
-      this.fetchMasterData('GRADE')
-      this.fetchMasterData('SHAPE')
-      this.fetchMasterData('MASTERGEMSHAPE')
+      this.fetchMasterData('STATUS')
+      this.fetchMasterData('GOLD')
     })
   }
 }

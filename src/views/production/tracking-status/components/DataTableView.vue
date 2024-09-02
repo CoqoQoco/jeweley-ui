@@ -9,10 +9,10 @@
       ref="dt"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 325px)"
+      scrollHeight="calc(100vh - 340px)"
       resizableColumns
-      showGridlines
       :paginator="true"
+      showGridlines
       :lazy="true"
       @page="handlePageChange"
       @sort="handlePageChangeSort"
@@ -23,73 +23,83 @@
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
-      <!-- <Column field="name" header="พลอย/เพชร" style="min-width: 150px"> </Column> -->
-      <Column field="code" header="รหัส" sortable style="min-width: 150px"> </Column>
-      <Column field="groupName" header="หมวดหมู่" sortable style="min-width: 150px"> </Column>
-      <Column field="size" header="ขนาด" sortable style="min-width: 150px"> </Column>
-      <Column field="shape" header="รูปร่าง" sortable style="min-width: 150px"> </Column>
-      <Column field="grade" header="เกรด" sortable style="min-width: 150px"> </Column>
-      <Column field="quantity" sortable header="จำนวนคงคลัง" style="min-width: 150px">
+      <Column field="receiveDate" header="วันที่ จ่ายงาน/รับงาน" sortable style="min-width: 150px">
         <template #body="slotProps">
-          {{
-            slotProps.data.quantity
-              ? Number(slotProps.data.quantity).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          {{ formatDateTime(slotProps.data.receiveDate) }}
         </template>
       </Column>
-      <Column field="quantityOnProcess" sortable header="จำนวนยืมคลัง" style="min-width: 150px">
+      <Column field="jobDate" header="วันที่ช่างรับงาน" sortable style="min-width: 150px">
         <template #body="slotProps">
-          {{
-            slotProps.data.quantityOnProcess
-              ? Number(slotProps.data.quantityOnProcess).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          {{ formatDateTime(slotProps.data.jobDate) }}
         </template>
       </Column>
-      <Column field="quantityWeight" sortable header="น้ำหนักคงคลัง" style="min-width: 150px">
+
+      <Column field="wo" header="เลขที่ใบงาน" sortable style="min-width: 150px"> </Column>
+      <Column field="woNumber" header="ลำดับ" sortable style="min-width: 50px"> </Column>
+      <Column field="statusName" header="สถานะใบงาน" sortable style="min-width: 150px"> </Column>
+
+      <Column field="typeStatusName" header="แผนก" sortable style="min-width: 150px"> </Column>
+      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 150px"> </Column>
+      <Column field="productNumber" header="รหัสสินค้า" sortable style="min-width: 150px"> </Column>
+      <Column field="productName" header="ชื่อสินค้า" sortable style="min-width: 150px"> </Column>
+      <Column field="description" header="รายละเอียด" sortable style="min-width: 150px"> </Column>
+
+      <Column field="gold" header="ประเภททอง" sortable style="min-width: 100px"> </Column>
+
+      <Column field="goldQtySend" header="จำนวนรับ" sortable style="min-width: 100px">
         <template #body="slotProps">
-          {{
-            slotProps.data.quantityWeight
-              ? Number(slotProps.data.quantityWeight).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          <div>
+            <span>
+              {{
+                slotProps.data.goldQtySend
+                  ? Number(slotProps.data.goldQtySend).toFixed(2).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
         </template>
       </Column>
-      <Column
-        field="quantityWeightOnProcess"
-        sortable
-        header="น้ำหนักยืมคลัง"
-        style="min-width: 150px"
-      >
+      <Column field="goldWeightSend" header="นำหนักจ่าย" sortable style="min-width: 100px">
         <template #body="slotProps">
-          {{
-            slotProps.data.quantityWeightOnProcess
-              ? Number(slotProps.data.quantityWeightOnProcess).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          <div>
+            <span>
+              {{
+                slotProps.data.goldWeightSend
+                  ? Number(slotProps.data.goldWeightSend).toFixed(2).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
         </template>
       </Column>
-      <Column field="price" header="ราคา" sortable style="min-width: 150px">
+      <Column field="goldQtyCheck" header="จำนวนรับ" sortable style="min-width: 100px">
         <template #body="slotProps">
-          {{
-            slotProps.data.price ? Number(slotProps.data.price).toFixed(2).toLocaleString() : '0.00'
-          }}
+          <div>
+            <span>
+              {{
+                slotProps.data.goldQtyCheck
+                  ? Number(slotProps.data.goldQtyCheck).toFixed(2).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
         </template>
       </Column>
-      <Column field="priceQty" header="ราคาต่อหน่วย" sortable style="min-width: 150px">
+      <Column field="goldWeightCheck" header="นำหนักรับ" sortable style="min-width: 100px">
         <template #body="slotProps">
-          {{
-            slotProps.data.priceQty
-              ? Number(slotProps.data.priceQty).toFixed(2).toLocaleString()
-              : '0.00'
-          }}
+          <div>
+            <span>
+              {{
+                slotProps.data.goldWeightCheck
+                  ? Number(slotProps.data.goldWeightCheck).toFixed(2).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
         </template>
       </Column>
-      <Column field="unit" header="หน่วย" sortable style="min-width: 150px"> </Column>
-      <Column field="unitCode" header="รหัสหน่วย" sortable style="min-width: 150px"> </Column>
-      <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 150px"> </Column>
-      <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 150px"> </Column> -->
+
+      <Column field="workerName" header="ช่าง" sortable style="min-width: 150px"> </Column>
     </DataTable>
   </div>
 </template>
@@ -103,7 +113,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Papa from 'papaparse'
 
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-config.js'
 
 export default {
@@ -120,6 +130,10 @@ export default {
     modelFormExport: {
       type: Object,
       default: () => ({})
+    },
+    modelMasterType: {
+      type: Array,
+      default: () => []
     },
     headerHeight: {
       type: Number,
@@ -151,10 +165,8 @@ export default {
     }
   },
   computed: {
-    //  ---------------- computed --------
-    headerHeightPx() {
-      console.log('headerHeightPx', this.headerHeight)
-      return `${this.headerHeight}px`
+    masterType() {
+      return this.modelMasterType
     }
   },
   data() {
@@ -172,7 +184,7 @@ export default {
       data: {},
       dataExcel: {},
       expnadData: [],
-      form: null,
+      form: { ...this.modelForm },
       export: null
     }
   },
@@ -201,20 +213,25 @@ export default {
       try {
         this.isLoading = true
 
+        console.log('fetchData', this.form)
+
         const params = {
           take: this.take,
           skip: this.skip,
           sort: this.sort,
           search: {
-            code: this.form.code ?? null,
-            groupName: this.form.groupName ?? null,
-            grade: this.form.grade ?? null,
-            shape: this.form.shape ?? null,
-            size: this.form.size ?? null
+            start: this.form.requestDateStart ? formatISOString(this.form.requestDateStart) : null,
+            end: this.form.requestDateEnd ? formatISOString(this.form.requestDateEnd) : null,
+
+            status: this.form.status.length > 0 ? this.form.status : null,
+            gold: this.form.gold.length > 0 ? this.form.gold : null,
+
+            woText: this.form.wo ?? null,
+            productNumber: this.form.productNo ?? null
           }
         }
         console.log('params', params)
-        const res = await api.jewelry.post('StockGem/SearchData', params)
+        const res = await api.jewelry.post('ProductionPlan/ListProductionPlanStatus', params)
         if (res) {
           this.data = { ...res }
           //this.$emit('export', true)
@@ -237,36 +254,44 @@ export default {
           skip: 0,
           sort: [],
           search: {
-            code: this.form.code ?? null,
-            groupName: this.form.groupName ?? null,
-            grade: this.form.grade ?? null,
-            shape: this.form.shape ?? null,
-            size: this.form.size ?? null
+            start: this.form.requestDateStart ? formatISOString(this.form.requestDateStart) : null,
+            end: this.form.requestDateEnd ? formatISOString(this.form.requestDateEnd) : null,
+
+            status: this.form.status.length > 0 ? this.form.status : null,
+            gold: this.form.gold.length > 0 ? this.form.gold : null,
+
+            woText: this.form.wo ?? null,
+            productNumber: this.form.productNo ?? null
           }
         }
         console.log('params', params)
-        const res = await api.jewelry.post('StockGem/SearchData', params)
+        const res = await api.jewelry.post('ProductionPlan/ListProductionPlanStatus', params)
         if (res) {
           const dataExcel = res.data.map((item) => {
             return {
-              รหัส: item.code,
-              หมวดหมู่: item.groupName,
-              ขนาด: item.size,
-              รูปร่าง: item.shape,
-              เกรด: item.grade,
-              จำนวน: item.quantity ? Number(item.quantity).toFixed(3).toLocaleString() : '0.000',
-              ราคา: item.price ? Number(item.price).toFixed(2).toLocaleString() : '0.00',
-              ราคาต่อหน่วย: item.priceQty
-                ? Number(item.priceQty).toFixed(2).toLocaleString()
-                : '0.00',
-              หน่วย: item.unit,
-              รหัสหน่วย: item.unitCode,
-              หมายเหตุ: item.remark1
+              'วันที่ จ่ายงาน/รับงาน': this.formatDateTime(item.receiveDate),
+              วันที่ช่างรับงาน: this.formatDateTime(item.jobDate),
+              เลขที่ใบงาน: item.wo,
+              ลำดับ: item.woNumber,
+              สถานะใบงานล่าสุด: item.statusName,
+              แผนก: item.typeStatusName,
+              เเม่พิมพ์: item.mold,
+              รหัสสินค้า: item.productNumber,
+              ชื่อสินค้า: item.productName,
+              รายละเอียด: item.description,
+              ประเภททอง: item.gold,
+              จำนวนรับ: item.goldQtySend ? Number(item.goldQtySend).toFixed(2) : '0.000',
+              นำหนักจ่าย: item.goldWeightSend ? Number(item.goldWeightSend).toFixed(2) : '0.000',
+              จำนวนรับ: item.goldQtyCheck ? Number(item.goldQtyCheck).toFixed(2) : '0.000',
+              นำหนักรับ: item.goldWeightCheck ? Number(item.goldWeightCheck).toFixed(2) : '0.000',
+              ช่าง: item.workerName
             }
           })
           this.exportWithCustomColumnCSV(
             dataExcel,
-            `เอกสารตรวจคลัง[${this.formatDateTime(new Date())}].csv`
+            `ตรวจสอบสถานะงานผลิต[${this.formatDate(this.form.requestDateStart)} - ${this.formatDate(
+              this.form.requestDateEnd
+            )}].csv`
           )
         }
         this.isLoading = false
@@ -327,15 +352,28 @@ export default {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+    },
+    getTypeName(type) {
+      return this.masterType.find((item) => item.id === type)?.description
+    },
+    getIconQty(type) {
+      switch (type) {
+        case 1:
+        case 2:
+        case 3:
+          return 'bi bi-arrow-down-square-fill text-success'
+        case 4:
+          return 'bi bi-arrow-up-square-fill text-danger'
+        default:
+          return ''
+      }
     }
 
     // -------- event -------- //
   },
   created() {
-    console.log('created', this.modelForm)
-    this.form = { ...this.modelForm }
     this.$nextTick(() => {
-      //this.fetchData()
+      this.fetchData()
     })
   }
 }

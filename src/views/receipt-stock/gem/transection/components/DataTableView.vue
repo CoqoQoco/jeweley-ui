@@ -25,7 +25,7 @@
     >
       <Column field="requestDate" header="วันทำรายการ" sortable style="min-width: 200px">
         <template #body="slotProps">
-          {{ formatDate(slotProps.data.requestDate) }}
+          {{ formatDateTime(slotProps.data.requestDate) }}
         </template>
       </Column>
       <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
@@ -50,7 +50,21 @@
           </div>
         </template>
       </Column>
-      <Column field="jobOrPo" header="JOB/PO No." style="min-width: 200px"> </Column>
+      <Column field="qtyWeight" header="น้ำหนัก" sortable style="min-width: 200px">
+        <template #body="slotProps">
+          <div>
+            <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
+            <span>
+              {{
+                slotProps.data.qtyWeight
+                  ? Number(slotProps.data.qtyWeight).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
+        </template>
+      </Column>
+      <Column field="jobOrPo" header="Invoice/Job No." style="min-width: 200px"> </Column>
       <Column field="subpplierName" header="ร้านผลิต/ชื่อร้าน" style="min-width: 200px"> </Column>
       <Column field="supplierCost" header="ราคาทุน" style="min-width: 200px">
         <template #body="slotProps">
@@ -231,9 +245,9 @@ export default {
 
         console.log('fetchDataExport', this.form)
         const params = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
+          take: 0,
+          skip: 0,
+          sort: [],
           search: {
             requestDateStart: this.form.requestDateStart
               ? formatISOString(this.form.requestDateStart)
