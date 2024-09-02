@@ -299,7 +299,7 @@ export default {
         params.append('location', this.form.LocationName.code)
         params.append('catagory', this.form.category.nameTh)
         params.append('catagoryCode', this.form.category.code)
-        params.append('remodel', this.form.remodel.code)
+        params.append('remodel', this.form.remodel ? this.form.remodel.code : '')
 
         this.form.images.forEach((file) => {
           params.append(`images`, file) // ใช้ชื่อ "Images" ตรงกับ property ใน model
