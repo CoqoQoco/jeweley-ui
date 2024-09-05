@@ -895,6 +895,53 @@
               </button>
             </div>
           </form>
+          <form v-if="showType === 6" @submit.prevent="onSubmit">
+            <div class="mb-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>แผนงานผลิตเสร็จสิ้น</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">วันที่</span>
+                <Calendar
+                  class="w-100"
+                  :class="val.isValReceiveDate === true ? `p-invalid` : ``"
+                  v-model="form.receiveDate"
+                  dateFormat="dd/mm/yy"
+                  showIcon
+                  showButtonBar
+                />
+              </div>
+              <div>
+                <span class="txt-title">ชื่อผู้ปิดแผนงานผลิต</span>
+                <input type="text" class="form-control" v-model="form.receiveBy" required />
+              </div>
+            </div>
+            <div class="mb-2 mt-2 txt-title-part">
+              <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
+              <span>ระบุข้อมูลเพิ่มเติม</span>
+            </div>
+            <div class="form-content-row-container">
+              <div>
+                <span class="txt-title">หมายเหตุ - 1</span>
+                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
+                </textarea>
+              </div>
+              <div>
+                <span class="txt-title">หมายเหตุ - 2</span>
+                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
+                </textarea>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <button class="btn btn-sm btn-dark btn-custom mr-2" type="button" @click="closeModal">
+                ยกเลิกเพิ่มสถานะการผลิต
+              </button>
+              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+                ยืนยันเพิ่มสถานะการผลิต
+              </button>
+            </div>
+          </form>
         </div>
       </template>
     </modal>
@@ -987,7 +1034,7 @@ export default {
   },
   computed: {
     modelMasterStatus() {
-      return this.masterStatus.filter((x) => x.id !== 10 && x.id !== 100)
+      return this.masterStatus.filter((x) => x.id !== 10)
     },
     model() {
       return this.modelValue
@@ -1070,6 +1117,8 @@ export default {
           this.showType = 4
         } else if (this.form.status === 95) {
           this.showType = 5
+        } else if (this.form.status === 100) {
+          this.showType = 6
         }
       } else {
         this.showType = 0
