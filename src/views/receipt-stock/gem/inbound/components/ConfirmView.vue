@@ -64,7 +64,7 @@
           <div class="form-col-container mt-1">
             <div>
               <div>
-                <span class="title-text">Invoice/Job No.</span>
+                <span class="title-text">Invoice/Ref No.</span>
                 <!-- <span class="txt-required"> *</span> -->
               </div>
               <input

@@ -103,10 +103,28 @@
           </template>
         </column>
 
-        <column field="remark" header="หมายเหตุ" style="width: 100px">
+        <column field="productionPlan" header="แผนผลิต" style="width: 150px">
+          <template #body="slotProps">
+            <AutoComplete
+              v-model="slotProps.data.productionPlan"
+              :suggestions="planSearch"
+              @complete="onSearchProductionPlanId"
+              optionLabel="woText"
+              forceSelection
+              style="width: 150px"
+            >
+              <template #option="slotProps">
+                <div class="flex align-options-center">
+                  <div>{{ `${slotProps.option.wo}-${slotProps.option.woNumber}` }}</div>
+                </div>
+              </template>
+            </AutoComplete>
+          </template>
+        </column>
+        <column field="remark" header="หมายเหตุ" style="width: 150px">
           <template #body="slotProps">
             <input
-              style="width: 100px; background-color: #dad4b5"
+              style="width: 150px; background-color: #dad4b5"
               :style="slotProps.data.remark ? 'background-color: #b5dad4' : ''"
               class="form-control"
               type="text"
@@ -118,7 +136,7 @@
 
         <ColumnGroup type="footer">
           <Row>
-            <column footerStyle="background-color: #921313" :colspan="9">
+            <column footerStyle="background-color: #921313" :colspan="10">
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <!-- text -->
@@ -168,6 +186,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Row from 'primevue/row'
 import ColumnGroup from 'primevue/columngroup' // optional
+import AutoComplete from 'primevue/autocomplete'
 //import Papa from 'papaparse'
 
 //import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
@@ -193,7 +212,8 @@ export default {
     Column,
     Row,
     ColumnGroup,
-    ConfirmView
+    ConfirmView,
+    AutoComplete
   },
   props: {
     modelFormScan: {
@@ -217,7 +237,8 @@ export default {
       data: [],
       formScan: { ...this.modelFormScan },
       formSubmit: { ...interfaceFormSubmit },
-      minQty: 1
+      minQty: 1,
+      planSearch: []
     }
   },
   methods: {
@@ -248,6 +269,34 @@ export default {
       } catch (error) {
         this.isLoading = false
         console.log(error)
+      }
+    },
+    async onSearchProductionPlanId(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null
+            //type: this.form.status,
+            //active: 1
+          }
+        }
+        const res = await api.jewelry.post(
+          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
+          params
+        )
+        if (res) {
+          //console.log(res)
+          this.planSearch = [...res.data]
+          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
       }
     },
 
@@ -384,5 +433,14 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+// ** ------ overide primevue style ------
+input {
+  margin-top: 0px !important;
+}
+:deep(.p-autocomplete .p-component) {
+  margin-top: 0px !important;
+  background-color: #dad4b5;
 }
 </style>

@@ -62,7 +62,7 @@
 
           <!-- job/po -->
           <div>
-            <span class="title-text">Invoice/Job No.</span>
+            <span class="title-text">Invoice/Ref No.</span>
             <input type="text" class="form-control" v-model="form.jobOrPo" />
           </div>
         </div>

@@ -64,7 +64,7 @@
           </div>
         </template>
       </Column>
-      <Column field="jobOrPo" header="Invoice/Job No." style="min-width: 200px"> </Column>
+      <Column field="jobOrPo" header="Invoice/Ref No." style="min-width: 200px"> </Column>
       <Column field="subpplierName" header="ร้านผลิต/ชื่อร้าน" style="min-width: 200px"> </Column>
       <Column field="supplierCost" header="ราคาทุน" style="min-width: 200px">
         <template #body="slotProps">
@@ -86,6 +86,8 @@
       <Column field="shape" header="รูปร่าง" sortable style="min-width: 200px"> </Column>
       <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column>
 
+      <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
+      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column>
       <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 200px"> </Column>
       <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column>
       <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column> -->
@@ -284,6 +286,8 @@ export default {
               ขนาด: item.size,
               รูปร่าง: item.shape,
               เกรด: item.grade,
+              'W.O.': item.woText,
+              เเม่พิมพ์: item.mold,
               'หมายเหตุ-1': item.remark1,
               'หมายเหตุ-2': item.remark2
             }

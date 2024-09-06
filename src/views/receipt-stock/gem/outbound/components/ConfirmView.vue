@@ -208,7 +208,11 @@ export default {
               code: gem.code,
               issueQty: gem.issueQty,
               issueQtyWeight: gem.issueQtyWeight,
-              remark: gem.remark
+              remark: gem.remark,
+              wo: gem.productionPlan?.wo,
+              woNumber: gem.productionPlan?.woNumber,
+              woText: gem.productionPlan?.woText,
+              mold: gem.productionPlan?.mold,
             }
           })
         }
