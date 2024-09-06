@@ -42,13 +42,21 @@ button.btn-green {
   background-color: $base-green;
   color: white;
 }
-// button.btn-view {
-//     background-color: $base-green;
-//     color: white;
-// }
+button.btn-red {
+  background-color: $base-red;
+  color: white;
+}
+
 button.btn-main:hover {
   color: white;
 }
+button.btn-green:hover {
+  color: white;
+}
+button.btn-red:hover {
+  color: white;
+}
+
 input {
   margin-top: 5px !important;
 }

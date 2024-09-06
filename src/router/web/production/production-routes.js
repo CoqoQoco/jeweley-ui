@@ -32,7 +32,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Plan Order',
-            th: 'สร้างใบจ่าย-รับคืนงาน'
+            th: 'สร้างแผนงานผลิต'
           },
           minorShow: true
         }
@@ -56,7 +56,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Plan Order Tracking',
-            th: 'ติดตามงานผลิต'
+            th: 'ติดตามแผนงานผลิต'
           },
           minorShow: true
         }

@@ -66,7 +66,7 @@
           <div class="form-col-container mt-3">
             <div>
               <div>
-                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการรับเพชรเเละพลอย</span>
+                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการจ่ายตัดเพชรเเละพลอย</span>
                 <span class="txt-required"> *</span>
               </div>
               <input

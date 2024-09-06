@@ -3,8 +3,10 @@
     <loading :isLoading="isLoading"></loading>
     <div class="filter-container mb-2">
       <pageTitle
-        :title="`โหมดเเก้ไข : ใบจ่าย-รับคืนงาน เลขที่: ${data?.wo ?? ''}-${data?.woNumber ?? ''}`"
-        description="เเก้ไขการผลิต เเละรายละเอียดต่างๆ"
+        :title="`ข้อมูลแผนงานผลิต ใบจ่าย-รับคืนงาน เลขที่: ${data?.wo ?? ''}-${
+          data?.woNumber ?? ''
+        }`"
+        description="เเก้ไข ปรับปรุง ตรวจสอบ แผนงานผลิต เเละรายละเอียดต่างๆ"
         :isShowBtnClose="false"
         isShowRightSlot
       >
@@ -12,7 +14,22 @@
       <TabMenu :model="tabItems" v-model:activeIndex="tabCctive" />
     </div>
     <div v-if="tabCctive === 0">
-      <FormHeader
+      <planHeaderView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterCustomerType="masterCustomer"
+        :masterProductType="masterProduct"
+        @onShowFormHeaderUpdate="onShowFormHeaderUpdate"
+      ></planHeaderView>
+      <planHeaderUpdateView
+        :isShow="isShowFormHeaderUpdate"
+        :modelValue="data"
+        :masterCustomerType="masterCustomer"
+        :masterProductType="masterProduct"
+        @fetch="fetchFormHeaderUpdate"
+        @closeModal="onCloseFormHeaderUpdate"
+      ></planHeaderUpdateView>
+      <!-- <FormHeader
         :modelValue="data"
         :modelMatValue="mat"
         :masterCustomerType="masterCustomer"
@@ -28,7 +45,7 @@
         @fetch="fetchFormHeaderUpdate"
         @closeModal="onCloseFormHeaderUpdate"
       >
-      </FormHeaderUpdate>
+      </FormHeaderUpdate> -->
     </div>
     <div v-if="tabCctive === 1">
       <FormMaterial
@@ -84,24 +101,30 @@ import TabMenu from 'primevue/tabmenu'
 
 import api from '@/axios/axios-config.js'
 
-import FormHeader from './components/form-header/FormHeaderView.vue'
-import FormHeaderUpdate from './components/form-header/FormHeaderUpdate.vue'
+//import FormHeader from './components/form-header/FormHeaderView.vue'
+//import FormHeaderUpdate from './components/form-header/FormHeaderUpdate.vue'
 import FormMaterial from './components/form-material/FormMaterialView.vue'
 import FormMaterialAdd from './components/form-material/FormMaterialAdd.vue'
 import FormStatus from './components/form-status/FormStatusView.vue'
 import FormStatusAdd from './components/form-status/FormStatusAdd.vue'
+
+//new
+import planHeaderView from './components/view/PlanHeaderView.vue'
+import planHeaderUpdateView from './components/update/PlanHeaderUpdateView.vue'
 
 export default {
   components: {
     loading,
     pageTitle,
     TabMenu,
-    FormHeader,
-    FormHeaderUpdate,
+    //FormHeader,
+    //FormHeaderUpdate,
     FormMaterial,
     FormMaterialAdd,
     FormStatus,
-    FormStatusAdd
+    FormStatusAdd,
+    planHeaderView,
+    planHeaderUpdateView
   },
   data() {
     return {
@@ -190,6 +213,71 @@ export default {
         this.isLoading = false
       }
     },
+    async fetchMasterData(type) {
+      this.isLoading = true
+      try {
+        let params = null
+        let url = null
+        let res = null
+
+        switch (type) {
+          case 'PRODUCTTYPE':
+            url = 'Master/MasterProductType'
+            break
+          case 'CUSTOMERTYPE':
+            url = 'Master/MasterCustomerType'
+            break
+          case 'GOLDSIZE':
+            url = 'Master/MasterGoldSize'
+            break
+          case 'GEMSHAPE':
+            url = 'Master/MasterGemShape'
+            break
+          case 'GOLD':
+            url = 'Master/MasterGold'
+            break
+          case 'STATUS':
+            url = 'ProductionPlan/GetProductionPlanStatus'
+            break
+        }
+
+        const apiGet = ['PRODUCTTYPE', 'CUSTOMERTYPE', 'GOLDSIZE', 'GEMSHAPE', 'GOLD', 'STATUS']
+        const apiPost = []
+
+        if (apiGet.includes(type)) {
+          res = await api.jewelry.get(url)
+        } else if (apiPost.includes(type)) {
+          res = await api.jewelry.post(url, params)
+        }
+
+        if (res) {
+          console.log('res', res)
+          switch (type) {
+            case 'PRODUCTTYPE':
+              this.masterProduct = [...res]
+              break
+            case 'CUSTOMERTYPE':
+              this.masterCustomer = [...res]
+              break
+            case 'GOLDSIZE':
+              this.masterGoldSize = [...res]
+              break
+            case 'GEMSHAPE':
+              this.masterGemShape = [...res]
+              break
+            case 'GOLD':
+              this.masterGold = [...res]
+              break
+            case 'STATUS':
+              this.masterStatus = [...res]
+              break
+          }
+        }
+      } catch (error) {
+        console.log(error)
+      }
+      this.isLoading = false
+    },
     async fetchDataMat(id) {
       try {
         this.isLoading = true
@@ -205,115 +293,27 @@ export default {
         console.log(error)
         this.isLoading = false
       }
-    },
-    async fetchMasterProductType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterCustomerType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterCustomerType')
-        if (res) {
-          this.masterCustomer = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterGold() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGold')
-        if (res) {
-          this.masterGold = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterGoldSize() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGoldSize = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterGem() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGem')
-        if (res) {
-          this.masterGem = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterGemShape() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGemShape')
-        if (res) {
-          this.masterGemShape = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMaterStatus() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
-        if (res) {
-          //this.data = [...res.data]
-          this.masterStatus = [...res]
-        }
-        //console.log(this.data)
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
     }
   },
-  mounted() {
-    const url = window.location.href
-    this.id = url.split('/').slice(-1)[0]
 
-    this.fetchData(this.id)
-    this.fetchDataMat(this.id)
+  created() {
+    this.$nextTick(() => {
+      const url = window.location.href
+      this.id = url.split('/').slice(-1)[0]
 
-    this.fetchMasterGold()
-    this.fetchMasterGoldSize()
-    this.fetchMasterGem()
-    this.fetchMasterGemShape()
-    this.fetchMaterStatus()
-    this.fetchMasterCustomerType()
-    this.fetchMasterProductType()
+      this.fetchData(this.id)
+      this.fetchDataMat(this.id)
+
+      this.fetchData(this.id)
+      this.fetchDataMat(this.id)
+
+      this.fetchMasterData('PRODUCTTYPE')
+      this.fetchMasterData('CUSTOMERTYPE')
+      this.fetchMasterData('GOLDSIZE')
+      this.fetchMasterData('GEMSHAPE')
+      this.fetchMasterData('GOLD')
+      this.fetchMasterData('STATUS')
+    })
   }
 }
 </script>

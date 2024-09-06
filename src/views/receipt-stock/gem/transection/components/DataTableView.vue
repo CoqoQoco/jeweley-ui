@@ -275,6 +275,7 @@ export default {
               ประเภท: this.getTypeName(item.type),
               'พลอย/เพชร': item.name,
               จำนวน: item.qty,
+              น้ำหนัก: item.qtyWeight,
               'JOB/PO No.': item.jobOrPo,
               'ร้านผลิต/ชื่อร้าน': item.subpplierName,
               ราคาทุน: item.supplierCost,
