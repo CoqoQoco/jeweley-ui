@@ -6,7 +6,7 @@
         :title="`ข้อมูลแผนงานผลิต ใบจ่าย-รับคืนงาน เลขที่: ${data?.wo ?? ''}-${
           data?.woNumber ?? ''
         }`"
-        description="เเก้ไข ปรับปรุง ตรวจสอบ แผนงานผลิต เเละรายละเอียดต่างๆ"
+        description="เเก้ไข/ปรับปรุง/ตรวจสอบ แผนงานผลิตเเละรายละเอียดต่างๆ"
         :isShowBtnClose="false"
         isShowRightSlot
       >
@@ -75,6 +75,7 @@
         :masterGold="masterGold"
         @onShowFormStatusAdd="onShowFormStatusAdd"
         @fetch="fetchFormStatus"
+        @add="onShowAddStatus"
       >
       </FormStatus>
       <FormStatusAdd
@@ -87,6 +88,36 @@
         @fetch="fetchFormStatusAdd"
       >
       </FormStatusAdd>
+    </div>
+
+    <div v-if="tabCctive === 3">
+      <planCatingView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planCatingView>
+      <planCastingAdd
+        :isShow="add.casting"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planCastingAdd>
+      <planCastingUpdate
+        :isShow="update.casting"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planCastingUpdate>
     </div>
   </div>
 </template>
@@ -112,6 +143,17 @@ import FormStatusAdd from './components/form-status/FormStatusAdd.vue'
 import planHeaderView from './components/view/PlanHeaderView.vue'
 import planHeaderUpdateView from './components/update/PlanHeaderUpdateView.vue'
 
+import planCatingView from './components/view/PlanCastingView.vue'
+import planCastingAdd from './components/add/PlanCatingAddView.vue'
+import planCastingUpdate from './components/update/PlanCastingUpdateView.vue'
+
+const interfaceIsShowAdd = {
+  casting: false
+}
+const interfaceIsShowUpdate = {
+  casting: false
+}
+
 export default {
   components: {
     loading,
@@ -124,7 +166,11 @@ export default {
     FormStatus,
     FormStatusAdd,
     planHeaderView,
-    planHeaderUpdateView
+    planHeaderUpdateView,
+
+    planCatingView,
+    planCastingAdd,
+    planCastingUpdate
   },
   data() {
     return {
@@ -133,6 +179,8 @@ export default {
       isShowFormHeaderUpdate: false,
       isShowFormMaterialAdd: false,
       isShowFormStatusAdd: false,
+      add: { ...interfaceIsShowAdd },
+      update: { ...interfaceIsShowUpdate },
 
       // --- data --- //
       data: {},
@@ -151,7 +199,8 @@ export default {
       tabItems: [
         { label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
         { label: 'ส่วนประกอบการผลิต', icon: 'bi bi-gem' },
-        { label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
+        { label: 'สถานะการผลิต', icon: 'bi bi-hammer' },
+        { label: 'จ่ายเเต่ง', icon: 'bi bi-hammer' }
       ]
     }
   },
@@ -185,6 +234,8 @@ export default {
     },
     onCloseFormStatusAdd() {
       this.isShowFormStatusAdd = false
+      this.add = { ...interfaceIsShowAdd }
+      this.update = { ...interfaceIsShowUpdate }
     },
     fetchFormStatus() {
       this.isShowFormStatusAdd = false
@@ -192,7 +243,23 @@ export default {
     },
     fetchFormStatusAdd() {
       this.isShowFormStatusAdd = false
+      this.add = { ...interfaceIsShowAdd }
+      this.update = { ...interfaceIsShowUpdate }
       this.fetchData(this.id)
+    },
+    onShowAddStatus(status) {
+      console.log('onShowAddStatus', status)
+      this.add = { ...interfaceIsShowAdd }
+      if (status === 'casting') {
+        this.add.casting = true
+      }
+    },
+    onShowUpdateStatus(status) {
+      console.log('onShowUpdateStatus', status)
+      this.update = { ...interfaceIsShowUpdate }
+      if (status === 'casting') {
+        this.update.casting = true
+      }
     },
 
     // --- APIs --- //

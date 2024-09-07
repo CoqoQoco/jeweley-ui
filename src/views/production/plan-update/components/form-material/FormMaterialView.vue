@@ -6,7 +6,7 @@
         class="p-datatable-sm"
         showGridlines
         scrollable
-        scrollHeight="calc(100vh - 280px)"
+        scrollHeight="calc(100vh - 170px)"
       >
         <Column style="width: 50px; text-align: center">
           <template #body="prop">
@@ -214,7 +214,7 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: #f7f7f7;
   padding: 10px;
-  height: calc(100vh - 210px);
+  height: calc(100vh - 160px);
   overflow: auto;
 }
 </style>

@@ -5,7 +5,7 @@
         <div>
           <pageTitle title="ค้นหาใบจ่าย-รับคืนงาน" :isShowBtnClose="false"> </pageTitle>
         </div>
-        <div class="search-bar-container">
+        <div class="form-col-container">
           <div>
             <span class="text-title">วันที่สร้างใบจ่าย-รับคืน</span>
             <div class="flex-group">
@@ -15,6 +15,7 @@
                 :max-date="search.end"
                 showIcon
                 placeholder="เริ่มต้น"
+                dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <Calendar
@@ -23,6 +24,7 @@
                 :min-date="search.start"
                 showIcon
                 placeholder="สิ้นสุด"
+                dateFormat="dd/mm/yy"
               />
             </div>
           </div>
@@ -35,6 +37,7 @@
                 :max-date="search.sendEnd"
                 showIcon
                 placeholder="เริ่มต้น"
+                dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <Calendar
@@ -43,9 +46,12 @@
                 :min-date="search.sendStart"
                 showIcon
                 placeholder="สิ้นสุด"
+                dateFormat="dd/mm/yy"
               />
             </div>
           </div>
+        </div>
+        <div class="form-col-container">
           <div>
             <span class="text-title">คำค้นหา</span>
             <div class="input-group input-group-inner">
@@ -64,17 +70,6 @@
               </div>
             </div>
           </div>
-          <div>
-            <span class="text-title">กำหนดส่งงาน</span>
-            <Dropdown
-              v-model="search.isOverPlan"
-              :options="masterOverPlan"
-              optionLabel="description"
-              class="w-full md:w-14rem"
-            />
-          </div>
-        </div>
-        <div class="search-bar-custom-container">
           <div>
             <span class="text-title">สถานะงานผลิต</span>
             <!-- <Dropdown
@@ -96,15 +91,23 @@
             </div>
             <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
           </div>
-
-          <div class="btn-container">
+          <div>
+            <span class="text-title">กำหนดส่งงาน</span>
+            <Dropdown
+              v-model="search.isOverPlan"
+              :options="masterOverPlan"
+              optionLabel="description"
+              class="w-full md:w-14rem"
+            />
+          </div>
+          <div class="btn-submit-container-no-line">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span><i class="bi bi-search"></i></span>
-              <span class="ml-2">ค้นหา</span>
+              <!-- <span class="ml-2">ค้นหา</span> -->
             </button>
             <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear">
               <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ล้าง</span>
+              <!-- <span class="ml-2">ล้าง</span> -->
             </button>
             <button
               :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
@@ -113,7 +116,7 @@
               @click="onExport"
             >
               <span><i class="bi bi-filetype-csv"></i></span>
-              <span class="ml-2">ออกเอกสาร</span>
+              <!-- <span class="ml-2">ออกเอกสาร</span> -->
             </button>
           </div>
         </div>
@@ -140,6 +143,16 @@ import MultiSelect from 'primevue/multiselect'
 import tableMain from './components/TableMainView.vue'
 
 import api from '@/axios/axios-config.js'
+
+const interfaceSearch = {
+  start: new Date(new Date().setDate(new Date().getDate() - 1)),
+  end: new Date(),
+  sendStart: null,
+  sendEnd: null,
+  text: null,
+  status: null,
+  isOverPlan: { id: 0, description: 'ทั้งหมด' }
+}
 export default {
   components: {
     tableMain,
@@ -153,16 +166,10 @@ export default {
       id: '',
       form: {},
       search: {
-        start: null,
-        end: null,
-        sendStart: null,
-        sendEnd: null,
-        text: null,
-        status: null,
-        isOverPlan: { id: 0, description: 'ทั้งหมด' }
+        ...interfaceSearch
       },
       formSearch: {},
-      formExport:{},
+      formExport: {},
       masterStatus: [],
       masterOverPlan: [
         { id: 0, description: 'ทั้งหมด' },
@@ -202,16 +209,10 @@ export default {
     onExport() {
       console.log(this.search)
       this.formExport = { ...this.search }
-
     },
     onClear() {
       this.search = {
-        start: null,
-        end: null,
-        sendStart: null,
-        sendEnd: null,
-        text: null,
-        status: null
+        ...interfaceSearch
       }
     },
     async fetchMaterStatus() {
@@ -231,6 +232,7 @@ export default {
   created() {
     this.fetchMaterStatus()
     //this.fetchData()
+    //this.formSearch = { ...this.search }
   },
   mounted() {
     const url = window.location.href
@@ -249,15 +251,17 @@ export default {
         isOverPlan: { id: 0, description: 'ทั้งหมด' },
         text: this.id
       }
-      this.formSearch = { ...this.search }
+      //this.formSearch = { ...this.search }
       console.log(this.formSearch)
     }
+
+    this.formSearch = { ...this.search }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/search-bar.scss';
+@import '@/assets/scss/custom-style/standard-search-bar.scss';
 
 .search-bar-container {
   display: grid;

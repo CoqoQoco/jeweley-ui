@@ -10,24 +10,19 @@
       </div>
       <div class="line"></div>
       <div class="d-flex justify-content-center">
-        <pdf
-          class="btn btn-sm btn-info btn-custom mr-2"
-          style="width: 100px"
-          :modelValue="model"
-          :matValue="modelMat"
-        >
+        <pdf class="btn btn-sm btn-primary btn-custom mr-2" :modelValue="model" :matValue="modelMat">
         </pdf>
-        <button class="btn btn-sm btn-warning mr-2" style="width: 100px" @click="onShowFormHeaderUpdate">
+        <button class="btn btn-sm btn-warning mr-2" @click="onShowFormHeaderUpdate">
           <span>
-            <i class="bi bi-brush mr-2"></i>
+            <i class="bi bi-brush"></i>
           </span>
-          <span>เเก้ไข</span>
+          <!-- <span>เเก้ไข</span> -->
         </button>
-        <button class="btn btn-sm btn-secondary" style="width: 100px" disabled>
+        <button class="btn btn-sm btn-secondary" disabled>
           <span>
-            <i class="bi bi-trash mr-2"></i>
+            <i class="bi bi-trash"></i>
           </span>
-          <span>หลอม</span>
+          <!-- <span>หลอม</span> -->
         </button>
       </div>
     </div>
@@ -263,6 +258,7 @@ export default {
   align-items: center;
   overflow: hidden;
   position: relative;
+  height: calc(100vh - 250px);
 }
 .image-preview {
   width: auto;

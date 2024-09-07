@@ -176,6 +176,10 @@
     border-color 0.2s,
     box-shadow 0.2s;
 }
+.p-checkbox.p-highlight .p-checkbox-box {
+  border-color: #921313 !important;  
+  background: #921313 !important;
+}
 
 
 // --------- stepper ---------- //

@@ -418,6 +418,13 @@ export default {
 
       return res
     }
+  },
+  unmounted() {
+    console.log('unmounted')
+    window.location.reload()
+    //this.data = []
+    //this.formScan = { ...this.modelFormScan }
+    //this.formSubmit = { ...interfaceFormSubmit }
   }
 }
 </script>

@@ -42,14 +42,14 @@
             <div class="box-status-show mr-2" :class="getBoxStatus(slotProps.data.status)">
               {{ slotProps.data.statusName }}
             </div>
-            <div
+            <di
               v-if="getPermissonNext(slotProps.data)"
               class="box-status-next"
               @click="onShowCreatePlan(slotProps.data)"
             >
               <span> <i class="bi bi-brush mr-2"></i></span>
               <span> {{ slotProps.data.nextStatusName }}</span>
-            </div>
+            </di>
           </div>
         </template>
       </Column>

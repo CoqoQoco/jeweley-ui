@@ -27,11 +27,10 @@
         <template #body="slotProps">
           <div class="btn-action-container">
             <button
-              class="btn btn-sm btn btn-main"
-              title="โหมดเเก้ไข"
+              class="btn btn-sm btn btn-green"
               @click="viewplan(slotProps.data)"
             >
-              <i class="bi bi-brush"></i>
+              <i class="bi bi-search"></i>
             </button>
             <!-- <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
               <i class="bi bi-clipboard2-data-fill"></i>
@@ -62,7 +61,7 @@
       <Column field="status" sortable header="สถานะใบงาน" style="min-width: 150px">
         <template #body="slotProps">
           <div
-            class="custom-tag-status text-center"
+            class="text-center"
             style="width: 100px"
             :class="getStatusSeverity(slotProps.data.status)"
             @click="onUpdateStatus(slotProps)"
@@ -238,12 +237,12 @@ export default {
     getStatusSeverity(status) {
       switch (status) {
         case 9999:
-          return 'bg-danger bg-gradient'
+          return 'box-status-process'
         case 100:
         case 95:
-          return 'bg-success bg-gradient'
+          return 'box-status-success'
         case 10:
-          return 'bg-dark bg-gradient'
+          return 'box-status-process'
         case 50:
         case 55:
         case 60:
@@ -251,7 +250,7 @@ export default {
         case 80:
         case 85:
         case 90:
-          return 'bg-primary bg-gradient text-light'
+          return 'box-status-show'
       }
     },
 
@@ -420,7 +419,7 @@ export default {
   },
   created() {
     //this.fetchMaterStatus()
-    this.fetchData()
+    //this.fetchData()
   },
   async mounted() {
     //this.fetchData()
@@ -430,25 +429,8 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/table-data.scss';
+@import '@/assets/scss/custom-style/standard-data-table';
 
-.custom-tag-status {
-  padding: 3px;
-  --x: 50%;
-  --y: 50%;
-  position: relative;
-  appearance: none;
-  //padding: 1em 1em;
-  color: white;
-  cursor: pointer;
-  outline: none;
-  border-radius: 10px;
-
-  // The magic
-  border: 2px solid transparent;
-  //   background:
-  //     linear-gradient(#000, #000) padding-box,
-  //     radial-gradient(farthest-corner at var(--x) var(--y), #00c9a7, #845ec2) border-box;
-}
 
 .btn-link:hover {
   color: var(--base-color) !important;

@@ -34,6 +34,10 @@
     color: white;
   }
 }
+.vertical-center-container {
+  display: flex;
+  align-items: center;
+}
 .center-container {
   display: grid;
   place-items: center;

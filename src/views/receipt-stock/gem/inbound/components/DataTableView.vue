@@ -80,7 +80,7 @@
               class="form-control"
               type="number"
               step="any"
-               min="0"
+              min="0"
               required
               v-model="slotProps.data.receiveQty"
               @blur="onBlurReceiveQty(slotProps.data)"
@@ -111,7 +111,7 @@
               class="form-control"
               type="number"
               step="any"
-               min="0"
+              min="0"
               required
               v-model="slotProps.data.supplierCost"
             />
@@ -254,7 +254,7 @@ export default {
               ...res,
               receiveQty: newQty.toFixed(3),
               receiveQtyWeight: newQty.toFixed(3),
-              supplierCost: newQty,
+              supplierCost: newQty
             }
             this.formSubmit.gems.push(newGems)
             console.log('fetchScan res', this.formSubmit.gems)
@@ -383,7 +383,9 @@ export default {
       }
 
       //check all item.receiveQty > 0 in this.formSubmit.gems
-      const invalidGems = this.formSubmit.gems.filter((gem) => gem.receiveQty <= 0 && gem.receiveQtyWeight <= 0)
+      const invalidGems = this.formSubmit.gems.filter(
+        (gem) => gem.receiveQty <= 0 && gem.receiveQtyWeight <= 0
+      )
       if (invalidGems.length > 0) {
         res = false
         invalidGems.forEach((gem) => {
@@ -397,6 +399,13 @@ export default {
 
       return res
     }
+  },
+  unmounted() {
+    console.log('unmounted')
+    window.location.reload()
+    //this.data = []
+    //this.formScan = { ...this.modelFormScan }
+    //this.formSubmit = { ...interfaceFormSubmit }
   }
 }
 </script>

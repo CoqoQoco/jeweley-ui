@@ -39,6 +39,9 @@ export default {
       console.log('onClearScan')
       this.formHeaderScan = { ...interfaceFormScan }
     }
+  },
+  created() {
+    console.log('created')
   }
 }
 </script>
