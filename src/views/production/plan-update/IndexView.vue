@@ -297,6 +297,9 @@ export default {
           case 'GOLDSIZE':
             url = 'Master/MasterGoldSize'
             break
+          case 'GEM':
+            url = 'Master/MasterGem'
+            break
           case 'GEMSHAPE':
             url = 'Master/MasterGemShape'
             break
@@ -308,7 +311,15 @@ export default {
             break
         }
 
-        const apiGet = ['PRODUCTTYPE', 'CUSTOMERTYPE', 'GOLDSIZE', 'GEMSHAPE', 'GOLD', 'STATUS']
+        const apiGet = [
+          'PRODUCTTYPE',
+          'CUSTOMERTYPE',
+          'GOLDSIZE',
+          'GEMSHAPE',
+          'GOLD',
+          'STATUS',
+          'GEM'
+        ]
         const apiPost = []
 
         if (apiGet.includes(type)) {
@@ -328,6 +339,9 @@ export default {
               break
             case 'GOLDSIZE':
               this.masterGoldSize = [...res]
+              break
+            case 'GEM':
+              this.masterGem = [...res]
               break
             case 'GEMSHAPE':
               this.masterGemShape = [...res]
@@ -377,6 +391,7 @@ export default {
       this.fetchMasterData('PRODUCTTYPE')
       this.fetchMasterData('CUSTOMERTYPE')
       this.fetchMasterData('GOLDSIZE')
+      this.fetchMasterData('GEM')
       this.fetchMasterData('GEMSHAPE')
       this.fetchMasterData('GOLD')
       this.fetchMasterData('STATUS')
