@@ -145,7 +145,7 @@
 
                   <!-- btn submit -->
                   <div>
-                    <button class="btn btn-sm btn-secondary mr-2" type="button">
+                    <button class="btn btn-sm btn-secondary mr-2" type="button" @click="onClear">
                       <span>ยกเลิกรายการ</span>
                     </button>
                     <button
@@ -317,7 +317,6 @@ export default {
         this.isShowConfirm = true
       }
     },
-
     onCloseConfirm(msg) {
       console.log('onCloseConfirm', msg)
       if (msg === 'confirm') {
@@ -325,10 +324,16 @@ export default {
         //this.formSubmit = { ...interfaceFormSubmit }
         //this.formSubmit.gems = []
 
-        window.location.reload()
+        this.onClear()
+        //window.location.reload()
       }
 
       this.isShowConfirm = false
+    },
+    onClear() {
+      this.formScan = { ...this.modelFormScan }
+      this.formSubmit = { ...interfaceFormSubmit }
+      this.formSubmit.gems = []
     },
     // ------------ Helpers
     createScanRequest(data) {
@@ -402,10 +407,15 @@ export default {
   },
   unmounted() {
     console.log('unmounted')
-    window.location.reload()
-    //this.data = []
-    //this.formScan = { ...this.modelFormScan }
-    //this.formSubmit = { ...interfaceFormSubmit }
+    this.formScan = { ...this.modelFormScan }
+    this.formSubmit = { ...interfaceFormSubmit }
+    this.formSubmit.gems = []
+  },
+  created() {
+    console.log('created')
+    this.formScan = { ...this.modelFormScan }
+    this.formSubmit = { ...interfaceFormSubmit }
+    this.formSubmit.gems = []
   }
 }
 </script>

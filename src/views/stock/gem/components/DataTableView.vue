@@ -9,7 +9,7 @@
       ref="dt"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 325px)"
+      scrollHeight="calc(100vh - 360px)"
       resizableColumns
       showGridlines
       :paginator="true"

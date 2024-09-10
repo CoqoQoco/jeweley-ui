@@ -142,23 +142,23 @@
         <div></div>
       </div>
       <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit">
-          <span><i class="bi bi-search mr-2"></i></span>
-          <span>ค้นหา</span>
+        <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+          <span><i class="bi bi-search"></i></span>
+          <!-- <span>ค้นหา</span> -->
         </button>
-        <button class="btn btn-sm btn-secondary mr-2" type="button" @click="onClear">
-          <span><i class="bi bi-x mr-2"></i></span>
-          <span>ล้าง</span>
+        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+          <span><i class="bi bi-x-circle"></i></span>
+          <!-- <span>ล้าง</span> -->
         </button>
         <button
           :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
           type="button"
-          style="width: 120px"
           :disabled="!isExportData"
           @click="onSubmitExport"
+          title="ออกเอกสาร"
         >
           <span><i class="bi bi-filetype-csv"></i></span>
-          <span class="ml-2">ออกเอกสาร</span>
+          <!-- <span class="ml-2">ออกเอกสาร</span> -->
         </button>
       </div>
     </form>

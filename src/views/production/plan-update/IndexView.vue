@@ -8,8 +8,13 @@
         }`"
         description="เเก้ไข/ปรับปรุง/ตรวจสอบ แผนงานผลิตเเละรายละเอียดต่างๆ"
         :isShowBtnClose="false"
-        isShowRightSlot
+        :isShowRightSlot="true"
       >
+        <template v-slot:rightSlot>
+          <div class="text-center" style="font-size: medium;" :class="getStatusSeverity(data.status)">
+            {{ data.statusName }}
+          </div>
+        </template>
       </pageTitle>
       <TabMenu :model="tabItems" v-model:activeIndex="tabCctive" />
     </div>
@@ -374,6 +379,27 @@ export default {
         console.log(error)
         this.isLoading = false
       }
+    },
+
+    // ----- helprt
+    getStatusSeverity(status) {
+      switch (status) {
+        case 9999:
+          return 'box-status-process'
+        case 100:
+        case 95:
+          return 'box-status-success'
+        case 10:
+          return 'box-status-process'
+        case 50:
+        case 55:
+        case 60:
+        case 70:
+        case 80:
+        case 85:
+        case 90:
+          return 'box-status-show'
+      }
     }
   },
 
@@ -402,4 +428,58 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/search-bar.scss';
+
+.box-status-show {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  color: var(--base-font-color);
+  font-weight: bold;
+  font-size: 12px;
+  background-color: #ffc21b;
+  width: 120px;
+  height: 100%;
+}
+.box-status-success {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  background-color: #038387;
+  width: 120px;
+  height: 100%;
+}
+.box-status-next {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  color: var(--base-color);
+  font-weight: bold;
+  font-size: 12px;
+  background-color: var(--base-font-color);
+  width: 120px;
+  height: 100%;
+  cursor: pointer;
+}
+.box-status-process {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  color: var(--base-font-color);
+  font-weight: bold;
+  font-size: 12px;
+  background-color: #dad4b5;
+  width: 120px;
+  height: 100%;
+}
 </style>
