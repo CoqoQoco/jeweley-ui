@@ -138,39 +138,7 @@
                   />
                 </template>
               </Column>
-              <Column
-                field="workers"
-                :header="status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
-                style="width: 120px"
-              >
-                <template #editor="{ data, field }">
-                  <!-- <input
-                        type="text"
-                        :class="data[field] ? `` : `-`"
-                        class="form-control"
-                        v-model="data[field]"
-                      /> -->
-                  <AutoComplete
-                    v-model="data[field]"
-                    :suggestions="workerItemSearch"
-                    @complete="onSearchWorker"
-                    :class="data[field] ? `` : `-`"
-                    optionLabel="code"
-                    forceSelection
-                  >
-                    <template #option="slotProps">
-                      <div class="flex align-options-center">
-                        <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
-                      </div>
-                    </template>
-                  </AutoComplete>
-                </template>
-                <template #body="slotProps">
-                  <div v-if="slotProps.data.workers">
-                    <span> {{ truncateName(slotProps.data.workers.nameTh, 10) }}</span>
-                  </div>
-                </template>
-              </Column>
+
               <Column :rowEditor="true" bodyStyle="text-align:center"> </Column>
               <template #footer>
                 <div class="d-flex justify-content-between">
