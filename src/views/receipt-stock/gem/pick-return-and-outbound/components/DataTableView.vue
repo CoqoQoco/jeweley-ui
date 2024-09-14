@@ -9,7 +9,7 @@
       ref="dt"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 420px)"
+      scrollHeight="calc(100vh - 350px)"
       resizableColumns
       :paginator="true"
       showGridlines
@@ -23,80 +23,41 @@
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
+      <Column style="width: 50px">
+        <template #body="slotProps">
+          <div class="d-flex justify-content-center">
+            <button class="btn btn-sm btn-main" title="คืน/เบิก" @click="edit(slotProps.data)">
+              <i class="bi bi-arrows-expand"></i>
+            </button>
+            <!-- <button class="btn btn-sm btn-green ml-2" title="รายละเอียด">
+              <i class="bi bi-search"></i>
+            </button> -->
+          </div>
+        </template>
+      </Column>
       <Column field="requestDate" header="วันทำรายการ" sortable style="min-width: 200px">
         <template #body="slotProps">
           {{ formatDateTime(slotProps.data.requestDate) }}
         </template>
       </Column>
+      <Column field="returnDate" header="กำหนดคืน" sortable style="min-width: 200px">
+        <template #body="slotProps">
+          <div class="noti-container">
+            <span> {{ formatDateTime(slotProps.data.returnDate) }}</span>
+            <span v-if="slotProps.data.isOverPick" class="overdue-tag">เกินกำหนด</span>
+          </div>
+        </template>
+      </Column>
       <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
-      <Column field="refRunning" header="เลขที่อ้างอิง" sortable style="min-width: 200px"> </Column>
-      <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
-      <Column field="type" header="ประเภท" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-            <span>
-              {{ getTypeName(slotProps.data.type) }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="qty" header="จำนวน" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-            <span>
-              {{
-                slotProps.data.qty
-                  ? Number(slotProps.data.qty).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="qtyWeight" header="น้ำหนัก" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-            <span>
-              {{
-                slotProps.data.qtyWeight
-                  ? Number(slotProps.data.qtyWeight).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="jobOrPo" header="Invoice/Ref No." style="min-width: 200px"> </Column>
-      <Column field="subpplierName" header="ร้านผลิต/ชื่อร้าน" style="min-width: 200px"> </Column>
-      <Column field="supplierCost" header="ราคาทุน" style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span>
-              {{
-                slotProps.data.supplierCost
-                  ? Number(slotProps.data.supplierCost).toFixed(2).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-
-      <Column field="code" header="รหัส" sortable style="min-width: 200px"> </Column>
-      <Column field="groupName" header="หมวดหมู่" sortable style="min-width: 200px"> </Column>
-      <Column field="size" header="ขนาด" sortable style="min-width: 200px"> </Column>
-      <Column field="shape" header="รูปร่าง" sortable style="min-width: 200px"> </Column>
-      <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column>
-
-      <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
-      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column>
-      <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 200px"> </Column>
-      <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column>
+      <Column field="remark" header="หมายเหตุ" sortable style="min-width: 200px"> </Column>
       <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column> -->
     </DataTable>
+
+    <!-- <create
+      :isShowModal="isShow.isShowCreate"
+      :modelValue="model"
+      @closeModal="closeModal"
+    ></create> -->
   </div>
 </template>
 
@@ -112,11 +73,19 @@ import Papa from 'papaparse'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-config.js'
 
+//import create from './create/PickReturnAndOutbound.vue'
+
+const interfaceShow = {
+  isShowCreate: false,
+  isShowView: false
+}
+
 export default {
   components: {
     loading,
     DataTable,
-    Column
+    Column,
+    //create
   },
   props: {
     modelForm: {
@@ -158,6 +127,9 @@ export default {
         val.data && val.data.length > 0 ? this.$emit('export', true) : this.$emit('export', false)
       },
       deep: true
+    },
+    masterType() {
+      return this.modelMasterType
     }
   },
   computed: {
@@ -173,6 +145,7 @@ export default {
       totalRecords: 0,
       take: 100, //all
       skip: 0,
+      isShow: { ...interfaceShow },
       //sortField: 'updateDate',
       //sortOrder: -1, // หรือ -1 สำหรับ descending
       sort: [],
@@ -181,7 +154,10 @@ export default {
       dataExcel: {},
       expnadData: [],
       form: { ...this.modelForm },
-      export: null
+      export: null,
+
+      // ----- form
+      model: {} // สำหรับส่งข้อมูลไปยัง modal
     }
   },
   methods: {
@@ -222,18 +198,21 @@ export default {
             requestDateEnd: this.form.requestDateEnd
               ? formatISOString(this.form.requestDateEnd)
               : null,
-            type: this.form.type.length > 0 ? this.form.type : null,
 
-            code: this.form.code ?? null,
-            groupName: this.form.groupName ?? null,
-            grade: this.form.grade ?? null,
-            shape: this.form.shape ?? null,
-            size: this.form.size ?? null,
-            status: 'completed'
+            returnDateStart: this.form.returnDateStart
+              ? formatISOString(this.form.returnDateStart)
+              : null,
+            returnDateEnd: this.form.returnDateEnd
+              ? formatISOString(this.form.returnDateEnd)
+              : null,
+
+            type: this.form.type.length > 0 ? this.form.type : [5],
+            status: this.form.status.length > 0 ? this.form.status : ['process'],
+            running: this.form.running ?? null
           }
         }
         console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
+        const res = await api.jewelry.post('ReceiptAndIssueStockGem/Picklist', params)
         if (res) {
           this.data = { ...res }
           //this.$emit('export', true)
@@ -279,7 +258,6 @@ export default {
             return {
               วันทำรายการ: formatDate(item.requestDate),
               เลขที่รายการ: item.running,
-              เลขที่อ้างอิง: item.refRunning,
               ประเภท: this.getTypeName(item.type),
               'พลอย/เพชร': item.name,
               จำนวน: item.qty,
@@ -372,19 +350,30 @@ export default {
         case 1:
         case 2:
         case 3:
-        case 6:
           return 'bi bi-arrow-down-square-fill text-success'
         case 4:
-        case 7:
           return 'bi bi-arrow-up-square-fill text-danger'
         case 5:
           return 'bi bi-arrow-right-square-fill text-secondary'
         default:
           return ''
       }
-    }
+    },
 
     // -------- event -------- //
+    edit(item) {
+      //this.model = { ...item }
+      console.log('edit', item)
+      //go route
+      this.$router.push({
+        name: 'stock-gem-pick-return-and-outbound-create',
+        params: { id: item.running }
+      })
+      //this.isShow.isShowCreate = true
+    },
+    closeModal() {
+      this.isShow = { ...interfaceShow }
+    }
   },
   created() {
     this.$nextTick(() => {
@@ -400,5 +389,17 @@ export default {
 .box-image-show {
   display: flex;
   gap: 5px;
+}
+.noti-container {
+  display: inline-flex;
+  align-items: center;
+}
+.overdue-tag {
+  background-color: #ff4d4d; /* สีแดง */
+  color: white;
+  padding: 2px 4px;
+  border-radius: 2px;
+  margin-left: 4px;
+  font-size: 12px;
 }
 </style>

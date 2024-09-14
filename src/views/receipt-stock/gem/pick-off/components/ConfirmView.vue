@@ -5,14 +5,14 @@
       <template v-slot:content>
         <div class="title-text-lg mb-2">
           <span class="mr-2"><i class="bi bi-house-add-fill"></i></span>
-          <span>ยืนยันจ่ายตัดเพชรเเละพลอย</span>
+          <span>ยืนยันยืมเพชรเเละพลอย</span>
         </div>
         <form @submit.prevent="onSubmit">
-          <!-- type && request date -->
+          <!-- type -->
           <div class="form-col-container">
             <div>
               <div>
-                <span class="title-text">เลือกประเภทการจ่ายตัด</span>
+                <span class="title-text">เลือกประเภทการยืม</span>
                 <span class="txt-required"> *</span>
               </div>
               <Dropdown
@@ -25,15 +25,39 @@
                 :showClear="form.type ? true : false"
               />
             </div>
+          </div>
+
+          <div class="form-col-container mt-1">
+            <!-- วันที่ยืม -->
             <div>
               <div>
-                <span class="title-text">วันที่จ่ายตัด</span>
+                <span class="title-text">วันที่ยืม</span>
                 <span class="txt-required"> *</span>
               </div>
               <Calendar
                 class="w-100"
                 :class="val.isRequestDate === true ? `p-invalid` : ``"
                 v-model="form.requestDate"
+                :max-date="form.returnDate"
+                dateFormat="dd/mm/yy"
+                showTime
+                hourFormat="24"
+                showIcon
+                showButtonBar
+              />
+            </div>
+
+            <!-- วันที่คืน -->
+            <div>
+              <div>
+                <span class="title-text">วันที่คืน</span>
+                <span class="txt-required"> *</span>
+              </div>
+              <Calendar
+                class="w-100"
+                :class="val.isReturnDate === true ? `p-invalid` : ``"
+                v-model="form.returnDate"
+                :min-date="form.requestDate"
                 dateFormat="dd/mm/yy"
                 showTime
                 hourFormat="24"
@@ -66,7 +90,7 @@
           <div class="form-col-container mt-3">
             <div>
               <div>
-                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการจ่ายตัดเพชรเเละพลอย</span>
+                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการยืมเพชรเเละพลอย</span>
                 <span class="txt-required"> *</span>
               </div>
               <input
@@ -114,7 +138,8 @@ import { formatISOString } from '@/services/utils/dayjs'
 
 const interfaceIsVal = {
   isType: false,
-  isRequestDate: false
+  isRequestDate: false,
+  isReturnDate: false
 }
 
 export default {
@@ -141,7 +166,7 @@ export default {
       isLoading: false,
       form: null,
       val: { ...interfaceIsVal },
-      masterType: [{ id: 4, description: 'จ่ายออกคลัง' }]
+      masterType: [{ id: 5, description: 'ยืมออกคลัง' }]
     }
   },
   watch: {
@@ -168,6 +193,11 @@ export default {
       if (this.form.requestDate) {
         this.val.isRequestDate = false
       }
+    },
+    'form.returnDate'() {
+      if (this.form.returnDate) {
+        this.val.isReturnDate = false
+      }
     }
   },
   methods: {
@@ -188,6 +218,10 @@ export default {
         this.val.isRequestDate = true
         return
       }
+      if (!this.form.returnDate) {
+        this.val.isReturnDate = true
+        return
+      }
 
       this.submit()
       //this.$emit('submit', this.form)
@@ -197,30 +231,26 @@ export default {
     async submit() {
       this.isLoading = true
       try {
-        console.log('requestDate', this.form.requestDate)
         const params = {
           type: this.form.type,
           remark: this.form.remark,
           pass: this.form.pass,
           requestDate: formatISOString(this.form.requestDate),
+          returnDate: formatISOString(this.form.returnDate),
           gems: this.form.gems.map((gem) => {
             return {
               code: gem.code,
               issueQty: gem.issueQty,
               issueQtyWeight: gem.issueQtyWeight,
-              remark: gem.remark,
-              wo: gem.productionPlan?.wo,
-              woNumber: gem.productionPlan?.woNumber,
-              woText: gem.productionPlan?.woText,
-              mold: gem.productionPlan?.mold,
+              remark: gem.remark
             }
           })
         }
         console.log('confirm params', params)
 
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/OutboundGem', params)
+        const res = await api.jewelry.post('ReceiptAndIssueStockGem/PickOffGem', params)
         if (res) {
-          swAlert.success('', `เลขที่ใบจ่ายตัดเพชรเเละพลอย: ${res}`, () => {
+          swAlert.success('', `เลขที่ใบยืมเพชรเเละพลอย: ${res}`, () => {
             this.onClear()
             this.$emit('closeModal', 'confirm')
           })

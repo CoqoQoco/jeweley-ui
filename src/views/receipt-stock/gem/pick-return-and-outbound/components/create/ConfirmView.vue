@@ -5,14 +5,14 @@
       <template v-slot:content>
         <div class="title-text-lg mb-2">
           <span class="mr-2"><i class="bi bi-house-add-fill"></i></span>
-          <span>ยืนยันจ่ายตัดเพชรเเละพลอย</span>
+          <span>ยืนยันคืนเข้าคลังเเละเบิกออกคลัง เพชรเเละพลอย</span>
         </div>
         <form @submit.prevent="onSubmit">
           <!-- type && request date -->
           <div class="form-col-container">
             <div>
               <div>
-                <span class="title-text">เลือกประเภทการจ่ายตัด</span>
+                <span class="title-text">เลือกประเภท</span>
                 <span class="txt-required"> *</span>
               </div>
               <Dropdown
@@ -27,7 +27,7 @@
             </div>
             <div>
               <div>
-                <span class="title-text">วันที่จ่ายตัด</span>
+                <span class="title-text">วันที่</span>
                 <span class="txt-required"> *</span>
               </div>
               <Calendar
@@ -66,7 +66,7 @@
           <div class="form-col-container mt-3">
             <div>
               <div>
-                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการจ่ายตัดเพชรเเละพลอย</span>
+                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการคืนเข้าคลังเเละเบิกออกคลัง</span>
                 <span class="txt-required"> *</span>
               </div>
               <input
@@ -133,15 +133,24 @@ export default {
     modelForm: {
       type: Object,
       required: true
+    },
+    modelReferenceRunning: {
+      type: String,
+      required: true
     }
   },
   data() {
     return {
       isShowModal: this.isShow,
       isLoading: false,
-      form: null,
+      form: {},
       val: { ...interfaceIsVal },
-      masterType: [{ id: 4, description: 'จ่ายออกคลัง' }]
+      masterType: [{ id: 6, description: 'คืนเข้าคลังเเละเบิกออกคลัง' }]
+    }
+  },
+  computed: {
+    referenceRunning() {
+      return this.modelReferenceRunning
     }
   },
   watch: {
@@ -153,8 +162,11 @@ export default {
     },
     modelForm: {
       handler(val) {
-        this.form = { ...val }
-        console.log('confirm modelForm', this.form)
+        //console.log('confirm modelForm', val)
+        this.form = {
+          requestDate: new Date(),
+          gemsReturn: [...val]
+        }
       },
       immediate: true,
       deep: true
@@ -197,33 +209,53 @@ export default {
     async submit() {
       this.isLoading = true
       try {
-        console.log('requestDate', this.form.requestDate)
+        console.log('this.form', this.form)
         const params = {
+          referenceRunning: this.referenceRunning,
           type: this.form.type,
           remark: this.form.remark,
           pass: this.form.pass,
           requestDate: formatISOString(this.form.requestDate),
-          gems: this.form.gems.map((gem) => {
+          gemsReturn: this.form.gemsReturn.map((gem) => {
             return {
               code: gem.code,
-              issueQty: gem.issueQty,
-              issueQtyWeight: gem.issueQtyWeight,
-              remark: gem.remark,
-              wo: gem.productionPlan?.wo,
-              woNumber: gem.productionPlan?.woNumber,
-              woText: gem.productionPlan?.woText,
-              mold: gem.productionPlan?.mold,
+
+              pickOffQty: gem.pickOffQty,
+              pickOffQtyWeight: gem.pickOffQtyWeight,
+
+              returnQty: gem.returnQty,
+              returnQtyWeight: gem.returnQtyWeight,
+
+              gemsOutbound: gem.gemsOutbound
+                ? gem.gemsOutbound.map((outbound) => {
+                    return {
+                      wo: outbound.productionPlan.wo,
+                      woNumber: outbound.productionPlan.woNumber,
+                      mold: outbound.productionPlan.mold,
+
+                      issueQty: outbound.issueQty,
+                      issueQtyWeight: outbound.issueQtyWeight,
+                      remark: outbound.remark
+                    }
+                  })
+                : null
             }
           })
         }
         console.log('confirm params', params)
 
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/OutboundGem', params)
+        const res = await api.jewelry.post('ReceiptAndIssueStockGem/PickReturnGem', params)
         if (res) {
-          swAlert.success('', `เลขที่ใบจ่ายตัดเพชรเเละพลอย: ${res}`, () => {
-            this.onClear()
-            this.$emit('closeModal', 'confirm')
-          })
+          swAlert.success(
+            `เลขที่ใบคืนเพชรเเละพลอย: ${res.runningPickReturn}
+            </br>
+            เลขที่ใบเบิกเพชรเเละพลอย: ${res.runningPickOutbound ?? '-'}`,
+            '',
+            () => {
+              this.onClear()
+              this.$emit('closeModal', 'confirm')
+            }
+          )
         }
       } catch (error) {
         console.log('error', error)

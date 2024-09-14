@@ -7,8 +7,8 @@
   }
 }
 .p-datatable thead th {
-  background-color: $base-font-color !important;
-  color: #ffffff;
+  background-color: #921313;
+  color: #ffffff !important;
   .p-column-header-content {
     font-weight: 100 !important;
   }
@@ -94,7 +94,7 @@
 
 //  --------- p-autocomplete p-component p-inputwrapper ----------
 .p-autocomplete {
-  height: 35px !important;
+  //height: 35px !important;
   width: 100% !important;
   .p-autocomplete.input {
     width: 100% !important;
@@ -177,24 +177,26 @@
     box-shadow 0.2s;
 }
 .p-checkbox.p-highlight .p-checkbox-box {
-  border-color: #921313 !important;  
+  border-color: #921313 !important;
   background: #921313 !important;
 }
 
-
 // --------- stepper ---------- //
 .p-stepper .p-stepper-header.p-highlight .p-stepper-number {
-  background: $base-font-color  !important;
-  color: #ffffff !important;;
+  background: $base-font-color !important;
+  color: #ffffff !important;
 }
 .p-stepper .p-stepper-header:has(~ .p-highlight) .p-stepper-separator {
   background-color: $base-font-color !important;
 }
-.p-stepper .p-stepper-header:has(~ .p-highlight)  .p-stepper-action .p-stepper-title {
+.p-stepper .p-stepper-header:has(~ .p-highlight) .p-stepper-action .p-stepper-title {
   margin-left: 0.5rem;
-  color: $base-font-color  !important;
+  color: $base-font-color !important;
   font-weight: 700;
-  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
 }
 .p-stepper .p-stepper-header .p-stepper-action .p-stepper-number {
   border: 1px solid #f3f4f6;
@@ -205,7 +207,10 @@
   line-height: 2rem;
   font-size: 1.143rem;
   border-radius: 50%;
-  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
 }
 .p-stepper .p-stepper-panels {
   //background: #ffffff;
@@ -246,8 +251,6 @@
   border-top-left-radius: 0px !important;
   gap: 0.5rem;
 }
-
-
 
 // ------------ mutiSelect ------------ //
 .p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container .p-inputtext {

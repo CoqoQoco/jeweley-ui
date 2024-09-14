@@ -29,16 +29,15 @@ import headerBar from './components/SearchView.vue'
 import dataTable from './components/DataTableView.vue'
 
 const interfaceForm = {
-  requestDateStart: new Date(),
-  requestDateEnd: new Date(),
-  type: [],
-  jobOrPo: null,
+  runing: null,
+  type: [5],
+  status: ['process'],
 
-  code: null,
-  groupName: [],
-  grade: [],
-  shape: [],
-  size: []
+  requestDateStart: null,
+  requestDateEnd: null,
+
+  returnDateStart: null,
+  returnDateEnd: null
 }
 export default {
   components: {
@@ -58,9 +57,7 @@ export default {
         { id: 2, description: 'รับเข้าคลัง [พลอยนอกสต๊อก]' },
         { id: 3, description: 'รับเข้าคลัง [พลอยคืน]' },
         { id: 4, description: 'จ่ายออกคลัง' },
-        { id: 5, description: 'ยืมออกคลัง' },
-        { id: 6, description: 'คืนเข้าคลัง' },
-        { id: 7, description: 'เบิกออกคลัง' }
+        { id: 5, description: 'ยืมออกคลัง' }
       ]
     }
   },
