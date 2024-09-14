@@ -20,7 +20,7 @@
           </button>
           <button
             :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
-            title="เพิ่มจ่ายแต่ง"
+            title="หลอม"
             :disabled="checkBtn('add')"
             @click="addStatus()"
           >
@@ -28,7 +28,7 @@
           </button>
           <button
             :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
-            title="เเก้ไขจ่ายแต่ง"
+            title="เเก้ไข"
             :disabled="checkBtn('edit')"
             @click="updateStatus()"
           >
@@ -36,7 +36,7 @@
           </button>
           <button
             :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
-            title="ลบจ่ายแต่ง"
+            title="ลบ"
             :disabled="checkBtn('delete')"
             @click="onDelStatus(modelPlanStatus.id)"
           >
@@ -49,12 +49,12 @@
       <div class="form-col-container pl-2 mt-3">
         <!-- name -->
         <div class="d-flex flex-column">
-          <span class="title-text">ชื่อ จ่ายงาน/รับงาน</span>
+          <span class="title-text">ชื่อผู้รับหลอม</span>
           <span class="desc-text">{{ modelPlanStatus.sendName }}</span>
         </div>
         <!-- date -->
         <div class="d-flex flex-column">
-          <span class="title-text">วันที่</span>
+          <span class="title-text">วันที่หลอม</span>
           <span class="desc-text">{{ formatDate(modelPlanStatus.sendDate) }}</span>
         </div>
         <div></div>
@@ -77,16 +77,16 @@
           columnResizeMode="fit"
           scrollHeight="calc(100vh - 160px)"
         >
-          <Column field="gold" header="ทอง" style="width: 80px"> </Column>
-          <Column field="requestDate" header="วันที่" style="width: 120px">
+          <Column field="gold" header="ทอง" style="min-width: 80px"> </Column>
+          <Column field="requestDate" header="วันที่" style="min-width: 120px">
             <template #body="slotProps">
               <div class="text-left">
                 {{ formatDate(slotProps.data.requestDate) }}
               </div>
             </template>
           </Column>
-          <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 80px"> </Column>
-          <Column field="goldWeightSend" header="นำหนักจ่าย" style="width: 80px">
+          <Column field="goldQtySend" header="จำนวน" style="min-width: 80px"> </Column>
+          <Column field="goldWeightSend" header="นำหนัก" style="min-width: 80px">
             <template #body="slotProps">
               <div>
                 {{
@@ -94,103 +94,6 @@
                     slotProps.data.goldWeightSend
                       ? Number(slotProps.data.goldWeightSend).toFixed(2).toLocaleString()
                       : ''
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 80px"> </Column>
-          <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 80px">
-            <template #body="slotProps">
-              <div>
-                {{
-                  `${
-                    slotProps.data.goldWeightCheck
-                      ? Number(slotProps.data.goldWeightCheck).toFixed(2).toLocaleString()
-                      : ''
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="goldWeightDiff" header="ขาด" style="width: 100px">
-            <template #body="prop">
-              <div v-if="prop.data.goldWeightDiff">
-                {{
-                  `${
-                    prop.data.goldWeightDiff
-                  } (${prop.data.goldWeightDiffPercent.toLocaleString()}%)`
-                }}
-              </div>
-              <div v-else>-</div>
-            </template>
-          </Column>
-          <Column field="description" header="รายละเอียด" style="min-width: 120px">
-            <template #editor="{ data, field }">
-              <input
-                type="text"
-                :class="data[field] ? `` : `bg-warning`"
-                class="form-control"
-                v-model="data[field]"
-              />
-            </template>
-          </Column>
-          <Column
-            field="worker"
-            :header="modelPlanStatus.status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
-            style="min-width: 120px"
-          >
-            <template #body="slotProps">
-              <div class="text-center">
-                {{
-                  `${
-                    slotProps.data.worker
-                      ? `${slotProps.data.worker} - ${slotProps.data.workerName}`
-                      : ''
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column
-            v-if="modelPlanStatus.status === 90"
-            field="workerSub"
-            header="ช่างชุบ"
-            style="min-width: 120px"
-          >
-            <template #body="slotProps">
-              <div class="text-center">
-                {{
-                  `${
-                    slotProps.data.workerSub
-                      ? `${slotProps.data.workerSub} - ${slotProps.data.workerSubName}`
-                      : null
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="wages" header="ค่าเเรงต่อชิ้น" style="width: 100px">
-            <template #body="slotProps">
-              <div class="text-right">
-                {{
-                  `${
-                    slotProps.data.wages
-                      ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
-                      : ''
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="totalWages" header="รวมค่าแรงช่าง" style="min-width: 120px">
-            <template #body="slotProps">
-              <div class="text-right">
-                {{
-                  `${
-                    slotProps.data.wages
-                      ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
-                      : Number(wages).toFixed(2).toLocaleString()
                   }`
                 }}
               </div>
@@ -282,7 +185,7 @@ export default {
       if (_.isEmpty(tbtProductionPlanStatusHeader)) {
         return null
       } else {
-        var value = tbtProductionPlanStatusHeader.find((x) => x.status === 50)
+        var value = tbtProductionPlanStatusHeader.find((x) => x.status === 500)
         console.log('modelPlanStatus', value)
         return value
       }
@@ -334,7 +237,7 @@ export default {
     // ----- event
     addStatus() {
       console.log('addStatus')
-      this.$emit('onShowAddStatus', 'casting')
+      this.$emit('onShowAddStatus', 'melted')
     },
     updateStatus() {
       console.log('updateStatus')

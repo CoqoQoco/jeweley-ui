@@ -22,7 +22,7 @@
             <button
               class="btn btn-sm btn btn-red"
               title="ลบรายการ"
-              @click="delOutbound(slotProps.data, slotProps.index)"
+              @click="delOutbound(slotProps.data, index)"
               type="button"
             >
               <i class="bi bi-trash-fill"></i>
@@ -61,7 +61,7 @@
           </div>
         </template>
       </Column>
-      <column field="issueQty" header="จำนวนจ่ายตัด" style="width: 100px">
+      <column field="issueQty" header="จำนวนเบิก" style="width: 100px">
         <template #body="slotProps">
           <input
             style="width: 100px; background-color: #e0e0e0"
@@ -79,7 +79,7 @@
           <!-- @change="onChangeQty(slotProps.data)" -->
         </template>
       </column>
-      <column field="issueQtyWeight" header="น้ำหนักจ่ายตัด" style="width: 100px">
+      <column field="issueQtyWeight" header="น้ำหนักจเบิก" style="width: 100px">
         <template #body="slotProps">
           <input
             style="width: 100px; background-color: #e0e0e0"
@@ -206,7 +206,8 @@ export default {
 
     // ------ event
     delOutbound(data, index) {
-      this.dataExpand.gemsOutbound.splice(index, 1)
+      //this.dataExpand.gemsOutbound.splice(index, 1)
+      this.$emit('delOutbound', data, index)
     },
     onUpdateIssueQty(e, data, index) {
       this.$emit('onUpdateIssueQty', e, data, index)

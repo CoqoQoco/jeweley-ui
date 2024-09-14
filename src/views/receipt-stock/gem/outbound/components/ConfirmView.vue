@@ -233,7 +233,7 @@ export default {
 
     // ----- helper
     onClear() {
-      this.form = {}
+      //this.form = {}
       this.val = { ...interfaceIsVal }
     }
   }

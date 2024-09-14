@@ -69,6 +69,65 @@
           </div>
         </template>
       </Column>
+      <Column field="previousRemianQty" header="จำนวนก่อนทำ" sortable style="min-width: 200px">
+        <template #body="slotProps">
+          <div>
+            <span>
+              {{
+                slotProps.data.previousRemianQty
+                  ? Number(slotProps.data.previousRemianQty).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
+        </template>
+      </Column>
+      <Column field="previousRemianQtyWeight" header="น้ำหนักก่อนทำ" sortable style="min-width: 200px">
+        <template #body="slotProps">
+          <div>
+            <span>
+              {{
+                slotProps.data.previousRemianQtyWeight
+                  ? Number(slotProps.data.previousRemianQtyWeight).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
+        </template>
+      </Column>
+      <Column field="pointRemianQty" header="จำนวนกหลังทำ" sortable style="min-width: 200px">
+        <template #body="slotProps">
+          <div>
+            <span>
+              {{
+                slotProps.data.pointRemianQty
+                  ? Number(slotProps.data.pointRemianQty).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
+        </template>
+      </Column>
+      <Column field="pointRemianQtyWeight" header="น้ำหนักหลังทำ" sortable style="min-width: 200px">
+        <template #body="slotProps">
+          <div>
+            <span>
+              {{
+                slotProps.data.pointRemianQtyWeight
+                  ? Number(slotProps.data.pointRemianQtyWeight).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </span>
+          </div>
+        </template>
+      </Column>
+      
+
+      <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
+      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column>
+      <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 200px"> </Column>
+      <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column>
+
       <Column field="jobOrPo" header="Invoice/Ref No." style="min-width: 200px"> </Column>
       <Column field="subpplierName" header="ร้านผลิต/ชื่อร้าน" style="min-width: 200px"> </Column>
       <Column field="supplierCost" header="ราคาทุน" style="min-width: 200px">
@@ -90,12 +149,6 @@
       <Column field="size" header="ขนาด" sortable style="min-width: 200px"> </Column>
       <Column field="shape" header="รูปร่าง" sortable style="min-width: 200px"> </Column>
       <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column>
-
-      <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
-      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column>
-      <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 200px"> </Column>
-      <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column>
-      <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column> -->
     </DataTable>
   </div>
 </template>

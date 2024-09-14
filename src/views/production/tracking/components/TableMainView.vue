@@ -26,10 +26,7 @@
       <Column style="width: 80px">
         <template #body="slotProps">
           <div class="btn-action-container">
-            <button
-              class="btn btn-sm btn btn-green"
-              @click="viewplan(slotProps.data)"
-            >
+            <button class="btn btn-sm btn btn-green" @click="viewplan(slotProps.data)">
               <i class="bi bi-search"></i>
             </button>
             <!-- <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
@@ -238,6 +235,8 @@ export default {
       switch (status) {
         case 9999:
           return 'box-status-process'
+        case 500:
+          return 'box-status-disable'
         case 100:
         case 95:
           return 'box-status-success'
@@ -430,7 +429,6 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/table-data.scss';
 @import '@/assets/scss/custom-style/standard-data-table';
-
 
 .btn-link:hover {
   color: var(--base-color) !important;

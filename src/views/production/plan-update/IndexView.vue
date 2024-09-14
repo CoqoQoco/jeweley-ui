@@ -11,7 +11,11 @@
         :isShowRightSlot="true"
       >
         <template v-slot:rightSlot>
-          <div class="text-center" style="font-size: medium;" :class="getStatusSeverity(data.status)">
+          <div
+            class="text-center"
+            style="font-size: medium"
+            :class="getStatusSeverity(data.status)"
+          >
             {{ data.statusName }}
           </div>
         </template>
@@ -124,6 +128,27 @@
         @fetch="fetchFormStatusAdd"
       ></planCastingUpdate>
     </div>
+
+    <div v-if="tabCctive === 4">
+      <planMeltedView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planMeltedView>
+      <planMeltedAdd
+        :isShow="add.melted"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planMeltedAdd>
+    </div>
   </div>
 </template>
 
@@ -152,11 +177,15 @@ import planCatingView from './components/view/PlanCastingView.vue'
 import planCastingAdd from './components/add/PlanCatingAddView.vue'
 import planCastingUpdate from './components/update/PlanCastingUpdateView.vue'
 
+import planMeltedView from './components/view/PlanMeltedView.vue'
+import planMeltedAdd from './components/add/PlanMeltedAddView.vue'
+
 const interfaceIsShowAdd = {
   casting: false
 }
 const interfaceIsShowUpdate = {
-  casting: false
+  casting: false,
+  melted: false
 }
 
 export default {
@@ -175,7 +204,10 @@ export default {
 
     planCatingView,
     planCastingAdd,
-    planCastingUpdate
+    planCastingUpdate,
+
+    planMeltedView,
+    planMeltedAdd
   },
   data() {
     return {
@@ -205,7 +237,8 @@ export default {
         { label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
         { label: 'ส่วนประกอบการผลิต', icon: 'bi bi-gem' },
         { label: 'สถานะการผลิต', icon: 'bi bi-hammer' },
-        { label: 'จ่ายเเต่ง', icon: 'bi bi-hammer' }
+        { label: 'แต่ง', icon: 'bi bi-hammer' },
+        { label: 'หลอม', icon: 'bi bi-hammer' }
       ]
     }
   },
@@ -257,6 +290,9 @@ export default {
       this.add = { ...interfaceIsShowAdd }
       if (status === 'casting') {
         this.add.casting = true
+      }
+      if (status === 'melted') {
+        this.add.melted = true
       }
     },
     onShowUpdateStatus(status) {
@@ -386,6 +422,8 @@ export default {
       switch (status) {
         case 9999:
           return 'box-status-process'
+        case 500:
+          return 'box-status-disable'
         case 100:
         case 95:
           return 'box-status-success'
@@ -479,6 +517,19 @@ export default {
   font-weight: bold;
   font-size: 12px;
   background-color: #dad4b5;
+  width: 120px;
+  height: 100%;
+}
+.box-status-disable {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  background-color: #ff4d4d;
   width: 120px;
   height: 100%;
 }
