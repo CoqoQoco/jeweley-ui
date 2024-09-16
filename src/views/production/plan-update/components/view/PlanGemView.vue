@@ -20,7 +20,7 @@
           </button>
           <button
             :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
-            title="หลอม"
+            title="คัดพลอย"
             :disabled="checkBtn('add')"
             @click="addStatus()"
           >
@@ -49,12 +49,12 @@
       <div class="form-col-container pl-2 mt-3">
         <!-- name -->
         <div class="d-flex flex-column">
-          <span class="title-text">ผู้รับหลอม</span>
+          <span class="title-text">ผู้คัดพลอย</span>
           <span class="desc-text">{{ modelPlanStatus.sendName }}</span>
         </div>
         <!-- date -->
         <div class="d-flex flex-column">
-          <span class="title-text">วันที่หลอม</span>
+          <span class="title-text">วันที่คัดพลอย</span>
           <span class="desc-text">{{ formatDate(modelPlanStatus.sendDate) }}</span>
         </div>
         <div></div>
@@ -63,7 +63,7 @@
 
       <div class="line"></div>
 
-      <!-- grid -->
+      <!-- grid gold-->
       <div class="filter-container-highlight mt-3">
         <span class="desc-text-white">รายละเอียดทอง</span>
       </div>
@@ -80,43 +80,146 @@
           columnResizeMode="fit"
           scrollHeight="calc(100vh - 160px)"
         >
-          <Column field="gold" header="ทอง" style="min-width: 80px"> </Column>
-          <Column field="requestDate" header="วันที่" style="min-width: 120px">
+          <Column field="gold" header="ทอง" style="min-width: 200px"> </Column>
+          <Column field="requestDate" header="วันที่" style="min-width: 200px">
             <template #body="slotProps">
               <div class="text-left">
                 {{ formatDate(slotProps.data.requestDate) }}
               </div>
             </template>
           </Column>
-          <Column field="goldQtySend" header="จำนวน" style="min-width: 80px"> </Column>
-          <Column field="goldWeightSend" header="นำหนัก" style="min-width: 80px">
+          <Column field="worker" header="ช่างคัดพลอย" style="min-width: 200px">
             <template #body="slotProps">
-              <div>
+              <div class="text-center">
                 {{
                   `${
-                    slotProps.data.goldWeightSend
-                      ? Number(slotProps.data.goldWeightSend).toFixed(2).toLocaleString()
+                    slotProps.data.worker
+                      ? `${slotProps.data.worker} - ${slotProps.data.workerName}`
                       : ''
                   }`
                 }}
               </div>
             </template>
           </Column>
-          <!-- <template #footer>
-            <div class="d-flex justify-content-between">
-              <div>ทั้งหมด {{ modelPlanStatus.tbtProductionPlanStatusDetail.length }} รายการ</div>
-              <div>
-                รวมค่าแรงทั้งหมด
+          <Column field="workerSub" header="ช่างคัดเพชร" style="min-width: 200px">
+            <template #body="slotProps">
+              <div class="text-center">
                 {{
                   `${
-                    modelPlanStatus.wagesTotal
-                      ? Number(modelPlanStatus.wagesTotal).toFixed(2).toLocaleString()
-                      : Number(wages).toFixed(2).toLocaleString()
+                    slotProps.data.workerSub
+                      ? `${slotProps.data.workerSub} - ${slotProps.data.workerSubName}`
+                      : ''
                   }`
                 }}
               </div>
+            </template>
+          </Column>
+          <Column field="goldQtyCheck" header="จำนวน" style="width: 100px">
+            <template #body="slotProps">
+              <div>
+                {{
+                  `${
+                    slotProps.data.goldQtyCheck
+                      ? Number(slotProps.data.goldQtyCheck).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }`
+                }}
+              </div>
+            </template>
+          </Column>
+          <Column field="goldWeightCheck" header="นำหนัก" style="width: 100px">
+            <template #body="slotProps">
+              <div>
+                {{
+                  `${
+                    slotProps.data.goldWeightSend
+                      ? Number(slotProps.data.goldWeightSend).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }`
+                }}
+              </div>
+            </template>
+          </Column>
+          <template #footer>
+            <div class="d-flex justify-content-between">
+              <div>ทั้งหมด {{ modelPlanStatus.tbtProductionPlanStatusDetail.length }} รายการ</div>
             </div>
-          </template> -->
+          </template>
+        </DataTable>
+      </div>
+
+      <!-- grid gem -->
+      <div class="filter-container-highlight mt-3">
+        <span class="desc-text-white">รายละเอียดเพชรเเละพลอย</span>
+      </div>
+      <div class="mb-4">
+        <DataTable
+          :value="modelPlanStatus.tbtProductionPlanStatusGem"
+          showGridlines
+          dataKey="id"
+          ref="dt"
+          class="p-datatable-sm"
+          resizableColumns
+          scrollable
+          stripedRows
+          columnResizeMode="fit"
+          scrollHeight="calc(100vh - 160px)"
+        >
+          <Column field="name" header="พลอย" style="min-width: 200px"> </Column>
+          <Column field="outboundRunning" header="เลขที่เบิก" style="min-width: 200px"> </Column>
+          <Column field="outboundName" header="ผู้เบิก" style="min-width: 200px"> </Column>
+          <Column field="outboundDate" header="วันที่เบิก" style="min-width: 200px">
+            <template #body="slotProps">
+              <div class="text-left">
+                {{ formatDateTime(slotProps.data.outboundDate) }}
+              </div>
+            </template>
+          </Column>
+          <Column field="qty" header="จำนวน" style="width: 100px">
+            <template #body="slotProps">
+              {{
+                slotProps.data.qty
+                  ? Number(slotProps.data.qty).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </template>
+          </Column>
+          <Column field="weight" header="น้ำหนัก" style="width: 100px">
+            <template #body="slotProps">
+              {{
+                slotProps.data.weight
+                  ? Number(slotProps.data.weight).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </template>
+          </Column>
+          <Column field="price" header="ราคา" style="width: 100px">
+            <template #body="slotProps">
+              {{
+                slotProps.data.price
+                  ? Number(slotProps.data.price).toFixed(3).toLocaleString()
+                  : '0.000'
+              }}
+            </template>
+          </Column>
+          <template #footer>
+            <div class="d-flex justify-content-between">
+              <div>ทั้งหมด {{ modelPlanStatus.tbtProductionPlanStatusGem.length }} รายการ</div>
+              <div>
+                <button
+                  v-if="modelPlanStatus.tbtProductionPlanStatusGem.length"
+                  :class="
+                    modelPlanStatus.tbtProductionPlanStatusGem.length
+                      ? 'btn btn-sm btn-primary'
+                      : 'btn btn-sm btn-secondary'
+                  "
+                  @click="exportGemCsv"
+                >
+                  <span class="bi bi-filetype-csv"></span>
+                </button>
+              </div>
+            </div>
+          </template>
         </DataTable>
       </div>
 
@@ -146,6 +249,7 @@ import _ from 'lodash'
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import Papa from 'papaparse'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-config.js'
@@ -188,7 +292,7 @@ export default {
       if (_.isEmpty(tbtProductionPlanStatusHeader)) {
         return null
       } else {
-        var value = tbtProductionPlanStatusHeader.find((x) => x.status === 500)
+        var value = tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
         console.log('modelPlanStatus', value)
         return value
       }
@@ -205,7 +309,8 @@ export default {
   },
   data() {
     return {
-      wages: 0
+      wages: 0,
+      status: 70
     }
   },
   methods: {
@@ -228,7 +333,8 @@ export default {
           case 'edit':
             return this.modelPlanStatus ? false : true
           case 'delete':
-            return this.modelPlanStatus ? false : true
+            return true
+          //return this.modelPlanStatus ? false : true
           case 'close':
             return true
         }
@@ -236,19 +342,42 @@ export default {
         return true
       }
     },
+    exportWithCustomColumnCSV(data, filename) {
+      const utf8BOM = '\uFEFF'
+      const csv = Papa.unparse(data, {
+        quotes: false, //or array of booleans
+        quoteChar: '"',
+        escapeChar: '"',
+        delimiter: ',',
+        header: true,
+        newline: '\r\n',
+        skipEmptyLines: false, //other option is 'greedy', meaning skip delimiters, quotes, and whitespace.
+        columns: null //or array of strings
+      })
+      const csvData = utf8BOM + csv
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.setAttribute('href', url)
+      link.setAttribute('download', filename)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
 
     // ----- event
     addStatus() {
       console.log('addStatus')
-      this.$emit('onShowAddStatus', 'melted')
+      this.$emit('onShowAddStatus', 'gems')
     },
     updateStatus() {
       console.log('updateStatus')
-      this.$emit('onShowUpdateStatus', 'casting')
+      this.$emit('onShowUpdateStatus', 'gems')
     },
     onDelStatus(id) {
       swAlert.confirmSubmit(
-        `ยืนยันลบงาน [จ่ายเเต่ง]`,
+        `ยืนยันลบงาน [คัดพลอย]`,
         `${this.model.wo}-${this.model.woNumber}`,
         async () => {
           //console.log('call submitPlan')
@@ -256,6 +385,22 @@ export default {
         },
         null,
         null
+      )
+    },
+    exportGemCsv() {
+      const dataExcel = this.modelPlanStatus.tbtProductionPlanStatusGem.map((item) => {
+        return {
+          เลขที่เบิก: item.remark1,
+          พลอย: item.name,
+          จำนวน: item.qty,
+          น้ำหนักรับ: item.weight,
+          ราคา: item.price
+        }
+      })
+
+      this.exportWithCustomColumnCSV(
+        dataExcel,
+        `รายการเพชรเเละพลอย แผนผลิตเลขที่ [${this.modelValue.wo}-${this.modelValue.woNumber}].csv`
       )
     },
 

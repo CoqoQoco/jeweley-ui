@@ -64,7 +64,10 @@
       <div class="line"></div>
 
       <!-- grid -->
-      <div class="mt-3 mb-4">
+      <div class="filter-container-highlight mt-3">
+        <span class="desc-text-white">รายละเอียดทอง</span>
+      </div>
+      <div class="mb-4">
         <DataTable
           :value="modelPlanStatus.tbtProductionPlanStatusDetail"
           showGridlines
@@ -322,7 +325,8 @@ export default {
           case 'edit':
             return this.modelPlanStatus ? false : true
           case 'delete':
-            return this.modelPlanStatus ? false : true
+            return true
+          //return this.modelPlanStatus ? false : true
           case 'close':
             return true
         }

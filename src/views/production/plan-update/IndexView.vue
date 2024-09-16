@@ -130,6 +130,36 @@
     </div>
 
     <div v-if="tabCctive === 4">
+      <planGemView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planGemView>
+      <planGemUpdate
+        :isShow="update.gems"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planGemUpdate>
+      <planGemAdd
+        :isShow="add.gems"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planGemAdd>
+    </div>
+
+    <div v-if="tabCctive === 5">
       <planMeltedView
         :modelValue="data"
         :modelMatValue="mat"
@@ -180,12 +210,17 @@ import planCastingUpdate from './components/update/PlanCastingUpdateView.vue'
 import planMeltedView from './components/view/PlanMeltedView.vue'
 import planMeltedAdd from './components/add/PlanMeltedAddView.vue'
 
+import planGemView from './components/view/PlanGemView.vue'
+import planGemUpdate from './components/update/PlanGemUpdateView.vue'
+import planGemAdd from './components/add/PlanGemAddView.vue'
+
 const interfaceIsShowAdd = {
   casting: false
 }
 const interfaceIsShowUpdate = {
   casting: false,
-  melted: false
+  melted: false,
+  gems: false
 }
 
 export default {
@@ -207,7 +242,11 @@ export default {
     planCastingUpdate,
 
     planMeltedView,
-    planMeltedAdd
+    planMeltedAdd,
+
+    planGemView,
+    planGemUpdate,
+    planGemAdd
   },
   data() {
     return {
@@ -238,6 +277,7 @@ export default {
         { label: 'ส่วนประกอบการผลิต', icon: 'bi bi-gem' },
         { label: 'สถานะการผลิต', icon: 'bi bi-hammer' },
         { label: 'แต่ง', icon: 'bi bi-hammer' },
+        { label: 'คัดพลอย', icon: 'bi bi-hammer' },
         { label: 'หลอม', icon: 'bi bi-hammer' }
       ]
     }
@@ -294,12 +334,18 @@ export default {
       if (status === 'melted') {
         this.add.melted = true
       }
+      if (status === 'gems') {
+        this.add.gems = true
+      }
     },
     onShowUpdateStatus(status) {
       console.log('onShowUpdateStatus', status)
       this.update = { ...interfaceIsShowUpdate }
       if (status === 'casting') {
         this.update.casting = true
+      }
+      if (status === 'gems') {
+        this.update.gems = true
       }
     },
 
@@ -314,6 +360,7 @@ export default {
         if (res) {
           this.data = { ...res }
           //this.statusName = this.data.statusNavigation.nameTh
+          console.log('this.data', this.data)
         }
         this.isLoading = false
       } catch (error) {
@@ -370,7 +417,7 @@ export default {
         }
 
         if (res) {
-          console.log('res', res)
+          //console.log('res', res)
           switch (type) {
             case 'PRODUCTTYPE':
               this.masterProduct = [...res]
@@ -449,8 +496,8 @@ export default {
       this.fetchData(this.id)
       this.fetchDataMat(this.id)
 
-      this.fetchData(this.id)
-      this.fetchDataMat(this.id)
+      //this.fetchData(this.id)
+      //this.fetchDataMat(this.id)
 
       this.fetchMasterData('PRODUCTTYPE')
       this.fetchMasterData('CUSTOMERTYPE')
