@@ -80,36 +80,36 @@
           columnResizeMode="fit"
           scrollHeight="calc(100vh - 160px)"
         >
-          <Column field="gold" header="ทอง" style="width: 80px"> </Column>
-          <Column field="requestDate" header="วันที่" style="width: 120px">
+          <Column field="gold" header="ทอง" style="min-width: 200px"> </Column>
+          <Column field="requestDate" header="วันที่" style="min-width: 200px">
             <template #body="slotProps">
               <div class="text-left">
                 {{ formatDate(slotProps.data.requestDate) }}
               </div>
             </template>
           </Column>
-          <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 80px"> </Column>
-          <Column field="goldWeightSend" header="นำหนักจ่าย" style="width: 80px">
+          <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 100px"> </Column>
+          <Column field="goldWeightSend" header="นำหนักจ่าย" style="width: 100px">
             <template #body="slotProps">
               <div>
                 {{
                   `${
                     slotProps.data.goldWeightSend
-                      ? Number(slotProps.data.goldWeightSend).toFixed(2).toLocaleString()
+                      ? Number(slotProps.data.goldWeightSend).toFixed(3).toLocaleString()
                       : ''
                   }`
                 }}
               </div>
             </template>
           </Column>
-          <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 80px"> </Column>
-          <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 80px">
+          <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 100px"> </Column>
+          <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
             <template #body="slotProps">
               <div>
                 {{
                   `${
                     slotProps.data.goldWeightCheck
-                      ? Number(slotProps.data.goldWeightCheck).toFixed(2).toLocaleString()
+                      ? Number(slotProps.data.goldWeightCheck).toFixed(3).toLocaleString()
                       : ''
                   }`
                 }}
@@ -118,17 +118,19 @@
           </Column>
           <Column field="goldWeightDiff" header="ขาด" style="width: 100px">
             <template #body="prop">
-              <div v-if="prop.data.goldWeightDiff">
-                {{
-                  `${
-                    prop.data.goldWeightDiff
-                  } (${prop.data.goldWeightDiffPercent.toLocaleString()}%)`
-                }}
+              <div>
+                <span v-if="prop.data.goldWeightDiff">
+                  {{
+                    `${
+                      prop.data.goldWeightDiff
+                    } (${prop.data.goldWeightDiffPercent.toLocaleString()}%)`
+                  }}
+                </span>
+                <span v-else> - </span>
               </div>
-              <div v-else>-</div>
             </template>
           </Column>
-          <Column field="description" header="รายละเอียด" style="min-width: 120px">
+          <Column field="description" header="รายละเอียด" style="min-width: 200px">
             <template #editor="{ data, field }">
               <input
                 type="text"
@@ -141,7 +143,7 @@
           <Column
             field="worker"
             :header="modelPlanStatus.status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
-            style="min-width: 120px"
+            style="min-width: 200px"
           >
             <template #body="slotProps">
               <div class="text-center">
@@ -159,7 +161,7 @@
             v-if="modelPlanStatus.status === 90"
             field="workerSub"
             header="ช่างชุบ"
-            style="min-width: 120px"
+            style="min-width: 200px"
           >
             <template #body="slotProps">
               <div class="text-center">
@@ -173,7 +175,7 @@
               </div>
             </template>
           </Column>
-          <Column field="wages" header="ค่าเเรงต่อชิ้น" style="width: 100px">
+          <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 200px">
             <template #body="slotProps">
               <div class="text-right">
                 {{
@@ -186,7 +188,7 @@
               </div>
             </template>
           </Column>
-          <Column field="totalWages" header="รวมค่าแรงช่าง" style="min-width: 120px">
+          <Column field="totalWages" header="รวมค่าแรงช่าง" style="min-width: 200px">
             <template #body="slotProps">
               <div class="text-right">
                 {{

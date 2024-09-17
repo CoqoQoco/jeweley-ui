@@ -231,7 +231,7 @@
                 <p class="description">{{ formatDateTime(data.updateDate) }}</p>
               </div>
             </template>
-            <template #icons>
+            <!-- <template #icons>
               <button
                 class="p-panel-header-icon p-link mr-2"
                 @click="onUpdateStatus(data)"
@@ -246,7 +246,7 @@
               >
                 <span><i class="bi bi-trash-fill text-danger"></i></span>
               </button>
-            </template>
+            </template> -->
             <div>
               <div class="status-gem-selection-container">
                 <!-- <div>

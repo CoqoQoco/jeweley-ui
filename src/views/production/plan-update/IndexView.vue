@@ -274,11 +274,11 @@ export default {
       tabCctive: 0,
       tabItems: [
         { label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
-        { label: 'ส่วนประกอบการผลิต', icon: 'bi bi-gem' },
+        { label: 'ส่วนประกอบทอง', icon: 'bi bi-gem' },
         { label: 'สถานะการผลิต', icon: 'bi bi-hammer' },
         { label: 'แต่ง', icon: 'bi bi-hammer' },
         { label: 'คัดพลอย', icon: 'bi bi-hammer' },
-        { label: 'หลอม', icon: 'bi bi-hammer' }
+        { label: 'หลอม', icon: 'bi bi-clipboard-x-fill' }
       ]
     }
   },

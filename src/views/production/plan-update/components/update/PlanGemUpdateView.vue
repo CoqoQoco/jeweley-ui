@@ -599,7 +599,7 @@ export default {
       console.log('initForm ed 2', this.form)
     },
     checkOutbound(data) {
-      return data.outboundRunning ? true : false
+      return !_.isEmpty(data.outboundRunning) ? true : false
     },
 
     // ----- event

@@ -1034,7 +1034,8 @@ export default {
   },
   computed: {
     modelMasterStatus() {
-      return this.masterStatus.filter((x) => x.id !== 10)
+      const disStatus = [10, 70, 50, 500]
+      return this.masterStatus.filter((x) => disStatus.includes(x.id) === false)
     },
     model() {
       return this.modelValue

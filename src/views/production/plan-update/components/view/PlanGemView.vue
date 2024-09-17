@@ -150,7 +150,22 @@
 
       <!-- grid gem -->
       <div class="filter-container-highlight mt-3">
-        <span class="desc-text-white">รายละเอียดเพชรเเละพลอย</span>
+        <div class="d-flex justify-content-between">
+          <span class="desc-text-white">รายละเอียดเพชรเเละพลอย</span>
+          <div>
+            <button
+              :class="
+                modelPlanStatus.tbtProductionPlanStatusGem.length
+                  ? 'btn btn-sm btn-primary'
+                  : 'btn btn-sm btn-secondary'
+              "
+              @click="exportGemCsv"
+              :disabled="!modelPlanStatus.tbtProductionPlanStatusGem.length"
+            >
+              <span class="bi bi-filetype-csv"></span>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="mb-4">
         <DataTable
@@ -205,19 +220,6 @@
           <template #footer>
             <div class="d-flex justify-content-between">
               <div>ทั้งหมด {{ modelPlanStatus.tbtProductionPlanStatusGem.length }} รายการ</div>
-              <div>
-                <button
-                  v-if="modelPlanStatus.tbtProductionPlanStatusGem.length"
-                  :class="
-                    modelPlanStatus.tbtProductionPlanStatusGem.length
-                      ? 'btn btn-sm btn-primary'
-                      : 'btn btn-sm btn-secondary'
-                  "
-                  @click="exportGemCsv"
-                >
-                  <span class="bi bi-filetype-csv"></span>
-                </button>
-              </div>
             </div>
           </template>
         </DataTable>
@@ -390,11 +392,12 @@ export default {
     exportGemCsv() {
       const dataExcel = this.modelPlanStatus.tbtProductionPlanStatusGem.map((item) => {
         return {
-          เลขที่เบิก: item.remark1,
+          เลขที่เบิก: item.outboundRunning,
+          ผู้เบิก: item.outboundName,
+          รหัส: item.code,
           พลอย: item.name,
-          จำนวน: item.qty,
-          น้ำหนักรับ: item.weight,
-          ราคา: item.price
+          จำนวน: item.qty ? Number(item.qty).toFixed(3) : '0.000',
+          น้ำหนัก: item.weight ? Number(item.weight).toFixed(3) : '0.000'
         }
       })
 
