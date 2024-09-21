@@ -238,8 +238,12 @@ export default {
             const newQty = 0
             const newGems = {
               ...res,
-              issueQty: newQty.toFixed(3),
-              issueQtyWeight: newQty.toFixed(3),
+              //issueQty: newQty.toFixed(3),
+              //issueQtyWeight: newQty.toFixed(3),
+
+               issueQty: res.quantity.toFixed(3),
+              issueQtyWeight: res.quantityWeight.toFixed(3),
+
               supplierCost: newQty
             }
             this.formSubmit.gems.push(newGems)

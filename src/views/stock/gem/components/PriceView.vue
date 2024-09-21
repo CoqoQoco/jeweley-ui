@@ -11,11 +11,11 @@
           <div class="form-col-container mt-1">
             <div class="form-col-container">
               <div class="d-flex flex-column">
-                <span class="title-text-white">ราคา</span>
+                <span class="title-text-white">ราคาต่อจำนวน</span>
                 <span class="desc-text-white">{{ gem.price.toFixed(3) }}</span>
               </div>
               <div class="d-flex flex-column">
-                <span class="title-text-white">ราคาต่อหน่วย</span>
+                <span class="title-text-white">ราคาต่อน้ำหนัก</span>
                 <span class="desc-text-white">{{ gem.priceQty.toFixed(3) }}</span>
               </div>
               <div class="d-flex flex-column">
@@ -39,7 +39,7 @@
               <!-- price -->
               <div>
                 <div>
-                  <span class="title-text">ราคา</span>
+                  <span class="title-text">ราคาต่อจำนวน</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <input
@@ -57,7 +57,7 @@
               <!-- price qty -->
               <div>
                 <div>
-                  <span class="title-text">ราคาต่อหน่วย</span>
+                  <span class="title-text">ราคาต่อน้ำหนัก</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <input
@@ -137,22 +137,22 @@
                 <span>{{ formatDateTime(slotProps.data.createDate) }}</span>
               </template>
             </Column>
-            <Column field="previousPrice" header="ราคาก่อนปรับ" style="min-width: 100px">
+            <Column field="previousPrice" header="ราคาต่อจำนวนก่อนปรับ" style="min-width: 100px">
               <template #body="slotProps">
                 <span>{{ slotProps.data.previousPrice.toFixed(3) }}</span>
               </template>
             </Column>
-            <Column field="newPrice" header="ราคาหลังปรับ" style="min-width: 100px">
+            <Column field="newPrice" header="ราคาต่อจำนวนหลังปรับ" style="min-width: 100px">
               <template #body="slotProps">
                 <span>{{ slotProps.data.newPrice.toFixed(3) }}</span>
               </template>
             </Column>
-            <Column field="previousPriceUnit" header="ราคาต่อหน่วย" style="min-width: 100px">
+            <Column field="previousPriceUnit" header="ราคาต่อน้ำหนักก่อนปรับ" style="min-width: 100px">
               <template #body="slotProps">
                 <span>{{ slotProps.data.previousPriceUnit.toFixed(3) }}</span>
               </template>
             </Column>
-            <Column field="newPriceUnit" header="ราคาต่อหน่วย" style="min-width: 100px">
+            <Column field="newPriceUnit" header="ราคาต่อน้ำหนักหลังปรับ" style="min-width: 100px">
               <template #body="slotProps">
                 <span>{{ slotProps.data.newPriceUnit.toFixed(3) }}</span>
               </template>
@@ -240,8 +240,8 @@ export default {
       form: { ...interfaceForm },
       val: { ...interfaceVal },
       unitCode: [
-        { value: 'K', description: 'K [ราคา]' },
-        { value: 'Q', description: 'Q [ราคาต่อหน่วย]' }
+        { value: 'K', description: 'K [ราคาต่อจำนวน]' },
+        { value: 'Q', description: 'Q [ราคาต่อน้ำหนัก]' }
       ]
     }
   },
