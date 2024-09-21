@@ -84,13 +84,19 @@
 
           <!-- btn -->
           <div class="form-col-container mt-2">
-            <div class="d-flex justify-content-end">
-              <button class="btn btn-secondary" type="button" @click="closeModal">
-                <span>ยกเลิก</span>
-              </button>
-              <button class="btn btn-main ml-2" type="submit">
-                <span>ยืนยัน</span>
-              </button>
+            <div class="d-flex justify-content-between">
+              <div class="check-return-container">
+                <Checkbox v-model="form.isClosePickReturn" :binary="true" />
+                <span for="ingredient1" class="ml-2">รายการคืนเข้าคลัง [ปิดใบยืม]</span>
+              </div>
+              <div>
+                <button class="btn btn-secondary" type="button" @click="closeModal">
+                  <span>ยกเลิก</span>
+                </button>
+                <button class="btn btn-main ml-2" type="submit">
+                  <span>ยืนยัน</span>
+                </button>
+              </div>
             </div>
           </div>
         </form>
@@ -107,6 +113,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 
 import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
+import Checkbox from 'primevue/checkbox'
 
 import api from '@/axios/axios-config.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
@@ -122,7 +129,8 @@ export default {
     modal,
     loading,
     Dropdown,
-    Calendar
+    Calendar,
+    Checkbox
   },
   props: {
     isShow: {
@@ -185,7 +193,7 @@ export default {
   methods: {
     // ----- event
     closeModal() {
-      this.onClear()
+      //this.onClear()
       this.$emit('closeModal')
     },
 
@@ -211,11 +219,12 @@ export default {
       try {
         console.log('this.form', this.form)
         const params = {
-          referenceRunning: this.referenceRunning,
+          pickOffRunning: this.referenceRunning,
           type: this.form.type,
           remark: this.form.remark,
           pass: this.form.pass,
           requestDate: formatISOString(this.form.requestDate),
+          isFullReturn: this.form.isClosePickReturn,
           gemsReturn: this.form.gemsReturn.map((gem) => {
             return {
               code: gem.code,
@@ -227,17 +236,20 @@ export default {
               returnQtyWeight: gem.returnQtyWeight,
 
               gemsOutbound: gem.gemsOutbound
-                ? gem.gemsOutbound.map((outbound) => {
-                    return {
-                      wo: outbound.productionPlan.wo,
-                      woNumber: outbound.productionPlan.woNumber,
-                      mold: outbound.productionPlan.mold,
+                ? gem.gemsOutbound
+                    .filter((x) => !x.isAlreadyOutbound)
+                    .map((outbound) => {
+                      //remove outbumd when isAlreadyOutbound === true
+                      return {
+                        wo: outbound.productionPlan.wo,
+                        woNumber: outbound.productionPlan.woNumber,
+                        mold: outbound.productionPlan.mold,
 
-                      issueQty: outbound.issueQty,
-                      issueQtyWeight: outbound.issueQtyWeight,
-                      remark: outbound.remark
-                    }
-                  })
+                        issueQty: outbound.issueQty,
+                        issueQtyWeight: outbound.issueQtyWeight,
+                        remark: outbound.remark
+                      }
+                    })
                 : null
             }
           })
@@ -247,9 +259,9 @@ export default {
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/PickReturnGem', params)
         if (res) {
           swAlert.success(
-            `เลขที่ใบคืนเพชรเเละพลอย: ${res.runningPickReturn}
+            `เลขที่ใบคืนเพชรเเละพลอย: ${res.runningPickReturn ?? '---'}
             </br>
-            เลขที่ใบเบิกเพชรเเละพลอย: ${res.runningPickOutbound ?? '-'}`,
+            เลขที่ใบเบิกเพชรเเละพลอย: ${res.runningPickOutbound ?? '---'}`,
             '',
             () => {
               this.onClear()
@@ -274,4 +286,8 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+.check-return-container {
+  display: flex;
+  align-items: center;
+}
 </style>

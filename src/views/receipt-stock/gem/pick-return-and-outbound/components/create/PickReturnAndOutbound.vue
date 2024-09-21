@@ -337,7 +337,7 @@ export default {
     },
     testPush() {
       this.$router.push('/stock-gem-transection')
-    },  
+    },
 
     // ----- grid event
     onRowExpand() {
@@ -355,7 +355,8 @@ export default {
         productionPlan: null,
         issueQty: Number(0).toFixed(3),
         issueQtyWeight: Number(0).toFixed(3),
-        remark: ''
+        remark: '',
+        isAlreadyOutbound: false
       }
 
       gemReturnItem.gemsOutbound.push(newOutbound)
@@ -497,20 +498,58 @@ export default {
         if (res) {
           this.model = { ...res.data[0] }
 
+          const paramsOutbound = {
+            take: 0,
+            skip: 0,
+            sort: [],
+            search: {
+              requestDateStart: null,
+              requestDateEnd: null,
+              refRunning2: running
+            }
+          }
+          const resOutBound = await api.jewelry.post(
+            'ReceiptAndIssueStockGem/ListTransection',
+            paramsOutbound
+          )
+          console.log('resOutBound', resOutBound)
+
           this.gemsReturn = this.model.items.map((item) => {
             return {
               code: item.code,
               name: item.name,
               pickOffQty: item.qty,
               pickOffQtyWeight: item.qtyWeight,
-              returnQty: item.qty,
-              returnQtyWeight: item.qtyWeight,
+              returnQty:
+                item.qty -
+                resOutBound.data
+                  .filter((x) => x.code === item.code)
+                  .reduce((sum, item) => sum + item.qty, 0),
+              returnQtyWeight:
+                item.qtyWeight -
+                resOutBound.data
+                  .filter((x) => x.code === item.code)
+                  .reduce((sum, item) => sum + item.qtyWeight, 0),
               gemsOutbound: [
-                // {
-                //   productionPlan: null,
-                //   issueQty: Number(0).toFixed(3),
-                //   issueQtyWeight: Number(0).toFixed(3)
-                // }
+                //return res.outbound
+                ...resOutBound.data
+                  .filter((x) => x.code === item.code)
+                  .map((outbound) => {
+                    return {
+                      productionPlan: {
+                        wo: outbound.wo,
+                        woNumber: outbound.woNumber,
+                        woText: outbound.woText,
+                        mold: outbound.mold
+                      },
+                      issueQty: outbound.qty,
+                      issueQtyWeight: outbound.qtyWeight,
+                      remark: outbound.remark2,
+                      running: outbound.running,
+                      requestDate: outbound.requestDate,
+                      isAlreadyOutbound: true
+                    }
+                  })
               ]
             }
           })

@@ -29,7 +29,8 @@
         </template>
       </Column>
       <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
-      <Column field="refRunning" header="เลขที่อ้างอิง" sortable style="min-width: 200px"> </Column>
+      <Column field="refRunning1" header="เลขที่อ้างอิง 1" sortable style="min-width: 200px"> </Column>
+      <Column field="refRunning2" header="เลขที่อ้างอิง 2" sortable style="min-width: 200px"> </Column>
       <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
       <Column field="type" header="ประเภท" sortable style="min-width: 200px">
         <template #body="slotProps">
@@ -95,7 +96,7 @@
           </div>
         </template>
       </Column>
-      <Column field="pointRemianQty" header="จำนวนกหลังทำ" sortable style="min-width: 200px">
+      <Column field="pointRemianQty" header="จำนวนหลังทำ" sortable style="min-width: 200px">
         <template #body="slotProps">
           <div>
             <span>

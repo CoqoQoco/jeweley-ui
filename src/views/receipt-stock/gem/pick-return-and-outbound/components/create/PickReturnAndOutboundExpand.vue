@@ -20,10 +20,14 @@
         <template #body="slotProps">
           <div class="table-btn-action-container">
             <button
-              class="btn btn-sm btn btn-red"
+              :class="[
+                'btn btn-sm',
+                slotProps.data.isAlreadyOutbound ? 'btn-secondary' : 'btn-red'
+              ]"
               title="ลบรายการ"
               @click="delOutbound(slotProps.data, index)"
               type="button"
+              :disabled="slotProps.data.isAlreadyOutbound"
             >
               <i class="bi bi-trash-fill"></i>
             </button>
@@ -32,13 +36,22 @@
       </Column>
       <column field="productionPlan" header="แผนผลิต" style="width: 200px">
         <template #body="slotProps">
+          <div v-if="slotProps.data.isAlreadyOutbound">
+            <span>
+              {{
+                `${slotProps.data.productionPlan.wo}-${slotProps.data.productionPlan.woNumber} [${slotProps.data.running}]`
+              }}
+            </span>
+          </div>
           <AutoComplete
+            v-else
             v-model="slotProps.data.productionPlan"
             :suggestions="planSearch"
             @complete="onSearchProductionPlanId"
-            :optionLabel="(option) => `${option.woText} - ${option.woNumber}`"
+            :optionLabel="(option) => `${option.wo} - ${option.woNumber}`"
             forceSelection
             :class="slotProps.data.productionPlan ? '' : 'p-invalid'"
+            :disabled="slotProps.data.isAlreadyOutbound"
           >
             <template #option="slotProps">
               <div class="flex align-options-center">
@@ -61,9 +74,30 @@
           </div>
         </template>
       </Column>
+      <column field="remark" header="หมายเหตุ" style="min-width: 150px">
+        <template #body="slotProps">
+          <div v-if="slotProps.data.isAlreadyOutbound">
+            <span>{{ slotProps.data.remark }}</span>
+          </div>
+          <input
+            v-else
+            style="width: 100%; background-color: #e0e0e0"
+            :style="slotProps.data.remark ? 'background-color: #b5dad4' : ''"
+            class="form-control"
+            type="text"
+            v-model="slotProps.data.remark"
+            :disabled="checkAvaliable(slotProps.data, 'remark')"
+          />
+          <!-- @change="onChangeQty(slotProps.data)" -->
+        </template>
+      </column>
       <column field="issueQty" header="จำนวนเบิก" style="width: 100px">
         <template #body="slotProps">
+          <div v-if="slotProps.data.isAlreadyOutbound">
+            <span>{{ slotProps.data.issueQty.toFixed(3) }}</span>
+          </div>
           <input
+            v-else
             style="width: 100px; background-color: #e0e0e0"
             :style="slotProps.data.issueQty > 0 ? 'background-color: #b5dad4' : ''"
             class="form-control"
@@ -74,14 +108,18 @@
             v-model="slotProps.data.issueQty"
             @input="onUpdateIssueQty($event, slotProps.data, index)"
             @blur="onblueIssueQty($event, slotProps.data)"
-            :disabled="slotProps.data.productionPlan ? false : true"
+            :disabled="checkAvaliable(slotProps.data, 'issueQty')"
           />
           <!-- @change="onChangeQty(slotProps.data)" -->
         </template>
       </column>
-      <column field="issueQtyWeight" header="น้ำหนักจเบิก" style="width: 100px">
+      <column field="issueQtyWeight" header="น้ำหนักเบิก" style="width: 100px">
         <template #body="slotProps">
+          <div v-if="slotProps.data.isAlreadyOutbound">
+            <span>{{ slotProps.data.issueQtyWeight.toFixed(3) }}</span>
+          </div>
           <input
+            v-else
             style="width: 100px; background-color: #e0e0e0"
             :style="slotProps.data.issueQtyWeight > 0 ? 'background-color: #b5dad4' : ''"
             class="form-control"
@@ -92,23 +130,11 @@
             v-model="slotProps.data.issueQtyWeight"
             @input="onUpdateIssueQtyWeight($event, slotProps.data, index)"
             @blur="onblueIssueQtyWeight($event, slotProps.data)"
-            :disabled="slotProps.data.productionPlan ? false : true"
+            :disabled="checkAvaliable(slotProps.data, 'issueQtyWeight')"
           />
         </template>
       </column>
-      <column field="remark" header="หมายเหตุ" style="min-width: 150px">
-        <template #body="slotProps">
-          <input
-            style="width: 100%; background-color: #e0e0e0"
-            :style="slotProps.data.remark ? 'background-color: #b5dad4' : ''"
-            class="form-control"
-            type="text"
-            v-model="slotProps.data.remark"
-            :disabled="slotProps.data.productionPlan ? false : true"
-          />
-          <!-- @change="onChangeQty(slotProps.data)" -->
-        </template>
-      </column>
+
       <template #footer>
         <div class="submit-container">
           <span>{{
@@ -220,6 +246,21 @@ export default {
     },
     onblueIssueQtyWeight(e, data) {
       this.$emit('onblueIssueQtyWeight', e, data)
+    },
+
+    // ------ helper
+    checkAvaliable(data, index) {
+      let check = false
+
+      let item = ['remark', 'issueQty', 'issueQtyWeight']
+      if (item.includes(index)) {
+        check = data.productionPlan ? false : true
+      }
+      if (data.isAlreadyOutbound) {
+        check = true
+      }
+
+      return check
     }
   }
 }

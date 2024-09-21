@@ -38,6 +38,10 @@ button.btn-main {
   background-color: $base-font-color;
   color: white;
 }
+button.btn-sub-main {
+  background-color: $base-font-sub-color;
+  color: white;
+}
 button.btn-green {
   background-color: $base-green;
   color: white;
@@ -48,6 +52,9 @@ button.btn-red {
 }
 
 button.btn-main:hover {
+  color: white;
+}
+button.btn-sub-main:hover {
   color: white;
 }
 button.btn-green:hover {
