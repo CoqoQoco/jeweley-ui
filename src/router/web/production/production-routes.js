@@ -20,7 +20,7 @@ const routes = [
         en: 'Production Plan',
         th: 'งานผลิต'
       },
-      classIcon: 'bi bi-vector-pen',
+      classIcon: 'bi bi-hammer',
       majorShow: true,
       btsubLineShow: true
     },

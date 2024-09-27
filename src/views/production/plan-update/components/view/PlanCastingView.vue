@@ -88,7 +88,19 @@
               </div>
             </template>
           </Column>
-          <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 100px"> </Column>
+          <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 100px">
+            <template #body="slotProps">
+              <div>
+                {{
+                  `${
+                    slotProps.data.goldQtySend
+                      ? Number(slotProps.data.goldQtySend).toFixed(3).toLocaleString()
+                      : ''
+                  }`
+                }}
+              </div>
+            </template>
+          </Column>
           <Column field="goldWeightSend" header="นำหนักจ่าย" style="width: 100px">
             <template #body="slotProps">
               <div>
@@ -102,7 +114,19 @@
               </div>
             </template>
           </Column>
-          <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 100px"> </Column>
+          <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 100px">
+            <template #body="slotProps">
+              <div>
+                {{
+                  `${
+                    slotProps.data.goldQtyCheck
+                      ? Number(slotProps.data.goldQtyCheck).toFixed(3).toLocaleString()
+                      : ''
+                  }`
+                }}
+              </div>
+            </template>
+          </Column>
           <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
             <template #body="slotProps">
               <div>
@@ -116,17 +140,27 @@
               </div>
             </template>
           </Column>
-          <Column field="goldWeightDiff" header="ขาด" style="width: 100px">
+          <Column field="goldWeightDiff" header="น้ำหนัก ขาด/เกิน" style="width: 150px">
             <template #body="prop">
-              <div>
-                <span v-if="prop.data.goldWeightDiff">
+              <div
+                style="font-weight: 600"
+                :style="
+                  calculateWeightDifference(prop.data.goldWeightSend, prop.data.goldWeightCheck)
+                    .style
+                "
+              >
+                <span>
                   {{
-                    `${
-                      prop.data.goldWeightDiff
-                    } (${prop.data.goldWeightDiffPercent.toLocaleString()}%)`
+                    calculateWeightDifference(prop.data.goldWeightSend, prop.data.goldWeightCheck)
+                      .difference
                   }}
                 </span>
-                <span v-else> - </span>
+                <span class="ml-1">{{
+                  `(${
+                    calculateWeightDifference(prop.data.goldWeightSend, prop.data.goldWeightCheck)
+                      .percentage
+                  })`
+                }}</span>
               </div>
             </template>
           </Column>
@@ -175,7 +209,7 @@
               </div>
             </template>
           </Column>
-          <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 200px">
+          <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 100px">
             <template #body="slotProps">
               <div class="text-right">
                 {{
@@ -188,7 +222,7 @@
               </div>
             </template>
           </Column>
-          <Column field="totalWages" header="รวมค่าแรงช่าง" style="min-width: 200px">
+          <Column field="totalWages" header="รวมค่าแรง" style="min-width: 100px">
             <template #body="slotProps">
               <div class="text-right">
                 {{
@@ -249,6 +283,7 @@ import Column from 'primevue/column'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-config.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
+import { calculateWeightDifference } from '@/services/helper/match.js'
 
 export default {
   components: {
@@ -314,6 +349,9 @@ export default {
     },
     formatDate(date) {
       return date ? formatDate(date) : ''
+    },
+    calculateWeightDifference(weightSend, weightReceived) {
+      return calculateWeightDifference(weightSend, weightReceived)
     },
     checkBtn(action) {
       console.log('checkBtn', this.modelPlanStatus)

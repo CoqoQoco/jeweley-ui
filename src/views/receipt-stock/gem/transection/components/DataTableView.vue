@@ -9,7 +9,7 @@
       ref="dt"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 420px)"
+      scrollHeight="calc(100vh - 280px)"
       resizableColumns
       :paginator="true"
       showGridlines
@@ -70,7 +70,7 @@
           </div>
         </template>
       </Column>
-      <Column field="previousRemianQty" header="จำนวนก่อนทำ" sortable style="min-width: 200px">
+      <Column field="previousRemianQty" header="จำนวนก่อนใช้" sortable style="min-width: 200px">
         <template #body="slotProps">
           <div>
             <span>
@@ -83,7 +83,7 @@
           </div>
         </template>
       </Column>
-      <Column field="previousRemianQtyWeight" header="น้ำหนักก่อนทำ" sortable style="min-width: 200px">
+      <Column field="previousRemianQtyWeight" header="น้ำหนักก่อนใช้" sortable style="min-width: 200px">
         <template #body="slotProps">
           <div>
             <span>
@@ -96,7 +96,7 @@
           </div>
         </template>
       </Column>
-      <Column field="pointRemianQty" header="จำนวนหลังทำ" sortable style="min-width: 200px">
+      <Column field="pointRemianQty" header="จำนวนคงเหลือ" sortable style="min-width: 200px">
         <template #body="slotProps">
           <div>
             <span>
@@ -109,7 +109,7 @@
           </div>
         </template>
       </Column>
-      <Column field="pointRemianQtyWeight" header="น้ำหนักหลังทำ" sortable style="min-width: 200px">
+      <Column field="pointRemianQtyWeight" header="น้ำหนักคงเหลือ" sortable style="min-width: 200px">
         <template #body="slotProps">
           <div>
             <span>
@@ -150,6 +150,24 @@
       <Column field="size" header="ขนาด" sortable style="min-width: 200px"> </Column>
       <Column field="shape" header="รูปร่าง" sortable style="min-width: 200px"> </Column>
       <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column>
+      <Column field="price" header="ราคา" sortable style="min-width: 150px">
+        <template #body="slotProps">
+          {{
+            slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.00'
+          }}
+        </template>
+      </Column>
+      <Column field="priceQty" header="ราคาต่อหน่วย" sortable style="min-width: 150px">
+        <template #body="slotProps">
+          {{
+            slotProps.data.priceQty
+              ? Number(slotProps.data.priceQty).toFixed(3).toLocaleString()
+              : '0.00'
+          }}
+        </template>
+      </Column>
+      <Column field="unitCode" header="หน่วย" sortable style="min-width: 150px"> </Column>
+      <Column field="unit" header="รหัสหน่วย" sortable style="min-width: 150px"> </Column>
     </DataTable>
   </div>
 </template>
@@ -346,6 +364,12 @@ export default {
               ขนาด: item.size,
               รูปร่าง: item.shape,
               เกรด: item.grade,
+
+              ราคา: item.price,
+              'ราคาต่อหน่วย': item.priceQty,
+              หน่วย: item.unitCode,
+              'รหัสหน่วย': item.unit,
+
               'W.O.': item.woText,
               เเม่พิมพ์: item.mold,
               'หมายเหตุ-1': item.remark1,

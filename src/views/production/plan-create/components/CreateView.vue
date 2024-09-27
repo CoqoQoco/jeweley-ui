@@ -128,7 +128,7 @@
           </div>
         </div>
       </div>
-      <div class="zone-container">
+      <div class="zone-container mt-2">
         <div class="title-header mb-3">
           <div class="font-weight-bold">
             <span class="mr-2"><i class="bi bi-card-list"></i></span>
@@ -379,7 +379,7 @@
           </DataTable>
         </div>
       </div>
-      <div class="zone-container d-flex justify-content-end">
+      <div class="zone-container d-flex justify-content-end mt-2">
         <button class="btn btn-sm btn-main" type="submit">
           <span class="mr-2">
             <i class="bi bi-gem"></i>
@@ -796,7 +796,7 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: #f7f7f7;
   padding: 20px 40px;
-  margin-bottom: 20px;
+  //margin-bottom: 20px;
 }
 .title-header {
   font-size: 15px;

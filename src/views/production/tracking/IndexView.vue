@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
     <form @submit.prevent="onSearch">
-      <div class="filter-container">
+      <div class="filter-container-searchBar">
         <div>
           <pageTitle title="ค้นหาใบจ่าย-รับคืนงาน" :isShowBtnClose="false"> </pageTitle>
         </div>
         <div class="form-col-container">
           <div>
-            <span class="text-title">วันที่สร้างใบจ่าย-รับคืน</span>
+            <span class="title-text">วันที่สร้างใบจ่าย-รับคืน</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
@@ -29,7 +29,7 @@
             </div>
           </div>
           <div>
-            <span class="text-title">วันที่ส่งงาน</span>
+            <span class="title-text">วันที่ส่งงาน</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
@@ -53,7 +53,7 @@
         </div>
         <div class="form-col-container">
           <div>
-            <span class="text-title">คำค้นหา</span>
+            <span class="title-text">คำค้นหา</span>
             <div class="input-group input-group-inner">
               <input
                 ref="inputText"
@@ -71,7 +71,7 @@
             </div>
           </div>
           <div>
-            <span class="text-title">สถานะงานผลิต</span>
+            <span class="title-text">สถานะงานผลิต</span>
             <!-- <Dropdown
               v-model="search.status"
               :options="masterStatus"
@@ -92,7 +92,7 @@
             <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
           </div>
           <div>
-            <span class="text-title">กำหนดส่งงาน</span>
+            <span class="title-text">กำหนดส่งงาน</span>
             <Dropdown
               v-model="search.isOverPlan"
               :options="masterOverPlan"
@@ -120,6 +120,7 @@
             </button>
           </div>
         </div>
+        
       </div>
     </form>
     <tableMain
@@ -145,7 +146,7 @@ import tableMain from './components/TableMainView.vue'
 import api from '@/axios/axios-config.js'
 
 const interfaceSearch = {
-  start: new Date(new Date().setDate(new Date().getDate() - 1)),
+  start: new Date(new Date().setDate(new Date().getDate() - 7)),
   end: new Date(),
   sendStart: null,
   sendEnd: null,
@@ -175,7 +176,8 @@ export default {
         { id: 0, description: 'ทั้งหมด' },
         { id: 1, description: 'เกินกำหนด' }
       ],
-      isExport: true
+      isExport: true,
+      //previuosDay: 7,
     }
   },
   computed: {
@@ -262,6 +264,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-search-bar.scss';
+//@import '@/assets/scss/custom-style/standard-form.scss';
 
 .search-bar-container {
   display: grid;

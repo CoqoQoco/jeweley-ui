@@ -147,7 +147,11 @@
                 <span>{{ slotProps.data.newPrice.toFixed(3) }}</span>
               </template>
             </Column>
-            <Column field="previousPriceUnit" header="ราคาต่อน้ำหนักก่อนปรับ" style="min-width: 100px">
+            <Column
+              field="previousPriceUnit"
+              header="ราคาต่อน้ำหนักก่อนปรับ"
+              style="min-width: 100px"
+            >
               <template #body="slotProps">
                 <span>{{ slotProps.data.previousPriceUnit.toFixed(3) }}</span>
               </template>
@@ -349,4 +353,6 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+</style>

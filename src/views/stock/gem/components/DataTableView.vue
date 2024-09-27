@@ -26,7 +26,11 @@
       <column style="width: 80px">
         <template #body="slotProps">
           <div class="d-flex justify-content-center">
-            <button class="btn btn-sm btn-main mr-2">
+            <button
+              class="btn btn-sm btn-main mr-2"
+              title="ประวัติ"
+              @click="onShowHistory(slotProps.data)"
+            >
               <span class="bi bi-search"></span>
             </button>
             <button class="btn btn-sm btn-green" title="ราคา" @click="onShowPrice(slotProps.data)">
@@ -98,13 +102,18 @@
           }}
         </template>
       </Column>
-      <Column field="unit" header="หน่วย" sortable style="min-width: 150px"> </Column>
-      <Column field="unitCode" header="รหัสหน่วย" sortable style="min-width: 150px"> </Column>
+      <Column field="unitCode" header="หน่วย" sortable style="min-width: 150px"> </Column>
+      <Column field="unit" header="รหัสหน่วย" sortable style="min-width: 150px"> </Column>
       <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 150px"> </Column>
       <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 150px"> </Column> -->
     </DataTable>
 
     <priceView :isShow="isShow.isPrice" :modelGem="price" @closeModal="closeModal"></priceView>
+    <historyView
+      :isShow="isShow.isHistory"
+      :modelGem="history"
+      @closeModal="closeModal"
+    ></historyView>
   </div>
 </template>
 
@@ -118,12 +127,14 @@ import Column from 'primevue/column'
 import Papa from 'papaparse'
 
 import priceView from './PriceView.vue'
+import historyView from './HistoryView.vue'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-config.js'
 
 const isShowModal = {
-  isPrice: false
+  isPrice: false,
+  isHistory: false
 }
 
 export default {
@@ -131,7 +142,8 @@ export default {
     loading,
     DataTable,
     Column,
-    priceView
+    priceView,
+    historyView
   },
   props: {
     modelForm: {
@@ -183,6 +195,7 @@ export default {
       isLoading: false,
       isShow: { ...isShowModal },
       price: {},
+      history: {},
 
       //--------- table ---------//
       totalRecords: 0,
@@ -365,6 +378,12 @@ export default {
       this.price = {}
       this.price = { ...data }
       this.isShow.isPrice = true
+    },
+    onShowHistory(data) {
+      console.log('onShowHistory', data)
+      this.history = {}
+      this.history = { ...data }
+      this.isShow.isHistory = true
     }
   },
   created() {

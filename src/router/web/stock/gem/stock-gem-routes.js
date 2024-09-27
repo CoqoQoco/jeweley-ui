@@ -27,7 +27,7 @@ const routes = [
         en: 'Stock Raw Material',
         th: 'คลังเพชรเเละพลอย'
       },
-      classIcon: 'bi bi-database',
+      classIcon: 'bi bi-gem',
       majorShow: true,
       btsubLineShow: true
     },

@@ -18,7 +18,7 @@ const routes = [
         en: 'Plan Design',
         th: 'งานเเม่พิมพ์'
       },
-      classIcon: 'bi bi-vector-pen',
+      classIcon: 'bi bi-palette',
       majorShow: true,
       btsubLineShow: true
     },
