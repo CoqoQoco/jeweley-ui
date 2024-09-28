@@ -397,7 +397,8 @@ export default {
           รหัส: item.code,
           พลอย: item.name,
           จำนวน: item.qty ? Number(item.qty).toFixed(3) : '0.000',
-          น้ำหนัก: item.weight ? Number(item.weight).toFixed(3) : '0.000'
+          น้ำหนัก: item.weight ? Number(item.weight).toFixed(3) : '0.000',
+          ราคา: item.price ? Number(item.price).toFixed(2) : '0.000'
         }
       })
 

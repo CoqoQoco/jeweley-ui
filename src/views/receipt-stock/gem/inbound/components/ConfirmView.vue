@@ -43,6 +43,26 @@
             </div>
           </div>
 
+           <!-- operator by -->
+           <div class="form-col-container mt-1">
+            <div>
+              <div>
+                <span class="title-text">ผู้รับเข้าคลัง</span>
+                <span class="txt-required"> *</span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                v-model="form.operator"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                required
+              />
+            </div>
+          </div>
+
           <!-- supplier name -->
           <div class="form-col-container mt-1">
             <div>
@@ -237,6 +257,7 @@ export default {
       try {
         const params = {
           type: this.form.type,
+          operatorBy: this.form.operator,
           subplierName: this.form.supplierName,
           jobNoOrPO: this.form.poOrJob,
           remark: this.form.remark,

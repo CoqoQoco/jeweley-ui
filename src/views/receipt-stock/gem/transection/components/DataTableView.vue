@@ -150,14 +150,14 @@
       <Column field="size" header="ขนาด" sortable style="min-width: 200px"> </Column>
       <Column field="shape" header="รูปร่าง" sortable style="min-width: 200px"> </Column>
       <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column>
-      <Column field="price" header="ราคา" sortable style="min-width: 150px">
+      <Column field="price" header="ราคาต่อน้ำหนัก" sortable style="min-width: 150px">
         <template #body="slotProps">
           {{
             slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.00'
           }}
         </template>
       </Column>
-      <Column field="priceQty" header="ราคาต่อหน่วย" sortable style="min-width: 150px">
+      <Column field="priceQty" header="ราคาต่อจำนวน" sortable style="min-width: 150px">
         <template #body="slotProps">
           {{
             slotProps.data.priceQty

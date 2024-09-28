@@ -12,11 +12,11 @@
             <div class="form-col-container">
               <div class="d-flex flex-column">
                 <span class="title-text-white">ราคาต่อจำนวน</span>
-                <span class="desc-text-white">{{ gem.price.toFixed(3) }}</span>
+                <span class="desc-text-white">{{ gem.priceQty.toFixed(3) }}</span>
               </div>
               <div class="d-flex flex-column">
                 <span class="title-text-white">ราคาต่อน้ำหนัก</span>
-                <span class="desc-text-white">{{ gem.priceQty.toFixed(3) }}</span>
+                <span class="desc-text-white">{{ gem.price.toFixed(3) }}</span>
               </div>
               <div class="d-flex flex-column">
                 <span class="title-text-white">หน่วย</span>
@@ -43,14 +43,14 @@
                   <span class="txt-required"> *</span>
                 </div>
                 <input
-                  :style="form.price > 0 ? 'background-color: #b5dad4' : ''"
+                  :style="form.priceQty > 0 ? 'background-color: #b5dad4' : ''"
                   class="form-control"
                   type="number"
                   step="any"
                   min="0"
                   required
-                  v-model="form.price"
-                  @blur="onbluePrice($event, form)"
+                  v-model="form.priceQty"
+                  @blur="onbluePriceQty($event, form)"
                 />
               </div>
 
@@ -61,14 +61,14 @@
                   <span class="txt-required"> *</span>
                 </div>
                 <input
-                  :style="form.priceQty > 0 ? 'background-color: #b5dad4' : ''"
+                  :style="form.price > 0 ? 'background-color: #b5dad4' : ''"
                   class="form-control"
                   type="number"
                   step="any"
                   min="0"
                   required
-                  v-model="form.priceQty"
-                  @blur="onbluePriceQty($event, form)"
+                  v-model="form.price"
+                  @blur="onbluePrice($event, form)"
                 />
               </div>
 
@@ -139,12 +139,12 @@
             </Column>
             <Column field="previousPrice" header="ราคาต่อจำนวนก่อนปรับ" style="min-width: 100px">
               <template #body="slotProps">
-                <span>{{ slotProps.data.previousPrice.toFixed(3) }}</span>
+                <span>{{ slotProps.data.previousPriceUnit.toFixed(3) }}</span>
               </template>
             </Column>
             <Column field="newPrice" header="ราคาต่อจำนวนหลังปรับ" style="min-width: 100px">
               <template #body="slotProps">
-                <span>{{ slotProps.data.newPrice.toFixed(3) }}</span>
+                <span>{{ slotProps.data.newPriceUnit.toFixed(3) }}</span>
               </template>
             </Column>
             <Column
@@ -153,12 +153,12 @@
               style="min-width: 100px"
             >
               <template #body="slotProps">
-                <span>{{ slotProps.data.previousPriceUnit.toFixed(3) }}</span>
+                <span>{{ slotProps.data.previousPrice.toFixed(3) }}</span>
               </template>
             </Column>
             <Column field="newPriceUnit" header="ราคาต่อน้ำหนักหลังปรับ" style="min-width: 100px">
               <template #body="slotProps">
-                <span>{{ slotProps.data.newPriceUnit.toFixed(3) }}</span>
+                <span>{{ slotProps.data.newPrice.toFixed(3) }}</span>
               </template>
             </Column>
             <Column field="unitCode" header="หน่วย" style="min-width: 100px"></Column>
@@ -244,8 +244,8 @@ export default {
       form: { ...interfaceForm },
       val: { ...interfaceVal },
       unitCode: [
-        { value: 'K', description: 'K [ราคาต่อจำนวน]' },
-        { value: 'Q', description: 'Q [ราคาต่อน้ำหนัก]' }
+        { value: 'Q', description: 'Q [ราคาต่อจำนวน]' },
+        { value: 'K', description: 'K [ราคาต่อน้ำหนัก]' }
       ]
     }
   },

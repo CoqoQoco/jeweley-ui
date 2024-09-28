@@ -99,6 +99,7 @@
       </FormStatusAdd>
     </div>
 
+    <!-- casting -->
     <div v-if="tabCctive === 3">
       <planCatingView
         :modelValue="data"
@@ -129,7 +130,21 @@
       ></planCastingUpdate>
     </div>
 
+    <!-- scrubb -->
     <div v-if="tabCctive === 4">
+      <planScrubb
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planScrubb>
+    </div>
+
+    <!-- gem -->
+    <div v-if="tabCctive === 5">
       <planGemView
         :modelValue="data"
         :modelMatValue="mat"
@@ -159,7 +174,8 @@
       ></planGemAdd>
     </div>
 
-    <div v-if="tabCctive === 5">
+    <!-- melt -->
+    <div v-if="tabCctive === 6">
       <planMeltedView
         :modelValue="data"
         :modelMatValue="mat"
@@ -214,6 +230,8 @@ import planGemView from './components/view/PlanGemView.vue'
 import planGemUpdate from './components/update/PlanGemUpdateView.vue'
 import planGemAdd from './components/add/PlanGemAddView.vue'
 
+import planScrubb from './components/view/PlanScrubbView.vue'
+
 const interfaceIsShowAdd = {
   casting: false
 }
@@ -246,7 +264,9 @@ export default {
 
     planGemView,
     planGemUpdate,
-    planGemAdd
+    planGemAdd,
+
+    planScrubb
   },
   data() {
     return {
@@ -277,6 +297,7 @@ export default {
         { label: 'ส่วนประกอบทอง', icon: 'bi bi-gem' },
         { label: 'สถานะการผลิต', icon: 'bi bi-hammer' },
         { label: 'แต่ง', icon: 'bi bi-hammer' },
+        { label: 'ขัดดิบ', icon: 'bi bi-hammer' },
         { label: 'คัดพลอย', icon: 'bi bi-hammer' },
         { label: 'หลอม', icon: 'bi bi-clipboard-x-fill' }
       ]

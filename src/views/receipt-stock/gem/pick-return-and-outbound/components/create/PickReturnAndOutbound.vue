@@ -5,26 +5,29 @@
       <!-- ใบเบิก -->
       <div class="filter-container-highlight">
         <div class="form-col-container">
-          <span class="desc-text-white">{{
-            `ใบคืน/ใบเบิก จาก ใบยืมเลขที่: ${model.running ?? 'loading...'}`
-          }}</span>
+          <div class="d-flex justify-content-between">
+            <span class="desc-text-white">
+              {{ `ใบคืน/ใบเบิก จาก ใบยืมเลขที่: ${model.running ?? 'loading...'}` }}
+            </span>
+            <pdf class="btn btn-sm btn-primary" :modelValue="model"></pdf>
+          </div>
         </div>
         <div class="form-col-container mt-1">
-          <div class="form-col-container">
-            <div class="d-flex flex-column">
-              <span class="title-text-white">วันที่ยืม</span>
-              <span class="desc-text-white">{{ formatDateTime(model.requestDate) }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text-white">กำหนดคืน</span>
-              <span class="desc-text-white">{{ formatDateTime(model.returnDate) }}</span>
-            </div>
+          <div class="d-flex flex-column">
+            <span class="title-text-white">วันที่ยืม</span>
+            <span class="desc-text-white">{{ formatDateTime(model.requestDate) }}</span>
           </div>
-          <div>
-            <div class="d-flex flex-column">
-              <span class="title-text-white">หมายเหตุ</span>
-              <span class="desc-text-white">{{ model.remark }}</span>
-            </div>
+          <div class="d-flex flex-column">
+            <span class="title-text-white">กำหนดคืน</span>
+            <span class="desc-text-white">{{ formatDateTime(model.returnDate) }}</span>
+          </div>
+          <div class="d-flex flex-column">
+            <span class="title-text-white">ผู้ยืม</span>
+            <span class="desc-text-white">{{ model.operatorBy }}</span>
+          </div>
+          <div class="d-flex flex-column">
+            <span class="title-text-white">หมายเหตุ</span>
+            <span class="desc-text-white">{{ model.remark }}</span>
           </div>
         </div>
       </div>
@@ -220,6 +223,7 @@ import { defineAsyncComponent } from 'vue'
 
 //const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+const pdf = defineAsyncComponent(() => import('@/components/pdf-make/FilePDFPickOffGem.vue'))
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -240,7 +244,8 @@ export default {
     Column,
     //AutoComplete,
     dataExpand,
-    confirm
+    confirm,
+    pdf
   },
   props: {
     // isShowModal: {
@@ -520,16 +525,18 @@ export default {
               name: item.name,
               pickOffQty: item.qty,
               pickOffQtyWeight: item.qtyWeight,
-              returnQty:
+              returnQty: parseFloat(
                 item.qty -
-                resOutBound.data
-                  .filter((x) => x.code === item.code)
-                  .reduce((sum, item) => sum + item.qty, 0),
-              returnQtyWeight:
+                  resOutBound.data
+                    .filter((x) => x.code === item.code)
+                    .reduce((sum, item) => sum + item.qty, 0)
+              ).toFixed(3),
+              returnQtyWeight: parseFloat(
                 item.qtyWeight -
-                resOutBound.data
-                  .filter((x) => x.code === item.code)
-                  .reduce((sum, item) => sum + item.qtyWeight, 0),
+                  resOutBound.data
+                    .filter((x) => x.code === item.code)
+                    .reduce((sum, item) => sum + item.qtyWeight, 0)
+              ).toFixed(3),
               gemsOutbound: [
                 //return res.outbound
                 ...resOutBound.data

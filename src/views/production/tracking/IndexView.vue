@@ -29,7 +29,7 @@
             </div>
           </div>
           <div>
-            <span class="title-text">วันที่ส่งงาน</span>
+            <span class="title-text">วันที่สถานะใบงาน</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
@@ -264,7 +264,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-search-bar.scss';
-//@import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/custom-style/standard-form.scss';
 
 .search-bar-container {
   display: grid;

@@ -43,6 +43,26 @@
             </div>
           </div>
 
+          <!-- operator by -->
+          <div class="form-col-container mt-1">
+            <div>
+              <div>
+                <span class="title-text">ผู้คืน/ผู้เบิก</span>
+                <span class="txt-required"> *</span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                v-model="form.operator"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                required
+              />
+            </div>
+          </div>
+
           <!-- remark -->
           <div class="form-col-container mt-1">
             <div>
@@ -221,6 +241,7 @@ export default {
         const params = {
           pickOffRunning: this.referenceRunning,
           type: this.form.type,
+          operatorBy: this.form.operator,
           remark: this.form.remark,
           pass: this.form.pass,
           requestDate: formatISOString(this.form.requestDate),
