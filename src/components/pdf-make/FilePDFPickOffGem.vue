@@ -92,8 +92,8 @@ export default {
         this.setTableTitleTextRight('น้ำหนัก'),
         this.setTableTitleTextRight('ราคา/จำนวน'),
         this.setTableTitleTextRight('ราคา/น้ำหนัก'),
-        this.setTableTitleTextRight('หน่วย'),
-        this.setTableTitleTextRight('รหัสหน่วย')
+        this.setTableTitleTextRight('รหัสหน่วย'),
+        this.setTableTitleTextRight('หน่วย')
       ]
 
       //title
