@@ -106,7 +106,7 @@ export default {
           this.setTableRowTextRight(item.qty),
           this.setTableRowTextRight(item.qtyWeight),
           this.setTableRowTextRight(item.priceQty),
-          this.setTableRowTextRight(item.priceQty),
+          this.setTableRowTextRight(item.price),
           this.setTableRowTextRight(item.unit),
           this.setTableRowTextRight(item.unitCode)
         ]
