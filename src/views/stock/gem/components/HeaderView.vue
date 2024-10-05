@@ -168,6 +168,36 @@ export default {
     isExport: {
       type: Boolean,
       default: false
+    },
+    masterGroupOptions: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterGradeOptions: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterShapeOptions: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterSizeOptions: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterGemShapeData: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterGradeData: {
+      type: Array,
+      Required: true,
+      default: () => []
     }
   },
   watch: {
@@ -181,6 +211,24 @@ export default {
   computed: {
     isExportData() {
       return this.isExport
+    },
+    groupOptions() {
+      return this.masterGroupOptions
+    },
+    shapeOptions() {
+      return this.masterShapeOptions
+    },
+    sizeOptions() {
+      return this.masterSizeOptions
+    },
+    gradeOptions() {
+      return this.masterGradeOptions
+    },
+    masterGemShape() {
+      return this.masterGemShapeData
+    },
+    masterGrade() {
+      return this.masterGradeData
     }
   },
   data() {
@@ -188,12 +236,6 @@ export default {
       isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow },
-      groupOptions: [],
-      gradeOptions: [],
-      shapeOptions: [],
-      sizeOptions: [],
-      masterGemShape: [],
-      masterGrade: []
     }
   },
   methods: {
@@ -332,12 +374,12 @@ export default {
   },
   created() {
     this.$nextTick(() => {
-      this.fetchGroupOptions()
-      this.fetchSizeOption()
-      this.fetchGradeOption()
-      this.fetchShapeOptions()
-      this.fetchMasterGemShape()
-      this.fetchMasterGoldGrade()
+      // this.fetchGroupOptions()
+      // this.fetchSizeOption()
+      // this.fetchGradeOption()
+      // this.fetchShapeOptions()
+      // this.fetchMasterGemShape()
+      // this.fetchMasterGoldGrade()
     })
   }
 }

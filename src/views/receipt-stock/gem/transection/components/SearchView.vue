@@ -137,6 +137,12 @@
               <span class="title-text">Invoice/Ref No.</span>
               <input type="text" class="form-control" v-model="form.jobOrPo" />
             </div>
+
+            <!-- running -->
+            <div>
+              <span class="title-text">เลขที่อ้างอิง</span>
+              <input type="text" class="form-control" v-model="form.running" />
+            </div>
           </div>
         </template>
       </dialogView>

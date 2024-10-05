@@ -28,10 +28,10 @@
           {{ formatDateTime(slotProps.data.requestDate) }}
         </template>
       </Column>
-      <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
-      <Column field="refRunning1" header="เลขที่อ้างอิง 1" sortable style="min-width: 200px"> </Column>
-      <Column field="refRunning2" header="เลขที่อ้างอิง 2" sortable style="min-width: 200px"> </Column>
       <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
+      <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
+      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column>
+
       <Column field="type" header="ประเภท" sortable style="min-width: 200px">
         <template #body="slotProps">
           <div>
@@ -70,6 +70,11 @@
           </div>
         </template>
       </Column>
+
+      <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
+      <Column field="refRunning1" header="เลขที่อ้างอิง 1" sortable style="min-width: 200px"> </Column>
+      <Column field="refRunning2" header="เลขที่อ้างอิง 2" sortable style="min-width: 200px"> </Column>
+
       <Column field="previousRemianQty" header="จำนวนก่อนใช้" sortable style="min-width: 200px">
         <template #body="slotProps">
           <div>
@@ -124,8 +129,8 @@
       </Column>
       
 
-      <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
-      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column>
+      <!-- <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
+      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column> -->
       <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 200px"> </Column>
       <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column>
 
@@ -145,11 +150,11 @@
         </template>
       </Column>
 
-      <Column field="code" header="รหัส" sortable style="min-width: 200px"> </Column>
+      <!-- <Column field="code" header="รหัส" sortable style="min-width: 200px"> </Column>
       <Column field="groupName" header="หมวดหมู่" sortable style="min-width: 200px"> </Column>
       <Column field="size" header="ขนาด" sortable style="min-width: 200px"> </Column>
       <Column field="shape" header="รูปร่าง" sortable style="min-width: 200px"> </Column>
-      <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column>
+      <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column> -->
       <Column field="price" header="ราคาต่อน้ำหนัก" sortable style="min-width: 150px">
         <template #body="slotProps">
           {{
@@ -301,7 +306,8 @@ export default {
             grade: this.form.grade ?? null,
             shape: this.form.shape ?? null,
             size: this.form.size ?? null,
-            status: 'completed'
+            status: 'completed',
+            running: this.form.running ?? null
           }
         }
         console.log('params', params)
@@ -341,7 +347,8 @@ export default {
             grade: this.form.grade ?? null,
             shape: this.form.shape ?? null,
             size: this.form.size ?? null,
-            status: 'completed'
+            status: 'completed',
+            running: this.form.running ?? null
           }
         }
         console.log('params', params)

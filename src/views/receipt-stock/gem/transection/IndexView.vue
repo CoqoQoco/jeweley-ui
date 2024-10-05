@@ -38,7 +38,9 @@ const interfaceForm = {
   groupName: [],
   grade: [],
   shape: [],
-  size: []
+  size: [],
+
+  running: null,
 }
 export default {
   components: {

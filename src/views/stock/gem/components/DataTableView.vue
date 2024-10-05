@@ -4,9 +4,6 @@
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
-      v-model:expandedRows="expnadData"
-      dataKey="id"
-      ref="dt"
       class="p-datatable-sm"
       scrollable
       scrollHeight="calc(100vh - 280px)"
@@ -32,6 +29,13 @@
               @click="onShowHistory(slotProps.data)"
             >
               <span class="bi bi-search"></span>
+            </button>
+            <button
+              class="btn btn-sm btn-green mr-2"
+              title="เเก้ไข"
+              @click="onShowUpdate(slotProps.data)"
+            >
+              <span class="bi bi-pencil"></span>
             </button>
             <button class="btn btn-sm btn-green" title="ราคา" @click="onShowPrice(slotProps.data)">
               <span class="bi bi-cash-coin"></span>
@@ -115,6 +119,12 @@
       @closeModal="closeModal"
     ></historyView>
   </div>
+  <updateView
+    :isShow="isShow.update"
+    :modelGem="updateGem"
+    :masterGrade="grade"
+    @closeModal="closeModal"
+  ></updateView>
 </template>
 
 <script>
@@ -128,13 +138,15 @@ import Papa from 'papaparse'
 
 import priceView from './PriceView.vue'
 import historyView from './HistoryView.vue'
+import updateView from './UpdateView.vue'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-config.js'
 
 const isShowModal = {
   isPrice: false,
-  isHistory: false
+  isHistory: false,
+  update: false
 }
 
 export default {
@@ -143,7 +155,8 @@ export default {
     DataTable,
     Column,
     priceView,
-    historyView
+    historyView,
+    updateView
   },
   props: {
     modelForm: {
@@ -157,6 +170,11 @@ export default {
     headerHeight: {
       type: Number,
       default: 0
+    },
+    masterGrade: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
   watch: {
@@ -170,7 +188,7 @@ export default {
     modelFormExport: {
       handler(val) {
         console.log('watch modelFormExport', val)
-        this.export = { ...val }
+        //this.export = { ...val }
         this.fetchDataExport()
       },
       deep: true
@@ -185,9 +203,8 @@ export default {
   },
   computed: {
     //  ---------------- computed --------
-    headerHeightPx() {
-      console.log('headerHeightPx', this.headerHeight)
-      return `${this.headerHeight}px`
+    grade() {
+      return this.masterGrade
     }
   },
   data() {
@@ -196,6 +213,7 @@ export default {
       isShow: { ...isShowModal },
       price: {},
       history: {},
+      updateGem: {},
 
       //--------- table ---------//
       totalRecords: 0,
@@ -249,7 +267,7 @@ export default {
             size: this.form.size ?? null
           }
         }
-        console.log('params', params)
+        //console.log('params', params)
         const res = await api.jewelry.post('StockGem/SearchData', params)
         if (res) {
           this.data = { ...res }
@@ -384,6 +402,12 @@ export default {
       this.history = {}
       this.history = { ...data }
       this.isShow.isHistory = true
+    },
+    onShowUpdate(data) {
+      console.log('onShowUpdate', data)
+      this.updateGem = {}
+      this.updateGem = { ...data }
+      this.isShow.update = true
     }
   },
   created() {

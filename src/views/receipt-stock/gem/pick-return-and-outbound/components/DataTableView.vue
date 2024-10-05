@@ -49,6 +49,7 @@
         </template>
       </Column>
       <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
+      <Column field="operatorBy" header="ผู้ยืม" sortable style="min-width: 200px"> </Column>
       <Column field="remark" header="หมายเหตุ" sortable style="min-width: 200px"> </Column>
       <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column> -->
     </DataTable>

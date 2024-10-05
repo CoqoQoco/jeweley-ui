@@ -1,9 +1,16 @@
 <template>
   <div class="app-container">
+    <loading :isLoading="isLoading"></loading>
     <headerBar
-      ref="headerBarRef"
       v-model:modelForm="form"
       :isExport="isExport"
+      :masterGroupOptions="groupOptions"
+      :masterGradeOptions="shapeOptions"
+      :masterShapeOptions="sizeOptions"
+      :masterSizeOptions="gradeOptions"
+      :masterGemShapeData="masterGemShape"
+      :masterGradeData="masterGrade"
+
       @search="onSearchFilter"
       @export="exportExcel"
       @clear="onClearFilter"
@@ -11,7 +18,7 @@
     <dataTable
       v-model:modelForm="search"
       v-model:modelFormExport="exportData"
-      :headerHeight="headerHeight"
+      :masterGrade="masterGrade"
       class="mt-2"
       @export="exportExcelFlag"
     ></dataTable>
@@ -19,12 +26,14 @@
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from 'vue'
 
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 import headerBar from './components/headerView.vue'
 import dataTable from './components/DataTableView.vue'
+
+import api from '@/axios/axios-config.js'
 
 const interfaceForm = {
   id: null,
@@ -38,24 +47,27 @@ export default {
   components: {
     //pageTitle,
     headerBar,
-    dataTable
+    dataTable,
+    loading,
   },
   data() {
     return {
+      isLoading: false,
       form: { ...interfaceForm },
       search: {},
       exportData: {},
-      headerHeight: 0,
-      isExport: false
+      isExport: false,
+
+      groupOptions: [],
+      shapeOptions: [],
+      sizeOptions: [],
+      gradeOptions: [],
+      masterGemShape: [],
+      masterGrade: []
     }
   },
   methods: {
     //  ---------------- event --------
-    updateHeaderHeight() {
-      if (this.$refs.headerBarRef) {
-        this.headerHeight = this.$refs.headerBarRef.$el.offsetHeight
-      }
-    },
     onSearchFilter(data) {
       console.log('onSearchFilter', data)
       this.search = { ...data }
@@ -71,15 +83,124 @@ export default {
     exportExcelFlag(value) {
       console.log('exportExcelFlag', value)
       this.isExport = value
+    },
+
+    // ---------------- APIs
+    async fetchGroupOptions() {
+      try {
+        this.isLoading = true
+
+        const params = {
+          type: 'GROUPGEM',
+          Value: null
+        }
+        console.log('params', params)
+        const res = await api.jewelry.post('StockGem/GroupGemData', params)
+        if (res) {
+          this.groupOptions = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    },
+    async fetchShapeOptions() {
+      try {
+        this.isLoading = true
+
+        const params = {
+          type: 'SHAPE',
+          Value: null
+        }
+        console.log('params', params)
+        const res = await api.jewelry.post('StockGem/GroupGemData', params)
+        if (res) {
+          this.shapeOptions = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    },
+
+    async fetchSizeOption() {
+      try {
+        this.isLoading = true
+
+        const params = {
+          type: 'SIZE',
+          Value: null
+        }
+        console.log('params', params)
+        const res = await api.jewelry.post('StockGem/GroupGemData', params)
+        if (res) {
+          this.sizeOptions = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    },
+
+    async fetchGradeOption() {
+      try {
+        this.isLoading = true
+
+        const params = {
+          type: 'GRADE',
+          Value: null
+        }
+        console.log('params', params)
+        const res = await api.jewelry.post('StockGem/GroupGemData', params)
+        if (res) {
+          this.gradeOptions = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        this.isLoading = false
+        console.log(error)
+      }
+    },
+    async fetchMasterGemShape() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGemShape')
+        if (res) {
+          this.masterGemShape = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGoldGrade() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGoldSize')
+        if (res) {
+          this.masterGrade = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
     }
   },
-  mounted() {
-    this.updateHeaderHeight()
-    window.addEventListener('resize', this.updateHeaderHeight)
+  created() {
+    this.$nextTick(() => {
+      this.fetchGroupOptions()
+      this.fetchSizeOption()
+      this.fetchGradeOption()
+      this.fetchShapeOptions()
+      this.fetchMasterGemShape()
+      this.fetchMasterGoldGrade()
+    })
   },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.updateHeaderHeight)
-  }
 }
 </script>
 
