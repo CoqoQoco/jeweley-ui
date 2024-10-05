@@ -41,6 +41,7 @@
           columnResizeMode="fit"
           showGridlines
         >
+          <!-- <Column field="no" header="ลำดับ" style="width: 20px"> </Column> -->
           <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
           <Column field="qty" header="จำนวน" sortable style="min-width: 200px">
             <template #body="slotProps">
@@ -117,6 +118,7 @@
                 </div>
               </template>
             </Column>
+            <Column field="no" header="ลำดับ" style="width: 10px"> </Column>
             <Column field="code" header="รหัส" style="width: 120px"> </Column>
             <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
             <Column field="pickOffQty" header="จำนวนยืม" style="width: 120px">
@@ -503,6 +505,8 @@ export default {
         if (res) {
           this.model = { ...res.data[0] }
 
+          let no = 1
+
           const paramsOutbound = {
             take: 0,
             skip: 0,
@@ -519,47 +523,50 @@ export default {
           )
           console.log('resOutBound', resOutBound)
 
-          this.gemsReturn = this.model.items.map((item) => {
-            return {
-              code: item.code,
-              name: item.name,
-              pickOffQty: item.qty,
-              pickOffQtyWeight: item.qtyWeight,
-              returnQty: parseFloat(
-                item.qty -
-                  resOutBound.data
+          this.gemsReturn = this.model.items
+            .sort((x) => x.code)
+            .map((item) => {
+              return {
+                no: no++,
+                code: item.code,
+                name: item.name,
+                pickOffQty: item.qty,
+                pickOffQtyWeight: item.qtyWeight,
+                returnQty: parseFloat(
+                  item.qty -
+                    resOutBound.data
+                      .filter((x) => x.code === item.code)
+                      .reduce((sum, item) => sum + item.qty, 0)
+                ).toFixed(3),
+                returnQtyWeight: parseFloat(
+                  item.qtyWeight -
+                    resOutBound.data
+                      .filter((x) => x.code === item.code)
+                      .reduce((sum, item) => sum + item.qtyWeight, 0)
+                ).toFixed(3),
+                gemsOutbound: [
+                  //return res.outbound
+                  ...resOutBound.data
                     .filter((x) => x.code === item.code)
-                    .reduce((sum, item) => sum + item.qty, 0)
-              ).toFixed(3),
-              returnQtyWeight: parseFloat(
-                item.qtyWeight -
-                  resOutBound.data
-                    .filter((x) => x.code === item.code)
-                    .reduce((sum, item) => sum + item.qtyWeight, 0)
-              ).toFixed(3),
-              gemsOutbound: [
-                //return res.outbound
-                ...resOutBound.data
-                  .filter((x) => x.code === item.code)
-                  .map((outbound) => {
-                    return {
-                      productionPlan: {
-                        wo: outbound.wo,
-                        woNumber: outbound.woNumber,
-                        woText: outbound.woText,
-                        mold: outbound.mold
-                      },
-                      issueQty: outbound.qty,
-                      issueQtyWeight: outbound.qtyWeight,
-                      remark: outbound.remark2,
-                      running: outbound.running,
-                      requestDate: outbound.requestDate,
-                      isAlreadyOutbound: true
-                    }
-                  })
-              ]
-            }
-          })
+                    .map((outbound) => {
+                      return {
+                        productionPlan: {
+                          wo: outbound.wo,
+                          woNumber: outbound.woNumber,
+                          woText: outbound.woText,
+                          mold: outbound.mold
+                        },
+                        issueQty: outbound.qty,
+                        issueQtyWeight: outbound.qtyWeight,
+                        remark: outbound.remark2,
+                        running: outbound.running,
+                        requestDate: outbound.requestDate,
+                        isAlreadyOutbound: true
+                      }
+                    })
+                ]
+              }
+            })
 
           this.refRunning = res.data[0].running
 
