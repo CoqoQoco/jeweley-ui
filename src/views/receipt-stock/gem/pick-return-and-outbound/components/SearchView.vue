@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-searchBar">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
       title="คืนเข้าคลัง/เบิกออกคลัง"
