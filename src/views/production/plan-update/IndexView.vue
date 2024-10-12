@@ -22,6 +22,7 @@
       </pageTitle>
       <TabMenu :model="tabItems" v-model:activeIndex="tabCctive" />
     </div>
+    <!-- header -->
     <div v-if="tabCctive === 0">
       <planHeaderView
         :modelValue="data"
@@ -56,10 +57,13 @@
       >
       </FormHeaderUpdate> -->
     </div>
+
+    <!-- gold -->
     <div v-if="tabCctive === 1">
       <FormMaterial
         :modelValue="data"
         :modelMatValue="mat"
+        :modelGoldItem="dataGoldCostItem"
         @onShowFormMaterialUpdate="onShowFormMaterialAdd"
         @fetch="fetchFormMaterial"
       >
@@ -76,6 +80,8 @@
       >
       </FormMaterialAdd>
     </div>
+
+    <!-- old function -->
     <div v-if="tabCctive === 2">
       <FormStatus
         :modelValue="data"
@@ -195,6 +201,28 @@
         @fetch="fetchFormStatusAdd"
       ></planMeltedAdd>
     </div>
+
+    <!-- price -->
+    <div v-if="tabCctive === 7">
+      <planPriceView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planPriceView>
+      <planPriceAddView
+        :isShow="add.price"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planPriceAddView>
+    </div>
   </div>
 </template>
 
@@ -210,7 +238,7 @@ import api from '@/axios/axios-config.js'
 
 //import FormHeader from './components/form-header/FormHeaderView.vue'
 //import FormHeaderUpdate from './components/form-header/FormHeaderUpdate.vue'
-import FormMaterial from './components/form-material/FormMaterialView.vue'
+import FormMaterial from './components/view/PlanMaterialView.vue'
 import FormMaterialAdd from './components/form-material/FormMaterialAdd.vue'
 import FormStatus from './components/form-status/FormStatusView.vue'
 import FormStatusAdd from './components/form-status/FormStatusAdd.vue'
@@ -232,13 +260,17 @@ import planGemAdd from './components/add/PlanGemAddView.vue'
 
 import planScrubb from './components/view/PlanScrubbView.vue'
 
+import planPriceView from './components/view/PlanPriceView.vue'
+import planPriceAddView from './components/add/PlanPriceAddView.vue'
+
 const interfaceIsShowAdd = {
   casting: false
 }
 const interfaceIsShowUpdate = {
   casting: false,
   melted: false,
-  gems: false
+  gems: false,
+  price: false
 }
 
 export default {
@@ -266,7 +298,10 @@ export default {
     planGemUpdate,
     planGemAdd,
 
-    planScrubb
+    planScrubb,
+
+    planPriceView,
+    planPriceAddView
   },
   data() {
     return {
@@ -280,6 +315,7 @@ export default {
 
       // --- data --- //
       data: {},
+      dataGoldCostItem: [],
       mat: [],
       masterProduct: [],
       masterCustomer: [],
@@ -294,12 +330,13 @@ export default {
       tabCctive: 0,
       tabItems: [
         { label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
-        { label: 'ส่วนประกอบทอง', icon: 'bi bi-gem' },
+        { label: 'ทอง', icon: 'bi bi-box-fill' },
         { label: 'สถานะการผลิต', icon: 'bi bi-hammer' },
         { label: 'แต่ง', icon: 'bi bi-hammer' },
         { label: 'ขัดดิบ', icon: 'bi bi-hammer' },
         { label: 'คัดพลอย', icon: 'bi bi-hammer' },
-        { label: 'หลอม', icon: 'bi bi-clipboard-x-fill' }
+        { label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
+        { label: 'ราคา', icon: 'bi bi-cash-coin' }
       ]
     }
   },
@@ -358,6 +395,9 @@ export default {
       if (status === 'gems') {
         this.add.gems = true
       }
+      if (status === 'price') {
+        this.add.price = true
+      }
     },
     onShowUpdateStatus(status) {
       console.log('onShowUpdateStatus', status)
@@ -367,6 +407,10 @@ export default {
       }
       if (status === 'gems') {
         this.update.gems = true
+      }
+
+      if (status === 'price') {
+        this.update.price = true
       }
     },
 
@@ -382,6 +426,9 @@ export default {
           this.data = { ...res }
           //this.statusName = this.data.statusNavigation.nameTh
           console.log('this.data', this.data)
+
+          const planNumber = `${this.data.wo}-${this.data.woNumber}`
+          this.fetchDataGoldCostItem(planNumber)
         }
         this.isLoading = false
       } catch (error) {
@@ -477,6 +524,30 @@ export default {
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet', param)
         if (res) {
           this.mat = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchDataGoldCostItem(planNumber) {
+      try {
+        console.log('planNumber', planNumber)
+        this.isLoading = true
+        const param = {
+          take: 0,
+          skip: 0,
+          sort: [],
+          search: {
+            ProductionPlanNumber: planNumber
+          }
+        }
+        const res = await api.jewelry.post('ProductionPlanCost/ListGoldCostItem', param)
+        if (res) {
+          this.dataGoldCostItem = [...res.data]
+          //this.statusName = this.data.statusNavigation.nameTh
+          console.log('this.dataGoldCostItem', this.dataGoldCostItem)
         }
         this.isLoading = false
       } catch (error) {

@@ -264,7 +264,7 @@ export default {
           isValGold: true
         }
         return false
-        }
+      }
       if (!this.form.goldSize.id) {
         this.val = {
           isValGoldSize: true

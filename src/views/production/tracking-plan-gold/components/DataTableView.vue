@@ -52,6 +52,7 @@
       </Column>
       <Column field="goldName" header="ประเภททอง" style="min-width: 150px"> </Column>
       <Column field="goldSizeName" header="เปอร์เซ็นทอง" style="min-width: 150px"> </Column>
+      <Column field="cost" header="ราคาทอง" style="min-width: 150px"> </Column>
       <Column field="zill" header="ซิล" style="min-width: 150px"> </Column>
       <Column field="zillQty" header="จำนวนซิล" style="min-width: 150px"> </Column>
       <Column field="goldReceipt" header="สูตรผสมทอง" style="min-width: 150px"> </Column>

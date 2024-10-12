@@ -1,7 +1,7 @@
 <template>
   <div>
     <loading :isLoading="isLoading"></loading>
-    <modal :showModal="isShow" @closeModal="closeModal" width="600px">
+    <modal :showModal="isShow" @closeModal="closeModal" width="1000px">
       <template v-slot:content>
         <form @submit.prevent="onSubmit" class="form-content-container-custom">
           <div class="mb-3">

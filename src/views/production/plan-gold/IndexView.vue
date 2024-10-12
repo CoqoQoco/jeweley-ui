@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <loading :isLoading="isLoading"></loading>
-    <div class="filter-container">
+    <div class="filter-container-search">
       <pageTitle
         title="สร้างใบเบิกผสมทอง"
         description="สร้างใบเบิกผสมทอง ระบุข้อมูลทองเบิก ทองหล่อ ทองหลอม ตัวเรือน เเละคำอธิบายอื่นๆ"
@@ -99,7 +99,21 @@
             </span>
             <input type="text" class="form-control" v-model="form.receiveBy" />
           </div>
-          <div></div>
+
+          <div>
+            <span class="title-text">
+              <span>ราคาทอง</span>
+              <span class="txt-required"> *</span>
+            </span>
+            <input
+              type="number"
+              step="any"
+              min="0"
+              class="form-control"
+              v-model="form.cost"
+              required
+            />
+          </div>
         </div>
         <div>
           <div>
@@ -589,7 +603,8 @@ const interfaceForm = {
   receiveBy: null,
   zill: null,
   zillQty: null,
-  items: []
+  items: [],
+  cost: 0
 }
 const interfaceIsValid = {
   isValAssignDate: false,

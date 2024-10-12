@@ -1,7 +1,7 @@
 <template>
   <div>
     <loading :isLoading="isLoading"></loading>
-    <modal :showModal="isShow" @closeModal="closeModal" width="800px">
+    <modal :showModal="isShow" @closeModal="closeModal" width="1000px">
       <template v-slot:content>
         <!-- ข้อมูล -->
         <div class="title-text-lg-bg">
@@ -42,7 +42,10 @@
               <span class="title-text">สูตรผสมทอง</span>
               <span class="desc-text">{{ form.goldReceipt }}</span>
             </div>
-            <div></div>
+            <div class="d-flex flex-column">
+              <span class="title-text">ราคาทอง</span>
+              <span class="desc-text">{{ form.cost }}</span>
+            </div>
           </div>
           <div class="form-col-sm-container">
             <div class="d-flex flex-column">
@@ -359,6 +362,7 @@ export default {
         runningNumber: value.runningNumber,
         zill: value.zill,
         zillQty: value.zillQty,
+        cost: value.cost,
         items: await Promise.all(
           value.items.map(async (x) => {
             const res = await this.onSearchProductionPlanIdByCode(x.productionPlanId)

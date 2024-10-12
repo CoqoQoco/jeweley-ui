@@ -9,6 +9,8 @@ const PlanOrderTrackingView = () => import('@/views/production/plan-update/Index
 const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
+const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
+
 const routes = [
   {
     path: '/production',
@@ -69,6 +71,18 @@ const routes = [
           Displayname: {
             en: 'Plan Order Tracking',
             th: 'ติดตามใบจ่าย-รับคืนงาน'
+          },
+          minorShow: false
+        }
+      },
+      {
+        path: '/plan-order-price-view/:id',
+        name: 'plan-order-price-view',
+        component: PlanOrderPrice,
+        meta: {
+          Displayname: {
+            en: 'Plan Order Pirce',
+            th: 'ประเมินราคาใบจ่าย-รับคืนงาน'
           },
           minorShow: false
         }
