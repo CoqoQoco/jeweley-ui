@@ -2,7 +2,7 @@
   <div class="app-container">
     <loading :isLoading="isLoading"></loading>
     <div class="title-text-lg-header mb-2">
-      <span>ประเมินราคา</span>
+      <span>บัตรต้นทุน</span>
       <span class="bi bi-arrow-right ml-1"></span>
       <span class="ml-1">{{ `ใบจ่าย-รับคืนงาน เลขที่: ${plan[0]}-${plan[1]}` }}</span>
     </div>

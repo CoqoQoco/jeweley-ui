@@ -8,7 +8,7 @@
       dataKey="id"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 280px)"
+      scrollHeight="calc(100vh - 270px)"
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
@@ -301,7 +301,8 @@ export default {
             sendEnd: this.formValue.sendEnd ? formatISOString(this.formValue.sendEnd) : null,
             text: this.formValue.text,
             status: this.formValue.status ? [...this.formValue.status] : null,
-            isOverPlan: this.formValue.isOverPlan?.id
+            isOverPlan: this.formValue.isOverPlan?.id,
+            customerCode: this.formValue.customerCode
           }
         }
 

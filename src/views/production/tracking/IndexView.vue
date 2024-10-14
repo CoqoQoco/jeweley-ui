@@ -5,6 +5,7 @@
         <div>
           <pageTitle title="ค้นหาใบจ่าย-รับคืนงาน" :isShowBtnClose="false"> </pageTitle>
         </div>
+
         <div class="form-col-container">
           <div>
             <span class="title-text">วันที่สร้างใบจ่าย-รับคืน</span>
@@ -51,76 +52,96 @@
             </div>
           </div>
         </div>
-        <div class="form-col-container">
-          <div>
-            <span class="title-text">คำค้นหา</span>
-            <div class="input-group input-group-inner">
-              <input
-                ref="inputText"
-                id="inputText"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="search.text"
-                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
-              />
-              <div class="input-group-append" @click="focusInputText">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
+
+        <dialogView
+          :isShow="isShow.dialog"
+          @closeDialog="closeDialog"
+          @search="dialogSearch"
+          txtHeader="ค้นหาเพิ่มเติม"
+        >
+          <template #content>
+            <div class="form-col-container">
+              <div>
+                <span class="title-text">คำค้นหา</span>
+                <div class="input-group input-group-inner">
+                  <input
+                    ref="inputText"
+                    id="inputText"
+                    :class="['form-control bg-input']"
+                    type="text"
+                    v-model.trim="search.text"
+                    placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                  />
+                  <div class="input-group-append" @click="focusInputText">
+                    <span class="input-group-text">
+                      <i class="bi bi-upc-scan text-main-color"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <span class="title-text">สถานะงานผลิต</span>
+                <div>
+                  <MultiSelect
+                    v-model="search.status"
+                    :options="masterStatus"
+                    optionLabel="nameTh"
+                    optionValue="id"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
+                <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
+              </div>
+              <div>
+                <span class="title-text">กำหนดส่งงาน</span>
+                <Dropdown
+                  v-model="search.isOverPlan"
+                  :options="masterOverPlan"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                />
+              </div>
+              <div>
+                <span class="title-text">รหัสลูกค้า</span>
+                <input
+                  ref="inputText"
+                  id="inputText"
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="search.customerCode"
+                />
               </div>
             </div>
-          </div>
-          <div>
-            <span class="title-text">สถานะงานผลิต</span>
-            <!-- <Dropdown
-              v-model="search.status"
-              :options="masterStatus"
-              optionLabel="nameTh"
-              optionValue="id"
-              placeholder="เลือกสถานะงาน"
-              class="w-full md:w-14rem"
-            /> -->
-            <div>
-              <MultiSelect
-                v-model="search.status"
-                :options="masterStatus"
-                optionLabel="nameTh"
-                optionValue="id"
-                class="w-full md:w-14rem"
-              />
-            </div>
-            <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
-          </div>
-          <div>
-            <span class="title-text">กำหนดส่งงาน</span>
-            <Dropdown
-              v-model="search.isOverPlan"
-              :options="masterOverPlan"
-              optionLabel="description"
-              class="w-full md:w-14rem"
-            />
-          </div>
-          <div class="btn-submit-container-no-line">
-            <button class="btn btn-sm btn-main mr-2" type="submit">
-              <span><i class="bi bi-search"></i></span>
-              <!-- <span class="ml-2">ค้นหา</span> -->
-            </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear">
-              <span><i class="bi bi-x-circle"></i></span>
-              <!-- <span class="ml-2">ล้าง</span> -->
-            </button>
-            <button
-              :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
-              type="button"
-              :disabled="!isExportData"
-              @click="onExport"
-            >
-              <span><i class="bi bi-filetype-csv"></i></span>
-              <!-- <span class="ml-2">ออกเอกสาร</span> -->
-            </button>
-          </div>
+          </template>
+        </dialogView>
+
+        <div class="btn-submit-container">
+          <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <span><i class="bi bi-search"></i></span>
+            <!-- <span>ค้นหา</span> -->
+          </button>
+          <button
+            class="btn btn-sm btn-sub-main mr-2"
+            type="button"
+            title="เพิ่มเติม"
+            @click="onShowDialog"
+          >
+            <span><i class="bi bi-zoom-in"></i></span>
+            <!-- <span>ค้นหา</span> -->
+          </button>
+          <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <span><i class="bi bi-x-circle"></i></span>
+            <!-- <span>ล้าง</span> -->
+          </button>
+          <button
+            :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
+            type="button"
+            :disabled="!isExportData"
+            @click="onExport"
+          >
+            <span><i class="bi bi-filetype-csv"></i></span>
+          </button>
         </div>
-        
       </div>
     </form>
     <tableMain
@@ -135,6 +156,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import Calendar from 'primevue/calendar'
@@ -145,6 +167,10 @@ import tableMain from './components/TableMainView.vue'
 
 import api from '@/axios/axios-config.js'
 
+const interfaceIsShow = {
+  dialog: false
+}
+
 const interfaceSearch = {
   start: new Date(new Date().setDate(new Date().getDate() - 7)),
   end: new Date(),
@@ -152,7 +178,8 @@ const interfaceSearch = {
   sendEnd: null,
   text: null,
   status: null,
-  isOverPlan: { id: 0, description: 'ทั้งหมด' }
+  isOverPlan: { id: 0, description: 'ทั้งหมด' },
+  customerCode: null
 }
 export default {
   components: {
@@ -160,10 +187,12 @@ export default {
     pageTitle,
     Calendar,
     MultiSelect,
-    Dropdown
+    Dropdown,
+    dialogView
   },
   data() {
     return {
+      isShow: { ...interfaceIsShow },
       id: '',
       form: {},
       search: {
@@ -176,7 +205,7 @@ export default {
         { id: 0, description: 'ทั้งหมด' },
         { id: 1, description: 'เกินกำหนด' }
       ],
-      isExport: true,
+      isExport: true
       //previuosDay: 7,
     }
   },
@@ -196,6 +225,12 @@ export default {
     focusInputText() {
       this.$refs.inputText.focus()
     },
+    onShowDialog() {
+      this.isShow.dialog = true
+    },
+    closeDialog() {
+      this.isShow.dialog = false
+    },
 
     // ----- push ----- ///
     onView(item) {
@@ -207,6 +242,11 @@ export default {
     onSearch() {
       console.log(this.search)
       this.formSearch = { ...this.search }
+    },
+    dialogSearch() {
+      console.log(this.search)
+      this.formSearch = { ...this.search }
+      this.isShow.dialog = false
     },
     onExport() {
       console.log(this.search)

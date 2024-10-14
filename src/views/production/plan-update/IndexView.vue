@@ -336,7 +336,7 @@ export default {
         { label: 'ขัดดิบ', icon: 'bi bi-hammer' },
         { label: 'คัดพลอย', icon: 'bi bi-hammer' },
         { label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
-        { label: 'ราคา', icon: 'bi bi-cash-coin' }
+        { label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' }
       ]
     }
   },

@@ -42,6 +42,7 @@
           showGridlines
         >
           <!-- <Column field="no" header="ลำดับ" style="width: 20px"> </Column> -->
+          <Column field="no" header="ลำดับ" style="width: 10px"> </Column>
           <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
           <Column field="qty" header="จำนวน" sortable style="min-width: 200px">
             <template #body="slotProps">
@@ -503,9 +504,20 @@ export default {
         console.log('params', params)
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/Picklist', params)
         if (res) {
-          this.model = { ...res.data[0] }
+          let noPick = 1
+          this.model = {
+            ...res.data[0],
+            items: res.data[0].items
+              .sort((x) => x.code)
+              .map((item) => {
+                return {
+                  ...item,
+                  no: noPick++
+                }
+              })
+          }
 
-          let no = 1
+          let noReturn = 1
 
           const paramsOutbound = {
             take: 0,
@@ -527,7 +539,7 @@ export default {
             .sort((x) => x.code)
             .map((item) => {
               return {
-                no: no++,
+                no: noReturn++,
                 code: item.code,
                 name: item.name,
                 pickOffQty: item.qty,

@@ -46,7 +46,7 @@ export default {
         margin: [0, 10, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', 50, 50, 50, 50, 40, 40],
+          widths: [20, '*', 50, 50, 50, 50, 40, 40],
           body: this.buildTablePickOff(data),
           layout: {
             defaultBorder: true
@@ -87,6 +87,7 @@ export default {
       //console.log(data)
       let body = []
       const title = [
+      this.setTableTitle('ลำดับ'),
         this.setTableTitle('พลอย/เพชร'),
         this.setTableTitleTextRight('จำนวน'),
         this.setTableTitleTextRight('น้ำหนัก'),
@@ -102,6 +103,7 @@ export default {
       //body
       data.forEach((item) => {
         const row = [
+        this.setTableRow(item.no),
           this.setTableRow(item.name),
           this.setTableRowTextRight(item.qty),
           this.setTableRowTextRight(item.qtyWeight),
