@@ -151,7 +151,7 @@
       <!-- grid gem -->
       <div class="filter-container-highlight mt-3">
         <div class="d-flex justify-content-between">
-          <span class="desc-text-white">รายละเอียดเพชรเเละพลอย</span>
+          <span class="desc-text-white">รายละเอียดวัถุดิบ</span>
           <div>
             <button
               :class="
@@ -404,7 +404,7 @@ export default {
 
       this.exportWithCustomColumnCSV(
         dataExcel,
-        `รายการเพชรเเละพลอย แผนผลิตเลขที่ [${this.modelValue.wo}-${this.modelValue.woNumber}].csv`
+        `รายการวัถุดิบ แผนผลิตเลขที่ [${this.modelValue.wo}-${this.modelValue.woNumber}].csv`
       )
     },
 

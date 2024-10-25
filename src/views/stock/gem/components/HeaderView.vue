@@ -2,16 +2,16 @@
   <div class="filter-container-searchBar">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
-      title="คลังเพชรเเละพลอย"
-      description="ตรวจสอบจำนวนคงคลัง ราคา รายละเอียดต่างๆ ของเพชรเเละพลอย"
+      title="คลังวัถุดิบ"
+      description="ตรวจสอบจำนวนคงคลัง ราคา รายละเอียดต่างๆ ของวัถุดิบ"
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >
       <template #rightSlot>
         <div>
-          <button class="btn btn-sm btn-main" @click="onShowCreate" title="สร้างข้อมูลเพชรเเละพลอย">
+          <button class="btn btn-sm btn-main" @click="onShowCreate" title="สร้างข้อมูลวัถุดิบ">
             <i class="bi bi-pencil"></i>
-            <!-- <span class="ml-2">สร้างข้อมูลเพชรเเละพลอย</span> -->
+            <!-- <span class="ml-2">สร้างข้อมูลวัถุดิบ</span> -->
           </button>
         </div>
       </template>

@@ -505,7 +505,7 @@ export default {
                 workerSub: thing.workerSub,
                 wages: thing.wages,
                 totalWages: thing.totalWages,
-                requestDate: new Date(thing.requestDate)
+                requestDate: thing.requestDate ? new Date(thing.requestDate) : new Date()
               }
             })
           )

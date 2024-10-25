@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container">
     <pageTitle
-      title="ใบยืมเพชรเเละพลอย"
-      description="ยืมเพชรเเละพลอยออกคลัง [งานคัดพลอย/ตรวจสอบ เป็นต้น] ระบุรหัส จำนวน และรายละเอียดอื่นๆ "
+      title="ใบยืมวัถุดิบ"
+      description="ยืมวัถุดิบออกคลัง [งานคัดพลอย/ตรวจสอบ เป็นต้น] ระบุรหัส จำนวน และรายละเอียดอื่นๆ "
       :isShowBtnClose="false"
       :isShowRightSlot="false"
     >

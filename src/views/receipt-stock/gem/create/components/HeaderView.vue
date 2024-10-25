@@ -2,8 +2,8 @@
   <div class="filter-container">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
-      title="สร้างรหัสเพชรเเละพลอย"
-      description="สร้างรหัสเพชรเเละพลอย ระบุข้อมูลรหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ"
+      title="สร้างรหัสวัถุดิบ"
+      description="สร้างรหัสวัถุดิบ ระบุข้อมูลรหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ"
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >

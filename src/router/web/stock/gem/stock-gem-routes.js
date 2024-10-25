@@ -25,7 +25,7 @@ const routes = [
     meta: {
       Displayname: {
         en: 'Stock Raw Material',
-        th: 'คลังเพชรเเละพลอย'
+        th: 'คลังวัถุดิบ'
       },
       classIcon: 'bi bi-gem',
       majorShow: true,

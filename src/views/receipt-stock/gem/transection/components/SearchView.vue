@@ -2,8 +2,8 @@
   <div class="filter-container">
     <loading :isLoading="isLoading"></loading>
     <pageTitle
-      title="การเคลื่อนไหว เพชรเเละพลอย"
-      description="ตรวจรายการเคลื่อนไหว รับ/จ่าย ยืม/คืน เเละใบเบิก เพชรเเละพลอย"
+      title="การเคลื่อนไหว วัถุดิบ"
+      description="ตรวจรายการเคลื่อนไหว รับ/จ่าย ยืม/คืน เเละใบเบิก วัถุดิบ"
       :isShowBtnClose="false"
       :isShowRightSlot="false"
     >
@@ -11,7 +11,7 @@
         <div>
           <button class="btn btn-sm btn-main" @click="onShowCreate">
             <i class="bi bi-pencil"></i>
-            <span class="ml-2">สร้างข้อมูลเพชรเเละพลอย</span>
+            <span class="ml-2">สร้างข้อมูลวัถุดิบ</span>
           </button>
         </div>
       </template>

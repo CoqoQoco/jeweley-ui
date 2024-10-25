@@ -2,6 +2,7 @@
 import mold from '../web/mold/mold-routes.js'
 import production from '../web/production/production-routes.js'
 import stockGem from '../web/stock/gem/stock-gem-routes.js'
+import stockProduct from '../web/stock/product/stock-product-routes.js'
 //import settingRoutes from './setting-routes.js'
 
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
@@ -69,6 +70,7 @@ const routes = [
   // --------- Production 
   ...production,
   // --------- stock 
+  ...stockProduct,
   ...stockGem,
 
   // ------------------ customer -------------------

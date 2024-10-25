@@ -5,59 +5,158 @@
         <!-- time -->
         <div class="title-text-white vertical-center-container">
           <span class="bi bi-clock-history mr-2"></span>
-          <span>ประวัติประเมินราคา</span>
+          <span>{{
+            this.modelPrice.length > 0 ? formatDateTime(this.modelPrice[0].date) : `---`
+          }}</span>
           <!-- <span v-if="modelPlanStatus">{{ formatDateTime(modelPlanStatus.updateDate) }}</span> -->
           <!-- <span v-else class="ml-2">---</span> -->
         </div>
 
         <!-- action -->
-        <div>
-          <button
-            :class="['btn btn-sm ml-2', checkBtn('close') ? 'btn-secondary' : 'btn-primary']"
-            title="พิมพ์แบบ"
-            :disabled="checkBtn('close')"
-          >
-            <span class="bi bi-printer"></span>
-          </button>
-          <button
-            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
-            title="ประเมินราคา"
-            :disabled="checkBtn('add')"
-            @click="addStatus()"
-          >
-            <span class="bi bi-database-fill-add"></span>
-          </button>
-          <button
-            :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
-            title="เเก้ไข"
-            :disabled="checkBtn('edit')"
-            @click="updateStatus()"
-          >
-            <span class="bi bi-brush"></span>
-          </button>
-          <button
-            :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
-            title="ลบ"
-            :disabled="checkBtn('delete')"
-            @click="onDelStatus(modelPlanStatus.id)"
-          >
-            <span class="bi bi-trash-fill"></span>
-          </button>
-
-          <button
-            :class="['btn btn-sm ml-2', checkBtn('price') ? 'btn-secondary' : 'btn-green']"
-            @click="goPrice"
-          >
-            <span class="bi bi-coin"></span>
-          </button>
+        <div class="d-flex">
+          <div>
+            <pricePDF
+              :isVisible="isMakePrice"
+              :modelValue="model"
+              :modelPrice="modelPrice"
+            ></pricePDF>
+          </div>
+          <div>
+            <button
+              :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
+              title="ประเมินบัตรต้นทุน"
+              :disabled="checkBtn('add')"
+              @click="addStatus()"
+            >
+              <span class="bi bi-database-fill-add"></span>
+            </button>
+            <button
+              :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
+              title="เเก้ไข"
+              :disabled="checkBtn('edit')"
+              @click="updateStatus()"
+            >
+              <span class="bi bi-brush"></span>
+            </button>
+            <button
+              :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
+              title="ลบ"
+              :disabled="checkBtn('delete')"
+              @click="onDelStatus(modelPlanStatus.id)"
+            >
+              <span class="bi bi-trash-fill"></span>
+            </button>
+          </div>
         </div>
       </div>
+    </div>
+    <div>
+      <DataTable
+        :value="modelPrice"
+        rowGroupMode="subheader"
+        groupRowsBy="nameGroup"
+        stripedRows
+        showGridlines
+      >
+        <ColumnGroup type="header">
+          <Row>
+            <Column header="รายละเอียดงาน" :colspan="2" />
+            <!-- <Column header="วันที่" /> -->
+            <Column header="จำนวน" />
+            <Column header="ราคา/จำนวน" />
+            <Column header="น้ำหนัก" />
+            <Column header="ราคา/น้ำหนัก" />
+            <Column header="ราคารวม" />
+          </Row>
+        </ColumnGroup>
+
+        <Column field="nameGroup"> </Column>
+        <Column field="index" style="width: 10px">
+          <template #body="slotProps">
+            <span>{{ slotProps.index + 1 }}</span>
+          </template>
+        </Column>
+        <Column field="nameDescription">
+          <template #body="slotProps">
+            <div>
+              <span>{{ slotProps.data.nameDescription }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column field="qty" style="width: 110px">
+          <template #body="slotProps">
+            <div class="text-right">
+              <span>{{ slotProps.data.qty }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column field="qtyPrice" style="width: 110px">
+          <template #body="slotProps">
+            <div class="text-right">
+              <span>{{ slotProps.data.qtyPrice.toFixed(2) }}</span>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="qtyWeight" style="width: 110px">
+          <template #body="slotProps">
+            <div class="text-right">
+              <span>{{ slotProps.data.qtyWeight }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column field="qtyWeightPrice" style="width: 110px">
+          <template #body="slotProps">
+            <div class="text-right">
+              <span>{{ slotProps.data.qtyWeightPrice.toFixed(2) }}</span>
+            </div>
+          </template>
+        </Column>
+
+        <column field="totalPrice" style="width: 150px">
+          <template #body="slotProps">
+            <div class="text-right">
+              <span>{{ slotProps.data.totalPrice }}</span>
+            </div>
+          </template>
+        </column>
+
+        <template #groupheader="slotProps">
+          <div class="flex align-items-center gap-2 type-container">
+            <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
+            <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
+          </div>
+        </template>
+        <ColumnGroup type="footer">
+          <Row>
+            <column :colspan="6">
+              <template #footer>
+                <div class="text-right">
+                  <span>ต้นทุนรวม</span>
+                </div>
+              </template>
+            </column>
+            <column :colspan="1">
+              <template #footer>
+                <div class="text-right">
+                  <span>{{ caltotalPrice(modelPrice) }}</span>
+                </div>
+              </template>
+            </column>
+          </Row>
+        </ColumnGroup>
+      </DataTable>
     </div>
   </div>
 </template>
 
 <script>
-import _ from 'lodash'
+import { defineAsyncComponent } from 'vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ColumnGroup from 'primevue/columngroup'
+//import _ from 'lodash'
+import Row from 'primevue/row'
 
 //import DataTable from 'primevue/datatable'
 //import Column from 'primevue/column'
@@ -67,10 +166,17 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-config.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
+const pricePDF = defineAsyncComponent(() =>
+  import('@/components/pdf-make/FilePDFProductionPlanPrice.vue')
+)
+
 export default {
   components: {
-    //DataTable,
-    //Column
+    DataTable,
+    Column,
+    ColumnGroup,
+    Row,
+    pricePDF
   },
   props: {
     modelValue: {
@@ -98,17 +204,6 @@ export default {
     model() {
       return this.modelValue
     },
-    modelPlanStatus() {
-      const tbtProductionPlanStatusHeader = this.modelValue.tbtProductionPlanStatusHeader
-
-      if (_.isEmpty(tbtProductionPlanStatusHeader)) {
-        return null
-      } else {
-        var value = tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
-        console.log('modelPlanStatus', value)
-        return value
-      }
-    },
     modelMat() {
       return this.modelMatValue
     },
@@ -117,6 +212,12 @@ export default {
     },
     modelGold() {
       return this.masterGold
+    },
+    modelPrice() {
+      return this.modelValue.priceItems
+    },
+    isMakePrice() {
+      return this.modelPrice.length > 0
     }
   },
   data() {
@@ -134,16 +235,15 @@ export default {
       return date ? formatDate(date) : ''
     },
     checkBtn(action) {
-      console.log('checkBtn', this.modelPlanStatus)
       const disStatus = [100, 500]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
           case 'print':
-            return this.modelPlanStatus ? false : true
+            return !this.isMakePrice
           case 'add':
-            return this.modelPlanStatus ? true : false
+            return false
           case 'edit':
-            return this.modelPlanStatus ? false : true
+            return true
           case 'delete':
             return true
           //return this.modelPlanStatus ? false : true
@@ -176,6 +276,25 @@ export default {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+    },
+    getGroupName(id) {
+      switch (id) {
+        case 'Gold':
+          return 'รายการทอง'
+        case 'Gem':
+          return 'รายการวัถุดิบ'
+        case 'Worker':
+          return 'รายการงานช่าง'
+        default:
+          return 'รายการเพิ่มเติม'
+      }
+    },
+    caltotalPrice(data) {
+      let total = 0
+      data.forEach((item) => {
+        total += Number(item.totalPrice)
+      })
+      return total.toFixed(2)
     },
 
     // ----- event
@@ -214,7 +333,7 @@ export default {
 
       this.exportWithCustomColumnCSV(
         dataExcel,
-        `รายการเพชรเเละพลอย แผนผลิตเลขที่ [${this.modelValue.wo}-${this.modelValue.woNumber}].csv`
+        `รายการวัถุดิบ แผนผลิตเลขที่ [${this.modelValue.wo}-${this.modelValue.woNumber}].csv`
       )
     },
     goPrice() {
@@ -258,6 +377,13 @@ export default {
         this.isLoading = false
       }
     }
+  },
+  created() {
+    this.$nextTick(() => {
+      //console.log('modelPlanStatus', this.modelPlanStatus)
+      console.log('model price', this.modelPrice)
+      console.log('model make price', this.isMakePrice)
+    })
   }
 }
 </script>
@@ -274,5 +400,12 @@ export default {
   padding: 10px;
   height: calc(100vh - 160px);
   overflow: auto;
+}
+.type-container {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--base-font-color);
+  padding: 5px;
+  //margin: 0px 0px 10px 0px;
 }
 </style>

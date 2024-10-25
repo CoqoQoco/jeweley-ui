@@ -5,7 +5,7 @@
       <template v-slot:content>
         <div class="title-text-lg mb-2">
           <span class="mr-2"><i class="bi bi-house-add-fill"></i></span>
-          <span>ยืนยันคืนเข้าคลังเเละเบิกออกคลัง เพชรเเละพลอย</span>
+          <span>ยืนยันคืนเข้าคลังเเละเบิกออกคลัง วัถุดิบ</span>
         </div>
         <form @submit.prevent="onSubmit">
           <!-- type && request date -->
@@ -280,9 +280,9 @@ export default {
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/PickReturnGem', params)
         if (res) {
           swAlert.success(
-            `เลขที่ใบคืนเพชรเเละพลอย: ${res.runningPickReturn ?? '---'}
+            `เลขที่ใบคืนวัถุดิบ: ${res.runningPickReturn ?? '---'}
             </br>
-            เลขที่ใบเบิกเพชรเเละพลอย: ${res.runningPickOutbound ?? '---'}`,
+            เลขที่ใบเบิกวัถุดิบ: ${res.runningPickOutbound ?? '---'}`,
             '',
             () => {
               this.onClear()

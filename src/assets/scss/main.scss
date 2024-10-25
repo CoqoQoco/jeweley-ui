@@ -18,6 +18,12 @@ html {
   color: $base-sub-color;
   //color: $base-font-color;
   font-size: $base-font-size;
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
 .app-container {
   padding: 10px 10px 10px 10px;

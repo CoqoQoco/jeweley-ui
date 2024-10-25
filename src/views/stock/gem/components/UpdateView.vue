@@ -7,7 +7,7 @@
           <div class="title-text-lg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
             <span>
-              {{ `เเก้ไขข้อมูลเพชรเเละพลอย: ${model.name}` }}
+              {{ `เเก้ไขข้อมูลวัถุดิบ: ${model.name}` }}
             </span>
           </div>
           <div class="form-col-container p-2">
@@ -114,7 +114,7 @@
               <span class="mr-2">
                 <i class="bi bi-gem"></i>
               </span>
-              <span>เเก้ไขข้อมูลเพชรเเละพลอย</span>
+              <span>เเก้ไขข้อมูลวัถุดิบ</span>
             </button>
           </div>
         </form>
@@ -263,7 +263,7 @@ export default {
       if (this.validateForm()) {
         swAlert.confirmSubmit(
           `${this.form.code}`,
-          `ยืนยันเเก้ไขเพชรเเละพลอย`,
+          `ยืนยันเเก้ไขวัถุดิบ`,
           async () => {
             //console.log('call submitPlan')
             await this.submit()

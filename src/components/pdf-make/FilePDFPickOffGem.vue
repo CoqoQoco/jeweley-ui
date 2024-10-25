@@ -137,7 +137,7 @@ export default {
           {
             columns: [
               'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
-              { text: `ใบยืมเพชรเเละพลอย`, alignment: 'right' }
+              { text: `ใบยืมวัถุดิบ`, alignment: 'right' }
             ],
             margin: [0, 0, 0, 0],
             bold: true,

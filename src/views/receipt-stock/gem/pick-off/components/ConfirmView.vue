@@ -5,7 +5,7 @@
       <template v-slot:content>
         <div class="title-text-lg mb-2">
           <span class="mr-2"><i class="bi bi-house-add-fill"></i></span>
-          <span>ยืนยันยืมเพชรเเละพลอย</span>
+          <span>ยืนยันยืมวัถุดิบ</span>
         </div>
         <form @submit.prevent="onSubmit">
           <!-- type -->
@@ -110,7 +110,7 @@
           <div class="form-col-container mt-3">
             <div>
               <div>
-                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการยืมเพชรเเละพลอย</span>
+                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการยืมวัถุดิบ</span>
                 <span class="txt-required"> *</span>
               </div>
               <input
@@ -271,7 +271,7 @@ export default {
 
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/PickOffGem', params)
         if (res) {
-          swAlert.success('', `เลขที่ใบยืมเพชรเเละพลอย: ${res}`, () => {
+          swAlert.success('', `เลขที่ใบยืมวัถุดิบ: ${res}`, () => {
             this.onClear()
             this.$emit('closeModal', 'confirm')
           })

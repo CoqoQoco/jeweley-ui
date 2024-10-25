@@ -385,7 +385,7 @@ export default {
           })
           this.exportWithCustomColumnCSV(
             dataExcel,
-            `รายการเคลื่อนไหวเพชรเเละพลอย[${this.formatDate(
+            `รายการเคลื่อนไหววัถุดิบ[${this.formatDate(
               this.form.requestDateStart
             )} - ${this.formatDate(this.form.requestDateEnd)}].csv`
           )

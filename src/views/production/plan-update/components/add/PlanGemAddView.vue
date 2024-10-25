@@ -312,7 +312,7 @@
           <div>
             <span class="title-text">*</span>
             <span class="title-text" style="font-size: 11px"
-              >เมื่อทำการเลือกเพชรเเละพลอย จะกำหนดราคาปัจจุบันของสต๊อกนั้นๆ</span
+              >เมื่อทำการเลือกวัถุดิบ จะกำหนดราคาปัจจุบันของสต๊อกนั้นๆ</span
             >
           </div>
           <div class="line mt-3"></div>

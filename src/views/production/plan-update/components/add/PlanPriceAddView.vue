@@ -3,8 +3,8 @@
     <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
-        <div class="title-text-lg-header mb-2">
-          <span>ประเมินราคา</span>
+        <div class="title-text-lg-header">
+          <span>ประเมินบัตรต้นทุน</span>
           <span class="bi bi-arrow-right ml-1"></span>
           <span class="ml-1">{{ `ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
@@ -20,10 +20,13 @@
             >
               <ColumnGroup type="header">
                 <Row>
-                  <Column header="รายละเอียดงานต่างๆ" :colspan="3" />
-                  <Column header="วันที่" />
+                  <Column header="รายละเอียดงาน" :colspan="3" />
+                  <!-- <Column header="วันที่" /> -->
                   <Column header="จำนวน" />
-                  <Column header="ราคา" />
+                  <Column header="ราคา/จำนวน" />
+                  <Column header="น้ำหนัก" />
+                  <Column header="ราคา/น้ำหนัก" />
+                  <Column header="ราคารวม" />
                 </Row>
               </ColumnGroup>
 
@@ -61,34 +64,96 @@
                   </div>
                 </template>
               </Column>
-              <Column field="date" style="width: 100px">
+              <!-- <Column field="date" style="width: 100px">
                 <template #body="slotProps">
                   <span>{{ formatDate(slotProps.data.date) }}</span>
                 </template>
-              </Column>
+              </Column> -->
+
               <Column field="qty" style="width: 130px">
                 <template #body="slotProps">
-                  <div class="text-right">
+                  <div v-if="slotProps.data.nameGroup === 'ETC'">
+                    <input
+                      style="background-color: #b5dad4"
+                      v-model="slotProps.data.qty"
+                      type="number"
+                      class="form-control no-spinners text-right"
+                      step="any"
+                      min="0"
+                      required
+                      @blur="onBluePrice(slotProps.data, slotProps.index, 'qty')"
+                    />
+                  </div>
+                  <div v-else class="text-right">
                     <span>{{ slotProps.data.qty }}</span>
                   </div>
                 </template>
               </Column>
-              <Column field="price" style="width: 130px">
+              <Column field="qtyPrice" style="width: 110px">
                 <template #body="slotProps">
                   <div>
                     <input
                       style="background-color: #b5dad4"
-                      v-model="slotProps.data.price"
+                      v-model="slotProps.data.qtyPrice"
                       type="number"
                       class="form-control text-right"
                       step="any"
                       min="0"
                       required
-                      @blur="onBluePrice(slotProps.data, slotProps.index)"
+                      @blur="onBluePrice(slotProps.data, slotProps.index, 'qtyPrice')"
                     />
                   </div>
                 </template>
               </Column>
+
+              <Column field="qtyWeight" style="width: 110px">
+                <template #body="slotProps">
+                  <div v-if="slotProps.data.nameGroup === 'ETC'">
+                    <input
+                      style="background-color: #b5dad4"
+                      v-model="slotProps.data.qtyWeight"
+                      type="number"
+                      class="form-control text-right"
+                      step="any"
+                      min="0"
+                      required
+                      @blur="onBluePrice(slotProps.data, slotProps.index, 'qtyWeight')"
+                    />
+                  </div>
+                  <div v-else class="text-right">
+                    <span>{{ slotProps.data.qtyWeight }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column field="qtyWeightPrice" style="width: 110px">
+                <template #body="slotProps">
+                  <div>
+                    <input
+                      style="background-color: #b5dad4"
+                      v-model="slotProps.data.qtyWeightPrice"
+                      type="number"
+                      class="form-control text-right"
+                      step="any"
+                      min="0"
+                      required
+                      @blur="onBluePrice(slotProps.data, slotProps.index, 'qtyWeightPrice')"
+                    />
+                  </div>
+                </template>
+              </Column>
+
+              <column field="totalPrice" style="width: 150px">
+                <template #body="slotProps">
+                  <div>
+                    <input
+                      v-model="slotProps.data.totalPrice"
+                      class="form-control text-right"
+                      min="0"
+                      disabled
+                    />
+                  </div>
+                </template>
+              </column>
 
               <template #groupheader="slotProps">
                 <div class="flex align-items-center gap-2 type-container">
@@ -98,10 +163,10 @@
               </template>
               <ColumnGroup type="footer">
                 <Row>
-                  <column :colspan="5">
+                  <column :colspan="7">
                     <template #footer>
                       <div class="text-right">
-                        <span>ราคาก่อนส่วนลด</span>
+                        <span>ต้นทุนรวม</span>
                       </div>
                     </template>
                   </column>
@@ -118,7 +183,7 @@
           </div>
 
           <!-- discounr -->
-          <DataTable :value="tranDiscount" stripedRows showGridlines>
+          <!-- <DataTable :value="tranDiscount" stripedRows showGridlines>
             <ColumnGroup type="header">
               <Row>
                 <Column header="รายละเอียดส่วนลด" :colspan="3" />
@@ -208,22 +273,26 @@
                 </column>
               </Row>
             </ColumnGroup>
-          </DataTable>
-          <div></div>
+          </DataTable> -->
 
           <div class="text-right mt-2">
-            <button type="button" class="btn btn-green mr-2" title="เพิ่มรายการ" @click="addItem">
+            <button
+              type="button"
+              class="btn btn-sm btn-green mr-2"
+              title="เพิ่มรายการ"
+              @click="addItem"
+            >
               <span><i class="bi bi-plus"></i></span>
             </button>
-            <button
+            <!-- <button
               type="button"
               class="btn btn-green mr-2"
               title="เพิ่มส่วนลด"
               @click="addItemDiscount"
             >
               <span><i class="bi bi-cash-coin"></i></span>
-            </button>
-            <button type="button" class="btn btn-main" title="บันทึก">
+            </button> -->
+            <button type="submit" class="btn btn-sm btn-main" title="บันทึก">
               <span><i class="bi bi-calendar-check"></i></span>
             </button>
           </div>
@@ -377,7 +446,7 @@ export default {
     caltotalPrice(data) {
       let total = 0
       data.forEach((item) => {
-        total += Number(item.price)
+        total += Number(item.totalPrice)
       })
       return total.toFixed(2)
     },
@@ -412,16 +481,12 @@ export default {
 
     // ----- event
     onclear() {
-      this.form = {
-        ...interfaceForm
-      }
       this.val = {
         ...interfaceIsValid
       }
-      this.matAssign = [...this.tempMatAssign]
-      this.gemAssign = []
     },
     closeModal() {
+      console.log('closeModal')
       this.onclear()
       this.$emit('closeModal', 'add')
     },
@@ -429,8 +494,8 @@ export default {
     onSubmit() {
       if (this.validateForm()) {
         swAlert.confirmSubmit(
-          `ยืนยันเเก้ไขงาน [คัดพลอย]`,
-          `${this.model.wo}-${this.model.woNumber}`,
+          `บัตรต้นทุน ${this.model.wo}-${this.model.woNumber}`,
+          `ยืนยันบันทึกบัตรต้นทุน`,
           async () => {
             //console.log('call submitPlan')
             await this.submit()
@@ -450,20 +515,23 @@ export default {
 
       return true
     },
-    onBluePrice(item, index) {
+    onBluePrice(item, index, fieldName) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBlurPrice', item, index)
+      console.log('onBluePrice' + fieldName, item, index)
 
       let newCal = {
         ...item,
-        price: item.price ? Number(item.price).toFixed(2) : '0.00'
+        [fieldName]: item[fieldName] ? Number(item[fieldName]).toFixed(2) : '0.00',
+        totalPrice: Number(item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice).toFixed(
+          2
+        )
       }
 
       // ในVue 3, เราสามารถอัปเดตได้โดยตรง
       this.tranItems[index] = newCal
 
-      console.log('onBlurPrice', this.tranItems[item])
-      console.log('onBlurPrice', this.tranItems)
+      console.log('onBluePrice' + fieldName, this.tranItems[item])
+      console.log('onBluePrice' + fieldName, this.tranItems)
       //this.onUpdateQty(item)
     },
     onBlueDiscount(item, index) {
@@ -487,8 +555,11 @@ export default {
         nameGroup: 'ETC',
         nameDescription: '',
         date: new Date(),
-        qty: 1,
-        price: 0
+        qty: 0,
+        qtyPrice: Number(0).toFixed(2),
+        qtyWeight: 0,
+        qtyWeightPrice: Number(0).toFixed(2),
+        totalPrice: Number(0).toFixed(2)
       })
     },
     addItemDiscount() {
@@ -511,81 +582,56 @@ export default {
         case 'Gold':
           return 'รายการทอง'
         case 'Gem':
-          return 'รายการเพชรเเละพลอย'
+          return 'รายการวัถุดิบ'
         case 'Worker':
           return 'รายการงานช่าง'
         default:
-          return 'อื่นๆ'
+          return 'รายการเพิ่มเติม'
       }
     },
 
     // --- APIs --- //
 
     async submit() {
+      this.isLoading = true
       try {
-        this.isLoading = true
-        this.matAssign = this.matAssign.map((item) => {
-          return {
-            ...item,
-            worker: item.workers?.code,
-            workerSub: item.workersSub?.code
-          }
-        })
-        this.gemAssign = this.gemAssign.map((item) => {
-          return {
-            id: item.gem?.id,
-            outboundRunning: item.outboundRunning,
-            itemNo: item.itemNo,
-            code: item.gem?.code,
-            name: item.gem?.name,
-            qty: item.qty,
-            weight: item.weight,
-            price: item.price
-          }
-        })
+        let no = 1
         const param = {
+          productionPlanId: this.model.id,
           wo: this.model.wo,
           woNumber: this.model.woNumber,
-          productionPlanId: this.model.id,
-          HeaderId: this.form.headerId,
-
-          status: this.status,
-          sendName: this.form.receiveBy,
-          sendDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          checkName: this.form.receiveBy,
-          checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          remark1: this.form.remark1,
-          remark2: this.form.remark2,
-          totalWages: this.form.totalWages,
-          golds: [...this.matAssign],
-          gems: [...this.gemAssign]
+          woText: `${this.model.wo}${this.model.woNumber}`,
+          item: this.tranItems.map((item) => {
+            return {
+              no: no++,
+              name: item.nameGroup === 'ETC' ? item.nameDescription : item.name,
+              nameGroup: item.nameGroup,
+              nameDescription: item.nameDescription,
+              date: item.date ? formatISOString(item.date) : null,
+              qty: item.qty ?? 0,
+              qtyPrice: item.qtyPrice ?? 0,
+              qtyWeight: item.qtyWeight ?? 0,
+              qtyWeightPrice: item.qtyWeightPrice ?? 0,
+              totalPrice: item.totalPrice ?? 0
+            }
+          })
         }
-        //console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
+        const res = await api.jewelry.post('ProductionPlan/CreatePrice', param)
         if (res) {
           swAlert.success(
             ``,
             '',
             () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.matAssign = [...this.tempMatAssign]
-              this.gemAssign = []
               this.$emit('fetch')
             },
             null,
             null
           )
         }
-        this.isLoading = false
       } catch (error) {
-        this.isLoading = false
         console.log(error)
       }
+      this.isLoading = false
     },
     async onSearchWorker(e) {
       try {
@@ -707,7 +753,11 @@ export default {
           this.tranItems = res.items.map((item) => {
             return {
               ...item,
-              price: item.price ? Number(item.price).toFixed(2) : '0.00'
+              qtyPrice: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
+              qtyWeightPrice: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
+              totalPrice: Number(
+                item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice
+              ).toFixed(2)
             }
           })
 
@@ -736,6 +786,14 @@ input {
   margin-top: 0px !important;
   //background-color: #dad4b5;
 }
+// :deep(.p-datatable .p-datatable-tfoot > tr > td) {
+//   text-align: left;
+//   padding: 1rem 1rem;
+//   border: 1px solid white;
+//   border-width: 0 0 1px 0;
+//   color: white;
+//   background: var(--base-font-color);
+// }
 
 .type-container {
   font-size: 15px;

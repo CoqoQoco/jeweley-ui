@@ -418,7 +418,7 @@ export default {
         case 'Gold':
           return 'รายการทอง'
         case 'Gem':
-          return 'รายการเพชรเเละพลอย'
+          return 'รายการวัถุดิบ'
         case 'Worker':
           return 'รายการงานช่าง'
         default:

@@ -7,7 +7,7 @@
           <div class="title-text-lg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
             <span>
-              สร้างข้อมูลเพชรเเละพลอย ระบุข้อมูล รหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ
+              สร้างข้อมูลวัถุดิบ ระบุข้อมูล รหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ
             </span>
           </div>
           <div class="form-col-container p-2">
@@ -105,7 +105,7 @@
               <span class="mr-2">
                 <i class="bi bi-gem"></i>
               </span>
-              <span>สร้างข้อมูลเพชรเเละพลอย</span>
+              <span>สร้างข้อมูลวัถุดิบ</span>
             </button>
           </div>
         </form>
@@ -234,7 +234,7 @@ export default {
       if (this.validateForm()) {
         swAlert.confirmSubmit(
           `${this.form.code}`,
-          `ยืนยันสร้างข้อมูลเพชรเเละพลอย`,
+          `ยืนยันสร้างข้อมูลวัถุดิบ`,
           async () => {
             //console.log('call submitPlan')
             await this.submit()

@@ -11,7 +11,7 @@
         <div>
           <button class="btn btn-sm btn-main" @click="onShowCreate">
             <i class="bi bi-pencil"></i>
-            <span class="ml-2">สร้างข้อมูลเพชรเเละพลอย</span>
+            <span class="ml-2">สร้างข้อมูลวัถุดิบ</span>
           </button>
         </div>
       </template>
