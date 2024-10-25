@@ -80,15 +80,15 @@
             columnResizeMode="fit"
             scrollHeight="calc(100vh - 160px)"
           >
-            <Column field="gold" header="ทอง" style="min-width: 200px"> </Column>
-            <Column field="requestDate" header="วันที่" style="min-width: 200px">
+            <Column field="gold" header="ทอง" style="min-width: 100px"> </Column>
+            <Column field="requestDate" header="วันที่" style="min-width: 100px">
               <template #body="slotProps">
                 <div class="text-left">
                   {{ formatDate(slotProps.data.requestDate) }}
                 </div>
               </template>
             </Column>
-            <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 100px">
+            <Column field="goldQtySend" header="จำนวนจ่าย" style="min-width: 100px">
               <template #body="slotProps">
                 <div>
                   {{
@@ -101,20 +101,20 @@
                 </div>
               </template>
             </Column>
-            <Column field="goldWeightSend" header="นำหนักจ่าย" style="width: 100px">
+            <Column field="goldWeightSend" header="นำหนักจ่าย" style="min-width: 100px">
               <template #body="slotProps">
                 <div>
                   {{
                     `${
                       slotProps.data.goldWeightSend
                         ? Number(slotProps.data.goldWeightSend).toFixed(3).toLocaleString()
-                        : ''
+                        : Number(0).toFixed(3)
                     }`
                   }}
                 </div>
               </template>
             </Column>
-            <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 100px">
+            <Column field="goldQtyCheck" header="จำนวนรับ" style="min-width: 100px">
               <template #body="slotProps">
                 <div>
                   {{
@@ -127,20 +127,20 @@
                 </div>
               </template>
             </Column>
-            <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
+            <Column field="goldWeightCheck" header="น้ำหนักรับ" style="min-width: 100px">
               <template #body="slotProps">
                 <div>
                   {{
                     `${
                       slotProps.data.goldWeightCheck
                         ? Number(slotProps.data.goldWeightCheck).toFixed(3).toLocaleString()
-                        : ''
+                        : Number(0).toFixed(3)
                     }`
                   }}
                 </div>
               </template>
             </Column>
-            <Column field="goldWeightDiff" header="น้ำหนัก ขาด/เกิน" style="width: 150px">
+            <Column field="goldWeightDiff" header="น้ำหนัก ขาด/เกิน" style="min-width: 150px">
               <template #body="prop">
                 <div
                   style="font-weight: 600"
@@ -323,7 +323,7 @@
           return null
         } else {
           var value = tbtProductionPlanStatusHeader.find((x) => x.status === 60)
-          console.log('modelPlanStatus', value)
+          //console.log('modelPlanStatus', value)
           return value
         }
       },
@@ -354,15 +354,15 @@
         return calculateWeightDifference(weightSend, weightReceived)
       },
       checkBtn(action) {
-        console.log('checkBtn', this.modelPlanStatus)
+        //console.log('checkBtn', this.modelPlanStatus)
         const disStatus = [100, 500]
         if (!disStatus.includes(this.model.status)) {
           switch (action) {
             case 'print':
               return this.modelPlanStatus ? false : true
             case 'add':
-              //return this.modelPlanStatus ? true : false
-              return true
+              return this.modelPlanStatus ? true : false
+              //return true
             case 'edit':
               return this.modelPlanStatus ? false : true
             case 'delete':
@@ -379,11 +379,11 @@
       // ----- event
       addStatus() {
         console.log('addStatus')
-        this.$emit('onShowAddStatus', 'scrubbing')
+        this.$emit('onShowAddStatus', 'scrubb')
       },
       updateStatus() {
         console.log('updateStatus')
-        this.$emit('onShowUpdateStatus', 'scrubbing')
+        this.$emit('onShowUpdateStatus', 'scrubb')
       },
       onDelStatus(id) {
         swAlert.confirmSubmit(

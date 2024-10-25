@@ -80,41 +80,41 @@
           columnResizeMode="fit"
           scrollHeight="calc(100vh - 160px)"
         >
-          <Column field="gold" header="ทอง" style="min-width: 200px"> </Column>
-          <Column field="requestDate" header="วันที่" style="min-width: 200px">
+          <Column field="gold" header="ทอง" style="min-width: 100px"> </Column>
+          <Column field="requestDate" header="วันที่" style="min-width: 100px">
             <template #body="slotProps">
               <div class="text-left">
                 {{ formatDate(slotProps.data.requestDate) }}
               </div>
             </template>
           </Column>
-          <Column field="goldQtySend" header="จำนวนจ่าย" style="width: 100px">
+          <Column field="goldQtySend" header="จำนวนจ่าย" style="min-width: 100px">
             <template #body="slotProps">
               <div>
                 {{
                   `${
                     slotProps.data.goldQtySend
                       ? Number(slotProps.data.goldQtySend).toFixed(3).toLocaleString()
-                      : ''
+                      : Number(0).toFixed(3)
                   }`
                 }}
               </div>
             </template>
           </Column>
-          <Column field="goldWeightSend" header="นำหนักจ่าย" style="width: 100px">
+          <Column field="goldWeightSend" header="นำหนักจ่าย" style="min-width: 100px">
             <template #body="slotProps">
               <div>
                 {{
                   `${
                     slotProps.data.goldWeightSend
                       ? Number(slotProps.data.goldWeightSend).toFixed(3).toLocaleString()
-                      : ''
+                      : Number(0).toFixed(3)
                   }`
                 }}
               </div>
             </template>
           </Column>
-          <Column field="goldQtyCheck" header="จำนวนรับ" style="width: 100px">
+          <Column field="goldQtyCheck" header="จำนวนรับ" style="min-width: 100px">
             <template #body="slotProps">
               <div>
                 {{
@@ -127,7 +127,7 @@
               </div>
             </template>
           </Column>
-          <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
+          <Column field="goldWeightCheck" header="น้ำหนักรับ" style="min-width: 100px">
             <template #body="slotProps">
               <div>
                 {{
@@ -140,7 +140,7 @@
               </div>
             </template>
           </Column>
-          <Column field="goldWeightDiff" header="น้ำหนัก ขาด/เกิน" style="width: 150px">
+          <Column field="goldWeightDiff" header="น้ำหนัก ขาด/เกิน" style="min-width: 100px">
             <template #body="prop">
               <div
                 style="font-weight: 600"

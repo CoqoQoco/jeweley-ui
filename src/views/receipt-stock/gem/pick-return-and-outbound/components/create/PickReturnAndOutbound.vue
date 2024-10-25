@@ -348,8 +348,9 @@ export default {
     },
 
     // ----- grid event
-    onRowExpand() {
-      console.log('onRowExpand')
+    onRowExpand(e) {
+      console.log('onRowExpand', e)
+      console.log('onRowExpand', this.expandedRows)
     },
     onRowCollapse() {
       console.log('onRowCollapse')

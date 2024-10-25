@@ -848,6 +848,9 @@ export default {
         //this.isLoading = false
       }
     }
+  },
+  created() {
+    this.matAssign = [...this.modelMat]
   }
 }
 </script>

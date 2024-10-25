@@ -147,6 +147,24 @@
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
       ></planScrubb>
+      <planScrubbAdd
+        :isShow="add.scrubb"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planScrubbAdd>
+      <planScrubbUpdate
+        :isShow="update.scrubb"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planScrubbUpdate>
     </div>
 
     <!-- gem -->
@@ -259,15 +277,22 @@ import planGemUpdate from './components/update/PlanGemUpdateView.vue'
 import planGemAdd from './components/add/PlanGemAddView.vue'
 
 import planScrubb from './components/view/PlanScrubbView.vue'
+import planScrubbAdd from './components/add/PlanScrubbAddView.vue'
+import planScrubbUpdate from './components/update/PlanScrubbUpdateView.vue'
 
 import planPriceView from './components/view/PlanPriceView.vue'
 import planPriceAddView from './components/add/PlanPriceAddView.vue'
 
 const interfaceIsShowAdd = {
-  casting: false
+  casting: false,
+  scrubb: false,
+  melted: false,
+  gems: false,
+  price: false
 }
 const interfaceIsShowUpdate = {
   casting: false,
+  scrubb: false,
   melted: false,
   gems: false,
   price: false
@@ -299,6 +324,8 @@ export default {
     planGemAdd,
 
     planScrubb,
+    planScrubbAdd,
+    planScrubbUpdate,
 
     planPriceView,
     planPriceAddView
@@ -389,6 +416,9 @@ export default {
       if (status === 'casting') {
         this.add.casting = true
       }
+      if (status === 'scrubb') {
+        this.add.scrubb = true
+      }
       if (status === 'melted') {
         this.add.melted = true
       }
@@ -405,6 +435,11 @@ export default {
       if (status === 'casting') {
         this.update.casting = true
       }
+
+      if (status === 'scrubb') {
+        this.update.scrubb = true
+      }
+      
       if (status === 'gems') {
         this.update.gems = true
       }
@@ -525,6 +560,7 @@ export default {
         if (res) {
           this.mat = [...res]
         }
+        console.log('this.mat', this.mat)
         this.isLoading = false
       } catch (error) {
         console.log(error)

@@ -4,8 +4,8 @@
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
-          <span>สร้างงาน/โอนงาน</span>
-          <span class="bi bi-arrow-right ml-1"> [จ่ายเเต่ง]</span>
+          <span>เเก้ไขงาน</span>
+          <span class="bi bi-arrow-right ml-1"> [ขัดดิบ]</span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
         <form @submit.prevent="onSubmit">
@@ -87,11 +87,11 @@
                   >
                     <!-- :showClear="data[field] ? true : false" -->
                     <!-- <template #option="slotProps">
-                          <Tag
-                            :value="slotProps.option.value"
-                            :severity="getStatusLabel(slotProps.option.value)"
-                          />
-                        </template> -->
+                              <Tag
+                                :value="slotProps.option.value"
+                                :severity="getStatusLabel(slotProps.option.value)"
+                              />
+                            </template> -->
                   </Dropdown>
                 </template>
               </Column>
@@ -175,11 +175,11 @@
               >
                 <template #editor="{ data, field }">
                   <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `-`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
+                          type="text"
+                          :class="data[field] ? `` : `-`"
+                          class="form-control"
+                          v-model="data[field]"
+                        /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
@@ -204,11 +204,11 @@
               <Column v-if="status === 90" field="workersSub" header="ช่างชุบ" style="width: 120px">
                 <template #editor="{ data, field }">
                   <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `-`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
+                          type="text"
+                          :class="data[field] ? `` : `-`"
+                          class="form-control"
+                          v-model="data[field]"
+                        /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
@@ -309,6 +309,7 @@ import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import _ from 'lodash'
 
 import moment from 'dayjs'
 import api from '@/axios/axios-config.js'
@@ -317,6 +318,7 @@ import { formatDate, formatDateTime, formatISOString } from '@/services/utils/da
 
 const interfaceForm = {
   status: null,
+  headerId: 0,
 
   receiveDate: new Date(),
   receiveBy: null,
@@ -382,6 +384,21 @@ export default {
     }
   },
   watch: {
+    isShow(newVal) {
+      if (newVal) {
+        console.log('Modal opened, initializing form')
+        this.initForm()
+      }
+    },
+    modelValue: {
+      handler(newVal) {
+        if (newVal && Object.keys(newVal).length > 0) {
+          console.log('modelValue changed, initializing form')
+          this.initForm()
+        }
+      },
+      deep: true
+    },
     'form.receiveDate'(val) {
       if (val) {
         this.val = {
@@ -415,11 +432,11 @@ export default {
       isLoading: false,
       autoId: 0,
       autoIdGem: 0,
-      status: 50,
+      status: 60,
 
       // --- from --- //
       form: {
-        ...interfaceForm
+        // ...interfaceForm
       },
       val: {
         ...interfaceIsValid
@@ -454,6 +471,47 @@ export default {
         return name
       }
       return name.slice(0, maxLength) + '...'
+    },
+    async initForm() {
+      var value = this.model.tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
+      if (value && Object.keys(value).length > 0) {
+        console.log('initForm ed 1', value)
+
+        //set form
+        this.form = {
+          receiveDate: _.get(value, 'checkDate') ? new Date(value.checkDate) : new Date(),
+          receiveBy: _.get(value, 'checkName', ''),
+          status: this.status || null,
+          remark1: _.get(value, 'remark1', ''),
+          remark2: _.get(value, 'remark2', ''),
+          headerId: _.get(value, 'id', 0)
+        }
+
+        //set mat >> tbtProductionPlanStatusDetail
+        if (value.tbtProductionPlanStatusDetail) {
+          this.matAssign = await Promise.all(
+            value.tbtProductionPlanStatusDetail.map(async (thing) => {
+              return {
+                id: ++this.autoId,
+                gold: thing.gold,
+                goldQTYSend: thing.goldQtySend,
+                goldWeightSend: thing.goldWeightSend,
+                goldQTYCheck: thing.goldQtyCheck,
+                goldWeightCheck: thing.goldWeightCheck,
+                description: thing.description,
+                workers: await this.onSearchWorkerByCode(thing.worker),
+                workersSub: await this.onSearchWorkerByCode(thing.workerSub),
+                worker: thing.worker,
+                workerSub: thing.workerSub,
+                wages: thing.wages,
+                totalWages: thing.totalWages,
+                requestDate: thing.requestDate ? new Date(thing.requestDate) : new Date()
+              }
+            })
+          )
+        }
+      }
+      console.log('initForm ed 2', this.form)
     },
 
     // ----- event
@@ -515,7 +573,7 @@ export default {
     onSubmit() {
       if (this.validateForm()) {
         swAlert.confirmSubmit(
-          `ยืนยัน สร้างงาน/โอนงาน [จ่ายเเต่ง]`,
+          `ยืนยันเเก้ไขงาน [ขัดดิบ]`,
           `${this.model.wo}-${this.model.woNumber}`,
           async () => {
             //console.log('call submitPlan')
@@ -562,6 +620,7 @@ export default {
           wo: this.model.wo,
           woNumber: this.model.woNumber,
           productionPlanId: this.model.id,
+          HeaderId: this.form.headerId,
 
           status: this.status,
           sendName: this.form.receiveBy,
@@ -575,7 +634,7 @@ export default {
           gems: [...this.gemAssign]
         }
         //console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanAddStatusDetail', param)
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
         if (res) {
           swAlert.success(
             ``,
@@ -626,6 +685,36 @@ export default {
         //this.isLoading = false
       }
     },
+    async onSearchWorkerByCode(e) {
+      try {
+        if (e === null) {
+          return null
+        }
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            code: e,
+            text: null,
+            type: null,
+            active: 0
+          }
+        }
+        const res = await api.jewelry.post('Worker/Search', params)
+        if (res) {
+          //console.log(res.data[0])
+          return res.data[0]
+        } else {
+          return null
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
+    },
     async onSearchGem(e) {
       try {
         //this.isLoading = true
@@ -648,10 +737,36 @@ export default {
         console.log(error)
         //this.isLoading = false
       }
+    },
+    async onSearchGemById(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            id: e ?? null,
+            text: null
+          }
+        }
+        const res = await api.jewelry.post('StockGem/Search', params)
+        if (res) {
+          //console.log(res)
+          if (res) {
+            //console.log(res.data[0])
+            return res[0]
+          } else {
+            return null
+          }
+          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
     }
-  },
-  created() {
-    this.matAssign = [...this.modelMat]
   }
 }
 </script>

@@ -5,7 +5,7 @@
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
           <span>สร้างงาน/โอนงาน</span>
-          <span class="bi bi-arrow-right ml-1"> [จ่ายเเต่ง]</span>
+          <span class="bi bi-arrow-right ml-1"> [ขัดดิบ]</span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
         <form @submit.prevent="onSubmit">
@@ -87,11 +87,11 @@
                   >
                     <!-- :showClear="data[field] ? true : false" -->
                     <!-- <template #option="slotProps">
-                          <Tag
-                            :value="slotProps.option.value"
-                            :severity="getStatusLabel(slotProps.option.value)"
-                          />
-                        </template> -->
+                            <Tag
+                              :value="slotProps.option.value"
+                              :severity="getStatusLabel(slotProps.option.value)"
+                            />
+                          </template> -->
                   </Dropdown>
                 </template>
               </Column>
@@ -175,11 +175,11 @@
               >
                 <template #editor="{ data, field }">
                   <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `-`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
+                        type="text"
+                        :class="data[field] ? `` : `-`"
+                        class="form-control"
+                        v-model="data[field]"
+                      /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
@@ -204,11 +204,11 @@
               <Column v-if="status === 90" field="workersSub" header="ช่างชุบ" style="width: 120px">
                 <template #editor="{ data, field }">
                   <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `-`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
+                        type="text"
+                        :class="data[field] ? `` : `-`"
+                        class="form-control"
+                        v-model="data[field]"
+                      /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
@@ -389,17 +389,21 @@ export default {
           isValReceiveDate: false
         }
       }
-    }
+    },
+    // modelMatValue(val) {
+    //   this.matAssign = [...val]
+    // }
   },
   computed: {
     isShowModal() {
       return this.isShow
     },
     model() {
-      console.log('model', this.modelValue)
+      //console.log('model', this.modelValue)
       return this.modelValue
     },
     modelMat() {
+      console.log('modelMat', this.modelMatValue)
       return this.modelMatValue
     },
     modelStatus() {
@@ -415,7 +419,7 @@ export default {
       isLoading: false,
       autoId: 0,
       autoIdGem: 0,
-      status: 50,
+      status: 60,
 
       // --- from --- //
       form: {
@@ -515,7 +519,7 @@ export default {
     onSubmit() {
       if (this.validateForm()) {
         swAlert.confirmSubmit(
-          `ยืนยัน สร้างงาน/โอนงาน [จ่ายเเต่ง]`,
+          `ยืนยัน สร้างงาน/โอนงาน [ขัดดิบ]`,
           `${this.model.wo}-${this.model.woNumber}`,
           async () => {
             //console.log('call submitPlan')
@@ -651,7 +655,9 @@ export default {
     }
   },
   created() {
+    //console.log('model', this.model)
     this.matAssign = [...this.modelMat]
+    //console.log('mat', this.matAssign)
   }
 }
 </script>

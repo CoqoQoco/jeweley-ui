@@ -75,7 +75,7 @@
                 </template>
               </Column>
 
-              <Column field="gold" header="ทอง" style="min-width: 200px">
+              <Column field="gold" header="ทอง" style="min-width: 100px">
                 <template #editor="{ data, field }">
                   <Dropdown
                     v-model="data[field]"
@@ -88,7 +88,7 @@
                   </Dropdown>
                 </template>
               </Column>
-              <Column field="requestDate" header="วันที่" style="min-width: 200px">
+              <Column field="requestDate" header="วันที่" style="min-width: 100px">
                 <template #editor="{ data, field }">
                   <div>
                     <Calendar
@@ -106,7 +106,7 @@
                   </div>
                 </template>
               </Column>
-              <Column field="goldQTYCheck" header="จำนวน" style="width: 100px">
+              <Column field="goldQTYCheck" header="จำนวน" style="min-width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" class="form-control" v-model="data[field]" />
                 </template>
@@ -118,7 +118,7 @@
                   }}
                 </template>
               </Column>
-              <Column field="goldWeightCheck" header="น้ำหนัก" style="width: 100px">
+              <Column field="goldWeightCheck" header="น้ำหนัก" style="min-width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" step="any" class="form-control" v-model="data[field]" />
                 </template>

@@ -2,8 +2,11 @@ const calculateWeightDifference = (weightSend, weightReceived) => {
   // คำนวณผลต่างของน้ำหนัก
   const difference = weightReceived - weightSend
 
+  // กำหนดค่าที่ใช้ในการหาร
+  let divide = weightSend > 0 ? weightSend : 1  
+
   // คำนวณเปอร์เซ็นต์
-  const percentage = (Math.abs(difference) / weightSend) * 100
+  const percentage = (Math.abs(difference) / divide) * 100
 
   // กำหนดสถานะ (ขาด/เกิน)
   const status = difference < 0 ? 'ขาด' : 'เกิน'

@@ -4,8 +4,8 @@
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
-      v-model:expandedRows="expnadData"
-      dataKey="id"
+      v-model:expandedRows="expandedRows"
+      dataKey="running"
       ref="dt"
       class="p-datatable-sm"
       scrollable
@@ -16,13 +16,14 @@
       :lazy="true"
       @page="handlePageChange"
       @sort="handlePageChangeSort"
+      sortMode="multiple"
       :rows="take"
       removableSort
-      sortMode="multiple"
-      :rowsPerPageOptions="[100, 200, 300]"
+      :rowsPerPageOptions="[10, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
+      <Column expander style="width: 1px; padding: 0px" />
       <Column style="width: 50px">
         <template #body="slotProps">
           <div class="d-flex justify-content-center">
@@ -35,12 +36,12 @@
           </div>
         </template>
       </Column>
-      <Column field="requestDate" header="วันทำรายการ" sortable style="min-width: 200px">
+      <Column field="requestDate" header="วันทำรายการ" sortable style="width: 220px">
         <template #body="slotProps">
           {{ formatDateTime(slotProps.data.requestDate) }}
         </template>
       </Column>
-      <Column field="returnDate" header="กำหนดคืน" sortable style="min-width: 200px">
+      <Column field="returnDate" header="กำหนดคืน" sortable style="width: 220px">
         <template #body="slotProps">
           <div class="noti-container">
             <span> {{ formatDateTime(slotProps.data.returnDate) }}</span>
@@ -48,10 +49,16 @@
           </div>
         </template>
       </Column>
-      <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
-      <Column field="operatorBy" header="ผู้ยืม" sortable style="min-width: 200px"> </Column>
+      <Column field="running" header="เลขที่รายการ" sortable style="width: 200px"> </Column>
+      <Column field="operatorBy" header="ผู้ยืม" sortable style="width: 200px"> </Column>
       <Column field="remark" header="หมายเหตุ" sortable style="min-width: 200px"> </Column>
       <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column> -->
+
+      <template #expansion="slotProps">
+        <div class="expand-container">
+          <expand :modelExpand="slotProps.data" :slotIndex="slotProps.index"></expand>
+        </div>
+      </template>
     </DataTable>
 
     <!-- <create
@@ -75,6 +82,7 @@ import { formatDate, formatDateTime, formatISOString } from '@/services/utils/da
 import api from '@/axios/axios-config.js'
 
 //import create from './create/PickReturnAndOutbound.vue'
+import expand from './DataTableExpand.vue'
 
 const interfaceShow = {
   isShowCreate: false,
@@ -86,6 +94,7 @@ export default {
     loading,
     DataTable,
     Column,
+    expand
     //create
   },
   props: {
@@ -144,7 +153,7 @@ export default {
 
       //--------- table ---------//
       totalRecords: 0,
-      take: 100, //all
+      take: 10, //all
       skip: 0,
       isShow: { ...interfaceShow },
       //sortField: 'updateDate',
@@ -153,7 +162,7 @@ export default {
       //sort: [],
       data: {},
       dataExcel: {},
-      expnadData: [],
+      expandedRows: [],
       form: { ...this.modelForm },
       export: null,
 
@@ -171,6 +180,7 @@ export default {
       })
       //console.log(e)
       this.fetchData()
+      this.expandedRows = []
     },
     handlePageChangeSort(e) {
       this.skip = e.first
@@ -179,13 +189,29 @@ export default {
         return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
       })
       this.fetchData()
+      this.expandedRows = []
+    },
+    onRowExpand(event) {
+      console.log('onRowExpand', event)
+      console.log('onRowExpand 1', this.expandedRows)
+      // เก็บข้อมูลแถวที่ expand โดยใช้ id เป็น key
+      this.expandedRows = [...event.data]
+
+      console.log('onRowExpand', this.expandedRows)
+    },
+
+    onRowCollapse(event) {
+      const { data } = event
+      // ลบข้อมูลแถวที่ collapse
+      delete this.expandedRows[data.index]
     },
 
     // ----------- APIs ----------- //
     async fetchData() {
       try {
         this.isLoading = true
-
+        this.expandedRows = []
+        
         console.log('fetchData', this.form)
 
         const params = {
