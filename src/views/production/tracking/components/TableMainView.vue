@@ -12,12 +12,12 @@
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
+      @page="handlePageChange"
       :lazy="true"
       sortMode="multiple"
+      @sort="handlePageChangeSort"
       stripedRows
       removableSort
-      @page="handlePageChange"
-      @sort="handlePageChangeSort"
       :rows="take"
       :rowsPerPageOptions="[10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
@@ -49,7 +49,7 @@
           </div>
         </template>
       </Column>
-      <Column field="wo" :sortable="false" header="W.O." style="min-width: 150px">
+      <Column field="woText" :sortable="true" header="W.O." style="min-width: 150px">
         <template #body="slotProps">
           {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
         </template>
@@ -88,8 +88,10 @@
         </template>
       </Column>
       <Column header="รหัสสินค้า" sortable field="productNumber" style="min-width: 150px"></Column>
+      <Column header="ประเภทสินค้า" sortable field="productTypeName" style="min-width: 150px"></Column>
       <Column header="จำนวนสินค้า" sortable field="productQty" style="min-width: 150px"></Column>
       <Column header="รหัสลูกค้า" sortable field="customerNumber" style="min-width: 150px"></Column>
+      <Column header="ชื่อลูกค้า" sortable field="customerName" style="min-width: 150px"></Column>
       <Column header="วันสร้างใบสินค้า" sortable field="createDate" style="min-width: 150px">
         <template #body="prop">
           {{ formatDate(prop.data.createDate) }}
@@ -222,6 +224,7 @@ export default {
       this.fetchData()
     },
     handlePageChangeSort(e) {
+      //console.log("handlePageChangeSort", e)
       this.skip = e.first
       this.take = e.rows
       this.sort = e.multiSortMeta.map((item) => {
@@ -354,7 +357,7 @@ export default {
         const params = {
           take: 0,
           skip: 0,
-          sort: [],
+          sort: this.sort,
           search: {
             start: this.formValue.start ? formatISOString(this.formValue.start) : null,
             end: this.formValue.end ? formatISOString(this.formValue.end) : null,

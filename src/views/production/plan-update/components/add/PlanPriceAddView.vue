@@ -61,6 +61,15 @@
                   </div>
                   <div v-else>
                     <span>{{ slotProps.data.nameDescription }}</span>
+                    <span v-if="slotProps.data.nameGroup === 'Gold'" class="ml-2 text-ref">
+                      {{
+                        `[ ราคาอ้างอิง --> ${
+                          slotProps.data.priceReference
+                            ? slotProps.data.priceReference.toFixed(2)
+                            : Number(0).toFixed(2)
+                        } ]`
+                      }}
+                    </span>
                   </div>
                 </template>
               </Column>
@@ -801,5 +810,9 @@ input {
   color: var(--base-font-color);
   padding: 5px;
   //margin: 0px 0px 10px 0px;
+}
+.text-ref{
+  color: gray;
+  font-size: small;
 }
 </style>

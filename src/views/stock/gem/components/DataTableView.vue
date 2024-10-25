@@ -51,29 +51,35 @@
       <Column field="grade" header="เกรด" sortable style="min-width: 150px"> </Column>
       <Column field="quantity" sortable header="จำนวนคงคลัง" style="min-width: 150px">
         <template #body="slotProps">
-          {{
-            slotProps.data.quantity
-              ? Number(slotProps.data.quantity).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          <div>
+            {{
+              slotProps.data.quantity
+                ? Number(slotProps.data.quantity).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </div>
         </template>
       </Column>
       <Column field="quantityOnProcess" sortable header="จำนวนยืมคลัง" style="min-width: 150px">
         <template #body="slotProps">
-          {{
-            slotProps.data.quantityOnProcess
-              ? Number(slotProps.data.quantityOnProcess).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          <div>
+            {{
+              slotProps.data.quantityOnProcess
+                ? Number(slotProps.data.quantityOnProcess).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </div>
         </template>
       </Column>
       <Column field="quantityWeight" sortable header="น้ำหนักคงคลัง" style="min-width: 150px">
         <template #body="slotProps">
-          {{
-            slotProps.data.quantityWeight
-              ? Number(slotProps.data.quantityWeight).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          <div>
+            {{
+              slotProps.data.quantityWeight
+                ? Number(slotProps.data.quantityWeight).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </div>
         </template>
       </Column>
       <Column
@@ -83,27 +89,35 @@
         style="min-width: 150px"
       >
         <template #body="slotProps">
-          {{
-            slotProps.data.quantityWeightOnProcess
-              ? Number(slotProps.data.quantityWeightOnProcess).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          <div>
+            {{
+              slotProps.data.quantityWeightOnProcess
+                ? Number(slotProps.data.quantityWeightOnProcess).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </div>
         </template>
       </Column>
       <Column field="price" header="ราคาต่อนำหนัก" sortable style="min-width: 150px">
         <template #body="slotProps">
-          {{
-            slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.00'
-          }}
+          <div>
+            {{
+              slotProps.data.price
+                ? Number(slotProps.data.price).toFixed(3).toLocaleString()
+                : '0.00'
+            }}
+          </div>
         </template>
       </Column>
       <Column field="priceQty" header="ราคาต่อจำนวน" sortable style="min-width: 150px">
         <template #body="slotProps">
-          {{
-            slotProps.data.priceQty
-              ? Number(slotProps.data.priceQty).toFixed(3).toLocaleString()
-              : '0.00'
-          }}
+          <div>
+            {{
+              slotProps.data.priceQty
+                ? Number(slotProps.data.priceQty).toFixed(3).toLocaleString()
+                : '0.00'
+            }}
+          </div>
         </template>
       </Column>
       <Column field="unitCode" header="หน่วย" sortable style="min-width: 150px"> </Column>
@@ -113,18 +127,22 @@
     </DataTable>
 
     <priceView :isShow="isShow.isPrice" :modelGem="price" @closeModal="closeModal"></priceView>
+
     <historyView
       :isShow="isShow.isHistory"
       :modelGem="history"
       @closeModal="closeModal"
     ></historyView>
+
+    <updateView
+      :isShow="isShow.update"
+      :modelGem="updateGem"
+      :masterGrade="masterGrade"
+      :masterGemShape="masterGemShape"
+      :modelGroupName="groupOptions"
+      @closeModal="closeModal"
+    ></updateView>
   </div>
-  <updateView
-    :isShow="isShow.update"
-    :modelGem="updateGem"
-    :masterGrade="grade"
-    @closeModal="closeModal"
-  ></updateView>
 </template>
 
 <script>
@@ -163,6 +181,11 @@ export default {
       type: Object,
       default: () => ({})
     },
+    masterGroupOptions: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
     modelFormExport: {
       type: Object,
       default: () => ({})
@@ -171,9 +194,29 @@ export default {
       type: Number,
       default: 0
     },
-    masterGrade: {
+    masterGradeOptions: {
       type: Array,
-      required: true,
+      Required: true,
+      default: () => []
+    },
+    masterShapeOptions: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterSizeOptions: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterGemShapeData: {
+      type: Array,
+      Required: true,
+      default: () => []
+    },
+    masterGradeData: {
+      type: Array,
+      Required: true,
       default: () => []
     }
   },
@@ -203,8 +246,23 @@ export default {
   },
   computed: {
     //  ---------------- computed --------
-    grade() {
-      return this.masterGrade
+    groupOptions() {
+      return this.masterGroupOptions
+    },
+    shapeOptions() {
+      return this.masterShapeOptions
+    },
+    sizeOptions() {
+      return this.masterSizeOptions
+    },
+    gradeOptions() {
+      return this.masterGradeOptions
+    },
+    masterGemShape() {
+      return this.masterGemShapeData
+    },
+    masterGrade() {
+      return this.masterGradeData
     }
   },
   data() {

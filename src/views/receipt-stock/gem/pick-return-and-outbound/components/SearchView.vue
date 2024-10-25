@@ -67,19 +67,41 @@
         </div>
       </div>
 
-      <div class="form-col-container">
-        <!-- running -->
-        <div>
-          <span class="title-text">เลขที่ใบยืม</span>
-          <input type="text" class="form-control" v-model="form.running" />
-        </div>
-        <div></div>
-      </div>
+      <dialogView
+        :isShow="isShow.dialog"
+        @closeDialog="closeDialog"
+        @search="dialogSearch"
+        txtHeader="ค้นหาเพิ่มเติม"
+      >
+        <template #content>
+          <div class="form-col-container">
+            <!-- running -->
+            <div>
+              <span class="title-text">เลขที่ใบยืม</span>
+              <input type="text" class="form-control" v-model="form.running" />
+            </div>
+            <div>
+              <span class="title-text">รหัส</span>
+              <input type="text" class="form-control" v-model="form.code" />
+            </div>
+            <div></div>
+            <div></div>
+          </div>
+        </template>
+      </dialogView>
 
       <div class="btn-submit-container">
         <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
           <span><i class="bi bi-search"></i></span>
           <!-- <span>ค้นหา</span> -->
+        </button>
+        <button
+          class="btn btn-sm btn-sub-main mr-2"
+          type="button"
+          title="เพิ่มเติม"
+          @click="onShowDialog"
+        >
+          <span><i class="bi bi-zoom-in"></i></span>
         </button>
         <button class="btn btn-sm btn-dark" type="button" @click="onClear" title="ล้าง">
           <span><i class="bi bi-x-circle"></i></span>
@@ -103,6 +125,7 @@
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 import Calendar from 'primevue/calendar'
 //import Dropdown from 'primevue/dropdown'
@@ -111,14 +134,17 @@ import MultiSelect from 'primevue/multiselect'
 import api from '@/axios/axios-config.js'
 
 const interfaceIsShow = {
-  isCreate: false
+  isCreate: false,
+  dialog: false
 }
+
 export default {
   components: {
     pageTitle,
-    MultiSelect,
+    //MultiSelect,
     loading,
-    Calendar
+    Calendar,
+    dialogView
     //Dropdown
   },
   props: {
@@ -180,6 +206,18 @@ export default {
     },
     onShowCreate() {
       this.isShow.isCreate = true
+    },
+    dialogSearch() {
+      console.log(this.search)
+      //this.formSearch = { ...this.search }
+      this.$emit('search', this.form)
+      this.isShow.dialog = false
+    },
+    onShowDialog() {
+      this.isShow.dialog = true
+    },
+    closeDialog() {
+      this.isShow.dialog = false
     },
 
     // ---------------- APIs

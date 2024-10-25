@@ -30,6 +30,7 @@ import dataTable from './components/DataTableView.vue'
 
 const interfaceForm = {
   runing: null,
+  code: null,
   type: [5],
   status: ['process'],
 

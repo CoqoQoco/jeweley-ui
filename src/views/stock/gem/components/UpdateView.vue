@@ -33,38 +33,38 @@
                 <span class="title-text">หมวดหมู่</span>
                 <span class="txt-required"> *</span>
               </div>
-              <input
+              <!-- <input
                 type="text"
                 class="form-control"
                 :class="form.groupName ? `` : `bg-warning`"
                 v-model="form.groupName"
                 disabled
                 required
-              />
-              <!-- <AutoComplete
+              /> -->
+              <AutoComplete
                 v-model="form.groupName"
                 :suggestions="suggestionsGroupName"
                 optionLabel="value"
                 optionValue="value"
                 @complete="searchGroupName"
                 :invalid="val.isGroupName"
-              /> -->
+              />
             </div>
 
             <div></div>
           </div>
           <div class="form-col-container p-2">
             <!-- size -->
-            <!-- <div>
+            <div>
               <div>
                 <span class="title-text">ขนาด</span>
                 <span class="txt-required"> *</span>
               </div>
               <input type="text" class="form-control" v-model="form.size" required />
-            </div> -->
+            </div>
 
             <!-- shape -->
-            <!-- <div>
+            <div>
               <div>
                 <span class="title-text">รูปร่าง</span>
                 <span class="txt-required"> *</span>
@@ -78,7 +78,7 @@
                 :class="val.isShape === true ? `p-invalid` : ``"
               >
               </Dropdown>
-            </div> -->
+            </div>
 
             <!-- grade -->
             <div>
@@ -189,6 +189,7 @@ export default {
       return this.masterGemShape
     },
     grade() {
+      console.log('masterGrade', this.masterGrade)
       return this.masterGrade
     },
     model() {
@@ -213,10 +214,12 @@ export default {
     },
     modelGem: {
       handler(val) {
+        console.log('modelGem', val)
         this.form = {
           ...val,
           remark: val.remark1 ?? '',
-          grade: this.grade.find((el) => el.nameTh === val.grade)
+          grade: this.grade.find((el) => el.nameTh === val.grade),
+          shape: this.gemShape.find((el) => el.code === val.shape)
         }
         console.log('modelvalue', this.form)
       },
@@ -237,21 +240,21 @@ export default {
     // ---------------- event
     closeModal() {
       this.onClear()
-      this.$emit('closeModal', 'create')
+      this.$emit('closeModal', 'fetch')
     },
     onClear() {
       this.form = { ...interfaceForm }
     },
     validateForm() {
       let isValid = true
-    //   if (!this.form.groupName) {
-    //     this.val.isGroupName = true
-    //     isValid = false
-    //   }
-    //   if (!this.form.shape) {
-    //     this.val.isShape = true
-    //     isValid = false
-    //   }
+      if (!this.form.groupName) {
+        this.val.isGroupName = true
+        isValid = false
+      }
+      if (!this.form.shape) {
+        this.val.isShape = true
+        isValid = false
+      }
       if (!this.form.grade) {
         this.val.isGrade = true
         isValid = false
@@ -275,7 +278,6 @@ export default {
     },
     searchGroupName(event) {
       const query = event.query
-      this.isInit = false
       this.suggestionsGroupName = this.groupName.filter((el) =>
         el.value.toLowerCase().includes(query.toLowerCase())
       )
@@ -290,9 +292,9 @@ export default {
         console.log('this.form', this.form)
         const params = {
           code: this.form.code,
-          //groupName: this.form.groupName.value,
-          //size: this.form.size,
-          //shape: this.form.shape.code,
+          groupName: this.form.groupName.value,
+          size: this.form.size,
+          shape: this.form.shape.code,
           grade: this.form.grade.description,
           gradeCode: this.form.grade.code,
           remark: this.form.remark

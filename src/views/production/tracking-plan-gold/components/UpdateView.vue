@@ -105,6 +105,23 @@
               <textarea class="form-control" v-model="form.remark"></textarea>
             </div>
           </div>
+          <div class="form-col-container">
+            <div>
+              <span class="title-text">
+                <span>ราคาทอง</span>
+                <span class="txt-required"> *</span>
+              </span>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                class="form-control"
+                v-model="form.cost"
+                required
+              />
+            </div>
+            <div></div>
+          </div>
 
           <!-- ทองหลอม -->
           <div class="title-text-lg mt-4">
@@ -193,7 +210,7 @@
           </div>
           <div class="form-col-container">
             <div>
-              <span>ซิล</span>
+              <span class="title-text">ซิล</span>
               <AutoComplete
                 v-model="form.zill"
                 :suggestions="zillItemSearch"
@@ -684,6 +701,7 @@ export default {
         receiveBy: value.receiveBy,
         zill: value.zill,
         zillQty: value.zillQty,
+        cost: value.cost,
         items: await Promise.all(
           value.items.map(async (x) => {
             const res = await this.onSearchProductionPlanIdByCode(x.productionPlanId)

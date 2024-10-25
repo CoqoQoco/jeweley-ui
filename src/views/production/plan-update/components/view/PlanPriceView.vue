@@ -113,7 +113,7 @@
           </template>
         </Column>
 
-        <column field="totalPrice" style="width: 150px">
+        <column field="totalPrice" style="width: 110px">
           <template #body="slotProps">
             <div class="text-right">
               <span>{{ slotProps.data.totalPrice }}</span>

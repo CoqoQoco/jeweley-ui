@@ -355,7 +355,7 @@ export default {
                         { text: 'รายละเอียดสินค้า', style: '' },
                         {
                           text: this.model.productDetail,
-                          style: 'detail'
+                          style: 'desc'
                         }
                       ],
                       border: [true, true, true, true]
@@ -495,10 +495,13 @@ export default {
               alignment: 'center',
               margin: [0, 4, 0, 4]
             },
-            detail: {
+            desc: {
               fontSize: 12,
               bold: true
-            }
+            },
+            title: {
+              fontSize: 10,
+            },
           },
 
           defaultStyle: {

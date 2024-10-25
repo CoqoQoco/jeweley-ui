@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-searchBar">
     <pageTitle
       title="ค้นหาใบเบิกผสมทอง"
       description=""
@@ -7,7 +7,9 @@
       :isShowRightSlot="true"
     >
       <template #rightSlot>
-        <button class="btn btn-sm btn-warning" @click="onCreate">สร้างใบเบิกผสมทองใหม่</button>
+        <button class="btn btn-sm btn-main" @click="onCreate">
+          <span class="bi bi-pencil"></span>
+        </button>
       </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
@@ -32,48 +34,49 @@
             />
           </div>
         </div>
-        <div>
-          <span class="title-text">ค้นหาใบผสมทอง</span>
-          <div class="input-group input-group-inner">
-            <input
-              id="inputStockID"
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.text"
-              placeholder="พิมพ์บางอย่างเพื่อค้นหา"
-            />
-            <div class="input-group-append">
-              <span class="input-group-text">
-                <i class="bi bi-upc-scan text-main-color"></i>
-              </span>
+        <div class="form-col-container">
+          <div>
+            <span class="title-text">ค้นหาใบผสมทอง</span>
+            <div class="input-group input-group-inner">
+              <input
+                id="inputStockID"
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.text"
+                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+              />
+              <div class="input-group-append">
+                <span class="input-group-text">
+                  <i class="bi bi-upc-scan text-main-color"></i>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <span class="title-text">ค้นหาด้วยหมายเลขลำดับ</span>
-          <div class="input-group input-group-inner">
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.runningNumber"
-            />
-            <!-- <div class="input-group-append">
+          <div>
+            <span class="title-text">ค้นหาด้วยหมายเลขลำดับ</span>
+            <div class="input-group input-group-inner">
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.runningNumber"
+              />
+              <!-- <div class="input-group-append">
                 <span class="input-group-text">
                   <i class="bi bi-upc-scan text-main-color"></i>
                 </span>
               </div> -->
+            </div>
           </div>
         </div>
-        <div class="submit-container">
-          <button class="btn btn-sm btn-main mr-2" style="width: 100px" type="submit">
-            <span><i class="bi bi-search mr-2"></i></span>
-            <span>ค้นหา</span>
-          </button>
-          <button class="btn btn-sm btn-secondary" style="width: 100px" type="button">
-            <span><i class="bi bi-x mr-2"></i></span>
-            <span>ล้าง</span>
-          </button>
-        </div>
+      </div>
+
+      <div class="btn-submit-container">
+        <button class="btn btn-sm btn-main" type="submit">
+          <span><i class="bi bi-search"></i></span>
+        </button>
+        <button class="btn btn-sm btn-dark ml-2" type="button">
+          <span><i class="bi bi-x-circle"></i></span>
+        </button>
       </div>
     </form>
   </div>

@@ -10,7 +10,6 @@
       :masterSizeOptions="gradeOptions"
       :masterGemShapeData="masterGemShape"
       :masterGradeData="masterGrade"
-
       @search="onSearchFilter"
       @export="exportExcel"
       @clear="onClearFilter"
@@ -18,7 +17,12 @@
     <dataTable
       v-model:modelForm="search"
       v-model:modelFormExport="exportData"
-      :masterGrade="masterGrade"
+      :masterGroupOptions="groupOptions"
+      :masterGradeOptions="shapeOptions"
+      :masterShapeOptions="sizeOptions"
+      :masterSizeOptions="gradeOptions"
+      :masterGemShapeData="masterGemShape"
+      :masterGradeData="masterGrade"
       class="mt-2"
       @export="exportExcelFlag"
     ></dataTable>
@@ -48,7 +52,7 @@ export default {
     //pageTitle,
     headerBar,
     dataTable,
-    loading,
+    loading
   },
   data() {
     return {
@@ -200,7 +204,7 @@ export default {
       this.fetchMasterGemShape()
       this.fetchMasterGoldGrade()
     })
-  },
+  }
 }
 </script>
 

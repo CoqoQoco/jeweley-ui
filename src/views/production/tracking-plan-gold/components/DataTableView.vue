@@ -9,15 +9,15 @@
       ref="dt"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 240px)"
+      scrollHeight="calc(100vh - 280px)"
       resizableColumns
       :paginator="true"
       :lazy="true"
       @page="handlePageChange"
+      sortMode="multiple"
       @sort="handlePageChangeSort"
       :rows="take"
       removableSort
-      sortMode="multiple"
       :rowsPerPageOptions="[10, 20, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
@@ -42,23 +42,25 @@
           </div>
         </template>
       </Column>
-      <Column field="bookNo" header="เล่มที่" style="min-width: 150px"> </Column>
-      <Column field="no" header="เลขที่" style="min-width: 50px"> </Column>
-      <Column field="runningNumber" header="หมายเลขลำดับ" style="min-width: 150px"> </Column>
-      <Column header="วันที่ออกใบเบิก" field="requestDate" style="min-width: 150px">
+      <Column field="bookNo" header="เล่มที่" sortable style="min-width: 150px"> </Column>
+      <Column field="no" header="เลขที่" sortable style="min-width: 50px"> </Column>
+      <Column field="runningNumber" header="หมายเลขลำดับ" sortable style="min-width: 150px">
+      </Column>
+      <Column header="วันที่ออกใบเบิก" field="assignDate" sortable style="min-width: 150px">
         <template #body="prop">
           {{ formatDate(prop.data.assignDate) }}
         </template>
       </Column>
-      <Column field="goldName" header="ประเภททอง" style="min-width: 150px"> </Column>
-      <Column field="goldSizeName" header="เปอร์เซ็นทอง" style="min-width: 150px"> </Column>
-      <Column field="cost" header="ราคาทอง" style="min-width: 150px"> </Column>
-      <Column field="zill" header="ซิล" style="min-width: 150px"> </Column>
-      <Column field="zillQty" header="จำนวนซิล" style="min-width: 150px"> </Column>
-      <Column field="goldReceipt" header="สูตรผสมทอง" style="min-width: 150px"> </Column>
-      <Column field="assignBy" header="ผู้เบิกทอง" style="min-width: 150px"> </Column>
-      <Column field="receiveBy" header="ผู้รับทอง" style="min-width: 150px"> </Column>
-      <Column field="remark" header="รายละเอียด" style="min-width: 100px"> </Column>
+      <Column field="goldName" header="ประเภททอง" sortable style="min-width: 150px"> </Column>
+      <Column field="goldSizeName" header="เปอร์เซ็นทอง" sortable style="min-width: 150px">
+      </Column>
+      <Column field="cost" header="ราคาทอง" sortable style="min-width: 150px"> </Column>
+      <Column field="zill" header="ซิล" sortable style="min-width: 150px"> </Column>
+      <Column field="zillQty" header="จำนวนซิล" sortable style="min-width: 150px"> </Column>
+      <Column field="goldReceipt" header="สูตรผสมทอง" sortable style="min-width: 150px"> </Column>
+      <Column field="assignBy" header="ผู้เบิกทอง" sortable style="min-width: 150px"> </Column>
+      <Column field="receiveBy" header="ผู้รับทอง" sortable style="min-width: 150px"> </Column>
+      <Column field="remark" header="รายละเอียด" sortable style="min-width: 150px"> </Column>
     </DataTable>
     <moldalUpdate
       :isShow="isShowMoldalUpdate"
@@ -199,6 +201,7 @@ export default {
         const param = {
           take: this.take,
           skip: this.skip,
+          sort: this.sort,
           search: {
             text: this.form.text,
             runningNumber: this.form.runningNumber,

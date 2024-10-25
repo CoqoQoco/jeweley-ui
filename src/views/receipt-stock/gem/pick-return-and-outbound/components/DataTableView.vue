@@ -9,7 +9,7 @@
       ref="dt"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 350px)"
+      scrollHeight="calc(100vh - 280px)"
       resizableColumns
       :paginator="true"
       showGridlines
@@ -209,7 +209,8 @@ export default {
 
             type: this.form.type.length > 0 ? this.form.type : [5],
             status: this.form.status.length > 0 ? this.form.status : ['process'],
-            running: this.form.running ?? null
+            running: this.form.running ?? null,
+            code: this.form.code ?? null
           }
         }
         console.log('params', params)
