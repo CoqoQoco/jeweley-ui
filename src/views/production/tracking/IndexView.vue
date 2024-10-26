@@ -61,6 +61,7 @@
         >
           <template #content>
             <div class="form-col-container">
+              <!-- text -->
               <div>
                 <span class="title-text">คำค้นหา</span>
                 <div class="input-group input-group-inner">
@@ -79,6 +80,14 @@
                   </div>
                 </div>
               </div>
+
+              <!-- modld -->
+              <div>
+                <span class="title-text">รหัสลูกค้า</span>
+                <input :class="['form-control bg-input']" type="text" v-model.trim="search.mold" />
+              </div>
+
+              <!-- status -->
               <div>
                 <span class="title-text">สถานะงานผลิต</span>
                 <div>
@@ -92,6 +101,8 @@
                 </div>
                 <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
               </div>
+
+              <!-- plan target -->
               <div>
                 <span class="title-text">กำหนดส่งงาน</span>
                 <Dropdown
@@ -101,6 +112,8 @@
                   class="w-full md:w-14rem"
                 />
               </div>
+
+              <!-- customer code -->
               <div>
                 <span class="title-text">รหัสลูกค้า</span>
                 <input
@@ -110,6 +123,74 @@
                   type="text"
                   v-model.trim="search.customerCode"
                 />
+              </div>
+
+              <!-- customer type -->
+              <div>
+                <span class="title-text">ประเภทลูกค้า</span>
+                <div>
+                  <MultiSelect
+                    v-model="search.customerType"
+                    :options="masterCustomer"
+                    optionLabel="nameTh"
+                    optionValue="code"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
+              </div>
+
+              <!-- product type -->
+              <div>
+                <span class="title-text">ประเภทสินค้า</span>
+                <div>
+                  <MultiSelect
+                    v-model="search.productType"
+                    :options="masterProduct"
+                    optionLabel="nameTh"
+                    optionValue="code"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
+              </div>
+
+              <!-- product number -->
+              <div>
+                <span class="title-text">รหัสสินค้า</span>
+                <input
+                  ref="inputText"
+                  id="inputText"
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="search.productNumber"
+                />
+              </div>
+
+              <!-- gold -->
+              <div>
+                <span class="title-text">ประเภททอง/เงิน</span>
+                <div>
+                  <MultiSelect
+                    v-model="search.gold"
+                    :options="masterGold"
+                    optionLabel="nameTh"
+                    optionValue="nameEn"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
+              </div>
+
+              <!-- gold size -->
+              <div>
+                <span class="title-text">ขนาดทอง/เงิน</span>
+                <div>
+                  <MultiSelect
+                    v-model="search.goldSize"
+                    :options="masterGoldSize"
+                    optionLabel="nameTh"
+                    optionValue="nameEn"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
               </div>
             </div>
           </template>
@@ -179,7 +260,14 @@ const interfaceSearch = {
   text: null,
   status: null,
   isOverPlan: { id: 0, description: 'ทั้งหมด' },
-  customerCode: null
+  customerCode: null,
+
+  mold: null,
+  customerType: null,
+  productType: null,
+  productNumber: null,
+  gold: null,
+  goldSize: null
 }
 export default {
   components: {
@@ -200,7 +288,13 @@ export default {
       },
       formSearch: {},
       formExport: {},
+
       masterStatus: [],
+      masterCustomer: [],
+      masterProduct: [],
+      masterGold: [],
+      masterGoldSize: [],
+
       masterOverPlan: [
         { id: 0, description: 'ทั้งหมด' },
         { id: 1, description: 'เกินกำหนด' }
@@ -269,12 +363,68 @@ export default {
         console.log(error)
         this.isLoading = false
       }
+    },
+    async fetchMasterGold() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGold')
+        if (res) {
+          this.masterGold = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterGoldSize() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterGoldSize')
+        if (res) {
+          this.masterGoldSize = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterCustomerType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterCustomerType')
+        if (res) {
+          this.masterCustomer = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
+    },
+    async fetchMasterProductType() {
+      try {
+        this.isLoading = true
+        const res = await api.jewelry.get('Master/MasterProductType')
+        if (res) {
+          this.masterProduct = [...res]
+        }
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        this.isLoading = false
+      }
     }
   },
   created() {
-    this.fetchMaterStatus()
-    //this.fetchData()
-    //this.formSearch = { ...this.search }
+    this.$nextTick(() => {
+      this.fetchMaterStatus()
+      this.fetchMasterGold()
+      this.fetchMasterGoldSize()
+      this.fetchMasterCustomerType()
+      this.fetchMasterProductType()
+    })
   },
   mounted() {
     const url = window.location.href

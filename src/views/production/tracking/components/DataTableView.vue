@@ -88,10 +88,18 @@
         </template>
       </Column>
       <Column header="รหัสสินค้า" sortable field="productNumber" style="min-width: 150px"></Column>
-      <Column header="ประเภทสินค้า" sortable field="productTypeName" style="min-width: 150px"></Column>
+      <Column
+        header="ประเภทสินค้า"
+        sortable
+        field="productTypeName"
+        style="min-width: 150px"
+      ></Column>
       <Column header="จำนวนสินค้า" sortable field="productQty" style="min-width: 150px"></Column>
+      <Column header="ประเภททอง/เงิน" sortable field="gold" style="min-width: 150px"></Column>
+      <Column header="ขนาดทอง/เงิน" sortable field="goldSize" style="min-width: 150px"></Column>
       <Column header="รหัสลูกค้า" sortable field="customerNumber" style="min-width: 150px"></Column>
       <Column header="ชื่อลูกค้า" sortable field="customerName" style="min-width: 150px"></Column>
+      <Column header="ประเภทลูกค้า" sortable field="customerTypeName" style="min-width: 150px"></Column>
       <Column header="วันสร้างใบสินค้า" sortable field="createDate" style="min-width: 150px">
         <template #body="prop">
           {{ formatDate(prop.data.createDate) }}
@@ -305,7 +313,13 @@ export default {
             text: this.formValue.text,
             status: this.formValue.status ? [...this.formValue.status] : null,
             isOverPlan: this.formValue.isOverPlan?.id,
-            customerCode: this.formValue.customerCode
+            customerCode: this.formValue.customerCode,
+            productType: this.formValue.productType ? [...this.formValue.productType] : null,
+            customerType: this.formValue.customerType ? [...this.formValue.customerType] : null,
+            gold: this.formValue.gold ? [...this.formValue.gold] : null,
+            goldSize: this.formValue.goldSize ? [...this.formValue.goldSize] : null,
+            mold: this.formValue.mold,
+            productNumber: this.formValue.productNumber
           }
         }
 
@@ -365,7 +379,14 @@ export default {
             sendEnd: this.formValue.sendEnd ? formatISOString(this.formValue.sendEnd) : null,
             text: this.formValue.text,
             status: this.formValue.status ? [...this.formValue.status] : null,
-            isOverPlan: this.formValue.isOverPlan?.id
+            isOverPlan: this.formValue.isOverPlan?.id,
+            customerCode: this.formValue.customerCode,
+            productType: this.formValue.productType ? [...this.formValue.productType] : null,
+            customerType: this.formValue.customerType ? [...this.formValue.customerType] : null,
+            gold: this.formValue.gold ? [...this.formValue.gold] : null,
+            goldSize: this.formValue.goldSize ? [...this.formValue.goldSize] : null,
+            mold: this.formValue.mold,
+            productNumber: this.formValue.productNumber
           }
         }
         console.log('params', params)
@@ -381,9 +402,13 @@ export default {
               'สถานะใบงาน (วันที่)': formatDate(item.lastUpdateStatus),
               วันส่งงานลูกค้า: formatDate(item.requestDate),
               รหัสสินค้า: item.productNumber,
+              ประเภทสินค้า: item.productTypeName,
               จำนวนสินค้า: item.productQty,
               รหัสลูกค้า: item.customerNumber,
-              วันสร้างใบสินค้า: formatDate(item.createDate)
+              ชื่อลูกค้า: item.customerName,
+              วันสร้างใบสินค้า: formatDate(item.createDate),
+              ประเภททอง_เงิน: item.gold,
+              ขนาดทอง_เงิน: item.goldSize
             }
           })
           this.exportWithCustomColumnCSV(
