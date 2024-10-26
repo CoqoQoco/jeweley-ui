@@ -107,6 +107,34 @@
                 <input type="text" class="form-control" v-model="form.productQtyUnit" required />
               </div>
             </div>
+            <div class="form-header-left-row-container">
+              <div>
+                <span class="title-text">ทอง/เงิน</span>
+                <Dropdown
+                  v-model="form.gold"
+                  :options="masterGold"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                  placeholder="เลือกทอง"
+                  :class="val.isValGold === true ? `p-invalid` : ``"
+                  :showClear="form.gold ? true : false"
+                >
+                </Dropdown>
+              </div>
+              <div>
+                <span class="title-text">ขนาดทอง/เงิน</span>
+                <Dropdown
+                  v-model="form.goldSize"
+                  :options="masterGoldSize"
+                  optionLabel="description"
+                  placeholder="เลือกเปอร์เซ็น"
+                  class="w-full md:w-14rem"
+                  :class="val.isValGoldSize === true ? `p-invalid` : ``"
+                  :showClear="form.goldSize ? true : false"
+                >
+                </Dropdown>
+              </div>
+            </div>
           </div>
           <div class="form-header-right-container">
             <div>
@@ -419,6 +447,8 @@ const interfaceForm = {
   productQtyUnit: '',
   productDetail: '',
   remark: '',
+  gold: null,
+  goldSize: null,
   material: []
 }
 const interfaceMaterial = {
@@ -457,7 +487,9 @@ const interfaceValid = {
   isValMold: false,
   isValCustomerType: false,
   isValProductType: false,
-  isValCustomerNumber: false
+  isValCustomerNumber: false,
+  isValGold: false,
+  isValGoldSize: false
 }
 export default {
   components: {
@@ -487,6 +519,16 @@ export default {
     'form.customerNumber'() {
       if (this.form.customerNumber) {
         this.val.isValCustomerNumber = false
+      }
+    },
+    'form.gold'() {
+      if (this.form.gold) {
+        this.val.isValGold = false
+      }
+    },
+    'form.goldSize'() {
+      if (this.form.goldSize) {
+        this.val.isValGoldSize = false
       }
     }
   },
@@ -556,6 +598,22 @@ export default {
       if (!this.form.customerNumber) {
         this.val = {
           isValCustomerNumber: true
+        }
+        return false
+      }
+
+      //gold
+      if (!this.form.gold) {
+        this.val = {
+          isValGold: true
+        }
+        return false
+      }
+
+      //goldSize
+      if (!this.form.goldSize) {
+        this.val = {
+          isValGoldSize: true
         }
         return false
       }
@@ -659,7 +717,8 @@ export default {
         params.append('productName', this.form.productName)
         params.append('productType', this.form.productType ? this.form.productType.code : '')
 
-        //console.log(productQty);
+        params.append('gold', this.form.gold ? this.form.gold.nameEn : '')
+        params.append('goldSize', this.form.goldSize ? this.form.goldSize.nameEn : '')
 
         params.append('productQty', this.form.productQty)
         params.append('productQtyUnit', this.form.productQtyUnit)
@@ -778,13 +837,16 @@ export default {
       }
     }
   },
-  mounted() {
-    this.fetchMasterCustomerType()
-    this.fetchMasterProductType()
-    this.fetchMasterGold()
-    this.fetchMasterGoldSize()
-    this.fetchMasterGem()
-    this.fetchMasterGemShape()
+  created() {
+    this,
+      this.$nextTick(() => {
+        this.fetchMasterCustomerType()
+        this.fetchMasterProductType()
+        this.fetchMasterGold()
+        this.fetchMasterGoldSize()
+        this.fetchMasterGem()
+        this.fetchMasterGemShape()
+      })
   }
 }
 </script>
@@ -835,7 +897,7 @@ export default {
 }
 
 .image-preview {
-  max-width: 300px;
+  max-width: 360px;
   height: auto;
   //border: 1px solid var(--base-color);
   border-radius: 8px;
