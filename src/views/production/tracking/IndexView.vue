@@ -163,7 +163,7 @@ import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 //import Dropdown from 'primevue/dropdown'
 import MultiSelect from 'primevue/multiselect'
-import tableMain from './components/TableMainView.vue'
+import tableMain from './components/DataTableView.vue'
 
 import api from '@/axios/axios-config.js'
 

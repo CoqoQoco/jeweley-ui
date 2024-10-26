@@ -292,7 +292,7 @@ export default {
         console.log('this.form', this.form)
         const params = {
           code: this.form.code,
-          groupName: this.form.groupName.value,
+          groupName: this.form.groupName,
           size: this.form.size,
           shape: this.form.shape.code,
           grade: this.form.grade.description,
