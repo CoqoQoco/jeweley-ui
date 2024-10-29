@@ -28,6 +28,17 @@
   //   width: 100px;
   // }
 }
+.btn-submit-container-between {
+  display: flex;
+  justify-content: space-between;
+  //align-items: flex-end;
+  padding-top: 8px;
+  margin-top: 10px;
+  border-top: 1px solid var(--base-font-color);
+  // button {
+  //   width: 100px;
+  // }
+}
 .btn-submit-container-no-line {
   display: flex;
   justify-content: flex-end;

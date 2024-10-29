@@ -1,5 +1,6 @@
 @import './variable.scss';
 
+
 // ----- table ---- //
 .p-datatable {
   font-size: $base-font-size !important;
@@ -161,6 +162,10 @@
 .p-multiselect {
   width: 100% !important;
   margin-top: 5px !important;
+  svg {
+    width: 10px;
+    height: 10px;
+  }
 }
 .p-multiselect .p-multiselect-label.p-placeholder {
   /* color: #6c757d; */

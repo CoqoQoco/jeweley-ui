@@ -196,32 +196,44 @@
           </template>
         </dialogView>
 
-        <div class="btn-submit-container">
-          <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
-            <span><i class="bi bi-search"></i></span>
-            <!-- <span>ค้นหา</span> -->
-          </button>
-          <button
-            class="btn btn-sm btn-sub-main mr-2"
-            type="button"
-            title="เพิ่มเติม"
-            @click="onShowDialog"
-          >
-            <span><i class="bi bi-zoom-in"></i></span>
-            <!-- <span>ค้นหา</span> -->
-          </button>
-          <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
-            <span><i class="bi bi-x-circle"></i></span>
-            <!-- <span>ล้าง</span> -->
-          </button>
-          <button
-            :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
-            type="button"
-            :disabled="!isExportData"
-            @click="onExport"
-          >
-            <span><i class="bi bi-filetype-csv"></i></span>
-          </button>
+        <div class="btn-submit-container-between">
+          <div>
+            <!-- <button
+              :class="['btn btn-sm', this.isTransfer ? 'btn-secondary' : 'btn-green']"
+              type="button"
+              :disabled="isTransfer"
+              title="โอนงาน"
+            >
+              <span><i class="bi bi-arrow-left-right"></i></span>
+            </button> -->
+          </div>
+          <div>
+            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+              <span><i class="bi bi-search"></i></span>
+              <!-- <span>ค้นหา</span> -->
+            </button>
+            <button
+              class="btn btn-sm btn-sub-main mr-2"
+              type="button"
+              title="เพิ่มเติม"
+              @click="onShowDialog"
+            >
+              <span><i class="bi bi-zoom-in"></i></span>
+              <!-- <span>ค้นหา</span> -->
+            </button>
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+              <span><i class="bi bi-x-circle"></i></span>
+              <!-- <span>ล้าง</span> -->
+            </button>
+            <button
+              :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
+              type="button"
+              :disabled="!isExportData"
+              @click="onExport"
+            >
+              <span><i class="bi bi-filetype-csv"></i></span>
+            </button>
+          </div>
         </div>
       </div>
     </form>
@@ -299,7 +311,8 @@ export default {
         { id: 0, description: 'ทั้งหมด' },
         { id: 1, description: 'เกินกำหนด' }
       ],
-      isExport: true
+      isExport: true,
+      isTransferFromSearch: true
       //previuosDay: 7,
     }
   },
@@ -307,6 +320,14 @@ export default {
     isExportData() {
       return this.isExport
     }
+    // isTransfer() {
+    //   console.log('isTransfer', this.formSearch)
+    //   if (this.formSearch && this.formSearch.status && this.formSearch.status.length === 1) {
+    //     return false
+    //   }
+
+    //   return true
+    // }
   },
   methods: {
     formatDateTime(date) {

@@ -81,32 +81,8 @@
       </FormMaterialAdd>
     </div>
 
-    <!-- old function -->
-    <div v-if="tabCctive === 2">
-      <FormStatus
-        :modelValue="data"
-        :modelMatValue="mat"
-        :masterStatus="masterStatus"
-        :masterGold="masterGold"
-        @onShowFormStatusAdd="onShowFormStatusAdd"
-        @fetch="fetchFormStatus"
-        @add="onShowAddStatus"
-      >
-      </FormStatus>
-      <FormStatusAdd
-        :isShow="isShowFormStatusAdd"
-        :modelValue="data"
-        :modelMatValue="mat"
-        :masterStatus="masterStatus"
-        :masterGold="masterGold"
-        @closeModal="onCloseFormStatusAdd"
-        @fetch="fetchFormStatusAdd"
-      >
-      </FormStatusAdd>
-    </div>
-
     <!-- casting -->
-    <div v-if="tabCctive === 3">
+    <div v-if="tabCctive === 2">
       <planCatingView
         :modelValue="data"
         :modelMatValue="mat"
@@ -137,7 +113,7 @@
     </div>
 
     <!-- scrubb -->
-    <div v-if="tabCctive === 4">
+    <div v-if="tabCctive === 3">
       <planScrubb
         :modelValue="data"
         :modelMatValue="mat"
@@ -168,7 +144,7 @@
     </div>
 
     <!-- gem -->
-    <div v-if="tabCctive === 5">
+    <div v-if="tabCctive === 4">
       <planGemView
         :modelValue="data"
         :modelMatValue="mat"
@@ -198,8 +174,42 @@
       ></planGemAdd>
     </div>
 
+    <!-- embed -->
+    <div v-if="tabCctive === 5"></div>
+
+    <!-- cvd -->
+    <div v-if="tabCctive === 6"></div>
+
+    <!-- plate -->
+    <div v-if="tabCctive === 7"></div>
+
+    <!-- price -->
+    <div v-if="tabCctive === 8">
+      <planPriceView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planPriceView>
+      <planPriceAddView
+        :isShow="add.price"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planPriceAddView>
+    </div>
+
+    <!-- succes -->
+    <div v-if="tabCctive === 9"></div>
+
     <!-- melt -->
-    <div v-if="tabCctive === 6">
+    <div v-if="tabCctive === 10">
       <planMeltedView
         :modelValue="data"
         :modelMatValue="mat"
@@ -220,26 +230,28 @@
       ></planMeltedAdd>
     </div>
 
-    <!-- price -->
-    <div v-if="tabCctive === 7">
-      <planPriceView
+    <!-- old function -->
+    <div v-if="tabCctive === 11">
+      <FormStatus
         :modelValue="data"
         :modelMatValue="mat"
         :masterStatus="masterStatus"
         :masterGold="masterGold"
-        @onShowAddStatus="onShowAddStatus"
-        @onShowUpdateStatus="onShowUpdateStatus"
-        @fetch="fetchFormStatusAdd"
-      ></planPriceView>
-      <planPriceAddView
-        :isShow="add.price"
+        @onShowFormStatusAdd="onShowFormStatusAdd"
+        @fetch="fetchFormStatus"
+        @add="onShowAddStatus"
+      >
+      </FormStatus>
+      <FormStatusAdd
+        :isShow="isShowFormStatusAdd"
         :modelValue="data"
         :modelMatValue="mat"
         :masterStatus="masterStatus"
         :masterGold="masterGold"
         @closeModal="onCloseFormStatusAdd"
         @fetch="fetchFormStatusAdd"
-      ></planPriceAddView>
+      >
+      </FormStatusAdd>
     </div>
   </div>
 </template>
@@ -356,14 +368,18 @@ export default {
       // --- tab --- //
       tabCctive: 0,
       tabItems: [
-        { label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
-        { label: 'ทอง', icon: 'bi bi-box-fill' },
-        { label: 'สถานะการผลิต', icon: 'bi bi-hammer' },
-        { label: 'แต่ง', icon: 'bi bi-hammer' },
-        { label: 'ขัดดิบ', icon: 'bi bi-hammer' },
-        { label: 'คัดพลอย', icon: 'bi bi-hammer' },
-        { label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
-        { label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' }
+        { id: 0, label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
+        { id: 1, label: 'ทอง', icon: 'bi bi-box-fill' },
+        { id: 2, label: 'แต่ง', icon: 'bi bi-hammer' },
+        { id: 3, label: 'ขัดดิบ', icon: 'bi bi-hammer' },
+        { id: 4, label: 'คัดพลอย', icon: 'bi bi-hammer' },
+        { id: 5, label: 'ฝัง', icon: 'bi bi-hammer' },
+        { id: 6, label: 'ตรวจ CVD', icon: 'bi bi-hammer' },
+        { id: 7, label: 'ขัดดิบ', icon: 'bi bi-hammer' },
+        { id: 8, label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' },
+        { id: 9, label: 'สำเร็จ', icon: 'bi bi-clipboard-check-fill' },
+        { id: 10, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
+        { id: 11, label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
       ]
     }
   },
@@ -439,7 +455,7 @@ export default {
       if (status === 'scrubb') {
         this.update.scrubb = true
       }
-      
+
       if (status === 'gems') {
         this.update.gems = true
       }

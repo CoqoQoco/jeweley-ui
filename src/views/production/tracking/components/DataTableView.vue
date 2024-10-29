@@ -8,7 +8,7 @@
       dataKey="id"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 270px)"
+      scrollHeight="calc(100vh - 310px)"
       columnResizeMode="expand"
       resizableColumns
       :paginator="true"
@@ -99,34 +99,52 @@
       <Column header="ขนาดทอง/เงิน" sortable field="goldSize" style="min-width: 150px"></Column>
       <Column header="รหัสลูกค้า" sortable field="customerNumber" style="min-width: 150px"></Column>
       <Column header="ชื่อลูกค้า" sortable field="customerName" style="min-width: 150px"></Column>
-      <Column header="ประเภทลูกค้า" sortable field="customerTypeName" style="min-width: 150px"></Column>
+      <Column
+        header="ประเภทลูกค้า"
+        sortable
+        field="customerTypeName"
+        style="min-width: 150px"
+      ></Column>
       <Column header="วันสร้างใบสินค้า" sortable field="createDate" style="min-width: 150px">
         <template #body="prop">
           {{ formatDate(prop.data.createDate) }}
         </template>
       </Column>
-      <!-- <template #expansion="slotProps">
-        <div class="p-3">
-          <h6 style="color: var(--base-font-color)">
-            <span class="mr-2"><i class="bi bi-gem"></i></span>
-            <span>ส่วนประกอบสินค้า</span>
-          </h6>
-          <tableExpand v-model:formValue="slotProps.data"></tableExpand>
-          <DataTable
-            class="expnad-table-container"
-            :value="slotProps.data.tbtProductionPlanMaterial"
-            showGridlines
-          >
-            <Column header="รายการ" field="material"></Column>
-            <Column header="ประเภท" field="materialType"></Column>
-            <Column header="รูปร่าง" field="materialShape"></Column>
-            <Column header="ขนาด" field="materialSize"></Column>
-            <Column header="จำนวน" field="materialQty"></Column>
-            <Column header="หมายเหตุ" field="materialRemark"></Column>
-          </DataTable>
+      <template #footer>
+        <div class="d-flex justify-content-between">
+          <div>
+            <button
+              :class="['btn btn-sm', this.isTransferJob ? 'btn-secondary' : 'btn-main']"
+              type="button"
+              :disabled="isTransferJob"
+              title="โอนงาน"
+              @click="onTransferJob"
+            >
+              <span><i class="bi bi-arrow-left-right"></i></span>
+              <span class="ml-2">โอนงาน</span>
+            </button>
+            <button
+              :class="['btn btn-sm ml-2', this.isTransferProduct ? 'btn-secondary' : 'btn-main']"
+              type="button"
+              :disabled="isTransferProduct"
+              title="โอนงาน"
+            >
+              <span><i class="bi bi-arrow-left-right"></i></span>
+              <span class="ml-2">โอนสินค้า</span>
+            </button>
+          </div>
+          <div></div>
         </div>
-      </template> -->
+      </template>
     </DataTable>
+
+    <transferJobView
+      :isShow="isShow.transferJob"
+      :modelTransferValue="dataTransfer"
+      :masterStatusValue="masterStatus"
+      :stausTransferValue="statusTransfer"
+      @closeModal="closeModal"
+    ></transferJobView>
   </div>
 </template>
 
@@ -143,15 +161,23 @@ import Column from 'primevue/column'
 import Papa from 'papaparse'
 
 import api from '@/axios/axios-config.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
+
+import transferJobView from './JobTransferView.vue'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
+
+const interfaceIsShow = {
+  transferJob: false
+}
 
 export default {
   components: {
     DataTable,
     Column,
     loading,
-    imagePreview
+    imagePreview,
+    transferJobView
   },
   props: {
     modelValue: {
@@ -175,7 +201,7 @@ export default {
     return {
       isLoading: false,
       isLoadingImage: false,
-      isShowUpdateStatusModal: false,
+      isShow: { ...interfaceIsShow },
       orderplan: 'ORDERPLAN',
       mold: 'MOLD',
 
@@ -188,8 +214,13 @@ export default {
       //sort: [{ field: 'updateDate', dir: 'desc' }],
       sort: [],
       data: {},
+      dataTransfer: {},
       dataExcel: {},
       expnadData: [],
+
+      //update
+      statusTransfer: 0,
+      totalTransferAllow: 10,
 
       //test
       urlImg: null,
@@ -202,11 +233,36 @@ export default {
     }
   },
   computed: {
+    model() {
+      return this.modelValue
+    },
     isData() {
       return this.modelValue.length ? false : true
     },
     masterStatus() {
       return this.masterStatusValue
+    },
+    isTransferJob() {
+      let res = true
+      //console.log('isTransferJob', this.formValue)
+      //console.log('isTransferJob', this.data)
+      if (this.formValue && this.formValue.status && this.formValue.status.length === 1) {
+        const allow = [10, 50, 60, 70, 80, 85, 90]
+        allow.includes(this.formValue.status[0]) && this.totalRecords > 0
+          ? (res = false)
+          : (res = true)
+      }
+      return res
+    },
+    isTransferProduct() {
+      let res = true
+      //console.log('isTransferProduct', this.formValue)
+      //console.log('isTransferProduct', this.data)
+      if (this.formValue && this.formValue.status && this.formValue.status.length === 1) {
+        this.formValue.status[0] === 95 && this.totalRecords > 0 ? (res = false) : (res = true)
+      }
+
+      return res
     }
   },
   watch: {
@@ -296,6 +352,31 @@ export default {
     },
 
     // ----- Api ----- //
+    initRequest() {
+      const param = {
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: {
+          start: this.formValue.start ? formatISOString(this.formValue.start) : null,
+          end: this.formValue.end ? formatISOString(this.formValue.end) : null,
+          sendStart: this.formValue.sendStart ? formatISOString(this.formValue.sendStart) : null,
+          sendEnd: this.formValue.sendEnd ? formatISOString(this.formValue.sendEnd) : null,
+          text: this.formValue.text,
+          status: this.formValue.status ? [...this.formValue.status] : null,
+          isOverPlan: this.formValue.isOverPlan?.id,
+          customerCode: this.formValue.customerCode,
+          productType: this.formValue.productType ? [...this.formValue.productType] : null,
+          customerType: this.formValue.customerType ? [...this.formValue.customerType] : null,
+          gold: this.formValue.gold ? [...this.formValue.gold] : null,
+          goldSize: this.formValue.goldSize ? [...this.formValue.goldSize] : null,
+          mold: this.formValue.mold,
+          productNumber: this.formValue.productNumber
+        }
+      }
+
+      return param
+    },
     async fetchData() {
       try {
         this.isLoading = true
@@ -305,34 +386,48 @@ export default {
           take: this.take,
           skip: this.skip,
           sort: this.sort,
-          search: {
-            start: this.formValue.start ? formatISOString(this.formValue.start) : null,
-            end: this.formValue.end ? formatISOString(this.formValue.end) : null,
-            sendStart: this.formValue.sendStart ? formatISOString(this.formValue.sendStart) : null,
-            sendEnd: this.formValue.sendEnd ? formatISOString(this.formValue.sendEnd) : null,
-            text: this.formValue.text,
-            status: this.formValue.status ? [...this.formValue.status] : null,
-            isOverPlan: this.formValue.isOverPlan?.id,
-            customerCode: this.formValue.customerCode,
-            productType: this.formValue.productType ? [...this.formValue.productType] : null,
-            customerType: this.formValue.customerType ? [...this.formValue.customerType] : null,
-            gold: this.formValue.gold ? [...this.formValue.gold] : null,
-            goldSize: this.formValue.goldSize ? [...this.formValue.goldSize] : null,
-            mold: this.formValue.mold,
-            productNumber: this.formValue.productNumber
-          }
+          ...this.initRequest()
         }
 
-        console.log(param)
+        //console.log(param)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanSearch', param)
         if (res) {
           this.data = { ...res }
+          this.totalRecords = res.total
+        } else {
+          this.data = {}
+          this.totalRecords = 0
         }
+
         this.isLoading = false
       } catch (error) {
         console.log(error)
         this.isLoading = false
       }
+    },
+    async fetchDataTransfer() {
+      this.isLoading = true
+      try {
+        this.dataTransfer = {}
+        //console.log(this.formValue)
+        const param = {
+          take: 0,
+          skip: 0,
+          sort: this.sort,
+          ...this.initRequest()
+        }
+
+        console.log(param)
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanSearch', param)
+        if (res) {
+          this.dataTransfer = { ...res }
+        }
+
+        this.isLoading = false
+      } catch (error) {
+        console.log(error)
+      }
+      this.isLoading = false
     },
     async fetchIamge(item) {
       if (item.data.tbtProductionPlanImage && item.data.tbtProductionPlanImage.length) {
@@ -367,29 +462,12 @@ export default {
       try {
         this.isLoading = true
 
-        console.log('fetchDataExport', this.formValue)
         const params = {
           take: 0,
           skip: 0,
           sort: this.sort,
-          search: {
-            start: this.formValue.start ? formatISOString(this.formValue.start) : null,
-            end: this.formValue.end ? formatISOString(this.formValue.end) : null,
-            sendStart: this.formValue.sendStart ? formatISOString(this.formValue.sendStart) : null,
-            sendEnd: this.formValue.sendEnd ? formatISOString(this.formValue.sendEnd) : null,
-            text: this.formValue.text,
-            status: this.formValue.status ? [...this.formValue.status] : null,
-            isOverPlan: this.formValue.isOverPlan?.id,
-            customerCode: this.formValue.customerCode,
-            productType: this.formValue.productType ? [...this.formValue.productType] : null,
-            customerType: this.formValue.customerType ? [...this.formValue.customerType] : null,
-            gold: this.formValue.gold ? [...this.formValue.gold] : null,
-            goldSize: this.formValue.goldSize ? [...this.formValue.goldSize] : null,
-            mold: this.formValue.mold,
-            productNumber: this.formValue.productNumber
-          }
+          ...this.initRequest()
         }
-        console.log('params', params)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanSearch', params)
         if (res) {
           const dataExcel = res.data.map((item) => {
@@ -435,6 +513,29 @@ export default {
       //console.log(e)
       this.isShowUpdateStatusModal = false
       await this.fetchData()
+    },
+
+    // ---- event
+    closeModal(action) {
+      this.isShow = { ...interfaceIsShow }
+
+      if (action === 'fetch') {
+        this.fetchData()
+      }
+    },
+    async onTransferJob() {
+      this.statusTransfer = 0
+
+      if (this.data.total > this.totalTransferAllow) {
+        swAlert.warning(
+          `สามารถโอนงานได้ไม่เกินครั้งละ ${this.totalTransferAllow} รายการ`,
+          'จำนวนงานเกินกำหนด'
+        )
+      } else {
+        await this.fetchDataTransfer()
+        this.statusTransfer = this.formValue.status[0]
+        this.isShow.transferJob = true
+      }
     },
 
     // ---- view plan ---- //
