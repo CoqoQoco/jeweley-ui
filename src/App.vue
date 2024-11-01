@@ -1,7 +1,15 @@
-<script setup>
+<script>
 import '@/assets/scss/core.scss'
+import BaseLoading from '@/components/layout/LoadingOverlay.vue'
 //import { RouterView } from 'vue-router'
 //import HelloWorld from './components/HelloWorld.vue'
+
+export default {
+  name: 'App',
+  components: {
+    BaseLoading
+  }
+}
 </script>
 
 <template>
@@ -20,6 +28,7 @@ import '@/assets/scss/core.scss'
 
   <!-- <RouterView /> -->
   <router-view></router-view>
+  <BaseLoading />
 </template>
 
 <style scoped></style>

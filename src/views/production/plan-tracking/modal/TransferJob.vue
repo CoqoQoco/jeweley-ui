@@ -1,0 +1,370 @@
+<template>
+  <div>
+    <modal :showModal="isShowModal" @closeModal="closeModal">
+      <template v-slot:content>
+        <form @submit.prevent="onSubmit">
+          <div class="filter-container-highlight">
+            <div class="form-col-container">
+              <div class="d-flex justify-content-between">
+                <div class="vertical-center-container desc-text-white">
+                  <span>
+                    {{ `โอนสถานะงาน: ${statusTransfer.nameTh}` }}
+                  </span>
+                  <span class="ml-2 bi bi-arrow-right"></span>
+                  <span class="ml-2">
+                    {{
+                      `${
+                        form.statustarget ? getStatusName(form.statustarget) : 'โปรดเลือกแผนกรับโอน'
+                      }`
+                    }}
+                  </span>
+                </div>
+                <div>
+                  <span class="mr-4 desc-text-white">
+                    {{ `จำนวนทั้งหมด ${planSearchStore.dataPlanTransfer.total} รายการ` }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- target status -->
+          <div class="form-col-container mt-1">
+            <div>
+              <div>
+                <span class="title-text">แผนกรับโอน</span>
+                <Dropdown
+                  v-model="form.statustarget"
+                  :options="allowSelectStatus"
+                  optionLabel="nameTh"
+                  optionValue="id"
+                  class="w-full md:w-14rem"
+                  :class="val.isTargetStatus === true ? `p-invalid` : ``"
+                />
+              </div>
+            </div>
+            <div>
+              <span class="title-text">ผู้โอน</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.name"
+                required
+              />
+            </div>
+            <div></div>
+            <div></div>
+          </div>
+
+          <div class="mt-2">
+            <BaseDataTable
+              :items="planSearchStore.dataPlanTransfer.data"
+              :totalRecords="planSearchStore.dataPlanTransfer.total"
+              :columns="columns"
+              dataKey="id"
+              scrollHeight="350px"
+              :selectionMode="true"
+              :paginator="false"
+              :itemsSelection="selectedValue"
+              @update:itemsSelection="selectedValue = $event"
+            >
+              <!-- WO Template -->
+              <template #woTemplate="{ data }">
+                {{ `${data.wo}-${data.woNumber}` }}
+              </template>
+
+              <!-- Last Update Status Template -->
+              <template #lastUpdateStatusTemplate="{ data }">
+                <div class="notification">
+                  <span>{{ formatDate(data.lastUpdateStatus) }}</span>
+                </div>
+              </template>
+
+              <!-- Request Date Template -->
+              <template #requestDateTemplate="{ data }">
+                <div class="notification">
+                  <span>{{ formatDate(data.requestDate) }}</span>
+                  <span v-if="data.isOverPlan" class="overdue-tag">เกินกำหนด</span>
+                </div>
+              </template>
+
+              <!-- Create Date Template -->
+              <template #createDateTemplate="{ data }">
+                {{ formatDate(data.createDate) }}
+              </template>
+            </BaseDataTable>
+          </div>
+
+          <div class="filter-container mt-1">
+            <div class="d-flex justify-content-between vertical-center-container">
+              <div class="title-text">
+                <span>{{ `จำนวนที่เลือก ${selectedValue.length} รายการ` }}</span>
+              </div>
+              <div>
+                <button
+                  :class="['btn btn-sm', selectedValue.length > 0 ? 'btn-main' : 'btn-secondary']"
+                  style="height: 34px"
+                  :disabled="!selectedValue.length > 0"
+                  @click="onTransferStatus"
+                  type="submit"
+                >
+                  <span><i class="bi bi-arrow-left-right"></i></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </template>
+    </modal>
+  </div>
+</template>
+
+<script>
+import { defineAsyncComponent } from 'vue'
+
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import Dropdown from 'primevue/dropdown'
+
+import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
+import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
+import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+
+const interfaceForm = {
+  formerStatus: null,
+  targetStatus: null,
+  name: null,
+  job: []
+}
+
+const interfaceVal = {
+  isTargetStatus: false
+}
+
+export default {
+  components: {
+    modal,
+    BaseDataTable,
+    Dropdown
+  },
+
+  props: {
+    isShow: {
+      type: Boolean,
+      required: true,
+      default: false
+    },
+    modelValue: {
+      type: Object,
+      default: () => ({})
+    },
+    stausTransferValue: {
+      type: Number,
+      required: true,
+      default: () => 0
+    },
+    masterStatusValue: {
+      type: Array,
+      required: true,
+      default: () => []
+    }
+  },
+
+  data() {
+    return {
+      selectedValue: [],
+      form: { ...interfaceForm },
+      val: { ...interfaceVal },
+      columns: [
+        {
+          field: 'wo',
+          header: 'W.O.',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'mold',
+          header: 'เเม่พิมพ์',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'lastUpdateStatus',
+          header: 'สถานะใบงาน (วันที่)',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'requestDate',
+          header: 'วันส่งงานลูกค้า',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'productNumber',
+          header: 'รหัสสินค้า',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'productTypeName',
+          header: 'ประเภทสินค้า',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'productQty',
+          header: 'จำนวนสินค้า',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'gold',
+          header: 'ประเภททอง/เงิน',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'goldSize',
+          header: 'ขนาดทอง/เงิน',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'customerNumber',
+          header: 'รหัสลูกค้า',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'customerName',
+          header: 'ชื่อลูกค้า',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'customerTypeName',
+          header: 'ประเภทลูกค้า',
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'createDate',
+          header: 'วันสร้างใบสินค้า',
+          minWidth: '150px',
+          format: 'date',
+          sortable: false
+        }
+      ]
+    }
+  },
+
+  setup() {
+    const planSearchStore = usePlanSearchApiStore()
+    const planUpdateStore = usePlanUpdateApiStore()
+    return { planSearchStore, planUpdateStore }
+  },
+
+  computed: {
+    isShowModal() {
+      return this.isShow
+    },
+    model() {
+      return this.modelValue
+    },
+    masterStatus() {
+      return this.masterStatusValue
+    },
+    statusTransfer() {
+      return this.masterStatusValue.find((item) => item.id === this.stausTransferValue) || null
+    },
+    allowSelectStatus() {
+      const removeStatus = [10, 49, 55, 59, 69, 79, 84, 89, 100, 500, this.stausTransferValue]
+      return this.masterStatus.filter((item) => !removeStatus.includes(item.id))
+    }
+  },
+
+  watch: {
+    'form.statustarget'() {
+      if (this.form.statustarget) {
+        this.val.isTargetStatus = false
+      }
+    }
+  },
+
+  methods: {
+    closeModal() {
+      this.selectedValue = []
+      this.$emit('closeModal')
+    },
+
+    onSubmit() {
+      if (this.validateForm()) {
+        swAlert.confirmSubmit('', 'ยืนยันการโอนสถานะงาน?', async () => {
+          await this.submit()
+        })
+      }
+    },
+
+    validateForm() {
+      let isValid = true
+      if (!this.form.statustarget) {
+        this.val.isTargetStatus = true
+        isValid = false
+      }
+      return isValid
+    },
+
+    formatDateTime(date) {
+      return date ? formatDateTime(date) : ''
+    },
+
+    formatDate(date) {
+      return formatDate(date)
+    },
+
+    getStatusName(statusId) {
+      return this.masterStatus.find((item) => item.id === statusId)?.nameTh || ''
+    },
+
+    async submit() {
+      try {
+        const res = await this.planUpdateStore.submitTransfer({
+          formerStatus: this.stausTransferValue,
+          targetStatus: this.form.statustarget,
+          transferBy: this.form.name,
+          selectedItems: this.selectedValue
+        })
+
+        console.log('res:', res)
+
+        if (res.success) {
+          this.$emit('closeModal', 'fetch')
+        }
+      } catch (error) {
+        console.error('Error in submit:', error)
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-data-table';
+
+.notification {
+  display: inline-flex;
+  align-items: center;
+}
+
+.overdue-tag {
+  background-color: #ff4d4d;
+  color: white;
+  padding: 2px 4px;
+  border-radius: 2px;
+  margin-left: 4px;
+  font-size: 12px;
+}
+</style>

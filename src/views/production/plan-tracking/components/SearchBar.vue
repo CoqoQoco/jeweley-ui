@@ -1,7 +1,8 @@
 <template>
-  <div class="app-container">
+  <div class="filter-container-searchBar">
+    <loading :isLoading="isLoading"></loading>
     <form @submit.prevent="onSearch">
-      <div class="filter-container-searchBar">
+      <div>
         <div>
           <pageTitle title="ค้นหาใบจ่าย-รับคืนงาน" :isShowBtnClose="false"> </pageTitle>
         </div>
@@ -12,8 +13,8 @@
             <div class="flex-group">
               <Calendar
                 class="w-100"
-                v-model="search.start"
-                :max-date="search.end"
+                v-model="form.start"
+                :max-date="form.end"
                 showIcon
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
@@ -21,8 +22,8 @@
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <Calendar
                 class="w-100"
-                v-model="search.end"
-                :min-date="search.start"
+                v-model="form.end"
+                :min-date="form.start"
                 showIcon
                 placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
@@ -34,8 +35,8 @@
             <div class="flex-group">
               <Calendar
                 class="w-100"
-                v-model="search.sendStart"
-                :max-date="search.sendEnd"
+                v-model="form.sendStart"
+                :max-date="form.sendEnd"
                 showIcon
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
@@ -43,8 +44,8 @@
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <Calendar
                 class="w-100"
-                v-model="search.sendEnd"
-                :min-date="search.sendStart"
+                v-model="form.sendEnd"
+                :min-date="form.sendStart"
                 showIcon
                 placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
@@ -70,7 +71,7 @@
                     id="inputText"
                     :class="['form-control bg-input']"
                     type="text"
-                    v-model.trim="search.text"
+                    v-model.trim="form.text"
                     placeholder="พิมพ์บางอย่างเพื่อค้นหา"
                   />
                   <div class="input-group-append" @click="focusInputText">
@@ -84,7 +85,7 @@
               <!-- modld -->
               <div>
                 <span class="title-text">รหัสลูกค้า</span>
-                <input :class="['form-control bg-input']" type="text" v-model.trim="search.mold" />
+                <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
               </div>
 
               <!-- status -->
@@ -92,8 +93,8 @@
                 <span class="title-text">สถานะงานผลิต</span>
                 <div>
                   <MultiSelect
-                    v-model="search.status"
-                    :options="masterStatus"
+                    v-model="form.status"
+                    :options="planStatus"
                     optionLabel="nameTh"
                     optionValue="id"
                     class="w-full md:w-14rem"
@@ -106,8 +107,8 @@
               <div>
                 <span class="title-text">กำหนดส่งงาน</span>
                 <Dropdown
-                  v-model="search.isOverPlan"
-                  :options="masterOverPlan"
+                  v-model="form.isOverPlan"
+                  :options="overPlanOptions"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                 />
@@ -121,7 +122,7 @@
                   id="inputText"
                   :class="['form-control bg-input']"
                   type="text"
-                  v-model.trim="search.customerCode"
+                  v-model.trim="form.customerCode"
                 />
               </div>
 
@@ -130,8 +131,8 @@
                 <span class="title-text">ประเภทลูกค้า</span>
                 <div>
                   <MultiSelect
-                    v-model="search.customerType"
-                    :options="masterCustomer"
+                    v-model="form.customerType"
+                    :options="customerType"
                     optionLabel="nameTh"
                     optionValue="code"
                     class="w-full md:w-14rem"
@@ -144,8 +145,8 @@
                 <span class="title-text">ประเภทสินค้า</span>
                 <div>
                   <MultiSelect
-                    v-model="search.productType"
-                    :options="masterProduct"
+                    v-model="form.productType"
+                    :options="productType"
                     optionLabel="nameTh"
                     optionValue="code"
                     class="w-full md:w-14rem"
@@ -161,7 +162,7 @@
                   id="inputText"
                   :class="['form-control bg-input']"
                   type="text"
-                  v-model.trim="search.productNumber"
+                  v-model.trim="form.productNumber"
                 />
               </div>
 
@@ -170,8 +171,8 @@
                 <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
                   <MultiSelect
-                    v-model="search.gold"
-                    :options="masterGold"
+                    v-model="form.gold"
+                    :options="gold"
                     optionLabel="nameTh"
                     optionValue="nameEn"
                     class="w-full md:w-14rem"
@@ -184,8 +185,8 @@
                 <span class="title-text">ขนาดทอง/เงิน</span>
                 <div>
                   <MultiSelect
-                    v-model="search.goldSize"
-                    :options="masterGoldSize"
+                    v-model="form.goldSize"
+                    :options="goldSize"
                     optionLabel="nameTh"
                     optionValue="nameEn"
                     class="w-full md:w-14rem"
@@ -226,9 +227,12 @@
               <!-- <span>ล้าง</span> -->
             </button>
             <button
-              :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
+              :class="[
+                'btn btn-sm btn-primary',
+                { 'btn-secondary': !planSearchStore.dataPlanSearch.total > 0 }
+              ]"
               type="button"
-              :disabled="!isExportData"
+              :disabled="!planSearchStore.dataPlanSearch.total > 0"
               @click="onExport"
             >
               <span><i class="bi bi-filetype-csv"></i></span>
@@ -237,11 +241,6 @@
         </div>
       </div>
     </form>
-    <tableMain
-      v-model:formValue="formSearch"
-      v-model:formValueExport="formExport"
-      v-model:masterStatusValue="masterStatus"
-    ></tableMain>
   </div>
 </template>
 
@@ -249,245 +248,113 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+//import Calendar from 'primevue/calendar'
+import MultiSelect from 'primevue/multiselect'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
-//import Dropdown from 'primevue/dropdown'
-import MultiSelect from 'primevue/multiselect'
 
-
-import api from '@/axios/axios-config.js'
-
-import tableMain from './components/DataTable.vue'
+import { mapState } from 'pinia'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
+//import api from '@/axios/axios-config.js'
 
 const interfaceIsShow = {
   dialog: false
 }
-
-const interfaceSearch = {
-  start: new Date(new Date().setDate(new Date().getDate() - 7)),
-  end: new Date(),
-  sendStart: null,
-  sendEnd: null,
-  text: null,
-  status: null,
-  isOverPlan: { id: 0, description: 'ทั้งหมด' },
-  customerCode: null,
-
-  mold: null,
-  customerType: null,
-  productType: null,
-  productNumber: null,
-  gold: null,
-  goldSize: null
-}
 export default {
   components: {
-    tableMain,
+    loading,
     pageTitle,
-    Calendar,
     MultiSelect,
+    Calendar,
     Dropdown,
     dialogView
   },
-  data() {
-    return {
-      isShow: { ...interfaceIsShow },
-      id: '',
-      form: {},
-      search: {
-        ...interfaceSearch
+  props: {
+    modelForm: {
+      type: Object,
+      default: () => ({})
+    },
+    masterPlanStatus: {
+      type: Array,
+      default: () => []
+    }
+  },
+  watch: {
+    modelForm: {
+      handler(val) {
+        this.form = { ...val }
       },
-      formSearch: {},
-      formExport: {},
-
-      masterStatus: [],
-      masterCustomer: [],
-      masterProduct: [],
-      masterGold: [],
-      masterGoldSize: [],
-
-      masterOverPlan: [
-        { id: 0, description: 'ทั้งหมด' },
-        { id: 1, description: 'เกินกำหนด' }
-      ],
-      isExport: true,
-      isTransferFromSearch: true
-      //previuosDay: 7,
+      deep: true
     }
   },
   computed: {
     isExportData() {
-      return this.isExport
-    }
-    // isTransfer() {
-    //   console.log('isTransfer', this.formSearch)
-    //   if (this.formSearch && this.formSearch.status && this.formSearch.status.length === 1) {
-    //     return false
-    //   }
+      return true
+    },
 
-    //   return true
-    // }
+    ...mapState(useMasterApiStore, [
+      'planStatus',
+      'gold',
+      'goldSize',
+      'customerType',
+      'productType',
+      'overPlanOptions'
+    ])
   },
+  data() {
+    return {
+      isLoading: false,
+      form: { ...this.modelForm },
+      isShow: { ...interfaceIsShow }
+    }
+  },
+
+  setup() {
+    const planSearchStore = usePlanSearchApiStore()
+    return { planSearchStore }
+  },
+
   methods: {
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
+    // ---------------- event
+    onSearch() {
+      console.log('onSubmit')
+      this.$emit('search', this.form)
     },
-    formatDate(date) {
-      return formatDate(date)
+    onExport() {
+      console.log('onExport')
+      this.$emit('export')
     },
-    // ------- controler --------------- //
-    focusInputText() {
-      this.$refs.inputText.focus()
+    dialogSearch() {
+      this.isShow.dialog = false
+      this.$emit('search', this.form)
+    },
+    onSubmitExport() {
+      this.$emit('export', true)
+    },
+    onClear() {
+      this.$emit('clear')
+    },
+    onCloseModal() {
+      this.isShow = { ...interfaceIsShow }
     },
     onShowDialog() {
       this.isShow.dialog = true
     },
     closeDialog() {
       this.isShow.dialog = false
-    },
-
-    // ----- push ----- ///
-    onView(item) {
-      console.log(item)
-      this.$router.push(`pickinglist-tag/${item.wo}-${item.woNumber}`)
-    },
-
-    // ----- Api -----//
-    onSearch() {
-      console.log(this.search)
-      this.formSearch = { ...this.search }
-    },
-    dialogSearch() {
-      console.log(this.search)
-      this.formSearch = { ...this.search }
-      this.isShow.dialog = false
-    },
-    onExport() {
-      console.log(this.search)
-      this.formExport = { ...this.search }
-    },
-    onClear() {
-      this.search = {
-        ...interfaceSearch
-      }
-    },
-    async fetchMaterStatus() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
-        if (res) {
-          this.masterStatus = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterGold() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGold')
-        if (res) {
-          this.masterGold = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterGoldSize() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGoldSize = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterCustomerType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterCustomerType')
-        if (res) {
-          this.masterCustomer = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterProductType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
     }
   },
   created() {
-    this.$nextTick(() => {
-      this.fetchMaterStatus()
-      this.fetchMasterGold()
-      this.fetchMasterGoldSize()
-      this.fetchMasterCustomerType()
-      this.fetchMasterProductType()
-    })
-  },
-  mounted() {
-    const url = window.location.href
-    this.id = url.split('/').slice(-1)[0]
-
-    if (this.id && this.id !== 'plan-order-tracking') {
-      //console.log(this.id)
-      this.search = {
-        start: null,
-        end: null,
-        //start: null,
-        //end: null,
-        sendStart: null,
-        sendEnd: null,
-        status: null,
-        isOverPlan: { id: 0, description: 'ทั้งหมด' },
-        text: this.id
-      }
-      //this.formSearch = { ...this.search }
-      console.log(this.formSearch)
-    }
-
-    this.formSearch = { ...this.search }
+    this.$nextTick(() => {})
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar.scss';
+@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
-
-.search-bar-container {
-  display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr;
-  gap: 10px;
-  //margin-bottom: 10px;
-}
-.search-bar-custom-container {
-  display: grid;
-  grid-template-columns: 6fr 2fr;
-  gap: 10px;
-}
 </style>

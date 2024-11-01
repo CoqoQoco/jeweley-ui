@@ -619,6 +619,13 @@ export default {
         case 95:
           return 'box-status-success'
         case 10:
+        case 49:
+        case 54:
+        case 59:
+        case 69:
+        case 79:
+        case 84:
+        case 89:
           return 'box-status-process'
         case 50:
         case 55:

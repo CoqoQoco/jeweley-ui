@@ -1,0 +1,32 @@
+@import '../variable.scss';
+
+.p-datatable {
+  font-size: $base-font-size !important;
+}
+.p-datatable thead th {
+  background-color: #921313;
+  color: #ffffff !important;
+  .p-column-header-content {
+    font-weight: 100 !important;
+  }
+}
+.p-datatable .p-column-header-content {
+  color: #ffffff !important;
+}
+.p-datatable-tbody > tr > td {
+  padding: 3px 10px 3px 10px !important;
+}
+.p-paginator {
+  font-size: $base-font-size !important;
+  padding: 5px;
+  .p-dropdown {
+    height: 25px !important;
+    width: 100px !important;
+  }
+  .p-dropdown-label {
+    font-size: $base-font-size !important;
+  }
+  .p-inputtext {
+    padding: 1px 0px 0px 10px !important;
+  }
+}

@@ -163,7 +163,7 @@ import Papa from 'papaparse'
 import api from '@/axios/axios-config.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
-import transferJobView from './JobTransferView.vue'
+import transferJobView from '../modal/JobTransfer.vue'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 

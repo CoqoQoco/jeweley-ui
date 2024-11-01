@@ -47,14 +47,24 @@
     </div>
     <div v-if="modelPlanStatus">
       <div class="form-col-container pl-2 mt-3">
+        <div class="d-flex flex-column">
+          <span class="title-text">ชื่อผู้รับโอนงาน</span>
+          <span class="desc-text">{{ modelPlanStatus.createBy }}</span>
+        </div>
+        <!-- date -->
+        <div class="d-flex flex-column">
+          <span class="title-text">วันที่โอนงาน</span>
+          <span class="desc-text">{{ formatDate(modelPlanStatus.createDate) }}</span>
+        </div>
+
         <!-- name -->
         <div class="d-flex flex-column">
-          <span class="title-text">ชื่อ จ่ายงาน/รับงาน</span>
+          <span class="title-text">ชื่อผู้รับรับงาน</span>
           <span class="desc-text">{{ modelPlanStatus.sendName }}</span>
         </div>
         <!-- date -->
         <div class="d-flex flex-column">
-          <span class="title-text">วันที่</span>
+          <span class="title-text">วันที่รับงาน</span>
           <span class="desc-text">{{ formatDate(modelPlanStatus.sendDate) }}</span>
         </div>
         <div></div>
@@ -361,7 +371,7 @@ export default {
           case 'print':
             return this.modelPlanStatus ? false : true
           case 'add':
-            return this.modelPlanStatus ? true : false
+            return true
           case 'edit':
             return this.modelPlanStatus ? false : true
           case 'delete':
