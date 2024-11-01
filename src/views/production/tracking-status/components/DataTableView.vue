@@ -23,7 +23,7 @@
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
-      <Column field="receiveDate" header="วันที่ จ่ายงาน/รับงาน" sortable style="min-width: 150px">
+      <Column field="receiveDate" header="วันที่รับงาน" sortable style="min-width: 150px">
         <template #body="slotProps">
           {{ formatDateTime(slotProps.data.receiveDate) }}
         </template>
@@ -269,7 +269,7 @@ export default {
         if (res) {
           const dataExcel = res.data.map((item) => {
             return {
-              'วันที่ จ่ายงาน/รับงาน': this.formatDateTime(item.receiveDate),
+              'วันที่รับงาน': this.formatDateTime(item.receiveDate),
               วันที่ช่างรับงาน: this.formatDateTime(item.jobDate),
               เลขที่ใบงาน: item.wo,
               ลำดับ: item.woNumber,

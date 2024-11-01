@@ -5,7 +5,7 @@
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
           <span>อัพเดตงาน</span>
-          <span class="bi bi-arrow-right ml-1"> [ขัดดิบ]</span>
+          <span class="bi bi-arrow-right ml-1"> [ฝัง]</span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
         <form @submit.prevent="onSubmit">
@@ -35,6 +35,7 @@
                 required
               />
             </div>
+
             <div></div>
             <div></div>
           </div>
@@ -431,7 +432,7 @@ export default {
       isLoading: false,
       autoId: 0,
       autoIdGem: 0,
-      status: 60,
+      status: 80,
 
       // --- from --- //
       form: {
@@ -572,7 +573,7 @@ export default {
     onSubmit() {
       if (this.validateForm()) {
         swAlert.confirmSubmit(
-          `ยืนยันอัพเดตงาน [ขัดดิบ]`,
+          `ยืนยันเเก้ไขงาน [ฝัง]`,
           `${this.model.wo}-${this.model.woNumber}`,
           async () => {
             //console.log('call submitPlan')

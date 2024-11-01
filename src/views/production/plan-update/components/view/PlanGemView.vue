@@ -46,19 +46,28 @@
       </div>
     </div>
     <div v-if="modelPlanStatus">
-      <div class="form-col-container pl-2 mt-3">
+      <div class="form-col-container mt-3">
+        <!-- transfer name -->
+        <div class="d-flex flex-column">
+          <span class="title-text">ชื่อผู้โอนงาน</span>
+          <span class="desc-text">{{ modelPlanStatus.createBy }}</span>
+        </div>
+        <!-- transfer date -->
+        <div class="d-flex flex-column">
+          <span class="title-text">วันที่โอนงาน</span>
+          <span class="desc-text">{{ formatDate(modelPlanStatus.createDate) }}</span>
+        </div>
+
         <!-- name -->
         <div class="d-flex flex-column">
-          <span class="title-text">ผู้คัดพลอย</span>
+          <span class="title-text">ชื่อผู้รับงาน</span>
           <span class="desc-text">{{ modelPlanStatus.sendName }}</span>
         </div>
         <!-- date -->
         <div class="d-flex flex-column">
-          <span class="title-text">วันที่คัดพลอย</span>
+          <span class="title-text">วันที่รับงาน</span>
           <span class="desc-text">{{ formatDate(modelPlanStatus.sendDate) }}</span>
         </div>
-        <div></div>
-        <div></div>
       </div>
 
       <div class="line"></div>

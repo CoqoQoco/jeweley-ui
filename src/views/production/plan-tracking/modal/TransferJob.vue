@@ -297,6 +297,7 @@ export default {
   methods: {
     closeModal() {
       this.selectedValue = []
+      this.form = { ...interfaceForm }
       this.$emit('closeModal')
     },
 
@@ -341,6 +342,8 @@ export default {
         console.log('res:', res)
 
         if (res.success) {
+          this.selectedValue = []
+          this.form = { ...interfaceForm }
           this.$emit('closeModal', 'fetch')
         }
       } catch (error) {

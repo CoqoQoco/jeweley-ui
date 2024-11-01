@@ -12,7 +12,7 @@
           <div class="form-col-container">
             <!-- date -->
             <div>
-              <span class="title-text">วันที่ จ่ายงาน/รับงาน</span>
+              <span class="title-text">วันที่รับงาน</span>
               <Calendar
                 class="w-100"
                 :class="val.isValReceiveDate === true ? `p-invalid` : ``"
@@ -27,7 +27,7 @@
 
             <!-- name -->
             <div>
-              <span class="title-text">ลงชื่อ จ่ายงาน/รับงาน</span>
+              <span class="title-text">ลงชื่อรับงาน</span>
               <input
                 type="text"
                 class="form-control custom-input"

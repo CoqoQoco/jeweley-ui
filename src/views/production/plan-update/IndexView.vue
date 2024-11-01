@@ -175,7 +175,26 @@
     </div>
 
     <!-- embed -->
-    <div v-if="tabCctive === 5"></div>
+    <div v-if="tabCctive === 5">
+      <planEmbed
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planEmbed>
+      <planEmbedUpdate
+        :isShow="update.embed"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></planEmbedUpdate>
+    </div>
 
     <!-- cvd -->
     <div v-if="tabCctive === 6"></div>
@@ -295,12 +314,16 @@ import planScrubbUpdate from './components/update/PlanScrubbUpdateView.vue'
 import planPriceView from './components/view/PlanPriceView.vue'
 import planPriceAddView from './components/add/PlanPriceAddView.vue'
 
+import planEmbed from './components/view/PlanEmbedView.vue'
+import planEmbedUpdate from './components/update/PlanEmbedUpdateView.vue'
+
 const interfaceIsShowAdd = {
   casting: false,
   scrubb: false,
   melted: false,
   gems: false,
-  price: false
+  price: false,
+  embed: false
 }
 const interfaceIsShowUpdate = {
   casting: false,
@@ -340,7 +363,10 @@ export default {
     planScrubbUpdate,
 
     planPriceView,
-    planPriceAddView
+    planPriceAddView,
+
+    planEmbed,
+    planEmbedUpdate
   },
   data() {
     return {
@@ -462,6 +488,10 @@ export default {
 
       if (status === 'price') {
         this.update.price = true
+      }
+
+      if (status === 'embed') {
+        this.update.embed = true
       }
     },
 

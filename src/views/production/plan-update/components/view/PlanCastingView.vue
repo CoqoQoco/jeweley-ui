@@ -47,11 +47,12 @@
     </div>
     <div v-if="modelPlanStatus">
       <div class="form-col-container pl-2 mt-3">
+        <!-- transfer name -->
         <div class="d-flex flex-column">
-          <span class="title-text">ชื่อผู้รับโอนงาน</span>
+          <span class="title-text">ชื่อผู้โอนงาน</span>
           <span class="desc-text">{{ modelPlanStatus.createBy }}</span>
         </div>
-        <!-- date -->
+        <!-- transfer date -->
         <div class="d-flex flex-column">
           <span class="title-text">วันที่โอนงาน</span>
           <span class="desc-text">{{ formatDate(modelPlanStatus.createDate) }}</span>
@@ -59,7 +60,7 @@
 
         <!-- name -->
         <div class="d-flex flex-column">
-          <span class="title-text">ชื่อผู้รับรับงาน</span>
+          <span class="title-text">ชื่อผู้รับงาน</span>
           <span class="desc-text">{{ modelPlanStatus.sendName }}</span>
         </div>
         <!-- date -->
@@ -332,7 +333,7 @@ export default {
       if (_.isEmpty(tbtProductionPlanStatusHeader)) {
         return null
       } else {
-        var value = tbtProductionPlanStatusHeader.find((x) => x.status === 50)
+        var value = tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
         console.log('modelPlanStatus', value)
         return value
       }
@@ -349,7 +350,8 @@ export default {
   },
   data() {
     return {
-      wages: 0
+      wages: 0,
+      status: 50
     }
   },
   methods: {

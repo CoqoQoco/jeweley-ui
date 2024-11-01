@@ -4,7 +4,7 @@
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
-          <span>เเก้ไขงาน</span>
+          <span>อัพเดต</span>
           <span class="bi bi-arrow-right ml-1"> [คัดพลอย]</span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
@@ -12,7 +12,7 @@
           <div class="form-col-container">
             <!-- date -->
             <div>
-              <span class="title-text">วันที่คัดพลอย</span>
+              <span class="title-text">วันที่รับงาน</span>
               <Calendar
                 class="w-100"
                 :class="val.isValReceiveDate === true ? `p-invalid` : ``"
@@ -27,7 +27,7 @@
 
             <!-- name -->
             <div>
-              <span class="title-text">ผู้คัดพลอย</span>
+              <span class="title-text">ชื่อผู้รับงาน</span>
               <input
                 type="text"
                 class="form-control custom-input"
