@@ -2,6 +2,14 @@ import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
+const CACHE_DURATION = 30 * 60 * 1000 // 5 minutes in milliseconds
+
+// Helper function to check if cache is valid
+const isCacheValid = (timestamp) => {
+  if (!timestamp) return false
+  return Date.now() - timestamp < CACHE_DURATION
+}
+
 export const useMasterApiStore = defineStore('master', {
   state: () => ({
     planStatus: [],
@@ -10,6 +18,13 @@ export const useMasterApiStore = defineStore('master', {
     customerType: [],
     productType: [],
     error: null,
+    cacheTimestamps: {
+      planStatus: null,
+      gold: null,
+      goldSize: null,
+      customerType: null,
+      productType: null
+    },
     overPlanOptions: [
       { id: 0, description: 'ทั้งหมด' },
       { id: 1, description: 'เกินกำหนด' }
@@ -17,6 +32,7 @@ export const useMasterApiStore = defineStore('master', {
   }),
 
   getters: {
+    // Original getters remain the same...
     getOverPlanOptions: (state) => state.overPlanOptions,
     getError: (state) => state.error,
 
@@ -25,29 +41,35 @@ export const useMasterApiStore = defineStore('master', {
     getPlanStatusById: (state) => (id) => state.planStatus.find((item) => item.id === id),
     getPlanStatusByCode: (state) => (code) => state.planStatus.find((item) => item.code === code),
 
-    // Gold
-    getGold: (state) => state.gold,
-    getGoldById: (state) => (id) => state.gold.find((item) => item.id === id),
-    getGoldByCode: (state) => (code) => state.gold.find((item) => item.code === code),
+    // Additional getters for cache status
+    isCacheValid: (state) => (key) => isCacheValid(state.cacheTimestamps[key]),
 
-    // Gold Size
-    getGoldSize: (state) => state.goldSize,
-    getGoldSizeById: (state) => (id) => state.goldSize.find((item) => item.id === id),
-    getGoldSizeByCode: (state) => (code) => state.goldSize.find((item) => item.code === code),
-
-    // Customer Type
-    getCustomerType: (state) => state.customerType,
-    getCustomerTypeById: (state) => (id) => state.customerType.find((item) => item.id === id),
-    getCustomerTypeByCode: (state) => (code) =>
-      state.customerType.find((item) => item.code === code),
-
-    // Product Type
-    getProductType: (state) => state.productType,
-    getProductTypeById: (state) => (id) => state.productType.find((item) => item.id === id),
-    getProductTypeByCode: (state) => (code) => state.productType.find((item) => item.code === code)
+    // Cache validation getters for each type
+    isPlanStatusCacheValid: (state) => isCacheValid(state.cacheTimestamps.planStatus),
+    isGoldCacheValid: (state) => isCacheValid(state.cacheTimestamps.gold),
+    isGoldSizeCacheValid: (state) => isCacheValid(state.cacheTimestamps.goldSize),
+    isCustomerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.customerType),
+    isProductTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.productType)
   },
 
   actions: {
+    // Update cache timestamp
+    updateCacheTimestamp(key) {
+      this.cacheTimestamps[key] = Date.now()
+    },
+
+    // Clear specific cache
+    clearCache(key) {
+      this.cacheTimestamps[key] = null
+    },
+
+    // Clear all cache
+    clearAllCache() {
+      Object.keys(this.cacheTimestamps).forEach((key) => {
+        this.cacheTimestamps[key] = null
+      })
+    },
+
     handleError(error, message) {
       console.error(message, error)
       this.error = error
@@ -67,97 +89,130 @@ export const useMasterApiStore = defineStore('master', {
       this.customerType = []
       this.productType = []
       this.error = null
+      this.clearAllCache()
     },
 
-    // Fetch all master data concurrently
-    async fetchAllMasterData() {
+    // Fetch all master data concurrently with cache check
+    async fetchAllMasterData(forceFetch = false) {
       const loadingStore = useLoadingStore()
       try {
         this.clearError()
         loadingStore.showLoading()
 
-        const [planStatus, gold, goldSize, customerType, productType] = await Promise.all([
-          api.jewelry.get('ProductionPlan/GetProductionPlanStatus', null, { skipLoading: true }),
-          api.jewelry.get('Master/MasterGold', null, { skipLoading: true }),
-          api.jewelry.get('Master/MasterGoldSize', null, { skipLoading: true }),
-          api.jewelry.get('Master/MasterCustomerType', null, { skipLoading: true }),
-          api.jewelry.get('Master/MasterProductType', null, { skipLoading: true })
-        ])
+        const fetchPromises = []
+        const fetchKeys = []
 
-        // Update state
-        this.planStatus = planStatus || []
-        this.gold = gold || []
-        this.goldSize = goldSize || []
-        this.customerType = customerType || []
-        this.productType = productType || []
+        // Check each data type and only fetch if needed
+        if (forceFetch || !this.isPlanStatusCacheValid) {
+          fetchPromises.push(
+            api.jewelry.get('ProductionPlan/GetProductionPlanStatus', null, { skipLoading: true })
+          )
+          fetchKeys.push('planStatus')
+        }
+        if (forceFetch || !this.isGoldCacheValid) {
+          fetchPromises.push(api.jewelry.get('Master/MasterGold', null, { skipLoading: true }))
+          fetchKeys.push('gold')
+        }
+        if (forceFetch || !this.isGoldSizeCacheValid) {
+          fetchPromises.push(api.jewelry.get('Master/MasterGoldSize', null, { skipLoading: true }))
+          fetchKeys.push('goldSize')
+        }
+        if (forceFetch || !this.isCustomerTypeCacheValid) {
+          fetchPromises.push(
+            api.jewelry.get('Master/MasterCustomerType', null, { skipLoading: true })
+          )
+          fetchKeys.push('customerType')
+        }
+        if (forceFetch || !this.isProductTypeCacheValid) {
+          fetchPromises.push(
+            api.jewelry.get('Master/MasterProductType', null, { skipLoading: true })
+          )
+          fetchKeys.push('productType')
+        }
+
+        // If all caches are valid and no force fetch, return early
+        if (fetchPromises.length === 0) {
+          loadingStore.hideLoading()
+          return {
+            planStatus: this.planStatus,
+            gold: this.gold,
+            goldSize: this.goldSize,
+            customerType: this.customerType,
+            productType: this.productType
+          }
+        }
+
+        // Fetch only needed data
+        const results = await Promise.all(fetchPromises)
+
+        // Update state and cache timestamps for fetched data
+        results.forEach((result, index) => {
+          const key = fetchKeys[index]
+          this[key] = result || []
+          this.updateCacheTimestamp(key)
+        })
 
         loadingStore.hideLoading()
         return {
-          planStatus,
-          gold,
-          goldSize,
-          customerType,
-          productType
+          planStatus: this.planStatus,
+          gold: this.gold,
+          goldSize: this.goldSize,
+          customerType: this.customerType,
+          productType: this.productType
         }
       } catch (error) {
         return this.handleError(error, 'Error fetching master data')
       }
     },
 
-    // Individual fetch methods
-    async fetchPlanStatus() {
+    // Individual fetch methods with cache check
+    async fetchWithCache(key, url, errorMessage) {
+      if (!forceFetch && this.isCacheValid(key)) {
+        return this[key]
+      }
+
       try {
         this.clearError()
-        const response = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
-        this.planStatus = response || []
+        const response = await api.jewelry.get(url)
+        this[key] = response || []
+        this.updateCacheTimestamp(key)
         return response
       } catch (error) {
-        return this.handleError(error, 'Error fetching status')
+        return this.handleError(error, errorMessage)
       }
     },
 
-    async fetchGold() {
-      try {
-        this.clearError()
-        const response = await api.jewelry.get('Master/MasterGold')
-        this.gold = response || []
-        return response
-      } catch (error) {
-        return this.handleError(error, 'Error fetching gold')
-      }
+    // Updated individual fetch methods
+    async fetchPlanStatus(forceFetch = false) {
+      return this.fetchWithCache(
+        'planStatus',
+        'ProductionPlan/GetProductionPlanStatus',
+        'Error fetching status'
+      )
     },
 
-    async fetchGoldSize() {
-      try {
-        this.clearError()
-        const response = await api.jewelry.get('Master/MasterGoldSize')
-        this.goldSize = response || []
-        return response
-      } catch (error) {
-        return this.handleError(error, 'Error fetching gold size')
-      }
+    async fetchGold(forceFetch = false) {
+      return this.fetchWithCache('gold', 'Master/MasterGold', 'Error fetching gold')
     },
 
-    async fetchCustomerType() {
-      try {
-        this.clearError()
-        const response = await api.jewelry.get('Master/MasterCustomerType')
-        this.customerType = response || []
-        return response
-      } catch (error) {
-        return this.handleError(error, 'Error fetching customer type')
-      }
+    async fetchGoldSize(forceFetch = false) {
+      return this.fetchWithCache('goldSize', 'Master/MasterGoldSize', 'Error fetching gold size')
     },
 
-    async fetchProductType() {
-      try {
-        this.clearError()
-        const response = await api.jewelry.get('Master/MasterProductType')
-        this.productType = response || []
-        return response
-      } catch (error) {
-        return this.handleError(error, 'Error fetching product type')
-      }
+    async fetchCustomerType(forceFetch = false) {
+      return this.fetchWithCache(
+        'customerType',
+        'Master/MasterCustomerType',
+        'Error fetching customer type'
+      )
+    },
+
+    async fetchProductType(forceFetch = false) {
+      return this.fetchWithCache(
+        'productType',
+        'Master/MasterProductType',
+        'Error fetching product type'
+      )
     }
   }
 })
