@@ -90,7 +90,7 @@ export default {
       try {
         loadingStore.showLoading()
         await this.fetchAllMasterData()
-        this.search = { ...this.form }
+        //this.search = { ...this.form }
       } catch (error) {
         console.error('Error initializing master data:', error)
       } finally {
@@ -101,6 +101,7 @@ export default {
 
   async created() {
     await this.initializeMasterData()
+    this.search = { ...this.form }
   },
 
   beforeUnmount() {
