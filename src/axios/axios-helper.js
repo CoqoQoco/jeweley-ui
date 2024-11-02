@@ -111,18 +111,34 @@ axiosInstance.interceptors.response.use(
     // Handle different error cases
     switch (status) {
       case 401:
-        handleUnauthorizedError(msg, stacktrace)
+        swAlert.error(
+          msg,
+          'Unauthorise',
+          async () => {
+            router.push({ name: 'dashboard' })
+          },
+          stacktrace
+        )
         break
 
       case 400:
-        handleBadRequestError(msg, errorSystem, stacktrace)
+        if (msg) {
+          swAlert.error(msg, null, () => {}, stacktrace)
+        } else if (errorSystem) {
+          const messages = Object.values(errorSystem)
+          swAlert.error(messages, null, () => {}, stacktrace)
+        }
         break
 
       case 402:
       case 404:
       case 500:
       case 504:
-        handleGenericError(status, msg, errorSystem, stacktrace)
+        if (msg || errorSystem) {
+          swAlert.error(msg || JSON.stringify(errorSystem), null, () => {}, stacktrace)
+        } else {
+          swAlert.error('กรุณาติดผู้พัฒนา', `ERROR : ${status}`, () => {}, stacktrace)
+        }
         break
 
       default:
@@ -137,35 +153,6 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
-// Error handling functions remain the same...
-const handleUnauthorizedError = (msg, stacktrace) => {
-  swAlert.error(
-    msg,
-    'Unauthorise',
-    async () => {
-      router.push({ name: 'dashboard' })
-    },
-    stacktrace
-  )
-}
-
-const handleBadRequestError = (msg, errorSystem, stacktrace) => {
-  if (msg) {
-    swAlert.error(msg, null, () => {}, stacktrace)
-  } else if (errorSystem) {
-    const messages = Object.values(errorSystem)
-    swAlert.error(messages, null, () => {}, stacktrace)
-  }
-}
-
-const handleGenericError = (status, msg, errorSystem, stacktrace) => {
-  if (msg || errorSystem) {
-    swAlert.error(msg || JSON.stringify(errorSystem), null, () => {}, stacktrace)
-  } else {
-    swAlert.error('กรุณาติดผู้พัฒนา', `ERROR : ${status}`, () => {}, stacktrace)
-  }
-}
 
 // Enhanced cleanup function
 const cleanupRequests = () => {
@@ -190,7 +177,7 @@ if (typeof window !== 'undefined') {
 }
 
 // GET method
-const fetchData = async function (url, params, optionsConfig = {}) {
+const fetchData = async (url, params, optionsConfig = {}) => {
   const { skipLoading = false, ...restOptions } = optionsConfig
 
   if (!skipLoading) {
@@ -213,7 +200,7 @@ const fetchData = async function (url, params, optionsConfig = {}) {
 }
 
 // POST method
-const postData = async function (url, data, optionsConfig = {}) {
+const postData = async (url, data, optionsConfig = {}) => {
   const { skipLoading = false, ...restOptions } = optionsConfig
 
   if (!skipLoading) {

@@ -1,26 +1,21 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
+import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
 export const useMasterApiStore = defineStore('master', {
-  // State
   state: () => ({
-    // Status
     planStatus: [],
-    // Master Data
     gold: [],
     goldSize: [],
     customerType: [],
     productType: [],
-    // UI States
     error: null,
-    // Constants
     overPlanOptions: [
       { id: 0, description: 'ทั้งหมด' },
       { id: 1, description: 'เกินกำหนด' }
     ]
   }),
 
-  // Getters
   getters: {
     getOverPlanOptions: (state) => state.overPlanOptions,
     getError: (state) => state.error,
@@ -52,16 +47,15 @@ export const useMasterApiStore = defineStore('master', {
     getProductTypeByCode: (state) => (code) => state.productType.find((item) => item.code === code)
   },
 
-  // Actions
   actions: {
-    // Error Handler
     handleError(error, message) {
       console.error(message, error)
       this.error = error
+      const loadingStore = useLoadingStore()
+      loadingStore.hideLoading()
       throw error
     },
 
-    // Clear States
     clearError() {
       this.error = null
     },
@@ -75,7 +69,42 @@ export const useMasterApiStore = defineStore('master', {
       this.error = null
     },
 
-    // API Calls
+    // Fetch all master data concurrently
+    async fetchAllMasterData() {
+      const loadingStore = useLoadingStore()
+      try {
+        this.clearError()
+        loadingStore.showLoading()
+
+        const [planStatus, gold, goldSize, customerType, productType] = await Promise.all([
+          api.jewelry.get('ProductionPlan/GetProductionPlanStatus', null, { skipLoading: true }),
+          api.jewelry.get('Master/MasterGold', null, { skipLoading: true }),
+          api.jewelry.get('Master/MasterGoldSize', null, { skipLoading: true }),
+          api.jewelry.get('Master/MasterCustomerType', null, { skipLoading: true }),
+          api.jewelry.get('Master/MasterProductType', null, { skipLoading: true })
+        ])
+
+        // Update state
+        this.planStatus = planStatus || []
+        this.gold = gold || []
+        this.goldSize = goldSize || []
+        this.customerType = customerType || []
+        this.productType = productType || []
+
+        loadingStore.hideLoading()
+        return {
+          planStatus,
+          gold,
+          goldSize,
+          customerType,
+          productType
+        }
+      } catch (error) {
+        return this.handleError(error, 'Error fetching master data')
+      }
+    },
+
+    // Individual fetch methods
     async fetchPlanStatus() {
       try {
         this.clearError()

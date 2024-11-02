@@ -321,7 +321,7 @@ export default {
       //console.log('onTrnsferJob')
       if (this.planSearchStore.dataPlanSearcTotalRecord > this.planSearchStore.totalTransferAllow) {
         swAlert.warning(
-          `สามารถโอนงานได้ไม่เกินครั้งละ ${this.this.planSearchStore.totalTransferAllow} รายการ`,
+          `สามารถโอนงานได้ไม่เกินครั้งละ ${this.planSearchStore.totalTransferAllow} รายการ`,
           'จำนวนงานเกินกำหนด'
         )
       } else {
