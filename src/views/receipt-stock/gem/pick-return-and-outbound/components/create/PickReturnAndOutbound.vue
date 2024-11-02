@@ -233,7 +233,7 @@ import Column from 'primevue/column'
 //import AutoComplete from 'primevue/autocomplete'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 import dataExpand from './PickReturnAndOutboundExpand.vue'

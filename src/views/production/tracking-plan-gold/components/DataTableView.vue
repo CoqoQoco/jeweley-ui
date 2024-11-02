@@ -90,7 +90,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import moldalUpdate from './UpdateView.vue'
 import modalView from './DataView.vue'

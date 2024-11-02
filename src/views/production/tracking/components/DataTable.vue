@@ -160,7 +160,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Papa from 'papaparse'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 import transferJobView from '../modal/JobTransfer.vue'

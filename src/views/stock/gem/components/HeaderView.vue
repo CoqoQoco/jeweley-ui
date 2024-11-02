@@ -143,7 +143,7 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import createView from './CreateView.vue'
 

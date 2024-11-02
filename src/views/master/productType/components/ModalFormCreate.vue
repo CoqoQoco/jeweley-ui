@@ -48,7 +48,7 @@
 import { defineAsyncComponent } from 'vue'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 //import modal from '@/components/modal/ModalView.vue'

@@ -195,7 +195,7 @@ import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 import statusDesign from './components/statusDesignView.vue'
@@ -210,7 +210,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-//import api from '@/axios/axios-config.js'
+//import api from '@/axios/axios-helper.js'
 
 const interfaceGem = {
   gem: null,

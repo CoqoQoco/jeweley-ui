@@ -182,7 +182,7 @@ import Column from 'primevue/column'
 //import Papa from 'papaparse'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 const interfaceForm = {

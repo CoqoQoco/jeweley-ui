@@ -119,7 +119,7 @@ import { defineAsyncComponent } from 'vue'
 const pdf = defineAsyncComponent(() => import('@/components/pdf-make/FilePDFProductionPlanView.vue'))
 
 import moment from 'dayjs'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
 export default {

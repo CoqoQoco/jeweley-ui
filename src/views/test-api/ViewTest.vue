@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 export default {
   components: {},
   data() {

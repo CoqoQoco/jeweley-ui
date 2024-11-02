@@ -110,7 +110,7 @@
 import { defineAsyncComponent } from 'vue'
 import Dropdown from 'primevue/dropdown'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))

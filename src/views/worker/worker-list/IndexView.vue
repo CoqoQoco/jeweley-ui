@@ -105,7 +105,7 @@ import FormCreate from './components/FormCreate.vue'
 import FormUpdate from './components/FormUpdate.vue'
 import TableMain from './components/TableMainView.vue'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
   type: null,

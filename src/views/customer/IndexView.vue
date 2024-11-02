@@ -67,7 +67,7 @@ import { defineAsyncComponent } from 'vue'
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import FormCreate from './components/FormCreate.vue'
 import FormView from './components/FormView.vue'

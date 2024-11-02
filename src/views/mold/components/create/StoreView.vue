@@ -89,7 +89,7 @@ const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/U
 import Dropdown from 'primevue/dropdown'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 import { eventStatus } from '@/views/mold/create-design/interface/data.js'

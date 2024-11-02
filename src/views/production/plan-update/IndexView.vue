@@ -302,7 +302,7 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTit
 
 import TabMenu from 'primevue/tabmenu'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 //import FormHeader from './components/form-header/FormHeaderView.vue'
 //import FormHeaderUpdate from './components/form-header/FormHeaderUpdate.vue'

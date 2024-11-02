@@ -283,7 +283,7 @@ import { vfs } from '@/assets/fonts/pdf-fonts.js'
 // import ColumnGroup from 'primevue/columngroup' // optional
 // import AutoComplete from 'primevue/autocomplete'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatISOString } from '@/services/utils/dayjs'
 

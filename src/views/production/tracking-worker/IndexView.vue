@@ -74,7 +74,7 @@ import Calendar from 'primevue/calendar'
 //import MultiSelect from 'primevue/multiselect'
 import tableMain from './components/TableMainView.vue'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const interfaceSearch = {
   start: null,

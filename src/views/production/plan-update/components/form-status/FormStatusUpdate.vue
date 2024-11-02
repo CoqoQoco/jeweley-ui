@@ -962,7 +962,7 @@ import AutoComplete from 'primevue/autocomplete'
 import moment from 'dayjs'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 
 // const interfaceMat = {

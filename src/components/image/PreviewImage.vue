@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 //import Avatar from 'primevue/avatar'
 import Image from 'primevue/image'
 export default {
@@ -81,7 +81,9 @@ export default {
                 imageName: `${this.imageName}`,
                 path: this.path
               }
-              const res = await api.jewelry.get('FileExtension/GetImage', param)
+              const res = await api.jewelry.get('FileExtension/GetImage', param, {
+                skipLoading: true
+              })
 
               if (res) {
                 this.urlImage = `data:image/png;base64,${res}`
@@ -93,7 +95,9 @@ export default {
               const param = {
                 imageName: this.imageName
               }
-              const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
+              const res = await api.jewelry.get('FileExtension/GetPlanImage', param, {
+                skipLoading: true
+              })
 
               if (res) {
                 this.urlImage = `data:image/png;base64,${res}`
@@ -105,7 +109,9 @@ export default {
               const param = {
                 imageName: `${this.imageName}-Mold.png`
               }
-              const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+              const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
+                skipLoading: true
+              })
 
               if (res) {
                 this.urlImage = `data:image/png;base64,${res}`
@@ -117,7 +123,9 @@ export default {
               const param = {
                 imageName: `${this.imageName}`
               }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldDesignImage', param)
+              const res = await api.jewelry.get('FileExtension/GetPlanMoldDesignImage', param, {
+                skipLoading: true
+              })
 
               if (res) {
                 this.urlImage = `data:image/png;base64,${res}`
@@ -129,7 +137,9 @@ export default {
               const param = {
                 imageName: `${this.imageName}`
               }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param)
+              const res = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param, {
+                skipLoading: true
+              })
 
               if (res) {
                 this.urlImage = `data:image/png;base64,${res}`

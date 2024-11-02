@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import api from '@/services/utils/api.js'
+import api from '@/axios/axios-helper.js'
 
 export const useMasterApiStore = defineStore('master', {
   // State

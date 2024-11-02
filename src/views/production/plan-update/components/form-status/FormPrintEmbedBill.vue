@@ -25,7 +25,7 @@ import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 
 import { formatDate } from '@/services/utils/dayjs'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 export default {
   components: {

@@ -20,7 +20,7 @@ import { defineAsyncComponent } from 'vue'
 const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import headerView from './components/HeaderView.vue'
 import modalCreate from './components/ModalCreateView.vue'

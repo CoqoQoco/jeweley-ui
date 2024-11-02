@@ -111,7 +111,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 //import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
 

@@ -166,7 +166,7 @@ import Column from 'primevue/column'
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
   text: null,

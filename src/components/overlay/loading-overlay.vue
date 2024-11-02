@@ -2,7 +2,7 @@
 <template>
   <div>
     <loading
-      :active="isLoadingActive"
+      :active="isLoadingActiveColse"
       :height="25"
       :width="25"
       :is-full-page="fullPage"
@@ -57,6 +57,7 @@ export default {
   data() {
     return {
       isLoadingActive: false,
+      isLoadingActiveColse: false,
       interval: null,
       timeCounting: 0,
     };

@@ -148,7 +148,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {

@@ -159,7 +159,7 @@ import historyView from './HistoryView.vue'
 import updateView from './UpdateView.vue'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const isShowModal = {
   isPrice: false,

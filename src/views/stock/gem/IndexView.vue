@@ -37,7 +37,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 import headerBar from './components/headerView.vue'
 import dataTable from './components/DataTableView.vue'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
   id: null,

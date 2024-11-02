@@ -16,7 +16,7 @@
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import jsbarcode from 'jsbarcode'
 
 export default {

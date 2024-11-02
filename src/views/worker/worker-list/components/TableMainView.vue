@@ -62,7 +62,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 export default {

@@ -190,7 +190,7 @@ import AutoComplete from 'primevue/autocomplete'
 //import Papa from 'papaparse'
 
 //import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 import ConfirmView from './ConfirmView.vue'

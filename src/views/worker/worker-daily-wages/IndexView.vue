@@ -263,7 +263,7 @@ import ColumnGroup from 'primevue/columngroup' // optional
 import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatISOString, formatDate } from '@/services/utils/dayjs'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 

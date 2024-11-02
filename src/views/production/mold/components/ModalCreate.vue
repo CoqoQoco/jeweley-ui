@@ -94,7 +94,7 @@
 import { defineAsyncComponent } from 'vue'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import Dropdown from 'primevue/dropdown'
 

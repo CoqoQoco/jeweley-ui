@@ -961,7 +961,7 @@ import Column from 'primevue/column'
 import AutoComplete from 'primevue/autocomplete'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import { formatISOString, formatDate } from '@/services/utils/dayjs'
 
 const interfaceForm = {

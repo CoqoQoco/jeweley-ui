@@ -130,7 +130,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import modalUpdate from './UpdateView.vue'
 import modalPicking from './PickingView.vue' // ยังไม่ได้ใช้

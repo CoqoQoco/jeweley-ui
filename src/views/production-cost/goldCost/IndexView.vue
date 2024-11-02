@@ -178,7 +178,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Calendar from 'primevue/calendar'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import FormCreate from './components/FormCreate.vue'
 import FormUpdate from './components/FormUpdate.vue'

@@ -83,7 +83,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import createView from './CreateView.vue'
 
 const interfaceIsShow = {

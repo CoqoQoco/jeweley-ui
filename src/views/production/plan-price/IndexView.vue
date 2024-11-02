@@ -244,7 +244,7 @@ import _ from 'lodash'
 import Row from 'primevue/row'
 
 import moment from 'dayjs'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 

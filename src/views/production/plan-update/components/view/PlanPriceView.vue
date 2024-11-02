@@ -163,7 +163,7 @@ import Row from 'primevue/row'
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 const pricePDF = defineAsyncComponent(() =>

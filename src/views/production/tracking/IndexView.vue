@@ -258,7 +258,7 @@ import Dropdown from 'primevue/dropdown'
 import MultiSelect from 'primevue/multiselect'
 
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import tableMain from './components/DataTable.vue'
 

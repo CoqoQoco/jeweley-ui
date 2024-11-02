@@ -139,7 +139,7 @@ import { defineAsyncComponent } from 'vue'
 //import DataView from 'primevue/dataview'
 //import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions'
 //import Card from 'primevue/card'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'

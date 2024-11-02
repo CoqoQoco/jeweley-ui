@@ -223,7 +223,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
   images: [],

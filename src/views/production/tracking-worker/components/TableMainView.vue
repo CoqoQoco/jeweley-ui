@@ -124,7 +124,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 //prime table
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 

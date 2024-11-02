@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import api from '@/services/utils/api.js'
+import api from '@/axios/axios-helper.js'
 import { formatISOString, formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { CsvHelper } from '@/services/utils/export-excel.js'

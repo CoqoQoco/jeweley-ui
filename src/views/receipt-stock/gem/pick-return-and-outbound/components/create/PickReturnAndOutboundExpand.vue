@@ -151,7 +151,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import AutoComplete from 'primevue/autocomplete'
 
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 export default {
   components: {

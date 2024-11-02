@@ -1,6 +1,6 @@
 // stores/modules/api/plan-search-store.js
 import { defineStore } from 'pinia'
-import api from '@/services/utils/api.js'
+import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 export const usePlanUpdateApiStore = defineStore('planUpdate', {

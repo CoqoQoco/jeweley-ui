@@ -144,7 +144,7 @@ const loading = defineAsyncComponent(() => import('@/components/overlay/loading-
 import Dropdown from 'primevue/dropdown'
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-config.js'
+import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
   gold: {
