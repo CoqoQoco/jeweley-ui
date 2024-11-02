@@ -4,11 +4,41 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 import router from '@/router'
 
-//test build
-//const jewelryUrl = 'https://localhost:32771/'
-
 //production
 const jewelryUrl = 'http://192.168.1.41:2001/'
+
+// Loading state management
+const loadingManager = {
+  timeoutId: null,
+  maxLoadingTime: 10000, // 10 seconds maximum loading time
+
+  showLoading() {
+    const loadingStore = useLoadingStore()
+    loadingStore.showLoading()
+
+    // Set timeout to force hide loading after maxLoadingTime
+    this.timeoutId = setTimeout(() => {
+      this.hideLoading()
+    }, this.maxLoadingTime)
+  },
+
+  hideLoading() {
+    const loadingStore = useLoadingStore()
+    loadingStore.hideLoading()
+
+    // Clear timeout if exists
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId)
+      this.timeoutId = null
+    }
+  },
+
+  // Force reset loading state
+  resetLoading() {
+    this.hideLoading()
+    activeRequests.clear()
+  }
+}
 
 // Create cancel token source
 const createCancelToken = () => {
@@ -30,9 +60,16 @@ axiosInstance.interceptors.request.use(
     const requestId = Math.random().toString(36).substring(7)
     config.requestId = requestId
     activeRequests.add(requestId)
+
+    // Reset loading state if it's stuck
+    if (document.hidden) {
+      loadingManager.resetLoading()
+    }
+
     return config
   },
   (error) => {
+    loadingManager.hideLoading()
     return Promise.reject(error)
   }
 )
@@ -43,6 +80,9 @@ axiosInstance.interceptors.response.use(
     if (response.config.requestId) {
       activeRequests.delete(response.config.requestId)
     }
+    if (activeRequests.size === 0) {
+      loadingManager.hideLoading()
+    }
     return response
   },
   (error) => {
@@ -51,10 +91,9 @@ axiosInstance.interceptors.response.use(
       activeRequests.delete(error.config.requestId)
     }
 
-    // Hide loading state only if it was shown
-    if (!error.config?.skipLoading) {
-      const loadingStore = useLoadingStore()
-      loadingStore.hideLoading()
+    // Hide loading state only if it was shown and no other requests are pending
+    if (!error.config?.skipLoading && activeRequests.size === 0) {
+      loadingManager.hideLoading()
     }
 
     // Handle canceled requests
@@ -87,7 +126,6 @@ axiosInstance.interceptors.response.use(
         break
 
       default:
-        // Handle unexpected errors
         swAlert.error(
           'เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง',
           `Error Code: ${status || 'Unknown'}`,
@@ -100,7 +138,7 @@ axiosInstance.interceptors.response.use(
   }
 )
 
-// Error handling functions
+// Error handling functions remain the same...
 const handleUnauthorizedError = (msg, stacktrace) => {
   swAlert.error(
     msg,
@@ -129,30 +167,37 @@ const handleGenericError = (status, msg, errorSystem, stacktrace) => {
   }
 }
 
-// Cleanup function for page unload
+// Enhanced cleanup function
 const cleanupRequests = () => {
-  const loadingStore = useLoadingStore()
-  if (activeRequests.size > 0) {
-    activeRequests.clear()
-    loadingStore.hideLoading()
-  }
+  loadingManager.resetLoading()
 }
 
-// Add event listeners for cleanup
+// Add enhanced event listeners
 if (typeof window !== 'undefined') {
+  // Handle page visibility changes
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      loadingManager.resetLoading()
+    }
+  })
+
+  // Handle page unload
   window.addEventListener('beforeunload', cleanupRequests)
   window.addEventListener('unload', cleanupRequests)
+
+  // Handle navigation events
+  window.addEventListener('popstate', cleanupRequests)
 }
 
-// GET method (renamed from 'get' to 'fetchData')
+// GET method
 const fetchData = async function (url, params, optionsConfig = {}) {
   const { skipLoading = false, ...restOptions } = optionsConfig
-  const loadingStore = useLoadingStore()
-  const source = createCancelToken()
 
   if (!skipLoading) {
-    loadingStore.showLoading()
+    loadingManager.showLoading()
   }
+
+  const source = createCancelToken()
 
   const res = await axiosInstance.get(url, {
     ...restOptions,
@@ -164,21 +209,18 @@ const fetchData = async function (url, params, optionsConfig = {}) {
     skipLoading
   })
 
-  if (!skipLoading) {
-    loadingStore.hideLoading()
-  }
   return res.data
 }
 
 // POST method
 const postData = async function (url, data, optionsConfig = {}) {
   const { skipLoading = false, ...restOptions } = optionsConfig
-  const loadingStore = useLoadingStore()
-  const source = createCancelToken()
 
   if (!skipLoading) {
-    loadingStore.showLoading()
+    loadingManager.showLoading()
   }
+
+  const source = createCancelToken()
 
   const res = await axiosInstance.post(url, data, {
     ...restOptions,
@@ -189,9 +231,6 @@ const postData = async function (url, data, optionsConfig = {}) {
     skipLoading
   })
 
-  if (!skipLoading) {
-    loadingStore.hideLoading()
-  }
   return res.data
 }
 
