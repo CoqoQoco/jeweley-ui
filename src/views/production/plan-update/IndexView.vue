@@ -197,13 +197,32 @@
     </div>
 
     <!-- cvd -->
-    <div v-if="tabCctive === 6"></div>
+    <!-- <div v-if="tabCctive === 6"></div> -->
 
     <!-- plate -->
-    <div v-if="tabCctive === 7"></div>
+    <div v-if="tabCctive === 6">
+      <planPlateView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @onShowAddStatus="onShowAddStatus"
+        @onShowUpdateStatus="onShowUpdateStatus"
+        @fetch="fetchFormStatusAdd"
+      ></planPlateView>
+      <PlanPlateUpdateView
+        :isShow="update.plate"
+        :modelValue="data"
+        :modelMatValue="mat"
+        :masterStatus="masterStatus"
+        :masterGold="masterGold"
+        @closeModal="onCloseFormStatusAdd"
+        @fetch="fetchFormStatusAdd"
+      ></PlanPlateUpdateView>
+    </div>
 
     <!-- price -->
-    <div v-if="tabCctive === 8">
+    <div v-if="tabCctive === 7">
       <planPriceView
         :modelValue="data"
         :modelMatValue="mat"
@@ -225,10 +244,10 @@
     </div>
 
     <!-- succes -->
-    <div v-if="tabCctive === 9"></div>
+    <div v-if="tabCctive === 8"></div>
 
     <!-- melt -->
-    <div v-if="tabCctive === 10">
+    <div v-if="tabCctive === 9">
       <planMeltedView
         :modelValue="data"
         :modelMatValue="mat"
@@ -250,7 +269,7 @@
     </div>
 
     <!-- old function -->
-    <div v-if="tabCctive === 11">
+    <div v-if="tabCctive === 10">
       <FormStatus
         :modelValue="data"
         :modelMatValue="mat"
@@ -317,13 +336,17 @@ import planPriceAddView from './components/add/PlanPriceAddView.vue'
 import planEmbed from './components/view/PlanEmbedView.vue'
 import planEmbedUpdate from './components/update/PlanEmbedUpdateView.vue'
 
+import planPlateView from './components/view/PlanPlateView.vue'
+import PlanPlateUpdateView from './components/update/PlanPlateUpdateView.vue'
+
 const interfaceIsShowAdd = {
   casting: false,
   scrubb: false,
   melted: false,
   gems: false,
   price: false,
-  embed: false
+  embed: false,
+  plate: false
 }
 const interfaceIsShowUpdate = {
   casting: false,
@@ -366,7 +389,10 @@ export default {
     planPriceAddView,
 
     planEmbed,
-    planEmbedUpdate
+    planEmbedUpdate,
+
+    planPlateView,
+    PlanPlateUpdateView
   },
   data() {
     return {
@@ -400,12 +426,12 @@ export default {
         { id: 3, label: 'ขัดดิบ', icon: 'bi bi-hammer' },
         { id: 4, label: 'คัดพลอย', icon: 'bi bi-hammer' },
         { id: 5, label: 'ฝัง', icon: 'bi bi-hammer' },
-        { id: 6, label: 'ตรวจ CVD', icon: 'bi bi-hammer' },
-        { id: 7, label: 'ขัดดิบ', icon: 'bi bi-hammer' },
+        // { id: 6, label: 'ตรวจ CVD', icon: 'bi bi-hammer' },
+        { id: 7, label: 'ขัดชุบ', icon: 'bi bi-hammer' },
         { id: 8, label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' },
         { id: 9, label: 'สำเร็จ', icon: 'bi bi-clipboard-check-fill' },
-        { id: 10, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
-        { id: 11, label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
+        { id: 10, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' }
+        //{ id: 11, label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
       ]
     }
   },
@@ -492,6 +518,10 @@ export default {
 
       if (status === 'embed') {
         this.update.embed = true
+      }
+
+      if (status === 'plate') {
+        this.update.plate = true
       }
     },
 
@@ -656,6 +686,7 @@ export default {
         case 79:
         case 84:
         case 89:
+        case 94:
           return 'box-status-process'
         case 50:
         case 55:

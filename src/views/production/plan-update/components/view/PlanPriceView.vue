@@ -236,12 +236,13 @@ export default {
     },
     checkBtn(action) {
       const disStatus = [100, 500]
+      const allowPrice = [95, 94]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
           case 'print':
             return !this.isMakePrice
           case 'add':
-            return false
+            return allowPrice.includes(this.model.status) ? false : true
           case 'edit':
             return true
           case 'delete':

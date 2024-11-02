@@ -767,7 +767,7 @@ export default {
               this.form = {
                 ...interfaceForm
               }
-              this.form.items = null
+              this.form.items = []
               this.val = {
                 ...interfaceIsValid
               }

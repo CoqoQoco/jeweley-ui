@@ -281,7 +281,21 @@ export default {
       return this.masterStatusValue.find((item) => item.id === this.stausTransferValue) || null
     },
     allowSelectStatus() {
-      const removeStatus = [10, 49, 55, 59, 69, 79, 84, 89, 100, 500, this.stausTransferValue]
+      const removeStatus = [
+        10,
+        49,
+        55,
+        59,
+        69,
+        79,
+        84,
+        85,
+        89,
+        94,
+        100,
+        500,
+        this.stausTransferValue
+      ]
       return this.masterStatus.filter((item) => !removeStatus.includes(item.id))
     }
   },
@@ -314,6 +328,13 @@ export default {
       if (!this.form.statustarget) {
         this.val.isTargetStatus = true
         isValid = false
+      }
+
+      let statusNotAllow = [49, 54, 55, 59, 69, 79, 84, 85, 94, 500]
+      if (statusNotAllow.includes(this.form.statustarget)) {
+        swAlert.warnig('ไม่สามารถโอนสถานงานนี้ได้', '', () => {
+          isValid = false
+        })
       }
       return isValid
     },

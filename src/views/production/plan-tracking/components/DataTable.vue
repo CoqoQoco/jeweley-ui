@@ -385,6 +385,7 @@ export default {
         case 79:
         case 84:
         case 89:
+        case 94:
           return 'box-status-process'
         case 50:
         case 55:

@@ -47,9 +47,9 @@
               />
             </div>
 
-            <!-- size -->
+            <!-- grade -->
             <div>
-              <span class="title-text">ขนาด</span>
+              <span class="title-text">เกรด</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelect
                 v-model="form.size"
@@ -61,9 +61,9 @@
               />
             </div>
 
-            <!-- shape -->
+            <!-- size -->
             <div>
-              <span class="title-text">รูปร่าง</span>
+              <span class="title-text">ขนาด</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelect
                 v-model="form.shape"
@@ -75,9 +75,9 @@
               />
             </div>
 
-            <!-- grade -->
+            <!-- shape -->
             <div>
-              <span class="title-text">เกรด</span>
+              <span class="title-text">รูปร่าง</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelect
                 v-model="form.grade"
