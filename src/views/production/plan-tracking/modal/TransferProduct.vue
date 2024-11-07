@@ -8,15 +8,11 @@
               <div class="d-flex justify-content-between">
                 <div class="vertical-center-container desc-text-white">
                   <span>
-                    {{ `โอนสถานะงาน: ${statusTransfer.nameTh}` }}
+                    {{ `โอนสินค้าเข้าคลัง[สำเร็จ]: ${statusTransfer.nameTh}` }}
                   </span>
                   <span class="ml-2 bi bi-arrow-right"></span>
                   <span class="ml-2">
-                    {{
-                      `${
-                        form.targetStatus ? getStatusName(form.targetStatus) : 'โปรดเลือกแผนกรับโอน'
-                      }`
-                    }}
+                    {{ `คลังสินค้า` }}
                   </span>
                 </div>
                 <div>
@@ -30,19 +26,13 @@
 
           <!-- target status -->
           <div class="form-col-container mt-1">
-            <div>
+            <!-- <div>
               <div>
                 <span class="title-text">แผนกรับโอน</span>
-                <Dropdown
-                  v-model="form.targetStatus"
-                  :options="allowSelectStatus"
-                  optionLabel="nameTh"
-                  optionValue="id"
-                  class="w-full md:w-14rem"
-                  :class="val.isTargetStatus === true ? `p-invalid` : ``"
-                />
+               
+                <div class="text-custom">{{ `คลังสินค้าสำเร็จ` }}</div>
               </div>
-            </div>
+            </div> -->
             <div>
               <span class="title-text">ผู้โอน</span>
               <input
@@ -52,6 +42,7 @@
                 required
               />
             </div>
+            <div></div>
             <div></div>
             <div></div>
           </div>
@@ -104,8 +95,8 @@
               </div>
               <div class="d-flex justify-content-between vertical-center-container">
                 <div class="check-excel-container">
-                  <Checkbox v-model="form.isExportTransfer" :binary="true" />
-                  <span for="ingredient1" class="ml-2">ออกเอกสารโอนงาน</span>
+                  <Checkbox v-model="form.isExportReceipt" :binary="true" />
+                  <span for="ingredient1" class="ml-2">ออกเอกสารรับสินค้า</span>
                 </div>
                 <button
                   :class="[
@@ -114,11 +105,10 @@
                   ]"
                   style="height: 34px"
                   :disabled="!selectedValue.length > 0"
-                  @click="onTransferStatus"
                   type="submit"
                 >
-                  <span><i class="bi bi-box-arrow-down"></i></span>
-                  <span class="ml-2">โอนงาน</span>
+                  <span><i class="bi bi-box-arrow-up"></i></span>
+                  <span class="ml-2">โอนสินค้า</span>
                 </button>
               </div>
             </div>
@@ -133,21 +123,24 @@
 import { defineAsyncComponent } from 'vue'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import Dropdown from 'primevue/dropdown'
+
 import Checkbox from 'primevue/checkbox'
+//import Dropdown from 'primevue/dropdown'
 
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
+import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+//import { CsvHelper } from '@/services/utils/export-excel.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
 const interfaceForm = {
   formerStatus: null,
-  targetStatus: null,
+  targetStatus: 100,
   name: null,
-  isExportTransfer: false,
+  isExportReceipt: true,
   job: []
 }
 
@@ -159,8 +152,8 @@ export default {
   components: {
     modal,
     BaseDataTable,
-    Dropdown,
     Checkbox
+    //Dropdown
   },
 
   props: {
@@ -188,7 +181,10 @@ export default {
   data() {
     return {
       selectedValue: [],
-      form: { ...interfaceForm },
+      form: {
+        ...interfaceForm
+        //targetStatus: this.masterStatusValue.find((item) => item.id === 100)
+      },
       val: { ...interfaceVal },
       allowItem: 100,
       columns: [
@@ -278,7 +274,8 @@ export default {
   setup() {
     const planSearchStore = usePlanSearchApiStore()
     const planUpdateStore = usePlanUpdateApiStore()
-    return { planSearchStore, planUpdateStore }
+    const stockProductStore = usrStockProductApiStore()
+    return { planSearchStore, planUpdateStore, stockProductStore }
   },
 
   computed: {
@@ -295,22 +292,22 @@ export default {
       return this.masterStatusValue.find((item) => item.id === this.stausTransferValue) || null
     },
     allowSelectStatus() {
-      const removeStatus = [
-        10,
-        49,
-        55,
-        59,
-        69,
-        79,
-        84,
-        85,
-        89,
-        94,
-        100,
-        500,
-        this.stausTransferValue
-      ]
-      return this.masterStatus.filter((item) => !removeStatus.includes(item.id))
+      //   const removeStatus = [
+      //     10,
+      //     49,
+      //     55,
+      //     59,
+      //     69,
+      //     79,
+      //     84,
+      //     85,
+      //     89,
+      //     94,
+      //     100,
+      //     500,
+      //     this.stausTransferValue
+      //   ]
+      return this.masterStatus.filter((item) => item.id === 100)
     }
   },
 
@@ -320,6 +317,12 @@ export default {
         this.val.isTargetStatus = false
       }
     }
+    // isShow(value) {
+    //   if (value) {
+    //     // set targetStatus === 100
+    //     this.form.targetStatus = this.masterStatusValue.find((item) => item.id === 100).id
+    //   }
+    // }
   },
 
   methods: {
@@ -331,7 +334,7 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit('', 'ยืนยันการโอนสถานะงาน?', async () => {
+        swAlert.confirmSubmit('', 'ยืนยันโอนสินค้าสำเร็จ?', async () => {
           await this.submit()
         })
       }
@@ -339,15 +342,6 @@ export default {
 
     validateForm() {
       let isValid = true
-
-      console.log('this.selectedValue.length:', this.selectedValue.length)
-
-      if (this.selectedValue.length > this.allowItem) {
-        swAlert.warning('รายการเลือกเกินจำนวนสูงสุด', '', () => {
-          return false
-        })
-      }
-
       if (!this.form.targetStatus) {
         this.val.isTargetStatus = true
         isValid = false
@@ -355,7 +349,7 @@ export default {
 
       let statusNotAllow = [49, 54, 55, 59, 69, 79, 84, 85, 94, 500]
       if (statusNotAllow.includes(this.form.targetStatus)) {
-        swAlert.warning('ไม่สามารถโอนสถานงานนี้ได้', '', () => {
+        swAlert.warnig('ไม่สามารถโอนสถานงานนี้ได้', '', () => {
           isValid = false
         })
       }
@@ -378,7 +372,7 @@ export default {
       try {
         const res = await this.planUpdateStore.submitTransfer({
           formerStatus: this.stausTransferValue,
-          targetStatus: this.form.targetStatus,
+          targetStatus: 100,
           transferBy: this.form.name,
           selectedItems: this.selectedValue
         })
@@ -386,9 +380,12 @@ export default {
         console.log('res:', res)
 
         if (res.success) {
-          if (res.transferNumber && this.form.isExportTransfer) {
+          //export excel
+          if (res.receiptNumber && this.form.isExportReceipt) {
             const form = {
-              transferNumber: res.transferNumber
+              recieptStart: null,
+              recieptEnd: null,
+              receiptNumber: res.receiptNumber
             }
             const sort = [
               {
@@ -400,16 +397,15 @@ export default {
                 dir: 'asc'
               }
             ]
-
-            await this.planUpdateStore.fetchDataTransferExport({
+            await this.stockProductStore.fetchDataSearchExport({
               sort: sort,
-              form: form,
-              masterStatus: this.masterStatus
+              form: form
             })
           }
 
           this.selectedValue = []
           this.form = { ...interfaceForm }
+
           this.$emit('closeModal', 'fetch')
         }
       } catch (error) {
@@ -435,5 +431,13 @@ export default {
   border-radius: 2px;
   margin-left: 4px;
   font-size: 12px;
+}
+
+.text-custom {
+  font-size: 20px;
+}
+.check-excel-container {
+  display: flex;
+  align-items: center;
 }
 </style>

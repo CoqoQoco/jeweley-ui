@@ -63,18 +63,19 @@
           title="โอนงาน"
           @click="onTrnsferJob"
         >
-          <span><i class="bi bi-arrow-left-right"></i></span>
-          <!-- <span class="ml-2">โอนงาน</span> -->
+          <span><i class="bi bi-box-arrow-down"></i></span>
+          <span class="ml-2">โอนงาน</span>
         </button>
-        <!-- <button
+        <button
           :class="['btn btn-sm ml-2', isTransferProduct ? 'btn-secondary' : 'btn-main']"
           type="button"
           :disabled="isTransferProduct"
           title="โอนงาน"
+          @click="onTrnsferProduct"
         >
-          <span><i class="bi bi-arrow-left-right"></i></span>
+          <span><i class="bi bi-box-arrow-up"></i></span>
           <span class="ml-2">โอนสินค้า</span>
-        </button> -->
+        </button>
       </template>
     </BaseDataTable>
 
@@ -84,6 +85,12 @@
       :stausTransferValue="statusTransfer"
       @closeModal="closeModal"
     />
+    <TransferProduct
+      :isShow="isShow.transferProduct"
+      :masterStatusValue="planStatus"
+      :stausTransferValue="statusTransfer"
+      @closeModal="closeModal"
+    ></TransferProduct>
   </div>
 </template>
 
@@ -102,9 +109,11 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 import TransferJob from '../modal/TransferJob.vue'
+import TransferProduct from '../modal/TransferProduct.vue'
 
 const interfaceIsShow = {
-  transferJob: false
+  transferJob: false,
+  transferProduct: false
 }
 
 export default {
@@ -113,7 +122,8 @@ export default {
   components: {
     BaseDataTable,
     imagePreview,
-    TransferJob
+    TransferJob,
+    TransferProduct
   },
 
   props: {
@@ -267,10 +277,18 @@ export default {
     },
     isTranferJob() {
       let res = true
-      //console.log('isTransferJob', this.formValue)
-      //console.log('isTransferJob', this.data)
       if (this.modelForm && this.modelForm.status && this.modelForm.status.length === 1) {
         const allow = [10, 50, 60, 70, 80, 85, 90]
+        allow.includes(this.modelForm.status[0]) && this.planSearchStore.dataPlanSearch.total > 0
+          ? (res = false)
+          : (res = true)
+      }
+      return res
+    },
+    isTransferProduct() {
+      let res = true
+      if (this.modelForm && this.modelForm.status && this.modelForm.status.length === 1) {
+        const allow = [95]
         allow.includes(this.modelForm.status[0]) && this.planSearchStore.dataPlanSearch.total > 0
           ? (res = false)
           : (res = true)
@@ -329,6 +347,19 @@ export default {
         this.statusTransfer = this.modelForm.status[0]
         await this.fetchDataTransfer()
         this.isShow.transferJob = true
+      }
+    },
+    async onTrnsferProduct() {
+      if (this.planSearchStore.dataPlanSearcTotalRecord > this.planSearchStore.totalTransferAllow) {
+        swAlert.warning(
+          `สามารถโอนงานได้ไม่เกินครั้งละ ${this.planSearchStore.totalTransferAllow} รายการ`,
+          'จำนวนงานเกินกำหนด'
+        )
+      } else {
+        console.log('onTrnsferJob', this.modelForm)
+        this.statusTransfer = this.modelForm.status[0]
+        await this.fetchDataTransfer()
+        this.isShow.transferProduct = true
       }
     },
     closeModal(action) {

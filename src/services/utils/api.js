@@ -2,10 +2,12 @@
 import axios from 'axios'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
-// API URLs
+//test build
 //const jewelryUrl = 'https://localhost:32771/'
+
 //production
 const jewelryUrl = 'http://192.168.1.41:2001/'
+
 
 // Axios instance
 const axiosInstance = axios.create({

@@ -1,8 +1,13 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
-import { formatISOString, formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import {
+  formatISOString,
+  formatDate
+  //formatDateTime
+} from '@/services/utils/dayjs.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
-import { CsvHelper } from '@/services/utils/export-excel.js'
+//import { CsvHelper } from '@/services/utils/export-excel.js'
+import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const usePlanSearchApiStore = defineStore('planSearch', {
   state: () => ({
@@ -11,7 +16,7 @@ export const usePlanSearchApiStore = defineStore('planSearch', {
     dataPlanTransfer: {},
 
     //permission
-    totalTransferAllow: 100
+    totalTransferAllow: 10000
   }),
 
   actions: {
@@ -91,8 +96,28 @@ export const usePlanSearchApiStore = defineStore('planSearch', {
               ขนาดทอง_เงิน: item.goldSize
             }))
 
+            const options = {
+              filename: `เอกสารใบจ่าย-รับคืนงาน_[${formatDate(new Date())}].xlsx`,
+              sheetName: 'เอกสารใบจ่าย-รับคืนงาน',
+              // ลบ columnWidths ออกเพื่อให้ใช้ค่า default width จาก ExcelHelper
+              styles: {
+                ...ExcelHelper.defaultStyles,
+                headerFill: {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: '921313' } // สีน้ำเงินเข้ม
+                }
+              }
+            }
+
+            // เรียกใช้งาน
+            ExcelHelper.exportToExcel(dataExcel, options)
+
             // Export to CSV
-            CsvHelper.exportToCsv(dataExcel, `เอกสารใบจ่ายข-รับคืนงาน[${formatDateTime(new Date())}]`)
+            // CsvHelper.exportToCsv(
+            //   dataExcel,
+            //   `เอกสารใบจ่ายข-รับคืนงาน[${formatDateTime(new Date())}]`
+            // )
           }
         }
       } catch (error) {
@@ -120,6 +145,8 @@ export const usePlanSearchApiStore = defineStore('planSearch', {
         throw error
       }
     },
+
+    //export this.dataPlanTransfer to excel
 
     async fetchPlanMoldImage(imagePath) {
       if (imagePath) {
