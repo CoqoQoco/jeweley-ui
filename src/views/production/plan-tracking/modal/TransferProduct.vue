@@ -399,7 +399,8 @@ export default {
             ]
             await this.stockProductStore.fetchDataSearchExport({
               sort: sort,
-              form: form
+              form: form,
+              title: `เอกสารรับสินค้า_${res.receiptNumber}`
             })
           }
 

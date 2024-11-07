@@ -4,17 +4,22 @@
     <form @submit.prevent="onSearch">
       <div>
         <div>
-          <pageTitle title="ค้นหาใบจ่าย-รับคืนงาน" :isShowBtnClose="false"> </pageTitle>
+          <pageTitle
+            title="คลังสินค้า"
+            description="ตรวจสอบจำนวนสินค้าคงคลัง ทำราคา/รายละเอียดต่างๆ"
+            :isShowBtnClose="false"
+          >
+          </pageTitle>
         </div>
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">วันที่สร้างใบจ่าย-รับคืน</span>
+            <span class="title-text">วันที่รับสินค้า</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
-                v-model="form.start"
-                :max-date="form.end"
+                v-model="form.recieptStart"
+                :max-date="form.recieptEnd"
                 showIcon
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
@@ -22,33 +27,29 @@
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <Calendar
                 class="w-100"
-                v-model="form.end"
-                :min-date="form.start"
+                v-model="form.recieptEnd"
+                :min-date="form.recieptStart"
                 showIcon
                 placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
               />
             </div>
           </div>
-          <div>
-            <span class="title-text">วันที่สถานะใบงาน</span>
-            <div class="flex-group">
-              <Calendar
-                class="w-100"
-                v-model="form.sendStart"
-                :max-date="form.sendEnd"
-                showIcon
-                placeholder="เริ่มต้น"
-                dateFormat="dd/mm/yy"
+          <div class="form-col-container">
+            <div>
+              <span class="title-text">เลขที่รับสินค้า</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.receiptNumber"
               />
-              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
-                v-model="form.sendEnd"
-                :min-date="form.sendStart"
-                showIcon
-                placeholder="สิ้นสุด"
-                dateFormat="dd/mm/yy"
+            </div>
+            <div>
+              <span class="title-text">เลขที่สินค้า</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.stockNumber"
               />
             </div>
           </div>
@@ -64,15 +65,14 @@
             <div class="form-col-container">
               <!-- text -->
               <div>
-                <span class="title-text">คำค้นหา</span>
+                <span class="title-text">เลขที่แผนผลิต</span>
                 <div class="input-group input-group-inner">
                   <input
                     ref="inputText"
                     id="inputText"
                     :class="['form-control bg-input']"
                     type="text"
-                    v-model.trim="form.text"
-                    placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                    v-model.trim="form.woText"
                   />
                   <div class="input-group-append" @click="focusInputText">
                     <span class="input-group-text">
@@ -86,32 +86,6 @@
               <div>
                 <span class="title-text">เเม่พิมพ์</span>
                 <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
-              </div>
-
-              <!-- status -->
-              <div>
-                <span class="title-text">สถานะงานผลิต</span>
-                <div>
-                  <MultiSelect
-                    v-model="form.status"
-                    :options="planStatus"
-                    optionLabel="nameTh"
-                    optionValue="id"
-                    class="w-full md:w-14rem"
-                  />
-                </div>
-                <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
-              </div>
-
-              <!-- plan target -->
-              <div>
-                <span class="title-text">กำหนดส่งงาน</span>
-                <Dropdown
-                  v-model="form.isOverPlan"
-                  :options="overPlanOptions"
-                  optionLabel="description"
-                  class="w-full md:w-14rem"
-                />
               </div>
 
               <!-- customer code -->
@@ -229,10 +203,10 @@
             <button
               :class="[
                 'btn btn-sm btn-primary',
-                { 'btn-secondary': !planSearchStore.dataPlanSearch.total > 0 }
+                { 'btn-secondary': !stockProductStore.dataSearch.total > 0 }
               ]"
               type="button"
-              :disabled="!planSearchStore.dataPlanSearch.total > 0"
+              :disabled="!stockProductStore.dataSearch.total > 0"
               @click="onExport"
             >
               <span><i class="bi bi-filetype-csv"></i></span>
@@ -254,11 +228,11 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
 import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+//import Dropdown from 'primevue/dropdown'
 
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
+import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 //import api from '@/axios/axios-helper.js'
 
 const interfaceIsShow = {
@@ -270,7 +244,7 @@ export default {
     pageTitle,
     MultiSelect,
     Calendar,
-    Dropdown,
+    //Dropdown,
     dialogView
   },
   props: {
@@ -314,8 +288,8 @@ export default {
   },
 
   setup() {
-    const planSearchStore = usePlanSearchApiStore()
-    return { planSearchStore }
+    const stockProductStore = usrStockProductApiStore()
+    return { stockProductStore }
   },
 
   methods: {

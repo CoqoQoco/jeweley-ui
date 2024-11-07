@@ -15,7 +15,8 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
     dataSearchExport: {}
   }),
   actions: {
-    inittSearchRequeast(form) {
+    initSearchRequeast(form) {
+      console.log('initSearchRequeast', form)
       return {
         search: {
           recieptStart: form.recieptStart ? formatISOString(form.recieptStart) : null,
@@ -23,6 +24,9 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
 
           receiptNumber: form.receiptNumber,
           stockNumber: form.stockNumber,
+
+          mold: form.mold,
+          woText: form.woText,
 
           productType: form.productType ? [...form.productType] : null,
           productNumber: form.productNumber
@@ -37,7 +41,7 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           take,
           skip,
           sort,
-          ...this.inittSearchRequeast(form)
+          ...this.initSearchRequeast(form)
         }
 
         const res = await api.jewelry.post('StockProduct/List', param)
@@ -51,14 +55,14 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         throw error
       }
     },
-    async fetchDataSearchExport({ sort, form }) {
+    async fetchDataSearchExport({ sort, form, title }) {
       try {
         this.dataSearchExport = {}
         const param = {
           take: 0,
           skip: 0,
           sort: sort,
-          ...this.inittSearchRequeast(form)
+          ...this.initSearchRequeast(form)
         }
 
         const res = await api.jewelry.post('StockProduct/List', param)
@@ -66,8 +70,8 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           const dataExcel = res.data.map((item) => ({
             WO: item.wo,
             'WO No.': item.woNumber,
-            วันที่รับสินค้า: formatDate(item.receiptDate),
             เลขที่รับสินค้า: item.receiptNumber,
+            วันที่รับสินค้า: formatDate(item.receiptDate),
             เลขที่สินค้า: item.stockNumber,
             เเม่พิมพ์: item.mold,
             รหัสสินค้า: item.productNumber,
@@ -77,9 +81,11 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
             ขนาดทอง_เงิน: item.goldSize
           }))
 
+          console.log('dataExcel title', title)
+
           const options = {
-            filename: `เอกสารรับสินค้า_${form.receiptNumber}.xlsx`,
-            sheetName: form.receiptNumber,
+            filename: title ? `${title}.xlsx` : `คลังสินค้าสินค้า.xlsx`,
+            sheetName: title ? `${title}.xlsx` : `คลังสินค้าสินค้า.xlsx`,
             // ลบ columnWidths ออกเพื่อให้ใช้ค่า default width จาก ExcelHelper
             styles: {
               ...ExcelHelper.defaultStyles,

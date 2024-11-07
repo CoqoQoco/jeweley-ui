@@ -1,6 +1,7 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
-const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+//const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+const List = () => import('@/views/stock/product/list/IndexView.vue')
 
 const productCost = () => import('@/views/stock/product/cost/IndexView.vue')
 
@@ -25,7 +26,7 @@ const routes = [
       {
         path: '/stock-product-list',
         name: 'stock-product-list',
-        component: Dashboard,
+        component: List,
         menuId: 'List',
         meta: {
           Displayname: {
