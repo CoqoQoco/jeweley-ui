@@ -199,21 +199,48 @@ export default {
     },
 
     formatValue(value, format) {
+      if (!value && value !== 0) return '0.000'
+
       switch (format) {
         case 'date':
           return formatDate(value)
         case 'datetime':
           return formatDateTime(value)
         case 'currency':
-          return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(
-            value
-          )
+          return new Intl.NumberFormat('th-TH', {
+            style: 'currency',
+            currency: 'THB'
+          }).format(value)
         case 'number':
           return new Intl.NumberFormat('th-TH').format(value)
+        case 'decimal3':
+          return new Intl.NumberFormat('th-TH', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+          }).format(value)
+        case 'decimal2':
+          return new Intl.NumberFormat('th-TH', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }).format(value)
+        case 'decimal1':
+          return new Intl.NumberFormat('th-TH', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          }).format(value)
         default:
+          if (typeof format === 'string' && format.startsWith('decimal')) {
+            const places = parseInt(format.replace('decimal', ''))
+            if (!isNaN(places)) {
+              return new Intl.NumberFormat('th-TH', {
+                minimumFractionDigits: places,
+                maximumFractionDigits: places
+              }).format(value)
+            }
+          }
           return value
       }
-    }
+    },
   }
 }
 </script>

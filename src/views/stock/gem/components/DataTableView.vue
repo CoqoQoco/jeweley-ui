@@ -1,130 +1,29 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
-    <DataTable
+    <BaseDataTable
+      :items="data.data"
       :totalRecords="data.total"
-      :value="data.data"
-      class="p-datatable-sm"
-      scrollable
-      scrollHeight="calc(100vh - 280px)"
-      resizableColumns
-      showGridlines
-      :paginator="true"
-      :lazy="true"
+      :columns="columns"
+      :perPage="take"
+      :scrollHeight="'calc(100vh - 290px)'"
       @page="handlePageChange"
-      @sort="handlePageChangeSort"
-      :rows="take"
-      removableSort
-      sortMode="multiple"
-      :rowsPerPageOptions="[100, 200, 300]"
-      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
+      @sort="handleSortChange"
     >
-      <column style="width: 80px">
-        <template #body="slotProps">
-          <div class="d-flex justify-content-center">
-            <button
-              class="btn btn-sm btn-main mr-2"
-              title="ประวัติ"
-              @click="onShowHistory(slotProps.data)"
-            >
-              <span class="bi bi-search"></span>
-            </button>
-            <button
-              class="btn btn-sm btn-green mr-2"
-              title="เเก้ไข"
-              @click="onShowUpdate(slotProps.data)"
-            >
-              <span class="bi bi-pencil"></span>
-            </button>
-            <button class="btn btn-sm btn-green" title="ราคา" @click="onShowPrice(slotProps.data)">
-              <span class="bi bi-cash-coin"></span>
-            </button>
-          </div>
-        </template>
-      </column>
-      <!-- <Column field="name" header="พลอย/เพชร" style="min-width: 150px"> </Column> -->
-      <Column field="code" header="รหัส" sortable style="min-width: 150px"> </Column>
-      <Column field="groupName" header="หมวดหมู่" sortable style="min-width: 150px"> </Column>
-      <Column field="size" header="ขนาด" sortable style="min-width: 150px"> </Column>
-      <Column field="shape" header="รูปร่าง" sortable style="min-width: 150px"> </Column>
-      <Column field="grade" header="เกรด" sortable style="min-width: 150px"> </Column>
-      <Column field="quantity" sortable header="จำนวนคงคลัง" style="min-width: 150px">
-        <template #body="slotProps">
-          <div>
-            {{
-              slotProps.data.quantity
-                ? Number(slotProps.data.quantity).toFixed(3).toLocaleString()
-                : '0.000'
-            }}
-          </div>
-        </template>
-      </Column>
-      <Column field="quantityOnProcess" sortable header="จำนวนยืมคลัง" style="min-width: 150px">
-        <template #body="slotProps">
-          <div>
-            {{
-              slotProps.data.quantityOnProcess
-                ? Number(slotProps.data.quantityOnProcess).toFixed(3).toLocaleString()
-                : '0.000'
-            }}
-          </div>
-        </template>
-      </Column>
-      <Column field="quantityWeight" sortable header="น้ำหนักคงคลัง" style="min-width: 150px">
-        <template #body="slotProps">
-          <div>
-            {{
-              slotProps.data.quantityWeight
-                ? Number(slotProps.data.quantityWeight).toFixed(3).toLocaleString()
-                : '0.000'
-            }}
-          </div>
-        </template>
-      </Column>
-      <Column
-        field="quantityWeightOnProcess"
-        sortable
-        header="น้ำหนักยืมคลัง"
-        style="min-width: 150px"
-      >
-        <template #body="slotProps">
-          <div>
-            {{
-              slotProps.data.quantityWeightOnProcess
-                ? Number(slotProps.data.quantityWeightOnProcess).toFixed(3).toLocaleString()
-                : '0.000'
-            }}
-          </div>
-        </template>
-      </Column>
-      <Column field="price" header="ราคาต่อนำหนัก" sortable style="min-width: 150px">
-        <template #body="slotProps">
-          <div>
-            {{
-              slotProps.data.price
-                ? Number(slotProps.data.price).toFixed(3).toLocaleString()
-                : '0.00'
-            }}
-          </div>
-        </template>
-      </Column>
-      <Column field="priceQty" header="ราคาต่อจำนวน" sortable style="min-width: 150px">
-        <template #body="slotProps">
-          <div>
-            {{
-              slotProps.data.priceQty
-                ? Number(slotProps.data.priceQty).toFixed(3).toLocaleString()
-                : '0.00'
-            }}
-          </div>
-        </template>
-      </Column>
-      <Column field="unitCode" header="หน่วย" sortable style="min-width: 150px"> </Column>
-      <Column field="unit" header="รหัสหน่วย" sortable style="min-width: 150px"> </Column>
-      <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 150px"> </Column>
-      <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 150px"> </Column> -->
-    </DataTable>
+      <!-- Action Column -->
+      <template #actionsTemplate="{ data: rowData }">
+        <div class="d-flex justify-content-center">
+          <button class="btn btn-sm btn-main mr-2" title="ประวัติ" @click="onShowHistory(rowData)">
+            <span class="bi bi-search"></span>
+          </button>
+          <button class="btn btn-sm btn-green mr-2" title="เเก้ไข" @click="onShowUpdate(rowData)">
+            <span class="bi bi-pencil"></span>
+          </button>
+          <button class="btn btn-sm btn-green" title="ราคา" @click="onShowPrice(rowData)">
+            <span class="bi bi-cash-coin"></span>
+          </button>
+        </div>
+      </template>
+    </BaseDataTable>
 
     <priceView :isShow="isShow.isPrice" :modelGem="price" @closeModal="closeModal"></priceView>
 
@@ -146,20 +45,17 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
+//import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
-
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Papa from 'papaparse'
+//const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import priceView from './PriceView.vue'
 import historyView from './HistoryView.vue'
 import updateView from './UpdateView.vue'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import api from '@/axios/axios-helper.js'
+import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'
 
 const isShowModal = {
   isPrice: false,
@@ -169,9 +65,8 @@ const isShowModal = {
 
 export default {
   components: {
-    loading,
-    DataTable,
-    Column,
+    //loading,
+    BaseDataTable,
     priceView,
     historyView,
     updateView
@@ -285,107 +180,132 @@ export default {
       dataExcel: {},
       expnadData: [],
       form: null,
-      export: null
+      export: null,
+
+      columns: [
+        {
+          field: 'actions',
+          //header: 'Actions',
+          sortable: false,
+          minWidth: '80px'
+        },
+        {
+          field: 'code',
+          header: 'รหัส',
+          sortable: true
+        },
+        {
+          field: 'groupName',
+          header: 'หมวดหมู่',
+          sortable: true
+        },
+        {
+          field: 'size',
+          header: 'ขนาด',
+          sortable: true
+        },
+        {
+          field: 'shape',
+          header: 'รูปร่าง',
+          sortable: true
+        },
+        {
+          field: 'grade',
+          header: 'เกรด',
+          sortable: true
+        },
+        {
+          field: 'quantity',
+          header: 'จำนวนคงคลัง',
+          sortable: true,
+          format: 'decimal3' // custom format with 3 decimal places
+        },
+        {
+          field: 'quantityOnProcess',
+          header: 'จำนวนยืมคลัง',
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'quantityWeight',
+          header: 'น้ำหนักคงคลัง',
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'quantityWeightOnProcess',
+          header: 'น้ำหนักยืมคลัง',
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'price',
+          header: 'ราคาต่อนำหนัก',
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'priceQty',
+          header: 'ราคาต่อจำนวน',
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'unitCode',
+          header: 'หน่วย',
+          sortable: true
+        },
+        {
+          field: 'unit',
+          header: 'รหัสหน่วย',
+          sortable: true
+        },
+        {
+          field: 'remark1',
+          header: 'หมายเหตุ-1',
+          sortable: true
+        }
+      ]
     }
+  },
+  setup() {
+    const stockGemSearchStore = usrStockGemApiStore()
+    return { stockGemSearchStore }
   },
   methods: {
     // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
       this.fetchData()
     },
-    handlePageChangeSort(e) {
+
+    handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
+      this.sort = e.multiSortMeta.map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
 
     // ----------- APIs ----------- //
     async fetchData() {
-      try {
-        this.isLoading = true
+      const res = await this.stockGemSearchStore.fetchDataSearch({
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        form: this.form
+      })
 
-        const params = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          search: {
-            code: this.form.code ?? null,
-            groupName: this.form.groupName ?? null,
-            grade: this.form.grade ?? null,
-            shape: this.form.shape ?? null,
-            size: this.form.size ?? null
-          }
-        }
-        //console.log('params', params)
-        const res = await api.jewelry.post('StockGem/SearchData', params)
-        if (res) {
-          this.data = { ...res }
-          //this.$emit('export', true)
-        } else {
-          //this.$emit('export', true)
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
+      this.data = { ...res }
     },
     async fetchDataExport() {
-      try {
-        this.isLoading = true
-
-        console.log('fetchDataExport', this.form)
-        const params = {
-          take: 0,
-          skip: 0,
-          sort: [],
-          search: {
-            code: this.form.code ?? null,
-            groupName: this.form.groupName ?? null,
-            grade: this.form.grade ?? null,
-            shape: this.form.shape ?? null,
-            size: this.form.size ?? null
-          }
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/SearchData', params)
-        if (res) {
-          const dataExcel = res.data.map((item) => {
-            return {
-              รหัส: item.code,
-              หมวดหมู่: item.groupName,
-              ขนาด: item.size,
-              รูปร่าง: item.shape,
-              เกรด: item.grade,
-              จำนวน: item.quantity ? Number(item.quantity).toFixed(3).toLocaleString() : '0.000',
-              ราคา: item.price ? Number(item.price).toFixed(2).toLocaleString() : '0.00',
-              ราคาต่อหน่วย: item.priceQty
-                ? Number(item.priceQty).toFixed(2).toLocaleString()
-                : '0.00',
-              หน่วย: item.unit,
-              รหัสหน่วย: item.unitCode,
-              หมายเหตุ: item.remark1
-            }
-          })
-          this.exportWithCustomColumnCSV(
-            dataExcel,
-            `เอกสารตรวจคลัง[${this.formatDateTime(new Date())}].csv`
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
+      await this.stockGemSearchStore.fetchDataSearchExport({
+        sort: this.sort,
+        form: this.form
+      })
     },
 
     // -------- helper function -------- //
@@ -416,29 +336,6 @@ export default {
       } else {
         return []
       }
-    },
-    exportWithCustomColumnCSV(data, filename) {
-      const utf8BOM = '\uFEFF'
-      const csv = Papa.unparse(data, {
-        quotes: false, //or array of booleans
-        quoteChar: '"',
-        escapeChar: '"',
-        delimiter: ',',
-        header: true,
-        newline: '\r\n',
-        skipEmptyLines: false, //other option is 'greedy', meaning skip delimiters, quotes, and whitespace.
-        columns: null //or array of strings
-      })
-      const csvData = utf8BOM + csv
-      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.setAttribute('href', url)
-      link.setAttribute('download', filename)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
     },
 
     // -------- event -------- //

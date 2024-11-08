@@ -240,7 +240,7 @@ export default {
     // ---------------- event
     closeModal() {
       this.onClear()
-      this.$emit('closeModal', 'fetch')
+      this.$emit('closeModal')
     },
     onClear() {
       this.form = { ...interfaceForm }

@@ -47,7 +47,6 @@
               class="w-full md:w-14rem"
             />
           </div>
-          <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
         </div>
       </div>
 
