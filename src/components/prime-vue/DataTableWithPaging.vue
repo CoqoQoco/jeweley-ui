@@ -203,9 +203,9 @@ export default {
 
       switch (format) {
         case 'date':
-          return formatDate(value)
+          return value ? formatDate(value) : '-'
         case 'datetime':
-          return formatDateTime(value)
+          return value ? formatDateTime(value) : '-'
         case 'currency':
           return new Intl.NumberFormat('th-TH', {
             style: 'currency',
@@ -240,7 +240,7 @@ export default {
           }
           return value
       }
-    },
+    }
   }
 }
 </script>

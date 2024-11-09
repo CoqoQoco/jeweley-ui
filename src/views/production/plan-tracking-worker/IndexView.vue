@@ -23,20 +23,9 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
 const interfaceForm = {
-  start: new Date(new Date().setDate(new Date().getDate() - 7)),
-  end: new Date(),
-  sendStart: null,
-  sendEnd: null,
-  text: null,
-  status: null,
-  isOverPlan: { id: 0, description: 'ทั้งหมด' },
-  customerCode: null,
-  mold: null,
-  customerType: null,
-  productType: null,
-  productNumber: null,
-  gold: null,
-  goldSize: null
+  start: null,
+  end: null,
+  text: null
 }
 
 export default {
@@ -86,7 +75,7 @@ export default {
     },
 
     async initializeMasterData() {
-      const loadingStore = useLoadingStore()
+      //const loadingStore = useLoadingStore()
       try {
         //loadingStore.showLoading()
         await this.fetchAllMasterData()
@@ -94,14 +83,14 @@ export default {
       } catch (error) {
         console.error('Error initializing master data:', error)
       } finally {
-        loadingStore.hideLoading()
+        //loadingStore.hideLoading()
       }
     }
   },
 
   async created() {
     await this.initializeMasterData()
-    this.search = { ...this.form }
+    //this.search = { ...this.form }
   },
 
   beforeUnmount() {

@@ -1,67 +1,33 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
-    <DataTable
+    <BaseDataTable
+      :items="data.data"
       :totalRecords="data.total"
-      :value="data.data"
-      v-model:expandedRows="expnadData"
-      dataKey="id"
-      ref="dt"
-      class="p-datatable-sm"
-      scrollable
-      scrollHeight="calc(100vh - 280px)"
-      resizableColumns
-      :paginator="true"
-      :lazy="true"
+      :columns="columns"
+      :perPage="take"
       @page="handlePageChange"
-      sortMode="multiple"
-      @sort="handlePageChangeSort"
-      :rows="take"
-      removableSort
-      :rowsPerPageOptions="[10, 20, 50, 100]"
-      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
+      @sort="handleSortChange"
     >
-      <Column style="min-width: 100px">
-        <template #body="slotProps">
-          <div class="btn-action-container">
-            <button
-              class="btn btn-sm btn btn-main"
-              title="โหมดเเก้ไข"
-              @click="UpdatePlanGold(slotProps.data)"
-            >
-              <i class="bi bi-brush"></i>
-            </button>
-            <button
-              class="ml-1 btn btn-sm btn btn-dark"
-              title="โหมดดูรายละเอียด"
-              @click="ViewPlanGold(slotProps.data)"
-            >
-              <i class="bi bi-clipboard2-data-fill"></i>
-            </button>
-          </div>
-        </template>
-      </Column>
-      <Column field="bookNo" header="เล่มที่" sortable style="min-width: 150px"> </Column>
-      <Column field="no" header="เลขที่" sortable style="min-width: 50px"> </Column>
-      <Column field="runningNumber" header="หมายเลขลำดับ" sortable style="min-width: 150px">
-      </Column>
-      <Column header="วันที่ออกใบเบิก" field="assignDate" sortable style="min-width: 150px">
-        <template #body="prop">
-          {{ formatDate(prop.data.assignDate) }}
-        </template>
-      </Column>
-      <Column field="goldName" header="ประเภททอง" sortable style="min-width: 150px"> </Column>
-      <Column field="goldSizeName" header="เปอร์เซ็นทอง" sortable style="min-width: 150px">
-      </Column>
-      <Column field="cost" header="ราคาทอง" sortable style="min-width: 150px"> </Column>
-      <Column field="zill" header="ซิล" sortable style="min-width: 150px"> </Column>
-      <Column field="zillQty" header="จำนวนซิล" sortable style="min-width: 150px"> </Column>
-      <Column field="goldReceipt" header="สูตรผสมทอง" sortable style="min-width: 150px"> </Column>
-      <Column field="assignBy" header="ผู้เบิกทอง" sortable style="min-width: 150px"> </Column>
-      <Column field="receiveBy" header="ผู้รับทอง" sortable style="min-width: 150px"> </Column>
-      <Column field="remark" header="รายละเอียด" sortable style="min-width: 150px"> </Column>
-    </DataTable>
+      <!-- Action buttons template -->
+      <template #actionsTemplate="{ data: rowData }">
+        <div class="btn-action-container">
+          <button
+            class="btn btn-sm btn btn-main"
+            title="โหมดเเก้ไข"
+            @click="UpdatePlanGold(rowData)"
+          >
+            <i class="bi bi-brush"></i>
+          </button>
+          <button
+            class="ml-1 btn btn-sm btn btn-dark"
+            title="โหมดดูรายละเอียด"
+            @click="ViewPlanGold(rowData)"
+          >
+            <i class="bi bi-clipboard2-data-fill"></i>
+          </button>
+        </div>
+      </template>
+    </BaseDataTable>
     <moldalUpdate
       :isShow="isShowMoldalUpdate"
       :modelMasterGold="masterGold"
@@ -83,12 +49,7 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
-
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
@@ -97,9 +58,7 @@ import modalView from './DataView.vue'
 
 export default {
   components: {
-    loading,
-    DataTable,
-    Column,
+    BaseDataTable,
     moldalUpdate,
     modalView
   },
@@ -139,7 +98,85 @@ export default {
       form: null,
       masterGold: [],
       masterGoldSize: [],
-      modelUpdate: {}
+      modelUpdate: {},
+
+      columns: [
+        {
+          field: 'actions',
+          header: '',
+          sortable: false,
+          minWidth: '100px'
+        },
+        {
+          field: 'bookNo',
+          header: 'เล่มที่',
+          sortable: true
+        },
+        {
+          field: 'no',
+          header: 'เลขที่',
+          sortable: true,
+          minWidth: '50px'
+        },
+        {
+          field: 'runningNumber',
+          header: 'หมายเลขลำดับ',
+          sortable: true
+        },
+        {
+          field: 'assignDate',
+          header: 'วันที่ออกใบเบิก',
+          sortable: true,
+          format: 'date'
+        },
+        {
+          field: 'goldName',
+          header: 'ประเภททอง',
+          sortable: true
+        },
+        {
+          field: 'goldSizeName',
+          header: 'เปอร์เซ็นทอง',
+          sortable: true
+        },
+        {
+          field: 'cost',
+          header: 'ราคาทอง',
+          sortable: true,
+          format: 'decimal2'
+        },
+        {
+          field: 'zill',
+          header: 'ซิล',
+          sortable: true
+        },
+        {
+          field: 'zillQty',
+          header: 'จำนวนซิล',
+          sortable: true,
+          format: 'number'
+        },
+        {
+          field: 'goldReceipt',
+          header: 'สูตรผสมทอง',
+          sortable: true
+        },
+        {
+          field: 'assignBy',
+          header: 'ผู้เบิกทอง',
+          sortable: true
+        },
+        {
+          field: 'receiveBy',
+          header: 'ผู้รับทอง',
+          sortable: true
+        },
+        {
+          field: 'remark',
+          header: 'รายละเอียด',
+          sortable: true
+        }
+      ]
     }
   },
   methods: {
@@ -147,18 +184,16 @@ export default {
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
       this.fetchData()
     },
-    handlePageChangeSort(e) {
+
+    handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
+      this.sort = e.multiSortMeta.map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
 
