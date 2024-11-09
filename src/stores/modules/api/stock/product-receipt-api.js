@@ -9,7 +9,7 @@ import {
 //import { CsvHelper } from '@/services/utils/export-excel.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 
-export const usrStockProductApiStore = defineStore('stockProduct', {
+export const usrStockProductReceiptApiStore = defineStore('stockProductReceipt', {
   state: () => ({
     dataSearch: {},
     dataSearchExport: {}
@@ -22,14 +22,14 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           recieptStart: form.recieptStart ? formatISOString(form.recieptStart) : null,
           recieptEnd: form.recieptEnd ? formatISOString(form.recieptEnd) : null,
 
-          receiptNumber: form.receiptNumber,
-          stockNumber: form.stockNumber,
+          running: form.receiptNumber,
+        //   stockNumber: form.stockNumber,
 
-          mold: form.mold,
-          woText: form.woText,
+        //   mold: form.mold,
+        //   woText: form.woText,
 
-          productType: form.productType ? [...form.productType] : null,
-          productNumber: form.productNumber
+        //   productType: form.productType ? [...form.productType] : null,
+        //   productNumber: form.productNumber
         }
       }
     },
@@ -44,7 +44,7 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           ...this.initSearchRequeast(form)
         }
 
-        const res = await api.jewelry.post('StockProduct/List', param)
+        const res = await api.jewelry.post('StockProduct/PlanReceiptList', param)
         if (res) {
           this.dataSearch = { ...res }
         } else {
@@ -55,7 +55,7 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         throw error
       }
     },
-    async fetchDataSearchReceiptExport({ sort, form, title }) {
+    async fetchDataSearchExport({ sort, form, title }) {
       try {
         this.dataSearchExport = {}
         const param = {
@@ -65,14 +65,14 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           ...this.initSearchRequeast(form)
         }
 
-        const res = await api.jewelry.post('StockProduct/List', param)
+        const res = await api.jewelry.post('StockProduct/PlanReceiptList', param)
         if (res) {
           const dataExcel = res.data.map((item) => ({
             WO: item.wo,
             'WO No.': item.woNumber,
             เลขที่รับสินค้า: item.receiptNumber,
             วันที่รับสินค้า: formatDate(item.receiptDate),
-            เลขที่สินค้า: item.stockNumber,
+            //เลขที่สินค้า: item.stockNumber,
             เเม่พิมพ์: item.mold,
             รหัสสินค้า: item.productNumber,
             ประเภทสินค้า: item.productTypeName,
@@ -84,8 +84,8 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           console.log('dataExcel title', title)
 
           const options = {
-            filename: title ? `${title}.xlsx` : `คลังสินค้าสินค้า.xlsx`,
-            sheetName: title ? `${title}.xlsx` : `คลังสินค้าสินค้า.xlsx`,
+            filename: title ? `${title}.xlsx` : `เอกสารโอนสินค้า_.xlsx`,
+            sheetName: title ? `${title}.xlsx` : `เอกสารโอนสินค้า_.xlsx`,
             // ลบ columnWidths ออกเพื่อให้ใช้ค่า default width จาก ExcelHelper
             styles: {
               ...ExcelHelper.defaultStyles,

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
+    <!-- <loading :isLoading="isLoading"></loading> -->
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -70,9 +70,9 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
+//import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+//const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -91,7 +91,7 @@ const interfaceShow = {
 
 export default {
   components: {
-    loading,
+    //loading,
     DataTable,
     Column,
     expand

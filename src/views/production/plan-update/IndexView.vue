@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
+    <!-- <loading :isLoading="isLoading"></loading> -->
     <div class="filter-container mb-2">
       <pageTitle
         :title="`ข้อมูลแผนงานผลิต ใบจ่าย-รับคืนงาน เลขที่: ${data?.wo ?? ''}-${
@@ -297,7 +297,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+// const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import TabMenu from 'primevue/tabmenu'
@@ -358,7 +358,7 @@ const interfaceIsShowUpdate = {
 
 export default {
   components: {
-    loading,
+    //loading,
     pageTitle,
     TabMenu,
     //FormHeader,
@@ -632,7 +632,7 @@ export default {
         const param = {
           id: id
         }
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet', param)
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet',  { skipLoading: true })
         if (res) {
           this.mat = [...res]
         }

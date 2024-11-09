@@ -286,6 +286,7 @@ export default {
       return res
     },
     isTransferProduct() {
+      //return true
       let res = true
       if (this.modelForm && this.modelForm.status && this.modelForm.status.length === 1) {
         const allow = [95]

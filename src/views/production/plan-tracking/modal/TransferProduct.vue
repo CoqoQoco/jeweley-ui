@@ -129,7 +129,7 @@ import Checkbox from 'primevue/checkbox'
 
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
-import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { usrStockProductReceiptApiStore } from '@/stores/modules/api/stock/product-receipt-api.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 //import { CsvHelper } from '@/services/utils/export-excel.js'
@@ -274,8 +274,8 @@ export default {
   setup() {
     const planSearchStore = usePlanSearchApiStore()
     const planUpdateStore = usePlanUpdateApiStore()
-    const stockProductStore = usrStockProductApiStore()
-    return { planSearchStore, planUpdateStore, stockProductStore }
+    const stockProductReceiptStore = usrStockProductReceiptApiStore()
+    return { planSearchStore, planUpdateStore, stockProductReceiptStore }
   },
 
   computed: {
@@ -397,10 +397,10 @@ export default {
                 dir: 'asc'
               }
             ]
-            await this.stockProductStore.fetchDataSearchExport({
+            await this.stockProductReceiptStore.fetchDataSearchExport({
               sort: sort,
               form: form,
-              title: `เอกสารรับสินค้า_${res.receiptNumber}`
+              title: `เอกสารโอนสินค้า_${res.receiptNumber}`
             })
           }
 
