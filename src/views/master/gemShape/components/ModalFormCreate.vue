@@ -1,6 +1,5 @@
 <template>
   <div class="app-container-modal">
-    <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="450px">
       <template v-slot:title>
         <h5>เพิ่มรูปร่างพลอย</h5>
@@ -52,10 +51,9 @@ import api from '@/axios/axios-helper.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 //import modal from '@/components/modal/ModalView.vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 export default {
-  components: { modal, loading },
+  components: { modal },
   props: {
     isShowModal: {
       type: Boolean,

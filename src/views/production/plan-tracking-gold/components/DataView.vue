@@ -1,6 +1,6 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
+  
     <modal :showModal="isShow" @closeModal="closeModal" width="1000px">
       <template v-slot:content>
         <!-- ข้อมูล -->
@@ -211,7 +211,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
 import pdfMake from 'pdfmake'

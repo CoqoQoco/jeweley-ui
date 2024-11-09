@@ -1,6 +1,6 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
+  
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -180,7 +180,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -191,7 +191,7 @@ import api from '@/axios/axios-helper.js'
 
 export default {
   components: {
-    loading,
+  
     DataTable,
     Column
   },

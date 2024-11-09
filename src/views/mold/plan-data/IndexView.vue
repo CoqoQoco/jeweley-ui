@@ -193,7 +193,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
@@ -222,7 +222,7 @@ const interfaceGem = {
 export default {
   components: {
     pageTitle,
-    loading,
+   
     statusDesign,
     statusResin,
     statusCastingSilver,

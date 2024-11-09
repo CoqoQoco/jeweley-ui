@@ -1,6 +1,5 @@
 <template>
     <div>
-      <loading :isLoading="isLoading"></loading>
       <modal :showModal="isShow" @closeModal="closeModal">
         <template v-slot:content> </template>
       </modal>
@@ -11,12 +10,10 @@
   import { defineAsyncComponent } from 'vue'
   
   const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-  const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
   
   export default {
     components: {
       modal,
-      loading
     },
     props: {
       isShowModal: {

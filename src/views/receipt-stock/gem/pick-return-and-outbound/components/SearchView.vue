@@ -1,6 +1,5 @@
 <template>
   <div class="filter-container-searchBar">
-    <loading :isLoading="isLoading"></loading>
     <pageTitle
       title="คืนเข้าคลัง/เบิกออกคลัง"
       description="ทำรายการคืนเข้าคลัง/เบิกออกคลัง จากใบยืมออกคลัง"
@@ -124,12 +123,10 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 import Calendar from 'primevue/calendar'
 //import Dropdown from 'primevue/dropdown'
-import MultiSelect from 'primevue/multiselect'
 
 import api from '@/axios/axios-helper.js'
 
@@ -142,7 +139,6 @@ export default {
   components: {
     pageTitle,
     //MultiSelect,
-    loading,
     Calendar,
     dialogView
     //Dropdown

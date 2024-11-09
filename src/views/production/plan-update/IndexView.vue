@@ -297,7 +297,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-// const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+// 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import TabMenu from 'primevue/tabmenu'

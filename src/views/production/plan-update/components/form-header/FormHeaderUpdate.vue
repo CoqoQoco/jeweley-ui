@@ -1,6 +1,6 @@
 <template>
   <div class="form-container">
-    <loading :isLoading="isLoading"></loading>
+  
     <modal :showModal="isShow" @closeModal="closeModal" width="1000px">
       <!-- <template v-slot:title>
         <span class="txt-title-modal">เเก้ไขรายละเอียดสินค้า</span>
@@ -156,7 +156,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
@@ -191,7 +191,7 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-    loading,
+  
     AutoComplete,
     Calendar,
     Dropdown

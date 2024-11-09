@@ -301,7 +301,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 import Calendar from 'primevue/calendar'
 import DataTable from 'primevue/datatable'
@@ -326,7 +326,7 @@ const interfaceIsValid = {
 export default {
   components: {
     pageTitle,
-    loading,
+  
     Calendar,
     DataTable,
     Column,

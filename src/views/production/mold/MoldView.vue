@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
 
     <form @submit.prevent="onSearch">
       <div class="filter-container mb-3">
@@ -108,7 +107,6 @@
       <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" >
         <template #body="slotProps">
           <div class="image-container">
-            <loading :isLoading="isLoadingImage"></loading>
             <!-- <img :src="fetchIamge(slotProps)" alt="Preview Image" /> -->
             <imagePreview :imageName="slotProps.data.code" type="MOLD"></imagePreview>
           </div>
@@ -146,7 +144,6 @@ import Column from 'primevue/column'
 //import Image from 'primevue/image'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 
@@ -155,7 +152,6 @@ import modalUpdate from './components/ModalUpdate.vue'
 export default {
   components: {
     pageTitle,
-    loading,
     modalCreate,
     modalUpdate,
     //DataView,

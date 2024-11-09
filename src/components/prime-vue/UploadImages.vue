@@ -1,6 +1,6 @@
 <template>
   <div class="">
-    <loading :isLoading="isLoading"></loading>
+    !-- <loading :isLoading="isLoading"></loading> --!
     <FileUpload
       name="demo[]"
       url="/api/upload"
@@ -97,15 +97,14 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 import FileUpload from 'primevue/fileupload'
 
 export default {
   components: {
     FileUpload,
-    loading
+    
   },
   props: {
     maxFileSize: {

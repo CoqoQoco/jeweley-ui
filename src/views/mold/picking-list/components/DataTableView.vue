@@ -1,6 +1,5 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -83,9 +82,7 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 //const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 
 import DataTable from 'primevue/datatable'
@@ -98,7 +95,6 @@ import modalReturn from './ReturnView.vue'
 
 export default {
   components: {
-    loading,
     DataTable,
     Column,
     modalReturn

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
+  
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="filter-container-highlight">
@@ -199,7 +199,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 //import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
@@ -213,7 +212,6 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 export default {
   components: {
     modal,
-    loading,
     DataTable,
     Column
     //Papa

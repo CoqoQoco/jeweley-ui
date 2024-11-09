@@ -1,6 +1,5 @@
 <template>
   <div class="app-container-modal">
-    <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
       <!-- <template v-slot:title>
         <h5>{{ `เเก้ไขเเม่พิมพ์ - ${model.code}` }}</h5>
@@ -114,12 +113,10 @@ import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 export default {
   components: {
     modal,
-    loading,
     Dropdown
   },
   props: {

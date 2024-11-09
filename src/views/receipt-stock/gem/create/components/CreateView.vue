@@ -1,6 +1,5 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
@@ -33,7 +32,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 const interfaceForm = {
   code: null
@@ -42,7 +40,6 @@ const interfaceForm = {
 export default {
   components: {
     modal,
-    loading
   },
   props: {
     isShow: {

@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
     <div class="filter-container">
       <pageTitle
         title="รายชื่อลูกค้า"
@@ -64,7 +63,6 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import api from '@/axios/axios-helper.js'
@@ -78,7 +76,6 @@ const interfaceSearch = {
 
 export default {
   components: {
-    loading,
     pageTitle,
     FormCreate,
     FormView

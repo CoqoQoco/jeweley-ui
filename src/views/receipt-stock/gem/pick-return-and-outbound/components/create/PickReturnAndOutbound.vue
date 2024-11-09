@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
+  
     <div>
       <!-- ใบเบิก -->
       <div class="filter-container-highlight">
@@ -225,7 +225,7 @@
 import { defineAsyncComponent } from 'vue'
 
 //const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 const pdf = defineAsyncComponent(() => import('@/components/pdf-make/FilePDFPickOffGem.vue'))
 
 import DataTable from 'primevue/datatable'
@@ -242,7 +242,7 @@ import confirm from './ConfirmView.vue'
 export default {
   components: {
     //modal,
-    loading,
+  
     DataTable,
     Column,
     //AutoComplete,

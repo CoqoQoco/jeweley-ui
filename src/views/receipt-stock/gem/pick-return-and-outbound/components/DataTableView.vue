@@ -72,7 +72,7 @@
 <script>
 //import { defineAsyncComponent } from 'vue'
 
-//const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+//
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'

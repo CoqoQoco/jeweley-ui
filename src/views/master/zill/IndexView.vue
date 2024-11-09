@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
     <headerView @create="onShowCreate" @search="onSearchFilter" @clear="onClearFilter"></headerView>
     <dataTable class="mt-2" ref="dataTableRef" v-model:modelForm="formSearch"></dataTable>
     <modalCreate
@@ -16,8 +15,6 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import swAlert from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
@@ -44,7 +41,6 @@ export default {
   components: {
     headerView,
     modalCreate,
-    loading,
     dataTable
   },
   data() {

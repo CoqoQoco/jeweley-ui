@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
     <pageTitle
       title="เเก้ไขปรับปรุง-เพิ่ม ข้อมูลพลอย"
       description="หน้าเเก้ไขปรับปรุง-เพิ่ม ข้อมูลพลอย เเละรายละเอียดต่างๆ"
@@ -127,7 +126,6 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
 
 //prime table
 import DataTable from 'primevue/datatable'
@@ -140,13 +138,11 @@ import modalAddGem from './components/ModalFormCreate.vue'
 import modalUpdGem from './components/ModalFromUpdate.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 export default {
   components: {
     pageTitle,
     DataTable,
     Column,
-    loading,
     modalAddGem,
     modalUpdGem
   },

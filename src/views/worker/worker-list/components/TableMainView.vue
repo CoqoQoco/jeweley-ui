@@ -1,6 +1,5 @@
 <template>
   <div class="mt-2">
-    <loading :isLoading="isLoading"></loading>
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -56,9 +55,6 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
-
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
@@ -69,7 +65,6 @@ export default {
   components: {
     DataTable,
     Column,
-    loading
   },
   props: {
     formValue: {

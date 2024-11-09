@@ -1,6 +1,6 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
+  
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
@@ -118,7 +118,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 import AutoComplete from 'primevue/autocomplete'
 import Dropdown from 'primevue/dropdown'
@@ -141,7 +141,7 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
-    loading,
+  
     AutoComplete,
     Dropdown
   },

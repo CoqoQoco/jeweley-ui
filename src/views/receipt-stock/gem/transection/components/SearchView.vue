@@ -1,6 +1,6 @@
 <template>
   <div class="filter-container-searchBar">
-    <loading :isLoading="isLoading"></loading>
+  
     <pageTitle
       title="การเคลื่อนไหว วัถุดิบ"
       description="ตรวจรายการเคลื่อนไหว รับ/จ่าย ยืม/คืน เเละใบเบิก วัถุดิบ"
@@ -183,7 +183,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 import Calendar from 'primevue/calendar'
@@ -200,7 +200,7 @@ export default {
   components: {
     pageTitle,
     MultiSelect,
-    loading,
+  
     Calendar,
     dialogView
     //Dropdown

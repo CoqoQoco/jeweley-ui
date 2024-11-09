@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
     <div class="filter-container-search">
       <pageTitle
         title="สร้างใบเบิกผสมทอง"
@@ -561,7 +560,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
@@ -616,7 +614,6 @@ const interfaceIsValid = {
 export default {
   components: {
     pageTitle,
-    loading,
     Calendar,
     Dropdown,
     DataTable,

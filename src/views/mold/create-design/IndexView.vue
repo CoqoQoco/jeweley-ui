@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
     <div class="box-center">
       <stepperStatus :events="events" :eventsIdActive="1"></stepperStatus>
     </div>
@@ -216,7 +215,6 @@ import { eventStatus, mateiralType } from './interface/data.js'
 
 const stepperStatus = defineAsyncComponent(() => import('@/components/prime-vue/StepperStatus.vue'))
 const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/UploadImages.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
@@ -248,7 +246,6 @@ export default {
   components: {
     stepperStatus,
     uploadImages,
-    loading,
     Dropdown,
     DataTable,
     Column

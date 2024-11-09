@@ -1,6 +1,5 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
     <form @submit.prevent="onSubmit">
       <DataTable
         :value="formSubmit.gems"
@@ -179,8 +178,6 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -207,7 +204,6 @@ const interfaceFormSubmit = {
 
 export default {
   components: {
-    loading,
     DataTable,
     Column,
     Row,

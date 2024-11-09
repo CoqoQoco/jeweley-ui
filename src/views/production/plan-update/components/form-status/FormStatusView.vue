@@ -696,7 +696,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-//const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+//
 const pdf = defineAsyncComponent(() => import('@/components/pdf-make/SavePDFOrderStatus.vue'))
 
 import Panel from 'primevue/panel'

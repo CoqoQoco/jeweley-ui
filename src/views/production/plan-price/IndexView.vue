@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
+  
     <div class="title-text-lg-header mb-2">
       <span>บัตรต้นทุน</span>
       <span class="bi bi-arrow-right ml-1"></span>
@@ -232,7 +232,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 // import AutoComplete from 'primevue/autocomplete'
 // import Calendar from 'primevue/calendar'
@@ -263,7 +263,7 @@ import { formatDate, formatDateTime, formatISOString } from '@/services/utils/da
 
 export default {
   components: {
-    loading,
+  
     //AutoComplete,
     //Calendar,
     //Dropdown,

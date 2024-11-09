@@ -47,7 +47,7 @@
 <script>
 //import { defineAsyncComponent } from 'vue'
 
-//const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+//
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import priceView from './PriceView.vue'

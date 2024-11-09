@@ -1,6 +1,5 @@
 <template>
   <div class="create-container">
-    <loading :isLoading="isLoading"></loading>
     <form @submit.prevent="onSubmitPlan">
       <div class="zone-container">
         <div class="title-header mb-3">
@@ -421,7 +420,6 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import AutoComplete from 'primevue/autocomplete'
 import Dropdown from 'primevue/dropdown'
@@ -493,7 +491,6 @@ const interfaceValid = {
 }
 export default {
   components: {
-    loading,
     AutoComplete,
     Dropdown,
     Calendar,

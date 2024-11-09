@@ -1,6 +1,6 @@
 <template>
   <div class="filter-container-searchBar">
-    <loading :isLoading="isLoading"></loading>
+  
     <form @submit.prevent="onSearch">
       <div>
         <div>
@@ -248,7 +248,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 //import Calendar from 'primevue/calendar'
@@ -266,7 +266,7 @@ const interfaceIsShow = {
 }
 export default {
   components: {
-    loading,
+  
     pageTitle,
     MultiSelect,
     Calendar,

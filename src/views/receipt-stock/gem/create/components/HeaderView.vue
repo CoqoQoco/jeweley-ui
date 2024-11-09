@@ -1,6 +1,5 @@
 <template>
   <div class="filter-container">
-    <loading :isLoading="isLoading"></loading>
     <pageTitle
       title="สร้างรหัสวัถุดิบ"
       description="สร้างรหัสวัถุดิบ ระบุข้อมูลรหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ"
@@ -78,7 +77,6 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
@@ -94,7 +92,6 @@ export default {
   components: {
     pageTitle,
     MultiSelect,
-    loading,
     createView
     //Calendar
   },

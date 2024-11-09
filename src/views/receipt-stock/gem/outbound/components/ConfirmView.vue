@@ -1,6 +1,5 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="600px">
       <template v-slot:content>
         <div class="title-text-lg mb-2">
@@ -123,7 +122,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 
 import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
@@ -140,7 +138,6 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
-    loading,
     Dropdown,
     Calendar
   },

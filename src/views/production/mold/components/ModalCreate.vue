@@ -1,6 +1,5 @@
 <template>
   <div class="app-container-modal">
-    <loading :isLoading="isLoading"></loading>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
       <!-- <template v-slot:title>
         <h5>สร้างเเม่พิมพ์</h5>
@@ -100,13 +99,11 @@ import Dropdown from 'primevue/dropdown'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 //import modal from '@/components/modal/ModalView.vue'
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 //const UploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
 
 export default {
   components: {
     modal,
-    loading,
     Dropdown
   },
   props: {

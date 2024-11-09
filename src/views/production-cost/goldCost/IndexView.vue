@@ -171,7 +171,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import DataTable from 'primevue/datatable'
@@ -192,7 +192,7 @@ const interfaceForm = {
 }
 export default {
   components: {
-    loading,
+  
     pageTitle,
     FormCreate,
     DataTable,

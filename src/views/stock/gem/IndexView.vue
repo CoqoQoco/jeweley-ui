@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"></loading>
+  
     <headerBar
       v-model:modelForm="form"
       :isExport="isExport"
@@ -33,7 +33,7 @@
 import { defineAsyncComponent } from 'vue'
 
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 import headerBar from './components/headerView.vue'
 import dataTable from './components/DataTableView.vue'
 

@@ -96,7 +96,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import Dropdown from 'primevue/dropdown'
@@ -117,7 +117,7 @@ const interfaceIsValid = {
 }
 export default {
   components: {
-    loading,
+  
     pageTitle,
     Dropdown,
     FormCreate,

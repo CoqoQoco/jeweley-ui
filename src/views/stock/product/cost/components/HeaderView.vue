@@ -1,6 +1,5 @@
 <template>
   <div>
-    <loading :isLoading="isLoading"></loading>
     <div class="filter-container-searchBar">
       <pageTitle
         :title="title"
@@ -43,7 +42,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
 const interfaceIsShow = {
@@ -57,7 +55,6 @@ const interfaceForm = {
 export default {
   components: {
     pageTitle,
-    loading,
     modal
   },
   data() {

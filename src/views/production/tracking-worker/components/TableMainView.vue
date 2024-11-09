@@ -1,6 +1,6 @@
 <template>
   <div class="mt-2">
-    <loading :isLoading="isLoading"></loading>
+  
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -119,7 +119,7 @@ import { defineAsyncComponent } from 'vue'
 //import tableMain from '@/components/table/HtmlTable.vue'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 
-const loading = defineAsyncComponent(() => import('@/components/overlay/loading-overlay.vue'))
+
 
 //prime table
 import DataTable from 'primevue/datatable'
@@ -132,7 +132,7 @@ export default {
   components: {
     DataTable,
     Column,
-    loading,
+  
     imagePreview
   },
   props: {
