@@ -52,7 +52,6 @@ export default {
     //pageTitle,
     headerBar,
     dataTable,
-    loading
   },
   data() {
     return {

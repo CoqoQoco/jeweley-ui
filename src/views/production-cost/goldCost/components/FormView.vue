@@ -325,7 +325,6 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-    loading
     // Dropdown,
     // Calendar,
     // DataTable,
