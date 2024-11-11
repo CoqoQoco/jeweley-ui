@@ -86,13 +86,13 @@ export default {
       this.isExport = value
     }
   },
-  mounted() {
-    this.updateHeaderHeight()
-    window.addEventListener('resize', this.updateHeaderHeight)
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.updateHeaderHeight)
-  }
+  // mounted() {
+  //   this.updateHeaderHeight()
+  //   window.addEventListener('resize', this.updateHeaderHeight)
+  // },
+  // beforeUnmount() {
+  //   window.removeEventListener('resize', this.updateHeaderHeight)
+  // }
 }
 </script>
 

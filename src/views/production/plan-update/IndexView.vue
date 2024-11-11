@@ -297,7 +297,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-// 
+//
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import TabMenu from 'primevue/tabmenu'
@@ -632,7 +632,9 @@ export default {
         const param = {
           id: id
         }
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet',  { skipLoading: true })
+        const res = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet', param, {
+          skipLoading: true
+        })
         if (res) {
           this.mat = [...res]
         }
