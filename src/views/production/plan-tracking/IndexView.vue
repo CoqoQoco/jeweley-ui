@@ -101,7 +101,7 @@ export default {
 
   async created() {
     await this.initializeMasterData()
-    this.search = { ...this.form }
+    //this.search = { ...this.form }
   },
 
   beforeUnmount() {
