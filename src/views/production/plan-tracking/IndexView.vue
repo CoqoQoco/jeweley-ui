@@ -71,12 +71,12 @@ export default {
     ...mapActions(useMasterApiStore, ['fetchAllMasterData']),
 
     onSearchFilter(data) {
-      console.log('onSearchFilter', data)
+      //console.log('onSearchFilter', data)
       this.search = { ...data }
     },
 
     onClearFilter() {
-      console.log('onClearFilter')
+      //console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
 
