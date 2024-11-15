@@ -55,8 +55,8 @@ export default {
   watch: {
     async modelForm() {
       console.log(this.modelForm)
-      this.take = 10
-      this.skip = 0
+      //this.take = 10
+      //this.skip = 0
       await this.fetchData()
     }
   },
