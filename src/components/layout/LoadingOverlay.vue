@@ -131,8 +131,8 @@ export default {
     watch(
       () => isLoading.value,
       (newValue) => {
-        console.log('Loading state changed:', newValue)
-        console.log('Current time elapsed:', timeElapsed.value)
+        //console.log('Loading state changed:', newValue)
+        //console.log('Current time elapsed:', timeElapsed.value)
       },
       { immediate: true }
     )

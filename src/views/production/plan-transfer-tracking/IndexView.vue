@@ -25,16 +25,18 @@ import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 const interfaceForm = {
   start: new Date(new Date().setDate(new Date().getDate() - 7)),
   end: new Date(),
-  sendStart: null,
-  sendEnd: null,
-  text: null,
-  status: null,
-  isOverPlan: { id: 0, description: 'ทั้งหมด' },
-  customerCode: null,
-  mold: null,
-  customerType: null,
+
+  transferNumber: null,
+  woText: null,
+
+  statusFormer: null,
+  statusTarget: null,
+
   productType: null,
   productNumber: null,
+
+  mold: null,
+  
   gold: null,
   goldSize: null
 }
@@ -71,12 +73,12 @@ export default {
     ...mapActions(useMasterApiStore, ['fetchAllMasterData']),
 
     onSearchFilter(data) {
-      //console.log('onSearchFilter', data)
+      console.log('onSearchFilter', data)
       this.search = { ...data }
     },
 
     onClearFilter() {
-      //console.log('onClearFilter')
+      console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
 

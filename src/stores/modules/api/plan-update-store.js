@@ -4,7 +4,7 @@ import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 import {
-  //formatISOString,
+  formatISOString,
   formatDate
   //formatDateTime
 } from '@/services/utils/dayjs.js'
@@ -14,7 +14,7 @@ import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const usePlanUpdateApiStore = defineStore('planUpdate', {
   state: () => ({
-    // ... state อื่นๆ
+    dataTransferTotalRecord: 0
   }),
 
   actions: {
@@ -62,6 +62,67 @@ export const usePlanUpdateApiStore = defineStore('planUpdate', {
       }
     },
 
+    initRequest(form) {
+      //console.log('initRequest', form)
+      return {
+        search: {
+          start: form.start ? formatISOString(form.start) : null,
+          end: form.end ? formatISOString(form.end) : null,
+
+          transferNumber: form.transferNumber,
+          woText: form.woText,
+
+          statusFormer: form.statusFormer ? form.statusFormer : null,
+          statusTarget: form.statusTarget ? form.statusTarget : null,
+
+          productType: form.productType ? [...form.productType] : null,
+          productNumber: form.productNumber,
+
+          gold: form.gold ? [...form.gold] : null,
+          goldSize: form.goldSize ? [...form.goldSize] : null,
+
+          mold: form.mold
+        }
+      }
+    },
+
+    async fetchDataTransfer({ take, skip, sort, form, masterStatus }) {
+      try {
+        this.dataSearchExport = {}
+        const param = {
+          take: take,
+          skip: skip,
+          sort: sort,
+          ...this.initRequest(form)
+        }
+        this.dataTransferTotalRecord = 0
+
+        //console.log('fetchDataTransfer', masterStatus)
+
+        const res = await api.jewelry.post('Production/Plan/TransferList', param)
+        if (res) {
+          const mappedData = res.data.map((item) => ({
+            ...item,
+            formerStatusName: masterStatus.find((status) => status.id === item.formerStatus).nameTh,
+            targetStatusName: masterStatus.find((status) => status.id === item.targetStatus).nameTh
+          }))
+          res.data = [...mappedData]
+          this.dataTransferTotalRecord = res.total
+
+          //console.log('fetchDataTransfer', res.data)
+
+          return res
+        } else {
+          this.dataTransferTotalRecord = 0
+          return {}
+        }
+      } catch (error) {
+        this.dataTransferTotalRecord = 0
+        console.error('Error fetching stock product export data:', error)
+        throw error
+      }
+    },
+
     async fetchDataTransferExport({ sort, form, masterStatus }) {
       try {
         this.dataSearchExport = {}
@@ -69,9 +130,7 @@ export const usePlanUpdateApiStore = defineStore('planUpdate', {
           take: 0,
           skip: 0,
           sort: sort,
-          search: {
-            transferNumber: form.transferNumber
-          }
+          ...this.initRequest(form)
         }
 
         const res = await api.jewelry.post('Production/Plan/TransferList', param)
@@ -93,7 +152,9 @@ export const usePlanUpdateApiStore = defineStore('planUpdate', {
           }))
 
           const options = {
-            filename: `เอกสารโอนงาน_${form.transferNumber}.xlsx`,
+            filename: form.transferNumber
+              ? `เอกสารโอนงาน_${form.transferNumber}.xlsx`
+              : `เอกสารโอนงาน.xlsx`,
             sheetName: form.receiptNumber,
             // ลบ columnWidths ออกเพื่อให้ใช้ค่า default width จาก ExcelHelper
             styles: {

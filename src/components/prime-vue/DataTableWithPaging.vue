@@ -35,7 +35,10 @@
         <Column
           v-bind="col"
           :sortable="col.sortable !== false"
-          :style="{ 'min-width': col.minWidth || '150px' }"
+          :style="{
+            'min-width': col.minWidth || '150px',
+            width: col.width || 'auto'
+          }"
           :alignHeader="col.align || 'left'"
           :bodyStyle="{ textAlign: col.align || 'left' }"
         >

@@ -6,6 +6,7 @@ const PlanOrderTracking = () => import('@/views/production/plan-tracking/IndexVi
 const PlanOrderTrackingStatus = () => import('@/views/production/plan-tracking-status/IndexView.vue')
 const PlanOrderTrackingWorker = () => import('@/views/production/plan-tracking-worker/IndexView.vue')
 const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
+const PlanOrderTransferTracking = () => import('@/views/production/plan-transfer-tracking/IndexView.vue')
 const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
@@ -59,6 +60,18 @@ const routes = [
           Displayname: {
             en: 'Plan Order Tracking',
             th: 'ติดตามแผนงานผลิต'
+          },
+          minorShow: true
+        }
+      },
+      {
+        path: '/plan-order-transfer-tracking',
+        name: 'plan-order-transfer-tracking',
+        component: PlanOrderTransferTracking,
+        meta: {
+          Displayname: {
+            en: 'Plan Order Transfer Tracking',
+            th: 'ติดตามแผนโอนงาน'
           },
           minorShow: true
         }

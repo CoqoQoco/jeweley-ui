@@ -213,6 +213,46 @@ export const useMasterApiStore = defineStore('master', {
         'Master/MasterProductType',
         'Error fetching product type'
       )
+    },
+
+    // master edit
+    async fetchListMaster({ take, skip, sort, form }) {
+      const param = {
+        take: take,
+        skip: skip,
+        sort: sort,
+        search: {
+          type: form.type,
+          text: form.text,
+
+          goldCode: form.goldCode,
+          goldSizeCode: form.goldSizeCode
+        }
+      }
+
+      return await api.jewelry.post('Master/ListMaster', param)
+    },
+    async updateListMaster({ form }) {
+      const param = {
+        type: 'GEM',
+        id: form.id,
+        code: form.code,
+        nameTh: form.nameTh,
+        nameEn: form.nameEn
+      }
+
+      return await api.jewelry.post('Master/UpdateMasterModel', param)
+    },
+    async createListMaster({ form }) {
+      const param = {
+        type: 'GEM',
+        id: form.id,
+        code: form.code,
+        nameTh: form.nameTh,
+        nameEn: form.nameEn
+      }
+
+      return await api.jewelry.post('Master/CreateMasterModel', param)
     }
   }
 })
