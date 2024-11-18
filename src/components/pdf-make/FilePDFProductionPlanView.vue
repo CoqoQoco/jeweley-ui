@@ -95,7 +95,7 @@ export default {
           `${item.goldNavigation?.code ?? ``} - ${item.goldNavigation?.nameEn ?? ``}`,
           `${item.goldSizeNavigation?.nameEn ?? `-`}`,
           `${item.goldQty ?? `-`}`,
-          `${item.gemNavigation?.code ?? ``} - ${item.gemNavigation?.nameEn ?? ``}`,
+          `${item.gemNavigation?.code ?? ``} - ${item.gemNavigation?.nameTh ?? ``}`,
           `${item.gemShapeNavigation?.code ?? ``} - ${item.gemSize ?? ``}`,
           `${item.gemQty ?? ``}`,
           `${item.gemWeight ?? `-`} ${item.gemWeight ? item.gemWeightUnit : ``}`,
