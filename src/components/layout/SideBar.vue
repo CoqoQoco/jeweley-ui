@@ -119,6 +119,15 @@
       <!-- end : sub menu -->
     </div>
 
+    <div class="main-menu">
+      <div class="main-menu-wrapper">
+        <button class="btn-link btn-main-menu" @click="handleLogout">
+          <span class="mr-2 bi bi-power"></span>
+          <span>ออกจากระบบ</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Footer -->
     <!-- <div class="main-footer"><label>version 1.0.0 (beta)</label></div> -->
     <!-- end : main menu -->
@@ -128,7 +137,13 @@
 <script>
 //import _ from 'lodash'
 
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 export default {
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
+  },
+
   data() {
     return {
       // DATA
@@ -186,6 +201,16 @@ export default {
     onToggleSubMenu(mainIndex, subIndex) {
       this.menuForPermission[mainIndex].subMenu[subIndex].isOpen =
         !this.menuForPermission[mainIndex].subMenu[subIndex].isOpen
+    },
+    async handleLogout() {
+      console.log('Logout')
+      //this.$store.dispatch('auth/logout')
+      const res = await this.authStore.logout()
+      if (res) {
+        console.log('Login success')
+        const redirectPath = this.$route.query.redirect
+        this.$router.push(redirectPath || '/') 
+      }
     },
 
     // ------------ Utils ------------

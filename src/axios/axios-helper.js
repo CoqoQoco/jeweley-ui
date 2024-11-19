@@ -2,6 +2,7 @@ import axios from 'axios'
 import get from 'lodash/get'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import router from '@/router'
 
 //production
@@ -43,6 +44,12 @@ const loadingManager = {
 // Create cancel token source
 const createCancelToken = () => {
   return axios.CancelToken.source()
+}
+
+const getTokenInfo = () => {
+  const token = localStorage.getItem('token-dk')
+
+  return token
 }
 
 // Axios instance
@@ -108,6 +115,8 @@ axiosInstance.interceptors.response.use(
     const stacktrace = get(error, 'response.data.stacktrace', null)
     const errorSystem = get(error, 'response.data.errors')
 
+    const authStore = useAuthStore()
+
     // Handle different error cases
     switch (status) {
       case 401:
@@ -115,7 +124,8 @@ axiosInstance.interceptors.response.use(
           msg,
           'Unauthorise',
           async () => {
-            router.push({ name: 'dashboard' })
+            await authStore.logout()
+            router.push({ name: '/' })
           },
           stacktrace
         )
@@ -178,6 +188,8 @@ if (typeof window !== 'undefined') {
 
 // GET method
 const fetchData = async (url, params, optionsConfig = {}) => {
+  const token = getTokenInfo()
+  console.log('get api token', token)
   const { skipLoading = false, ...restOptions } = optionsConfig
 
   if (!skipLoading) {
@@ -189,6 +201,7 @@ const fetchData = async (url, params, optionsConfig = {}) => {
   const res = await axiosInstance.get(url, {
     ...restOptions,
     headers: {
+      Authorization: token,
       ...restOptions?.headers
     },
     params: params,
@@ -201,6 +214,7 @@ const fetchData = async (url, params, optionsConfig = {}) => {
 
 // POST method
 const postData = async (url, data, optionsConfig = {}) => {
+  const token = getTokenInfo()
   const { skipLoading = false, ...restOptions } = optionsConfig
 
   if (!skipLoading) {
@@ -212,6 +226,7 @@ const postData = async (url, data, optionsConfig = {}) => {
   const res = await axiosInstance.post(url, data, {
     ...restOptions,
     headers: {
+      Authorization: token,
       ...restOptions?.headers
     },
     cancelToken: source.token,

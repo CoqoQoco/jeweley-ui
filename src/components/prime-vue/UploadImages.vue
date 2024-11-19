@@ -1,6 +1,5 @@
 <template>
   <div class="">
-    !-- <loading :isLoading="isLoading"></loading> --!
     <FileUpload
       name="demo[]"
       url="/api/upload"
@@ -97,14 +96,11 @@
 </template>
 
 <script>
-
-
 import FileUpload from 'primevue/fileupload'
 
 export default {
   components: {
-    FileUpload,
-    
+    FileUpload
   },
   props: {
     maxFileSize: {

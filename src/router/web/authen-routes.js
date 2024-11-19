@@ -65,11 +65,11 @@ const routes = [
     ]
   },
 
-  // --------- Mold Design 
+  // --------- Mold Design
   ...mold,
-  // --------- Production 
+  // --------- Production
   ...production,
-  // --------- stock 
+  // --------- stock
   ...stockProduct,
   ...stockGem,
 
@@ -265,39 +265,39 @@ const routes = [
         }
       }
     ]
-  },
+  }
 
   //----- Setting -----
   //...settingRoutes,
 
   //---- Logout -----
-  {
-    path: '/logout',
-    component: Layout,
-    redirect: '/logout',
-    name: 'logout',
-    meta: {
-      Displayname: {
-        en: 'Logout',
-        th: 'ออกจากระบบ'
-      },
-      classIcon: 'bi bi-power',
-      majorShow: true
-    },
-    children: [
-      {
-        path: '/logout',
-        name: 'logout',
-        component: Dashboard,
-        meta: {
-          Displayname: {
-            en: 'Logout',
-            th: 'ออกจากระบบ'
-          },
-          minorShow: false
-        }
-      }
-    ]
-  }
+  // {
+  //   path: '/logout',
+  //   component: Layout,
+  //   redirect: '/logout',
+  //   name: 'logout',
+  //   meta: {
+  //     Displayname: {
+  //       en: 'Logout',
+  //       th: 'ออกจากระบบ'
+  //     },
+  //     classIcon: 'bi bi-power',
+  //     majorShow: true
+  //   },
+  //   children: [
+  //     {
+  //       path: '/logout',
+  //       name: 'logout',
+  //       component: Dashboard,
+  //       meta: {
+  //         Displayname: {
+  //           en: 'Logout',
+  //           th: 'ออกจากระบบ'
+  //         },
+  //         minorShow: false
+  //       }
+  //     }
+  //   ]
+  // }
 ]
 export default routes
