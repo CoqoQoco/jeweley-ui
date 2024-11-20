@@ -97,6 +97,41 @@ export const useAuthStore = defineStore('auth', {
         return this.handleError(error, 'Logout failed')
       }
     },
+    async checkDupUsername({ username }) {
+      try {
+        // Login request
+        const response = await api.jewelry.get(
+          'Landing/CheckDupUsername',
+          {
+            username
+          },
+          {
+            skipLoading: true
+          }
+        )
+
+        return response
+      } catch (error) {
+        return this.handleError(error, 'Login failed')
+      }
+    },
+    async register({ form }) {
+      try {
+        const param = {
+          username: form.username,
+          password: form.password,
+          firstname: form.firstname,
+          lastname: form.lastname
+        }
+
+        // Login request
+        const response = await api.jewelry.post('Landing/Register', param)
+
+        return response
+      } catch (error) {
+        return this.handleError(error, 'Login failed')
+      }
+    },
 
     async fetchUserProfile() {
       try {

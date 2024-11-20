@@ -79,7 +79,7 @@
                 <router-link :to="{ name: subMenu.name }" v-slot="{ href, navigate }">
                   <button class="btn-link btn-sub-menu" :href="href" @click="navigate">
                     <span class="">
-                      <i class="bi bi-arrow-return-right"></i>
+                      <i class="bi bi-dash"></i>
                       {{ showMenuName(subMenu) }}
                     </span>
                   </button>
@@ -156,8 +156,6 @@ export default {
     async setMenuBar() {
       //children ในส่วนนี้ คือ ข้อมูลที่เพิ่มจาก route ของหน้าบ้าน (pc routes)
       const allList = this.$router.getRoutes()
-      //console.log('start set menu')
-      //console.log(allList)
 
       // Map Data for MenuList
       allList.forEach((e) => {
@@ -167,14 +165,10 @@ export default {
 
           //get memu from route
           const filterChirldren = e.children.filter((c) => c.meta.minorShow)
-          //console.log('filterChirldren')
-          //console.log(filterChirldren)
 
           filterChirldren.forEach((s) => {
             subMenu = [...subMenu, s]
           })
-          //console.log('subMenu')
-          //console.log(subMenu)
 
           this.menuForPermission = [
             ...this.menuForPermission,
@@ -209,18 +203,13 @@ export default {
       if (res) {
         console.log('Login success')
         const redirectPath = this.$route.query.redirect
-        this.$router.push(redirectPath || '/') 
+        this.$router.push(redirectPath || '/')
       }
     },
 
     // ------------ Utils ------------
     showMenuName(data) {
-      //console.log(data)
       return data.meta.Displayname.th
-      // ชื่อของ breadCrumbName ส่วนนี้ เอามาจาก pc-routes.js (ตั้งที่หน้าบ้าน)
-      //   return localStorage.getItem('lang') === 'th'
-      //     ? _.get(data, 'meta.breadCrumbName.th', '')
-      //     : _.get(data, 'meta.breadCrumbName.en', '')
     }
   },
   async created() {
@@ -245,10 +234,6 @@ export default {
   > a {
     width: inherit;
   }
-  // .bottom-line-menu {
-  //   height: 20px;
-  //   border-bottom: solid 3px var(--base-font-color);
-  // }
 }
 .bottom-line-menu {
   //height: 20px;

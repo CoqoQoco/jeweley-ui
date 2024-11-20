@@ -100,12 +100,16 @@ export default {
   //transform: translateX(-100%);
 }
 .sidebar-wrapper {
-  //border-top: 1px solid var(--base-color);
   padding-top: 5px;
   height: 100vh;
-  overflow-y: hidden;
+  overflow-y: auto;
   overflow-x: hidden;
-  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  &::-webkit-scrollbar {
+    /* Chrome, Safari, Edge */
+    display: none;
+  }
+  -ms-overflow-style: none; /* IE/Edge */
 }
 .sidebar-wrapper:hover {
   //overflow-y: overlay;

@@ -40,7 +40,7 @@ router.beforeEach(async (to, from, next) => {
       await authStore.fetchUserProfile()
       return next()
     } catch {
-      authStore.clearAuth()
+      authStore.logout()
       return next('/login')
     }
   } else {
@@ -52,7 +52,7 @@ router.beforeEach(async (to, from, next) => {
 router.onError((error) => {
   const authStore = useAuthStore()
   if (error.message.includes('Authentication')) {
-    authStore.clearAuth()
+    authStore.logout()
     router.push('/login')
   }
 })
