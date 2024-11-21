@@ -136,6 +136,7 @@
 
 <script>
 //import _ from 'lodash'
+import swAlert from '@/services/alert/sweetAlerts.js'
 
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 export default {
@@ -199,12 +200,11 @@ export default {
     async handleLogout() {
       console.log('Logout')
       //this.$store.dispatch('auth/logout')
-      const res = await this.authStore.logout()
-      if (res) {
-        console.log('Login success')
+      swAlert.confirmSubmit('', 'ออกจากระบบ', async () => {
+        await this.authStore.logout()
         const redirectPath = this.$route.query.redirect
         this.$router.push(redirectPath || '/')
-      }
+      })
     },
 
     // ------------ Utils ------------
@@ -328,7 +328,7 @@ export default {
 
 .btn-sub-menu,
 .btn-children-menu {
-  padding: 0.75rem 1rem 0.75rem 2.25rem;
+  padding: 0.75rem 1rem 0.75rem 1.85rem;
 }
 
 // Overwrite

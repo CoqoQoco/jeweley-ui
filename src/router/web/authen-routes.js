@@ -3,7 +3,7 @@ import mold from '../web/mold/mold-routes.js'
 import production from '../web/production/production-routes.js'
 import stockGem from '../web/stock/gem/stock-gem-routes.js'
 import stockProduct from '../web/stock/product/stock-product-routes.js'
-//import settingRoutes from './setting-routes.js'
+import settingRoutes from '../web/setting/setting-routes.js'
 
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
@@ -265,10 +265,10 @@ const routes = [
         }
       }
     ]
-  }
+  },
 
   //----- Setting -----
-  //...settingRoutes,
+  ...settingRoutes
 
   //---- Logout -----
   // {
