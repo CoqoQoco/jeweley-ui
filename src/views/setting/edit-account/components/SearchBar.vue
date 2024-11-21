@@ -13,7 +13,7 @@
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">ชื่อบัญชีผู้ใช้งาน</span>
+            <span class="title-text">บัญชี</span>
             <input
               ref="inputAccountName"
               id="inputAccountName"

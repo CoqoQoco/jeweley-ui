@@ -183,7 +183,7 @@ export default {
       if (data.isActive) {
         return 'box-status-success'
       }
-      if (data.isActive) {
+      if (data.isNew) {
         return 'box-status-process'
       }
       return 'box-status-disable'

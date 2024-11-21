@@ -6,7 +6,10 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import router from '@/router'
 
 //production
-const jewelryUrl = 'http://192.168.1.41:2001/'
+//const jewelryUrl = 'http://192.168.1.41:2001/'
+
+//dev
+const jewelryUrl = 'https://localhost:7001/'
 
 // Loading state management
 const loadingManager = {
@@ -125,7 +128,8 @@ axiosInstance.interceptors.response.use(
           'Unauthorise',
           async () => {
             await authStore.logout()
-            router.push({ name: '/' })
+            console.log('router', router)
+            router.push('/login')
           },
           stacktrace
         )
@@ -189,7 +193,7 @@ if (typeof window !== 'undefined') {
 // GET method
 const fetchData = async (url, params, optionsConfig = {}) => {
   const token = getTokenInfo()
-  console.log('get api token', token)
+  //console.log('get api token', token)
   const { skipLoading = false, ...restOptions } = optionsConfig
 
   if (!skipLoading) {

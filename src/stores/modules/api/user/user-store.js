@@ -66,6 +66,18 @@ export const useUserApiStore = defineStore('userStore', {
       } catch (error) {
         console.error('Error fetching user get account:', error)
       }
+    },
+    async fetchActiveAccount({ form }) {
+      try {
+        const res = await api.jewelry.post('User/Active', form)
+        if (res) {
+          return res
+        } else {
+          return {}
+        }
+      } catch (error) {
+        console.error('Error fetching user active account:', error)
+      }
     }
   }
 })
