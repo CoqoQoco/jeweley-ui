@@ -28,6 +28,9 @@
                 v-model="formLogin.username"
                 type="text"
                 placeholder="ชื่อผู้ใช้งาน"
+                @paste.prevent
+                @copy.prevent
+                @cut.prevent
                 required
               />
             </div>
@@ -41,6 +44,9 @@
                 v-model="formLogin.password"
                 :type="showPassword ? 'text' : 'password'"
                 placeholder="รหัสผ่าน"
+                @paste.prevent
+                @copy.prevent
+                @cut.prevent
                 required
               />
               <button type="button" class="toggle-password" @click="showPassword = !showPassword">
@@ -81,6 +87,9 @@
                 type="text"
                 placeholder="ชื่อผู้ใช้งาน (USERNAME)"
                 @input="validateUsername"
+                @paste.prevent
+                @copy.prevent
+                @cut.prevent
                 autocomplete="off"
                 required
               />
@@ -126,6 +135,9 @@
                 placeholder="รหัสผ่าน (PASSWORD)"
                 @input="validatePassword"
                 autocomplete="new-password"
+                @paste.prevent
+                @copy.prevent
+                @cut.prevent
                 required
               />
               <button
@@ -159,6 +171,9 @@
                 placeholder="ยืนยันรหัสผ่าน"
                 @input="validateConfirmPassword"
                 autocomplete="new-password"
+                @paste.prevent
+                @copy.prevent
+                @cut.prevent
                 required
               />
               <button
@@ -343,7 +358,7 @@ export default {
           form: this.formRegister
         })
 
-        if(response) {
+        if (response) {
           console.log('Register success')
           this.stage.isLogin = true
           this.stage.isRegister = false

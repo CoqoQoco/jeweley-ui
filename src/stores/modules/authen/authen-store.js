@@ -80,7 +80,7 @@ export const useAuthStore = defineStore('auth', {
 
           // Fetch user profile after successful login
           await this.fetchUserProfile()
-
+          loadingStore.hideLoading()
           return true
         }
       } catch (error) {

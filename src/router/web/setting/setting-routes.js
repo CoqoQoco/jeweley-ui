@@ -1,6 +1,7 @@
-import Dashboard from '@/views/dashboard/WelcomePage.vue'
+//import Dashboard from '@/views/dashboard/WelcomePage.vue'
 import Layout from '@/layout/web/LayoutDashboard.vue'
 
+import account from '@/views/setting/user-account/IndexView.vue'
 import EditAccount from '@/views/setting/edit-account/IndexView.vue'
 import EditAccountView from '@/views/setting/edit-account/view/AccountView.vue'
 
@@ -25,7 +26,7 @@ const routes = [
       {
         path: '/user-account',
         name: 'user-account',
-        component: Dashboard,
+        component: account,
         meta: {
           Displayname: {
             en: 'User Account',

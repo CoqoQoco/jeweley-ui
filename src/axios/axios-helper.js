@@ -123,18 +123,28 @@ axiosInstance.interceptors.response.use(
     // Handle different error cases
     switch (status) {
       case 401:
-        swAlert.error(
-          msg,
-          'Unauthorise',
-          async () => {
-            await authStore.logout()
-            console.log('router', router)
-            router.push('/login')
-          },
-          stacktrace
-        )
-        break
+        {
+          let error = ''
+          if (error.response?.headers['token-expired']) {
+            error = 'Token expired'
+          } else if (error.response?.data.message === 'User is inactive or not found') {
+            error = 'User is inactive or not found'
+          }
 
+          console.log('401error', error)
+
+          swAlert.error(
+            msg,
+            `${error ?? `Unauthorise`}`,
+            async () => {
+              await authStore.logout()
+              console.log('router', router)
+              router.push('/login')
+            },
+            stacktrace
+          )
+        }
+        break
       case 400:
         if (msg) {
           swAlert.error(msg, null, () => {}, stacktrace)

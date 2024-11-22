@@ -78,6 +78,18 @@ export const useUserApiStore = defineStore('userStore', {
       } catch (error) {
         console.error('Error fetching user active account:', error)
       }
+    },
+    async fetchInactiveAccount({ form }) {
+      try {
+        const res = await api.jewelry.post('User/Inactive', form)
+        if (res) {
+          return res
+        } else {
+          return {}
+        }
+      } catch (error) {
+        console.error('Error fetching user inactive account:', error)
+      }
     }
   }
 })

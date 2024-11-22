@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container view-container">
-      <form @submit.prevent="onSubmit">
+      <div>
         <!-- header -->
         <div class="d-flex justify-content-between">
           <div class="title-text-lg ml-2">
@@ -77,38 +77,11 @@
             :columns="columns"
             :paginator="false"
           >
-            <template #nameTemplate="{ data }">
-              <div>
-                <button class="btn btn-sm btn-red mr-2" type="button" @click="removeRole(data)">
-                  <span class="bi bi-trash"></span>
-                </button>
-                <Dropdown
-                  v-model="data.id"
-                  :options="masterRoles"
-                  optionLabel="name"
-                  optionValue="id"
-                  class="dropdown-custom"
-                />
-              </div>
-            </template>
-            <template #descriptionTemplate="{ data }">
-              <div>
-                <span>{{ data.description }}</span>
-              </div>
-            </template>
-
-            <template #footer>
-              <div class="d-flex justify-content-start">
-                <button class="btn btn-sm btn-main" type="button" @click="addRole">
-                  <span class="bi bi-plus"></span>
-                </button>
-              </div>
-            </template>
           </BaseDataTable>
         </div>
 
         <!-- action -->
-        <div class="submit-container-custom">
+        <!-- <div class="submit-container-custom">
           <button style="width: 120px" :class="['btn btn-sm  mr-2 btn-green']" type="submit">
             <span class="bi bi-check mr-2"></span>
             <span>{{ shouldShowRegister ? `ลงทะเบียน` : `เเก้ไขบัญชี` }}</span>
@@ -122,30 +95,32 @@
             <span class="bi bi-x mr-2"></span>
             <span>ยกเลิกใช้งาน</span>
           </button>
-        </div>
-      </form>
+        </div> -->
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import Dropdown from 'primevue/dropdown'
+//import Dropdown from 'primevue/dropdown'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+//import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
-    BaseDataTable,
-    Dropdown
+    BaseDataTable
+    //Dropdown
   },
 
   setup() {
     const userStore = useUserApiStore()
-    return { userStore }
+    const userAuth = useAuthStore()
+    return { userStore, userAuth }
   },
 
   watch: {
@@ -192,9 +167,9 @@ export default {
   },
   methods: {
     // ---- APIs
-    async fetchData(id) {
+    async fetchData() {
       const res = await this.userStore.fetchGetAccount({
-        id: id
+        id: this.userAuth.user.id
       })
 
       if (res) {
@@ -261,60 +236,6 @@ export default {
       if (index > -1) {
         this.roles.splice(index, 1)
       }
-    },
-    async onSubmit() {
-      console.log('submit')
-      swAlert.confirmSubmit(
-        `${this.data.username}`,
-        `${this.data.isNew ? `ลงทะเบียน` : `เเก้ไขบัญชี`}`,
-        async () => {
-          const validRoles = this.roles
-            .filter((role) => role.id !== null) // ลบ role ที่ไม่มี id
-            .reduce((unique, role) => {
-              // กำจัดค่าซ้ำ
-              if (!unique.some((r) => r.id === role.id)) {
-                unique.push(role)
-              }
-              return unique
-            }, [])
-
-          const form = {
-            ...this.data,
-            roles: validRoles
-          }
-          const res = await this.userStore.fetchActiveAccount({
-            form: form
-          })
-
-          if (res) {
-            swAlert.success('', '')
-
-            //back router
-            this.$router.go(-1)
-            //this.$router.push({ name: 'edit-account' })
-          }
-        }
-      )
-    },
-    async onCancel() {
-      console.log('submit')
-      swAlert.confirmSubmit(`${this.data.username}`, `ยกเลิกใช้งาน`, async () => {
-        const form = {
-          ...this.data,
-          roles: []
-        }
-        const res = await this.userStore.fetchInactiveAccount({
-          form: form
-        })
-
-        if (res) {
-          swAlert.success('', '')
-
-          //back router
-          this.$router.go(-1)
-          //this.$router.push({ name: 'edit-account' })
-        }
-      })
     }
   },
   created() {
