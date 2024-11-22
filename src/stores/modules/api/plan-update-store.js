@@ -140,6 +140,7 @@ export const usePlanUpdateApiStore = defineStore('planUpdate', {
             'WO No.': item.woNumber,
             เลขที่โอน: item.transferNumber,
             วันที่โอน: formatDate(item.createDate),
+            ผู้โอน: item.createBy,
             แผนกโอน: masterStatus.find((status) => status.id === item.formerStatus).nameTh,
             แผนกรับโอน: masterStatus.find((status) => status.id === item.targetStatus).nameTh,
 

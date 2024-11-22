@@ -146,6 +146,12 @@ export default {
           format: 'datetime'
         },
         {
+          field: 'createBy',
+          header: 'ผู้โอนงาน',
+          sortable: true,
+          minWidth: '150px',
+        },
+        {
           field: 'productNumber',
           header: 'รหัสสินค้า',
           sortable: true,

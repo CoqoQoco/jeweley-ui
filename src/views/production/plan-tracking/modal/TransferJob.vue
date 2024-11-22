@@ -44,13 +44,13 @@
               </div>
             </div>
             <div>
-              <span class="title-text">ผู้โอน</span>
+              <!-- <span class="title-text">ผู้โอน</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
                 v-model.trim="form.name"
                 required
-              />
+              /> -->
             </div>
             <div></div>
             <div></div>

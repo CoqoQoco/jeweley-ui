@@ -13,6 +13,8 @@
           </div>
         </div>
 
+        <div class="line"></div>
+
         <!-- detail -->
         <div class="label-container mt-2">
           <!-- username -->
@@ -44,18 +46,29 @@
               {{ data.lastName }}
             </div>
           </div>
+        </div>
 
-          <!-- date -->
-          <div class="title-label">
-            <span>วันที่ลงทะเบียน</span>
-          </div>
-          <div class="text-left">
-            <div class="form-control w-50" type="text">
+        <div class="line"></div>
+
+        <div class="form-col-sm-container date-container">
+          <div>
+            <span class="title-label">วันที่ลงทะเบียน</span>
+            <div class="form-control" type="text">
               <span class="bi bi-calendar mr-2"></span>
               <span> {{ formatDateTime(data.createdDate) }}</span>
             </div>
           </div>
+          <div>
+            <span class="title-label">วันที่เข้าสู่ระบบล่าสุด</span>
+            <div class="form-control" type="text">
+              <span class="bi bi-calendar mr-2"></span>
+              <span> {{ formatDateTime(data.lastLogin) }}</span>
+            </div>
+          </div>
+          <div></div>
         </div>
+
+        <div class="line"></div>
 
         <div class="role-conteiner">
           <BaseDataTable
@@ -301,6 +314,10 @@ export default {
   .custom-input {
     background-color: white;
   }
+}
+.date-container {
+  padding: 10px 0;
+  padding-left: 30px;
 }
 .submit-container-custom {
   display: flex;

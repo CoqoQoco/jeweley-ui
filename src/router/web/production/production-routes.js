@@ -9,7 +9,7 @@ const PlanOrderTrackingWorker = () =>
   import('@/views/production/plan-tracking-worker/IndexView.vue')
 const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
 const PlanOrderTransferTracking = () =>
-  import('@/views/production/plan-transfer-tracking/IndexView.vue')
+  import('@/views/production/plan-tracking-transfer/IndexView.vue')
 const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 

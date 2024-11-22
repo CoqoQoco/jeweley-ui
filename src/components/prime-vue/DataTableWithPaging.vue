@@ -202,7 +202,7 @@ export default {
     },
 
     formatValue(value, format) {
-      if (!value && value !== 0) return '0.000'
+      if (!value && value !== 0) return '-'
 
       switch (format) {
         case 'date':

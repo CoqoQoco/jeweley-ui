@@ -106,6 +106,13 @@ export default {
           format: 'datetime'
         },
         {
+          field: 'lastLogin',
+          header: 'วันที่เข้าสู่ระบบล่าสุด',
+          sortable: true,
+          minWidth: '150px',
+          format: 'datetime'
+        },
+        {
           field: 'status',
           header: 'สถานะ',
           sortable: false,
