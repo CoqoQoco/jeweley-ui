@@ -15,6 +15,7 @@ const stockGemPickReturnAndOutboundCreate = () =>
     '@/views/receipt-stock/gem/pick-return-and-outbound/components/create/PickReturnAndOutbound.vue'
   )
 
+import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   {
     path: '/stock-raw-material',
@@ -29,7 +30,8 @@ const routes = [
       },
       classIcon: 'bi bi-gem',
       majorShow: true,
-      btsubLineShow: true
+      btsubLineShow: true,
+      permissions: [PERMISSIONS.STOCK_GEM_VIEW]
     },
     children: [
       // stock Gem
@@ -44,7 +46,7 @@ const routes = [
             th: 'ตรวจคลัง'
           },
           minorShow: true,
-          menuId: `stock-gem`
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
         }
       },
 
@@ -60,7 +62,7 @@ const routes = [
             th: 'รายการเคลื่อนไหว'
           },
           minorShow: true,
-          menuId: `stock-gem-transection`
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
         }
       },
 
@@ -76,7 +78,7 @@ const routes = [
             th: 'รับเข้าคลัง'
           },
           minorShow: true,
-          menuId: `stock-gem-inbound`
+          permissions: [PERMISSIONS.STOCK_GEM_EDIT]
         }
       },
 
@@ -92,7 +94,7 @@ const routes = [
             th: 'จ่ายออกคลัง'
           },
           minorShow: true,
-          menuId: `stock-gem-outbound`
+          permissions: [PERMISSIONS.STOCK_GEM_EDIT]
         }
       },
 
@@ -108,7 +110,7 @@ const routes = [
             th: 'ยืมออกคลัง'
           },
           minorShow: true,
-          menuId: `stock-gem-pick-off`
+          permissions: [PERMISSIONS.STOCK_GEM_EDIT]
         }
       },
       // pick-return
@@ -123,7 +125,7 @@ const routes = [
             th: 'คืนเข้าคลัง/เบิกออกคลัง'
           },
           minorShow: true,
-          menuId: `stock-gem-pick-return-and-outbound`
+          permissions: [PERMISSIONS.STOCK_GEM_EDIT]
         }
       },
       {
@@ -137,7 +139,7 @@ const routes = [
             th: 'คืนเข้าคลัง/เบิกออกคลัง'
           },
           minorShow: false,
-          menuId: `stock-gem-pick-return-and-outbound-create`
+          permissions: [PERMISSIONS.STOCK_GEM_EDIT]
         }
       }
       // pick-outbound

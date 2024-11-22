@@ -24,15 +24,7 @@ const ZillView = () => import('@/views/master/zill/IndexView.vue')
 
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
-// ----- test ----- //
-//import TestAPI from '@/views/test-api/ViewTest.vue'
-
-//import MoldDesign from '@/views/production/order-plan/mold-design/MoldView.vue'
-//import PickingList from '@/views/production/order-plan/picking-list/PickingListView.vue'
-//test commit
-
-//import ImportProductionFile from '@/views/import-production/import/NewImportFile.vue'
-
+import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   //----- Main Dashboard ----
   // Main Dashboard
@@ -85,7 +77,8 @@ const routes = [
         th: 'ข้อมูลลูกค้า'
       },
       classIcon: 'bi bi-person-lines-fill',
-      majorShow: true
+      majorShow: true,
+      permissions: [PERMISSIONS.CUSTOMER_VIEW]
     },
     children: [
       {
@@ -97,7 +90,8 @@ const routes = [
             en: 'Customer Data',
             th: 'ข้อมูลลูกค้า'
           },
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.CUSTOMER_VIEW]
         }
       }
     ]
@@ -116,7 +110,8 @@ const routes = [
       },
       classIcon: 'bi bi-person-gear',
       majorShow: true,
-      btsubLineShow: true
+      btsubLineShow: true,
+      permissions: [PERMISSIONS.WORKER_VIEW]
     },
     children: [
       {
@@ -128,7 +123,8 @@ const routes = [
             en: 'Worker Name',
             th: 'ข้อมูลพนักงาน (ช่าง)'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.WORKER_VIEW]
         }
       },
       {
@@ -140,21 +136,10 @@ const routes = [
             en: 'Worker Wages',
             th: 'ตรวจสอบค่าเเรงช่าง'
           },
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.WORKER_VIEW]
         }
       }
-      // {
-      //   path: '/worker-salary',
-      //   name: 'worker-salary',
-      //   component: Report,
-      //   meta: {
-      //     Displayname: {
-      //       en: 'Worker Salary',
-      //       th: 'รายงานค่าเเรงช่าง'
-      //     },
-      //     minorShow: true
-      //   }
-      // }
     ]
   },
 
@@ -170,7 +155,8 @@ const routes = [
         th: 'รายงานช่าง'
       },
       classIcon: 'bi bi-file-spreadsheet',
-      majorShow: true
+      majorShow: true,
+      permissions: [PERMISSIONS.WORKER_VIEW]
     },
     children: [
       {
@@ -182,7 +168,8 @@ const routes = [
             en: 'Wages Report',
             th: 'รายงานช่าง'
           },
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.WORKER_VIEW]
         }
       }
     ]
@@ -201,7 +188,8 @@ const routes = [
       },
       classIcon: 'bi bi-database',
       majorShow: true,
-      btsubLineShow: true
+      btsubLineShow: true,
+      permissions: [PERMISSIONS.MASTER_VIEW]
     },
     children: [
       {
@@ -213,7 +201,8 @@ const routes = [
             en: 'Gem',
             th: 'ข้อมูลพลอย'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
         }
       },
       {
@@ -225,7 +214,8 @@ const routes = [
             en: 'Gem Shape',
             th: 'ข้อมูลรูปร่างพลอย'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
         }
       },
       {
@@ -237,7 +227,8 @@ const routes = [
             en: 'Gold Size',
             th: 'ข้อมูลขนาดทอง'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
         }
       },
       {
@@ -249,7 +240,8 @@ const routes = [
             en: 'Product Type',
             th: 'ข้อมูลประเภทสินค้า'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
         }
       },
       {
@@ -261,7 +253,8 @@ const routes = [
             en: 'Zill',
             th: 'ข้อมูลซิล'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
         }
       }
     ]
@@ -269,35 +262,5 @@ const routes = [
 
   //----- Setting -----
   ...settingRoutes
-
-  //---- Logout -----
-  // {
-  //   path: '/logout',
-  //   component: Layout,
-  //   redirect: '/logout',
-  //   name: 'logout',
-  //   meta: {
-  //     Displayname: {
-  //       en: 'Logout',
-  //       th: 'ออกจากระบบ'
-  //     },
-  //     classIcon: 'bi bi-power',
-  //     majorShow: true
-  //   },
-  //   children: [
-  //     {
-  //       path: '/logout',
-  //       name: 'logout',
-  //       component: Dashboard,
-  //       meta: {
-  //         Displayname: {
-  //           en: 'Logout',
-  //           th: 'ออกจากระบบ'
-  //         },
-  //         minorShow: false
-  //       }
-  //     }
-  //   ]
-  // }
 ]
 export default routes

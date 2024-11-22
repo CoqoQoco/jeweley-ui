@@ -3,15 +3,19 @@ const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
 const PlanGoldOrder = () => import('@/views/production/plan-gold/IndexView.vue')
 const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/IndexView.vue')
 const PlanOrderTracking = () => import('@/views/production/plan-tracking/IndexView.vue')
-const PlanOrderTrackingStatus = () => import('@/views/production/plan-tracking-status/IndexView.vue')
-const PlanOrderTrackingWorker = () => import('@/views/production/plan-tracking-worker/IndexView.vue')
+const PlanOrderTrackingStatus = () =>
+  import('@/views/production/plan-tracking-status/IndexView.vue')
+const PlanOrderTrackingWorker = () =>
+  import('@/views/production/plan-tracking-worker/IndexView.vue')
 const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
-const PlanOrderTransferTracking = () => import('@/views/production/plan-transfer-tracking/IndexView.vue')
+const PlanOrderTransferTracking = () =>
+  import('@/views/production/plan-transfer-tracking/IndexView.vue')
 const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
 const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
 
+import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   {
     path: '/production',
@@ -25,7 +29,8 @@ const routes = [
       },
       classIcon: 'bi bi-hammer',
       majorShow: true,
-      btsubLineShow: true
+      btsubLineShow: true,
+      permissions: [PERMISSIONS.PRODUCTION_VIEW]
     },
     children: [
       {
@@ -37,7 +42,8 @@ const routes = [
             en: 'Plan Order',
             th: 'สร้างแผนงานผลิต'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_CREATE]
         }
       },
       {
@@ -49,7 +55,8 @@ const routes = [
             en: 'Plan Gold Order',
             th: 'สร้างใบเบิกผสมทอง'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_CREATE]
         }
       },
       {
@@ -61,7 +68,8 @@ const routes = [
             en: 'Plan Order Tracking',
             th: 'ติดตามแผนงานผลิต'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
       {
@@ -73,7 +81,8 @@ const routes = [
             en: 'Plan Order Transfer Tracking',
             th: 'ติดตามแผนโอนงาน'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
       {
@@ -85,7 +94,8 @@ const routes = [
             en: 'Plan Order Tracking',
             th: 'ติดตามใบจ่าย-รับคืนงาน'
           },
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.PRODUCTION_EDIT]
         }
       },
       {
@@ -97,7 +107,8 @@ const routes = [
             en: 'Plan Order Pirce',
             th: 'ประเมินราคาใบจ่าย-รับคืนงาน'
           },
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.PRODUCTION_EDIT]
         }
       },
       {
@@ -109,7 +120,8 @@ const routes = [
             en: 'Plan Detail',
             th: 'รายละเอียดงานผลิต'
           },
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.PRODUCTION_EDIT]
         }
       },
       {
@@ -121,7 +133,8 @@ const routes = [
             en: 'Plan Order Status Tracking',
             th: 'ตรวจสอบสถานะงาน'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
       {
@@ -133,7 +146,8 @@ const routes = [
             en: 'Plan Order Worker Status Tracking',
             th: 'ตรวจสอบสถานะช่าง'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
       {
@@ -145,7 +159,8 @@ const routes = [
             en: 'Plan Gold Tracking',
             th: 'ติดตามงานเบิกผสมทอง'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
 
@@ -159,7 +174,8 @@ const routes = [
             en: 'Production Plan Report',
             th: 'รายงานผลิต'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
       {
@@ -171,7 +187,8 @@ const routes = [
             en: 'Plan Gold Report',
             th: 'รายงานใบเบิกผสมทอง'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       }
     ]

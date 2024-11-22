@@ -1,5 +1,5 @@
 // permissions/service.js
-import { PERMISSIONS, ROLE_PERMISSIONS } from './config.js'
+import { ROLE_PERMISSIONS } from './config.js'
 
 export class PermissionService {
   constructor(user) {
@@ -9,7 +9,7 @@ export class PermissionService {
 
   getUserPermissions() {
     if (!this.user?.role) return []
-    
+
     // รวม permissions จากทุก role ของ user
     return this.user.role.reduce((permissions, role) => {
       const rolePermissions = ROLE_PERMISSIONS[role.name] || []
@@ -24,15 +24,11 @@ export class PermissionService {
 
   hasAnyPermission(requiredPermissions) {
     if (!requiredPermissions?.length) return true
-    return requiredPermissions.some(permission => 
-      this.userPermissions.includes(permission)
-    )
+    return requiredPermissions.some((permission) => this.userPermissions.includes(permission))
   }
 
   hasAllPermissions(requiredPermissions) {
     if (!requiredPermissions?.length) return true
-    return requiredPermissions.every(permission => 
-      this.userPermissions.includes(permission)
-    )
+    return requiredPermissions.every((permission) => this.userPermissions.includes(permission))
   }
 }

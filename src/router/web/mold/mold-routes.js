@@ -7,6 +7,7 @@ const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
 const MoldList = () => import('@/views/mold/mold-list/IndexView.vue')
 const MoldpickingList = () => import('@/views/mold/picking-list/IndexView.vue')
 
+import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   {
     path: '/mold',
@@ -20,7 +21,8 @@ const routes = [
       },
       classIcon: 'bi bi-palette',
       majorShow: true,
-      btsubLineShow: true
+      btsubLineShow: true,
+      permissions: [PERMISSIONS.MOLD_VIEW]
     },
     children: [
       {
@@ -32,7 +34,8 @@ const routes = [
             en: 'Design Mold',
             th: 'สร้างเเบบเเม่พิมพ์'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_CREATE]
         }
       },
       {
@@ -44,7 +47,8 @@ const routes = [
             en: 'Re-design Mold',
             th: 'แปลงเเบบเเละจัดเก็บ'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_CREATE]
         }
       },
       {
@@ -56,7 +60,8 @@ const routes = [
             en: 'Plan List',
             th: 'ติดตามแบบเเม่พิมพ์'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_VIEW]
         }
       },
       {
@@ -64,7 +69,8 @@ const routes = [
         name: 'plan-data',
         component: MoldPlanData,
         meta: {
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.MOLD_EDIT]
         }
       },
       {
@@ -76,7 +82,8 @@ const routes = [
             en: 'Tracking Mold',
             th: 'เเบบเเม่พิมพ์สำเร็จ'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_VIEW]
         }
       },
       // {
@@ -100,7 +107,8 @@ const routes = [
             en: 'Picking Mold Summery',
             th: 'ติดตามเบิกเเม่พิมพ์'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_EDIT]
         }
       },
       {
@@ -112,7 +120,8 @@ const routes = [
             en: 'Picking Mold Summery',
             th: 'รายงานแบบเเม่พิมพ์'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_VIEW]
         }
       },
       {
@@ -124,7 +133,8 @@ const routes = [
             en: 'Picking Mold Summery',
             th: 'รายงานเบิกเเม่พิมพ์'
           },
-          minorShow: true
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_VIEW]
         }
       }
     ]
