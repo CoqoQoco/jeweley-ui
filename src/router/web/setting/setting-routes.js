@@ -29,8 +29,7 @@ const routes = [
             en: 'User Account',
             th: 'ข้อมูลส่วนบุคคล'
           },
-          minorShow: true,
-          menuId: `user-account`
+          minorShow: true
         }
       },
       {
@@ -43,7 +42,7 @@ const routes = [
             th: 'จัดการบัญชีผู้ใช้'
           },
           minorShow: true,
-          menuId: `edit-account`
+          permissions: ['Admin']
         }
       },
       {
@@ -55,8 +54,7 @@ const routes = [
             en: 'Edit Account',
             th: 'จัดการบัญชีผู้ใช้'
           },
-          minorShow: false,
-          menuId: `edit-account-view`
+          minorShow: false
         }
       }
     ]

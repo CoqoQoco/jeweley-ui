@@ -236,11 +236,18 @@ export default {
   }
 }
 .bottom-line-menu {
-  //height: 20px;
-  border-bottom: solid 1px var(--base-font-color);
-  margin-left: 10px;
-  margin-right: 10px;
-  padding-top: 5px;
+  // //height: 20px;
+  // border-bottom: solid 1px var(--base-font-color);
+  // margin-left: 10px;
+  // margin-right: 10px;
+  // padding-top: 5px;
+
+   // เพิ่ม border ด้านล่าง
+   border-bottom: 3px solid var(--base-font-color);
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  border-radius: 50%; /* ทำให้เส้นขอบเป็นเส้นกลม */
 }
 .top-line-menu {
   //height: 20px;

@@ -35,6 +35,7 @@ const ReportProductionWages = () => import('@/views/report-production-wages/Inde
 
 const routes = [
   //----- Main Dashboard ----
+  // Main Dashboard
   {
     path: '/',
     component: Layout,
@@ -46,8 +47,7 @@ const routes = [
         th: 'หน้าแรก'
       },
       classIcon: 'bi bi-house-door-fill',
-      majorShow: true,
-      btLineShow: true
+      majorShow: true
     },
     children: [
       {

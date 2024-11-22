@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"> </loading>
     <div class="filter-container">
       <pageTitle
         title="รายงานใบผสมทอง"
@@ -302,7 +301,6 @@ import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-
 import Calendar from 'primevue/calendar'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -326,7 +324,7 @@ const interfaceIsValid = {
 export default {
   components: {
     pageTitle,
-  
+
     Calendar,
     DataTable,
     Column,

@@ -13,9 +13,17 @@
           class="avatar"
           :class="{ 'hidden-avatar': !isShowSidenav }"
         />
-        <!-- <div class="employee-container" :class="{ 'hidden-avatar': !isShowSidenav }">
-          <label class="employee-name">JEWELRY MANAGEMENT</label>
-        </div> -->
+      </div>
+
+      <!-- ขีดเส้น -->
+      <div class="bottom-logo-line"></div>
+
+      <div class="employee-container" :class="{ 'hidden-avatar': !isShowSidenav }">
+        <!-- <div class="title">สวัสดี</div> -->
+        <div>
+          <span class="employee-name bi bi-person-hearts mr-2"></span>
+          <span class="employee-name">{{ `${user.firstName} ${user.lastName}` }}</span>
+        </div>
       </div>
 
       <!-- ขีดเส้น -->
@@ -57,17 +65,31 @@
 
 <script>
 import SlideBar from '@/components/layout/SideBar.vue'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 //import Breadcrumb from '@/components/layout/BreadcrumbName.vue'
 export default {
   components: {
     SlideBar
     //Breadcrumb
   },
+
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
+  },
+
+  computed: {
+    user() {
+      return this.authStore.user
+    }
+  },
+
   data() {
     return {
       isShowSidenav: true
     }
   },
+
   watch: {}
 }
 </script>
@@ -215,6 +237,24 @@ export default {
   //padding-top: 50px;
 }
 
+.employee-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px 0px;
+  .title {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--base-sub-color);
+  }
+  .employee-name {
+    font-size: 15px;
+    font-weight: 200;
+    color: var(--base-font-color);
+  }
+}
+
 // Custom Style
 .bottom-logo-line {
   // เพิ่ม border ด้านล่าง
@@ -266,22 +306,6 @@ export default {
     //   height: 30px;
     //   transform: translateY(-3px) translateX(-10px);
     // }
-  }
-
-  .employee-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    //background-color: #f0f0f0;
-    margin-top: 5px;
-    //padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    .employee-name {
-      font-size: 18px;
-      font-weight: 400;
-      color: var(--base-font-color);
-    }
   }
 
   .show-stagging {

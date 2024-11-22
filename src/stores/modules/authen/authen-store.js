@@ -6,8 +6,8 @@ import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: localStorage.getItem('token') || null,
-    user: JSON.parse(localStorage.getItem('user')) || null,
+    token: localStorage.getItem('token-dk') || null,
+    user: JSON.parse(localStorage.getItem('user-dk')) || null,
     error: null,
     permissions: [],
     userMenus: []
