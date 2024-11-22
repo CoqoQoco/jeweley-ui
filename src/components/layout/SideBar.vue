@@ -139,6 +139,8 @@
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { PermissionService } from '@/services/permission/permission.js'
+//import { PERMISSIONS } from '@/services/permission/config.js'
 export default {
   setup() {
     const authStore = useAuthStore()
@@ -154,40 +156,77 @@ export default {
   },
   methods: {
     // ------------ Business Logic ------------
+    // ใน Menu Component
     async setMenuBar() {
-      //children ในส่วนนี้ คือ ข้อมูลที่เพิ่มจาก route ของหน้าบ้าน (pc routes)
       const allList = this.$router.getRoutes()
+      const user = this.authStore.getUser
 
-      // Map Data for MenuList
-      allList.forEach((e) => {
-        //console.log(e)
-        if (e.meta.majorShow) {
-          let subMenu = []
+      // ถ้าไม่มี user หรือไม่มี role ให้แสดงแค่ dashboard และ user-account
+      if (!user?.role || user.role.length === 0) {
+        const dashboardRoute = allList.find((route) => route.name === 'dashboard')
+        const settingRoute = allList.find((route) => route.name === 'data-setting')
 
-          //get memu from route
-          const filterChirldren = e.children.filter((c) => c.meta.minorShow)
-
-          filterChirldren.forEach((s) => {
-            subMenu = [...subMenu, s]
+        if (dashboardRoute) {
+          this.menuForPermission.push({
+            ...dashboardRoute,
+            isOpen: false,
+            subMenu: []
           })
+        }
 
-          this.menuForPermission = [
-            ...this.menuForPermission,
-            {
-              ...e,
+        if (settingRoute) {
+          // กรองเอาแค่ user-account submenu
+          const userAccountMenu = settingRoute.children.find(
+            (child) => child.name === 'user-account'
+          )
+
+          if (userAccountMenu) {
+            this.menuForPermission.push({
+              ...settingRoute,
               isOpen: false,
-              subMenu: subMenu.map((thing) => {
-                return {
-                  ...thing,
+              subMenu: [
+                {
+                  ...userAccountMenu,
                   isOpen: false
                 }
-              })
-            }
-          ]
+              ]
+            })
+          }
+        }
+        return
+      }
+
+      // กรณีมี role ทำงานปกติ
+      const permissionService = new PermissionService(user)
+      allList.forEach((route) => {
+        if (route.meta.majorShow) {
+          const hasAccess = permissionService.hasAnyPermission(route.meta.permissions)
+
+          if (hasAccess || route.name === 'dashboard') {
+            const subMenu = this.getAuthorizedSubMenus(route, permissionService)
+            this.menuForPermission.push({
+              ...route,
+              isOpen: false,
+              subMenu
+            })
+          }
         }
       })
+    },
+    getAuthorizedSubMenus(route, permissionService) {
+      if (route.name === 'dashboard') return []
 
-      //console.log(this.menuForPermission)
+      return route.children
+        .filter((child) => {
+          if (!child.meta.minorShow) return false
+          // อนุญาต user-account เสมอ
+          if (child.name === 'user-account') return true
+          return permissionService.hasAnyPermission(child.meta.permissions)
+        })
+        .map((menu) => ({
+          ...menu,
+          isOpen: false
+        }))
     },
     // ------------ Actions (Open hidden menu) ------------
     onToggleMainMenu(mainIndex) {
@@ -242,8 +281,8 @@ export default {
   // margin-right: 10px;
   // padding-top: 5px;
 
-   // เพิ่ม border ด้านล่าง
-   border-bottom: 3px solid var(--base-font-color);
+  // เพิ่ม border ด้านล่าง
+  border-bottom: 3px solid var(--base-font-color);
   margin-left: 5px;
   margin-right: 5px;
   margin-bottom: 5px;

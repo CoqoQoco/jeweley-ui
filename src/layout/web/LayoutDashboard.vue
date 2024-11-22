@@ -22,7 +22,7 @@
         <!-- <div class="title">สวัสดี</div> -->
         <div>
           <span class="employee-name bi bi-person-hearts mr-2"></span>
-          <span class="employee-name">{{ `${user.firstName} ${user.lastName}` }}</span>
+          <span class="employee-name">{{ `${user?.firstName} ${user?.lastName}` }}</span>
         </div>
       </div>
 

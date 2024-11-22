@@ -3,6 +3,8 @@ import Layout from '@/layout/web/LayoutDashboard.vue'
 
 import EditAccount from '@/views/setting/edit-account/IndexView.vue'
 import EditAccountView from '@/views/setting/edit-account/view/AccountView.vue'
+
+import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   //----- Main Dashboard -----
   {
@@ -42,7 +44,7 @@ const routes = [
             th: 'จัดการบัญชีผู้ใช้'
           },
           minorShow: true,
-          permissions: ['Admin']
+          permissions: [PERMISSIONS.USER_EDIT]
         }
       },
       {
@@ -54,7 +56,8 @@ const routes = [
             en: 'Edit Account',
             th: 'จัดการบัญชีผู้ใช้'
           },
-          minorShow: false
+          minorShow: false,
+          permissions: [PERMISSIONS.USER_EDIT]
         }
       }
     ]
