@@ -59,7 +59,7 @@ export const useAuthStore = defineStore('auth', {
     async login({ username, password }) {
       const loadingStore = useLoadingStore()
 
-      loadingStore.showLoading()
+      //loadingStore.showLoading()
       try {
         this.clearError()
 
@@ -134,6 +134,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async fetchUserProfile() {
+      const loadingStore = useLoadingStore()
       try {
         // Get user profile data
         const userProfile = await api.jewelry.get('User/Get')
@@ -152,12 +153,14 @@ export const useAuthStore = defineStore('auth', {
         // Update user in localStorag
         localStorage.setItem('user-dk', JSON.stringify(this.user))
 
+        loadingStore.hideLoading()
         return {
           profile: this.user,
           permissions: this.permissions,
           userMenus: this.userMenus
         }
       } catch (error) {
+        loadingStore.hideLoading()
         return this.handleError(error, 'Error fetching user profile')
       }
     },
