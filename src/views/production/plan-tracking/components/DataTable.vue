@@ -20,6 +20,7 @@
             </button> -->
         </div>
       </template>
+
       <!-- Image Column -->
       <template #imageTemplate="{ data }">
         <div class="image-container">
@@ -224,13 +225,13 @@ export default {
         },
         {
           field: 'gold',
-          header: 'ประเภททอง/เงิน',
+          header: 'สีของทอง/เงิน',
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'goldSize',
-          header: 'ขนาดทอง/เงิน',
+          header: 'ประเภททอง/เงิน',
           sortable: true,
           minWidth: '150px'
         },
@@ -278,7 +279,7 @@ export default {
     isTranferJob() {
       let res = true
       if (this.modelForm && this.modelForm.status && this.modelForm.status.length === 1) {
-        const allow = [10, 50, 60, 70, 80, 85, 90]
+        const allow = [10, 50, 60, 70, 80, 85, 90, 94, 95]
         allow.includes(this.modelForm.status[0]) && this.planSearchStore.dataPlanSearch.total > 0
           ? (res = false)
           : (res = true)

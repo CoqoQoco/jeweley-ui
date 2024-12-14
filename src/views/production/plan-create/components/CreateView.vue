@@ -121,7 +121,7 @@
                 </Dropdown>
               </div>
               <div>
-                <span class="title-text">ขนาดทอง/เงิน</span>
+                <span class="title-text">ประเภททอง/เงิน</span>
                 <Dropdown
                   v-model="form.goldSize"
                   :options="masterGoldSize"
@@ -189,7 +189,7 @@
                 </div>
               </template>
             </Column>
-            <Column field="gold" header="ประเภททอง/เงิน" style="min-width: 150px">
+            <Column field="gold" header="สีของทอง/เงิน" style="min-width: 150px">
               <template #body="slotProps">
                 <span>{{ slotProps.data.gold?.description }}</span>
               </template>

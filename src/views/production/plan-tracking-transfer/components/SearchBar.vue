@@ -120,7 +120,7 @@
 
               <!-- gold -->
               <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
+                <span class="title-text">สีของทอง/เงิน</span>
                 <div>
                   <MultiSelect
                     v-model="form.gold"
@@ -134,7 +134,7 @@
 
               <!-- gold size -->
               <div>
-                <span class="title-text">ขนาดทอง/เงิน</span>
+                <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
                   <MultiSelect
                     v-model="form.goldSize"

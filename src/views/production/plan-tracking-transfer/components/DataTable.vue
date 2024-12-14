@@ -171,13 +171,13 @@ export default {
         },
         {
           field: 'gold',
-          header: 'ประเภททอง/เงิน',
+          header: 'สีของทอง/เงิน',
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'goldSize',
-          header: 'ขนาดทอง/เงิน',
+          header: 'ประเภททอง/เงิน',
           sortable: true,
           minWidth: '150px'
         }
