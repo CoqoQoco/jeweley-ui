@@ -104,6 +104,19 @@
           <span class="desc-text">{{ model.productDetail }}</span>
         </div>
       </div>
+
+      <div class="form-col-container pl-3 mt-4">
+        <div class="d-flex flex-column">
+          <span class="title-text">สีของทอง/เงิน</span>
+          <span class="desc-text">{{ model.gold ?? `-` }}</span>
+        </div>
+        <div class="d-flex flex-column">
+          <span class="title-text">ประเภททอง/เงิน</span>
+          <span class="desc-text">{{ model.goldSize ?? `-` }}</span>
+        </div>
+      </div>
+
+
       <div class="line"></div>
       <div class="form-col-container pl-3 mt-4">
         <div class="d-flex flex-column">

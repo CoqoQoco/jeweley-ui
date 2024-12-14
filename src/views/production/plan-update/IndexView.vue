@@ -36,6 +36,8 @@
         :modelValue="data"
         :masterCustomerType="masterCustomer"
         :masterProductType="masterProduct"
+        :masterGold="masterGold"
+        :masterGoldSize="masterGoldSize"
         @fetch="fetchFormHeaderUpdate"
         @closeModal="onCloseFormHeaderUpdate"
       ></planHeaderUpdateView>

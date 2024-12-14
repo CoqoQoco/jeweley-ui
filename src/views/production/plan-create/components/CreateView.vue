@@ -108,7 +108,7 @@
             </div>
             <div class="form-header-left-row-container">
               <div>
-                <span class="title-text">ทอง/เงิน</span>
+                <span class="title-text">สีของทองทอง/เงิน</span>
                 <Dropdown
                   v-model="form.gold"
                   :options="masterGold"

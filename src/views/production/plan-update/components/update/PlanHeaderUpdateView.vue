@@ -1,6 +1,5 @@
 <template>
   <div>
-  
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
@@ -125,7 +124,7 @@
             <div></div>
             <div></div>
           </div>
-          <div class="form-col-container">
+          <div class="form-col-container mt-2">
             <!-- product detail -->
             <div>
               <span class="title-text">รายละเอียดสินค้า</span>
@@ -137,6 +136,32 @@
               >
               </textarea>
             </div>
+          </div>
+
+          <div class="form-col-container mt-2">
+            <div>
+              <span class="title-text">สีของทองทอง/เงิน</span>
+              <Dropdown
+                v-model="form.gold"
+                :options="modelMastergold"
+                optionLabel="description"
+                class="w-full md:w-14rem"
+                placeholder="เลือกทอง"
+              >
+              </Dropdown>
+            </div>
+            <div>
+              <span class="title-text">ประเภททอง/เงิน</span>
+              <Dropdown
+                v-model="form.goldSize"
+                :options="modelMasterGoldSize"
+                optionLabel="description"
+                placeholder="เลือกเปอร์เซ็น"
+                class="w-full md:w-14rem"
+              >
+              </Dropdown>
+            </div>
+            <div></div>
           </div>
 
           <div class="line-main mt-4"></div>
@@ -166,7 +191,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-
 
 import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
@@ -202,11 +226,12 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-  
+
     AutoComplete,
     Calendar,
     Dropdown
   },
+
   props: {
     isShow: {
       type: Boolean,
@@ -226,8 +251,19 @@ export default {
       type: Array,
       required: true,
       default: () => []
+    },
+    masterGold: {
+      type: Array,
+      required: true,
+      default: () => []
+    },
+    masterGoldSize: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
+
   watch: {
     modelValue: {
       handler(val) {
@@ -249,12 +285,16 @@ export default {
           productQty: val.productQty,
           productQtyUnit: val.productQtyUnit,
           productDetail: val.productDetail,
-          remark: val.remark
+          remark: val.remark,
+
+          gold: this.modelMastergold.find((x) => x.nameEn === val.gold),
+          goldSize: this.modelMasterGoldSize.find((x) => x.nameEn === val.goldSize)
         }
       },
       deep: true
     }
   },
+
   computed: {
     isShowModal() {
       return this.isShow
@@ -267,8 +307,15 @@ export default {
     },
     modelMasterProductType() {
       return this.masterProductType
+    },
+    modelMastergold() {
+      return this.masterGold
+    },
+    modelMasterGoldSize() {
+      return this.masterGoldSize
     }
   },
+
   data() {
     return {
       // --- flag --- //
@@ -285,6 +332,7 @@ export default {
       modelCustomer: []
     }
   },
+
   methods: {
     // ------ helper ------//
     formatDateTime(date) {
@@ -433,7 +481,10 @@ export default {
           productNumber: this.form.productNumber,
           productType: this.form.productType ? this.form.productType.code : null,
           productDetail: this.form.productDetail,
-          remark: this.form.remark ?? null
+          remark: this.form.remark ?? null,
+
+          gold: this.form.gold ? this.form.gold.nameEn : null,
+          goldSize: this.form.goldSize ? this.form.goldSize.nameEn : null
         }
 
         //console.log(params)
