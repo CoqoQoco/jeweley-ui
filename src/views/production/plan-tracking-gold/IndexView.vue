@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <headerBar v-model:modelForm="form" @search="onSearchFilter" @clear="onClearFilter"></headerBar>
-    <dataTable v-model:modelForm="form" class="mt-2"></dataTable>
+    <dataTable v-model:modelForm="search" class="mt-2"></dataTable>
   </div>
 </template>
 
@@ -10,6 +10,8 @@ import headerBar from './components/HeaderView.vue'
 import dataTable from './components/DataTableView.vue'
 
 const interfaceForm = {
+  bookNo: null,
+  no: null,
   text: null,
   runningNumber: null,
   createStart: null,
@@ -22,13 +24,14 @@ export default {
   },
   data() {
     return {
-      form: { ...interfaceForm }
+      form: { ...interfaceForm },
+      search: {}
     }
   },
   methods: {
     onSearchFilter(data) {
       console.log('onSearchFilter')
-      this.form = { ...data }
+      this.search = { ...data }
     },
     onClearFilter() {
       //console.log('onClearFilter')

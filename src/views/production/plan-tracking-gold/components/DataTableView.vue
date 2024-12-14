@@ -238,8 +238,10 @@ export default {
           skip: this.skip,
           sort: this.sort,
           search: {
-            text: this.form.text,
-            runningNumber: this.form.runningNumber,
+            bookNo: this.form.bookNo ?? null,
+            no: this.form.no ?? null,
+            text: this.form.text ?? null,
+            runningNumber: this.form.runningNumber ?? null,
             createStart: this.form.createStart ? formatISOString(this.form.createStart) : null,
             createEnd: this.form.createEnd ? formatISOString(this.form.createEnd) : null
           }

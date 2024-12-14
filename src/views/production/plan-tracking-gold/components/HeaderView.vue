@@ -36,45 +36,72 @@
         </div>
         <div class="form-col-container">
           <div>
-            <span class="title-text">ค้นหาใบผสมทอง</span>
+            <span class="title-text">เล่มที่</span>
             <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.text"
-                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div>
+              <input :class="['form-control bg-input']" type="text" v-model.trim="form.bookNo" />
             </div>
           </div>
           <div>
-            <span class="title-text">ค้นหาด้วยหมายเลขลำดับ</span>
+            <span class="title-text">เลขที่</span>
             <div class="input-group input-group-inner">
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.runningNumber"
-              />
-              <!-- <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div> -->
+              <input :class="['form-control bg-input']" type="text" v-model.trim="form.no" />
             </div>
           </div>
         </div>
       </div>
 
+      <dialogView
+        :isShow="isShow.dialog"
+        @closeDialog="closeDialog"
+        @search="dialogSearch"
+        txtHeader="ค้นหาเพิ่มเติม"
+      >
+        <template #content>
+          <div class="form-col-container">
+            <div>
+              <span class="title-text">ค้นหาใบผสมทอง</span>
+              <div class="input-group input-group-inner">
+                <input
+                  id="inputStockID"
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="form.text"
+                  placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                />
+                <div class="input-group-append">
+                  <span class="input-group-text">
+                    <i class="bi bi-upc-scan text-main-color"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="title-text">ค้นหาด้วยหมายเลขลำดับ</span>
+              <div class="input-group input-group-inner">
+                <input
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="form.runningNumber"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
+      </dialogView>
+
       <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main" type="submit">
+        <button class="btn btn-sm btn-main mr-2" type="submit">
           <span><i class="bi bi-search"></i></span>
         </button>
-        <button class="btn btn-sm btn-dark ml-2" type="button">
+        <button
+          class="btn btn-sm btn-sub-main mr-2"
+          type="button"
+          title="เพิ่มเติม"
+          @click="onShowDialog"
+        >
+          <span><i class="bi bi-zoom-in"></i></span>
+        </button>
+        <button class="btn btn-sm btn-dark" type="button" @click="onClear"> 
           <span><i class="bi bi-x-circle"></i></span>
         </button>
       </div>
@@ -84,21 +111,30 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import Calendar from 'primevue/calendar'
 
+const interfaceIsShow = {
+  dialog: false
+}
+
 export default {
   components: {
     pageTitle,
-    Calendar
+    Calendar,
+    dialogView
   },
+
   props: {
     modelForm: {
       type: Object,
       default: () => ({})
     }
   },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -107,11 +143,14 @@ export default {
       deep: true
     }
   },
+
   data() {
     return {
+      isShow: { ...interfaceIsShow },
       form: { ...this.modelForm }
     }
   },
+
   methods: {
     onSubmit() {
       this.$emit('search', this.form)
@@ -122,6 +161,16 @@ export default {
     onCreate() {
       //this.$router.push({ name: 'plan-gold-order' })
       this.$router.push('/plan-gold-order')
+    },
+    dialogSearch() {
+      this.isShow.dialog = false
+      this.$emit('search', this.form)
+    },
+    onShowDialog() {
+      this.isShow.dialog = true
+    },
+    closeDialog() {
+      this.isShow.dialog = false
     }
   }
 }
