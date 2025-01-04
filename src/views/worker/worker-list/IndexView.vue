@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <loading :isLoading="isLoading"> </loading>
-    <div class="filter-container">
+    <div class="filter-container-searchBar">
       <pageTitle
         title="ข้อมูลพนักงาน (ช่าง)"
         description="ข้อมูลพนักงาน(ช่าง) เพิ่ม/เเก้ไข เเละรายละเอียดต่างๆ"
@@ -55,22 +55,19 @@
           </div>
           <div class="btn-container">
             <button type="submit" class="btn btn-sm btn-main mr-2">
-              <span class="mr-2">
+              <span class="">
                 <i class="bi bi-search"></i>
               </span>
-              <span>ค้นหา</span>
             </button>
             <button type="button" @click="onClear" class="btn btn-sm btn-dark mr-2">
-              <span class="mr-2">
+              <span class="">
                 <i class="bi bi-x-circle"></i>
               </span>
-              <span>ล้างคำค้นหา</span>
             </button>
             <button type="button" @click="onShowFormAddWorker" class="btn btn-sm btn-warning">
-              <span class="mr-2">
+              <span class="">
                 <i class="bi bi-plus"></i>
               </span>
-              <span>เพิ่มข้อมูลพนักงาน</span>
             </button>
           </div>
         </div>
