@@ -1,7 +1,6 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"> </loading>
-    <div class="filter-container">
+    <div class="filter-container-searchBar">
       <pageTitle
         title="ตรวจสอบค่าเเรง (ช่าง)"
         description="ตรสจสอบค่าเเรง(ช่าง) พิมพ์เอกสาร เเละรายละเอียดต่างๆ"
@@ -78,7 +77,7 @@
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span><i class="bi bi-search"></i></span>
-              <span class="ml-2">ตรวจสอบ</span>
+              <!-- <span class="ml-2">ตรวจสอบ</span> -->
             </button>
             <!-- <button class="btn btn-sm btn-dark" type="button" @click="onClear">
               <span><i class="bi bi-x-circle"></i></span>

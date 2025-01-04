@@ -6,7 +6,7 @@
       dataKey="code"
       class="p-datatable-sm"
       scrollable
-      scrollHeight="calc(100vh - 305px)"
+      scrollHeight="calc(100vh - 240px)"
       resizableColumns
       :paginator="true"
       :lazy="true"

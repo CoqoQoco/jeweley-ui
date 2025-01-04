@@ -52,7 +52,7 @@
               <span class="title-text">เกรด</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelect
-                v-model="form.size"
+                v-model="form.grade"
                 :options="sizeOptions"
                 filter
                 optionLabel="value"
@@ -66,7 +66,7 @@
               <span class="title-text">ขนาด</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelect
-                v-model="form.shape"
+                v-model="form.size"
                 :options="shapeOptions"
                 filter
                 optionLabel="value"
@@ -80,7 +80,7 @@
               <span class="title-text">รูปร่าง</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelect
-                v-model="form.grade"
+                v-model="form.shape"
                 :options="gradeOptions"
                 filter
                 optionLabel="value"
