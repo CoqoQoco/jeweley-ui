@@ -17,7 +17,7 @@
           </div>
           <div>
             <button
-              class="btn btn-sm btn-primary mr-2"
+              class="btn btn-sm btn-main mr-2"
               style="width: 100px"
               @click.prevent="chooseCallback(chooseCallback)"
             >
