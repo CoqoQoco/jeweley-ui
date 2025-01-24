@@ -92,7 +92,8 @@ export default {
         Gold: 'รายการทอง',
         Worker: 'รายการงานช่าง',
         Gem: 'รายการเพชรและพลอย',
-        ETC: 'รายการเพิ่มเติม'
+        ETC: 'รายการเพิ่มเติม',
+        Embed: 'รายการฝัง',
       }
       return titles[groupName] || groupName
     },

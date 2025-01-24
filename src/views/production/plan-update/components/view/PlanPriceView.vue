@@ -286,8 +286,12 @@ export default {
           return 'รายการวัถุดิบ'
         case 'Worker':
           return 'รายการงานช่าง'
-        default:
+        case 'Embed':
+          return 'รายการงานฝัง'
+        case 'ETC':
           return 'รายการเพิ่มเติม'
+        default:
+          return 'Unknown'
       }
     },
     caltotalPrice(data) {

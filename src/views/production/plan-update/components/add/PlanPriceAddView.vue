@@ -1,6 +1,5 @@
 <template>
   <div>
-  
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header">
@@ -50,7 +49,7 @@
               </Column>
               <Column field="nameDescription">
                 <template #body="slotProps">
-                  <div v-if="slotProps.data.nameGroup === 'ETC'">
+                  <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
                     <input
                       type="text"
                       style="background-color: #b5dad4"
@@ -81,7 +80,7 @@
 
               <Column field="qty" style="width: 130px">
                 <template #body="slotProps">
-                  <div v-if="slotProps.data.nameGroup === 'ETC'">
+                  <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
                     <input
                       style="background-color: #b5dad4"
                       v-model="slotProps.data.qty"
@@ -117,7 +116,7 @@
 
               <Column field="qtyWeight" style="width: 110px">
                 <template #body="slotProps">
-                  <div v-if="slotProps.data.nameGroup === 'ETC'">
+                  <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
                     <input
                       style="background-color: #b5dad4"
                       v-model="slotProps.data.qtyWeight"
@@ -166,22 +165,42 @@
 
               <template #groupheader="slotProps">
                 <div class="flex align-items-center gap-2 type-container">
-                  <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
+                  <span><i class="bi bi-clipboard2-check mr-2"></i></span>
                   <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
                 </div>
               </template>
+              <template #groupfooter="slotProps">
+                <div class="d-flex align-items-center justify-content-between gap-2 type-container">
+                  <div>
+                    <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
+                    <span>ต้นทุน</span>
+                    <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
+                  </div>
+                  <div class="text-right mr-2">
+                    {{ calculateGroupTotal(slotProps.data.nameGroup).toFixed(2) }}
+                  </div>
+                </div>
+              </template>
+
+              <!-- <template #groupheader="slotProps">
+                <div class="flex align-items-center gap-2 type-container">
+                  <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
+                  <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
+                </div>
+              </template> -->
+
               <ColumnGroup type="footer">
                 <Row>
                   <column :colspan="7">
                     <template #footer>
-                      <div class="text-right">
-                        <span>ต้นทุนรวม</span>
+                      <div class="text-right type-container">
+                        <span>ต้นทุนรวมทั้งหมด</span>
                       </div>
                     </template>
                   </column>
                   <column :colspan="1">
                     <template #footer>
-                      <div class="text-right">
+                      <div class="text-right type-container">
                         <span>{{ caltotalPrice(tranItems) }}</span>
                       </div>
                     </template>
@@ -284,16 +303,30 @@
             </ColumnGroup>
           </DataTable> -->
 
-          <div class="text-right mt-2">
-            <button
-              type="button"
-              class="btn btn-sm btn-green mr-2"
-              title="เพิ่มรายการ"
-              @click="addItem"
-            >
-              <span><i class="bi bi-plus"></i></span>
-            </button>
-            <!-- <button
+          <div class="action-group-container mt-2">
+            <div class="d-flex align-items-center gap-2">
+              <Dropdown
+                v-model="masterValue"
+                :options="masterType"
+                optionLabel="name"
+                optionValue="code"
+                class="w-full md:w-14rem mr-2"
+                placeholder="เลือกรายการ"
+              >
+              </Dropdown>
+
+              <button
+                type="button"
+                class="btn btn-sm btn-green mt-1 mr-2"
+                title="เพิ่มรายการ"
+                @click="addItem"
+              >
+                <span><i class="bi bi-plus"></i></span>
+              </button>
+            </div>
+
+            <div>
+              <!-- <button
               type="button"
               class="btn btn-green mr-2"
               title="เพิ่มส่วนลด"
@@ -301,9 +334,10 @@
             >
               <span><i class="bi bi-cash-coin"></i></span>
             </button> -->
-            <button type="submit" class="btn btn-sm btn-main" title="บันทึก">
-              <span><i class="bi bi-calendar-check"></i></span>
-            </button>
+              <button type="submit" class="btn btn-sm btn-main mt-1" title="บันทึก">
+                <span><i class="bi bi-calendar-check"></i></span>
+              </button>
+            </div>
           </div>
         </form>
       </template>
@@ -316,10 +350,9 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
-
 // import AutoComplete from 'primevue/autocomplete'
 // import Calendar from 'primevue/calendar'
-// import Dropdown from 'primevue/dropdown'
+import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
@@ -353,10 +386,10 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-  
+
     //AutoComplete,
     //Calendar,
-    //Dropdown,
+    Dropdown,
     DataTable,
     Column,
     ColumnGroup,
@@ -428,6 +461,14 @@ export default {
       val: {
         ...interfaceIsValid
       },
+      masterValue: 'ETC',
+      masterType: [
+        { code: 'Gold', name: 'รายการทอง' },
+        { code: 'Gem', name: 'รายการวัถุดิบ' },
+        { code: 'Worker', name: 'รายการงานช่าง' },
+        { code: 'Embed', name: 'รายการงานฝัง' },
+        { code: 'ETC', name: 'รายการเพิ่มเติม' }
+      ],
 
       tempMatAssign: [],
       matAssign: [],
@@ -560,16 +601,32 @@ export default {
       //this.onUpdateQty(item)
     },
     addItem() {
+      console.log('addItem', this.masterValue)
       this.tranItems.push({
-        nameGroup: 'ETC',
+        nameGroup: this.masterValue ?? 'ETC',
         nameDescription: '',
         date: new Date(),
         qty: 0,
         qtyPrice: Number(0).toFixed(2),
         qtyWeight: 0,
         qtyWeightPrice: Number(0).toFixed(2),
-        totalPrice: Number(0).toFixed(2)
+        totalPrice: Number(0).toFixed(2),
+        isAdd: true
       })
+
+      // กำหนดลำดับของ nameGroup
+      const groupOrder = {
+        Gold: 1,
+        Worker: 2,
+        Embed: 3,
+        Gem: 4,
+        ETC: 5
+      }
+
+      // เรียงตามลำดับที่กำหนด
+      this.tranItems = _.sortBy(this.tranItems, (item) => groupOrder[item.nameGroup])
+
+      console.log('addItem', this.tranItems)
     },
     addItemDiscount() {
       this.tranDiscount.push({
@@ -594,9 +651,18 @@ export default {
           return 'รายการวัถุดิบ'
         case 'Worker':
           return 'รายการงานช่าง'
-        default:
+        case 'Embed':
+          return 'รายการงานฝัง'
+        case 'ETC':
           return 'รายการเพิ่มเติม'
+        default:
+          return 'Unknown'
       }
+    },
+    calculateGroupTotal(groupName) {
+      return this.tranItems
+        .filter((item) => item.nameGroup === groupName)
+        .reduce((total, item) => total + Number(item.totalPrice), 0)
     },
 
     // --- APIs --- //
@@ -613,7 +679,7 @@ export default {
           item: this.tranItems.map((item) => {
             return {
               no: no++,
-              name: item.nameGroup === 'ETC' ? item.nameDescription : item.name,
+              name: item.isAdd ? item.nameDescription : item.name,
               nameGroup: item.nameGroup,
               nameDescription: item.nameDescription,
               date: item.date ? formatISOString(item.date) : null,
@@ -762,6 +828,8 @@ export default {
           this.tranItems = res.items.map((item) => {
             return {
               ...item,
+              isAdd: false,
+              qtyWeight: item.qtyWeight ? Number(item.qtyWeight).toFixed(2) : '0.00',
               qtyPrice: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
               qtyWeightPrice: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
               totalPrice: Number(
@@ -811,7 +879,12 @@ input {
   padding: 5px;
   //margin: 0px 0px 10px 0px;
 }
-.text-ref{
+.action-group-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.text-ref {
   color: gray;
   font-size: small;
 }
