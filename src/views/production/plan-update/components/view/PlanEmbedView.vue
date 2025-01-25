@@ -391,6 +391,7 @@ export default {
               worker: `${item.worker} - ${item.workerName}`,
               wo: `${this.model.wo} - ${this.model.woNumber}`,
               product: `${this.model.productName} - ${this.model.productTypeName}`,
+              mold: this.model.mold,
               values: [item]
             })
           }
@@ -474,6 +475,7 @@ export default {
       try {
         console.log('generatePDF', data)
         // สร้าง PDF
+        console.log('data', data)
         const pdfBuilder = new EmbedSlipPdfBuilder(data, this.urlImage)
         const pdf = pdfBuilder.generatePDF()
         pdf.open()
