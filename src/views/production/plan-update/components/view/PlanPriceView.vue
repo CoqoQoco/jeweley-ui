@@ -50,6 +50,7 @@
         </div>
       </div>
     </div>
+
     <div>
       <DataTable
         :value="modelPrice"
@@ -144,9 +145,38 @@
               </template>
             </column>
           </Row>
+
+          <Row>
+            <column :colspan="6">
+              <template #footer>
+                <div class="text-right">
+                  <span>{{ `ต้นทุน/สินค้า [จำนวนผลิต ${this.model.productQty}]` }}</span>
+                </div>
+              </template>
+            </column>
+            <column :colspan="1">
+              <template #footer>
+                <div class="text-right">
+                  <span>{{ calPricePerQty(modelPrice) }}</span>
+                </div>
+              </template>
+            </column>
+          </Row>
         </ColumnGroup>
       </DataTable>
     </div>
+
+    <!-- <div class="filter-container mt-2">
+      <div class="form-col-container filter-container-highlight-custom pl-4">
+        <div class="d-flex flex-column">
+          <span class="title-text-white">ราคา/ชิ้น</span>
+        </div>
+        <div class="d-flex flex-column">
+          <span class="title-text-white">ลำดับ</span>
+          <span class="desc-text-white">{{ model.woNumber }}</span>
+        </div>
+      </div>
+    </div> -->
   </div>
 </template>
 
@@ -302,6 +332,15 @@ export default {
       return total.toFixed(2)
     },
 
+    calPricePerQty(data) {
+      const total = this.caltotalPrice(data)
+      console.log('total', total, this.model.productQty)
+      let price =  (total / this.model.productQty ?? 1).toFixed(2)
+      console.log('price', price)
+
+      return price
+    },
+
     // ----- event
     addStatus() {
       console.log('addStatus')
@@ -396,6 +435,14 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
+.filter-container-highlight-custom {
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--base-font-color);
+  padding: 10px;
+}
 .filter-container-custom {
   border: 1px solid #dddddd;
   border-radius: 5px;

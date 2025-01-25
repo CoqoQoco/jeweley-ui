@@ -80,7 +80,18 @@
 
               <Column field="qty" style="width: 130px">
                 <template #body="slotProps">
-                  <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
+                  <input
+                    style="background-color: #b5dad4"
+                    v-model="slotProps.data.qty"
+                    type="number"
+                    class="form-control no-spinners text-right"
+                    step="any"
+                    min="0"
+                    required
+                    @blur="onBluePrice(slotProps.data, slotProps.index, 'qty')"
+                  />
+
+                  <!-- <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
                     <input
                       style="background-color: #b5dad4"
                       v-model="slotProps.data.qty"
@@ -94,7 +105,7 @@
                   </div>
                   <div v-else class="text-right">
                     <span>{{ slotProps.data.qty }}</span>
-                  </div>
+                  </div> -->
                 </template>
               </Column>
               <Column field="qtyPrice" style="width: 110px">
@@ -116,7 +127,18 @@
 
               <Column field="qtyWeight" style="width: 110px">
                 <template #body="slotProps">
-                  <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
+                  <input
+                    style="background-color: #b5dad4"
+                    v-model="slotProps.data.qtyWeight"
+                    type="number"
+                    class="form-control text-right"
+                    step="any"
+                    min="0"
+                    required
+                    @blur="onBluePrice(slotProps.data, slotProps.index, 'qtyWeight')"
+                  />
+
+                  <!-- <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
                     <input
                       style="background-color: #b5dad4"
                       v-model="slotProps.data.qtyWeight"
@@ -130,7 +152,7 @@
                   </div>
                   <div v-else class="text-right">
                     <span>{{ slotProps.data.qtyWeight }}</span>
-                  </div>
+                  </div> -->
                 </template>
               </Column>
               <Column field="qtyWeightPrice" style="width: 110px">
@@ -469,6 +491,13 @@ export default {
         { code: 'Embed', name: 'รายการงานฝัง' },
         { code: 'ETC', name: 'รายการเพิ่มเติม' }
       ],
+      groupOrderRunning: {
+        Gold: 1,
+        Worker: 2,
+        Embed: 3,
+        Gem: 4,
+        ETC: 5
+      },
 
       tempMatAssign: [],
       matAssign: [],
@@ -614,19 +643,10 @@ export default {
         isAdd: true
       })
 
-      // กำหนดลำดับของ nameGroup
-      const groupOrder = {
-        Gold: 1,
-        Worker: 2,
-        Embed: 3,
-        Gem: 4,
-        ETC: 5
-      }
-
       // เรียงตามลำดับที่กำหนด
-      this.tranItems = _.sortBy(this.tranItems, (item) => groupOrder[item.nameGroup])
+      this.tranItems = _.sortBy(this.tranItems, (item) => this.groupOrderRunning[item.nameGroup])
 
-      console.log('addItem', this.tranItems)
+      //console.log('addItem', this.tranItems)
     },
     addItemDiscount() {
       this.tranDiscount.push({
@@ -687,7 +707,8 @@ export default {
               qtyPrice: item.qtyPrice ?? 0,
               qtyWeight: item.qtyWeight ?? 0,
               qtyWeightPrice: item.qtyWeightPrice ?? 0,
-              totalPrice: item.totalPrice ?? 0
+              totalPrice: item.totalPrice ?? 0,
+              isAdd: item.isAdd
             }
           })
         }
@@ -828,7 +849,7 @@ export default {
           this.tranItems = res.items.map((item) => {
             return {
               ...item,
-              isAdd: false,
+              //isAdd: false,
               qtyWeight: item.qtyWeight ? Number(item.qtyWeight).toFixed(2) : '0.00',
               qtyPrice: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
               qtyWeightPrice: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
@@ -837,6 +858,12 @@ export default {
               ).toFixed(2)
             }
           })
+
+          // เรียงตามลำดับที่กำหนด
+          this.tranItems = _.sortBy(
+            this.tranItems,
+            (item) => this.groupOrderRunning[item.nameGroup]
+          )
 
           this.addItemDiscount()
         }
