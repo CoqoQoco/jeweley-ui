@@ -174,7 +174,7 @@ export class EmbedSlipPdfBuilder {
                       stack: [
                         { text: 'เลขที่ W.O.', style: 'title' },
                         { text: `${this.data.wo}`, style: 'desc' },
-                        { text: `$${this.data.mold}`, style: 'desc' }
+                        { text: `[ ${this.data.mold} ]`, style: 'desc' }
                       ]
                     },
                     // Gold Info
