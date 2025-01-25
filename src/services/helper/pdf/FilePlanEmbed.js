@@ -173,14 +173,15 @@ export class EmbedSlipPdfBuilder {
                       margin: [5, 0, 0, 0],
                       stack: [
                         { text: 'เลขที่ W.O.', style: 'title' },
-                        { text: `${this.data.wo} [${this.data.mold}]`, style: 'desc' }
+                        { text: `${this.data.wo}`, style: 'desc' },
+                        { text: `$${this.data.mold}`, style: 'desc' }
                       ]
                     },
                     // Gold Info
                     {
                       margin: [0, 0, 0, 0],
                       stack: [
-                        { text: 'สินค้า', style: 'title' },
+                        { text: 'รหัสสินค้าสินค้า', style: 'title' },
                         { text: this.data.product, style: 'desc' }
                       ]
                     },
