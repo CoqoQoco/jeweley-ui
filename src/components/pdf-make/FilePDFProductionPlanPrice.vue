@@ -93,7 +93,7 @@ export default {
         Worker: 'รายการงานช่าง',
         Gem: 'รายการเพชรและพลอย',
         ETC: 'รายการเพิ่มเติม',
-        Embed: 'รายการฝัง',
+        Embed: 'รายการฝัง'
       }
       return titles[groupName] || groupName
     },
@@ -374,7 +374,7 @@ export default {
             {
               table: {
                 headerRows: 1,
-                widths: [20, '*', 60, 60, 60, 60, 80],
+                widths: [15, '*', 50, 50, 50, 50, 70], // ปรับขนาดคอลัมน์ให้แคบลง
                 body: [
                   // Header Row (with bottom border)
                   [
@@ -387,7 +387,7 @@ export default {
                     { text: 'ราคารวม', style: 'tableHeader', alignment: 'right' }
                   ],
 
-                  // Group Headers and Data
+                  // แก้ไขส่วนการสร้าง body ของตาราง
                   ...Object.entries(this.groupItems()).flatMap(([groupName, items]) => [
                     // Group Header
                     [
@@ -412,11 +412,39 @@ export default {
                       { text: this.formatNumber(item.qtyWeight, 2), alignment: 'right' },
                       { text: this.formatNumber(item.qtyWeightPrice, 2), alignment: 'right' },
                       { text: this.formatNumber(item.totalPrice, 2), alignment: 'right' }
-                    ])
+                    ]),
+                    // Subtotal Row สำหรับแต่ละกลุ่ม
+                    [
+                      {
+                        text: `ต้นทุน${this.getGroupTitle(groupName)}`,
+                        colSpan: 6,
+                        alignment: 'right',
+                        bold: true,
+                        fontSize: 11
+                      },
+                      {},
+                      {},
+                      {},
+                      {},
+                      {},
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      }
+                    ]
                   ]),
-                  // Total Row
+                  // Grand Total Row (ผลรวมทั้งหมด)
                   [
-                    { text: 'ต้นทุนรวม', colSpan: 6, alignment: 'right', style: 'tableHeader' },
+                    {
+                      text: 'ต้นทุน/แผนผลิต',
+                      colSpan: 6,
+                      alignment: 'right',
+                      style: 'tableHeader'
+                    },
                     {},
                     {},
                     {},
@@ -427,30 +455,53 @@ export default {
                       alignment: 'right',
                       style: 'tableHeader'
                     }
+                  ],
+                  // ต้นทุนต่อชิ้น
+                  [
+                    {
+                      text: 'ต้นทุน/สินค้า',
+                      colSpan: 6,
+                      alignment: 'right',
+                      style: 'tableHeader'
+                    },
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {
+                      text: this.formatNumber(this.calculateTotal() / this.model.productQty, 2),
+                      alignment: 'right',
+                      style: 'tableHeader'
+                    }
                   ]
                 ]
               },
               layout: {
                 hLineWidth: function (i, node) {
-                  if (i === 0) return 1
-                  if (i === 1) return 1
-                  if (i === node.table.body.length - 1) return 1
-                  if (i === node.table.body.length) return 1
+                  if (i === 0) return 1 // เส้นบนสุดของตาราง
+                  if (i === 1) return 1 // เส้นใต้ header
+                  if (i === node.table.body.length) return 1 // เส้นล่างสุดของตาราง
+
+                  // เพิ่มเส้นเหนือแถวต้นทุนรวม
+                  // หาตำแหน่งของแถว "ต้นทุนรวม" โดยนับจากด้านล่าง
+                  const totalRowIndex = node.table.body.length - 2 // -2 เพราะมีแถว "ต้นทุนต่อชิ้น" ต่อท้าย
+                  if (i === totalRowIndex) return 1
+
                   return 0
                 },
                 vLineWidth: function (i) {
                   return 0
                 },
                 paddingLeft: function (i) {
-                  return 4
+                  return 2 // ลดจาก 4
                 },
                 paddingRight: function (i) {
-                  return 4
+                  return 2 // ลดจาก 4
                 },
-                // ปรับ padding top และ bottom แบบมีเงื่อนไข
                 paddingTop: function (i, node) {
                   // สำหรับ header row
-                  if (i === 0) return 4
+                  if (i === 0) return 2 // ลดจาก 4
                   // สำหรับ row ที่เป็น group name
                   if (
                     node.table.body[i] &&
@@ -458,16 +509,17 @@ export default {
                     (node.table.body[i][0].text === 'รายการทอง' ||
                       node.table.body[i][0].text === 'รายการงานช่าง' ||
                       node.table.body[i][0].text === 'รายการเพชรและพลอย' ||
-                      node.table.body[i][0].text === 'รายการเพิ่มเติม')
+                      node.table.body[i][0].text === 'รายการเพิ่มเติม' ||
+                      node.table.body[i][0].text === 'รายการฝัง')
                   ) {
-                    return 8 // เพิ่มระยะห่างด้านบนสำหรับ group name
+                    return 4 // ลดจาก 8
                   }
                   // สำหรับ row ปกติ
-                  return 1 // ลดระยะห่างสำหรับ row ทั่วไป
+                  return 1
                 },
                 paddingBottom: function (i, node) {
                   // สำหรับ header row
-                  if (i === 0) return 4
+                  if (i === 0) return 2 // ลดจาก 4
                   // สำหรับ row ที่เป็น group name
                   if (
                     node.table.body[i] &&
@@ -475,12 +527,13 @@ export default {
                     (node.table.body[i][0].text === 'รายการทอง' ||
                       node.table.body[i][0].text === 'รายการงานช่าง' ||
                       node.table.body[i][0].text === 'รายการเพชรและพลอย' ||
-                      node.table.body[i][0].text === 'รายการเพิ่มเติม')
+                      node.table.body[i][0].text === 'รายการเพิ่มเติม' ||
+                      node.table.body[i][0].text === 'รายการฝัง')
                   ) {
-                    return 4 // เพิ่มระยะห่างด้านล่างสำหรับ group name
+                    return 2 // ลดจาก 4
                   }
                   // สำหรับ row ปกติ
-                  return 1 // ลดระยะห่างสำหรับ row ทั่วไป
+                  return 1
                 },
                 hLineColor: function (i, node) {
                   return '#000000'
@@ -491,23 +544,23 @@ export default {
 
           styles: {
             tableHeader: {
-              fontSize: 12,
+              fontSize: 11, // ลดจาก 12
               bold: true,
               alignment: 'center',
-              margin: [0, 4, 0, 4]
+              margin: [0, 2, 0, 2] // ลดจาก [0, 4, 0, 4]
             },
             desc: {
-              fontSize: 12,
+              fontSize: 11, // ลดจาก 12
               bold: true
             },
             title: {
-              fontSize: 10,
-            },
+              fontSize: 10
+            }
           },
 
           defaultStyle: {
             font: 'THSarabunNew',
-            fontSize: 12
+            fontSize: 11 // ลดจาก 12
           }
         }
 

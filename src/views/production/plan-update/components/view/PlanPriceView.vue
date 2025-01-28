@@ -124,22 +124,36 @@
 
         <template #groupheader="slotProps">
           <div class="flex align-items-center gap-2 type-container">
-            <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
+            <span><i class="bi bi-clipboard2-check mr-2"></i></span>
             <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
           </div>
         </template>
+
+        <template #groupfooter="slotProps">
+          <div class="d-flex align-items-center justify-content-between gap-2 type-container">
+            <div>
+              <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
+              <span>ต้นทุน</span>
+              <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
+            </div>
+            <div class="text-right">
+              {{ calculateGroupTotal(slotProps.data.nameGroup, modelPrice).toFixed(2) }}
+            </div>
+          </div>
+        </template>
+
         <ColumnGroup type="footer">
           <Row>
             <column :colspan="6">
               <template #footer>
-                <div class="text-right">
+                <div class="text-right type-container">
                   <span>ต้นทุนรวม</span>
                 </div>
               </template>
             </column>
             <column :colspan="1">
               <template #footer>
-                <div class="text-right">
+                <div class="text-right type-container">
                   <span>{{ caltotalPrice(modelPrice) }}</span>
                 </div>
               </template>
@@ -149,14 +163,14 @@
           <Row>
             <column :colspan="6">
               <template #footer>
-                <div class="text-right">
+                <div class="text-right type-container">
                   <span>{{ `ต้นทุน/สินค้า [จำนวนผลิต ${this.model.productQty}]` }}</span>
                 </div>
               </template>
             </column>
             <column :colspan="1">
               <template #footer>
-                <div class="text-right">
+                <div class="text-right type-container">
                   <span>{{ calPricePerQty(modelPrice) }}</span>
                 </div>
               </template>
@@ -324,6 +338,12 @@ export default {
           return 'Unknown'
       }
     },
+    calculateGroupTotal(groupName, data) {
+      return data
+        .filter((item) => item.nameGroup === groupName)
+        .reduce((total, item) => total + Number(item.totalPrice), 0)
+    },
+
     caltotalPrice(data) {
       let total = 0
       data.forEach((item) => {
@@ -335,7 +355,7 @@ export default {
     calPricePerQty(data) {
       const total = this.caltotalPrice(data)
       console.log('total', total, this.model.productQty)
-      let price =  (total / this.model.productQty ?? 1).toFixed(2)
+      let price = (total / this.model.productQty ?? 1).toFixed(2)
       console.log('price', price)
 
       return price
@@ -454,9 +474,16 @@ export default {
   overflow: auto;
 }
 .type-container {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: bold;
   color: var(--base-font-color);
+  //padding: 5px;
+  //margin: 0px 0px 10px 0px;
+}
+.type-container-footer {
+  font-size: 12px;
+  font-weight: bold;
+  //color: var(--base-font-color);
   padding: 5px;
   //margin: 0px 0px 10px 0px;
 }
