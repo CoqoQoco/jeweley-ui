@@ -1,9 +1,15 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
-//const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 const List = () => import('@/views/stock/product/list/IndexView.vue')
 
-const productCost = () => import('@/views/stock/product/cost/IndexView.vue')
+const GRProductionList = () =>
+  import('@/views/receipt-stock/product/gr-production-list/IndexView.vue')
+const GRProduction = () => import('@/views/receipt-stock/product/gr-production/IndexView.vue')
+
+const Barcode = () => import('@/views/receipt-stock/product/test-barcode/IndexView.vue')
+
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 const routes = [
   {
@@ -19,7 +25,8 @@ const routes = [
       },
       classIcon: 'bi bi-gem',
       majorShow: true,
-      btsubLineShow: true
+      btsubLineShow: true,
+      permissions: [PERMISSIONS.STOCK_PRODUCT]
     },
     children: [
       // stock product
@@ -34,24 +41,81 @@ const routes = [
             th: 'ตรวจคลัง'
           },
           minorShow: true,
-          menuId: `stock-product`
+          menuId: `stock-product`,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       },
-      // cost
+
+      //gr product
       {
-        path: '/product-cost/:id',
-        name: 'product-cost',
-        component: productCost,
-        menuId: 'Product-Cost',
+        path: '/goods-receipt-production-list',
+        name: 'goods-receipt-production-list',
+        component: GRProductionList,
+        menuId: 'create',
         meta: {
           Displayname: {
-            en: 'Product Cost',
-            th: 'ประเมินราคาสินค้า'
+            en: 'Goods Receipt Production',
+            th: 'รับสินค้างานผลิต'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION]
+        }
+      },
+      {
+        path: '/goods-receipt-production/:id',
+        name: 'goods-receipt-production',
+        component: GRProduction,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Production',
+            th: 'รับสินค้างานผลิต'
           },
           minorShow: false,
-          menuId: `product-cost`
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
         }
-      }
+      },
+
+      {
+        path: '/goods-receipt-outsource',
+        name: 'goods-receipt-outsource',
+        component: Dashboard,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Outsource',
+            th: 'รับสินค้างานนอก'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
+        }
+      },
+
+      {
+        path: '/goods-receipt-report',
+        name: 'goods-receipt-report',
+        component: Dashboard,
+        meta: {
+          Displayname: {
+            en: 'Report',
+            th: 'รายงานรับสินค้า'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
+      {
+        path: '/goods-receipt-barcode',
+        name: 'goods-receipt-barcode',
+        component: Barcode,
+        meta: {
+          Displayname: {
+            en: '',
+            th: 'Barcode'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
+        }
+      },
     ]
   }
 ]
