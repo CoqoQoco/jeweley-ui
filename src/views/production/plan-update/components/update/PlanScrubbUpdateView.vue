@@ -452,7 +452,8 @@ export default {
       gemAssign: [],
       editingGemRows: [],
       workerItemSearch: [],
-      gemItemSearch: []
+      gemItemSearch: [],
+      user: null
     }
   },
   methods: {
@@ -484,7 +485,7 @@ export default {
         //set form
         this.form = {
           receiveDate: _.get(value, 'checkDate') ? new Date(value.checkDate) : new Date(),
-          receiveBy: _.get(value, 'checkName', ''),
+          receiveBy: _.get(value, 'checkName', '') ?? this.user?.firstName,
           status: this.status || null,
           remark1: _.get(value, 'remark1', ''),
           remark2: _.get(value, 'remark2', ''),
@@ -771,6 +772,10 @@ export default {
         //this.isLoading = false
       }
     }
+  },
+  mounted() {
+    this.user = JSON.parse(localStorage.getItem('user-dk'))
+    console.log('user', this.user)
   }
 }
 </script>
