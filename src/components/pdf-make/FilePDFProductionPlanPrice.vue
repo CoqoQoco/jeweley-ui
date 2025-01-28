@@ -152,7 +152,7 @@ export default {
                   [
                     {
                       columns: [
-                        ` ใบจ่าย-รับคืนงาน เลขที่ : ${this.model.wo}-${this.model.woNumber}`,
+                        ` เลขที่แผนผลิต [W.O.] : ${this.model.wo}-${this.model.woNumber}`,
                         { text: this.formatDate(this.price[0].date), alignment: 'right' }
                       ],
                       //bold: true,
@@ -168,105 +168,47 @@ export default {
               margin: [0, 0, 0, 5]
             },
 
-            // ------- img -------
+            // ------- img & details -------
             {
               style: 'tableExample',
               table: {
-                widths: [80, 160, '*', '*', '*'],
+                widths: [80, '*', '*', '*', '*'], // เปลี่ยนเป็น 5 columns
                 body: [
-                  //row 1
                   [
-                    //image
+                    // รูป
                     {
                       rowSpan: 2,
                       image: this.urlImage,
-                      //fit: [50, 50],
-                      margin: [0, 5, 0, 0],
-                      width: 70,
-                      height: 70,
+                      width: 50,
+                      height: 50,
                       border: [true, true, true, true],
-                      alignment: 'center'
+                      alignment: 'center',
+                      margin: [0, 5, 0, 0]
                     },
-                    //wo
+
+                    // Column 2
                     {
-                      margin: [30, 0, 0, 0],
-                      stack: [
-                        { text: 'เลขที่ W.O.', style: 'title' },
-                        {
-                          text: this.model.wo,
-                          style: 'desc'
-                        }
-                      ]
-                    },
-                    //wo number
-                    {
-                      stack: [
-                        { text: 'ลำดับ W.O.', style: 'title' },
-                        {
-                          text: this.model.woNumber,
-                          style: 'desc'
-                        }
-                      ]
-                    },
-                    //create date
-                    {
-                      stack: [
-                        { text: 'วันสร้างใบงาน', style: 'title' },
-                        {
-                          text: formatDate(this.model.createDate),
-                          style: 'desc'
-                        }
-                      ]
-                    },
-                    //send date
-                    {
-                      stack: [
-                        { text: 'วันส่งงาน', style: 'title' },
-                        {
-                          text: formatDate(this.model.requestDate),
-                          style: 'desc'
-                        }
-                      ]
-                    }
-                  ],
-                  //row 2
-                  [
-                    //image
-                    '',
-                    //mode
-                    {
-                      //colSpan: 2,
-                      margin: [30, 0, 0, 0],
+                      //margin: [30, 0, 0, 0],
                       stack: [
                         { text: 'เเม่พิมพ์', style: 'title' },
-                        {
-                          text: this.model.mold,
-                          style: 'desc'
-                        }
+                        { text: this.model.mold, style: 'desc' }
                       ]
                     },
-                    //product code
+                    // Column 3
                     {
                       stack: [
                         { text: 'รหัสสินค้า', style: 'title' },
-                        {
-                          text: this.model.productNumber,
-                          style: 'desc'
-                        }
+                        { text: this.model.productNumber, style: 'desc' }
                       ]
                     },
-                    //product name
+                    // Column 4
                     {
-                      //colSpan: 2,
                       stack: [
                         { text: 'ชื่อสินค้า', style: 'title' },
-                        {
-                          text: this.model.productName,
-                          style: 'desc'
-                        }
+                        { text: this.model.productName, style: 'desc' }
                       ]
                     },
-                    //product type
+                    // Column 5
                     {
                       stack: [
                         { text: 'จำนวนสินค้า', style: 'title' },
@@ -274,64 +216,39 @@ export default {
                           text: `${this.model.productQty} ${this.model.productQtyUnit}`,
                           style: 'desc'
                         }
-                      ]
+                      ],
+                      //border: [true, true, true, true]
                     }
                   ],
-                  //row 3
                   [
-                    //image
+                    '', // สำหรับ rowSpan ของรูป
+                    // Column 2
                     {
-                      image: this.textToBase64Barcode(`${this.model.wo}-${this.model.woNumber}`),
-                      //fit: [50, 50],
-                      margin: [0, 5, 0, 0],
-                      width: 80,
-                      height: 30,
-                      border: [false, false, false, false],
-                      alignment: 'center'
-                    },
-                    //customer code
-                    {
-                      margin: [30, 0, 0, 0],
+                      //margin: [30, 0, 0, 0],
                       stack: [
                         { text: 'รหัสลูกค้า', style: 'title' },
-                        {
-                          text: ` ${
-                            this.model.customerName
-                              ? `${this.model.customerNumber} : ${this.model.customerName}`
-                              : this.model.customerNumber
-                          }`,
-                          style: 'desc'
-                        }
+                        { text: this.model.customerNumber, style: 'desc' }
                       ]
                     },
-                    //customer type
+                    // Column 3
                     {
                       stack: [
                         { text: 'ประเภทลูกค้า', style: 'title' },
-                        {
-                          text: `${this.model.customerTypeName}`,
-                          style: 'desc'
-                        }
+                        { text: this.model.customerTypeName, style: 'desc' }
                       ]
                     },
-                    //remark
+                    // Column 4
                     {
                       stack: [
-                        { text: 'ประเภทสินค้า', style: 'title' },
-                        {
-                          text: this.model.productTypeName,
-                          style: 'desc'
-                        }
+                        { text: 'วันสร้างใบงาน', style: 'title' },
+                        { text: formatDate(this.model.createDate), style: 'desc' }
                       ]
                     },
+                    // Column 5
                     {
-                      //colSpan: 2,
                       stack: [
-                        { text: 'หมายเหตุ', style: 'title' },
-                        {
-                          text: this.model.remark,
-                          style: 'desc'
-                        }
+                        { text: 'วันส่งงาน', style: 'title' },
+                        { text: formatDate(this.model.requestDate), style: 'desc' }
                       ]
                     }
                   ]
@@ -343,21 +260,25 @@ export default {
               margin: [0, 0, 0, 5]
             },
 
-            // ------- product detail ---------
+            // ------- barcode & product detail ---------
             {
-              style: 'tableExample',
               table: {
-                widths: ['*'],
+                widths: [80, '*'],
                 body: [
-                  //row 1
                   [
+                    // barcode
+                    {
+                      image: this.textToBase64Barcode(`${this.model.wo}${this.model.woNumber}`),
+                      width: 70,
+                      height: 25,
+                      alignment: 'center',
+                      border: [false, false, false, false]
+                    },
+                    // product detail
                     {
                       stack: [
-                        { text: 'รายละเอียดสินค้า', style: '' },
-                        {
-                          text: this.model.productDetail,
-                          style: 'desc'
-                        }
+                        { text: 'รายละเอียดสินค้า', style: 'title' },
+                        { text: this.model.productDetail || '-', style: 'desc' }
                       ],
                       border: [true, true, true, true]
                     }
