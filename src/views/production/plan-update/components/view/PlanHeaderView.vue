@@ -10,7 +10,11 @@
       </div>
       <div class="line"></div>
       <div class="d-flex justify-content-center">
-        <pdf class="btn btn-sm btn-primary btn-custom mr-2" :modelValue="model" :matValue="modelMat">
+        <pdf
+          class="btn btn-sm btn-primary btn-custom mr-2"
+          :modelValue="model"
+          :matValue="modelMat"
+        >
         </pdf>
         <button class="btn btn-sm btn-warning mr-2" @click="onShowFormHeaderUpdate">
           <span>
@@ -116,7 +120,6 @@
         </div>
       </div>
 
-
       <div class="line"></div>
       <div class="form-col-container pl-3 mt-4">
         <div class="d-flex flex-column">
@@ -126,6 +129,8 @@
       </div>
     </div>
   </div>
+
+  <!-- <planOverview class="mt-2" :modelValue="model"></planOverview> -->
 </template>
 
 <script>
@@ -139,9 +144,12 @@ import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
+//import planOverview from './PlanOverview.vue'
+
 export default {
   components: {
-    pdf
+    pdf,
+    //planOverview
   },
   props: {
     modelValue: {

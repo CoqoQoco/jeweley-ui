@@ -151,12 +151,17 @@
         <Column field="cost" header="ราคา" style="min-width: 100px"> </Column>
         <Column header="วันที่" field="assignDate" style="min-width: 150px">
           <template #body="prop">
-            <div >
+            <div>
               <span>{{ formatDate(prop.data.assignDate) }}</span>
             </div>
           </template>
         </Column>
       </DataTable>
+    </div>
+
+    <!-- plan gold history -->
+    <div class="mt-3">
+      <planOverview :modelValue="modelHerder"></planOverview>
     </div>
   </div>
 </template>
@@ -169,10 +174,13 @@ import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
+import planOverview from './PlanOverview.vue'
+
 export default {
   components: {
     DataTable,
-    Column
+    Column,
+    planOverview
   },
   props: {
     modelValue: {
@@ -198,6 +206,9 @@ export default {
     },
     modelGold() {
       return this.modelGoldItem
+    },
+    modelHerder() {
+      return this.modelValue
     }
   },
 

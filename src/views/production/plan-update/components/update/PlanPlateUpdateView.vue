@@ -292,6 +292,10 @@
             <button class="btn btn-sm btn-main" type="submit">ยืนยัน</button>
           </div>
         </form>
+
+        <div class="mt-3">
+          <planOverview :modelValue="model"></planOverview>
+        </div>
       </template>
     </modal>
   </div>
@@ -313,6 +317,8 @@ import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+import planOverview from '../view/PlanOverview.vue'
 
 const interfaceForm = {
   status: null,
@@ -352,7 +358,8 @@ export default {
     Calendar,
     Dropdown,
     DataTable,
-    Column
+    Column,
+    planOverview
   },
   props: {
     isShow: {

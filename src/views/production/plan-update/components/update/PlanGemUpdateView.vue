@@ -1,6 +1,5 @@
 <template>
   <div>
-  
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
@@ -358,6 +357,10 @@
             <button class="btn btn-sm btn-main" type="submit">ยืนยัน</button>
           </div>
         </form>
+
+        <div class="mt-3">
+          <planOverview :modelValue="model"></planOverview>
+        </div>
       </template>
     </modal>
   </div>
@@ -367,7 +370,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-
 
 import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
@@ -380,6 +382,8 @@ import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+import planOverview from '../view/PlanOverview.vue'
 
 const interfaceForm = {
   status: null,
@@ -415,12 +419,13 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-  
+
     AutoComplete,
     Calendar,
     Dropdown,
     DataTable,
-    Column
+    Column,
+    planOverview
   },
   props: {
     isShow: {
