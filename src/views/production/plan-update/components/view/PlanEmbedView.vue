@@ -100,7 +100,7 @@
               </div>
             </template>
           </Column>
-          <Column field="goldQtySend" header="จำนวนจ่าย" style="min-width: 100px">
+          <Column field="goldQtySend" header="จำนวนจ่าย [ชิ้น]" style="min-width: 100px">
             <template #body="slotProps">
               <div>
                 {{
@@ -126,7 +126,7 @@
               </div>
             </template>
           </Column>
-          <Column field="goldQtyCheck" header="จำนวนรับ" style="min-width: 100px">
+          <Column field="goldQtyCheck" header="จำนวนฝัง [เม็ด]" style="min-width: 100px">
             <template #body="slotProps">
               <div>
                 {{

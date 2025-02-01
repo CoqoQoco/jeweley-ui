@@ -46,7 +46,7 @@ const routes = [
         }
       },
 
-      //gr product
+      //gr product from production
       {
         path: '/goods-receipt-production-list',
         name: 'goods-receipt-production-list',
@@ -75,6 +75,8 @@ const routes = [
         }
       },
 
+
+      //gr product from outsource
       {
         path: '/goods-receipt-outsource',
         name: 'goods-receipt-outsource',
@@ -86,6 +88,21 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
+        }
+      },
+
+      //update product img
+      {
+        path: '/goods-receipt-image',
+        name: 'goods-receipt-image',
+        component: Dashboard,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Image',
+            th: 'รูปภาพสินค้า'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_IMAGE_CREATE]
         }
       },
 

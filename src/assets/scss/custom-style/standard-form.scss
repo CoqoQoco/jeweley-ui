@@ -11,6 +11,17 @@
   //margin-top: 10px;
   overflow: auto;
 }
+.filter-container-bg {
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--base-green);
+  //background-color: var(--base-color);
+  padding: 10px;
+  //margin-top: 10px;
+  overflow: auto;
+}
 .filter-container-search {
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -27,6 +38,16 @@
   background-color: var(--base-font-color);
   //background-color: var(--base-color);
   padding: 10px;
+  //margin-top: 10px;
+}
+.filter-container-highlight-green {
+  border: 1px solid var(--base-green);
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--base-green);
+  //background-color: var(--base-color);
+  padding: 5px;
   //margin-top: 10px;
 }
 .filter-container-content {
@@ -68,6 +89,13 @@
   gap: 10px;
   padding: 10px 0;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.form-col-fix-2-container {
+  display: grid;
+  gap: 10px;
+  padding: 0px;
+  grid-template-columns: 2fr 4fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
 }
 
 .submit-container {
@@ -117,6 +145,10 @@
   font-size: 20px;
   font-weight: 700;
 }
+.desc-text-required {
+  color: white;
+}
+
 .desc-text-white {
   font-size: 20px;
   font-weight: 700;

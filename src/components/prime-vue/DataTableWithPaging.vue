@@ -42,13 +42,28 @@
       <!-- select template -->
       <!-- <Column v-if="selectionMode" selectionMode="multiple" headerStyle="width: 50px"></Column> -->
 
-      <Column v-if="selectionMode" selectionMode="multiple" headerStyle="width: 50px">
+      <Column v-if="selectionMode" selectionMode="null" headerStyle="width: 50px">
         <template #body="slotProps">
           <div class="flex align-items-center justify-content-center">
             <Checkbox
               :modelValue="isSelected(slotProps.data)"
               :disabled="isDisabled(slotProps.data)"
               @change="onSelectionChange($event, slotProps.data)"
+              :binary="true"
+              :class="{ 'selected-row': isSelected(slotProps.data) }"
+              :data-pre-selected="isPreSelected(slotProps.data)"
+            />
+          </div>
+        </template>
+
+        <!-- เพิ่ม header template เพื่อจัดการ check all -->
+
+        <template #header>
+          <div class="flex align-items-center justify-content-center">
+            <Checkbox
+              :modelValue="isAllSelected"
+              :disabled="false"
+              @update:modelValue="onSelectAllChange"
               :binary="true"
             />
           </div>
@@ -233,6 +248,29 @@ export default {
     'row-collapse' // เมื่อ row ถูก collapse
   ],
 
+  computed: {
+    isAllSelected() {
+      if (this.items.length === 0) return false
+
+      // Count only selectable items (non-preselected and non-disabled)
+      const selectableItems = this.items.filter((item) => {
+        const isPreSelected = this.preSelectedItems.some(
+          (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+        )
+        const isDisabled = this.isDisabled(item)
+        return !isPreSelected && !isDisabled
+      })
+
+      // Check if all selectable items are selected
+      return (
+        selectableItems.length > 0 &&
+        selectableItems.every((item) =>
+          this.itemsSelection.some((selected) => selected[this.dataKey] === item[this.dataKey])
+        )
+      )
+    }
+  },
+
   watch: {
     // ถ้าต้องการให้ parent component ควบคุม expanded rows
     modelValue: {
@@ -332,9 +370,53 @@ export default {
     },
 
     // จัดการการเปลี่ยนแปลงการเลือก
+    onSelectAllChange(value) {
+      // เปลี่ยนชื่อ parameter ให้ชัดเจนขึ้น
+      console.log('select all value:', value) // debug
+      let newSelection = [...this.itemsSelection]
+
+      if (value) {
+        // Check all
+        this.items.forEach((item) => {
+          if (this.isPreSelected(item) || this.isDisabled(item)) return
+
+          const exists = newSelection.some(
+            (selected) => selected[this.dataKey] === item[this.dataKey]
+          )
+          if (!exists) {
+            newSelection.push(item)
+          }
+        })
+      } else {
+        // Uncheck all - เก็บแค่ preSelected items
+        //newSelection = [...this.preSelectedItems] // ทำ shallow copy
+        newSelection = []
+      }
+
+      this.$emit('update:itemsSelection', newSelection)
+    },
+    // helper method
+    isPreSelected(item) {
+      return this.preSelectedItems.some(
+        (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+      )
+    },
+
     onSelectionChange(checked, item) {
-      if (this.isDisabled(item)) return
       console.log('checked', checked, 'item', item)
+
+      if (this.isDisabled(item)) return
+
+      // เพิ่มเช็คว่าอยู่ใน preSelectedItems หรือไม่
+      const isPreSelected = this.preSelectedItems.some(
+        (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+      )
+
+      // ถ้าเป็น preSelected item ให้ return ออกไปเลย
+      if (isPreSelected) {
+        console.log('isPreSelected return')
+        return
+      }
 
       let newSelection = [...this.itemsSelection]
 
@@ -359,6 +441,13 @@ export default {
       console.log('newSelection', newSelection)
       this.$emit('update:itemsSelection', newSelection)
     }
+
+    // เช็คว่า item อยู่ใน preSelectedItems หรือไม่
+    // isPreSelected(item) {
+    //   return this.preSelectedItems.some(
+    //     (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+    //   )
+    // }
   }
 }
 </script>

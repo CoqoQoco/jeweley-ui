@@ -99,8 +99,10 @@ export default {
   },
 
   async created() {
-    await this.initializeMasterData()
-    //this.search = { ...this.form }
+    this.$nextTick(async () => {
+      await this.initializeMasterData()
+      this.search = { ...this.form }
+    })
   },
 
   beforeUnmount() {

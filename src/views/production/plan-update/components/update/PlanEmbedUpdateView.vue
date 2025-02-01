@@ -114,7 +114,7 @@
                   </div>
                 </template>
               </Column>
-              <Column field="goldQTYSend" header="จำนวนจ่าย" style="width: 100px">
+              <Column field="goldQTYSend" header="จำนวนจ่าย [ชิ้น]" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input
                     type="number"
@@ -135,7 +135,7 @@
                   />
                 </template>
               </Column>
-              <Column field="goldQTYCheck" header="จำนวนรับ" style="width: 100px">
+              <Column field="goldQTYCheck" header="จำนวนฝัง [เม็ด]" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input
                     type="number"
