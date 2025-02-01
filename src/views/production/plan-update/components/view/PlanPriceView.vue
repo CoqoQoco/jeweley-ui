@@ -94,7 +94,9 @@
         <Column field="qtyPrice" style="width: 110px">
           <template #body="slotProps">
             <div class="text-right">
-              <span>{{ slotProps.data.qtyPrice.toFixed(2) }}</span>
+              <span>{{
+                slotProps.data.qtyPrice ? Number(slotProps.data.qtyPrice).toFixed(2) : '0.00'
+              }}</span>
             </div>
           </template>
         </Column>
@@ -102,14 +104,18 @@
         <Column field="qtyWeight" style="width: 110px">
           <template #body="slotProps">
             <div class="text-right">
-              <span>{{ slotProps.data.qtyWeight }}</span>
+              <span>{{
+                slotProps.data.qtyWeight ? Number(slotProps.data.qtyWeight).toFixed(3) : '0.000'
+              }}</span>
             </div>
           </template>
         </Column>
         <Column field="qtyWeightPrice" style="width: 110px">
           <template #body="slotProps">
             <div class="text-right">
-              <span>{{ slotProps.data.qtyWeightPrice.toFixed(2) }}</span>
+              <span>{{
+                slotProps.data.qtyWeightPrice ? slotProps.data.qtyWeightPrice.toFixed(2) : '0.00'
+              }}</span>
             </div>
           </template>
         </Column>

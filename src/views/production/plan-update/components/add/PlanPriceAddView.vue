@@ -850,7 +850,7 @@ export default {
             return {
               ...item,
               //isAdd: false,
-              qtyWeight: item.qtyWeight ? Number(item.qtyWeight).toFixed(2) : '0.00',
+              qtyWeight: item.qtyWeight ? Number(item.qtyWeight).toFixed(3) : '0.000',
               qtyPrice: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
               qtyWeightPrice: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
               totalPrice: Number(

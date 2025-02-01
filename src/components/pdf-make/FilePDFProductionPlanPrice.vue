@@ -331,7 +331,7 @@ export default {
                       { text: this.formatNumber(item.qty), alignment: 'right' },
                       { text: this.formatNumber(item.qtyPrice, 2), alignment: 'right' },
                       { text: this.formatNumber(item.qtyWeight, 2), alignment: 'right' },
-                      { text: this.formatNumber(item.qtyWeightPrice, 2), alignment: 'right' },
+                      { text: this.formatNumber(item.qtyWeightPrice, 3), alignment: 'right' },
                       { text: this.formatNumber(item.totalPrice, 2), alignment: 'right' }
                     ]),
                     // Subtotal Row สำหรับแต่ละกลุ่ม
