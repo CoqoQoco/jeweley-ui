@@ -108,6 +108,9 @@ export default {
     calculateTotal() {
       return this.price.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
     },
+    calculateTotalPerQty() {
+      return this.calculateTotal() / (this.model.productQty || 1)
+    },
 
     async generatePDF() {
       await this.fetchIamge()
@@ -216,7 +219,7 @@ export default {
                           text: `${this.model.productQty} ${this.model.productQtyUnit}`,
                           style: 'desc'
                         }
-                      ],
+                      ]
                       //border: [true, true, true, true]
                     }
                   ],
@@ -278,7 +281,14 @@ export default {
                     {
                       stack: [
                         { text: 'รายละเอียดสินค้า', style: 'title' },
-                        { text: this.model.productDetail || '-', style: 'desc' }
+                        {
+                          text: this.model.productDetail || '-',
+                          style: 'desc',
+                          // เพิ่มการจัดการข้อความยาว
+                          maxHeight: 100,
+                          lineHeight: 1.2,
+                          wrap: true // เพิ่มการ wrap text
+                        }
                       ],
                       border: [true, true, true, true]
                     }
@@ -286,7 +296,8 @@ export default {
                 ]
               },
               layout: {
-                defaultBorder: false
+                defaultBorder: false,
+                
               },
               margin: [0, 0, 0, 10]
             },
@@ -295,7 +306,7 @@ export default {
             {
               table: {
                 headerRows: 1,
-                widths: [15, '*', 50, 50, 50, 50, 70], // ปรับขนาดคอลัมน์ให้แคบลง
+                widths: [15, '*', 50, 50, 50, 50, 70, 50], // ปรับขนาดคอลัมน์ให้แคบลง
                 body: [
                   // Header Row (with bottom border)
                   [
@@ -305,6 +316,7 @@ export default {
                     { text: 'ราคา/จำนวน', style: 'tableHeader', alignment: 'right' },
                     { text: 'น้ำหนัก', style: 'tableHeader', alignment: 'right' },
                     { text: 'ราคา/น้ำหนัก', style: 'tableHeader', alignment: 'right' },
+                    { text: 'ราคา/สินค้า', style: 'tableHeader', alignment: 'right' },
                     { text: 'ราคารวม', style: 'tableHeader', alignment: 'right' }
                   ],
 
@@ -322,6 +334,7 @@ export default {
                       {},
                       {},
                       {},
+                      {},
                       {}
                     ],
                     // Group Items
@@ -330,8 +343,12 @@ export default {
                       { text: item.nameDescription },
                       { text: this.formatNumber(item.qty), alignment: 'right' },
                       { text: this.formatNumber(item.qtyPrice, 2), alignment: 'right' },
-                      { text: this.formatNumber(item.qtyWeight, 2), alignment: 'right' },
-                      { text: this.formatNumber(item.qtyWeightPrice, 3), alignment: 'right' },
+                      { text: this.formatNumber(item.qtyWeight, 3), alignment: 'right' },
+                      { text: this.formatNumber(item.qtyWeightPrice, 2), alignment: 'right' },
+                      {
+                        text: this.formatNumber(item.totalPrice / (this.model.productQty || 1), 2),
+                        alignment: 'right'
+                      },
                       { text: this.formatNumber(item.totalPrice, 2), alignment: 'right' }
                     ]),
                     // Subtotal Row สำหรับแต่ละกลุ่ม
@@ -350,6 +367,15 @@ export default {
                       {},
                       {
                         text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0) /
+                            (this.model.productQty || 1),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      },
+                      {
+                        text: this.formatNumber(
                           items.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
                           2
                         ),
@@ -361,7 +387,7 @@ export default {
                   // Grand Total Row (ผลรวมทั้งหมด)
                   [
                     {
-                      text: 'ต้นทุน/แผนผลิต',
+                      text: 'ต้นทุน',
                       colSpan: 6,
                       alignment: 'right',
                       style: 'tableHeader'
@@ -371,31 +397,36 @@ export default {
                     {},
                     {},
                     {},
+                    {
+                      text: this.formatNumber(this.calculateTotalPerQty(), 2),
+                      alignment: 'right',
+                      style: 'tableHeader'
+                    },
                     {
                       text: this.formatNumber(this.calculateTotal(), 2),
                       alignment: 'right',
                       style: 'tableHeader'
                     }
-                  ],
-                  // ต้นทุนต่อชิ้น
-                  [
-                    {
-                      text: 'ต้นทุน/สินค้า',
-                      colSpan: 6,
-                      alignment: 'right',
-                      style: 'tableHeader'
-                    },
-                    {},
-                    {},
-                    {},
-                    {},
-                    {},
-                    {
-                      text: this.formatNumber(this.calculateTotal() / this.model.productQty, 2),
-                      alignment: 'right',
-                      style: 'tableHeader'
-                    }
                   ]
+                  // ต้นทุนต่อชิ้น
+                  // [
+                  //   {
+                  //     text: 'ต้นทุน/สินค้า',
+                  //     colSpan: 6,
+                  //     alignment: 'right',
+                  //     style: 'tableHeader'
+                  //   },
+                  //   {},
+                  //   {},
+                  //   {},
+                  //   {},
+                  //   {},
+                  //   {
+                  //     text: this.formatNumber(this.calculateTotal() / this.model.productQty, 2),
+                  //     alignment: 'right',
+                  //     style: 'tableHeader'
+                  //   }
+                  // ]
                 ]
               },
               layout: {
@@ -406,7 +437,7 @@ export default {
 
                   // เพิ่มเส้นเหนือแถวต้นทุนรวม
                   // หาตำแหน่งของแถว "ต้นทุนรวม" โดยนับจากด้านล่าง
-                  const totalRowIndex = node.table.body.length - 2 // -2 เพราะมีแถว "ต้นทุนต่อชิ้น" ต่อท้าย
+                  const totalRowIndex = node.table.body.length - 1 // -2 เพราะมีแถว "ต้นทุนต่อชิ้น" ต่อท้าย
                   if (i === totalRowIndex) return 1
 
                   return 0

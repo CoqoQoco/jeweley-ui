@@ -58,6 +58,8 @@
         groupRowsBy="nameGroup"
         stripedRows
         showGridlines
+        dataKey="no"
+        tableStyle="min-width: 50rem"
       >
         <ColumnGroup type="header">
           <Row>
@@ -67,6 +69,7 @@
             <Column header="ราคา/จำนวน" />
             <Column header="น้ำหนัก" />
             <Column header="ราคา/น้ำหนัก" />
+            <Column header="ราคา/สินค้า" />
             <Column header="ราคารวม" />
           </Row>
         </ColumnGroup>
@@ -120,13 +123,20 @@
           </template>
         </Column>
 
-        <column field="totalPrice" style="width: 110px">
+        <Column field="totalPricePerQty" style="width: 110px">
+          <template #body="slotProps">
+            <div class="text-right">
+              <span>{{ calEachPricePerQty(slotProps.data.totalPrice) }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column field="totalPrice" style="width: 110px">
           <template #body="slotProps">
             <div class="text-right">
               <span>{{ slotProps.data.totalPrice }}</span>
             </div>
           </template>
-        </column>
+        </Column>
 
         <template #groupheader="slotProps">
           <div class="flex align-items-center gap-2 type-container">
@@ -135,6 +145,7 @@
           </div>
         </template>
 
+        <!-- old group footer -->
         <template #groupfooter="slotProps">
           <div class="d-flex align-items-center justify-content-between gap-2 type-container">
             <div>
@@ -142,8 +153,13 @@
               <span>ต้นทุน</span>
               <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
             </div>
-            <div class="text-right">
-              {{ calculateGroupTotal(slotProps.data.nameGroup, modelPrice).toFixed(2) }}
+            <div class="form-col-2equal-container text-right" style="width: 220px">
+              <div>
+                {{ calculateGroupTotalPerQty(slotProps.data.nameGroup, modelPrice).toFixed(2) }}
+              </div>
+              <div>
+                {{ calculateGroupTotal(slotProps.data.nameGroup, modelPrice).toFixed(2) }}
+              </div>
             </div>
           </div>
         </template>
@@ -153,7 +169,14 @@
             <column :colspan="6">
               <template #footer>
                 <div class="text-right type-container">
-                  <span>ต้นทุนรวม</span>
+                  <span>ต้นทุน</span>
+                </div>
+              </template>
+            </column>
+            <column :colspan="1">
+              <template #footer>
+                <div class="text-right type-container">
+                  <span>{{ calPricePerQty(modelPrice) }}</span>
                 </div>
               </template>
             </column>
@@ -166,8 +189,8 @@
             </column>
           </Row>
 
-          <Row>
-            <column :colspan="6">
+          <!-- <Row>
+            <column :colspan="7">
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ `ต้นทุน/สินค้า [จำนวนผลิต ${this.model.productQty}]` }}</span>
@@ -181,7 +204,7 @@
                 </div>
               </template>
             </column>
-          </Row>
+          </Row> -->
         </ColumnGroup>
       </DataTable>
     </div>
@@ -349,6 +372,14 @@ export default {
         .filter((item) => item.nameGroup === groupName)
         .reduce((total, item) => total + Number(item.totalPrice), 0)
     },
+    calculateGroupTotalPerQty(groupName, data) {
+      return (
+        data
+          .filter((item) => item.nameGroup === groupName)
+          .reduce((total, item) => total + Number(item.totalPrice), 0) /
+        (this.model.productQty || 1)
+      )
+    },
 
     caltotalPrice(data) {
       let total = 0
@@ -358,9 +389,22 @@ export default {
       return total.toFixed(2)
     },
 
+    calGroupPricePerQty(groupName) {
+      const groupTotal = this.calculateGroupTotal(groupName, this.modelPrice)
+      return (groupTotal / (this.model.productQty || 1)).toFixed(2)
+    },
+
     calPricePerQty(data) {
       const total = this.caltotalPrice(data)
       console.log('total', total, this.model.productQty)
+      let price = (total / this.model.productQty ?? 1).toFixed(2)
+      console.log('price', price)
+
+      return price
+    },
+    calEachPricePerQty(total) {
+      //const total = this.caltotalPrice(data)
+      //console.log('total', total, this.model.productQty)
       let price = (total / this.model.productQty ?? 1).toFixed(2)
       console.log('price', price)
 
@@ -492,5 +536,12 @@ export default {
   //color: var(--base-font-color);
   padding: 5px;
   //margin: 0px 0px 10px 0px;
+}
+
+.form-col-2equal-container {
+  display: grid;
+  //gap: 10px;
+  padding: 0px;
+  grid-template-columns: 1fr 1fr; // แบ่งเป็น 2 columns เท่าๆกัน
 }
 </style>
