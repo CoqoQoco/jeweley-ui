@@ -7,6 +7,8 @@ const GRProductionList = () =>
   import('@/views/receipt-stock/product/gr-production-list/IndexView.vue')
 const GRProduction = () => import('@/views/receipt-stock/product/gr-production/IndexView.vue')
 
+const StockImage = () => import('@/views/stock/product/image/IndexView.vue')
+
 const Barcode = () => import('@/views/receipt-stock/product/test-barcode/IndexView.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
@@ -75,7 +77,6 @@ const routes = [
         }
       },
 
-
       //gr product from outsource
       {
         path: '/goods-receipt-outsource',
@@ -95,7 +96,7 @@ const routes = [
       {
         path: '/goods-receipt-image',
         name: 'goods-receipt-image',
-        component: Dashboard,
+        component: StockImage,
         meta: {
           Displayname: {
             en: 'Goods Receipt Image',
@@ -132,7 +133,7 @@ const routes = [
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
         }
-      },
+      }
     ]
   }
 ]

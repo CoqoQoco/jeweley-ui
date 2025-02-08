@@ -15,6 +15,7 @@ export const useMasterApiStore = defineStore('master', {
     planStatus: [],
     gold: [],
     goldSize: [],
+    gem: [],
     customerType: [],
     productType: [],
     error: null,
@@ -48,6 +49,7 @@ export const useMasterApiStore = defineStore('master', {
     isPlanStatusCacheValid: (state) => isCacheValid(state.cacheTimestamps.planStatus),
     isGoldCacheValid: (state) => isCacheValid(state.cacheTimestamps.gold),
     isGoldSizeCacheValid: (state) => isCacheValid(state.cacheTimestamps.goldSize),
+    isGemCacheValid: (state) => isCacheValid(state.cacheTimestamps.Gem),
     isCustomerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.customerType),
     isProductTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.productType)
   },
@@ -86,6 +88,7 @@ export const useMasterApiStore = defineStore('master', {
       this.planStatus = []
       this.gold = []
       this.goldSize = []
+      this.gem = []
       this.customerType = []
       this.productType = []
       this.error = null
@@ -117,6 +120,10 @@ export const useMasterApiStore = defineStore('master', {
           fetchPromises.push(api.jewelry.get('Master/MasterGoldSize', null, { skipLoading: true }))
           fetchKeys.push('goldSize')
         }
+        if (forceFetch || !this.isGemCacheValid) {
+          fetchPromises.push(api.jewelry.get('Master/MasterGem', null, { skipLoading: true }))
+          fetchKeys.push('gem')
+        }
         if (forceFetch || !this.isCustomerTypeCacheValid) {
           fetchPromises.push(
             api.jewelry.get('Master/MasterCustomerType', null, { skipLoading: true })
@@ -137,6 +144,7 @@ export const useMasterApiStore = defineStore('master', {
             planStatus: this.planStatus,
             gold: this.gold,
             goldSize: this.goldSize,
+            gem: this.gem,
             customerType: this.customerType,
             productType: this.productType
           }
@@ -157,6 +165,7 @@ export const useMasterApiStore = defineStore('master', {
           planStatus: this.planStatus,
           gold: this.gold,
           goldSize: this.goldSize,
+          gem: this.gem,
           customerType: this.customerType,
           productType: this.productType
         }
@@ -165,15 +174,14 @@ export const useMasterApiStore = defineStore('master', {
       }
     },
 
-    // Individual fetch methods with cache check
-    async fetchWithCache(key, url, errorMessage) {
+    async fetchWithCache(key, url, errorMessage, forceFetch = false) {
       if (!forceFetch && this.isCacheValid(key)) {
         return this[key]
       }
-
+    
       try {
         this.clearError()
-        const response = await api.jewelry.get(url)
+        const response = await api.jewelry.get(url, null, { skipLoading: true })
         this[key] = response || []
         this.updateCacheTimestamp(key)
         return response
@@ -181,6 +189,23 @@ export const useMasterApiStore = defineStore('master', {
         return this.handleError(error, errorMessage)
       }
     },
+
+    // Individual fetch methods with cache check
+    // async fetchWithCache(key, url, errorMessage) {
+    //   if (!forceFetch && this.isCacheValid(key)) {
+    //     return this[key]
+    //   }
+
+    //   try {
+    //     this.clearError()
+    //     const response = await api.jewelry.get(url)
+    //     this[key] = response || []
+    //     this.updateCacheTimestamp(key)
+    //     return response
+    //   } catch (error) {
+    //     return this.handleError(error, errorMessage)
+    //   }
+    // },
 
     // Updated individual fetch methods
     async fetchPlanStatus(forceFetch = false) {
@@ -197,6 +222,10 @@ export const useMasterApiStore = defineStore('master', {
 
     async fetchGoldSize(forceFetch = false) {
       return this.fetchWithCache('goldSize', 'Master/MasterGoldSize', 'Error fetching gold size')
+    },
+
+    async fetchGem(forceFetch = false) {
+      return this.fetchWithCache('gem', 'Master/MasterGem', 'Error fetching gem')
     },
 
     async fetchCustomerType(forceFetch = false) {

@@ -27,7 +27,7 @@
 
     <!-- <div class="line mt-4 mb-4"></div> -->
 
-    <div class="filter-container-highlight mt-4">
+    <div class="filter-container-highlight">
       <div class="form-col-container">
         <div class="desc-text-white d-flex justify-content-between">
           <div>
@@ -41,13 +41,14 @@
       </div>
     </div>
 
-    <!-- <div class="form-col-container">
-      <uploadImages
-        title="รูปสินค้า"
-        @onUpdateFile="updateFile"
-        @btnClearRef="setBtnClearRef"
-      ></uploadImages>
-    </div> -->
+    <div class="filter-container-highlight">
+      <div class="form-col-repeat-container">
+        <button class="btn btn-sm btn-secondary" type="button">
+          <span class="bi bi-gear mr-2"></span>
+          <span>ปรับเเต่งสินค้า</span>
+        </button>
+      </div>
+    </div>
 
     <div class="form-col-container">
       <form>
@@ -65,6 +66,13 @@
           :scrollHeight="null"
           class="custom-form-table"
         >
+          auto index
+          <template #noTemplate="{ index, data }">
+            <div class="d-flex justify-content-center">
+              <span>{{ index + 1 }}</span>
+            </div>
+          </template>
+
           <template #productNumberTemplate="{ data }">
             <div class="d-flex justify-content-center">
               <input
@@ -80,18 +88,33 @@
             </div>
           </template>
 
-          <template #productNameTemplate="{ data }">
+          <template #productNameEnTemplate="{ data }">
             <div class="d-flex justify-content-center">
               <input
                 v-if="!data.isReceipt"
                 class="form-control form-control-sm"
-                :style="getBgColor(data.isReceipt, data.productName)"
+                :style="getBgColor(data.isReceipt, data.productNameEN)"
                 type="text"
-                v-model="data.productName"
+                v-model="data.productNameEN"
                 :required="isRequiredField(data)"
                 :disabled="data.isReceipt"
               />
-              <span v-else>{{ data.productNumber }}</span>
+              <span v-else>{{ data.productNameEN }}</span>
+            </div>
+          </template>
+
+          <template #productNameThTemplate="{ data }">
+            <div class="d-flex justify-content-center">
+              <input
+                v-if="!data.isReceipt"
+                class="form-control form-control-sm"
+                :style="getBgColor(data.isReceipt, data.productNameTH)"
+                type="text"
+                v-model="data.productNameTH"
+                :required="isRequiredField(data)"
+                :disabled="data.isReceipt"
+              />
+              <span v-else>{{ data.productNameTH }}</span>
             </div>
           </template>
 
@@ -337,7 +360,7 @@
 
                       <!-- ส่วนปุ่มควบคุม -->
                       <div class="image-controls mt-1">
-                        <button class="btn btn-red btn-sm ms-2" type="button">
+                        <button class="btn btn-green btn-sm ms-2" type="button">
                           <span class="bi bi-image"></span>
                           <span>เลือกรูปสินค้า</span>
                         </button>
@@ -377,12 +400,19 @@
                             </div>
                           </div> -->
 
-                        <div class="form-col-fix-4-container">
+                        <div class="form-col-fix-col-container">
                           <!-- Type -->
                           <div>
                             <div>
                               <span class="title-text-white">ประเภท</span>
                               <span class="title-text-white"> *</span>
+                            </div>
+                          </div>
+
+                          <!-- type -->
+                          <div>
+                            <div>
+                              <!-- <span class="title-text-white">รายละเอียด</span> -->
                             </div>
                           </div>
 
@@ -393,10 +423,26 @@
                             </div>
                           </div>
 
+                          <!-- size -->
+                          <div>
+                            <div>
+                              <span class="title-text-white">ขนาด</span>
+                              <span class="title-text-white"> *</span>
+                            </div>
+                          </div>
+
+                          <!-- qty -->
+                          <div>
+                            <div>
+                              <span class="title-text-white">จำนวน</span>
+                              <span class="title-text-white"> *</span>
+                            </div>
+                          </div>
+
                           <!-- Weight -->
                           <div>
                             <div>
-                              <span class="title-text-white">น้ำหนัก (กรัม)</span>
+                              <span class="title-text-white">น้ำหนัก</span>
                               <span class="title-text-white"> *</span>
                             </div>
                           </div>
@@ -416,7 +462,7 @@
 
                     <!-- item data -->
                     <div v-for="(item, index) in slotProps.data.material" :key="index" class="mb-1">
-                      <div class="form-col-fix-4-container">
+                      <div class="form-col-fix-col-container">
                         <!-- Type -->
                         <div>
                           <Dropdown
@@ -431,15 +477,78 @@
                           <!-- @change="onResetValDate('isValCategory')" -->
                         </div>
 
+                        <!-- subType -->
+                        <div class="">
+                          <div v-if="item.type === '1'">
+                            <Dropdown
+                              v-model="item.subType"
+                              :options="masterGold"
+                              optionLabel="description"
+                              optionValue="code"
+                              class="w-full md:w-14rem"
+                              placeholder="เลือกทอง"
+                              :showClear="item.subType ? true : false"
+                            >
+                            </Dropdown>
+                          </div>
+                          <div v-else-if="item.type === '2'">
+                            <input
+                              type="text"
+                              v-model="item.subType"
+                              class="form-control"
+                              placeholder="ระบุเพชร"
+                              required
+                            />
+                          </div>
+                          <div v-else-if="item.type === '3'">
+                            <Dropdown
+                              v-model="item.subType"
+                              :options="masterGem"
+                              optionLabel="description"
+                              optionValue="code"
+                              class="w-full md:w-14rem"
+                              placeholder="เลือกพลอย"
+                              :showClear="item.subType ? true : false"
+                            >
+                            </Dropdown>
+                          </div>
+                          <div v-else  class="mt-3">
+                            <span>--- โปรดระบุประเภท ---</span>
+                          </div>
+                        </div>
+
                         <!-- Description -->
                         <div>
                           <input
                             type="text"
                             v-model="item.description"
-                            class="form-control form-control-sm"
+                            class="form-control"
                             :style="getBgColor(false, item.description)"
                             min="0"
                             step="0.01"
+                            required
+                          />
+                        </div>
+
+                        <!-- size -->
+                        <div>
+                          <input
+                            type="text"
+                            v-model="item.size"
+                            class="form-control"
+                            :style="getBgColor(false, item.size)"
+                            required
+                          />
+                        </div>
+
+                        <!-- qty -->
+                        <div>
+                          <input
+                            type="number"
+                            v-model="item.qty"
+                            class="form-control"
+                            :style="getBgColor(false, item.qty)"
+                            min="0"
                             required
                           />
                         </div>
@@ -449,7 +558,7 @@
                           <input
                             type="number"
                             v-model="item.weight"
-                            class="form-control form-control-sm"
+                            class="form-control"
                             :style="getBgColor(false, item.weight)"
                             min="0"
                             step="0.01"
@@ -457,12 +566,12 @@
                           />
                         </div>
 
-                        <!-- Weight -->
+                        <!-- price -->
                         <div>
                           <input
                             type="number"
                             v-model="item.price"
-                            class="form-control form-control-sm"
+                            class="form-control"
                             :style="getBgColor(false, item.price)"
                             min="0"
                             step="0.01"
@@ -471,7 +580,7 @@
                         </div>
 
                         <!-- Delete button -->
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mt-1">
                           <button
                             type="button"
                             class="btn btn-red btn-sm"
@@ -493,7 +602,14 @@
             <div class="d-flex justify-content-between items-center">
               <span>จำนวนรายการที่เลือก: {{ checkItemSelectedLength(form) }}</span>
               <div>
-                <button class="btn btn-sm btn-main">บันทึก</button>
+                <button class="btn btn-sm btn-green" type="button">
+                  <span class="bi bi-file-arrow-up"></span>
+                  <span class="ml-2">ร่างข้อมูลสินค้า</span>
+                </button>
+                <button class="btn btn-sm btn-main ml-2" type="submit">
+                  <span class="bi bi-upload"></span>
+                  <span class="ml-2">บันทึกสินค้า</span>
+                </button>
               </div>
             </div>
           </template>
@@ -517,6 +633,8 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import api from '@/axios/axios-helper.js'
 
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+
 // const interfaceForm = {
 //   operator: ''
 // }
@@ -535,7 +653,17 @@ export default {
 
   setup() {
     const receiptProductionStore = useReceiptProductionApiStore()
-    return { receiptProductionStore }
+    const masterStore = useMasterApiStore()
+    return { receiptProductionStore, masterStore }
+  },
+
+  computed: {
+    masterGold() {
+      return this.masterStore.gold
+    },
+    masterGem() {
+      return this.masterStore.gem
+    }
   },
 
   data() {
@@ -562,7 +690,7 @@ export default {
       headerColumns: [
         {
           field: 'receiptNumber',
-          header: 'เลขที่ตั้งรับสินค้า',
+          header: 'เลขที่ตั้งรับแผนผลิต',
           sortable: false,
           minWidth: '150px'
         },
@@ -615,7 +743,13 @@ export default {
         //เลขที่ผลิต
         {
           field: 'stockNumber',
-          header: 'รหัสตั้งรับสินค้า',
+          header: 'เลขที่ตั้งรับสินค้า',
+          sortable: false,
+          minWidth: '150px'
+        },
+        {
+          field: 'stockTestNumber',
+          header: 'เลขที่ผลิต',
           sortable: false,
           minWidth: '150px'
         },
@@ -626,59 +760,17 @@ export default {
           minWidth: '150px'
         },
         {
-          field: 'productName',
-          header: 'ชื่อสินค้า',
+          field: 'productNameEn',
+          header: 'ชื่อสินค้า EN',
+          sortable: false,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNameTh',
+          header: 'ชื่อสินค้า TH',
           sortable: false,
           minWidth: '150px'
         }
-        // {
-        //   field: 'productQty',
-        //   header: 'จำนวน',
-        //   sortable: false,
-        //   minWidth: '100px'
-        // },
-        // {
-        //   field: 'size',
-        //   header: 'ไซส์',
-        //   sortable: false,
-        //   minWidth: '100px'
-        // },
-        // {
-        //   field: 'gold',
-        //   header: 'น้้ำหนักทอง',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // },
-        // {
-        //   field: 'diamond',
-        //   header: 'น้้ำหนักเพชร',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // },
-        // {
-        //   field: 'gem',
-        //   header: 'น้้ำหนักพลอย',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // },
-        // {
-        //   field: 'location',
-        //   header: 'คลังจัดเก็บ',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // },
-        // {
-        //   field: 'price',
-        //   header: 'ราคาขาย',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // },
-        // {
-        //   field: 'remark',
-        //   header: 'หมายเหตุ',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // }
       ],
 
       btnClearImg: null,
@@ -806,7 +898,7 @@ export default {
   },
 
   created() {
-    this.$nextTick(() => {
+    this.$nextTick(async () => {
       this.param = {
         running: this.$route.params.id
       }
@@ -815,6 +907,14 @@ export default {
 
       //test
       this.fetchImageData()
+
+      console.log('this.masterStore.planStatus')
+
+      // เข้าถึง state โดยตรง
+      await this.masterStore.fetchGold()
+      await this.masterStore.fetchGem()
+      console.log(this.masterStore.gold)
+      console.log(this.masterStore.gem)
     })
   }
 }
@@ -827,11 +927,11 @@ export default {
 .form-control {
   font-size: 50px;
 }
-.form-col-fix-4-container {
+.form-col-fix-col-container {
   display: grid;
   gap: 10px;
   padding: 0px;
-  grid-template-columns: 1fr 4fr 1fr 1fr 1fr 1fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
+  grid-template-columns: 1fr 2fr 2fr 1fr 1fr 1fr 1fr 1fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
 }
 
 .form-col-fix-2-container {
@@ -839,6 +939,13 @@ export default {
   //gap: 10px;
   padding: 0px;
   grid-template-columns: 4fr 2fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
+}
+
+.form-col-repeat-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  //gap: 5px;
+  //padding: 20px;
 }
 
 .filter-container-img {

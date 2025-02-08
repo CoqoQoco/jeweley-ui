@@ -282,7 +282,7 @@ export default {
                       stack: [
                         { text: 'รายละเอียดสินค้า', style: 'title' },
                         {
-                          text: this.model.productDetail || '-',
+                          text: this.model.productDetail,
                           style: 'desc',
                           // เพิ่มการจัดการข้อความยาว
                           maxHeight: 100,
@@ -296,8 +296,7 @@ export default {
                 ]
               },
               layout: {
-                defaultBorder: false,
-                
+                defaultBorder: false
               },
               margin: [0, 0, 0, 10]
             },
