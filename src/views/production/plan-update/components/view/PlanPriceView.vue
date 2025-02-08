@@ -126,7 +126,8 @@
         <Column field="totalPricePerQty" style="width: 110px">
           <template #body="slotProps">
             <div class="text-right">
-              <span>{{ calEachPricePerQty(slotProps.data.totalPrice) }}</span>
+              <!-- <span>{{ calEachPricePerQty(slotProps.data.totalPrice) }}</span> -->
+               <span>0.00</span>
             </div>
           </template>
         </Column>

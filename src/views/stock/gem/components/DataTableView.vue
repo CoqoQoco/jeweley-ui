@@ -194,26 +194,28 @@ export default {
           header: 'รหัส',
           sortable: true
         },
-        {
-          field: 'groupName',
-          header: 'หมวดหมู่',
-          sortable: true
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: true
-        },
-        {
-          field: 'shape',
-          header: 'รูปร่าง',
-          sortable: true
-        },
-        {
-          field: 'grade',
-          header: 'เกรด',
-          sortable: true
-        },
+
+        // {
+        //   field: 'groupName',
+        //   header: 'หมวดหมู่',
+        //   sortable: true
+        // },
+        // {
+        //   field: 'size',
+        //   header: 'ขนาด',
+        //   sortable: true
+        // },
+        // {
+        //   field: 'shape',
+        //   header: 'รูปร่าง',
+        //   sortable: true
+        // },
+        // {
+        //   field: 'grade',
+        //   header: 'เกรด',
+        //   sortable: true
+        // },
+
         {
           field: 'quantity',
           header: 'จำนวนคงคลัง',
@@ -260,6 +262,28 @@ export default {
           header: 'รหัสหน่วย',
           sortable: true
         },
+
+        {
+          field: 'groupName',
+          header: 'หมวดหมู่',
+          sortable: true
+        },
+        {
+          field: 'size',
+          header: 'ขนาด',
+          sortable: true
+        },
+        {
+          field: 'shape',
+          header: 'รูปร่าง',
+          sortable: true
+        },
+        {
+          field: 'grade',
+          header: 'เกรด',
+          sortable: true
+        },
+
         {
           field: 'remark1',
           header: 'หมายเหตุ-1',

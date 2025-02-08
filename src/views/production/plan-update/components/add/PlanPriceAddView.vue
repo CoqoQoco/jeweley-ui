@@ -859,6 +859,24 @@ export default {
             }
           })
 
+          console.log('model priceItems', this.model?.priceItems)
+          if (this.model.priceItems) {
+            const sourceItem = this.model.priceItems.find(
+              (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
+            )
+
+            // หาข้อมูลปลายทางใน array ที่สอง
+            const targetItem = this.tranItems.find(
+              (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
+            )
+
+            // อัปเดตค่าถ้าเจอทั้งสองรายการ
+            if (sourceItem && targetItem) {
+              targetItem.qtyWeightPrice = sourceItem.qtyWeightPrice
+              targetItem.priceReference = sourceItem.totalPrice
+            }
+          }
+
           // เรียงตามลำดับที่กำหนด
           this.tranItems = _.sortBy(
             this.tranItems,

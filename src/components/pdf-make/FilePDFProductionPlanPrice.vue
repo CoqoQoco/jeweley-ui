@@ -110,6 +110,7 @@ export default {
     },
     calculateTotalPerQty() {
       return this.calculateTotal() / (this.model.productQty || 1)
+      //return '0.00'
     },
 
     async generatePDF() {
@@ -345,7 +346,7 @@ export default {
                       { text: this.formatNumber(item.qtyWeight, 3), alignment: 'right' },
                       { text: this.formatNumber(item.qtyWeightPrice, 2), alignment: 'right' },
                       {
-                        text: this.formatNumber(item.totalPrice / (this.model.productQty || 1), 2),
+                        text: this.formatNumber(0, 2),
                         alignment: 'right'
                       },
                       { text: this.formatNumber(item.totalPrice, 2), alignment: 'right' }
