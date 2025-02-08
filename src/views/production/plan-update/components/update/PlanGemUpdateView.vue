@@ -226,17 +226,13 @@
             >
               <Column style="width: 30px">
                 <template #body="prop">
-                  <div
+                  <!-- <div
                     v-if="checkOutbound(prop.data)"
                     class="btn btn-sm btn-secondary text-center w-100"
                   >
                     <i class="bi bi-trash-fill"></i>
-                  </div>
-                  <div
-                    v-else
-                    class="btn btn-sm btn-danger text-center w-100"
-                    @click="onDelGem(prop.data)"
-                  >
+                  </div> -->
+                  <div class="btn btn-sm btn-danger text-center w-100" @click="onDelGem(prop.data)">
                     <i class="bi bi-trash-fill"></i>
                   </div>
                 </template>
@@ -706,7 +702,11 @@ export default {
         this.gemAssign = this.gemAssign.map((item) => {
           return {
             id: item.gem?.id,
-            outboundRunning: item.outboundRunning,
+
+            outboundRunning: item.outboundRunning ?? null,
+            outboundName: item.outboundName ?? null,
+            outboundDate: item.outboundDate ?? null,
+
             itemNo: item.itemNo,
             code: item.gem?.code,
             name: item.gem?.name,
