@@ -839,6 +839,7 @@ export default {
         this.form.items = this.form.items.map((x) => {
           return {
             ...x,
+            id: x.productionPlan ? x.productionPlan.id : null,
             productionPlanId: x.productionPlan
               ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
               : null
