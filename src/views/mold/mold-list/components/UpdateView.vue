@@ -7,8 +7,8 @@
         </div>
         <form @submit.prevent="onSubmit">
           <div class="form-col-container">
-            <!-- image -->
-            <div>
+            <!-- main image -->
+            <div class="mt-2">
               <div class="image-container">
                 <div class="upload-btn">
                   <input
@@ -16,32 +16,74 @@
                     type="file"
                     ref="fileInput"
                     accept=".jpg, .png"
-                    @change="onSelectImg"
+                    @change="onSelectImageMain"
                   />
-                  <button class="btn btn-sm btn-warning btn-upload-custom" type="button">
-                    เลือกเเเก้ไขรูปภาพ
+                  <button class="btn btn-sm btn-upload-custom" type="button">
+                    <span><i class="bi bi-image"></i></span>
+                    <span>เเก้ไข</span>
                   </button>
                 </div>
                 <div class="upload-preview">
                   <div v-if="urlImage">
                     <img :src="urlImage" alt="Preview" class="preview-image" />
-                    <!-- <i class="bi bi-x del-iamge-x"></i> -->
                   </div>
+                </div>
+                <div class="upload-title title-upload-custom">
+                  <span>รูปที่ 1</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- sub image -->
+            <div class="mt-2">
+              <div class="image-container">
+                <div class="upload-btn">
+                  <input
+                    class="hidden-input"
+                    type="file"
+                    ref="fileInput"
+                    accept=".jpg, .png"
+                    @change="onSelectImageSub"
+                  />
+                  <button class="btn btn-sm btn-upload-custom" type="button">
+                    <span><i class="bi bi-image"></i></span>
+                    <span>เเก้ไข</span>
+                  </button>
+                </div>
+                <div class="upload-preview">
+                  <div v-if="urlImageSub">
+                    <img :src="urlImageSub" alt="Preview" class="preview-image" />
+                  </div>
+                  <div v-else>
+                    <div class="no-image-container" style="height: 100%">
+                      <img src="@/assets/no-image.png" class="preview-no-image" />
+                      <span class="desc-text">ไม่มีรูปภาพ</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="upload-title title-upload-custom">
+                  <span>รูปที่ 2</span>
                 </div>
               </div>
             </div>
 
             <!-- data -->
-            <div>
+            <div class="filter-container-highlight mt-2">
               <div class="form-col-container">
                 <div>
-                  <span class="title-text">รหัส</span>
-                  <input type="text" class="form-control" v-model="form.code" disabled required />
+                  <span class="title-text-white">รหัส</span>
+                  <input
+                    type="text"
+                    class="form-control dis-input-container"
+                    v-model="form.code"
+                    disabled
+                    required
+                  />
                 </div>
               </div>
               <div class="form-col-container">
                 <div>
-                  <span class="title-text">ประเภท</span>
+                  <span class="title-text-white">ประเภท</span>
                   <Dropdown
                     v-model="form.category"
                     :options="masterProduct"
@@ -55,13 +97,13 @@
               </div>
               <div class="form-col-container">
                 <div>
-                  <label>ช่างขึ้นพิมพ์</label>
+                  <span class="title-text-white">ช่างขึ้นพิมพ์</span>
                   <input type="text" class="form-control" v-model="form.moldBy" />
                 </div>
               </div>
               <div class="form-col-container">
                 <div>
-                  <label>คำอธิบาย</label>
+                  <span class="title-text-white">คำอธิบาย</span>
                   <textarea
                     class="form-control"
                     v-model="form.description"
@@ -70,15 +112,15 @@
                   />
                 </div>
               </div>
+              <div class="d-flex justify-content-end mt-2">
+                <button class="btn btn-sm btn-green" type="submit">
+                  <span class="mr-2">
+                    <i class="bi bi-calendar-check"></i>
+                  </span>
+                  <span>บันทึก</span>
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="d-flex justify-content-end mt-1">
-            <button class="btn btn-sm btn-main" type="submit">
-              <span class="mr-2">
-                <i class="bi bi-gem"></i>
-              </span>
-              <span>เเก้ไขเเม่พิมพ์</span>
-            </button>
           </div>
         </form>
       </template>
@@ -95,11 +137,15 @@ import Dropdown from 'primevue/dropdown'
 
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
+import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 
 const interfaceForm = {
   code: null,
   category: null,
-  description: null
+  description: null,
+
+  imageMain: null,
+  imageSub: null
 }
 const interfaceVal = {
   isValCategory: false
@@ -138,7 +184,14 @@ export default {
         category: this.masterProduct.find((x) => x.code === value.categoryCode)
       }
       //console.log(value)
-      await this.fetchImageData(value.code)
+
+      if (value.code) {
+        await this.fetchImageData(value.code, false)
+      }
+
+      if (value.imageDraft1) {
+        await this.fetchImageData(value.code, true)
+      }
     },
     'form.category'() {
       if (this.form.category) {
@@ -155,18 +208,21 @@ export default {
       masterProduct: [],
 
       // image
-      urlImage: ''
+      urlImage: '',
+      urlImageSub: ''
     }
   },
   methods: {
     // ---------------- event ----------------
     closeModal() {
-      //this.onclear()
+      this.onclear()
       this.$emit('closeModal')
     },
     onclear() {
       //this.$refs.fileInput.value = null
-      this.imgUrl = ''
+      this.urlImage = ''
+      this.urlImageSub = ''
+      this.ima
       this.form = {
         ...interfaceForm
       }
@@ -175,29 +231,79 @@ export default {
         isValCategory: false
       }
 
-      this.$emit('fetch')
+      //this.$emit('fetch')
     },
-    onSelectImg(e) {
-      this.isLoading = true
+    async onSelectImageMain(e) {
       if (e.target.files[0]) {
-        //const maxSizeInBytes = 1024 * 1024 // 1 MB (ตั้งค่าตามที่ต้องการ)
-        // if (e.target.files[0].size > maxSizeInBytes) {
-        //   alert('ไฟล์ที่คุณเลือกมีขนาดเกินกำหนด (1 MB)')
-        //   return
-        // }
+        // เก็บชื่อไฟล์ต้นฉบับ
         this.name = e.target.files[0].name
 
-        //preview
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          this.urlImage = event.target.result
-        }
-        reader.readAsDataURL(e.target.files[0])
+        try {
+          // แสดง preview ชั่วคราวจากไฟล์ต้นฉบับก่อน
+          const reader = new FileReader()
+          reader.onload = (event) => {
+            this.urlImage = event.target.result
+          }
+          reader.readAsDataURL(e.target.files[0])
 
-        //assign
-        this.form.image = e.target.files[0]
+          // บีบอัดไฟล์
+          const compressedFile = await compressOptimalImage(e.target.files[0])
+
+          // อัพเดท preview ถ้าต้องการ (อาจไม่จำเป็นถ้าต้องการแสดง preview จากไฟล์ต้นฉบับ)
+          const compressedReader = new FileReader()
+          compressedReader.onload = (event) => {
+            this.urlImage = event.target.result
+          }
+          compressedReader.readAsDataURL(compressedFile)
+
+          // แสดงข้อมูลการบีบอัด (optional)
+          console.log(`ขนาดไฟล์เดิม: ${(e.target.files[0].size / 1024).toFixed(2)} KB`)
+          console.log(`ขนาดไฟล์หลังบีบอัด: ${(compressedFile.size / 1024).toFixed(2)} KB`)
+
+          // assign ไฟล์ที่บีบอัดแล้วไปยัง form
+          this.form.imageMain = compressedFile
+        } catch (error) {
+          console.error('เกิดข้อผิดพลาดในการบีบอัดรูปภาพ:', error)
+          // หากเกิดข้อผิดพลาด ใช้ไฟล์ต้นฉบับ
+          this.form.imageMain = e.target.files[0]
+        }
       }
-      this.isLoading = false
+    },
+    async onSelectImageSub(e) {
+      if (e.target.files[0]) {
+        // เก็บชื่อไฟล์ต้นฉบับ
+        this.name = e.target.files[0].name
+
+        try {
+          // แสดง preview ชั่วคราวจากไฟล์ต้นฉบับก่อน
+          const reader = new FileReader()
+          reader.onload = (event) => {
+            this.urlImageSub = event.target.result
+          }
+          reader.readAsDataURL(e.target.files[0])
+
+          // บีบอัดไฟล์
+          const compressedFile = await compressOptimalImage(e.target.files[0])
+
+          // อัพเดท preview ถ้าต้องการ (อาจไม่จำเป็นถ้าต้องการแสดง preview จากไฟล์ต้นฉบับ)
+          const compressedReader = new FileReader()
+          compressedReader.onload = (event) => {
+            this.urlImageSub = event.target.result
+          }
+          compressedReader.readAsDataURL(compressedFile)
+
+          // แสดงข้อมูลการบีบอัด (optional)
+          console.log(`ขนาดไฟล์เดิม: ${(e.target.files[0].size / 1024).toFixed(2)} KB`)
+          console.log(`ขนาดไฟล์หลังบีบอัด: ${(compressedFile.size / 1024).toFixed(2)} KB`)
+
+          // assign ไฟล์ที่บีบอัดแล้วไปยัง form
+          this.form.imageSub = compressedFile
+        } catch (error) {
+          console.error('เกิดข้อผิดพลาดในการบีบอัดรูปภาพ:', error)
+          // หากเกิดข้อผิดพลาด ใช้ไฟล์ต้นฉบับ
+          this.form.imageSub = e.target.files[0]
+        }
+      }
     },
     VaidateForm() {
       if (!this.form.category) {
@@ -232,18 +338,22 @@ export default {
     },
 
     // -------- APIs --------------- //
-    async fetchImageData(path) {
+    async fetchImageData(path, sub) {
       try {
         //console.log
         switch (this.type) {
           case 'ORDERPLAN': {
             const param = {
-              imageName: `${path}-Mold.png`
+              imageName: sub ? `${path}-Sub-Mold.png` : `${path}-Mold.png`
             }
             const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
 
             if (res) {
-              this.urlImage = `data:image/png;base64,${res}`
+              if (sub) {
+                this.urlImageSub = `data:image/png;base64,${res}`
+              } else {
+                this.urlImage = `data:image/png;base64,${res}`
+              }
             }
           }
         }
@@ -253,27 +363,22 @@ export default {
     },
     async fetchMasterProductType() {
       try {
-        this.isLoading = true
         const res = await api.jewelry.get('Master/MasterProductType')
         if (res) {
           this.masterProduct = [...res]
         }
-        this.isLoading = false
       } catch (error) {
         console.log(error)
-        this.isLoading = false
       }
     },
     async submit() {
       try {
-        this.isLoading = true
-
         // let params = {
         //   code: this.form.code,
         //   category: this.form.category.nameTh,
         //   categoryCode: this.form.category.code,
         //   description: this.form.description,
-        //   Images: this.form.image ? this.form.image : null
+        //   Images: this.form.imageMain ? this.form.imageMain : null
 
         // }
 
@@ -283,7 +388,9 @@ export default {
         params.append('categoryCode', this.form.category.code)
         params.append('description', this.form.description)
         params.append('moldBy', this.form.moldBy)
-        params.append('images', this.form.image ? this.form.image : null)
+
+        params.append('imagesMain', this.form.imageMain ? this.form.imageMain : null)
+        params.append('imagesSub', this.form.imageSub ? this.form.imageSub : null)
 
         let options = {
           headers: {
@@ -305,10 +412,8 @@ export default {
             null
           )
         }
-        this.isLoading = false
       } catch (error) {
         console.log(error)
-        this.isLoading = false
       }
     }
   },
@@ -325,35 +430,91 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .image-container {
+  position: relative;
   border: 1px solid var(--base-color);
   background-color: #ffff;
-  padding: 0px;
-  //display: grid;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.upload-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+.upload-title {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
 }
 
 .hidden-input {
   opacity: 0;
-  overflow: hidden;
   position: absolute;
   width: 100%;
-  height: 35px;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
 }
+
 .btn-upload-custom {
-  width: 100%;
-  height: 35px;
+  padding: 5px 10px;
+  background-color: var(--base-green);
+  border-color: var(--base-warning);
+  color: #ffff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
+.title-upload-custom {
+  padding: 5px 10px;
+  background-color: var(--base-sub-color);
+  color: #ffff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .upload-preview {
   display: grid;
   place-items: center;
-  //width: 20rem;
-  height: 22rem;
+  height: 23rem;
+  background-color: #f8f9fa;
 }
+
 .preview-image {
-  width: 20rem;
-  height: 20rem;
-  margin: 10px 0px;
-  //border: 1px solid var(--base-sub-color);
-  //box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  max-width: 20rem;
+  max-height: 20rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 10px;
   border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.preview-no-image {
+  max-width: 10rem;
+  max-height: 10rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.no-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 300px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
 </style>

@@ -24,7 +24,12 @@
       <!-- Image Column -->
       <template #imageTemplate="{ data }">
         <div class="image-container">
-          <imagePreview :imageName="data.mold" :type="mold" :width="30" :height="30" />
+          <div>
+            <imagePreview :imageName="data.mold" :type="mold" :width="25" :height="25" />
+          </div>
+          <div v-if="data.moldSub" class="ml-2">
+            <imagePreview :imageName="data.moldSub" :type="mold" :width="25" :height="25" />
+          </div>
         </div>
       </template>
 
@@ -458,5 +463,12 @@ export default {
   border-radius: 2px;
   margin-left: 4px;
   font-size: 12px;
+}
+
+.image-container {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  margin-left: 4px;
 }
 </style>

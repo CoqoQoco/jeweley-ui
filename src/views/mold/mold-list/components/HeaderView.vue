@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-searchBar">
     <pageTitle :title="title" description="" :isShowBtnClose="false" :isShowRightSlot="false">
       <template #rightSlot>
         <button class="btn btn-sm btn-main" @click="onCreate">สร้างเเบบเเม่พิมพ์ใหม่</button>
@@ -9,7 +9,12 @@
       <div class="form-col-container">
         <div>
           <span class="title-text">ค้นหา</span>
-          <input type="text" class="form-control" v-model="form.text" placeholder="รหัส/ประเภท/ช่าง..." />
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.text"
+            placeholder="รหัส/ประเภท/ช่าง..."
+          />
         </div>
         <div></div>
         <div></div>
@@ -17,12 +22,12 @@
       </div>
       <div class="btn-submit-container">
         <button class="btn btn-sm btn-main mr-2" type="submit">
-          <span><i class="bi bi-search mr-2"></i></span>
-          <span>ค้นหา</span>
+          <span><i class="bi bi-search"></i></span>
+          <!-- <span>ค้นหา</span> -->
         </button>
         <button class="btn btn-sm btn-secondary" @click="onClear" type="button">
-          <span><i class="bi bi-x mr-2"></i></span>
-          <span>ล้าง</span>
+          <span><i class="bi bi-x"></i></span>
+          <!-- <span>ล้าง</span> -->
         </button>
       </div>
     </form>

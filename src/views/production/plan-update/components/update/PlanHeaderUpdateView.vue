@@ -267,29 +267,30 @@ export default {
   watch: {
     modelValue: {
       handler(val) {
-        this.form = {
-          id: val.id,
-          wo: val.wo,
-          woNumber: val.woNumber,
+        this.getValue(val)
+        // this.form = {
+        //   id: val.id,
+        //   wo: val.wo,
+        //   woNumber: val.woNumber,
 
-          mold: val.mold,
-          requestDate: val.requestDate ? new Date(val.requestDate) : null,
+        //   mold: val.mold,
+        //   requestDate: val.requestDate ? new Date(val.requestDate) : null,
 
-          customerNumber: val.customerNumber,
-          customerType: this.modelMasterCustomerType.find((x) => x.code === val.customerType),
+        //   customerNumber: val.customerNumber,
+        //   customerType: this.modelMasterCustomerType.find((x) => x.code === val.customerType),
 
-          productName: val.productName,
-          productNumber: val.productNumber,
-          productType: this.modelMasterProductType.find((x) => x.code === val.productType),
+        //   productName: val.productName,
+        //   productNumber: val.productNumber,
+        //   productType: this.modelMasterProductType.find((x) => x.code === val.productType),
 
-          productQty: val.productQty,
-          productQtyUnit: val.productQtyUnit,
-          productDetail: val.productDetail,
-          remark: val.remark,
+        //   productQty: val.productQty,
+        //   productQtyUnit: val.productQtyUnit,
+        //   productDetail: val.productDetail,
+        //   remark: val.remark,
 
-          gold: this.modelMastergold.find((x) => x.nameEn === val.gold),
-          goldSize: this.modelMasterGoldSize.find((x) => x.nameEn === val.goldSize)
-        }
+        //   gold: this.modelMastergold.find((x) => x.nameEn === val.gold),
+        //   goldSize: this.modelMasterGoldSize.find((x) => x.nameEn === val.goldSize)
+        // }
       },
       deep: true
     }
@@ -346,20 +347,30 @@ export default {
     },
 
     // --- controller --- //
-    getValue() {
+    getValue(val) {
       //console.log('get')
       this.form = {
-        id: this.model.id,
-        wo: this.model.wo,
-        woNumber: this.model.woNumber,
-        mold: this.model.mold,
-        customerNumber: this.model.customerNumber,
-        productQty: this.model.productQty,
-        productQtyUnit: this.model.productQtyUnit,
-        productName: this.model.productName,
-        productNumber: this.model.productNumber,
-        productDetail: this.model.productDetail,
-        remark: this.model.remark
+        id: val.id,
+        wo: val.wo,
+        woNumber: val.woNumber,
+
+        mold: val.mold,
+        requestDate: val.requestDate ? new Date(val.requestDate) : null,
+
+        customerNumber: val.customerNumber,
+        customerType: this.modelMasterCustomerType.find((x) => x.code === val.customerType),
+
+        productName: val.productName,
+        productNumber: val.productNumber,
+        productType: this.modelMasterProductType.find((x) => x.code === val.productType),
+
+        productQty: val.productQty,
+        productQtyUnit: val.productQtyUnit,
+        productDetail: val.productDetail,
+        remark: val.remark,
+
+        gold: this.modelMastergold.find((x) => x.nameEn === val.gold),
+        goldSize: this.modelMasterGoldSize.find((x) => x.nameEn === val.goldSize)
       }
     },
     closeModal() {
@@ -519,6 +530,10 @@ export default {
         this.isLoading = false
       }
     }
+  },
+
+  activated() {
+    this.getValue(this.modelValue)
   }
 }
 </script>

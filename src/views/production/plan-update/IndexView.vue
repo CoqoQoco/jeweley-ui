@@ -24,23 +24,27 @@
     </div>
     <!-- header -->
     <div v-if="tabCctive === 0">
-      <planHeaderView
-        :modelValue="data"
-        :modelMatValue="mat"
-        :masterCustomerType="masterCustomer"
-        :masterProductType="masterProduct"
-        @onShowFormHeaderUpdate="onShowFormHeaderUpdate"
-      ></planHeaderView>
-      <planHeaderUpdateView
-        :isShow="isShowFormHeaderUpdate"
-        :modelValue="data"
-        :masterCustomerType="masterCustomer"
-        :masterProductType="masterProduct"
-        :masterGold="masterGold"
-        :masterGoldSize="masterGoldSize"
-        @fetch="fetchFormHeaderUpdate"
-        @closeModal="onCloseFormHeaderUpdate"
-      ></planHeaderUpdateView>
+      <keep-alive>
+        <planHeaderView
+          :modelValue="data"
+          :modelMatValue="mat"
+          :masterCustomerType="masterCustomer"
+          :masterProductType="masterProduct"
+          @onShowFormHeaderUpdate="onShowFormHeaderUpdate"
+        ></planHeaderView>
+      </keep-alive>
+      <keep-alive>
+        <planHeaderUpdateView
+          :isShow="isShowFormHeaderUpdate"
+          :modelValue="data"
+          :masterCustomerType="masterCustomer"
+          :masterProductType="masterProduct"
+          :masterGold="masterGold"
+          :masterGoldSize="masterGoldSize"
+          @fetch="fetchFormHeaderUpdate"
+          @closeModal="onCloseFormHeaderUpdate"
+        ></planHeaderUpdateView>
+      </keep-alive>
       <!-- <FormHeader
         :modelValue="data"
         :modelMatValue="mat"
@@ -481,7 +485,7 @@ export default {
       this.fetchData(this.id)
     },
     onShowAddStatus(status) {
-      console.log('onShowAddStatus', status)
+      //console.log('onShowAddStatus', status)
       this.add = { ...interfaceIsShowAdd }
       if (status === 'casting') {
         this.add.casting = true
@@ -500,7 +504,7 @@ export default {
       }
     },
     onShowUpdateStatus(status) {
-      console.log('onShowUpdateStatus', status)
+      //console.log('onShowUpdateStatus', status)
       this.update = { ...interfaceIsShowUpdate }
       if (status === 'casting') {
         this.update.casting = true
@@ -538,7 +542,7 @@ export default {
         if (res) {
           this.data = { ...res }
           //this.statusName = this.data.statusNavigation.nameTh
-          console.log('this.data', this.data)
+          //console.log('this.data', this.data)
 
           const planNumber = `${this.data.wo}-${this.data.woNumber}`
           this.fetchDataGoldCostItem(planNumber)
@@ -640,7 +644,7 @@ export default {
         if (res) {
           this.mat = [...res]
         }
-        console.log('this.mat', this.mat)
+        //console.log('this.mat', this.mat)
         this.isLoading = false
       } catch (error) {
         console.log(error)
@@ -649,7 +653,7 @@ export default {
     },
     async fetchDataGoldCostItem(planNumber) {
       try {
-        console.log('planNumber', planNumber)
+        //console.log('planNumber', planNumber)
         this.isLoading = true
         const param = {
           take: 0,
@@ -663,7 +667,7 @@ export default {
         if (res) {
           this.dataGoldCostItem = [...res.data]
           //this.statusName = this.data.statusNavigation.nameTh
-          console.log('this.dataGoldCostItem', this.dataGoldCostItem)
+          //console.log('this.dataGoldCostItem', this.dataGoldCostItem)
         }
         this.isLoading = false
       } catch (error) {
