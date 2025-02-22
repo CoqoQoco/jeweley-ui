@@ -62,11 +62,11 @@ export class FilePlanProduction {
             {
               rowSpan: 2,
               image: this.urlImage,
-              width: 50,
-              height: 50,
+              width: 65,
+              height: 65,
               border: [true, true, true, true],
               alignment: 'center',
-              margin: [0, 5, 0, 0]
+              margin: [0, 0, 0, 0]
             },
 
             // Column 2
