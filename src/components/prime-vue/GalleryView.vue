@@ -13,10 +13,18 @@
       >
         <template #item="slotProps">
           <div class="galleria-item-container" v-if="slotProps.item">
-            <img
+            <!-- <img
               :src="slotProps.item.itemImageSrc"
               :alt="slotProps.item.alt"
               class="galleria-main-image"
+            /> -->
+            <Image
+              class="galleria-main-image"
+              :src="slotProps.item.itemImageSrc"
+              :alt="slotProps.item.alt"
+              :width="width"
+              :height="height"
+              preview
             />
             <button
               v-if="getIsRemoveVisible(slotProps.item)"
@@ -47,11 +55,13 @@
 
 <script>
 import Galleria from 'primevue/galleria'
+import Image from 'primevue/image'
 
 export default {
   name: 'GalleriaComponent',
   components: {
-    Galleria
+    Galleria,
+    Image
   },
   props: {
     urls: {
@@ -89,6 +99,14 @@ export default {
     transitionInterval: {
       type: Number,
       default: 3000
+    },
+    width: {
+      type: Number,
+      default: () => 350
+    },
+    height: {
+      type: Number,
+      default: () => 350
     }
   },
   data() {
@@ -249,8 +267,8 @@ export default {
 }
 
 .galleria-main-image {
-  max-height: 300px;
-  max-width: 100%;
+  //max-height: 300px;
+  //max-width: 100%;
   object-fit: contain;
   border-radius: 5px;
 }

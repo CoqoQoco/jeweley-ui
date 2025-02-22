@@ -5,7 +5,7 @@
       :totalRecords="data.total"
       :columns="columns"
       @page="handlePageChange"
-      @sort="handlePageChangeSort"
+      @sort="handleSortChange"
       :perPage="take"
       :rowsPerPageOptions="[10, 30]"
     >
@@ -188,24 +188,40 @@ export default {
     }
   },
   methods: {
-    // ----------- table ----------- //
+    // ----- data table hnadle
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
       this.fetchData()
     },
-    handlePageChangeSort(e) {
+
+    handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
+      this.sort = e.multiSortMeta.map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
+
+    // handlePageChange(e) {
+    //   this.skip = e.first
+    //   this.take = e.rows
+    //   this.sort = e.multiSortMeta.map((item) => {
+    //     return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
+    //   })
+    //   //console.log(e)
+    //   this.fetchData()
+    // },
+    // handlePageChangeSort(e) {
+    //   this.skip = e.first
+    //   this.take = e.rows
+    //   this.sort = e.multiSortMeta.map((item) => {
+    //     return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
+    //   })
+    //   this.fetchData()
+    // },
 
     // ----------- APIs ----------- //
     async fetchData() {
