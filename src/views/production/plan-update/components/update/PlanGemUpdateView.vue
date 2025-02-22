@@ -251,6 +251,7 @@
                     forceSelection
                     :minLength="4"
                     :disabled="checkOutbound(data)"
+                    @item-select="onGemSelect($event, data)"
                   >
                     <template #option="slotProps">
                       <div class="flex align-options-center">
@@ -328,6 +329,7 @@
               </template>
             </DataTable>
           </div>
+
           <div class="line mt-3"></div>
 
           <div class="form-col-container mt-2">
@@ -452,14 +454,14 @@ export default {
   watch: {
     isShow(newVal) {
       if (newVal) {
-        console.log('Modal opened, initializing form')
+        //console.log('Modal opened, initializing form')
         this.initForm()
       }
     },
     modelValue: {
       handler(newVal) {
         if (newVal && Object.keys(newVal).length > 0) {
-          console.log('modelValue changed, initializing form')
+          //console.log('modelValue changed, initializing form')
           this.initForm()
         }
       },
@@ -479,7 +481,7 @@ export default {
       return this.isShow
     },
     model() {
-      console.log('model', this.modelValue)
+      //console.log('model', this.modelValue)
       return this.modelValue
     },
     modelMat() {
@@ -542,7 +544,7 @@ export default {
     async initForm() {
       var value = this.model.tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
       if (value && Object.keys(value).length > 0) {
-        console.log('initForm ed 1', value)
+        //console.log('initForm ed 1', value)
 
         //set form
         this.form = {
@@ -579,7 +581,7 @@ export default {
         }
 
         //set gem >> tbtProductionPlanStatusGem
-        console.log('initForm ed 1.1', value.tbtProductionPlanStatusGem)
+        //console.log('initForm ed 1.1', value.tbtProductionPlanStatusGem)
         if (value.tbtProductionPlanStatusGem) {
           this.gemAssign = await Promise.all(
             value.tbtProductionPlanStatusGem.map(async (thing) => {
@@ -598,7 +600,7 @@ export default {
           )
         }
       }
-      console.log('initForm ed 2', this.form)
+      //console.log('initForm ed 2', this.form)
     },
     checkOutbound(data) {
       return !_.isEmpty(data.outboundRunning) ? true : false
@@ -685,6 +687,19 @@ export default {
       //   }
 
       return true
+    },
+
+    onGemSelect(event, rowData) {
+      // event.value จะมีข้อมูลของพลอยที่ถูกเลือก
+      const selectedGem = event.value
+
+      // นำราคาจากพลอยที่เลือกมาใส่ในแถวปัจจุบัน
+      if (selectedGem) {
+        rowData.price = selectedGem.unit === 'Q' ? selectedGem.priceQty : selectedGem.price
+      }
+
+      //console.log('selectedGem', selectedGem)
+      //console.log('rowData', rowData)
     },
 
     // --- APIs --- //
@@ -869,7 +884,7 @@ export default {
   },
   mounted() {
     this.user = JSON.parse(localStorage.getItem('user-dk'))
-    console.log('user', this.user)
+    //console.log('user', this.user)
   }
 }
 </script>

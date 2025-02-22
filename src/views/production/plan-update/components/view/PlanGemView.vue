@@ -305,7 +305,7 @@ export default {
         return null
       } else {
         var value = tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
-        console.log('modelPlanStatus', value)
+        //console.log('modelPlanStatus', value)
         return value
       }
     },
@@ -334,7 +334,7 @@ export default {
       return date ? formatDate(date) : ''
     },
     checkBtn(action) {
-      console.log('checkBtn', this.modelPlanStatus)
+      //console.log('checkBtn', this.modelPlanStatus)
       const disStatus = [100, 500]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
@@ -381,11 +381,11 @@ export default {
 
     // ----- event
     addStatus() {
-      console.log('addStatus')
+      //console.log('addStatus')
       this.$emit('onShowAddStatus', 'gems')
     },
     updateStatus() {
-      console.log('updateStatus')
+      //console.log('updateStatus')
       this.$emit('onShowUpdateStatus', 'gems')
     },
     onDelStatus(id) {
