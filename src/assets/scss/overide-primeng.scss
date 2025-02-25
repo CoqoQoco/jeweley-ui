@@ -1,6 +1,5 @@
 @import './variable.scss';
 
-
 // ----- table ---- //
 .p-datatable {
   font-size: $base-font-size !important;
@@ -184,6 +183,23 @@
 .p-checkbox.p-highlight .p-checkbox-box {
   border-color: #921313 !important;
   background: #921313 !important;
+}
+
+/* สำหรับสีพื้นหลังปุ่ม Radio */
+.p-radiobutton-box.p-highlight,
+.p-radiobutton.p-component.p-highlight .p-radiobutton-box,
+div[data-pc-name='radiobutton'] .p-radiobutton-box.p-highlight,
+.p-radiobutton.p-component.p-highlight.selected-row .p-radiobutton-box {
+  border-color: #921313 !important;
+  background: #ffffff !important;
+}
+
+/* สำหรับจุดสีขาวตรงกลาง */
+.p-radiobutton-box.p-highlight .p-radiobutton-icon,
+.p-radiobutton.p-component.p-highlight .p-radiobutton-box .p-radiobutton-icon,
+div[data-pc-name='radiobutton'] .p-radiobutton-box.p-highlight .p-radiobutton-icon,
+.p-radiobutton.p-component.p-highlight.selected-row .p-radiobutton-box .p-radiobutton-icon {
+  background-color: #921313 !important;
 }
 
 // --------- stepper ---------- //

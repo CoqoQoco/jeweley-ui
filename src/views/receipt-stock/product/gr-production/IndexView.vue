@@ -1,61 +1,32 @@
 <template>
   <div class="app-container">
-    <div class="filter-container-highlight">
-      <div class="form-col-container">
-        <div class="d-flex justify-content-between">
-          <span class="desc-text-white">
-            {{
-              `รับสินค้างานผลิต แผนผลิตเลขที่ [ W.O. ] : 
-              ${data.wo ? `${data.wo}-${data.woNumber}` : 'loading...'}`
-            }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-col-container">
-      <BaseDataTable :items="header" :columns="headerColumns" :paginator="false">
-        <template #productQtyTemplate="{ data }">
-          <div class="d-flex justify-content-end p-1">
-            <span>{{ data.qtyRunning }}</span>
-            <span>/</span>
-            <span>{{ data.productQty }}</span>
-          </div>
-        </template>
-      </BaseDataTable>
-    </div>
-
+    <headerView :model="data" :modelHeader="header"></headerView>
     <!-- <div class="line mt-4 mb-4"></div> -->
-
-    <div class="filter-container-highlight">
-      <div class="form-col-container">
-        <div class="desc-text-white d-flex justify-content-between">
-          <div>
-            <span class="bi bi-box-arrow-in-down mr-2"></span>
-            <span>ปรับปรุงรายการสินค้ารับเข้าคลัง</span>
-          </div>
-          <div>
-            <span>{{ `จำนวนรับเเล้ว ${data.qtyRunning}/${data.productQty}` }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="filter-container-highlight">
+    <div class="mt-2 mb-2">
       <div class="form-col-repeat-container">
-        <button class="btn btn-sm btn-secondary" type="button">
+        <button class="btn btn-sm btn-outline-dark" type="button">
           <span class="bi bi-gear mr-2"></span>
           <span>ปรับเเต่งสินค้า</span>
         </button>
+        <button class="btn btn-sm btn-outline-dark ml-2" disabled type="button">
+          <span class="bi bi-image mr-2"></span>
+          <span>อัพโหลดรูป</span>
+        </button>
+        <button class="btn btn-sm btn-outline-dark ml-2" type="button">
+          <span class="bi bi-upc-scan mr-2"></span>
+          <span>ออก barcode</span>
+        </button>
       </div>
     </div>
+
+    <div class="line"></div>
 
     <div class="form-col-container">
       <form>
         <BaseDataTable
           :items="form"
-          dataKey="stockNumber"
-          :columns="formColumns"
+          dataKey="stockReceiptNumber"
+          :columns="columns"
           :paginator="false"
           :selectionMode="true"
           :itemsSelection="selectedItems"
@@ -63,11 +34,11 @@
           :disabledItems="itemsToDisable"
           :preSelectedItems="itemsToPreSelect"
           :expandable="true"
-          :scrollHeight="null"
+          :scrollHeight="scrollHeight"
           class="custom-form-table"
         >
-          auto index
-          <template #noTemplate="{ index, data }">
+          <!-- auto index -->
+          <template #noTemplate="{ index }">
             <div class="d-flex justify-content-center">
               <span>{{ index + 1 }}</span>
             </div>
@@ -115,123 +86,6 @@
                 :disabled="data.isReceipt"
               />
               <span v-else>{{ data.productNameTH }}</span>
-            </div>
-          </template>
-
-          <template #productQtyTemplate="{ data }">
-            <div class="d-flex justify-content-center">
-              <input
-                v-if="!data.isReceipt"
-                class="form-control form-control-sm"
-                :style="getBgColor(data.isReceipt, data.productQty)"
-                type="Number"
-                step="any"
-                min="0"
-                v-model="data.productQty"
-                :required="isRequiredField(data)"
-                :disabled="data.isReceipt"
-              />
-              <span v-else>{{ data.productNumber }}</span>
-            </div>
-          </template>
-
-          <template #sizeTemplate="{ data }">
-            <div class="d-flex justify-content-center">
-              <input
-                v-if="!data.isReceipt"
-                class="form-control form-control-sm"
-                :style="getBgColor(data.isReceipt, data.size)"
-                type="text"
-                v-model="data.size"
-                :disabled="data.isReceipt"
-              />
-            </div>
-          </template>
-
-          <!-- <template #goldTemplate="{ data }">
-              <div class="d-flex justify-content-center">
-                <input
-                  v-if="!data.isReceipt"
-                  class="form-control form-control-sm"
-                  :style="getBgColor(data.isReceipt, data.gold)"
-                  type="text"
-                  v-model="data.gold"
-                  :disabled="data.isReceipt"
-                />
-                <span v-else>{{ data.productNumber }}</span>
-              </div>
-            </template> -->
-
-          <!-- <template #diamondTemplate="{ data }">
-              <div class="d-flex justify-content-center">
-                <input
-                  v-if="!data.isReceipt"
-                  class="form-control form-control-sm"
-                  :style="getBgColor(data.isReceipt, data.diamond)"
-                  type="text"
-                  v-model="data.diamond"
-                  :disabled="data.isReceipt"
-                />
-                <span v-else>{{ data.productNumber }}</span>
-              </div>
-            </template> -->
-
-          <!-- <template #gemTemplate="{ data }">
-              <div class="d-flex justify-content-center">
-                <input
-                  v-if="!data.isReceipt"
-                  class="form-control form-control-sm"
-                  :style="getBgColor(data.isReceipt, data.gem)"
-                  type="text"
-                  v-model="data.gem"
-                  :disabled="data.isReceipt"
-                />
-                <span v-else>{{ data.productNumber }}</span>
-              </div>
-            </template> -->
-
-          <template #locationTemplate="{ data }">
-            <div class="d-flex justify-content-center">
-              <input
-                v-if="!data.isReceipt"
-                class="form-control form-control-sm"
-                :style="getBgColor(data.isReceipt, data.location)"
-                type="text"
-                v-model="data.location"
-                :disabled="data.isReceipt"
-              />
-              <span v-else>{{ data.productNumber }}</span>
-            </div>
-          </template>
-
-          <template #priceTemplate="{ data }">
-            <div class="d-flex justify-content-center">
-              <input
-                v-if="!data.isReceipt"
-                class="form-control form-control-sm"
-                :style="getBgColor(data.isReceipt, data.price)"
-                type="Number"
-                step="any"
-                min="0"
-                v-model="data.price"
-                :required="isRequiredField(data)"
-                :disabled="data.isReceipt"
-              />
-              <span v-else>{{ data.productNumber }}</span>
-            </div>
-          </template>
-
-          <template #remarkTemplate="{ data }">
-            <div class="d-flex justify-content-center">
-              <input
-                v-if="!data.isReceipt"
-                class="form-control form-control-sm"
-                :style="getBgColor(data.isReceipt, data.remark)"
-                type="text"
-                v-model="data.remark"
-                :disabled="data.isReceipt"
-              />
-              <span v-else>{{ data.productNumber }}</span>
             </div>
           </template>
 
@@ -344,23 +198,33 @@
                     <div class="filter-container-img">
                       <!-- ส่วนแสดงรูป -->
                       <div class="image-preview">
-                        <Image
-                          v-if="urlImage"
-                          class="image-body"
-                          :src="urlImage"
-                          alt="Image"
+                        <imagePreview
+                          v-if="slotProps.data.imagePath"
+                          :imageName="slotProps.data.imagePath"
+                          :path="slotProps.data.imagePath"
+                          :type="type"
                           :width="150"
                           :height="150"
-                          preview
+                          :preview="true"
+                          class="image-body"
                         />
-                        <div v-else class="spinner-border" role="status">
-                          <span class="sr-only">Loading...</span>
-                        </div>
+                        <img
+                          v-else
+                          src="@/assets/no-image.png"
+                          :width="150"
+                          :height="150"
+                          alt="Image"
+                          class="image-body"
+                        />
                       </div>
 
                       <!-- ส่วนปุ่มควบคุม -->
                       <div class="image-controls mt-1">
-                        <button class="btn btn-green btn-sm ms-2" type="button">
+                        <button
+                          class="btn btn-green btn-sm ms-2"
+                          type="button"
+                          @click="onSelectImage(slotProps.data)"
+                        >
                           <span class="bi bi-image"></span>
                           <span>เลือกรูปสินค้า</span>
                         </button>
@@ -376,14 +240,14 @@
                     <div class="d-flex justify-content-between">
                       <div class="vertical-center-container">
                         <span class="title-text-lg bi bi-gem"></span>
-                        <span class="title-text-lg ml-2">ข้อมูลน้ำหนัก ทอง เพชรเเละพลอย</span>
+                        <span class="title-text-lg ml-2">ทอง/เพชร/พลอย</span>
                       </div>
                       <!-- Add button -->
                       <div class="d-flex justify-content-start mt-2">
                         <button
                           type="button"
                           class="btn btn-green btn-sm"
-                          @click="addMaterialItem(slotProps.data.material)"
+                          @click="addMaterialItem(slotProps.data.materials)"
                         >
                           <span class="bi bi-plus-lg"></span>
                           <span></span>
@@ -461,7 +325,11 @@
                     </div>
 
                     <!-- item data -->
-                    <div v-for="(item, index) in slotProps.data.material" :key="index" class="mb-1">
+                    <div
+                      v-for="(item, index) in slotProps.data.materials"
+                      :key="index"
+                      class="mb-1"
+                    >
                       <div class="form-col-fix-col-container">
                         <!-- Type -->
                         <div>
@@ -512,7 +380,7 @@
                             >
                             </Dropdown>
                           </div>
-                          <div v-else  class="mt-3">
+                          <div v-else class="mt-3">
                             <span>--- โปรดระบุประเภท ---</span>
                           </div>
                         </div>
@@ -584,8 +452,8 @@
                           <button
                             type="button"
                             class="btn btn-red btn-sm"
-                            @click="removeMaterialItem(slotProps.data.material, index)"
-                            :disabled="slotProps.data.material.length === 1"
+                            @click="removeMaterialItem(slotProps.data.materials, index)"
+                            :disabled="slotProps.data.materials.length === 1"
                           >
                             <i class="bi bi-trash"></i>
                           </button>
@@ -599,6 +467,8 @@
           </template>
 
           <template #footer>
+            <div class="line"></div>
+
             <div class="d-flex justify-content-between items-center">
               <span>จำนวนรายการที่เลือก: {{ checkItemSelectedLength(form) }}</span>
               <div>
@@ -616,16 +486,24 @@
         </BaseDataTable>
       </form>
     </div>
+
+    <modalSelectImage
+      :isShow="isShowSelectImage"
+      :modelStock="stockUpdate"
+      @select="updateImage"
+      @closeModal="closeModal"
+    ></modalSelectImage>
   </div>
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from 'vue'
 //const imgPreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 //const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/UploadImages.vue'))
+const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
 import Dropdown from 'primevue/dropdown'
-import Image from 'primevue/image'
+//import Image from 'primevue/image'
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -634,6 +512,9 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import api from '@/axios/axios-helper.js'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+
+import headerView from './components/production-header-view.vue'
+import modalSelectImage from './components/image-select-view.vue'
 
 // const interfaceForm = {
 //   operator: ''
@@ -645,7 +526,10 @@ export default {
   components: {
     BaseDataTable,
     Dropdown,
-    Image
+    imagePreview,
+    //Image,
+    headerView,
+    modalSelectImage
     //imgPreview,
     //Image
     //uploadImages
@@ -668,10 +552,15 @@ export default {
 
   data() {
     return {
+      isShowSelectImage: false,
+      stockUpdate: {},
+      type: 'STOCK-PRODUCT',
+
       param: {},
       data: {},
       header: [],
       form: [],
+      scrollHeight: 'calc(100vh - 270px)',
 
       imgTest: {
         type: 'MOLD',
@@ -687,52 +576,7 @@ export default {
         { value: '3', description: 'พลอย' }
       ],
 
-      headerColumns: [
-        {
-          field: 'receiptNumber',
-          header: 'เลขที่ตั้งรับแผนผลิต',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'receiptDate',
-          header: 'วันที่ผลิตสำเร็จ',
-          sortable: false,
-          minWidth: '150px',
-          format: 'datetime'
-        },
-        {
-          field: 'mold',
-          header: 'เเม่พิมพ์',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'productNumber',
-          header: 'รหัสสินค้าผลิต',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'productTypeName',
-          header: 'ประเภทสินค้า',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'gold',
-          header: 'สีของทอง/เงิน',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'goldSize',
-          header: 'ประเภททอง/เงิน',
-          sortable: false,
-          minWidth: '150px'
-        }
-      ],
-      formColumns: [
+      columns: [
         {
           field: 'no',
           header: 'ลำดับ',
@@ -742,13 +586,13 @@ export default {
 
         //เลขที่ผลิต
         {
-          field: 'stockNumber',
-          header: 'เลขที่ตั้งรับสินค้า',
+          field: 'stockReceiptNumber',
+          header: 'เลขที่ตั้งรับ',
           sortable: false,
           minWidth: '150px'
         },
         {
-          field: 'stockTestNumber',
+          field: 'stockNumber',
           header: 'เลขที่ผลิต',
           sortable: false,
           minWidth: '150px'
@@ -786,16 +630,8 @@ export default {
 
       //init header
       this.header.push(this.data)
-      this.form = this.data.receiptStocks.map((item) => ({
-        ...item, // copy ทุก property จาก receiptStocks
-        material: [
-          {
-            // เพิ่ม material array พร้อม initial item
-            type: '',
-            weight: null,
-            description: ''
-          }
-        ]
+      this.form = this.data.stocks.map((item) => ({
+        ...item // copy ทุก property จาก receiptStocks
       }))
 
       this.itemsToDisable = this.form.filter((item) => item.isReceipt)
@@ -804,7 +640,7 @@ export default {
 
     setBtnClearRef(ref) {
       this.btnClearImg = ref
-      console.log('setBtnClearRef', this.btnClearImg)
+      //console.log('setBtnClearRef', this.btnClearImg)
     },
     updateFile(files) {
       this.images = files
@@ -820,7 +656,7 @@ export default {
       }
     },
     checkItemSelectedLength(item) {
-      console.log('item', item)
+      //console.log('item', item)
       return item.filter(
         (item) =>
           !item.isReceipt &&
@@ -858,6 +694,45 @@ export default {
       //return this.materialItems.every((item) => item.type && item.weight)
     },
 
+    //handle modal
+    closeModal() {
+      this.isShowSelectImage = false
+    },
+    onSelectImage(e) {
+      //console.log('onSelectImage', e)
+      this.stockUpdate = { ...e }
+      this.isShowSelectImage = true
+    },
+    updateImage(image, stock) {
+      this.isShowSelectImage = false
+      //console.log('updateImage', image, stock)
+
+      //create array update form stock
+      const stockArray = [{ ...stock }]
+
+      this.updateStock(null, image, stockArray)
+    },
+
+    updateStock(data, image, stock) {
+      //console.log('updateStock', data, image, stock)
+
+      //update form by array stock
+      stock.forEach((item) => {
+        const index = this.form.findIndex((x) => x.stockReceiptNumber === item.stockReceiptNumber)
+        if (index > -1) {
+          this.form[index] = { ...item }
+
+          if (image) {
+            this.form[index].imageName = image.name
+            this.form[index].imageYear = image.year
+            this.form[index].imagePath = image.path
+          }
+
+          console.log('updateStock form index update', this.form[index])
+        }
+      })
+    },
+
     //test image
     async fetchImageData() {
       try {
@@ -868,20 +743,6 @@ export default {
                 imageName: `${this.imgTest.imageName}-Mold.png`
               }
               const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
-            }
-            break
-
-            {
-              const param = {
-                imageName: `${this.imageName}`
-              }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param, {
                 skipLoading: true
               })
 
@@ -902,19 +763,19 @@ export default {
       this.param = {
         running: this.$route.params.id
       }
-      console.log('this.param', this.param)
+      //console.log('this.param', this.param)
       this.fetchData()
 
       //test
       this.fetchImageData()
 
-      console.log('this.masterStore.planStatus')
+      //console.log('this.masterStore.planStatus')
 
       // เข้าถึง state โดยตรง
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()
-      console.log(this.masterStore.gold)
-      console.log(this.masterStore.gem)
+      //console.log(this.masterStore.gold)
+      //console.log(this.masterStore.gem)
     })
   }
 }
@@ -943,7 +804,7 @@ export default {
 
 .form-col-repeat-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   //gap: 5px;
   //padding: 20px;
 }
@@ -1019,7 +880,9 @@ export default {
           background-color: var(--base-warning) !important;
 
           > td {
+            //background-color: #e0e0e0 !important;
             background-color: #e0e0e0 !important;
+            color: var(--base-font-color);
           }
         }
 

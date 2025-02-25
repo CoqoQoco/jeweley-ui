@@ -1,4 +1,3 @@
-// src/components/common/BaseDataTable.vue
 <template>
   <div class="base-datatable">
     <DataTable
@@ -42,7 +41,7 @@
       <!-- select template -->
       <!-- <Column v-if="selectionMode" selectionMode="multiple" headerStyle="width: 50px"></Column> -->
 
-      <Column v-if="selectionMode" selectionMode="null" headerStyle="width: 50px">
+      <!-- <Column v-if="selectionMode" selectionMode="null" headerStyle="width: 50px">
         <template #body="slotProps">
           <div class="flex align-items-center justify-content-center">
             <Checkbox
@@ -56,9 +55,47 @@
           </div>
         </template>
 
-        <!-- เพิ่ม header template เพื่อจัดการ check all -->
 
         <template #header>
+          <div class="flex align-items-center justify-content-center">
+            <Checkbox
+              :modelValue="isAllSelected"
+              :disabled="false"
+              @update:modelValue="onSelectAllChange"
+              :binary="true"
+            />
+          </div>
+        </template>
+      </Column> -->
+
+      <Column v-if="selectionMode" selectionMode="null" headerStyle="width: 50px">
+        <template #body="slotProps">
+          <div class="flex align-items-center justify-content-center">
+            <template v-if="selectionType === 'single'">
+              <RadioButton
+                :modelValue="isSelectedSingle(slotProps.data)"
+                :disabled="isDisabled(slotProps.data)"
+                @change="onSingleSelectionChange($event, slotProps.data)"
+                :binary="true"
+                :class="{ 'selected-row': isSelectedSingle(slotProps.data) }"
+                name="selection-group"
+              />
+            </template>
+            <template v-else>
+              <Checkbox
+                :modelValue="isSelected(slotProps.data)"
+                :disabled="isDisabled(slotProps.data)"
+                @change="onSelectionChange($event, slotProps.data)"
+                :binary="true"
+                :class="{ 'selected-row': isSelected(slotProps.data) }"
+                :data-pre-selected="isPreSelected(slotProps.data)"
+              />
+            </template>
+          </div>
+        </template>
+
+        <!-- เพิ่ม header template เพื่อจัดการ check all (เฉพาะ multiple mode) -->
+        <template #header v-if="selectionType === 'multiple'">
           <div class="flex align-items-center justify-content-center">
             <Checkbox
               :modelValue="isAllSelected"
@@ -140,6 +177,8 @@
 
 <script>
 import Checkbox from 'primevue/checkbox'
+import RadioButton from 'primevue/radiobutton'
+
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
@@ -150,7 +189,8 @@ export default {
   components: {
     DataTable,
     Column,
-    Checkbox
+    Checkbox,
+    RadioButton
   },
 
   props: {
@@ -169,6 +209,11 @@ export default {
     selectionMode: {
       type: Boolean,
       default: false
+    },
+    selectionType: {
+      type: String,
+      default: 'multiple',
+      validator: (value) => ['single', 'multiple'].includes(value)
     },
     columns: {
       type: Array,
@@ -440,6 +485,30 @@ export default {
 
       console.log('newSelection', newSelection)
       this.$emit('update:itemsSelection', newSelection)
+    },
+
+    // เช็คว่า item นั้นถูกเลือกหรือไม่ในโหมด single
+    isSelectedSingle(item) {
+      return (
+        this.itemsSelection.length === 1 &&
+        this.itemsSelection[0][this.dataKey] === item[this.dataKey]
+      )
+    },
+
+    // จัดการการเปลี่ยนแปลงการเลือกในโหมด single
+    onSingleSelectionChange(checked, item) {
+      if (this.isDisabled(item)) return
+
+      // ถ้าเป็น preSelected item ให้ return ออกไปเลย
+      if (this.isPreSelected(item)) return
+
+      let newSelection = []
+
+      if (checked) {
+        newSelection = [item]
+      }
+
+      this.$emit('update:itemsSelection', newSelection)
     }
 
     // เช็คว่า item อยู่ใน preSelectedItems หรือไม่
@@ -529,6 +598,7 @@ export default {
       > td {
         padding: 3px 10px !important;
         font-size: 14px !important;
+        //color: #7a1010;
         //border: 1px solid #dee2e6 !important;
       }
 

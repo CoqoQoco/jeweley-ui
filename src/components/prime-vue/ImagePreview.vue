@@ -8,7 +8,7 @@
       alt="Image"
       :width="width"
       :height="height"
-      preview
+      :preview="preview"
     />
     <div v-else class="spinner-border" role="status">
       <span class="sr-only">Loading...</span>
@@ -52,6 +52,10 @@ export default {
       default: () => 60
     },
     borderShow: {
+      type: Boolean,
+      default: () => true
+    },
+    preview: {
       type: Boolean,
       default: () => true
     }

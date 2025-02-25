@@ -30,7 +30,7 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
     async fetchDataListPlan({ take, skip, sort, formValue }) {
       try {
         this.dataListPlan = {}
-        console.log('fetchDataListPlan', formValue)
+        //console.log('fetchDataListPlan', formValue)
         const param = {
           take,
           skip,
@@ -53,7 +53,7 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
     },
     async fetchDataGetPlan({ formValue }) {
       try {
-        console.log('fetchDataGetPlan', formValue)
+        //console.log('fetchDataGetPlan', formValue)
         const param = {
           running: formValue.running
         }
