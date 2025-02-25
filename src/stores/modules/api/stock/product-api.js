@@ -52,7 +52,6 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         }
       } catch (error) {
         console.error('Error fetching stock product data:', error)
-        throw error
       }
     },
     async fetchDataSearchReceiptExport({ sort, form, title }) {

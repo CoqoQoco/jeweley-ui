@@ -78,7 +78,7 @@ const compressOptimalImage = async (file) => {
                 tryCompression(0.9)
               }
             },
-            'image/jpeg',
+            'image/png',
             attemptQuality
           )
         }
