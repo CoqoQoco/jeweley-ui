@@ -51,19 +51,29 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
         throw error
       }
     },
-    async fetchDataGetPlan({ formValue }) {
+    async fetchDataGetPlan({ formValue, skipLoading }) {
       try {
         //console.log('fetchDataGetPlan', formValue)
         const param = {
           running: formValue.running
         }
-        return await api.jewelry.post('ReceiptProduction/GetPlan', param)
+        return await api.jewelry.post('ReceiptProduction/GetPlan', param, {
+          skipLoading: skipLoading
+        })
       } catch (error) {
         console.error('Error fetchDataGetPlan:', error)
         throw error
       }
+    },
+    async fetchCreateDraft({ formValue }) {
+      try {
+        return await api.jewelry.post('ReceiptProduction/CreateDraft', formValue, {
+          skipLoading: true
+        })
+      } catch (error) {
+        console.error('Error fetchCreateDraft:', error)
+        throw error
+      }
     }
-
-   
   }
 })

@@ -9,8 +9,9 @@
           }}
         </span>
         <div class="desc-text-white">
-          <div>
+          <div class="d-flex align-items-center">
             <span>{{ `จำนวนรับเเล้ว ${data.qtyRunning}/${data.productQty}` }}</span>
+            <div class="bi bi-arrow-clockwise ml-2" @click="onFetch"></div>
           </div>
         </div>
       </div>
@@ -51,6 +52,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {
   name: 'production-header-view',
+  emits: ['onFetch'],
 
   components: {
     BaseDataTable
@@ -126,6 +128,12 @@ export default {
         }
       ]
     }
+  },
+
+  methods: {
+    onFetch() {
+      this.$emit('onFetch')
+    }
   }
 }
 </script>
@@ -133,4 +141,14 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form';
+
+.bi-arrow-clockwise {
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.bi-arrow-clockwise:hover {
+  transform: rotate(90deg);
+  color: var(--base-color);
+}
 </style>

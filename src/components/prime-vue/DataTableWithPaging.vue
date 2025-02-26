@@ -448,7 +448,7 @@ export default {
     },
 
     onSelectionChange(checked, item) {
-      console.log('checked', checked, 'item', item)
+      //console.log('checked', checked, 'item', item)
 
       if (this.isDisabled(item)) return
 
@@ -483,7 +483,7 @@ export default {
         )
       }
 
-      console.log('newSelection', newSelection)
+      //console.log('newSelection', newSelection)
       this.$emit('update:itemsSelection', newSelection)
     },
 

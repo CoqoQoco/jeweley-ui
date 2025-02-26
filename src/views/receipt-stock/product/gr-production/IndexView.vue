@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <headerView :model="data" :modelHeader="header"></headerView>
+    <headerView :model="data" :modelHeader="header" @onFetch="onFetch"></headerView>
     <!-- <div class="line mt-4 mb-4"></div> -->
     <div class="mt-2 mb-2">
       <div class="form-col-repeat-container">
@@ -22,7 +22,7 @@
     <div class="line"></div>
 
     <div class="form-col-container">
-      <form>
+      <form @submit.prevent="onSubmit">
         <BaseDataTable
           :items="form"
           dataKey="stockReceiptNumber"
@@ -91,44 +91,43 @@
 
           <template #expansion="slotProps">
             <div class="p-2">
-              <div class="">
+              <div v-if="slotProps.data.isReceipt"></div>
+              <div v-else>
                 <!-- data & img -->
                 <div class="form-col-fix-2-container">
                   <!-- detail -->
-                  <div class="p-2 filter-container-bg">
+                  <div class="p-2 filter-container-bg-focus">
                     <!-- qty -->
                     <div class="form-col-container">
                       <div>
                         <div>
-                          <span class="title-text-white">จำนวน</span>
-                          <span class="title-text-white"> *</span>
+                          <span class="title-text">จำนวน</span>
+                          <span class="title-text"> *</span>
                         </div>
                         <input
-                          v-if="!data.isReceipt"
                           class="form-control form-control-sm"
-                          :style="getBgColor(slotProps.data.isReceipt, slotProps.data.productQty)"
+                          :style="getBgColor(slotProps.data.isReceipt, slotProps.data.qty)"
                           type="number"
                           step="any"
                           min="0"
-                          v-model="slotProps.data.productQty"
-                          required
+                          v-model="slotProps.data.qty"
+                          :required="isRequiredField(slotProps.data)"
                         />
                       </div>
 
                       <div>
                         <div>
-                          <span class="title-text-white">ราคาขาย</span>
-                          <span class="title-text-white"> *</span>
+                          <span class="title-text">ราคาขาย</span>
+                          <span class="title-text"> *</span>
                         </div>
                         <input
-                          v-if="!data.isReceipt"
                           class="form-control form-control-sm"
                           :style="getBgColor(slotProps.data.isReceipt, slotProps.data.price)"
                           type="number"
                           step="any"
                           min="0"
                           v-model="slotProps.data.price"
-                          required
+                          :required="isRequiredField(slotProps.data)"
                         />
                       </div>
                     </div>
@@ -138,12 +137,11 @@
                       <!-- size -->
                       <div>
                         <div>
-                          <span class="title-text-white">ขนาด</span>
-                          <!-- <span class="title-text-white"> *</span> -->
+                          <span class="title-text">ขนาด</span>
+                          <!-- <span class="title-text"> *</span> -->
                         </div>
                         <input
                           type="text"
-                          v-if="!data.isReceipt"
                           class="form-control form-control-sm"
                           v-model="slotProps.data.size"
                           autocomplete="off"
@@ -156,18 +154,18 @@
                       <!-- location -->
                       <div>
                         <div>
-                          <span class="title-text-white">คลังจัดเก็บ</span>
+                          <span class="title-text">คลังจัดเก็บ</span>
                           <!-- <span class="txt-required"> *</span> -->
                         </div>
                         <input
                           type="text"
-                          v-if="!data.isReceipt"
                           class="form-control form-control-sm"
                           v-model="slotProps.data.location"
                           autocomplete="off"
                           autocorrect="off"
                           autocapitalize="off"
                           spellcheck="false"
+                          disabled
                         />
                       </div>
                     </div>
@@ -176,12 +174,11 @@
                     <div class="form-col-container mt-1">
                       <div>
                         <div>
-                          <span class="title-text-white">หมายเหตุ</span>
+                          <span class="title-text">หมายเหตุ</span>
                           <!-- <span class="txt-required"> *</span> -->
                         </div>
                         <textarea
                           type="text"
-                          v-if="!data.isReceipt"
                           class="form-control form-control-sm"
                           v-model="slotProps.data.remark"
                           autocomplete="off"
@@ -365,7 +362,6 @@
                               v-model="item.subType"
                               class="form-control"
                               placeholder="ระบุเพชร"
-                              required
                             />
                           </div>
                           <div v-else-if="item.type === '3'">
@@ -394,7 +390,6 @@
                             :style="getBgColor(false, item.description)"
                             min="0"
                             step="0.01"
-                            required
                           />
                         </div>
 
@@ -405,7 +400,6 @@
                             v-model="item.size"
                             class="form-control"
                             :style="getBgColor(false, item.size)"
-                            required
                           />
                         </div>
 
@@ -417,7 +411,6 @@
                             class="form-control"
                             :style="getBgColor(false, item.qty)"
                             min="0"
-                            required
                           />
                         </div>
 
@@ -430,7 +423,6 @@
                             :style="getBgColor(false, item.weight)"
                             min="0"
                             step="0.01"
-                            required
                           />
                         </div>
 
@@ -443,17 +435,16 @@
                             :style="getBgColor(false, item.price)"
                             min="0"
                             step="0.01"
-                            required
                           />
                         </div>
 
                         <!-- Delete button -->
                         <div class="d-flex align-items-center mt-1">
+                          <!-- :disabled="slotProps.data.materials.length === 1" -->
                           <button
                             type="button"
                             class="btn btn-red btn-sm"
                             @click="removeMaterialItem(slotProps.data.materials, index)"
-                            :disabled="slotProps.data.materials.length === 1"
                           >
                             <i class="bi bi-trash"></i>
                           </button>
@@ -472,11 +463,19 @@
             <div class="d-flex justify-content-between items-center">
               <span>จำนวนรายการที่เลือก: {{ checkItemSelectedLength(form) }}</span>
               <div>
-                <button class="btn btn-sm btn-green" type="button">
-                  <span class="bi bi-file-arrow-up"></span>
-                  <span class="ml-2">ร่างข้อมูลสินค้า</span>
+                <button class="btn btn-sm btn-green" type="button" @click="fetchDraft">
+                  <span v-if="isOnDraft" class="spinner-border spinner-border-sm"></span>
+                  <span v-else class="bi bi-clipboard2-pulse-fill"></span>
+                  <span class="ml-2">บันทึกฉบับร่าง</span>
                 </button>
-                <button class="btn btn-sm btn-main ml-2" type="submit">
+                <button
+                  :class="[
+                    'btn btn-sm btn-main ml-2',
+                    selectedItems.length > 0 ? 'btn-main' : 'btn-secondary'
+                  ]"
+                  type="submit"
+                  :disabled="selectedItems.length === 0"
+                >
                   <span class="bi bi-upload"></span>
                   <span class="ml-2">บันทึกสินค้า</span>
                 </button>
@@ -510,6 +509,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 //import uploadImages from '@/components/prime-vue/UploadImages.vue'
 
 import api from '@/axios/axios-helper.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -552,6 +552,8 @@ export default {
 
   data() {
     return {
+      isOnDraft: false,
+
       isShowSelectImage: false,
       stockUpdate: {},
       type: 'STOCK-PRODUCT',
@@ -623,27 +625,9 @@ export default {
   },
 
   methods: {
-    async fetchData() {
-      this.data = await this.receiptProductionStore.fetchDataGetPlan({
-        formValue: this.param
-      })
-
-      //init header
-      this.header.push(this.data)
-      this.form = this.data.stocks.map((item) => ({
-        ...item // copy ทุก property จาก receiptStocks
-      }))
-
-      this.itemsToDisable = this.form.filter((item) => item.isReceipt)
-      this.itemsToPreSelect = this.form.filter((item) => item.isReceipt)
-    },
-
     setBtnClearRef(ref) {
       this.btnClearImg = ref
       //console.log('setBtnClearRef', this.btnClearImg)
-    },
-    updateFile(files) {
-      this.images = files
     },
 
     getBgColor(isReceipt, data) {
@@ -665,17 +649,64 @@ export default {
           )
       ).length
     },
+
+    //validate
     isRequiredField(data) {
       return (
         !data.isReceipt &&
-        this.selectedItems.some((selected) => selected.stockNumber === data.stockNumber)
+        this.selectedItems.some(
+          (selected) => selected.stockReceiptNumber === data.stockReceiptNumber
+        )
       )
     },
+    validateForm() {
+      let isValid = true
 
+      // ตรวจสอบเฉพาะรายการที่ถูกเลือกเท่านั้น
+      for (const item of this.selectedItems) {
+        // หารายการที่เลือกในฟอร์ม
+        const formItem = this.form.find((f) => f.stockReceiptNumber === item.stockReceiptNumber)
+
+        if (formItem && !formItem.isReceipt) {
+          if (!formItem.productNumber) {
+            isValid = false
+          }
+
+          if (!formItem.productNameEN) {
+            isValid = false
+          }
+
+          if (!formItem.productNameTH) {
+            isValid = false
+          }
+
+          if (formItem.qty === null || formItem.qty === undefined || formItem.qty === '') {
+            isValid = false
+          }
+
+          if (formItem.price === null || formItem.price === undefined || formItem.price === '') {
+            isValid = false
+          }
+        }
+      }
+
+      if (!isValid) {
+        swAlert.warning('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', '', () => {
+          console.log('swAlert.warning')
+        })
+      }
+
+      return isValid
+    },
+
+    validateMaterialItems() {
+      //return this.materialItems.every((item) => item.type && item.weight)
+    },
+
+    //update data
     updateSelection(newSelection) {
       this.selectedItems = newSelection
     },
-
     addMaterialItem(data) {
       data.push({
         type: '',
@@ -683,15 +714,14 @@ export default {
         description: ''
       })
     },
-
     removeMaterialItem(data, index) {
-      if (data.length > 1) {
-        data.splice(index, 1)
-      }
+      // if (data.length > 1) {
+      //   data.splice(index, 1)
+      // }
+      data.splice(index, 1)
     },
-
-    validateMaterialItems() {
-      //return this.materialItems.every((item) => item.type && item.weight)
+    updateFile(files) {
+      this.images = files
     },
 
     //handle modal
@@ -712,7 +742,6 @@ export default {
 
       this.updateStock(null, image, stockArray)
     },
-
     updateStock(data, image, stock) {
       //console.log('updateStock', data, image, stock)
 
@@ -733,7 +762,60 @@ export default {
       })
     },
 
-    //test image
+    onSubmit(event) {
+      if (!this.validateForm()) {
+        event.preventDefault() // ป้องกันการส่งฟอร์ม
+        return false
+      }
+
+      console.log('onSubmit', this.selectedItems)
+    },
+
+    onFetch() {
+      this.fetchData(true)
+    },
+    async fetchData(skipLoading = false) {
+      this.header = []
+      this.form = []
+      this.itemsToDisable = []
+      this.itemsToPreSelect = []
+
+      this.data = await this.receiptProductionStore.fetchDataGetPlan({
+        formValue: this.param,
+        skipLoading: skipLoading
+      })
+
+      //init header
+      this.header.push(this.data)
+      this.form = this.data.stocks.map((item) => ({
+        ...item // copy ทุก property จาก receiptStocks
+      }))
+
+      this.itemsToDisable = this.form.filter((item) => item.isReceipt)
+      this.itemsToPreSelect = this.form.filter((item) => item.isReceipt)
+    },
+    async fetchDraft() {
+      try {
+        this.isOnDraft = true
+
+        const formValue = {
+          receiptNumber: this.data.receiptNumber,
+          stocks: [...this.form]
+        }
+        console.log('fetchDraft', formValue)
+
+        const res = await this.receiptProductionStore.fetchCreateDraft({
+          formValue: formValue
+        })
+
+        if (res) {
+          this.isOnDraft = false
+        }
+      } catch (error) {
+        console.log(error)
+        this.isOnDraft = false
+      }
+    },
     async fetchImageData() {
       try {
         switch (this.imgTest.type) {
@@ -895,5 +977,9 @@ export default {
       }
     }
   }
+}
+.field-error {
+  border-color: red !important;
+  background-color: #ffeeee !important;
 }
 </style>
