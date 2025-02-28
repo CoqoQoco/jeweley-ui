@@ -417,7 +417,7 @@ export default {
     // จัดการการเปลี่ยนแปลงการเลือก
     onSelectAllChange(value) {
       // เปลี่ยนชื่อ parameter ให้ชัดเจนขึ้น
-      console.log('select all value:', value) // debug
+      //console.log('select all value:', value) // debug
       let newSelection = [...this.itemsSelection]
 
       if (value) {

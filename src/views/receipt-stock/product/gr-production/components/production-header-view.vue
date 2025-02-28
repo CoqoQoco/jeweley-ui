@@ -18,31 +18,27 @@
     </div>
   </div>
 
-  <div class="form-col-container">
-    <BaseDataTable :items="dataHeader" :columns="columns" :paginator="false">
-      <template #productQtyTemplate="{ data }">
-        <div class="d-flex justify-content-end p-1">
-          <span>{{ data.qtyRunning }}</span>
-          <span>/</span>
-          <span>{{ data.productQty }}</span>
-        </div>
-      </template>
-    </BaseDataTable>
-  </div>
-
-  <!-- <div class="filter-container-highlight mt-2">
-    <div class="form-col-container">
-      <div class="desc-text-white d-flex justify-content-between">
-        <div>
-          <span class="bi bi-box-arrow-in-down mr-2"></span>
-          <span>ปรับปรุงรายการสินค้ารับเข้าคลัง</span>
-        </div>
-        <div>
-          <span>{{ `จำนวนรับเเล้ว ${data.qtyRunning}/${data.productQty}` }}</span>
-        </div>
+  <div class="filter-container mt-1">
+    <div>
+      <div class="title-text">
+        <span class="bi bi-database-fill-gear mr-2"></span>
+        <span>รายละเอียด</span>
+      </div>
+      <div class="form-col-container">
+        <BaseDataTable :items="dataHeader" :columns="columns" :paginator="false"> </BaseDataTable>
       </div>
     </div>
+
+    <!-- <div class="mt-2">
+    <div class="title-text">
+      <span class="bi bi-database-fill-gear mr-2"></span>
+      <span>พลอย</span>
+    </div>
+    <div class="form-col-container">
+      <BaseDataTable :items="dataGem" :columns="gemColumn" :paginator="false"> </BaseDataTable>
+    </div>
   </div> -->
+  </div>
 
   <div class="line"></div>
 </template>
@@ -68,6 +64,11 @@ export default {
       type: Array,
       required: true,
       default: () => []
+    },
+    modelGem: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
 
@@ -77,6 +78,9 @@ export default {
     },
     dataHeader() {
       return this.modelHeader
+    },
+    dataGem() {
+      return this.modelGem
     }
   },
 
@@ -125,6 +129,33 @@ export default {
           header: 'ประเภททอง/เงิน',
           sortable: false,
           minWidth: '150px'
+        }
+      ],
+
+      gemColumn: [
+        {
+          field: 'gemCode',
+          header: 'รหัส',
+          sortable: false,
+          width: '150px'
+        },
+        {
+          field: 'gemName',
+          header: 'รายละเอียด',
+          sortable: false,
+          minWidth: '300px'
+        },
+        {
+          field: 'gemQty',
+          header: 'จำนวน',
+          sortable: false,
+          width: '150px'
+        },
+        {
+          field: 'gemWeight',
+          header: 'น้ำหนัก',
+          sortable: false,
+          width: '150px'
         }
       ]
     }

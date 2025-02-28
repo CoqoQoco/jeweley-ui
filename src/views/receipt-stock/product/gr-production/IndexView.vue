@@ -1,8 +1,13 @@
 <template>
   <div class="app-container">
-    <headerView :model="data" :modelHeader="header" @onFetch="onFetch"></headerView>
+    <headerView
+      :model="data"
+      :modelHeader="header"
+      :modelGem="gems"
+      @onFetch="onFetch"
+    ></headerView>
     <!-- <div class="line mt-4 mb-4"></div> -->
-    <div class="mt-2 mb-2">
+    <div class="mb-2">
       <div class="form-col-repeat-container">
         <button class="btn btn-sm btn-outline-dark" type="button">
           <span class="bi bi-gear mr-2"></span>
@@ -561,8 +566,9 @@ export default {
       param: {},
       data: {},
       header: [],
+      gems: [],
       form: [],
-      scrollHeight: 'calc(100vh - 270px)',
+      scrollHeight: 'calc(100vh - 330px)',
 
       imgTest: {
         type: 'MOLD',
@@ -776,6 +782,7 @@ export default {
     },
     async fetchData(skipLoading = false) {
       this.header = []
+      this.gems = []
       this.form = []
       this.itemsToDisable = []
       this.itemsToPreSelect = []
@@ -787,12 +794,19 @@ export default {
 
       //init header
       this.header.push(this.data)
+      if (this.data.gems.length > 0) {
+        this.gems.push(this.data.gems)
+      }
       this.form = this.data.stocks.map((item) => ({
         ...item // copy ทุก property จาก receiptStocks
       }))
 
       this.itemsToDisable = this.form.filter((item) => item.isReceipt)
       this.itemsToPreSelect = this.form.filter((item) => item.isReceipt)
+
+      //console.log('this.data', this.data)
+      //console.log('this.header', this.header)
+      //console.log('this.gems', this.gems)
     },
     async fetchDraft() {
       try {

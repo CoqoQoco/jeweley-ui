@@ -67,7 +67,7 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
     },
     async fetchCreateDraft({ formValue }) {
       try {
-        return await api.jewelry.post('ReceiptProduction/CreateDraft', formValue, {
+        return await api.jewelry.post('ReceiptProduction/Darft', formValue, {
           skipLoading: true
         })
       } catch (error) {
