@@ -1,26 +1,33 @@
 <template>
-  <div>
-    <loading
-      :active="isLoading"
-      :height="25"
-      :width="25"
-      :is-full-page="fullPage"
-      :can-cancel="true"
-      :z-index="1100"
-      :color="'#921313'"
-      @before-open="beforeOpen"
-      @before-close="beforeClose"
-    >
-      <template v-slot:after>
-        <div v-if="showTimeoutWarning" class="cancel-loading-container">
-          <div class="font-weight-bold">
-            เนื่องจากการดำเนินการใช้เวลา เกินกว่า {{ convertToMinute(timeoutSeconds) }} นาที
+  <div v-if="isLoading" class="loading-overlay">
+    <div class="loader-container">
+      <div class="loader">
+        <div style="--i: 1; --inset: 30%" class="box">
+          <div class="logo">
+            <img src="@/assets/duangkaew-logo.png" alt="DK Logo" class="svg" />
           </div>
-          <div class="font-weight-bold">คุณต้องการปิดหน้าต่างหรือไม่?</div>
-          <button class="mt-2 btn btn-sm btn-primary" @click="onCancel">ปิดหน้าต่าง</button>
         </div>
-      </template>
-    </loading>
+        <div style="--i: 2; --inset: 28%" class="box"></div>
+        <div style="--i: 3; --inset: 22%" class="box"></div>
+        <!-- <div style="--i: 3; --inset: 36%" class="box"></div>
+        <div style="--i: 4; --inset: 32%" class="box"></div>
+        <div style="--i: 5; --inset: 28%" class="box"></div>
+        <div style="--i: 6; --inset: 24%" class="box"></div>
+        <div style="--i: 7; --inset: 20%" class="box"></div>
+        <div style="--i: 8; --inset: 16%" class="box"></div>
+        <div style="--i: 9; --inset: 13%" class="box"></div>
+        <div style="--i: 10; --inset: 10%" class="box"></div>
+        <div style="--i: 11; --inset: 15%" class="box"></div> -->
+      </div>
+
+      <div v-if="showTimeoutWarning" class="cancel-loading-container">
+        <div class="font-weight-bold">
+          เนื่องจากการดำเนินการใช้เวลา เกินกว่า {{ convertToMinute(timeoutSeconds) }} นาที
+        </div>
+        <div class="font-weight-bold">คุณต้องการปิดหน้าต่างหรือไม่?</div>
+        <button class="mt-2 btn-cancel" @click="onCancel">ปิดหน้าต่าง</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -28,16 +35,9 @@
 import { ref, watch, onBeforeUnmount } from 'vue'
 import { useLoadingStore } from '@/stores/modules/master/loading-store'
 import { storeToRefs } from 'pinia'
-import Loading from 'vue3-loading-overlay'
-import 'vue3-loading-overlay/dist/vue3-loading-overlay.css'
-import _ from 'lodash'
 
 export default {
   name: 'BaseLoading',
-
-  components: {
-    loading: Loading
-  },
 
   props: {
     showText: {
@@ -50,7 +50,7 @@ export default {
     },
     timeoutSeconds: {
       type: Number,
-      default: 30 // 30 seconds default timeout
+      default: 30
     }
   },
 
@@ -102,15 +102,6 @@ export default {
       }
     )
 
-    // Lifecycle hooks and utility functions
-    const beforeOpen = () => {
-      startTimer()
-    }
-
-    const beforeClose = () => {
-      stopTimer()
-    }
-
     const onCancel = () => {
       loadingStore.hideLoading()
       stopTimer()
@@ -127,22 +118,10 @@ export default {
       stopTimer()
     })
 
-    // Debug loading state changes
-    watch(
-      () => isLoading.value,
-      (newValue) => {
-        //console.log('Loading state changed:', newValue)
-        //console.log('Current time elapsed:', timeElapsed.value)
-      },
-      { immediate: true }
-    )
-
     return {
       isLoading,
       showTimeoutWarning,
       timeElapsed,
-      beforeOpen,
-      beforeClose,
       onCancel,
       convertToMinute
     }
@@ -150,55 +129,128 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+// @import '@/assets/scss/custom-style/standard-form';
+
 .loading-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: rgba(17, 17, 17, 0.7); // ปรับสีพื้นฐานเป็น #921313 พร้อมความโปร่งใส
   z-index: 9999;
 }
 
-.loading-content {
+.loader-container {
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
 }
 
-.loading-text {
-  color: white;
-  font-size: 1rem;
+.loader {
+  --size: 400px;
+  --duration: 2.5s;
+  --logo-color: #ffff; // ปรับสีโลโก้เป็น #921313
+  --background: linear-gradient(
+    0deg,
+    rgba(146, 19, 19, 0.1) 0%,
+    rgba(146, 19, 19, 0.2) 100%
+  ); // ปรับสีพื้นหลังให้เข้ากับ theme
+  height: var(--size);
+  aspect-ratio: 1;
+  position: relative;
+  pointer-events: none;
 }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #921313;
+.loader .box {
+  position: absolute;
+  background: #faf8f8ab ;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  box-shadow:
+    rgba(0, 0, 0, 0.3) 0px 10px 10px 0,
+    inset rgba(230, 24, 24, 0.5) 0px 5px 10px -7px; // ปรับสีเงาให้เข้ากับ theme แดง
+  animation: ripple var(--duration) infinite ease-in-out;
+  inset: var(--inset);
+  animation-delay: calc(var(--i) * 0.15s);
+  z-index: calc(var(--i) * -1);
+  pointer-events: all;
+  transition: all 0.3s ease;
+}
+
+.loader .box:last-child {
+  filter: blur(30px);
+}
+
+.loader .box:not(:last-child):hover {
+  filter: brightness(2.5) blur(5px);
+}
+
+.loader .logo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: 30%;
+}
+
+.svg {
+  width: 150px;
+  height: 100%;
 }
 
 .cancel-loading-container {
-  background-color: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
+  background-color: rgba(146, 19, 19, 0.9); // ปรับสีเป็น #921313
+  padding: 1.5rem;
+  border-radius: 0.75rem;
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 2rem;
+  color: white;
+  font-size: 16px;
+  max-width: 350px;
 }
 
-@keyframes spin {
+.btn-cancel {
+  background-color: white;
+  color: #921313; // ปรับสีข้อความปุ่มเป็น #921313
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.btn-cancel:hover {
+  background-color: #f0f0f0;
+}
+
+.font-weight-bold {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+@keyframes ripple {
   0% {
-    transform: rotate(0deg);
+    transform: scale(1);
+    box-shadow:
+      rgba(0, 0, 0, 0.3) 0px 10px 10px 0,
+      inset rgba(143, 132, 132, 0.5) 0px 5px 10px -7px;
+  }
+  65% {
+    transform: scale(1.4);
+    box-shadow: rgba(0, 0, 0, 0) 0px 0 0 0;
   }
   100% {
-    transform: rotate(360deg);
+    transform: scale(1);
+    box-shadow:
+      rgba(0, 0, 0, 0.3) 0px 10px 10px 0,
+      inset rgba(175, 158, 158, 0.5) 0px 5px 10px -7px;
   }
 }
 </style>

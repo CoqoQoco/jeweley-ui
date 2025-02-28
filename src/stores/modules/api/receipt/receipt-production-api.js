@@ -74,6 +74,17 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
         console.error('Error fetchCreateDraft:', error)
         throw error
       }
+    },
+
+    async fetchConfirm({ formValue }) {
+      try {
+        return await api.jewelry.post('ReceiptProduction/Confirm', formValue, {
+          skipLoading: true
+        })
+      } catch (error) {
+        console.error('Error fetchConfirm:', error)
+        throw error
+      }
     }
   }
 })

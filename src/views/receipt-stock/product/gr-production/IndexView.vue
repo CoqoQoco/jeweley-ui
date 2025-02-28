@@ -256,128 +256,63 @@
                         </button>
                       </div>
                     </div>
-                    <!-- header data -->
-                    <div class="form-col-container mt-2">
-                      <!-- header -->
-                      <div class="filter-container-highlight-green">
-                        <!-- <div class="form-col-container">
-                            <div class="d-flex justify-content-between">
-                              <span class="desc-text-white">ข้อมูลน้ำหนัก ทอง เพชรเเละพลอย</span>
-                            </div>
-                          </div> -->
 
-                        <div class="form-col-fix-col-container">
-                          <!-- Type -->
-                          <div>
-                            <div>
-                              <span class="title-text-white">ประเภท</span>
-                              <span class="title-text-white"> *</span>
-                            </div>
-                          </div>
-
-                          <!-- type -->
-                          <div>
-                            <div>
-                              <!-- <span class="title-text-white">รายละเอียด</span> -->
-                            </div>
-                          </div>
-
-                          <!-- Description -->
-                          <div>
-                            <div>
-                              <span class="title-text-white">รายละเอียด</span>
-                            </div>
-                          </div>
-
-                          <!-- size -->
-                          <div>
-                            <div>
-                              <span class="title-text-white">ขนาด</span>
-                              <span class="title-text-white"> *</span>
-                            </div>
-                          </div>
-
-                          <!-- qty -->
-                          <div>
-                            <div>
-                              <span class="title-text-white">จำนวน</span>
-                              <span class="title-text-white"> *</span>
-                            </div>
-                          </div>
-
-                          <!-- Weight -->
-                          <div>
-                            <div>
-                              <span class="title-text-white">น้ำหนัก</span>
-                              <span class="title-text-white"> *</span>
-                            </div>
-                          </div>
-
-                          <div>
-                            <div>
-                              <span class="title-text-white">ราคาทุน</span>
-                              <span class="title-text-white"> *</span>
-                            </div>
-                          </div>
-
-                          <!-- Delete button -->
-                          <div></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- item data -->
-                    <div
-                      v-for="(item, index) in slotProps.data.materials"
-                      :key="index"
-                      class="mb-1"
+                    <BaseDataTable
+                      :items="slotProps.data.materials"
+                      :columns="materialColumns"
+                      :paginator="false"
+                      :scrollHeight="scrollHeight"
+                      class="custom-form-table-material"
                     >
-                      <div class="form-col-fix-col-container">
-                        <!-- Type -->
-                        <div>
+                      <template #typeTemplate="{ data }">
+                        <div class="d-flex justify-content-center">
                           <Dropdown
-                            v-model="item.type"
+                            v-model="data.type"
                             :options="masterMaterialType"
                             optionLabel="description"
                             optionValue="value"
                             class="w-full md:w-14rem"
-                            :class="item.type === true ? `p-invalid` : ``"
+                            :class="data.type === true ? `p-invalid` : ``"
+                            @change="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                           />
-                          <!-- :showClear="item.type ? true : false" -->
-                          <!-- @change="onResetValDate('isValCategory')" -->
                         </div>
+                      </template>
 
-                        <!-- subType -->
+                      <template #typeCodeTemplate="{ data }">
                         <div class="">
-                          <div v-if="item.type === '1'">
+                          <div v-if="data.type === 'Gold'">
                             <Dropdown
-                              v-model="item.subType"
+                              v-model="data.typeCode"
                               :options="masterGold"
                               optionLabel="description"
                               optionValue="code"
                               class="w-full md:w-14rem"
                               placeholder="เลือกทอง"
-                              :showClear="item.subType ? true : false"
+                              :showClear="data.typeCode ? true : false"
+                              @change="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                             >
                             </Dropdown>
                           </div>
-                          <div v-else-if="item.type === '2'">
+                          <div v-else-if="data.type === 'Diamond'">
                             <input
                               type="text"
-                              v-model="item.subType"
+                              v-model="data.typeCode"
                               class="form-control"
-                              placeholder="ระบุเพชร"
+                              placeholder="เกรดเพชร"
+                              :style="getBgColor(false, data.typeCode)"
+                              @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                             />
                           </div>
-                          <div v-else-if="item.type === '3'">
+                          <div v-else-if="data.type === 'Gem'">
                             <Dropdown
-                              v-model="item.subType"
+                              v-model="data.typeCode"
                               :options="masterGem"
                               optionLabel="description"
-                              optionValue="code"
+                              optionValue="nameEn"
                               class="w-full md:w-14rem"
                               placeholder="เลือกพลอย"
-                              :showClear="item.subType ? true : false"
+                              :showClear="data.typeCode ? true : false"
+                              @change="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                             >
                             </Dropdown>
                           </div>
@@ -385,67 +320,96 @@
                             <span>--- โปรดระบุประเภท ---</span>
                           </div>
                         </div>
+                      </template>
 
-                        <!-- Description -->
-                        <div>
+                      <template #sizeTemplate="{ data }">
+                        <div class="d-flex justify-content-center">
                           <input
                             type="text"
-                            v-model="item.description"
+                            v-model="data.size"
                             class="form-control"
-                            :style="getBgColor(false, item.description)"
-                            min="0"
-                            step="0.01"
+                            :style="getBgColor(false, data.size)"
+                            @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                           />
                         </div>
+                      </template>
 
-                        <!-- size -->
-                        <div>
+                      <template #qtyTemplate="{ data }">
+                        <div class="d-flex justify-content-center">
+                          <input
+                            type="number"
+                            v-model="data.qty"
+                            class="form-control"
+                            :style="getBgColor(false, data.qty)"
+                            placeholder="จำนวน"
+                            min="0"
+                            @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
+                          />
                           <input
                             type="text"
-                            v-model="item.size"
+                            style="margin-left: 1px"
+                            v-model="data.qtyUnit"
                             class="form-control"
-                            :style="getBgColor(false, item.size)"
-                          />
-                        </div>
-
-                        <!-- qty -->
-                        <div>
-                          <input
-                            type="number"
-                            v-model="item.qty"
-                            class="form-control"
-                            :style="getBgColor(false, item.qty)"
+                            :style="getBgColor(false, data.qtyUnit)"
+                            placeholder="หน่วย"
                             min="0"
+                            @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                           />
                         </div>
+                      </template>
 
-                        <!-- Weight -->
-                        <div>
+                      <template #weightTemplate="{ data }">
+                        <div class="d-flex justify-content-center">
                           <input
                             type="number"
-                            v-model="item.weight"
+                            v-model="data.weight"
                             class="form-control"
-                            :style="getBgColor(false, item.weight)"
+                            :style="getBgColor(false, data.weight)"
+                            placeholder="น้ำหนัก"
+                            min="0"
+                            step="0.01"
+                            @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
+                          />
+                          <input
+                            type="text"
+                            style="margin-left: 1px"
+                            v-model="data.weightUnit"
+                            class="form-control"
+                            :style="getBgColor(false, data.qtyUnit)"
+                            placeholder="หน่วย"
+                            min="0"
+                            @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
+                          />
+                        </div>
+                      </template>
+
+                      <template #priceTemplate="{ data }">
+                        <div class="d-flex justify-content-center">
+                          <input
+                            type="number"
+                            v-model="data.price"
+                            class="form-control"
+                            :style="getBgColor(false, data.price)"
                             min="0"
                             step="0.01"
                           />
                         </div>
+                      </template>
 
-                        <!-- price -->
-                        <div>
+                      <template #typeBarcodeTemplate="{ data }">
+                        <div class="d-flex justify-content-center">
                           <input
-                            type="number"
-                            v-model="item.price"
+                            type="text"
+                            v-model="data.typeBarcode"
                             class="form-control"
-                            :style="getBgColor(false, item.price)"
-                            min="0"
-                            step="0.01"
+                            :style="getBgColor(false, data.typeBarcode)"
+                            placeholder="ข้อความที่จะเเสดงบน Barcode"
                           />
                         </div>
+                      </template>
 
-                        <!-- Delete button -->
+                      <template #actionTemplate="{ index }">
                         <div class="d-flex align-items-center mt-1">
-                          <!-- :disabled="slotProps.data.materials.length === 1" -->
                           <button
                             type="button"
                             class="btn btn-red btn-sm"
@@ -454,8 +418,24 @@
                             <i class="bi bi-trash"></i>
                           </button>
                         </div>
-                      </div>
-                    </div>
+                      </template>
+                    </BaseDataTable>
+                  </div>
+                </div>
+
+                <div class="form-col-container mt-2">
+                  <div class="filter-container-bg-focus">
+                    <barcodeDemo
+                      :madeIn="formBarcode.madeIn"
+                      :madeInText="formBarcode.madeInText"
+                      :stockNumber="slotProps.stockNumber"
+                      :mold="formBarcode.mold"
+                      :gold="slotProps.data.barcodeGold"
+                      :gems="slotProps.data.barcodeGems"
+                      :size="slotProps.data.size"
+                      :goldType="formBarcode.goldType"
+                    >
+                    </barcodeDemo>
                   </div>
                 </div>
               </div>
@@ -466,7 +446,7 @@
             <div class="line"></div>
 
             <div class="d-flex justify-content-between items-center">
-              <span>จำนวนรายการที่เลือก: {{ checkItemSelectedLength(form) }}</span>
+              <span>จำนวนรายการที่เลือก: {{ checkItemSelectedLength() }}</span>
               <div>
                 <button class="btn btn-sm btn-green" type="button" @click="fetchDraft">
                   <span v-if="isOnDraft" class="spinner-border spinner-border-sm"></span>
@@ -476,10 +456,10 @@
                 <button
                   :class="[
                     'btn btn-sm btn-main ml-2',
-                    selectedItems.length > 0 ? 'btn-main' : 'btn-secondary'
+                    checkItemSelectedLength() > 0 ? 'btn-main' : 'btn-secondary'
                   ]"
                   type="submit"
-                  :disabled="selectedItems.length === 0"
+                  :disabled="checkItemSelectedLength() === 0"
                 >
                   <span class="bi bi-upload"></span>
                   <span class="ml-2">บันทึกสินค้า</span>
@@ -520,10 +500,14 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 import headerView from './components/production-header-view.vue'
 import modalSelectImage from './components/image-select-view.vue'
+import barcodeDemo from './components/barcode-demo-view.vue'
 
-// const interfaceForm = {
-//   operator: ''
-// }
+const interfaceBarcode = {
+  madeIn: 'MADE IN THAILAND',
+  madeInText: 'XXXXXXXXXXX',
+  mold: 'RFXXXXR',
+  goldType: 'XXK'
+}
 
 export default {
   name: 'ProductionPlanList',
@@ -534,7 +518,8 @@ export default {
     imagePreview,
     //Image,
     headerView,
-    modalSelectImage
+    modalSelectImage,
+    barcodeDemo
     //imgPreview,
     //Image
     //uploadImages
@@ -579,9 +564,9 @@ export default {
       itemsToDisable: [], // items ที่ต้องการ disable
       itemsToPreSelect: [], // items ที่ต้องการให้ติ๊กถูกไว้ตั้งแต่แรก
       masterMaterialType: [
-        { value: '1', description: 'ทอง' },
-        { value: '2', description: 'เพชร' },
-        { value: '3', description: 'พลอย' }
+        { value: 'Gold', description: 'ทอง' },
+        { value: 'Diamond', description: 'เพชร' },
+        { value: 'Gem', description: 'พลอย' }
       ],
 
       columns: [
@@ -624,9 +609,61 @@ export default {
           minWidth: '150px'
         }
       ],
+      materialColumns: [
+        {
+          field: 'type',
+          header: 'ประเภท',
+          sortable: false,
+          width: '100px'
+        },
+        {
+          field: 'typeCode',
+          header: 'รหัส',
+          sortable: false,
+          minWidth: '100px'
+        },
+        {
+          field: 'size',
+          header: 'ขนาด',
+          sortable: false,
+          width: '150px'
+        },
+        {
+          field: 'qty',
+          header: 'จำนวน',
+          sortable: false,
+          width: '200px'
+        },
+        {
+          field: 'weight',
+          header: 'น้ำหนัก',
+          sortable: false,
+          width: '200px'
+        },
+        {
+          field: 'price',
+          header: 'ราคา',
+          sortable: false,
+          width: '150px'
+        },
+        {
+          field: 'typeBarcode',
+          header: 'Barcode',
+          sortable: false,
+          minWidth: '100px'
+        },
+        {
+          field: 'action',
+          header: '',
+          sortable: false,
+          width: '50px'
+        }
+      ],
 
       btnClearImg: null,
-      images: []
+      images: [],
+
+      formBarcode: { ...interfaceBarcode }
     }
   },
 
@@ -645,15 +682,13 @@ export default {
         return 'background-color: #dad4b5'
       }
     },
-    checkItemSelectedLength(item) {
+    checkItemSelectedLength() {
       //console.log('item', item)
-      return item.filter(
-        (item) =>
-          !item.isReceipt &&
-          this.selectedItems.some(
-            (selected) => selected.stockNumber === item.stockNumber // หรือใช้ field อื่นที่เป็น unique identifier
-          )
-      ).length
+      if (this.selectedItems.length > 0) {
+        return this.selectedItems.length
+      }
+
+      return 0
     },
 
     //validate
@@ -665,11 +700,11 @@ export default {
         )
       )
     },
-    validateForm() {
+    validateForm(formValue) {
       let isValid = true
 
       // ตรวจสอบเฉพาะรายการที่ถูกเลือกเท่านั้น
-      for (const item of this.selectedItems) {
+      for (const item of formValue) {
         // หารายการที่เลือกในฟอร์ม
         const formItem = this.form.find((f) => f.stockReceiptNumber === item.stockReceiptNumber)
 
@@ -753,28 +788,148 @@ export default {
 
       //update form by array stock
       stock.forEach((item) => {
-        const index = this.form.findIndex((x) => x.stockReceiptNumber === item.stockReceiptNumber)
-        if (index > -1) {
-          this.form[index] = { ...item }
+        //update this.form
+        const indexForm = this.form.findIndex(
+          (x) => x.stockReceiptNumber === item.stockReceiptNumber
+        )
+        if (indexForm > -1) {
+          //this.form[indexForm] = { ...item }
 
           if (image) {
-            this.form[index].imageName = image.name
-            this.form[index].imageYear = image.year
-            this.form[index].imagePath = image.path
+            this.form[indexForm].imageName = image.name
+            this.form[indexForm].imageYear = image.year
+            this.form[indexForm].imagePath = image.path
           }
 
-          console.log('updateStock form index update', this.form[index])
+          console.log('updateStock form index update', this.form[indexForm])
+        }
+
+        //update this.selectedItems if any()
+        if (this.selectedItems.length > 0) {
+          const indexSelect = this.selectedItems.findIndex(
+            (x) => x.stockReceiptNumber === item.stockReceiptNumber
+          )
+          if (indexSelect > -1) {
+            //this.selectedItems[indexSelect] = { ...item }
+
+            if (image) {
+              this.selectedItems[indexForm].imageName = image.name
+              this.selectedItems[indexForm].imageYear = image.year
+              this.selectedItems[indexForm].imagePath = image.path
+            }
+            console.log('updateStock selectedItems index update', this.selectedItems[indexSelect])
+          }
         }
       })
     },
+    updateTypeBarcode(item, index) {
+      console.log(item)
+
+      if (item.type === 'Diamond') {
+        item.typeBarcode = this.getBarcode(item)
+      }
+
+      if (item.type === 'Gold') {
+        item.typeBarcode = this.getBarcode(item)
+      }
+
+      if (item.type === 'Gem') {
+        item.typeBarcode = this.getBarcode(item)
+      }
+
+      this.updateFormBarcodeIndex(index)
+    },
+    updateFormBarcodeAll() {
+      //create barcode
+      this.form.forEach((item) => {
+        item.barcodeGems = []
+        if (item.materials.length > 0) {
+          item.materials.forEach((mat) => {
+            //console.log(' mat.type', mat.type)
+
+            if (mat.type === 'Gold') {
+              item.barcodeGold = this.getBarcode(mat)
+            }
+
+            if (mat.type === 'Diamond') {
+              let display = this.getBarcode(mat)
+              item.barcodeGems.push(display)
+            }
+
+            if (mat.type === 'Gem') {
+              let display = this.getBarcode(mat)
+              item.barcodeGems.push(display)
+            }
+          })
+        }
+      })
+    },
+    updateFormBarcodeIndex(index) {
+      //create barcode
+      const item = this.form.find((x) => x.stockReceiptNumber === index)
+
+      //console.log('updateFormBarcodeIndex', item, index)
+      if (item.materials.length > 0) {
+        item.barcodeGems = []
+        item.materials.forEach((mat) => {
+          //console.log(' mat.type', mat.type)
+
+          if (mat.type === 'Gold') {
+            item.barcodeGold = this.getBarcode(mat)
+          }
+
+          if (mat.type === 'Diamond') {
+            let display = this.getBarcode(mat)
+            item.barcodeGems.push(display)
+          }
+
+          if (mat.type === 'Gem') {
+            let display = this.getBarcode(mat)
+            item.barcodeGems.push(display)
+          }
+        })
+      }
+    },
+    getBarcode(item) {
+      let display = ''
+
+      if (item.type === 'Diamond') {
+        display = `${item.qty ?? ''}${item.type ?? ''}${item.weight ?? ''}${
+          item.weightUnit ? ` ${item.weightUnit}` : ''
+        }${item.typeCode ? `, ${item.typeCode}` : ''}`
+      }
+
+      if (item.type === 'Gold') {
+        display = `${item.weight ?? ``}${item.weightUnit ? ` ${item.weightUnit}` : ``}${
+          item.type ? ` ${item.type}` : ``
+        }`
+      }
+
+      if (item.type === 'Gem') {
+        display = `${item.qty ?? ''}${item.typeCode ?? ''}${item.weight ?? ''}${
+          item.weightUnit ? ` ${item.weightUnit}` : ``
+        }`
+      }
+
+      return display
+    },
 
     onSubmit(event) {
-      if (!this.validateForm()) {
+      var confirm = this.selectedItems.filter((item) => !item.isReceipt)
+      if (!this.validateForm(confirm)) {
         event.preventDefault() // ป้องกันการส่งฟอร์ม
         return false
       }
 
-      console.log('onSubmit', this.selectedItems)
+      const formValue = {
+        wo: this.data.wo,
+        woNumber: this.data.woNumber,
+        receiptNumber: this.data.receiptNumber,
+        Stocks: [...confirm]
+      }
+
+      console.log('onSubmit', formValue)
+      this.fetchConfirm(formValue)
     },
 
     onFetch() {
@@ -798,15 +953,23 @@ export default {
         this.gems.push(this.data.gems)
       }
       this.form = this.data.stocks.map((item) => ({
-        ...item // copy ทุก property จาก receiptStocks
+        ...item, // copy ทุก property จาก receiptStocks
+        barcodeGold: '',
+        barcodeGems: []
       }))
 
       this.itemsToDisable = this.form.filter((item) => item.isReceipt)
       this.itemsToPreSelect = this.form.filter((item) => item.isReceipt)
 
-      //console.log('this.data', this.data)
-      //console.log('this.header', this.header)
-      //console.log('this.gems', this.gems)
+      //set barcode
+      this.formBarcode.goldType = this.data.goldSize
+      this.formBarcode.mold = this.data.mold
+      //this.formBarcode.goldType = this.data.gems
+
+      //create barcode
+      this.updateFormBarcodeAll()
+
+      //console.log('this.form', this.form)
     },
     async fetchDraft() {
       try {
@@ -851,6 +1014,16 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    async fetchConfirm(formValue) {
+      const res = await this.receiptProductionStore.fetchConfirm({
+        formValue: formValue
+      })
+
+      if (res) {
+        await this.fetchData(true)
+        console.log('fetchConfirm', res)
+      }
     }
   },
 
@@ -888,7 +1061,13 @@ export default {
   display: grid;
   gap: 10px;
   padding: 0px;
-  grid-template-columns: 1fr 2fr 2fr 1fr 1fr 1fr 1fr 1fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
+  grid-template-columns: 1fr 2fr 1fr 1fr 1fr 1fr 2fr 1fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
+}
+.form-col-fix-group-col-container {
+  display: grid;
+  gap: 10px;
+  padding: 0px;
+  grid-template-columns: 2fr 1fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
 }
 
 .form-col-fix-2-container {
