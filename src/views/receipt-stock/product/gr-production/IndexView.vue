@@ -96,7 +96,52 @@
 
           <template #expansion="slotProps">
             <div class="p-2">
-              <div v-if="slotProps.data.isReceipt"></div>
+              <div v-if="slotProps.data.isReceipt">
+                <div class="form-col-fix-2-container">
+                  <div class="form-col-container">
+                    <div class="filter-container-bg-focus">
+                      <barcodeDemo
+                        :madeIn="formBarcode.madeIn"
+                        :madeInText="formBarcode.madeInText"
+                        :stockNumber="slotProps.stockNumber"
+                        :mold="formBarcode.mold"
+                        :gold="slotProps.data.barcodeGold"
+                        :gems="slotProps.data.barcodeGems"
+                        :size="slotProps.data.size"
+                        :goldType="formBarcode.goldType"
+                        class="mt-4"
+                      >
+                      </barcodeDemo>
+                    </div>
+                  </div>
+                  <!-- รูปสินค้า -->
+                  <div class="form-col-container">
+                    <div class="filter-container-img">
+                      <!-- ส่วนแสดงรูป -->
+                      <div class="image-preview">
+                        <imagePreview
+                          v-if="slotProps.data.imagePath"
+                          :imageName="slotProps.data.imagePath"
+                          :path="slotProps.data.imagePath"
+                          :type="type"
+                          :width="150"
+                          :height="150"
+                          :preview="true"
+                          class="image-body"
+                        />
+                        <img
+                          v-else
+                          src="@/assets/no-image.png"
+                          :width="150"
+                          :height="150"
+                          alt="Image"
+                          class="image-body"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div v-else>
                 <!-- data & img -->
                 <div class="form-col-fix-2-container">
