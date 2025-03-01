@@ -6,6 +6,7 @@ const List = () => import('@/views/stock/product/list/IndexView.vue')
 const GRProductionList = () =>
   import('@/views/receipt-stock/product/gr-production-list/IndexView.vue')
 const GRProduction = () => import('@/views/receipt-stock/product/gr-production/IndexView.vue')
+const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-view.vue')
 
 const StockImage = () => import('@/views/stock/product/image/IndexView.vue')
 
@@ -110,7 +111,7 @@ const routes = [
       {
         path: '/goods-receipt-report',
         name: 'goods-receipt-report',
-        component: Dashboard,
+        component: ReportGR,
         meta: {
           Displayname: {
             en: 'Report',

@@ -11,7 +11,10 @@ import //formatISOString,
 export const useReceiptProductionApiStore = defineStore('receiptProduction', {
   state: () => ({
     dataListPlan: {},
-    dataListPlanTotalRecord: 0
+    dataListPlanTotalRecord: 0,
+
+    dataReceiptHistory: {},
+    dataReceiptHistoryTotalRecord: 0
   }),
 
   actions: {
@@ -75,7 +78,6 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
         throw error
       }
     },
-
     async fetchConfirm({ formValue }) {
       try {
         return await api.jewelry.post('ReceiptProduction/Confirm', formValue, {
@@ -83,6 +85,34 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
         })
       } catch (error) {
         console.error('Error fetchConfirm:', error)
+        throw error
+      }
+    },
+    async fetchConfirmHistory({ take, skip, sort, formValue, skipLoading }) {
+      try {
+        this.dataReceiptHistory = {}
+        //console.log('fetchDataListPlan', formValue)
+        const param = {
+          take,
+          skip,
+          sort,
+          search:{
+            ...formValue
+          }
+        }
+        const res = await api.jewelry.post('ReceiptProduction/ListHistory', param, {
+          skipLoading: skipLoading
+        })
+
+        if (res) {
+          this.dataReceiptHistory = { ...res }
+          this.dataReceiptHistoryTotalRecord = res.total
+        } else {
+          this.dataReceiptHistory = {}
+          this.dataReceiptHistoryTotalRecord = 0
+        }
+      } catch (error) {
+        console.error('Error fetchConfirmHistory:', error)
         throw error
       }
     }

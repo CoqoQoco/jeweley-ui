@@ -1,4 +1,3 @@
-// src/views/ProductionPlan/ProductionPlanList.vue
 <template>
   <div class="mt-2">
     <!-- @view="viewplan" -->
