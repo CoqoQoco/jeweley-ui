@@ -62,11 +62,9 @@
         </div>
 
         <!-- STEP 2 : SUB MENU -->
-        <!-- Check Has List Data -->
         <div v-if="mainMenu.subMenu.length">
           <!-- Hidden Menu (Toggle with Flag:isOpen ) -->
           <div v-show="mainMenu.isOpen" class="submenu-container">
-            <!-- Render List Menu -->
             <div
               v-for="(subMenu, indexSubMenu) in mainMenu.subMenu"
               :key="indexSubMenu"
@@ -77,7 +75,6 @@
             >
               <!-- Wrapper -->
               <div class="sub-menu">
-                <!-- Has children -->
                 <div
                   v-if="subMenu.children"
                   :class="['sub-menu-wrapper', subMenu.isOpen ? 'sub-menu-active' : null]"
@@ -108,7 +105,7 @@
                   <router-link :to="{ name: subMenu.name }" v-slot="{ href, navigate }">
                     <button class="btn-link btn-sub-menu" :href="href" @click="navigate">
                       <span class="submenu-text">
-                        <i class="bi bi-dash submenu-icon"></i>
+                        <i class="bi bi-arrow-right-circle submenu-icon"></i>
                         {{ showMenuName(subMenu) }}
                       </span>
                       <span class="menu-counter" v-if="subMenu.meta && subMenu.meta.counter">{{
@@ -163,7 +160,6 @@
             </div>
           </div>
         </div>
-        <!-- end : sub menu -->
       </div>
 
       <div class="menu-separator"></div>
@@ -278,7 +274,8 @@ export default {
             if (!route.meta.counter && route.name !== 'dashboard') {
               route.meta = {
                 ...route.meta,
-                counter: Math.floor(Math.random() * 1000)
+                counter: 0
+                //counter: Math.floor(Math.random() * 1000)
               }
             }
 
@@ -307,7 +304,8 @@ export default {
           if (!menu.meta.counter) {
             menu.meta = {
               ...menu.meta,
-              counter: Math.floor(Math.random() * 100)
+              counter: 0
+              //counter: Math.floor(Math.random() * 0)
             }
           }
 
@@ -572,7 +570,7 @@ export default {
 /* Active Route Styling */
 .router-link-active {
   > .btn-link {
-    background-color: #0d6efd;
+    background-color: var(--base-font-color);
     color: white !important;
     font-weight: 500;
 

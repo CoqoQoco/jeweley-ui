@@ -11,14 +11,18 @@
             <i class="bi bi-grid"></i>
             <span>หัวข้องาน</span>
           </div>
-          <div class="nav-item" :class="{ active: isActive('home') }" @click="setActive('home')">
+          <div
+            class="nav-item"
+            :class="{ active: isActive('home') }"
+            @click="navigateTo('home', 'dashboard')"
+          >
             <i class="bi bi-house-door"></i>
             <span>หน้าแรก</span>
           </div>
           <div
             class="nav-item"
             :class="{ active: isActive('profile') }"
-            @click="setActive('profile')"
+            @click="navigateTo('profile', 'user-account')"
           >
             <i class="bi bi-person"></i>
             <span>ข้อมูลบุคคล</span>
@@ -44,7 +48,7 @@
       <div class="sidebar-header">
         <div class="sidebar-title">
           <i class="bi bi-grid-fill menu-icon"></i>
-          เลือกงาน
+          <span> เลือกงาน</span>
         </div>
         <button class="close-sidebar-btn" @click="closeSidebar">
           <i class="bi bi-x-lg"></i>
@@ -107,6 +111,15 @@ export default {
     }
   },
 
+  watch: {
+    $route(to) {
+      //console.log('Route Changed to:', to)
+      if (to.name === 'dashboard') {
+        this.setActive('home')
+      }
+    }
+  },
+
   data() {
     return {
       isSideBarVisible: false,
@@ -115,6 +128,10 @@ export default {
   },
 
   methods: {
+    navigateTo(activeTab, routeName) {
+      this.setActive(activeTab)
+      this.$router.push({ name: routeName })
+    },
     isActive(page) {
       return this.activePage === page
     },
