@@ -1,8 +1,9 @@
 <template>
   <!-- 1.Sidebar -->
-  <div id="layoutDashboard">
-    <div id="mySidenav" :class="[isShowSidenav ? 'active-sidenav' : 'inactive-sidenav']">
-      <!-- Logo -->
+  <div id="layout">
+    <mainBar></mainBar>
+
+    <!-- <div id="mySidenav" :class="[isShowSidenav ? 'active-sidenav' : 'inactive-sidenav']">
       <div class="logo-layout">
         <img
           src="@/assets/duangkaew-logo.png"
@@ -11,7 +12,6 @@
         />
       </div>
 
-      <!-- ขีดเส้น -->
       <div class="bottom-logo-line"></div>
 
       <div class="employee-container" :class="{ 'hidden-avatar': !isShowSidenav }">
@@ -22,14 +22,12 @@
         <div class="employee-role">{{ `[ ${userRole} ]` }}</div>
       </div>
 
-      <!-- ขีดเส้น -->
       <div class="bottom-logo-line"></div>
 
-      <!-- Side Menu -->
       <div class="sidebar-wrapper">
         <SlideBar :class="{ 'hidden-SlideBar': !isShowSidenav }"></SlideBar>
       </div>
-    </div>
+    </div> -->
 
     <!-- 2.Main Workspace -->
     <div id="main" :class="[isShowSidenav ? 'active-main' : 'inactive-main']">
@@ -41,11 +39,14 @@
 </template>
 
 <script>
-import SlideBar from '@/components/layout/SideBar.vue'
+//import SlideBar from '@/components/layout/SideBar.vue'
+import mainBar from '@/components/layout/main-bar.vue'
+
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 export default {
   components: {
-    SlideBar
+    mainBar,
+    //SlideBar
   },
 
   setup() {
@@ -89,7 +90,7 @@ export default {
 
   data() {
     return {
-      isShowSidenav: true
+      isShowSidenav: false
     }
   }
 }
