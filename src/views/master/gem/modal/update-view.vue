@@ -1,64 +1,68 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal">
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px">
+      <template v-slot:title>
+        <div>
+          <div class="title-text-lg-header">
+            <span class="bi bi-database-fill-gear mr-2"></span>
+            <span> {{ `เเก้ไขพลอย: ${model.code}-${model.nameTh}` }}</span>
+          </div>
+        </div>
+      </template>
+
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
-          <div class="title-text-lg">
-            <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>
-              {{ `เเก้ไขพลอย: ${model.code}-${model.nameTh}` }}
-            </span>
-          </div>
           <div class="p-2">
-            <div class="form-col-container">
-              <!-- code -->
-              <div>
-                <div>
-                  <span class="title-text">รหัส</span>
-                  <span class="txt-required"> *</span>
-                </div>
-                <input
-                  type="text"
-                  class="form-control"
-                  :class="form.code ? `` : `bg-warning`"
-                  v-model="form.code"
-                  disabled
-                  required
-                />
+            <!-- code -->
+            <div>
+              <div class="title-text">
+                <span>รหัส</span>
               </div>
-            </div>
-            <div class="form-col-container mt-2">
-              <!-- name th -->
-              <div>
-                <span class="title-text">ชื่อไทย</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  :class="form.nameTh ? `` : `bg-warning`"
-                  v-model="form.nameTh"
-                  required
-                />
-              </div>
-
-              <!-- name en -->
-              <div>
-                <span class="title-text">ชื่ออังกฤษ</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  :class="form.nameEn ? `` : `bg-warning`"
-                  v-model="form.nameEn"
-                  required
-                />
-              </div>
+              <input
+                type="text"
+                class="form-control"
+                v-model="form.code"
+                placeholder="EX: CZ"
+                disabled
+                required
+              />
             </div>
 
-            <div class="d-flex justify-content-end mt-2">
+            <!-- name th -->
+            <div class="mt-2">
+              <div class="title-text">
+                <span>ชื่อ TH</span>
+                <span> *</span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                :style="getBgColor(form.nameTh)"
+                v-model="form.nameTh"
+                placeholder="EX: ทับทิมเเดง"
+                required
+              />
+            </div>
+
+            <!-- name en -->
+            <div class="mt-2">
+              <div class="title-text">
+                <span>ชื่อ EN</span>
+                <span> *</span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                :style="getBgColor(form.nameEn)"
+                v-model="form.nameEn"
+                placeholder="EX: Ruby"
+                required
+              />
+            </div>
+
+            <div class="submit-container">
               <button class="btn btn-sm btn-main" type="submit">
-                <!-- <span class="mr-2">
-                  <i class="bi bi-gem"></i>
-                </span> -->
-                <span>ยืนยัน</span>
+                <span><i class="bi bi-calendar-check"></i></span>
               </button>
             </div>
           </div>
@@ -70,17 +74,17 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 const interfaceForm = {
   code: null,
   nameTh: null,
-  nameEn: null
+  nameEn: null,
+  prefix: null
 }
 export default {
   components: { modal },
@@ -127,18 +131,25 @@ export default {
     return {
       form: {
         ...interfaceForm
-      }
+      },
+
+      //wording
+      txtConfirmSubmit: 'ยืนยันเเก้ไขข้อมูล'
     }
   },
   methods: {
+    getBgColor(data) {
+      return data ? 'background-color: #b5dad4' : 'background-color: #dad4b5'
+    },
+
     closeModal() {
-      this.onclear()
+      this.onClear()
       this.$emit('closeModal')
     },
     onSubmit() {
       swAlert.confirmSubmit(
         `${this.model.code} : ${this.form.nameTh}`,
-        `ยืนยันเเก้ไขข้อมูล`,
+        this.txtConfirmSubmit,
         async () => {
           await this.submit()
         },
@@ -149,10 +160,7 @@ export default {
     async submit() {
       const param = {
         type: 'GEM',
-        id: this.model.id,
-        code: this.model.code,
-        nameTh: this.form.nameTh,
-        nameEn: this.form.nameEn
+        ...this.form
       }
 
       const res = await this.masterStore.updateListMaster({
@@ -164,7 +172,7 @@ export default {
           ``,
           ``,
           async () => {
-            this.onclear()
+            this.onClear()
             this.$emit('closeModal', 'fetch')
           },
           null,
@@ -172,7 +180,7 @@ export default {
         )
       }
     },
-    onclear() {
+    onClear() {
       this.form = { ...interfaceForm }
     }
   }

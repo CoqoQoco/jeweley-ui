@@ -1,77 +1,96 @@
 <template>
   <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="500px">
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px">
       <template v-slot:title>
-        <div class="filter-container-highlight">
+        <div>
           <div class="title-text-lg-header">
             <span class="bi bi-database-fill-add mr-2"></span>
             <span>เพิ่มประเภทสินค้า</span>
           </div>
         </div>
       </template>
+
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
-          <!-- code -->
-          <div class="form-col-sm-container">
-            <div>
-              <span class="title-text">รหัส</span>
-              <input
-                type="text"
-                class="form-control"
-                v-model="form.code"
-                placeholder="EX: B"
-                required
-              />
+          <div class="p-2">
+            <!-- code -->
+            <div class="form-col-sm-container">
+              <div>
+                <div class="title-text">
+                  <span>รหัส</span>
+                  <span> *</span>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.code)"
+                  v-model="form.code"
+                  placeholder="EX: B"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <!-- name th -->
-          <div class="form-col-sm-container mt-2">
-            <div>
-              <span class="title-text">ชื่อไทย</span>
-              <input
-                type="text"
-                class="form-control"
-                v-model="form.nameTh"
-                placeholder="EX: สร้อยข้อมือ"
-                required
-              />
+            <!-- name th -->
+            <div class="mt-2">
+              <div>
+                <div class="title-text">
+                  <span>ชื่อ TH</span>
+                  <span> *</span>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.nameTh)"
+                  v-model="form.nameTh"
+                  placeholder="EX: สร้อยข้อมือ"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <!-- name en -->
-          <div class="form-col-sm-container mt-2">
-            <div>
-              <span class="title-text">ชื่ออังกฤษ</span>
-              <input
-                type="text"
-                class="form-control"
-                v-model="form.nameEn"
-                placeholder="EX: Bracelet"
-                required
-              />
+            <!-- name en -->
+            <div class="mt-2">
+              <div>
+                <div class="title-text">
+                  <span>ชื่อ EN</span>
+                  <span> *</span>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.nameEn)"
+                  v-model="form.nameEn"
+                  placeholder="EX: Bracelet"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <!-- prefix -->
-          <div class="form-col-sm-container mt-2">
-            <div>
-              <span class="title-text">อักษรหน้าสินค้า</span>
-              <input
-                type="text"
-                class="form-control"
-                v-model="form.prefix"
-                placeholder="EX: DK"
-                required
-              />
+            <!-- prefix -->
+            <div class="mt-2">
+              <div>
+                <div class="title-text">
+                  <span>อักษรหน้าสินค้า</span>
+                  <span> *</span>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.prefix)"
+                  v-model="form.prefix"
+                  placeholder="EX: DK"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <div class="submit-container">
-            <button class="btn btn-sm btn-main" type="submit">
-              <span><i class="bi bi-calendar-check"></i></span>
-              <!-- <span>เพิ่มพลอย</span> -->
-            </button>
+            <div class="submit-container">
+              <button class="btn btn-sm btn-main" type="submit">
+                <span><i class="bi bi-calendar-check"></i></span>
+                <!-- <span>เพิ่มพลอย</span> -->
+              </button>
+            </div>
           </div>
         </form>
       </template>
@@ -97,7 +116,7 @@ const interfaceFrom = {
 export default {
   components: { modal },
   props: {
-    isShowModal: {
+    isShow: {
       type: Boolean,
       default: false
     }
@@ -114,12 +133,16 @@ export default {
         ...interfaceFrom
       },
 
-      ///wording
+      //wording
       txtConfirmSubmit: 'ยืนยันเพิ่มประเภทสินค้า'
     }
   },
 
   methods: {
+    getBgColor(data) {
+      return data ? 'background-color: #b5dad4' : 'background-color: #dad4b5'
+    },
+
     closeModal() {
       this.onClear()
       this.$emit('closeModal')
@@ -151,6 +174,7 @@ export default {
       })
 
       if (res) {
+        this.onClear()
         this.$emit('fetch', this.form)
       }
     }

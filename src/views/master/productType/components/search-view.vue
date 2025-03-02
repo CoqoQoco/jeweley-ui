@@ -9,12 +9,7 @@
           :isShowRightSlot="true"
         >
           <template #rightSlot>
-            <button
-              class="btn btn-sm btn-warning mr-2"
-              type="button"
-              @click="onCreate"
-              title="สร้าง"
-            >
+            <button class="btn btn-sm btn-main mr-2" type="button" @click="onCreate" title="สร้าง">
               <span><i class="bi bi-plus-lg"></i></span>
             </button>
           </template>

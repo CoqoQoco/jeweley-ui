@@ -1,48 +1,94 @@
 <template>
-  <div class="app-container-modal">
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="450px">
+  <div>
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px">
       <template v-slot:title>
-        <h5>เเก้ไขประเภทสินค้า</h5>
+        <div>
+          <div class="title-text-lg-header">
+            <span class="bi bi-database-fill-gear mr-2"></span>
+            <span> {{ `เเก้ไขประเภทสินค้า: ${model.code}-${model.nameTh}` }}</span>
+          </div>
+        </div>
       </template>
+
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
-          <div class="form-container">
-            <div><label class="title">ระบุข้อมูลประเภทสินค้า</label></div>
-            <div class="row form-group">
-              <div class="col-md-12">
-                <label>รหัส</label>
-                <input type="text" class="form-control" v-model="model.code" required disabled />
+          <div class="p-2">
+            <!-- code -->
+            <div class="form-col-sm-container">
+              <div>
+                <div class="title-text">
+                  <span>รหัส</span>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.code"
+                  placeholder="EX: B"
+                  disabled
+                  required
+                />
               </div>
             </div>
-            <div class="row form-group">
-              <div class="col-md-12">
-                <label>ชื่อไทย</label>
-                <div class="flex-group">
-                  <div class="w-50">{{ model.nameTh }}</div>
-                  <div class="mr-2 ml-1"><i class="bi bi-arrow-right"></i></div>
-                  <input type="text" class="form-control" v-model="form.nameTh" required />
+
+            <!-- name th -->
+            <div class="mt-2">
+              <div>
+                <div class="title-text">
+                  <span>ชื่อ TH</span>
+                  <span> *</span>
                 </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.nameTh)"
+                  v-model="form.nameTh"
+                  placeholder="EX: สร้อยข้อมือ"
+                  required
+                />
               </div>
             </div>
-            <div class="row form-group">
-              <div class="col-md-12">
-                <label>ชื่ออังกฤษ</label>
-                <div class="flex-group">
-                  <div class="w-50">{{ model.nameEn }}</div>
-                  <div class="mr-2 ml-1"><i class="bi bi-arrow-right"></i></div>
-                  <input type="text" class="form-control" v-model="form.nameEn" required />
+
+            <!-- name en -->
+            <div class="mt-2">
+              <div>
+                <div class="title-text">
+                  <span>ชื่อ EN</span>
+                  <span> *</span>
                 </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.nameEn)"
+                  v-model="form.nameEn"
+                  placeholder="EX: Bracelet"
+                  required
+                />
               </div>
             </div>
-            <div class="line"></div>
-            <div class="row form-group">
-              <div class="col-md-12">
-                <div class="btn-container">
-                  <button class="btn btn-sm btn-main" type="submit">
-                    <span class="mr-2"><i class="bi bi-gem"></i></span><span>แก้ไขพลอย</span>
-                  </button>
+
+            <!-- prefix -->
+            <div class="mt-2">
+              <div>
+                <div class="title-text">
+                  <span>อักษรหน้าสินค้า</span>
+                  <span> *</span>
                 </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.prefix)"
+                  v-model="form.prefix"
+                  placeholder="EX: DK"
+                  required
+                />
               </div>
+            </div>
+
+            <div class="submit-container">
+              <button class="btn btn-sm btn-main" type="submit">
+                <span><i class="bi bi-calendar-check"></i></span>
+                <!-- <span>เพิ่มพลอย</span> -->
+              </button>
             </div>
           </div>
         </form>
@@ -53,95 +99,108 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
 import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-helper.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-//import modal from '@/components/modal/ModalView.vue'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+
+const interfaceFrom = {
+  code: null,
+  nameTh: null,
+  nameEn: null,
+  prefix: null
+}
 
 export default {
   components: { modal },
+
+  setup() {
+    const masterStore = useMasterApiStore()
+    return { masterStore }
+  },
+
   props: {
-    isShowModal: {
+    isShow: {
       type: Boolean,
       default: false
     },
-    modelMaster: {
+    modelUpdate: {
       type: Object,
-      required: true,
-      default: () => {}
+      default: () => ({}),
+      required: true
     }
   },
+
   computed: {
     model() {
-      return this.modelMaster
+      return this.modelUpdate
     }
   },
+
+  watch: {
+    modelUpdate: {
+      handler(newVal) {
+        if (newVal) {
+          this.form = { ...newVal }
+        } else {
+          this.form = {}
+        }
+      },
+      deep: true, // ถ้าต้องการ watch การเปลี่ยนแปลงของ nested properties
+      immediate: true // ถ้าต้องการให้ทำงานทันทีตอน component ถูกสร้าง
+    }
+  },
+
   data() {
     return {
-      isLoading: false,
       form: {
-        //code: null,
-        nameTh: null,
-        nameEn: null
-      }
+        ...interfaceFrom
+      },
+
+      //wording
+      txtConfirmSubmit: 'ยืนยันเเก้ไขประเภทสินค้า'
     }
   },
+
   methods: {
+    getBgColor(data) {
+      return data ? 'background-color: #b5dad4' : 'background-color: #dad4b5'
+    },
+
     closeModal() {
-      this.onclear()
+      this.onClear()
       this.$emit('closeModal')
     },
     onSubmit() {
       swAlert.confirmSubmit(
-        `${this.model.code} : ${this.form.nameTh}`,
-        `ยืนยันเเก้ไขประเภทสินค้า`,
+        `${this.form.code} : ${this.form.nameTh}`,
+        this.txtConfirmSubmit,
         async () => {
-          //console.log('call submitPlan')
           await this.submit()
         },
         null,
         null
       )
     },
-    async submit() {
-      try {
-        this.isLoading = true
-
-        const param = {
-          type: 'PRODUCT-TYPE',
-          id: this.model.id,
-          code: this.model.code,
-          nameTh: this.form.nameTh,
-          nameEn: this.form.nameEn
-        }
-
-        const res = await api.jewelry.post('Master/UpdateMasterModel', param)
-        if (res) {
-          //console.log(res)
-          swAlert.success(
-            ``,
-            ``,
-            async () => {
-              this.onclear()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+    onClear() {
+      this.form = {
+        ...interfaceFrom
       }
     },
-    onclear() {
-      this.form = {
-        //code: null,
-        nameTh: null,
-        nameEn: null
+    async submit() {
+      const param = {
+        type: 'PRODUCT-TYPE',
+        ...this.form
+      }
+      const res = await this.masterStore.updateMaster({
+        formValue: param,
+        skipLoading: false
+      })
+
+      if (res) {
+        this.onClear()
+        this.$emit('fetch')
       }
     }
   }
@@ -149,38 +208,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-h5 {
-  padding: 10px 0px 0px 10px;
-  font-size: 21px;
-  font-weight: 600;
-  color: var(--base-font-color);
-}
-label {
-  color: var(--base-font-color);
-  //font-size: 13px;
-  font-weight: 300;
-  margin: 5px 0px 0px 0px;
-}
-.form-group {
-  margin-bottom: 5px;
-}
-.title {
-  font-size: 21px;
-  font-weight: 600;
-  width: 100%;
-}
-.btn-container {
-  margin-top: 10px;
-  display: grid;
-  place-items: end;
-}
-.line {
-  border-bottom: 1px solid var(--base-font-color);
-  margin: 10px 20px;
-}
-.flex-group {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+@import '@/assets/scss/custom-style/standard-form.scss';
 </style>

@@ -283,6 +283,9 @@ export const useMasterApiStore = defineStore('master', {
 
       return await api.jewelry.post('Master/CreateMasterModel', param)
     },
+    async updateMaster({ formValue, skipLoading = false }) {
+      return await api.jewelry.post('Master/UpdateMasterModel', formValue, { skipLoading })
+    },
     async createMaster({ formValue, skipLoading = false }) {
       return await api.jewelry.post('Master/CreateMasterModel', formValue, { skipLoading })
     }

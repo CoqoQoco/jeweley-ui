@@ -9,9 +9,9 @@
       @sort="handleSortChange"
     >
       <!-- Action buttons template -->
-      <template #actionsTemplate="{ data: rowData }">
+      <template #actionsTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-main" title="เเก้ไข" @click="onUpdate(rowData)">
+          <button class="btn btn-sm btn btn-main" title="เเก้ไข" @click="onUpdate(data)">
             <i class="bi bi-brush"></i>
           </button>
         </div>
@@ -23,6 +23,13 @@
         </div>
       </template>
     </BaseDataTable>
+
+    <updateView
+      :isShow="isShowUpdate"
+      :modelUpdate="dataUpdate"
+      @closeModal="onCloseModal"
+      @fetch="fetchDataByUpdate"
+    ></updateView>
   </div>
 </template>
 
@@ -31,9 +38,12 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
+import updateView from '../modal/update-view.vue'
+
 export default {
   components: {
-    BaseDataTable
+    BaseDataTable,
+    updateView
   },
 
   setup() {
@@ -111,7 +121,10 @@ export default {
         }
       ],
 
-      data: []
+      data: [],
+
+      isShowUpdate: false,
+      dataUpdate: {}
     }
   },
 
@@ -130,6 +143,20 @@ export default {
         dir: item.order === 1 ? 'asc' : 'desc'
       }))
       this.fetchData()
+    },
+
+    onCloseModal() {
+      this.isShowUpdate = false
+      this.dataUpdate = {}
+    },
+    onUpdate(e) {
+      this.dataUpdate = { ...e }
+      //console.log('onUpdated', this.dataUpdate)
+      this.isShowUpdate = true
+    },
+    async fetchDataByUpdate() {
+      await this.fetchData()
+      this.onCloseModal()
     },
 
     async fetchData() {

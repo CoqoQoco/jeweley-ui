@@ -9,7 +9,7 @@
     ></searchView>
     <dataTable v-model:modelForm="search" v-model:modelFormExport="formExport"></dataTable>
     <create
-      :isShowModal="isShowCreate"
+      :isShow="isShowCreate"
       @fetch="onSearchFilterByCreate"
       @closeModal="onCloseModal"
     ></create>

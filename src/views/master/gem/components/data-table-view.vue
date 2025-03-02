@@ -32,7 +32,7 @@ import {
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-import modalUpd from '../modal/UpdateView.vue'
+import modalUpd from '../modal/update-view.vue'
 
 const interfaceIsShowModal = {
   add: false,
@@ -97,13 +97,13 @@ export default {
         },
         {
           field: 'nameTh',
-          header: 'ชื่อไทย',
+          header: 'ชื่อ TH',
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameEn',
-          header: 'ชื่ออังกฤษ',
+          header: 'ชื่อ EN',
           sortable: true,
           minWidth: '150px'
         },

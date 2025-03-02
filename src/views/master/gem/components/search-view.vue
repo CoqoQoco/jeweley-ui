@@ -7,7 +7,7 @@
       :isShowRightSlot="true"
     >
       <template #rightSlot>
-        <button class="btn btn-sm btn-warning" @click="onCreate">
+        <button class="btn btn-sm btn-main" @click="onCreate">
           <span class="bi bi-plus-lg"></span>
         </button>
       </template>
@@ -44,7 +44,7 @@
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-import addView from '../modal/AddView.vue'
+import addView from '../modal/create-view.vue'
 
 const interfaceIsShowModal = {
   add: false

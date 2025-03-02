@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import headerBar from './components/HeaderView.vue'
-import dataTable from './components/DataTableView.vue'
+import headerBar from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 
 const interfaceForm = {
   text: null
