@@ -8,7 +8,7 @@
     >
       <template #rightSlot>
         <button class="btn btn-sm btn-main" @click="onCreate">
-          <span class="bi bi-plus-lg"></span>
+          <span class="bi bi-database-fill-add"></span>
         </button>
       </template>
     </pageTitle>

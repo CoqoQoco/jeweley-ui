@@ -12,7 +12,7 @@
       <template #actionsTemplate="{ data }">
         <div class="btn-action-container">
           <button class="btn btn-sm btn btn-main" title="เเก้ไข" @click="onUpdate(data)">
-            <i class="bi bi-brush"></i>
+            <i class="bi bi-database-fill-gear"></i>
           </button>
         </div>
       </template>

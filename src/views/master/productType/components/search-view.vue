@@ -10,7 +10,7 @@
         >
           <template #rightSlot>
             <button class="btn btn-sm btn-main mr-2" type="button" @click="onCreate" title="สร้าง">
-              <span><i class="bi bi-plus-lg"></i></span>
+              <span><i class="bi bi-database-fill-add"></i></span>
             </button>
           </template>
         </pageTitle>
