@@ -18,7 +18,7 @@ const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/IndexVi
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/index-view.vue')
 const GemShapeView = () => import('@/views/master/gemShape/index-view.vue')
-const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
+const GoldSizeView = () => import('@/views/master/goldSize/index-view.vue')
 const ProductTypeView = () => import('@/views/master/productType/index-view.vue')
 const ZillView = () => import('@/views/master/zill/IndexView.vue')
 
