@@ -237,7 +237,7 @@ export default {
     },
     scrollHeight: {
       type: String,
-      default: 'calc(100vh - 280px)'
+      default: 'calc(100vh - 330px)'
     },
     showActions: {
       type: Boolean,

@@ -179,7 +179,8 @@ export default {
 <style lang="scss" scoped>
 .main-bar-container {
   border-bottom: 1px solid var(--base-font-color);
-  background-color: var(--base-color);
+  //background-color: var(--base-color);
+  background: linear-gradient(to right, var(--base-font-color), var(--base-font-sub-color));
   padding: 5px 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative; /* สำคัญสำหรับการจัดวาง sidebar */
@@ -221,6 +222,7 @@ export default {
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--base-font-color);
+  color: white;
 
   i {
     margin-right: 8px;
@@ -232,7 +234,7 @@ export default {
   }
 
   &.active {
-    background-color: var(--base-font-color);
+    background-color: var(--base-font-sub-color);
     color: white;
   }
 }

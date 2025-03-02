@@ -1,37 +1,13 @@
 <template>
-  <!-- 1.Sidebar -->
-  <div id="layout">
-    <mainBar></mainBar>
+  <div id="app-layout">
+    <!-- Fixed Main Bar on top -->
+    <div class="mainbar-container">
+      <mainBar></mainBar>
+    </div>
 
-    <!-- <div id="mySidenav" :class="[isShowSidenav ? 'active-sidenav' : 'inactive-sidenav']">
-      <div class="logo-layout">
-        <img
-          src="@/assets/duangkaew-logo.png"
-          class="avatar"
-          :class="{ 'hidden-avatar': !isShowSidenav }"
-        />
-      </div>
-
-      <div class="bottom-logo-line"></div>
-
-      <div class="employee-container" :class="{ 'hidden-avatar': !isShowSidenav }">
-        <div>
-          <span class="employee-name bi bi-person-hearts mr-2"></span>
-          <span class="employee-name">{{ `${user?.firstName} ${user?.lastName}` }}</span>
-        </div>
-        <div class="employee-role">{{ `[ ${userRole} ]` }}</div>
-      </div>
-
-      <div class="bottom-logo-line"></div>
-
-      <div class="sidebar-wrapper">
-        <SlideBar :class="{ 'hidden-SlideBar': !isShowSidenav }"></SlideBar>
-      </div>
-    </div> -->
-
-    <!-- 2.Main Workspace -->
-    <div id="main" :class="[isShowSidenav ? 'active-main' : 'inactive-main']">
-      <div class="layout-content">
+    <!-- Content Area (includes sidebar and main content) -->
+    <div class="content-container">
+      <div id="main" class="main-content">
         <router-view :key="$route.fullPath"></router-view>
       </div>
     </div>
@@ -39,13 +15,14 @@
 </template>
 
 <script>
-//import SlideBar from '@/components/layout/SideBar.vue'
 import mainBar from '@/components/layout/main-bar.vue'
+//import SlideBar from '@/components/layout/SideBar.vue'
 
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+
 export default {
   components: {
-    mainBar,
+    mainBar
     //SlideBar
   },
 
@@ -97,48 +74,80 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-//------ Slide Bar -----
+/* Layout Structure */
+#app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mainbar-container {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.content-container {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  //padding: 20px;
+  width: 100%;
+  //margin-top: 10px; /* เพิ่มระยะห่างจาก mainbar */
+  min-height: calc(100vh - 60px); /* ปรับความสูงตามความสูงของ mainbar */
+}
+
+/* Sidebar Styles (คอมเม้นต์ไว้แต่ยังคงไว้เผื่อต้องใช้ในอนาคต) */
 #mySidenav {
   height: 100%;
   background-color: var(--base-color);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   position: fixed;
-  top: 0;
+  top: 60px; /* ปรับตำแหน่งให้อยู่ใต้ mainbar */
   left: 0;
   display: flex;
   flex-direction: column;
   transition-duration: 0.5s;
-  z-index: 1;
+  z-index: 900;
   border-right: 1px solid var(--base-font-color);
+  height: calc(100vh - 60px); /* ปรับความสูงตามความสูงของ mainbar */
 }
 
 .sidebar-wrapper {
   padding-top: 5px;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
   }
+
   -ms-overflow-style: none;
-}
 
-.sidebar-wrapper:hover {
-  z-index: 300;
-}
+  &:hover {
+    z-index: 300;
+  }
 
-.sidebar-wrapper::-webkit-scrollbar {
-  width: 10px;
-}
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
 
-.sidebar-wrapper::-webkit-scrollbar-track {
-  background-color: var(--base-color);
-}
+  &::-webkit-scrollbar-track {
+    background-color: var(--base-color);
+  }
 
-.sidebar-wrapper::-webkit-scrollbar-thumb {
-  background-color: var(--base-color);
-  border-radius: 10px;
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--base-color);
+    border-radius: 10px;
+  }
 }
 
 .inactive-sidenav {
@@ -147,21 +156,6 @@ export default {
 
 .active-sidenav {
   width: 230px;
-}
-
-//----- Main -----
-#main {
-  transition-duration: 0.5s;
-}
-
-.inactive-main {
-  margin-left: 0;
-  width: 100%;
-}
-
-.active-main {
-  margin-left: 230px;
-  width: calc(100% - 230px);
 }
 
 .employee-container {
@@ -183,7 +177,7 @@ export default {
   }
 }
 
-// Custom Style
+/* Custom Style */
 .bottom-logo-line {
   border-bottom: 3px solid var(--base-font-color);
   margin-left: 5px;
