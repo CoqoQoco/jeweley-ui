@@ -178,7 +178,7 @@ export const useMasterApiStore = defineStore('master', {
       if (!forceFetch && this.isCacheValid(key)) {
         return this[key]
       }
-    
+
       try {
         this.clearError()
         const response = await api.jewelry.get(url, null, { skipLoading: true })
@@ -282,6 +282,9 @@ export const useMasterApiStore = defineStore('master', {
       }
 
       return await api.jewelry.post('Master/CreateMasterModel', param)
+    },
+    async createMaster({ formValue, skipLoading = false }) {
+      return await api.jewelry.post('Master/CreateMasterModel', formValue, { skipLoading })
     }
   }
 })

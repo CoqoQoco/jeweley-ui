@@ -112,7 +112,6 @@
 .form-col-sm-container {
   display: grid;
   gap: 10px;
-  padding: 10px 0;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 

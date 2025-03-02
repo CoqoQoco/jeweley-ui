@@ -265,16 +265,16 @@ export default {
   methods: {
     // ---------------- event
     onSearch() {
-      console.log('onSubmit')
+      //console.log('onSubmit')
       this.$emit('search', this.form)
     },
     onExport() {
-      console.log('onExport')
-      this.$emit('export')
+      //console.log('onExport')
+      this.$emit('export', this.form)
     },
     dialogSearch() {
       this.isShow.dialog = false
-      this.$emit('search', this.form)
+      this.$emit('search')
     },
     onSubmitExport() {
       this.$emit('export', true)
@@ -292,6 +292,7 @@ export default {
       this.isShow.dialog = false
     }
   },
+
   created() {
     this.$nextTick(async () => {
       await this.masterStore.fetchProductType()

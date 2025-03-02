@@ -1,14 +1,14 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="เเก้ไขปรับปรุง-เพิ่ม ข้อมูลพลอย"
-      description="หน้าเเก้ไขปรับปรุง-เพิ่ม ข้อมูลพลอย เเละรายละเอียดต่างๆ"
+      title="ข้อมูลพลอย"
+      description="เเก้ไขปรับปรุง/เพิ่ม พลอยเเละรายละเอียดต่างๆ"
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >
       <template #rightSlot>
-        <button class="btn btn-sm btn-main" @click="onCreate">
-          <span class="bi bi-pencil"></span>
+        <button class="btn btn-sm btn-warning" @click="onCreate">
+          <span class="bi bi-plus-lg"></span>
         </button>
       </template>
     </pageTitle>
@@ -16,8 +16,13 @@
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
         <div>
-          <span class="title-text">คำค้นหา</span>
-          <input :class="['form-control bg-input']" type="text" v-model.trim="form.text" />
+          <span class="title-text">ค้นหา</span>
+          <input
+            :class="['form-control bg-input']"
+            type="text"
+            v-model.trim="form.text"
+            placeholder="EX: RU, Ruby, ทับทิมเเดง......"
+          />
         </div>
       </div>
 

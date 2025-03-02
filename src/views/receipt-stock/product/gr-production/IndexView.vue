@@ -747,6 +747,8 @@ export default {
     },
     validateForm(formValue) {
       let isValid = true
+      const productNumbers = new Set() // ใช้ Set เพื่อเก็บค่า productNumber ที่ผ่านการตรวจสอบแล้ว
+      let duplicateProductNumbers = [] // เก็บรายการ productNumber ที่ซ้ำกัน
 
       // ตรวจสอบเฉพาะรายการที่ถูกเลือกเท่านั้น
       for (const item of formValue) {
@@ -754,8 +756,17 @@ export default {
         const formItem = this.form.find((f) => f.stockReceiptNumber === item.stockReceiptNumber)
 
         if (formItem && !formItem.isReceipt) {
+          // ตรวจสอบข้อมูลพื้นฐาน
           if (!formItem.productNumber) {
             isValid = false
+          } else {
+            // ตรวจสอบความซ้ำซ้อนของ productNumber
+            if (productNumbers.has(formItem.productNumber)) {
+              duplicateProductNumbers.push(formItem.productNumber)
+              isValid = false
+            } else {
+              productNumbers.add(formItem.productNumber)
+            }
           }
 
           if (!formItem.productNameEN) {
@@ -777,9 +788,21 @@ export default {
       }
 
       if (!isValid) {
-        swAlert.warning('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', '', () => {
-          console.log('swAlert.warning')
-        })
+        if (duplicateProductNumbers.length > 0) {
+          // แสดงข้อความเตือนเฉพาะกรณีมีรหัสสินค้าซ้ำกัน
+          swAlert.warning(
+            'พบรหัสสินค้าซ้ำกัน',
+            `กรุณาตรวจสอบรหัสสินค้าต่อไปนี้: ${duplicateProductNumbers.join(', ')}`,
+            () => {
+              console.log('swAlert.warning - duplicate productNumber')
+            }
+          )
+        } else {
+          // แสดงข้อความเตือนทั่วไปเมื่อข้อมูลไม่ครบถ้วน
+          swAlert.warning('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', '', () => {
+            console.log('swAlert.warning')
+          })
+        }
       }
 
       return isValid

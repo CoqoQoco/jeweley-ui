@@ -12,45 +12,54 @@
         </div>
 
         <div class="form-col-container">
+          <!-- receipt date -->
           <div>
-            <span class="title-text">วันที่ผลิตสำเร็จ</span>
+            <span class="title-text">วันที่ผลิต [โอนสำเร็จ]</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
-                v-model="form.productionCompleteDateStart"
-                :max-date="form.productionCompleteDateEnd"
+                v-model="form.receiptDateStart"
+                :max-date="form.receiptDateEnd"
                 showIcon
+                :manualInput="false"
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <Calendar
                 class="w-100"
-                v-model="form.productionCompleteDateEnd"
-                :min-date="form.productionCompleteDateStart"
+                v-model="form.receiptDateEnd"
+                :min-date="form.receiptDateStart"
                 showIcon
+                :manualInput="false"
                 placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
               />
             </div>
           </div>
+
           <div class="form-col-container">
+            <!-- wo -->
             <div>
-              <span class="title-text">เลขที่งานผลิต [ W.O. ]</span>
+              <span class="title-text">W.O.</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
-                v-model.trim="form.wo"
+                v-model.trim="form.woText"
+                placeholder="EX: 6802017XX"
               />
             </div>
-            <!-- <div>
-              <span class="title-text">เลขที่สินค้า</span>
+
+            <!-- receipt number -->
+            <div>
+              <span class="title-text">เลขที่ตั้งรับสินค้า</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
-                v-model.trim="form.stockNumber"
+                v-model.trim="form.receiptNumber"
+                placeholder="EX: REP2411090XX"
               />
-            </div> -->
+            </div>
           </div>
         </div>
 
@@ -62,36 +71,26 @@
         >
           <template #content>
             <div class="form-col-container">
-              <!-- modld -->
+              <!-- mold -->
               <div>
                 <span class="title-text">เเม่พิมพ์</span>
-                <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
-              </div>
-
-              <!-- customer code -->
-              <div>
-                <span class="title-text">รหัสลูกค้า</span>
                 <input
-                  ref="inputText"
-                  id="inputText"
                   :class="['form-control bg-input']"
                   type="text"
-                  v-model.trim="form.customerCode"
+                  v-model.trim="form.mold"
+                  placeholder="EX: CN-2400XX"
                 />
               </div>
 
-              <!-- customer type -->
+              <!-- receiptNumber -->
               <div>
-                <span class="title-text">ประเภทลูกค้า</span>
-                <div>
-                  <MultiSelect
-                    v-model="form.customerType"
-                    :options="customerType"
-                    optionLabel="nameTh"
-                    optionValue="code"
-                    class="w-full md:w-14rem"
-                  />
-                </div>
+                <span class="title-text">รหัสสินค้า</span>
+                <input
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="form.receiptNumber"
+                  placeholder="EX: Gold Ring #66"
+                />
               </div>
 
               <!-- product type -->
@@ -100,68 +99,50 @@
                 <div>
                   <MultiSelect
                     v-model="form.productType"
-                    :options="productType"
-                    optionLabel="nameTh"
+                    :options="masterProductType"
+                    optionLabel="description"
                     optionValue="code"
                     class="w-full md:w-14rem"
                   />
                 </div>
               </div>
 
-              <!-- product number -->
-              <div>
-                <span class="title-text">รหัสสินค้า</span>
-                <input
-                  ref="inputText"
-                  id="inputText"
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.productNumber"
-                />
-              </div>
-
-              <!-- gold -->
-              <div>
+               <!-- gold type -->
+               <div>
                 <span class="title-text">สีของทอง/เงิน</span>
                 <div>
                   <MultiSelect
-                    v-model="form.gold"
-                    :options="gold"
-                    optionLabel="nameTh"
-                    optionValue="nameEn"
+                    v-model="form.goldType"
+                    :options="masterGold"
+                    optionLabel="description"
+                    optionValue="code"
                     class="w-full md:w-14rem"
                   />
                 </div>
               </div>
 
-              <!-- gold size -->
-              <div>
+
+               <!-- gold size -->
+               <div>
                 <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
                   <MultiSelect
                     v-model="form.goldSize"
-                    :options="goldSize"
-                    optionLabel="nameTh"
-                    optionValue="nameEn"
+                    :options="masterGoldSize"
+                    optionLabel="description"
+                    optionValue="code"
                     class="w-full md:w-14rem"
                   />
                 </div>
               </div>
+
+            
             </div>
           </template>
         </dialogView>
 
         <div class="btn-submit-container-between">
-          <div>
-            <!-- <button
-              :class="['btn btn-sm', this.isTransfer ? 'btn-secondary' : 'btn-green']"
-              type="button"
-              :disabled="isTransfer"
-              title="โอนงาน"
-            >
-              <span><i class="bi bi-arrow-left-right"></i></span>
-            </button> -->
-          </div>
+          <div></div>
           <div>
             <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
               <span><i class="bi bi-search"></i></span>
@@ -180,17 +161,18 @@
               <span><i class="bi bi-x-circle"></i></span>
               <!-- <span>ล้าง</span> -->
             </button>
-            <button
+
+            <!-- <button
               :class="[
                 'btn btn-sm btn-primary',
-                { 'btn-secondary': !stockProductStore.dataSearch.total > 0 }
+                { 'btn-secondary': !receiptProductionStore.dataListPlan.total > 0 }
               ]"
               type="button"
-              :disabled="!stockProductStore.dataSearch.total > 0"
+              :disabled="!receiptProductionStore.dataListPlan.total > 0"
               @click="onExport"
             >
               <span><i class="bi bi-filetype-csv"></i></span>
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
@@ -200,18 +182,18 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
+
+import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
 import Calendar from 'primevue/calendar'
 //import Dropdown from 'primevue/dropdown'
 
-import { mapState } from 'pinia'
-import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+//import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 //import api from '@/axios/axios-helper.js'
 
 const interfaceIsShow = {
@@ -225,16 +207,35 @@ export default {
     //Dropdown,
     dialogView
   },
+
+  setup() {
+    const receiptProductionStore = useReceiptProductionApiStore()
+    const masterStore = useMasterApiStore()
+    return { receiptProductionStore, masterStore }
+  },
+
   props: {
     modelForm: {
       type: Object,
       default: () => ({})
-    },
-    masterPlanStatus: {
-      type: Array,
-      default: () => []
     }
   },
+
+  computed: {
+    isExportData() {
+      return true
+    },
+    masterProductType() {
+      return this.masterStore.productType
+    },
+    masterGold() {
+      return this.masterStore.gold
+    },
+    masterGoldSize() {
+      return this.masterStore.goldSize
+    }
+  },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -243,20 +244,7 @@ export default {
       deep: true
     }
   },
-  computed: {
-    isExportData() {
-      return true
-    },
 
-    ...mapState(useMasterApiStore, [
-      'planStatus',
-      'gold',
-      'goldSize',
-      'customerType',
-      'productType',
-      'overPlanOptions'
-    ])
-  },
   data() {
     return {
       isLoading: false,
@@ -265,24 +253,19 @@ export default {
     }
   },
 
-  setup() {
-    const stockProductStore = usrStockProductApiStore()
-    return { stockProductStore }
-  },
-
   methods: {
     // ---------------- event
     onSearch() {
-      console.log('onSubmit')
+      //console.log('onSubmit')
       this.$emit('search', this.form)
     },
     onExport() {
-      console.log('onExport')
-      this.$emit('export')
+      //console.log('onExport')
+      this.$emit('export', this.form)
     },
     dialogSearch() {
       this.isShow.dialog = false
-      this.$emit('search', this.form)
+      this.$emit('search')
     },
     onSubmitExport() {
       this.$emit('export', true)
@@ -300,8 +283,13 @@ export default {
       this.isShow.dialog = false
     }
   },
+
   created() {
-    this.$nextTick(() => {})
+    this.$nextTick(async () => {
+      await this.masterStore.fetchProductType()
+      await this.masterStore.fetchGold()
+      await this.masterStore.fetchGoldSize()
+    })
   }
 }
 </script>

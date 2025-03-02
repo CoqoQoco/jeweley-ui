@@ -8,6 +8,11 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
+    <template #woTextTemplate="{ data }">
+        <div>
+          {{ `${data.wo}-${data.woNumber}` }}
+        </div>
+      </template>
     </BaseDataTable>
   </div>
 </template>
@@ -29,6 +34,11 @@ export default {
 
   props: {
     modelForm: {
+      type: Object,
+      default: () => ({}),
+      required: true
+    },
+    modelFormExport: {
       type: Object,
       default: () => ({}),
       required: true
@@ -184,7 +194,13 @@ export default {
       })
     },
 
-    async fetchDataExport() {}
+    async fetchDataExport() {
+      //console.log('fetchDataExport')
+      await this.receiptProductionStore.fetchConfirmHistoryExport({
+        sort: this.sort,
+        formValue: this.form
+      })
+    }
   }
 }
 </script>

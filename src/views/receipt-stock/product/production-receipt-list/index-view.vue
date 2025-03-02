@@ -6,8 +6,7 @@
       @clear="onClearFilter"
       @export="onExport"
     ></search>
-    <dataTable v-model:modelForm="search" 
-    v-model:modelFormExport="formExport"></dataTable>
+    <dataTable v-model:modelForm="search" v-model:modelFormExport="formExport"></dataTable>
   </div>
 </template>
 
@@ -18,19 +17,17 @@ import dataTable from './components/data-table-view.vue'
 const interfaceForm = {
   receiptDateStart: new Date(new Date().setDate(new Date().getDate() - 7)),
   receiptDateEnd: new Date(),
-  receiptType: null,
 
-  stockNumber: null,
+  woText: null,
+  receiptNumber: null,
+
   mold: null,
 
   productNumber: null,
-  productNameEn: null,
-  productNameTh: null,
+  productType: [],
 
-  woText: null,
-  size: null,
-
-  productType: []
+  goldType: [],
+  goldSize: []
 }
 
 export default {

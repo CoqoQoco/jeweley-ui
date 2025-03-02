@@ -4,7 +4,7 @@ const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 const List = () => import('@/views/stock/product/list/IndexView.vue')
 
 const GRProductionList = () =>
-  import('@/views/receipt-stock/product/gr-production-list/IndexView.vue')
+  import('@/views/receipt-stock/product/production-receipt-list/index-view.vue')
 const GRProduction = () => import('@/views/receipt-stock/product/gr-production/IndexView.vue')
 const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-view.vue')
 

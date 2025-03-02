@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mt-2">
     <BaseDataTable
       :items="data.data"
       :totalRecords="data.total"
@@ -16,48 +16,41 @@
           </button>
         </div>
       </template>
-    </BaseDataTable>
 
-    <modalUpd :isShow="isShow.update" :modelUpdate="dataUpdate" @closeModal="closeModal"></modalUpd>
+      <template #woTextTemplate="{ data }">
+        <div>
+          {{ `${data.wo}-${data.woNumber}` }}
+        </div>
+      </template>
+    </BaseDataTable>
   </div>
 </template>
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import {
-  formatDate,
-  formatDateTime
-  //formatISOString
-} from '@/services/utils/dayjs.js'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-import modalUpd from '../modal/UpdateView.vue'
-
-const interfaceIsShowModal = {
-  add: false,
-  update: false
-}
-
 export default {
   components: {
-    BaseDataTable,
-    modalUpd
+    BaseDataTable
   },
+
+  setup() {
+    const masterStore = useMasterApiStore()
+    return { masterStore }
+  },
+
   props: {
     modelForm: {
       type: Object,
       default: () => ({}),
       required: true
-    }
-  },
-
-  watch: {
-    async modelForm() {
-      console.log(this.modelForm)
-      //this.take = 10
-      //this.skip = 0
-      await this.fetchData()
+    },
+    modelFormExport: {
+      type: Object,
+      default: () => ({}),
+      required: true
     }
   },
 
@@ -67,21 +60,24 @@ export default {
     }
   },
 
-  setup() {
-    const masterStore = useMasterApiStore()
-    return { masterStore }
+  watch: {
+    async modelForm() {
+      //console.log(this.modelForm)
+      this.take = 10
+      this.skip = 0
+      await this.fetchData()
+    },
+    async modelFormExport() {
+      //console.log(this.modelForm)
+      await this.fetchDataExport()
+    }
   },
 
   data() {
     return {
-      isShow: { ...interfaceIsShowModal },
-
       take: 10,
       skip: 0,
       sort: [],
-      data: {},
-      dataUpdate: {},
-
       columns: [
         {
           field: 'actions',
@@ -96,28 +92,30 @@ export default {
           minWidth: '150px'
         },
         {
-          field: 'nameTh',
-          header: 'ชื่อไทย',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
           field: 'nameEn',
-          header: 'ชื่ออังกฤษ',
+          header: 'ชื่อ EN',
           sortable: true,
           minWidth: '150px'
         },
         {
-          field: 'description',
-          header: 'คำอธิบาย',
+          field: 'nameTh',
+          header: 'ชื่อ TH',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'prefix',
+          header: 'อักษรหน้าสินค้า',
           sortable: true,
           minWidth: '150px'
         }
-      ]
+      ],
+
+      data: []
     }
   },
+
   methods: {
-    // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
@@ -134,45 +132,21 @@ export default {
       this.fetchData()
     },
 
-    // -------- helper function -------- //
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
-    formatDate(date) {
-      return formatDate(date)
-    },
-
-    // --------- event
-    closeModal(event) {
-      this.isShow = { ...interfaceIsShowModal }
-
-      if (event === 'fetch') {
-        this.fetchData()
-      }
-    },
-    onUpdate(data) {
-      console.log(data)
-      this.dataUpdate = {}
-      this.dataUpdate = { ...data }
-      this.isShow.update = true
-    },
-
-    // --------- APIs ---------//
     async fetchData() {
-      const param = {
-        type: 'GEM',
-        text: this.form.text
-      }
-      const res = await this.masterStore.fetchListMaster({
-        take: this.take,
+      this.data = await this.masterStore.fetchListMaster({
         skip: this.skip,
+        take: this.take,
         sort: this.sort,
-        form: param
+        form: this.form
       })
+    },
 
-      if (res) {
-        this.data = { ...res }
-      }
+    async fetchDataExport() {
+      //console.log('fetchDataExport')
+      await this.receiptProductionStore.fetchConfirmHistoryExport({
+        sort: this.sort,
+        formValue: this.form
+      })
     }
   }
 }

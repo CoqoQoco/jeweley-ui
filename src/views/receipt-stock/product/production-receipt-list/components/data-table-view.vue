@@ -9,29 +9,13 @@
     <BaseDataTable
       :items="receiptProductionStore.dataListPlan.data"
       :totalRecords="receiptProductionStore.dataListPlan.total"
-      :expandable="true"
-      v-model:expandedRows="expandedRows"
       :columns="columns"
       :perPage="take"
       :scrollHeight="'calc(100vh - 340px)'"
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-      <!-- action -->
-      <!-- <template #actionTemplate="{ data }">
-        <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-green" @click="viewplan(data)">
-            <i class="bi bi-search"></i>
-          </button>
-        </div>
-      </template> -->
-
-      <!-- Image Column -->
-      <!-- <template #imageTemplate="{ data }">
-        <div class="image-container">
-          <imagePreview :imageName="data.mold" :type="mold" :width="30" :height="30" />
-        </div>
-      </template> -->
+      
       <template #actionTemplate="{ data }">
         <div class="vertical-center-container">
           <button class="btn btn-sm btn-main" @click="receipt(data)" title="รับสินค้า">
@@ -56,13 +40,6 @@
         </div>
       </template>
 
-      <!-- Request Date Column -->
-      <!-- <template #receiptDateTemplate="{ data }">
-        <div class="notification">
-          <span>{{ formatDate(data.receiptDate) }}</span>
-        </div>
-      </template> -->
-
       <!-- Custom Expansion Template -->
       <template #expansion="slotProps">
         <div class="p-1">
@@ -70,27 +47,17 @@
         </div>
       </template>
 
-      <!-- Custom Footer/Paginator Buttons -->
-      <!-- <template #paginator-buttons>
-       
-      </template> -->
     </BaseDataTable>
   </div>
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
-//import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-//const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
-
-//import { mapState, mapActions } from 'pinia'
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-//import swAlert from '@/services/alert/sweetAlerts.js'
 
-import dataExpand from './DataExpand.vue'
+import dataExpand from './data-expand-view.vue'
 
 export default {
   name: 'ProductionPlanList',
@@ -98,9 +65,6 @@ export default {
   components: {
     BaseDataTable,
     dataExpand
-    //imagePreview
-    //TransferJob,
-    //TransferProduct
   },
 
   props: {
@@ -113,20 +77,12 @@ export default {
       type: Object,
       default: () => ({})
     },
-    formValueExport: {
-      type: Object,
-      default: () => ({})
-    },
-    masterPlanStatus: {
-      type: Array,
-      default: () => [],
-      required: true
-    }
+   
+   
   },
 
   data() {
     return {
-      mold: 'MOLD',
       take: 10,
       skip: 0,
       sort: [],
@@ -210,20 +166,18 @@ export default {
     form() {
       return this.modelForm || {}
     },
-    planStatus() {
-      return this.masterPlanStatus
-    }
+    
   },
 
   watch: {
     async modelForm() {
-      console.log(this.modelForm)
+      //console.log(this.modelForm)
       this.take = 10
       this.skip = 0
       await this.fetchData()
     },
     async modelFormExport() {
-      console.log(this.modelForm)
+      //console.log(this.modelForm)
       await this.fetchDataExport()
     }
   },
