@@ -9,9 +9,9 @@
           </span>
           <h2>ข้อมูลบัญชี</h2>
         </div>
-        <div class="status-badge" :class="getStatusSeverity(data)">
-          <i :class="getStatusIcon(data)"></i>
-          {{ getStatusName(data) }}
+        <div class="status-badge" :class="getStatusSeverity(user)">
+          <i :class="getStatusIcon(user)"></i>
+          {{ getStatusName(user) }}
         </div>
       </div>
 
@@ -20,10 +20,9 @@
         <div class="profile-header">
           <div class="avatar-container">
             <div class="avatar">
-              <!-- แสดงรูปภาพโปรไฟล์ถ้ามี หรือไอคอนถ้าไม่มี -->
               <img
-                v-if="profileImage || data.profileImage"
-                :src="profileImage || data.profileImage"
+                v-if="profileImage"
+                :src="profileImage"
                 alt="Profile"
                 class="avatar-image"
                 @error="handleImageError"
@@ -46,7 +45,7 @@
               <div
                 class="option"
                 @click="removeProfileImage"
-                v-if="profileImage || data.profileImage"
+                v-if="profileImage || user.profileImage"
               >
                 <i class="bi bi-trash"></i>
                 <span>ลบรูปภาพ</span>
@@ -69,8 +68,8 @@
 
           <!-- info -->
           <div class="user-info">
-            <h3 class="fullname">{{ data.firstName }} {{ data.lastName }}</h3>
-            <span class="username">@{{ data.username }}</span>
+            <h3 class="fullname">{{ user.firstName }} {{ user.lastName }}</h3>
+            <span class="username">@{{ user.username }}</span>
           </div>
         </div>
 
@@ -78,12 +77,12 @@
         <div class="details-grid mt-2">
           <div class="detail-item">
             <div class="detail-label"><i class="bi bi-person"></i> ชื่อ</div>
-            <div class="detail-value">{{ data.firstName }}</div>
+            <div class="detail-value">{{ user.firstName }}</div>
           </div>
 
           <div class="detail-item">
             <div class="detail-label"><i class="bi bi-person-vcard"></i> นามสกุล</div>
-            <div class="detail-value">{{ data.lastName }}</div>
+            <div class="detail-value">{{ user.lastName }}</div>
           </div>
         </div>
       </div>
@@ -96,7 +95,7 @@
             วันที่ลงทะเบียน
           </div>
           <div class="date-value">
-            {{ formatDateTime(data.createdDate) }}
+            {{ formatDateTime(user.createdDate) }}
           </div>
         </div>
 
@@ -106,7 +105,7 @@
             วันที่เข้าสู่ระบบล่าสุด
           </div>
           <div class="date-value">
-            {{ formatDateTime(data.lastLogin) }}
+            {{ formatDateTime(user.lastLogin) }}
           </div>
         </div>
       </div>
@@ -118,8 +117,8 @@
           สิทธิ์การใช้งาน
         </h3>
         <BaseDataTable
-          :items="roles"
-          :totalRecords="roles.length"
+          :items="masterRoles"
+          :totalRecords="masterRoles.length"
           :columns="columns"
           :paginator="false"
           class="custom-data-table"
@@ -128,15 +127,25 @@
       </div>
 
       <!-- Action Buttons สำหรับบันทึกรูปภาพ -->
-      <div class="action-buttons" v-if="profileImageChanged">
-        <button class="btn btn-sm btn-main" @click="saveProfileImage">
+      <div class="custom-submit-container mt-2">
+        <button
+          :class="[`btn btn-sm`, !isReadyUpdateProfile ? 'btn-secondary' : 'btn-green']"
+          @click="onUpdateProfile"
+          :disabled="!isReadyUpdateProfile"
+        >
           <span class="bi bi-check-circle mr-2"></span>
           <span>บันทึก</span>
         </button>
+        <button
+          :class="[`btn btn-sm`, !isReadyUpdateProfile ? 'btn-secondary' : 'btn-green']"
+          @click="onCancel"
+          :disabled="!isReadyUpdateProfile"
+        >
+          <span class="bi bi-x-circle mr-2"></span>
+          <span>ยกเลิก</span>
+        </button>
       </div>
     </div>
-
-    <!-- Modal สำหรับการตัดรูปภาพ (ถ้าต้องการเพิ่มในอนาคต) -->
   </div>
 </template>
 
@@ -175,15 +184,19 @@ export default {
 
   computed: {
     shouldShowRegister() {
-      return !this.data.isNew || !this.data.isActive
+      return !this.user.isNew || !this.user.isActive
+    },
+    user() {
+      const data = JSON.parse(localStorage.getItem('user-dk'))
+      return data
     }
   },
 
   data() {
     return {
-      data: {},
       roles: [],
       masterRoles: [],
+
       columns: [
         {
           field: 'name',
@@ -197,41 +210,45 @@ export default {
           sortable: false
         }
       ],
+
       // ข้อมูลเพิ่มเติมสำหรับการจัดการรูปภาพโปรไฟล์
+      compressedImageFile: null,
       profileImage: null,
       originalProfileImage: null,
-      profileImageChanged: false,
       showAvatarOptions: false,
+
+      isReadyUpdateProfile: false,
       isUploading: false
     }
   },
+
   methods: {
-    // ---- APIs
     async fetchData() {
-      const res = await this.userStore.fetchGetAccount({
-        id: this.userAuth.user.id
-      })
-
-      if (res) {
-        this.data = { ...res }
-        this.originalProfileImage = res.profileImage || null
-
-        // init roles
-        if (res.roles && res.roles.length > 0) {
-          this.roles = res.roles.map((item) => {
-            return {
-              id: item.id,
-              name: item.name,
-              description: item.description
-            }
-          })
-        }
-
-        // init masterRoles
-        if (res.masterRoles && res.masterRoles.length > 0) {
-          this.masterRoles = [...res.masterRoles]
-        }
+      await this.userStore.fetchGetUser()
+    },
+    mapUser() {
+      // init roles
+      if (this.user.roles && this.user.roles.length > 0) {
+        this.roles = this.user.roles.map((item) => {
+          return {
+            id: item.id,
+            name: item.name,
+            description: item.description
+          }
+        })
       }
+
+      // init masterRoles
+      if (this.user.masterRoles && this.user.masterRoles.length > 0) {
+        this.masterRoles = [...this.user.masterRoles]
+      }
+
+      if (this.user.image) {
+        this.originalProfileImage = `data:image/png;base64,${this.user.image}`
+        this.profileImage = this.originalProfileImage
+      }
+
+      console.log('User:', this.originalProfileImage)
     },
 
     // ---handle Page---
@@ -284,82 +301,98 @@ export default {
       this.$refs.fileInput.click()
     },
 
-    // จัดการเมื่อมีการอัปโหลดไฟล์
     async handleFileUpload(event) {
       const file = event.target.files[0]
       if (!file) return
 
-      const compressedFile = await compressOptimalImage(file)
+      try {
+        // บีบอัดรูปภาพ
+        const compressedFile = await compressOptimalImage(file)
+        console.log('Compressed file:', compressedFile)
+        console.log('File size:', file.size, '=>', compressedFile.size)
 
-      // สร้าง URL สำหรับแสดงรูปภาพ
-      const reader = new FileReader()
-      reader.onload = () => {
-        this.profileImage = compressedFile
-        this.profileImageChanged = true
+        // เก็บไฟล์ที่บีบอัดแล้วไว้ใช้ในตอนส่ง
+        this.compressedImageFile = compressedFile
+
+        // อ่านเป็น Data URL เพื่อแสดงผลบนหน้าเว็บ
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.profileImage = e.target.result
+          this.profileImageChanged = true
+          this.isReadyUpdateProfile = true
+        }
+        reader.readAsDataURL(compressedFile)
+
+        // รีเซ็ต input
+        this.$refs.fileInput.value = ''
+      } catch (error) {
+        console.error('Error processing image:', error)
+        alert('เกิดข้อผิดพลาดในการประมวลผลรูปภาพ')
       }
-      reader.readAsDataURL(file)
+    },
 
-      // รีเซ็ต input เพื่อให้สามารถอัปโหลดไฟล์เดิมซ้ำได้
-      this.$refs.fileInput.value = ''
+    async onUpdateProfile() {
+      let params = new FormData()
+      params.append('Id', this.userAuth.user.id)
+
+      if (this.compressedImageFile) {
+        params.append('imageAction', 'update')
+        params.append('Image', this.compressedImageFile)
+      }
+
+      // //else if (!this.profileImage) {
+      //   // กรณีลบรูปภาพ
+      //   params.append('image', null)
+      //   params.append('imageAction', 'update')
+      // }
+
+      const res = await this.userStore.fetchUpdateAccount({
+        formValue: params
+      })
+
+      if (res) {
+        await this.fetchData()
+        this.mapUser()
+        this.onCancel()
+      }
     },
 
     // จัดการเมื่อรูปภาพโหลดไม่สำเร็จ
     handleImageError() {
       this.profileImage = null
-      this.data.profileImage = null
+      this.user.profileImage = null
     },
 
     // ลบรูปภาพโปรไฟล์
     removeProfileImage() {
       this.profileImage = null
-      this.profileImageChanged = true
       this.showAvatarOptions = false
     },
 
-    // บันทึกการเปลี่ยนแปลงรูปภาพ
-    async saveProfileImage() {
-      try {
-        this.isUploading = true
-
-        // ส่งข้อมูลไปยัง API (ปรับใช้ตามโครงสร้าง API ของคุณ)
-        await this.userStore.updateProfileImage({
-          id: this.userAuth.user.id,
-          profileImage: this.profileImage
-        })
-
-        // อัปเดตข้อมูลผู้ใช้
-        this.data.profileImage = this.profileImage
-        this.originalProfileImage = this.profileImage
-        this.profileImageChanged = false
-        this.isUploading = false
-
-        // แสดงข้อความสำเร็จ (ใช้ library ที่คุณใช้งาน)
-        // เช่น this.$message.success('อัปเดตรูปภาพเรียบร้อยแล้ว')
-        alert('บันทึกรูปภาพเรียบร้อยแล้ว')
-      } catch (error) {
-        console.error('Error updating profile image:', error)
-        // แสดงข้อความผิดพลาด
-        alert('เกิดข้อผิดพลาดในการบันทึกรูปภาพ')
-        this.isUploading = false
-      }
-    },
-
-    // ยกเลิกการเปลี่ยนแปลงรูปภาพ
-    cancelProfileImageChange() {
+    onCancel() {
       this.profileImage = this.originalProfileImage
-      this.profileImageChanged = false
+      this.isReadyUpdateProfile = false
     }
   },
 
-  created() {
-    this.$nextTick(() => {
-      this.fetchData(this.$route.params.id)
+  async created() {
+    this.$nextTick(async () => {
+      const userData = JSON.parse(localStorage.getItem('user-dk'))
+      if (userData) {
+        this.mapUser()
+      } else {
+        await this.fetchData().then(() => {
+          this.mapUser()
+        })
+      }
     })
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+
 .app-container {
   padding: 20px;
   display: flex;
@@ -571,42 +604,41 @@ export default {
       }
     }
   }
+}
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
 
-  .details-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 10px;
+  .detail-item {
+    background-color: var(--base-color);
+    border-radius: 8px;
+    padding: 16px;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
 
-    .detail-item {
-      background-color: var(--base-color);
-      border-radius: 8px;
-      padding: 16px;
-      transition:
-        transform 0.2s,
-        box-shadow 0.2s;
+    &:hover {
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
 
-      &:hover {
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    .detail-label {
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      i {
+        color: var(--base-font-color);
       }
+    }
 
-      .detail-label {
-        color: #6c757d;
-        font-size: 14px;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        i {
-          color: var(--base-font-color);
-        }
-      }
-
-      .detail-value {
-        font-size: 16px;
-        font-weight: 500;
-        color: #212529;
-      }
+    .detail-value {
+      font-size: 16px;
+      font-weight: 500;
+      color: #212529;
     }
   }
 }
@@ -647,6 +679,13 @@ export default {
 .roles-section {
   padding: 24px;
 
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: #f7f7f7;
+  overflow: auto;
+
   .section-title {
     font-size: 18px;
     margin-bottom: 16px;
@@ -661,45 +700,25 @@ export default {
   }
 }
 
-.action-buttons {
+.custom-submit-container {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   padding: 20px 24px;
   background-color: #f8f9fa;
+}
 
-  .btn-action {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &.btn-save {
-      background-color: var(--base-font-color);
-      color: white;
-
-      &:hover {
-        background-color: darken(#28a745, 5%);
-      }
-    }
-
-    &.btn-cancel {
-      background-color: #f8f9fa;
-      color: #dc3545;
-      border: 1px solid #dc3545;
-
-      &:hover {
-        background-color: #dc3545;
-        color: white;
-      }
-    }
-  }
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .custom-data-table {

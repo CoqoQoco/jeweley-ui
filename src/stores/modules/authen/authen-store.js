@@ -139,6 +139,7 @@ export const useAuthStore = defineStore('auth', {
         // Get user profile data
         const userProfile = await api.jewelry.get('User/Get')
 
+
         // Get permissions and menus in parallel
         // const [permissions, userMenus] = await Promise.all([
         //   api.jewelry.get('auth/permissions'),

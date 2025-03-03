@@ -160,11 +160,7 @@
   background-color: var(--base-font-color);
   border-radius: 5px 5px 0px 0px;
 }
-// .desc-container{
-//     display: flex;
-//     flex-direction: column;
-//     overflow: auto;
-// }
+
 .desc-text {
   font-size: 20px;
   font-weight: 700;
@@ -202,6 +198,7 @@
   background-color: #afaeae;
 }
 
+// ----- status tag -----
 .box-status-show {
   display: flex;
   justify-content: center;

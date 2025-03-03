@@ -32,11 +32,14 @@
       <div class="main-right-container">
         <div class="user-profile">
           <div class="avatar">
-            <i class="bi bi-person-circle"></i>
+            <div v-if="userImage" class="avatar-image">
+              <img :src="`data:image/png;base64,${userImage}`" alt="User Avatar" />
+            </div>
+            <i v-else class="bi bi-person-circle"></i>
           </div>
           <div class="user-profile-role">
             <span class="user-name">{{ userName || 'ผู้ใช้งาน' }}</span>
-            <span>{{ userRole }}</span>
+            <span class="user-role">{{ userRole }}</span>
           </div>
         </div>
       </div>
@@ -79,6 +82,10 @@ export default {
   computed: {
     userName() {
       return `${this.authStore?.user.firstName} ${this.authStore?.user.lastName}`
+    },
+
+    userImage() {
+      return this.authStore?.user.image
     },
 
     userRole() {
@@ -260,6 +267,11 @@ export default {
 
   .user-name {
     font-size: 0.9rem;
+    color: white;
+  }
+  .user-role {
+    font-size: 0.7rem;
+    color: white;
   }
 
   .avatar {
@@ -271,9 +283,23 @@ export default {
     align-items: center;
     justify-content: center;
     color: white;
+    overflow: hidden;
 
     i {
       font-size: 1.2rem;
+    }
+
+    .avatar-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      //border: 1px solid blue;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
   }
 }

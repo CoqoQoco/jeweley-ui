@@ -43,6 +43,10 @@ button {
 button.btn-main {
   background-color: $base-font-color;
   color: white;
+
+  &:hover {
+    background-color: darken(#921313, 5%);
+  }
 }
 button.btn-sub-main {
   background-color: $base-font-sub-color;
@@ -51,10 +55,18 @@ button.btn-sub-main {
 button.btn-green {
   background-color: $base-green;
   color: white;
+
+  &:hover {
+    background-color: darken(#038387, 5%);
+  }
 }
 button.btn-red {
   background-color: $base-red;
   color: white;
+
+  &:hover {
+    background-color: darken(#ff4d4d, 5%);
+  }
 }
 
 button.btn-main:hover {
@@ -84,4 +96,3 @@ textarea {
 .text-main {
   color: $base-font-color;
 }
-
