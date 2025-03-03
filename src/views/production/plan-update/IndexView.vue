@@ -22,6 +22,7 @@
       </pageTitle>
       <TabMenu :model="tabItems" v-model:activeIndex="tabCctive" />
     </div>
+
     <!-- header -->
     <div v-if="tabCctive === 0">
       <keep-alive>
@@ -313,7 +314,7 @@ import api from '@/axios/axios-helper.js'
 //import FormHeader from './components/form-header/FormHeaderView.vue'
 //import FormHeaderUpdate from './components/form-header/FormHeaderUpdate.vue'
 import FormMaterial from './components/view/PlanMaterialView.vue'
-import FormMaterialAdd from './components/form-material/FormMaterialAdd.vue'
+import FormMaterialAdd from './components/add/plan-material-add.vue'
 import FormStatus from './components/form-status/FormStatusView.vue'
 import FormStatusAdd from './components/form-status/FormStatusAdd.vue'
 

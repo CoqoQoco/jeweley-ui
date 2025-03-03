@@ -25,6 +25,12 @@ html {
     margin: 0;
   }
 }
+
+#modal-container {
+  position: relative;
+  z-index: 1000;
+}
+
 .app-container {
   padding: 10px 10px 10px 10px;
 }

@@ -6,6 +6,7 @@
       modal
       :style="{ width: dialogWidth }"
       header=""
+      @keyup.enter="search"
     >
       <template #header>
         <slot name="header">
@@ -69,7 +70,18 @@ export default {
     search() {
       //console.log('search')
       this.$emit('search')
+    },
+    handleKeyup(event) {
+      if (this.dialogShow && event.key === 'Enter') {
+        this.search()
+      }
     }
+  },
+  mounted() {
+    window.addEventListener('keyup', this.handleKeyup)
+  },
+  beforeUnmount() {
+    window.removeEventListener('keyup', this.handleKeyup)
   }
 }
 </script>

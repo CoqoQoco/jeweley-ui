@@ -6,180 +6,182 @@
           <span>{{ `เเก้ไขแผนงานผลิต ใบจ่าย-รับคืนงาน เลขที่: ${form.wo}-${form.woNumber}` }}</span>
         </div>
         <form @submit.prevent="onSubmit">
-          <div class="form-col-container">
-            <!-- mold -->
-            <div>
-              <span class="title-text">เเม่พิมพ์</span>
-              <AutoComplete
-                v-model="form.mold"
-                :suggestions="modelMold"
-                @complete="onSearchMold"
-                placeholder="กรอกรหัสเเม่พิมพ์ ...."
-                :class="val.isValMold === true ? `p-invalid` : ``"
-                forceSelection
-              />
-            </div>
-
-            <div></div>
-            <div></div>
-          </div>
-          <div class="form-col-container mt-3">
-            <!-- send date -->
-            <div>
-              <span class="title-text">วันส่งงานลูกค้า</span>
-              <Calendar
-                class="w-100"
-                dateFormat="dd/mm/yy"
-                v-model="form.requestDate"
-                :class="val.isValRequestDate === true ? `p-invalid` : ``"
-                showIcon
-              />
-            </div>
-            <!-- customer number -->
-            <div>
-              <span class="title-text">รหัสลุกค้า</span>
-              <!-- <input type="text" class="form-control" v-model="form.customerNumber" required /> -->
-              <AutoComplete
-                v-model="form.customerNumber"
-                :suggestions="modelCustomer"
-                @complete="onSearchCustomer"
-                placeholder="กรอกรหัสลูกค้า...."
-                :class="val.isValCustomerNumber === true ? `p-invalid` : ``"
-                forceSelection
-              />
-            </div>
-
-            <!-- customer type -->
-            <div>
-              <span class="title-text">ประเภทลูกค้า</span>
-              <Dropdown
-                v-model="form.customerType"
-                :options="modelMasterCustomerType"
-                optionLabel="description"
-                class="md:w-14rem"
-                :class="val.isValCustomerType === true ? `p-invalid` : ``"
-                :showClear="form.customerType ? true : false"
-              />
-            </div>
-          </div>
-
-          <div class="line-main mt-4"></div>
-
-          <div class="form-col-container mt-3">
-            <!-- product name -->
-            <div>
-              <span class="title-text">ชื่อสินค้า</span>
-              <input type="text" class="form-control" v-model="form.productName" required />
-            </div>
-
-            <!-- product number -->
-            <div>
-              <span class="title-text">รหัสสินค้า</span>
-              <input type="text" class="form-control" v-model="form.productNumber" required />
-            </div>
-
-            <!-- product type -->
-            <div>
-              <span class="title-text">ประเภทสินค้า</span>
-              <Dropdown
-                v-model="form.productType"
-                :options="modelMasterProductType"
-                optionLabel="description"
-                class="md:w-14rem"
-                :class="val.isValProductType === true ? `p-invalid` : ``"
-                :showClear="form.productType ? true : false"
-              />
-            </div>
-          </div>
-          <div class="form-col-container filter-container-highlight mt-2">
-            <div class="form-col-sm-container pl-2">
-              <!-- qty -->
+          <div class="p-2">
+            <div class="form-col-container">
+              <!-- mold -->
               <div>
-                <span class="title-text-white">จำนวนสินค้า</span>
-                <input
-                  type="number"
-                  min="1"
-                  class="form-control"
-                  style="background-color: #dad4b5"
-                  :style="form.productQty ? 'background-color: #b5dad4' : ''"
-                  v-model="form.productQty"
-                  required
+                <span class="title-text">เเม่พิมพ์</span>
+                <AutoComplete
+                  v-model="form.mold"
+                  :suggestions="modelMold"
+                  @complete="onSearchMold"
+                  placeholder="กรอกรหัสเเม่พิมพ์ ...."
+                  :class="val.isValMold === true ? `p-invalid` : ``"
+                  forceSelection
                 />
               </div>
 
-              <!-- unit -->
+              <div></div>
+              <div></div>
+            </div>
+            <div class="form-col-container mt-3">
+              <!-- send date -->
               <div>
-                <span class="title-text-white">หน่วย</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  style="background-color: #dad4b5"
-                  :style="form.productQtyUnit ? 'background-color: #b5dad4' : ''"
-                  v-model="form.productQtyUnit"
-                  required
+                <span class="title-text">วันส่งงานลูกค้า</span>
+                <Calendar
+                  class="w-100"
+                  dateFormat="dd/mm/yy"
+                  v-model="form.requestDate"
+                  :class="val.isValRequestDate === true ? `p-invalid` : ``"
+                  showIcon
+                />
+              </div>
+              <!-- customer number -->
+              <div>
+                <span class="title-text">รหัสลุกค้า</span>
+                <!-- <input type="text" class="form-control" v-model="form.customerNumber" required /> -->
+                <AutoComplete
+                  v-model="form.customerNumber"
+                  :suggestions="modelCustomer"
+                  @complete="onSearchCustomer"
+                  placeholder="กรอกรหัสลูกค้า...."
+                  :class="val.isValCustomerNumber === true ? `p-invalid` : ``"
+                  forceSelection
+                />
+              </div>
+
+              <!-- customer type -->
+              <div>
+                <span class="title-text">ประเภทลูกค้า</span>
+                <Dropdown
+                  v-model="form.customerType"
+                  :options="modelMasterCustomerType"
+                  optionLabel="description"
+                  class="md:w-14rem"
+                  :class="val.isValCustomerType === true ? `p-invalid` : ``"
+                  :showClear="form.customerType ? true : false"
                 />
               </div>
             </div>
 
-            <div></div>
-            <div></div>
-          </div>
-          <div class="form-col-container mt-2">
-            <!-- product detail -->
-            <div>
-              <span class="title-text">รายละเอียดสินค้า</span>
-              <textarea
-                class="form-control"
-                v-model="form.productDetail"
-                style="height: 50px"
-                required
-              >
-              </textarea>
+            <div class="line-main mt-4"></div>
+
+            <div class="form-col-container mt-3">
+              <!-- product name -->
+              <div>
+                <span class="title-text">ชื่อสินค้า</span>
+                <input type="text" class="form-control" v-model="form.productName" required />
+              </div>
+
+              <!-- product number -->
+              <div>
+                <span class="title-text">รหัสสินค้า</span>
+                <input type="text" class="form-control" v-model="form.productNumber" required />
+              </div>
+
+              <!-- product type -->
+              <div>
+                <span class="title-text">ประเภทสินค้า</span>
+                <Dropdown
+                  v-model="form.productType"
+                  :options="modelMasterProductType"
+                  optionLabel="description"
+                  class="md:w-14rem"
+                  :class="val.isValProductType === true ? `p-invalid` : ``"
+                  :showClear="form.productType ? true : false"
+                />
+              </div>
             </div>
-          </div>
+            <div class="form-col-container filter-container-highlight mt-2 p-2">
+              <div class="form-col-sm-container pl-2">
+                <!-- qty -->
+                <div>
+                  <span class="title-text-white">จำนวนสินค้า</span>
+                  <input
+                    type="number"
+                    min="1"
+                    class="form-control"
+                    style="background-color: #dad4b5"
+                    :style="form.productQty ? 'background-color: #b5dad4' : ''"
+                    v-model="form.productQty"
+                    required
+                  />
+                </div>
 
-          <div class="form-col-container mt-2">
-            <div>
-              <span class="title-text">สีของทองทอง/เงิน</span>
-              <Dropdown
-                v-model="form.gold"
-                :options="modelMastergold"
-                optionLabel="description"
-                class="w-full md:w-14rem"
-                placeholder="เลือกทอง"
-              >
-              </Dropdown>
+                <!-- unit -->
+                <div>
+                  <span class="title-text-white">หน่วย</span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    style="background-color: #dad4b5"
+                    :style="form.productQtyUnit ? 'background-color: #b5dad4' : ''"
+                    v-model="form.productQtyUnit"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div></div>
+              <div></div>
             </div>
-            <div>
-              <span class="title-text">ประเภททอง/เงิน</span>
-              <Dropdown
-                v-model="form.goldSize"
-                :options="modelMasterGoldSize"
-                optionLabel="description"
-                placeholder="เลือกเปอร์เซ็น"
-                class="w-full md:w-14rem"
-              >
-              </Dropdown>
+            <div class="form-col-container mt-2">
+              <!-- product detail -->
+              <div>
+                <span class="title-text">รายละเอียดสินค้า</span>
+                <textarea
+                  class="form-control"
+                  v-model="form.productDetail"
+                  style="height: 50px"
+                  required
+                >
+                </textarea>
+              </div>
             </div>
-            <div></div>
-          </div>
 
-          <div class="line-main mt-4"></div>
-
-          <div class="form-col-container mt-3">
-            <div>
-              <span class="title-text">หมายเหตุ</span>
-              <textarea class="form-control" v-model="form.remark" style="height: 50px"> </textarea>
+            <div class="form-col-container mt-2">
+              <div>
+                <span class="title-text">สีของทองทอง/เงิน</span>
+                <Dropdown
+                  v-model="form.gold"
+                  :options="modelMastergold"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                  placeholder="เลือกทอง"
+                >
+                </Dropdown>
+              </div>
+              <div>
+                <span class="title-text">ประเภททอง/เงิน</span>
+                <Dropdown
+                  v-model="form.goldSize"
+                  :options="modelMasterGoldSize"
+                  optionLabel="description"
+                  placeholder="เลือกเปอร์เซ็น"
+                  class="w-full md:w-14rem"
+                >
+                </Dropdown>
+              </div>
+              <div></div>
             </div>
-          </div>
 
-          <div class="line-main mt-4"></div>
+            <div class="line-main mt-4"></div>
 
-          <div class="d-flex justify-content-end mt-1">
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
-              ยกเลิก
-            </button>
-            <button class="btn btn-sm btn-main" type="submit">ยืนยัน</button>
+            <div class="form-col-container mt-3">
+              <div>
+                <span class="title-text">หมายเหตุ</span>
+                <textarea class="form-control" v-model="form.remark" style="height: 50px">
+                </textarea>
+              </div>
+            </div>
+
+            <div class="line-main mt-4"></div>
+
+            <div class="d-flex justify-content-end mt-1">
+              <button class="btn btn-sm btn-green" type="submit">
+                <span class="bi bi-calendar-check"></span>
+              </button>
+            </div>
           </div>
         </form>
       </template>

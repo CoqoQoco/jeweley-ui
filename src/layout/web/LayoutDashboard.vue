@@ -5,6 +5,8 @@
       <mainBar></mainBar>
     </div>
 
+    <div id="modal-container"></div>
+
     <!-- Content Area (includes sidebar and main content) -->
     <div class="content-container">
       <div id="main" class="main-content">

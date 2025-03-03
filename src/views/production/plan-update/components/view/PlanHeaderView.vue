@@ -360,7 +360,7 @@ export default {
   gap: 10px;
   padding: 0px;
   grid-template-columns: 5fr 5fr;
-  height: calc(100vh - 170px);
+  height: calc(100vh - 220px);
 }
 .form-custom-one-col-container {
   display: grid;
@@ -374,7 +374,7 @@ export default {
   align-items: center;
   overflow: hidden;
   position: relative;
-  height: calc(100vh - 250px);
+  height: calc(100vh - 300px);
 }
 .image-preview {
   width: auto;

@@ -3,7 +3,8 @@
     <div class="filter-container-highlight">
       <div class="d-flex justify-content-between">
         <div class="title-text-white vertical-center-container">
-          <span>แผนงานผลิตส่วนประกอบทอง</span>
+          <span class="bi bi-list-check mr-2"></span>
+          <span>แผนผลิตผสมทอง</span>
         </div>
         <div>
           <button
@@ -127,6 +128,7 @@
     <div class="filter-container-highlight mt-3">
       <div class="d-flex justify-content-between">
         <div class="title-text-white vertical-center-container">
+          <span class="bi bi-list-check mr-2"></span>
           <span>รายการเบิกผสมทอง</span>
         </div>
       </div>
