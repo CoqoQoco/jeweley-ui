@@ -38,14 +38,10 @@
 
             <!-- ตัวเลือกถ่ายภาพหรืออัปโหลด (แสดงเมื่อคลิกที่รูป) -->
             <div class="avatar-options" v-if="showAvatarOptions">
-              <div class="option" @click="triggerFileInput">
-                <i class="bi bi-upload"></i>
-                <span>อัปโหลดรูป</span>
-              </div>
               <div
                 class="option"
                 @click="removeProfileImage"
-                v-if="profileImage || user.profileImage"
+                v-if="profileImage || user.image"
               >
                 <i class="bi bi-trash"></i>
                 <span>ลบรูปภาพ</span>
@@ -248,7 +244,7 @@ export default {
         this.profileImage = this.originalProfileImage
       }
 
-      console.log('User:', this.originalProfileImage)
+      //console.log('User:', this.originalProfileImage)
     },
 
     // ---handle Page---

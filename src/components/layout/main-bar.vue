@@ -51,7 +51,7 @@
       <div class="sidebar-header">
         <div class="sidebar-title">
           <i class="bi bi-grid-fill menu-icon"></i>
-          <span> เลือกงาน</span>
+          <span>เลือกงาน</span>
         </div>
         <button class="close-sidebar-btn" @click="closeSidebar">
           <i class="bi bi-x-lg"></i>
@@ -123,7 +123,13 @@ export default {
       //console.log('Route Changed to:', to)
       if (to.name === 'dashboard') {
         this.setActive('home')
+      } else if (to.name === 'user-account') {
+        this.setActive('profile')
+      } else {
+        this.setActive('menu')
       }
+
+      this.closeSidebar()
     }
   },
 
@@ -149,7 +155,7 @@ export default {
 
     onOpenSideBar() {
       this.isSideBarVisible = true
-      this.setActive('menu')
+      //this.setActive('menu')
       document.body.style.overflow = 'hidden' // ป้องกันการเลื่อนหน้าเว็บเมื่อ sidebar เปิด
     },
 
@@ -168,6 +174,14 @@ export default {
   },
 
   mounted() {
+    // ตรวจสอบ route ปัจจุบันและตั้งค่า activePage
+    if (this.$route.name === 'dashboard') {
+      this.setActive('home')
+    } else if (this.$route.name === 'user-account') {
+      this.setActive('profile')
+    } else {
+      this.setActive('menu')
+    }
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.addEventListener('keydown', this.handleKeyDown)
   },

@@ -30,7 +30,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'User Account',
-            th: 'ข้อมูลส่วนบุคคล'
+            th: 'ข้อมูลบุคคล'
           },
           minorShow: true
         }
