@@ -27,8 +27,10 @@ export default {
 
   // แบบที่ 4: ไล่สีแบบซ้อนกัน
 
-  background: linear-gradient(135deg, rgba(241, 188, 188, 0.95) 0%, rgba(167, 17, 32, 0.95) 100%),
-    linear-gradient(45deg, #921313 0%, #290407 100%);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(245, 13, 40, 0.95) 100%),
+    linear-gradient(45deg, #000000 0%, #e4d9db 100%);
+
+  // background: linear-gradient(to right, var(--base-font-color), var(--base-font-sub-color));
 
   // เพิ่ม animation (optional)
   animation: gradientAnimation 15s ease infinite;
