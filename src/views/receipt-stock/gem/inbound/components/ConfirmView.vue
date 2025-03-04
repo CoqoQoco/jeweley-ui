@@ -2,11 +2,11 @@
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="600px">
       <template v-slot:content>
-        <div class="title-text-lg mb-2">
+        <div class="title-text-lg-bg">
           <span class="mr-2"><i class="bi bi-house-add-fill"></i></span>
           <span>ยืนยันรับวัถุดิบ</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <!-- type && request date -->
           <div class="form-col-container">
             <div>

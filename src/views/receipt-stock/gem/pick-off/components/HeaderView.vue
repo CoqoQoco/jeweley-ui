@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-search">
     <pageTitle
       title="ใบยืมวัถุดิบ"
       description="ยืมวัถุดิบออกคลัง [งานคัดพลอย/ตรวจสอบ เป็นต้น] ระบุรหัส จำนวน และรายละเอียดอื่นๆ "

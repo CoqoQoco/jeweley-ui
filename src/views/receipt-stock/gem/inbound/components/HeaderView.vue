@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-search">
     <pageTitle
       title="ใบรับวัถุดิบ"
       description="รับวัถุดิบเข้าคลัง ระบุรหัส จำนวน และรายละเอียดอื่นๆ"
