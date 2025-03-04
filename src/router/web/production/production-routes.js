@@ -1,6 +1,6 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
-const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
-const PlanGoldOrder = () => import('@/views/production/plan-gold/IndexView.vue')
+const PlanOrder = () => import('@/views/production/plan-create/index-view.vue')
+const PlanGoldOrder = () => import('@/views/production/plan-gold/index-view.vue')
 const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/IndexView.vue')
 const PlanOrderTracking = () => import('@/views/production/plan-tracking/IndexView.vue')
 const PlanOrderTrackingStatus = () =>

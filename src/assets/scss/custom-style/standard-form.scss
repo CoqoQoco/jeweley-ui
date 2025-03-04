@@ -1,5 +1,7 @@
 @import '../variable.scss';
 
+// @import '@/assets/scss/custom-style/standard-form.scss';
+
 .filter-container {
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -10,6 +12,16 @@
   padding: 10px;
   //margin-top: 10px;
   overflow: auto;
+}
+.filter-container-main{
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: #f7f7f7;
+  //background-color: var(--base-color);
+  padding: 10px;
+  //margin-top: 10px;
 }
 .filter-container-bg {
   border: 1px solid #dddddd;
@@ -106,6 +118,11 @@
   display: grid;
   place-items: left;
   width: 100%;
+}
+
+.border-container {
+  border: 1px solid #dddddd;
+  border-radius: 0px 0px 10px 10px;
 }
 
 .form-col-container {
