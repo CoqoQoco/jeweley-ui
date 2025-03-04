@@ -5,7 +5,7 @@
         <div class="title-text-lg-header">
           <span>{{ `เบิกเเม่พิมพ์ - ${model.code}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
             <!-- main image -->
             <div class="mt-2">

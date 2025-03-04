@@ -20,11 +20,11 @@
           </div>
         </template>
       </pageTitle>
-      <TabMenu :model="tabItems" v-model:activeIndex="tabCctive" />
+      <TabMenu :model="tabItems" v-model:activeIndex="tabActive" />
     </div>
 
     <!-- header -->
-    <div v-if="tabCctive === 0">
+    <div v-if="tabActive === 0">
       <keep-alive>
         <planHeaderView
           :modelValue="data"
@@ -66,7 +66,7 @@
     </div>
 
     <!-- gold -->
-    <div v-if="tabCctive === 1">
+    <div v-if="tabActive === 1">
       <FormMaterial
         :modelValue="data"
         :modelMatValue="mat"
@@ -89,7 +89,7 @@
     </div>
 
     <!-- casting -->
-    <div v-if="tabCctive === 2">
+    <div v-if="tabActive === 2">
       <planCatingView
         :modelValue="data"
         :modelMatValue="mat"
@@ -98,6 +98,7 @@
         @onShowAddStatus="onShowAddStatus"
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
+        @transfer="onTransferJob"
       ></planCatingView>
       <planCastingAdd
         :isShow="add.casting"
@@ -120,7 +121,7 @@
     </div>
 
     <!-- scrubb -->
-    <div v-if="tabCctive === 3">
+    <div v-if="tabActive === 3">
       <planScrubb
         :modelValue="data"
         :modelMatValue="mat"
@@ -151,7 +152,7 @@
     </div>
 
     <!-- gem -->
-    <div v-if="tabCctive === 4">
+    <div v-if="tabActive === 4">
       <planGemView
         :modelValue="data"
         :modelMatValue="mat"
@@ -182,7 +183,7 @@
     </div>
 
     <!-- embed -->
-    <div v-if="tabCctive === 5">
+    <div v-if="tabActive === 5">
       <planEmbed
         :modelValue="data"
         :modelMatValue="mat"
@@ -204,10 +205,10 @@
     </div>
 
     <!-- cvd -->
-    <!-- <div v-if="tabCctive === 6"></div> -->
+    <!-- <div v-if="tabActive === 6"></div> -->
 
     <!-- plate -->
-    <div v-if="tabCctive === 6">
+    <div v-if="tabActive === 6">
       <planPlateView
         :modelValue="data"
         :modelMatValue="mat"
@@ -229,7 +230,7 @@
     </div>
 
     <!-- price -->
-    <div v-if="tabCctive === 7">
+    <div v-if="tabActive === 7">
       <planPriceView
         :modelValue="data"
         :modelMatValue="mat"
@@ -251,10 +252,10 @@
     </div>
 
     <!-- succes -->
-    <div v-if="tabCctive === 8"></div>
+    <div v-if="tabActive === 8"></div>
 
     <!-- melt -->
-    <div v-if="tabCctive === 9">
+    <div v-if="tabActive === 9">
       <planMeltedView
         :modelValue="data"
         :modelMatValue="mat"
@@ -276,7 +277,7 @@
     </div>
 
     <!-- old function -->
-    <div v-if="tabCctive === 10">
+    <div v-if="tabActive === 10">
       <FormStatus
         :modelValue="data"
         :modelMatValue="mat"
@@ -298,6 +299,14 @@
       >
       </FormStatusAdd>
     </div>
+
+    <transferJob
+      :isShow="update.transferJob"
+      :statusTransferValue="statusTransferValue"
+      :modelValue="jobTransfer"
+      :masterStatusValue="masterStatus"
+      @closeModal="onCloseFormStatusAdd"
+    ></transferJob>
   </div>
 </template>
 
@@ -346,6 +355,8 @@ import planEmbedUpdate from './components/update/PlanEmbedUpdateView.vue'
 import planPlateView from './components/view/PlanPlateView.vue'
 import PlanPlateUpdateView from './components/update/PlanPlateUpdateView.vue'
 
+import transferJob from './components/update/transfer-job.vue'
+
 const interfaceIsShowAdd = {
   casting: false,
   scrubb: false,
@@ -360,7 +371,9 @@ const interfaceIsShowUpdate = {
   scrubb: false,
   melted: false,
   gems: false,
-  price: false
+  price: false,
+
+  transferJob: false
 }
 
 export default {
@@ -399,7 +412,9 @@ export default {
     planEmbedUpdate,
 
     planPlateView,
-    PlanPlateUpdateView
+    PlanPlateUpdateView,
+
+    transferJob
   },
   data() {
     return {
@@ -410,6 +425,9 @@ export default {
       isShowFormStatusAdd: false,
       add: { ...interfaceIsShowAdd },
       update: { ...interfaceIsShowUpdate },
+
+      statusTransferValue: 0,
+      jobTransfer: {},
 
       // --- data --- //
       data: {},
@@ -425,7 +443,7 @@ export default {
       id: '',
 
       // --- tab --- //
-      tabCctive: 0,
+      tabActive: 0,
       tabItems: [
         { id: 0, label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
         { id: 1, label: 'ทอง', icon: 'bi bi-box-fill' },
@@ -470,10 +488,17 @@ export default {
     onShowFormStatusAdd() {
       this.isShowFormStatusAdd = true
     },
-    onCloseFormStatusAdd() {
+    onCloseFormStatusAdd(fetch) {
       this.isShowFormStatusAdd = false
       this.add = { ...interfaceIsShowAdd }
       this.update = { ...interfaceIsShowUpdate }
+
+      this.statusTransferValue = 0
+      this.jobTransfer = {}
+
+      if (fetch === 'fetch') {
+        this.fetchData(this.id)
+      }
     },
     fetchFormStatus() {
       this.isShowFormStatusAdd = false
@@ -530,6 +555,18 @@ export default {
       if (status === 'plate') {
         this.update.plate = true
       }
+    },
+
+    //trnasfer
+    onTransferJob(job, from) {
+      this.statusTransferValue = from
+      this.jobTransfer = { ...job }
+
+      console.log('onTransferJob; job', this.jobTransfer)
+      console.log('onTransferJob; form', this.statusTransferValue)
+
+      this.update.transferJob = true
+      //this.interfaceIsShowUpdate.transferJob = true
     },
 
     // --- APIs --- //

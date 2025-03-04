@@ -68,7 +68,7 @@
           title="โอนงาน"
           @click="onTrnsferJob"
         >
-          <span><i class="bi bi-box-arrow-down"></i></span>
+          <span><i class="bi bi-arrow-down-up"></i></span>
           <span class="ml-2">โอนงาน</span>
         </button>
         <button

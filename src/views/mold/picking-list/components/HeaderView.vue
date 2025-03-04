@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-searchBar">
     <pageTitle
       title="ติดตามงานเบิกเเม่พิมพ์"
       description=""

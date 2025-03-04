@@ -123,6 +123,7 @@ export default {
   right: 0;
   font-size: 20px;
   color: var(--base-sub-color);
+  z-index: 10000;
 }
 // Override Class
 // .k-animation-container {

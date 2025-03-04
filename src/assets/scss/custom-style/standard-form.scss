@@ -102,6 +102,11 @@
   place-items: right;
   width: 100%;
 }
+.left-container {
+  display: grid;
+  place-items: left;
+  width: 100%;
+}
 
 .form-col-container {
   display: grid;
@@ -192,6 +197,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+.flex-start {
+  display: flex;
+  justify-content: start;
 }
 
 .dis-input-container {

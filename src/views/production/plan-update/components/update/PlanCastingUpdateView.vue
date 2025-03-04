@@ -7,7 +7,7 @@
           <span class="bi bi-arrow-right ml-1"> [จ่ายเเต่ง]</span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
             <!-- date -->
             <div>
@@ -778,7 +778,7 @@ export default {
   },
   mounted() {
     this.user = JSON.parse(localStorage.getItem('user-dk'))
-    console.log('user', this.user)
+    //console.log('user', this.user)
   }
 }
 </script>

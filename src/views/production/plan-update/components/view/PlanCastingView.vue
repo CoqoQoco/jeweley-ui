@@ -12,6 +12,14 @@
         <!-- action -->
         <div>
           <button
+            :class="['btn btn-sm ml-2', checkBtn('transfer') ? 'btn-secondary' : 'btn-green']"
+            title="โอนงาน"
+            :disabled="checkBtn('transfer')"
+            @click="transfer()"
+          >
+            <span class="bi bi-arrow-down-up"></span>
+          </button>
+          <button
             :class="['btn btn-sm ml-2', checkBtn('close') ? 'btn-secondary' : 'btn-primary']"
             title="พิมพ์แบบ"
             :disabled="checkBtn('close')"
@@ -366,7 +374,7 @@ export default {
       return calculateWeightDifference(weightSend, weightReceived)
     },
     checkBtn(action) {
-      console.log('checkBtn', this.modelPlanStatus)
+      //console.log('checkBtn', this.modelPlanStatus)
       const disStatus = [100, 500]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
@@ -376,6 +384,8 @@ export default {
             return true
           case 'edit':
             return this.modelPlanStatus ? false : true
+          case 'transfer':
+            return !(this.modelPlanStatus.status === this.status)
           case 'delete':
             return true
           //return this.modelPlanStatus ? false : true
@@ -407,6 +417,10 @@ export default {
         null,
         null
       )
+    },
+    transfer() {
+      //console.log('transfer')
+      this.$emit('transfer', this.model, this.status)
     },
 
     // ----- APIs
