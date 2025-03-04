@@ -5,7 +5,6 @@
       :totalRecords="data.total"
       :columns="columns"
       :perPage="take"
-      :scrollHeight="'calc(100vh - 290px)'"
       @page="handlePageChange"
       @sort="handleSortChange"
     >
@@ -50,9 +49,9 @@
 //
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-import priceView from './PriceView.vue'
-import historyView from './HistoryView.vue'
-import updateView from './UpdateView.vue'
+import priceView from './price-view.vue'
+import historyView from './history-view.vue'
+import updateView from './update-view.vue'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'

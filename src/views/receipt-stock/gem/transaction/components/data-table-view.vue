@@ -1,189 +1,53 @@
 <template>
   <div>
-  
-    <DataTable
+    <BaseDataTable
+      :items="data.data"
       :totalRecords="data.total"
-      :value="data.data"
-      v-model:expandedRows="expnadData"
       dataKey="id"
-      ref="dt"
-      class="p-datatable-sm"
-      scrollable
-      scrollHeight="calc(100vh - 280px)"
-      resizableColumns
-      :paginator="true"
-      showGridlines
-      :lazy="true"
+      :columns="columns"
+      :perPage="take"
       @page="handlePageChange"
-      @sort="handlePageChangeSort"
-      :rows="take"
-      removableSort
-      sortMode="multiple"
-      :rowsPerPageOptions="[100, 200, 300]"
-      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
+      @sort="handleSortChange"
     >
-      <Column field="requestDate" header="วันทำรายการ" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          {{ formatDateTime(slotProps.data.requestDate) }}
-        </template>
-      </Column>
-      <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
-      <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
-      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column>
+      <template #typeTemplate="{ data: rowData }">
+        <div>
+          <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
+          <span>
+            {{ getTypeName(rowData.type) }}
+          </span>
+        </div>
+      </template>
 
-      <Column field="type" header="ประเภท" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-            <span>
-              {{ getTypeName(slotProps.data.type) }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="qty" header="จำนวน" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-            <span>
-              {{
-                slotProps.data.qty
-                  ? Number(slotProps.data.qty).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="qtyWeight" header="น้ำหนัก" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-            <span>
-              {{
-                slotProps.data.qtyWeight
-                  ? Number(slotProps.data.qtyWeight).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
+      <template #qtyTemplate="{ data: rowData }">
+        <div>
+          <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
+          <span>
+            {{
+              rowData.qty ? Number(rowData.qty).toFixed(3).toLocaleString() : '0.000'
+            }}
+          </span>
+        </div>
+      </template>
+    
 
-      <Column field="running" header="เลขที่รายการ" sortable style="min-width: 200px"> </Column>
-      <Column field="refRunning1" header="เลขที่อ้างอิง 1" sortable style="min-width: 200px"> </Column>
-      <Column field="refRunning2" header="เลขที่อ้างอิง 2" sortable style="min-width: 200px"> </Column>
-
-      <Column field="previousRemianQty" header="จำนวนก่อนใช้" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span>
-              {{
-                slotProps.data.previousRemianQty
-                  ? Number(slotProps.data.previousRemianQty).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="previousRemianQtyWeight" header="น้ำหนักก่อนใช้" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span>
-              {{
-                slotProps.data.previousRemianQtyWeight
-                  ? Number(slotProps.data.previousRemianQtyWeight).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="pointRemianQty" header="จำนวนคงเหลือ" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span>
-              {{
-                slotProps.data.pointRemianQty
-                  ? Number(slotProps.data.pointRemianQty).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      <Column field="pointRemianQtyWeight" header="น้ำหนักคงเหลือ" sortable style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span>
-              {{
-                slotProps.data.pointRemianQtyWeight
-                  ? Number(slotProps.data.pointRemianQtyWeight).toFixed(3).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-      
-
-      <!-- <Column field="woText" header="W.O." sortable style="min-width: 200px"> </Column>
-      <Column field="mold" header="เเม่พิมพ์" sortable style="min-width: 200px"> </Column> -->
-      <Column field="remark1" header="หมายเหตุ-1" sortable style="min-width: 200px"> </Column>
-      <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column>
-
-      <Column field="jobOrPo" header="Invoice/Ref No." style="min-width: 200px"> </Column>
-      <Column field="subpplierName" header="ร้านผลิต/ชื่อร้าน" style="min-width: 200px"> </Column>
-      <Column field="supplierCost" header="ราคาทุน" style="min-width: 200px">
-        <template #body="slotProps">
-          <div>
-            <span>
-              {{
-                slotProps.data.supplierCost
-                  ? Number(slotProps.data.supplierCost).toFixed(2).toLocaleString()
-                  : '0.000'
-              }}
-            </span>
-          </div>
-        </template>
-      </Column>
-
-      <!-- <Column field="code" header="รหัส" sortable style="min-width: 200px"> </Column>
-      <Column field="groupName" header="หมวดหมู่" sortable style="min-width: 200px"> </Column>
-      <Column field="size" header="ขนาด" sortable style="min-width: 200px"> </Column>
-      <Column field="shape" header="รูปร่าง" sortable style="min-width: 200px"> </Column>
-      <Column field="grade" header="เกรด" sortable style="min-width: 200px"> </Column> -->
-      <Column field="price" header="ราคาต่อน้ำหนัก" sortable style="min-width: 150px">
-        <template #body="slotProps">
-          {{
-            slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.00'
-          }}
-        </template>
-      </Column>
-      <Column field="priceQty" header="ราคาต่อจำนวน" sortable style="min-width: 150px">
-        <template #body="slotProps">
-          {{
-            slotProps.data.priceQty
-              ? Number(slotProps.data.priceQty).toFixed(3).toLocaleString()
-              : '0.00'
-          }}
-        </template>
-      </Column>
-      <Column field="unitCode" header="หน่วย" sortable style="min-width: 150px"> </Column>
-      <Column field="unit" header="รหัสหน่วย" sortable style="min-width: 150px"> </Column>
-    </DataTable>
+      <template #qtyWeightTemplate="{ data: rowData }">
+        <div>
+          <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
+          <span>
+            {{
+              rowData.qtyWeight
+                ? Number(rowData.qtyWeight).toFixed(3).toLocaleString()
+                : '0.000'
+            }}
+          </span>
+        </div>
+      </template>
+    </BaseDataTable>
   </div>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-
-
-
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
@@ -191,10 +55,9 @@ import api from '@/axios/axios-helper.js'
 
 export default {
   components: {
-  
-    DataTable,
-    Column
+    BaseDataTable
   },
+
   props: {
     modelForm: {
       type: Object,
@@ -213,6 +76,7 @@ export default {
       default: 0
     }
   },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -223,7 +87,7 @@ export default {
     },
     modelFormExport: {
       handler(val) {
-        console.log('watch modelFormExport', val)
+        //console.log('watch modelFormExport', val)
         this.export = { ...val }
         this.fetchDataExport()
       },
@@ -231,17 +95,19 @@ export default {
     },
     data: {
       handler(val) {
-        console.log('watch data', val)
+        //console.log('watch data', val)
         val.data && val.data.length > 0 ? this.$emit('export', true) : this.$emit('export', false)
       },
       deep: true
     }
   },
+
   computed: {
     masterType() {
       return this.modelMasterType
     }
   },
+
   data() {
     return {
       isLoading: false,
@@ -258,35 +124,181 @@ export default {
       dataExcel: {},
       expnadData: [],
       form: { ...this.modelForm },
-      export: null
+      export: null,
+
+      columns: [
+        {
+          field: 'requestDate',
+          header: 'วันทำรายการ',
+          sortable: true,
+          minWidth: '200px',
+          format: 'datetime'
+        },
+        {
+          field: 'name',
+          header: 'พลอย/เพชร',
+          minWidth: '200px'
+        },
+        {
+          field: 'woText',
+          header: 'W.O.',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'mold',
+          header: 'เเม่พิมพ์',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'type',
+          header: 'ประเภท',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'qty',
+          header: 'จำนวน',
+          sortable: true,
+          minWidth: '200px',
+          format: 'decimal3'
+        },
+        {
+          field: 'qtyWeight',
+          header: 'น้ำหนัก',
+          sortable: true,
+          minWidth: '200px',
+          format: 'decimal3'
+        },
+        {
+          field: 'running',
+          header: 'เลขที่รายการ',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'refRunning1',
+          header: 'เลขที่อ้างอิง 1',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'refRunning2',
+          header: 'เลขที่อ้างอิง 2',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'previousRemianQty',
+          header: 'จำนวนก่อนใช้',
+          sortable: true,
+          minWidth: '200px',
+          format: 'decimal3'
+        },
+        {
+          field: 'previousRemianQtyWeight',
+          header: 'น้ำหนักก่อนใช้',
+          sortable: true,
+          minWidth: '200px',
+          format: 'decimal3'
+        },
+        {
+          field: 'pointRemianQty',
+          header: 'จำนวนคงเหลือ',
+          sortable: true,
+          minWidth: '200px',
+          format: 'decimal3'
+        },
+        {
+          field: 'pointRemianQtyWeight',
+          header: 'น้ำหนักคงเหลือ',
+          sortable: true,
+          minWidth: '200px',
+          format: 'decimal3'
+        },
+        {
+          field: 'remark1',
+          header: 'หมายเหตุ-1',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'remark2',
+          header: 'หมายเหตุ-2',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'jobOrPo',
+          header: 'Invoice/Ref No.',
+          minWidth: '200px'
+        },
+        {
+          field: 'subpplierName',
+          header: 'ร้านผลิต/ชื่อร้าน',
+          minWidth: '200px'
+        },
+        {
+          field: 'supplierCost',
+          header: 'ราคาทุน',
+          minWidth: '200px',
+          format: 'decimal2'
+        },
+        {
+          field: 'price',
+          header: 'ราคาต่อน้ำหนัก',
+          sortable: true,
+          minWidth: '150px',
+          format: 'decimal3'
+        },
+        {
+          field: 'priceQty',
+          header: 'ราคาต่อจำนวน',
+          sortable: true,
+          minWidth: '150px',
+          format: 'decimal3'
+        },
+        {
+          field: 'unitCode',
+          header: 'หน่วย',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'unit',
+          header: 'รหัสหน่วย',
+          sortable: true,
+          minWidth: '150px'
+        }
+      ]
     }
   },
+
   methods: {
+    // ----------- table ----------- //
     // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
-      this.fetchData()
-    },
-    handlePageChangeSort(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
       this.fetchData()
     },
 
+    handleSortChange(e) {
+      this.skip = e.first
+      this.take = e.rows
+      this.sort = e.multiSortMeta.map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
+      this.fetchData()
+    },
     // ----------- APIs ----------- //
     async fetchData() {
       try {
         this.isLoading = true
 
-        console.log('fetchData', this.form)
+        //('fetchData', this.form)
 
         const params = {
           take: this.take,
@@ -310,7 +322,7 @@ export default {
             running: this.form.running ?? null
           }
         }
-        console.log('params', params)
+        //console.log('params', params)
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
         if (res) {
           this.data = { ...res }
@@ -328,7 +340,7 @@ export default {
       try {
         this.isLoading = true
 
-        console.log('fetchDataExport', this.form)
+        //console.log('fetchDataExport', this.form)
         const params = {
           take: 0,
           skip: 0,
@@ -351,7 +363,7 @@ export default {
             running: this.form.running ?? null
           }
         }
-        console.log('params', params)
+        //console.log('params', params)
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
         if (res) {
           const dataExcel = res.data.map((item) => {
@@ -373,9 +385,9 @@ export default {
               เกรด: item.grade,
 
               ราคา: item.price,
-              'ราคาต่อหน่วย': item.priceQty,
+              ราคาต่อหน่วย: item.priceQty,
               หน่วย: item.unitCode,
-              'รหัสหน่วย': item.unit,
+              รหัสหน่วย: item.unit,
 
               'W.O.': item.woText,
               เเม่พิมพ์: item.mold,
@@ -405,7 +417,7 @@ export default {
       return formatDate(date)
     },
     stringToArray(str) {
-      console.log('stringToArray', str)
+      //console.log('stringToArray', str)
       if (str && typeof str === 'string') {
         // ตัดช่องว่างหน้าและหลังสตริง
         str = str.trim()
@@ -471,6 +483,7 @@ export default {
 
     // -------- event -------- //
   },
+
   created() {
     this.$nextTick(() => {
       this.fetchData()

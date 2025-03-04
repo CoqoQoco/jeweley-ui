@@ -2,7 +2,7 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 
 const stockGem = () => import('@/views/stock/gem/IndexView.vue')
-const stockGemTransection = () => import('@/views/receipt-stock/gem/transection/IndexView.vue')
+const stockGemTransection = () => import('@/views/receipt-stock/gem/transaction/index-view.vue')
 
 const stockGemInbound = () => import('@/views/receipt-stock/gem/inbound/IndexView.vue')
 const stockGemOutbound = () => import('@/views/receipt-stock/gem/outbound/IndexView.vue')

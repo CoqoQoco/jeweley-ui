@@ -25,8 +25,8 @@
 
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-import headerBar from './components/SearchView.vue'
-import dataTable from './components/DataTableView.vue'
+import headerBar from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 
 const interfaceForm = {
   requestDateStart: new Date(),
@@ -40,7 +40,7 @@ const interfaceForm = {
   shape: [],
   size: [],
 
-  running: null,
+  running: null
 }
 export default {
   components: {
@@ -74,7 +74,7 @@ export default {
       }
     },
     onSearchFilter(data) {
-      console.log('onSearchFilter', data)
+      //console.log('onSearchFilter', data)
       this.search = { ...data }
     },
     onClearFilter() {
@@ -86,7 +86,7 @@ export default {
       this.exportData = { ...data }
     },
     exportExcelFlag(value) {
-      console.log('exportExcelFlag', value)
+      //console.log('exportExcelFlag', value)
       this.isExport = value
     }
   },

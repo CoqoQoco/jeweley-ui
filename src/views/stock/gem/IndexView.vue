@@ -30,12 +30,11 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
 
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-import headerBar from './components/headerView.vue'
-import dataTable from './components/DataTableView.vue'
+import headerBar from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 
 import api from '@/axios/axios-helper.js'
 

@@ -1,112 +1,110 @@
 <template>
   <div>
-  
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
-          <div class="title-text-lg">
+          <div class="title-text-lg-bg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
             <span>
               สร้างข้อมูลวัถุดิบ ระบุข้อมูล รหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ
             </span>
           </div>
-          <div class="form-col-container p-2">
-            <!-- code -->
-            <div>
+          <div class="p-2">
+            <div class="form-col-container p-2">
+              <!-- code -->
               <div>
-                <span class="title-text">รหัส</span>
-                <span class="txt-required"> *</span>
+                <div>
+                  <span class="title-text">รหัส</span>
+                  <span class="txt-required"> *</span>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :class="form.code ? `` : `bg-warning`"
+                  v-model="form.code"
+                  required
+                />
               </div>
-              <input
-                type="text"
-                class="form-control"
-                :class="form.code ? `` : `bg-warning`"
-                v-model="form.code"
-                required
-              />
-            </div>
 
-            <!-- group name -->
-            <div>
+              <!-- group name -->
               <div>
-                <span class="title-text">หมวดหมู่</span>
-                <span class="txt-required"> *</span>
+                <div>
+                  <span class="title-text">หมวดหมู่</span>
+                  <span class="txt-required"> *</span>
+                </div>
+                <AutoComplete
+                  v-model="form.groupName"
+                  :suggestions="suggestionsGroupName"
+                  optionLabel="value"
+                  optionValue="value"
+                  @complete="searchGroupName"
+                  :invalid="val.isGroupName"
+                />
               </div>
-              <AutoComplete
-                v-model="form.groupName"
-                :suggestions="suggestionsGroupName"
-                optionLabel="value"
-                optionValue="value"
-                @complete="searchGroupName"
-                :invalid="val.isGroupName"
-              />
-            </div>
 
-            <div></div>
-          </div>
-          <div class="form-col-container p-2">
-            <!-- size -->
-            <div>
-              <div>
-                <span class="title-text">ขนาด</span>
-                <span class="txt-required"> *</span>
-              </div>
-              <input type="text" class="form-control" v-model="form.size" required />
+              <div></div>
             </div>
+            <div class="form-col-container p-2">
+              <!-- size -->
+              <div>
+                <div>
+                  <span class="title-text">ขนาด</span>
+                  <span class="txt-required"> *</span>
+                </div>
+                <input type="text" class="form-control" v-model="form.size" required />
+              </div>
 
-            <!-- shape -->
-            <div>
+              <!-- shape -->
               <div>
-                <span class="title-text">รูปร่าง</span>
-                <span class="txt-required"> *</span>
+                <div>
+                  <span class="title-text">รูปร่าง</span>
+                  <span class="txt-required"> *</span>
+                </div>
+                <Dropdown
+                  v-model="form.shape"
+                  :options="gemShape"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                  :showClear="form.shape ? true : false"
+                  :class="val.isShape === true ? `p-invalid` : ``"
+                >
+                </Dropdown>
               </div>
-              <Dropdown
-                v-model="form.shape"
-                :options="gemShape"
-                optionLabel="description"
-                class="w-full md:w-14rem"
-                :showClear="form.shape ? true : false"
-                :class="val.isShape === true ? `p-invalid` : ``"
-              >
-              </Dropdown>
-            </div>
 
-            <!-- grade -->
-            <div>
+              <!-- grade -->
               <div>
-                <span class="title-text">เกรด</span>
-                <span class="txt-required"> *</span>
+                <div>
+                  <span class="title-text">เกรด</span>
+                  <span class="txt-required"> *</span>
+                </div>
+                <Dropdown
+                  v-model="form.grade"
+                  :options="grade"
+                  optionLabel="description"
+                  class="w-full md:w-14rem"
+                  :showClear="form.grade ? true : false"
+                  :class="val.isGrade === true ? `p-invalid` : ``"
+                >
+                </Dropdown>
               </div>
-              <Dropdown
-                v-model="form.grade"
-                :options="grade"
-                optionLabel="description"
-                class="w-full md:w-14rem"
-                :showClear="form.grade ? true : false"
-                :class="val.isGrade === true ? `p-invalid` : ``"
-              >
-              </Dropdown>
             </div>
-          </div>
-          <div class="form-col-container p-2">
-            <!-- reamrk -->
-            <div>
+            <div class="form-col-container p-2">
+              <!-- reamrk -->
               <div>
-                <span class="title-text">คำอธิบาย</span>
-                <!-- <span class="txt-required"> *</span> -->
+                <div>
+                  <span class="title-text">คำอธิบาย</span>
+                  <!-- <span class="txt-required"> *</span> -->
+                </div>
+                <textarea class="form-control" v-model="form.remark" rows="3" required></textarea>
               </div>
-              <textarea class="form-control" v-model="form.remark" rows="3" required></textarea>
             </div>
-          </div>
-          <!-- btn -->
-          <div class="d-flex justify-content-end mt-2">
-            <!-- <button class="btn btn-sm btn-main mr-2" type="button" @click="onTest">TEST</button> -->
-            <button class="btn btn-sm btn-main" type="submit">
-              <span class="mr-2">
-                <i class="bi bi-gem"></i>
-              </span>
-              <span>สร้างข้อมูลวัถุดิบ</span>
-            </button>
+            <!-- btn -->
+            <div class="d-flex justify-content-end mt-2">
+              <!-- <button class="btn btn-sm btn-main mr-2" type="button" @click="onTest">TEST</button> -->
+              <button class="btn btn-sm btn-green" type="submit">
+                <span class="bi bi-calendar-check"> </span>
+              </button>
+            </div>
           </div>
         </form>
       </template>
@@ -118,7 +116,6 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-
 
 import AutoComplete from 'primevue/autocomplete'
 import Dropdown from 'primevue/dropdown'
@@ -141,7 +138,7 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
-  
+
     AutoComplete,
     Dropdown
   },

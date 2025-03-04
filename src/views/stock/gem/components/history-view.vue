@@ -9,12 +9,12 @@
               <span class="desc-text-white">
                 {{ `ประวัติเพชร/พลอย: ${gem.name ?? 'loading...'}` }}
               </span>
-              <span class="mr-4 desc-text-white">{{ `${take} รายการล่าสุด` }}</span>
+              <span class="mr-5 desc-text-white">{{ `${take} รายการล่าสุด` }}</span>
             </div>
           </div>
         </div>
 
-        <div class="form-col-container">
+        <div class="form-col-container p-2">
           <DataTable
             :totalRecords="history.total"
             :value="history.data"
