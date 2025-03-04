@@ -78,7 +78,7 @@
           title="โอนงาน"
           @click="onTrnsferProduct"
         >
-          <span><i class="bi bi-box-arrow-up"></i></span>
+          <span><i class="bi bi-cart-check-fill"></i></span>
           <span class="ml-2">โอนสินค้า</span>
         </button>
       </template>

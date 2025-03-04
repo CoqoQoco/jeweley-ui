@@ -563,7 +563,7 @@ export default {
       }
       this.gemAssign.push(add)
     },
-    onclear() {
+    onClear() {
       this.form = {
         ...interfaceForm
       }
@@ -574,7 +574,7 @@ export default {
       this.gemAssign = []
     },
     closeModal() {
-      this.onclear()
+      this.onClear()
       this.$emit('closeModal', 'add')
     },
 

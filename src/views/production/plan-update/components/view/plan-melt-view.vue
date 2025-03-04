@@ -20,7 +20,7 @@
           </button>
           <button
             :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
-            title="เพิ่มขัดชุบ"
+            title="หลอม"
             :disabled="checkBtn('add')"
             @click="addStatus()"
           >
@@ -28,7 +28,7 @@
           </button>
           <button
             :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
-            title="เเก้ไขขัดชุบ"
+            title="เเก้ไข"
             :disabled="checkBtn('edit')"
             @click="updateStatus()"
           >
@@ -36,7 +36,7 @@
           </button>
           <button
             :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
-            title="ลบขัดชุบ"
+            title="ลบ"
             :disabled="checkBtn('delete')"
             @click="onDelStatus(modelPlanStatus.id)"
           >
@@ -47,25 +47,14 @@
     </div>
     <div v-if="modelPlanStatus">
       <div class="form-col-container pl-2 mt-3">
-        <!-- transfer name -->
-        <div class="d-flex flex-column">
-          <span class="title-text">ชื่อผู้โอนงาน</span>
-          <span class="desc-text">{{ modelPlanStatus.createBy }}</span>
-        </div>
-        <!-- transfer date -->
-        <div class="d-flex flex-column">
-          <span class="title-text">วันที่โอนงาน</span>
-          <span class="desc-text">{{ formatDate(modelPlanStatus.createDate) }}</span>
-        </div>
-
         <!-- name -->
         <div class="d-flex flex-column">
-          <span class="title-text">ชื่อผู้รับงาน</span>
+          <span class="title-text">ผู้รับหลอม</span>
           <span class="desc-text">{{ modelPlanStatus.sendName }}</span>
         </div>
         <!-- date -->
         <div class="d-flex flex-column">
-          <span class="title-text">วันที่รับงาน</span>
+          <span class="title-text">วันที่หลอม</span>
           <span class="desc-text">{{ formatDate(modelPlanStatus.sendDate) }}</span>
         </div>
         <div></div>
@@ -91,162 +80,29 @@
           columnResizeMode="fit"
           scrollHeight="calc(100vh - 160px)"
         >
-          <Column field="gold" header="ทอง" style="min-width: 100px"> </Column>
-          <Column field="requestDate" header="วันที่" style="min-width: 100px">
+          <Column field="gold" header="ทอง" style="min-width: 80px"> </Column>
+          <Column field="requestDate" header="วันที่" style="min-width: 120px">
             <template #body="slotProps">
               <div class="text-left">
                 {{ formatDate(slotProps.data.requestDate) }}
               </div>
             </template>
           </Column>
-          <Column field="goldQtySend" header="จำนวนจ่าย" style="min-width: 100px">
-            <template #body="slotProps">
-              <div>
-                {{
-                  `${
-                    slotProps.data.goldQtySend
-                      ? Number(slotProps.data.goldQtySend).toFixed(3).toLocaleString()
-                      : Number(0).toFixed(3)
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="goldWeightSend" header="นำหนักจ่าย" style="min-width: 100px">
+          <Column field="goldQtySend" header="จำนวน" style="min-width: 80px"> </Column>
+          <Column field="goldWeightSend" header="นำหนัก" style="min-width: 80px">
             <template #body="slotProps">
               <div>
                 {{
                   `${
                     slotProps.data.goldWeightSend
-                      ? Number(slotProps.data.goldWeightSend).toFixed(3).toLocaleString()
-                      : Number(0).toFixed(3)
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="goldQtyCheck" header="จำนวนรับ" style="min-width: 100px">
-            <template #body="slotProps">
-              <div>
-                {{
-                  `${
-                    slotProps.data.goldQtyCheck
-                      ? Number(slotProps.data.goldQtyCheck).toFixed(3).toLocaleString()
+                      ? Number(slotProps.data.goldWeightSend).toFixed(2).toLocaleString()
                       : ''
                   }`
                 }}
               </div>
             </template>
           </Column>
-          <Column field="goldWeightCheck" header="น้ำหนักรับ" style="min-width: 100px">
-            <template #body="slotProps">
-              <div>
-                {{
-                  `${
-                    slotProps.data.goldWeightCheck
-                      ? Number(slotProps.data.goldWeightCheck).toFixed(3).toLocaleString()
-                      : ''
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="goldWeightDiff" header="น้ำหนัก ขาด/เกิน" style="min-width: 100px">
-            <template #body="prop">
-              <div
-                style="font-weight: 600"
-                :style="
-                  calculateWeightDifference(prop.data.goldWeightSend, prop.data.goldWeightCheck)
-                    .style
-                "
-              >
-                <span>
-                  {{
-                    calculateWeightDifference(prop.data.goldWeightSend, prop.data.goldWeightCheck)
-                      .difference
-                  }}
-                </span>
-                <span class="ml-1">{{
-                  `(${
-                    calculateWeightDifference(prop.data.goldWeightSend, prop.data.goldWeightCheck)
-                      .percentage
-                  })`
-                }}</span>
-              </div>
-            </template>
-          </Column>
-          <Column field="description" header="รายละเอียด" style="min-width: 200px">
-            <template #editor="{ data, field }">
-              <input
-                type="text"
-                :class="data[field] ? `` : `bg-warning`"
-                class="form-control"
-                v-model="data[field]"
-              />
-            </template>
-          </Column>
-          <Column
-            field="worker"
-            :header="modelPlanStatus.status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
-            style="min-width: 200px"
-          >
-            <template #body="slotProps">
-              <div class="text-center">
-                {{
-                  `${
-                    slotProps.data.worker
-                      ? `${slotProps.data.worker} - ${slotProps.data.workerName}`
-                      : ''
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column
-            v-if="modelPlanStatus.status === 90"
-            field="workerSub"
-            header="ช่างชุบ"
-            style="min-width: 200px"
-          >
-            <template #body="slotProps">
-              <div class="text-center">
-                {{
-                  `${
-                    slotProps.data.workerSub
-                      ? `${slotProps.data.workerSub} - ${slotProps.data.workerSubName}`
-                      : null
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 100px">
-            <template #body="slotProps">
-              <div class="text-right">
-                {{
-                  `${
-                    slotProps.data.wages
-                      ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
-                      : ''
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <Column field="totalWages" header="รวมค่าแรง" style="min-width: 100px">
-            <template #body="slotProps">
-              <div class="text-right">
-                {{
-                  `${
-                    slotProps.data.wages
-                      ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
-                      : Number(wages).toFixed(2).toLocaleString()
-                  }`
-                }}
-              </div>
-            </template>
-          </Column>
-          <template #footer>
+          <!-- <template #footer>
             <div class="d-flex justify-content-between">
               <div>ทั้งหมด {{ modelPlanStatus.tbtProductionPlanStatusDetail.length }} รายการ</div>
               <div>
@@ -260,7 +116,7 @@
                 }}
               </div>
             </div>
-          </template>
+          </template> -->
         </DataTable>
       </div>
 
@@ -294,7 +150,6 @@ import Column from 'primevue/column'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
-import { calculateWeightDifference } from '@/services/helper/match.js'
 
 export default {
   components: {
@@ -333,7 +188,7 @@ export default {
       if (_.isEmpty(tbtProductionPlanStatusHeader)) {
         return null
       } else {
-        var value = tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
+        var value = tbtProductionPlanStatusHeader.find((x) => x.status === 500)
         console.log('modelPlanStatus', value)
         return value
       }
@@ -350,8 +205,7 @@ export default {
   },
   data() {
     return {
-      wages: 0,
-      status: 90
+      wages: 0
     }
   },
   methods: {
@@ -362,9 +216,6 @@ export default {
     formatDate(date) {
       return date ? formatDate(date) : ''
     },
-    calculateWeightDifference(weightSend, weightReceived) {
-      return calculateWeightDifference(weightSend, weightReceived)
-    },
     checkBtn(action) {
       console.log('checkBtn', this.modelPlanStatus)
       const disStatus = [100, 500]
@@ -373,12 +224,15 @@ export default {
           case 'print':
             return this.modelPlanStatus ? false : true
           case 'add':
-            return true
+            return this.modelPlanStatus ? true : false
           case 'edit':
             return this.modelPlanStatus ? false : true
+          case 'transfer': {
+            let check = this.model.status === this.status
+            return !check
+          }
           case 'delete':
-            return true
-          //return this.modelPlanStatus ? false : true
+            return this.modelPlanStatus ? false : true
           case 'close':
             return true
         }
@@ -390,15 +244,15 @@ export default {
     // ----- event
     addStatus() {
       console.log('addStatus')
-      this.$emit('onShowAddStatus', 'casting')
+      this.$emit('onShowAddStatus', 'melted')
     },
     updateStatus() {
       console.log('updateStatus')
-      this.$emit('onShowUpdateStatus', 'plate')
+      this.$emit('onShowUpdateStatus', 'casting')
     },
     onDelStatus(id) {
       swAlert.confirmSubmit(
-        `ยืนยันลบงาน [ขัดชุบ]`,
+        `ยืนยันลบงาน [จ่ายเเต่ง]`,
         `${this.model.wo}-${this.model.woNumber}`,
         async () => {
           //console.log('call submitPlan')
@@ -407,6 +261,11 @@ export default {
         null,
         null
       )
+    },
+
+    transfer() {
+      //console.log('transfer')
+      this.$emit('transfer', this.model, this.status)
     },
 
     // ----- APIs

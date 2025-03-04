@@ -16,8 +16,8 @@
 </template>
 
 <script>
-import search from './components/SearchBar.vue'
-import dataTable from './components/DataTable.vue'
+import search from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 import { mapState, mapActions } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'

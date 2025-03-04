@@ -12,6 +12,14 @@
         <!-- action -->
         <div>
           <button
+            :class="['btn btn-sm ml-2', checkBtn('transfer') ? 'btn-secondary' : 'btn-green']"
+            title="โอนงาน"
+            :disabled="checkBtn('transfer')"
+            @click="transfer()"
+          >
+            <span class="bi bi-arrow-down-up"></span>
+          </button>
+          <button
             :class="['btn btn-sm ml-2', checkBtn('print') ? 'btn-secondary' : 'btn-primary']"
             title="พิมพ์แบบ"
             :disabled="checkBtn('print')"
@@ -286,10 +294,10 @@
 
     <modal :showModal="isShowSelectGold" @closeModal="closeModal" width="350px">
       <template v-slot:content>
-        <div class="mb-3">
-          <span class="txt-title-modal-no-padding">เลือกข้อมูลพิมพ์สลิป</span>
+        <div class="title-text-lg-bg">
+          <span>เลือกข้อมูลพิมพ์สลิป</span>
         </div>
-        <div class="btn-gold-wrapper">
+        <div class="btn-gold-wrapper p-4">
           <div v-for="(data, index) in groupGold" :key="index">
             <div class="btn-gold" @click="handleGeneratePDF(data)">{{ data.selectKey }}</div>
           </div>
@@ -433,6 +441,10 @@ export default {
             return true
           case 'edit':
             return this.modelPlanStatus ? false : true
+          case 'transfer': {
+            let check = this.model.status === this.status
+            return !check
+          }
           case 'delete':
             return true
           //return this.modelPlanStatus ? false : true
@@ -442,6 +454,11 @@ export default {
       } else {
         return true
       }
+    },
+
+    transfer() {
+      //console.log('transfer')
+      this.$emit('transfer', this.model, this.status)
     },
 
     // ----- event

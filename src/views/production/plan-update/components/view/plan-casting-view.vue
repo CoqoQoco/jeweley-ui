@@ -53,6 +53,7 @@
         </div>
       </div>
     </div>
+
     <div v-if="modelPlanStatus">
       <div class="form-col-container pl-2 mt-3">
         <!-- transfer name -->
@@ -384,8 +385,10 @@ export default {
             return true
           case 'edit':
             return this.modelPlanStatus ? false : true
-          case 'transfer':
-            return !(this.modelPlanStatus.status === this.status)
+          case 'transfer': {
+            let check = this.model.status === this.status
+            return !check
+          }
           case 'delete':
             return true
           //return this.modelPlanStatus ? false : true

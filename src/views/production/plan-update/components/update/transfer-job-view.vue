@@ -135,7 +135,7 @@ export default {
       return res || {}
     },
     allowSelectStatus() {
-      const removeStatus = [
+      let removeStatus = [
         10,
         49,
         55,
@@ -150,6 +150,12 @@ export default {
         500,
         this.statusTransferValue
       ]
+
+      if (this.modelValue.tbtProductionPlanStatusHeader) {
+        const statusArray = this.modelValue.tbtProductionPlanStatusHeader.map((item) => item.status)
+        removeStatus = [...removeStatus, ...statusArray]
+      }
+
       return this.masterStatus.filter((item) => !removeStatus.includes(item.id))
     }
   },

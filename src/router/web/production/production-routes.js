@@ -2,12 +2,12 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 const PlanOrder = () => import('@/views/production/plan-create/index-view.vue')
 const PlanGoldOrder = () => import('@/views/production/plan-gold/index-view.vue')
 const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/IndexView.vue')
-const PlanOrderTracking = () => import('@/views/production/plan-tracking/IndexView.vue')
+const PlanOrderTracking = () => import('@/views/production/plan-tracking/index-view.vue')
 const PlanOrderTrackingStatus = () =>
   import('@/views/production/plan-tracking-status/IndexView.vue')
 const PlanOrderTrackingWorker = () =>
   import('@/views/production/plan-tracking-worker/IndexView.vue')
-const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
+const PlanOrderTrackingView = () => import('@/views/production/plan-update/index-view.vue')
 const PlanOrderTransferTracking = () =>
   import('@/views/production/plan-tracking-transfer/IndexView.vue')
 const ReportProduction = () => import('@/views/report-production/IndexView.vue')

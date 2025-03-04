@@ -90,7 +90,7 @@
 
     <!-- casting -->
     <div v-if="tabActive === 2">
-      <planCatingView
+      <planCastingView
         :modelValue="data"
         :modelMatValue="mat"
         :masterStatus="masterStatus"
@@ -99,7 +99,7 @@
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
         @transfer="onTransferJob"
-      ></planCatingView>
+      ></planCastingView>
       <planCastingAdd
         :isShow="add.casting"
         :modelValue="data"
@@ -130,6 +130,7 @@
         @onShowAddStatus="onShowAddStatus"
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
+        @transfer="onTransferJob"
       ></planScrubb>
       <planScrubbAdd
         :isShow="add.scrubb"
@@ -161,6 +162,7 @@
         @onShowAddStatus="onShowAddStatus"
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
+        @transfer="onTransferJob"
       ></planGemView>
       <planGemUpdate
         :isShow="update.gems"
@@ -192,6 +194,7 @@
         @onShowAddStatus="onShowAddStatus"
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
+        @transfer="onTransferJob"
       ></planEmbed>
       <planEmbedUpdate
         :isShow="update.embed"
@@ -217,6 +220,7 @@
         @onShowAddStatus="onShowAddStatus"
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
+        @transfer="onTransferJob"
       ></planPlateView>
       <PlanPlateUpdateView
         :isShow="update.plate"
@@ -239,6 +243,7 @@
         @onShowAddStatus="onShowAddStatus"
         @onShowUpdateStatus="onShowUpdateStatus"
         @fetch="fetchFormStatusAdd"
+        @receipt="onTransferProduct"
       ></planPriceView>
       <planPriceAddView
         :isShow="add.price"
@@ -307,6 +312,12 @@
       :masterStatusValue="masterStatus"
       @closeModal="onCloseFormStatusAdd"
     ></transferJob>
+    <transferProduct
+      :isShow="update.transferProduct"
+      :statusTransferValue="statusTransferValue"
+      :modelValue="jobTransfer"
+      @closeModal="onCloseFormStatusAdd"
+    ></transferProduct>
   </div>
 </template>
 
@@ -323,7 +334,7 @@ import api from '@/axios/axios-helper.js'
 //import FormHeader from './components/form-header/FormHeaderView.vue'
 //import FormHeaderUpdate from './components/form-header/FormHeaderUpdate.vue'
 import FormMaterial from './components/view/PlanMaterialView.vue'
-import FormMaterialAdd from './components/add/plan-material-add.vue'
+import FormMaterialAdd from './components/add/plan-material-add-view.vue'
 import FormStatus from './components/form-status/FormStatusView.vue'
 import FormStatusAdd from './components/form-status/FormStatusAdd.vue'
 
@@ -331,31 +342,32 @@ import FormStatusAdd from './components/form-status/FormStatusAdd.vue'
 import planHeaderView from './components/view/PlanHeaderView.vue'
 import planHeaderUpdateView from './components/update/PlanHeaderUpdateView.vue'
 
-import planCatingView from './components/view/PlanCastingView.vue'
-import planCastingAdd from './components/add/PlanCatingAddView.vue'
-import planCastingUpdate from './components/update/PlanCastingUpdateView.vue'
+import planCastingView from './components/view/plan-casting-view.vue'
+import planCastingAdd from './components/add/plan-casting-add-view.vue'
+import planCastingUpdate from './components/update/plan-casting-update-view.vue'
 
-import planMeltedView from './components/view/PlanMeltedView.vue'
+import planMeltedView from './components/view/plan-melt-view.vue'
 import planMeltedAdd from './components/add/PlanMeltedAddView.vue'
 
-import planGemView from './components/view/PlanGemView.vue'
-import planGemUpdate from './components/update/PlanGemUpdateView.vue'
-import planGemAdd from './components/add/PlanGemAddView.vue'
+import planGemView from './components/view/plan-gem-view.vue'
+import planGemUpdate from './components/update/plan-gem-update-view.vue'
+import planGemAdd from './components/add/plan-gem-add-view.vue'
 
-import planScrubb from './components/view/PlanScrubbView.vue'
+import planScrubb from './components/view/plan-scrubb-view.vue'
 import planScrubbAdd from './components/add/PlanScrubbAddView.vue'
 import planScrubbUpdate from './components/update/PlanScrubbUpdateView.vue'
 
-import planPriceView from './components/view/PlanPriceView.vue'
+import planPriceView from './components/view/plan-price-view.vue'
 import planPriceAddView from './components/add/PlanPriceAddView.vue'
 
-import planEmbed from './components/view/PlanEmbedView.vue'
+import planEmbed from './components/view/plan-embed-view.vue'
 import planEmbedUpdate from './components/update/PlanEmbedUpdateView.vue'
 
-import planPlateView from './components/view/PlanPlateView.vue'
+import planPlateView from './components/view/plan-plate-view.vue'
 import PlanPlateUpdateView from './components/update/PlanPlateUpdateView.vue'
 
-import transferJob from './components/update/transfer-job.vue'
+import transferJob from './components/update/transfer-job-view.vue'
+import transferProduct from './components/update/transfer-product-view.vue'
 
 const interfaceIsShowAdd = {
   casting: false,
@@ -373,7 +385,8 @@ const interfaceIsShowUpdate = {
   gems: false,
   price: false,
 
-  transferJob: false
+  transferJob: false,
+  transferProduct: false
 }
 
 export default {
@@ -390,7 +403,7 @@ export default {
     planHeaderView,
     planHeaderUpdateView,
 
-    planCatingView,
+    planCastingView,
     planCastingAdd,
     planCastingUpdate,
 
@@ -414,7 +427,8 @@ export default {
     planPlateView,
     PlanPlateUpdateView,
 
-    transferJob
+    transferJob,
+    transferProduct
   },
   data() {
     return {
@@ -488,7 +502,7 @@ export default {
     onShowFormStatusAdd() {
       this.isShowFormStatusAdd = true
     },
-    onCloseFormStatusAdd(fetch) {
+    onCloseFormStatusAdd(fetch, value) {
       this.isShowFormStatusAdd = false
       this.add = { ...interfaceIsShowAdd }
       this.update = { ...interfaceIsShowUpdate }
@@ -498,6 +512,10 @@ export default {
 
       if (fetch === 'fetch') {
         this.fetchData(this.id)
+      }
+
+      if (fetch === 'go-receipt') {
+        this.$router.push({ name: 'goods-receipt-production', params: { id: value } })
       }
     },
     fetchFormStatus() {
@@ -562,11 +580,17 @@ export default {
       this.statusTransferValue = from
       this.jobTransfer = { ...job }
 
-      console.log('onTransferJob; job', this.jobTransfer)
-      console.log('onTransferJob; form', this.statusTransferValue)
+      //console.log('onTransferJob; job', this.jobTransfer)
+      //console.log('onTransferJob; form', this.statusTransferValue)
 
       this.update.transferJob = true
       //this.interfaceIsShowUpdate.transferJob = true
+    },
+    onTransferProduct(job, from) {
+      this.statusTransferValue = from
+      this.jobTransfer = { ...job }
+
+      this.update.transferProduct = true
     },
 
     // --- APIs --- //

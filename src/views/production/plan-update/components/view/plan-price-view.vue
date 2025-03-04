@@ -13,40 +13,46 @@
         </div>
 
         <!-- action -->
+
         <div class="d-flex">
-          <div>
-            <pricePDF
-              :isVisible="isMakePrice"
-              :modelValue="model"
-              :modelPrice="modelPrice"
-            ></pricePDF>
-          </div>
-          <div>
-            <button
-              :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
-              title="ประเมินบัตรต้นทุน"
-              :disabled="checkBtn('add')"
-              @click="addStatus()"
-            >
-              <span class="bi bi-database-fill-add"></span>
-            </button>
-            <button
-              :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
-              title="เเก้ไข"
-              :disabled="checkBtn('edit')"
-              @click="updateStatus()"
-            >
-              <span class="bi bi-brush"></span>
-            </button>
-            <button
-              :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
-              title="ลบ"
-              :disabled="checkBtn('delete')"
-              @click="onDelStatus(modelPlanStatus.id)"
-            >
-              <span class="bi bi-trash-fill"></span>
-            </button>
-          </div>
+          <button
+            :class="['btn btn-sm ml-2', checkBtn('success') ? 'btn-secondary' : 'btn-green']"
+            title="โอนสินค้า"
+            :disabled="checkBtn('success')"
+            @click="receiptProduct()"
+          >
+            <span class="bi bi-cart-check-fill"></span>
+          </button>
+
+          <pricePDF
+            :isVisible="isMakePrice"
+            :modelValue="model"
+            :modelPrice="modelPrice"
+          ></pricePDF>
+          <button
+            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
+            title="ประเมินบัตรต้นทุน"
+            :disabled="checkBtn('add')"
+            @click="addStatus()"
+          >
+            <span class="bi bi-database-fill-add"></span>
+          </button>
+          <button
+            :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
+            title="เเก้ไข"
+            :disabled="checkBtn('edit')"
+            @click="updateStatus()"
+          >
+            <span class="bi bi-brush"></span>
+          </button>
+          <button
+            :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
+            title="ลบ"
+            :disabled="checkBtn('delete')"
+            @click="onDelStatus(modelPlanStatus.id)"
+          >
+            <span class="bi bi-trash-fill"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -127,7 +133,7 @@
           <template #body="slotProps">
             <div class="text-right">
               <!-- <span>{{ calEachPricePerQty(slotProps.data.totalPrice) }}</span> -->
-               <span>0.00</span>
+              <span>0.00</span>
             </div>
           </template>
         </Column>
@@ -297,7 +303,7 @@ export default {
   data() {
     return {
       wages: 0,
-      status: 70
+      status: 95
     }
   },
   methods: {
@@ -319,6 +325,10 @@ export default {
             return allowPrice.includes(this.model.status) ? false : true
           case 'edit':
             return true
+          case 'success': {
+            let check = this.model.status === this.status
+            return !check
+          }
           case 'delete':
             return true
           //return this.modelPlanStatus ? false : true
@@ -433,6 +443,13 @@ export default {
         null
       )
     },
+
+    receiptProduct() {
+      //console.log('transfer')
+      this.$emit('receipt', this.model, this.status)
+    },
+
+
     exportGemCsv() {
       const dataExcel = this.modelPlanStatus.tbtProductionPlanStatusGem.map((item) => {
         return {

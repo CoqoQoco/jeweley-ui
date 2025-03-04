@@ -3,14 +3,12 @@
     <modal :showModal="isShowModal" @closeModal="closeModal" width="900px">
       <template v-slot:content>
         <div>
-          <div class="title-text">
+          <div class="title-text-lg-bg">
             <span><i class="bi bi-image mr-2"></i></span>
             <span>เลือกรูปสินค้า | เลขที่ตั้งรับ :</span>
             <span class="ml-2">{{ stock.stockReceiptNumber }}</span>
           </div>
-
-          <div class="line"></div>
-
+          
           <div>
             <form @submit.prevent="handleSubmit">
               <div class="input-group input-group-sm">

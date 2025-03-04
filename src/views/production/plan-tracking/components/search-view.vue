@@ -1,6 +1,5 @@
 <template>
   <div class="filter-container-searchBar">
-  
     <form @submit.prevent="onSearch">
       <div>
         <div>
@@ -16,6 +15,7 @@
                 v-model="form.start"
                 :max-date="form.end"
                 showIcon
+                :manualInput="false"
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
               />
@@ -25,6 +25,7 @@
                 v-model="form.end"
                 :min-date="form.start"
                 showIcon
+                :manualInput="false"
                 placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
               />
@@ -38,6 +39,7 @@
                 v-model="form.sendStart"
                 :max-date="form.sendEnd"
                 showIcon
+                :manualInput="false"
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
               />
@@ -47,6 +49,7 @@
                 v-model="form.sendEnd"
                 :min-date="form.sendStart"
                 showIcon
+                :manualInput="false"
                 placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
               />
@@ -266,7 +269,6 @@ const interfaceIsShow = {
 }
 export default {
   components: {
-  
     pageTitle,
     MultiSelect,
     Calendar,

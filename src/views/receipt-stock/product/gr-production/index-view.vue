@@ -598,7 +598,7 @@ export default {
       header: [],
       gems: [],
       form: [],
-      scrollHeight: 'calc(100vh - 330px)',
+      scrollHeight: 'calc(100vh - 380px)',
 
       imgTest: {
         type: 'MOLD',
@@ -1017,7 +1017,9 @@ export default {
 
       //init header
       this.header.push(this.data)
-      if (this.data.gems.length > 0) {
+
+      console.log('fetchData', this.data)
+      if (this.data?.gems?.length > 0) {
         this.gems.push(this.data.gems)
       }
       this.form = this.data.stocks.map((item) => ({
