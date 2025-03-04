@@ -9,8 +9,7 @@ import //formatISOString,
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const usrStockGemApiStore = defineStore('stockGem', {
-  state: () => ({
-  }),
+  state: () => ({}),
   actions: {
     initSearchRequeast(form) {
       return {
@@ -19,7 +18,8 @@ export const usrStockGemApiStore = defineStore('stockGem', {
           groupName: form.groupName ?? null,
           grade: form.grade ?? null,
           shape: form.shape ?? null,
-          size: form.size ?? null
+          size: form.size ?? null,
+          typeCheck: form.typeCheck ?? null
         }
       }
     },
@@ -58,10 +58,18 @@ export const usrStockGemApiStore = defineStore('stockGem', {
             ขนาด: item.size,
             รูปร่าง: item.shape,
             เกรด: item.grade,
-            จำนวนคงคลัง: item.quantity ? Number(item.quantity).toFixed(3).toLocaleString() : '0.000',
-            จำนวนยืมคลัง: item.quantityOnProcess ? Number(item.quantityOnProcess).toFixed(3).toLocaleString() : '0.000',
-            น้ำหนักคงคลัง: item.quantityWeight ? Number(item.quantityWeight).toFixed(3).toLocaleString() : '0.000',
-            น้ำหนักยืมคลัง: item.quantityWeightOnProcess ? Number(item.quantityWeightOnProcess).toFixed(3).toLocaleString() : '0.000',
+            จำนวนคงคลัง: item.quantity
+              ? Number(item.quantity).toFixed(3).toLocaleString()
+              : '0.000',
+            จำนวนยืมคลัง: item.quantityOnProcess
+              ? Number(item.quantityOnProcess).toFixed(3).toLocaleString()
+              : '0.000',
+            น้ำหนักคงคลัง: item.quantityWeight
+              ? Number(item.quantityWeight).toFixed(3).toLocaleString()
+              : '0.000',
+            น้ำหนักยืมคลัง: item.quantityWeightOnProcess
+              ? Number(item.quantityWeightOnProcess).toFixed(3).toLocaleString()
+              : '0.000',
             ราคาต่อนำหนัก: item.price ? Number(item.price).toFixed(2).toLocaleString() : '0.00',
             ราคาต่อจำนวน: item.priceQty
               ? Number(item.priceQty).toFixed(2).toLocaleString()

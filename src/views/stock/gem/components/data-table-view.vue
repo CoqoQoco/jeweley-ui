@@ -70,6 +70,12 @@ export default {
     historyView,
     updateView
   },
+
+  setup() {
+    const stockGemSearchStore = usrStockGemApiStore()
+    return { stockGemSearchStore }
+  },
+
   props: {
     modelForm: {
       type: Object,
@@ -114,6 +120,7 @@ export default {
       default: () => []
     }
   },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -138,6 +145,7 @@ export default {
       deep: true
     }
   },
+
   computed: {
     //  ---------------- computed --------
     groupOptions() {
@@ -159,6 +167,7 @@ export default {
       return this.masterGradeData
     }
   },
+
   data() {
     return {
       isLoading: false,
@@ -193,28 +202,6 @@ export default {
           header: 'รหัส',
           sortable: true
         },
-
-        // {
-        //   field: 'groupName',
-        //   header: 'หมวดหมู่',
-        //   sortable: true
-        // },
-        // {
-        //   field: 'size',
-        //   header: 'ขนาด',
-        //   sortable: true
-        // },
-        // {
-        //   field: 'shape',
-        //   header: 'รูปร่าง',
-        //   sortable: true
-        // },
-        // {
-        //   field: 'grade',
-        //   header: 'เกรด',
-        //   sortable: true
-        // },
-
         {
           field: 'quantity',
           header: 'จำนวนคงคลัง',
@@ -291,10 +278,7 @@ export default {
       ]
     }
   },
-  setup() {
-    const stockGemSearchStore = usrStockGemApiStore()
-    return { stockGemSearchStore }
-  },
+
   methods: {
     // ----------- table ----------- //
     handlePageChange(e) {
@@ -388,6 +372,7 @@ export default {
       this.isShow.update = true
     }
   },
+
   created() {
     console.log('created', this.modelForm)
     this.form = { ...this.modelForm }

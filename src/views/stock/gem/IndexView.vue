@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-  
     <headerBar
       v-model:modelForm="form"
       :isExport="isExport"
@@ -10,6 +9,7 @@
       :masterSizeOptions="gradeOptions"
       :masterGemShapeData="masterGemShape"
       :masterGradeData="masterGrade"
+      :masterTypeCheckOption="masterTypeCheck"
       @search="onSearchFilter"
       @export="exportExcel"
       @clear="onClearFilter"
@@ -30,7 +30,6 @@
 </template>
 
 <script>
-
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import headerBar from './components/search-view.vue'
@@ -44,14 +43,17 @@ const interfaceForm = {
   groupName: [],
   grade: [],
   shape: [],
-  size: []
+  size: [],
+
+  typeCheck: []
 }
 export default {
   components: {
     //pageTitle,
     headerBar,
-    dataTable,
+    dataTable
   },
+
   data() {
     return {
       isLoading: false,
@@ -65,9 +67,16 @@ export default {
       sizeOptions: [],
       gradeOptions: [],
       masterGemShape: [],
-      masterGrade: []
+      masterGrade: [],
+      masterTypeCheck: [
+        { id: 1, name: 'มีจำนวนคงคลัง', value: 'qty-remain' },
+        { id: 2, name: 'มีจำนวนยืมคลัง', value: 'qty-process-remain' },
+        { id: 3, name: 'มีน้ำหนักคงคลัง', value: 'qty-weight-remain' },
+        { id: 3, name: 'มีน้ำหนักยืมคลัง', value: 'qty-weight-process-remain' }
+      ]
     }
   },
+
   methods: {
     //  ---------------- event --------
     onSearchFilter(data) {
@@ -193,6 +202,7 @@ export default {
       }
     }
   },
+
   created() {
     this.$nextTick(() => {
       this.fetchGroupOptions()

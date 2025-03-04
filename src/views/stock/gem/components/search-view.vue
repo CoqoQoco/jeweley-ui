@@ -1,6 +1,5 @@
 <template>
   <div class="filter-container-searchBar">
-  
     <pageTitle
       title="คลังวัถุดิบ"
       description="ตรวจสอบจำนวนคงคลัง ราคา รายละเอียดต่างๆ ของวัถุดิบ"
@@ -22,6 +21,20 @@
         <div>
           <span class="title-text">รหัส</span>
           <input type="text" class="form-control" v-model="form.code" />
+        </div>
+
+        <!-- type check -->
+        <div>
+          <span class="title-text">ประเภท</span>
+          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
+          <MultiSelect
+            v-model="form.typeCheck"
+            :options="masterTypeCheck"
+            filter
+            optionLabel="name"
+            optionValue="value"
+            class="w-full md:w-14rem"
+          />
         </div>
       </div>
 
@@ -155,11 +168,12 @@ export default {
   components: {
     pageTitle,
     MultiSelect,
-  
+
     createView,
     dialogView
     //Calendar
   },
+
   props: {
     modelForm: {
       type: Object,
@@ -198,8 +212,14 @@ export default {
       type: Array,
       Required: true,
       default: () => []
+    },
+    masterTypeCheckOption: {
+      type: Array,
+      Required: true,
+      default: () => []
     }
   },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -208,6 +228,7 @@ export default {
       deep: true
     }
   },
+
   computed: {
     isExportData() {
       return this.isExport
@@ -229,15 +250,20 @@ export default {
     },
     masterGrade() {
       return this.masterGradeData
+    },
+    masterTypeCheck() {
+      return this.masterTypeCheckOption
     }
   },
+
   data() {
     return {
       isLoading: false,
       form: { ...this.modelForm },
-      isShow: { ...interfaceIsShow },
+      isShow: { ...interfaceIsShow }
     }
   },
+
   methods: {
     // ---------------- event
     onSubmit() {
@@ -372,6 +398,7 @@ export default {
       }
     }
   },
+
   created() {
     this.$nextTick(() => {
       // this.fetchGroupOptions()
