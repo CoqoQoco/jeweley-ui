@@ -53,8 +53,8 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
-import moldalUpdate from './UpdateView.vue'
-import modalView from './DataView.vue'
+import moldalUpdate from './update-view.vue'
+import modalView from './data-view.vue'
 
 export default {
   components: {
@@ -288,7 +288,7 @@ export default {
     this.$nextTick(() => {
       this.fetchMasterGold()
       this.fetchMasterGoldSize()
-      this.fetchData()
+      //this.fetchData()
     })
   }
 }

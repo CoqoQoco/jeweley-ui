@@ -6,22 +6,46 @@
       :totalRecords="data.total"
       :columns="columns"
       :perPage="take"
-      :scrollHeight="'calc(100vh - 290px)'"
+      :scrollHeight="'calc(100vh - 350px)'"
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-      <!-- WO Column -->
-      <template #woTextTemplate="{ data }">
-        {{ `${data.wo}-${data.woNumber}` }}
+      <!-- Image Column -->
+      <template #imageTemplate="{ data }">
+        <div class="image-container">
+          <imagePreview :imageName="data.mold" :type="mold" :width="30" :height="30" />
+        </div>
+      </template>
+
+      <!-- WO Number template -->
+      <template #woTemplate="{ data: rowData }">
+        {{ `${rowData.wo}-${rowData.woNumber}` }}
+      </template>
+
+      <!-- Status template -->
+      <template #statusTemplate="{ data: rowData }">
+        {{ rowData.wagesStatus === 100 ? `สำเร็จ` : `ติดตามระหว่างผลิต` }}
+      </template>
+
+      <!-- Worker template -->
+      <template #workerCodeTemplate="{ data: rowData }">
+        {{ `${rowData.workerCode}-${rowData.workerName}` }}
+      </template>
+
+      <!-- Description template -->
+      <template #descTemplate="{ data: rowData }">
+        {{ `${rowData.gold} ${rowData.description ? `[${rowData.description}]` : ``}` }}
       </template>
     </BaseDataTable>
   </div>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
+const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-import { usePlanStatusDetailApiStore } from '@/stores/modules/api/plan/plan-status-detail-store.js'
+import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 
@@ -29,7 +53,8 @@ export default {
   name: 'ProductionPlanList',
 
   components: {
-    BaseDataTable
+    BaseDataTable,
+    imagePreview
   },
 
   props: {
@@ -59,103 +84,84 @@ export default {
       take: 10,
       skip: 0,
       sort: [],
+      mold: 'MOLD',
 
       // Columns Configuration
-
       columns: [
         {
-          field: 'woText',
-          header: 'W.O.',
-          sortable: true
+          field: 'image',
+          header: '',
+          minWidth: '50px',
+          sortable: false,
+          align: 'center'
         },
         {
-          field: 'receiveDate',
-          header: 'วันที่รับโอนงานงาน',
-          sortable: true,
-          format: 'datetime'
+          field: 'wo',
+          header: 'เลขที่ใบงาน',
+          minWidth: '150px'
         },
         {
-          field: 'receiveWorkDate',
-          header: 'วันที่ช่างรับงาน',
-          sortable: true,
-          format: 'datetime'
-        },
-        {
-          field: 'statusName',
+          field: 'status',
           header: 'สถานะงาน',
-          sortable: true
+          minWidth: '150px'
         },
         {
-          field: 'typeStatusName',
-          header: 'แผนก',
-          sortable: true
+          field: 'workerCode',
+          header: 'ช่าง',
+          minWidth: '150px'
         },
         {
-          field: 'mold',
-          header: 'เเม่พิมพ์',
-          sortable: true
+          field: 'jobDate',
+          header: 'วันที่ส่งงาน',
+          minWidth: '150px',
+          format: 'date'
         },
         {
           field: 'productNumber',
           header: 'รหัสสินค้า',
-          sortable: true
+          minWidth: '150px'
         },
         {
-          field: 'productName',
-          header: 'ชื่อสินค้า',
-          sortable: true
+          field: 'statusName',
+          header: 'เเผนกงาน',
+          minWidth: '150px'
         },
         {
-          field: 'description',
+          field: 'desc',
           header: 'รายละเอียด',
-          sortable: true
-        },
-        {
-          field: 'gold',
-          header: 'ประเภททอง',
-          sortable: true,
-          minWidth: '100px'
+          minWidth: '150px'
         },
         {
           field: 'goldQtySend',
           header: 'จำนวนจ่าย',
-          sortable: true,
-          format: 'decimal2',
-          minWidth: '100px'
+          minWidth: '150px',
+          format: 'decimal3'
         },
         {
           field: 'goldWeightSend',
-          header: 'นำหนักจ่าย',
-          sortable: true,
-          format: 'decimal2',
-          minWidth: '100px'
+          header: 'น้ำหนักจ่าย',
+          minWidth: '150px',
+          format: 'decimal3'
         },
         {
           field: 'goldQtyCheck',
           header: 'จำนวนรับ',
-          sortable: true,
-          format: 'decimal2',
-          minWidth: '100px'
+          minWidth: '150px',
+          format: 'decimal3'
         },
         {
           field: 'goldWeightCheck',
-          header: 'นำหนักรับ',
-          sortable: true,
-          format: 'decimal2',
-          minWidth: '100px'
-        },
-        {
-          field: 'workerName',
-          header: 'ช่าง',
-          sortable: true
+          header: 'น้ำหนักรับ',
+          minWidth: '150px',
+          format: 'decimal3'
         }
       ]
     }
   },
 
   setup() {
-    const planStatusDetailStore = usePlanStatusDetailApiStore()
-    return { planStatusDetailStore }
+    const planWorkerStore = usePlanWorkerApiStore()
+    return { planWorkerStore }
   },
 
   computed: {
@@ -201,7 +207,7 @@ export default {
     // ---- APIs
     async fetchData() {
       console.log('fetchData', this.form)
-      const res = await this.planStatusDetailStore.fetchDataSearch({
+      const res = await this.planWorkerStore.fetchDataSearch({
         take: this.take,
         skip: this.skip,
         sort: this.sort,
@@ -211,7 +217,7 @@ export default {
       this.data = { ...res }
     },
     async fetchDataExport() {
-      await this.planStatusDetailStore.fetchDataSearchExport({
+      await this.planWorkerStore.fetchDataSearchExport({
         sort: this.sort,
         form: this.form
       })

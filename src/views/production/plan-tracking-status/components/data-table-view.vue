@@ -1,51 +1,27 @@
 <template>
-  <div class="mt-2">
+  <div>
     <!-- @view="viewplan" -->
     <BaseDataTable
       :items="data.data"
       :totalRecords="data.total"
       :columns="columns"
       :perPage="take"
-      :scrollHeight="'calc(100vh - 290px)'"
+      :scrollHeight="'calc(100vh - 350px)'"
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-      <!-- Image Column -->
-      <template #imageTemplate="{ data }">
-        <div class="image-container">
-          <imagePreview :imageName="data.mold" :type="mold" :width="30" :height="30" />
-        </div>
-      </template>
-
-      <!-- WO Number template -->
-      <template #woTemplate="{ data: rowData }">
-        {{ `${rowData.wo}-${rowData.woNumber}` }}
-      </template>
-
-      <!-- Status template -->
-      <template #statusTemplate="{ data: rowData }">
-        {{ rowData.wagesStatus === 100 ? `สำเร็จ` : `ติดตามระหว่างผลิต` }}
-      </template>
-
-      <!-- Worker template -->
-      <template #workerCodeTemplate="{ data: rowData }">
-        {{ `${rowData.workerCode}-${rowData.workerName}` }}
-      </template>
-
-      <!-- Description template -->
-      <template #descTemplate="{ data: rowData }">
-        {{ `${rowData.gold} ${rowData.description ? `[${rowData.description}]` : ``}` }}
+      <!-- WO Column -->
+      <template #woTextTemplate="{ data }">
+        {{ `${data.wo}-${data.woNumber}` }}
       </template>
     </BaseDataTable>
   </div>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
+import { usePlanStatusDetailApiStore } from '@/stores/modules/api/plan/plan-status-detail-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 
@@ -53,8 +29,7 @@ export default {
   name: 'ProductionPlanList',
 
   components: {
-    BaseDataTable,
-    imagePreview
+    BaseDataTable
   },
 
   props: {
@@ -84,84 +59,103 @@ export default {
       take: 10,
       skip: 0,
       sort: [],
-      mold: 'MOLD',
 
       // Columns Configuration
+
       columns: [
         {
-          field: 'image',
-          header: '',
-          minWidth: '50px',
-          sortable: false,
-          align: 'center'
+          field: 'woText',
+          header: 'W.O.',
+          sortable: true
         },
         {
-          field: 'wo',
-          header: 'เลขที่ใบงาน',
-          minWidth: '150px'
+          field: 'receiveDate',
+          header: 'วันที่รับโอนงานงาน',
+          sortable: true,
+          format: 'datetime'
         },
         {
-          field: 'status',
+          field: 'receiveWorkDate',
+          header: 'วันที่ช่างรับงาน',
+          sortable: true,
+          format: 'datetime'
+        },
+        {
+          field: 'statusName',
           header: 'สถานะงาน',
-          minWidth: '150px'
+          sortable: true
         },
         {
-          field: 'workerCode',
-          header: 'ช่าง',
-          minWidth: '150px'
+          field: 'typeStatusName',
+          header: 'แผนก',
+          sortable: true
         },
         {
-          field: 'jobDate',
-          header: 'วันที่ส่งงาน',
-          minWidth: '150px',
-          format: 'date'
+          field: 'mold',
+          header: 'เเม่พิมพ์',
+          sortable: true
         },
         {
           field: 'productNumber',
           header: 'รหัสสินค้า',
-          minWidth: '150px'
+          sortable: true
         },
         {
-          field: 'statusName',
-          header: 'เเผนกงาน',
-          minWidth: '150px'
+          field: 'productName',
+          header: 'ชื่อสินค้า',
+          sortable: true
         },
         {
-          field: 'desc',
+          field: 'description',
           header: 'รายละเอียด',
-          minWidth: '150px'
+          sortable: true
+        },
+        {
+          field: 'gold',
+          header: 'ประเภททอง',
+          sortable: true,
+          minWidth: '100px'
         },
         {
           field: 'goldQtySend',
           header: 'จำนวนจ่าย',
-          minWidth: '150px',
-          format: 'decimal3'
+          sortable: true,
+          format: 'decimal2',
+          minWidth: '100px'
         },
         {
           field: 'goldWeightSend',
-          header: 'น้ำหนักจ่าย',
-          minWidth: '150px',
-          format: 'decimal3'
+          header: 'นำหนักจ่าย',
+          sortable: true,
+          format: 'decimal2',
+          minWidth: '100px'
         },
         {
           field: 'goldQtyCheck',
           header: 'จำนวนรับ',
-          minWidth: '150px',
-          format: 'decimal3'
+          sortable: true,
+          format: 'decimal2',
+          minWidth: '100px'
         },
         {
           field: 'goldWeightCheck',
-          header: 'น้ำหนักรับ',
-          minWidth: '150px',
-          format: 'decimal3'
+          header: 'นำหนักรับ',
+          sortable: true,
+          format: 'decimal2',
+          minWidth: '100px'
+        },
+        {
+          field: 'workerName',
+          header: 'ช่าง',
+          sortable: true
         }
       ]
     }
   },
 
   setup() {
-    const planWorkerStore = usePlanWorkerApiStore()
-    return { planWorkerStore }
+    const planStatusDetailStore = usePlanStatusDetailApiStore()
+    return { planStatusDetailStore }
   },
 
   computed: {
@@ -207,7 +201,7 @@ export default {
     // ---- APIs
     async fetchData() {
       console.log('fetchData', this.form)
-      const res = await this.planWorkerStore.fetchDataSearch({
+      const res = await this.planStatusDetailStore.fetchDataSearch({
         take: this.take,
         skip: this.skip,
         sort: this.sort,
@@ -217,7 +211,7 @@ export default {
       this.data = { ...res }
     },
     async fetchDataExport() {
-      await this.planWorkerStore.fetchDataSearchExport({
+      await this.planStatusDetailStore.fetchDataSearchExport({
         sort: this.sort,
         form: this.form
       })

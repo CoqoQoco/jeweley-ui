@@ -6,16 +6,16 @@
 </template>
 
 <script>
-import headerBar from './components/HeaderView.vue'
-import dataTable from './components/DataTableView.vue'
+import headerBar from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 
 const interfaceForm = {
   bookNo: null,
   no: null,
   text: null,
   runningNumber: null,
-  createStart: null,
-  createEnd: null
+  createStart: new Date(new Date().setDate(new Date().getDate() - 7)),
+  createEnd: new Date()
 }
 export default {
   components: {

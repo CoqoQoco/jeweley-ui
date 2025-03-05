@@ -21,6 +21,7 @@
               class="w-100"
               v-model="form.createStart"
               :max-date="form.createEnd"
+              :manualInput="false"
               showIcon
               placeholder="เริ่มต้น"
             />
@@ -29,6 +30,7 @@
               class="w-100"
               v-model="form.createEnd"
               :min-date="form.createStart"
+              :manualInput="false"
               showIcon
               placeholder="สิ้นสุด"
             />
@@ -101,7 +103,7 @@
         >
           <span><i class="bi bi-zoom-in"></i></span>
         </button>
-        <button class="btn btn-sm btn-dark" type="button" @click="onClear"> 
+        <button class="btn btn-sm btn-dark" type="button" @click="onClear">
           <span><i class="bi bi-x-circle"></i></span>
         </button>
       </div>

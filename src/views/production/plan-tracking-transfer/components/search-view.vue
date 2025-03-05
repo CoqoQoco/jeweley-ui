@@ -3,60 +3,59 @@
     <form @submit.prevent="onSearch">
       <div>
         <div>
-          <pageTitle
-            title="ตรวจสอบสถานะงานผลิต"
-            description="ตรวจสอบ ติดตาม การดำเนินงาน รับ-จ่ายงาน เเต่ละเเผนก"
-            :isShowBtnClose="false"
-          >
+          <pageTitle title="ติดตามการ โอนงาน/รับงาน, โอนสินค้า" :isShowBtnClose="false">
           </pageTitle>
         </div>
 
         <div class="form-col-container">
-          <!-- receive date -->
+          <!-- date -->
           <div>
-            <span class="title-text">วันที่รับโอนงาน</span>
+            <span class="title-text">วันที่โอนงาน/สินค้า</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
-                v-model="form.requestDateStart"
-                :max-date="form.requestDateEnd"
-                dateFormat="dd/mm/yy"
+                v-model="form.start"
+                :max-date="form.end"
+                :manualInput="false"
                 showIcon
                 placeholder="เริ่มต้น"
+                dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <Calendar
                 class="w-100"
-                v-model="form.requestDateEnd"
-                :min-date="form.requestDateStart"
-                dateFormat="dd/mm/yy"
+                v-model="form.end"
+                :min-date="form.start"
+                :manualInput="false"
                 showIcon
                 placeholder="สิ้นสุด"
+                dateFormat="dd/mm/yy"
               />
             </div>
           </div>
 
-          <!-- receive work date -->
-          <div>
-            <span class="title-text">วันที่ช่างรับงาน</span>
-            <div class="flex-group">
-              <Calendar
-                class="w-100"
-                v-model="form.receiveWorkDateStart"
-                :max-date="form.receiveWorkDateEnd"
-                dateFormat="dd/mm/yy"
-                showIcon
-                placeholder="เริ่มต้น"
-              />
-              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
-                v-model="form.receiveWorkDateEnd"
-                :min-date="form.receiveWorkDateStart"
-                dateFormat="dd/mm/yy"
-                showIcon
-                placeholder="สิ้นสุด"
-              />
+          <div class="form-col-container">
+            <div>
+              <span class="title-text">แผนก โอนงาน-รับงาน</span>
+              <div>
+                <div class="flex-group">
+                  <Dropdown
+                    v-model="form.statusFormer"
+                    :options="planStatus"
+                    optionLabel="nameTh"
+                    optionValue="id"
+                    class="w-full md:w-14rem"
+                  />
+                  <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+                  <Dropdown
+                    v-model="form.statusTarget"
+                    :options="planStatus"
+                    optionLabel="nameTh"
+                    optionValue="id"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -69,44 +68,84 @@
         >
           <template #content>
             <div class="form-col-container">
-              <!-- status -->
+              <!-- wo text -->
               <div>
-                <span class="title-text">ประเภทงาน</span>
+                <span class="title-text">เลขที่ W.O.</span>
+                <div class="input-group input-group-inner">
+                  <input
+                    ref="inputText"
+                    id="inputText"
+                    :class="['form-control bg-input']"
+                    type="text"
+                    v-model.trim="form.woText"
+                    placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                  />
+                  <div class="input-group-append" @click="focusInputText">
+                    <span class="input-group-text">
+                      <i class="bi bi-upc-scan text-main-color"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- modld -->
+              <div>
+                <span class="title-text">เเม่พิมพ์</span>
+                <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
+              </div>
+
+              <!-- product type -->
+              <div>
+                <span class="title-text">ประเภทสินค้า</span>
                 <div>
                   <MultiSelect
-                    v-model="form.status"
-                    :options="masterApiStore.planStatus"
+                    v-model="form.productType"
+                    :options="productType"
                     optionLabel="nameTh"
-                    optionValue="id"
-                    filter
+                    optionValue="code"
                     class="w-full md:w-14rem"
                   />
                 </div>
               </div>
 
-              <!-- gold -->
+              <!-- product number -->
               <div>
-                <span class="title-text">ประเภททอง</span>
-                <MultiSelect
-                  v-model="form.gold"
-                  :options="masterApiStore.gold"
-                  filter
-                  optionLabel="description"
-                  optionValue="code"
-                  class="w-full md:w-14rem"
+                <span class="title-text">รหัสสินค้า</span>
+                <input
+                  ref="inputText"
+                  id="inputText"
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="form.productNumber"
                 />
               </div>
 
-              <!-- wo -->
+              <!-- gold -->
               <div>
-                <span class="title-text">เลขที่ใบงาน</span>
-                <input :class="['form-control']" type="text" v-model.trim="form.wo" />
+                <span class="title-text">สีของทอง/เงิน</span>
+                <div>
+                  <MultiSelect
+                    v-model="form.gold"
+                    :options="gold"
+                    optionLabel="nameTh"
+                    optionValue="nameEn"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
               </div>
-              
-              <!-- product no  -->
+
+              <!-- gold size -->
               <div>
-                <span class="title-text">รหัสสินค้า</span>
-                <input :class="['form-control']" type="text" v-model.trim="form.productNo" />
+                <span class="title-text">ประเภททอง/เงิน</span>
+                <div>
+                  <MultiSelect
+                    v-model="form.goldSize"
+                    :options="goldSize"
+                    optionLabel="nameTh"
+                    optionValue="nameEn"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
               </div>
             </div>
           </template>
@@ -144,10 +183,10 @@
             <button
               :class="[
                 'btn btn-sm btn-primary',
-                { 'btn-secondary': !planStatusDetailStore.dataSearcTotalRecord > 0 }
+                { 'btn-secondary': !planSearchStore.dataTransferTotalRecord > 0 }
               ]"
               type="button"
-              :disabled="!planStatusDetailStore.dataSearcTotalRecord > 0"
+              :disabled="!planSearchStore.dataTransferTotalRecord > 0"
               @click="onExport"
             >
               <span><i class="bi bi-filetype-csv"></i></span>
@@ -163,15 +202,17 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
 import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
+import Dropdown from 'primevue/dropdown'
 
+import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { usePlanStatusDetailApiStore } from '@/stores/modules/api/plan/plan-status-detail-store.js'
+import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
 //import api from '@/axios/axios-helper.js'
 
 const interfaceIsShow = {
@@ -182,13 +223,17 @@ export default {
     pageTitle,
     MultiSelect,
     Calendar,
-    //Dropdown,
+    Dropdown,
     dialogView
   },
   props: {
     modelForm: {
       type: Object,
       default: () => ({})
+    },
+    masterPlanStatus: {
+      type: Array,
+      default: () => []
     }
   },
   watch: {
@@ -202,7 +247,16 @@ export default {
   computed: {
     isExportData() {
       return true
-    }
+    },
+
+    ...mapState(useMasterApiStore, [
+      'planStatus',
+      'gold',
+      'goldSize',
+      'customerType',
+      'productType',
+      'overPlanOptions'
+    ])
   },
   data() {
     return {
@@ -213,9 +267,8 @@ export default {
   },
 
   setup() {
-    const masterApiStore = useMasterApiStore()
-    const planStatusDetailStore = usePlanStatusDetailApiStore()
-    return { planStatusDetailStore, masterApiStore }
+    const planSearchStore = usePlanUpdateApiStore()
+    return { planSearchStore }
   },
 
   methods: {

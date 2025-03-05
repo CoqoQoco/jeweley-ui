@@ -1,6 +1,5 @@
 <template>
   <div>
-  
     <modal :showModal="isShow" @closeModal="closeModal" width="1000px">
       <template v-slot:content>
         <!-- ข้อมูล -->
@@ -8,201 +7,202 @@
           <span class="mr-1"><i class="bi bi-journal-text"></i></span>
           <span>ข้อมูลเบิกผสมทอง</span>
         </div>
-        <div class="filter-container">
-          <div class="form-col-sm-container">
-            <div class="d-flex flex-column">
-              <span class="title-text">เล่มที่</span>
-              <span class="desc-text">{{ form.bookNo }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">เลขที่</span>
-              <span class="desc-text">{{ form.no }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">วันที่</span>
-              <span class="desc-text">{{ formatDate(form.assignDate) }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">หมายเลขลำดับ</span>
-              <span class="desc-text">{{ form.runningNumber }}</span>
-            </div>
-          </div>
-          <div class="form-col-sm-container">
-            <div class="d-flex flex-column">
-              <span class="title-text">ประเภททอง</span>
-              <span class="desc-text">{{
-                form.gold ? `${form.gold?.code}:${form.gold?.nameTh}` : ``
-              }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">เปอร์เซ็นทอง</span>
-              <span class="desc-text">{{ form.goldSize ? `${form.goldSize?.nameTh}` : `` }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">สูตรผสมทอง</span>
-              <span class="desc-text">{{ form.goldReceipt }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">ราคาทอง</span>
-              <span class="desc-text">{{ form.cost }}</span>
-            </div>
-          </div>
-          <div class="form-col-sm-container">
-            <div class="d-flex flex-column">
-              <span class="title-text">ชื่อผู้เบิกทอง</span>
-              <span class="desc-text">{{ form.assignBy }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">ชื่อผู้รับทอง</span>
-              <span class="desc-text">{{ form.receiveBy }}</span>
-            </div>
-            <div class="d-flex flex-column">
-              <span class="title-text">รายละเอียดอื่นๆ</span>
-              <span class="desc-text">{{ form.remark }}</span>
-            </div>
-            <div></div>
-          </div>
-        </div>
 
-        <div class="line"></div>
-
-        <!-- รายละเอียด -->
-        <div class="form-col-sm-container title-text-lg-bg">
-          <div>
-            <div class="">
-              <span><i class="bi bi-card-checklist mr-1"></i></span>
-              <span> เบิกทองหล่อ</span>
-            </div>
-            <!-- <small class="ml-4">{{ `วันที่เบิกหลอม: ${formatDate(form.meltDate)}` }}</small> -->
-          </div>
-          <div class="font-weight-bold">รายการ</div>
-          <div class="font-weight-bold text-right">น้ำหนัก</div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div class="ml-2">
-            <small>{{ `วันที่เบิกหล่อ: ${formatDate(form.castDate)}` }}</small>
-          </div>
-          <div class="text-main">เบิกหล่อ</div>
-          <div class="text-main text-right">
-            {{ form.castWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">คืนทองหล่อ</div>
-          <div class="text-main text-right">
-            {{ form.returnCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">คืนขี้เบ้า</div>
-          <div class="text-main text-right">
-            {{ form.returnCastScrapWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">คืนเเม่พิมพ์</div>
-          <div class="text-main text-right">
-            {{ form.returnCastMoldWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">คืนตัวเรือน</div>
-          <div class="text-main text-right">
-            {{ form.returnCastBodyWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">คืนตัวเรือนเสีย</div>
-          <div class="text-main text-right">
-            {{
-              form.returnCastBodyBrokenWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
-            }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">คืนผงทอง</div>
-          <div class="text-main text-right">
-            {{ form.returnCastPowderWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">น้ำหนักขาด</div>
-          <div class="text-main text-right">
-            {{ form.castWeightLoss?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-        <div class="form-col-sm-container mr-3">
-          <div></div>
-          <div class="text-main">น้้ำหนักเกิน</div>
-          <div class="text-main text-right">
-            {{ form.castWeightOver?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
-          </div>
-        </div>
-
-        <div class="line"></div>
-
-        <div class="form-col-sm-container title-text-lg-bg">
-          <div>
-            <div class="">
-              <span><i class="bi bi-gem mr-1"></i></span>
-              <span> คืนตัวเรือน</span>
-            </div>
-          </div>
-          <div class="">รายการ</div>
-          <div class="d-flex justify-content-between">
-            <div class="">จำนวน</div>
-            <div class="">น้ำหนัก</div>
-          </div>
-        </div>
-        <div v-if="form.items.length">
-          <div v-for="(item, index) in form.items" :key="index">
+        <div class="p-4">
+          <div class="filter-container">
             <div class="form-col-sm-container">
+              <div class="d-flex flex-column">
+                <span class="title-text">เล่มที่</span>
+                <span class="desc-text">{{ form.bookNo }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">เลขที่</span>
+                <span class="desc-text">{{ form.no }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">วันที่</span>
+                <span class="desc-text">{{ formatDate(form.assignDate) }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">หมายเลขลำดับ</span>
+                <span class="desc-text">{{ form.runningNumber }}</span>
+              </div>
+            </div>
+            <div class="form-col-sm-container">
+              <div class="d-flex flex-column">
+                <span class="title-text">ประเภททอง</span>
+                <span class="desc-text">{{
+                  form.gold ? `${form.gold?.code}:${form.gold?.nameTh}` : ``
+                }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">เปอร์เซ็นทอง</span>
+                <span class="desc-text">{{ form.goldSize ? `${form.goldSize?.nameTh}` : `` }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">สูตรผสมทอง</span>
+                <span class="desc-text">{{ form.goldReceipt }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">ราคาทอง</span>
+                <span class="desc-text">{{ form.cost }}</span>
+              </div>
+            </div>
+            <div class="form-col-sm-container">
+              <div class="d-flex flex-column">
+                <span class="title-text">ชื่อผู้เบิกทอง</span>
+                <span class="desc-text">{{ form.assignBy }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">ชื่อผู้รับทอง</span>
+                <span class="desc-text">{{ form.receiveBy }}</span>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="title-text">รายละเอียดอื่นๆ</span>
+                <span class="desc-text">{{ form.remark }}</span>
+              </div>
               <div></div>
-              <div class="text-main">
-                {{ `${item.productionPlan.wo}-${item.productionPlan.woNumber}` }}
+            </div>
+          </div>
+
+          <!-- รายละเอียด -->
+          <div class="form-col-sm-container title-text-lg-bg mt-4">
+            <div>
+              <div class="">
+                <span><i class="bi bi-card-checklist mr-1"></i></span>
+                <span> เบิกทองหล่อ</span>
               </div>
-              <div class="d-flex justify-content-between">
-                <div class="text-main">
-                  {{ item.returnQTY.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              <!-- <small class="ml-4">{{ `วันที่เบิกหลอม: ${formatDate(form.meltDate)}` }}</small> -->
+            </div>
+            <div class="font-weight-bold">รายการ</div>
+            <div class="font-weight-bold text-right">น้ำหนัก</div>
+          </div>
+          <div class="border-container p-2">
+            <div class="form-col-sm-container mr-3">
+              <div class="ml-2">
+                <small>{{ `วันที่เบิกหล่อ: ${formatDate(form.castDate)}` }}</small>
+              </div>
+              <div class="text-main">เบิกหล่อ</div>
+              <div class="text-main text-right">
+                {{ form.castWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">คืนทองหล่อ</div>
+              <div class="text-main text-right">
+                {{ form.returnCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">คืนขี้เบ้า</div>
+              <div class="text-main text-right">
+                {{ form.returnCastScrapWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">คืนเเม่พิมพ์</div>
+              <div class="text-main text-right">
+                {{ form.returnCastMoldWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">คืนตัวเรือน</div>
+              <div class="text-main text-right">
+                {{ form.returnCastBodyWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">คืนตัวเรือนเสีย</div>
+              <div class="text-main text-right">
+                {{
+                  form.returnCastBodyBrokenWeight?.toFixed(2) ??
+                  defaultDisplay.emptyValue.toFixed(2)
+                }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">คืนผงทอง</div>
+              <div class="text-main text-right">
+                {{
+                  form.returnCastPowderWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
+                }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">น้ำหนักขาด</div>
+              <div class="text-main text-right">
+                {{ form.castWeightLoss?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
+              <div class="text-main">น้้ำหนักเกิน</div>
+              <div class="text-main text-right">
+                {{ form.castWeightOver?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-col-sm-container title-text-lg-bg mt-4">
+            <div>
+              <div class="">
+                <span><i class="bi bi-gem mr-1"></i></span>
+                <span> คืนตัวเรือน</span>
+              </div>
+            </div>
+            <div class="">รายการ</div>
+            <div class="d-flex justify-content-between">
+              <div class="">จำนวน</div>
+              <div class="">น้ำหนัก</div>
+            </div>
+          </div>
+          <div class="border-container p-2">
+            <div v-if="form.items.length">
+              <div v-for="(item, index) in form.items" :key="index">
+                <div class="form-col-sm-container">
+                  <div></div>
+                  <div class="text-main">
+                    {{ `${item.productionPlan.wo}-${item.productionPlan.woNumber}` }}
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <div class="text-main">
+                      {{ item.returnQTY.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+                    </div>
+                    <div class="text-main text-right mr-3">
+                      {{ item.returnWeight.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+                    </div>
+                  </div>
                 </div>
+              </div>
+              <div class="form-col-sm-container">
+                <div></div>
+                <div class="text-main font-weight-bold">รวมน้ำหนักคืนตัวเรือน</div>
                 <div class="text-main text-right mr-3">
-                  {{ item.returnWeight.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+                  {{ form.returnCastBodyWeight.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
                 </div>
               </div>
             </div>
-          </div>
-          <div class="form-col-sm-container">
-            <div></div>
-            <div class="text-main font-weight-bold">รวมน้ำหนักคืนตัวเรือน</div>
-            <div class="text-main text-right mr-3">
-              {{ form.returnCastBodyWeight.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
+            <div v-else class="d-flex justify-content-center">
+              <div style="color: var(--base-sub-color)">-- ไม่มีรายการคืนตัวเรือน --</div>
             </div>
           </div>
-        </div>
-        <div v-else class="d-flex justify-content-center">
-          <div style="color: var(--base-sub-color)">-- ไม่มีรายการคืนตัวเรือน --</div>
-        </div>
 
-        <div class="line"></div>
-
-        <div class="d-flex justify-content-center mt-3">
-          <button class="btn btn-sm btn-dark btn-custom mr-2" type="button" @click="closeModal">
-            <span class="mr-2"><i class="bi bi-x-circle"></i></span>
-            <span>ปิดหน้าต่าง</span>
-          </button>
-          <button class="btn btn-sm btn-info btn-custom" type="button" @click="generatePDF()">
-            <span class="mr-2"><i class="bi bi-printer"></i></span>
-            <span>พิมพ์เอกสาร</span>
-          </button>
+          <div class="d-flex justify-content-center mt-3">
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
+              <span class="bi bi-x-circle"></span>
+            </button>
+            <button class="btn btn-sm btn-info" type="button" @click="generatePDF()">
+              <span class="bi bi-printer"></span>
+            </button>
+          </div>
         </div>
-        <div class="p-2"></div>
       </template>
     </modal>
   </div>
@@ -210,7 +210,6 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
@@ -268,7 +267,7 @@ const interfaceIsValid = {
 }
 export default {
   components: {
-    modal,
+    modal
     // Dropdown,
     // Calendar,
     // DataTable,

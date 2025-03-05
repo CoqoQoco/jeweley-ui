@@ -1,15 +1,15 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 const PlanOrder = () => import('@/views/production/plan-create/index-view.vue')
 const PlanGoldOrder = () => import('@/views/production/plan-gold/index-view.vue')
-const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/IndexView.vue')
+const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/index-view.vue')
 const PlanOrderTracking = () => import('@/views/production/plan-tracking/index-view.vue')
 const PlanOrderTrackingStatus = () =>
-  import('@/views/production/plan-tracking-status/IndexView.vue')
+  import('@/views/production/plan-tracking-status/index-view.vue')
 const PlanOrderTrackingWorker = () =>
-  import('@/views/production/plan-tracking-worker/IndexView.vue')
+  import('@/views/production/plan-tracking-worker/index-view.vue')
 const PlanOrderTrackingView = () => import('@/views/production/plan-update/index-view.vue')
 const PlanOrderTransferTracking = () =>
-  import('@/views/production/plan-tracking-transfer/IndexView.vue')
+  import('@/views/production/plan-tracking-transfer/index-view.vue')
 const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
@@ -165,32 +165,32 @@ const routes = [
       },
 
       // report
-      {
-        path: '/report-production',
-        name: 'report-production',
-        component: ReportProduction,
-        meta: {
-          Displayname: {
-            en: 'Production Plan Report',
-            th: 'รายงานผลิต'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.PRODUCTION_VIEW]
-        }
-      },
-      {
-        path: '/report-production-plan-gold',
-        name: 'report-production-plan-gold',
-        component: ReportProductionGoldCost,
-        meta: {
-          Displayname: {
-            en: 'Plan Gold Report',
-            th: 'รายงานใบเบิกผสมทอง'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.PRODUCTION_VIEW]
-        }
-      }
+      // {
+      //   path: '/report-production',
+      //   name: 'report-production',
+      //   component: ReportProduction,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Production Plan Report',
+      //       th: 'รายงานผลิต'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.PRODUCTION_VIEW]
+      //   }
+      // },
+      // {
+      //   path: '/report-production-plan-gold',
+      //   name: 'report-production-plan-gold',
+      //   component: ReportProductionGoldCost,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Plan Gold Report',
+      //       th: 'รายงานใบเบิกผสมทอง'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.PRODUCTION_VIEW]
+      //   }
+      // }
     ]
   }
 ]
