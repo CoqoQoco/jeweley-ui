@@ -9,7 +9,7 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
 
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
-const Customer = () => import('@/views/customer/IndexView.vue')
+const Customer = () => import('@/views/customer/list-customer/index-view.vue')
 
 //worker
 const WorkerList = () => import('@/views/worker/worker-list/IndexView.vue')

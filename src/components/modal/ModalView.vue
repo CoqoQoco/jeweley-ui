@@ -17,7 +17,7 @@
           <slot name="title"></slot>
         </div>
         <button class="btn float-close" @click="closeModal">
-          <i class="bi-x-square-fill"></i>
+          <i class="bi-x-square-fill text-custom"></i>
         </button>
       </div>
       <!-- Content -->
@@ -122,8 +122,14 @@ export default {
   top: 0;
   right: 0;
   font-size: 20px;
-  color: var(--base-sub-color);
+  //color: var(--base-sub-color);
+  //border: 1px solid var(--base-sub-color);
   z-index: 10000;
+
+  .text-custom {
+    //color: var(--base-sub-color);
+    background-color: var(--base-font-color);
+  }
 }
 // Override Class
 // .k-animation-container {

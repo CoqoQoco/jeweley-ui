@@ -92,6 +92,8 @@ input {
   margin-top: 5px !important;
 }
 input[type='text'],
+input[type='email'],
+input[type='tel'],
 input[type='number'] {
   font-size: $base-font-size !important;
 }
