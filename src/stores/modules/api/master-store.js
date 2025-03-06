@@ -18,6 +18,7 @@ export const useMasterApiStore = defineStore('master', {
     gem: [],
     customerType: [],
     productType: [],
+    workerType: [],
     error: null,
     cacheTimestamps: {
       planStatus: null,
@@ -208,7 +209,7 @@ export const useMasterApiStore = defineStore('master', {
     // },
 
     // Updated individual fetch methods
-    async fetchPlanStatus(forceFetch = false) {
+    async fetchPlanStatus() {
       return this.fetchWithCache(
         'planStatus',
         'ProductionPlan/GetProductionPlanStatus',
@@ -216,19 +217,19 @@ export const useMasterApiStore = defineStore('master', {
       )
     },
 
-    async fetchGold(forceFetch = false) {
+    async fetchGold() {
       return this.fetchWithCache('gold', 'Master/MasterGold', 'Error fetching gold')
     },
 
-    async fetchGoldSize(forceFetch = false) {
+    async fetchGoldSize() {
       return this.fetchWithCache('goldSize', 'Master/MasterGoldSize', 'Error fetching gold size')
     },
 
-    async fetchGem(forceFetch = false) {
+    async fetchGem() {
       return this.fetchWithCache('gem', 'Master/MasterGem', 'Error fetching gem')
     },
 
-    async fetchCustomerType(forceFetch = false) {
+    async fetchCustomerType() {
       return this.fetchWithCache(
         'customerType',
         'Master/MasterCustomerType',
@@ -236,10 +237,17 @@ export const useMasterApiStore = defineStore('master', {
       )
     },
 
-    async fetchProductType(forceFetch = false) {
+    async fetchProductType() {
       return this.fetchWithCache(
         'productType',
         'Master/MasterProductType',
+        'Error fetching product type'
+      )
+    },
+    async fetchWorkerType() {
+      return this.fetchWithCache(
+        'workerType',
+        'Worker/GetWorkerProductionType',
         'Error fetching product type'
       )
     },

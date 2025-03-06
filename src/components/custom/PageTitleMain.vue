@@ -1,6 +1,6 @@
 <template>
   <div id="wmsPageTitle" class="page-title-container">
-    <div>
+    <div class="row">
       <!-- แสดง Title และ Desctiption -->
       <div :class="[!isShowRightSlot ? 'col-12' : 'col-9']">
         <p class="title">{{ title }}</p>
@@ -63,7 +63,7 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: #f7f7f7;
   //background-color: var(--base-color);
-  padding: 10px ;
+  padding: 10px;
   //margin-top: 10px;
   overflow: auto;
 }
@@ -75,7 +75,7 @@ export default {
   position: relative;
   border-radius: 5px;
 
-  padding: 10px 10px 10px 0px;
+  padding: 10px 10px 10px 10px;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: var(--base-font-color);
 

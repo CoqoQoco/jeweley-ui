@@ -13,7 +13,7 @@
   //margin-top: 10px;
   overflow: auto;
 }
-.filter-container-main{
+.filter-container-main {
   border: 1px solid #dddddd;
   border-radius: 5px;
 
@@ -148,6 +148,16 @@
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
+  padding: 10px 0px;
+  //border-top: 1px solid var(--base-font-color);
+  // button{
+  //     width: 200px;
+  // }
+}
+.submit-container-start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
   padding: 10px 0px;
   //border-top: 1px solid var(--base-font-color);
   // button{

@@ -3,7 +3,7 @@ import Layout from '@/layout/web/LayoutDashboard.vue'
 
 import account from '@/views/setting/user-account/index-view.vue'
 import EditAccount from '@/views/setting/edit-account/index-view.vue'
-import EditAccountView from '@/views/setting/edit-account/view/AccountView.vue'
+import EditAccountView from '@/views/setting/edit-account/view/account-view.vue'
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [

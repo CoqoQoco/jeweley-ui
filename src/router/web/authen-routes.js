@@ -12,8 +12,8 @@ const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 const Customer = () => import('@/views/customer/list-customer/index-view.vue')
 
 //worker
-const WorkerList = () => import('@/views/worker/worker-list/IndexView.vue')
-const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/IndexView.vue')
+const WorkerList = () => import('@/views/worker/worker-list/index-view.vue')
+const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/index-view.vue')
 
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/index-view.vue')
@@ -121,7 +121,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Worker Name',
-            th: 'ข้อมูลพนักงาน (ช่าง)'
+            th: 'ข้อมูลช่าง'
           },
           minorShow: true,
           permissions: [PERMISSIONS.WORKER_VIEW]

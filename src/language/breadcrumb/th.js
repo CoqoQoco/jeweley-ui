@@ -23,7 +23,7 @@ export default {
   customer: 'รายชื่อลูกค้า',
 
   //worker
-  workerName: 'ข้อมูลพนักงาน (ช่าง)',
+  workerName: 'ช่าง',
   workerDailyWages: 'ตรวจสอบค่าเเรง',
 
   //stock

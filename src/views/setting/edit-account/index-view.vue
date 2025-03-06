@@ -15,8 +15,8 @@
 </template>
 
 <script>
-import search from './components/SearchBar.vue'
-import dataTable from './components/DataTable.vue'
+import search from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 
 const interfaceForm = {
   username: null,
