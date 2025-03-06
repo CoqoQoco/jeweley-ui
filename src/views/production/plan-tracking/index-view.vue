@@ -23,7 +23,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
 const interfaceForm = {
-  start: new Date(new Date().setDate(new Date().getDate() - 7)),
+  start: new Date(new Date().setDate(new Date().getDate() - 30)),
   end: new Date(),
   sendStart: null,
   sendEnd: null,
