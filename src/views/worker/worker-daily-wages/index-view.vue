@@ -1,55 +1,29 @@
 <template>
   <div class="app-container">
-    <div class="filter-container-searchBar">
+    <form @submit.prevent="onSearch">
       <pageTitle
-        title="ตรวจสอบค่าเเรง (ช่าง)"
-        description="ตรสจสอบค่าเเรง(ช่าง) พิมพ์เอกสาร เเละรายละเอียดต่างๆ"
+        :title="`ตรวจสอบค่าเเรงช่าง : ${data.code ?? ''} - ${data.nameTh ?? ''}`"
         :isShowBtnClose="false"
-        isShowRightSlot
+        :isShowRightSlot="false"
       >
+        <template #rightSlot>
+          <button class="btn btn-sm btn-warning mr-2" type="button" @click="onCreate" title="สร้าง">
+            <span><i class="bi bi-search"></i></span>
+          </button>
+        </template>
       </pageTitle>
-      <form @submit.prevent="onSearch">
-        <div class="info-bar-container">
+      <div class="p-2">
+        <div class="form-col-container">
+          <!-- date -->
           <div>
-            <span class="text-title">รหัส</span>
-            <div class="input-group input-group-inner">
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                :value="`${data.code} - ${data.nameTh}`"
-                disabled
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-person-bounding-box text-main-color"></i>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <span class="text-title">แผนก</span>
-            <div class="input-group input-group-inner">
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                :value="`${data.typeName}`"
-                disabled
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-card-list text-main-color"></i>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <span class="text-title">เลือกวันที่ตรวจสอบ</span>
+            <span class="title-text">วันที่ตรวจสอบ</span>
             <div class="flex-group">
               <Calendar
                 class="w-100"
                 v-model="form.requestDateStart"
                 :max-date="form.requestDateEnd"
                 :class="val.isValRequestDateStart === true ? `p-invalid` : ``"
+                :manualInput="false"
                 showIcon
                 dateFormat="dd/mm/yy"
                 placeholder="เริ่มต้น"
@@ -60,165 +34,166 @@
                 v-model="form.requestDateEnd"
                 :min-date="form.requestDateStart"
                 :class="val.isValRequestDateEnd === true ? `p-invalid` : ``"
+                :manualInput="false"
                 showIcon
                 dateFormat="dd/mm/yy"
                 placeholder="สิ้นสุด"
               />
+              <!-- <div class="submit-container ml-5">
+                <button class="btn btn-sm btn-main mr-2" type="submit">
+                  <span><i class="bi bi-search"></i></span>
+                </button>
+                <button class="btn btn-sm btn-dark" type="button" @click="onClear">
+                  <span><i class="bi bi-x-circle"></i></span>
+                </button>
+              </div> -->
             </div>
-            <!-- <div>
-              <Calendar
-                v-model="form.requestDate"
-                :class="val.isValRequestDate === true ? `p-invalid` : ``"
-                showIcon
-                showButtonBar
-              />
-            </div> -->
           </div>
-          <div class="btn-container">
-            <button class="btn btn-sm btn-main mr-2" type="submit">
-              <span><i class="bi bi-search"></i></span>
-              <!-- <span class="ml-2">ตรวจสอบ</span> -->
-            </button>
-            <!-- <button class="btn btn-sm btn-dark" type="button" @click="onClear">
-              <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ล้างค้นหา</span>
-            </button> -->
+
+          <div>
+            <div class="d-flex justify-content-start">
+              <button
+                class="btn btn-sm btn-green"
+                type="submit"
+                style="height: 35px; margin-top: 27px"
+              >
+                <span><i class="bi bi-search mr-2"></i></span>
+                <span>ตรวจสอบ</span>
+              </button>
+            </div>
           </div>
         </div>
-      </form>
-    </div>
-    <div v-if="isShowDataTable" class="data-table-container mt-2">
-      <!-- scrollHeight="calc(100vh - 305px)" -->
-      <DataTable
-        :value="dataWages.items"
-        class="p-datatable-sm"
-        scrollHeight="calc(100vh - 280px)"
-        show-gridlines
-        scrollable
-        resizableColumns
-      >
-        <ColumnGroup type="header">
-          <Row>
-            <Column header="เลขที่ใบงาน"></Column>
-            <Column header="สถานะใบงาน"></Column>
-            <Column header="วันที่ส่งงาน"></Column>
-            <Column header="รหัสสินค้า"></Column>
-            <Column header="สถานะ"></Column>
-            <Column header="เเผนกงาน"></Column>
-            <Column header="รายละเอียด"></Column>
-            <Column header="จำนวนจ่าย"></Column>
-            <Column header="น้ำหนักจ่าย"></Column>
-            <Column header="จำนวนรับ"></Column>
-            <Column header="น้ำหนักรับ"></Column>
-            <Column header="ราคาต่อหน่วย"></Column>
-            <Column header="ราคา"></Column>
-          </Row>
-        </ColumnGroup>
-        <Column field="wo">
-          <template #body="slotProps">
-            {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
-          </template>
-        </Column>
-        <Column field="statusActiveName"></Column>
-        <Column field="jobDate">
-          <template #body="slotProps">
-            {{ `${formatDate(slotProps.data.jobDate)}` }}
-          </template>
-        </Column>
-        <Column field="productNumber"></Column>
-        <Column field="status">
-          <template #body="slotProps">
-            {{ slotProps.data.wagesStatus === 100 ? `สำเร็จ` : `ติดตามระหว่างผลิต` }}
-          </template>
-        </Column>
-        <Column field="statusName"></Column>
-        <Column field="desc">
-          <template #body="slotProps">
-            {{
-              `${slotProps.data.gold} ${
-                slotProps.data.description ? `[${slotProps.data.description}]` : ``
-              }`
-            }}
-          </template>
-        </Column>
-        <Column field="goldQtySend">
-          <template #body="slotProps">
-            {{
-              slotProps.data.status === 70
-                ? slotProps.data.goldQtyCheck
-                : slotProps.data.goldQtySend
-            }}
-          </template>
-        </Column>
-        <Column field="goldWeightSend">
-          <template #body="slotProps">
-            {{
-              slotProps.data.status === 70
-                ? slotProps.data.goldWeightCheck
-                : slotProps.data.goldWeightSend
-            }}
-          </template>
-        </Column>
-        <Column field="goldQtyCheck">
-          <template #body="slotProps">
-            {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldQtyCheck }}
-          </template>
-        </Column>
-        <Column field="goldWeightCheck">
-          <template #body="slotProps">
-            {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldWeightCheck }}
-          </template></Column
-        >
-        <Column field="wages">
-          <template #body="slotProps">
-            <div>
-              {{
-                `${
-                  slotProps.data.wages
-                    ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
-                    : Number(0).toFixed(2).toLocaleString()
-                }`
-              }}
-            </div>
-          </template>
-        </Column>
-        <Column field="totalWages">
-          <template #body="slotProps">
-            <div>
-              {{
-                `${
-                  slotProps.data.totalWages
-                    ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
-                    : Number(0).toFixed(2).toLocaleString()
-                }`
-              }}
-            </div>
-          </template>
-        </Column>
-        <ColumnGroup type="footer">
-          <Row>
-            <Column :footer="`จำวนวน  ${dataWages.items.length}  รายการ`" :colspan="5" />
-            <Column footer="รวมจำนวนรับ" :colspan="3" footerStyle="text-align:right" />
-            <Column :footer="dataWages.totalGoldQtyCheck" />
-            <Column footer="รวมราคา" :colspan="3" footerStyle="text-align:right" />
-            <Column
-              :footer="
-                dataWages.totalWages
-                  ? Number(dataWages.totalWages).toFixed(2).toLocaleString()
-                  : Number(0).toFixed(2).toLocaleString()
-              "
-            />
-          </Row>
-        </ColumnGroup>
-      </DataTable>
-    </div>
-    <div v-if="isShowNoDataTable">
-      <div class="data-table-container-no-value mt-4">
-        <span>--- ไม่พบข้อมูล ---</span>
       </div>
-    </div>
-    <div v-if="isShowDataTable">
-      <div class="btn-container">
+    </form>
+
+    <div class="p-2">
+      <div class="data-table-container mt-2">
+        <!-- scrollHeight="calc(100vh - 305px)" -->
+        <DataTable
+          :value="dataWages.items"
+          class="p-datatable-sm"
+          scrollHeight="calc(100vh - 280px)"
+          show-gridlines
+          scrollable
+          resizableColumns
+        >
+          <ColumnGroup type="header">
+            <Row>
+              <Column header="เลขที่ใบงาน"></Column>
+              <Column header="สถานะใบงาน"></Column>
+              <Column header="วันที่ส่งงาน"></Column>
+              <Column header="รหัสสินค้า"></Column>
+              <Column header="สถานะ"></Column>
+              <Column header="เเผนกงาน"></Column>
+              <Column header="รายละเอียด"></Column>
+              <Column header="จำนวนจ่าย"></Column>
+              <Column header="น้ำหนักจ่าย"></Column>
+              <Column header="จำนวนรับ"></Column>
+              <Column header="น้ำหนักรับ"></Column>
+              <Column header="ราคาต่อหน่วย"></Column>
+              <Column header="ราคา"></Column>
+            </Row>
+          </ColumnGroup>
+          <Column field="wo">
+            <template #body="slotProps">
+              {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
+            </template>
+          </Column>
+          <Column field="statusActiveName"></Column>
+          <Column field="jobDate">
+            <template #body="slotProps">
+              {{ `${formatDate(slotProps.data.jobDate)}` }}
+            </template>
+          </Column>
+          <Column field="productNumber"></Column>
+          <Column field="status">
+            <template #body="slotProps">
+              {{ slotProps.data.wagesStatus === 100 ? `สำเร็จ` : `ติดตามระหว่างผลิต` }}
+            </template>
+          </Column>
+          <Column field="statusName"></Column>
+          <Column field="desc">
+            <template #body="slotProps">
+              {{
+                `${slotProps.data.gold} ${
+                  slotProps.data.description ? `[${slotProps.data.description}]` : ``
+                }`
+              }}
+            </template>
+          </Column>
+          <Column field="goldQtySend">
+            <template #body="slotProps">
+              {{
+                slotProps.data.status === 70
+                  ? slotProps.data.goldQtyCheck
+                  : slotProps.data.goldQtySend
+              }}
+            </template>
+          </Column>
+          <Column field="goldWeightSend">
+            <template #body="slotProps">
+              {{
+                slotProps.data.status === 70
+                  ? slotProps.data.goldWeightCheck
+                  : slotProps.data.goldWeightSend
+              }}
+            </template>
+          </Column>
+          <Column field="goldQtyCheck">
+            <template #body="slotProps">
+              {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldQtyCheck }}
+            </template>
+          </Column>
+          <Column field="goldWeightCheck">
+            <template #body="slotProps">
+              {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldWeightCheck }}
+            </template></Column
+          >
+          <Column field="wages">
+            <template #body="slotProps">
+              <div>
+                {{
+                  `${
+                    slotProps.data.wages
+                      ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
+                      : Number(0).toFixed(2).toLocaleString()
+                  }`
+                }}
+              </div>
+            </template>
+          </Column>
+          <Column field="totalWages">
+            <template #body="slotProps">
+              <div>
+                {{
+                  `${
+                    slotProps.data.totalWages
+                      ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
+                      : Number(0).toFixed(2).toLocaleString()
+                  }`
+                }}
+              </div>
+            </template>
+          </Column>
+          <ColumnGroup type="footer">
+            <Row>
+              <Column :footer="`จำวนวน  ${dataWages.items.length}  รายการ`" :colspan="5" />
+              <Column footer="รวมจำนวนรับ" :colspan="3" footerStyle="text-align:right" />
+              <Column :footer="dataWages.totalGoldQtyCheck" />
+              <Column footer="รวมราคา" :colspan="3" footerStyle="text-align:right" />
+              <Column
+                :footer="
+                  dataWages.totalWages
+                    ? Number(dataWages.totalWages).toFixed(2).toLocaleString()
+                    : Number(0).toFixed(2).toLocaleString()
+                "
+              />
+            </Row>
+          </ColumnGroup>
+        </DataTable>
+      </div>
+
+      <div class="submit-container">
         <!-- <button
           class="btn btn-sm btn-info mr-2"
           style="width: 200px"
@@ -249,10 +224,7 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-
-
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+import pageTitle from '@/components/custom/PageTitleMain.vue'
 
 import Calendar from 'primevue/calendar'
 import DataTable from 'primevue/datatable'
@@ -266,9 +238,11 @@ import api from '@/axios/axios-helper.js'
 import { formatISOString, formatDate } from '@/services/utils/dayjs'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 
+import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
+
 const interfaceForm = {
-  requestDateStart: null,
-  requestDateEnd: null
+  requestDateStart: new Date(new Date().setDate(new Date().getDate() - 30)),
+  requestDateEnd: new Date()
 }
 const interfaceValid = {
   isValRequestDateStart: false,
@@ -276,7 +250,6 @@ const interfaceValid = {
 }
 export default {
   components: {
-  
     pageTitle,
     Calendar,
     DataTable,
@@ -284,6 +257,12 @@ export default {
     Row,
     ColumnGroup
   },
+
+  setup() {
+    const workerStore = usePlanWorkerApiStore()
+    return { workerStore }
+  },
+
   computed: {
     query() {
       //return this.$route.query
@@ -291,6 +270,7 @@ export default {
       return url.split('/').slice(-1)[0]
     }
   },
+
   watch: {
     'form.requestDateStart'() {
       if (this.form.requestDateStart) {
@@ -303,6 +283,7 @@ export default {
       }
     }
   },
+
   data() {
     return {
       // --- flag --- //
@@ -312,7 +293,9 @@ export default {
 
       // --- form --- //
       data: {},
-      dataWages: {},
+      dataWages: {
+        items: []
+      },
       dataActiveStatus: {},
       form: {
         interfaceForm
@@ -322,6 +305,7 @@ export default {
       }
     }
   },
+
   methods: {
     // --- controller --- //
     async onSearch() {
@@ -360,33 +344,7 @@ export default {
     },
 
     // --- APIs --- //
-    async fetchData() {
-      try {
-        this.isLoading = true
 
-        //console.log(this.query)
-
-        const params = {
-          take: this.take,
-          skip: this.skip,
-          search: {
-            code: this.query,
-            text: null,
-            type: null,
-            active: 1
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          this.data = { ...res.data[0] }
-          console.log(this.data)
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
     async search() {
       try {
         this.isLoading = true
@@ -921,25 +879,38 @@ export default {
       pdfMake.createPdf(docDefinition).open()
     }
   },
-  mounted() {
-    this.fetchData()
+
+  async created() {
+    this.$nextTick(async () => {
+      const url = window.location.href
+      const code = url.split('/').slice(-1)[0]
+
+      const res = await this.workerStore.fetchReturnSearch({
+        skip: 0,
+        take: 0,
+        sort: [],
+        formValue: {
+          code: code,
+          text: null,
+          type: null,
+          active: 1
+        }
+      })
+
+      if (res) {
+        this.data = { ...res.data[0] }
+        this.form = { ...interfaceForm }
+      }
+    })
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/search-bar.scss';
+@import '@/assets/scss/custom-style/standard-form.scss';
 
-.info-bar-container {
-  display: grid;
-  grid-template-columns: 2fr 2fr 3fr 3fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.data-table-container-no-value {
-  display: grid;
-  place-items: center;
-  color: var(--base-font-color);
-  font-size: large;
+.input-group-text {
+  height: 35px;
+  margin-top: 5px;
 }
 </style>

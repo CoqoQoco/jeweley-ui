@@ -82,11 +82,20 @@ export default {
         },
         {
           field: 'productionPlanCount',
-          header: 'ยอดผลิต',
+          header: 'ยอดสั่งผลิต',
           sortable: true,
           minWidth: '50px',
           format: 'number'
         },
+        {
+          field: '',
+          header: 'ยอดขาย',
+          sortable: true,
+          minWidth: '50px',
+          format: 'number'
+        },
+      
+      
         {
           field: 'address',
           header: 'ที่อยู่',
