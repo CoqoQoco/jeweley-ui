@@ -440,6 +440,7 @@ export default {
 
       this.$emit('update:itemsSelection', newSelection)
     },
+
     // helper method
     isPreSelected(item) {
       return this.preSelectedItems.some(
@@ -460,7 +461,7 @@ export default {
       // ถ้าเป็น preSelected item ให้ return ออกไปเลย
       if (isPreSelected) {
         console.log('isPreSelected return')
-        return
+        //return
       }
 
       let newSelection = [...this.itemsSelection]
@@ -497,6 +498,7 @@ export default {
 
     // จัดการการเปลี่ยนแปลงการเลือกในโหมด single
     onSingleSelectionChange(checked, item) {
+      console.log('checked', checked, 'item', item)
       if (this.isDisabled(item)) return
 
       // ถ้าเป็น preSelected item ให้ return ออกไปเลย

@@ -10,7 +10,7 @@
         </span>
         <div class="desc-text-white">
           <div class="d-flex align-items-center">
-            <span>{{ `จำนวนรับเเล้ว ${data.qtyRunning}/${data.productQty}` }}</span>
+            <span>{{ `จำนวนรับเเล้ว ${data.qtyRunning ?? 0}/${data.productQty ?? 0}` }}</span>
             <div class="bi bi-arrow-clockwise ml-2" @click="onFetch"></div>
           </div>
         </div>
@@ -18,9 +18,9 @@
     </div>
   </div>
 
-  <div class="filter-container mt-1">
+  <div class="filter-container pt-2 pb-4 pl-4 pr-4">
     <div>
-      <div class="title-text">
+      <div class="title-text ml-2">
         <span class="bi bi-database-fill-gear mr-2"></span>
         <span>รายละเอียด</span>
       </div>
@@ -39,8 +39,6 @@
     </div>
   </div> -->
   </div>
-
-  <div class="line"></div>
 </template>
 
 <script>

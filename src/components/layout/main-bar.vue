@@ -103,7 +103,7 @@ export default {
 
       // ถ้ามี role เดียว
       if (!Array.isArray(user.role)) {
-        return user.role.name.toUpperCase()
+        return user.role.name
       }
 
       // หา role ที่มี level สูงสุด
@@ -114,7 +114,7 @@ export default {
         return highest
       }, null)
 
-      return highestRole ? highestRole.name.toUpperCase() : 'รออนุมัติสิทธิ์'
+      return highestRole ? highestRole.name : 'รออนุมัติสิทธิ์'
     }
   },
 

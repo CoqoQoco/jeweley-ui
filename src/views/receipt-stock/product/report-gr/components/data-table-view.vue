@@ -5,6 +5,7 @@
       :totalRecords="receiptProductionStore.dataReceiptHistory.total"
       :columns="columns"
       :perPage="take"
+      :scrollHeight="'calc(100vh - 310px)'"
       @page="handlePageChange"
       @sort="handleSortChange"
     >

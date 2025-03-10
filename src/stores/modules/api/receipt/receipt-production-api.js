@@ -119,7 +119,6 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
     },
     async fetchConfirmHistoryExport({ sort, formValue }) {
       try {
-        this.dataReceiptHistory = {}
         //console.log('fetchDataListPlan', formValue)
         const param = {
           take: 0,

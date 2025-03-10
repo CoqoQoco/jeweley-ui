@@ -7,7 +7,7 @@
       @onFetch="onFetch"
     ></headerView>
     <!-- <div class="line mt-4 mb-4"></div> -->
-    <div class="mb-2">
+    <!-- <div class="mb-2">
       <div class="form-col-repeat-container">
         <button class="btn btn-sm btn-outline-dark" type="button">
           <span class="bi bi-gear mr-2"></span>
@@ -22,11 +22,9 @@
           <span>ออก barcode</span>
         </button>
       </div>
-    </div>
+    </div> -->
 
-    <div class="line"></div>
-
-    <div class="form-col-container">
+    <div class="form-col-container mt-2">
       <form @submit.prevent="onSubmit">
         <BaseDataTable
           :items="form"
@@ -183,7 +181,7 @@
                     </div>
 
                     <!-- size -->
-                    <div class="form-col-container mt-1">
+                    <div class="form-col-container mt-2">
                       <!-- size -->
                       <div>
                         <div>
@@ -221,7 +219,7 @@
                     </div>
 
                     <!-- remark -->
-                    <div class="form-col-container mt-1">
+                    <div class="form-col-container mt-2">
                       <div>
                         <div>
                           <span class="title-text">หมายเหตุ</span>
@@ -229,7 +227,7 @@
                         </div>
                         <textarea
                           type="text"
-                          class="form-control form-control-sm"
+                          class="form-control form-control-sm mt-1"
                           v-model="slotProps.data.remark"
                           autocomplete="off"
                           autocorrect="off"
@@ -287,18 +285,18 @@
                     <div class="d-flex justify-content-between">
                       <div class="vertical-center-container">
                         <span class="title-text-lg bi bi-gem"></span>
-                        <span class="title-text-lg ml-2">ทอง/เพชร/พลอย</span>
+                        <span class="title-text-lg ml-2">ทอง | เพชร | พลอย</span>
                       </div>
                       <!-- Add button -->
                       <div class="d-flex justify-content-start mt-2">
-                        <button
+                        <div
                           type="button"
-                          class="btn btn-green btn-sm"
+                          class="p-2 text-dark"
                           @click="addMaterialItem(slotProps.data.materials)"
                         >
                           <span class="bi bi-plus-lg"></span>
                           <span></span>
-                        </button>
+                        </div>
                       </div>
                     </div>
 
@@ -361,8 +359,8 @@
                             >
                             </Dropdown>
                           </div>
-                          <div v-else class="mt-3">
-                            <span>--- โปรดระบุประเภท ---</span>
+                          <div v-else class="vertical-center-container text-center">
+                            <span> --- โปรดระบุประเภท ---</span>
                           </div>
                         </div>
                       </template>
@@ -447,18 +445,18 @@
                             type="text"
                             v-model="data.typeBarcode"
                             class="form-control"
-                            :style="getBgColor(false, data.typeBarcode)"
                             placeholder="ข้อความที่จะเเสดงบน Barcode"
+                            disabled
                           />
                         </div>
                       </template>
 
-                      <template #actionTemplate="{ index }">
+                      <template #actionTemplate="{ index, data }">
                         <div class="d-flex align-items-center mt-1">
                           <button
                             type="button"
                             class="btn btn-red btn-sm"
-                            @click="removeMaterialItem(slotProps.data.materials, index)"
+                            @click="removeMaterialItem(data, slotProps.data, index)"
                           >
                             <i class="bi bi-trash"></i>
                           </button>
@@ -491,7 +489,26 @@
             <div class="line"></div>
 
             <div class="d-flex justify-content-between items-center">
-              <span>จำนวนรายการที่เลือก: {{ checkItemSelectedLength() }}</span>
+              <div class="vertical-center-container">
+                <span class="title-text">จำนวนรายการที่เลือก: {{ checkItemSelectedLength() }}</span>
+                <span class="ml-2 mr-2 title-text">|</span>
+                <button class="btn btn-sm btn-outline-main" type="button">
+                  <span class="bi bi-gear mr-2"></span>
+                  <span>ปรับเเต่งสินค้า</span>
+                </button>
+                <button class="btn btn-sm btn-secondary ml-2" disabled type="button">
+                  <span class="bi bi-image mr-2"></span>
+                  <span>อัพโหลดรูป</span>
+                </button>
+                <button class="btn btn-sm btn-secondary ml-2" disabled type="button">
+                  <span class="bi bi-upc-scan mr-2"></span>
+                  <span>Barcode</span>
+                </button>
+                <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="onResPrint">
+                  <span class="bi bi-upc-scan mr-2"></span>
+                  <span>Barcode</span>
+                </button>
+              </div>
               <div>
                 <button class="btn btn-sm btn-green" type="button" @click="fetchDraft">
                   <span v-if="isOnDraft" class="spinner-border spinner-border-sm"></span>
@@ -500,8 +517,8 @@
                 </button>
                 <button
                   :class="[
-                    'btn btn-sm btn-main ml-2',
-                    checkItemSelectedLength() > 0 ? 'btn-main' : 'btn-secondary'
+                    'btn btn-sm  ml-2',
+                    checkItemSelectedLength() === 0 ? 'btn-secondary' : 'btn-main'
                   ]"
                   type="submit"
                   :disabled="checkItemSelectedLength() === 0"
@@ -517,11 +534,17 @@
     </div>
 
     <modalSelectImage
-      :isShow="isShowSelectImage"
+      :isShow="isShow.imageSelect"
       :modelStock="stockUpdate"
       @select="updateImage"
       @closeModal="closeModal"
     ></modalSelectImage>
+
+    <modalBarcodePrint
+      :isShow="isShow.barcodePrint"
+      :modelStock="res"
+      @closeModal="closeModal"
+    ></modalBarcodePrint>
   </div>
 </template>
 
@@ -544,14 +567,20 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 import headerView from './components/production-header-view.vue'
-import modalSelectImage from './components/image-select-view.vue'
 import barcodeDemo from './components/barcode-demo-view.vue'
+
+import modalSelectImage from './modal/image-select-view.vue'
+import modalBarcodePrint from './modal/barcode-print-view.vue'
 
 const interfaceBarcode = {
   madeIn: 'MADE IN THAILAND',
   madeInText: 'XXXXXXXXXXX',
   mold: 'RFXXXXR',
   goldType: 'XXK'
+}
+const interfaceIsShow = {
+  imageSelect: false,
+  barcodePrint: false
 }
 
 export default {
@@ -564,7 +593,8 @@ export default {
     //Image,
     headerView,
     modalSelectImage,
-    barcodeDemo
+    barcodeDemo,
+    modalBarcodePrint
     //imgPreview,
     //Image
     //uploadImages
@@ -589,16 +619,65 @@ export default {
     return {
       isOnDraft: false,
 
-      isShowSelectImage: false,
+      isShow: { ...interfaceIsShow },
       stockUpdate: {},
       type: 'STOCK-PRODUCT',
 
       param: {},
       data: {},
+      res: [],
+
+      // res: [
+      //   {
+      //     stockNumber: 'DK-2503-005',
+      //     receiptNumber: 'STR250227008',
+      //     receiptType: 'production',
+      //     receiptDate: '2025-03-10T16:10:13.8603059Z',
+      //     productNumber: '2025TER--POI-6',
+      //     productNameEn: '2025TER-GREEN-4',
+      //     productNameTh: '2025TER-GREEN-4',
+      //     productTypeName: 'กระดุม',
+      //     productType: 'V',
+      //     productPrice: 3432.7,
+      //     wo: '20250221',
+      //     woNumber: 1,
+      //     woText: null,
+      //     productionType: 'Yellow Gold',
+      //     productionTypeSize: '18K',
+      //     productionDate: '2025-03-10T16:10:13.8603188Z',
+      //     mold: 'BOSI-564-PPS',
+      //     imageName: '',
+      //     imagePath: '',
+      //     status: 'Available',
+      //     qty: 1.0,
+      //     location: '',
+      //     size: '#77',
+      //     remark: '',
+      //     createDate: '2025-03-10T16:10:13.8603188Z',
+      //     createBy: 'CoqoAdmin2',
+      //     updateDate: null,
+      //     updateBy: null,
+      //     materials: [
+      //       {
+      //         type: 'Gold',
+      //         typeName: null,
+      //         typeCode: null,
+      //         typeBarcode: '0.5 G Gold',
+      //         qty: 1.0,
+      //         qtyUnit: null,
+      //         weight: 0.5,
+      //         weightUnit: 'G',
+      //         size: '1',
+      //         price: 100.0
+      //       }
+      //     ]
+      //   }
+      // ],
+
       header: [],
       gems: [],
       form: [],
-      scrollHeight: 'calc(100vh - 380px)',
+      scrollHeight: 'calc(100vh - 325px)',
 
       imgTest: {
         type: 'MOLD',
@@ -823,11 +902,9 @@ export default {
         description: ''
       })
     },
-    removeMaterialItem(data, index) {
-      // if (data.length > 1) {
-      //   data.splice(index, 1)
-      // }
-      data.splice(index, 1)
+    removeMaterialItem(data, item, index) {
+      item.materials.splice(index, 1)
+      this.updateTypeBarcode(data, item.stockReceiptNumber)
     },
     updateFile(files) {
       this.images = files
@@ -835,15 +912,16 @@ export default {
 
     //handle modal
     closeModal() {
-      this.isShowSelectImage = false
+      this.isShow = { ...interfaceIsShow }
     },
     onSelectImage(e) {
       //console.log('onSelectImage', e)
       this.stockUpdate = { ...e }
-      this.isShowSelectImage = true
+      this.isShow.imageSelect = true
     },
+
     updateImage(image, stock) {
-      this.isShowSelectImage = false
+      this.isShow.imageSelect = false
       //console.log('updateImage', image, stock)
 
       //create array update form stock
@@ -890,8 +968,9 @@ export default {
         }
       })
     },
+
     updateTypeBarcode(item, index) {
-      console.log(item)
+      //console.log(item)
 
       if (item.type === 'Diamond') {
         item.typeBarcode = this.getBarcode(item)
@@ -907,6 +986,7 @@ export default {
 
       this.updateFormBarcodeIndex(index)
     },
+
     updateFormBarcodeAll() {
       //create barcode
       this.form.forEach((item) => {
@@ -939,6 +1019,7 @@ export default {
       //console.log('updateFormBarcodeIndex', item, index)
       if (item.materials.length > 0) {
         item.barcodeGems = []
+        //console.log('item.barcodeGems', item.barcodeGems)
         item.materials.forEach((mat) => {
           //console.log(' mat.type', mat.type)
 
@@ -956,6 +1037,9 @@ export default {
             item.barcodeGems.push(display)
           }
         })
+      } else {
+        item.barcodeGold = ''
+        item.barcodeGems = []
       }
     },
     getBarcode(item) {
@@ -996,8 +1080,10 @@ export default {
         Stocks: [...confirm]
       }
 
-      console.log('onSubmit', formValue)
-      this.fetchConfirm(formValue)
+      //console.log('onSubmit', formValue)
+      swAlert.confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+        this.fetchConfirm(formValue)
+      })
     },
 
     onFetch() {
@@ -1018,7 +1104,7 @@ export default {
       //init header
       this.header.push(this.data)
 
-      console.log('fetchData', this.data)
+      //console.log('fetchData', this.data)
       if (this.data?.gems?.length > 0) {
         this.gems.push(this.data.gems)
       }
@@ -1086,14 +1172,24 @@ export default {
       }
     },
     async fetchConfirm(formValue) {
-      const res = await this.receiptProductionStore.fetchConfirm({
+      this.res = []
+      this.selectedItems = []
+      const response = await this.receiptProductionStore.fetchConfirm({
         formValue: formValue
       })
 
-      if (res) {
+      if (response) {
+        this.res = [...response.stocks]
         await this.fetchData(true)
-        console.log('fetchConfirm', res)
+
+        console.log('fetchConfirm', response)
+        this.isShow.barcodePrint = true
       }
+    },
+
+    onResPrint() {
+      //console.log('onResPrint')
+      this.isShow.barcodePrint = true
     }
   },
 
@@ -1121,7 +1217,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form';
 
 .form-control {
