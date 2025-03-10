@@ -20,6 +20,31 @@
         </div>
       </template>
 
+      <template #imageTemplate="{ data }">
+        <div class="image-container">
+          <div v-if="data.image">
+            <imagePreview
+              class="image-preview"
+              :imageName="data.image"
+              :type="type"
+              :path="path"
+              :width="30"
+              :height="30"
+              :avatar="true"
+            />
+          </div>
+          <div v-else>
+            <img
+              src="@/assets/no-image.png"
+              :width="30"
+              :height="30"
+              alt="Image"
+              class="image-body"
+            />
+          </div>
+        </div>
+      </template>
+
       <template #statusTemplate="{ data }">
         <div :class="getStatusSeverity(data)">
           {{ getStatusName(data) }}
@@ -35,7 +60,8 @@
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from 'vue'
+const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 //import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
@@ -45,7 +71,8 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 export default {
   components: {
-    BaseDataTable
+    BaseDataTable,
+    imagePreview
   },
 
   props: {
@@ -71,6 +98,9 @@ export default {
       sort: [],
       data: {},
 
+      type: 'PATH',
+      path: 'Images/User/Profile',
+
       // Columns Configuration
       columns: [
         {
@@ -79,6 +109,13 @@ export default {
           sortable: false,
           width: '50px', // กำหนดความกว้างแน่นอนสำหรับคอลัมน์ action
           minWidth: '50px'
+        },
+        {
+          field: 'image',
+          header: '',
+          minWidth: '50px',
+          sortable: false,
+          align: 'center'
         },
         {
           field: 'username',
@@ -95,6 +132,18 @@ export default {
         {
           field: 'lastName',
           header: 'นามสกุล',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'roleName',
+          header: 'ตำเเหน่ง',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'roleDescription',
+          header: 'อธิบายตำเเหน่ง',
           sortable: true,
           minWidth: '150px'
         },
@@ -232,5 +281,20 @@ export default {
   border-radius: 2px;
   margin-left: 4px;
   font-size: 12px;
+}
+
+.image-container {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  border-radius: 50px;
+  //margin-left: 4px;
+
+  .image-body {
+    //height: 100px;
+    //width: 100px;
+    border-radius: 50px;
+    border: 1px solid var(--base-color);
+  }
 }
 </style>
