@@ -41,6 +41,12 @@
             <span class="user-name">{{ userName || 'ผู้ใช้งาน' }}</span>
             <span class="user-role">{{ userRole }}</span>
           </div>
+          <div>
+            <span class="text-border"></span>
+          </div>
+        </div>
+        <div class="logout-container">
+          <span class="menu-icon bi bi-power" @click="handleLogout"></span>
         </div>
       </div>
     </div>
@@ -68,6 +74,8 @@
 <script>
 import SidebarView from '@/components/layout/side-bar.vue'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+
+import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
@@ -162,6 +170,23 @@ export default {
     closeSidebar() {
       this.isSideBarVisible = false
       document.body.style.overflow = '' // คืนค่าการเลื่อนหน้าเว็บเมื่อปิด sidebar
+    },
+
+    async handleLogout() {
+      console.log('Logout')
+      //this.$store.dispatch('auth/logout')
+      swAlert.confirmSubmit(
+        '',
+        'ออกจากระบบ',
+        async () => {
+          await this.authStore.logout()
+          const redirectPath = this.$route.query.redirect
+          this.$router.push(redirectPath || '/')
+        },
+        '',
+        '',
+        ''
+      )
     }
   },
 
@@ -315,6 +340,29 @@ export default {
         object-fit: cover;
       }
     }
+  }
+
+  border-right: 2px solid white;
+}
+
+.menu-icon {
+  font-size: 1.2rem;
+  //margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  //color: var(--base-font-color);
+  color: white;
+  transition: color 0.2s ease; // เพิ่ม transition เพื่อให้การเปลี่ยนสีดูนุ่มนวล
+  cursor: pointer;
+
+  &:hover {
+    color: var(--menu-hover-color, #ff6b6b); // ใช้ตัวแปรสำรองเป็นสีแดงอ่อน
+    // หรือจะใช้แบบนี้
+    // color: rgba(var(--base-font-color-rgb), 0.7); // ถ้ามีตัวแปร RGB components
+    // หรือ
+    // filter: brightness(1.5); // ทำให้สว่างขึ้นโดยใช้ filter
   }
 }
 
