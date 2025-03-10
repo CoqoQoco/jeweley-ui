@@ -1,14 +1,13 @@
 <template>
   <div>
-  
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
-        <div class="title-text-lg-header mb-2">
+        <div class="title-text-lg-header">
           <span>หลอมงาน</span>
           <span class="bi bi-arrow-right ml-1"></span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
             <!-- date -->
             <div>
@@ -186,7 +185,6 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
-
 import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
@@ -231,13 +229,14 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-  
+
     AutoComplete,
     Calendar,
     Dropdown,
     DataTable,
     Column
   },
+
   props: {
     isShow: {
       type: Boolean,
@@ -264,6 +263,7 @@ export default {
       default: () => []
     }
   },
+
   watch: {
     'form.receiveDate'(val) {
       if (val) {
@@ -274,6 +274,7 @@ export default {
       }
     }
   },
+
   computed: {
     isShowModal() {
       return this.isShow
@@ -292,6 +293,7 @@ export default {
       return this.masterGold
     }
   },
+
   data() {
     return {
       // --- flag --- //
@@ -314,24 +316,31 @@ export default {
       gemAssign: [],
       editingGemRows: [],
       workerItemSearch: [],
-      gemItemSearch: []
+      gemItemSearch: [],
+
+      user: null
     }
   },
+
   methods: {
     // ------ helper ------//
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
+
     formatDate(date) {
       return date ? formatDate(date) : ''
     },
+
     showDate(date) {
       return date ? moment(date).format('DD/MM/yyyy') : ''
     },
+
     calTotalWages(data) {
       data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
       //console.log(data.totalWages)
     },
+
     truncateName(name, maxLength) {
       if (name.length <= maxLength) {
         return name
@@ -533,9 +542,20 @@ export default {
       }
     }
   },
+
   created() {
-    this.matAssign = [...this.modelMat]
+    this.$nextTick(() => {
+      this.matAssign = [...this.modelMat]
+
+      this.user = JSON.parse(localStorage.getItem('user-dk'))
+      this.form.receiveBy = this.user?.firstName
+    })
   }
+
+  // mounted() {
+  //   this.user = JSON.parse(localStorage.getItem('user-dk'))
+  //   //console.log('user', this.user)
+  // }
 }
 </script>
 

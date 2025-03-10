@@ -31,28 +31,42 @@
               />
             </div>
           </div>
-          <div>
-            <span class="title-text">วันที่สถานะใบงาน</span>
-            <div class="flex-group">
-              <Calendar
-                class="w-100"
-                v-model="form.sendStart"
-                :max-date="form.sendEnd"
-                showIcon
-                :manualInput="false"
-                placeholder="เริ่มต้น"
-                dateFormat="dd/mm/yy"
-              />
-              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
-                v-model="form.sendEnd"
-                :min-date="form.sendStart"
-                showIcon
-                :manualInput="false"
-                placeholder="สิ้นสุด"
-                dateFormat="dd/mm/yy"
-              />
+
+          <div class="form-col-container">
+            <!-- text -->
+            <div>
+              <span class="title-text">W.O.</span>
+              <div class="input-group input-group-inner">
+                <input
+                  ref="inputText"
+                  id="inputText"
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="form.text"
+                  placeholder="EX: 202502211"
+                />
+                <div class="input-group-append" @click="focusInputText">
+                  <span class="input-group-text">
+                    <i class="bi bi-upc-scan text-main-color"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- status -->
+            <div>
+              <span class="title-text">สถานะงานผลิต</span>
+              <div>
+                <MultiSelect
+                  v-model="form.status"
+                  :options="planStatus"
+                  optionLabel="nameTh"
+                  optionValue="id"
+                  class="w-full md:w-14rem"
+                  placeholder="เลือกสถานะ"
+                />
+              </div>
+              <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
             </div>
           </div>
         </div>
@@ -65,58 +79,52 @@
         >
           <template #content>
             <div class="form-col-container">
-              <!-- text -->
               <div>
-                <span class="title-text">คำค้นหา</span>
-                <div class="input-group input-group-inner">
-                  <input
-                    ref="inputText"
-                    id="inputText"
-                    :class="['form-control bg-input']"
-                    type="text"
-                    v-model.trim="form.text"
-                    placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                <span class="title-text">วันที่สถานะใบงาน</span>
+                <div class="flex-group">
+                  <Calendar
+                    class="w-100"
+                    v-model="form.sendStart"
+                    :max-date="form.sendEnd"
+                    showIcon
+                    :manualInput="false"
+                    placeholder="เริ่มต้น"
+                    dateFormat="dd/mm/yy"
                   />
-                  <div class="input-group-append" @click="focusInputText">
-                    <span class="input-group-text">
-                      <i class="bi bi-upc-scan text-main-color"></i>
-                    </span>
-                  </div>
+                  <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+                  <Calendar
+                    class="w-100"
+                    v-model="form.sendEnd"
+                    :min-date="form.sendStart"
+                    showIcon
+                    :manualInput="false"
+                    placeholder="สิ้นสุด"
+                    dateFormat="dd/mm/yy"
+                  />
                 </div>
               </div>
 
-              <!-- modld -->
-              <div>
-                <span class="title-text">เเม่พิมพ์</span>
-                <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
-              </div>
-
-              <!-- status -->
-              <div>
-                <span class="title-text">สถานะงานผลิต</span>
+              <div class="form-col-container">
+                <!-- modld -->
                 <div>
-                  <MultiSelect
-                    v-model="form.status"
-                    :options="planStatus"
-                    optionLabel="nameTh"
-                    optionValue="id"
+                  <span class="title-text">เเม่พิมพ์</span>
+                  <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
+                </div>
+
+                <!-- plan target -->
+                <div>
+                  <span class="title-text">กำหนดส่งงาน</span>
+                  <Dropdown
+                    v-model="form.isOverPlan"
+                    :options="overPlanOptions"
+                    optionLabel="description"
                     class="w-full md:w-14rem"
                   />
                 </div>
-                <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
               </div>
+            </div>
 
-              <!-- plan target -->
-              <div>
-                <span class="title-text">กำหนดส่งงาน</span>
-                <Dropdown
-                  v-model="form.isOverPlan"
-                  :options="overPlanOptions"
-                  optionLabel="description"
-                  class="w-full md:w-14rem"
-                />
-              </div>
-
+            <div class="form-col-container mt-2">
               <!-- customer code -->
               <div>
                 <span class="title-text">รหัสลูกค้า</span>

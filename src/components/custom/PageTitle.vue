@@ -2,7 +2,7 @@
   <div v-if="isShowTitle" id="wmsPageTitle" class="page-title-container">
     <div class="row">
       <!-- แสดง Title และ Desctiption -->
-      <div :class="[!isShowRightSlot ? 'col-12' : 'col-9']">
+      <div :class="[!isShowRightSlot ? 'col-12' : 'col-9']" class="title-container">
         <p class="title">{{ title }}</p>
         <p v-if="description" class="description">{{ description }}</p>
       </div>
@@ -64,8 +64,12 @@ export default {
 .page-title-container {
   border-bottom: 1px solid var(--base-font-color);
   padding-bottom: 5px;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   position: relative;
+  
+  .title-container{
+    //background-color: var(--base-font-color);
+  }
 
   .title {
     font-size: 1.2rem;

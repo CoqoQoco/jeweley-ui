@@ -71,8 +71,8 @@
   .p-calendar-w-btn,
   .p-datepicker-trigger {
     background-color: $base-font-color !important;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-top-right-radius: 5px !important;
+    border-bottom-right-radius: 5px !important;
     border-color: $base-font-color !important;
     //height: 35px !important;
     //padding-top: 500px !important;
@@ -82,6 +82,16 @@
     font-size: $base-font-size !important;
     padding: 10px !important;
     margin: 0px !important;
+
+    &:hover {
+      border-color: var(--base-font-color) !important;
+      box-shadow: none !important;
+    }
+
+    &:focus {
+      border-color: var(--base-font-color) !important;
+      box-shadow: none !important;
+    }
   }
   svg {
     width: 15px;
@@ -161,6 +171,17 @@
 .p-multiselect {
   width: 100% !important;
   margin-top: 5px !important;
+
+  &:hover {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
+
+  &:focus {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
+
   svg {
     width: 10px;
     height: 10px;
@@ -283,4 +304,3 @@ div[data-pc-name='radiobutton'] .p-radiobutton-box.p-highlight .p-radiobutton-ic
 .p-sidebar .p-sidebar-content {
   padding: 0px !important;
 }
-

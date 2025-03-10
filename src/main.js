@@ -39,6 +39,11 @@ import 'primevue/resources/themes/lara-light-indigo/theme.css'
 
 //import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 
+// เพิ่มในไฟล์ main.js หรือ App.vue
+const modalContainer = document.createElement('div');
+modalContainer.id = 'modal-container';
+document.body.appendChild(modalContainer);
+
 //App.config.productionTip = false
 const app = createApp(App)
 

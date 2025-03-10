@@ -12,12 +12,20 @@
         <!-- action -->
         <div>
           <button
+            :class="['btn btn-sm ml-2', checkBtn('return') ? 'btn-secondary' : 'btn-green']"
+            title="คืนค่า"
+            :disabled="checkBtn('return')"
+            @click="resetStatus()"
+          >
+            <span class="bi bi-bootstrap-reboot"></span>
+          </button>
+          <!-- <button
             :class="['btn btn-sm ml-2', checkBtn('close') ? 'btn-secondary' : 'btn-primary']"
             title="พิมพ์แบบ"
             :disabled="checkBtn('close')"
           >
             <span class="bi bi-printer"></span>
-          </button>
+          </button> -->
           <button
             :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
             title="หลอม"
@@ -26,7 +34,7 @@
           >
             <span class="bi bi-database-fill-add"></span>
           </button>
-          <button
+          <!-- <button
             :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
             title="เเก้ไข"
             :disabled="checkBtn('edit')"
@@ -41,7 +49,7 @@
             @click="onDelStatus(modelPlanStatus.id)"
           >
             <span class="bi bi-trash-fill"></span>
-          </button>
+          </button> -->
         </div>
       </div>
     </div>
@@ -156,6 +164,7 @@ export default {
     DataTable,
     Column
   },
+
   props: {
     modelValue: {
       type: Object,
@@ -178,6 +187,7 @@ export default {
       default: () => []
     }
   },
+
   computed: {
     model() {
       return this.modelValue
@@ -189,7 +199,7 @@ export default {
         return null
       } else {
         var value = tbtProductionPlanStatusHeader.find((x) => x.status === 500)
-        console.log('modelPlanStatus', value)
+        //console.log('modelPlanStatus', value)
         return value
       }
     },
@@ -203,11 +213,14 @@ export default {
       return this.masterGold
     }
   },
+
   data() {
     return {
-      wages: 0
+      wages: 0,
+      status: 500
     }
   },
+
   methods: {
     // ----- helper
     formatDateTime(date) {
@@ -217,8 +230,8 @@ export default {
       return date ? formatDate(date) : ''
     },
     checkBtn(action) {
-      console.log('checkBtn', this.modelPlanStatus)
-      const disStatus = [100, 500]
+      //console.log('checkBtn', this.modelPlanStatus)
+      const disStatus = [100]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
           case 'print':
@@ -230,6 +243,9 @@ export default {
           case 'transfer': {
             let check = this.model.status === this.status
             return !check
+          }
+          case 'return': {
+            return this.model.status ? false : true
           }
           case 'delete':
             return this.modelPlanStatus ? false : true
@@ -261,6 +277,19 @@ export default {
         null,
         null
       )
+    },
+
+    resetStatus() {
+      swAlert.confirmSubmit(
+        `แผนผลิตจะกลับไปเป็นสถานะล่าสุดก่อนหลอม`,
+        `ปรับปรุง <br/> W.O. : ${this.model.wo}-${this.model.woNumber}`,
+        async () => {
+          //console.log('call submitPlan')
+        },
+        null,
+        null
+      )
+      //console.log('resetStatus')
     },
 
     transfer() {

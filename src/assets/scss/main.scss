@@ -90,6 +90,16 @@ button.btn-red:hover {
 
 input {
   margin-top: 5px !important;
+
+  &:hover {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
+
+  &:focus {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
 }
 input[type='text'],
 input[type='email'],

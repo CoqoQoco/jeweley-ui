@@ -347,7 +347,7 @@ import planCastingAdd from './components/add/plan-casting-add-view.vue'
 import planCastingUpdate from './components/update/plan-casting-update-view.vue'
 
 import planMeltedView from './components/view/plan-melt-view.vue'
-import planMeltedAdd from './components/add/PlanMeltedAddView.vue'
+import planMeltedAdd from './components/add/plan-melt-add-view.vue'
 
 import planGemView from './components/view/plan-gem-view.vue'
 import planGemUpdate from './components/update/plan-gem-update-view.vue'
