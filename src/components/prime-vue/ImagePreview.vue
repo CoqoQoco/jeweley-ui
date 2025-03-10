@@ -2,7 +2,7 @@
   <div class="image-container">
     <!-- <img class="image-preview" :src="urlImage" alt="PreviewImage" /> -->
     <Image
-      v-if="urlImage"
+      v-if="urlImage && !loading"
       :class="borderShow ? `image-preview` : ``"
       :src="urlImage"
       alt="Image"
@@ -10,10 +10,10 @@
       :height="height"
       :preview="preview"
     />
-    <div v-else class="spinner-border" role="status">
-      <span class="sr-only">Loading...</span>
+    <!-- แทนที่ spinner ด้วย Skeleton -->
+    <div v-else class="skeleton-container" :style="{ width: `${width}px`, height: `${height}px` }">
+      <Skeleton :width="width + 'px'" :height="height + 'px'" />
     </div>
-    <!-- <Avatar :image="urlImage" size="xlarge" shape="square" /> -->
   </div>
 </template>
 
@@ -21,13 +21,17 @@
 import api from '@/axios/axios-helper.js'
 //import Avatar from 'primevue/avatar'
 import Image from 'primevue/image'
+import Skeleton from 'primevue/skeleton' // เพิ่ม import Skeleton
+
 export default {
   name: 'PreviewImage',
   inheritAttrs: false, // ป้องกัน
   components: {
     //Avatar
-    Image
+    Image,
+    Skeleton
   },
+
   props: {
     imageName: {
       type: String,
@@ -65,21 +69,26 @@ export default {
     //   default: () => 0
     // }
   },
+
   watch: {
     imageName: {
       handler: 'fetchImageData',
       immediate: true
     }
   },
+
   data() {
     return {
       urlImage: null,
-      name: null
+      name: null,
+      loading: true // เพิ่ม state สำหรับติดตามการโหลด
     }
   },
+
   methods: {
     async fetchImageData() {
       try {
+        this.loading = true // เริ่มการโหลด
         switch (this.type) {
           case 'PATH':
             {
@@ -168,11 +177,18 @@ export default {
             }
             break
         }
+
+        // ใส่ setTimeout เพื่อแสดง skeleton สักครู่แม้ว่าโหลดเร็ว (ถ้าต้องการ)
+        setTimeout(() => {
+          this.loading = false // สิ้นสุดการโหลด
+        }, 200)
       } catch (error) {
         console.log(error)
+        this.loading = false // กรณีเกิด error ก็ยังต้องปิด loading
       }
     }
   },
+
   async created() {
     //await this.fetchImageData()
   }
@@ -189,5 +205,12 @@ export default {
   //height: 100px;
   //width: 100px;
   border: 1px solid var(--base-color);
+}
+.skeleton-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--surface-d, #dee2e6);
+  border-radius: 4px;
 }
 </style>

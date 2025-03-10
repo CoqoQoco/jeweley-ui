@@ -105,7 +105,7 @@ import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 //import swAlert from '@/services/alert/sweetAlerts'
 
-const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
+const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 //const transferJobView = defineAsyncComponent(() => import('../modal/JobTransfer.vue'))
 
 //import { mapState, mapActions } from 'pinia'
