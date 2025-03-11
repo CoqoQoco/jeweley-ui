@@ -88,8 +88,8 @@
                 <input
                   :class="['form-control bg-input']"
                   type="text"
-                  v-model.trim="form.receiptNumber"
-                  placeholder="EX: Gold Ring #66"
+                  v-model.trim="form.productNumber"
+                  placeholder="EX: DAY250303A"
                 />
               </div>
 
@@ -103,40 +103,40 @@
                     optionLabel="description"
                     optionValue="code"
                     class="w-full md:w-14rem"
+                    placeholder="เลือกประเภทสินค้า"
                   />
                 </div>
               </div>
 
-               <!-- gold type -->
-               <div>
+              <!-- gold type -->
+              <div>
                 <span class="title-text">สีของทอง/เงิน</span>
                 <div>
                   <MultiSelect
                     v-model="form.goldType"
                     :options="masterGold"
                     optionLabel="description"
-                    optionValue="code"
+                    optionValue="nameEn"
                     class="w-full md:w-14rem"
+                    placeholder="เลือกสีของทอง/เงิน"
                   />
                 </div>
               </div>
 
-
-               <!-- gold size -->
-               <div>
+              <!-- gold size -->
+              <div>
                 <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
                   <MultiSelect
                     v-model="form.goldSize"
                     :options="masterGoldSize"
                     optionLabel="description"
-                    optionValue="code"
+                    optionValue="nameEn"
                     class="w-full md:w-14rem"
+                    placeholder="เลือกประเภททอง/เงิน"
                   />
                 </div>
               </div>
-
-            
             </div>
           </template>
         </dialogView>
@@ -265,7 +265,7 @@ export default {
     },
     dialogSearch() {
       this.isShow.dialog = false
-      this.$emit('search')
+      this.$emit('search', this.form)
     },
     onSubmitExport() {
       this.$emit('export', true)

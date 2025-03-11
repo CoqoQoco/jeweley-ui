@@ -21,8 +21,7 @@
 
 <script>
 import api from '@/axios/axios-helper.js'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
+//import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   data() {
