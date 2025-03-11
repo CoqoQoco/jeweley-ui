@@ -10,7 +10,7 @@ const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-vie
 
 const StockImage = () => import('@/views/stock/product/image/IndexView.vue')
 
-const Barcode = () => import('@/views/receipt-stock/product/test-barcode/IndexView.vue')
+const Barcode = () => import('@/views/receipt-stock/product/test-barcode/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 

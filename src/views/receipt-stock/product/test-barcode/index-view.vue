@@ -13,13 +13,16 @@
       ></textarea>
     </div>
     <div class="form-col-container mt-2">
-      <button class="btn btn-sm btn-main" @click="handlePrint">พิมพ์ Barcode</button>
+      <button class="btn btn-sm btn-main" @click="handlePrint">print</button>
+      <button class="btn btn-sm btn-main" @click="checkServiceStatus">check status</button>
     </div>
   </div>
 </template>
 
 <script>
-import { printBarcode } from '@/services/helper/printer/printer-service.js'
+import api from '@/axios/axios-helper.js'
+
+import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   data() {
@@ -41,10 +44,20 @@ export default {
     async handlePrint() {
       try {
         const zplData = this.generateZPL()
-        await printBarcode(zplData)
-        this.$toast.success('พิมพ์สำเร็จ')
+        await api.zebraPrinter.printZPL(zplData)
       } catch (error) {
-        this.$toast.error('เกิดข้อผิดพลาดในการพิมพ์')
+        console.log(error)
+      }
+    },
+
+    async checkServiceStatus() {
+      try {
+        const res = await api.zebraPrinter.getStatus()
+        console.log(res)
+        //swAlert.success('', res)
+        this.form.barcode = JSON.stringify(res)
+      } catch (error) {
+        //swAlert.error('', 'ไม่สามารถเชื่อมต่อเครื่องพิมพ์ได้')
       }
     }
   }
