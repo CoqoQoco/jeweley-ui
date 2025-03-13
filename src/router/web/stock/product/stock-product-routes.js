@@ -1,7 +1,7 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
-const List = () => import('@/views/stock/product/list/IndexView.vue')
+const List = () => import('@/views/stock/product/list/index-view.vue')
 
 const GRProductionList = () =>
   import('@/views/receipt-stock/product/production-receipt-list/index-view.vue')

@@ -4,7 +4,7 @@
       <div>
         <div>
           <pageTitle
-            title=" รับสินค้างานผลิต"
+            title="รับสินค้างานผลิต"
             description="ตรวจสอบเเละรับสินค้าจากงานผลิตเข้าคลัง"
             :isShowBtnClose="false"
           >

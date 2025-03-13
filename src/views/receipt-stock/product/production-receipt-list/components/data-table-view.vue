@@ -15,7 +15,6 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-      
       <template #actionTemplate="{ data }">
         <div class="vertical-center-container">
           <button class="btn btn-sm btn-main" @click="receipt(data)" title="รับสินค้า">
@@ -46,7 +45,6 @@
           <dataExpand :modelForm="slotProps"></dataExpand>
         </div>
       </template>
-
     </BaseDataTable>
   </div>
 </template>
@@ -76,9 +74,7 @@ export default {
     modelFormExport: {
       type: Object,
       default: () => ({})
-    },
-   
-   
+    }
   },
 
   data() {
@@ -165,8 +161,7 @@ export default {
   computed: {
     form() {
       return this.modelForm || {}
-    },
-    
+    }
   },
 
   watch: {
