@@ -10,7 +10,7 @@ import router from '@/router'
 
 //dev
 const jewelryUrl = 'https://localhost:7001/'
-const printerUrl = 'http://localhost:5000/'
+const ZebraPrinterUrl = 'http://localhost:7003/'
 
 // Loading state management
 const loadingManager = {
@@ -63,7 +63,7 @@ const axiosInstance = axios.create({
 
 // Axios instance for printer API
 const printerAxiosInstance = axios.create({
-  baseURL: printerUrl,
+  baseURL: ZebraPrinterUrl,
   timeout: 30000
 })
 
@@ -121,7 +121,7 @@ const configureInterceptors = (instance) => {
       }
 
       // Check if this is a printer service error
-      const isPrinterError = error.config?.baseURL === printerUrl
+      const isPrinterError = error.config?.baseURL === ZebraPrinterUrl
 
       if (isPrinterError) {
         // Handle printer specific errors
@@ -423,7 +423,8 @@ const zebraPrinter = {
     }
   },
 
-  // ปรับปรุงฟังก์ชันพิมพ์ ZPL เพื่อรองรับผลลัพธ์จาก API เรา
+  // ปรับปรุงฟังก์ชันพิมพ์ ZPL
+
   printZPL: async (zplData, optionsConfig = {}) => {
     try {
       const result = await postPrinterData('print', { data: zplData }, optionsConfig)
@@ -453,6 +454,70 @@ const zebraPrinter = {
         message: 'ไม่สามารถพิมพ์ได้',
         serviceStatus: 'running',
         printerStatus: 'not_connected'
+      }
+    }
+  },
+
+  // ฟังก์ชันสำหรับพิมพ์ ZPL หลายรายการพร้อมกัน
+  printsZPL: async (zplData, optionsConfig = {}) => {
+    try {
+      // เรียกใช้ API /print-batch
+      const items = zplData.map((zpl) => ({ data: zpl }))
+      const result = await postPrinterData('prints', { items }, optionsConfig)
+
+      // ตรวจสอบผลลัพธ์
+      if (result.status === 'success') {
+        // พิมพ์ทุกรายการสำเร็จ
+        return {
+          status: 'success',
+          message: result.message || `พิมพ์ทั้งหมด ${result.success} รายการสำเร็จ`,
+          summary: {
+            total: result.total,
+            success: result.success,
+            failed: result.failed
+          },
+          results: result.results,
+          serviceStatus: 'running',
+          printerStatus: 'connected'
+        }
+      } else if (result.status === 'partial') {
+        // พิมพ์บางรายการสำเร็จ บางรายการล้มเหลว
+        return {
+          status: 'partial',
+          message:
+            result.message ||
+            `พิมพ์สำเร็จบางส่วน: สำเร็จ ${result.success} รายการ, ล้มเหลว ${result.failed} รายการ`,
+          summary: {
+            total: result.total,
+            success: result.success,
+            failed: result.failed
+          },
+          results: result.results,
+          serviceStatus: 'running',
+          printerStatus: 'connected'
+        }
+      } else {
+        // พิมพ์ทุกรายการล้มเหลว
+        return {
+          status: 'error',
+          message: result.message || 'พิมพ์ไม่สำเร็จทั้งหมด',
+          summary: {
+            total: result.total || zplData.length,
+            success: result.success || 0,
+            failed: result.failed || zplData.length
+          },
+          results: result.results,
+          serviceStatus: result.serviceStatus || 'running',
+          printerStatus: result.printerStatus || 'error'
+        }
+      }
+    } catch (error) {
+      console.error('Print batch error:', error)
+      return {
+        status: 'error',
+        message: 'ไม่สามารถเชื่อมต่อกับเซอร์วิส',
+        serviceStatus: 'unknown',
+        printerStatus: 'unknown'
       }
     }
   },

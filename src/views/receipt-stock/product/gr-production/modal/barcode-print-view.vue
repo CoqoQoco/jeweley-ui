@@ -74,6 +74,7 @@
                         : 'btn-main'
                     ]"
                     :disabled="checkItemSelectedLength() === 0 || checkPrinterService !== 'success'"
+                    @click="onPrintBarcode"
                   >
                     <span class="bi bi-upc-scan"></span>
                   </button>
@@ -91,13 +92,19 @@
 import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
+import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
+
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import api from '@/axios/axios-helper.js'
 
 export default {
   components: {
     modal,
     BaseDataTable
+  },
+
+  setup() {
+    const zebraPrinter = zebraPrinterApi()
+    return { zebraPrinter }
   },
 
   props: {
@@ -233,7 +240,7 @@ export default {
     async checkPrinterStatus() {
       this.checkPrinterService = 'unknown'
 
-      const res = await api.zebraPrinter.getStatus({ skipLoading: true })
+      const res = await this.zebraPrinter.fetchZebraPrinterStatus({ skipLoading: true })
       console.log('res', res)
 
       if (res && res.status === 'success') {
@@ -247,6 +254,11 @@ export default {
       }
 
       console.log('checkPrinterService', this.checkPrinterService)
+    },
+
+    async onPrintBarcode() {
+      console.log('onPrintBarcode', this.selectedItems)
+      //this.$emit('printBarcode', this.selectedItems)
     }
   },
 
