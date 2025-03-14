@@ -6,7 +6,7 @@
           <div v-if="data.type === 'Diamond'">
             <span>{{ getDiamondType(data.typeCode) }}</span>
           </div>
-          <div v-if="data.type === 'Gold'">
+          <div v-if="data.type === 'Gold' || data.type === 'Silver'">
             <span>{{ getGoldType(data.typeCode) }}</span>
           </div>
           <div v-if="data.type === 'Gem'">
@@ -143,7 +143,7 @@ export default {
   width: 650px;
   z-index: 0 !important;
 
-  .text-focus-main{
+  .text-focus-main {
     font-weight: 700;
     color: var(--base-font-color);
   }

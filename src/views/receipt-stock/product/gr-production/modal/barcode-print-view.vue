@@ -259,6 +259,48 @@ export default {
     async onPrintBarcode() {
       console.log('onPrintBarcode', this.selectedItems)
       //this.$emit('printBarcode', this.selectedItems)
+
+      const zplData = this.selectedItems.map((item) => {
+        const barcodeData = {
+          madeIn: 'MADE IN THAILAND',
+          madeInText: 'XXXXXXXXXXX',
+          goldType: item.productionTypeSize,
+          mold: item.mold,
+          stockNumber: item.stockNumber,
+          size: item.size,
+          gold: '',
+          gems: []
+        }
+
+        // Process materials if available
+        if (item.materials?.length > 0) {
+          // Filter and process materials by type
+          item.materials.forEach((material) => {
+            switch (material.type) {
+              case 'Gold':
+              case 'Silver':
+                barcodeData.gold = material.typeBarcode
+                break
+              case 'Gem':
+              case 'Diamond':
+                barcodeData.gems.push(material.typeBarcode)
+                break
+            }
+          })
+        }
+
+        return barcodeData
+      })
+
+      console.log('zplData', zplData)
+
+      const res = await this.zebraPrinter.fetchZebraPrints({
+        formValue: zplData,
+        skipLoading: true
+      })
+
+      console.log('res', res)
+      this.closeModal()
     }
   },
 

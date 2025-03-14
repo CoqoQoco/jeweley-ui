@@ -7,7 +7,7 @@
           <span class="bi bi-arrow-right ml-1"></span>
           <span class="ml-1">{{ `ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <!-- transection -->
           <div>
             <DataTable

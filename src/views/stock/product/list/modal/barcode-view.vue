@@ -165,6 +165,7 @@ export default {
           val.materials.forEach((material) => {
             switch (material.type) {
               case 'Gold':
+              case 'Silver':
                 this.barcode.gold = material.typeBarcode
                 break
               case 'Gem':

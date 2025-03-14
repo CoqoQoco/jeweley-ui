@@ -323,7 +323,7 @@
 
                       <template #typeCodeTemplate="{ data }">
                         <div class="">
-                          <div v-if="data.type === 'Gold'">
+                          <div v-if="data.type === 'Gold' || data.type === 'Silver'">
                             <Dropdown
                               v-model="data.typeCode"
                               :options="masterGold"
@@ -567,7 +567,7 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 import headerView from './components/production-header-view.vue'
-import barcodeDemo from '@/components/custom/barcode-dem/barcode-demo-view.vue'
+import barcodeDemo from '@/components/custom/barcode-demo/barcode-demo-view.vue'
 
 import modalSelectImage from './modal/image-select-view.vue'
 import modalBarcodePrint from './modal/barcode-print-view.vue'
@@ -689,6 +689,7 @@ export default {
       itemsToPreSelect: [], // items ที่ต้องการให้ติ๊กถูกไว้ตั้งแต่แรก
       masterMaterialType: [
         { value: 'Gold', description: 'ทอง' },
+        { value: 'Silver', description: 'เงิน' },
         { value: 'Diamond', description: 'เพชร' },
         { value: 'Gem', description: 'พลอย' }
       ],
@@ -898,7 +899,10 @@ export default {
     addMaterialItem(data) {
       data.push({
         type: '',
+        qty: 1,
+        qtyUnit: 'pc',
         weight: null,
+        weightUnit: 'ct.',
         description: ''
       })
     },
@@ -976,7 +980,7 @@ export default {
         item.typeBarcode = this.getBarcode(item)
       }
 
-      if (item.type === 'Gold') {
+      if (item.type === 'Gold' || item.type === 'Silver') {
         item.typeBarcode = this.getBarcode(item)
       }
 
@@ -995,7 +999,7 @@ export default {
           item.materials.forEach((mat) => {
             //console.log(' mat.type', mat.type)
 
-            if (mat.type === 'Gold') {
+            if (mat.type === 'Gold' || mat.type === 'Silver') {
               item.barcodeGold = this.getBarcode(mat)
             }
 
@@ -1023,7 +1027,7 @@ export default {
         item.materials.forEach((mat) => {
           //console.log(' mat.type', mat.type)
 
-          if (mat.type === 'Gold') {
+          if (mat.type === 'Gold' || mat.type === 'Silver') {
             item.barcodeGold = this.getBarcode(mat)
           }
 
@@ -1051,7 +1055,7 @@ export default {
         }${item.typeCode ? `, ${item.typeCode}` : ''}`
       }
 
-      if (item.type === 'Gold') {
+      if (item.type === 'Gold' || item.type === 'Silver') {
         display = `${item.weight ?? ``}${item.weightUnit ? ` ${item.weightUnit}` : ``}${
           item.type ? ` ${item.type}` : ``
         }`

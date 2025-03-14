@@ -358,7 +358,7 @@ import planScrubbAdd from './components/add/PlanScrubbAddView.vue'
 import planScrubbUpdate from './components/update/PlanScrubbUpdateView.vue'
 
 import planPriceView from './components/view/plan-price-view.vue'
-import planPriceAddView from './components/add/PlanPriceAddView.vue'
+import planPriceAddView from './components/add/plan-price-add-view.vue'
 
 import planEmbed from './components/view/plan-embed-view.vue'
 import planEmbedUpdate from './components/update/PlanEmbedUpdateView.vue'
@@ -515,6 +515,7 @@ export default {
       }
 
       if (fetch === 'go-receipt') {
+        console.log('go-receipt', value)
         this.$router.push({ name: 'goods-receipt-production', params: { id: value } })
       }
     },

@@ -30,7 +30,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
         //create multi zebra code
         const zpl = formValue.map((form) => this.generateZPLs(form))
 
-        console.Console.log('ZPL:', zpl)
+        console.log('ZPL:', zpl)
         return await api.zebraPrinter.printsZPL({ zpl, skipLoading: skipLoading })
       } catch (error) {
         console.error('Print from forms error:', error)
