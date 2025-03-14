@@ -13,7 +13,7 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-green" title="พิมพ์ป้าย">
+          <button class="btn btn-sm btn btn-green" title="พิมพ์ป้าย" @click="onPrintBarcode(data)">
             <i class="bi bi-upc-scan"></i>
           </button>
           <button class="btn btn-sm btn btn-main ml-2" title="เเก้ไข">
@@ -49,6 +49,12 @@
         </div>
       </template>
     </BaseDataTable>
+
+    <barcode
+      :isShow="isShow.isBarcode"
+      :modelStock="modelStock"
+      @closeModal="onCloseModal"
+    ></barcode>
   </div>
 </template>
 
@@ -59,12 +65,18 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
 import dataExpand from './data-expand-view.vue'
+import barcode from '../modal/barcode-view.vue'
+
+const interfaceShow = {
+  isBarcode: false
+}
 
 export default {
   components: {
     BaseDataTable,
     imagePreview,
-    dataExpand
+    dataExpand,
+    barcode
   },
 
   setup() {
@@ -106,6 +118,9 @@ export default {
 
   data() {
     return {
+      isShow: { ...interfaceShow },
+      modelStock: {},
+
       take: 10,
       skip: 0,
       sort: [],
@@ -233,6 +248,15 @@ export default {
         dir: item.order === 1 ? 'asc' : 'desc'
       }))
       this.fetchData()
+    },
+
+    onCloseModal() {
+      this.isShow = { ...interfaceShow }
+      this.modelStock = {}
+    },
+    onPrintBarcode(val) {
+      this.modelStock = val
+      this.isShow.isBarcode = true
     },
 
     async fetchData() {

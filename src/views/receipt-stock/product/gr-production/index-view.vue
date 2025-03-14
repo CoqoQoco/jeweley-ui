@@ -567,7 +567,7 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 import headerView from './components/production-header-view.vue'
-import barcodeDemo from './components/barcode-demo-view.vue'
+import barcodeDemo from '@/components/custom/barcode-dem/barcode-demo-view.vue'
 
 import modalSelectImage from './modal/image-select-view.vue'
 import modalBarcodePrint from './modal/barcode-print-view.vue'
