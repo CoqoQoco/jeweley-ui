@@ -19,7 +19,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       try {
         //create zebra code
         const zpl = this.generateZPLs(formValue)
-        return await api.zebraPrinter.printZPL({ zpl, skipLoading: skipLoading })
+        return await api.zebraPrinter.printZPL(zpl, { skipLoading: skipLoading })
       } catch (error) {
         console.error('Error fetching zebra printer status:', error)
       }
@@ -31,7 +31,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
         const zpl = formValue.map((form) => this.generateZPLs(form))
 
         console.log('ZPL:', zpl)
-        return await api.zebraPrinter.printsZPL({ zpl, skipLoading: skipLoading })
+        return await api.zebraPrinter.printsZPL(zpl, { skipLoading: skipLoading })
       } catch (error) {
         console.error('Print from forms error:', error)
         return {
