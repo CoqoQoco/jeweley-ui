@@ -504,10 +504,6 @@
                   <span class="bi bi-upc-scan mr-2"></span>
                   <span>Barcode</span>
                 </button>
-                <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="onResPrint">
-                  <span class="bi bi-upc-scan mr-2"></span>
-                  <span>Barcode</span>
-                </button>
               </div>
               <div>
                 <button class="btn btn-sm btn-green" type="button" @click="fetchDraft">
