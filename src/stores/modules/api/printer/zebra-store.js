@@ -69,7 +69,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
         let yPos = 15
         formValue.gems.forEach((gem) => {
           if (gem) {
-            zpl += `^FO426,${yPos}^A0N,14,16,B^FD${gem}^FS`
+            zpl += `^F500,${yPos}^A0N,14,16,B^FD${gem}^FS`
             yPos += 15
           }
         })
