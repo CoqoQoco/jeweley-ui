@@ -5,7 +5,7 @@
         <div>
           <div class="title-text-lg-header">
             <span class="bi bi-database-fill-gear mr-2"></span>
-            <span> {{ `เเก้ไขรูปร่างพลอย: ${model.code}-${model.nameTh}` }}</span>
+            <span> {{ `เเก้ไขเกรดเพชร: ${model.code}-${model.nameTh}` }}</span>
           </div>
         </div>
       </template>
@@ -23,7 +23,7 @@
                   type="text"
                   class="form-control"
                   v-model="form.code"
-                  placeholder="EX: OG"
+                  placeholder="EX: VSCII"
                   disabled
                   required
                 />
@@ -42,7 +42,7 @@
                   class="form-control"
                   :style="getBgColor(form.nameTh)"
                   v-model="form.nameTh"
-                  placeholder="EX: สี่เหลี่ยมตัดมุม"
+                  placeholder="EX: VSC II, VSD II, VS III......"
                   required
                 />
               </div>
@@ -60,7 +60,7 @@
                   class="form-control"
                   :style="getBgColor(form.nameEn)"
                   v-model="form.nameEn"
-                  placeholder="EX: Octagon"
+                  placeholder="EX: VSC II, VSD II, VS III......"
                   required
                 />
               </div>
@@ -141,7 +141,7 @@ export default {
       },
 
       //wording
-      txtConfirmSubmit: 'ยืนยันเเก้ไขรูปร่างพลอย'
+      txtConfirmSubmit: 'ยืนยันเเก้ไขเกรดเพชร'
     }
   },
 
@@ -172,7 +172,7 @@ export default {
     },
     async submit() {
       const param = {
-        type: 'GEM-SHAPE',
+        type: 'DIAMOND-GRADE',
         ...this.form
       }
       const res = await this.masterStore.updateMaster({

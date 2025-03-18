@@ -22,7 +22,7 @@ import dataTable from './components/data-table-view.vue'
 import create from './modal/create-view.vue'
 
 const interfaceForm = {
-  type: 'GEM-SHAPE',
+  type: 'DIAMOND-GRADE',
   text: null
 }
 export default {

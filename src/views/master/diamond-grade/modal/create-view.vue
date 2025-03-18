@@ -5,7 +5,7 @@
         <div>
           <div class="title-text-lg-header">
             <span class="bi bi-database-fill-add mr-2"></span>
-            <span>เพิ่มรูปร่างพลอย</span>
+            <span>เพิ่มเกรดเพชร</span>
           </div>
         </div>
       </template>
@@ -25,7 +25,7 @@
                   class="form-control"
                   :style="getBgColor(form.code)"
                   v-model="form.code"
-                  placeholder="EX: OG"
+                  placeholder="EX: VSCII"
                   required
                 />
               </div>
@@ -43,7 +43,7 @@
                   class="form-control"
                   :style="getBgColor(form.nameTh)"
                   v-model="form.nameTh"
-                  placeholder="EX: สี่เหลี่ยมตัดมุม"
+                  placeholder="EX: VSC II, VSD II, VS III......"
                   required
                 />
               </div>
@@ -61,7 +61,7 @@
                   class="form-control"
                   :style="getBgColor(form.nameEn)"
                   v-model="form.nameEn"
-                  placeholder="EX: Octagon"
+                  placeholder="EX: VSC II, VSD II, VS III......"
                   required
                 />
               </div>
@@ -116,7 +116,7 @@ export default {
       },
 
       //wording
-      txtConfirmSubmit: 'ยืนยันเพิ่มรูปร่างพลอย'
+      txtConfirmSubmit: 'ยืนยันเพิ่มเกรดเพชร'
     }
   },
 
@@ -147,7 +147,7 @@ export default {
     },
     async submit() {
       const param = {
-        type: 'GEM-SHAPE',
+        type: 'DIAMOND-GRADE',
         ...this.form
       }
       const res = await this.masterStore.createMaster({

@@ -353,14 +353,25 @@
                             </Dropdown>
                           </div>
                           <div v-else-if="data.type === 'Diamond'">
-                            <input
+                            <!-- <input
                               type="text"
                               v-model="data.typeCode"
                               class="form-control"
                               placeholder="เกรดเพชร"
                               :style="getBgColor(false, data.typeCode)"
                               @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
-                            />
+                            /> -->
+                            <Dropdown
+                              v-model="data.typeCode"
+                              :options="masterDiamondGrade"
+                              optionLabel="description"
+                              optionValue="nameEn"
+                              class="w-full md:w-14rem"
+                              placeholder="เลือกพลอย"
+                              :showClear="data.typeCode ? true : false"
+                              @change="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
+                            >
+                            </Dropdown>
                           </div>
                           <div v-else-if="data.type === 'Gem'">
                             <Dropdown
@@ -625,6 +636,9 @@ export default {
     },
     masterGem() {
       return this.masterStore.gem
+    },
+    masterDiamondGrade() {
+      return this.masterStore.diamondGrade
     }
   },
 
@@ -1152,9 +1166,9 @@ export default {
       this.form = this.data.stocks.map((item) => ({
         ...item, // copy ทุก property จาก receiptStocks
 
-        moldDesign: item.moldDesign ?? this.data.mold,
-        productNameTH: item.productNameTH ?? this.data.productName,
-        productNameEN: item.productNameEN ?? this.data.productName,
+        productNameTH: item.productNameTH?.trim() || this.data.productName || '',
+        productNameEN: item.productNameEN?.trim() || this.data.productName || '',
+        moldDesign: item.moldDesign?.trim() || this.data.mold || '',
 
         barcodeGold: '',
         barcodeGems: []
@@ -1255,6 +1269,7 @@ export default {
       // เข้าถึง state โดยตรง
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()
+      await this.masterStore.fetchDiamondGrade()
       //console.log(this.masterStore.gold)
       //console.log(this.masterStore.gem)
     })
