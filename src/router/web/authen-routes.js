@@ -21,6 +21,7 @@ const GemShapeView = () => import('@/views/master/gemShape/index-view.vue')
 const GoldSizeView = () => import('@/views/master/goldSize/index-view.vue')
 const ProductTypeView = () => import('@/views/master/productType/index-view.vue')
 const ZillView = () => import('@/views/master/zill/index-view.vue')
+const DiamondGrade = () => import('@/views/master/diamond-grade/index-view.vue')
 
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
@@ -252,6 +253,19 @@ const routes = [
           Displayname: {
             en: 'Zill',
             th: 'ข้อมูลซิล'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
+        }
+      },
+      {
+        path: '/master-diamond-grade',
+        name: 'master-diamond-grade',
+        component: DiamondGrade,
+        meta: {
+          Displayname: {
+            en: 'Diamond Grade',
+            th: 'ข้อมูลเกรดเพรช'
           },
           minorShow: true,
           permissions: [PERMISSIONS.MASTER_VIEW]
