@@ -62,6 +62,21 @@
             </div>
           </template>
 
+          <template #moldDesignTemplate="{ data }">
+            <div class="d-flex justify-content-center">
+              <input
+                v-if="!data.isReceipt"
+                class="form-control form-control-sm"
+                :style="getBgColor(data.isReceipt, data.moldDesign)"
+                type="text"
+                v-model="data.moldDesign"
+                :required="isRequiredField(data)"
+                :disabled="data.isReceipt"
+              />
+              <span v-else>{{ data.moldDesign }}</span>
+            </div>
+          </template>
+
           <template #productNameEnTemplate="{ data }">
             <div class="d-flex justify-content-center">
               <input
@@ -102,7 +117,7 @@
                         :madeIn="formBarcode.madeIn"
                         :madeInText="formBarcode.madeInText"
                         :stockNumber="slotProps.stockNumber"
-                        :mold="formBarcode.mold"
+                        :mold="slotProps.data.moldDesign ?? formBarcode.mold"
                         :gold="slotProps.data.barcodeGold"
                         :gems="slotProps.data.barcodeGems"
                         :size="slotProps.data.size"
@@ -192,6 +207,7 @@
                           type="text"
                           class="form-control form-control-sm"
                           v-model="slotProps.data.size"
+                          :required="isRequiredField(slotProps.data, true)"
                           autocomplete="off"
                           autocorrect="off"
                           autocapitalize="off"
@@ -337,14 +353,25 @@
                             </Dropdown>
                           </div>
                           <div v-else-if="data.type === 'Diamond'">
-                            <input
+                            <!-- <input
                               type="text"
                               v-model="data.typeCode"
                               class="form-control"
                               placeholder="เกรดเพชร"
                               :style="getBgColor(false, data.typeCode)"
                               @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
-                            />
+                            /> -->
+                            <Dropdown
+                              v-model="data.typeCode"
+                              :options="masterDiamondGrade"
+                              optionLabel="description"
+                              optionValue="nameEn"
+                              class="w-full md:w-14rem"
+                              placeholder="เลือกพลอย"
+                              :showClear="data.typeCode ? true : false"
+                              @change="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
+                            >
+                            </Dropdown>
                           </div>
                           <div v-else-if="data.type === 'Gem'">
                             <Dropdown
@@ -466,13 +493,14 @@
                   </div>
                 </div>
 
+                <!-- barcode -->
                 <div class="form-col-container mt-2">
                   <div class="filter-container-bg-focus">
                     <barcodeDemo
                       :madeIn="formBarcode.madeIn"
                       :madeInText="formBarcode.madeInText"
                       :stockNumber="slotProps.stockNumber"
-                      :mold="formBarcode.mold"
+                      :mold="slotProps.data.moldDesign ?? formBarcode.mold"
                       :gold="slotProps.data.barcodeGold"
                       :gems="slotProps.data.barcodeGems"
                       :size="slotProps.data.size"
@@ -608,6 +636,9 @@ export default {
     },
     masterGem() {
       return this.masterStore.gem
+    },
+    masterDiamondGrade() {
+      return this.masterStore.diamondGrade
     }
   },
 
@@ -718,6 +749,12 @@ export default {
           minWidth: '150px'
         },
         {
+          field: 'moldDesign',
+          header: 'เเม่พิมพ์',
+          sortable: false,
+          minWidth: '150px'
+        },
+        {
           field: 'productNameEn',
           header: 'ชื่อสินค้า EN',
           sortable: false,
@@ -813,7 +850,25 @@ export default {
     },
 
     //validate
-    isRequiredField(data) {
+    isRequiredField(data, size = false) {
+      if (size) {
+        return (
+          !data.isReceipt &&
+          this.selectedItems.some(
+            (selected) => selected.stockReceiptNumber === data.stockReceiptNumber
+          ) &&
+          ['G', 'B', 'R'].includes(this.data.productType)
+        )
+      } else {
+        return (
+          !data.isReceipt &&
+          this.selectedItems.some(
+            (selected) => selected.stockReceiptNumber === data.stockReceiptNumber
+          )
+        )
+      }
+    },
+    isRequiredSizeField(data) {
       return (
         !data.isReceipt &&
         this.selectedItems.some(
@@ -1110,6 +1165,11 @@ export default {
       }
       this.form = this.data.stocks.map((item) => ({
         ...item, // copy ทุก property จาก receiptStocks
+
+        productNameTH: item.productNameTH?.trim() || this.data.productName || '',
+        productNameEN: item.productNameEN?.trim() || this.data.productName || '',
+        moldDesign: item.moldDesign?.trim() || this.data.mold || '',
+
         barcodeGold: '',
         barcodeGems: []
       }))
@@ -1209,6 +1269,7 @@ export default {
       // เข้าถึง state โดยตรง
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()
+      await this.masterStore.fetchDiamondGrade()
       //console.log(this.masterStore.gold)
       //console.log(this.masterStore.gem)
     })

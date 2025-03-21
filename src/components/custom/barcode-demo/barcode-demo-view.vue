@@ -60,7 +60,8 @@ export default {
       default: 'XX-XXXX-XXX'
     },
     mold: {
-      type: String
+      type: String,
+      default: 'Mold'
     },
     gold: {
       type: String,
@@ -91,7 +92,7 @@ export default {
   },
 
   watch: {
-    mold: {
+    stockNumber: {
       handler(newVal) {
         this.generateBarcode(newVal)
       },

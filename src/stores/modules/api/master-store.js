@@ -19,13 +19,16 @@ export const useMasterApiStore = defineStore('master', {
     customerType: [],
     productType: [],
     workerType: [],
+    diamondGrade: [],
     error: null,
     cacheTimestamps: {
       planStatus: null,
       gold: null,
       goldSize: null,
       customerType: null,
-      productType: null
+      productType: null,
+      workerType: null,
+      diamondGrade: null
     },
     overPlanOptions: [
       { id: 0, description: 'ทั้งหมด' },
@@ -52,7 +55,10 @@ export const useMasterApiStore = defineStore('master', {
     isGoldSizeCacheValid: (state) => isCacheValid(state.cacheTimestamps.goldSize),
     isGemCacheValid: (state) => isCacheValid(state.cacheTimestamps.Gem),
     isCustomerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.customerType),
-    isProductTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.productType)
+    isProductTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.productType),
+    isWorkerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.workerType),
+    isDiamondGradeCacheValid: (state) => isCacheValid(state.cacheTimestamps.diamondGrade)
+
   },
 
   actions: {
@@ -92,6 +98,8 @@ export const useMasterApiStore = defineStore('master', {
       this.gem = []
       this.customerType = []
       this.productType = []
+      this.workerType = []
+      this.diamondGrade = []
       this.error = null
       this.clearAllCache()
     },
@@ -136,6 +144,18 @@ export const useMasterApiStore = defineStore('master', {
             api.jewelry.get('Master/MasterProductType', null, { skipLoading: true })
           )
           fetchKeys.push('productType')
+        }
+        if (forceFetch || !this.isWorkerTypeCacheValid) {
+          fetchPromises.push(
+            api.jewelry.get('Worker/GetWorkerProductionType', null, { skipLoading: true })
+          )
+          fetchKeys.push('workerType')
+        }
+        if (forceFetch || !this.isDiamondGradeCacheValid) {
+          fetchPromises.push(
+            api.jewelry.get('Master/MasterDiamondGrade', null, { skipLoading: true })
+          )
+          fetchKeys.push('diamondGrade')
         }
 
         // If all caches are valid and no force fetch, return early
@@ -250,6 +270,9 @@ export const useMasterApiStore = defineStore('master', {
         'Worker/GetWorkerProductionType',
         'Error fetching product type'
       )
+    },
+    async fetchDiamondGrade() {
+      return this.fetchWithCache('diamondGrade', 'Master/MasterDiamondGrade', 'Error fetching diamond grade')
     },
 
     // master edit
