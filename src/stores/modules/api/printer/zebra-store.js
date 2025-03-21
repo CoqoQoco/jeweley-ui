@@ -15,16 +15,71 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       }
     },
 
+    // async fetchZebraPrint({ formValue, skipLoading }) {
+    //   try {
+    //     //create zebra code
+    //     const zpl = this.generateZPLs(formValue)
+    //     return await api.zebraPrinter.printZPL(zpl, { skipLoading: skipLoading })
+    //   } catch (error) {
+    //     console.error('Error fetching zebra printer status:', error)
+    //   }
+    // },
+
     async fetchZebraPrint({ formValue, skipLoading }) {
       try {
-        //create zebra code
-        const zpl = this.generateZPLs(formValue)
-        return await api.zebraPrinter.printZPL(zpl, { skipLoading: skipLoading })
+        // ตรวจสอบว่ามีการระบุจำนวนที่ต้องการพิมพ์หรือไม่
+        const printCount = formValue.print || 1; // กำหนดค่าเริ่มต้นเป็น 1 ถ้าไม่ได้ระบุ
+        
+        console.log(`เริ่มพิมพ์จำนวน ${printCount} ชิ้น`);
+        
+        // สร้าง ZPL code เพียงครั้งเดียว
+        const zpl = this.generateZPLs(formValue);
+        
+        // สร้างฟังก์ชันสำหรับ delay
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        // วนลูปพิมพ์ทีละชิ้นตามลำดับ โดยใช้ ZPL เดิม
+        for (let i = 0; i < printCount; i++) {
+          try {
+            // ยิง API ด้วย ZPL ที่สร้างครั้งเดียว
+            const result = await api.zebraPrinter.printZPL(zpl, { skipLoading: skipLoading });
+            
+            // ตรวจสอบผลลัพธ์
+            if (result.status !== 'success') {
+              console.error(`การพิมพ์ชิ้นที่ ${i + 1} ล้มเหลว: ${result.message}`);
+              return result; // หยุดและส่งคืนข้อผิดพลาด
+            }
+            
+            console.log(`พิมพ์ชิ้นที่ ${i + 1}/${printCount} สำเร็จ`);
+            
+            // ถ้ายังไม่ใช่ชิ้นสุดท้าย ให้รอ 1 วินาที
+            if (i < printCount - 1) {
+              await delay(1000); // รอ 1 วินาที
+            }
+          } catch (innerError) {
+            console.error(`เกิดข้อผิดพลาดในการพิมพ์ชิ้นที่ ${i + 1}:`, innerError);
+            return {
+              status: 'error',
+              message: `เกิดข้อผิดพลาดในการพิมพ์ชิ้นที่ ${i + 1}`,
+              error: innerError
+            };
+          }
+        }
+        
+        console.log(`พิมพ์ทั้งหมด ${printCount} ชิ้นเสร็จสิ้น`);
+        return {
+          status: 'success',
+          message: `พิมพ์ทั้งหมด ${printCount} ชิ้นเสร็จสิ้น`
+        };
       } catch (error) {
-        console.error('Error fetching zebra printer status:', error)
+        console.error('เกิดข้อผิดพลาดในการพิมพ์:', error);
+        return {
+          status: 'error',
+          message: 'เกิดข้อผิดพลาดในการพิมพ์',
+          error: error
+        };
       }
-    },
-
+    }
     async fetchZebraPrints({ formValue, skipLoading }) {
       try {
         //create multi zebra code
