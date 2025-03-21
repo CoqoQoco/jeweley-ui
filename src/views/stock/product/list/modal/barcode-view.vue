@@ -67,12 +67,32 @@
 
             <!-- action -->
             <div class="vertical-center-container">
-              <button class="btn btn-sm btn-dark" type="button" @click="closeModal">
+              <!-- <button class="btn btn-sm btn-dark" type="button" @click="closeModal">
                 <span class="bi bi-x"></span>
-              </button>
+              </button> -->
+              <div>
+                <span class="title-text">จำนวนพิมพ์</span>
+              </div>
+              <div class="ml-2 mr-2">
+                <input
+                  class="form-control text-center"
+                  type="number"
+                  v-model="barcode.print"
+                  min="1"
+                  max="999"
+                  style="
+                    width: 50px;
+                    font-size: 16px;
+                    height: 30px;
+                    border-radius: 4px;
+                    border: 1px solid #ced4da;
+                  "
+                  @input="validateInput"
+                />
+              </div>
               <button
                 :class="[
-                  'btn btn-sm  ml-2',
+                  'btn btn-sm',
                   checkPrinterService !== 'success' ? 'btn-secondary' : 'btn-main'
                 ]"
                 :disabled="checkPrinterService !== 'success'"
@@ -103,7 +123,8 @@ const interfaceBarcode = {
   stockNumber: 'XX-XXXX-XXX',
   size: 'XX',
   barcodeGold: 'Gold XX g.',
-  barcodeGems: []
+  barcodeGems: [],
+  print: 1
 }
 
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
@@ -156,7 +177,8 @@ export default {
           stockNumber: val.stockNumber,
           size: val.size,
           gold: '',
-          gems: []
+          gems: [],
+          print: 1
         }
 
         // Process materials if available
@@ -176,7 +198,7 @@ export default {
           })
         }
 
-        //console.log('barcode', this.barcode)
+        console.log('barcode', this.barcode)
 
         // Schedule printer status check if stock number exists
         if (val.stockNumber) {
@@ -252,6 +274,18 @@ export default {
       return `กำลังตรวจสอบสถานะ${name}...`
     },
 
+    // เพิ่ม method นี้ใน methods ที่มีอยู่แล้ว
+    validateInput() {
+      // ตรวจสอบว่าเป็นตัวเลขจำนวนเต็มบวกเท่านั้น
+      if (this.barcode.print < 1) {
+        this.barcode.print = 1
+      } else if (this.barcode.print > 30) {
+        this.barcode.print = 30
+      }
+      // แปลงเป็นจำนวนเต็ม (ตัดทศนิยมออก)
+      this.barcode.print = Math.floor(this.barcode.print)
+    },
+
     async checkPrinterStatus() {
       this.checkPrinterService = 'unknown'
 
@@ -290,6 +324,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form';
+
+input {
+  margin-top: 0px !important;
+}
 
 .printer-status-indicator {
   display: flex;

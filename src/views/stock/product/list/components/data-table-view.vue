@@ -16,7 +16,7 @@
           <button class="btn btn-sm btn btn-green" title="พิมพ์ป้าย" @click="onPrintBarcode(data)">
             <i class="bi bi-upc-scan"></i>
           </button>
-          <button class="btn btn-sm btn btn-main ml-2" title="เเก้ไข">
+          <button class="btn btn-sm btn btn-main ml-2" title="เเก้ไข" @click="onUpdate(data)">
             <i class="bi bi-brush"></i>
           </button>
         </div>
@@ -55,6 +55,7 @@
       :modelStock="modelStock"
       @closeModal="onCloseModal"
     ></barcode>
+    <update :isShow="isShow.isUpdate" :modelStock="modelStock" @closeModal="onCloseModal"></update>
   </div>
 </template>
 
@@ -66,9 +67,11 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 
 import dataExpand from './data-expand-view.vue'
 import barcode from '../modal/barcode-view.vue'
+import update from '../modal/update-view.vue'
 
 const interfaceShow = {
-  isBarcode: false
+  isBarcode: false,
+  isUpdate: false
 }
 
 export default {
@@ -76,7 +79,8 @@ export default {
     BaseDataTable,
     imagePreview,
     dataExpand,
-    barcode
+    barcode,
+    update
   },
 
   setup() {
@@ -250,13 +254,21 @@ export default {
       this.fetchData()
     },
 
-    onCloseModal() {
+    onCloseModal(action) {
       this.isShow = { ...interfaceShow }
       this.modelStock = {}
+
+      if (action === 'fetch') {
+        this.fetchData()
+      }
     },
     onPrintBarcode(val) {
       this.modelStock = val
       this.isShow.isBarcode = true
+    },
+    onUpdate(val) {
+      this.modelStock = val
+      this.isShow.isUpdate = true
     },
 
     async fetchData() {
@@ -279,6 +291,7 @@ export default {
   }
 }
 </script>
+
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 

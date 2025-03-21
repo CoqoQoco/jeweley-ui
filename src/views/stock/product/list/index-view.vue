@@ -47,7 +47,17 @@ export default {
     return { masterStore }
   },
 
-  computed: {},
+  computed: {
+    masterGold() {
+      return this.masterStore.gold
+    },
+    masterGem() {
+      return this.masterStore.gem
+    },
+    masterDiamondGrade() {
+      return this.masterStore.diamondGrade
+    }
+  },
 
   data() {
     return {
@@ -80,6 +90,7 @@ export default {
     this.$nextTick(async () => {
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()
+      await this.masterStore.fetchDiamondGrade()
     })
   }
 }

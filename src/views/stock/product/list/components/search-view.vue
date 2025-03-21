@@ -279,7 +279,7 @@ export default {
     },
     dialogSearch() {
       this.isShow.dialog = false
-      this.$emit('search')
+      this.$emit('search', this.form)
     },
     onSubmitExport() {
       this.$emit('export', true)

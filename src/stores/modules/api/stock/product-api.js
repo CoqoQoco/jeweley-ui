@@ -19,6 +19,7 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
   actions: {
     async fetchDataSearch({ take, skip, sort, formValue }) {
       try {
+        //console.log('formValue', formValue)
         this.dataSearch = {}
         const param = {
           take: take,
@@ -94,6 +95,15 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         }
       } catch (error) {
         console.error('Error fetching stock product export data:', error)
+        throw error
+      }
+    },
+
+    async fetchUpdateStockProduct({ formValue }) {
+      try {
+        return await api.jewelry.post('StockProduct/Update', formValue)
+      } catch (error) {
+        console.error('Error fetching update stock product data:', error)
         throw error
       }
     }
