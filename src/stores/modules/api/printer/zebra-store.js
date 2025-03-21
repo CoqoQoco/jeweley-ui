@@ -79,7 +79,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
           error: error
         };
       }
-    }
+    },
     async fetchZebraPrints({ formValue, skipLoading }) {
       try {
         //create multi zebra code
