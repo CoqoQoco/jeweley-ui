@@ -118,6 +118,12 @@ export default {
           header: 'อักษรหน้าสินค้า',
           sortable: true,
           minWidth: '150px'
+        },
+        {
+          field: 'prefix2',
+          header: 'อักษรหน้าสินค้า (Silver)',
+          sortable: true,
+          minWidth: '150px'
         }
       ],
 

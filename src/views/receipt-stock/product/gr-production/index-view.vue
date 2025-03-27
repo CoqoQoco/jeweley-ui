@@ -79,7 +79,7 @@
 
           <template #productNameEnTemplate="{ data }">
             <div class="d-flex justify-content-center">
-              <input
+              <!-- <input
                 v-if="!data.isReceipt"
                 class="form-control form-control-sm"
                 :style="getBgColor(data.isReceipt, data.productNameEN)"
@@ -87,14 +87,41 @@
                 v-model="data.productNameEN"
                 :required="isRequiredField(data)"
                 :disabled="data.isReceipt"
-              />
+              /> -->
+
+              <div v-if="!data.isReceipt" class="input-group input-group-sm">
+                <div class="input-group input-group-inner">
+                  <input
+                    class="form-control"
+                    :style="getBgColor(data.isReceipt, data.productNameEN)"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    v-model="data.productNameEN"
+                    :required="isRequiredField(data)"
+                    :disabled="data.isReceipt"
+                  />
+                  <div class="input-group-append mr-1">
+                    <button
+                      type="button"
+                      class="btn btn-green btn-sm btn-input-group"
+                      style="height: 35px !important; margin-top: 5px"
+                      @click="onSearchProductName(data, 'EN')"
+                    >
+                      <span class="bi bi-search"></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
               <span v-else>{{ data.productNameEN }}</span>
             </div>
           </template>
 
           <template #productNameThTemplate="{ data }">
             <div class="d-flex justify-content-center">
-              <input
+              <!-- <input
                 v-if="!data.isReceipt"
                 class="form-control form-control-sm"
                 :style="getBgColor(data.isReceipt, data.productNameTH)"
@@ -102,7 +129,33 @@
                 v-model="data.productNameTH"
                 :required="isRequiredField(data)"
                 :disabled="data.isReceipt"
-              />
+              /> -->
+              <div v-if="!data.isReceipt" class="input-group input-group-sm">
+                <div class="input-group input-group-inner">
+                  <input
+                    class="form-control"
+                    :style="getBgColor(data.isReceipt, data.productNameTH)"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    v-model="data.productNameTH"
+                    :required="isRequiredField(data)"
+                    :disabled="data.isReceipt"
+                  />
+                  <div class="input-group-append mr-1">
+                    <button
+                      type="button"
+                      class="btn btn-green btn-sm btn-input-group"
+                      style="height: 35px !important; margin-top: 5px"
+                      @click="onSearchProductName(data, 'TH')"
+                    >
+                      <span class="bi bi-search"></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
               <span v-else>{{ data.productNameTH }}</span>
             </div>
           </template>
@@ -198,21 +251,42 @@
                     <!-- size -->
                     <div class="form-col-container mt-2">
                       <!-- size -->
-                      <div>
+                      <div class="form-col-sm-container">
                         <div>
-                          <span class="title-text">ขนาด</span>
-                          <!-- <span class="title-text"> *</span> -->
+                          <div>
+                            <span class="title-text">ขนาด</span>
+                            <!-- <span class="title-text"> *</span> -->
+                          </div>
+                          <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="slotProps.data.size"
+                            :required="isRequiredField(slotProps.data, true)"
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
+                          />
                         </div>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          v-model="slotProps.data.size"
-                          :required="isRequiredField(slotProps.data, true)"
-                          autocomplete="off"
-                          autocorrect="off"
-                          autocapitalize="off"
-                          spellcheck="false"
-                        />
+
+                        <div>
+                          <div>
+                            <span class="title-text">แป้นต่างหู</span>
+                            <!-- <span class="title-text"> *</span> -->
+                          </div>
+                          <Dropdown
+                            v-model="slotProps.data.studEarring"
+                            :options="masterStud"
+                            optionLabel="description"
+                            optionValue="value"
+                            class="w-full md:w-14rem"
+                            placeholder="เลือกแป้นต่างหู"
+                            :showClear="slotProps.data.studEarring ? true : false"
+                            style="height: 31px !important"
+                            :disabled="!requiredStud"
+                          >
+                          </Dropdown>
+                        </div>
                       </div>
 
                       <!-- location -->
@@ -569,6 +643,14 @@
       :modelStock="res"
       @closeModal="closeModal"
     ></modalBarcodePrint>
+
+    <modalSearchProductName
+      :isShow="isShow.searchProductName"
+      :modelStock="stockUpdate"
+      :mode="searchProductNameType"
+      @select="updateProductName"
+      @closeModal="closeModal"
+    ></modalSearchProductName>
   </div>
 </template>
 
@@ -595,6 +677,7 @@ import barcodeDemo from '@/components/custom/barcode-demo/barcode-demo-view.vue'
 
 import modalSelectImage from './modal/image-select-view.vue'
 import modalBarcodePrint from './modal/barcode-print-view.vue'
+import modalSearchProductName from './modal/search-product-name-view.vue'
 
 const interfaceBarcode = {
   madeIn: 'MADE IN THAILAND',
@@ -604,7 +687,8 @@ const interfaceBarcode = {
 }
 const interfaceIsShow = {
   imageSelect: false,
-  barcodePrint: false
+  barcodePrint: false,
+  searchProductName: false
 }
 
 export default {
@@ -618,7 +702,8 @@ export default {
     headerView,
     modalSelectImage,
     barcodeDemo,
-    modalBarcodePrint
+    modalBarcodePrint,
+    modalSearchProductName
     //imgPreview,
     //Image
     //uploadImages
@@ -639,6 +724,11 @@ export default {
     },
     masterDiamondGrade() {
       return this.masterStore.diamondGrade
+    },
+    requiredStud() {
+      const res = this.data.productType === 'ES'
+      console.log('requiredStud', res)
+      return res
     }
   },
 
@@ -653,6 +743,7 @@ export default {
       param: {},
       data: {},
       res: [],
+      searchProductNameType: 'EN',
 
       // res: [
       //   {
@@ -720,6 +811,11 @@ export default {
         { value: 'Diamond', description: 'เพชร' },
         { value: 'Gem', description: 'พลอย' }
       ],
+      masterStud: [
+        { value: 'lg', description: 'แป้นใหญ่' },
+        { value: 'md', description: 'แป้นกลาง' },
+        { value: 'sm', description: 'แป้นเล็ก' }
+      ],
 
       columns: [
         {
@@ -734,25 +830,25 @@ export default {
           field: 'stockReceiptNumber',
           header: 'เลขที่ตั้งรับ',
           sortable: false,
-          minWidth: '150px'
+          minWidth: '140px'
         },
         {
           field: 'stockNumber',
           header: 'เลขที่ผลิต',
           sortable: false,
-          minWidth: '150px'
+          minWidth: '140px'
         },
         {
           field: 'productNumber',
           header: 'รหัสสินค้า',
           sortable: false,
-          minWidth: '150px'
+          minWidth: '140px'
         },
         {
           field: 'moldDesign',
           header: 'เเม่พิมพ์',
           sortable: false,
-          minWidth: '150px'
+          minWidth: '120px'
         },
         {
           field: 'productNameEn',
@@ -857,7 +953,7 @@ export default {
           this.selectedItems.some(
             (selected) => selected.stockReceiptNumber === data.stockReceiptNumber
           ) &&
-          ['G', 'B', 'R'].includes(this.data.productType)
+          ['G', 'B', 'R', 'N'].includes(this.data.productType)
         )
       } else {
         return (
@@ -967,12 +1063,19 @@ export default {
 
     //handle modal
     closeModal() {
+      this.searchProductNameType = 'EN'
       this.isShow = { ...interfaceIsShow }
     },
     onSelectImage(e) {
       //console.log('onSelectImage', e)
       this.stockUpdate = { ...e }
       this.isShow.imageSelect = true
+    },
+    onSearchProductName(e, type) {
+      this.stockUpdate = { ...e }
+      this.searchProductNameType = type
+      //console.log('onSearchProductName', type)
+      this.isShow.searchProductName = true
     },
 
     updateImage(image, stock) {
@@ -981,47 +1084,105 @@ export default {
 
       //create array update form stock
       const stockArray = [{ ...stock }]
-
       this.updateStock(null, image, stockArray)
     },
-    updateStock(data, image, stock) {
-      //console.log('updateStock', data, image, stock)
+    updateProductName(name, stock, mode, all) {
+      this.searchProductNameType = 'EN'
+      this.isShow.searchProductName = false
+      //console.log('updateProductName', name)
 
-      //update form by array stock
-      stock.forEach((item) => {
-        //update this.form
-        const indexForm = this.form.findIndex(
-          (x) => x.stockReceiptNumber === item.stockReceiptNumber
-        )
-        if (indexForm > -1) {
-          //this.form[indexForm] = { ...item }
+      name = {
+        ...name,
+        mode: mode
+      }
+
+      const stockArray = [{ ...stock }]
+      this.updateStock(name, null, stockArray, all)
+    },
+    updateStock(data, image, stock, all = false) {
+      if (all) {
+        console.log('updateProductName all')
+        this.form.forEach((item) => {
+          //update all
+          if (item.isReceipt) return
 
           if (image) {
-            this.form[indexForm].imageName = image.name
-            this.form[indexForm].imageYear = image.year
-            this.form[indexForm].imagePath = image.path
+            item.imageName = image.name
+            item.imageYear = image.year
+            item.imagePath = image.path
           }
 
-          console.log('updateStock form index update', this.form[indexForm])
-        }
-
-        //update this.selectedItems if any()
-        if (this.selectedItems.length > 0) {
-          const indexSelect = this.selectedItems.findIndex(
+          if (data) {
+            if (data.text) {
+              if (data.mode === 'EN') {
+                item.productNameEN = data.text
+              }
+              if (data.mode === 'TH') {
+                item.productNameTH = data.text
+              }
+            }
+          }
+        })
+      } else {
+        stock.forEach((item) => {
+          //update this.form
+          const indexForm = this.form.findIndex(
             (x) => x.stockReceiptNumber === item.stockReceiptNumber
           )
-          if (indexSelect > -1) {
-            //this.selectedItems[indexSelect] = { ...item }
+          if (indexForm > -1) {
+            //this.form[indexForm] = { ...item }
 
             if (image) {
-              this.selectedItems[indexForm].imageName = image.name
-              this.selectedItems[indexForm].imageYear = image.year
-              this.selectedItems[indexForm].imagePath = image.path
+              this.form[indexForm].imageName = image.name
+              this.form[indexForm].imageYear = image.year
+              this.form[indexForm].imagePath = image.path
             }
-            console.log('updateStock selectedItems index update', this.selectedItems[indexSelect])
+
+            if (data) {
+              console.log('updateStock data', data)
+              if (data.text) {
+                if (data.mode === 'EN') {
+                  this.form[indexForm].productNameEN = data.text
+                }
+                if (data.mode === 'TH') {
+                  this.form[indexForm].productNameTH = data.text
+                }
+              }
+            }
+
+            console.log('updateStock form index update', this.form[indexForm])
           }
-        }
-      })
+
+          //update this.selectedItems if any()
+          if (this.selectedItems.length > 0) {
+            const indexSelect = this.selectedItems.findIndex(
+              (x) => x.stockReceiptNumber === item.stockReceiptNumber
+            )
+            if (indexSelect > -1) {
+              //this.selectedItems[indexSelect] = { ...item }
+
+              if (image) {
+                this.selectedItems[indexForm].imageName = image.name
+                this.selectedItems[indexForm].imageYear = image.year
+                this.selectedItems[indexForm].imagePath = image.path
+              }
+
+              if (data) {
+                if (data.text) {
+                  if (data.mode === 'EN') {
+                    this.selectedItems[indexForm].productNameEN = data.text
+                  }
+                  if (data.mode === 'TH') {
+                    this.selectedItems[indexForm].productNameTH = data.text
+                  }
+                }
+              }
+
+              console.log('updateStock selectedItems index update', this.selectedItems[indexSelect])
+            }
+          }
+        })
+      }
     },
 
     updateTypeBarcode(item, index) {
@@ -1168,7 +1329,9 @@ export default {
 
         productNameTH: item.productNameTH?.trim() || this.data.productName || '',
         productNameEN: item.productNameEN?.trim() || this.data.productName || '',
+
         moldDesign: item.moldDesign?.trim() || this.data.mold || '',
+        price: 0,
 
         barcodeGold: '',
         barcodeGems: []
@@ -1400,5 +1563,11 @@ export default {
 .field-error {
   border-color: red !important;
   background-color: #ffeeee !important;
+}
+
+.input-group-prepend .btn,
+.input-group-append .btn {
+  position: relative;
+  z-index: 0 !important;
 }
 </style>

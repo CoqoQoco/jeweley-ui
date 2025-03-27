@@ -498,7 +498,7 @@ export default {
 
     // จัดการการเปลี่ยนแปลงการเลือกในโหมด single
     onSingleSelectionChange(checked, item) {
-      console.log('checked', checked, 'item', item)
+      //console.log('checked', checked, 'item', item)
       if (this.isDisabled(item)) return
 
       // ถ้าเป็น preSelected item ให้ return ออกไปเลย

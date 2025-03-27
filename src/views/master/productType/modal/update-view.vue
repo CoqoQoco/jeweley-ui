@@ -84,6 +84,24 @@
               </div>
             </div>
 
+
+            <div class="mt-2">
+              <div>
+                <div class="title-text">
+                  <span>อักษรหน้าสินค้า (Silver)</span>
+                  <span> *</span>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  :style="getBgColor(form.prefix2)"
+                  v-model="form.prefix2"
+                  placeholder="EX: DK"
+                  required
+                />
+              </div>
+            </div>
+
             <div class="submit-container">
               <button class="btn btn-sm btn-main" type="submit">
                 <span><i class="bi bi-calendar-check"></i></span>

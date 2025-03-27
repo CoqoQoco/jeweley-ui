@@ -106,6 +106,17 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.error('Error fetching update stock product data:', error)
         throw error
       }
+    },
+
+    async fetchDataSearchProductName({ formValue, skipLoading }) {
+      try {
+        return await api.jewelry.post('StockProduct/ListName', formValue, {
+          skipLoading: skipLoading
+        })
+      } catch (error) {
+        console.error('Error fetching update stock product data:', error)
+        throw error
+      }
     }
   }
 })
