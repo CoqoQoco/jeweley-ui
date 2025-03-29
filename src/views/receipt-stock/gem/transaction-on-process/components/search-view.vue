@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="คืนเข้าคลัง/เบิกออกคลัง"
-      description="ทำรายการคืนเข้าคลัง/เบิกออกคลัง จากใบยืมออกคลัง"
+      title="ติดตามรายการยืมคลัง"
+      description="ตรวจสอบรายการยืมคลัง กำหนดส่งคืน การทำงาน เเละรายละเอียดตต่างๆ"
       :isShowBtnClose="false"
       :isShowRightSlot="false"
     >
@@ -41,27 +41,14 @@
           </div>
         </div>
 
-        <!-- returnDate -->
-        <div>
-          <span class="title-text">กำหนดคืนเข้าคลัง</span>
-          <div class="flex-group">
-            <Calendar
-              class="w-100"
-              v-model="form.returnDateStart"
-              :max-date="form.returnDateEnd"
-              dateFormat="dd/mm/yy"
-              showIcon
-              placeholder="เริ่มต้น"
-            />
-            <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
-              class="w-100"
-              v-model="form.returnDateEnd"
-              :min-date="form.returnDateStart"
-              dateFormat="dd/mm/yy"
-              showIcon
-              placeholder="สิ้นสุด"
-            />
+        <div class="form-col-container">
+          <div>
+            <span class="title-text">ผู้ยืม</span>
+            <input type="text" class="form-control" v-model="form.operator" />
+          </div>
+          <div>
+            <span class="title-text">ผู้ทำรายการ</span>
+            <input type="text" class="form-control" v-model="form.createBy" />
           </div>
         </div>
       </div>
@@ -75,16 +62,40 @@
         <template #content>
           <div class="form-col-container">
             <!-- running -->
-            <div>
-              <span class="title-text">เลขที่ใบยืม</span>
-              <input type="text" class="form-control" v-model="form.running" />
+            <div class="form-col-container">
+              <div>
+                <span class="title-text">เลขที่ใบยืม</span>
+                <input type="text" class="form-control" v-model="form.running" />
+              </div>
+              <div>
+                <span class="title-text">รหัส</span>
+                <input type="text" class="form-control" v-model="form.code" />
+              </div>
             </div>
+
+            <!-- returnDate -->
             <div>
-              <span class="title-text">รหัส</span>
-              <input type="text" class="form-control" v-model="form.code" />
+              <span class="title-text">กำหนดคืนเข้าคลัง</span>
+              <div class="flex-group">
+                <Calendar
+                  class="w-100"
+                  v-model="form.returnDateStart"
+                  :max-date="form.returnDateEnd"
+                  dateFormat="dd/mm/yy"
+                  showIcon
+                  placeholder="เริ่มต้น"
+                />
+                <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+                <Calendar
+                  class="w-100"
+                  v-model="form.returnDateEnd"
+                  :min-date="form.returnDateStart"
+                  dateFormat="dd/mm/yy"
+                  showIcon
+                  placeholder="สิ้นสุด"
+                />
+              </div>
             </div>
-            <div></div>
-            <div></div>
           </div>
         </template>
       </dialogView>

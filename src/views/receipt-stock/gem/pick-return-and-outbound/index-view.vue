@@ -25,14 +25,17 @@
 
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-import headerBar from './components/SearchView.vue'
-import dataTable from './components/DataTableView.vue'
+import headerBar from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 
 const interfaceForm = {
   runing: null,
   code: null,
   type: [5],
   status: ['process'],
+
+  operator: null,
+  createBy: null,
 
   requestDateStart: null,
   requestDateEnd: null,
@@ -85,7 +88,7 @@ export default {
       console.log('exportExcelFlag', value)
       this.isExport = value
     }
-  },
+  }
   // mounted() {
   //   this.updateHeaderHeight()
   //   window.addEventListener('resize', this.updateHeaderHeight)

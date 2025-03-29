@@ -178,7 +178,8 @@ export default {
           size: val.size,
           gold: '',
           gems: [],
-          print: 1
+          print: 1,
+          isSilver: val.productionTypeSize === 'SILVER' ? true : false
         }
 
         // Process materials if available

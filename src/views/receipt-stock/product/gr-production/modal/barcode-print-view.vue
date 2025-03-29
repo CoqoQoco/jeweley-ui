@@ -269,7 +269,8 @@ export default {
           stockNumber: item.stockNumber,
           size: item.size,
           gold: '',
-          gems: []
+          gems: [],
+          isSilver: item.productionTypeSize === 'SILVER' ? true : false
         }
 
         // Process materials if available

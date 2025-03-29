@@ -9,9 +9,14 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-    <template #woTextTemplate="{ data }">
+      <template #woTextTemplate="{ data }">
         <div>
           {{ `${data.wo}-${data.woNumber}` }}
+        </div>
+      </template>
+      <template #studEarringTemplate="{ data }">
+        <div>
+          {{ getStudEarring(data.studEarring) }}
         </div>
       </template>
     </BaseDataTable>
@@ -22,6 +27,7 @@
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
+import { get } from 'lodash'
 
 export default {
   components: {
@@ -67,6 +73,12 @@ export default {
 
   data() {
     return {
+      masterStud: [
+        { value: 'lg', description: 'แป้นใหญ่' },
+        { value: 'md', description: 'แป้นกลาง' },
+        { value: 'sm', description: 'แป้นเล็ก' }
+      ],
+
       take: 10,
       skip: 0,
       sort: [],
@@ -106,6 +118,12 @@ export default {
         {
           field: 'productTypeName',
           header: 'ประเภทสินค้า',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'studEarring',
+          header: 'แป้นต่างหู',
           sortable: true,
           minWidth: '150px'
         },
@@ -174,7 +192,6 @@ export default {
       this.take = e.rows
       this.fetchData()
     },
-
     handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
@@ -184,7 +201,6 @@ export default {
       }))
       this.fetchData()
     },
-
     async fetchData() {
       await this.receiptProductionStore.fetchConfirmHistory({
         skip: this.skip,
@@ -194,13 +210,16 @@ export default {
         skipLoading: false
       })
     },
-
     async fetchDataExport() {
       //console.log('fetchDataExport')
       await this.receiptProductionStore.fetchConfirmHistoryExport({
         sort: this.sort,
         formValue: this.form
       })
+    },
+
+    getStudEarring(value) {
+      return this.masterStud.find((item) => item.value === value)?.description
     }
   }
 }

@@ -1264,7 +1264,7 @@ export default {
       if (item.type === 'Diamond') {
         display = `${item.qty ?? ''}${item.type ?? ''}${item.weight ?? ''}${
           item.weightUnit ? ` ${item.weightUnit}` : ''
-        }${item.typeCode ? `, ${item.typeCode}` : ''}`
+        }${item.typeCode ? `, ${item.typeCode}` : ''}${item.size ? `, ${item.size}` : ''}`
       }
 
       if (item.type === 'Gold' || item.type === 'Silver') {
@@ -1276,7 +1276,7 @@ export default {
       if (item.type === 'Gem') {
         display = `${item.qty ?? ''}${item.typeCode ?? ''}${item.weight ?? ''}${
           item.weightUnit ? ` ${item.weightUnit}` : ``
-        }`
+        }${item.size ? `, ${item.size}` : ''}`
       }
 
       return display

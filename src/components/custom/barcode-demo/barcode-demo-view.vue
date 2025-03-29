@@ -13,7 +13,7 @@
       <div class="main-box">
         <div class="box-col-container">
           <div class="left-box">
-            <div class="mold-box">{{ mold }}</div>
+            <div class="mold-box">{{ type === 'gem' ? null : mold }}</div>
             <div class="d-flex justify-content-between">
               <div class="barcode-wrapper">
                 <svg ref="barcodeElement"></svg>
@@ -48,6 +48,10 @@ export default {
   name: 'BarcodeTag',
 
   props: {
+    type: {
+      type: String,
+      default: 'gem'
+    },
     madeIn: {
       type: String
     },
@@ -74,6 +78,10 @@ export default {
     gems: {
       type: Array,
       default: () => ['XXXX XXX, XXXXX']
+    },
+    diamond: {
+      type: Array,
+      default: () => null
     },
     goldType: {
       type: String
@@ -197,7 +205,8 @@ export default {
 }
 .gold-box {
   text-align: start;
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: bold;
 }
 .gem-box {
   display: flex;

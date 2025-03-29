@@ -1,102 +1,65 @@
 <template>
   <div>
-    <!-- <loading :isLoading="isLoading"></loading> -->
-    <DataTable
+    <BaseDataTable
+      :items="data.data"
       :totalRecords="data.total"
-      :value="data.data"
-      v-model:expandedRows="expandedRows"
-      dataKey="running"
-      ref="dt"
-      class="p-datatable-sm"
-      scrollable
-      scrollHeight="calc(100vh - 330px)"
-      resizableColumns
-      :paginator="true"
-      showGridlines
-      :lazy="true"
+      dataKey="id"
+      :columns="columns"
+      :perPage="take"
       @page="handlePageChange"
-      @sort="handlePageChangeSort"
-      sortMode="multiple"
-      :rows="take"
-      removableSort
-      :rowsPerPageOptions="[10, 50, 100]"
-      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
+      @sort="handleSortChange"
     >
-      <Column expander style="width: 1px; padding: 0px" />
-      <Column style="width: 50px">
-        <template #body="slotProps">
-          <div class="d-flex justify-content-center">
-            <button class="btn btn-sm btn-main" title="คืน/เบิก" @click="edit(slotProps.data)">
-              <i class="bi bi-arrows-expand"></i>
-            </button>
-            <!-- <button class="btn btn-sm btn-green ml-2" title="รายละเอียด">
-              <i class="bi bi-search"></i>
-            </button> -->
-          </div>
-        </template>
-      </Column>
-      <Column field="requestDate" header="วันทำรายการ" sortable style="width: 220px">
-        <template #body="slotProps">
-          {{ formatDateTime(slotProps.data.requestDate) }}
-        </template>
-      </Column>
-      <Column field="returnDate" header="กำหนดคืน" sortable style="width: 220px">
-        <template #body="slotProps">
-          <div class="noti-container">
-            <span> {{ formatDateTime(slotProps.data.returnDate) }}</span>
-            <span v-if="slotProps.data.isOverPick" class="overdue-tag">เกินกำหนด</span>
-          </div>
-        </template>
-      </Column>
-      <Column field="running" header="เลขที่รายการ" sortable style="width: 200px"> </Column>
-      <Column field="operatorBy" header="ผู้ยืม" sortable style="width: 200px"> </Column>
-      <Column field="remark" header="หมายเหตุ" sortable style="min-width: 200px"> </Column>
-      <!-- <Column field="remark2" header="หมายเหตุ-2" sortable style="min-width: 200px"> </Column> -->
-
-      <template #expansion="slotProps">
-        <div class="expand-container">
-          <expand :modelExpand="slotProps.data" :slotIndex="slotProps.index"></expand>
+      <template #typeTemplate="{ data: rowData }">
+        <div>
+          <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
+          <span>
+            {{ getTypeName(rowData.type) }}
+          </span>
         </div>
       </template>
-    </DataTable>
 
-    <!-- <create
-      :isShowModal="isShow.isShowCreate"
-      :modelValue="model"
-      @closeModal="closeModal"
-    ></create> -->
+      <template #qtyTemplate="{ data: rowData }">
+        <div>
+          <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
+          <span>
+            {{ rowData.qty ? Number(rowData.qty).toFixed(3).toLocaleString() : '0.000' }}
+          </span>
+        </div>
+      </template>
+
+      <template #qtyWeightTemplate="{ data: rowData }">
+        <div>
+          <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
+          <span>
+            {{
+              rowData.qtyWeight ? Number(rowData.qtyWeight).toFixed(3).toLocaleString() : '0.000'
+            }}
+          </span>
+        </div>
+      </template>
+
+      <template #returnDateTemplate="{ data }">
+        <div class="noti-container">
+          <span style="width: 160px"> {{ formatDateTime(data.returnDate) }}</span>
+          <span v-if="data.isOverPick" class="overdue-tag">เกินกำหนด</span>
+        </div>
+      </template>
+    </BaseDataTable>
   </div>
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
-
-//
-
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
-//import create from './create/PickReturnAndOutbound.vue'
-import expand from './DataTableExpand.vue'
-
-const interfaceShow = {
-  isShowCreate: false,
-  isShowView: false
-}
-
 export default {
   components: {
-    //loading,
-    DataTable,
-    Column,
-    expand
-    //create
+    BaseDataTable
   },
+
   props: {
     modelForm: {
       type: Object,
@@ -115,6 +78,7 @@ export default {
       default: 0
     }
   },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -125,7 +89,7 @@ export default {
     },
     modelFormExport: {
       handler(val) {
-        console.log('watch modelFormExport', val)
+        //console.log('watch modelFormExport', val)
         this.export = { ...val }
         this.fetchDataExport()
       },
@@ -133,86 +97,155 @@ export default {
     },
     data: {
       handler(val) {
-        console.log('watch data', val)
+        //console.log('watch data', val)
         val.data && val.data.length > 0 ? this.$emit('export', true) : this.$emit('export', false)
       },
       deep: true
-    },
-    masterType() {
-      return this.modelMasterType
     }
   },
+
   computed: {
     masterType() {
       return this.modelMasterType
     }
   },
+
   data() {
     return {
       isLoading: false,
 
       //--------- table ---------//
       totalRecords: 0,
-      take: 10, //all
+      take: 100, //all
       skip: 0,
-      isShow: { ...interfaceShow },
       //sortField: 'updateDate',
       //sortOrder: -1, // หรือ -1 สำหรับ descending
       sort: [],
       //sort: [],
       data: {},
       dataExcel: {},
-      expandedRows: [],
+      expnadData: [],
       form: { ...this.modelForm },
       export: null,
 
-      // ----- form
-      model: {} // สำหรับส่งข้อมูลไปยัง modal
+      columns: [
+        {
+          field: 'requestDate',
+          header: 'วันทำรายการ',
+          sortable: true,
+          minWidth: '150px',
+          format: 'datetime'
+        },
+        {
+          field: 'returnDate',
+          header: 'กำหนดคืน',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'running',
+          header: 'เลขที่รายการ',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'operatorBy',
+          header: 'ผู้ยืม',
+          sortable: true,
+          width: '150px'
+        },
+        {
+          field: 'createBy',
+          header: 'ผู้ทำรายการ',
+          sortable: true,
+          width: '150px'
+        },
+        {
+          field: 'qty',
+          header: 'จำนวน',
+          sortable: true,
+          width: '120px',
+          format: 'decimal3'
+        },
+        {
+          field: 'qtyWeight',
+          header: 'น้ำหนัก',
+          sortable: true,
+          width: '120px',
+          format: 'decimal3'
+        },
+        {
+          field: 'name',
+          header: 'พลอย/เพชร',
+          minWidth: '150px'
+        },
+        {
+          field: 'remark1',
+          header: 'หมายเหตุ-1',
+          sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'remark2',
+          header: 'หมายเหตุ-2',
+          sortable: true,
+          minWidth: '200px'
+        },
+
+        {
+          field: 'price',
+          header: 'ราคาต่อน้ำหนัก',
+          sortable: true,
+          minWidth: '150px',
+          format: 'decimal3'
+        },
+        {
+          field: 'priceQty',
+          header: 'ราคาต่อจำนวน',
+          sortable: true,
+          minWidth: '150px',
+          format: 'decimal3'
+        },
+        {
+          field: 'unitCode',
+          header: 'หน่วย',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'unit',
+          header: 'รหัสหน่วย',
+          sortable: true,
+          minWidth: '150px'
+        }
+      ]
     }
   },
+
   methods: {
+    // ----------- table ----------- //
     // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
       this.fetchData()
-      this.expandedRows = []
     },
-    handlePageChangeSort(e) {
+
+    handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
+      this.sort = e.multiSortMeta.map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
-      this.expandedRows = []
     },
-    onRowExpand(event) {
-      console.log('onRowExpand', event)
-      console.log('onRowExpand 1', this.expandedRows)
-      // เก็บข้อมูลแถวที่ expand โดยใช้ id เป็น key
-      this.expandedRows = [...event.data]
-
-      console.log('onRowExpand', this.expandedRows)
-    },
-
-    onRowCollapse(event) {
-      const { data } = event
-      // ลบข้อมูลแถวที่ collapse
-      delete this.expandedRows[data.index]
-    },
-
     // ----------- APIs ----------- //
     async fetchData() {
       try {
         this.isLoading = true
-        this.expandedRows = []
-        
-        console.log('fetchData', this.form)
+
+        //('fetchData', this.form)
 
         const params = {
           take: this.take,
@@ -226,6 +259,11 @@ export default {
               ? formatISOString(this.form.requestDateEnd)
               : null,
 
+            // groupName: this.form.groupName ?? null,
+            // grade: this.form.grade ?? null,
+            // shape: this.form.shape ?? null,
+            // size: this.form.size ?? null,
+
             returnDateStart: this.form.returnDateStart
               ? formatISOString(this.form.returnDateStart)
               : null,
@@ -233,14 +271,16 @@ export default {
               ? formatISOString(this.form.returnDateEnd)
               : null,
 
-            type: this.form.type.length > 0 ? this.form.type : [5],
-            status: this.form.status.length > 0 ? this.form.status : ['process'],
+            type: this.form.type.length > 0 ? this.form.type : null,
+            status: this.form.status,
             running: this.form.running ?? null,
-            code: this.form.code ?? null
+            code: this.form.code ?? null,
+            operator: this.form.operator ?? null,
+            createBy: this.form.createBy ?? null
           }
         }
-        console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/Picklist', params)
+        //console.log('params', params)
+        const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
         if (res) {
           this.data = { ...res }
           //this.$emit('export', true)
@@ -257,7 +297,7 @@ export default {
       try {
         this.isLoading = true
 
-        console.log('fetchDataExport', this.form)
+        //console.log('fetchDataExport', this.form)
         const params = {
           take: 0,
           skip: 0,
@@ -276,16 +316,18 @@ export default {
             grade: this.form.grade ?? null,
             shape: this.form.shape ?? null,
             size: this.form.size ?? null,
-            status: 'completed'
+            status: 'completed',
+            running: this.form.running ?? null
           }
         }
-        console.log('params', params)
+        //console.log('params', params)
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
         if (res) {
           const dataExcel = res.data.map((item) => {
             return {
               วันทำรายการ: formatDate(item.requestDate),
               เลขที่รายการ: item.running,
+              เลขที่อ้างอิง: item.refRunning,
               ประเภท: this.getTypeName(item.type),
               'พลอย/เพชร': item.name,
               จำนวน: item.qty,
@@ -298,6 +340,12 @@ export default {
               ขนาด: item.size,
               รูปร่าง: item.shape,
               เกรด: item.grade,
+
+              ราคา: item.price,
+              ราคาต่อหน่วย: item.priceQty,
+              หน่วย: item.unitCode,
+              รหัสหน่วย: item.unit,
+
               'W.O.': item.woText,
               เเม่พิมพ์: item.mold,
               'หมายเหตุ-1': item.remark1,
@@ -326,7 +374,7 @@ export default {
       return formatDate(date)
     },
     stringToArray(str) {
-      console.log('stringToArray', str)
+      //console.log('stringToArray', str)
       if (str && typeof str === 'string') {
         // ตัดช่องว่างหน้าและหลังสตริง
         str = str.trim()
@@ -378,31 +426,21 @@ export default {
         case 1:
         case 2:
         case 3:
+        case 6:
           return 'bi bi-arrow-down-square-fill text-success'
         case 4:
+        case 7:
           return 'bi bi-arrow-up-square-fill text-danger'
         case 5:
           return 'bi bi-arrow-right-square-fill text-secondary'
         default:
           return ''
       }
-    },
+    }
 
     // -------- event -------- //
-    edit(item) {
-      //this.model = { ...item }
-      console.log('edit', item)
-      //go route
-      this.$router.push({
-        name: 'stock-gem-pick-return-and-outbound-create',
-        params: { id: item.running }
-      })
-      //this.isShow.isShowCreate = true
-    },
-    closeModal() {
-      this.isShow = { ...interfaceShow }
-    }
   },
+
   created() {
     this.$nextTick(() => {
       this.fetchData()

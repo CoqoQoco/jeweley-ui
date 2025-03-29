@@ -3,13 +3,14 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const stockGem = () => import('@/views/stock/gem/IndexView.vue')
 const stockGemTransection = () => import('@/views/receipt-stock/gem/transaction/index-view.vue')
+const stockGemTransactionOnProcess = () => import('@/views/receipt-stock/gem/transaction-on-process/index-view.vue')
 
 const stockGemInbound = () => import('@/views/receipt-stock/gem/inbound/IndexView.vue')
 const stockGemOutbound = () => import('@/views/receipt-stock/gem/outbound/IndexView.vue')
 
 const stockGemPickOff = () => import('@/views/receipt-stock/gem/pick-off/IndexView.vue')
 const stockGemPickReturnAndOutbound = () =>
-  import('@/views/receipt-stock/gem/pick-return-and-outbound/IndexView.vue')
+  import('@/views/receipt-stock/gem/pick-return-and-outbound/index-view.vue')
 const stockGemPickReturnAndOutboundCreate = () =>
   import(
     '@/views/receipt-stock/gem/pick-return-and-outbound/components/create/PickReturnAndOutbound.vue'
@@ -141,7 +142,22 @@ const routes = [
           minorShow: false,
           permissions: [PERMISSIONS.STOCK_GEM_EDIT]
         }
-      }
+      },
+
+      {
+        path: '/stock-gem-transaction-on-process',
+        name: 'stock-gem-transaction',
+        component: stockGemTransactionOnProcess,
+        menuId: 'STOCK-GEM-TRANSACTION-ON-PROCESS',
+        meta: {
+          Displayname: {
+            en: 'Transection on Process',
+            th: 'ติดตามยืมออกคลัง'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
       // pick-outbound
     ]
   }
