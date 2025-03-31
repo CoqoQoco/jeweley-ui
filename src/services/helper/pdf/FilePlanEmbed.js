@@ -22,7 +22,7 @@ export class EmbedSlipPdfBuilder {
       ],
       bold: true,
       fontSize: 15,
-      margin: [0, 0, 0, 0],
+      margin: [5, 0, 5, 0],
       border: [false, false, false, true]
     }
   }

@@ -84,7 +84,8 @@ export default {
       default: () => null
     },
     goldType: {
-      type: String
+      type: String,
+      default: 'gem'
     },
     barcodeOptions: {
       type: Object,

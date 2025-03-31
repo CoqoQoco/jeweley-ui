@@ -117,14 +117,14 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       zpl += `^FO025,050^A0N,15,15,B^FD${formValue.madeIn || ''}^FS`
 
       // gold type
-      zpl += `^FO426,045^A0N,14,16,B^FD${formValue.goldType || ''}^FS`
+      zpl += `^FO420,045^A0N,14,16,B^FD${formValue.goldType || ''}^FS`
 
       // รายการอัญมณี
       if (Array.isArray(formValue.gems)) {
         let yPos = 15
         formValue.gems.forEach((gem) => {
           if (gem) {
-            zpl += `^F500,${yPos}^A0N,14,16,B^FD${gem}^FS`
+            zpl += `^F450,${yPos}^A0N,14,16,B^FD${gem}^FS`
             yPos += 15
           }
         })

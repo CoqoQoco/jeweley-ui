@@ -22,22 +22,17 @@
         <div>
           <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
           <span>
-            {{
-              rowData.qty ? Number(rowData.qty).toFixed(3).toLocaleString() : '0.000'
-            }}
+            {{ rowData.qty ? Number(rowData.qty).toFixed(3).toLocaleString() : '0.000' }}
           </span>
         </div>
       </template>
-    
 
       <template #qtyWeightTemplate="{ data: rowData }">
         <div>
           <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
           <span>
             {{
-              rowData.qtyWeight
-                ? Number(rowData.qtyWeight).toFixed(3).toLocaleString()
-                : '0.000'
+              rowData.qtyWeight ? Number(rowData.qtyWeight).toFixed(3).toLocaleString() : '0.000'
             }}
           </span>
         </div>
@@ -318,7 +313,7 @@ export default {
             grade: this.form.grade ?? null,
             shape: this.form.shape ?? null,
             size: this.form.size ?? null,
-            status: 'completed',
+            status: ['completed'],
             running: this.form.running ?? null
           }
         }
@@ -359,7 +354,7 @@ export default {
             grade: this.form.grade ?? null,
             shape: this.form.shape ?? null,
             size: this.form.size ?? null,
-            status: 'completed',
+            status: ['completed'],
             running: this.form.running ?? null
           }
         }

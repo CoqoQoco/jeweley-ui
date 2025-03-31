@@ -175,6 +175,7 @@
                         :gems="slotProps.data.barcodeGems"
                         :size="slotProps.data.size"
                         :goldType="formBarcode.goldType"
+                        :type="formBarcode.type"
                         class="mt-4"
                       >
                       </barcodeDemo>
@@ -579,6 +580,7 @@
                       :gems="slotProps.data.barcodeGems"
                       :size="slotProps.data.size"
                       :goldType="formBarcode.goldType"
+                      :type="formBarcode.type"
                     >
                     </barcodeDemo>
                   </div>
@@ -683,7 +685,8 @@ const interfaceBarcode = {
   madeIn: 'MADE IN THAILAND',
   madeInText: 'XXXXXXXXXXX',
   mold: 'RFXXXXR',
-  goldType: 'XXK'
+  goldType: 'XXK',
+  type: 'gem'
 }
 const interfaceIsShow = {
   imageSelect: false,
@@ -1343,6 +1346,10 @@ export default {
       //set barcode
       this.formBarcode.goldType = this.data.goldSize
       this.formBarcode.mold = this.data.mold
+
+      console.log(this.data.type)
+      this.formBarcode.type = this.data.type === 'Silver' ? 'silver' : 'gem'
+      console.log(this.formBarcode.type)
       //this.formBarcode.goldType = this.data.gems
 
       //create barcode
