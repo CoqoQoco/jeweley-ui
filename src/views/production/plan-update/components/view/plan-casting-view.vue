@@ -55,7 +55,7 @@
     </div>
 
     <div v-if="modelPlanStatus">
-      <div class="form-col-container pl-2 mt-3">
+      <div class="form-col-sm-container pl-2 mt-3">
         <!-- transfer name -->
         <div class="d-flex flex-column">
           <span class="title-text">ชื่อผู้โอนงาน</span>
@@ -67,18 +67,31 @@
           <span class="desc-text">{{ formatDate(modelPlanStatus.createDate) }}</span>
         </div>
 
-        <!-- name -->
+        <!-- worker receive  -->
         <div class="d-flex flex-column">
-          <span class="title-text">ชื่อผู้รับงาน</span>
-          <span class="desc-text">{{ modelPlanStatus.sendName }}</span>
+          <span class="title-text">กำหนดช่างรับงาน</span>
+          <span class="desc-text">{{ modelPlanStatus.sendName ?? `-` }}</span>
         </div>
         <!-- date -->
         <div class="d-flex flex-column">
-          <span class="title-text">วันที่รับงาน</span>
-          <span class="desc-text">{{ formatDate(modelPlanStatus.sendDate) }}</span>
+          <span class="title-text">ชื่อผู้เเก้ไขล่าสุด</span>
+          <span class="desc-text">{{ modelPlanStatus.updateBy ?? `-` }}</span>
         </div>
-        <div></div>
-        <div></div>
+
+        <!-- update name -->
+        <!-- <div class="d-flex flex-column">
+          <span class="title-text">วันที่เเก้ไขล่าสุด</span>
+          <span class="desc-text">{{
+            modelPlanStatus.updateDate ? formatDate(modelPlanStatus.updateDate) : `-`
+          }}</span>
+        </div> -->
+        <!-- date -->
+        <!-- <div class="d-flex flex-column">
+          <span class="title-text">วันที่รับงาน</span>
+          <span class="desc-text">{{
+            modelPlanStatus.updateDate ? formatDate(modelPlanStatus.updateDate) : `-`
+          }}</span>
+        </div> -->
       </div>
 
       <div class="line"></div>
@@ -343,7 +356,7 @@ export default {
         return null
       } else {
         var value = tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
-        console.log('modelPlanStatus', value)
+        //console.log('modelPlanStatus', value)
         return value
       }
     },
@@ -375,7 +388,7 @@ export default {
       return calculateWeightDifference(weightSend, weightReceived)
     },
     checkBtn(action) {
-      //console.log('checkBtn', this.modelPlanStatus)
+      ////console.log('checkBtn', this.modelPlanStatus)
       const disStatus = [100, 500]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
@@ -402,11 +415,11 @@ export default {
 
     // ----- event
     addStatus() {
-      console.log('addStatus')
+      //console.log('addStatus')
       this.$emit('onShowAddStatus', 'casting')
     },
     updateStatus() {
-      console.log('updateStatus')
+      //console.log('updateStatus')
       this.$emit('onShowUpdateStatus', 'casting')
     },
     onDelStatus(id) {
@@ -414,7 +427,7 @@ export default {
         `ยืนยันลบงาน [จ่ายเเต่ง]`,
         `${this.model.wo}-${this.model.woNumber}`,
         async () => {
-          //console.log('call submitPlan')
+          ////console.log('call submitPlan')
           await this.DelStatus(id)
         },
         null,
@@ -422,13 +435,13 @@ export default {
       )
     },
     transfer() {
-      //console.log('transfer')
+      ////console.log('transfer')
       this.$emit('transfer', this.model, this.status)
     },
 
     // ----- APIs
     async DelStatus(id) {
-      //console.log(id)
+      ////console.log(id)
       try {
         this.isLoading = true
 

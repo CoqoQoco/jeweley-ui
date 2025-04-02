@@ -4,55 +4,32 @@
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
           <span>อัพเดตงาน</span>
-          <span class="bi bi-arrow-right ml-1"> [จ่ายเเต่ง]</span>
+          <span class="bi bi-arrow-right ml-1"> [{{ getStatusName }}]</span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
         <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
-            <!-- date -->
-            <!-- <div>
-              <span class="title-text">ช่างรับงาน</span>
-              <Calendar
-                class="w-100"
-                :class="val.isValReceiveDate === true ? `p-invalid` : ``"
-                v-model="form.receiveDate"
-                dateFormat="dd/mm/yy"
-                showIcon
-                showTime
-                hourFormat="24"
-                showButtonBar
-              />
-            </div> -->
-
             <!-- name -->
             <div>
               <span class="title-text">กำหนดช่างรับงาน</span>
               <AutoComplete
-                v-model="form.receiveBy"
+                v-model="form.worker"
                 :suggestions="workerItemSearch"
                 @complete="onSearchWorker"
-                :class="form.receiveBy ? `` : `-`"
+                :class="form.worker ? `` : `-`"
                 optionLabel="nameTh"
-                optionValue="nameTh"
                 forceSelection
               >
               </AutoComplete>
-              <!-- <input
-                type="text"
-                class="form-control custom-input"
-                v-model="form.receiveBy"
-                required
-              /> -->
             </div>
 
             <div></div>
             <div></div>
+            <div></div>
           </div>
 
-          <!-- <div class="line mt-3"></div> -->
-
+          <!-- gold -->
           <div class="form-col-container mt-3">
-            <!-- gold -->
             <DataTable
               class="p-datatable-sm"
               showGridlines
@@ -85,7 +62,6 @@
 
               <Column field="gold" header="ทอง" style="width: 80px">
                 <template #editor="{ data, field }">
-                  <!-- <input type="text" class="form-control" v-model="data[field]" /> -->
                   <Dropdown
                     v-model="data[field]"
                     :options="masterGold"
@@ -94,13 +70,6 @@
                     class="w-full md:w-14rem"
                     placeholder="เลือกทอง"
                   >
-                    <!-- :showClear="data[field] ? true : false" -->
-                    <!-- <template #option="slotProps">
-                            <Tag
-                              :value="slotProps.option.value"
-                              :severity="getStatusLabel(slotProps.option.value)"
-                            />
-                          </template> -->
                   </Dropdown>
                 </template>
               </Column>
@@ -112,7 +81,7 @@
                       v-model="data[field]"
                       dateFormat="dd/mm/yy"
                       showIcon
-                      showTime
+                      :showTime="status !== 70"
                       hourFormat="24"
                       showButtonBar
                     />
@@ -120,11 +89,19 @@
                 </template>
                 <template #body="slotProps">
                   <div v-if="slotProps.data.requestDate">
-                    {{ formatDateTime(slotProps.data.requestDate) }}
+                    {{
+                      status === 70
+                        ? formatDate(slotProps.data.requestDate)
+                        : formatDateTime(slotProps.data.requestDate)
+                    }}
                   </div>
                 </template>
               </Column>
-              <Column field="goldQTYSend" header="จำนวนจ่าย" style="width: 100px">
+              <Column
+                field="goldQTYSend"
+                :header="status === 80 ? 'จำนวนจ่าย [ชิ้น]' : 'จำนวนจ่าย'"
+                style="width: 100px"
+              >
                 <template #editor="{ data, field }">
                   <input
                     type="number"
@@ -132,6 +109,13 @@
                     class="form-control"
                     v-model="data[field]"
                   />
+                </template>
+                <template #body="slotProps" v-if="status === 70">
+                  {{
+                    slotProps.data && slotProps.data.goldQTYSend
+                      ? Number(slotProps.data.goldQTYSend).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
                 </template>
               </Column>
               <Column field="goldWeightSend" header="น้ำหนักจ่าย" style="width: 100px">
@@ -144,8 +128,19 @@
                     v-model="data[field]"
                   />
                 </template>
+                <template #body="slotProps" v-if="status === 70">
+                  {{
+                    slotProps.data && slotProps.data.goldWeightSend
+                      ? Number(slotProps.data.goldWeightSend).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
+                </template>
               </Column>
-              <Column field="goldQTYCheck" header="จำนวนรับ" style="width: 100px">
+              <Column
+                field="goldQTYCheck"
+                :header="status === 80 ? 'จำนวนฝัง [เม็ด]' : status === 70 ? 'จำนวน' : 'จำนวนรับ'"
+                style="width: 100px"
+              >
                 <template #editor="{ data, field }">
                   <input
                     type="number"
@@ -154,6 +149,13 @@
                     v-model="data[field]"
                     @change="calTotalWages(data)"
                   />
+                </template>
+                <template #body="slotProps" v-if="status === 70">
+                  {{
+                    slotProps.data && slotProps.data.goldQTYCheck
+                      ? Number(slotProps.data.goldQTYCheck).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
                 </template>
               </Column>
               <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
@@ -166,8 +168,20 @@
                     v-model="data[field]"
                   />
                 </template>
+                <template #body="slotProps" v-if="status === 70">
+                  {{
+                    slotProps.data && slotProps.data.goldWeightCheck
+                      ? Number(slotProps.data.goldWeightCheck).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
+                </template>
               </Column>
-              <Column field="description" header="รายละเอียด" style="width: 120px">
+              <Column
+                field="description"
+                header="รายละเอียด"
+                style="width: 120px"
+                v-if="status !== 70"
+              >
                 <template #editor="{ data, field }">
                   <input
                     type="text"
@@ -179,21 +193,16 @@
               </Column>
               <Column
                 field="workers"
-                :header="status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
-                style="width: 120px"
+                :header="status === 90 ? `ช่างขัด` : status === 70 ? 'ช่างคัดพลอย' : `ช่างรับงาน`"
+                style="width: 150px"
               >
                 <template #editor="{ data, field }">
-                  <!-- <input
-                        type="text"
-                        :class="data[field] ? `` : `-`"
-                        class="form-control"
-                        v-model="data[field]"
-                      /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
                     @complete="onSearchWorker"
                     :class="data[field] ? `` : `-`"
+                    placeholder="กรอกรหัส/ชื่อช่าง...."
                     optionLabel="code"
                     forceSelection
                   >
@@ -206,18 +215,17 @@
                 </template>
                 <template #body="slotProps">
                   <div v-if="slotProps.data.workers">
-                    <span> {{ truncateName(slotProps.data.workers.nameTh, 10) }}</span>
+                    <span>{{ truncateName(slotProps.data.workers.nameTh, 10) }}</span>
                   </div>
                 </template>
               </Column>
-              <Column v-if="status === 90" field="workersSub" header="ช่างชุบ" style="width: 120px">
+              <Column
+                :field="status === 70 ? 'workersSub' : 'workersSub'"
+                :header="status === 90 ? `ช่างชุบ` : status === 70 ? 'ช่างคัดเพชร' : ''"
+                style="width: 150px"
+                v-if="status === 90 || status === 70"
+              >
                 <template #editor="{ data, field }">
-                  <!-- <input
-                        type="text"
-                        :class="data[field] ? `` : `-`"
-                        class="form-control"
-                        v-model="data[field]"
-                      /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
@@ -236,11 +244,18 @@
                 </template>
                 <template #body="slotProps">
                   <div v-if="slotProps.data.workersSub">
-                    {{ `${slotProps.data.workersSub.code} - ${slotProps.data.workersSub.nameTh}` }}
+                    <div v-if="slotProps.data.workers">
+                      <span>{{ truncateName(slotProps.data.workers.nameTh, 10) }}</span>
+                    </div>
                   </div>
                 </template>
               </Column>
-              <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 100px">
+              <Column
+                field="wages"
+                header="ค่าเเรงต่อชิ้น"
+                style="min-width: 100px"
+                v-if="status !== 70"
+              >
                 <template #editor="{ data, field }">
                   <input
                     type="number"
@@ -253,7 +268,12 @@
                   />
                 </template>
               </Column>
-              <Column field="totalWages" header="รวมค่าแรง" style="min-width: 120px">
+              <Column
+                field="totalWages"
+                header="รวมค่าแรง"
+                style="min-width: 120px"
+                v-if="status !== 70"
+              >
                 <template #editor="{ data, field }">
                   <input
                     type="number"
@@ -277,7 +297,124 @@
             </DataTable>
           </div>
 
-          <div class="line mt-3"></div>
+          <!-- gems - เฉพาะคัดพลอย -->
+          <div class="form-col-container mt-3" v-if="status === 70">
+            <DataTable
+              class="p-datatable-sm"
+              showGridlines
+              v-model:editingRows="editingGemRows"
+              :value="gemAssign"
+              editMode="row"
+              dataKey="id"
+              @row-edit-save="onRowGemEditSave"
+              :pt="{
+                table: { style: 'min-width: 50rem' },
+                column: {
+                  bodycell: ({ state }) => ({
+                    style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                  })
+                }
+              }"
+            >
+              <Column style="width: 30px">
+                <template #body="prop">
+                  <div class="btn btn-sm btn-danger text-center w-100" @click="onDelGem(prop.data)">
+                    <i class="bi bi-trash-fill"></i>
+                  </div>
+                </template>
+              </Column>
+              <Column field="outboundRunning" header="เลขที่เบิก" style="min-width: 200px">
+              </Column>
+              <Column field="gem" header="พลอย" style="min-width: 200px">
+                <template #editor="{ data, field }">
+                  <AutoComplete
+                    v-model="data[field]"
+                    :suggestions="gemItemSearch"
+                    @complete="onSearchGem"
+                    placeholder="กรอกรหัสพลอย...."
+                    :class="data[field] ? `` : `bg-warning`"
+                    optionLabel="name"
+                    forceSelection
+                    :minLength="4"
+                    :disabled="checkOutbound(data)"
+                    @item-select="onGemSelect($event, data)"
+                  >
+                    <template #option="slotProps">
+                      <div class="flex align-options-center">
+                        <div>{{ `${slotProps.option.name}` }}</div>
+                      </div>
+                    </template>
+                  </AutoComplete>
+                </template>
+                <template #body="slotProps">
+                  <div v-if="slotProps.data.gem">
+                    {{ `${slotProps.data.gem.name}` }}
+                  </div>
+                </template>
+              </Column>
+              <Column field="qty" header="จำนวน" style="width: 100px">
+                <template #editor="{ data, field }">
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control"
+                    v-model="data[field]"
+                    :disabled="checkOutbound(data)"
+                  />
+                </template>
+                <template #body="slotProps">
+                  {{
+                    slotProps.data && slotProps.data.qty
+                      ? Number(slotProps.data.qty).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
+                </template>
+              </Column>
+              <Column field="weight" header="น้ำหนัก" style="width: 100px">
+                <template #editor="{ data, field }">
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control"
+                    v-model="data[field]"
+                    :disabled="checkOutbound(data)"
+                  />
+                </template>
+                <template #body="slotProps">
+                  {{
+                    slotProps.data && slotProps.data.weight
+                      ? Number(slotProps.data.weight).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
+                </template>
+              </Column>
+              <Column field="price" header="ราคา" style="width: 100px">
+                <template #editor="{ data, field }">
+                  <input type="number" step="any" class="form-control" v-model="data[field]" />
+                </template>
+                <template #body="slotProps">
+                  {{
+                    slotProps.data && slotProps.data.price
+                      ? Number(slotProps.data.price).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
+                </template>
+              </Column>
+              <Column
+                :rowEditor="true"
+                style="width: 10%; min-width: 8rem"
+                bodyStyle="text-align:center"
+              ></Column>
+              <template #footer>
+                <div class="d-flex justify-content-between">
+                  <div>ทั้งหมด {{ this.gemAssign.length }} รายการ</div>
+                  <div @click="addGem">
+                    <i class="bi bi-plus-square-fill"></i>
+                  </div>
+                </div>
+              </template>
+            </DataTable>
+          </div>
 
           <div class="form-col-container mt-2">
             <div>
@@ -287,7 +424,7 @@
             </div>
           </div>
 
-          <div class="form-col-container">
+          <div class="form-col-container mt-2">
             <div>
               <span class="title-text">หมายเหตุ - 2</span>
               <textarea class="form-control" v-model="form.remark2" style="height: 50px">
@@ -327,9 +464,9 @@ import _ from 'lodash'
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
-import planOverview from '../view/PlanOverview.vue'
+import planOverview from '../components/plan-overview.vue'
 
 const interfaceForm = {
   status: null,
@@ -343,18 +480,7 @@ const interfaceForm = {
   remark2: null,
   totalWages: null
 }
-// const interfaceMat = {
-//   //id: null,
-//   //gold: null,
-//   goldQTYSend: null,
-//   goldWeightSend: null,
-//   goldQTYCheck: null,
-//   goldWeightCheck: null,
-//   workers: null,
-//   workersSub: null,
-//   description: null,
-//   wages: null
-// }
+
 const interfaceIsValid = {
   isValStatus: false,
   isValReceiveDate: false,
@@ -365,7 +491,6 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-
     AutoComplete,
     Calendar,
     Dropdown,
@@ -373,6 +498,7 @@ export default {
     Column,
     planOverview
   },
+
   props: {
     isShow: {
       type: Boolean,
@@ -397,19 +523,25 @@ export default {
       type: Array,
       required: true,
       default: () => []
+    },
+    statusCode: {
+      type: Number,
+      required: false,
+      default: 50
     }
   },
+
   watch: {
     isShow(newVal) {
       if (newVal) {
-        ////console.log('Modal opened, initializing form')
+        //console.log('Modal opened, initializing form')
         this.initForm()
       }
     },
     modelValue: {
       handler(newVal) {
         if (newVal && Object.keys(newVal).length > 0) {
-          ////console.log('modelValue changed, initializing form')
+          console.log('modelValue changed, initializing form')
           this.initForm()
         }
       },
@@ -418,18 +550,20 @@ export default {
     'form.receiveDate'(val) {
       if (val) {
         this.val = {
-          //...interfaceIsValid,
           isValReceiveDate: false
         }
       }
+    },
+    statusCode(newVal) {
+      this.status = newVal
     }
   },
+
   computed: {
     isShowModal() {
       return this.isShow
     },
     model() {
-      //console.log('model', this.modelValue)
       return this.modelValue
     },
     modelMat() {
@@ -440,15 +574,32 @@ export default {
     },
     modelGold() {
       return this.masterGold
+    },
+    getStatusName() {
+      switch (this.status) {
+        case 50:
+          return 'จ่ายเเต่ง'
+        case 60:
+          return 'ขัดดิบ'
+        case 70:
+          return 'คัดพลอย'
+        case 80:
+          return 'ฝัง'
+        case 90:
+          return 'ขัดชุบ'
+        default:
+          return 'จ่ายเเต่ง'
+      }
     }
   },
+
   data() {
     return {
       // --- flag --- //
       isLoading: false,
       autoId: 0,
       autoIdGem: 0,
-      status: 50,
+      status: this.statusCode,
 
       // --- from --- //
       form: {
@@ -469,6 +620,7 @@ export default {
       user: null
     }
   },
+
   methods: {
     // ------ helper ------//
     formatDateTime(date) {
@@ -482,23 +634,26 @@ export default {
     },
     calTotalWages(data) {
       data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
-      ////console.log(data.totalWages)
     },
     truncateName(name, maxLength) {
-      if (name.length <= maxLength) {
+      if (!name || name.length <= maxLength) {
         return name
       }
       return name.slice(0, maxLength) + '...'
     },
+    checkOutbound(data) {
+      return !_.isEmpty(data.outboundRunning) ? true : false
+    },
     async initForm() {
       var value = this.model.tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
       if (value && Object.keys(value).length > 0) {
-        //console.log('initForm ed 1', value)
+        console.log('initForm ed 1', value)
 
         //set form
         this.form = {
-          receiveDate: _.get(value, 'checkDate') ? new Date(value.checkDate) : new Date(),
-          //receiveBy: _.get(value, 'checkName', '') ?? this.user?.firstName,
+          worker: _.get(value, 'workerCode')
+            ? await this.onSearchWorkerByCode(_.get(value, 'workerCode'))
+            : null,
           status: this.status || null,
           remark1: _.get(value, 'remark1', ''),
           remark2: _.get(value, 'remark2', ''),
@@ -528,8 +683,27 @@ export default {
             })
           )
         }
+
+        // กรณีเป็นการคัดพลอย
+        if (this.status === 70 && value.tbtProductionPlanStatusGem) {
+          this.gemAssign = await Promise.all(
+            value.tbtProductionPlanStatusGem.map(async (thing) => {
+              return {
+                id: ++this.autoIdGem,
+                outboundRunning: thing.outboundRunning ?? null,
+                outboundName: thing.outboundName,
+                outboundDate: thing.outboundDate,
+                itemNo: thing.itemNo,
+                gem: await this.onSearchGemById(thing.id),
+                qty: thing.qty,
+                weight: thing.weight,
+                price: thing.price
+              }
+            })
+          )
+        }
       }
-      //console.log('initForm ed 2', this.form)
+      console.log('initForm ed 2', this.form)
     },
 
     // ----- event
@@ -537,7 +711,7 @@ export default {
       let { newData, index } = event
       this.matAssign[index] = newData
     },
-    onGemRowEditSave(event) {
+    onRowGemEditSave(event) {
       let { newData, index } = event
       this.gemAssign[index] = newData
     },
@@ -567,6 +741,8 @@ export default {
     addGem() {
       const add = {
         id: ++this.autoIdGem,
+        itemNo: null,
+        outboundRunning: null,
         gem: null,
         qty: null,
         weight: null
@@ -591,10 +767,10 @@ export default {
     onSubmit() {
       if (this.validateForm()) {
         swAlert.confirmSubmit(
-          `ยืนยันเเก้ไขงาน [จ่ายเเต่ง]`,
+          `ยืนยันเเก้ไขงาน [${this.getStatusName}]`,
           `${this.model.wo}-${this.model.woNumber}`,
           async () => {
-            ////console.log('call submitPlan')
+            console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -603,21 +779,22 @@ export default {
       }
     },
     validateForm() {
-      //   if (!this.form.mold) {
-      //     this.val = {
-      //       isValMold: true
-      //     }
-      //     return false
-      //   }
-
+      // ตรวจสอบข้อมูลก่อนส่ง (สามารถเพิ่มเงื่อนไขได้)
       return true
     },
 
-    // --- APIs --- //
+    onGemSelect(event, rowData) {
+      // กรณีเลือกพลอย (เฉพาะงานคัดพลอย)
+      const selectedGem = event.value
+      if (selectedGem) {
+        rowData.price = selectedGem.unit === 'Q' ? selectedGem.priceQty : selectedGem.price
+      }
+    },
 
+    // --- APIs --- //
     async submit() {
       try {
-        this.isLoading = true
+        // แปลงข้อมูลช่าง
         this.matAssign = this.matAssign.map((item) => {
           return {
             ...item,
@@ -625,15 +802,24 @@ export default {
             workerSub: item.workersSub?.code
           }
         })
+
+        // แปลงข้อมูลพลอย (ถ้ามี)
         this.gemAssign = this.gemAssign.map((item) => {
           return {
             id: item.gem?.id,
+            outboundRunning: item.outboundRunning ?? null,
+            outboundName: item.outboundName ?? null,
+            outboundDate: item.outboundDate ?? null,
+            itemNo: item.itemNo,
             code: item.gem?.code,
             name: item.gem?.name,
-            QTY: item.QTY,
-            weight: item.weight
+            qty: item.qty,
+            weight: item.weight,
+            price: item.price
           }
         })
+
+        // สร้างพารามิเตอร์
         const param = {
           wo: this.model.wo,
           woNumber: this.model.woNumber,
@@ -641,17 +827,16 @@ export default {
           HeaderId: this.form.headerId,
 
           status: this.status,
-          sendName: this.form.receiveBy?.nameTh ?? null,
-          sendDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          checkName: this.form.receiveBy?.nameTh ?? null,
-          checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
+          workerName: this.form.worker?.nameTh,
+          workerCode: this.form.worker?.code,
           remark1: this.form.remark1,
           remark2: this.form.remark2,
           totalWages: this.form.totalWages,
           golds: [...this.matAssign],
           gems: [...this.gemAssign]
         }
-        ////console.log(param)
+
+        console.log(param)
         const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
         if (res) {
           swAlert.success(
@@ -672,15 +857,12 @@ export default {
             null
           )
         }
-        this.isLoading = false
       } catch (error) {
-        this.isLoading = false
-        //console.log(error)
+        console.error('Error in submit:', error)
       }
     },
     async onSearchWorker(e) {
       try {
-        //this.isLoading = true
         ////console.log(this.formValue)
         const params = {
           take: 0,
@@ -697,10 +879,8 @@ export default {
           this.workerItemSearch = [...res.data]
           //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
         }
-        //this.isLoading = false
       } catch (error) {
-        //console.log(error)
-        //this.isLoading = false
+        console.log(error)
       }
     },
     async onSearchWorkerByCode(e) {
@@ -708,7 +888,6 @@ export default {
         if (e === null) {
           return null
         }
-        //this.isLoading = true
         ////console.log(this.formValue)
         const params = {
           take: 0,
@@ -720,22 +899,19 @@ export default {
             active: 0
           }
         }
-        const res = await api.jewelry.post('Worker/Search', params)
+        const res = await api.jewelry.post('Worker/Search', params, { skipLoading: true })
         if (res) {
           ////console.log(res.data[0])
           return res.data[0]
         } else {
           return null
         }
-        //this.isLoading = false
       } catch (error) {
-        //console.log(error)
-        //this.isLoading = false
+        console.log(error)
       }
     },
     async onSearchGem(e) {
       try {
-        //this.isLoading = true
         ////console.log(this.formValue)
         const params = {
           take: 0,
@@ -744,22 +920,18 @@ export default {
             text: e.query ?? null
           }
         }
-        const res = await api.jewelry.post('StockGem/Search', params)
+        const res = await api.jewelry.post('StockGem/Search', params, { skipLoading: true })
         if (res) {
           ////console.log(res)
           this.gemItemSearch = [...res]
           //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
         }
-        //this.isLoading = false
       } catch (error) {
-        //console.log(error)
-        //this.isLoading = false
+        console.log(error)
       }
     },
     async onSearchGemById(e) {
       try {
-        //this.isLoading = true
-        ////console.log(this.formValue)
         const params = {
           take: 0,
           skip: 0,
@@ -768,7 +940,7 @@ export default {
             text: null
           }
         }
-        const res = await api.jewelry.post('StockGem/Search', params)
+        const res = await api.jewelry.post('StockGem/Search', params, { skipLoading: true })
         if (res) {
           ////console.log(res)
           if (res) {
@@ -779,16 +951,10 @@ export default {
           }
           //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
         }
-        //this.isLoading = false
       } catch (error) {
-        //console.log(error)
-        //this.isLoading = false
+        console.log(error)
       }
     }
-  },
-  mounted() {
-    this.user = JSON.parse(localStorage.getItem('user-dk'))
-    ////console.log('user', this.user)
   }
 }
 </script>
@@ -801,7 +967,7 @@ export default {
   margin-top: 5px !important;
 }
 input {
-  margin-top: 0px !important;
+  //margin-top: 0px !important;
 }
 :deep(.p-autocomplete .p-component) {
   margin-top: 0px !important;

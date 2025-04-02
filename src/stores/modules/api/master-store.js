@@ -16,6 +16,7 @@ export const useMasterApiStore = defineStore('master', {
     gold: [],
     goldSize: [],
     gem: [],
+    gemShape: [],
     customerType: [],
     productType: [],
     workerType: [],
@@ -25,6 +26,8 @@ export const useMasterApiStore = defineStore('master', {
       planStatus: null,
       gold: null,
       goldSize: null,
+      gem: [],
+      gemShape: [],
       customerType: null,
       productType: null,
       workerType: null,
@@ -54,11 +57,11 @@ export const useMasterApiStore = defineStore('master', {
     isGoldCacheValid: (state) => isCacheValid(state.cacheTimestamps.gold),
     isGoldSizeCacheValid: (state) => isCacheValid(state.cacheTimestamps.goldSize),
     isGemCacheValid: (state) => isCacheValid(state.cacheTimestamps.Gem),
+    isGemShapeCacheValid: (state) => isCacheValid(state.cacheTimestamps.GemShape),
     isCustomerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.customerType),
     isProductTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.productType),
     isWorkerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.workerType),
     isDiamondGradeCacheValid: (state) => isCacheValid(state.cacheTimestamps.diamondGrade)
-
   },
 
   actions: {
@@ -96,6 +99,7 @@ export const useMasterApiStore = defineStore('master', {
       this.gold = []
       this.goldSize = []
       this.gem = []
+      this.gemShape = []
       this.customerType = []
       this.productType = []
       this.workerType = []
@@ -133,6 +137,10 @@ export const useMasterApiStore = defineStore('master', {
           fetchPromises.push(api.jewelry.get('Master/MasterGem', null, { skipLoading: true }))
           fetchKeys.push('gem')
         }
+        if (forceFetch || !this.isGemShapeCacheValid) {
+          fetchPromises.push(api.jewelry.get('Master/MasterGemShape', null, { skipLoading: true }))
+          fetchKeys.push('gemShape')
+        }
         if (forceFetch || !this.isCustomerTypeCacheValid) {
           fetchPromises.push(
             api.jewelry.get('Master/MasterCustomerType', null, { skipLoading: true })
@@ -166,6 +174,7 @@ export const useMasterApiStore = defineStore('master', {
             gold: this.gold,
             goldSize: this.goldSize,
             gem: this.gem,
+            gemShape: this.gemShape,
             customerType: this.customerType,
             productType: this.productType
           }
@@ -187,6 +196,7 @@ export const useMasterApiStore = defineStore('master', {
           gold: this.gold,
           goldSize: this.goldSize,
           gem: this.gem,
+          gemShape: this.gemShape,
           customerType: this.customerType,
           productType: this.productType
         }
@@ -249,6 +259,10 @@ export const useMasterApiStore = defineStore('master', {
       return this.fetchWithCache('gem', 'Master/MasterGem', 'Error fetching gem')
     },
 
+    async fetchGemShape() {
+      return this.fetchWithCache('gemShape', 'Master/MasterGemShape', 'Error fetching gem shape')
+    },
+
     async fetchCustomerType() {
       return this.fetchWithCache(
         'customerType',
@@ -272,7 +286,11 @@ export const useMasterApiStore = defineStore('master', {
       )
     },
     async fetchDiamondGrade() {
-      return this.fetchWithCache('diamondGrade', 'Master/MasterDiamondGrade', 'Error fetching diamond grade')
+      return this.fetchWithCache(
+        'diamondGrade',
+        'Master/MasterDiamondGrade',
+        'Error fetching diamond grade'
+      )
     },
 
     // master edit

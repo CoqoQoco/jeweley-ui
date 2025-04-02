@@ -7,11 +7,11 @@ const PlanOrderTrackingStatus = () =>
   import('@/views/production/plan-tracking-status/index-view.vue')
 const PlanOrderTrackingWorker = () =>
   import('@/views/production/plan-tracking-worker/index-view.vue')
-const PlanOrderTrackingView = () => import('@/views/production/plan-update/index-view.vue')
+const PlanOrderTrackingView = () => import('@/views/production/plan-view/index-view.vue')
 const PlanOrderTransferTracking = () =>
   import('@/views/production/plan-tracking-transfer/index-view.vue')
-const ReportProduction = () => import('@/views/report-production/IndexView.vue')
-const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
+//const ReportProduction = () => import('@/views/report-production/IndexView.vue')
+//const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
 const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
 

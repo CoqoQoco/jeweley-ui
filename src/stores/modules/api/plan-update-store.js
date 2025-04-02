@@ -20,7 +20,14 @@ export const usePlanUpdateApiStore = defineStore('planUpdate', {
   actions: {
     // ... actions อื่นๆ
 
-    async submitTransfer({ formerStatus, targetStatus, transferBy, selectedItems }) {
+    async submitTransfer({
+      formerStatus,
+      targetStatus,
+      transferBy,
+      selectedItems,
+      workerName = null,
+      workerCode = null
+    }) {
       try {
         const param = {
           formerStatus,
@@ -30,7 +37,9 @@ export const usePlanUpdateApiStore = defineStore('planUpdate', {
             wo: item.wo,
             woNumber: item.woNumber,
             id: item.id
-          }))
+          })),
+          workerName,
+          workerCode
         }
 
         const res = await api.jewelry.post('Production/Plan/Transfer', param)

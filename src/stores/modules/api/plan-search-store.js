@@ -162,7 +162,44 @@ export const usePlanSearchApiStore = defineStore('planSearch', {
       }
     },
 
-    //export this.dataPlanTransfer to excel
+    async fetchProductionPlanGet({ id }) {
+      try {
+        const param = {
+          id: id
+        }
+        return await api.jewelry.get('ProductionPlan/ProductionPlanGet', param)
+      } catch (error) {
+        console.error('Error fetchProductionPlanGet:', error)
+        throw error
+      }
+    },
+    async fetchProductionPlanMateriaGet({ id }) {
+      try {
+        const param = {
+          id: id
+        }
+        return await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet', param)
+      } catch (error) {
+        console.error('Error fetchProductionPlanMateriaGet:', error)
+        throw error
+      }
+    },
+    async fetchDataGoldCostItem({ planNumber }) {
+      try {
+        const param = {
+          take: 0,
+          skip: 0,
+          sort: [],
+          search: {
+            ProductionPlanNumber: planNumber
+          }
+        }
+        return await api.jewelry.post('ProductionPlanCost/ListGoldCostItem', param)
+      } catch (error) {
+        console.error('Error fetchDataGoldCostItem:', error)
+        throw error
+      }
+    },
 
     async fetchPlanMoldImage(imagePath) {
       if (imagePath) {

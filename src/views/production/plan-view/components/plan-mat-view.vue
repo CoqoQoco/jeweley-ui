@@ -110,13 +110,13 @@
           </template>
         </Column>
         <!-- <template #footer>
-          <div>
-            <button class="btn btn-sm btn-warning" type="button" @click="onShowFormMaterialUpdate">
-              <span class="mr-2"><i class="bi bi-plus"></i></span>
-              <span>เพิ่มส่วนประกอบ</span>
-            </button>
-          </div>
-        </template> -->
+            <div>
+              <button class="btn btn-sm btn-warning" type="button" @click="onShowFormMaterialUpdate">
+                <span class="mr-2"><i class="bi bi-plus"></i></span>
+                <span>เพิ่มส่วนประกอบ</span>
+              </button>
+            </div>
+          </template> -->
       </DataTable>
     </div>
 
@@ -171,7 +171,7 @@ import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
-import planOverview from './PlanOverview.vue'
+import planOverview from './plan-overview.vue'
 
 export default {
   components: {
@@ -279,7 +279,7 @@ export default {
 @import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-.btn-add{
+.btn-add {
   display: grid;
   place-items: center;
   background-color: white;

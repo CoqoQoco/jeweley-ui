@@ -61,7 +61,7 @@
 
       <!-- Custom Footer/Paginator Buttons -->
       <template #paginator-buttons>
-        <button
+        <!-- <button
           :class="['btn btn-sm', isTranferJob ? 'btn-secondary' : 'btn-main']"
           type="button"
           :disabled="isTranferJob"
@@ -80,7 +80,7 @@
         >
           <span><i class="bi bi-cart-check-fill"></i></span>
           <span class="ml-2">โอนสินค้า</span>
-        </button>
+        </button> -->
       </template>
     </BaseDataTable>
 
