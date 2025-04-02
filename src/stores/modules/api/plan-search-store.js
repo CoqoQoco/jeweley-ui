@@ -28,16 +28,16 @@ export const usePlanSearchApiStore = defineStore('planSearch', {
           end: formValue.end ? formatISOString(formValue.end) : null,
           sendStart: formValue.sendStart ? formatISOString(formValue.sendStart) : null,
           sendEnd: formValue.sendEnd ? formatISOString(formValue.sendEnd) : null,
-          text: formValue.text,
+          text: formValue.text ?? null,
           status: formValue.status ? [...formValue.status] : null,
           isOverPlan: formValue.isOverPlan?.id,
-          customerCode: formValue.customerCode,
+          customerCode: formValue.customerCode ?? null,
           productType: formValue.productType ? [...formValue.productType] : null,
           customerType: formValue.customerType ? [...formValue.customerType] : null,
           gold: formValue.gold ? [...formValue.gold] : null,
           goldSize: formValue.goldSize ? [...formValue.goldSize] : null,
-          mold: formValue.mold,
-          productNumber: formValue.productNumber
+          mold: formValue.mold ?? null,
+          productNumber: formValue.productNumber ?? null
         }
       }
     },
@@ -61,6 +61,22 @@ export const usePlanSearchApiStore = defineStore('planSearch', {
           this.dataPlanSearch = {}
           this.dataPlanSearcTotalRecord = 0
         }
+      } catch (error) {
+        console.error('Error fetching production plan data:', error)
+        throw error
+      }
+    },
+    async SearchData({ take, skip, sort, formValue }) {
+      try {
+        //console.log('fetchData', formValue)
+        const param = {
+          take,
+          skip,
+          sort,
+          ...this.initRequest(formValue)
+        }
+
+        return await api.jewelry.post('ProductionPlan/ProductionPlanSearch', param)
       } catch (error) {
         console.error('Error fetching production plan data:', error)
         throw error

@@ -47,7 +47,7 @@
       <!-- Last Update Status Column -->
       <template #lastUpdateStatusTemplate="{ data }">
         <div class="notification">
-          <span>{{ formatDate(data.lastUpdateStatus) }}</span>
+          <span>{{ data.lastUpdateStatus ? formatDate(data.lastUpdateStatus) : `` }}</span>
         </div>
       </template>
 

@@ -1,19 +1,32 @@
 <template>
-  <div>
+  <div class="container-create-wo">
     <form @submit.prevent="onSubmitPlan">
       <div class="filter-container-main">
         <pageTitle
           title="สร้างใบจ่าย-รับคืนงาน"
           description="หน้าสร้างใบจ่าย-รับคืนงาน เเละรายละเอียดต่างๆ"
           :isShowBtnClose="false"
+          :isShowRightSlot="true"
         >
+          <template #rightSlot>
+            <button
+              class="btn btn-sm btn-dark mr-2"
+              type="button"
+              @click="onModifyPlan"
+              title="งานแปลง"
+            >
+              <span class="bi bi-collection mr-2"></span>
+              <span>เลือกเเบบงาน</span>
+            </button>
+          </template>
         </pageTitle>
 
         <div class="p-2">
-          <div class="title-text-lg-bg mt-2">
+          <div class="title-text-lg-bg mt-1">
             <span class="bi bi-card-list mr-2"></span>
             <span>ส่วนที่ 1 ระบุรายละเอียดใบจ่าย-รับคืน</span>
           </div>
+
           <!-- ส่วนที่ 1  -->
           <div class="form-col-container border-container p-4">
             <!-- data -->
@@ -208,7 +221,10 @@
               </Column>
               <Column style="min-width: 60px">
                 <template #body="prop">
-                  <div class="btn btn-danger text-center w-100" @click="onDelMaterial(prop.data)">
+                  <div
+                    class="btn btn-sm btn-danger text-center w-100"
+                    @click="onDelMaterial(prop.data)"
+                  >
                     <i class="bi bi-trash-fill"></i>
                   </div>
                 </template>
@@ -419,7 +435,7 @@
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <div>ทั้งหมด {{ this.form.material.length }} รายการ</div>
-                  <div class="btn btn-sm btn-warning" @click="onAddMaterial">
+                  <div class="btn btn-sm btn-dark" @click="onAddMaterial">
                     <span class="text-center">
                       <i class="bi bi-plus"></i>
                     </span>
@@ -432,6 +448,10 @@
 
           <!-- action -->
           <div class="submit-container mt-2">
+            <div class="check-return-container mr-4 p-1">
+              <Checkbox v-model="form.isModifyPlan" :binary="true" />
+              <span for="ingredient1" class="ml-2 title-text">งานแปลงสินค้า</span>
+            </div>
             <button class="btn btn-sm btn-main" type="submit">
               <span class="bi bi-calendar-check mr-2"> </span>
               <span>สร้างใบจ่าย-รับคืนงาน</span>
@@ -440,6 +460,12 @@
         </div>
       </div>
     </form>
+
+    <modifyPlanView
+      :isShow="isShow.modifyPlan"
+      @modifyPlan="modifyPlan"
+      @closeModal="onCloseModal"
+    ></modifyPlanView>
   </div>
 </template>
 
@@ -451,10 +477,14 @@ import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import Checkbox from 'primevue/checkbox'
 
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
+import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
+
+import modifyPlanView from '../modal/modify-plan-view.vue'
 
 const interfaceForm = {
   wo: '',
@@ -462,7 +492,8 @@ const interfaceForm = {
   mold: '',
   customerNumber: '',
   customerType: '',
-  requestDate: new Date().toISOString().substr(0, 10),
+  //+ 1
+  requestDate: new Date(new Date().setDate(new Date().getDate() + 7)),
   productNumber: '',
   productName: '',
   productType: '',
@@ -472,7 +503,8 @@ const interfaceForm = {
   remark: '',
   gold: null,
   goldSize: null,
-  material: []
+  material: [],
+  isModifyPlan: false
 }
 const interfaceMaterial = {
   //   gold: {
@@ -514,6 +546,10 @@ const interfaceValid = {
   isValGold: false,
   isValGoldSize: false
 }
+
+const interfaceIsShow = {
+  modifyPlan: false
+}
 export default {
   components: {
     pageTitle,
@@ -521,8 +557,16 @@ export default {
     Dropdown,
     Calendar,
     DataTable,
-    Column
+    Column,
+    modifyPlanView,
+    Checkbox
   },
+
+  setup() {
+    const loadingStore = useLoadingStore()
+    return { loadingStore }
+  },
+
   watch: {
     'form.mold'() {
       if (this.form.mold) {
@@ -555,6 +599,7 @@ export default {
       }
     }
   },
+
   data() {
     return {
       // --- flag --- //
@@ -567,6 +612,9 @@ export default {
       },
       val: {
         ...interfaceValid
+      },
+      isShow: {
+        ...interfaceIsShow
       },
       imageurl: '',
 
@@ -584,6 +632,7 @@ export default {
       editingRows: []
     }
   },
+
   methods: {
     // --- controller --- //
     onSubmitPlan() {
@@ -649,6 +698,15 @@ export default {
       }
     },
 
+    onCloseModal() {
+      this.isShow = {
+        ...interfaceIsShow
+      }
+    },
+    onModifyPlan() {
+      this.isShow.modifyPlan = true
+    },
+
     // --- datatable --- //
     onRowEditSave(event) {
       let { newData, index } = event
@@ -678,7 +736,7 @@ export default {
           }
         }
 
-        const res = await api.jewelry.post('Customer/SearchCustomer', param)
+        const res = await api.jewelry.post('Customer/SearchCustomer', param, { skipLoading: true })
         if (res) {
           this.customerItemSearch = res.data.map((x) => `${x.code}`)
           console.log(this.customerItemSearch)
@@ -699,7 +757,7 @@ export default {
           }
         }
 
-        const res = await api.jewelry.post('Mold/SearchMold', param)
+        const res = await api.jewelry.post('Mold/SearchMold', param, { skipLoading: true })
         if (res) {
           this.moldItemSearch = res.data.map((x) => `${x.code}`)
         }
@@ -712,7 +770,9 @@ export default {
         const param = {
           imageName: `${e.value}-Mold.png`
         }
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+        const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
+          skipLoading: true
+        })
 
         if (res) {
           this.imageurl = `data:image/png;base64,${res}`
@@ -748,6 +808,8 @@ export default {
 
         params.append('productDetail', this.form.productDetail)
         params.append('remark', this.form.remark)
+
+        params.append('isModifyPlan', this.form.isModifyPlan)
 
         //console.log(this.form.material)
         params.append('material', JSON.stringify(this.form.material))
@@ -858,8 +920,81 @@ export default {
         console.log(error)
         this.isLoading = false
       }
+    },
+
+    async modifyPlan(item) {
+      //console.log(item)
+
+      this.form = {
+        wo: item.data.wo,
+        nowo: null,
+        mold: item.data.mold,
+        requestDate:  new Date(new Date().setDate(new Date().getDate() + 7)),
+
+        customerNumber: item.data.customerNumber,
+        customerType: this.masterCustomer.find((x) => x.code === item.data.customerType),
+
+        productNumber: item.data.productNumber,
+        productName: item.header.productName,
+        productType: this.masterProduct.find((x) => x.code === item.data.productType),
+
+        productQty: item.data.productQty,
+        productQtyUnit: item.header.productQtyUnit,
+        productDetail: item.header.productDetail,
+
+        remark: '',
+        gold: this.masterGold.find((x) => x.nameEn === item.data.gold),
+        goldSize: this.masterGoldSize.find((x) => x.nameEn === item.data.goldSize),
+        material: []
+      }
+
+      //get image
+      const param = {
+        imageName: `${item.data.mold}-Mold.png`
+      }
+      const image = await api.jewelry.get('FileExtension/GetMoldImage', param, {
+        skipLoading: true
+      })
+      if (image) {
+        this.imageurl = `data:image/png;base64,${image}`
+      }
+
+      if (item.headerMat.length > 0) {
+        this.form.material = item.headerMat.map((x) => {
+          return {
+            id: ++this.autoId,
+            gold: this.masterGold.find((y) => y.code === x.gold),
+            goldSize: this.masterGoldSize.find((y) => y.code === x.goldSize),
+            goldQty: x.goldQty,
+            gem: this.masterGem.find((y) => y.code === x.gem),
+            gemShape: this.masterGemShape.find((y) => y.code === x.gemShape),
+            gemQty: x.gemQty,
+            gemUnit: x.gemUnit,
+            gemWeight: x.gemWeight,
+            gemWeightUnit: x.gemWeightUnit,
+            gemSize: x.gemSize,
+            diamondQty: x.diamondQty,
+            diamondUnit: x.diamondUnit,
+            diamondQuality: x.diamondQuality,
+            diamondWeight: x.diamondWeight,
+            diamondWeightUnit: x.diamondWeightUnit,
+            diamondSize: x.diamondSize
+          }
+        })
+      } else {
+        this.form.material = []
+      }
+
+      //alway true
+      this.form.isModifyPlan = true
+
+      console.log('modifyPlan', this.form)
+
+      this.onCloseModal()
+      this.loadingStore.hideLoading()
     }
   },
+
   created() {
     this,
       this.$nextTick(() => {
@@ -888,9 +1023,268 @@ export default {
 
 .image-preview {
   max-width: 300px;
+  max-height: 300px;
   height: auto;
   border-radius: 8px;
   object-fit: contain;
   padding: 20px 0px;
+}
+
+.container-create-wo {
+  :deep(.p-datatable) {
+    font-size: 14px !important;
+
+    // Header Styles
+    .p-datatable-thead > tr > th {
+      background-color: var(--base-font-color) !important;
+      padding: 0.5rem 1rem !important;
+      border: 1px solid #dee2e6 !important;
+      color: #ffffff !important;
+
+      .p-column-header-content {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+
+        .p-column-title {
+          color: #ffffff !important;
+          font-weight: normal !important;
+          margin-right: 0.5rem !important;
+        }
+
+        .p-sortable-column-icon,
+        .pi {
+          color: #ffffff !important;
+          font-size: 0.8rem !important;
+        }
+
+        .p-sortable-column-badge {
+          background-color: #ffffff !important;
+          color: var(--base-font-color) !important;
+          font-size: 0.7rem !important;
+          margin-left: 0.2rem !important;
+        }
+      }
+
+      &.p-sortable-column {
+        &:hover {
+          background-color: var(--base-font-color) !important;
+          .p-sortable-column-icon,
+          .pi {
+            color: #ffffff !important;
+          }
+        }
+
+        &.p-highlight {
+          background-color: var(--base-font-color) !important;
+
+          .p-sortable-column-icon,
+          .pi {
+            color: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    // Body Styles
+    .p-datatable-tbody > tr {
+      &.p-highlight {
+        // เพิ่ม style สำหรับ row ที่ถูก select
+        background-color: #e3f2fd !important; // สีฟ้าอ่อน
+
+        // ถ้าต้องการให้ยังคง hover effect
+        &:hover {
+          background-color: #bbdefb !important; // สีฟ้าที่เข้มขึ้นเมื่อ hover
+        }
+
+        // สำหรับ striped rows
+        &:nth-child(even) {
+          background-color: #e3f2fd !important;
+        }
+      }
+
+      > td {
+        padding: 3px 10px !important;
+        font-size: 14px !important;
+        //color: #7a1010;
+        //border: 1px solid #dee2e6 !important;
+      }
+
+      &:nth-child(even) {
+        background-color: #f8f9fa !important;
+      }
+
+      &:hover {
+        background-color: #e9ecef !important;
+      }
+    }
+
+    // Empty Message
+    .p-datatable-emptymessage > td {
+      text-align: center !important;
+      padding: 2rem !important;
+    }
+  }
+
+  // Paginator Styles
+  :deep(.p-paginator) {
+    font-size: 14px !important;
+    padding: 5px !important;
+    background: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 0px !important;
+
+    .p-paginator-first,
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-last,
+    .p-paginator-page {
+      min-width: 2rem !important;
+      height: 2rem !important;
+      margin: 0 0.1rem !important;
+      border: 1px solid #dee2e6 !important;
+
+      &:not(.p-disabled):not(.p-highlight):hover {
+        background: #e9ecef !important;
+        border-color: #dee2e6 !important;
+      }
+
+      &.p-highlight {
+        background: var(--base-font-color) !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .p-dropdown {
+      height: 2rem !important;
+      width: 100px !important;
+      margin: 0 0.5rem !important;
+
+      .p-dropdown-label {
+        font-size: 14px !important;
+        padding: 0.25rem 0.5rem !important;
+      }
+
+      .p-dropdown-trigger {
+        width: 2rem !important;
+      }
+    }
+
+    .p-paginator-current {
+      margin: 0 0.5rem !important;
+      color: #6c757d !important;
+    }
+  }
+
+  // Empty Message
+  :deep(.empty-message) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+    text-align: center !important;
+    color: #6c757d !important;
+
+    i {
+      font-size: 2rem !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    p {
+      margin: 0 !important;
+      font-size: 14px !important;
+    }
+  }
+
+  // Action Buttons
+  .btn-action-container {
+    display: flex !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+
+    .btn {
+      padding: 0.25rem 0.5rem !important;
+
+      i {
+        font-size: 1rem !important;
+      }
+    }
+  }
+
+  // Loading Overlay
+  :deep(.p-datatable-loading-overlay) {
+    background: rgba(255, 255, 255, 0.8) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  // Table Scrollbar
+  :deep(.p-datatable-wrapper) {
+    &::-webkit-scrollbar {
+      width: 6px !important;
+      height: 6px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #c1c1c1 !important;
+      border-radius: 3px !important;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: #f1f1f1 !important;
+    }
+  }
+
+  // Resize Handle
+  :deep(.p-column-resizer) {
+    &:hover {
+      background-color: var(--base-font) !important;
+    }
+  }
+
+  // Override for sort icons
+  :deep(.p-datatable .p-sortable-column),
+  :deep(.p-datatable .p-sortable-column.p-highlight) {
+    .p-sortable-column-icon,
+    .pi-sort,
+    .pi-sort-amount-up-alt,
+    .pi-sort-amount-down,
+    .p-sortable-column-badge {
+      color: #ffffff !important;
+    }
+  }
+
+  // เพิ่ม style สำหรับ expanded content
+  :deep(.expanded-row-content) {
+    background-color: #f8f9fa;
+    //padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  // Style สำหรับ expand button
+  :deep(.p-row-toggler) {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: var(--row-hover-bg);
+    }
+
+    .p-row-toggler-icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+.check-return-container {
+  display: flex;
+  align-items: center;
 }
 </style>
