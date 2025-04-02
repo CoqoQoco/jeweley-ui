@@ -149,7 +149,13 @@ export default {
           field: 'createBy',
           header: 'ผู้โอนงาน',
           sortable: true,
-          minWidth: '150px',
+          minWidth: '150px'
+        },
+        {
+          field: 'workerName',
+          header: 'กำหนดช่างรับงาน',
+          sortable: true,
+          minWidth: '150px'
         },
         {
           field: 'productNumber',
