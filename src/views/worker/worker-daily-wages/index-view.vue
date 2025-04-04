@@ -452,7 +452,7 @@ export default {
           this.setTableRow(`${item.statusName}`, `row`),
           this.setTableRow(
             `${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${
-              item.description ? `[${item.gold}]` : ``
+              item.description ? `[${item.description}]` : ``
             }`,
             `row`
           ),
@@ -535,7 +535,7 @@ export default {
           this.setTableRow(`${item.statusName}`, `row`),
           this.setTableRow(
             `${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${
-              item.description ? `[${item.gold}]` : ``
+              item.description ? `[${item.description}]` : ``
             }`,
             `row`
           ),
@@ -607,7 +607,7 @@ export default {
           this.setTableRow(`${item.statusName}`, `row`),
           this.setTableRow(
             `${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${
-              item.description ? `[${item.gold}]` : ``
+              item.description ? `[${item.description}]` : ``
             }`,
             `row`
           ),
