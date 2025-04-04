@@ -414,7 +414,7 @@ export default {
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: [60, 60, '*', 60, 60, 50, 50, 50],
+          widths: [60, 60, '*', 60, '*', 50, 50, 50],
           body: this.buildTablePayBody(),
           layout: {
             defaultBorder: false
@@ -496,7 +496,7 @@ export default {
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: [60, 60, '*', 60, 60, 50, 50, 50],
+          widths: [60, 60, '*', 60, '*', 50, 50, 50],
           body: this.buildTableStatusBody(),
           layout: {
             defaultBorder: false
