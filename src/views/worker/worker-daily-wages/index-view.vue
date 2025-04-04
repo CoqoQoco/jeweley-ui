@@ -115,9 +115,9 @@
           <Column field="desc">
             <template #body="slotProps">
               {{
-                `${slotProps.data.gold} ${
-                  slotProps.data.description ? `[${slotProps.data.description}]` : ``
-                }`
+                `${slotProps.data.gold} 
+                ${slotProps.data.goldSize ? ` - ${slotProps.data.goldSize}` : ``}
+                ${slotProps.data.description ? `[${slotProps.data.description}]` : ``}`
               }}
             </template>
           </Column>
@@ -450,7 +450,7 @@ export default {
           this.setTableRow(`${item.wo}-${item.woNumber}`, `row`),
           this.setTableRow(`${item.productNumber}`, `row`),
           this.setTableRow(`${item.statusName}`, `row`),
-          this.setTableRow(`[${item.gold}] ${item.description ?? ``}`, `row`),
+          this.setTableRow(`${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${item.description ? `[${item.gold}]` : ``}`, `row`),
           this.setTableRow(`${item.goldQtyCheck ?? ``}`, `row-right`),
           this.setTableRow(
             item.wages ? Number(item.wages).toFixed(2).toLocaleString() : '0.00',
