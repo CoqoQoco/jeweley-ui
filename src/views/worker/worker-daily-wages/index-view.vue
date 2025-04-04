@@ -450,7 +450,12 @@ export default {
           this.setTableRow(`${item.wo}-${item.woNumber}`, `row`),
           this.setTableRow(`${item.productNumber}`, `row`),
           this.setTableRow(`${item.statusName}`, `row`),
-          this.setTableRow(`${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${item.description ? `[${item.gold}]` : ``}`, `row`),
+          this.setTableRow(
+            `${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${
+              item.description ? `[${item.gold}]` : ``
+            }`,
+            `row`
+          ),
           this.setTableRow(`${item.goldQtyCheck ?? ``}`, `row-right`),
           this.setTableRow(
             item.wages ? Number(item.wages).toFixed(2).toLocaleString() : '0.00',
@@ -528,7 +533,12 @@ export default {
           this.setTableRow(`${item.wo}-${item.woNumber}`, `row`),
           this.setTableRow(`${item.productNumber}`, `row`),
           this.setTableRow(`${item.statusName}`, `row`),
-          this.setTableRow(`[${item.gold}] ${item.description ?? ``}`, `row`),
+          this.setTableRow(
+            `${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${
+              item.description ? `[${item.gold}]` : ``
+            }`,
+            `row`
+          ),
           this.setTableRow(
             `${item.status === 70 ? item.goldQtyCheck : item.goldQtySend ?? ``}`,
             `row-right`
@@ -595,7 +605,12 @@ export default {
           this.setTableRow(`${item.wo}-${item.woNumber}`, `row`),
           this.setTableRow(`${item.productNumber}`, `row`),
           this.setTableRow(`${item.statusName}`, `row`),
-          this.setTableRow(`[${item.gold}] ${item.description ?? ``}`, `row`),
+          this.setTableRow(
+            `${item.gold}${item.goldSize ? `- ${item.goldSize}` : ``} ${
+              item.description ? `[${item.gold}]` : ``
+            }`,
+            `row`
+          ),
           this.setTableRow(`${item.goldQtyCheck ?? ``}`, `row-right`),
           this.setTableRow(
             item.wages ? Number(item.wages).toFixed(2).toLocaleString() : '0.00',
