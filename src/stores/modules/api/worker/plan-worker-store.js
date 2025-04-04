@@ -162,7 +162,7 @@ export const usePlanWorkerApiStore = defineStore('PlanWorker', {
         }
         //console.log(params)
 
-        return await api.jewelry.post('Worker/Crate', params)
+        return await api.jewelry.post('Worker/Create', params)
       } catch (error) {
         console.error('Error fetching plan worker create data:', error)
       }
