@@ -21,7 +21,7 @@
                 v-model="form.receiptDateStart"
                 :max-date="form.receiptDateEnd"
                 showIcon
-                :manualInput="false"
+                :manualInput="true"
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
               />
