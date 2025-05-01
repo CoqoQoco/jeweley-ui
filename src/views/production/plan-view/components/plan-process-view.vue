@@ -56,13 +56,19 @@
 
           <!-- worker receive  -->
           <div class="d-flex flex-column">
-            <span class="title-text">กำหนดช่างรับงาน</span>
-            <span class="desc-text">{{ data.workerName ?? `-` }}</span>
+            <div v-if="[500, 100].includes(status)"></div>
+            <div v-else>
+              <span class="title-text">กำหนดช่างรับงาน</span>
+              <span class="desc-text">{{ data.workerName ?? `-` }}</span>
+            </div>
           </div>
           <!-- date -->
           <div class="d-flex flex-column">
-            <span class="title-text">ผู้เเก้ไขล่าสุด</span>
-            <span class="desc-text">{{ data.updateBy ?? `-` }}</span>
+            <div v-if="[500, 100].includes(status)"></div>
+            <div v-else>
+              <span class="title-text">ผู้เเก้ไขล่าสุด</span>
+              <span class="desc-text">{{ data.updateBy ?? `-` }}</span>
+            </div>
           </div>
         </div>
       </div>

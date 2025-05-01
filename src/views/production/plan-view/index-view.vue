@@ -31,6 +31,7 @@
           :masterCustomerType="masterCustomerType"
           :masterProductType="masterProductType"
           @onShowFormHeaderUpdate="onUpdated('plan')"
+          @onMeltJob="onUpdated('process')"
         ></planView>
       </keep-alive>
       <keep-alive>
@@ -70,7 +71,7 @@
       </planMatUpdate>
     </div>
 
-    <div v-if="[2, 3, 4, 5, 6, 8, 9].includes(tabActive)">
+    <div v-if="[0, 2, 3, 4, 5, 6, 8, 9].includes(tabActive)">
       <planProcess
         :status="getStatusByTapActive()"
         :modelValue="data"
@@ -138,6 +139,7 @@ import TabMenu from 'primevue/tabmenu'
 import pageTitle from '@/components/custom/PageTitle.vue'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
 
 import planView from './components/plan-view.vue'
 import planViewUpdate from './modal/update-plan-view.vue'
@@ -159,6 +161,7 @@ const interfaceIsUpdate = {
   mat: false,
   process: false,
   price: false,
+  melt: false,
 
   transferJob: false,
   transferProduct: false
@@ -295,6 +298,7 @@ export default {
         case 8:
           return 100
         case 9:
+        case 0:
           return 500
         default:
           return 500
@@ -307,6 +311,7 @@ export default {
       }
     },
     onUpdated(type) {
+      console.log('onUpdated', type)
       this.isUpdate[type] = true
     },
 
@@ -329,6 +334,15 @@ export default {
     },
     goReceipt(value) {
       this.$router.push({ name: 'goods-receipt-production', params: { id: value } })
+    },
+    onMeltJob() {
+      swAlert.confirmSubmit(
+        `แผนผลิต: ${this.data.wo}-${this.data.woNumber}`,
+        'ยืนยันการหลอม',
+        async () => {
+          console.log('onMeltJob', this.jobTransfer)
+        }
+      )
     },
 
     // ------ Apis ------

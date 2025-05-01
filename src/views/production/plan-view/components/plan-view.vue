@@ -36,7 +36,7 @@
           </span>
           <!-- <span>เเก้ไข</span> -->
         </button>
-        <button class="btn btn-sm btn-secondary" disabled>
+        <button class="btn btn-sm btn-red" @click="onMeltJob">
           <span>
             <i class="bi bi-trash"></i>
           </span>
@@ -309,6 +309,9 @@ export default {
       } catch (error) {
         console.error('Failed to generate PDF:', error)
       }
+    },
+    onMeltJob() {
+      this.$emit('onMeltJob')
     }
   },
   async created() {

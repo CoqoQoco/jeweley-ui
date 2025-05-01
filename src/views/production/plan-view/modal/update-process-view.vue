@@ -11,7 +11,9 @@
           <div class="form-col-container">
             <!-- name -->
             <div>
-              <span class="title-text">กำหนดช่างรับงาน</span>
+              <span :class="['title-text', [500].includes(status) ? 'text-secondary' : '']"
+                >กำหนดช่างรับงาน</span
+              >
               <AutoComplete
                 v-model="form.worker"
                 :suggestions="workerItemSearch"
@@ -19,6 +21,7 @@
                 :class="form.worker ? `` : `-`"
                 optionLabel="nameTh"
                 forceSelection
+                :disabled="[500].includes(status)"
               >
               </AutoComplete>
             </div>
@@ -587,8 +590,10 @@ export default {
           return 'ฝัง'
         case 90:
           return 'ขัดชุบ'
+        case 500:
+          return 'หลอม'
         default:
-          return 'จ่ายเเต่ง'
+          return ''
       }
     }
   },
@@ -837,7 +842,13 @@ export default {
         }
 
         console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
+        let url = 'ProductionPlan/ProductionPlanUpdateStatusDetail'
+
+        if ([500].includes(this.status)) {
+          url = 'ProductionPlan/ProductionPlanAddStatusDetail'
+        }
+
+        const res = await api.jewelry.post(url, param)
         if (res) {
           swAlert.success(
             ``,
