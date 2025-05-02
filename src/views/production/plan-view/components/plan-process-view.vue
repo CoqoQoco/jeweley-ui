@@ -57,7 +57,7 @@
           <!-- worker receive  -->
           <div class="d-flex flex-column">
             <div v-if="[500, 100].includes(status)"></div>
-            <div v-else>
+            <div v-else class="d-flex flex-column">
               <span class="title-text">กำหนดช่างรับงาน</span>
               <span class="desc-text">{{ data.workerName ?? `-` }}</span>
             </div>
@@ -65,7 +65,7 @@
           <!-- date -->
           <div class="d-flex flex-column">
             <div v-if="[500, 100].includes(status)"></div>
-            <div v-else>
+            <div v-else class="d-flex flex-column">
               <span class="title-text">ผู้เเก้ไขล่าสุด</span>
               <span class="desc-text">{{ data.updateBy ?? `-` }}</span>
             </div>

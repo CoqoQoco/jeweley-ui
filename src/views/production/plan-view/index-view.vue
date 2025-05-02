@@ -72,7 +72,8 @@
     </div>
 
     <div v-if="[0, 2, 3, 4, 5, 6, 8, 9].includes(tabActive)">
-      <planProcess
+      <planProcess 
+        v-if="tabActive !== 0"
         :status="getStatusByTapActive()"
         :modelValue="data"
         :modelMatValue="mat"
