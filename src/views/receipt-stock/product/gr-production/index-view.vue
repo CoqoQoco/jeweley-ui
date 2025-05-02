@@ -442,7 +442,7 @@
                               optionLabel="description"
                               optionValue="nameEn"
                               class="w-full md:w-14rem"
-                              placeholder="เลือกพลอย"
+                              placeholder="เลือกเกรดเพชร"
                               :showClear="data.typeCode ? true : false"
                               @change="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                             >
@@ -474,6 +474,18 @@
                             v-model="data.size"
                             class="form-control"
                             :style="getBgColor(false, data.size)"
+                            @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
+                          />
+                        </div>
+                      </template>
+
+                      <template #regionTemplate="{ data }">
+                        <div class="d-flex justify-content-center">
+                          <input
+                            type="text"
+                            v-model="data.region"
+                            class="form-control"
+                            :style="getBgColor(false, data.region)"
                             @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
                           />
                         </div>
@@ -595,8 +607,8 @@
             <div class="d-flex justify-content-between items-center">
               <div class="vertical-center-container">
                 <span class="title-text">จำนวนรายการที่เลือก: {{ checkItemSelectedLength() }}</span>
-                <span class="ml-2 mr-2 title-text">|</span>
-                <button class="btn btn-sm btn-outline-main" type="button">
+                <!-- <span class="ml-2 mr-2 title-text">|</span> -->
+                <!-- <button class="btn btn-sm btn-outline-main" type="button">
                   <span class="bi bi-gear mr-2"></span>
                   <span>ปรับเเต่งสินค้า</span>
                 </button>
@@ -607,7 +619,7 @@
                 <button class="btn btn-sm btn-secondary ml-2" disabled type="button">
                   <span class="bi bi-upc-scan mr-2"></span>
                   <span>Barcode</span>
-                </button>
+                </button> -->
               </div>
               <div>
                 <button class="btn btn-sm btn-green" type="button" @click="fetchDraft">
@@ -884,6 +896,12 @@ export default {
           header: 'ขนาด',
           sortable: false,
           width: '150px'
+        },
+        {
+          field: 'region',
+          header: 'เเหล่งผลิต',
+          sortable: false,
+          width: '80px'
         },
         {
           field: 'qty',
@@ -1267,7 +1285,9 @@ export default {
       if (item.type === 'Diamond') {
         display = `${item.qty ?? ''}${item.type ?? ''}${item.weight ?? ''}${
           item.weightUnit ? ` ${item.weightUnit}` : ''
-        }${item.typeCode ? `, ${item.typeCode}` : ''}${item.size ? `, ${item.size}` : ''}`
+        }${item.typeCode ? `, ${item.typeCode}` : ''}${item.size ? `, ${item.size}` : ''} ${
+          item.region ? `, (${item.region})` : ''
+        }`
       }
 
       if (item.type === 'Gold' || item.type === 'Silver') {
@@ -1279,7 +1299,7 @@ export default {
       if (item.type === 'Gem') {
         display = `${item.qty ?? ''}${item.typeCode ?? ''}${item.weight ?? ''}${
           item.weightUnit ? ` ${item.weightUnit}` : ``
-        }${item.size ? `, ${item.size}` : ''}`
+        }${item.size ? `, ${item.size}` : ''}${item.region ? `, (${item.region})` : ''}`
       }
 
       return display

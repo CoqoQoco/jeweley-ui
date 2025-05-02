@@ -158,6 +158,10 @@ export default {
       handler(val) {
         //console.log('isShow', val)
         this.isShowModal = val
+
+        if (val && this.stock?.stockNumber) {
+          setTimeout(() => this.checkPrinterStatus(), 3000)
+        }
       },
       immediate: true
     },
@@ -202,9 +206,9 @@ export default {
         console.log('barcode', this.barcode)
 
         // Schedule printer status check if stock number exists
-        if (val.stockNumber) {
-          setTimeout(() => this.checkPrinterStatus(), 3000)
-        }
+        // if (val.stockNumber) {
+        //   setTimeout(() => this.checkPrinterStatus(), 3000)
+        // }
       },
       immediate: true
     }

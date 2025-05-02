@@ -348,6 +348,17 @@
                 </div>
               </template>
 
+              <template #regionTemplate="{ data }">
+                <div class="d-flex justify-content-center">
+                  <input
+                    type="text"
+                    v-model="data.region"
+                    class="form-control"
+                    :style="getBgColor(data.region)"
+                  />
+                </div>
+              </template>
+
               <template #qtyTemplate="{ data }">
                 <div class="d-flex justify-content-center">
                   <input
@@ -574,6 +585,12 @@ export default {
           width: '100px'
         },
         {
+          field: 'region',
+          header: 'เเหล่งผลิต',
+          sortable: false,
+          width: '80px'
+        },
+        {
           field: 'qty',
           header: 'จำนวน',
           sortable: false,
@@ -709,7 +726,7 @@ export default {
     },
     async fetchConfirm() {
       //set type barcode
-      if(this.stock.materials && this.stock.materials.length > 0) {
+      if (this.stock.materials && this.stock.materials.length > 0) {
         this.stock.materials.forEach((item) => {
           item.typeBarcode = this.getBarcode(item)
         })
