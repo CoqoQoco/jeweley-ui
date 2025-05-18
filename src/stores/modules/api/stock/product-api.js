@@ -40,6 +40,22 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.error('Error fetching stock product data:', error)
       }
     },
+    async fetchDataGet({ formValue }) {
+      try {
+        //console.log('formValue', formValue)
+        this.dataSearch = {}
+        const param = {
+          ...formValue
+        }
+
+        return await api.jewelry.post('StockProduct/Get', param, {
+          skipLoading: true
+        })
+      } catch (error) {
+        console.error('Error get stock product data:', error)
+      }
+    },
+
     async fetchDataSearchReceiptExport({ sort, formValue, title }) {
       try {
         this.dataSearchExport = {}

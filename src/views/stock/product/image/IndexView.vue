@@ -34,6 +34,6 @@ export default {
 }
 </script>
 
-<style style lang="scss" scoped>
+<style  lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form';
 </style>

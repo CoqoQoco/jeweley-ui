@@ -7,6 +7,7 @@ export const PERMISSIONS = {
   USER_CREATE: 'user:create',
   USER_EDIT: 'user:edit',
   USER_DELETE: 'user:delete',
+  USER_DEV: 'user:dev',
 
   //production
   PRODUCTION_VIEW: 'production:view',
@@ -43,7 +44,11 @@ export const PERMISSIONS = {
   REPORT_VIEW: 'report:view',
 
   //master
-  MASTER_VIEW: 'master:view'
+  MASTER_VIEW: 'master:view',
+
+  //sale
+   SALE_VIEW: 'sale:view',
+  SALE_CREATE: 'sale:create',
 }
 
 // Role Permission Mapping
@@ -54,6 +59,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.USER_VIEW,
     PERMISSIONS.USER_CREATE,
     PERMISSIONS.USER_EDIT,
+    PERMISSIONS.USER_DELETE,
+    PERMISSIONS.USER_DEV,
 
     PERMISSIONS.PRODUCTION_VIEW,
     PERMISSIONS.PRODUCTION_CREATE,
@@ -82,7 +89,10 @@ export const ROLE_PERMISSIONS = {
 
     PERMISSIONS.REPORT_VIEW,
 
-    PERMISSIONS.MASTER_VIEW
+    PERMISSIONS.MASTER_VIEW,
+
+    PERMISSIONS.SALE_VIEW,
+    PERMISSIONS.SALE_CREATE
   ],
 
   Admin: [
