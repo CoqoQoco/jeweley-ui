@@ -41,20 +41,43 @@ export function generateInvoicePdf({
         invoiceDate
       )
 
-      // สร้าง PDF
-      const pdf = invoiceBuilder.generatePDF()
+      invoiceBuilder
+        .generatePDF()
+        .then((pdf) => {
+          if (openInNewTab) {
+            pdf.open()
+          } else {
+            pdf.download(filename)
+          }
 
-      // เปิดหรือดาวน์โหลด PDF
-      if (openInNewTab) {
-        pdf.open()
-      } else {
-        pdf.download(filename)
-      }
+          resolve({
+            success: true,
+            message: openInNewTab ? 'เปิดใบกำกับสินค้าสำเร็จ' : 'สร้างใบกำกับสินค้าสำเร็จ'
+          })
+        })
+        .catch((error) => {
+          console.error('Error in PDF generation:', error)
+          reject({
+            success: false,
+            message: 'เกิดข้อผิดพลาดในการสร้างใบกำกับสินค้า',
+            error
+          })
+        })
 
-      resolve({
-        success: true,
-        message: openInNewTab ? 'เปิดใบกำกับสินค้าสำเร็จ' : 'สร้างใบกำกับสินค้าสำเร็จ'
-      })
+      //   // สร้าง PDF
+      //   const pdf = await invoiceBuilder.generatePDF()
+
+      //   // เปิดหรือดาวน์โหลด PDF
+      //   if (openInNewTab) {
+      //     pdf.open()
+      //   } else {
+      //     pdf.download(filename)
+      //   }
+
+      //   resolve({
+      //     success: true,
+      //     message: openInNewTab ? 'เปิดใบกำกับสินค้าสำเร็จ' : 'สร้างใบกำกับสินค้าสำเร็จ'
+      //   })
     } catch (error) {
       console.error('Error generating PDF:', error)
       reject({
