@@ -62,12 +62,12 @@ export default {
     preview: {
       type: Boolean,
       default: () => true
+    },
+    // เพิ่ม prop ใหม่เพื่อกำหนดว่าต้องการ emit ข้อมูลรูปภาพหรือไม่
+    emitImage: {
+      type: Boolean,
+      default: () => false
     }
-    // fetch: {
-    //   type: Number,
-    //   required: true,
-    //   default: () => 0
-    // }
   },
 
   watch: {
@@ -90,6 +90,8 @@ export default {
     async fetchImageData() {
       try {
         this.loading = true // เริ่มการโหลด
+        let base64Data = null
+
         switch (this.type) {
           case 'PATH':
             {
@@ -97,13 +99,9 @@ export default {
                 imageName: `${this.imageName}`,
                 path: this.path
               }
-              const res = await api.jewelry.get('FileExtension/GetImage', param, {
+              base64Data = await api.jewelry.get('FileExtension/GetImage', param, {
                 skipLoading: true
               })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
             }
             break
           case 'ORDERPLAN':
@@ -111,13 +109,9 @@ export default {
               const param = {
                 imageName: this.imageName
               }
-              const res = await api.jewelry.get('FileExtension/GetPlanImage', param, {
+              base64Data = await api.jewelry.get('FileExtension/GetPlanImage', param, {
                 skipLoading: true
               })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
             }
             break
           case 'MOLD':
@@ -125,13 +119,9 @@ export default {
               const param = {
                 imageName: `${this.imageName}-Mold.png`
               }
-              const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
+              base64Data = await api.jewelry.get('FileExtension/GetMoldImage', param, {
                 skipLoading: true
               })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
             }
             break
           case 'PLANMOLD':
@@ -139,13 +129,9 @@ export default {
               const param = {
                 imageName: `${this.imageName}`
               }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldDesignImage', param, {
+              base64Data = await api.jewelry.get('FileExtension/GetPlanMoldDesignImage', param, {
                 skipLoading: true
               })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
             }
             break
           case 'PLANMOLDRESIN':
@@ -153,13 +139,9 @@ export default {
               const param = {
                 imageName: `${this.imageName}`
               }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param, {
+              base64Data = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param, {
                 skipLoading: true
               })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
             }
             break
           case 'STOCK-PRODUCT':
@@ -167,16 +149,27 @@ export default {
               const param = {
                 imageName: `${this.path}`
               }
-              const res = await api.jewelry.get('FileExtension/GetStockProductImage', param, {
+              base64Data = await api.jewelry.get('FileExtension/GetStockProductImage', param, {
                 skipLoading: true
               })
-
-              //console.log('STOCK-PRODUCT-IMAGE', res)
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
             }
             break
+        }
+
+        if (base64Data) {
+          this.imageBase64 = base64Data // เก็บ base64 ไว้
+          this.urlImage = `data:image/png;base64,${base64Data}`
+
+          // ถ้า prop emitImage เป็น true หรือมีการรับฟัง event 'image-loaded'
+          // ให้ส่ง emit ข้อมูลรูปภาพกลับไปยัง parent component
+          if (this.emitImage || (this.$listeners && this.$listeners['image-loaded'])) {
+            this.$emit('image-loaded', {
+              base64: base64Data,
+              imageName: this.imageName,
+              path: this.path,
+              type: this.type
+            })
+          }
         }
 
         // ใส่ setTimeout เพื่อแสดง skeleton สักครู่แม้ว่าโหลดเร็ว (ถ้าต้องการ)
@@ -190,9 +183,17 @@ export default {
     }
   },
 
-  async created() {
-    //await this.fetchImageData()
+  onUnmounted() {
+    // ทำความสะอาดข้อมูลเมื่อคอมโพเนนต์ถูกยกเลิกการติดตาม
+    this.urlImage = null
+    this.imageBase64 = null
   }
+
+  //   onDestroyed() {
+  //     // ทำความสะอาดข้อมูลเมื่อคอมโพเนนต์ถูกทำลาย
+  //     this.urlImage = null
+  //     this.imageBase64 = null
+  //   }
 }
 </script>
 

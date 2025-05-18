@@ -48,12 +48,21 @@
             <template #body="slotProps">
               <div class="image-container">
                 <div v-if="slotProps.data.imagePath">
+                  <!-- <imagePreview
+                    :imageName="slotProps.data.imagePath"
+                    :path="slotProps.data.imagePath"
+                    :type="type"
+                    :width="25"
+                    :height="25"
+                  /> -->
                   <imagePreview
                     :imageName="slotProps.data.imagePath"
                     :path="slotProps.data.imagePath"
                     :type="type"
                     :width="25"
                     :height="25"
+                    :emitImage="true"
+                    @image-loaded="handleImageLoaded($event, slotProps.index)"
                   />
                 </div>
               </div>
@@ -245,13 +254,13 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import Calendar from 'primevue/calendar'
 
-import imagePreview from '@/components/prime-vue/ImagePreview.vue'
+import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
-import swAlert from '@/services/alert/sweetAlerts.js'
+//import swAlert from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
 const interfaceForm = {
@@ -405,6 +414,15 @@ export default {
         this.quotationItems.push(data)
       }
     },
+    handleImageLoaded(imageData, index) {
+      // อัปเดตข้อมูลใน quotationItems ด้วยข้อมูลรูปภาพ
+      if (this.quotationItems[index]) {
+        this.quotationItems[index] = {
+          ...this.quotationItems[index],
+          imageBase64: imageData.base64 // เก็บ base64 ไว้ใช้ในการสร้าง PDF
+        }
+      }
+    },
 
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
@@ -421,7 +439,9 @@ export default {
           items: this.quotationItems,
           customer: {
             name: this.customer.name,
-            note: this.customer.remark
+            note: this.customer.remark,
+            discount: this.customer.discount,
+            freight: this.customer.freight
           },
           invoiceDate: this.form.quotationDate,
           filename,

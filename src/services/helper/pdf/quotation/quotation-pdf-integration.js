@@ -38,7 +38,9 @@ export function generateInvoicePdf({
         formattedItems,
         customer.name || '',
         customer.note || customer.remark || '',
-        invoiceDate
+        invoiceDate,
+        customer.freight,
+        customer.discount
       )
 
       invoiceBuilder

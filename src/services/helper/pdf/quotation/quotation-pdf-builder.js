@@ -4,7 +4,7 @@ import { initPdfMake } from '@/services/utils/pdf-make'
 //import logoImage from '@/assets/duangkaew-logo.png'
 
 export class InvoicePdfBuilder {
-  constructor(data, customerName, note, invoiceDate) {
+  constructor(data, customerName, note, invoiceDate, freight, discount) {
     this.data = data // ข้อมูลสินค้า
     this.customerName = customerName || '' // ชื่อลูกค้า
     this.note = note || '' // หมายเหตุ
@@ -17,6 +17,8 @@ export class InvoicePdfBuilder {
       email: 'info@dukaek.com'
     }
     this.invoiceNo = 'INV' + dayjs().format('YYMMDDHHmm')
+    this.freight = Number(freight) || 0 // ค่า freight
+    this.discount = Number(discount) || 0 // ค่า discount
     this.logoBase64 = null // จะถูกตั้งค่าภายหลัง
   }
 
@@ -134,7 +136,7 @@ export class InvoicePdfBuilder {
 
         {
           canvas: [
-            { type: 'line', x1: 0, y1: 2, x2: 555, y2: 2, lineWidth: 1 } // เพิ่มความยาวของเส้น
+            { type: 'line', x1: 0, y1: 2, x2: 575, y2: 2, lineWidth: 1 } // เพิ่มความยาวของเส้น
           ],
           margin: [0, 5, 0, 5]
         },
@@ -221,7 +223,7 @@ export class InvoicePdfBuilder {
 
       // เพิ่มตารางพร้อม total
       if (isLastPage) {
-        // หน้าสุดท้ายมี total, freight, dismount และ grand total
+        // หน้าสุดท้ายมี total, freight, discount และ grand total
         pageContent.push(this.getFinalPageTableContent(pageItems, pageNum, totalPages, pageTotal))
       } else {
         // หน้าอื่นๆ มีเฉพาะ total
@@ -248,7 +250,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [30, '*', '*', '*', '*', '*', 40, 60, 60],
+        widths: [20, 20, '*', '*', '*', '*', '*', 40, 60, 60],
         body: this.buildRegularTableBody(items, pageNum, totalPages, pageTotal)
       },
       layout: {
@@ -262,13 +264,13 @@ export class InvoicePdfBuilder {
     }
   }
 
-  // สร้างตารางพร้อม total, freight, dismount และ grand total สำหรับหน้าสุดท้าย
+  // สร้างตารางพร้อม total, freight, discount และ grand total สำหรับหน้าสุดท้าย
   getFinalPageTableContent(items, pageNum, totalPages, pageTotal) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [30, '*', '*', '*', '*', '*', 40, 60, 60],
+        widths: [20, 20, '*', '*', '*', '*', '*', 40, 60, 60],
         body: this.buildFinalTableBody(items, pageNum, totalPages, pageTotal)
       },
       layout: {
@@ -289,13 +291,14 @@ export class InvoicePdfBuilder {
     // Header with color
     body.push([
       this.setTableHeader('No.'),
+      this.setTableHeader(''),
       this.setTableHeader('Style/Product'),
       this.setTableHeader('Description'),
       this.setTableHeader('Gold'),
       this.setTableHeader('Diamond'),
       this.setTableHeader('Stone'),
       this.setTableHeader('Quantity'),
-      this.setTableHeader('Unit Price (THB)'),
+      this.setTableHeader('Price (THB)'),
       this.setTableHeader('Amount (THB)')
     ])
 
@@ -347,8 +350,15 @@ export class InvoicePdfBuilder {
         })
       }
 
+      console.log('item.imageBase64', item.imageBase64)
+
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
+
+        //product image
+        // product image
+        item.imageBase64 ? this.setTabImageCell(item.imageBase64) : this.setTableCell(''),
+
         this.setTableCell(styleNo),
         this.setTableCell(this.getDescription(item)),
         this.setTableCell(goldTexts.join(', ')),
@@ -360,26 +370,10 @@ export class InvoicePdfBuilder {
       ])
     })
 
-    // เพิ่มแถวว่าง
-    const emptyRowsToAdd = Math.max(0, 10 - items.length)
-
-    for (let i = 0; i < emptyRowsToAdd; i++) {
-      body.push([
-        this.setTableCell(''),
-        this.setTableCell(''),
-        this.setTableCell(''),
-        this.setTableCell(''),
-        this.setTableCell(''),
-        this.setTableCell(''),
-        this.setTableCell(''),
-        this.setTableCell(''),
-        this.setTableCell('')
-      ])
-    }
-
     // เพิ่ม TOTAL row
     body.push([
-      { text: 'TOTAL', style: 'summaryLabelColored', alignment: 'right', colSpan: 7 },
+      { text: 'PAGE TOTAL', style: 'summaryLabelColored', alignment: 'right', colSpan: 8 },
+      {},
       {},
       {},
       {},
@@ -404,10 +398,14 @@ export class InvoicePdfBuilder {
   buildFinalTableBody(items, pageNum, totalPages, pageTotal) {
     const body = this.buildRegularTableBody(items, pageNum, totalPages, pageTotal)
 
-    // เพิ่ม FREIGHT & INSURANCE, DISMOUNT, GRAND TOTAL ในหน้าสุดท้าย
-    // FREIGHT & INSURANCE
+    // เพิ่มแถวที่แสดงคำอ่านของ page total (ก่อนที่จะแสดง TOTAL ทั้งหมด)
     body.push([
-      { text: 'FREIGHT & INSURANCE', style: 'summaryLabel', alignment: 'right', colSpan: 7 },
+      {
+        text: this.convertNumberToWords(pageTotal, true), // ส่งพารามิเตอร์ true เพื่อระบุว่าเป็น page total
+        style: 'totalWordsInTable',
+        alignment: 'right',
+        colSpan: 10
+      },
       {},
       {},
       {},
@@ -415,25 +413,19 @@ export class InvoicePdfBuilder {
       {},
       {},
       {},
-      { text: this.formatPrice(this.totalAmount), style: 'summaryLabel', alignment: 'right' }
+      {},
+      {}
     ])
 
-    // DISMOUNT
+    // เพิ่มแถว TOTAL ใหม่ (รวมทุกหน้า)
     body.push([
-      { text: 'DISMOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 7 },
+      {
+        text: 'TOTAL',
+        style: 'summaryLabelColored',
+        alignment: 'right',
+        colSpan: 8
+      },
       {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      { text: this.formatPrice(this.totalAmount), style: 'summaryLabel', alignment: 'right' }
-    ])
-
-    // GRAND TOTAL
-    body.push([
-      { text: 'GRAND TOTAL', style: 'summaryLabelColored', alignment: 'right', colSpan: 7 },
       {},
       {},
       {},
@@ -452,15 +444,71 @@ export class InvoicePdfBuilder {
       }
     ])
 
+    // เพิ่ม FREIGHT & INSURANCE
+    body.push([
+      { text: 'FREIGHT & INSURANCE', style: 'summaryLabel', alignment: 'right', colSpan: 8 },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      { text: this.formatPrice(this.freight), style: 'summaryLabel', alignment: 'right' },
+      { text: this.formatPrice(this.freight), style: 'summaryLabel', alignment: 'right' }
+    ])
+
+    // เพิ่ม DISMOUNT
+    body.push([
+      { text: 'DISCOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 8 },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      { text: this.formatPrice(this.discount), style: 'summaryLabel', alignment: 'right' },
+      { text: this.formatPrice(this.discount), style: 'summaryLabel', alignment: 'right' }
+    ])
+
+    // คำนวณ GRAND TOTAL = total + freight - discount
+    const grandTotal = this.totalAmount + this.freight - this.discount
+
+    // GRAND TOTAL
+    body.push([
+      { text: 'GRAND TOTAL', style: 'summaryLabelColored', alignment: 'right', colSpan: 8 },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {
+        text: this.formatPrice(grandTotal),
+        style: 'summaryLabelColored',
+        alignment: 'right'
+      },
+      {
+        text: this.formatPrice(grandTotal),
+        style: 'summaryLabelColored',
+        alignment: 'right'
+      }
+    ])
+
     return body
   }
 
   getSummarySection() {
+    // คำนวณ grand total
+    const grandTotal = this.totalAmount + this.freight - this.discount
+
     return [
       // ส่วนแสดงจำนวนเงินเป็นตัวอักษรและข้อความเพิ่มเติม
       {
         alignment: 'right',
-        text: this.convertNumberToWords(this.totalAmount),
+        text: this.convertNumberToWords(grandTotal),
         style: 'totalWords',
         margin: [0, 5, 0, 5]
       },
@@ -627,7 +675,7 @@ export class InvoicePdfBuilder {
 
       // DISMOUNT
       body.push([
-        { text: 'DISMOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 7 },
+        { text: 'DISCOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 7 },
         {},
         {},
         {},
@@ -725,7 +773,7 @@ export class InvoicePdfBuilder {
             { text: this.formatPrice(this.totalAmount), style: 'summaryLabel', alignment: 'right' }
           ],
           [
-            { text: 'DISMOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 7 },
+            { text: 'DISCOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 7 },
             {},
             {},
             {},
@@ -802,17 +850,13 @@ export class InvoicePdfBuilder {
     }
   }
 
-  convertNumberToWords(number) {
-    // แปลงตัวเลขเป็นคำอ่านภาษาอังกฤษ (ตัวอย่างเท่านั้น)
-    const formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'THB',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+  convertNumberToWords(number, isPageTotal = false) {
+    // ถ้าเป็น isPageTotal ให้ใช้ number ที่ส่งมาเลย ไม่ต้องคำนวณ grand total
+    const amountToConvert = isPageTotal ? number : this.totalAmount + this.freight - this.discount
 
-    const formattedAmount = formatter.format(number)
-    const numInWords = 'THAI BAHT ' + this.numberToWords(Math.floor(number)) + ' ONLY'
+    // แปลงตัวเลขเป็นคำอ่านภาษาอังกฤษ
+    const prefix = isPageTotal ? 'THAI BAHT ' : 'THAI BAHT '
+    const numInWords = prefix + this.numberToWords(Math.floor(amountToConvert)) + ' ONLY'
     return numInWords
   }
 
@@ -921,7 +965,29 @@ export class InvoicePdfBuilder {
   setTableCell(text) {
     return {
       text: text,
-      fontSize: 10,
+      fontSize: 11,
+      margin: [2, 5, 2, 5]
+    }
+  }
+
+  setTabImageCell(imageBase64) {
+    if (!imageBase64) {
+      return {
+        text: '',
+        margin: [2, 5, 2, 5]
+      }
+    }
+
+    // ตรวจสอบว่า imageBase64 มี prefix data:image แล้วหรือไม่
+    const imageData = imageBase64.startsWith('data:image')
+      ? imageBase64
+      : `data:image/png;base64,${imageBase64}`
+
+    return {
+      image: imageData,
+      width: 25, // ปรับขนาดให้เล็กลงเพื่อให้พอดีกับเซลล์
+      height: 25,
+      alignment: 'center',
       margin: [2, 5, 2, 5]
     }
   }
@@ -929,7 +995,7 @@ export class InvoicePdfBuilder {
   setTableCellRight(text) {
     return {
       text: text,
-      fontSize: 10,
+      fontSize: 12,
       alignment: 'right',
       margin: [2, 5, 2, 5]
     }
@@ -939,7 +1005,7 @@ export class InvoicePdfBuilder {
     return {
       text: text,
       bold: true,
-      fontSize: 10,
+      fontSize: 12,
       alignment: 'right',
       fillColor: '#8B0000', // สีแดงเข้ม (Maroon)
       color: 'white',
@@ -958,7 +1024,7 @@ export class InvoicePdfBuilder {
   getDocDefinition() {
     return {
       pageSize: 'A4',
-      pageMargins: [20, 20, 20, 40], // เพิ่ม margin ล่างเพื่อรองรับเลขหน้า
+      pageMargins: [10, 10, 10, 40], // เพิ่ม margin ล่างเพื่อรองรับเลขหน้า
 
       content: [this.getHeaderContent(), ...this.createPages()],
 
@@ -973,7 +1039,7 @@ export class InvoicePdfBuilder {
 
       defaultStyle: {
         font: 'THSarabunNew',
-        fontSize: 10
+        fontSize: 13
       },
 
       styles: {
@@ -983,14 +1049,15 @@ export class InvoicePdfBuilder {
           margin: [0, 0, 0, 2]
         },
         companyName: {
-          fontSize: 14,
+          fontSize: 16,
           bold: true,
           color: '#8B0000', // สีแดงเข้ม
-          margin: [0, 0, 0, 1]
+          margin: [0, 0, 0, 0]
         },
         companyInfo: {
           fontSize: 10,
-          margin: [0, 0, 0, 1]
+          bold: true,
+          margin: [0, 0, 0, 0]
         },
         invoiceTitle: {
           fontSize: 22, // ปรับขนาดตัวอักษรให้ใหญ่ขึ้น
@@ -1020,7 +1087,7 @@ export class InvoicePdfBuilder {
           color: '#000000'
         },
         summaryLabel: {
-          fontSize: 10,
+          fontSize: 12,
           bold: true
         },
         summaryValue: {
@@ -1028,7 +1095,7 @@ export class InvoicePdfBuilder {
           bold: true
         },
         summaryLabelColored: {
-          fontSize: 10,
+          fontSize: 12,
           bold: true,
           color: 'white', // สีตัวอักษรขาว
           fillColor: '#8B0000' // สีพื้นหลังแดงเข้ม
@@ -1052,6 +1119,12 @@ export class InvoicePdfBuilder {
         },
         receivedByText: {
           fontSize: 9
+        },
+        totalWordsInTable: {
+          fontSize: 10,
+          bold: true,
+          margin: [0, 0, 0, 10]
+          //color: '#444444' // สีเทาเข้ม เพื่อให้ดูเป็นข้อความรอง
         }
       }
     }
