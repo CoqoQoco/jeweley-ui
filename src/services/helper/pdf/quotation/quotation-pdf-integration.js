@@ -40,7 +40,8 @@ export function generateInvoicePdf({
         customer.note || customer.remark || '',
         invoiceDate,
         customer.freight,
-        customer.discount
+        customer.discount,
+        customer.invoiceNumber
       )
 
       invoiceBuilder

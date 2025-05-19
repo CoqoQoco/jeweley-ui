@@ -153,6 +153,33 @@
               </column>
             </Row>
 
+            <!-- freight -->
+            <Row>
+              <column :colspan="10">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>Freight & Insurance</span>
+                  </div>
+                </template>
+              </column>
+              <column :colspan="1">
+                <template #footer>
+                  <div class="qty-container">
+                    <input
+                      style="background-color: #b5dad4"
+                      v-model="customer.freight"
+                      type="number"
+                      class="form-control text-right"
+                      step="any"
+                      min="0"
+                      required
+                      @blur="onBlueFreight(customer.freight)"
+                    />
+                  </div>
+                </template>
+              </column>
+            </Row>
+
             <!-- discount -->
             <Row>
               <column :colspan="10">
@@ -215,12 +242,19 @@
               />
             </div>
 
-            <div></div>
+            <div>
+              <span class="title-text">เลขที่ใบเสนอราคา</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="customer.invoiceNumber"
+              />
+            </div>
             <div></div>
             <div></div>
           </div>
 
-          <div class="form-col-container mt-1">
+          <div class="form-col-container mt-2">
             <div>
               <span class="title-text">ชื่อลูกค้า</span>
               <input :class="['form-control bg-input']" type="text" v-model.trim="customer.name" />
@@ -236,7 +270,7 @@
             </div>
           </div>
 
-          <div class="center-container mt-2">
+          <div class="right-container mt-2">
             <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
               <span>สร้างใบเสนอราคา</span>
             </button>
@@ -265,8 +299,10 @@ import dayjs from 'dayjs'
 
 const interfaceForm = {
   discount: 0,
+  freight: 0,
   quotationDate: new Date(),
-  name: null
+  name: null,
+  invoiceNumber: null
 }
 export default {
   name: 'QuotationView',
@@ -338,7 +374,13 @@ export default {
         return total + Number(item.price)
       }, 0)
 
-      return (sum - this.customer.discount).toFixed(2) // แสดงผลเป็นทศนิยม 2 ตำแหน่ง
+      
+      var freight = this.customer.freight ? Number(this.customer.freight) : 0
+      let sumFreight = sum + freight
+      var discount = this.customer.discount ? Number(this.customer.discount) : 0
+      
+      console.log('calTotalPriceAfterDiscount', sum, freight, discount)
+      return (sumFreight - discount).toFixed(2) // แสดงผลเป็นทศนิยม 2 ตำแหน่ง
     },
 
     getGroupName(id) {
@@ -385,8 +427,13 @@ export default {
     },
     onBlueDiscount(discount) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBluePrice discount', discount)
+      //console.log('onBluePrice discount', discount)
       this.customer.discount = discount ? Number(discount).toFixed(2) : 0
+    },
+    onBlueFreight(freight) {
+      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
+      //console.log('onBluePrice freight', freight)
+      this.customer.freight = freight ? Number(freight).toFixed(2) : 0
     },
     // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้มีลูกน้ำและทศนิยม 2 ตำแหน่ง
     formatPrice(price) {
@@ -441,7 +488,8 @@ export default {
             name: this.customer.name,
             note: this.customer.remark,
             discount: this.customer.discount,
-            freight: this.customer.freight
+            freight: this.customer.freight,
+            invoiceNumber: this.customer.invoiceNumber
           },
           invoiceDate: this.form.quotationDate,
           filename,
