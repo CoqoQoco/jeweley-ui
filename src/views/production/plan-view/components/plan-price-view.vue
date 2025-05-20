@@ -229,6 +229,7 @@ import Papa from 'papaparse'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
+import { findLastKey } from 'lodash'
 
 const pricePDF = defineAsyncComponent(() =>
   import('@/components/pdf-make/FilePDFProductionPlanPrice.vue')
@@ -299,8 +300,9 @@ export default {
       return date ? formatDate(date) : ''
     },
     checkBtn(action) {
+      //const disStatus = [100, 500]
       const disStatus = [100, 500]
-      const allowPrice = [95, 94]
+      const allowPrice = [95, 94, 100]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
           case 'print':
@@ -320,7 +322,11 @@ export default {
             return true
         }
       } else {
-        return true
+        if (action === 'add') {
+          return false
+        } else {
+          return true
+        }
       }
     },
     exportWithCustomColumnCSV(data, filename) {
