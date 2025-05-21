@@ -379,7 +379,6 @@ export default {
       let sumFreight = sum + freight
       var discount = this.customer.discount ? Number(this.customer.discount) : 0
       
-      console.log('calTotalPriceAfterDiscount', sum, freight, discount)
       return (sumFreight - discount).toFixed(2) // แสดงผลเป็นทศนิยม 2 ตำแหน่ง
     },
 
@@ -410,8 +409,6 @@ export default {
     },
     onBluePrice(item, index, fieldName) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBluePrice' + fieldName, item, index)
-
       let newCal = {
         ...item,
         [fieldName]: item[fieldName] ? Number(item[fieldName]).toFixed(2) : 0,
@@ -427,12 +424,10 @@ export default {
     },
     onBlueDiscount(discount) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      //console.log('onBluePrice discount', discount)
       this.customer.discount = discount ? Number(discount).toFixed(2) : 0
     },
     onBlueFreight(freight) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      //console.log('onBluePrice freight', freight)
       this.customer.freight = freight ? Number(freight).toFixed(2) : 0
     },
     // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้มีลูกน้ำและทศนิยม 2 ตำแหน่ง
@@ -448,7 +443,6 @@ export default {
 
     async fetchGetData() {
       var data = await this.productStore.fetchDataGet({ formValue: this.form })
-      console.log('fetchGetData', data)
 
       if (data) {
         data = {
@@ -499,8 +493,6 @@ export default {
         // แสดงข้อความสำเร็จ
       } catch (error) {
         // แสดงข้อความผิดพลาด
-
-        console.error('PDF generation error:', error)
       }
     }
   }
