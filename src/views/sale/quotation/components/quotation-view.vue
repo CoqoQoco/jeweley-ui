@@ -755,13 +755,7 @@ export default {
 
         await generateInvoicePdf({
           items: this.customer.quotationItems,
-          customer: {
-            name: this.customer.name,
-            note: this.customer.remark,
-            discount: this.customer.discount,
-            freight: this.customer.freight,
-            invoiceNumber: this.customer.invoiceNumber
-          },
+          customer: this.customer, // ส่ง customer object ทั้งก้อน
           invoiceDate: this.form.quotationDate,
           filename,
           openInNewTab: true // เปิดในแท็บใหม่

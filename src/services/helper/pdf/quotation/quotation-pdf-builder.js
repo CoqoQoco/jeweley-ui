@@ -1,6 +1,7 @@
 //import { formatDate } from '@/services/utils/dayjs'
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { matchedRouteKey } from 'vue-router'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -18,10 +19,10 @@ export class InvoicePdfBuilder {
     this.invoiceDate = invoiceDate || dayjs().format('YYYY-MM-DD')
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '206/19 Rama 9 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
-      phone: '(+662) 6730580-4',
-      fax: 'FAX: (+662) 6-271-4614',
-      email: 'info@dukaek.com'
+      address: '200/16 Rama 6 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
+      phone: '(+662) 6196601-4',
+      fax: 'FAX: (+662) 2710834',
+      email: 'admin@dkbangkok.com'
     }
     this.invoiceNo = invoiceNo
     this.freight = Number(freight) || 0
@@ -83,142 +84,223 @@ export class InvoicePdfBuilder {
   getHeaderContent() {
     return {
       stack: [
+        // --- Main Header with dark blue background and green accent ---
         {
+          margin: [-10, -10, -10, 0], // ขยายให้เต็มความกว้าง
+          table: {
+            widths: ['70%', '30%'],
+            body: [
+              [
+                {
+                  // Left side - Company info with dark blue background
+                  fillColor: '#e0e0e0',
+                  stack: [
+                    {
+                      columns: [
+                        this.logoBase64
+                          ? {
+                              image: this.logoBase64,
+                              width: 35,
+                              height: 35,
+                              margin: [15, 10, 10, 0]
+                            }
+                          : {
+                              text: 'LOGO',
+                              fontSize: 14,
+                              color: 'white',
+                              margin: [15, 20, 10, 0]
+                            },
+                        {
+                          stack: [
+                            {
+                              text: 'Duang Kaew Jewelry',
+                              fontSize: 30,
+                              bold: true,
+                              color: '#8B0000',
+                              margin: [25, 5, 0, 0]
+                            },
+                            {
+                              text: 'The first step is always the hardest',
+                              fontSize: 12,
+                              color: '#8B0000',
+                              margin: [25, -10, 0, 0]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  // Right side - Invoice title with green background
+                  //fillColor: '#7CB342', // สีเขียว
+                  stack: [
+                    {
+                      text: 'QUOTATION',
+                      fontSize: 20,
+                      bold: true,
+                      color: '#393939',
+                      alignment: 'center',
+                      margin: [0, 10, 0, 0]
+                    },
+                    {
+                      columns: [
+                        {
+                          text: 'No.:',
+                          fontSize: 9,
+                          color: '#393939',
+                          alignment: 'right',
+                          width: '45%'
+                        },
+                        {
+                          text: this.invoiceNo || '',
+                          fontSize: 10,
+                          bold: true,
+                          color: '#8B0000',
+                          alignment: 'left',
+                          width: '55%',
+                          margin: [5, 0, 0, 0]
+                        }
+                      ]
+                    },
+                    {
+                      columns: [
+                        {
+                          text: 'Date:',
+                          fontSize: 9,
+                          color: '#393939',
+                          alignment: 'right',
+                          width: '45%'
+                        },
+                        {
+                          text: dayjs(this.invoiceDate).format('MMM DD, YYYY'),
+                          fontSize: 10,
+                          bold: true,
+                          color: '#8B0000',
+                          alignment: 'left',
+                          width: '55%',
+                          margin: [5, 0, 0, 0]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          layout: 'noBorders'
+        },
+
+        {
+          margin: [0, 0, 0, 5],
+          canvas: [
+            {
+              type: 'line',
+              x1: 0,
+              y1: 0,
+              x2: 575,
+              y2: 0,
+              lineWidth: 2,
+              lineColor: '#E0E0E0'
+            }
+          ]
+        },
+
+        // --- Company details and Consigned To section ---
+        {
+          margin: [0, 0, 0, 0],
           columns: [
             {
-              width: '65%',
+              width: '50%',
               stack: [
+                // Company Address
                 {
-                  columns: [
-                    this.logoBase64
-                      ? {
-                          image: this.logoBase64,
-                          width: 25,
-                          height: 20,
-                          margin: [0, 0, 0, 0]
-                        }
-                      : { text: '', width: 25 }, // เพิ่ม fallback เมื่อไม่มีโลโก้
-                    {
-                      width: '*',
-                      text: this.companyInfo.name,
-                      style: 'companyName',
-                      margin: [10, 0, 0, 0]
-                    }
-                  ],
-                  margin: [0, 0, 0, 10]
+                  text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
+                  fontSize: 14,
+                  bold: true,
+                  color: '#8B0000',
+                  margin: [0, 0, 0, 0]
                 },
-                { text: this.companyInfo.address, style: 'companyInfo' },
-                { text: 'TEL: ' + this.companyInfo.phone, style: 'companyInfo' },
-                { text: 'E-Mail: ' + this.companyInfo.email, style: 'companyInfo' }
+                {
+                  text: this.companyInfo.address || '',
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'TEL: ' + (this.companyInfo.phone || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'FAX: ' + (this.companyInfo.fax || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'E-Mail: ' + (this.companyInfo.email || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                }
               ]
             },
             {
-              width: '35%',
-              alignment: 'right',
+              width: '50%',
               stack: [
                 {
-                  table: {
-                    widths: [100],
-                    heights: [30],
-                    body: [
-                      [
-                        {
-                          text: 'INVOICE',
-                          style: 'invoiceTitle',
-                          fillColor: '#8B0000',
-                          color: 'white',
-                          alignment: 'center'
-                        }
-                      ]
-                    ]
-                  },
-                  layout: {
-                    hLineWidth: function () {
-                      return 0
-                    },
-                    vLineWidth: function () {
-                      return 0
-                    },
-                    paddingLeft: function () {
-                      return 0
-                    },
-                    paddingRight: function () {
-                      return 0
-                    },
-                    paddingTop: function () {
-                      return 0
-                    },
-                    paddingBottom: function () {
-                      return 0
-                    }
-                  },
-                  margin: [90, 10, 0, 0]
-                }
+                  text: `Consigned To: ${this.customer.name || ''}`,
+                  fontSize: 14,
+                  bold: true,
+                  color: '#8B0000',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: this.customer.address || '',
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'TEl: ' + (this.customer.tel || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 10, color: '#393939' }
               ]
             }
           ]
         },
-        {
-          canvas: [{ type: 'line', x1: 0, y1: 2, x2: 575, y2: 2, lineWidth: 1 }],
-          margin: [0, 5, 0, 5]
-        },
-        {
-          columns: [
-            {
-              width: '80%',
-              stack: [
-                { text: 'Consigned to: ' + (this.customer.name || ''), style: 'customerInfo' },
-                this.customer.address
-                  ? { text: 'Address: ' + this.customer.address, style: 'customerInfo' }
-                  : { text: '', margin: [0, 0, 0, 0] }, // เพิ่ม fallback
-                this.customer.tel
-                  ? { text: 'Tel: ' + this.customer.tel, style: 'customerInfo' }
-                  : { text: '', margin: [0, 0, 0, 0] }, // เพิ่ม fallback
-                this.customer.email
-                  ? { text: 'Email: ' + this.customer.email, style: 'customerInfo' }
-                  : { text: '', margin: [0, 0, 0, 0] }, // เพิ่ม fallback
-                this.customer.remark
-                  ? { text: 'Note: ' + this.customer.remark, style: 'noteText' }
-                  : { text: '', margin: [0, 0, 0, 0] } // เพิ่ม fallback
-              ]
-            },
-            {
-              width: '20%',
-              stack: [
-                {
-                  columns: [
-                    {
-                      text: 'Invoice No.',
-                      width: '40%',
-                      alignment: 'left',
-                      style: 'invoiceInfoLabel'
-                    },
-                    {
-                      text: this.invoiceNo || '', // เพิ่ม fallback
-                      width: '60%',
-                      alignment: 'right',
-                      style: 'invoiceInfoValue'
-                    }
-                  ]
-                },
-                {
-                  columns: [
-                    { text: 'Date', width: '30%', alignment: 'left', style: 'invoiceInfoLabel' },
-                    {
-                      text: dayjs(this.invoiceDate).format('DD/MM/YYYY'),
-                      width: '70%',
-                      alignment: 'right',
-                      style: 'invoiceInfoValue'
-                    }
-                  ]
-                }
-              ],
-              alignment: 'right'
+
+        // --- Note section if exists ---
+        this.customer.remark
+          ? {
+              margin: [0, 5, 0, 0],
+              text: 'Note: ' + this.customer.remark,
+              fontSize: 10,
+              color: '#0000FF'
             }
-          ],
-          margin: [0, 0, 0, 10]
+          : null,
+
+        // --- Horizontal line separator ---
+        {
+          margin: [0, 5, 0, 5],
+          canvas: [
+            {
+              type: 'line',
+              x1: 0,
+              y1: 0,
+              x2: 575,
+              y2: 0,
+              lineWidth: 2,
+              lineColor: '#E0E0E0'
+            }
+          ]
         }
-      ]
+      ].filter(Boolean) // กรอง null values ออก
     }
   }
 
@@ -600,6 +682,25 @@ export class InvoicePdfBuilder {
   }
 
   getSummarySection() {
+    // Calculate net weight like sumNetWeight in quotation-view.vue
+    let gold = 0
+    let diamond = 0
+    let gem = 0
+    if (this.data && Array.isArray(this.data)) {
+      this.data.forEach((item) => {
+        if (item.materials) {
+          item.materials.forEach((m) => {
+            if (m.type === 'Gold') gold += Number(m.weight) || 0
+            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
+            if (m.type === 'Gem') gem += Number(m.weight) || 0
+          })
+        }
+      })
+    }
+    const net = (diamond + gem) / 5 + gold
+    const netWeightText = `${
+      net ? net.toFixed(2) : (0).toFixed(2)
+    } NET WEIGHT OF MERCHANDISES (gms.)`
     return [
       {
         columns: [
@@ -607,22 +708,33 @@ export class InvoicePdfBuilder {
             stack: [
               { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left' },
               {
-                text: 'WE CERTIFY THAT THIS INVOICE TRUE AND CORRECT.',
-                style: 'certifyText',
-                alignment: 'left'
+                columns: [
+                  {
+                    text: 'WE CERTIFY THAT THIS INVOICE TRUE AND CORRECT.',
+                    style: 'certifyText',
+                    width: '80%',
+                    alignment: 'left'
+                  },
+                  { text: '_________________________', width: '20%', style: 'receivedByText' }
+                ]
               },
               {
                 columns: [
-                  { text: '1.020 NET WEIGHT OF MERCHANDISES', width: '50%', style: 'weightText' },
-                  { text: 'MADE IN THAILAND', width: '30%', style: 'madeInText' },
-                  { text: 'Goods Received By', width: '20%', style: 'receivedByText' }
+                  { text: netWeightText, width: '50%', style: 'weightText' },
+                  { text: 'ORIGIN THAILAND', width: '30%', style: 'madeInText' },
+                  {
+                    text: 'Signature:',
+                    width: '20%',
+                    style: 'receivedByText',
+                    margin: [25, 0, 0, 0]
+                  }
                 ]
               }
             ],
             width: '90%'
           }
         ],
-        margin: [0, 10, 0, 0],
+        margin: [0, 15, 0, 0],
         pageBreakBefore: false
       }
     ]
@@ -642,8 +754,8 @@ export class InvoicePdfBuilder {
   }
 
   convertNumberToWords(number) {
-    const prefix = 'THAI BAHT '
-    const numInWords = prefix + this.numberToWords(Math.floor(number)) + ' ONLY'
+    const prefix = this.customer.currencyUnit ? `(${this.customer.currencyUnit})` : ''
+    const numInWords = prefix + ' ' + this.numberToWords(Math.floor(number)) + ' ONLY'
     return numInWords
   }
 
@@ -761,7 +873,7 @@ export class InvoicePdfBuilder {
     if (!imageBase64) {
       return {
         text: '',
-        alignment: 'center',
+        alignment: 'center'
         //margin: [5, 5, 5, 5]
       }
     }

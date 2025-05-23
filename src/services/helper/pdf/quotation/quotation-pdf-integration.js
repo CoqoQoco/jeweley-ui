@@ -36,15 +36,13 @@ export function generateInvoicePdf({
       // สร้าง instance ของ InvoicePdfBuilder
       const invoiceBuilder = new InvoicePdfBuilder(
         formattedItems,
-        customer.name || '',
-        customer.note || customer.remark || '',
+        customer, // Pass the full customer object
         invoiceDate,
         customer.freight,
         customer.discount,
         customer.invoiceNumber,
-        customer.currencyUnit, // เพิ่มรับค่า currencyUnit
-        customer.currencyMultiplier, // เพิ่มรับค่า currencyMultiplier
-        customer // ส่งอ็อบเจกต์ customer ทั้งหมด (address, tel, email, ...)
+        customer.currencyUnit, // currency unit
+        customer.currencyMultiplier // currency multiplier
       )
 
       invoiceBuilder
