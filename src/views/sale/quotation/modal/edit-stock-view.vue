@@ -1,13 +1,13 @@
 <template>
   <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="1200px">
+    <modal :showModal="isShowModal" @closeModal="closeModal" width="1300px">
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span><i class="bi bi-brush mr-2"></i></span>
           <span>{{ `เเก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
         </div>
 
-        <form @submit.prevent="onSubmit" class="p-2">
+        <form @submit.prevent="onSubmit" class="mt-2">
           <!-- image -->
           <div class="form-col-container">
             <div v-if="imageStage === 'SHOW'" class="image-container">
@@ -1080,7 +1080,7 @@ input {
 }
 
 .data-container {
-  padding: 0px 100px;
+  padding: 0px 20px;
 }
 
 .gem-container {
