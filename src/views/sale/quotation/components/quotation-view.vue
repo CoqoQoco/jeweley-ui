@@ -792,22 +792,18 @@ export default {
       return date ? formatDate(date) : ''
     },
 
-    async printInvoice() {
-      try {
-        const filename = `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
-
-        await generateInvoicePdf({
-          items: this.customer.quotationItems,
-          customer: this.customer, // ส่ง customer object ทั้งก้อน
-          invoiceDate: this.form.quotationDate,
-          filename,
-          openInNewTab: true // เปิดในแท็บใหม่
-        })
-
-        // แสดงข้อความสำเร็จ
-      } catch (error) {
-        // แสดงข้อความผิดพลาด
-      }
+    printInvoice() {
+      const filename = `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
+      // Only generate the main PDF, which now includes the breakdown section
+      const win1 = window.open('', '_blank')
+      generateInvoicePdf({
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        invoiceDate: this.form.quotationDate,
+        filename,
+        openInNewTab: true,
+        targetWindow: win1
+      })
     },
     onEditStock(item, index) {
       this.modelEditStock = JSON.parse(JSON.stringify(item))

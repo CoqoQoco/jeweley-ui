@@ -2,7 +2,6 @@
 
 // นำเข้า InvoicePdfBuilder
 import { InvoicePdfBuilder } from '@/services/helper/pdf/quotation/quotation-pdf-builder.js'
-import dayjs from 'dayjs'
 
 /**
  * สร้าง PDF ใบกำกับสินค้า/ใบแจ้งหนี้จากข้อมูลในคอมโพเนนต์
@@ -13,6 +12,7 @@ import dayjs from 'dayjs'
  * @param {Date|String} options.invoiceDate วันที่ออกใบกำกับ
  * @param {String} options.filename ชื่อไฟล์ PDF (ถ้าไม่ระบุจะเป็น 'invoice.pdf')
  * @param {Boolean} options.openInNewTab เปิดในแท็บใหม่หรือไม่ (true = เปิดในแท็บใหม่, false = ดาวน์โหลด)
+ * @param {Object} options.targetWindow เป้าหมายสำหรับเปิดแท็บใหม่ (ใช้สำหรับการหลีกเลี่ยง browser block)
  * @returns {Promise} Promise ที่จะ resolve เมื่อสร้าง PDF เสร็จสิ้น
  */
 export function generateInvoicePdf({
@@ -20,7 +20,8 @@ export function generateInvoicePdf({
   customer,
   invoiceDate,
   filename = 'invoice.pdf',
-  openInNewTab = false
+  openInNewTab = false,
+  targetWindow = null
 }) {
   return new Promise((resolve, reject) => {
     try {
@@ -48,16 +49,34 @@ export function generateInvoicePdf({
       invoiceBuilder
         .generatePDF()
         .then((pdf) => {
-          if (openInNewTab) {
+          if (openInNewTab && targetWindow) {
+            // เปิด PDF invoice แล้วรอ 1 วินาที ก่อนจะ resolve เพื่อให้มีเวลาสำหรับเปิด breakdown ต่อ
+            pdf.getBlob((blob) => {
+              const url = URL.createObjectURL(blob)
+              targetWindow.location.href = url
+              setTimeout(() => {
+                resolve({
+                  success: true,
+                  message: openInNewTab ? 'เปิดใบกำกับสินค้าสำเร็จ' : 'สร้างใบกำกับสินค้าสำเร็จ'
+                })
+              }, 1000)
+            })
+            return // ป้องกัน resolve ซ้ำ
+          } else if (openInNewTab) {
             pdf.open()
+            resolve({
+              success: true,
+              message: 'เปิดใบกำกับสินค้าสำเร็จ'
+            })
+            return
           } else {
             pdf.download(filename)
+            resolve({
+              success: true,
+              message: 'สร้างใบกำกับสินค้าสำเร็จ'
+            })
+            return
           }
-
-          resolve({
-            success: true,
-            message: openInNewTab ? 'เปิดใบกำกับสินค้าสำเร็จ' : 'สร้างใบกำกับสินค้าสำเร็จ'
-          })
         })
         .catch((error) => {
           console.error('Error in PDF generation:', error)

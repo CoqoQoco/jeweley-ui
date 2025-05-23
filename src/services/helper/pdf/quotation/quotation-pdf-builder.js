@@ -1,7 +1,6 @@
 //import { formatDate } from '@/services/utils/dayjs'
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { matchedRouteKey } from 'vue-router'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -681,6 +680,324 @@ export class InvoicePdfBuilder {
     return body
   }
 
+  // --- BREAKDOWN SECTION ---
+  getBreakdownSection() {
+    // ใช้ header เหมือน quotation แต่เปลี่ยน title เป็น BREAKDOWN
+    const breakdownHeader = {
+      stack: [
+        {
+          margin: [-10, -10, -10, 0],
+          table: {
+            widths: ['70%', '30%'],
+            body: [
+              [
+                {
+                  fillColor: '#e0e0e0',
+                  stack: [
+                    {
+                      columns: [
+                        this.logoBase64
+                          ? {
+                              image: this.logoBase64,
+                              width: 35,
+                              height: 35,
+                              margin: [15, 10, 10, 0]
+                            }
+                          : {
+                              text: 'LOGO',
+                              fontSize: 14,
+                              color: 'white',
+                              margin: [15, 20, 10, 0]
+                            },
+                        {
+                          stack: [
+                            {
+                              text: 'Duang Kaew Jewelry',
+                              fontSize: 30,
+                              bold: true,
+                              color: '#8B0000',
+                              margin: [25, 5, 0, 0]
+                            },
+                            {
+                              text: 'The first step is always the hardest',
+                              fontSize: 12,
+                              color: '#8B0000',
+                              margin: [25, -10, 0, 0]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  stack: [
+                    {
+                      text: 'BREAKDOWN',
+                      fontSize: 20,
+                      color: '#393939',
+                      alignment: 'center',
+                      margin: [0, 10, 0, 0]
+                    },
+                    {
+                      columns: [
+                        {
+                          text: 'No.:',
+                          fontSize: 9,
+                          color: '#393939',
+                          alignment: 'right',
+                          width: '45%'
+                        },
+                        {
+                          text: this.invoiceNo || '',
+                          fontSize: 12,
+                          bold: true,
+                          color: '#8B0000',
+                          alignment: 'left',
+                          width: '55%',
+                          margin: [5, 0, 0, 0]
+                        }
+                      ]
+                    },
+                    {
+                      columns: [
+                        {
+                          text: 'Date:',
+                          fontSize: 9,
+                          color: '#393939',
+                          alignment: 'right',
+                          width: '45%'
+                        },
+                        {
+                          text: dayjs(this.invoiceDate).format('MMM DD, YYYY'),
+                          fontSize: 12,
+                          bold: true,
+                          color: '#8B0000',
+                          alignment: 'left',
+                          width: '55%',
+                          margin: [5, 0, 0, 0]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          layout: 'noBorders'
+        },
+        {
+          margin: [0, 0, 0, 5],
+          canvas: [
+            {
+              type: 'line',
+              x1: 0,
+              y1: 0,
+              x2: 575,
+              y2: 0,
+              lineWidth: 2,
+              lineColor: '#E0E0E0'
+            }
+          ]
+        },
+        {
+          margin: [0, 0, 0, 0],
+          columns: [
+            {
+              width: '50%',
+              stack: [
+                {
+                  text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
+                  fontSize: 14,
+                  bold: true,
+                  color: '#8B0000',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: this.companyInfo.address || '',
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'TEL: ' + (this.companyInfo.phone || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'FAX: ' + (this.companyInfo.fax || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'E-Mail: ' + (this.companyInfo.email || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                }
+              ]
+            },
+            {
+              width: '50%',
+              stack: [
+                {
+                  text: `Consigned To: ${this.customer.name || ''}`,
+                  fontSize: 14,
+                  bold: true,
+                  color: '#8B0000',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: this.customer.address || '',
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                {
+                  text: 'TEl: ' + (this.customer.tel || ''),
+                  fontSize: 10,
+                  color: '#393939',
+                  margin: [0, 0, 0, 0]
+                },
+                { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 10, color: '#393939' }
+              ]
+            }
+          ]
+        },
+        this.customer.remark
+          ? {
+              margin: [0, 5, 0, 0],
+              text: 'Note: ' + this.customer.remark,
+              fontSize: 10,
+              color: '#0000FF'
+            }
+          : null,
+        {
+          margin: [0, 5, 0, 5],
+          canvas: [
+            {
+              type: 'line',
+              x1: 0,
+              y1: 0,
+              x2: 575,
+              y2: 0,
+              lineWidth: 2,
+              lineColor: '#E0E0E0'
+            }
+          ]
+        }
+      ].filter(Boolean)
+    }
+
+    // Table header (No., Style/Product, Type, Description, Qty, Weight, Cost/pc)
+    const tableHeader = [
+      { text: 'No.', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Style/Product', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Type', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Description', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Qty', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Weight', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Cost/pc', style: 'summaryLabelColored', alignment: 'center' }
+    ]
+
+    const body = [tableHeader]
+    let rowIndex = 1
+    const typeList = [
+      { key: 'gold', label: 'Gold' },
+      { key: 'setting', label: 'Setting' },
+      { key: 'labor', label: 'Labor' },
+      { key: 'etc', label: 'Etc' }
+    ]
+    ;(this.data || []).forEach((item) => {
+      const planQty = Number(item.planQty || item.qty || 1)
+      const priceTransactions = Array.isArray(item.priceTransactions) ? item.priceTransactions : []
+      // Map nameGroup to typeKey
+      const typeMap = {
+        gold: 'gold',
+        embed: 'setting',
+        worker: 'labor'
+      }
+      // Collect sum by type (except gem)
+      const sumByType = { gold: 0, setting: 0, labor: 0, etc: 0 }
+      priceTransactions.forEach((t) => {
+        const group = (t.nameGroup || '').toLowerCase()
+        let typeKey =
+          typeMap[group] || (['gold', 'setting', 'labor'].includes(group) ? group : 'etc')
+        if (typeKey !== 'etc' && group !== 'gem') {
+          sumByType[typeKey] += Number(t.totalPrice || t.price || 0)
+        }
+      })
+      // รวม gold weight
+      let goldWeight = 0
+      if (item.materials && Array.isArray(item.materials)) {
+        item.materials.forEach((m) => {
+          if (m.type === 'Gold') goldWeight += Number(m.weight) || 0
+        })
+      }
+      // Always show all types (except gem), even if 0
+      let firstRow = true
+      typeList.forEach((typeObj) => {
+        body.push([
+          firstRow ? { text: rowIndex++, alignment: 'center', rowSpan: typeList.length + 1 } : {},
+          firstRow
+            ? {
+                text: item.stockNumber || item.productNumber || '',
+                alignment: 'center',
+                rowSpan: typeList.length + 1
+              }
+            : {},
+          { text: typeObj.label, alignment: 'center' },
+          { text: '-', alignment: 'left' },
+          { text: '', alignment: 'center' },
+          { text: typeObj.key === 'gold' ? this.formatPrice(goldWeight) : '', alignment: 'center' },
+          {
+            text: this.formatPrice(planQty ? sumByType[typeObj.key] / planQty : 0),
+            alignment: 'right'
+          }
+        ])
+        firstRow = false
+      })
+      // Gem rows: show every Gem priceTransaction (Type=Gem, Description=name, qty/weight/price)
+      let gemRows = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'gem')
+      gemRows.forEach((gem) => {
+        body.push([
+          {},
+          {},
+          { text: 'Gem', alignment: 'center' },
+          { text: gem.name || '-', alignment: 'left' },
+          { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
+          { text: gem.weight ? this.formatPrice(gem.weight) : '', alignment: 'center' },
+          {
+            text: this.formatPrice(planQty ? (gem.totalPrice || gem.price || 0) / planQty : 0),
+            alignment: 'right'
+          }
+        ])
+      })
+    })
+    return [
+      { text: '', pageBreak: 'before' },
+      breakdownHeader,
+      {
+        margin: [0, 10, 0, 0],
+        table: {
+          headerRows: 1,
+          widths: [20, 70, 40, '*', 50, 60, 60], // 7 columns
+          body
+        },
+        layout: {
+          hLineWidth: function () {
+            return 0.5
+          },
+          vLineWidth: function () {
+            return 0.5
+          }
+        }
+      }
+    ]
+  }
+
   getSummarySection() {
     // Calculate net weight like sumNetWeight in quotation-view.vue
     let gold = 0
@@ -934,9 +1251,7 @@ export class InvoicePdfBuilder {
     return {
       pageSize: 'A4',
       pageMargins: [10, 10, 10, 40],
-
-      content: [this.getHeaderContent(), ...this.createPages()],
-
+      content: [this.getHeaderContent(), ...this.createPages(), ...this.getBreakdownSection()],
       footer: function (currentPage, pageCount) {
         return {
           text: currentPage.toString() + ' / ' + pageCount,
@@ -944,12 +1259,10 @@ export class InvoicePdfBuilder {
           margin: [0, 10, 0, 0]
         }
       },
-
       defaultStyle: {
         font: 'THSarabunNew',
         fontSize: 13
       },
-
       styles: {
         headerCompanyName: {
           fontSize: 14,
