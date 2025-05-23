@@ -768,7 +768,8 @@ export default {
           price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
           discountPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
           description: data.productNameEn,
-          group: 'product'
+          group: 'product',
+          planQty : data.planQty || 1,
         }
 
         //data is object

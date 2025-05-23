@@ -899,82 +899,98 @@ export class InvoicePdfBuilder {
       { text: 'Description', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Qty', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Weight', style: 'summaryLabelColored', alignment: 'center' },
-      { text: 'Cost/pc', style: 'summaryLabelColored', alignment: 'center' }
+      { text: 'Price', style: 'summaryLabelColored', alignment: 'center' }
     ]
 
     const body = [tableHeader]
     let rowIndex = 1
+    // typeList: etc ไว้ล่างสุด
     const typeList = [
       { key: 'gold', label: 'Gold' },
       { key: 'setting', label: 'Setting' },
-      { key: 'labor', label: 'Labor' },
+      { key: 'labor', label: '"Labor"' },
+      { key: 'gem', label: 'Gem' },
       { key: 'etc', label: 'Etc' }
     ]
     ;(this.data || []).forEach((item) => {
-      const planQty = Number(item.planQty || item.qty || 1)
-      const priceTransactions = Array.isArray(item.priceTransactions) ? item.priceTransactions : []
-      // Map nameGroup to typeKey
-      const typeMap = {
-        gold: 'gold',
-        embed: 'setting',
-        worker: 'labor'
-      }
-      // Collect sum by type (except gem)
-      const sumByType = { gold: 0, setting: 0, labor: 0, etc: 0 }
-      priceTransactions.forEach((t) => {
-        const group = (t.nameGroup || '').toLowerCase()
-        let typeKey =
-          typeMap[group] || (['gold', 'setting', 'labor'].includes(group) ? group : 'etc')
-        if (typeKey !== 'etc' && group !== 'gem') {
-          sumByType[typeKey] += Number(t.totalPrice || t.price || 0)
+      const planQty = Number(item.planQty || item.qty || 1);
+      const priceTransactions = Array.isArray(item.priceTransactions) ? item.priceTransactions : [];
+      // เตรียมข้อมูลแยกตาม type
+      const goldRows = 1;
+      const settingRows = 1;
+      const laborRows = 1;
+      const gemRows = priceTransactions.filter(t => (t.nameGroup||'').toLowerCase()==='gem').length;
+      const etcRows = priceTransactions.filter(t => {
+        const group = (t.nameGroup||'').toLowerCase();
+        return group !== 'gold' && group !== 'setting' && group !== 'labor' && group !== 'gem';
+      }).length;
+      const totalRows = goldRows + settingRows + laborRows + gemRows + etcRows;
+      let rowSpan = totalRows > 0 ? totalRows : 1;
+      let rowCount = 0;
+      // gold/setting/labor: 1 row ต่อ type
+      ['gold','setting','labor'].forEach(typeKey => {
+        let sum = 0;
+        let qty = '', weight = '';
+        if (typeKey === 'gold') {
+          qty = '0';
+          const goldWeight = (item.materials||[]).filter(m=>m.type==='Gold').reduce((a,b)=>a+Number(b.weight)||0,0);
+          weight = planQty ? this.formatPrice(goldWeight/planQty) : this.formatPrice(goldWeight);
+        } else {
+          qty = '1';
+          weight = '0';
         }
-      })
-      // รวม gold weight
-      let goldWeight = 0
-      if (item.materials && Array.isArray(item.materials)) {
-        item.materials.forEach((m) => {
-          if (m.type === 'Gold') goldWeight += Number(m.weight) || 0
-        })
-      }
-      // Always show all types (except gem), even if 0
-      let firstRow = true
-      typeList.forEach((typeObj) => {
+        priceTransactions.forEach(t => {
+          const group = (t.nameGroup || '').toLowerCase();
+          if ((group === typeKey) || (typeKey==='setting' && group==='embed') || (typeKey==='labor' && group==='worker')) sum += Number(t.totalPrice || t.price || 0);
+        });
         body.push([
-          firstRow ? { text: rowIndex++, alignment: 'center', rowSpan: typeList.length + 1 } : {},
-          firstRow
-            ? {
-                text: item.stockNumber || item.productNumber || '',
-                alignment: 'center',
-                rowSpan: typeList.length + 1
-              }
-            : {},
-          { text: typeObj.label, alignment: 'center' },
+          rowCount === 0 ? { text: rowIndex++, alignment: 'center', rowSpan } : {},
+          rowCount === 0 ? { text: item.stockNumber || item.productNumber || '', alignment: 'center', rowSpan } : {},
+          { text: typeKey.charAt(0).toUpperCase()+typeKey.slice(1), alignment: 'center' },
           { text: '-', alignment: 'left' },
-          { text: '', alignment: 'center' },
-          { text: typeObj.key === 'gold' ? this.formatPrice(goldWeight) : '', alignment: 'center' },
-          {
-            text: this.formatPrice(planQty ? sumByType[typeObj.key] / planQty : 0),
-            alignment: 'right'
-          }
-        ])
-        firstRow = false
-      })
-      // Gem rows: show every Gem priceTransaction (Type=Gem, Description=name, qty/weight/price)
-      let gemRows = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'gem')
-      gemRows.forEach((gem) => {
+          { text: qty, alignment: 'center' },
+          { text: weight, alignment: 'center' },
+          { text: this.formatPrice(planQty ? sum/planQty : 0), alignment: 'right' }
+        ]);
+        rowCount++;
+      });
+      // gem: แสดงทุกรายการ gem (qty, weight, price ต้องหาร planQty)
+      const gemList = priceTransactions.filter(t => (t.nameGroup||'').toLowerCase()==='gem');
+      gemList.forEach((gem, idx) => {
         body.push([
-          {},
-          {},
-          { text: 'Gem', alignment: 'center' },
+          {}, {},
+          idx === 0 && gemList.length > 1 ? { text: 'Gem', alignment: 'center', rowSpan: gemList.length } : (idx === 0 ? { text: 'Gem', alignment: 'center' } : {}),
           { text: gem.name || '-', alignment: 'left' },
-          { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
-          { text: gem.weight ? this.formatPrice(gem.weight) : '', alignment: 'center' },
-          {
-            text: this.formatPrice(planQty ? (gem.totalPrice || gem.price || 0) / planQty : 0),
-            alignment: 'right'
-          }
-        ])
-      })
+          { text: gem.qty ? this.formatPrice(planQty ? gem.qty/planQty : gem.qty) : '', alignment: 'center' },
+          { text: gem.weight ? this.formatPrice(planQty ? gem.qtyWeight/planQty : gem.qtyWeight) : '', alignment: 'center' },
+          { text: this.formatPrice(planQty ? (gem.totalPrice || gem.price || 0) / planQty : 0), alignment: 'right' }
+        ]);
+        rowCount++;
+      });
+      // etc: แสดงทุกรายการ etc (qty, weight, price ต้องหาร planQty)
+      const etcList = priceTransactions.filter(t => {
+        const group = (t.nameGroup||'').toLowerCase();
+        return group !== 'gold' && group !== 'setting' && group !== 'worker' && group !== 'gem' && group !== 'embed';
+      });
+      etcList.forEach((etc, idx) => {
+        body.push([
+          {}, {},
+          idx === 0 && etcList.length > 1 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : (idx === 0 ? { text: 'Etc', alignment: 'center' } : {}),
+          { text: etc.name || '-', alignment: 'left' },
+          { text: etc.qty ? this.formatPrice(planQty ? etc.qty/planQty : etc.qty) : '', alignment: 'center' },
+          { text: etc.weight ? this.formatPrice(planQty ? etc.weight/planQty : etc.weight) : '', alignment: 'center' },
+          { text: this.formatPrice(planQty ? (etc.totalPrice || etc.price || 0) / planQty : 0), alignment: 'right' }
+        ]);
+        rowCount++;
+      });
+      // Total price row for this item
+      let totalItemPrice = priceTransactions.reduce((sum, t) => sum + Number(t.totalPrice || t.price || 0), 0);
+      body.push([
+        { text: 'Total Price', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 6 }, {}, {},
+        {}, {},
+        {  },
+        { text: this.formatPrice(totalItemPrice), style: 'totalSummaryLabelColored', alignment: 'right', bold: true }
+      ]);
     })
     return [
       { text: '', pageBreak: 'before' },
