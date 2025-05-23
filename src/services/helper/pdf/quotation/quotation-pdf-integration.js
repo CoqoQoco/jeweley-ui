@@ -41,7 +41,10 @@ export function generateInvoicePdf({
         invoiceDate,
         customer.freight,
         customer.discount,
-        customer.invoiceNumber
+        customer.invoiceNumber,
+        customer.currencyUnit, // เพิ่มรับค่า currencyUnit
+        customer.currencyMultiplier, // เพิ่มรับค่า currencyMultiplier
+        customer // ส่งอ็อบเจกต์ customer ทั้งหมด (address, tel, email, ...)
       )
 
       invoiceBuilder

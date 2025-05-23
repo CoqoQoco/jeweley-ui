@@ -3,7 +3,7 @@
     <form>
       <div class="base-datatable">
         <DataTable
-          :value="quotationItems"
+          :value="customer.quotationItems"
           rowGroupMode="subheader"
           groupRowsBy="nameGroup"
           stripedRows
@@ -19,10 +19,12 @@
               <Column header="Gold (gms)" />
               <Column header="Diamond (cts)" />
               <Column header="Stone (cts)" />
-              <Column header="จำนวน" />
-              <Column header="ราคา (THB)" />
+              <Column header="ราคาขาย (THB)" />
+              <Column header="ราคาพิเศษ (THB)" />
               <Column header="ตัวคูณ" />
-              <Column header="ราคาแปลงสกุลเงิน" />
+              <Column :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '" />
+              <Column header="จำนวน" />
+              <Column :header="'รวมราคา (' + (customer.currencyUnit || '') + ') '" />
             </Row>
           </ColumnGroup>
 
@@ -79,7 +81,7 @@
               <input
                 v-model="slotProps.data.description"
                 type="text"
-                class="form-control"
+                class="form-control bg-input input-bg"
                 @blur="onBlueDescription(slotProps.data, slotProps.index, 'description')"
                 style="background-color: #b5dad4; width: 100%"
               />
@@ -143,13 +145,59 @@
             </template>
           </column>
 
+          <column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2)
+                }}</span>
+              </div>
+            </template>
+          </column>
+          <column field="price" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <input
+                  v-model.number="slotProps.data.discountPrice"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  step="any"
+                  @blur="onBluePrice(slotProps.data, slotProps.index, 'discountPrice')"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+              </div>
+            </template>
+          </column>
+          <column field="multiplier" header="ตัวคูณ" style="min-width: 80px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{ customer.currencyMultiplier }}</span>
+              </div>
+            </template>
+          </column>
+          <column
+            field="priceAfterMultiply"
+            header="ราคาแปลง ({{ customer.currencyUnit || '' }})"
+            style="min-width: 150px"
+          >
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  (Number(slotProps.data.discountPrice || 0) * customer.currencyMultiplier).toFixed(
+                    2
+                  )
+                }}</span>
+              </div>
+            </template>
+          </column>
           <column field="qty" header="จำนวน" style="width: 80px">
             <template #body="slotProps">
               <div class="qty-container">
                 <input
                   v-model.number="slotProps.data.qty"
                   type="number"
-                  class="form-control text-right"
+                  class="form-control text-right bg-input input-bg"
                   min="0"
                   step="1"
                   @blur="onBlueQty(slotProps.data, slotProps.index, 'qty')"
@@ -158,36 +206,20 @@
               </div>
             </template>
           </column>
-
-          <column field="price" header="ราคา (THB)" style="min-width: 150px">
+          <column
+            field="totalConverted"
+            :header="'รวมราคา (' + (customer.currencyUnit || '') + ') '"
+            style="min-width: 150px"
+          >
             <template #body="slotProps">
               <div class="qty-container">
-                <input
-                  style="background-color: #b5dad4"
-                  v-model="slotProps.data.price"
-                  type="number"
-                  class="form-control text-right"
-                  step="any"
-                  min="0"
-                  required
-                  @blur="onBluePrice(slotProps.data, slotProps.index, 'price')"
-                />
-              </div>
-            </template>
-          </column>
-
-          <column header="ตัวแปลง" style="min-width: 80px">
-            <template #body="slotProps">
-              <div class="qty-container">
-                <span>{{ currencyMultiplier }}</span>
-              </div>
-            </template>
-          </column>
-
-          <column header="ราคาแปลง" style="min-width: 150px">
-            <template #body="slotProps">
-              <div class="qty-container">
-                <span>{{ (slotProps.data.price * currencyMultiplier * slotProps.data.qty).toFixed(2) }}</span>
+                <span>{{
+                  (
+                    Number(slotProps.data.discountPrice || 0) *
+                    customer.currencyMultiplier *
+                    (slotProps.data.qty || 0)
+                  ).toFixed(2)
+                }}</span>
               </div>
             </template>
           </column>
@@ -195,7 +227,16 @@
           <ColumnGroup type="footer">
             <!-- total -->
             <Row>
-              <column :colspan="6">
+              <column :colspan="5">
+                <template #footer>
+                  <div class="text-left type-container">
+                    <span class="mr-2">Net Weight Of Merchandise</span>
+                    <span class="mr-2">{{ sumNetWeight }}</span>
+                    <span>gms.</span>
+                  </div>
+                </template>
+              </column>
+              <column >
                 <template #footer>
                   <div class="text-right type-container">
                     <span>รวม</span>
@@ -223,6 +264,20 @@
                   </div>
                 </template>
               </column>
+              <column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ sumDiscountPrice }}</span>
+                  </div>
+                </template>
+              </column>
+              <column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ sumConvertPrice }}</span>
+                  </div>
+                </template>
+              </column>
               <column>
                 <template #footer>
                   <div class="text-right type-container">
@@ -230,17 +285,10 @@
                   </div>
                 </template>
               </column>
-              <column>
+              <column :colspan="2">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ sumPrice }}</span>
-                  </div>
-                </template>
-              </column>
-              <column :colspan="4">
-                <template #footer>
-                  <div class="text-right type-container">
-                    <span>{{ formatPrice(calTotalPrice(quotationItems)) }}</span>
+                    <span>{{ sumConvertedPrice }}</span>
                   </div>
                 </template>
               </column>
@@ -248,7 +296,7 @@
 
             <!-- freight -->
             <Row>
-              <column :colspan="12">
+              <column :colspan="14">
                 <template #footer>
                   <div class="text-right type-container">
                     <span>Freight & Insurance</span>
@@ -262,7 +310,7 @@
                       style="background-color: #b5dad4"
                       v-model="customer.freight"
                       type="number"
-                      class="form-control text-right"
+                      class="form-control text-right bg-input input-bg"
                       step="any"
                       min="0"
                       required
@@ -275,7 +323,7 @@
 
             <!-- total after discount -->
             <Row>
-              <column :colspan="12">
+              <column :colspan="14">
                 <template #footer>
                   <div class="text-right type-container">
                     <span>ราคารวม</span>
@@ -285,7 +333,9 @@
               <column :colspan="1">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ formatPrice(calTotalPriceAfterDiscount(quotationItems)) }}</span>
+                    <span
+                      >{{ formatPrice(calTotalPriceAfterDiscount(customer.quotationItems)) }}
+                    </span>
                   </div>
                 </template>
               </column>
@@ -297,39 +347,93 @@
       <div class="base-customer">
         <div class="filter-container mt-2">
           <div class="form-col-container">
-            <div>
-              <span class="title-text">วันที่ใบเสนอราคา</span>
-              <Calendar
-                class="w-100"
-                v-model="form.quotationDate"
-                showIcon
-                :manualInput="true"
-                dateFormat="dd/mm/yy"
-              />
+            <!-- date -->
+            <div class="form-col-container">
+              <div>
+                <span class="title-text">วันที่ใบเสนอราคา</span>
+                <Calendar
+                  class="w-100"
+                  v-model="form.quotationDate"
+                  showIcon
+                  :manualInput="true"
+                  dateFormat="dd/mm/yy"
+                />
+              </div>
+
+              <div>
+                <span class="title-text">เลขที่ใบเสนอราคา</span>
+                <input
+                  :class="['form-control bg-input input-bg']"
+                  type="text"
+                  v-model.trim="customer.invoiceNumber"
+                />
+              </div>
             </div>
 
-            <div>
-              <span class="title-text">เลขที่ใบเสนอราคา</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="customer.invoiceNumber"
-              />
+            <!-- convert price -->
+            <div class="form-col-container d-flex justify-content-end align-items-end">
+              <div class="">
+                <span class="title-text">สกุลเงิน</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="text"
+                  v-model.trim="customer.currencyUnit"
+                  style="width: 100px"
+                />
+              </div>
+              <div class="">
+                <span class="title-text">ตัวแปลง</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.currencyMultiplier"
+                  min="0"
+                  step="any"
+                  style="width: 100px"
+                />
+              </div>
             </div>
-            <div></div>
-            <div></div>
           </div>
 
           <div class="form-col-container mt-2">
             <div>
               <span class="title-text">ชื่อลูกค้า</span>
-              <input :class="['form-control bg-input']" type="text" v-model.trim="customer.name" />
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="text"
+                v-model.trim="customer.name"
+              />
             </div>
-
+            <div>
+              <span class="title-text">ที่อยู่</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="text"
+                v-model.trim="customer.address"
+              />
+            </div>
+            <div>
+              <span class="title-text">เบอร์โทร</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="text"
+                v-model.trim="customer.tel"
+              />
+            </div>
+            <div>
+              <span class="title-text">อีเมล</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="email"
+                v-model.trim="customer.email"
+              />
+            </div>
+          </div>
+          <div class="form-col-container mt-2">
             <div>
               <span class="title-text">หมายเหตุ</span>
               <input
-                :class="['form-control bg-input']"
+                :class="['form-control bg-input', 'input-bg']"
                 type="text"
                 v-model.trim="customer.remark"
               />
@@ -370,6 +474,7 @@ const interfaceForm = {
   name: null,
   invoiceNumber: null
 }
+
 export default {
   name: 'QuotationView',
 
@@ -401,7 +506,7 @@ export default {
     },
     sumGoldWeight() {
       let sum = 0
-      this.quotationItems.forEach((item) => {
+      this.customer.quotationItems.forEach((item) => {
         if (item.materials) {
           item.materials
             .filter((m) => m.type === 'Gold')
@@ -414,7 +519,7 @@ export default {
     },
     sumDiamondWeight() {
       let sum = 0
-      this.quotationItems.forEach((item) => {
+      this.customer.quotationItems.forEach((item) => {
         if (item.materials) {
           item.materials
             .filter((m) => m.type === 'Diamond')
@@ -427,7 +532,7 @@ export default {
     },
     sumGemWeight() {
       let sum = 0
-      this.quotationItems.forEach((item) => {
+      this.customer.quotationItems.forEach((item) => {
         if (item.materials) {
           item.materials
             .filter((m) => m.type === 'Gem')
@@ -440,17 +545,50 @@ export default {
     },
     sumQty() {
       let sum = 0
-      this.quotationItems.forEach((item) => {
+      this.customer.quotationItems.forEach((item) => {
         sum += Number(item.qty) || 0
       })
       return sum
     },
-    sumPrice() {
+    sumConvertPrice() {
       let sum = 0
-      this.quotationItems.forEach((item) => {
-        sum += Number(item.price) || 0
+      this.customer.quotationItems.forEach((item) => {
+        sum += (Number(item.discountPrice) || 0) * this.customer.currencyMultiplier
       })
       return sum.toFixed(2)
+    },
+    sumDiscountPrice() {
+      let sum = 0
+      this.customer.quotationItems.forEach((item) => {
+        sum += Number(item.discountPrice) || 0
+      })
+      return sum.toFixed(2)
+    },
+    sumConvertedPrice() {
+      let sum = 0
+      this.customer.quotationItems.forEach((item) => {
+        sum +=
+          Number(item.discountPrice || 0) *
+          this.customer.currencyMultiplier *
+          (Number(item.qty) || 0)
+      })
+      return sum.toFixed(2)
+    },
+    sumNetWeight() {
+      let gold = 0
+      let diamond = 0
+      let gem = 0
+      this.customer.quotationItems.forEach((item) => {
+        if (item.materials) {
+          item.materials.forEach((m) => {
+            if (m.type === 'Gold') gold += Number(m.weight) || 0
+            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
+            if (m.type === 'Gem') gem += Number(m.weight) || 0
+          })
+        }
+      })
+      const net = (diamond + gem) / 5 + gold
+      return net ? net.toFixed(2) : (0).toFixed(2)
     }
   },
 
@@ -462,41 +600,51 @@ export default {
 
   data() {
     return {
-      quotationItems: [],
+      // quotationItems: [],
+      // groupOrderRunning: {
+      //   product: 1,
+      //   etc: 5
+      // },
+      type: 'STOCK-PRODUCT',
+      customer: {
+        ...interfaceForm,
+        quotationItems: [],
+        currencyMultiplier: 1,
+        currencyUnit: 'THB'
+      },
       groupOrderRunning: {
         product: 1,
         etc: 5
-      },
-      type: 'STOCK-PRODUCT',
-      customer: { ...interfaceForm },
-      currencyMultiplier: 1
+      }
     }
   },
 
   methods: {
     delItem(index) {
-      this.quotationItems.splice(index, 1)
+      this.customer.quotationItems.splice(index, 1)
     },
 
     calTotalPrice(items) {
+      // ใช้ currencyMultiplier ในการคำนวณราคารวม
       const sum = items.reduce((total, item) => {
-        // แปลง item.price เป็นตัวเลขด้วย Number() หรือ parseFloat()
-        return total + Number(item.price)
+        return (
+          total + Number(item.price) * this.customer.currencyMultiplier * (Number(item.qty) || 1)
+        )
       }, 0)
-
-      return sum.toFixed(2) // แสดงผลเป็นทศนิยม 2 ตำแหน่ง
+      return sum.toFixed(2)
     },
     calTotalPriceAfterDiscount(items) {
+      // ใช้ currencyMultiplier ในการคำนวณราคารวมหลังหักส่วนลด
       const sum = items.reduce((total, item) => {
-        // แปลง item.price เป็นตัวเลขด้วย Number() หรือ parseFloat()
-        return total + Number(item.price)
+        return (
+          total +
+          Number(item.discountPrice) * this.customer.currencyMultiplier * (Number(item.qty) || 0)
+        )
       }, 0)
-
       var freight = this.customer.freight ? Number(this.customer.freight) : 0
       let sumFreight = sum + freight
       var discount = this.customer.discount ? Number(this.customer.discount) : 0
-
-      return (sumFreight - discount).toFixed(2) // แสดงผลเป็นทศนิยม 2 ตำแหน่ง
+      return (sumFreight - discount).toFixed(2)
     },
 
     getGroupName(id) {
@@ -533,7 +681,7 @@ export default {
       }
 
       // ในVue 3, เราสามารถอัปเดตได้โดยตรง
-      this.quotationItems[index] = newCal
+      this.customer.quotationItems[index] = newCal
 
       //console.log('onBluePrice' + fieldName, this.quotationItems[item])
       //console.log('onBluePrice' + fieldName, this.quotationItems)
@@ -548,14 +696,14 @@ export default {
         ...item,
         [fieldName]: item[fieldName] ? Number(item[fieldName]) : 0
       }
-      this.quotationItems[index] = newCal
+      this.customer.quotationItems[index] = newCal
     },
     onBlueDescription(item, index, fieldName) {
       let newCal = {
         ...item,
         [fieldName]: item[fieldName] ? item[fieldName] : ''
       }
-      this.quotationItems[index] = newCal
+      this.customer.quotationItems[index] = newCal
     },
     // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้มีลูกน้ำและทศนิยม 2 ตำแหน่ง
     formatPrice(price) {
@@ -575,19 +723,20 @@ export default {
         data = {
           ...data,
           price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          discountPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
           description: data.productNameEn,
           group: 'product'
         }
 
         //data is object
-        this.quotationItems.push(data)
+        this.customer.quotationItems.push(data)
       }
     },
     handleImageLoaded(imageData, index) {
       // อัปเดตข้อมูลใน quotationItems ด้วยข้อมูลรูปภาพ
-      if (this.quotationItems[index]) {
-        this.quotationItems[index] = {
-          ...this.quotationItems[index],
+      if (this.customer.quotationItems[index]) {
+        this.customer.quotationItems[index] = {
+          ...this.customer.quotationItems[index],
           imageBase64: imageData.base64 // เก็บ base64 ไว้ใช้ในการสร้าง PDF
         }
       }
@@ -605,7 +754,7 @@ export default {
         const filename = `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
 
         await generateInvoicePdf({
-          items: this.quotationItems,
+          items: this.customer.quotationItems,
           customer: {
             name: this.customer.name,
             note: this.customer.remark,
@@ -630,6 +779,17 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/overide-prime-vue/data-table-dub.scss';
+
+.input-bg {
+  background-color: #b5dad4 !important;
+}
+
+.remark-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0.5rem;
+}
 
 .image-container {
   display: flex;

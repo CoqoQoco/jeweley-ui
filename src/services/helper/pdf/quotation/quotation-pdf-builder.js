@@ -3,11 +3,19 @@ import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 
 export class InvoicePdfBuilder {
-  constructor(data, customerName, note, invoiceDate, freight, discount, invoiceNo) {
+  constructor(
+    data,
+    customer,
+    invoiceDate,
+    freight,
+    discount,
+    invoiceNo,
+    currencyUnit,
+    currencyMultiplier
+  ) {
     this.data = data // ข้อมูลสินค้า
-    this.customerName = customerName || '' // ชื่อลูกค้า
-    this.note = note || '' // หมายเหตุ
-    this.invoiceDate = invoiceDate || dayjs().format('YYYY-MM-DD') // วันที่ออกใบกำกับ
+    this.customer = customer || {}
+    this.invoiceDate = invoiceDate || dayjs().format('YYYY-MM-DD')
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
       address: '206/19 Rama 9 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
@@ -15,11 +23,29 @@ export class InvoicePdfBuilder {
       fax: 'FAX: (+662) 6-271-4614',
       email: 'info@dukaek.com'
     }
-    //this.invoiceNo = 'INV' + dayjs().format('YYMMDDHHmm')
     this.invoiceNo = invoiceNo
-    this.freight = Number(freight) || 0 // ค่า freight
-    this.discount = Number(discount) || 0 // ค่า discount
-    this.logoBase64 = null // จะถูกตั้งค่าภายหลัง
+    this.freight = Number(freight) || 0
+    this.discount = Number(discount) || 0
+    this.logoBase64 = null
+    this.currencyUnit = currencyUnit || 'THB'
+    this.currencyMultiplier = Number(currencyMultiplier) || 1
+
+    // เพิ่มการคำนวณ totalAmount ใน constructor
+    this.totalAmount = this.calculateTotalAmount()
+  }
+
+  // เพิ่มเมธอดคำนวณ totalAmount
+  calculateTotalAmount() {
+    let total = 0
+    if (this.data && Array.isArray(this.data)) {
+      this.data.forEach((item) => {
+        const discountPrice = Number(item.discountPrice || 0)
+        const convertedPrice = discountPrice * this.currencyMultiplier
+        const totalConverted = convertedPrice * (item.qty || 0)
+        total += totalConverted
+      })
+    }
+    return total
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -67,11 +93,11 @@ export class InvoicePdfBuilder {
                     this.logoBase64
                       ? {
                           image: this.logoBase64,
-                          width: 25, // ปรับขนาดตามที่ต้องการ
+                          width: 25,
                           height: 20,
                           margin: [0, 0, 0, 0]
                         }
-                      : {},
+                      : { text: '', width: 25 }, // เพิ่ม fallback เมื่อไม่มีโลโก้
                     {
                       width: '*',
                       text: this.companyInfo.name,
@@ -81,7 +107,6 @@ export class InvoicePdfBuilder {
                   ],
                   margin: [0, 0, 0, 10]
                 },
-
                 { text: this.companyInfo.address, style: 'companyInfo' },
                 { text: 'TEL: ' + this.companyInfo.phone, style: 'companyInfo' },
                 { text: 'E-Mail: ' + this.companyInfo.email, style: 'companyInfo' }
@@ -93,15 +118,15 @@ export class InvoicePdfBuilder {
               stack: [
                 {
                   table: {
-                    widths: [100], // กำหนดความกว้างชัดเจน (ปรับตามต้องการ)
-                    heights: [30], // กำหนดความสูงชัดเจน (ปรับตามต้องการ)
+                    widths: [100],
+                    heights: [30],
                     body: [
                       [
                         {
                           text: 'INVOICE',
                           style: 'invoiceTitle',
-                          fillColor: '#8B0000', // สีพื้นหลังแดงเข้ม
-                          color: 'white', // สีตัวหนังสือขาว
+                          fillColor: '#8B0000',
+                          color: 'white',
                           alignment: 'center'
                         }
                       ]
@@ -110,42 +135,52 @@ export class InvoicePdfBuilder {
                   layout: {
                     hLineWidth: function () {
                       return 0
-                    }, // ซ่อนเส้นแนวนอน
+                    },
                     vLineWidth: function () {
                       return 0
-                    }, // ซ่อนเส้นแนวตั้ง
+                    },
                     paddingLeft: function () {
                       return 0
-                    }, // เพิ่ม padding ซ้าย
+                    },
                     paddingRight: function () {
                       return 0
-                    }, // เพิ่ม padding ขวา
+                    },
                     paddingTop: function () {
                       return 0
-                    }, // เพิ่ม padding บน
+                    },
                     paddingBottom: function () {
                       return 0
-                    } // เพิ่ม padding ล่าง
+                    }
                   },
-                  margin: [90, 10, 0, 0] // เพิ่ม margin รอบกรอบ
+                  margin: [90, 10, 0, 0]
                 }
               ]
             }
           ]
         },
-
         {
-          canvas: [
-            { type: 'line', x1: 0, y1: 2, x2: 575, y2: 2, lineWidth: 1 } // เพิ่มความยาวของเส้น
-          ],
+          canvas: [{ type: 'line', x1: 0, y1: 2, x2: 575, y2: 2, lineWidth: 1 }],
           margin: [0, 5, 0, 5]
         },
         {
           columns: [
             {
               width: '80%',
-              text: 'Consigned to: ' + this.customerName,
-              style: 'customerInfo'
+              stack: [
+                { text: 'Consigned to: ' + (this.customer.name || ''), style: 'customerInfo' },
+                this.customer.address
+                  ? { text: 'Address: ' + this.customer.address, style: 'customerInfo' }
+                  : { text: '', margin: [0, 0, 0, 0] }, // เพิ่ม fallback
+                this.customer.tel
+                  ? { text: 'Tel: ' + this.customer.tel, style: 'customerInfo' }
+                  : { text: '', margin: [0, 0, 0, 0] }, // เพิ่ม fallback
+                this.customer.email
+                  ? { text: 'Email: ' + this.customer.email, style: 'customerInfo' }
+                  : { text: '', margin: [0, 0, 0, 0] }, // เพิ่ม fallback
+                this.customer.remark
+                  ? { text: 'Note: ' + this.customer.remark, style: 'noteText' }
+                  : { text: '', margin: [0, 0, 0, 0] } // เพิ่ม fallback
+              ]
             },
             {
               width: '20%',
@@ -159,7 +194,7 @@ export class InvoicePdfBuilder {
                       style: 'invoiceInfoLabel'
                     },
                     {
-                      text: this.invoiceNo,
+                      text: this.invoiceNo || '', // เพิ่ม fallback
                       width: '60%',
                       alignment: 'right',
                       style: 'invoiceInfoValue'
@@ -191,11 +226,16 @@ export class InvoicePdfBuilder {
   createPages() {
     const itemsPerPage = 10 // จำนวนรายการต่อหน้า
     const pages = []
-    const totalItems = this.data.length
+    const totalItems = this.data ? this.data.length : 0 // เพิ่มการตรวจสอบ
     const totalPages = Math.ceil(totalItems / itemsPerPage)
 
+    if (totalPages === 0) {
+      // ถ้าไม่มีข้อมูล ให้สร้างหน้าเปล่า
+      pages.push(this.getEmptyPageContent())
+      return pages
+    }
+
     for (let pageNum = 0; pageNum < totalPages; pageNum++) {
-      // ดึงข้อมูลสำหรับหน้านี้
       const startIdx = pageNum * itemsPerPage
       const endIdx = Math.min(startIdx + itemsPerPage, totalItems)
       const pageItems = this.data.slice(startIdx, endIdx)
@@ -204,11 +244,12 @@ export class InvoicePdfBuilder {
       // คำนวณ pageTotal สำหรับแต่ละหน้า
       let pageTotal = 0
       pageItems.forEach((item) => {
-        const price = Number(item.price || item.productPrice || 0)
-        pageTotal += price * item.qty
+        const discountPrice = Number(item.discountPrice || 0)
+        const convertedPrice = discountPrice * this.currencyMultiplier
+        const totalConverted = convertedPrice * (item.qty || 0)
+        pageTotal += totalConverted
       })
 
-      // สร้างตารางสำหรับหน้านี้
       const pageContent = []
 
       // ใส่ส่วนหัวตารางในทุกหน้า (ถ้าไม่ใช่หน้าแรก)
@@ -218,20 +259,13 @@ export class InvoicePdfBuilder {
 
       // เพิ่มตารางพร้อม total
       if (isLastPage) {
-        // หน้าสุดท้ายมี total, freight, discount และ grand total
         pageContent.push(this.getFinalPageTableContent(pageItems, pageNum, totalPages, pageTotal))
       } else {
-        // หน้าอื่นๆ มีเฉพาะ total
         pageContent.push(this.getRegularPageTableContent(pageItems, pageNum, totalPages, pageTotal))
       }
 
-      // เพิ่ม Summary Section ในทุกหน้า
-      if (isLastPage) {
-        //pageContent.push(...this.getLastSummarySection())
-        pageContent.push(...this.getSummarySection())
-      } else {
-        pageContent.push(...this.getSummarySection())
-      }
+      // เพิ่ม Summary Section
+      pageContent.push(...this.getSummarySection())
 
       // เพิ่ม pageBreak ในทุกหน้ายกเว้นหน้าสุดท้าย
       if (pageNum < totalPages - 1) {
@@ -244,193 +278,254 @@ export class InvoicePdfBuilder {
     return pages
   }
 
-  // สร้างตารางพร้อม total สำหรับหน้าทั่วไป (ไม่ใช่หน้าสุดท้าย)
+  // สร้างตารางเปล่า (Empty Page)
+  getEmptyPageContent() {
+    return {
+      margin: [0, 0, 0, 0],
+      table: {
+        headerRows: 1,
+        widths: [20, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
+        body: [
+          [
+            this.setTableHeader('No.'),
+            this.setTableHeader(''),
+            this.setTableHeader('Style/Product'),
+            this.setTableHeader('Description'),
+            this.setTableHeader('Gold (gms)'),
+            this.setTableHeader('Diamond (cts)'),
+            this.setTableHeader('Gem (cts)'),
+            this.setTableHeader('Qty'),
+            this.setTableHeader('Price (' + this.currencyUnit + ')'),
+            this.setTableHeader('Amount')
+          ]
+        ]
+      },
+      layout: {
+        hLineWidth: function (i, node) {
+          return 0.5
+        },
+        vLineWidth: function (i, node) {
+          return 0
+        }
+      }
+    }
+  }
+
+  // ตารางหน้าปกติ (ไม่ใช่หน้าสุดท้าย)
   getRegularPageTableContent(items, pageNum, totalPages, pageTotal) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [20, 20, '*', '*', '*', '*', '*', 40, 60, 60],
+        widths: [20, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
         body: this.buildRegularTableBody(items, pageNum, totalPages, pageTotal)
       },
       layout: {
-        hLineWidth: function (i, node) {
+        hLineWidth: function () {
           return 0.5
         },
-        vLineWidth: function (i, node) {
-          return 0
-        }
+        vLineWidth: function () {
+          return 0.5
+        } // border left/right
       }
     }
   }
 
-  // สร้างตารางพร้อม total, freight, discount และ grand total สำหรับหน้าสุดท้าย
+  // ตารางหน้าสุดท้าย (มี total, freight, discount, grand total)
   getFinalPageTableContent(items, pageNum, totalPages, pageTotal) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [20, 20, '*', '*', '*', '*', '*', 40, 60, 60],
+        widths: [20, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
         body: this.buildFinalTableBody(items, pageNum, totalPages, pageTotal)
       },
       layout: {
-        hLineWidth: function (i, node) {
+        hLineWidth: function () {
           return 0.5
         },
-        vLineWidth: function (i, node) {
-          return 0
-        }
+        vLineWidth: function () {
+          return 0.5
+        } // border left/right
       }
     }
   }
 
-  // แยก buildTableBody เป็น 2 เมธอด - หนึ่งสำหรับหน้าทั่วไป และอีกเมธอดสำหรับหน้าสุดท้าย
+  // สร้าง body ตาราง (หน้าปกติ)
   buildRegularTableBody(items, pageNum, totalPages, pageTotal) {
     const body = []
-
-    // Header with color
+    // Header
     body.push([
       this.setTableHeader('No.'),
       this.setTableHeader(''),
       this.setTableHeader('Style/Product'),
       this.setTableHeader('Description'),
-      this.setTableHeader('Gold'),
-      this.setTableHeader('Diamond'),
-      this.setTableHeader('Stone'),
-      this.setTableHeader('Quantity'),
-      this.setTableHeader('Price (THB)'),
-      this.setTableHeader('Amount (THB)')
+      this.setTableHeader('Gold (gms)'),
+      this.setTableHeader('Diamond (cts)'),
+      this.setTableHeader('Gem (cts)'),
+      this.setTableHeader('Qty'),
+      this.setTableHeader('Price (' + this.currencyUnit + ')'),
+      this.setTableHeader('Amount (' + this.currencyUnit + ')')
     ])
-
     // Content rows
-    items = items || [] // ป้องกันกรณี items เป็น undefined
-
+    let sumGold = 0,
+      sumDiamond = 0,
+      sumGem = 0,
+      sumQty = 0,
+      sumAmount = 0
+    items = items || []
     items.forEach((item, index) => {
-      // คำนวณ index จริงในกรณีที่มีหลายหน้า
       const actualIndex = pageNum * 10 + index
-
-      const price = Number(item.price || item.productPrice || 0)
-      const amount = price * item.qty
-
-      // ถ้าเป็นหน้าแรกและรายการแรก ให้เริ่มคำนวณ totalAmount ใหม่
-      if (pageNum === 0 && index === 0) {
-        this.totalAmount = 0
-        this.totalWeight = 0
+      // Gold, Diamond, Gem columns (format like UI)
+      function buildMaterialTable(materials, type) {
+        if (!materials || !Array.isArray(materials)) return ''
+        const rows = materials
+          .filter((m) => m.type === type)
+          .map((m) => [
+            {
+              text:
+                type === 'Gold'
+                  ? m.typeCode || ''
+                  : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
+              alignment: 'left',
+              fontSize: 11,
+              margin: [0, 0, 0, 0]
+            },
+            {
+              text: m.weight ? Number(m.weight).toFixed(2) : Number(0).toFixed(2),
+              alignment: 'right',
+              fontSize: 12,
+              margin: [0, 0, 0, 0]
+            }
+          ])
+        if (!rows.length) return ''
+        return {
+          table: {
+            widths: ['*', 22],
+            body: rows
+          },
+          layout: {
+            hLineWidth: function () {
+              return 0
+            },
+            vLineWidth: function () {
+              return 0
+            },
+            paddingLeft: function () {
+              return 0
+            },
+            paddingRight: function () {
+              return 0
+            },
+            paddingTop: function () {
+              return 0
+            },
+            paddingBottom: function () {
+              return 0
+            }
+          },
+          margin: [5, 5, 0, 0]
+        }
       }
-
-      // สะสมค่า totalAmount และ totalWeight
-      this.totalAmount += amount
-
-      // ส่วนที่เหลือเหมือนเดิม...
-      const styleNo =
-        item.stockNumber && item.productNumber
-          ? `${item.stockNumber}/${item.productNumber}`
-          : item.stockNumber || item.productNumber || ''
-
-      const goldTexts = []
-      const diamondTexts = []
-      const gemTexts = []
-
-      if (item.materials) {
-        item.materials.forEach((material) => {
-          if (material.type === 'Gold' && material.textGold) {
-            goldTexts.push(material.textGold.trim())
-          } else if (material.type === 'Diamond' && material.textDiamond) {
-            diamondTexts.push(material.textDiamond.replace('Diamond', '').trim())
-          } else if (material.type === 'Gem' && material.textGem) {
-            gemTexts.push(material.textGem.trim())
-          }
-        })
-
-        // คำนวณน้ำหนักรวม
-        item.materials.forEach((material) => {
-          if (material.type === 'Gold' && material.weight) {
-            this.totalWeight += material.weight * item.qty
-          }
+      // Calculate total weights for summary
+      let goldWeight = 0,
+        diamondWeight = 0,
+        gemWeight = 0
+      if (item.materials && Array.isArray(item.materials)) {
+        item.materials.forEach((m) => {
+          if (m.type === 'Gold') goldWeight += Number(m.weight) || 0
+          if (m.type === 'Diamond') diamondWeight += Number(m.weight) || 0
+          if (m.type === 'Gem') gemWeight += Number(m.weight) || 0
         })
       }
-
+      sumGold += goldWeight
+      sumDiamond += diamondWeight
+      sumGem += gemWeight
+      const qty = Number(item.qty) || 0
+      const price = Number(item.discountPrice || 0) * this.currencyMultiplier
+      const amount = price * qty
+      sumQty += qty
+      sumAmount += amount
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
-
-        // product image
         item.imageBase64 ? this.setTabImageCell(item.imageBase64) : this.setTableCell(''),
-
-        this.setTableCell(styleNo),
+        this.setTableCell(
+          item.stockNumber && item.productNumber
+            ? `${item.stockNumber}/${item.productNumber}`
+            : item.stockNumber || item.productNumber || ''
+        ),
         this.setTableCell(this.getDescription(item)),
-        this.setTableCell(goldTexts.join(', ')),
-        this.setTableCell(diamondTexts.join(', ')),
-        this.setTableCell(gemTexts.join(', ')),
-        this.setTableCellRight(item.qty.toString()),
+        buildMaterialTable(item.materials, 'Gold'),
+        buildMaterialTable(item.materials, 'Diamond'),
+        buildMaterialTable(item.materials, 'Gem'),
+        this.setTableCellRight(qty ? qty.toString() : '0'),
         this.setTableCellRight(this.formatPrice(price)),
         this.setTableCellRight(this.formatPrice(amount))
       ])
     })
-
-    console.log('pageNum:', pageNum)
-    console.log('totalPages:', totalPages)
-    console.log('pageTotal:', pageTotal)
-
-    // เพิ่ม TOTAL row
-    if (totalPages > 1) {
-      body.push([
-        { text: 'PAGE TOTAL', style: 'summaryLabelColored', alignment: 'right', colSpan: 8 },
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-
-        {
-          text: this.formatPrice(pageTotal),
-          style: 'summaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
-        {}
-
-        //   {
-        //     text: this.formatPrice(pageTotal),
-        //     style: 'summaryLabelColored',
-        //     alignment: 'right'
-        //   }
-      ])
-    }
-
+    // Footer: Total weight, qty, amount
+    body.push([
+      { text: 'Total', style: 'summaryLabelColored', alignment: 'right', colSpan: 4 },
+      { text: '', style: 'summaryLabelColored', alignment: 'right' },
+      { text: '', style: 'summaryLabelColored', alignment: 'right' },
+      { text: '', style: 'summaryLabelColored', alignment: 'right' },
+      { text: this.formatPrice(sumGold), style: 'summaryLabelColored', alignment: 'right' },
+      { text: this.formatPrice(sumDiamond), style: 'summaryLabelColored', alignment: 'right' },
+      { text: this.formatPrice(sumGem), style: 'summaryLabelColored', alignment: 'right' },
+      { text: sumQty, style: 'summaryLabelColored', alignment: 'right' },
+      { text: '', style: 'summaryLabelColored', alignment: 'right' },
+      { text: this.formatPrice(sumAmount), style: 'summaryLabelColored', alignment: 'right' }
+    ])
     return body
   }
 
+  // สร้าง body ตาราง (หน้าสุดท้าย)
   buildFinalTableBody(items, pageNum, totalPages, pageTotal) {
     const body = this.buildRegularTableBody(items, pageNum, totalPages, pageTotal)
+    // --- Add Total Weight (All Pages) row ---
+    let sumGoldAll = 0,
+      sumDiamondAll = 0,
+      sumGemAll = 0,
+      sumQty = 0
 
-    // เพิ่มแถวที่แสดงคำอ่านของ page total (ก่อนที่จะแสดง TOTAL ทั้งหมด)
-    // body.push([
-    //   {
-    //     text: this.convertNumberToWords(pageTotal, true), // ส่งพารามิเตอร์ true เพื่อระบุว่าเป็น page total
-    //     style: 'totalWordsInTable',
-    //     alignment: 'right',
-    //     colSpan: 10
-    //   },
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {}
-    // ])
+    if (this.data && Array.isArray(this.data)) {
+      this.data.forEach((item) => {
+        const qty = Number(item.qty) || 0
+        sumQty += qty
 
-    // เพิ่มแถว TOTAL ใหม่ (รวมทุกหน้า)
+        if (item.materials && Array.isArray(item.materials)) {
+          item.materials.forEach((m) => {
+            if (m.type === 'Gold') sumGoldAll += Number(m.weight) || 0
+            if (m.type === 'Diamond') sumDiamondAll += Number(m.weight) || 0
+            if (m.type === 'Gem') sumGemAll += Number(m.weight) || 0
+          })
+        }
+      })
+    }
+
+    if (totalPages > 1) {
+      body.push([
+        { text: 'Total (All Pages)', style: 'summaryLabel', alignment: 'right', colSpan: 4 },
+        {},
+        {},
+        {},
+        { text: this.formatPrice(sumGoldAll), style: 'summaryLabel', alignment: 'right' },
+        { text: this.formatPrice(sumDiamondAll), style: 'summaryLabel', alignment: 'right' },
+        { text: this.formatPrice(sumGemAll), style: 'summaryLabel', alignment: 'right' },
+        { text: sumQty, style: 'summaryLabel', alignment: 'right' },
+        {},
+        {}
+      ])
+    }
+
+    // TOTAL row
     body.push([
       {
-        text: 'TOTAL',
-        style: 'summaryLabelColored',
+        text: '',
+        style: 'summaryLabel',
         alignment: 'right',
-        colSpan: 8
+        colSpan: 7,
+        border: [true, false, false, false]
       },
       {},
       {},
@@ -438,158 +533,74 @@ export class InvoicePdfBuilder {
       {},
       {},
       {},
+      { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
       {},
       {
         text: this.formatPrice(this.totalAmount),
-        style: 'summaryLabelColored',
+        style: 'totalSummaryLabelColored',
+        alignment: 'right'
+      }
+    ])
+
+    // FREIGHT & INSURANCE
+    body.push([
+      {
+        text: '',
+        style: 'summaryLabel',
+        alignment: 'right',
+        colSpan: 7,
+        border: [true, false, false, false]
+      },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {
+        text: 'FREIGHT & INSURANCE',
+        style: 'totalSummaryLabelColored',
         alignment: 'right',
         colSpan: 2
       },
-      {}
-      //   {
-      //     text: this.formatPrice(this.totalAmount),
-      //     style: 'summaryLabelColored',
-      //     alignment: 'right'
-      //   }
-    ])
-
-    // เพิ่ม FREIGHT & INSURANCE
-    body.push([
-      { text: 'FREIGHT & INSURANCE', style: 'summaryLabel', alignment: 'right', colSpan: 8 },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {},
       {
         text: this.formatPrice(this.freight),
-        style: 'summaryLabel',
-        alignment: 'right',
-        colSpan: 2
-      },
-      {}
+        style: 'totalSummaryLabelColored',
+        alignment: 'right'
+      }
     ])
-
-    // เพิ่ม DISCOUNT
-    body.push([
-      { text: 'DISCOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 8 },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {
-        text: this.formatPrice(this.discount),
-        style: 'summaryLabel',
-        alignment: 'right',
-        colSpan: 2
-      },
-      {}
-    ])
-
-    // คำนวณ GRAND TOTAL = total + freight - discount
+    // DISCOUNT
+    // body.push([
+    //   { text: 'DISCOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 8 },
+    //   { text: '' },
+    //   { text: this.formatPrice(this.discount), style: 'summaryLabel', alignment: 'right' }
+    // ])
+    // GRAND TOTAL (colSpan:7, 2 empty, label, value)
     const grandTotal = this.totalAmount + this.freight - this.discount
 
-    // GRAND TOTAL
     body.push([
       {
-        text: this.convertNumberToWords(grandTotal), // ส่งพารามิเตอร์ true เพื่อระบุว่าเป็น page total
-        style: 'totalWordsInTable',
-        alignment: 'left',
-        colSpan: 6
-      },
-      {},
-      {},
-      {},
-      {},
-      {},
-      { text: 'GRAND TOTAL', style: 'summaryLabelColored', alignment: 'right', colSpan: 2 },
-      {},
-      {
-        text: this.formatPrice(grandTotal),
+        text: this.convertNumberToWords(grandTotal),
         style: 'summaryLabelColored',
-        alignment: 'right',
-        colSpan: 2
+        alignment: 'left',
+        colSpan: 7
       },
-      {}
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      { text: 'C.I.F', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+      {},
+      { text: this.formatPrice(grandTotal), style: 'totalSummaryLabelColored', alignment: 'right' }
     ])
-
-    // เพิ่มแถวที่แสดงคำอ่านของ page total (ก่อนที่จะแสดง TOTAL ทั้งหมด)
-    // body.push([
-    //   {
-    //     text: this.convertNumberToWords(grandTotal), // ส่งพารามิเตอร์ true เพื่อระบุว่าเป็น page total
-    //     style: 'totalWordsInTable',
-    //     alignment: 'right',
-    //     colSpan: 10
-    //   },
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {},
-    //   {}
-    // ])
-
     return body
   }
 
   getSummarySection() {
-    // คำนวณ grand total
-    //const grandTotal = this.totalAmount + this.freight - this.discount
-
     return [
-      // ส่วนแสดงจำนวนเงินเป็นตัวอักษรและข้อความเพิ่มเติม
-      //   {
-      //     alignment: 'right',
-      //     text: this.convertNumberToWords(grandTotal),
-      //     style: 'totalWords',
-      //     margin: [0, 5, 0, 5]
-      //   },
-      {
-        columns: [
-          {
-            stack: [
-              { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left' },
-              {
-                text: 'WE CERTIFY THAT THIS INVOICE TRUE AND CORRECT.',
-                style: 'certifyText',
-                alignment: 'left'
-              },
-              {
-                columns: [
-                  { text: '1.020 NET WEIGHT OF MERCHANDISES', width: '50%', style: 'weightText' },
-                  { text: 'MADE IN THAILAND', width: '30%', style: 'madeInText' },
-                  { text: 'Goods Received By', width: '20%', style: 'receivedByText' }
-                ]
-              }
-            ],
-            width: '90%'
-          }
-        ],
-        margin: [0, 10, 0, 0],
-        pageBreakBefore: false
-      }
-    ]
-  }
-  getLastSummarySection() {
-    // คำนวณ grand total
-    const grandTotal = this.totalAmount + this.freight - this.discount
-
-    return [
-      // ส่วนแสดงจำนวนเงินเป็นตัวอักษรและข้อความเพิ่มเติม
-      {
-        alignment: 'right',
-        text: this.convertNumberToWords(grandTotal),
-        style: 'totalWords',
-        margin: [0, 5, 0, 5]
-      },
       {
         columns: [
           {
@@ -626,17 +637,13 @@ export class InvoicePdfBuilder {
   }
 
   getMaterialInfo(materials, type) {
-    if (!materials) return null
+    if (!materials || !Array.isArray(materials)) return null
     return materials.find((m) => m.type === type)
   }
 
-  convertNumberToWords(number, isPageTotal = false) {
-    // ถ้าเป็น isPageTotal ให้ใช้ number ที่ส่งมาเลย ไม่ต้องคำนวณ grand total
-    const amountToConvert = isPageTotal ? number : this.totalAmount + this.freight - this.discount
-
-    // แปลงตัวเลขเป็นคำอ่านภาษาอังกฤษ
-    const prefix = isPageTotal ? 'THAI BAHT ' : 'THAI BAHT '
-    const numInWords = prefix + this.numberToWords(Math.floor(amountToConvert)) + ' ONLY'
+  convertNumberToWords(number) {
+    const prefix = 'THAI BAHT '
+    const numInWords = prefix + this.numberToWords(Math.floor(number)) + ' ONLY'
     return numInWords
   }
 
@@ -736,7 +743,7 @@ export class InvoicePdfBuilder {
       bold: true,
       fontSize: 10,
       alignment: 'center',
-      fillColor: '#8B0000', // สีแดงเข้ม (Maroon)
+      fillColor: '#8B0000',
       color: 'white',
       margin: [2, 5, 2, 5]
     }
@@ -744,7 +751,7 @@ export class InvoicePdfBuilder {
 
   setTableCell(text) {
     return {
-      text: text,
+      text: text || '', // เพิ่ม fallback
       fontSize: 11,
       margin: [2, 5, 2, 5]
     }
@@ -754,18 +761,18 @@ export class InvoicePdfBuilder {
     if (!imageBase64) {
       return {
         text: '',
-        margin: [2, 5, 2, 5]
+        alignment: 'center',
+        //margin: [5, 5, 5, 5]
       }
     }
 
-    // ตรวจสอบว่า imageBase64 มี prefix data:image แล้วหรือไม่
     const imageData = imageBase64.startsWith('data:image')
       ? imageBase64
       : `data:image/png;base64,${imageBase64}`
 
     return {
       image: imageData,
-      width: 25, // ปรับขนาดให้เล็กลงเพื่อให้พอดีกับเซลล์
+      width: 25,
       height: 25,
       alignment: 'center',
       margin: [2, 5, 2, 5]
@@ -774,41 +781,50 @@ export class InvoicePdfBuilder {
 
   setTableCellRight(text) {
     return {
-      text: text,
+      text: text || '', // เพิ่ม fallback
       fontSize: 12,
       alignment: 'right',
       margin: [2, 5, 2, 5]
     }
   }
+  setTablePriceCellRight(text) {
+    return {
+      text: text || '', // เพิ่ม fallback
+      fontSize: 12,
+      alignment: 'right',
+      margin: [2, 5, 2, 5],
+      fillColor: '#e0e0e0',
+      color: '#8B0000'
+    }
+  }
 
   setTableFooterRight(text) {
     return {
-      text: text,
+      text: text || '', // เพิ่ม fallback
       bold: true,
       fontSize: 12,
       alignment: 'right',
-      fillColor: '#8B0000', // สีแดงเข้ม (Maroon)
+      fillColor: '#8B0000',
       color: 'white',
       margin: [2, 5, 2, 5]
     }
   }
 
   formatPrice(price) {
+    if (typeof price !== 'number' || isNaN(price)) return '0.00'
     return price.toLocaleString('th-TH', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })
   }
 
-  // เพิ่มการแสดงเลขหน้า
   getDocDefinition() {
     return {
       pageSize: 'A4',
-      pageMargins: [10, 10, 10, 40], // เพิ่ม margin ล่างเพื่อรองรับเลขหน้า
+      pageMargins: [10, 10, 10, 40],
 
       content: [this.getHeaderContent(), ...this.createPages()],
 
-      // เพิ่มเลขหน้า
       footer: function (currentPage, pageCount) {
         return {
           text: currentPage.toString() + ' / ' + pageCount,
@@ -831,7 +847,7 @@ export class InvoicePdfBuilder {
         companyName: {
           fontSize: 16,
           bold: true,
-          color: '#8B0000', // สีแดงเข้ม
+          color: '#8B0000',
           margin: [0, 0, 0, 0]
         },
         companyInfo: {
@@ -840,10 +856,10 @@ export class InvoicePdfBuilder {
           margin: [0, 0, 0, 0]
         },
         invoiceTitle: {
-          fontSize: 22, // ปรับขนาดตัวอักษรให้ใหญ่ขึ้น
+          fontSize: 22,
           bold: true,
-          alignment: 'center', // ตัวหนังสืออยู่ตรงกลาง
-          margin: [0, 8, 0, 8] // เพิ่ม margin ภายในเพื่อให้กรอบใหญ่ขึ้น
+          alignment: 'center',
+          margin: [0, 8, 0, 8]
         },
         invoiceInfoLabel: {
           fontSize: 10,
@@ -877,8 +893,14 @@ export class InvoicePdfBuilder {
         summaryLabelColored: {
           fontSize: 12,
           bold: true,
-          color: 'white', // สีตัวอักษรขาว
-          fillColor: '#8B0000' // สีพื้นหลังแดงเข้ม
+          color: 'white',
+          fillColor: '#8B0000'
+        },
+        totalSummaryLabelColored: {
+          fontSize: 12,
+          bold: true,
+          color: '#8B0000',
+          fillColor: '#e0e0e0'
         },
         totalWords: {
           fontSize: 10,
@@ -911,7 +933,6 @@ export class InvoicePdfBuilder {
   async generatePDF() {
     try {
       await this.preparePDF()
-
       const pdfMake = initPdfMake()
       const docDefinition = this.getDocDefinition()
       return pdfMake.createPdf(docDefinition)
