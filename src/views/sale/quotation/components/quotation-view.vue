@@ -21,7 +21,7 @@
               <Column header="Stone (cts)" />
               <Column header="ราคาขาย (THB)" />
               <Column header="ราคาพิเศษ (THB)" />
-              <Column header="ตัวคูณ" />
+              <Column header="ตัวแปลง" />
               <Column :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '" />
               <Column header="จำนวน" />
               <Column :header="'รวมราคา (' + (customer.currencyUnit || '') + ') '" />
@@ -36,14 +36,32 @@
 
           <Column field="action" style="width: 10px">
             <template #body="slotProps">
-              <button
-                class="btn btn-sm btn-red"
-                type="button"
-                title="ลบ"
-                @click="delItem(slotProps.index)"
-              >
-                <span class="bi bi-trash"></span>
-              </button>
+              <div class="d-flex justify-content-center align-items-center">
+                <button
+                  class="btn btn-sm btn-red"
+                  type="button"
+                  title="ลบ"
+                  @click="delItem(slotProps.index)"
+                >
+                  <span class="bi bi-trash"></span>
+                </button>
+                <button
+                  class="btn btn-sm btn-main ml-2"
+                  type="button"
+                  title="แก้ไข"
+                  @click="onEditStock(slotProps.data, slotProps.index)"
+                >
+                  <span class="bi bi-brush"></span>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-dark ml-2"
+                  type="button"
+                  title="คัดลอก"
+                  @click="copyItem(slotProps.data)"
+                >
+                  <span class="bi bi-files"></span>
+                </button>
+              </div>
             </template>
           </Column>
 
@@ -88,16 +106,18 @@
             </template>
           </column>
 
-          <column field="gold" style="min-width: 140px">
+          <column field="gold" style="min-width: 120px; max-width: 300px;">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
                   v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
                   :key="idx"
-                  style="display: flex; gap: 1px"
+                  class="material-cell"
                 >
-                  <div style="flex: 5; text-align: right" class="mr-2">{{ item.typeCode }}</div>
-                  <div style="flex: 1">
+                  <div class="material-typecode-gold">
+                    {{ item.typeCode }}
+                  </div>
+                  <div class="material-weight">
                     {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
                   </div>
                 </div>
@@ -105,20 +125,18 @@
             </template>
           </column>
 
-          <column field="diamond" style="min-width: 140px">
+          <column field="diamond" style="min-width: 140px; max-width: 300px;">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
-                  v-for="(item, idx) in slotProps.data.materials.filter(
-                    (m) => m.type === 'Diamond'
-                  )"
+                  v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Diamond')"
                   :key="idx"
-                  style="display: flex; gap: 1px"
+                  class="material-cell"
                 >
-                  <div style="flex: 5; text-align: right" class="mr-2">
+                  <div class="material-typecode">
                     {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
                   </div>
-                  <div style="flex: 1">
+                  <div class="material-weight">
                     {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
                   </div>
                 </div>
@@ -126,18 +144,18 @@
             </template>
           </column>
 
-          <column field="gem" style="min-width: 140px">
+          <column field="gem" style="min-width: 140px; max-width: 300px;">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
                   v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
                   :key="idx"
-                  style="display: flex; gap: 1px"
+                  class="material-cell"
                 >
-                  <div style="flex: 5; text-align: right" class="mr-2">
+                  <div class="material-typecode">
                     {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
                   </div>
-                  <div style="flex: 1">
+                  <div class="material-weight">
                     {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
                   </div>
                 </div>
@@ -169,7 +187,7 @@
               </div>
             </template>
           </column>
-          <column field="multiplier" header="ตัวคูณ" style="min-width: 80px">
+          <column field="multiplier" header="ตัวคูณ" style="min-width: 100px">
             <template #body="slotProps">
               <div class="qty-container">
                 <span>{{ customer.currencyMultiplier }}</span>
@@ -236,7 +254,7 @@
                   </div>
                 </template>
               </column>
-              <column >
+              <column>
                 <template #footer>
                   <div class="text-right type-container">
                     <span>รวม</span>
@@ -448,6 +466,12 @@
         </div>
       </div>
     </form>
+
+    <edit-stock-view
+      :isShow="isShow.isEditStock"
+      :modelStock="modelEditStock"
+      @closeModal="onCloseEditStockModal"
+    />
   </div>
 </template>
 
@@ -459,9 +483,11 @@ import Row from 'primevue/row'
 import Calendar from 'primevue/calendar'
 
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 //import swAlert from '@/services/alert/sweetAlerts.js'
@@ -474,6 +500,9 @@ const interfaceForm = {
   name: null,
   invoiceNumber: null
 }
+const interfaceShow = {
+  isEditStock: false
+}
 
 export default {
   name: 'QuotationView',
@@ -484,12 +513,14 @@ export default {
     ColumnGroup,
     Row,
     imagePreview,
-    Calendar
+    Calendar,
+    editStockView
   },
 
   setup() {
     const productStore = usrStockProductApiStore()
-    return { productStore }
+    const masterStore = useMasterApiStore()
+    return { productStore, masterStore }
   },
 
   props: {
@@ -589,6 +620,15 @@ export default {
       })
       const net = (diamond + gem) / 5 + gold
       return net ? net.toFixed(2) : (0).toFixed(2)
+    },
+    masterGold() {
+      return this.masterStore.gold
+    },
+    masterGem() {
+      return this.masterStore.gem
+    },
+    masterDiamondGrade() {
+      return this.masterStore.diamondGrade
     }
   },
 
@@ -615,7 +655,10 @@ export default {
       groupOrderRunning: {
         product: 1,
         etc: 5
-      }
+      },
+      isShow: { ...interfaceShow, isEditStock: false },
+      modelEditStock: {},
+      editStockIndex: null
     }
   },
 
@@ -765,7 +808,39 @@ export default {
       } catch (error) {
         // แสดงข้อความผิดพลาด
       }
+    },
+    onEditStock(item, index) {
+      this.modelEditStock = JSON.parse(JSON.stringify(item))
+      this.editStockIndex = index
+      this.isShow.isEditStock = true
+    },
+    onCloseEditStockModal(payload) {
+      this.isShow.isEditStock = false
+      if (payload && payload.action === 'save' && payload.data) {
+        // อัปเดตข้อมูลในตาราง
+        this.customer.quotationItems[this.editStockIndex] = payload.data
+        // sync discountPrice ถ้ามี priceDiscount (จาก modal)
+        if (payload.data.priceDiscount !== undefined && payload.data.priceDiscount !== null) {
+          this.customer.quotationItems[this.editStockIndex].discountPrice = payload.data.priceDiscount
+        }
+      }
+      this.modelEditStock = {}
+      this.editStockIndex = null
+    },
+    copyItem(item) {
+      // Deep copy the item
+      const newItem = JSON.parse(JSON.stringify(item))
+      newItem.stockNumber = null
+      this.customer.quotationItems.push(newItem)
     }
+  },
+
+  async created() {
+    this.$nextTick(async () => {
+      await this.masterStore.fetchGold()
+      await this.masterStore.fetchGem()
+      await this.masterStore.fetchDiamondGrade()
+    })
   }
 }
 </script>
@@ -803,5 +878,54 @@ export default {
   color: var(--base-font-color);
   padding: 5px;
   //margin: 0px 0px 10px 0px;
+}
+
+.material-cell {
+  display: flex;
+  gap: 1px;
+  align-items: flex-start;
+  min-width: 0;
+}
+.material-typecode {
+  flex: 5;
+  text-align: left;
+  margin-right: 0.5rem;
+  min-width: 120px;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+.material-typecode-gold {
+  flex: 5;
+  text-align: center;
+  margin-right: 0.5rem;
+  min-width: 0;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+.material-weight {
+  flex: 1;
+  vertical-align: top;
+}
+
+/* --- align cell content to top for all columns --- */
+:deep(.p-column-body),
+:deep(.p-cell-text),
+.qty-container,
+.type-container,
+.form-control {
+  align-items: flex-start !important;
+  vertical-align: top !important;
+}
+:deep(.p-column-body) {
+  vertical-align: top !important;
+}
+:deep(.p-column-body) > * {
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  display: flex;
 }
 </style>

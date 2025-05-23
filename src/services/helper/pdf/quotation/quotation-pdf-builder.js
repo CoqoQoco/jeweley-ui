@@ -138,7 +138,7 @@ export class InvoicePdfBuilder {
                     {
                       text: 'QUOTATION',
                       fontSize: 20,
-                      bold: true,
+                      //bold: true,
                       color: '#393939',
                       alignment: 'center',
                       margin: [0, 10, 0, 0]
@@ -154,7 +154,7 @@ export class InvoicePdfBuilder {
                         },
                         {
                           text: this.invoiceNo || '',
-                          fontSize: 10,
+                          fontSize: 12,
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
@@ -174,7 +174,7 @@ export class InvoicePdfBuilder {
                         },
                         {
                           text: dayjs(this.invoiceDate).format('MMM DD, YYYY'),
-                          fontSize: 10,
+                          fontSize: 12,
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
@@ -366,7 +366,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [20, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
+        widths: [15, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
         body: [
           [
             this.setTableHeader('No.'),
@@ -399,7 +399,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [20, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
+        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
         body: this.buildRegularTableBody(items, pageNum, totalPages, pageTotal)
       },
       layout: {
@@ -419,7 +419,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [20, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
+        widths: [10, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
         body: this.buildFinalTableBody(items, pageNum, totalPages, pageTotal)
       },
       layout: {
@@ -438,7 +438,7 @@ export class InvoicePdfBuilder {
     const body = []
     // Header
     body.push([
-      this.setTableHeader('No.'),
+      this.setTableHeader(''),
       this.setTableHeader(''),
       this.setTableHeader('Style/Product'),
       this.setTableHeader('Description'),
@@ -470,20 +470,20 @@ export class InvoicePdfBuilder {
                   ? m.typeCode || ''
                   : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
               alignment: 'left',
-              fontSize: 11,
+              fontSize: 10,
               margin: [0, 0, 0, 0]
             },
             {
               text: m.weight ? Number(m.weight).toFixed(2) : Number(0).toFixed(2),
               alignment: 'right',
-              fontSize: 12,
+              fontSize: 10,
               margin: [0, 0, 0, 0]
             }
           ])
         if (!rows.length) return ''
         return {
           table: {
-            widths: ['*', 22],
+            widths: ['*', 15],
             body: rows
           },
           layout: {
@@ -894,7 +894,7 @@ export class InvoicePdfBuilder {
   setTableCellRight(text) {
     return {
       text: text || '', // เพิ่ม fallback
-      fontSize: 12,
+      fontSize: 10,
       alignment: 'right',
       margin: [2, 5, 2, 5]
     }
