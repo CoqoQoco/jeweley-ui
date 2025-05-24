@@ -456,8 +456,12 @@
             <!-- ต้นทุนต่อชิ้น -->
             <div class="d-flex align-items-center mt-3">
               <span class="mr-2 type-container">ต้นทุนต่อชิ้น:</span>
-              <span class="font-weight-bold mr-3 type-container">{{ costPerPiece.toFixed(2) }}</span>
-              <span class="mr-3 type-container">(แผนผลิต {{ stock.planQty || stock.qty || 1 }} ชิ้น)</span>
+              <span class="font-weight-bold mr-3 type-container">{{
+                costPerPiece.toFixed(2)
+              }}</span>
+              <span class="mr-3 type-container"
+                >(แผนผลิต {{ stock.planQty || stock.qty || 1 }} ชิ้น)</span
+              >
               <input type="checkbox" id="useCostPerPiece" v-model="useCostPerPiece" class="mr-1" />
               <span for="useCostPerPiece">ใช้ต้นทุนต่อชิ้นเป็นราคาพิเศษ</span>
             </div>
@@ -480,9 +484,7 @@
                   <span><i class="bi bi-plus"></i></span>
                 </button>
               </div>
-              <div>
-              
-              </div>
+              <div></div>
             </div>
           </div>
 
@@ -568,7 +570,7 @@ export default {
     costPerPiece() {
       const total = this.caltotalPrice(this.tranItems)
       const qty = Number(this.stock.planQty || this.stock.qty || 1)
-      return qty > 0 ? (total / qty) : total
+      return qty > 0 ? total / qty : total
     }
   },
 
@@ -599,8 +601,10 @@ export default {
           }))
         } else if (this.stock.materials && this.stock.materials.length > 0) {
           this.tranItems = this.stock.materials.map((mat) => ({
-            nameGroup: mat.type,
-            nameDescription: mat.typeCode || mat.description || '',
+
+            nameGroup: mat.type === 'Diamond' ? 'Gem' : mat.type,
+            //nameGroup: mat.type,
+            nameDescription: mat.typeCode || mat.description || mat.type || '',
             qty: mat.qty || 0,
             qtyPrice: mat.price || 0,
             qtyWeight: mat.weight || 0,

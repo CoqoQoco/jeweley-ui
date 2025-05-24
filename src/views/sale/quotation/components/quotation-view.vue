@@ -20,6 +20,7 @@
               <Column header="Diamond (cts)" />
               <Column header="Stone (cts)" />
               <Column header="ราคาขาย (THB)" />
+               <Column header="New Price  (THB)" />
               <Column header="ราคาพิเศษ (THB)" />
               <Column header="ตัวแปลง" />
               <Column :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '" />
@@ -166,9 +167,15 @@
           <column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
-                <span>{{
-                  Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2)
-                }}</span>
+                <span>{{ Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2) }}</span>
+              </div>
+            </template>
+          </column>
+          <column field="newPrice" header="New Price" style="min-width: 120px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <!-- Use slotProps to avoid unused warning -->
+                <span v-if="slotProps">{{ (Number(slotProps.data.priceOrigin || slotProps.data.price || 0) * (customer.markup || 1)).toFixed(2) }}</span>
               </div>
             </template>
           </column>
@@ -176,12 +183,12 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
-                  v-model.number="slotProps.data.discountPrice"
+                  :value="(Number(slotProps.data.priceOrigin || slotProps.data.price || 0) * (customer.markup || 1) * (1 - (customer.discountPercent || 0) / 100)).toFixed(2)"
                   type="number"
                   class="form-control text-right bg-input input-bg"
                   min="0"
                   step="any"
-                  @blur="onBluePrice(slotProps.data, slotProps.index, 'discountPrice')"
+                  readonly
                   style="background-color: #b5dad4; width: 100%"
                 />
               </div>
@@ -410,6 +417,29 @@
                   style="width: 100px"
                 />
               </div>
+              <div class="ml-2">
+                <span class="title-text">Markup</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.markup"
+                  min="0"
+                  step="any"
+                  style="width: 80px"
+                />
+              </div>
+              <div class="ml-2">
+                <span class="title-text">Discount (%)</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.discountPercent"
+                  min="0"
+                  max="100"
+                  step="any"
+                  style="width: 80px"
+                />
+              </div>
             </div>
           </div>
 
@@ -428,6 +458,7 @@
                 :class="['form-control bg-input', 'input-bg']"
                 type="text"
                 v-model.trim="customer.address"
+                disabled
               />
             </div>
             <div>
@@ -650,7 +681,9 @@ export default {
         ...interfaceForm,
         quotationItems: [],
         currencyMultiplier: 1,
-        currencyUnit: 'THB'
+        currencyUnit: 'THB',
+        markup: 0,
+        discountPercent: 0
       },
       groupOrderRunning: {
         product: 1,

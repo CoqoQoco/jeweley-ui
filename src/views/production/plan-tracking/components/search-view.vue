@@ -87,7 +87,7 @@
                     v-model="form.sendStart"
                     :max-date="form.sendEnd"
                     showIcon
-                    :manualInput="false"
+                    :manualInput="true"
                     placeholder="เริ่มต้น"
                     dateFormat="dd/mm/yy"
                   />
@@ -97,7 +97,7 @@
                     v-model="form.sendEnd"
                     :min-date="form.sendStart"
                     showIcon
-                    :manualInput="false"
+                    :manualInput="true"
                     placeholder="สิ้นสุด"
                     dateFormat="dd/mm/yy"
                   />

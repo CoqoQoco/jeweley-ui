@@ -1,6 +1,5 @@
 <template>
   <div>
-  
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="filter-container-highlight">
@@ -291,7 +290,7 @@ export default {
             grade: null,
             shape: null,
             size: null,
-            status: 'completed'
+            status: ['completed']
           }
         }
         console.log('params', params)
