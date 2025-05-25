@@ -291,6 +291,10 @@
               <span class="title-text-lg bi bi-calculator"></span>
               <span class="title-text-lg ml-2">ประเมินราคาสินค้า</span>
             </div>
+            <!-- ข้อความแจ้งเตือนว่ารายการที่แสดงเป็นราคาต่อชิ้น -->
+            <div class="mb-2" style="color: #888; font-size: 14px;">
+              * รายการที่แสดงในตารางนี้เป็นราคาต่อ 1 ชิ้น (หารต้นทุนตามจำนวนแผนผลิตแล้ว)
+            </div>
             <DataTable
               :value="tranItems"
               rowGroupMode="subheader"
@@ -459,11 +463,11 @@
               <span class="font-weight-bold mr-3 type-container">{{
                 costPerPiece.toFixed(2)
               }}</span>
-              <span class="mr-3 type-container"
+              <!-- <span class="mr-3 type-container"
                 >(แผนผลิต {{ stock.planQty || stock.qty || 1 }} ชิ้น)</span
-              >
+              > -->
               <input type="checkbox" id="useCostPerPiece" v-model="useCostPerPiece" class="mr-1" />
-              <span for="useCostPerPiece">ใช้ต้นทุนต่อชิ้นเป็นราคาพิเศษ</span>
+              <span for="useCostPerPiece">ใช้ต้นทุนต่อชิ้นเป็นราคาประเมิน</span>
             </div>
             <div class="action-group-container mt-2">
               <div class="d-flex align-items-center gap-2">
@@ -568,9 +572,8 @@ export default {
       return this.masterStore.diamondGrade
     },
     costPerPiece() {
-      const total = this.caltotalPrice(this.tranItems)
-      const qty = Number(this.stock.planQty || this.stock.qty || 1)
-      return qty > 0 ? total / qty : total
+      // tranItems เป็นราคาต่อชิ้นอยู่แล้ว ไม่ต้องหารซ้ำ
+      return Number(this.caltotalPrice(this.tranItems))
     }
   },
 
@@ -585,23 +588,22 @@ export default {
       handler(val) {
         if (!val) return
         this.stock = { ...val }
-        // ใช้ข้อมูล priceTransactions เสมอถ้ามี
+        // ใช้ข้อมูล priceTransactions เสมอถ้ามี ต้องหารด้วย planQty เพื่อทำเป็นข้อมูลต่อชิ้น
         if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
+          const planQty = Number(this.stock.planQty) || 1
           this.tranItems = this.stock.priceTransactions.map((item) => ({
-            ...item,
-            qty: item.qty ?? 0,
-            qtyPrice: item.qtyPrice ?? 0,
-            qtyWeight: item.qtyWeight ?? 0,
-            qtyWeightPrice: item.qtyWeightPrice ?? 0,
-            totalPrice: (
-              (Number(item.qty) || 0) * (Number(item.qtyPrice) || 0) +
-              (Number(item.qtyWeight) || 0) * (Number(item.qtyWeightPrice) || 0)
-            ).toFixed(2),
-            isAdd: !!item.isAdd
+            // ต้องหารด้วย planQty ทุกรายการ เพื่อทำเป็นข้อมูลต่อชิ้น
+            nameGroup: item.nameGroup || (item.type === 'Diamond' ? 'Gem' : item.type) || 'ETC',
+            nameDescription: item.nameDescription || item.typeCode || item.description || item.type || '',
+            qty: (Number(item.qty) || 0) / planQty,
+            qtyPrice: (Number(item.qtyPrice) || 0) / planQty,
+            qtyWeight: (Number(item.qtyWeight) || 0) / planQty,
+            qtyWeightPrice: (Number(item.qtyWeightPrice) || 0) / planQty,
+            totalPrice: (((Number(item.qty) || 0) / planQty) * ((Number(item.qtyPrice) || 0) / planQty) + ((Number(item.qtyWeight) || 0) / planQty) * ((Number(item.qtyWeightPrice) || 0) / planQty)).toFixed(2),
+            isAdd: true
           }))
         } else if (this.stock.materials && this.stock.materials.length > 0) {
           this.tranItems = this.stock.materials.map((mat) => ({
-
             nameGroup: mat.type === 'Diamond' ? 'Gem' : mat.type,
             //nameGroup: mat.type,
             nameDescription: mat.typeCode || mat.description || mat.type || '',
@@ -801,9 +803,11 @@ export default {
     onSave() {
       // อัปเดต priceTransactions ก่อนส่งข้อมูลกลับ parent
       this.stock.priceTransactions = [...this.tranItems]
-      // ถ้าเลือกใช้ต้นทุนต่อชิ้นเป็นราคาส่วนลด
+      // ถ้าเลือกใช้ต้นทุนต่อชิ้นเป็นราคาพิเศษ
       if (this.useCostPerPiece) {
-        this.stock.priceDiscount = Number(this.costPerPiece.toFixed(2))
+        // ส่ง appraisalPrice = costPerPiece * markup กลับไปด้วย
+        const markup = this.$parent?.customer?.markup || 1
+        this.stock.appraisalPrice = Number((this.costPerPiece * markup).toFixed(2))
       }
       // ส่งข้อมูลกลับ parent
       this.$emit('closeModal', { action: 'save', data: { ...this.stock } })
@@ -975,7 +979,7 @@ export default {
       }))
     },
     onBluePrice(item, fieldName) {
-      // คำนวณราคารวมใหม่เมื่อเปลี่ยนค่า
+      // คำนวณราคารวมใหม่เมื่อเปลี่ยนค่า (ใช้ค่าต่อชิ้น ไม่ต้องหาร planQty ซ้ำ)
       item[fieldName] = item[fieldName] ? Number(item[fieldName]) : 0
       item.totalPrice = (
         (Number(item.qty) || 0) * (Number(item.qtyPrice) || 0) +

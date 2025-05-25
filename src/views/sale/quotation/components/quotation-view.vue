@@ -19,9 +19,10 @@
               <Column header="Gold (gms)" />
               <Column header="Diamond (cts)" />
               <Column header="Stone (cts)" />
-              <Column header="ราคาขาย (THB)" />
-               <Column header="New Price  (THB)" />
-              <Column header="ราคาพิเศษ (THB)" />
+              <Column header="ราคาขาย  (THB)" />
+              <Column header="ราคาประเมิน (THB)" />
+              <Column header="ส่วนลด" />
+              <Column header="ราคาส่วนลด (THB)" />
               <Column header="ตัวแปลง" />
               <Column :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '" />
               <Column header="จำนวน" />
@@ -107,7 +108,7 @@
             </template>
           </column>
 
-          <column field="gold" style="min-width: 120px; max-width: 300px;">
+          <column field="gold" style="min-width: 120px; max-width: 300px">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
@@ -126,11 +127,13 @@
             </template>
           </column>
 
-          <column field="diamond" style="min-width: 140px; max-width: 300px;">
+          <column field="diamond" style="min-width: 140px; max-width: 300px">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
-                  v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Diamond')"
+                  v-for="(item, idx) in slotProps.data.materials.filter(
+                    (m) => m.type === 'Diamond'
+                  )"
                   :key="idx"
                   class="material-cell"
                 >
@@ -145,7 +148,7 @@
             </template>
           </column>
 
-          <column field="gem" style="min-width: 140px; max-width: 300px;">
+          <column field="gem" style="min-width: 140px; max-width: 300px">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
@@ -167,55 +170,91 @@
           <column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
-                <span>{{ Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2) }}</span>
+                <span>{{
+                  Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2)
+                }}</span>
               </div>
             </template>
           </column>
-          <column field="newPrice" header="New Price" style="min-width: 120px">
-            <template #body="slotProps">
-              <div class="qty-container">
-                <!-- Use slotProps to avoid unused warning -->
-                <span v-if="slotProps">{{ (Number(slotProps.data.priceOrigin || slotProps.data.price || 0) * (customer.markup || 1)).toFixed(2) }}</span>
-              </div>
-            </template>
-          </column>
-          <column field="price" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+
+          <column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
                 <input
-                  :value="(Number(slotProps.data.priceOrigin || slotProps.data.price || 0) * (customer.markup || 1) * (1 - (customer.discountPercent || 0) / 100)).toFixed(2)"
+                  v-model.number="slotProps.data.appraisalPrice"
                   type="number"
                   class="form-control text-right bg-input input-bg"
                   min="0"
                   step="any"
-                  readonly
+                  @blur="onBluePrice(slotProps.data, slotProps.index, 'appraisalPrice')"
                   style="background-color: #b5dad4; width: 100%"
                 />
               </div>
             </template>
           </column>
-          <column field="multiplier" header="ตัวคูณ" style="min-width: 100px">
+
+          <column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  `${customer.discountPercent ? `${customer.discountPercent} %` : `0 %`}`
+                }}</span>
+              </div>
+            </template>
+          </column>
+
+          <column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <!-- <input
+                  :value="
+                    (
+                      Number(slotProps.data.appraisalPrice || 0) *
+                      (1 - (customer.discountPercent || 0) / 100)
+                    ).toFixed(2)
+                  "
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  step="any"
+                  readonly
+                  style="background-color: #b5dad4; width: 100%" -->
+                <span>{{
+                  (
+                    Number(slotProps.data.appraisalPrice || 0) *
+                    (1 - (customer.discountPercent || 0) / 100)
+                  ).toFixed(2)
+                }}</span>
+              </div>
+            </template>
+          </column>
+
+          <column field="currencyMultiplier" header="ตัวแปลง" style="min-width: 100px">
             <template #body="slotProps">
               <div class="qty-container">
                 <span>{{ customer.currencyMultiplier }}</span>
               </div>
             </template>
           </column>
+
           <column
             field="priceAfterMultiply"
-            header="ราคาแปลง ({{ customer.currencyUnit || '' }})"
+            :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '"
             style="min-width: 150px"
           >
             <template #body="slotProps">
               <div class="qty-container">
                 <span>{{
-                  (Number(slotProps.data.discountPrice || 0) * customer.currencyMultiplier).toFixed(
-                    2
-                  )
+                  (
+                    Number(slotProps.data.appraisalPrice || 0) *
+                    (1 - (customer.discountPercent || 0) / 100) *
+                    customer.currencyMultiplier
+                  ).toFixed(2)
                 }}</span>
               </div>
             </template>
           </column>
+
           <column field="qty" header="จำนวน" style="width: 80px">
             <template #body="slotProps">
               <div class="qty-container">
@@ -232,7 +271,7 @@
             </template>
           </column>
           <column
-            field="totalConverted"
+            field="total"
             :header="'รวมราคา (' + (customer.currencyUnit || '') + ') '"
             style="min-width: 150px"
           >
@@ -240,9 +279,10 @@
               <div class="qty-container">
                 <span>{{
                   (
-                    Number(slotProps.data.discountPrice || 0) *
+                    Number(slotProps.data.appraisalPrice || 0) *
+                    (1 - (customer.discountPercent || 0) / 100) *
                     customer.currencyMultiplier *
-                    (slotProps.data.qty || 0)
+                    (Number(slotProps.data.qty) || 0)
                   ).toFixed(2)
                 }}</span>
               </div>
@@ -292,21 +332,14 @@
               <column :colspan="2">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ sumDiscountPrice }}</span>
+                    <span>{{ sumAppraisalPrice }}</span>
                   </div>
                 </template>
               </column>
               <column :colspan="2">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ sumConvertPrice }}</span>
-                  </div>
-                </template>
-              </column>
-              <column>
-                <template #footer>
-                  <div class="text-right type-container">
-                    <span>{{ sumQty }}</span>
+                    <span>{{ sumDiscountPrice }}</span>
                   </div>
                 </template>
               </column>
@@ -317,18 +350,31 @@
                   </div>
                 </template>
               </column>
+              <column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ sumQty }}</span>
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ sumTotalConvertedPrice }}</span>
+                  </div>
+                </template>
+              </column>
             </Row>
-
             <!-- freight -->
             <Row>
-              <column :colspan="14">
+              <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
                     <span>Freight & Insurance</span>
                   </div>
                 </template>
               </column>
-              <column :colspan="1">
+              <column>
                 <template #footer>
                   <div class="qty-container">
                     <input
@@ -345,22 +391,21 @@
                 </template>
               </column>
             </Row>
-
             <!-- total after discount -->
             <Row>
-              <column :colspan="14">
+              <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
                     <span>ราคารวม</span>
                   </div>
                 </template>
               </column>
-              <column :colspan="1">
+              <column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span
-                      >{{ formatPrice(calTotalPriceAfterDiscount(customer.quotationItems)) }}
-                    </span>
+                    <span>{{
+                      formatPrice(calTotalPriceAfterDiscount(customer.quotationItems))
+                    }}</span>
                   </div>
                 </template>
               </column>
@@ -619,10 +664,17 @@ export default {
       })
       return sum.toFixed(2)
     },
+    sumAppraisalPrice() {
+      let sum = 0
+      this.customer.quotationItems.forEach((item) => {
+        sum += Number(item.appraisalPrice) || 0
+      })
+      return sum.toFixed(2)
+    },
     sumDiscountPrice() {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
-        sum += Number(item.discountPrice) || 0
+        sum += (Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)
       })
       return sum.toFixed(2)
     },
@@ -630,7 +682,18 @@ export default {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
         sum +=
-          Number(item.discountPrice || 0) *
+          (Number(item.appraisalPrice) || 0) *
+          (1 - (this.customer.discountPercent || 0) / 100) *
+          this.customer.currencyMultiplier
+      })
+      return sum.toFixed(2)
+    },
+    sumTotalConvertedPrice() {
+      let sum = 0
+      this.customer.quotationItems.forEach((item) => {
+        sum +=
+          (Number(item.appraisalPrice) || 0) *
+          (1 - (this.customer.discountPercent || 0) / 100) *
           this.customer.currencyMultiplier *
           (Number(item.qty) || 0)
       })
@@ -710,17 +773,19 @@ export default {
       return sum.toFixed(2)
     },
     calTotalPriceAfterDiscount(items) {
-      // ใช้ currencyMultiplier ในการคำนวณราคารวมหลังหักส่วนลด
+      // ใช้ currencyMultiplier และ discountPercent ในการคำนวณราคารวมหลังหักส่วนลด
       const sum = items.reduce((total, item) => {
-        return (
-          total +
-          Number(item.discountPrice) * this.customer.currencyMultiplier * (Number(item.qty) || 0)
-        )
+        const priceAfterDiscount =
+          (Number(item.appraisalPrice) || 0) *
+          (1 - (this.customer.discountPercent || 0) / 100) *
+          this.customer.currencyMultiplier *
+          (Number(item.qty) || 1)
+        return total + priceAfterDiscount
       }, 0)
-      var freight = this.customer.freight ? Number(this.customer.freight) : 0
-      let sumFreight = sum + freight
-      var discount = this.customer.discount ? Number(this.customer.discount) : 0
-      return (sumFreight - discount).toFixed(2)
+
+      // + finsurance
+      const freight = Number(this.customer.freight) || 0
+      return (sum + freight).toFixed(2)
     },
 
     getGroupName(id) {
@@ -799,10 +864,10 @@ export default {
         data = {
           ...data,
           price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
-          discountPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          appraisalPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
           description: data.productNameEn,
           group: 'product',
-          planQty : data.planQty || 1,
+          planQty: data.planQty || 1
         }
 
         //data is object
@@ -851,7 +916,8 @@ export default {
         this.customer.quotationItems[this.editStockIndex] = payload.data
         // sync discountPrice ถ้ามี priceDiscount (จาก modal)
         if (payload.data.priceDiscount !== undefined && payload.data.priceDiscount !== null) {
-          this.customer.quotationItems[this.editStockIndex].discountPrice = payload.data.priceDiscount
+          this.customer.quotationItems[this.editStockIndex].discountPrice =
+            payload.data.priceDiscount
         }
       }
       this.modelEditStock = {}
