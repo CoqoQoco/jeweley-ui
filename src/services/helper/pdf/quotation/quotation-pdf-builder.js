@@ -1,4 +1,3 @@
-//import { formatDate } from '@/services/utils/dayjs'
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 
@@ -39,10 +38,12 @@ export class InvoicePdfBuilder {
     let total = 0
     if (this.data && Array.isArray(this.data)) {
       this.data.forEach((item) => {
-        const discountPrice = Number(item.discountPrice || 0)
-        const convertedPrice = discountPrice * this.currencyMultiplier
-        const totalConverted = convertedPrice * (item.qty || 0)
-        total += totalConverted
+        const appraisalPrice = Number(item.appraisalPrice) || 0
+        const discountPercent = this.customer.discountPercent || 0
+        const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
+        const qtyVal = Number(item.qty) || 0
+        const convertedPrice = priceAfterDiscount * this.currencyMultiplier
+        total += convertedPrice * qtyVal
       })
     }
     return total
@@ -523,7 +524,8 @@ export class InvoicePdfBuilder {
       sumDiamond += diamondWeight
       sumGem += gemWeight
       const qty = Number(item.qty) || 0
-      const price = Number(item.discountPrice || 0) * this.currencyMultiplier
+      // --- ปรับ logic ตรงนี้ ---
+      const price = (Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100) * this.currencyMultiplier
       const amount = price * qty
       sumQty += qty
       sumAmount += amount
@@ -891,154 +893,127 @@ export class InvoicePdfBuilder {
       ].filter(Boolean)
     }
 
-    // Table header (No., Style/Product, Type, Description, Qty, Weight, Cost/pc)
     const tableHeader = [
       { text: 'No.', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Style/Product', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Type', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Description', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Qty', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Qty Price', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Weight', style: 'summaryLabelColored', alignment: 'center' },
-      { text: `Price (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' }
+      { text: 'Weight Price', style: 'summaryLabelColored', alignment: 'center' },
+      { text: `Price/Unit (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Qty (สินค้า)', style: 'summaryLabelColored', alignment: 'center' },
+      { text: `Total (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' }
     ]
 
     const body = [tableHeader]
     let rowIndex = 1
-    // typeList: etc ไว้ล่างสุด
-    const typeList = [
-      { key: 'gold', label: 'Gold' },
-      { key: 'setting', label: 'Setting' },
-      { key: 'labor', label: '"Labor"' },
-      { key: 'gem', label: 'Gem' },
-      { key: 'etc', label: 'Etc' }
-    ]
     ;(this.data || []).forEach((item) => {
       const planQty = Number(item.planQty || item.qty || 1)
       const priceTransactions = Array.isArray(item.priceTransactions) ? item.priceTransactions : []
-      // เตรียมข้อมูลแยกตาม type
-      const goldRows = 1
-      const settingRows = 1
-      const laborRows = 1
-      const gemRows = priceTransactions.filter(
-        (t) => (t.nameGroup || '').toLowerCase() === 'gem'
-      ).length
-      const etcRows = priceTransactions.filter((t) => {
-        const group = (t.nameGroup || '').toLowerCase()
-        return (
-          group !== 'gold' &&
-          group !== 'setting' &&
-          group !== 'worker' &&
-          group !== 'gem' &&
-          group !== 'embed'
-        )
-      }).length
-      const totalRows = goldRows + settingRows + laborRows + gemRows + etcRows
-      let rowSpan = totalRows > 0 ? totalRows : 1
-      let rowCount = 0
-      // gold/setting/labor: 1 row ต่อ type
-      ;['gold', 'setting', 'labor'].forEach((typeKey) => {
-        let sum = 0
-        let qty = '',
-          weight = ''
-        if (typeKey === 'gold') {
-          qty = '0'
-          const goldWeight = (item.materials || [])
-            .filter((m) => m.type === 'Gold')
-            .reduce((a, b) => a + Number(b.weight) || 0, 0)
-          weight = planQty ? this.formatPrice(goldWeight / planQty) : this.formatPrice(goldWeight)
-        } else {
-          qty = '1'
-          weight = '0'
-        }
-        priceTransactions.forEach((t) => {
-          const group = (t.nameGroup || '').toLowerCase()
-          if (
-            group === typeKey ||
-            (typeKey === 'setting' && group === 'embed') ||
-            (typeKey === 'labor' && group === 'worker')
-          )
-            sum += Number(t.totalPrice || t.price || 0)
-        })
-        body.push([
-          rowCount === 0 ? { text: rowIndex++, alignment: 'center', rowSpan } : {},
-          rowCount === 0
-            ? { text: item.stockNumber || item.productNumber || '', alignment: 'center', rowSpan }
-            : {},
-          { text: typeKey.charAt(0).toUpperCase() + typeKey.slice(1), alignment: 'center' },
-          { text: '-', alignment: 'left' },
-          { text: qty, alignment: 'center' },
-          { text: weight, alignment: 'center' },
-          { text: this.formatPrice((planQty ? sum / planQty : 0) * this.currencyMultiplier), alignment: 'right' }
-        ])
-        rowCount++
-      })
-      // gem: แสดงทุกรายการ gem (qty, weight, price ต้องหาร planQty)
+      // --- เตรียม group ---
+      const goldList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'gold')
       const gemList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'gem')
+      const etcList = priceTransactions.filter((t) => {
+        const group = (t.nameGroup || '').toLowerCase()
+        return group !== 'gold' && group !== 'setting' && group !== 'worker' && group !== 'gem' && group !== 'embed'
+      })
+      // work/embed รวมราคา
+      const workList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'worker')
+      const embedList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'embed')
+      // รวม row ทั้งหมด
+      const totalRows = goldList.length + gemList.length + etcList.length + (workList.length ? 1 : 0) + (embedList.length ? 1 : 0)
+      let currentRow = 0
+      // gold
+      goldList.forEach((gold, idx) => {
+        body.push([
+          currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
+          currentRow === 0 ? { text: item.stockNumber || item.productNumber || '', alignment: 'center', rowSpan: totalRows } : {},
+          { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
+          { text: gold.name || '-', alignment: 'left' },
+          { text: gold.qty ? this.formatPrice(gold.qty) : '', alignment: 'center' },
+          { text: gold.qtyPrice ? this.formatPrice(gold.qtyPrice) : '', alignment: 'center' },
+          { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
+          { text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice) : '', alignment: 'center' },
+          { text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier), alignment: 'right' },
+          { text: planQty, alignment: 'center' },
+          { text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier), alignment: 'right' }
+        ])
+        currentRow++
+      })
+      // gem
       gemList.forEach((gem, idx) => {
         body.push([
           {},
           {},
-          idx === 0 && gemList.length > 1
-            ? { text: 'Gem', alignment: 'center', rowSpan: gemList.length }
-            : idx === 0
-            ? { text: 'Gem', alignment: 'center' }
-            : {},
+          idx === 0 ? { text: 'Gem', alignment: 'center', rowSpan: gemList.length } : {},
           { text: gem.name || '-', alignment: 'left' },
-          {
-            text: gem.qty ? this.formatPrice(planQty ? gem.qty / planQty : gem.qty) : '',
-            alignment: 'center'
-          },
-          {
-            text: gem.qtyWeight
-              ? this.formatPrice(planQty ? gem.qtyWeight / planQty : gem.qtyWeight)
-              : '',
-            alignment: 'center'
-          },
-          {
-            text: this.formatPrice((planQty ? (gem.totalPrice || gem.price || 0) / planQty : 0) * this.currencyMultiplier),
-            alignment: 'right'
-          }
+          { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
+          { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice) : '', alignment: 'center' },
+          { text: gem.qtyWeight ? this.formatPrice(gem.qtyWeight) : '', alignment: 'center' },
+          { text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice) : '', alignment: 'center' },
+          { text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier), alignment: 'right' },
+          { text: planQty, alignment: 'center' },
+          { text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier), alignment: 'right' }
         ])
-        rowCount++
+        currentRow++
       })
-      // etc: แสดงทุกรายการ etc (qty, weight, price ต้องหาร planQty)
-      const etcList = priceTransactions.filter((t) => {
-        const group = (t.nameGroup || '').toLowerCase()
-        return (
-          group !== 'gold' &&
-          group !== 'setting' &&
-          group !== 'worker' &&
-          group !== 'gem' &&
-          group !== 'embed'
-        )
-      })
+      // work รวม
+      if (workList.length) {
+        const sumWork = workList.reduce((sum, t) => sum + Number(t.totalPrice || t.price || 0), 0)
+        body.push([
+          {},
+          {},
+          { text: 'Work', alignment: 'center' },
+          { text: '-', alignment: 'left' },
+          { text: '1', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: this.formatPrice(sumWork * this.currencyMultiplier), alignment: 'right' },
+          { text: planQty, alignment: 'center' },
+          { text: this.formatPrice(sumWork * this.currencyMultiplier), alignment: 'right' }
+        ])
+        currentRow++
+      }
+      // embed รวม
+      if (embedList.length) {
+        const sumEmbed = embedList.reduce((sum, t) => sum + Number(t.totalPrice || t.price || 0), 0)
+        body.push([
+          {},
+          {},
+          { text: 'Embed', alignment: 'center' },
+          { text: '-', alignment: 'left' },
+          { text: '1', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: this.formatPrice(sumEmbed * this.currencyMultiplier), alignment: 'right' },
+          { text: planQty, alignment: 'center' },
+          { text: this.formatPrice(sumEmbed * this.currencyMultiplier), alignment: 'right' }
+        ])
+        currentRow++
+      }
+      // etc
       etcList.forEach((etc, idx) => {
         body.push([
           {},
           {},
-          idx === 0 && etcList.length > 1
-            ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length }
-            : idx === 0
-            ? { text: 'Etc', alignment: 'center' }
-            : {},
+          idx === 0 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : {},
           { text: etc.name || '-', alignment: 'left' },
-          {
-            text: etc.qty ? this.formatPrice(planQty ? etc.qty / planQty : etc.qty) : '',
-            alignment: 'center'
-          },
-          {
-            text: etc.weight ? this.formatPrice(planQty ? etc.weight / planQty : etc.weight) : '',
-            alignment: 'center'
-          },
-          {
-            text: this.formatPrice((planQty ? (etc.totalPrice || etc.price || 0) / planQty : 0) * this.currencyMultiplier),
-            alignment: 'right'
-          }
+          { text: etc.qty ? this.formatPrice(etc.qty) : '', alignment: 'center' },
+          { text: etc.qtyPrice ? this.formatPrice(etc.qtyPrice) : '', alignment: 'center' },
+          { text: etc.qtyWeight ? this.formatPrice(etc.qtyWeight) : '', alignment: 'center' },
+          { text: etc.qtyWeightPrice ? this.formatPrice(etc.qtyWeightPrice) : '', alignment: 'center' },
+          { text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier), alignment: 'right' },
+          { text: planQty, alignment: 'center' },
+          { text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier), alignment: 'right' }
         ])
-        rowCount++
+        currentRow++
       })
       // Total price row for this item
-      let totalItemPrice = priceTransactions.reduce(
+      const totalItemPrice = priceTransactions.reduce(
         (sum, t) => sum + Number(t.totalPrice || t.price || 0),
         0
       )
@@ -1047,13 +1022,9 @@ export class InvoicePdfBuilder {
           text: `Total of ${item.productNumber} `,
           style: 'totalSummaryLabelColored',
           alignment: 'right',
-          colSpan: 6
+          colSpan: 10
         },
-        {},
-        {},
-        {},
-        {},
-        {},
+        {},{},{},{},{},{},{},{},{} ,
         {
           text: this.formatPrice(totalItemPrice * this.currencyMultiplier),
           style: 'totalSummaryLabelColored',
@@ -1061,6 +1032,7 @@ export class InvoicePdfBuilder {
           bold: true
         }
       ])
+      rowIndex++
     })
     return [
       { text: '', pageBreak: 'before' },
@@ -1069,7 +1041,7 @@ export class InvoicePdfBuilder {
         margin: [0, 10, 0, 0],
         table: {
           headerRows: 1,
-          widths: [20, 70, 40, '*', 50, 60, 60], // 7 columns
+          widths: [20, 50, 20, '*', 40, 40, 40, 40, 60, 40, 60], // 11 columns
           body
         },
         layout: {
