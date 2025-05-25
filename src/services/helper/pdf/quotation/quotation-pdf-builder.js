@@ -198,7 +198,7 @@ export class InvoicePdfBuilder {
               type: 'line',
               x1: 0,
               y1: 0,
-              x2: 575,
+              x2: 675,
               y2: 0,
               lineWidth: 2,
               lineColor: '#E0E0E0'
@@ -222,7 +222,7 @@ export class InvoicePdfBuilder {
                   margin: [0, 0, 0, 0]
                 },
                 {
-                  text: this.companyInfo.address || '',
+                  text: 'Address: ' + (this.companyInfo.address || ''),
                   fontSize: 10,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
@@ -263,6 +263,15 @@ export class InvoicePdfBuilder {
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
+                // เพิ่ม ardders (ถ้ามี)
+                this.customer.ardders
+                  ? {
+                      text: this.customer.ardders,
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 0, 0, 0]
+                    }
+                  : null,
                 {
                   text: 'TEl: ' + (this.customer.tel || ''),
                   fontSize: 10,
@@ -419,7 +428,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [10, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
+        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
         body: this.buildFinalTableBody(items, pageNum, totalPages, pageTotal)
       },
       layout: {
@@ -525,7 +534,10 @@ export class InvoicePdfBuilder {
       sumGem += gemWeight
       const qty = Number(item.qty) || 0
       // --- ปรับ logic ตรงนี้ ---
-      const price = (Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100) * this.currencyMultiplier
+      const price =
+        (Number(item.appraisalPrice) || 0) *
+        (1 - (this.customer.discountPercent || 0) / 100) *
+        this.currencyMultiplier
       const amount = price * qty
       sumQty += qty
       sumAmount += amount
@@ -588,7 +600,7 @@ export class InvoicePdfBuilder {
 
     if (totalPages > 1) {
       body.push([
-        { text: 'Total (All Pages)', style: 'summaryLabel', alignment: 'right', colSpan: 4 },
+        { text: 'Grand Total', style: 'summaryLabel', alignment: 'right', colSpan: 4 },
         {},
         {},
         {},
@@ -857,6 +869,15 @@ export class InvoicePdfBuilder {
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
+                // เพิ่ม ardders (ถ้ามี)
+                this.customer.ardders
+                  ? {
+                      text: this.customer.ardders,
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 0, 0, 0]
+                    }
+                  : null,
                 {
                   text: 'TEl: ' + (this.customer.tel || ''),
                   fontSize: 10,
@@ -902,7 +923,11 @@ export class InvoicePdfBuilder {
       { text: 'Qty Price', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Weight', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Weight Price', style: 'summaryLabelColored', alignment: 'center' },
-      { text: `Price/Unit (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' },
+      {
+        text: `Price/Unit (${this.currencyUnit})`,
+        style: 'summaryLabelColored',
+        alignment: 'center'
+      },
       { text: 'Qty (สินค้า)', style: 'summaryLabelColored', alignment: 'center' },
       { text: `Total (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' }
     ]
@@ -917,28 +942,58 @@ export class InvoicePdfBuilder {
       const gemList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'gem')
       const etcList = priceTransactions.filter((t) => {
         const group = (t.nameGroup || '').toLowerCase()
-        return group !== 'gold' && group !== 'setting' && group !== 'worker' && group !== 'gem' && group !== 'embed'
+        return (
+          group !== 'gold' &&
+          group !== 'setting' &&
+          group !== 'worker' &&
+          group !== 'gem' &&
+          group !== 'embed'
+        )
       })
       // work/embed รวมราคา
-      const workList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'worker')
-      const embedList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'embed')
+      const workList = priceTransactions.filter(
+        (t) => (t.nameGroup || '').toLowerCase() === 'worker'
+      )
+      const embedList = priceTransactions.filter(
+        (t) => (t.nameGroup || '').toLowerCase() === 'embed'
+      )
       // รวม row ทั้งหมด
-      const totalRows = goldList.length + gemList.length + etcList.length + (workList.length ? 1 : 0) + (embedList.length ? 1 : 0)
+      const totalRows =
+        goldList.length +
+        gemList.length +
+        etcList.length +
+        (workList.length ? 1 : 0) +
+        (embedList.length ? 1 : 0)
       let currentRow = 0
       // gold
       goldList.forEach((gold, idx) => {
         body.push([
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
-          currentRow === 0 ? { text: item.stockNumber || item.productNumber || '', alignment: 'center', rowSpan: totalRows } : {},
+          currentRow === 0
+            ? {
+                text: item.stockNumber || item.productNumber || '',
+                alignment: 'center',
+                rowSpan: totalRows
+              }
+            : {},
           { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
           { text: gold.name || '-', alignment: 'left' },
           { text: gold.qty ? this.formatPrice(gold.qty) : '', alignment: 'center' },
           { text: gold.qtyPrice ? this.formatPrice(gold.qtyPrice) : '', alignment: 'center' },
           { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
-          { text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice) : '', alignment: 'center' },
-          { text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier), alignment: 'right' },
+          {
+            text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice) : '',
+            alignment: 'center'
+          },
+          {
+            text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier),
+            alignment: 'right'
+          },
           { text: planQty, alignment: 'center' },
-          { text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier), alignment: 'right' }
+          {
+            text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier),
+            alignment: 'right'
+          }
         ])
         currentRow++
       })
@@ -952,10 +1007,19 @@ export class InvoicePdfBuilder {
           { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
           { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice) : '', alignment: 'center' },
           { text: gem.qtyWeight ? this.formatPrice(gem.qtyWeight) : '', alignment: 'center' },
-          { text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice) : '', alignment: 'center' },
-          { text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier), alignment: 'right' },
+          {
+            text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice) : '',
+            alignment: 'center'
+          },
+          {
+            text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier),
+            alignment: 'right'
+          },
           { text: planQty, alignment: 'center' },
-          { text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier), alignment: 'right' }
+          {
+            text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier),
+            alignment: 'right'
+          }
         ])
         currentRow++
       })
@@ -1005,10 +1069,19 @@ export class InvoicePdfBuilder {
           { text: etc.qty ? this.formatPrice(etc.qty) : '', alignment: 'center' },
           { text: etc.qtyPrice ? this.formatPrice(etc.qtyPrice) : '', alignment: 'center' },
           { text: etc.qtyWeight ? this.formatPrice(etc.qtyWeight) : '', alignment: 'center' },
-          { text: etc.qtyWeightPrice ? this.formatPrice(etc.qtyWeightPrice) : '', alignment: 'center' },
-          { text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier), alignment: 'right' },
+          {
+            text: etc.qtyWeightPrice ? this.formatPrice(etc.qtyWeightPrice) : '',
+            alignment: 'center'
+          },
+          {
+            text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier),
+            alignment: 'right'
+          },
           { text: planQty, alignment: 'center' },
-          { text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier), alignment: 'right' }
+          {
+            text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier),
+            alignment: 'right'
+          }
         ])
         currentRow++
       })
@@ -1024,7 +1097,15 @@ export class InvoicePdfBuilder {
           alignment: 'right',
           colSpan: 10
         },
-        {},{},{},{},{},{},{},{},{} ,
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
         {
           text: this.formatPrice(totalItemPrice * this.currencyMultiplier),
           style: 'totalSummaryLabelColored',
@@ -1038,6 +1119,7 @@ export class InvoicePdfBuilder {
       { text: '', pageBreak: 'before' },
       breakdownHeader,
       {
+        pageOrientation: 'landscape', // เพิ่มตรงนี้เพื่อให้ section breakdown เป็นแนวนอน
         margin: [0, 10, 0, 0],
         table: {
           headerRows: 1,
@@ -1081,27 +1163,57 @@ export class InvoicePdfBuilder {
         columns: [
           {
             stack: [
-              { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left' },
+              {
+                columns: [
+                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '70%' },
+                  {
+                    text: 'Confirm and Accept',
+                    style: 'parcelText',
+                    alignment: 'center',
+                    width: '30%'
+                  }
+                ]
+              },
               {
                 columns: [
                   {
                     text: 'WE CERTIFY THAT THIS INVOICE TRUE AND CORRECT.',
                     style: 'certifyText',
-                    width: '80%',
                     alignment: 'left'
-                  },
-                  { text: '_________________________', width: '20%', style: 'receivedByText' }
+                  }
                 ]
               },
               {
                 columns: [
                   { text: netWeightText, width: '50%', style: 'weightText' },
-                  { text: 'ORIGIN THAILAND', width: '30%', style: 'madeInText' },
+                  { text: '', width: '50%', style: 'madeInText' }
+                  // {
+                  //   text: 'Signature:',
+                  //   width: '20%',
+                  //   style: 'receivedByText',
+                  //   margin: [25, 0, 0, 0]
+                  // }
+                ]
+              },
+              {
+                columns: [
+                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
                   {
-                    text: 'Signature:',
-                    width: '20%',
-                    style: 'receivedByText',
-                    margin: [25, 0, 0, 0]
+                    text: '______________________________',
+                    style: 'parcelText',
+                    alignment: 'center',
+                    width: '30%'
+                  }
+                ]
+              },
+              {
+                columns: [
+                  { text: '', style: 'parcelText', alignment: 'left', width: '70%' },
+                  {
+                    text: '(Authorized Signature and Company Stamp)',
+                    style: 'parcelText',
+                    alignment: 'center',
+                    width: '30%'
                   }
                 ]
               }
@@ -1309,7 +1421,7 @@ export class InvoicePdfBuilder {
     return {
       pageSize: 'A4',
       pageMargins: [10, 10, 10, 40],
-      content: [this.getHeaderContent(), ...this.createPages(), ...this.getBreakdownSection()],
+      content: [this.getHeaderContent(), ...this.createPages()], // ลบ getBreakdownSection()
       footer: function (currentPage, pageCount) {
         return {
           text: currentPage.toString() + ' / ' + pageCount,

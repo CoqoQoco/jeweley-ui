@@ -292,7 +292,7 @@
               <span class="title-text-lg ml-2">ประเมินราคาสินค้า</span>
             </div>
             <!-- ข้อความแจ้งเตือนว่ารายการที่แสดงเป็นราคาต่อชิ้น -->
-            <div class="mb-2" style="color: #888; font-size: 14px;">
+            <div class="mb-2" style="color: #888; font-size: 14px">
               * รายการที่แสดงในตารางนี้เป็นราคาต่อ 1 ชิ้น (หารต้นทุนตามจำนวนแผนผลิตแล้ว)
             </div>
             <DataTable
@@ -590,16 +590,18 @@ export default {
         this.stock = { ...val }
         // ใช้ข้อมูล priceTransactions เสมอถ้ามี ต้องหารด้วย planQty เพื่อทำเป็นข้อมูลต่อชิ้น
         if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
-          const planQty = Number(this.stock.planQty) || 1
+          const planQty = 1
           this.tranItems = this.stock.priceTransactions.map((item) => ({
             // ต้องหารด้วย planQty ทุกรายการ เพื่อทำเป็นข้อมูลต่อชิ้น
             nameGroup: item.nameGroup || (item.type === 'Diamond' ? 'Gem' : item.type) || 'ETC',
-            nameDescription: item.nameDescription || item.typeCode || item.description || item.type || '',
-            qty: (Number(item.qty) || 0) / planQty,
-            qtyPrice: (Number(item.qtyPrice) || 0) / planQty,
-            qtyWeight: (Number(item.qtyWeight) || 0) / planQty,
-            qtyWeightPrice: (Number(item.qtyWeightPrice) || 0) / planQty,
-            totalPrice: (((Number(item.qty) || 0) / planQty) * ((Number(item.qtyPrice) || 0) / planQty) + ((Number(item.qtyWeight) || 0) / planQty) * ((Number(item.qtyWeightPrice) || 0) / planQty)).toFixed(2),
+            nameDescription:
+              item.nameDescription || item.typeCode || item.description || item.type || '',
+            qty: Number(item.qty) || Number(0).toFixed(2),
+            qtyPrice: Number(item.qtyPrice) || Number(0).toFixed(2),
+            qtyWeight: Number(item.qtyWeight) || Number(0).toFixed(2),
+            qtyWeightPrice: Number(item.qtyWeightPrice) || Number(0).toFixed(2),
+            totalPrice: Number(item.totalPrice).toFixed(2) || Number(0).toFixed(2),
+           
             isAdd: true
           }))
         } else if (this.stock.materials && this.stock.materials.length > 0) {

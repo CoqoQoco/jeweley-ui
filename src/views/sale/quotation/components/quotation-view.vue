@@ -23,7 +23,7 @@
               <Column header="ราคาประเมิน (THB)" />
               <Column header="ส่วนลด" />
               <Column header="ราคาส่วนลด (THB)" />
-              <Column header="ตัวแปลง" />
+              <Column header="แปลงเรท" />
               <Column :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '" />
               <Column header="จำนวน" />
               <Column :header="'รวมราคา (' + (customer.currencyUnit || '') + ') '" />
@@ -229,7 +229,7 @@
             </template>
           </column>
 
-          <column field="currencyMultiplier" header="ตัวแปลง" style="min-width: 100px">
+          <column field="currencyMultiplier" header="แปลงเรท" style="min-width: 100px">
             <template #body="slotProps">
               <div class="qty-container">
                 <span>{{ customer.currencyMultiplier }}</span>
@@ -443,7 +443,7 @@
             <!-- convert price -->
             <div class="form-col-container d-flex justify-content-end align-items-end">
               <div class="">
-                <span class="title-text">สกุลเงิน</span>
+                <span class="title-text">Currency</span>
                 <input
                   :class="['form-control bg-input', 'input-bg']"
                   type="text"
@@ -452,7 +452,7 @@
                 />
               </div>
               <div class="">
-                <span class="title-text">ตัวแปลง</span>
+                <span class="title-text">Currency Rate</span>
                 <input
                   :class="['form-control bg-input', 'input-bg']"
                   type="number"
@@ -503,7 +503,6 @@
                 :class="['form-control bg-input', 'input-bg']"
                 type="text"
                 v-model.trim="customer.address"
-                disabled
               />
             </div>
             <div>
@@ -534,9 +533,15 @@
             </div>
           </div>
 
-          <div class="right-container mt-2">
+          <div class="d-flex justify-content-center mt-3">
             <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
-              <span>สร้างใบเสนอราคา</span>
+              <span>Quotation File</span>
+            </button>
+            <button class="btn btn-sm btn-green ml-2" type="button" @click="printBreakdown()">
+              <span>Breakdown File</span>
+            </button>
+            <button class="btn btn-sm btn-main ml-2" type="button">
+              <span>Save</span>
             </button>
           </div>
         </div>
@@ -563,6 +568,7 @@ import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
+import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
@@ -896,6 +902,18 @@ export default {
       // Only generate the main PDF, which now includes the breakdown section
       const win1 = window.open('', '_blank')
       generateInvoicePdf({
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        invoiceDate: this.form.quotationDate,
+        filename,
+        openInNewTab: true,
+        targetWindow: win1
+      })
+    },
+    printBreakdown() {
+      const filename = `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
+      const win1 = window.open('', '_blank')
+      generateBreakdownPdf({
         items: this.customer.quotationItems,
         customer: this.customer,
         invoiceDate: this.form.quotationDate,
