@@ -1,6 +1,6 @@
 <template>
   <div class="mt-2">
-    <form>
+    <form @submit.prevent="onSave">
       <div class="base-datatable">
         <DataTable
           :value="customer.quotationItems"
@@ -540,7 +540,7 @@
             <button class="btn btn-sm btn-green ml-2" type="button" @click="printBreakdown()">
               <span>Breakdown File</span>
             </button>
-            <button class="btn btn-sm btn-main ml-2" type="button">
+            <button class="btn btn-sm btn-main ml-2" type="submit">
               <span>Save</span>
             </button>
           </div>
@@ -572,13 +572,15 @@ import Calendar from 'primevue/calendar'
 
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
+
 import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pdf-view.vue'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 
-import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
@@ -611,7 +613,8 @@ export default {
   setup() {
     const productStore = usrStockProductApiStore()
     const masterStore = useMasterApiStore()
-    return { productStore, masterStore }
+    const quotationStore = usrQuotationApiStore()
+    return { productStore, masterStore, quotationStore }
   },
 
   props: {
@@ -970,6 +973,49 @@ export default {
       const newItem = JSON.parse(JSON.stringify(item))
       newItem.stockNumber = null
       this.customer.quotationItems.push(newItem)
+    },
+
+    onSave() {
+      this.fetchSaveQuotation()
+    },
+    async fetchSaveQuotation() {
+      console.log('fetchSaveQuotation', this.customer)
+
+      const dataSave = this.customer.quotationItems.map((item) => {
+        return {
+          ...item,
+          imageBase64: null
+        }
+      })
+
+      const formValue = {
+        number: this.customer.invoiceNumber,
+
+        customerName: this.customer.name ? this.customer.name.trim() : '',
+        customerAddress: this.customer.address ? this.customer.address.trim() : '',
+        customerTel: this.customer.tel ? this.customer.tel.trim() : '',
+        customerEmail: this.customer.email ? this.customer.email.trim() : '',
+
+        currency: this.customer.currencyUnit ? this.customer.currencyUnit.trim() : '',
+        currencyRate: this.customer.currencyMultiplier || 1,
+
+        markup: this.customer.markup || 0,
+        discount: this.customer.discountPercent || 0,
+
+        freight: this.customer.freight || 0,
+        date: this.customer.quotationDate ? formatISOString(this.customer.quotationDate) : '',
+        remark: this.customer.remark ? this.customer.remark.trim() : '',
+
+        //data is quoatationItems in parse in json string
+        data: JSON.stringify(dataSave || [])
+      }
+
+      const res = await this.quotationStore.fetchSave({ formValue })
+      if (res) {
+        // แสดงข้อความสำเร็จ
+      } else {
+        // แสดงข้อความผิดพลาด
+      }
     }
   },
 

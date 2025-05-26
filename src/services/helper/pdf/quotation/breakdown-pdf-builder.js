@@ -255,7 +255,7 @@ export class BreakdownPdfBuilder {
               type: 'line',
               x1: 0,
               y1: 0,
-              x2: 575,
+              x2: 975,
               y2: 0,
               lineWidth: 2,
               lineColor: '#E0E0E0'
@@ -353,7 +353,9 @@ export class BreakdownPdfBuilder {
         body.push([
           {},
           {},
-          idx === 0 ? { text: 'Diamond / C. Stone', alignment: 'center', rowSpan: gemList.length } : {},
+          idx === 0
+            ? { text: 'Diamond / C. Stone', alignment: 'center', rowSpan: gemList.length }
+            : {},
           { text: gem.name || '-', alignment: 'left' },
           { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
           { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice) : '', alignment: 'center' },
@@ -531,17 +533,17 @@ export class BreakdownPdfBuilder {
       },
       defaultStyle: {
         font: 'THSarabunNew',
-        fontSize: 13
+        fontSize: 10
       },
       styles: {
         summaryLabelColored: {
-          fontSize: 12,
+          fontSize: 10,
           bold: true,
           color: 'white',
           fillColor: '#8B0000'
         },
         totalSummaryLabelColored: {
-          fontSize: 12,
+          fontSize: 10,
           bold: true,
           color: '#8B0000',
           fillColor: '#e0e0e0'
