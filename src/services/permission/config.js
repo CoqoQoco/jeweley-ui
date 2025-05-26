@@ -47,8 +47,8 @@ export const PERMISSIONS = {
   MASTER_VIEW: 'master:view',
 
   //sale
-   SALE_VIEW: 'sale:view',
-  SALE_CREATE: 'sale:create',
+  SALE_VIEW: 'sale:view',
+  SALE_CREATE: 'sale:create'
 }
 
 // Role Permission Mapping
@@ -164,5 +164,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.WORKER_VIEW,
     PERMISSIONS.WORKER_CREATE,
     PERMISSIONS.WORKER_EDIT
-  ]
+  ],
+
+  Sale: [PERMISSIONS.SALE_VIEW, PERMISSIONS.SALE_CREATE]
 }
