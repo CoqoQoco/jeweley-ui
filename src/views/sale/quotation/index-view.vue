@@ -1,7 +1,13 @@
 <template>
   <div class="app-container">
-    <search v-model:modelForm="form" @search="onSearchFilter" @clear="onClearFilter"></search>
-    <quotation v-model:modelForm="search"></quotation>
+    <search
+      v-model:modelForm="form"
+      v-model:quotation="formQuotation"
+      @search="onSearchFilter"
+      @searchQuotation="onSearchQuotation"
+      @clear="onClearFilter"
+    ></search>
+    <quotation v-model:modelForm="search" v-model:modelQuotation="quotation"></quotation>
   </div>
 </template>
 
@@ -23,6 +29,10 @@ const interfaceForm = {
   productType: []
 }
 
+const interfaceSearchQuotation = {
+  Number: null
+}
+
 export default {
   name: 'QuotationIndexView',
   components: {
@@ -32,13 +42,20 @@ export default {
   data() {
     return {
       form: { ...interfaceForm },
-      search: {}
+      search: {},
+
+      formQuotation: { ...interfaceSearchQuotation },
+      quotation: {}
     }
   },
   methods: {
     onSearchFilter(data) {
       //console.log('onSearchFilter', data)
       this.search = { ...data }
+    },
+    onSearchQuotation(data) {
+      //console.log('onSearchQuotation', data)
+      this.quotation = { ...data }
     },
 
     onClearFilter() {

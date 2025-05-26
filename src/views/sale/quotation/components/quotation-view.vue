@@ -423,7 +423,7 @@
                 <span class="title-text">วันที่ใบเสนอราคา</span>
                 <Calendar
                   class="w-100"
-                  v-model="form.quotationDate"
+                  v-model="customer.quotationDate"
                   showIcon
                   :manualInput="true"
                   dateFormat="dd/mm/yy"
@@ -622,6 +622,11 @@ export default {
       type: Object,
       default: () => ({}),
       required: true
+    },
+    modelQuotation: {
+      type: Object,
+      default: () => ({}),
+      required: true
     }
   },
 
@@ -747,6 +752,9 @@ export default {
   watch: {
     async modelForm() {
       await this.fetchGetData()
+    },
+    async modelQuotation() {
+      await this.fetchGetQuotation()
     }
   },
 
@@ -917,7 +925,7 @@ export default {
       this.pendingInvoiceParams = {
         items: this.customer.quotationItems,
         customer: this.customer,
-        invoiceDate: this.form.quotationDate,
+        invoiceDate: this.customer.quotationDate,
         filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
         openInNewTab: true
         // ไม่ต้องเปิด window ตรงนี้ ให้ไปเปิดใน onConfirmItemsPerPage แทน
@@ -943,7 +951,7 @@ export default {
       generateBreakdownPdf({
         items: this.customer.quotationItems,
         customer: this.customer,
-        invoiceDate: this.form.quotationDate,
+        invoiceDate: this.customer.quotationDate,
         filename,
         openInNewTab: true,
         targetWindow: win1
@@ -979,7 +987,7 @@ export default {
       this.fetchSaveQuotation()
     },
     async fetchSaveQuotation() {
-      console.log('fetchSaveQuotation', this.customer)
+      //console.log('fetchSaveQuotation', this.customer)
 
       const dataSave = this.customer.quotationItems.map((item) => {
         return {
@@ -993,7 +1001,7 @@ export default {
 
         customerName: this.customer.name ? this.customer.name.trim() : '',
         customerAddress: this.customer.address ? this.customer.address.trim() : '',
-        customerTel: this.customer.tel ? this.customer.tel.trim() : '',
+        customerPhone: this.customer.tel ? this.customer.tel.trim() : '',
         customerEmail: this.customer.email ? this.customer.email.trim() : '',
 
         currency: this.customer.currencyUnit ? this.customer.currencyUnit.trim() : '',
@@ -1015,6 +1023,38 @@ export default {
         // แสดงข้อความสำเร็จ
       } else {
         // แสดงข้อความผิดพลาด
+      }
+    },
+    async fetchGetQuotation() {
+      const formValue = {
+        number: this.modelQuotation.number || null
+      }
+
+      const res = await this.quotationStore.fetchGet({ formValue })
+
+      if (res) {
+        this.customer = {
+          ...this.customer,
+          ...res,
+          quotationItems: res.data ? JSON.parse(res.data) : [],
+          freight: res.freight || 0,
+
+          currencyUnit: res.currency || 'THB',
+          currencyMultiplier: res.currencyRate || 1,
+
+          markup: res.markUp || 0,
+          discountPercent: res.discount || 0,
+
+          invoiceNumber: res.number || null,
+          remark: res.remark || '',
+
+          name: res.customerName || '',
+          address: res.customerAddress || '',
+          tel: res.customerPhone || '',
+          email: res.customerEmail || ''
+        }
+        console.log('fetchGetQuotation', res)
+        this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
       }
     }
   },

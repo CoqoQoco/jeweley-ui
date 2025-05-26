@@ -1,13 +1,35 @@
 <template>
   <div>
-    <form @submit.prevent="onSearch">
+    <form @submit.prevent="onSearchQuotation">
       <pageTitle
         title="เสนอราคา"
         description="ค้นหาเเละเลือกสินค้า ออกใบเสนอราคา"
         :isShowBtnClose="false"
+        :isShowRightSlot="true"
       >
+        <template #rightSlot>
+          <div class="d-flex align-items-center">
+            <div class="input-group input-group-inner">
+              <input
+                ref="inputText"
+                id="inputText"
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="formQuotation.number"
+                placeholder="Search Quotation"
+              />
+              <div class="input-group-append" @click="onSearchQuotation">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </template>
       </pageTitle>
+    </form>
 
+    <form @submit.prevent="onSearchStock">
       <div class="filter-container mt-2">
         <div class="form-col-container">
           <div class="form-col-container">
@@ -71,6 +93,10 @@ export default {
     modelForm: {
       type: Object,
       default: () => ({})
+    },
+    quotation: {
+      type: Object,
+      default: () => ({})
     }
   },
 
@@ -80,17 +106,27 @@ export default {
         this.form = { ...val }
       },
       deep: true
+    },
+    quotation: {
+      handler(val) {
+        this.formQuotation = { ...val }
+      },
+      deep: true
     }
   },
 
   data() {
     return {
-      form: { ...this.modelForm }
+      form: { ...this.modelForm },
+      formQuotation: { ...this.quotation }
     }
   },
   methods: {
-    onSearch() {
+    onSearchStock() {
       this.$emit('search', this.form)
+    },
+    onSearchQuotation() {
+      this.$emit('searchQuotation', this.formQuotation)
     },
     onClear() {
       this.$emit('clear')
@@ -100,6 +136,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .btn-submit-container-custom {
