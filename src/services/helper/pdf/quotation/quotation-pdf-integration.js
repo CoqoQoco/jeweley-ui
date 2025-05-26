@@ -13,6 +13,7 @@ import { InvoicePdfBuilder } from '@/services/helper/pdf/quotation/quotation-pdf
  * @param {String} options.filename ชื่อไฟล์ PDF (ถ้าไม่ระบุจะเป็น 'invoice.pdf')
  * @param {Boolean} options.openInNewTab เปิดในแท็บใหม่หรือไม่ (true = เปิดในแท็บใหม่, false = ดาวน์โหลด)
  * @param {Object} options.targetWindow เป้าหมายสำหรับเปิดแท็บใหม่ (ใช้สำหรับการหลีกเลี่ยง browser block)
+ * @param {Number} options.itemsPerPage จำนวนรายการต่อหน้า (default = 10)
  * @returns {Promise} Promise ที่จะ resolve เมื่อสร้าง PDF เสร็จสิ้น
  */
 export function generateInvoicePdf({
@@ -21,7 +22,8 @@ export function generateInvoicePdf({
   invoiceDate,
   filename = 'invoice.pdf',
   openInNewTab = false,
-  targetWindow = null
+  targetWindow = null,
+  itemsPerPage = 10 // เพิ่ม default parameter
 }) {
   return new Promise((resolve, reject) => {
     try {
@@ -43,7 +45,8 @@ export function generateInvoicePdf({
         customer.discount,
         customer.invoiceNumber,
         customer.currencyUnit, // currency unit
-        customer.currencyMultiplier // currency multiplier
+        customer.currencyMultiplier, // currency multiplier
+        itemsPerPage // ส่งค่า itemsPerPage เข้าไป
       )
 
       invoiceBuilder

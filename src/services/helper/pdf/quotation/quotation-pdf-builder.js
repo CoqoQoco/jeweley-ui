@@ -10,7 +10,8 @@ export class InvoicePdfBuilder {
     discount,
     invoiceNo,
     currencyUnit,
-    currencyMultiplier
+    currencyMultiplier,
+    itemsPerPage // เพิ่ม parameter นี้
   ) {
     this.data = data // ข้อมูลสินค้า
     this.customer = customer || {}
@@ -28,6 +29,7 @@ export class InvoicePdfBuilder {
     this.logoBase64 = null
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyMultiplier = Number(currencyMultiplier) || 1
+    this.itemsPerPage = Number(itemsPerPage) || 10 // default 10 ถ้าไม่ส่งมา
 
     // เพิ่มการคำนวณ totalAmount ใน constructor
     this.totalAmount = this.calculateTotalAmount()
@@ -315,7 +317,7 @@ export class InvoicePdfBuilder {
 
   // แก้ไขเมธอด createPages ให้ทุกหน้ามี total และ getSummarySection
   createPages() {
-    const itemsPerPage = 10 // จำนวนรายการต่อหน้า
+    const itemsPerPage = this.itemsPerPage // ใช้ค่าจาก instance
     const pages = []
     const totalItems = this.data ? this.data.length : 0 // เพิ่มการตรวจสอบ
     const totalPages = Math.ceil(totalItems / itemsPerPage)

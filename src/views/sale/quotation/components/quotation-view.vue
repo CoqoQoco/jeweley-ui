@@ -553,6 +553,13 @@
       :modelStock="modelEditStock"
       @closeModal="onCloseEditStockModal"
     />
+
+    <ConfirmCreatePdfView
+      :showModal="showItemsPerPageModal"
+      :defaultItemsPerPage="itemsPerPageInput"
+      @closeModal="showItemsPerPageModal = false"
+      @confirm="onConfirmItemsPerPage"
+    />
   </div>
 </template>
 
@@ -565,11 +572,11 @@ import Calendar from 'primevue/calendar'
 
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
-
-import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pdf-view.vue'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 //import swAlert from '@/services/alert/sweetAlerts.js'
@@ -596,7 +603,9 @@ export default {
     Row,
     imagePreview,
     Calendar,
-    editStockView
+    editStockView,
+    ConfirmCreatePdfView
+    // ลบ PDialog, PInputNumber, PButton ออก (modal เดิมไม่ใช้แล้ว)
   },
 
   setup() {
@@ -760,7 +769,10 @@ export default {
       },
       isShow: { ...interfaceShow, isEditStock: false },
       modelEditStock: {},
-      editStockIndex: null
+      editStockIndex: null,
+      showItemsPerPageModal: false,
+      itemsPerPageInput: 10,
+      pendingInvoiceParams: null
     }
   },
 
@@ -898,17 +910,29 @@ export default {
     },
 
     printInvoice() {
-      const filename = `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
-      // Only generate the main PDF, which now includes the breakdown section
-      const win1 = window.open('', '_blank')
-      generateInvoicePdf({
+      // เปิด modal รับค่าจำนวนรายการต่อหน้า
+      this.pendingInvoiceParams = {
         items: this.customer.quotationItems,
         customer: this.customer,
         invoiceDate: this.form.quotationDate,
-        filename,
-        openInNewTab: true,
+        filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
+        openInNewTab: true
+        // ไม่ต้องเปิด window ตรงนี้ ให้ไปเปิดใน onConfirmItemsPerPage แทน
+        // targetWindow: window.open('', '_blank')
+      }
+      this.showItemsPerPageModal = true
+    },
+    onConfirmItemsPerPage(itemsPerPage) {
+      this.showItemsPerPageModal = false
+      if (!this.pendingInvoiceParams) return
+      // เปิด window ที่นี่เพื่อหลีกเลี่ยง popup block เฉพาะตอนยืนยัน
+      const win1 = window.open('', '_blank')
+      generateInvoicePdf({
+        ...this.pendingInvoiceParams,
+        itemsPerPage: itemsPerPage,
         targetWindow: win1
       })
+      this.pendingInvoiceParams = null
     },
     printBreakdown() {
       const filename = `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
