@@ -32,7 +32,7 @@
     <form @submit.prevent="onSearchStock">
       <div class="filter-container mt-2">
         <div class="form-col-container">
-          <div class="form-col-container">
+          <div class="form-col-sm-container">
             <!-- stock number -->
             <div>
               <span class="title-text">เลขที่ผลิต (ใหม่)</span>
