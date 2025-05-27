@@ -20,6 +20,7 @@ const interfaceForm = {
   //receiptDateStart: new Date(new Date().setDate(new Date().getDate())),
   //receiptDateEnd: new Date(),
   receiptType: null,
+  stockNumberOriginal: null,
 
   stockNumber: null,
   mold: null,

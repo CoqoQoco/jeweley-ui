@@ -87,7 +87,13 @@
 
           <column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
             <template #body="slotProps">
-              <span>{{ slotProps.data.stockNumber }}</span>
+              <span>{{
+                `${
+                  slotProps.data.stockNumberOrigin
+                    ? slotProps.data.stockNumberOrigin
+                    : slotProps.data.stockNumber
+                }`
+              }}</span>
             </template>
           </column>
           <column field="stockNumber" header="รหัสสินค้า" style="min-width: 150px">
@@ -896,7 +902,8 @@ export default {
           appraisalPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
           description: data.productNameEn,
           group: 'product',
-          planQty: data.planQty || 1
+          planQty: data.planQty || 1,
+          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
         }
 
         //data is object

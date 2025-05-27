@@ -35,12 +35,22 @@
           <div class="form-col-container">
             <!-- stock number -->
             <div>
-              <span class="title-text">เลขที่ผลิต</span>
+              <span class="title-text">เลขที่ผลิต (ใหม่)</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
                 v-model.trim="form.stockNumber"
                 placeholder="EX: DK-2502-00X"
+              />
+            </div>
+
+             <div>
+              <span class="title-text">เลขที่ผลิต (เก่า)</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.stockNumberOrigin"
+                placeholder="EX: AD054XX"
               />
             </div>
 

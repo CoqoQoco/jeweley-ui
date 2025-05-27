@@ -147,7 +147,13 @@ export default {
 
         {
           field: 'stockNumber',
-          header: 'เลขที่ผลิต',
+          header: 'เลขที่ผลิต (ใหม่)',
+          sortable: true,
+          minWidth: '150px'
+        },
+         {
+          field: 'stockNumberOrigin',
+          header: 'เลขที่ผลิต (เก่า)',
           sortable: true,
           minWidth: '150px'
         },

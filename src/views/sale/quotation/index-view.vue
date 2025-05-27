@@ -16,7 +16,8 @@ import search from './components/search-view.vue'
 import quotation from './components/quotation-view.vue'
 
 const interfaceForm = {
-  stockNumber: 'DK-1XL-6396',
+  stockNumber: null,
+  stockNumberOrigin: null,  
   mold: null,
 
   productNumber: null,

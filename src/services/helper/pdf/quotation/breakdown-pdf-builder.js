@@ -320,7 +320,7 @@ export class BreakdownPdfBuilder {
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
           currentRow === 0
             ? {
-                text: item.stockNumber || item.productNumber || '',
+                text: item.stockNumberOrigin || item.stockNumber || '',
                 alignment: 'center',
                 rowSpan: totalRows
               }
@@ -478,7 +478,7 @@ export class BreakdownPdfBuilder {
 
       body.push([
         {
-          text: `Total of ${item.productNumber} `,
+          text: `Total of ${item.stockNumberOrigin} `,
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           colSpan: 10

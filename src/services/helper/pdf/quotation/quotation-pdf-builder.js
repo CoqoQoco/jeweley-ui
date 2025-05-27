@@ -547,9 +547,9 @@ export class InvoicePdfBuilder {
         this.setTableCell((actualIndex + 1).toString()),
         item.imageBase64 ? this.setTabImageCell(item.imageBase64) : this.setTableCell(''),
         this.setTableCell(
-          item.stockNumber && item.productNumber
-            ? `${item.stockNumber}/${item.productNumber}`
-            : item.stockNumber || item.productNumber || ''
+          item.stockNumberOrigin && item.productNumber
+            ? `${item.stockNumberOrigin}/${item.productNumber}`
+            : item.stockNumberOrigin || item.productNumber || ''
         ),
         this.setTableCell(this.getDescription(item)),
         buildMaterialTable(item.materials, 'Gold'),
@@ -973,7 +973,7 @@ export class InvoicePdfBuilder {
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
           currentRow === 0
             ? {
-                text: item.stockNumber || item.productNumber || '',
+                text: item.stockNumberOrigin || item.productNumber || '',
                 alignment: 'center',
                 rowSpan: totalRows
               }
