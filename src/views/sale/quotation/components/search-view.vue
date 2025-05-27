@@ -152,6 +152,7 @@ export default {
 .btn-submit-container-custom {
   display: flex;
   justify-content: flex-end;
-  margin-top: 30px;
+  align-items: center ;
+  margin-top: 20px;
 }
 </style>
