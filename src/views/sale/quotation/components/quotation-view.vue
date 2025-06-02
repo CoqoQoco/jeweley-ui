@@ -558,7 +558,7 @@
               <span>Breakdown File</span>
             </button>
             <button class="btn btn-sm btn-main ml-2" type="submit">
-              <span>Save</span>
+              <span>Save Quotation</span>
             </button>
           </div>
         </div>
@@ -574,8 +574,10 @@
     <ConfirmCreatePdfView
       :showModal="showItemsPerPageModal"
       :defaultItemsPerPage="itemsPerPageInput"
+      :quotationNumber="customer.invoiceNumber"
       @closeModal="showItemsPerPageModal = false"
       @confirm="onConfirmItemsPerPage"
+      @saveAndCreate="onSaveAndCreatePdfAndSave"
     />
   </div>
 </template>
@@ -1074,6 +1076,22 @@ export default {
         console.log('fetchGetQuotation', res)
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
       }
+    },
+    onSaveAndCreatePdfAndSave(itemsPerPage) {
+      // Save the quotation first
+      this.fetchSaveQuotation().then(() => {
+        // After saving, generate and open the PDF
+        const win1 = window.open('', '_blank')
+        generateInvoicePdf({
+          items: this.customer.quotationItems,
+          customer: this.customer,
+          invoiceDate: this.customer.quotationDate,
+          filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
+          openInNewTab: true,
+          itemsPerPage: itemsPerPage,
+          targetWindow: win1
+        })
+      })
     }
   },
 

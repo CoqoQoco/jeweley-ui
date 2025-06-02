@@ -21,9 +21,17 @@
           />
         </div>
         <div class="d-flex justify-content-end mt-4">
-          <button class="btn btn-main" @click="onConfirm">
+          <button class="btn btn-sm btn-green mr-2" @click="onConfirm">
             <span><i class="bi bi-calendar-check"></i></span>
-            <span class="ml-2">ยืนยัน</span>
+            <span class="ml-2">Confirm</span>
+          </button>
+          <button
+            v-if="quotationNumber && quotationNumber.trim() !== ''"
+            class="btn btn-sm btn-main"
+            @click="onSaveAndCreate"
+          >
+            <span><i class="bi bi-save"></i></span>
+            <span class="ml-2">Save And Confirm</span>
           </button>
         </div>
       </div>
@@ -44,7 +52,8 @@ export default {
 
   props: {
     showModal: { type: Boolean, default: false },
-    defaultItemsPerPage: { type: Number, default: 10 }
+    defaultItemsPerPage: { type: Number, default: 10 },
+    quotationNumber: { type: String, default: '' } // เพิ่ม prop รับเลขที่ quotation
   },
 
   data() {
@@ -64,6 +73,10 @@ export default {
   methods: {
     onConfirm() {
       this.$emit('confirm', this.itemsPerPage)
+      this.isShowModal = false
+    },
+    onSaveAndCreate() {
+      this.$emit('saveAndCreate', this.itemsPerPage)
       this.isShowModal = false
     },
     onCancel() {
