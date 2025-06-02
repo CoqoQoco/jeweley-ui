@@ -328,19 +328,19 @@ export class BreakdownPdfBuilder {
           { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
           { text: gold.name || '-', alignment: 'left' },
           { text: gold.qty ? this.formatPrice(gold.qty) : '', alignment: 'center' },
-          { text: gold.qtyPrice ? this.roundNoDecimal(gold.qtyPrice) : '', alignment: 'center' },
+          { text: gold.qtyPrice ? this.formatPrice(gold.qtyPrice) : '', alignment: 'center' },
           { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
           {
-            text: gold.qtyWeightPrice ? this.roundNoDecimal(gold.qtyWeightPrice) : '',
+            text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice) : '',
             alignment: 'center'
           },
           {
-            text: this.roundNoDecimal((gold.totalPrice || 0) / (this.currencyMultiplier || 1)),
+            text: this.formatPrice((gold.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.roundNoDecimal(
+            text: this.formatPrice(
               ((gold.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
@@ -358,19 +358,19 @@ export class BreakdownPdfBuilder {
             : {},
           { text: gem.name || '-', alignment: 'left' },
           { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
-          { text: gem.qtyPrice ? this.roundNoDecimal(gem.qtyPrice) : '', alignment: 'center' },
+          { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice) : '', alignment: 'center' },
           { text: gem.qtyWeight ? this.formatPrice(gem.qtyWeight) : '', alignment: 'center' },
           {
-            text: gem.qtyWeightPrice ? this.roundNoDecimal(gem.qtyWeightPrice) : '',
+            text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice) : '',
             alignment: 'center'
           },
           {
-            text: this.roundNoDecimal((gem.totalPrice || 0) / (this.currencyMultiplier || 1)),
+            text: this.formatPrice((gem.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.roundNoDecimal(
+            text: this.formatPrice(
               ((gem.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
@@ -391,10 +391,10 @@ export class BreakdownPdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.roundNoDecimal(sumWork / (this.currencyMultiplier || 1)), alignment: 'right' },
+          { text: this.formatPrice(sumWork / (this.currencyMultiplier || 1)), alignment: 'right' },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.roundNoDecimal((sumWork / (this.currencyMultiplier || 1)) * (item.qty || 1)),
+            text: this.formatPrice((sumWork / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
           }
         ])
@@ -412,10 +412,10 @@ export class BreakdownPdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.roundNoDecimal(sumEmbed / (this.currencyMultiplier || 1)), alignment: 'right' },
+          { text: this.formatPrice(sumEmbed / (this.currencyMultiplier || 1)), alignment: 'right' },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.roundNoDecimal((sumEmbed / (this.currencyMultiplier || 1)) * (item.qty || 1)),
+            text: this.formatPrice((sumEmbed / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
           }
         ])
@@ -428,19 +428,19 @@ export class BreakdownPdfBuilder {
           idx === 0 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : {},
           { text: etc.name || '-', alignment: 'left' },
           { text: etc.qty ? this.formatPrice(etc.qty) : '', alignment: 'center' },
-          { text: etc.qtyPrice ? this.roundNoDecimal(etc.qtyPrice) : '', alignment: 'center' },
+          { text: etc.qtyPrice ? this.formatPrice(etc.qtyPrice) : '', alignment: 'center' },
           { text: etc.qtyWeight ? this.formatPrice(etc.qtyWeight) : '', alignment: 'center' },
           {
-            text: etc.qtyWeightPrice ? this.roundNoDecimal(etc.qtyWeightPrice) : '',
+            text: etc.qtyWeightPrice ? this.formatPrice(etc.qtyWeightPrice) : '',
             alignment: 'center'
           },
           {
-            text: this.roundNoDecimal((etc.totalPrice || 0) / (this.currencyMultiplier || 1)),
+            text: this.formatPrice((etc.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.roundNoDecimal(
+            text: this.formatPrice(
               ((etc.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
@@ -495,7 +495,7 @@ export class BreakdownPdfBuilder {
         {},
         {},
         {
-          text: this.roundNoDecimal(totalItemPrice),
+          text: this.formatPrice(totalItemPrice),
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           bold: true
