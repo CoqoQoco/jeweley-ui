@@ -262,7 +262,7 @@ export class InvoicePdfBuilder {
                   margin: [0, 0, 0, 0]
                 },
                 {
-                  text: this.customer.address || '',
+                  text: 'Address: ' + (this.customer.address || ''),
                   fontSize: 10,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
