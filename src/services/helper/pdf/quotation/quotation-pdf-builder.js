@@ -565,7 +565,7 @@ export class InvoicePdfBuilder {
         buildMaterialTable(item.materials, 'Diamond'),
         buildMaterialTable(item.materials, 'Gem'),
         this.setTableCellRight(qty ? qty.toString() : '0'),
-        this.setTableCellRight(this.roundNoDecimal(price)),
+        this.setTableCellRight(this.formatPrice(Number(price))),
         this.setTableCellRight(this.roundNoDecimal(amount))
       ])
     })
