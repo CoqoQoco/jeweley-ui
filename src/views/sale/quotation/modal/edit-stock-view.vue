@@ -33,7 +33,40 @@
                     class="image-body"
                   />
                 </div>
-                <!-- ลบปุ่มเลือกรูปสินค้าออก -->
+                <!-- ปุ่มอัปโหลด/เปลี่ยนรูป -->
+                <div class="image-controls mt-2">
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept="image/*"
+                    style="display: none"
+                    @change="onFileChange"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-main"
+                    @click="$refs.fileInput.click()"
+                  >
+                    <span class="bi bi-upload"></span>
+                    <span>อัปโหลดรูป</span>
+                  </button>
+                  <!-- <button
+                    v-if="stock.imagePath"
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    @click="removeImage"
+                  >
+                    <span class="bi bi-x"></span> ลบรูป
+                  </button> -->
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-info ml-2"
+                    @click="onSelectImage('SELECT')"
+                  >
+                    <span class="bi bi-images"></span>
+                    <span>เลือกรูปจากคลัง</span>
+                  </button>
+                </div>
               </div>
             </div>
             <div v-if="imageStage === 'SELECT'" class="image-container">
@@ -601,7 +634,7 @@ export default {
             qtyWeight: Number(item.qtyWeight) || Number(0).toFixed(2),
             qtyWeightPrice: Number(item.qtyWeightPrice) || Number(0).toFixed(2),
             totalPrice: Number(item.totalPrice).toFixed(2) || Number(0).toFixed(2),
-           
+
             isAdd: true
           }))
         } else if (this.stock.materials && this.stock.materials.length > 0) {
@@ -1033,6 +1066,19 @@ export default {
       return this.tranItems
         .filter((item) => item.nameGroup === groupName)
         .reduce((total, item) => total + Number(item.totalPrice), 0)
+    },
+    onFileChange(e) {
+      const file = e.target.files[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (evt) => {
+        this.stock.imagePath = evt.target.result
+        // คุณอาจต้องอัปโหลดไปยัง server ที่นี่ด้วย (API call)
+      }
+      reader.readAsDataURL(file)
+    },
+    removeImage() {
+      this.stock.imagePath = ''
     }
   }
 }
@@ -1046,7 +1092,7 @@ export default {
   margin-top: 5px !important;
 }
 input {
-  margin-top: 0px !important;
+  margin-top: 5px !important;
 }
 :deep(.p-autocomplete .p-component) {
   margin-top: 0px !important;
