@@ -240,14 +240,15 @@ export class BreakdownPdfBuilder {
             }
           ]
         },
-        this.customer.remark
-          ? {
-              margin: [0, 5, 0, 0],
-              text: 'Note: ' + this.customer.remark,
-              fontSize: 10,
-              color: '#0000FF'
-            }
-          : null,
+
+        // this.customer.remark
+        //   ? {
+        //       margin: [0, 5, 0, 0],
+        //       text: 'Note: ' + this.customer.remark,
+        //       fontSize: 10,
+        //       color: '#0000FF'
+        //     }
+        //   : null,
         {
           margin: [0, 5, 0, 5],
           canvas: [
@@ -302,6 +303,9 @@ export class BreakdownPdfBuilder {
           group !== 'embed'
         )
       })
+
+      console.log('currencyMultiplier:', this.currencyMultiplier)
+       
       const workList = priceTransactions.filter(
         (t) => (t.nameGroup || '').toLowerCase() === 'worker'
       )
@@ -320,18 +324,18 @@ export class BreakdownPdfBuilder {
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
           currentRow === 0
             ? {
-                text: item.stockNumberOrigin || item.stockNumber || '',
+                text: item.productNumber || item.stockNumberOrigin || item.stockNumber || '',
                 alignment: 'center',
                 rowSpan: totalRows
               }
             : {},
           { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
-          { text: gold.name || '-', alignment: 'left' },
+          { text: gold.nameDescription || '-', alignment: 'left' },
           { text: gold.qty ? this.formatPrice(gold.qty) : '', alignment: 'center' },
-          { text: gold.qtyPrice ? this.formatPrice(gold.qtyPrice) : '', alignment: 'center' },
+          { text: gold.qtyPrice ? this.formatPrice(gold.qtyPrice / (this.currencyMultiplier || 1)) : '', alignment: 'center' },
           { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
           {
-            text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice) : '',
+            text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice / (this.currencyMultiplier || 1)) : '',
             alignment: 'center'
           },
           {
@@ -356,12 +360,12 @@ export class BreakdownPdfBuilder {
           idx === 0
             ? { text: 'Diamond / C. Stone', alignment: 'center', rowSpan: gemList.length }
             : {},
-          { text: gem.name || '-', alignment: 'left' },
+          { text: gem.nameDescription || '-', alignment: 'left' },
           { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
-          { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice) : '', alignment: 'center' },
+          { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice / (this.currencyMultiplier || 1)) : '', alignment: 'center' },
           { text: gem.qtyWeight ? this.formatPrice(gem.qtyWeight) : '', alignment: 'center' },
           {
-            text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice) : '',
+            text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice / (this.currencyMultiplier || 1)) : '',
             alignment: 'center'
           },
           {
@@ -426,7 +430,7 @@ export class BreakdownPdfBuilder {
           {},
           {},
           idx === 0 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : {},
-          { text: etc.name || '-', alignment: 'left' },
+          { text: etc.nameDescription || '-', alignment: 'left' },
           { text: etc.qty ? this.formatPrice(etc.qty) : '', alignment: 'center' },
           { text: etc.qtyPrice ? this.formatPrice(etc.qtyPrice) : '', alignment: 'center' },
           { text: etc.qtyWeight ? this.formatPrice(etc.qtyWeight) : '', alignment: 'center' },
@@ -480,7 +484,7 @@ export class BreakdownPdfBuilder {
 
       body.push([
         {
-          text: `Total of ${item.stockNumberOrigin} `,
+          text: `Total of ${item.productNumber} `,
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           colSpan: 10
