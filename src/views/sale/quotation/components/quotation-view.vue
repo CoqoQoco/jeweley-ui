@@ -90,15 +90,26 @@
               <span>{{
                 `${
                   slotProps.data.stockNumberOrigin
-                    ? slotProps.data.stockNumberOrigin
-                    : slotProps.data.stockNumber
+                    ? slotProps.data.stockNumberOrigin || ''
+                    : slotProps.data.stockNumber || ''
                 }`
               }}</span>
             </template>
           </column>
           <column field="stockNumber" header="รหัสสินค้า" style="min-width: 150px">
             <template #body="slotProps">
-              <span>{{ slotProps.data.productNumber }}</span>
+              <div v-if="!slotProps.data.stockNumber">
+                <input
+                  v-model="slotProps.data.productNumber"
+                  type="text"
+                  class="form-control bg-input input-bg"
+                  @blur="onBlueDescription(slotProps.data, slotProps.index, 'productNumber')"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+              </div>
+              <div v-else>
+                <span>{{ slotProps.data.productNumber }}</span>
+              </div>
             </template>
           </column>
 
@@ -252,8 +263,8 @@
               <div class="qty-container">
                 <span>{{
                   (
-                    Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (customer.discountPercent || 0) / 100) /
+                    (Number(slotProps.data.appraisalPrice || 0) *
+                      (1 - (customer.discountPercent || 0) / 100)) /
                     (customer.currencyMultiplier || 1)
                   ).toFixed(2)
                 }}</span>
@@ -285,9 +296,9 @@
               <div class="qty-container">
                 <span>{{
                   (
-                    Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (customer.discountPercent || 0) / 100) /
-                    (customer.currencyMultiplier || 1) *
+                    ((Number(slotProps.data.appraisalPrice || 0) *
+                      (1 - (customer.discountPercent || 0) / 100)) /
+                      (customer.currencyMultiplier || 1)) *
                     (Number(slotProps.data.qty) || 0)
                   ).toFixed(2)
                 }}</span>
@@ -711,8 +722,7 @@ export default {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
         sum +=
-          (Number(item.appraisalPrice) || 0) *
-          (1 - (this.customer.discountPercent || 0) / 100) /
+          ((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
           (this.customer.currencyMultiplier || 1)
       })
       return sum.toFixed(2)
@@ -721,9 +731,8 @@ export default {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
         sum +=
-          (Number(item.appraisalPrice) || 0) *
-          (1 - (this.customer.discountPercent || 0) / 100) /
-          (this.customer.currencyMultiplier || 1) *
+          (((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
+            (this.customer.currencyMultiplier || 1)) *
           (Number(item.qty) || 0)
       })
       return sum.toFixed(2)
@@ -802,7 +811,8 @@ export default {
       // ใช้ currencyMultiplier ในการคำนวณราคารวม
       const sum = items.reduce((total, item) => {
         return (
-          total + Number(item.price) / (this.customer.currencyMultiplier || 1) * (Number(item.qty) || 1)
+          total +
+          (Number(item.price) / (this.customer.currencyMultiplier || 1)) * (Number(item.qty) || 1)
         )
       }, 0)
       return sum.toFixed(2)
@@ -811,9 +821,8 @@ export default {
       // ใช้ currencyMultiplier และ discountPercent ในการคำนวณราคารวมหลังหักส่วนลด
       const sum = items.reduce((total, item) => {
         const priceAfterDiscount =
-          (Number(item.appraisalPrice) || 0) *
-          (1 - (this.customer.discountPercent || 0) / 100) /
-          (this.customer.currencyMultiplier || 1) *
+          (((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
+            (this.customer.currencyMultiplier || 1)) *
           (Number(item.qty) || 1)
         return total + priceAfterDiscount
       }, 0)
@@ -903,7 +912,7 @@ export default {
           description: data.productNameEn,
           group: 'product',
           planQty: data.planQty || 1,
-          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
+          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber
         }
 
         //data is object
@@ -987,6 +996,8 @@ export default {
       // Deep copy the item
       const newItem = JSON.parse(JSON.stringify(item))
       newItem.stockNumber = null
+      newItem.stockNumberOrigin = null
+      //console.log('copyItem', newItem)
       this.customer.quotationItems.push(newItem)
     },
 

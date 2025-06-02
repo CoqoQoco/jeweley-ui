@@ -4,7 +4,7 @@
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span><i class="bi bi-brush mr-2"></i></span>
-          <span>{{ `เเก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
+          <span>{{ `เเก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber || stock.stockNumberOrigin || 'New'}` }}</span>
         </div>
 
         <form @submit.prevent="onSubmit" class="mt-2">
@@ -561,6 +561,7 @@ import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.j
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
+import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 
 export default {
   components: {
@@ -1067,15 +1068,49 @@ export default {
         .filter((item) => item.nameGroup === groupName)
         .reduce((total, item) => total + Number(item.totalPrice), 0)
     },
-    onFileChange(e) {
+    async onFileChange(e) {
       const file = e.target.files[0]
       if (!file) return
-      const reader = new FileReader()
-      reader.onload = (evt) => {
-        this.stock.imagePath = evt.target.result
-        // คุณอาจต้องอัปโหลดไปยัง server ที่นี่ด้วย (API call)
+      if (!file.type.match(/image.*/)) {
+        swAlert.warning('', 'กรุณาเลือกไฟล์รูปภาพเท่านั้น')
+        return
       }
-      reader.readAsDataURL(file)
+      try {
+        // บีบอัดไฟล์ก่อนอัปโหลด
+        const compressedFile = await compressOptimalImage(file)
+        // สร้าง preview ทันที
+        this.stock.imagePath = URL.createObjectURL(compressedFile)
+        // เตรียมข้อมูลสำหรับอัปโหลดจริง
+        const formData = new FormData()
+        // สร้างชื่อไฟล์ใหม่แบบ unique โดยต่อท้ายวันที่และเวลา (ไม่ต้องใส่นามสกุล)
+        const now = new Date()
+        const pad = (n) => n.toString().padStart(2, '0')
+        const yyyy = now.getFullYear()
+        const MM = pad(now.getMonth() + 1)
+        const dd = pad(now.getDate())
+        const hh = pad(now.getHours())
+        const mm = pad(now.getMinutes())
+        const ss = pad(now.getSeconds())
+        // ใช้ stock.imageName ถ้ามี ไม่งั้น fallback เป็นชื่อไฟล์เดิม (และตัดนามสกุลออก)
+        const base =
+          this.stock.imageName && this.stock.imageName.trim() !== ''
+            ? this.stock.imageName.replace(/\.[^/.]+$/, '')
+            : file.name.substring(0, file.name.lastIndexOf('.'))
+        const uniqueName = `${base}_${yyyy}${MM}${dd}_${hh}${mm}${ss}` // ไม่ต้องใส่ .ext
+        formData.append('name', uniqueName)
+        formData.append('image', compressedFile)
+        // อัปโหลดไปยัง backend (ใช้ API เดียวกับหน้า create-view)
+        const res = await this.stockProductImageStore.fetchSaveImage({ form: formData })
+        if (res) {
+          this.stock.imagePath = `${uniqueName}.png` // ใช้ path จริงหลังอัปโหลด
+          this.stock.name = uniqueName // อัปเดตชื่อไฟล์ใน stock ด้วย
+
+          console.log('อัปโหลดรูปสำเร็จ:', this.stock)
+          swAlert.success('', 'อัปโหลดรูปสำเร็จ')
+        }
+      } catch (error) {
+        swAlert.error('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ')
+      }
     },
     removeImage() {
       this.stock.imagePath = ''
