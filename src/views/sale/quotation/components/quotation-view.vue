@@ -253,8 +253,8 @@
                 <span>{{
                   (
                     Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (customer.discountPercent || 0) / 100) *
-                    customer.currencyMultiplier
+                    (1 - (customer.discountPercent || 0) / 100) /
+                    (customer.currencyMultiplier || 1)
                   ).toFixed(2)
                 }}</span>
               </div>
@@ -286,8 +286,8 @@
                 <span>{{
                   (
                     Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (customer.discountPercent || 0) / 100) *
-                    customer.currencyMultiplier *
+                    (1 - (customer.discountPercent || 0) / 100) /
+                    (customer.currencyMultiplier || 1) *
                     (Number(slotProps.data.qty) || 0)
                   ).toFixed(2)
                 }}</span>
@@ -712,8 +712,8 @@ export default {
       this.customer.quotationItems.forEach((item) => {
         sum +=
           (Number(item.appraisalPrice) || 0) *
-          (1 - (this.customer.discountPercent || 0) / 100) *
-          this.customer.currencyMultiplier
+          (1 - (this.customer.discountPercent || 0) / 100) /
+          (this.customer.currencyMultiplier || 1)
       })
       return sum.toFixed(2)
     },
@@ -722,8 +722,8 @@ export default {
       this.customer.quotationItems.forEach((item) => {
         sum +=
           (Number(item.appraisalPrice) || 0) *
-          (1 - (this.customer.discountPercent || 0) / 100) *
-          this.customer.currencyMultiplier *
+          (1 - (this.customer.discountPercent || 0) / 100) /
+          (this.customer.currencyMultiplier || 1) *
           (Number(item.qty) || 0)
       })
       return sum.toFixed(2)
@@ -802,7 +802,7 @@ export default {
       // ใช้ currencyMultiplier ในการคำนวณราคารวม
       const sum = items.reduce((total, item) => {
         return (
-          total + Number(item.price) * this.customer.currencyMultiplier * (Number(item.qty) || 1)
+          total + Number(item.price) / (this.customer.currencyMultiplier || 1) * (Number(item.qty) || 1)
         )
       }, 0)
       return sum.toFixed(2)
@@ -812,8 +812,8 @@ export default {
       const sum = items.reduce((total, item) => {
         const priceAfterDiscount =
           (Number(item.appraisalPrice) || 0) *
-          (1 - (this.customer.discountPercent || 0) / 100) *
-          this.customer.currencyMultiplier *
+          (1 - (this.customer.discountPercent || 0) / 100) /
+          (this.customer.currencyMultiplier || 1) *
           (Number(item.qty) || 1)
         return total + priceAfterDiscount
       }, 0)

@@ -44,7 +44,7 @@ export class InvoicePdfBuilder {
         const discountPercent = this.customer.discountPercent || 0
         const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
         const qtyVal = Number(item.qty) || 0
-        const convertedPrice = priceAfterDiscount * this.currencyMultiplier
+        const convertedPrice = priceAfterDiscount / this.currencyMultiplier
         total += convertedPrice * qtyVal
       })
     }
@@ -338,7 +338,7 @@ export class InvoicePdfBuilder {
       let pageTotal = 0
       pageItems.forEach((item) => {
         const discountPrice = Number(item.discountPrice || 0)
-        const convertedPrice = discountPrice * this.currencyMultiplier
+        const convertedPrice = discountPrice / this.currencyMultiplier
         const totalConverted = convertedPrice * (item.qty || 0)
         pageTotal += totalConverted
       })
@@ -537,8 +537,7 @@ export class InvoicePdfBuilder {
       const qty = Number(item.qty) || 0
       // --- ปรับ logic ตรงนี้ ---
       const price =
-        (Number(item.appraisalPrice) || 0) *
-        (1 - (this.customer.discountPercent || 0) / 100) *
+        ((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
         this.currencyMultiplier
       const amount = price * qty
       sumQty += qty
@@ -556,8 +555,8 @@ export class InvoicePdfBuilder {
         buildMaterialTable(item.materials, 'Diamond'),
         buildMaterialTable(item.materials, 'Gem'),
         this.setTableCellRight(qty ? qty.toString() : '0'),
-        this.setTableCellRight(this.formatPrice(price)),
-        this.setTableCellRight(this.formatPrice(amount))
+        this.setTableCellRight(this.roundNoDecimal(price)),
+        this.setTableCellRight(this.roundNoDecimal(amount))
       ])
     })
     // Footer: Total weight, qty, amount
@@ -571,7 +570,7 @@ export class InvoicePdfBuilder {
       { text: this.formatPrice(sumGem), style: 'summaryLabelColored', alignment: 'right' },
       { text: sumQty, style: 'summaryLabelColored', alignment: 'right' },
       { text: '', style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.formatPrice(sumAmount), style: 'summaryLabelColored', alignment: 'right' }
+      { text: this.roundNoDecimal(sumAmount), style: 'summaryLabelColored', alignment: 'right' }
     ])
     return body
   }
@@ -633,7 +632,7 @@ export class InvoicePdfBuilder {
       { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
       {},
       {
-        text: this.formatPrice(this.totalAmount),
+        text: this.roundNoDecimal(this.totalAmount),
         style: 'totalSummaryLabelColored',
         alignment: 'right'
       }
@@ -662,7 +661,7 @@ export class InvoicePdfBuilder {
       },
       {},
       {
-        text: this.formatPrice(this.freight),
+        text: this.roundNoDecimal(this.freight),
         style: 'totalSummaryLabelColored',
         alignment: 'right'
       }
@@ -691,7 +690,11 @@ export class InvoicePdfBuilder {
       {},
       { text: 'C.I.F', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
       {},
-      { text: this.formatPrice(grandTotal), style: 'totalSummaryLabelColored', alignment: 'right' }
+      {
+        text: this.roundNoDecimal(grandTotal),
+        style: 'totalSummaryLabelColored',
+        alignment: 'right'
+      }
     ])
     return body
   }
@@ -988,12 +991,12 @@ export class InvoicePdfBuilder {
             alignment: 'center'
           },
           {
-            text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier),
+            text: this.formatPrice((gold.totalPrice || gold.price || 0) / this.currencyMultiplier),
             alignment: 'right'
           },
           { text: planQty, alignment: 'center' },
           {
-            text: this.formatPrice((gold.totalPrice || gold.price || 0) * this.currencyMultiplier),
+            text: this.formatPrice((gold.totalPrice || gold.price || 0) / this.currencyMultiplier),
             alignment: 'right'
           }
         ])
@@ -1014,12 +1017,12 @@ export class InvoicePdfBuilder {
             alignment: 'center'
           },
           {
-            text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier),
+            text: this.formatPrice((gem.totalPrice || gem.price || 0) / this.currencyMultiplier),
             alignment: 'right'
           },
           { text: planQty, alignment: 'center' },
           {
-            text: this.formatPrice((gem.totalPrice || gem.price || 0) * this.currencyMultiplier),
+            text: this.formatPrice((gem.totalPrice || gem.price || 0) / this.currencyMultiplier),
             alignment: 'right'
           }
         ])
@@ -1037,9 +1040,9 @@ export class InvoicePdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.formatPrice(sumWork * this.currencyMultiplier), alignment: 'right' },
+          { text: this.formatPrice(sumWork / this.currencyMultiplier), alignment: 'right' },
           { text: planQty, alignment: 'center' },
-          { text: this.formatPrice(sumWork * this.currencyMultiplier), alignment: 'right' }
+          { text: this.formatPrice(sumWork / this.currencyMultiplier), alignment: 'right' }
         ])
         currentRow++
       }
@@ -1055,9 +1058,9 @@ export class InvoicePdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.formatPrice(sumEmbed * this.currencyMultiplier), alignment: 'right' },
+          { text: this.formatPrice(sumEmbed / this.currencyMultiplier), alignment: 'right' },
           { text: planQty, alignment: 'center' },
-          { text: this.formatPrice(sumEmbed * this.currencyMultiplier), alignment: 'right' }
+          { text: this.formatPrice(sumEmbed / this.currencyMultiplier), alignment: 'right' }
         ])
         currentRow++
       }
@@ -1076,12 +1079,12 @@ export class InvoicePdfBuilder {
             alignment: 'center'
           },
           {
-            text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier),
+            text: this.formatPrice((etc.totalPrice || etc.price || 0) / this.currencyMultiplier),
             alignment: 'right'
           },
           { text: planQty, alignment: 'center' },
           {
-            text: this.formatPrice((etc.totalPrice || etc.price || 0) * this.currencyMultiplier),
+            text: this.formatPrice((etc.totalPrice || etc.price || 0) / this.currencyMultiplier),
             alignment: 'right'
           }
         ])
@@ -1109,7 +1112,7 @@ export class InvoicePdfBuilder {
         {},
         {},
         {
-          text: this.formatPrice(totalItemPrice * this.currencyMultiplier),
+          text: this.formatPrice(totalItemPrice / this.currencyMultiplier),
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           bold: true
@@ -1417,6 +1420,11 @@ export class InvoicePdfBuilder {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })
+  }
+
+  roundNoDecimal(num) {
+    if (typeof num !== 'number' || isNaN(num)) return '0.00'
+    return Math.round(num).toFixed(2)
   }
 
   getDocDefinition() {

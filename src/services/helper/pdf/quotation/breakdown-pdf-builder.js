@@ -328,20 +328,20 @@ export class BreakdownPdfBuilder {
           { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
           { text: gold.name || '-', alignment: 'left' },
           { text: gold.qty ? this.formatPrice(gold.qty) : '', alignment: 'center' },
-          { text: gold.qtyPrice ? this.formatPrice(gold.qtyPrice) : '', alignment: 'center' },
+          { text: gold.qtyPrice ? this.roundNoDecimal(gold.qtyPrice) : '', alignment: 'center' },
           { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
           {
-            text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice) : '',
+            text: gold.qtyWeightPrice ? this.roundNoDecimal(gold.qtyWeightPrice) : '',
             alignment: 'center'
           },
           {
-            text: this.formatPrice((gold.totalPrice || 0) * this.currencyMultiplier),
+            text: this.roundNoDecimal((gold.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.formatPrice(
-              (gold.totalPrice || 0) * this.currencyMultiplier * (item.qty || 1)
+            text: this.roundNoDecimal(
+              ((gold.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
           }
@@ -358,20 +358,20 @@ export class BreakdownPdfBuilder {
             : {},
           { text: gem.name || '-', alignment: 'left' },
           { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
-          { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice) : '', alignment: 'center' },
+          { text: gem.qtyPrice ? this.roundNoDecimal(gem.qtyPrice) : '', alignment: 'center' },
           { text: gem.qtyWeight ? this.formatPrice(gem.qtyWeight) : '', alignment: 'center' },
           {
-            text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice) : '',
+            text: gem.qtyWeightPrice ? this.roundNoDecimal(gem.qtyWeightPrice) : '',
             alignment: 'center'
           },
           {
-            text: this.formatPrice((gem.totalPrice || 0) * this.currencyMultiplier),
+            text: this.roundNoDecimal((gem.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.formatPrice(
-              (gem.totalPrice || 0) * this.currencyMultiplier * (item.qty || 1)
+            text: this.roundNoDecimal(
+              ((gem.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
           }
@@ -381,6 +381,7 @@ export class BreakdownPdfBuilder {
 
       if (workList.length) {
         const sumWork = workList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0)
+
         body.push([
           {},
           {},
@@ -390,10 +391,10 @@ export class BreakdownPdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.formatPrice(sumWork * this.currencyMultiplier), alignment: 'right' },
+          { text: this.roundNoDecimal(sumWork / (this.currencyMultiplier || 1)), alignment: 'right' },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.formatPrice(sumWork * this.currencyMultiplier * (item.qty || 1)),
+            text: this.roundNoDecimal((sumWork / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
           }
         ])
@@ -411,10 +412,10 @@ export class BreakdownPdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.formatPrice(sumEmbed * this.currencyMultiplier), alignment: 'right' },
+          { text: this.roundNoDecimal(sumEmbed / (this.currencyMultiplier || 1)), alignment: 'right' },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.formatPrice(sumEmbed * this.currencyMultiplier * (item.qty || 1)),
+            text: this.roundNoDecimal((sumEmbed / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
           }
         ])
@@ -427,20 +428,20 @@ export class BreakdownPdfBuilder {
           idx === 0 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : {},
           { text: etc.name || '-', alignment: 'left' },
           { text: etc.qty ? this.formatPrice(etc.qty) : '', alignment: 'center' },
-          { text: etc.qtyPrice ? this.formatPrice(etc.qtyPrice) : '', alignment: 'center' },
+          { text: etc.qtyPrice ? this.roundNoDecimal(etc.qtyPrice) : '', alignment: 'center' },
           { text: etc.qtyWeight ? this.formatPrice(etc.qtyWeight) : '', alignment: 'center' },
           {
-            text: etc.qtyWeightPrice ? this.formatPrice(etc.qtyWeightPrice) : '',
+            text: etc.qtyWeightPrice ? this.roundNoDecimal(etc.qtyWeightPrice) : '',
             alignment: 'center'
           },
           {
-            text: this.formatPrice((etc.totalPrice || 0) * this.currencyMultiplier),
+            text: this.roundNoDecimal((etc.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
           { text: item.qty || 1, alignment: 'center' },
           {
-            text: this.formatPrice(
-              (etc.totalPrice || 0) * this.currencyMultiplier * (item.qty || 1)
+            text: this.roundNoDecimal(
+              ((etc.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
           }
@@ -448,33 +449,34 @@ export class BreakdownPdfBuilder {
         currentRow++
       })
 
-      // ...existing code above...
-      // รวมราคาทั้งหมดแบบถูกต้อง (แต่ละรายการต้อง * currencyMultiplier * item.qty)
+      // รวมราคาทั้งหมดแบบถูกต้อง (แต่ละรายการต้อง / currencyMultiplier * item.qty)
       const totalGold = goldList.reduce(
-        (sum, t) => sum + Number(t.totalPrice || 0) * this.currencyMultiplier * (item.qty || 1),
+        (sum, t) =>
+          sum + (Number(t.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1),
         0
       )
       const totalGem = gemList.reduce(
-        (sum, t) => sum + Number(t.totalPrice || 0) * this.currencyMultiplier * (item.qty || 1),
+        (sum, t) =>
+          sum + (Number(t.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1),
         0
       )
       const totalEtc = etcList.reduce(
-        (sum, t) => sum + Number(t.totalPrice || 0) * this.currencyMultiplier * (item.qty || 1),
+        (sum, t) =>
+          sum + (Number(t.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1),
         0
       )
       const totalWork = workList.length
-        ? workList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) *
-          this.currencyMultiplier *
+        ? (workList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) /
+            (this.currencyMultiplier || 1)) *
           (item.qty || 1)
         : 0
       const totalEmbed = embedList.length
-        ? embedList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) *
-          this.currencyMultiplier *
+        ? (embedList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) /
+            (this.currencyMultiplier || 1)) *
           (item.qty || 1)
         : 0
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
-      // ...existing code below...
 
       body.push([
         {
@@ -493,7 +495,7 @@ export class BreakdownPdfBuilder {
         {},
         {},
         {
-          text: this.formatPrice(totalItemPrice * this.currencyMultiplier),
+          text: this.roundNoDecimal(totalItemPrice),
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           bold: true
@@ -558,6 +560,11 @@ export class BreakdownPdfBuilder {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })
+  }
+
+  roundNoDecimal(num) {
+    if (typeof num !== 'number' || isNaN(num)) return '0.00'
+    return Math.round(num).toFixed(2)
   }
 
   async generatePDF() {
