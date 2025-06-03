@@ -289,14 +289,14 @@ export class InvoicePdfBuilder {
         },
 
         // --- Note section if exists ---
-        this.customer.remark
-          ? {
-              margin: [0, 5, 0, 0],
-              text: 'Note: ' + this.customer.remark,
-              fontSize: 10,
-              color: '#0000FF'
-            }
-          : null,
+        // this.customer.remark
+        //   ? {
+        //       margin: [0, 5, 0, 0],
+        //       text: 'Note: ' + this.customer.remark,
+        //       fontSize: 10,
+        //       color: '#0000FF'
+        //     }
+        //   : null,
 
         // --- Horizontal line separator ---
         {
