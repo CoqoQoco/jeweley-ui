@@ -503,7 +503,7 @@
                 />
               </div>
               <div class="ml-2">
-                <span class="title-text">Gold/Oz.</span>
+                <span class="title-text">Gold (US$/Oz.)</span>
                 <input
                   :class="['form-control bg-input', 'input-bg']"
                   type="number"

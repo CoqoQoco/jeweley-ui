@@ -239,7 +239,7 @@ export class BreakdownPdfBuilder {
                 { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 10, color: '#393939' },
                 {
                   text: this.goldPerOz
-                    ? `Gold Price Per Oz: ${this.formatPrice(this.goldPerOz)}`
+                    ? `Gold Price: US$  ${this.formatPrice(this.goldPerOz)} /Oz.`
                     : '',
                   fontSize: 10,
                   color: '#393939',
