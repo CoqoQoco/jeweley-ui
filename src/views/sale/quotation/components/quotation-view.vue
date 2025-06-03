@@ -502,6 +502,18 @@
                   style="width: 80px"
                 />
               </div>
+              <div class="ml-2">
+                <span class="title-text">Gold/Oz.</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.goldPerOz"
+                  min="0"
+                  max="10000"
+                  step="any"
+                  style="width: 80px"
+                />
+              </div>
             </div>
           </div>
 
@@ -608,7 +620,13 @@ const interfaceForm = {
   freight: 0,
   quotationDate: new Date(),
   name: null,
-  invoiceNumber: null
+  invoiceNumber: null,
+  goldPerOz: 0,
+  quotationItems: [],
+  currencyMultiplier: 33.0,
+  currencyUnit: 'US$',
+  markup: 3.5,
+  discountPercent: 0
 }
 const interfaceShow = {
   isEditStock: false
@@ -784,12 +802,12 @@ export default {
       // },
       type: 'STOCK-PRODUCT',
       customer: {
-        ...interfaceForm,
-        quotationItems: [],
-        currencyMultiplier: 1,
-        currencyUnit: 'THB',
-        markup: 0,
-        discountPercent: 0
+        ...interfaceForm
+        // quotationItems: [],
+        // currencyMultiplier: 1,
+        // currencyUnit: 'THB',
+        // markup: 0,
+        // discountPercent: 0
       },
       groupOrderRunning: {
         product: 1,
@@ -966,6 +984,8 @@ export default {
     printBreakdown() {
       const filename = `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
       const win1 = window.open('', '_blank')
+
+      console.log('printBreakdown', this.customer.quotationItems, this.customer)
       generateBreakdownPdf({
         items: this.customer.quotationItems,
         customer: this.customer,

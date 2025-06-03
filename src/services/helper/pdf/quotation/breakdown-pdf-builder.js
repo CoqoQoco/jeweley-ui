@@ -9,6 +9,7 @@ export class BreakdownPdfBuilder {
     this.invoiceNo = invoiceNo
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyMultiplier = Number(currencyMultiplier) || 1
+    this.goldPerOz = customer.goldPerOz || 0
     this.logoBase64 = null
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
@@ -202,6 +203,14 @@ export class BreakdownPdfBuilder {
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 }
+                // {
+                //   text: this.goldPerOz
+                //     ? `Gold Price Per Oz: ${this.formatPrice(this.goldPerOz)}`
+                //     : '',
+                //   fontSize: 10,
+                //   color: '#393939',
+                //   margin: [0, 0, 0, 0]
+                // }
               ]
             },
             {
@@ -220,22 +229,23 @@ export class BreakdownPdfBuilder {
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
-                // เพิ่ม ardders (ถ้ามี)
-                this.customer.ardders
-                  ? {
-                      text: this.customer.ardders,
-                      fontSize: 10,
-                      color: '#393939',
-                      margin: [0, 0, 0, 0]
-                    }
-                  : null,
+
                 {
                   text: 'TEl: ' + (this.customer.tel || ''),
                   fontSize: 10,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
-                { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 10, color: '#393939' }
+                { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 10, color: '#393939' },
+                {
+                  text: this.goldPerOz
+                    ? `Gold Price Per Oz: ${this.formatPrice(this.goldPerOz)}`
+                    : '',
+                  fontSize: 10,
+                  color: '#393939',
+                  bold: true,
+                  margin: [0, 0, 0, 0]
+                }
               ]
             }
           ]
@@ -305,7 +315,7 @@ export class BreakdownPdfBuilder {
       })
 
       console.log('currencyMultiplier:', this.currencyMultiplier)
-       
+
       const workList = priceTransactions.filter(
         (t) => (t.nameGroup || '').toLowerCase() === 'worker'
       )
@@ -332,10 +342,17 @@ export class BreakdownPdfBuilder {
           { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
           { text: gold.nameDescription || '-', alignment: 'left' },
           { text: gold.qty ? this.formatPrice(gold.qty) : '', alignment: 'center' },
-          { text: gold.qtyPrice ? this.formatPrice(gold.qtyPrice / (this.currencyMultiplier || 1)) : '', alignment: 'center' },
+          {
+            text: gold.qtyPrice
+              ? this.formatPrice(gold.qtyPrice / (this.currencyMultiplier || 1))
+              : '',
+            alignment: 'center'
+          },
           { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
           {
-            text: gold.qtyWeightPrice ? this.formatPrice(gold.qtyWeightPrice / (this.currencyMultiplier || 1)) : '',
+            text: gold.qtyWeightPrice
+              ? this.formatPrice(gold.qtyWeightPrice / (this.currencyMultiplier || 1))
+              : '',
             alignment: 'center'
           },
           {
@@ -362,10 +379,17 @@ export class BreakdownPdfBuilder {
             : {},
           { text: gem.nameDescription || '-', alignment: 'left' },
           { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
-          { text: gem.qtyPrice ? this.formatPrice(gem.qtyPrice / (this.currencyMultiplier || 1)) : '', alignment: 'center' },
+          {
+            text: gem.qtyPrice
+              ? this.formatPrice(gem.qtyPrice / (this.currencyMultiplier || 1))
+              : '',
+            alignment: 'center'
+          },
           { text: gem.qtyWeight ? this.formatPrice(gem.qtyWeight) : '', alignment: 'center' },
           {
-            text: gem.qtyWeightPrice ? this.formatPrice(gem.qtyWeightPrice / (this.currencyMultiplier || 1)) : '',
+            text: gem.qtyWeightPrice
+              ? this.formatPrice(gem.qtyWeightPrice / (this.currencyMultiplier || 1))
+              : '',
             alignment: 'center'
           },
           {
