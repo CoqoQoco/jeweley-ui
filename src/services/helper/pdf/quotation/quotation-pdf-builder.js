@@ -683,7 +683,8 @@ export class InvoicePdfBuilder {
     //   { text: this.formatPrice(this.discount), style: 'summaryLabel', alignment: 'right' }
     // ])
     // GRAND TOTAL (colSpan:7, 2 empty, label, value)
-    const grandTotal = this.totalAmount + this.freight - this.discount
+    //const grandTotal = this.totalAmount + this.freight - this.discount
+     const grandTotal = this.totalAmount + this.freight
 
     body.push([
       {
