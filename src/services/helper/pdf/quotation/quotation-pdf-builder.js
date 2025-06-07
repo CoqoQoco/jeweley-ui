@@ -799,11 +799,11 @@ export class InvoicePdfBuilder {
   }
 
   getDescription(item) {
-    let description = item.productNameEn || ''
-    if (item.size) {
-      description += ' ' + item.size
-    }
-    return description
+    // let description = item.productNameEn || ''
+    // if (item.size) {
+    //   description += ' ' + item.size
+    // }
+    return item.description
   }
 
   getMaterialInfo(materials, type) {
