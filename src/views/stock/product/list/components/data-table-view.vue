@@ -165,6 +165,12 @@ export default {
           minWidth: '150px'
         },
         {
+          field: 'mold',
+          header: 'เเม่พิมพ์',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
           field: 'productNameEn',
           header: 'ชื่อสินค้า EN',
           sortable: true,
@@ -188,12 +194,12 @@ export default {
           sortable: true,
           minWidth: '150px'
         },
-        {
-          field: 'mold',
-          header: 'เเม่พิมพ์',
-          sortable: true,
-          minWidth: '150px'
-        },
+        // {
+        //   field: 'mold',
+        //   header: 'เเม่พิมพ์',
+        //   sortable: true,
+        //   minWidth: '150px'
+        // },
         {
           field: 'productionType',
           header: 'สีของทอง/เงิน',
