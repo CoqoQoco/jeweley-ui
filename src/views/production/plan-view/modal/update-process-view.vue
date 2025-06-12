@@ -544,7 +544,7 @@ export default {
     modelValue: {
       handler(newVal) {
         if (newVal && Object.keys(newVal).length > 0) {
-          console.log('modelValue changed, initializing form')
+          //console.log('modelValue changed, initializing form')
           this.initForm()
         }
       },
@@ -708,7 +708,7 @@ export default {
           )
         }
       }
-      console.log('initForm ed 2', this.form)
+      //console.log('initForm ed 2', this.form)
     },
 
     // ----- event

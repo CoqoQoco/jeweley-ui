@@ -72,7 +72,7 @@
     </div>
 
     <div v-if="[0, 2, 3, 4, 5, 6, 8, 9].includes(tabActive)">
-      <planProcess 
+      <planProcess
         v-if="tabActive !== 0"
         :status="getStatusByTapActive()"
         :modelValue="data"
@@ -116,6 +116,17 @@
       ></planPriceViewUpdate>
     </div>
 
+    <div v-if="tabActive === 10">
+      <planBOMView
+        :modelValue="data"
+        :modelMatValue="mat"
+        :modelBomValue="bom"
+        :modelTransactionBomValue="transactionBom"
+        @bomCreated="onBOMCreated"
+        @editBOM="onEditBOM"
+      ></planBOMView>
+    </div>
+
     <transferJob
       :isShow="isUpdate.transferJob"
       :statusTransferValue="statusTransferValue"
@@ -140,6 +151,7 @@ import TabMenu from 'primevue/tabmenu'
 import pageTitle from '@/components/custom/PageTitle.vue'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
 import planView from './components/plan-view.vue'
@@ -156,6 +168,8 @@ import planProcessUpdate from './modal/update-process-view.vue'
 
 import planPriceView from './components/plan-price-view.vue'
 import planPriceViewUpdate from './modal/update-price-view.vue'
+
+import planBOMView from './components/plan-bom-view.vue'
 
 const interfaceIsUpdate = {
   plan: false,
@@ -187,13 +201,16 @@ export default {
     planProcessUpdate,
 
     planPriceView,
-    planPriceViewUpdate
+    planPriceViewUpdate,
+
+    planBOMView
   },
 
   setup() {
     const planSearchStore = usePlanSearchApiStore()
     const masterStore = useMasterApiStore()
-    return { planSearchStore, masterStore }
+    const planBOMStore = usePlanBOMApiStore()
+    return { planSearchStore, masterStore, planBOMStore }
   },
 
   computed: {
@@ -234,7 +251,8 @@ export default {
         { id: 6, label: 'ขัดชุบ', icon: 'bi bi-hammer' },
         { id: 7, label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' },
         { id: 8, label: 'สำเร็จ', icon: 'bi bi-clipboard-check-fill' },
-        { id: 9, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' }
+        { id: 9, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
+        { id: 10, label: 'BOM', icon: 'bi bi-list-check' }
         //{ id: 11, label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
       ],
 
@@ -244,7 +262,9 @@ export default {
 
       data: {}, //plan data from API
       mat: [], // material data from API
-      gold: [], // gold data from API
+      gold: [], // gold data from API,
+      bom: {}, // BOM data from API,
+      transactionBom: {},
 
       statusTransferValue: 0,
       jobTransfer: {}
@@ -346,6 +366,16 @@ export default {
       )
     },
 
+    // ------ BOM Methods ------
+    onBOMCreated(bomData) {
+      console.log('BOM Created:', bomData)
+      swAlert.success('สร้าง BOM สำเร็จ', `จำนวนรายการ: ${bomData.length} รายการ`)
+    },
+    onEditBOM(bomData) {
+      console.log('Edit BOM:', bomData)
+      // TODO: Implement BOM editing modal
+    },
+
     // ------ Apis ------
     async fetchData(type) {
       switch (type) {
@@ -371,6 +401,17 @@ export default {
         id: this.id
       })
     },
+    async fetchBOM() {
+      this.bom = await this.planBOMStore.fetchGet({
+        id: this.id
+      })
+    },
+    async fetchTransactionBOM() {
+      this.transactionBom = await this.planBOMStore.fetchTransaction({
+        id: this.id
+      })
+    },
+
     async fetchDataGoldCostItem(planNumber) {
       const res = await this.planSearchStore.fetchDataGoldCostItem({
         planNumber: planNumber
@@ -389,6 +430,8 @@ export default {
 
       await this.fetchPlan()
       await this.fetchMat()
+      await this.fetchBOM()
+      await this.fetchTransactionBOM()
 
       if (this.data) {
         this.fetchDataGoldCostItem(`${this.data.wo}-${this.data.woNumber}`)
