@@ -810,7 +810,7 @@ export default {
       header: [],
       gems: [],
       form: [],
-      scrollHeight: 'calc(100vh - 325px)',
+      scrollHeight: '',
 
       imgTest: {
         type: 'MOLD',
