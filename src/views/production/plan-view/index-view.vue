@@ -122,8 +122,7 @@
         :modelMatValue="mat"
         :modelBomValue="bom"
         :modelTransactionBomValue="transactionBom"
-        @bomCreated="onBOMCreated"
-        @editBOM="onEditBOM"
+        @bomSaved="fetchData('boms')"
       ></planBOMView>
     </div>
 
@@ -252,7 +251,7 @@ export default {
         { id: 7, label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' },
         { id: 8, label: 'สำเร็จ', icon: 'bi bi-clipboard-check-fill' },
         { id: 9, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
-        { id: 10, label: 'BOM', icon: 'bi bi-list-check' }
+        { id: 10, label: 'วัสดุ', icon: 'bi bi-list-check' }
         //{ id: 11, label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
       ],
 
@@ -263,7 +262,7 @@ export default {
       data: {}, //plan data from API
       mat: [], // material data from API
       gold: [], // gold data from API,
-      bom: {}, // BOM data from API,
+      bom: [], // BOM data from API,
       transactionBom: {},
 
       statusTransferValue: 0,
@@ -366,16 +365,6 @@ export default {
       )
     },
 
-    // ------ BOM Methods ------
-    onBOMCreated(bomData) {
-      console.log('BOM Created:', bomData)
-      swAlert.success('สร้าง BOM สำเร็จ', `จำนวนรายการ: ${bomData.length} รายการ`)
-    },
-    onEditBOM(bomData) {
-      console.log('Edit BOM:', bomData)
-      // TODO: Implement BOM editing modal
-    },
-
     // ------ Apis ------
     async fetchData(type) {
       switch (type) {
@@ -386,6 +375,10 @@ export default {
         case 'mat':
           this.fetchMat()
           this.tabActive = 0
+          break
+        case 'boms':
+          this.fetchBOM()
+          this.tabActive = 10
           break
       }
 

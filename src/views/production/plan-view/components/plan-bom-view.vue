@@ -2,26 +2,60 @@
   <div class="form-custom-col-container">
     <!-- model bom -->
     <div class="filter-container">
-      <div class="form-col-container filter-container-highlight-custom pl-4">
+      <div class="filter-container-highlight-custom pl-4">
         <div class="d-flex flex-column">
-          <span class="title-text-white">BOM รหัส</span>
-          <span class="desc-text-white">{{ model.wo }}-{{ model.woNumber }}</span>
+          <span class="desc-text text-white mb-1">รายการวัสดุแผนผลิต</span>
+          <!-- <small>เเสดงข้อมูล เบิกผสมทองเเละเบิกวัถุดิบในกระบวนการคัดพลอย</small> -->
         </div>
-        <div class="d-flex flex-column">
-          <span class="title-text-white">สถานะ BOM</span>
+        <div class="d-flex">
+          <div class="text-white vertical-center-container">
+            <span class="bi bi-clock mr-2"></span>
+            <span v-if="modelBom">{{ formatDateTime(modelBom[0].createDate) }}</span>
+            <span v-else class="ml-2">---</span>
+          </div>
+          <div class="text-white vertical-center-container ml-3">
+            <span class="bi bi-pencil mr-2"></span>
+            <span v-if="modelBom">{{ modelBom[0].createBy }}</span>
+            <span v-else class="ml-2">---</span>
+          </div>
         </div>
       </div>
 
-      <div class="line"></div>
+      <!-- <div class="line"></div> -->
+      <div class="base-datatable mt-2">
+        <DataTable :value="groupBom" stripedRows showGridlines>
+          <Column field="index" style="width: 10px">
+            <template #body="slotProps">
+              <span>{{ slotProps.data.index }}</span>
+            </template>
+          </Column>
 
-      <!-- BOM Actions -->
-      <div class="d-flex justify-content-center">
-        <button class="btn btn-sm btn-primary btn-custom mr-2" @click="generateBOM">
-          <span>
-            <i class="bi bi-file-earmark-plus mr-2"></i>
-          </span>
-          <span>สร้าง BOM</span>
-        </button>
+          <Column field="displayName" header="รายการ">
+            <template #body="slotProps">
+              <div>
+                <span>{{ slotProps.data.displayName }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="qty" header="จำนวน" style="width: 130px">
+            <template #body="slotProps">
+              <span>{{ toFixed2(slotProps.data.quantity) }}</span>
+            </template>
+          </Column>
+
+          <Column field="unit" style="width: 20px">
+            <template #body="slotProps">
+              <span>{{ slotProps.data.unit }}</span>
+            </template>
+          </Column>
+
+          <Column field="price" header="ราคา" style="width: 130px">
+            <template #body="slotProps">
+              <span>{{ toFixed2(slotProps.data.price) }}</span>
+            </template>
+          </Column>
+        </DataTable>
       </div>
     </div>
 
@@ -29,17 +63,37 @@
     <div class="filter-container">
       <div class="bom-table-container">
         <div class="table-header">
-          <span class="title-text">รายการวัสดุแผนผลิต</span>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column">
+              <span class="title-text">สร้างวัสดุแผนผลิต</span>
+              <small
+                >เเสดงข้อมูลเบิกผสมทองเเละเบิกวัถุดิบในกระบวนการคัดพลอย
+                สร้างวัสดุแผนผลิตเพื่อออกรายงาน</small
+              >
+            </div>
+            <div>
+              <button class="btn btn-sm btn-warning mr-2" @click="getBOM">
+                <span>
+                  <i class="bi bi-arrow-clockwise"></i>
+                </span>
+              </button>
+              <button class="btn btn-sm btn-green" @click="saveBOM" :disabled="!hasTransactionData">
+                <span>
+                  <i class="bi bi-calendar-check"></i>
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
-        <div>
+        <div class="base-datatable">
           <DataTable :value="transactionBom" stripedRows showGridlines>
-            <Column field="no" style="width: 10px">
+            <!-- <Column field="no" style="width: 10px">
               <template #body="slotProps">
                 <span>{{ slotProps.data.no }}</span>
               </template>
-            </Column>
+            </Column> -->
 
-            <Column field="action" style="width: 10px">
+            <!-- <Column field="action" style="width: 10px">
               <template #body="slotProps">
                 <button
                   class="btn btn-sm btn-red"
@@ -50,7 +104,7 @@
                   <span class="bi bi-trash"></span>
                 </button>
               </template>
-            </Column>
+            </Column> -->
 
             <Column field="displayName" header="รายการ">
               <template #body="slotProps">
@@ -153,7 +207,7 @@ export default {
       default: () => []
     },
     modelBomValue: {
-      type: Object,
+      type: Array,
       required: true,
       default: () => {}
     },
@@ -171,12 +225,34 @@ export default {
   },
 
   watch: {
-    // modelBomValue: {
-    //   handler(newVal) {
-    //     console.log('modelBomValue changed:', newVal)
-    //   },
-    //   immediate: true
-    // },
+    modelBomValue: {
+      handler(newVal) {
+        //console.log('modelBomValue changed:', newVal)
+        //group boms by type
+        const grouped = newVal.reduce((acc, item) => {
+          if (!acc[item.displayName]) {
+            acc[item.displayName] = {
+              index: 0,
+              displayName: item.displayName,
+              quantity: 0,
+              price: 0,
+              unit: item.unit
+            }
+          }
+          acc[item.displayName].quantity += item.quantity || 0
+          acc[item.displayName].price += item.price || 0
+          return acc
+        }, {})
+
+        this.groupBom = Object.values(grouped).map((item, idx) => ({
+          ...item,
+          index: idx + 1
+        }))
+
+        //console.log('groupBom:', this.groupBom)
+      },
+      immediate: true
+    },
     modelTransactionBomValue: {
       handler(newVal) {
         console.log('modelTransactionBomValue changed:', newVal)
@@ -205,17 +281,20 @@ export default {
     },
     masterGem() {
       return this.masterStore.gem
+    },
+    hasTransactionData() {
+      return this.transactionBom && this.transactionBom.length > 0
     }
   },
 
   data() {
     return {
-      transactionBom: []
+      transactionBom: [],
+      groupBom: []
     }
   },
 
   methods: {
-    // --- Helper Methods --- //
     formatNumber(value) {
       if (!value) return '0'
       return new Intl.NumberFormat('th-TH').format(value)
@@ -231,6 +310,14 @@ export default {
 
     formatDate(date) {
       return date ? formatDate(date) : ''
+    },
+    formatDateTime(date) {
+      return date ? formatDateTime(date) : ''
+    },
+
+    //tofix(2) แปลงเป็นทศนิยม 2 ตำแหน่ง
+    toFixed2(value) {
+      return value ? Number(value).toFixed(2) : '0.00'
     },
 
     onBluePrice(item, index, fieldName) {
@@ -263,6 +350,61 @@ export default {
       }
 
       console.log('MatchCode changed:', rowData)
+    },
+
+    async getBOM() {
+      const transactionBom = await this.planBOMStore.fetchTransaction({
+        id: this.model.id,
+        skipLoading: true
+      })
+
+      if (transactionBom) {
+        this.transactionBom = transactionBom.boMs.map((item, index) => ({
+          ...item,
+          quantity: item.quantity ? item.quantity.toFixed(2) : Number(0).toFixed(2),
+          price: item.price ? item.price.toFixed(2) : Number(0).toFixed(2)
+        }))
+      }
+    },
+
+    // --- BOM Save Method --- //
+    async saveBOM() {
+      try {
+        const formValue = {
+          id: this.model.id,
+          bOMs: this.transactionBom.map((item) => ({
+            type: item.type,
+
+            matchCode: item.matchCode,
+            matchName: item.matchName,
+
+            displayName: item.displayName,
+
+            originCode: item.originCode,
+            originName: item.originName,
+
+            quantity: parseFloat(item.quantity) || 0,
+            unit: item.unit,
+            price: parseFloat(item.price) || 0
+          }))
+        }
+
+        const response = await this.planBOMStore.fetchSave({
+          formValue: formValue,
+          skipLoading: true
+        })
+
+        if (response) {
+          this.$emit('bomSaved', response)
+          //console.log('BOM saved successfully:', response)
+        }
+      } catch (error) {
+        console.error('Error saving BOM:', error)
+      }
+    },
+
+    delItem(index) {
+      this.transactionBom.splice(index, 1)
     }
   }
 }
@@ -270,6 +412,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/overide-prime-vue/data-table-dub.scss';
 
 .filter-container-highlight-custom {
   border: 1px solid #dddddd;

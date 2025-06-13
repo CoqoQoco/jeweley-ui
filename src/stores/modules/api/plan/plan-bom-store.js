@@ -19,12 +19,12 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
   getters: {},
 
   actions: {
-    async fetchTransaction({ id }) {
+    async fetchTransaction({ id, skipLoading = false }) {
       try {
         const param = {
           id: id
         }
-        return await api.jewelry.get('Production/Bom/Transaction', param)
+        return await api.jewelry.get('Production/Bom/Transaction', param, { skipLoading })
       } catch (error) {
         console.error('Error fetching transaction data:', error)
         throw error
@@ -43,9 +43,9 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
       }
     },
 
-    async fetchSave({ formValue }) {
+    async fetchSave({ formValue, skipLoading = false }) {
       try {
-        return await api.jewelry.post('Production/Bom/Save', formValue)
+        return await api.jewelry.post('Production/Bom/Save', formValue, { skipLoading })
       } catch (error) {
         console.error('Error fetching save data:', error)
         throw error
