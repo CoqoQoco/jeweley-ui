@@ -7,7 +7,7 @@
       :disabled="!visible"
       type="button"
     >
-      <span class="bi bi-printer"></span>
+      <span class="bi bi-journal-check"></span>
     </button>
   </div>
 </template>
