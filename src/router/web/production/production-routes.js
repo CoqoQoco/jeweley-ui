@@ -13,6 +13,7 @@ const PlanOrderTransferTracking = () =>
 //const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 //const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
+const PlanBOMReport = () => import('@/views/production/plan-bom/index-view.vue')
 const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
@@ -162,6 +163,23 @@ const routes = [
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
+      },
+      {
+        path: '/plan-bom-report',
+        name: 'plan-bom-report',
+        component: PlanBOMReport,
+        meta: {
+          Displayname: {
+            en: 'Plan BOM Tracking',
+            th: 'รายงานวัถุดิบ'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      /* The `// report` section in the JavaScript code is a commented-out block of code that contains
+      routes for generating production reports. These routes are currently disabled because they are
+      commented out using `//`. This means that the routes for generating production reports are not
+      active in the application at the moment. */
       },
 
       // report
