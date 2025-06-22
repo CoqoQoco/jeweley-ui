@@ -2,12 +2,12 @@
   <div>
     <button
       :class="['btn btn-sm ml-2', isVisible ? 'btn-primary' : 'btn-secondary']"
-      title="พิมพ์แบบบัตรต้นทุน"
+      title="พิมพ์แบบวัถุดิบ"
       @click="generatePDF"
       :disabled="!visible"
       type="button"
     >
-      <span class="bi bi-printer"></span>
+      <span class="bi bi-receipt"></span>
     </button>
   </div>
 </template>
@@ -140,7 +140,7 @@ export default {
             {
               columns: [
                 'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
-                { text: 'บัตรต้นทุน', alignment: 'right' }
+                { text: 'วัตถุดิบ', alignment: 'right' }
               ],
               bold: true,
               fontSize: 15,
@@ -352,62 +352,62 @@ export default {
                       { text: this.formatNumber(item.totalPrice, 2), alignment: 'right' }
                     ]),
                     // Subtotal Row สำหรับแต่ละกลุ่ม
-                    [
-                      {
-                        text: `ต้นทุน${this.getGroupTitle(groupName)}`,
-                        colSpan: 6,
-                        alignment: 'right',
-                        bold: true,
-                        fontSize: 11
-                      },
-                      {},
-                      {},
-                      {},
-                      {},
-                      {},
-                      {
-                        text: this.formatNumber(
-                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0) /
-                            (this.model.productQty || 1),
-                          2
-                        ),
-                        alignment: 'right',
-                        bold: true
-                      },
-                      {
-                        text: this.formatNumber(
-                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
-                          2
-                        ),
-                        alignment: 'right',
-                        bold: true
-                      }
-                    ]
+                    // [
+                    //   {
+                    //     text: `ต้นทุน${this.getGroupTitle(groupName)}`,
+                    //     colSpan: 6,
+                    //     alignment: 'right',
+                    //     bold: true,
+                    //     fontSize: 11
+                    //   },
+                    //   {},
+                    //   {},
+                    //   {},
+                    //   {},
+                    //   {},
+                    //   {
+                    //     text: this.formatNumber(
+                    //       items.reduce((sum, item) => sum + (item.totalPrice || 0), 0) /
+                    //         (this.model.productQty || 1),
+                    //       2
+                    //     ),
+                    //     alignment: 'right',
+                    //     bold: true
+                    //   },
+                    //   {
+                    //     text: this.formatNumber(
+                    //       items.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+                    //       2
+                    //     ),
+                    //     alignment: 'right',
+                    //     bold: true
+                    //   }
+                    // ]
                   ]),
                   // Grand Total Row (ผลรวมทั้งหมด)
-                  [
-                    {
-                      text: 'ต้นทุน',
-                      colSpan: 6,
-                      alignment: 'right',
-                      style: 'tableHeader'
-                    },
-                    {},
-                    {},
-                    {},
-                    {},
-                    {},
-                    {
-                      text: this.formatNumber(this.calculateTotalPerQty(), 2),
-                      alignment: 'right',
-                      style: 'tableHeader'
-                    },
-                    {
-                      text: this.formatNumber(this.calculateTotal(), 2),
-                      alignment: 'right',
-                      style: 'tableHeader'
-                    }
-                  ]
+                //   [
+                //     {
+                //       text: 'ต้นทุน',
+                //       colSpan: 6,
+                //       alignment: 'right',
+                //       style: 'tableHeader'
+                //     },
+                //     {},
+                //     {},
+                //     {},
+                //     {},
+                //     {},
+                //     {
+                //       text: this.formatNumber(this.calculateTotalPerQty(), 2),
+                //       alignment: 'right',
+                //       style: 'tableHeader'
+                //     },
+                //     {
+                //       text: this.formatNumber(this.calculateTotal(), 2),
+                //       alignment: 'right',
+                //       style: 'tableHeader'
+                //     }
+                //   ]
                   // ต้นทุนต่อชิ้น
                   // [
                   //   {
@@ -433,12 +433,12 @@ export default {
                 hLineWidth: function (i, node) {
                   if (i === 0) return 1 // เส้นบนสุดของตาราง
                   if (i === 1) return 1 // เส้นใต้ header
-                  if (i === node.table.body.length) return 1 // เส้นล่างสุดของตาราง
+                  //if (i === node.table.body.length) return 1 // เส้นล่างสุดของตาราง
 
                   // เพิ่มเส้นเหนือแถวต้นทุนรวม
                   // หาตำแหน่งของแถว "ต้นทุนรวม" โดยนับจากด้านล่าง
-                  const totalRowIndex = node.table.body.length - 1 // -2 เพราะมีแถว "ต้นทุนต่อชิ้น" ต่อท้าย
-                  if (i === totalRowIndex) return 1
+                  //const totalRowIndex = node.table.body.length - 1 // -2 เพราะมีแถว "ต้นทุนต่อชิ้น" ต่อท้าย
+                  //if (i === totalRowIndex) return 1
 
                   return 0
                 },

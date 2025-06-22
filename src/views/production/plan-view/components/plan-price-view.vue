@@ -29,6 +29,8 @@
             :modelValue="model"
             :modelPrice="modelPrice"
           ></pricePDF>
+
+          <bomPDF :isVisible="isMakePrice" :modelValue="model" :modelPrice="modelBom"></bomPDF>
           <button
             :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
             title="ประเมินบัตรต้นทุน"
@@ -235,13 +237,18 @@ const pricePDF = defineAsyncComponent(() =>
   import('@/components/pdf-make/FilePDFProductionPlanPrice.vue')
 )
 
+const bomPDF = defineAsyncComponent(() =>
+  import('@/components/pdf-make/FilePDFProductionPlanBOM.vue')
+)
+
 export default {
   components: {
     DataTable,
     Column,
     ColumnGroup,
     Row,
-    pricePDF
+    pricePDF,
+    bomPDF
   },
   props: {
     modelValue: {
@@ -280,6 +287,10 @@ export default {
     },
     modelPrice() {
       return this.modelValue.priceItems
+    },
+    modelBom() {
+      const allowBom = ['Gold', 'Gem']
+      return this.modelValue.priceItems.filter((item) => allowBom.includes(item.nameGroup))
     },
     isMakePrice() {
       return this.modelPrice.length > 0
