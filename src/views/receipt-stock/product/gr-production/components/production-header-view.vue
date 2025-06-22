@@ -80,40 +80,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Gem Section -->
-    <div v-if="dataGem && dataGem.length > 0" class="mt-4">
-      <div class="title-text ml-2">
-        <span class="bi bi-gem mr-2"></span>
-        <span>พลอย</span>
-      </div>
-      <div class="form-col-container">
-        <div v-for="(gem, index) in dataGem" :key="index" class="gem-item mb-2">
-          <div class="gem-details">
-            <div class="gem-row">
-              <div class="gem-field">
-                <span class="gem-label">รหัส:</span>
-                <span class="gem-value">{{ gem.gemCode }}</span>
-              </div>
-              <div class="gem-field">
-                <span class="gem-label">รายละเอียด:</span>
-                <span class="gem-value">{{ gem.gemName }}</span>
-              </div>
-            </div>
-            <div class="gem-row">
-              <div class="gem-field">
-                <span class="gem-label">จำนวน:</span>
-                <span class="gem-value">{{ gem.gemQty }}</span>
-              </div>
-              <div class="gem-field">
-                <span class="gem-label">น้ำหนัก:</span>
-                <span class="gem-value">{{ gem.gemWeight }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 

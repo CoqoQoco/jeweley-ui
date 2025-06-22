@@ -162,6 +162,7 @@
 
           <template #expansion="slotProps">
             <div class="p-2">
+              <!-- stock already receipt -->
               <div v-if="slotProps.data.isReceipt">
                 <div class="form-col-fix-2-container">
                   <div class="form-col-container">
@@ -209,6 +210,8 @@
                   </div>
                 </div>
               </div>
+
+              <!-- stock on receipt -->
               <div v-else>
                 <!-- data & img -->
                 <div class="form-col-fix-2-container">
@@ -374,9 +377,12 @@
                   <!-- List of items -->
                   <div class="filter-container mt-2">
                     <div class="d-flex justify-content-between">
-                      <div class="vertical-center-container">
-                        <span class="title-text-lg bi bi-gem"></span>
-                        <span class="title-text-lg ml-2">ทอง | เพชร | พลอย</span>
+                      <div class="group-title pl-2">
+                        <div>
+                          <span class="title-text-lg bi bi-hammer"></span>
+                          <span class="title-text-lg ml-2">ส่วนประกอบสินค้า</span>
+                        </div>
+                        <small class="pl-4">รายละเอียดการผลิตสินค้า ส่วนประกอบ เเละวัสดุต่างๆ</small>
                       </div>
                       <!-- Add button -->
                       <div class="d-flex justify-content-start mt-2">
@@ -821,10 +827,10 @@ export default {
       itemsToDisable: [], // items ที่ต้องการ disable
       itemsToPreSelect: [], // items ที่ต้องการให้ติ๊กถูกไว้ตั้งแต่แรก
       masterMaterialType: [
-        { value: 'Gold', description: 'ทอง' },
-        { value: 'Silver', description: 'เงิน' },
-        { value: 'Diamond', description: 'เพชร' },
-        { value: 'Gem', description: 'พลอย' }
+        { value: 'Gold', description: 'Gold' },
+        { value: 'Silver', description: 'Silver' },
+        { value: 'Diamond', description: 'Diamond' },
+        { value: 'Gem', description: 'Gem ' }
       ],
       masterStud: [
         { value: 'lg', description: 'แป้นใหญ่' },
@@ -1596,5 +1602,10 @@ export default {
 .input-group-append .btn {
   position: relative;
   z-index: 0 !important;
+}
+
+.group-title {
+  display: flex;
+  flex-direction: column;
 }
 </style>

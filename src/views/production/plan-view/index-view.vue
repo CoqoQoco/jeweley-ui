@@ -12,7 +12,7 @@
         <template v-slot:rightSlot>
           <div
             class="text-center"
-            style="font-size: medium"
+            style="font-size: medium; width: 200px; "
             :class="getStatusSeverity(data.status)"
           >
             {{ data.statusName }}
@@ -251,7 +251,7 @@ export default {
         { id: 7, label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' },
         { id: 8, label: 'สำเร็จ', icon: 'bi bi-clipboard-check-fill' },
         { id: 9, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
-        { id: 10, label: 'วัสดุ', icon: 'bi bi-list-check' }
+        //{ id: 10, label: 'วัสดุ', icon: 'bi bi-list-check' }
         //{ id: 11, label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
       ],
 

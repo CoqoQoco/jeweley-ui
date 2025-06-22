@@ -61,7 +61,7 @@
 
       <!-- Custom Footer/Paginator Buttons -->
       <template #paginator-buttons>
-        <!-- <button
+        <button
           :class="['btn btn-sm', isTranferJob ? 'btn-secondary' : 'btn-main']"
           type="button"
           :disabled="isTranferJob"
@@ -80,7 +80,7 @@
         >
           <span><i class="bi bi-cart-check-fill"></i></span>
           <span class="ml-2">โอนสินค้า</span>
-        </button> -->
+        </button>
       </template>
     </BaseDataTable>
 
@@ -282,6 +282,7 @@ export default {
     },
     isTranferJob() {
       let res = true
+      //console.log('isTranferJob', this.modelForm)
       if (this.modelForm && this.modelForm.status && this.modelForm.status.length === 1) {
         const allow = [10, 50, 60, 70, 80, 85, 90, 94, 95]
         allow.includes(this.modelForm.status[0]) && this.planSearchStore.dataPlanSearch.total > 0
@@ -433,6 +434,9 @@ export default {
         case 90:
           return 'box-status-show'
       }
+    },
+    getStatusName(status) {
+      return status
     },
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
