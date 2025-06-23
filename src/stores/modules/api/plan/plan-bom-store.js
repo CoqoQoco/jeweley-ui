@@ -61,10 +61,10 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
         this.bomData = {}
         this.bomTotal = 0
         const param = {
+          take,
+          skip,
+          sort,
           search: {
-            take,
-            skip,
-            sort,
             start: formValue.start ? formatISOString(formValue.start) : null,
             end: formValue.end ? formatISOString(formValue.end) : null,
             woText: formValue.woText ?? null,
@@ -97,10 +97,10 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
     async fetchListReport({ take, skip, sort, formValue, skipLoading = false }) {
       try {
         const param = {
+          take,
+          skip,
+          sort,
           search: {
-            take,
-            skip,
-            sort,
             start: formValue.start ? formatISOString(formValue.start) : null,
             end: formValue.end ? formatISOString(formValue.end) : null,
             woText: formValue.woText ?? null,
