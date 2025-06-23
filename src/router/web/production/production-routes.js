@@ -1,4 +1,5 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
+const ProductionDashboard = () => import('@/views/production/dashboard/index-view.vue')
 const PlanOrder = () => import('@/views/production/plan-create/index-view.vue')
 const PlanGoldOrder = () => import('@/views/production/plan-gold/index-view.vue')
 const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/index-view.vue')
@@ -21,7 +22,7 @@ const routes = [
   {
     path: '/production',
     component: Layout,
-    redirect: '/mold',
+    redirect: '/production-dashboard',
     name: 'prodution',
     meta: {
       Displayname: {
@@ -34,6 +35,19 @@ const routes = [
       permissions: [PERMISSIONS.PRODUCTION_VIEW]
     },
     children: [
+      {
+        path: '/production-dashboard',
+        name: 'production-dashboard',
+        component: ProductionDashboard,
+        meta: {
+          Displayname: {
+            en: 'Dashboard',
+            th: 'แดชบอร์ด'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
       {
         path: '/plan-order',
         name: 'plan-order',

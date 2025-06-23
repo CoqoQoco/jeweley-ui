@@ -5,6 +5,10 @@ export default {
   importProductExcel: 'นำเข้าใบผลิตสินค้า',
 
   //production
+  production: {
+    main: 'งานผลิต',
+    dashboard: 'แดชบอร์ด'
+  },
   planMold: 'สร้างเเบบเเม่พิมพ์',
   planOrder: 'สร้างใบจ่าย-รับคืนงาน',
   goldPickinkList: 'ใบผสมทอง',
