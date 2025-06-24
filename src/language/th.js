@@ -16,7 +16,7 @@ export default {
         title: 'รายงานผลิตประจำวัน',
         lastUpdate: 'อัปเดตล่าสุด',
         totalPlans: 'แผนงานทั้งหมด',
-        allActivePlans: 'แผนงานที่ยังไม่เสร็จ',
+        allActivePlans: 'แผนงานที่ยังไม่สำเร็จ 100 %',
         inProcess: 'กำลังผลิต',
         currentlyWorking: 'อยู่ระหว่างการดำเนินงาน',
         completedYesterday: 'เสร็จเมื่อวาน',

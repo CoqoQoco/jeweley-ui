@@ -52,7 +52,7 @@ export default {
         status: 'Status',
         goldType: 'Gold Type',
         updatedBy: 'Updated By',
-        viewDetails: 'View Details'
+        viewDetails: 'View Details',
       }
     }
   }

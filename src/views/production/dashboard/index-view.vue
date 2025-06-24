@@ -83,6 +83,44 @@
           </div>
         </div>
 
+        <!-- Completed Today -->
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="stat-card summary today">
+            <div class="stat-card-body">
+              <div class="stat-icon">
+                <i class="bi bi-calendar-check"></i>
+              </div>
+              <div class="stat-content">
+                <h3>{{ summary.completedToday }}</h3>
+                <p>{{ $t('view.production.dashboard.completedToday') }}</p>
+                <small class="stat-detail">{{
+                  $t('view.production.dashboard.finishedToday')
+                }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Stats Row -->
+      <div class="row mb-4" v-if="summary">
+        <!-- <div class="col-lg-3 col-md-6 mb-3">
+          <div class="stat-card summary active">
+            <div class="stat-card-body">
+              <div class="stat-icon">
+                <i class="bi bi-activity"></i>
+              </div>
+              <div class="stat-content">
+                <h3>{{ summary.totalActiveProjects }}</h3>
+                <p>{{ $t('view.production.dashboard.activeProjects') }}</p>
+                <small class="stat-detail">{{
+                  $t('view.production.dashboard.currentlyActive')
+                }}</small>
+              </div>
+            </div>
+          </div>
+        </div> -->
+
         <!-- Overdue Plans -->
         <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card overdue">
@@ -100,45 +138,8 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Summary Stats Row -->
-      <div class="row mb-4" v-if="summary">
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card summary active">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-activity"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ summary.totalActiveProjects }}</h3>
-                <p>{{ $t('view.production.dashboard.activeProjects') }}</p>
-                <small class="stat-detail">{{
-                  $t('view.production.dashboard.currentlyActive')
-                }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card summary today">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-calendar-check"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ summary.completedToday }}</h3>
-                <p>{{ $t('view.production.dashboard.completedToday') }}</p>
-                <small class="stat-detail">{{
-                  $t('view.production.dashboard.finishedToday')
-                }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-3">
+        <!-- <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card summary approval">
             <div class="stat-card-body">
               <div class="stat-icon">
@@ -153,7 +154,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card summary percentage">
@@ -162,7 +163,7 @@
                 <i class="bi bi-percent"></i>
               </div>
               <div class="stat-content">
-                <h3>{{ summary.percentageCompleted.toFixed(1) }}%</h3>
+                <h3>{{ summary.percentageCompleted.toFixed(2) }}%</h3>
                 <p>{{ $t('view.production.dashboard.completionRate') }}</p>
                 <small class="stat-detail">{{
                   $t('view.production.dashboard.overallProgress')
@@ -221,9 +222,9 @@
                 <div class="summary-table">
                   <div class="table-header">
                     <div class="col">{{ $t('view.production.dashboard.productType') }}</div>
+                    <div class="col">{{ $t('view.production.dashboard.orders') }}</div>
                     <div class="col">{{ $t('view.production.dashboard.count') }}</div>
-                    <div class="col">{{ $t('view.production.dashboard.quantity') }}</div>
-                    <div class="col">{{ $t('view.production.dashboard.weight') }}</div>
+                    <!-- <div class="col">{{ $t('view.production.dashboard.weight') }}</div> -->
                   </div>
                   <div
                     v-for="product in productTypeSummary"
@@ -233,9 +234,9 @@
                     <div class="col">{{ product.productTypeName }}</div>
                     <div class="col">{{ product.count }}</div>
                     <div class="col">{{ product.totalQty }}</div>
-                    <div class="col">
+                    <!-- <div class="col">
                       {{ product.totalWeight ? product.totalWeight.toFixed(2) : '-' }}
-                    </div>
+                    </div> -->
                   </div>
                 </div>
                 <div
@@ -258,7 +259,7 @@
                   <div class="table-header">
                     <div class="col">{{ $t('view.production.dashboard.customerType') }}</div>
                     <div class="col">{{ $t('view.production.dashboard.orders') }}</div>
-                    <div class="col">{{ $t('view.production.dashboard.totalQty') }}</div>
+                    <div class="col">{{ $t('view.production.dashboard.count') }}</div>
                   </div>
                   <div
                     v-for="customer in customerTypeSummary"
@@ -410,7 +411,7 @@
 </template>
 
 <script>
-import PageTitleMain from '@/components/custom/PageTitleMain.vue'
+//import PageTitleMain from '@/components/custom/PageTitleMain.vue'
 import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
 import { useProductionDailyApiStore } from '@/stores/modules/api/plan/daily-store-api.js'
 import dayjs from 'dayjs'
@@ -418,7 +419,7 @@ import dayjs from 'dayjs'
 export default {
   name: 'ProductionDashboardView',
   components: {
-    PageTitleMain,
+    //PageTitleMain,
     HorizontalBarChart
   },
   setup() {
