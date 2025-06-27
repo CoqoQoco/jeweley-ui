@@ -58,6 +58,71 @@ export default {
         updatedBy: 'อัปเดตโดย',
         viewDetails: 'ดูรายละเอียด'
       }
+    },
+    stock: {
+      gem: {
+        dashboard: {
+          title: 'แดชบอร์ดคลังอัญมณี',
+          lastUpdate: 'อัปเดตล่าสุด',
+          filters: 'ตัวกรอง',
+          groupName: 'กลุ่มอัญมณี',
+          shape: 'รูปทรง',
+          grade: 'เกรด',
+          allGroups: 'ทุกกลุ่ม',
+          allShapes: 'ทุกรูปทรง',
+          allGrades: 'ทุกเกรด',
+          
+          // Tabs
+          overview: 'ภาพรวม',
+          today: 'วันนี้',
+          weekly: 'รายสัปดาห์',
+          monthly: 'รายเดือน',
+          
+          // Main stats
+          totalGemTypes: 'ประเภทอัญมณีทั้งหมด',
+          uniqueGemVarieties: 'ความหลากหลายของอัญมณี',
+          totalQuantity: 'จำนวนรวม',
+          totalWeight: 'น้ำหนักรวม',
+          totalValue: 'มูลค่ารวม',
+          inventoryValue: 'มูลค่าสินค้าคงคลัง',
+          lowStockItems: 'สินค้าใกล้หมด',
+          outOfStock: 'หมดสต็อก',
+          
+          // Availability
+          availability: 'สถานะพร้อมใช้',
+          available: 'พร้อมใช้',
+          onProcess: 'อยู่ในกระบวนการ',
+          
+          // Charts and tables
+          categoryBreakdown: 'แบ่งตามหมวดหมู่',
+          topMovements: 'การเคลื่อนไหวสูงสุด',
+          priceAlerts: 'การแจ้งเตือนราคา',
+          gemCode: 'รหัสอัญมณี',
+          category: 'หมวดหมู่',
+          transactions: 'ธุรกรรม',
+          totalMoved: 'ย้ายรวม',
+          
+          // Today report
+          todayTransactions: 'ธุรกรรมวันนี้',
+          priceChanges: 'การเปลี่ยนแปลงราคา',
+          newItems: 'รายการใหม่',
+          lowStockAlerts: 'แจ้งเตือนสต็อกต่ำ',
+          quantity: 'จำนวน',
+          status: 'สถานะ',
+          jobOrPo: 'งาน/PO',
+          
+          // No data messages
+          loadingChart: 'กำลังโหลดข้อมูล...',
+          noData: 'ไม่มีข้อมูลแสดง',
+          noMovements: 'ไม่มีการเคลื่อนไหว',
+          noPriceChanges: 'ไม่มีการเปลี่ยนแปลงราคา',
+          noTodayTransactions: 'ไม่มีธุรกรรมวันนี้',
+          
+          // Coming soon
+          weeklyReportComingSoon: 'รายงานรายสัปดาห์ เร็วๆ นี้',
+          monthlyReportComingSoon: 'รายงานรายเดือน เร็วๆ นี้'
+        }
+      }
     }
   }
 }

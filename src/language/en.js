@@ -54,6 +54,71 @@ export default {
         updatedBy: 'Updated By',
         viewDetails: 'View Details',
       }
+    },
+    stock: {
+      gem: {
+        dashboard: {
+          title: 'Gem Stock Dashboard',
+          lastUpdate: 'Last Update',
+          filters: 'Filters',
+          groupName: 'Gem Group',
+          shape: 'Shape',
+          grade: 'Grade',
+          allGroups: 'All Groups',
+          allShapes: 'All Shapes',
+          allGrades: 'All Grades',
+          
+          // Tabs
+          overview: 'Overview',
+          today: 'Today',
+          weekly: 'Weekly',
+          monthly: 'Monthly',
+          
+          // Main stats
+          totalGemTypes: 'Total Gem Types',
+          uniqueGemVarieties: 'Unique gem varieties',
+          totalQuantity: 'Total Quantity',
+          totalWeight: 'Total Weight',
+          totalValue: 'Total Value',
+          inventoryValue: 'Inventory value',
+          lowStockItems: 'Low Stock Items',
+          outOfStock: 'Out of stock',
+          
+          // Availability
+          availability: 'Availability Status',
+          available: 'Available',
+          onProcess: 'On Process',
+          
+          // Charts and tables
+          categoryBreakdown: 'Category Breakdown',
+          topMovements: 'Top Movements',
+          priceAlerts: 'Price Alerts',
+          gemCode: 'Gem Code',
+          category: 'Category',
+          transactions: 'Transactions',
+          totalMoved: 'Total Moved',
+          
+          // Today report
+          todayTransactions: "Today's Transactions",
+          priceChanges: 'Price Changes',
+          newItems: 'New Items',
+          lowStockAlerts: 'Low Stock Alerts',
+          quantity: 'Quantity',
+          status: 'Status',
+          jobOrPo: 'Job/PO',
+          
+          // No data messages
+          loadingChart: 'Loading data...',
+          noData: 'No data to display',
+          noMovements: 'No movements',
+          noPriceChanges: 'No price changes',
+          noTodayTransactions: 'No transactions today',
+          
+          // Coming soon
+          weeklyReportComingSoon: 'Weekly Report Coming Soon',
+          monthlyReportComingSoon: 'Monthly Report Coming Soon'
+        }
+      }
     }
   }
 }

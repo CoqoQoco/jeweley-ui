@@ -2,10 +2,10 @@
   <div class="horizontal-bar-chart">
     <div class="chart-container">
       <h4 v-if="title" class="chart-title">{{ title }}</h4>
-      <Chart 
-        type="bar" 
-        :data="chartData" 
-        :options="chartOptions" 
+      <Chart
+        type="bar"
+        :data="chartData"
+        :options="chartOptions"
         :width="width"
         :height="height"
         class="chart-component"
@@ -38,7 +38,7 @@ export default {
     },
     width: {
       type: [String, Number],
-      default: '100%'
+      default: 100
     },
     useThaiLabels: {
       type: Boolean,
@@ -95,7 +95,7 @@ export default {
               text: 'Count',
               color: 'var(--base-font-color)',
               font: {
-                size: 14,
+                size: 14
                 //weight: 'bold'
               }
             },
@@ -116,7 +116,7 @@ export default {
               text: 'Description',
               color: 'var(--base-font-color)',
               font: {
-                size: 14,
+                size: 14
                 //weight: 'bold'
               }
             },
@@ -141,13 +141,13 @@ export default {
     },
     chartData() {
       if (!this.data || !this.data.report) return { labels: [], datasets: [] }
-      
-      const labels = this.data.report.map(item => 
+
+      const labels = this.data.report.map((item) =>
         this.useThaiLabels ? item.statusNameTH : item.statusNameEN
       )
-      
-      const counts = this.data.report.map(item => item.count)
-      
+
+      const counts = this.data.report.map((item) => item.count)
+
       return {
         labels: labels,
         datasets: [
@@ -163,20 +163,20 @@ export default {
       }
     },
     backgroundColors() {
-      const baseColors = this.colors.length > 0 ? this.colors : [
-        '#921313', '#038387', '#fabc3f', '#ff4d4d', '#e0e0e0', '#393939', '#DAD4B5'
-      ]
-      return this.data.report.map((_, index) => 
-        baseColors[index % baseColors.length] + '80' // Add transparency
+      const baseColors =
+        this.colors.length > 0
+          ? this.colors
+          : ['#921313', '#038387', '#fabc3f', '#ff4d4d', '#e0e0e0', '#393939', '#DAD4B5']
+      return this.data.report.map(
+        (_, index) => baseColors[index % baseColors.length] + '80' // Add transparency
       )
     },
     borderColors() {
-      const baseColors = this.colors.length > 0 ? this.colors : [
-        '#921313', '#038387', '#fabc3f', '#ff4d4d', '#e0e0e0', '#393939', '#DAD4B5'
-      ]
-      return this.data.report.map((_, index) => 
-        baseColors[index % baseColors.length]
-      )
+      const baseColors =
+        this.colors.length > 0
+          ? this.colors
+          : ['#921313', '#038387', '#fabc3f', '#ff4d4d', '#e0e0e0', '#393939', '#DAD4B5']
+      return this.data.report.map((_, index) => baseColors[index % baseColors.length])
     }
   }
 }
@@ -217,13 +217,13 @@ export default {
   // Responsive design
   @media (max-width: 768px) {
     padding: 10px;
-    
+
     .chart-container {
       .chart-title {
         font-size: 16px;
         margin-bottom: 15px;
       }
-      
+
       .chart-component {
         min-height: 300px;
       }
@@ -232,13 +232,13 @@ export default {
 
   @media (max-width: 480px) {
     padding: 8px;
-    
+
     .chart-container {
       .chart-title {
         font-size: 14px;
         margin-bottom: 10px;
       }
-      
+
       .chart-component {
         min-height: 250px;
       }
