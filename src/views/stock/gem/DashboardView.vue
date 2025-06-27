@@ -215,6 +215,7 @@
                 :show-data-labels="true"
                 :datasetFields="datasetFields"
                 :chartName="chartName"
+                :maxBarThickness="2"
               />
               <div v-else-if="isLoading" class="chart-loading">
                 <div class="loading-spinner">

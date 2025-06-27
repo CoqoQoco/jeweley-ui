@@ -60,6 +60,23 @@ export default {
     chartName: {
       type: String,
       default: 'normal'
+    },
+    // Props สำหรับกำหนดความกว้างของแท่ง
+    barThickness: {
+      type: [Number, String],
+      default: 25 // ความหนาของแท่งแต่ละอัน (pixels)
+    },
+    maxBarThickness: {
+      type: [Number, String],
+      default: 20 // ความหนาสูงสุดของแท่ง
+    },
+    categoryPercentage: {
+      type: Number,
+      default: 0.8 // เปอร์เซ็นต์ของพื้นที่ที่ category จะใช้ (0-1)
+    },
+    barPercentage: {
+      type: Number,
+      default: 0.9 // เปอร์เซ็นต์ของพื้นที่ที่แท่งจะใช้ใน category (0-1)
     }
   },
   computed: {
@@ -178,7 +195,10 @@ export default {
           backgroundColor: this.getColorWithAlpha(fieldIndex, '80'),
           borderColor: this.getColor(fieldIndex),
           borderWidth: 1,
-          barThickness: 25 // ลดขนาดแท่งเล็กน้อยเพื่อให้แท่งหลายแท่งไม่แออัด
+          barThickness: this.barThickness, // ลดขนาดแท่งเล็กน้อยเพื่อให้แท่งหลายแท่งไม่แออัด
+          maxBarThickness: this.maxBarThickness,
+          barPercentage: this.barPercentage,
+          categoryPercentage: this.categoryPercentage,
         }
       })
 
