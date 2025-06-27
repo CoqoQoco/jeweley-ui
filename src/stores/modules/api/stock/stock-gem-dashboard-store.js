@@ -63,24 +63,18 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     // Chart data for visualization
     getCategoryChartData: (state) => {
       const categories = state.dashboardData?.categories || []
+
       return {
-        labels: categories.map((cat) => `${cat.groupName} - ${cat.shape}`),
-        datasets: [
-          {
-            label: 'Total Value',
-            data: categories.map((cat) => cat.totalValue),
-            backgroundColor: [
-              '#921313',
-              '#038387',
-              '#fabc3f',
-              '#ff4d4d',
-              '#e0e0e0',
-              '#393939',
-              '#dad4b5',
-              '#b5dad4'
-            ]
-          }
-        ]
+        report: categories.map((cat) => ({
+          statusNameTH: `${cat.groupName}`,
+          statusNameEN: `${cat.groupName}`,
+          status: cat.id || cat.groupName, // เพิ่ม status สำหรับ tooltip
+          description: `Group: ${cat.groupName}, Shape: ${cat.shape}`,
+          count: cat.totalQuantity, // แท่งที่ 1
+          count2: cat.totalOnProcessQuantity, // แท่งที่ 2
+          count3: cat.totalQuantityWeight, // แท่งที่ 3
+          count4: cat.totalOnProcessQuantityWeight // แท่งที่ 4
+        }))
       }
     },
 

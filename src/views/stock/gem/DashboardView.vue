@@ -16,30 +16,40 @@
           <div class="header-controls">
             <!-- Filter Dropdown -->
             <div class="dropdown me-2">
-              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <button
+                class="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+              >
                 <i class="bi bi-funnel"></i>
                 {{ $t('view.stock.gem.dashboard.filters') }}
               </button>
-              <div class="dropdown-menu p-3" style="min-width: 250px;">
+              <div class="dropdown-menu p-3" style="min-width: 250px">
                 <div class="mb-2">
                   <label class="form-label">{{ $t('view.stock.gem.dashboard.groupName') }}</label>
                   <select class="form-select form-select-sm" v-model="filters.groupName">
                     <option value="">{{ $t('view.stock.gem.dashboard.allGroups') }}</option>
-                    <option v-for="group in gemGroups" :key="group" :value="group">{{ group }}</option>
+                    <option v-for="group in gemGroups" :key="group" :value="group">
+                      {{ group }}
+                    </option>
                   </select>
                 </div>
                 <div class="mb-2">
                   <label class="form-label">{{ $t('view.stock.gem.dashboard.shape') }}</label>
                   <select class="form-select form-select-sm" v-model="filters.shape">
                     <option value="">{{ $t('view.stock.gem.dashboard.allShapes') }}</option>
-                    <option v-for="shape in gemShapes" :key="shape" :value="shape">{{ shape }}</option>
+                    <option v-for="shape in gemShapes" :key="shape" :value="shape">
+                      {{ shape }}
+                    </option>
                   </select>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">{{ $t('view.stock.gem.dashboard.grade') }}</label>
                   <select class="form-select form-select-sm" v-model="filters.grade">
                     <option value="">{{ $t('view.stock.gem.dashboard.allGrades') }}</option>
-                    <option v-for="grade in gemGrades" :key="grade" :value="grade">{{ grade }}</option>
+                    <option v-for="grade in gemGrades" :key="grade" :value="grade">
+                      {{ grade }}
+                    </option>
                   </select>
                 </div>
                 <div class="d-flex gap-2">
@@ -67,8 +77,8 @@
       <div class="col-12">
         <ul class="nav nav-tabs dashboard-tabs">
           <li class="nav-item">
-            <button 
-              class="nav-link" 
+            <button
+              class="nav-link"
               :class="{ active: activeTab === 'overview' }"
               @click="activeTab = 'overview'"
             >
@@ -77,8 +87,8 @@
             </button>
           </li>
           <li class="nav-item">
-            <button 
-              class="nav-link" 
+            <button
+              class="nav-link"
               :class="{ active: activeTab === 'today' }"
               @click="setActiveTab('today')"
             >
@@ -87,8 +97,8 @@
             </button>
           </li>
           <li class="nav-item">
-            <button 
-              class="nav-link" 
+            <button
+              class="nav-link"
               :class="{ active: activeTab === 'weekly' }"
               @click="setActiveTab('weekly')"
             >
@@ -97,8 +107,8 @@
             </button>
           </li>
           <li class="nav-item">
-            <button 
-              class="nav-link" 
+            <button
+              class="nav-link"
               :class="{ active: activeTab === 'monthly' }"
               @click="setActiveTab('monthly')"
             >
@@ -124,7 +134,9 @@
               <div class="stat-content">
                 <h3>{{ stockSummary.totalGemTypes }}</h3>
                 <p>{{ $t('view.stock.gem.dashboard.totalGemTypes') }}</p>
-                <small class="stat-detail">{{ $t('view.stock.gem.dashboard.uniqueGemVarieties') }}</small>
+                <small class="stat-detail">{{
+                  $t('view.stock.gem.dashboard.uniqueGemVarieties')
+                }}</small>
               </div>
             </div>
           </div>
@@ -140,7 +152,10 @@
               <div class="stat-content">
                 <h3>{{ formatNumber(stockSummary.totalQuantity) }}</h3>
                 <p>{{ $t('view.stock.gem.dashboard.totalQuantity') }}</p>
-                <small class="stat-detail">{{ formatNumber(stockSummary.totalQuantityWeight) }} {{ $t('view.stock.gem.dashboard.totalWeight') }}</small>
+                <small class="stat-detail"
+                  >{{ formatNumber(stockSummary.totalQuantityWeight) }}
+                  {{ $t('view.stock.gem.dashboard.totalWeight') }}</small
+                >
               </div>
             </div>
           </div>
@@ -156,7 +171,9 @@
               <div class="stat-content">
                 <h3>{{ formatCurrency(stockSummary.totalValue) }}</h3>
                 <p>{{ $t('view.stock.gem.dashboard.totalValue') }}</p>
-                <small class="stat-detail">{{ $t('view.stock.gem.dashboard.inventoryValue') }}</small>
+                <small class="stat-detail">{{
+                  $t('view.stock.gem.dashboard.inventoryValue')
+                }}</small>
               </div>
             </div>
           </div>
@@ -172,28 +189,32 @@
               <div class="stat-content">
                 <h3>{{ stockSummary.lowStockCount }}</h3>
                 <p>{{ $t('view.stock.gem.dashboard.lowStockItems') }}</p>
-                <small class="stat-detail">{{ stockSummary.zeroStockCount }} {{ $t('view.stock.gem.dashboard.outOfStock') }}</small>
+                <small class="stat-detail"
+                  >{{ stockSummary.zeroStockCount }}
+                  {{ $t('view.stock.gem.dashboard.outOfStock') }}</small
+                >
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Charts and Analysis -->
+      <!-- chart -->
       <div class="row">
-        <!-- Category Breakdown Chart -->
-        <div class="col-lg-8 col-md-12 mb-4">
+        <div class="col-lg-12 col-md-12 mb-4">
           <div class="chart-card">
             <div class="chart-card-header">
               <h5>{{ $t('view.stock.gem.dashboard.categoryBreakdown') }}</h5>
             </div>
             <div class="chart-card-body">
               <HorizontalBarChart
-                v-if="categoryChartData && categoryChartData.datasets[0].data.length > 0"
+                v-if="categoryChartData && categoryChartData.report?.length > 0"
                 :data="categoryChartData"
                 :title="$t('view.stock.gem.dashboard.categoryBreakdown')"
                 :height="400"
                 :show-data-labels="true"
+                :datasetFields="datasetFields"
+                :chartName="chartName"
               />
               <div v-else-if="isLoading" class="chart-loading">
                 <div class="loading-spinner">
@@ -207,7 +228,13 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      <!-- Charts and Analysis -->
+      <div class="row">
+        <!-- Category Breakdown Chart -->
+        <div class="col-lg-8 col-md-12 mb-4">
           <!-- Top Movements Table -->
           <div class="summary-card mt-3">
             <div class="summary-header">
@@ -221,11 +248,7 @@
                   <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
                   <div class="col">{{ $t('view.stock.gem.dashboard.totalMoved') }}</div>
                 </div>
-                <div
-                  v-for="movement in topMovements"
-                  :key="movement.code"
-                  class="table-row"
-                >
+                <div v-for="movement in topMovements" :key="movement.code" class="table-row">
                   <div class="col">{{ movement.code }}</div>
                   <div class="col">{{ movement.groupName }} - {{ movement.shape }}</div>
                   <div class="col">{{ movement.transactionCount }}</div>
@@ -259,10 +282,9 @@
                   </div>
                 </div>
                 <div class="trend-direction">
-                  <span 
-                    :class="['percentage-badge', alert.changeType.toLowerCase()]"
-                  >
-                    {{ alert.changePercentage > 0 ? '+' : '' }}{{ alert.changePercentage.toFixed(1) }}%
+                  <span :class="['percentage-badge', alert.changeType.toLowerCase()]">
+                    {{ alert.changePercentage > 0 ? '+' : ''
+                    }}{{ alert.changePercentage.toFixed(1) }}%
                   </span>
                 </div>
               </div>
@@ -373,25 +395,36 @@
             </div>
             <div class="activities-body">
               <div v-if="todayTransactions.length > 0" class="activities-list">
-                <div v-for="transaction in todayTransactions.slice(0, 10)" :key="transaction.running" class="activity-item">
+                <div
+                  v-for="transaction in todayTransactions.slice(0, 10)"
+                  :key="transaction.running"
+                  class="activity-item"
+                >
                   <div class="activity-icon">
                     <i :class="getTransactionIcon(transaction.type)"></i>
                   </div>
                   <div class="activity-content">
                     <div class="activity-header">
                       <h6>{{ transaction.code }} - {{ transaction.groupName }}</h6>
-                      <span class="activity-time">{{ formatDateTime(transaction.createDate) }}</span>
+                      <span class="activity-time">{{
+                        formatDateTime(transaction.createDate)
+                      }}</span>
                     </div>
                     <p class="activity-description">
-                      {{ transaction.typeName }} - {{ $t('view.stock.gem.dashboard.quantity') }}: {{ formatNumber(transaction.qty) }}
+                      {{ transaction.typeName }} - {{ $t('view.stock.gem.dashboard.quantity') }}:
+                      {{ formatNumber(transaction.qty) }}
                     </p>
                     <div class="activity-details">
                       <div class="detail-row">
-                        <span class="detail-label">{{ $t('view.stock.gem.dashboard.status') }}:</span>
+                        <span class="detail-label"
+                          >{{ $t('view.stock.gem.dashboard.status') }}:</span
+                        >
                         <span class="detail-value">{{ transaction.status }}</span>
                       </div>
                       <div class="detail-row" v-if="transaction.jobOrPo">
-                        <span class="detail-label">{{ $t('view.stock.gem.dashboard.jobOrPo') }}:</span>
+                        <span class="detail-label"
+                          >{{ $t('view.stock.gem.dashboard.jobOrPo') }}:</span
+                        >
                         <span class="detail-value">{{ transaction.jobOrPo }}</span>
                       </div>
                     </div>
@@ -412,14 +445,14 @@
     <!-- For brevity, implementing placeholders -->
     <div v-show="activeTab === 'weekly'" class="tab-content">
       <div class="text-center p-4">
-        <i class="bi bi-calendar-week" style="font-size: 3rem; color: #921313;"></i>
+        <i class="bi bi-calendar-week" style="font-size: 3rem; color: #921313"></i>
         <h4 class="mt-3">{{ $t('view.stock.gem.dashboard.weeklyReportComingSoon') }}</h4>
       </div>
     </div>
 
     <div v-show="activeTab === 'monthly'" class="tab-content">
       <div class="text-center p-4">
-        <i class="bi bi-calendar-month" style="font-size: 3rem; color: #921313;"></i>
+        <i class="bi bi-calendar-month" style="font-size: 3rem; color: #921313"></i>
         <h4 class="mt-3">{{ $t('view.stock.gem.dashboard.monthlyReportComingSoon') }}</h4>
       </div>
     </div>
@@ -452,7 +485,14 @@ export default {
       },
       gemGroups: ['DIAMOND', 'RUBY', 'SAPPHIRE', 'EMERALD', 'PEARL'],
       gemShapes: ['ROUND', 'OVAL', 'SQUARE', 'HEART', 'MARQUISE'],
-      gemGrades: ['A', 'AA', 'AAA', 'AAAA']
+      gemGrades: ['A', 'AA', 'AAA', 'AAAA'],
+      datasetFields: [
+        { key: 'count', label: 'Count', labelTH: 'จำนวน' },
+        { key: 'count2', label: 'On Process Count', labelTH: 'จำนวนที่อยู่ระหว่างดำเนินการ' },
+        { key: 'count3', label: 'Total Weight', labelTH: 'น้ำหนักรวม' },
+        { key: 'count4', label: 'On Process Weight', labelTH: 'น้ำหนักที่อยู่ระหว่างดำเนินการ' }
+      ],
+      chartName: 'stock-gem-dashboard'
     }
   },
   computed: {
@@ -517,7 +557,7 @@ export default {
 
     async setActiveTab(tab) {
       this.activeTab = tab
-      
+
       try {
         switch (tab) {
           case 'today':

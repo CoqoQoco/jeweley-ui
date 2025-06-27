@@ -50,7 +50,16 @@ export default {
     },
     colors: {
       type: Array,
-      default: () => ['#038387', '#921313']
+      default: () => ['#038387', '#638387', '#421313', '#921313']
+    },
+    // เพิ่ม prop สำหรับกำหนด datasets ที่ต้องการแสดง
+    datasetFields: {
+      type: Array,
+      default: () => [{ key: 'count', label: 'Count', labelTH: 'จำนวน' }]
+    },
+    chartName: {
+      type: String,
+      default: 'normal'
     }
   },
   computed: {
@@ -64,7 +73,15 @@ export default {
             display: false // We handle title separately
           },
           legend: {
-            display: false // Single dataset doesn't need legend
+            display: this.datasetFields.length > 1, // Show legend only for multiple datasets
+            position: 'top',
+            labels: {
+              color: 'var(--base-font-color)',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
           },
           tooltip: {
             mode: 'index',
@@ -78,8 +95,13 @@ export default {
               label: (context) => {
                 const index = context.dataIndex
                 const report = this.data.report[index]
+                const datasetLabel = context.dataset.label
+
+                if (this.chartName == 'stock-gem-dashboard') {
+                  return [`${datasetLabel}: ${context.parsed.x}`]
+                }
                 return [
-                  `Count: ${context.parsed.x}`,
+                  `${datasetLabel}: ${context.parsed.x}`,
                   `Status Code: ${report.status}`,
                   `Description: ${report.description || 'N/A'}`
                 ]
@@ -96,7 +118,6 @@ export default {
               color: 'var(--base-font-color)',
               font: {
                 size: 14
-                //weight: 'bold'
               }
             },
             grid: {
@@ -117,7 +138,6 @@ export default {
               color: 'var(--base-font-color)',
               font: {
                 size: 14
-                //weight: 'bold'
               }
             },
             grid: {
@@ -140,43 +160,44 @@ export default {
       }
     },
     chartData() {
+      console.log('Generating chart data...', this.data)
+
       if (!this.data || !this.data.report) return { labels: [], datasets: [] }
 
       const labels = this.data.report.map((item) =>
         this.useThaiLabels ? item.statusNameTH : item.statusNameEN
       )
 
-      const counts = this.data.report.map((item) => item.count)
+      // สร้าง datasets หลายชุดตาม datasetFields
+      const datasets = this.datasetFields.map((field, fieldIndex) => {
+        const data = this.data.report.map((item) => item[field.key] || 0)
+
+        return {
+          label: this.useThaiLabels ? field.labelTH : field.label,
+          data: data,
+          backgroundColor: this.getColorWithAlpha(fieldIndex, '80'),
+          borderColor: this.getColor(fieldIndex),
+          borderWidth: 1,
+          barThickness: 25 // ลดขนาดแท่งเล็กน้อยเพื่อให้แท่งหลายแท่งไม่แออัด
+        }
+      })
 
       return {
         labels: labels,
-        datasets: [
-          {
-            label: 'Count',
-            data: counts,
-            backgroundColor: this.backgroundColors,
-            borderColor: this.borderColors,
-            borderWidth: 1,
-            barThickness: 30
-          }
-        ]
+        datasets: datasets
       }
-    },
-    backgroundColors() {
+    }
+  },
+  methods: {
+    getColor(index) {
       const baseColors =
         this.colors.length > 0
           ? this.colors
           : ['#921313', '#038387', '#fabc3f', '#ff4d4d', '#e0e0e0', '#393939', '#DAD4B5']
-      return this.data.report.map(
-        (_, index) => baseColors[index % baseColors.length] + '80' // Add transparency
-      )
+      return baseColors[index % baseColors.length]
     },
-    borderColors() {
-      const baseColors =
-        this.colors.length > 0
-          ? this.colors
-          : ['#921313', '#038387', '#fabc3f', '#ff4d4d', '#e0e0e0', '#393939', '#DAD4B5']
-      return this.data.report.map((_, index) => baseColors[index % baseColors.length])
+    getColorWithAlpha(index, alpha) {
+      return this.getColor(index) + alpha
     }
   }
 }
