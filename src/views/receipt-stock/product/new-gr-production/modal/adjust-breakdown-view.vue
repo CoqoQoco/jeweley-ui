@@ -62,6 +62,7 @@
                   type="text"
                   v-model="materialData.typeName"
                   class="form-control form-control-sm"
+                  :style="getBgColor(false, materialData.typeName)"
                   placeholder="ชื่อวัสดุ"
                 />
               </template>
@@ -89,7 +90,6 @@
                     class="w-full"
                     placeholder="เลือกเกรดเพชร"
                     :showClear="true"
-                    @change="updateMaterialBarcode(materialData)"
                   />
                 </div>
                 <div v-else-if="materialData.type === 'Gem'">
@@ -97,11 +97,10 @@
                     v-model="materialData.typeCode"
                     :options="masterGem"
                     optionLabel="description"
-                    optionValue="nameEn"
+                    optionValue="code"
                     class="w-full"
                     placeholder="เลือกพลอย"
                     :showClear="true"
-                    @change="updateMaterialBarcode(materialData)"
                   />
                 </div>
                 <div v-else>
@@ -109,6 +108,7 @@
                     type="text"
                     v-model="materialData.typeCode"
                     class="form-control form-control-sm"
+                    :style="getBgColor(false, materialData.typeCode)"
                     placeholder="รหัสวัสดุ"
                   />
                 </div>
@@ -121,15 +121,16 @@
                     type="number"
                     v-model="materialData.qty"
                     class="form-control form-control-sm"
+                    :style="getBgColor(false, materialData.qty)"
                     placeholder="จำนวน"
                     min="0"
                     step="0.01"
-                    @input="updateMaterialBarcode(materialData)"
                   />
                   <input
                     type="text"
                     v-model="materialData.qtyUnit"
                     class="form-control form-control-sm unit-input"
+                    :style="getBgColor(false, materialData.qtyUnit)"
                     placeholder="หน่วย"
                   />
                 </div>
@@ -141,10 +142,10 @@
                     type="number"
                     v-model="materialData.qtyPrice"
                     class="form-control form-control-sm"
+                    :style="getBgColor(false, materialData.qtyPrice)"
                     placeholder="ราคา/หน่วย"
                     min="0"
                     step="0.01"
-                    @input="updateMaterialBarcode(materialData)"
                   />
                 </div>
               </template>
@@ -156,15 +157,16 @@
                     type="number"
                     v-model="materialData.qtyWeight"
                     class="form-control form-control-sm"
+                    :style="getBgColor(false, materialData.qtyWeight)"
                     placeholder="น้ำหนัก"
                     min="0"
                     step="0.01"
-                    @input="updateMaterialBarcode(materialData)"
                   />
                   <input
                     type="text"
                     v-model="materialData.qtyWeightUnit"
                     class="form-control form-control-sm unit-input"
+                    :style="getBgColor(false, materialData.qtyWeightUnit)"
                     placeholder="หน่วย"
                   />
                 </div>
@@ -177,10 +179,10 @@
                     type="number"
                     v-model="materialData.qtyWeightPrice"
                     class="form-control form-control-sm"
+                    :style="getBgColor(false, materialData.qtyWeightPrice)"
                     placeholder="ราคา/น้ำหนัก"
                     min="0"
                     step="0.01"
-                    @input="updateMaterialBarcode(materialData)"
                   />
                 </div>
               </template>
@@ -191,6 +193,7 @@
                   type="text"
                   v-model="materialData.region"
                   class="form-control form-control-sm"
+                  :style="getBgColor(false, materialData.region)"
                   placeholder="แหล่งที่มา"
                 />
               </template>
@@ -261,7 +264,7 @@
                           v-model="applyType"
                         />
                         <label class="form-check-label" for="applyAll">
-                          ทุกรายการ ({{ stockList.length }} รายการ)
+                          ทุกรายการ ({{ filteredStockList.length }} รายการ)
                         </label>
                       </div>
                       <div class="form-check mb-2">
@@ -280,7 +283,7 @@
                     <!-- Stock Selection List -->
                     <div v-if="applyType === 'selected'" class="stock-list mt-2">
                       <BaseDataTable
-                        :items="stockList"
+                        :items="filteredStockList"
                         :columns="stockColumns"
                         :paginator="false"
                         :scrollHeight="'200px'"
@@ -291,6 +294,17 @@
                         dataKey="stockReceiptNumber"
                         class="stock-selection-table"
                       >
+                        <!-- Status Template -->
+                        <template #isReceiptTemplate="{ data: stockData }">
+                          <div class="d-flex justify-content-center">
+                            <span 
+                              class="badge" 
+                              :class="stockData.isReceipt ? 'badge-secondary' : 'badge-success'"
+                            >
+                              {{ stockData.isReceipt ? 'รับแล้ว' : 'ยังไม่รับ' }}
+                            </span>
+                          </div>
+                        </template>
                       </BaseDataTable>
                     </div>
 
@@ -334,8 +348,8 @@
                         <span class="value">{{ editableBreakdown.length }} รายการ</span>
                       </div>
                       <div class="summary-item">
-                        <span class="label">จำนวนสินค้า:</span>
-                        <span class="value">{{ stockList.length }} รายการ</span>
+                        <span class="label">จำนวนสินค้า (ยังไม่รับ):</span>
+                        <span class="value">{{ filteredStockList.length }} รายการ</span>
                       </div>
                       <div class="summary-item">
                         <span class="label">รายการที่เลือก:</span>
@@ -458,6 +472,13 @@ export default {
           header: 'ชื่อสินค้า',
           minWidth: '200px',
           sortable: false
+        },
+        {
+          field: 'isReceipt',
+          header: 'สถานะ',
+          width: '80px',
+          sortable: false,
+          align: 'center'
         }
       ],
 
@@ -546,7 +567,7 @@ export default {
 
     canApply() {
       if (this.applyType === 'all') {
-        return this.stockList.length > 0 && this.hasValidBreakdown
+        return this.filteredStockList.length > 0 && this.hasValidBreakdown
       } else {
         return this.selectedStockItems.length > 0 && this.hasValidBreakdown
       }
@@ -558,7 +579,7 @@ export default {
 
     selectedCount() {
       if (this.applyType === 'all') {
-        return this.stockList.length
+        return this.filteredStockList.length
       } else {
         return this.selectedStockItems.length
       }
@@ -566,6 +587,11 @@ export default {
 
     validBreakdownMaterials() {
       return this.editableBreakdown.filter((m) => m.type && (m.qty > 0 || m.qtyWeight > 0))
+    },
+
+    filteredStockList() {
+      // Only show items where isReceipt = false
+      return this.stockList.filter(stock => !stock.isReceipt)
     }
   },
 
@@ -639,11 +665,6 @@ export default {
       }
     },
 
-    updateMaterialBarcode(material) {
-      material.typeBarcode = this.generateBarcode(material)
-      // Force reactivity update for total price calculation
-      this.$forceUpdate()
-    },
 
     calculateTotalPrice(material) {
       if (!material) return 0
@@ -654,45 +675,16 @@ export default {
       return qtyTotal + weightTotal
     },
 
-    generateBarcode(material) {
-      if (!material.type) return ''
-
-      let display = ''
-
-      switch (material.type) {
-        case 'Diamond':
-          display = `${material.qty || ''}${material.type || ''}${material.qtyWeight || ''}${
-            material.qtyWeightUnit ? ` ${material.qtyWeightUnit}` : ''
-          }${material.typeCode ? `, ${material.typeCode}` : ''}${
-            material.region ? `, (${material.region})` : ''
-          }`
-          break
-
-        case 'Gold':
-        case 'Silver':
-          display = `${material.qtyWeight || ''}${
-            material.qtyWeightUnit ? ` ${material.qtyWeightUnit}` : ''
-          }${material.type ? ` ${material.type}` : ''}`
-          break
-
-        case 'Gem':
-          display = `${material.qty || ''}${material.typeCode || ''}${material.qtyWeight || ''}${
-            material.qtyWeightUnit ? ` ${material.qtyWeightUnit}` : ''
-          }${material.region ? `, (${material.region})` : ''}`
-          break
-
-        case 'Worker':
-          display = `${material.typeName || 'ค่าแรง'}`
-          break
-
-        case 'Setting':
-        case 'ETC':
-          display = `${material.typeName || material.type}`
-          break
+    getBgColor(isReceipt, data) {
+      if (isReceipt) {
+        return 'background-color: #e0e0e0' // Gray for receipted items
+      } else if (data) {
+        return 'background-color: #b5dad4' // Light green for items with data
+      } else {
+        return 'background-color: #dad4b5' // Light yellow for empty/required fields
       }
-
-      return display
     },
+
 
     updateStockSelection(newSelection) {
       this.selectedStockItems = newSelection
@@ -703,13 +695,17 @@ export default {
       let targetStocks = []
 
       if (this.applyType === 'all') {
-        targetStocks = this.stockList.map((s) => s.stockReceiptNumber)
+        // Only apply to items where isReceipt = false
+        targetStocks = this.filteredStockList.map((s) => s.stockReceiptNumber)
       } else {
-        targetStocks = this.selectedStockItems.map((s) => s.stockReceiptNumber)
+        // Only selected items that are not receipted
+        targetStocks = this.selectedStockItems
+          .filter(item => !item.isReceipt)
+          .map((s) => s.stockReceiptNumber)
       }
 
       if (targetStocks.length === 0) {
-        swAlert.warning('กรุณาเลือกสินค้า', 'ต้องเลือกสินค้าอย่างน้อย 1 รายการ', () => {})
+        swAlert.warning('ไม่มีสินค้าที่สามารถนำไปใช้', 'สินค้าที่เลือกต้องยังไม่รับเข้าคลังเท่านั้น', () => {})
         return
       }
 
@@ -871,6 +867,23 @@ export default {
       font-size: 0.85rem;
       padding: 0.5rem;
     }
+  }
+}
+
+.badge {
+  padding: 0.25em 0.6em;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  
+  &.badge-success {
+    color: white;
+    background-color: var(--base-green);
+  }
+  
+  &.badge-secondary {
+    color: white;
+    background-color: #6c757d;
   }
 }
 

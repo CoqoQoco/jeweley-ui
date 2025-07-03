@@ -236,55 +236,80 @@ export default {
           field: 'type',
           header: 'ประเภท',
           sortable: false,
-          width: '100px'
+          minWidth: '120px'
+        },
+        {
+          field: 'typeName',
+          header: 'ชื่อวัสดุ',
+          sortable: false,
+          minWidth: '180px'
         },
         {
           field: 'typeCode',
-          header: 'รหัส',
+          header: 'รหัส/เกรด',
           sortable: false,
-          minWidth: '100px'
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: false,
-          width: '150px'
-        },
-        {
-          field: 'region',
-          header: 'เเหล่งผลิต',
-          sortable: false,
-          width: '80px'
+          minWidth: '130px'
         },
         {
           field: 'qty',
           header: 'จำนวน',
           sortable: false,
-          width: '200px'
+          minWidth: '150px',
+          align: 'center'
         },
         {
-          field: 'weight',
+          field: 'priceQty',
+          header: 'ราคา/หน่วย',
+          sortable: false,
+          minWidth: '120px',
+          align: 'center'
+        },
+        {
+          field: 'qtyWeight',
           header: 'น้ำหนัก',
           sortable: false,
-          width: '200px'
+          minWidth: '150px',
+          align: 'center'
         },
         {
-          field: 'price',
-          header: 'ราคา',
+          field: 'priceWeight',
+          header: 'ราคา/น้ำหนัก',
           sortable: false,
-          width: '150px'
+          minWidth: '120px',
+          align: 'center'
+        },
+        {
+          field: 'totalPrice',
+          header: 'รวมราคา',
+          sortable: false,
+          minWidth: '150px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'size',
+          header: 'ขนาด',
+          sortable: false,
+          minWidth: '100px'
+        },
+        {
+          field: 'region',
+          header: 'แหล่งที่มา',
+          sortable: false,
+          minWidth: '100px'
         },
         {
           field: 'typeBarcode',
           header: 'Barcode',
           sortable: false,
-          minWidth: '100px'
+          minWidth: '150px'
         },
         {
           field: 'action',
-          header: '',
+          header: 'จัดการ',
           sortable: false,
-          width: '50px'
+          minWidth: '80px',
+          align: 'center'
         }
       ],
 
@@ -503,6 +528,20 @@ export default {
     },
 
     updateTypeBarcode(item, index) {
+
+      console.log('updateTypeBarcode', item, index)
+      // Check if item exists
+      if (!item) {
+        console.warn('No item provided to updateTypeBarcode')
+        return
+      }
+
+      // Check if index (stockReceiptNumber) exists  
+      if (!index) {
+        console.warn('No index (stockReceiptNumber) provided to updateTypeBarcode')
+        return
+      }
+
       if (item.type === 'Diamond') {
         item.typeBarcode = this.getBarcode(item)
       }
@@ -544,7 +583,21 @@ export default {
     updateFormBarcodeIndex(index) {
       const item = this.form.find((x) => x.stockReceiptNumber === index)
 
-      if (item.materials.length > 0) {
+      // Check if item exists before accessing its properties
+      if (!item) {
+        console.warn('No item found with stockReceiptNumber:', index)
+        return
+      }
+
+      // Initialize barcode properties if they don't exist
+      if (!item.barcodeGems) {
+        item.barcodeGems = []
+      }
+      if (!item.barcodeGold) {
+        item.barcodeGold = ''
+      }
+
+      if (item.materials && item.materials.length > 0) {
         item.barcodeGems = []
         item.materials.forEach((mat) => {
           if (mat.type === 'Gold' || mat.type === 'Silver') {
@@ -571,22 +624,22 @@ export default {
       let display = ''
 
       if (item.type === 'Diamond') {
-        display = `${item.qty ?? ''}${item.type ?? ''}${item.weight ?? ''}${
-          item.weightUnit ? ` ${item.weightUnit}` : ''
+        display = `${item.qty ?? ''}${item.type ?? ''}${item.qtyWeight ?? ''}${
+          item.qtyWeightUnit ? ` ${item.qtyWeightUnit}` : ''
         }${item.typeCode ? `, ${item.typeCode}` : ''}${item.size ? `, ${item.size}` : ''} ${
           item.region ? `, (${item.region})` : ''
         }`
       }
 
       if (item.type === 'Gold' || item.type === 'Silver') {
-        display = `${item.weight ?? ``}${item.weightUnit ? ` ${item.weightUnit}` : ``}${
+        display = `${item.qtyWeight ?? ``}${item.qtyWeightUnit ? ` ${item.qtyWeightUnit}` : ``}${
           item.type ? ` ${item.type}` : ``
         }`
       }
 
       if (item.type === 'Gem') {
-        display = `${item.qty ?? ''}${item.typeCode ?? ''}${item.weight ?? ''}${
-          item.weightUnit ? ` ${item.weightUnit}` : ``
+        display = `${item.qty ?? ''}${item.typeCode ?? ''}${item.qtyWeight ?? ''}${
+          item.qtyWeightUnit ? ` ${item.qtyWeightUnit}` : ``
         }${item.size ? `, ${item.size}` : ''}${item.region ? `, (${item.region})` : ''}`
       }
 

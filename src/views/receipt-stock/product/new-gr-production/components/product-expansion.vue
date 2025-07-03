@@ -2,11 +2,7 @@
   <div class="p-2">
     <!-- Stock already receipt -->
     <div v-if="slotProps.data.isReceipt">
-      <ReceiptedStock
-        :slotProps="slotProps"
-        :formBarcode="formBarcode"
-        :type="type"
-      />
+      <ReceiptedStock :slotProps="slotProps" :formBarcode="formBarcode" :type="type" />
     </div>
 
     <!-- Stock on receipt -->
@@ -31,22 +27,29 @@
       </div>
 
       <!-- Materials section -->
-      <MaterialsSection
-        :data="slotProps.data"
-        :masterMaterialType="masterMaterialType"
-        :masterGold="masterGold"
-        :masterDiamondGrade="masterDiamondGrade"
-        :masterGem="masterGem"
-        :materialColumns="materialColumns"
-        :scrollHeight="scrollHeight"
-        :getBgColor="getBgColor"
-        :breakdownData="breakdownData"
-        @addMaterial="$emit('addMaterial', $event)"
-        @removeMaterial="$emit('removeMaterial', $event)"
-        @updateTypeBarcode="$emit('updateTypeBarcode', $event)"
-        @loadFromBreakdown="() => $emit('loadFromBreakdown', slotProps.data.stockReceiptNumber)"
-        @editAllMaterials="$emit('editAllMaterials')"
-      />
+      <div class="form-col-limit-width-container">
+        <MaterialsSection
+          :data="slotProps.data"
+          :masterMaterialType="masterMaterialType"
+          :masterGold="masterGold"
+          :masterDiamondGrade="masterDiamondGrade"
+          :masterGem="masterGem"
+          :materialColumns="materialColumns"
+          :scrollHeight="scrollHeight"
+          :getBgColor="getBgColor"
+          :breakdownData="breakdownData"
+          @addMaterial="$emit('addMaterial', $event)"
+          @removeMaterial="
+            (materialData, data, index) => $emit('removeMaterial', materialData, data, index)
+          "
+          @updateTypeBarcode="
+            (materialData, stockReceiptNumber) =>
+              $emit('updateTypeBarcode', materialData, stockReceiptNumber)
+          "
+          @loadFromBreakdown="() => $emit('loadFromBreakdown', slotProps.data.stockReceiptNumber)"
+          @editAllMaterials="$emit('editAllMaterials')"
+        />
+      </div>
 
       <!-- Barcode preview -->
       <div class="form-col-container mt-2">
@@ -145,7 +148,14 @@ export default {
     }
   },
 
-  emits: ['selectImage', 'addMaterial', 'removeMaterial', 'updateTypeBarcode', 'loadFromBreakdown', 'editAllMaterials']
+  emits: [
+    'selectImage',
+    'addMaterial',
+    'removeMaterial',
+    'updateTypeBarcode',
+    'loadFromBreakdown',
+    'editAllMaterials'
+  ]
 }
 </script>
 
@@ -154,5 +164,13 @@ export default {
   display: grid;
   padding: 0px;
   grid-template-columns: 4fr 2fr;
+}
+//scss for div fit width of display
+.form-col-limit-width-container {
+  display: flex;
+  padding: 0px;
+  grid-template-columns: 1fr;
+  overflow: hidden;
+
 }
 </style>

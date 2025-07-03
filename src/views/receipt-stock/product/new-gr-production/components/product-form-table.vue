@@ -259,6 +259,7 @@ export default {
     },
 
     updateTypeBarcode(item, index) {
+      console.log('product-form-table updateTypeBarcode:', item, index)
       this.$emit('updateTypeBarcode', item, index)
     },
 
