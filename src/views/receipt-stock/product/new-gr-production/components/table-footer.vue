@@ -3,15 +3,11 @@
     <div class="line"></div>
     <div class="d-flex justify-content-between items-center">
       <div class="vertical-center-container">
-        <button 
-          class="btn btn-sm btn-outline-primary mr-3" 
-          type="button" 
-          @click="$emit('adjustBreakdown')"
-        >
+        <span class="title-text">จำนวนรายการที่เลือก: {{ selectedItemsLength }}</span>
+        <button class="btn btn-sm btn-green ml-3" type="button" @click="$emit('adjustBreakdown')">
           <span class="bi bi-hammer mr-1"></span>
           <span>ปรับปรุง Breakdown</span>
         </button>
-        <span class="title-text">จำนวนรายการที่เลือก: {{ selectedItemsLength }}</span>
       </div>
       <div>
         <button class="btn btn-sm btn-green" type="button" @click="$emit('fetchDraft')">
@@ -20,10 +16,7 @@
           <span class="ml-2">บันทึกฉบับร่าง</span>
         </button>
         <button
-          :class="[
-            'btn btn-sm ml-2',
-            selectedItemsLength === 0 ? 'btn-secondary' : 'btn-main'
-          ]"
+          :class="['btn btn-sm ml-2', selectedItemsLength === 0 ? 'btn-secondary' : 'btn-main']"
           type="submit"
           :disabled="selectedItemsLength === 0"
           @click="$emit('submit')"
@@ -39,7 +32,7 @@
 <script>
 export default {
   name: 'TableFooter',
-  
+
   props: {
     selectedItemsLength: {
       type: Number,
