@@ -3,6 +3,14 @@
     <div class="line"></div>
     <div class="d-flex justify-content-between items-center">
       <div class="vertical-center-container">
+        <button 
+          class="btn btn-sm btn-outline-primary mr-3" 
+          type="button" 
+          @click="$emit('adjustBreakdown')"
+        >
+          <span class="bi bi-hammer mr-1"></span>
+          <span>ปรับปรุง Breakdown</span>
+        </button>
         <span class="title-text">จำนวนรายการที่เลือก: {{ selectedItemsLength }}</span>
       </div>
       <div>
@@ -43,7 +51,7 @@ export default {
     }
   },
 
-  emits: ['fetchDraft', 'submit']
+  emits: ['fetchDraft', 'submit', 'adjustBreakdown']
 }
 </script>
 

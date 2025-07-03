@@ -76,10 +76,13 @@
         :requiredStud="requiredStud"
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
+        :breakdownData="data.breakDown || []"
         @selectImage="onSelectImage"
         @addMaterial="addMaterialItem"
         @removeMaterial="removeMaterialItem"
         @updateTypeBarcode="updateTypeBarcode"
+        @loadFromBreakdown="onLoadFromBreakdown"
+        @editAllMaterials="onEditAllMaterials"
       />
     </template>
 
@@ -90,6 +93,7 @@
         :isOnDraft="isOnDraft"
         @fetchDraft="fetchDraft"
         @submit="$emit('submit')"
+        @adjustBreakdown="$emit('adjustBreakdown')"
       />
     </template>
   </BaseDataTable>
@@ -193,8 +197,11 @@ export default {
     'addMaterial',
     'removeMaterial',
     'updateTypeBarcode',
+    'loadFromBreakdown',
+    'editAllMaterials',
     'fetchDraft',
-    'submit'
+    'submit',
+    'adjustBreakdown'
   ],
 
   methods: {
@@ -253,6 +260,14 @@ export default {
 
     updateTypeBarcode(item, index) {
       this.$emit('updateTypeBarcode', item, index)
+    },
+
+    onLoadFromBreakdown(stockReceiptNumber) {
+      this.$emit('loadFromBreakdown', stockReceiptNumber)
+    },
+
+    onEditAllMaterials() {
+      this.$emit('editAllMaterials')
     },
 
     fetchDraft() {

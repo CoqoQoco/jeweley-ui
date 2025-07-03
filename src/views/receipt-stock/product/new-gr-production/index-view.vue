@@ -1,11 +1,6 @@
 <template>
   <div class="app-container">
-    <headerView
-      :model="data"
-      :modelHeader="header"
-      :modelGem="gems"
-      @onFetch="onFetch"
-    />
+    <headerView :model="data" :modelHeader="header" :modelGem="gems" @onFetch="onFetch" />
 
     <div class="form-col-container mt-2">
       <form @submit.prevent="onSubmit">
@@ -32,8 +27,11 @@
           @addMaterial="addMaterialItem"
           @removeMaterial="removeMaterialItem"
           @updateTypeBarcode="updateTypeBarcode"
+          @loadFromBreakdown="onLoadFromBreakdown"
+          @editAllMaterials="onEditAllMaterials"
           @fetchDraft="fetchDraft"
           @submit="onSubmit"
+          @adjustBreakdown="onAdjustBreakdown"
         />
       </form>
     </div>
@@ -45,17 +43,39 @@
       @closeModal="closeModal"
     />
 
-    <modalBarcodePrint
-      :isShow="isShow.barcodePrint"
-      :modelStock="res"
-      @closeModal="closeModal"
-    />
+    <modalBarcodePrint :isShow="isShow.barcodePrint" :modelStock="res" @closeModal="closeModal" />
 
     <modalSearchProductName
       :isShow="isShow.searchProductName"
       :modelStock="stockUpdate"
       :mode="searchProductNameType"
       @select="updateProductName"
+      @closeModal="closeModal"
+    />
+
+    <modalEditAllMaterials
+      :isShow="isShow.editAllMaterials"
+      :selectedStocks="selectedItems"
+      :breakdownData="data.breakDown || []"
+      :masterMaterialType="masterMaterialType"
+      :masterGold="masterGold"
+      :masterDiamondGrade="masterDiamondGrade"
+      :masterGem="masterGem"
+      @saveMaterials="applyMaterialsToAll"
+      @closeModal="closeModal"
+    />
+
+    <modalAdjustBreakdown
+      :isShow="isShow.adjustBreakdown"
+      :planData="data"
+      :breakdownData="data.breakDown || []"
+      :stockList="form"
+      :masterMaterialType="masterMaterialType"
+      :masterGold="masterGold"
+      :masterDiamondGrade="masterDiamondGrade"
+      :masterGem="masterGem"
+      @applyBreakdown="onApplyBreakdown"
+      @saveDraft="onSaveBreakdownDraft"
       @closeModal="closeModal"
     />
   </div>
@@ -72,6 +92,8 @@ import ProductFormTable from './components/product-form-table.vue'
 import modalSelectImage from './modal/image-select-view.vue'
 import modalBarcodePrint from './modal/barcode-print-view.vue'
 import modalSearchProductName from './modal/search-product-name-view.vue'
+import modalEditAllMaterials from './modal/edit-all-materials-view.vue'
+import modalAdjustBreakdown from './modal/adjust-breakdown-view.vue'
 
 const interfaceBarcode = {
   madeIn: 'MADE IN THAILAND',
@@ -83,7 +105,9 @@ const interfaceBarcode = {
 const interfaceIsShow = {
   imageSelect: false,
   barcodePrint: false,
-  searchProductName: false
+  searchProductName: false,
+  editAllMaterials: false,
+  adjustBreakdown: false
 }
 
 export default {
@@ -94,7 +118,9 @@ export default {
     ProductFormTable,
     modalSelectImage,
     modalBarcodePrint,
-    modalSearchProductName
+    modalSearchProductName,
+    modalEditAllMaterials,
+    modalAdjustBreakdown
   },
 
   setup() {
@@ -148,9 +174,12 @@ export default {
       itemsToPreSelect: [],
       masterMaterialType: [
         { value: 'Gold', description: 'Gold' },
-        { value: 'Silver', description: 'Silver' },
-        { value: 'Diamond', description: 'Diamond' },
-        { value: 'Gem', description: 'Gem ' }
+        //{ value: 'Silver', description: 'Silver' },
+        //{ value: 'Diamond', description: 'Diamond' },
+        { value: 'Gem', description: 'Gem ' },
+        { value: 'Worker', description: 'Worker ' },
+        { value: 'Setting', description: 'Setting ' },
+        { value: 'ETC', description: 'ETC ' }
       ],
       masterStud: [
         { value: 'lg', description: 'แป้นใหญ่' },
@@ -691,6 +720,136 @@ export default {
 
     onResPrint() {
       this.isShow.barcodePrint = true
+    },
+
+    // New material management methods
+    onEditAllMaterials() {
+      if (this.selectedItems.length === 0) {
+        swAlert.warning(
+          'กรุณาเลือกสินค้าก่อน',
+          'ต้องเลือกสินค้าอย่างน้อย 1 รายการเพื่อแก้ไขวัสดุ',
+          () => {
+            console.log('No items selected for material editing')
+          }
+        )
+        return
+      }
+      this.isShow.editAllMaterials = true
+    },
+
+    onLoadFromBreakdown(stockReceiptNumber) {
+      if (!this.data.breakDown || this.data.breakDown.length === 0) {
+        swAlert.warning('ไม่พบข้อมูล Breakdown', 'ไม่มีข้อมูลวัสดุจาก Breakdown ให้โหลด', () => {
+          console.log('No breakdown data available')
+        })
+        return
+      }
+
+      // Find the specific stock item
+      const stockIndex = this.form.findIndex((x) => x.stockReceiptNumber === stockReceiptNumber)
+      if (stockIndex > -1) {
+        // Load breakdown materials into this stock's materials array
+        this.form[stockIndex].materials = this.data.breakDown.map((material) => ({
+          type: material.type,
+          typeName: material.typeName,
+          typeNameDescription: material.typeNameDescription,
+          typeCode: material.typeCode,
+          typeCodeName: material.typeCodeName,
+          typeBarcode: material.typeBarcode || this.getBarcode(material),
+          qty: material.qty || 0,
+          qtyUnit: material.qtyUnit || 'pc',
+          qtyPrice: material.qtyPrice || 0,
+          weight: material.qtyWeight || 0, // Map qtyWeight to weight for compatibility
+          weightUnit: material.qtyWeightUnit || 'g',
+          qtyWeight: material.qtyWeight || 0,
+          qtyWeightUnit: material.qtyWeightUnit || 'g',
+          qtyWeightPrice: material.qtyWeightPrice || 0,
+          size: '', // Not in breakdown, keep empty
+          region: material.region || '',
+          price: 0, // Individual item price, different from material price
+          isOrigin: material.isOrigin || false
+        }))
+
+        // Update barcode for this stock
+        this.updateFormBarcodeIndex(stockReceiptNumber)
+
+        swAlert.success(
+          'โหลดข้อมูลสำเร็จ',
+          `โหลดวัสดุจาก Breakdown เรียบร้อยแล้ว (${this.data.breakDown.length} รายการ)`,
+          () => {
+            console.log('Breakdown materials loaded successfully')
+          }
+        )
+      }
+    },
+
+    applyMaterialsToAll({ materials, selectedStocks }) {
+      selectedStocks.forEach((selectedStock) => {
+        const stockIndex = this.form.findIndex(
+          (x) => x.stockReceiptNumber === selectedStock.stockReceiptNumber
+        )
+        if (stockIndex > -1) {
+          // Deep copy materials to avoid reference issues
+          this.form[stockIndex].materials = JSON.parse(JSON.stringify(materials))
+
+          // Update barcode for this stock
+          this.updateFormBarcodeIndex(selectedStock.stockReceiptNumber)
+        }
+      })
+
+      swAlert.success(
+        'อัปเดตสำเร็จ',
+        `อัปเดตวัสดุสำหรับสินค้า ${selectedStocks.length} รายการเรียบร้อยแล้ว`,
+        () => {
+          console.log('Materials updated for all selected stocks')
+        }
+      )
+    },
+
+    // Adjust breakdown modal methods
+    onAdjustBreakdown() {
+      this.isShow.adjustBreakdown = true
+    },
+
+    onApplyBreakdown({ breakdown, stockNumbers }) {
+      // Apply the adjusted breakdown to selected stocks
+      stockNumbers.forEach((stockNumber) => {
+        const stockIndex = this.form.findIndex((x) => x.stockReceiptNumber === stockNumber)
+        if (stockIndex > -1) {
+          // Convert breakdown materials to stock materials format
+          this.form[stockIndex].materials = breakdown.map((material) => ({
+            type: material.type,
+            typeName: material.typeName,
+            typeNameDescription: material.typeNameDescription,
+            typeCode: material.typeCode,
+            typeCodeName: material.typeCodeName,
+            typeBarcode: material.typeBarcode || this.getBarcode(material),
+            qty: material.qty || 0,
+            qtyUnit: material.qtyUnit || 'pc',
+            qtyPrice: material.qtyPrice || 0,
+            weight: material.weight || 0,
+            weightUnit: material.weightUnit || 'g',
+            qtyWeight: material.qtyWeight || 0,
+            qtyWeightUnit: material.qtyWeightUnit || 'g',
+            qtyWeightPrice: material.qtyWeightPrice || 0,
+            size: '', // Not applicable for breakdown materials
+            region: material.region || '',
+            price: 0, // Individual item price, different from breakdown price
+            isOrigin: material.isOrigin || false
+          }))
+
+          // Update barcode for this stock
+          this.updateFormBarcodeIndex(stockNumber)
+        }
+      })
+
+      console.log('Breakdown applied to stocks:', stockNumbers)
+    },
+
+    onSaveBreakdownDraft({ breakdown }) {
+      // Update the data breakdown with the new breakdown
+      this.data.breakDown = breakdown
+      console.log('Breakdown draft saved:', breakdown)
     }
   },
 

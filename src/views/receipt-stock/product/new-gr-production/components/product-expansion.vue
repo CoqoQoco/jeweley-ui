@@ -40,9 +40,12 @@
         :materialColumns="materialColumns"
         :scrollHeight="scrollHeight"
         :getBgColor="getBgColor"
+        :breakdownData="breakdownData"
         @addMaterial="$emit('addMaterial', $event)"
         @removeMaterial="$emit('removeMaterial', $event)"
         @updateTypeBarcode="$emit('updateTypeBarcode', $event)"
+        @loadFromBreakdown="() => $emit('loadFromBreakdown', slotProps.data.stockReceiptNumber)"
+        @editAllMaterials="$emit('editAllMaterials')"
       />
 
       <!-- Barcode preview -->
@@ -135,10 +138,14 @@ export default {
     isRequiredField: {
       type: Function,
       required: true
+    },
+    breakdownData: {
+      type: Array,
+      default: () => []
     }
   },
 
-  emits: ['selectImage', 'addMaterial', 'removeMaterial', 'updateTypeBarcode']
+  emits: ['selectImage', 'addMaterial', 'removeMaterial', 'updateTypeBarcode', 'loadFromBreakdown', 'editAllMaterials']
 }
 </script>
 

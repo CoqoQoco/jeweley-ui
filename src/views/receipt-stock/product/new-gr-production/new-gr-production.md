@@ -27,7 +27,9 @@ new-gr-production/
 └── modal/
     ├── image-select-view.vue           # Image selection modal
     ├── barcode-print-view.vue          # Barcode printing modal
-    └── search-product-name-view.vue    # Product name search modal
+    ├── search-product-name-view.vue    # Product name search modal
+    ├── edit-all-materials-view.vue     # Bulk material editing modal
+    └── adjust-breakdown-view.vue       # Breakdown adjustment modal
 ```
 
 ## 🎯 Key Components
@@ -110,6 +112,7 @@ new-gr-production/
   - Selected items counter
   - Draft save functionality
   - Submit button with validation
+  - Breakdown adjustment trigger button
 
 ## 🔄 Data Flow
 
@@ -132,6 +135,8 @@ graph TD
     L --> M[image-select-view.vue]
     L --> N[barcode-print-view.vue]
     L --> O[search-product-name-view.vue]
+    L --> P[edit-all-materials-view.vue]
+    L --> Q[adjust-breakdown-view.vue]
 ```
 
 ## 🛠️ Technical Features
@@ -150,6 +155,12 @@ graph TD
 - **Dynamic Generation**: Real-time barcode updates based on materials
 - **Multiple Formats**: Support for different product types
 - **Preview Integration**: Live barcode preview in expansion rows
+
+### Breakdown Management
+- **Breakdown Adjustment**: Edit and modify breakdown materials via modal
+- **Material Application**: Apply breakdown to all or selected stock items
+- **Draft Saving**: Save breakdown changes as drafts
+- **Real-time Updates**: Live preview of breakdown changes
 
 ### Material Management
 - **Dynamic Adding**: Add materials on demand
@@ -177,6 +188,9 @@ $emit('search', data: Object, type: string)
 $emit('selectImage', data: Object)
 $emit('addMaterial', materials: Array)
 $emit('removeMaterial', material: Object, item: Object, index: number)
+$emit('adjustBreakdown')
+$emit('applyBreakdown', payload: { breakdown: Array, stockNumbers: Array })
+$emit('saveDraft', payload: { breakdown: Array })
 ```
 
 ## 📊 Master Data Integration
@@ -252,6 +266,8 @@ $emit('removeMaterial', material: Object, item: Object, index: number)
     <modalSelectImage />
     <modalBarcodePrint />
     <modalSearchProductName />
+    <modalEditAllMaterials />
+    <modalAdjustBreakdown />
   </div>
 </template>
 ```
@@ -272,6 +288,67 @@ $emit('removeMaterial', material: Object, item: Object, index: number)
 1. Add validation rules to parent component
 2. Pass validation functions as props
 3. Handle validation feedback in field components
+
+## 🔧 Breakdown Adjustment Feature
+
+### Overview
+The breakdown adjustment feature allows users to modify and apply material breakdown to stock items through a dedicated modal interface.
+
+### Components
+
+#### `adjust-breakdown-view.vue`
+- **Purpose**: Modal for editing breakdown materials
+- **Features**:
+  - Edit breakdown materials in a dedicated table
+  - Apply breakdown to all stock or selected stock items
+  - Save draft functionality for breakdown changes
+  - Real-time material summary display
+  - Validation for material data completeness
+
+### Usage Flow
+1. Click "ปรับปรุง Breakdown" button in table footer
+2. Modal opens with current breakdown data
+3. Edit materials using dropdown selectors and input fields
+4. Choose application scope (all stock or selected items)
+5. Apply changes or save as draft
+6. Changes are applied to selected stock items' material lists
+
+### Technical Details
+
+#### Modal Structure
+```vue
+<modalAdjustBreakdown
+  :isShow="isShow.adjustBreakdown"
+  :planData="data"
+  :breakdownData="data.breakDown || []"
+  :stockList="form"
+  :masterMaterialType="masterMaterialType"
+  :masterGold="masterGold"
+  :masterDiamondGrade="masterDiamondGrade"
+  :masterGem="masterGem"
+  @applyBreakdown="onApplyBreakdown"
+  @saveDraft="onSaveBreakdownDraft"
+  @closeModal="closeModal"
+/>
+```
+
+#### Event Handlers
+- `onAdjustBreakdown()`: Opens the breakdown adjustment modal
+- `onApplyBreakdown({ breakdown, stockNumbers })`: Applies breakdown to selected stocks
+- `onSaveBreakdownDraft({ breakdown })`: Saves breakdown changes as draft
+
+### Material Type Support
+- **Gold/Silver**: Weight-based input with gold type selection
+- **Diamond**: Quantity, weight, and grade selection
+- **Gem**: Quantity, weight, and gem type selection
+- **Worker**: Labor cost entries
+- **Setting/ETC**: General material entries
+
+### Validation Rules
+- At least one material type must be selected
+- Quantity or weight must be greater than 0
+- Required fields based on material type
+- Barcode generation validation
 
 ## 📈 Performance Considerations
 
