@@ -150,7 +150,7 @@
           <PriceAlertsPanel :price-alerts="priceAlerts" />
 
           <!-- Available vs On Process -->
-          <AvailabilityStatus :stock-summary="stockSummary" />
+          <!-- <AvailabilityStatus :stock-summary="stockSummary" /> -->
         </div>
       </div>
     </div>
