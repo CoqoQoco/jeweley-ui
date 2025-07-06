@@ -10,7 +10,7 @@
             v-if="categoryChartData && categoryChartData.report?.length > 0"
             :data="categoryChartData"
             :title="$t('view.stock.gem.dashboard.categoryBreakdown')"
-            :height="400"
+            :height="1000"
             :show-data-labels="true"
             :datasetFields="datasetFields"
             :chartName="chartName"
