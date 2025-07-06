@@ -111,6 +111,20 @@ export default {
           status: 'สถานะ',
           jobOrPo: 'งาน/PO',
           
+          // Last activities
+          lastActivities: 'กิจกรรมล่าสุด',
+          noActivities: 'ไม่มีกิจกรรม',
+          
+          // Weekly report
+          weeklyTransactions: 'ธุรกรรมรายสัปดาห์',
+          weeklyAnalysis: 'การวิเคราะห์รายสัปดาห์',
+          noWeeklyData: 'ไม่มีข้อมูลรายสัปดาห์',
+          
+          // Monthly report
+          monthlyTransactions: 'ธุรกรรมรายเดือน',
+          monthlyAnalysis: 'การวิเคราะห์รายเดือน',
+          noMonthlyData: 'ไม่มีข้อมูลรายเดือน',
+          
           // No data messages
           loadingChart: 'กำลังโหลดข้อมูล...',
           noData: 'ไม่มีข้อมูลแสดง',

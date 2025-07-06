@@ -320,6 +320,57 @@
               </div>
             </div>
           </div>
+
+          <!-- Last Activities -->
+          <div class="summary-card mt-3">
+            <div class="summary-header">
+              <h5>{{ $t('view.stock.gem.dashboard.lastActivities') }}</h5>
+              <div class="activities-count">
+                <span class="badge bg-primary">{{ lastActivities.length }}</span>
+              </div>
+            </div>
+            <div class="summary-body">
+              <div v-if="lastActivities.length > 0" class="activities-list">
+                <div
+                  v-for="activity in lastActivities"
+                  :key="activity.running"
+                  class="activity-item"
+                >
+                  <div class="activity-icon">
+                    <i :class="getTransactionIcon(activity.type)"></i>
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-header">
+                      <h6>{{ activity.code }} - {{ activity.groupName }}</h6>
+                      <span class="activity-time">{{ formatDateTime(activity.createDate) }}</span>
+                    </div>
+                    <p class="activity-description">
+                      {{ activity.typeName }} - {{ $t('view.stock.gem.dashboard.quantity') }}:
+                      {{ formatNumber(activity.qty) }}
+                    </p>
+                    <div class="activity-details">
+                      <div class="detail-row">
+                        <span class="detail-label"
+                          >{{ $t('view.stock.gem.dashboard.status') }}:</span
+                        >
+                        <span class="detail-value">{{ activity.status }}</span>
+                      </div>
+                      <div class="detail-row" v-if="activity.jobOrPo">
+                        <span class="detail-label"
+                          >{{ $t('view.stock.gem.dashboard.jobOrPo') }}:</span
+                        >
+                        <span class="detail-value">{{ activity.jobOrPo }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="activities-empty">
+                <i class="bi bi-clock-history"></i>
+                <p>{{ $t('view.stock.gem.dashboard.noActivities') }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -442,19 +493,205 @@
       </div>
     </div>
 
-    <!-- Weekly and Monthly tabs would be similar structures -->
-    <!-- For brevity, implementing placeholders -->
+    <!-- Weekly Tab -->
     <div v-show="activeTab === 'weekly'" class="tab-content">
-      <div class="text-center p-4">
-        <i class="bi bi-calendar-week" style="font-size: 3rem; color: #921313"></i>
-        <h4 class="mt-3">{{ $t('view.stock.gem.dashboard.weeklyReportComingSoon') }}</h4>
+      <div class="row">
+        <!-- Weekly Summary Cards -->
+        <div class="col-12 mb-4">
+          <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card weekly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-activity"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ weeklySummary.totalTransactions || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.weeklyTransactions') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card weekly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-currency-exchange"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ weeklySummary.priceChanges || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.priceChanges') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card weekly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-plus-circle"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ weeklySummary.newStockItems || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.newItems') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card weekly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ weeklySummary.lowStockAlerts || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.lowStockAlerts') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Analysis -->
+        <div class="col-12">
+          <div class="activities-card">
+            <div class="activities-header">
+              <h5>{{ $t('view.stock.gem.dashboard.weeklyAnalysis') }}</h5>
+              <div class="activities-count">
+                <span class="badge bg-success">{{ weeklyMovements.length || 0 }}</span>
+              </div>
+            </div>
+            <div class="activities-body">
+              <div v-if="weeklyMovements && weeklyMovements.length > 0" class="activities-list">
+                <div
+                  v-for="movement in weeklyMovements"
+                  :key="movement.id || movement.code"
+                  class="activity-item"
+                >
+                  <div class="activity-icon">
+                    <i class="bi bi-graph-up text-success"></i>
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-header">
+                      <h6>{{ movement.code || movement.title }}</h6>
+                      <span class="activity-time">{{ movement.date || movement.time }}</span>
+                    </div>
+                    <p class="activity-description">
+                      {{ movement.description || 'Weekly activity summary' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="activities-empty">
+                <i class="bi bi-clock-history"></i>
+                <p>{{ $t('view.stock.gem.dashboard.noWeeklyData') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Monthly Tab -->
     <div v-show="activeTab === 'monthly'" class="tab-content">
-      <div class="text-center p-4">
-        <i class="bi bi-calendar-month" style="font-size: 3rem; color: #921313"></i>
-        <h4 class="mt-3">{{ $t('view.stock.gem.dashboard.monthlyReportComingSoon') }}</h4>
+      <div class="row">
+        <!-- Monthly Summary Cards -->
+        <div class="col-12 mb-4">
+          <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card monthly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-activity"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ monthlySummary.totalTransactions || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.monthlyTransactions') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card monthly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-currency-exchange"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ monthlySummary.priceChanges || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.priceChanges') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card monthly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-plus-circle"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ monthlySummary.newStockItems || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.newItems') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <div class="stat-card monthly">
+                <div class="stat-card-body">
+                  <div class="stat-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>{{ monthlySummary.lowStockAlerts || 0 }}</h3>
+                    <p>{{ $t('view.stock.gem.dashboard.lowStockAlerts') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Analysis -->
+        <div class="col-12">
+          <div class="activities-card">
+            <div class="activities-header">
+              <h5>{{ $t('view.stock.gem.dashboard.monthlyAnalysis') }}</h5>
+              <div class="activities-count">
+                <span class="badge bg-info">{{ monthlyMovements.length || 0 }}</span>
+              </div>
+            </div>
+            <div class="activities-body">
+              <div v-if="monthlyMovements && monthlyMovements.length > 0" class="activities-list">
+                <div
+                  v-for="movement in monthlyMovements"
+                  :key="movement.id || movement.code"
+                  class="activity-item"
+                >
+                  <div class="activity-icon">
+                    <i class="bi bi-graph-up text-info"></i>
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-header">
+                      <h6>{{ movement.code || movement.title }}</h6>
+                      <span class="activity-time">{{ movement.date || movement.time }}</span>
+                    </div>
+                    <p class="activity-description">
+                      {{ movement.description || 'Monthly activity summary' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="activities-empty">
+                <i class="bi bi-clock-history"></i>
+                <p>{{ $t('view.stock.gem.dashboard.noMonthlyData') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -521,6 +758,9 @@ export default {
     priceAlerts() {
       return this.dashboardStore.getPriceAlerts
     },
+    lastActivities() {
+      return this.dashboardStore.getLastActivities
+    },
 
     // Today's data
     todaySummary() {
@@ -528,6 +768,22 @@ export default {
     },
     todayTransactions() {
       return this.dashboardStore.getTodayTransactions
+    },
+
+    // Weekly data
+    weeklySummary() {
+      return this.dashboardStore.getWeeklySummary
+    },
+    weeklyMovements() {
+      return this.dashboardStore.getDailyMovements
+    },
+
+    // Monthly data
+    monthlySummary() {
+      return this.dashboardStore.getMonthlySummary
+    },
+    monthlyMovements() {
+      return this.dashboardStore.getWeeklyComparisons
     },
 
     // Chart data
@@ -732,6 +988,12 @@ export default {
     }
     &.today {
       border-left-color: #6f42c1;
+    }
+    &.weekly {
+      border-left-color: #28a745;
+    }
+    &.monthly {
+      border-left-color: #17a2b8;
     }
 
     .stat-card-body {

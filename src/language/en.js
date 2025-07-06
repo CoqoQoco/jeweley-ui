@@ -107,6 +107,20 @@ export default {
           status: 'Status',
           jobOrPo: 'Job/PO',
           
+          // Last activities
+          lastActivities: 'Last Activities',
+          noActivities: 'No activities',
+          
+          // Weekly report
+          weeklyTransactions: 'Weekly Transactions',
+          weeklyAnalysis: 'Weekly Analysis',
+          noWeeklyData: 'No weekly data',
+          
+          // Monthly report
+          monthlyTransactions: 'Monthly Transactions',
+          monthlyAnalysis: 'Monthly Analysis',
+          noMonthlyData: 'No monthly data',
+          
           // No data messages
           loadingChart: 'Loading data...',
           noData: 'No data to display',

@@ -30,6 +30,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     getTrends: (state) => state.dashboardData?.trends || [],
     getTopMovements: (state) => state.dashboardData?.topMovements || [],
     getPriceAlerts: (state) => state.dashboardData?.priceAlerts || [],
+    getLastActivities: (state) => state.dashboardData?.lastActivities || [],
 
     // Today report getters
     getTodaySummary: (state) => state.todayReport?.summary || {},
