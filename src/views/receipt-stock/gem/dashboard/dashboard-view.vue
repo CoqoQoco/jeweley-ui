@@ -152,10 +152,23 @@
               <div class="stat-content">
                 <h3>{{ formatNumber(stockSummary.totalQuantity) }}</h3>
                 <p>{{ $t('view.stock.gem.dashboard.totalQuantity') }}</p>
-                <small class="stat-detail"
-                  >{{ formatNumber(stockSummary.totalQuantityWeight) }}
-                  {{ $t('view.stock.gem.dashboard.totalWeight') }}</small
-                >
+                <small class="stat-detail">{{ $t('view.stock.gem.dashboard.pieceCount') }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Weight -->
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="stat-card total">
+            <div class="stat-card-body">
+              <div class="stat-icon">
+                <i class="bi bi-weight"></i>
+              </div>
+              <div class="stat-content">
+                <h3>{{ formatNumber(stockSummary.totalQuantityWeight) }}</h3>
+                <p>{{ $t('view.stock.gem.dashboard.totalWeight') }}</p>
+                <small class="stat-detail">{{ $t('view.stock.gem.dashboard.weightInGrams') }}</small>
               </div>
             </div>
           </div>

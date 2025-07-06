@@ -22,7 +22,8 @@ The Gem Stock Dashboard provides comprehensive analytics and monitoring capabili
 **Key Sections**:
 - **Stock Summary Cards**: 
   - Total gem types with unique varieties count
-  - Total quantity with weight breakdown
+  - Total quantity (piece count) - separate card
+  - Total weight (grams) - separate card
   - Low stock alerts with zero stock count
   - Available vs on-process quantities
 
@@ -193,6 +194,20 @@ The Gem Stock Dashboard provides comprehensive analytics and monitoring capabili
 - Comprehensive time-period analysis
 - Consistent user experience across all tabs
 - Foundation for future analytics features
+
+### Stock Summary Card Separation
+**Business Requirement**: Users needed clearer distinction between piece count and weight metrics.
+
+**Implementation**:
+- **UI Split**: Separated combined quantity/weight card into two distinct cards
+- **Visual Design**: Added weight-specific icon (bi-weight) for weight card
+- **Data Clarity**: Piece count and weight now have dedicated displays
+- **Translations**: Added specific labels for piece count and weight units
+
+**Enhanced User Experience**:
+- Clear visual separation of quantity vs weight metrics
+- Improved readability of key inventory indicators
+- Better alignment with business inventory tracking practices
 
 ### API Integration Updates
 **DateTimeOffset Support**: Updated to handle timezone-aware date filtering
