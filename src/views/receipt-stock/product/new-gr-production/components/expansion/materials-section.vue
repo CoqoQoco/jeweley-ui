@@ -256,7 +256,7 @@
         </template>
 
         <template #actionTemplate="{ index, data: materialData }">
-          <div class="d-flex align-items-center mt-1">
+          <div>
             <button
               type="button"
               class="btn btn-red btn-sm"

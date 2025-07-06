@@ -96,7 +96,7 @@
 
         <!-- เพิ่ม header template เพื่อจัดการ check all (เฉพาะ multiple mode) -->
         <template #header v-if="selectionType === 'multiple'">
-          <div class="flex align-items-center justify-content-center">
+          <div class="flex align-items-center justify-content-center" style="width: 10px !important">
             <Checkbox
               :modelValue="isAllSelected"
               :disabled="false"
@@ -113,7 +113,7 @@
           v-bind="col"
           :sortable="col.sortable !== false"
           :style="{
-            'min-width': col.minWidth || '10px',
+            'min-width': col.minWidth,
             width: col.width || 'auto',
             backgroundColor: col.backgroundColor || 'transparent'
           }"

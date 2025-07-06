@@ -1,7 +1,7 @@
 <template>
   <div class="app-container stock-gem-dashboard">
     <!-- Dashboard Header with Refresh and Filters -->
-    <div class="row mb-3">
+    <div class="row">
       <div class="col-12">
         <div class="dashboard-header">
           <div class="header-info">
@@ -15,7 +15,7 @@
           </div>
           <div class="header-controls">
             <!-- Filter Dropdown -->
-            <div class="dropdown me-2">
+            <!-- <div class="dropdown me-2">
               <button
                 class="btn btn-outline-secondary dropdown-toggle"
                 type="button"
@@ -24,7 +24,7 @@
                 <i class="bi bi-funnel"></i>
                 {{ $t('view.stock.gem.dashboard.filters') }}
               </button>
-              <div class="dropdown-menu p-3" style="min-width: 250px">
+              <div class="dropdown-menu p-3 ml-2" style="min-width: 250px">
                 <div class="mb-2">
                   <label class="form-label">{{ $t('view.stock.gem.dashboard.groupName') }}</label>
                   <select class="form-select form-select-sm" v-model="filters.groupName">
@@ -61,7 +61,7 @@
                   </button>
                 </div>
               </div>
-            </div>
+            </div> -->
             <!-- Refresh Button -->
             <button @click="refreshDashboard" class="btn btn-outline-main" :disabled="isLoading">
               <i class="bi bi-arrow-clockwise" :class="{ spinning: isLoading }"></i>
@@ -144,7 +144,7 @@
 
         <!-- Total Quantity -->
         <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card process">
+          <div class="stat-card total">
             <div class="stat-card-body">
               <div class="stat-icon">
                 <i class="bi bi-boxes"></i>
@@ -162,7 +162,7 @@
         </div>
 
         <!-- Total Value -->
-        <div class="col-lg-3 col-md-6 mb-3">
+        <!-- <div class="col-lg-3 col-md-6 mb-3">
           <div class="stat-card completed">
             <div class="stat-card-body">
               <div class="stat-icon">
@@ -177,11 +177,11 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Low Stock Alert -->
         <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card overdue">
+          <div class="stat-card total">
             <div class="stat-card-body">
               <div class="stat-icon">
                 <i class="bi bi-exclamation-triangle"></i>
@@ -648,7 +648,7 @@ export default {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 
     .header-info {
       h3 {

@@ -236,53 +236,53 @@ export default {
           field: 'type',
           header: 'ประเภท',
           sortable: false,
-          minWidth: '120px'
+          width: '120px'
         },
         {
           field: 'typeName',
           header: 'ชื่อวัสดุ',
           sortable: false,
-          minWidth: '180px'
+          //width: '180px'
         },
         {
           field: 'typeCode',
           header: 'รหัส/เกรด',
           sortable: false,
-          minWidth: '130px'
+          width: '130px'
         },
         {
           field: 'qty',
           header: 'จำนวน',
           sortable: false,
-          minWidth: '150px',
+          width: '150px',
           align: 'center'
         },
         {
           field: 'priceQty',
           header: 'ราคา/หน่วย',
           sortable: false,
-          minWidth: '120px',
+          width: '120px',
           align: 'center'
         },
         {
           field: 'qtyWeight',
           header: 'น้ำหนัก',
           sortable: false,
-          minWidth: '150px',
+          width: '150px',
           align: 'center'
         },
         {
           field: 'priceWeight',
           header: 'ราคา/น้ำหนัก',
           sortable: false,
-          minWidth: '120px',
+          width: '120px',
           align: 'center'
         },
         {
           field: 'totalPrice',
           header: 'รวมราคา',
           sortable: false,
-          minWidth: '150px',
+          width: '150px',
           align: 'right',
           format: 'decimal2'
         },
@@ -290,25 +290,25 @@ export default {
           field: 'size',
           header: 'ขนาด',
           sortable: false,
-          minWidth: '100px'
+          width: '100px'
         },
         {
           field: 'region',
           header: 'แหล่งที่มา',
           sortable: false,
-          minWidth: '100px'
+          width: '100px'
         },
-        {
-          field: 'typeBarcode',
-          header: 'Barcode',
-          sortable: false,
-          minWidth: '150px'
-        },
+        // {
+        //   field: 'typeBarcode',
+        //   header: 'Barcode',
+        //   sortable: false,
+        //   width: '150px'
+        // },
         {
           field: 'action',
           header: 'จัดการ',
           sortable: false,
-          minWidth: '80px',
+          width: '10px',
           align: 'center'
         }
       ],
@@ -528,7 +528,6 @@ export default {
     },
 
     updateTypeBarcode(item, index) {
-
       console.log('updateTypeBarcode', item, index)
       // Check if item exists
       if (!item) {
@@ -536,7 +535,7 @@ export default {
         return
       }
 
-      // Check if index (stockReceiptNumber) exists  
+      // Check if index (stockReceiptNumber) exists
       if (!index) {
         console.warn('No index (stockReceiptNumber) provided to updateTypeBarcode')
         return
