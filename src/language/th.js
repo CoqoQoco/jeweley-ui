@@ -112,6 +112,11 @@ export default {
           quantity: 'จำนวน',
           status: 'สถานะ',
           jobOrPo: 'งาน/PO',
+          createBy: 'สร้างโดย',
+          updateBy: 'อัปเดตโดย',
+          createDate: 'วันที่สร้าง',
+          type: 'ประเภท',
+          running: 'เลขที่รายการ',
           
           // Last activities
           lastActivities: 'กิจกรรมล่าสุด',

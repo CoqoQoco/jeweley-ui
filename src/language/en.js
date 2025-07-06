@@ -108,6 +108,11 @@ export default {
           quantity: 'Quantity',
           status: 'Status',
           jobOrPo: 'Job/PO',
+          createBy: 'Created By',
+          updateBy: 'Updated By',
+          createDate: 'Create Date',
+          type: 'Type',
+          running: 'Running No.',
           
           // Last activities
           lastActivities: 'Last Activities',

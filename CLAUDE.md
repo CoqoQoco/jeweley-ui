@@ -60,6 +60,41 @@ This is a Vue 3 jewelry management application with the following key architectu
 - `src/views/` - Page-level components organized by feature
 - `src/layout/` - Layout components (dashboard, login layouts)
 
+#### Component Architecture Patterns
+**File Naming Convention**: Use kebab-case for all component filenames
+- ✅ `stock-summary-cards.vue`
+- ❌ `StockSummaryCards.vue`
+
+**Component Structure**: For complex views with multiple sections, follow the modular pattern:
+```
+/feature-view/
+├── feature-view.vue (main orchestrator)
+└── components/
+    ├── section-one.vue
+    ├── section-two.vue
+    └── data-table.vue
+```
+
+**Example**: Gem Dashboard Implementation
+```
+/dashboard/
+├── dashboard-view.vue (main orchestrator)
+└── components/
+    ├── stock-summary-cards.vue (overview cards)
+    ├── category-chart.vue (chart visualization)
+    ├── top-movements-table.vue (movement analysis)
+    ├── last-activities-table.vue (transaction history)
+    ├── price-alerts-panel.vue (price change alerts)
+    └── availability-status.vue (availability metrics)
+```
+
+**Benefits of This Pattern**:
+- **Maintainability**: Smaller, focused components
+- **Reusability**: Components can be used across different views
+- **Testability**: Individual components can be tested in isolation
+- **Team Development**: Multiple developers can work simultaneously
+- **Performance**: Better optimization through component-level changes
+
 ### Key Features
 - Multi-language support (Thai primary, English secondary)
 - PDF generation with pdfmake
@@ -73,3 +108,53 @@ This is a Vue 3 jewelry management application with the following key architectu
 - Permission checks happen at route level and component level
 - Uses SCSS with custom variables and mixins
 - Modal container dynamically created in DOM
+
+## Component Development Guidelines
+
+### When to Create Separate Components
+Create separate components when any of the following apply:
+1. **Size**: The main component file exceeds 400-500 lines
+2. **Complexity**: Multiple distinct UI sections that can be logically separated
+3. **Reusability**: Sections that might be reused in other views
+4. **Team Development**: Multiple developers working on the same feature
+5. **Testability**: Individual sections need isolated testing
+
+### Component Props Best Practices
+- Use TypeScript-style prop validation in Vue 2/3 Options API
+- Pass only necessary data to child components
+- Prefer specific props over large objects when possible
+- Use descriptive prop names following camelCase convention
+
+```javascript
+// Good
+props: {
+  stockSummary: {
+    type: Object,
+    default: () => ({})
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
+  }
+}
+
+// Avoid
+props: {
+  data: Object  // Too generic
+}
+```
+
+### Import Conventions
+- Use relative imports for local components: `'./components/stock-summary-cards.vue'`
+- Group imports by type: external dependencies, then local components
+- Use kebab-case for component file paths in imports
+
+```javascript
+// External dependencies
+import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
+import dayjs from 'dayjs'
+
+// Local components
+import StockSummaryCards from './components/stock-summary-cards.vue'
+import CategoryChart from './components/category-chart.vue'
+```

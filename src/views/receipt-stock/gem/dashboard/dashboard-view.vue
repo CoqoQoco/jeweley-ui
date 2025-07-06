@@ -123,267 +123,34 @@
     <!-- Overview Tab -->
     <div v-show="activeTab === 'overview'" class="tab-content">
       <!-- Dashboard Stats Cards -->
-      <div class="row mb-4">
-        <!-- Total Gem Types -->
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card total">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-gem"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ stockSummary.totalGemTypes }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.totalGemTypes') }}</p>
-                <small class="stat-detail">{{
-                  $t('view.stock.gem.dashboard.uniqueGemVarieties')
-                }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
+      <StockSummaryCards :stock-summary="stockSummary" />
 
-        <!-- Total Quantity -->
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card total">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-boxes"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ formatNumber(stockSummary.totalQuantity) }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.totalQuantity') }}</p>
-                <small class="stat-detail">{{ $t('view.stock.gem.dashboard.pieceCount') }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total Weight -->
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card total">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-weight"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ formatNumber(stockSummary.totalQuantityWeight) }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.totalWeight') }}</p>
-                <small class="stat-detail">{{ $t('view.stock.gem.dashboard.weightInGrams') }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total Value -->
-        <!-- <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card completed">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-currency-dollar"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ formatCurrency(stockSummary.totalValue) }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.totalValue') }}</p>
-                <small class="stat-detail">{{
-                  $t('view.stock.gem.dashboard.inventoryValue')
-                }}</small>
-              </div>
-            </div>
-          </div>
-        </div> -->
-
-        <!-- Low Stock Alert -->
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card total">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-exclamation-triangle"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ stockSummary.lowStockCount }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.lowStockItems') }}</p>
-                <small class="stat-detail"
-                  >{{ stockSummary.zeroStockCount }}
-                  {{ $t('view.stock.gem.dashboard.outOfStock') }}</small
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- chart -->
-      <div class="row">
-        <div class="col-lg-12 col-md-12 mb-4">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h5>{{ $t('view.stock.gem.dashboard.categoryBreakdown') }}</h5>
-            </div>
-            <div class="chart-card-body">
-              <HorizontalBarChart
-                v-if="categoryChartData && categoryChartData.report?.length > 0"
-                :data="categoryChartData"
-                :title="$t('view.stock.gem.dashboard.categoryBreakdown')"
-                :height="400"
-                :show-data-labels="true"
-                :datasetFields="datasetFields"
-                :chartName="chartName"
-                :maxBarThickness="2"
-              />
-              <div v-else-if="isLoading" class="chart-loading">
-                <div class="loading-spinner">
-                  <i class="bi bi-arrow-repeat"></i>
-                </div>
-                <p>{{ $t('view.stock.gem.dashboard.loadingChart') }}</p>
-              </div>
-              <div v-else class="chart-empty">
-                <i class="bi bi-graph-up"></i>
-                <p>{{ $t('view.stock.gem.dashboard.noData') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Category Breakdown Chart -->
+      <CategoryChart 
+        :category-chart-data="categoryChartData"
+        :is-loading="isLoading"
+        :dataset-fields="datasetFields"
+        :chart-name="chartName"
+      />
 
       <!-- Charts and Analysis -->
       <div class="row">
         <!-- Category Breakdown Chart -->
         <div class="col-lg-8 col-md-12 mb-4">
           <!-- Top Movements Table -->
-          <div class="summary-card mt-3">
-            <div class="summary-header">
-              <h5>{{ $t('view.stock.gem.dashboard.topMovements') }}</h5>
-            </div>
-            <div class="summary-body">
-              <div class="summary-table">
-                <div class="table-header">
-                  <div class="col">{{ $t('view.stock.gem.dashboard.gemCode') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.category') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.totalMoved') }}</div>
-                </div>
-                <div v-for="movement in topMovements" :key="movement.code" class="table-row">
-                  <div class="col">{{ movement.code }}</div>
-                  <div class="col">{{ movement.groupName }} - {{ movement.shape }}</div>
-                  <div class="col">{{ movement.transactionCount }}</div>
-                  <div class="col">{{ formatNumber(movement.totalQuantityMoved) }}</div>
-                </div>
-              </div>
-              <div v-if="!topMovements || topMovements.length === 0" class="summary-empty">
-                <i class="bi bi-activity"></i>
-                <p>{{ $t('view.stock.gem.dashboard.noMovements') }}</p>
-              </div>
-            </div>
-          </div>
+          <TopMovementsTable :top-movements="topMovements" />
+
+          <!-- Last Activities -->
+          <LastActivitiesTable :last-activities="lastActivities" />
         </div>
 
         <!-- Price Alerts and Trends -->
         <div class="col-lg-4 col-md-12 mb-4">
           <!-- Price Alerts -->
-          <div class="trends-card">
-            <div class="trends-header">
-              <h5>{{ $t('view.stock.gem.dashboard.priceAlerts') }}</h5>
-            </div>
-            <div class="trends-body">
-              <div v-for="alert in priceAlerts" :key="alert.code" class="trend-item">
-                <div class="trend-info">
-                  <h6>{{ alert.code }}</h6>
-                  <small class="text-muted">{{ alert.groupName }} - {{ alert.shape }}</small>
-                  <div class="trend-stats">
-                    <span class="price-old">{{ formatCurrency(alert.previousPrice) }}</span>
-                    <i class="bi bi-arrow-right mx-1"></i>
-                    <span class="price-new">{{ formatCurrency(alert.newPrice) }}</span>
-                  </div>
-                </div>
-                <div class="trend-direction">
-                  <span :class="['percentage-badge', alert.changeType.toLowerCase()]">
-                    {{ alert.changePercentage > 0 ? '+' : ''
-                    }}{{ alert.changePercentage.toFixed(1) }}%
-                  </span>
-                </div>
-              </div>
-              <div v-if="!priceAlerts || priceAlerts.length === 0" class="trends-empty">
-                <i class="bi bi-currency-exchange"></i>
-                <p>{{ $t('view.stock.gem.dashboard.noPriceChanges') }}</p>
-              </div>
-            </div>
-          </div>
+          <PriceAlertsPanel :price-alerts="priceAlerts" />
 
           <!-- Available vs On Process -->
-          <div class="summary-card mt-3">
-            <div class="summary-header">
-              <h5>{{ $t('view.stock.gem.dashboard.availability') }}</h5>
-            </div>
-            <div class="summary-body">
-              <div class="availability-stats">
-                <div class="stat-item available">
-                  <i class="bi bi-check-circle"></i>
-                  <div class="stat-content">
-                    <h4>{{ formatNumber(stockSummary.availableQuantity) }}</h4>
-                    <small>{{ $t('view.stock.gem.dashboard.available') }}</small>
-                  </div>
-                </div>
-                <div class="stat-item on-process">
-                  <i class="bi bi-arrow-repeat"></i>
-                  <div class="stat-content">
-                    <h4>{{ formatNumber(stockSummary.totalOnProcessQuantity) }}</h4>
-                    <small>{{ $t('view.stock.gem.dashboard.onProcess') }}</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Last Activities -->
-          <div class="summary-card mt-3">
-            <div class="summary-header">
-              <h5>{{ $t('view.stock.gem.dashboard.lastActivities') }}</h5>
-              <div class="activities-count">
-                <span class="badge bg-primary">{{ lastActivities.length }}</span>
-              </div>
-            </div>
-            <div class="summary-body">
-              <div v-if="lastActivities.length > 0" class="activities-list">
-                <div
-                  v-for="activity in lastActivities"
-                  :key="activity.running"
-                  class="activity-item"
-                >
-                  <div class="activity-icon">
-                    <i :class="getTransactionIcon(activity.type)"></i>
-                  </div>
-                  <div class="activity-content">
-                    <div class="activity-header">
-                      <h6>{{ activity.code }} - {{ activity.groupName }}</h6>
-                      <span class="activity-time">{{ formatDateTime(activity.createDate) }}</span>
-                    </div>
-                    <p class="activity-description">
-                      {{ activity.typeName }} - {{ $t('view.stock.gem.dashboard.quantity') }}:
-                      {{ formatNumber(activity.qty) }}
-                    </p>
-                    <div class="activity-details">
-                      <div class="detail-row">
-                        <span class="detail-label"
-                          >{{ $t('view.stock.gem.dashboard.status') }}:</span
-                        >
-                        <span class="detail-value">{{ activity.status }}</span>
-                      </div>
-                      <div class="detail-row" v-if="activity.jobOrPo">
-                        <span class="detail-label"
-                          >{{ $t('view.stock.gem.dashboard.jobOrPo') }}:</span
-                        >
-                        <span class="detail-value">{{ activity.jobOrPo }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="activities-empty">
-                <i class="bi bi-clock-history"></i>
-                <p>{{ $t('view.stock.gem.dashboard.noActivities') }}</p>
-              </div>
-            </div>
-          </div>
+          <AvailabilityStatus :stock-summary="stockSummary" />
         </div>
       </div>
     </div>
@@ -711,14 +478,26 @@
 </template>
 
 <script>
-import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
 import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
 import dayjs from 'dayjs'
+
+// Dashboard Components
+import StockSummaryCards from './components/stock-summary-cards.vue'
+import CategoryChart from './components/category-chart.vue'
+import TopMovementsTable from './components/top-movements-table.vue'
+import LastActivitiesTable from './components/last-activities-table.vue'
+import PriceAlertsPanel from './components/price-alerts-panel.vue'
+import AvailabilityStatus from './components/availability-status.vue'
 
 export default {
   name: 'StockGemDashboardView',
   components: {
-    HorizontalBarChart
+    StockSummaryCards,
+    CategoryChart,
+    TopMovementsTable,
+    LastActivitiesTable,
+    PriceAlertsPanel,
+    AvailabilityStatus
   },
   setup() {
     const dashboardStore = useStockGemDashboardStore()
@@ -774,6 +553,7 @@ export default {
     lastActivities() {
       return this.dashboardStore.getLastActivities
     },
+    
 
     // Today's data
     todaySummary() {
@@ -871,14 +651,26 @@ export default {
       }
     },
 
-    getTransactionIcon(type) {
+
+    getTypeName(type) {
+      // Map transaction type to Thai names (already handled by typeName from API)
       switch (type) {
         case 1:
-          return 'bi bi-box-arrow-in-down text-success'
+          return 'รับเข้าคลัง [พลอยใหม่]'
         case 2:
-          return 'bi bi-box-arrow-up text-danger'
+          return 'รับเข้าคลัง [พลอยนอกสต๊อก]'
+        case 3:
+          return 'รับเข้าคลัง [พลอยคืน]'
+        case 4:
+          return 'จ่ายออกคลัง'
+        case 5:
+          return 'ยืมออกคลัง'
+        case 6:
+          return 'คืนเข้าคลัง'
+        case 7:
+          return 'เบิกออกคลัง'
         default:
-          return 'bi bi-arrow-left-right text-warning'
+          return 'อื่นๆ'
       }
     },
 
@@ -1261,6 +1053,64 @@ export default {
   }
 
   .activities-body {
+    .activity-table-container {
+      // Custom styling for BaseDataTable
+      :deep(.base-datatable) {
+        .p-datatable {
+          .p-datatable-tbody {
+            tr {
+              td {
+                padding: 8px 12px;
+                font-size: 12px;
+                
+                .gem-info {
+                  .gem-code {
+                    font-weight: 600;
+                    color: $base-font-color;
+                    font-size: 13px;
+                  }
+                }
+
+                .running-number {
+                  font-family: monospace;
+                  font-size: 11px;
+                  background: #e9ecef;
+                  padding: 2px 6px;
+                  border-radius: 3px;
+                }
+
+                .job-po {
+                  font-size: 11px;
+                  color: $base-sub-color;
+                }
+
+                .status-badge {
+                  font-size: 10px;
+                  padding: 3px 8px;
+                  border-radius: 12px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                }
+
+                .user-info {
+                  .create-by {
+                    font-weight: 500;
+                    color: $base-font-color;
+                    font-size: 11px;
+                  }
+
+                  small {
+                    font-size: 10px;
+                    line-height: 1.2;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     .activities-list {
       .activity-item {
         display: flex;
