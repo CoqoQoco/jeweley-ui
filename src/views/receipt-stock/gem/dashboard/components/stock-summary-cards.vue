@@ -1,5 +1,5 @@
 <template>
-  <div class="row mb-4">
+  <div class="row ">
     <!-- Total Gem Types -->
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="stat-card total">

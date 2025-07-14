@@ -1,5 +1,5 @@
 <template>
-  <div class="summary-card mt-3">
+  <div class="summary-card">
     <div class="summary-header">
       <h5>{{ $t('view.stock.gem.dashboard.topMovements') }}</h5>
     </div>

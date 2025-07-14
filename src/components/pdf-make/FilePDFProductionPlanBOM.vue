@@ -352,62 +352,65 @@ export default {
                       { text: this.formatNumber(item.totalPrice, 2), alignment: 'right' }
                     ]),
                     // Subtotal Row สำหรับแต่ละกลุ่ม
-                    // [
-                    //   {
-                    //     text: `ต้นทุน${this.getGroupTitle(groupName)}`,
-                    //     colSpan: 6,
-                    //     alignment: 'right',
-                    //     bold: true,
-                    //     fontSize: 11
-                    //   },
-                    //   {},
-                    //   {},
-                    //   {},
-                    //   {},
-                    //   {},
-                    //   {
-                    //     text: this.formatNumber(
-                    //       items.reduce((sum, item) => sum + (item.totalPrice || 0), 0) /
-                    //         (this.model.productQty || 1),
-                    //       2
-                    //     ),
-                    //     alignment: 'right',
-                    //     bold: true
-                    //   },
-                    //   {
-                    //     text: this.formatNumber(
-                    //       items.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
-                    //       2
-                    //     ),
-                    //     alignment: 'right',
-                    //     bold: true
-                    //   }
-                    // ]
-                  ]),
-                  // Grand Total Row (ผลรวมทั้งหมด)
-                //   [
-                //     {
-                //       text: 'ต้นทุน',
-                //       colSpan: 6,
-                //       alignment: 'right',
-                //       style: 'tableHeader'
-                //     },
-                //     {},
-                //     {},
-                //     {},
-                //     {},
-                //     {},
-                //     {
-                //       text: this.formatNumber(this.calculateTotalPerQty(), 2),
-                //       alignment: 'right',
-                //       style: 'tableHeader'
-                //     },
-                //     {
-                //       text: this.formatNumber(this.calculateTotal(), 2),
-                //       alignment: 'right',
-                //       style: 'tableHeader'
-                //     }
-                //   ]
+                    [
+                      {
+                        text: `รวม${this.getGroupTitle(groupName)}`,
+                        colSpan: 2,
+                        alignment: 'right',
+                        bold: true,
+                        fontSize: 11
+                      },
+                      {},
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.qty || 0), 0)
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      },
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.qtyPrice || 0), 0),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      },
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.qtyWeight || 0), 0),
+                          3
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      },
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.qtyWeightPrice || 0), 0),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      },
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0) /
+                            (this.model.productQty || 1),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      },
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      }
+                    ]
+                  ])
                   // ต้นทุนต่อชิ้น
                   // [
                   //   {
@@ -433,22 +436,29 @@ export default {
                 hLineWidth: function (i, node) {
                   if (i === 0) return 1 // เส้นบนสุดของตาราง
                   if (i === 1) return 1 // เส้นใต้ header
-                  //if (i === node.table.body.length) return 1 // เส้นล่างสุดของตาราง
+                  if (i === node.table.body.length) return 1 // เส้นล่างสุดของตาราง
 
-                  // เพิ่มเส้นเหนือแถวต้นทุนรวม
-                  // หาตำแหน่งของแถว "ต้นทุนรวม" โดยนับจากด้านล่าง
-                  //const totalRowIndex = node.table.body.length - 1 // -2 เพราะมีแถว "ต้นทุนต่อชิ้น" ต่อท้าย
-                  //if (i === totalRowIndex) return 1
+                  // เพิ่มเส้นเหนือแถวย่อยของแต่ละกลุ่ม (top line)
+                  if (node.table.body[i] && node.table.body[i][0].text && 
+                      node.table.body[i][0].text.toString().startsWith('ต้นทุน')) {
+                    return 1
+                  }
+
+                  // เพิ่มเส้นใต้แถวย่อยของแต่ละกลุ่ม (bottom line)
+                  if (node.table.body[i - 1] && node.table.body[i - 1][0].text && 
+                      node.table.body[i - 1][0].text.toString().startsWith('ต้นทุน')) {
+                    return 1
+                  }
 
                   return 0
                 },
-                vLineWidth: function (i) {
+                vLineWidth: function () {
                   return 0
                 },
-                paddingLeft: function (i) {
+                paddingLeft: function () {
                   return 2 // ลดจาก 4
                 },
-                paddingRight: function (i) {
+                paddingRight: function () {
                   return 2 // ลดจาก 4
                 },
                 paddingTop: function (i, node) {
@@ -487,7 +497,7 @@ export default {
                   // สำหรับ row ปกติ
                   return 1
                 },
-                hLineColor: function (i, node) {
+                hLineColor: function () {
                   return '#000000'
                 }
               }

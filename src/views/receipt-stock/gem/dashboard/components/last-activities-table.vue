@@ -3,7 +3,7 @@
     <div class="summary-header">
       <h5>{{ $t('view.stock.gem.dashboard.lastActivities') }}</h5>
       <div class="activities-count">
-        <span class="badge bg-primary">{{ lastActivities.length }}</span>
+        <!-- <span class="badge bg-primary">{{ lastActivities.length }}</span> -->
       </div>
     </div>
     <div class="summary-body">

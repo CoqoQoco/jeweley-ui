@@ -1,7 +1,29 @@
 <template>
   <div class="row">
     <div class="col-lg-12 col-md-12 mb-4">
-      <div class="chart-card">
+      <div class="chart-card-body">
+        <HorizontalBarChart
+          v-if="categoryChartData && categoryChartData.report?.length > 0"
+          :data="categoryChartData"
+          :title="$t('view.stock.gem.dashboard.categoryBreakdown')"
+          :height="1000"
+          :show-data-labels="true"
+          :datasetFields="datasetFields"
+          :chartName="chartName"
+          :maxBarThickness="2"
+        />
+        <div v-else-if="isLoading" class="chart-loading">
+          <div class="loading-spinner">
+            <i class="bi bi-arrow-repeat"></i>
+          </div>
+          <p>{{ $t('view.stock.gem.dashboard.loadingChart') }}</p>
+        </div>
+        <div v-else class="chart-empty">
+          <i class="bi bi-graph-up"></i>
+          <p>{{ $t('view.stock.gem.dashboard.noData') }}</p>
+        </div>
+      </div>
+      <!-- <div class="chart-card">
         <div class="chart-card-header">
           <h5>{{ $t('view.stock.gem.dashboard.categoryBreakdown') }}</h5>
         </div>
@@ -27,7 +49,7 @@
             <p>{{ $t('view.stock.gem.dashboard.noData') }}</p>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -82,7 +104,7 @@ export default {
   }
 
   .chart-card-body {
-    padding: 20px;
+    padding: 20px 20px;
 
     .chart-loading,
     .chart-empty {
@@ -106,7 +128,11 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
