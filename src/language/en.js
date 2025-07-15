@@ -125,8 +125,10 @@ export default {
           
           // Monthly report
           monthlyTransactions: 'Monthly Transactions',
+          monthlyTransactionSummaries: 'Monthly Transaction Summaries',
           monthlyAnalysis: 'Monthly Analysis',
           noMonthlyData: 'No monthly data',
+          noMonthlyTransactionData: 'No monthly transaction data',
           
           // No data messages
           loadingChart: 'Loading data...',

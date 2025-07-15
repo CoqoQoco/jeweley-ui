@@ -129,8 +129,10 @@ export default {
           
           // Monthly report
           monthlyTransactions: 'ธุรกรรมรายเดือน',
+          monthlyTransactionSummaries: 'สรุปธุรกรรมรายเดือน',
           monthlyAnalysis: 'การวิเคราะห์รายเดือน',
           noMonthlyData: 'ไม่มีข้อมูลรายเดือน',
+          noMonthlyTransactionData: 'ไม่มีข้อมูลธุรกรรมรายเดือน',
           
           // No data messages
           loadingChart: 'กำลังโหลดข้อมูล...',
