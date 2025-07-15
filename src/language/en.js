@@ -129,6 +129,16 @@ export default {
           monthlyAnalysis: 'Monthly Analysis',
           noMonthlyData: 'No monthly data',
           noMonthlyTransactionData: 'No monthly transaction data',
+          transactionTypeBreakdown: 'Transaction Type Breakdown',
+          gemType: 'Gem Type',
+          qtyUsed: 'Qty Used',
+          weightUsed: 'Weight Used',
+          inbound: 'Inbound',
+          outbound: 'Outbound',
+          currentStock: 'Current Stock',
+          actions: 'Actions',
+          cost: 'Cost',
+          noTransactionTypes: 'No transaction type data',
           
           // No data messages
           loadingChart: 'Loading data...',

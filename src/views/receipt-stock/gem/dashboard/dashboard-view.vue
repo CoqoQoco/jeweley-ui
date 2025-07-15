@@ -126,7 +126,7 @@
       <StockSummaryCards :stock-summary="stockSummary" />
 
       <!-- Category Breakdown Chart -->
-      <CategoryChart 
+      <CategoryChart
         :category-chart-data="categoryChartData"
         :is-loading="isLoading"
         :dataset-fields="datasetFields"
@@ -445,74 +445,165 @@
               </div>
             </div>
             <div class="activities-body">
-              <div v-if="monthlyGemTransactionSummaries && monthlyGemTransactionSummaries.length > 0" class="transaction-summary-table">
-                <div class="table-header">
-                  <div class="col">{{ $t('view.stock.gem.dashboard.gemType') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.qtyUsed') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.weightUsed') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.inbound') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.outbound') }}</div>
-                  <div class="col">{{ $t('view.stock.gem.dashboard.currentStock') }}</div>
-                </div>
-                <div
-                  v-for="summary in monthlyGemTransactionSummaries"
-                  :key="`${summary.groupName}-${summary.shape}-${summary.grade}`"
-                  class="table-row"
-                >
-                  <div class="col">
-                    <div class="gem-type-info">
-                      <strong>{{ summary.groupName }}</strong>
-                      <div class="gem-details">
-                        <small>{{ summary.shape }} - {{ summary.grade }}</small>
+              <div
+                v-if="monthlyGemTransactionSummaries && monthlyGemTransactionSummaries.length > 0"
+                class="transaction-summary-container"
+              >
+                <div class="transaction-summary-table">
+                  <div class="table-header">
+                    <div class="col">{{ $t('view.stock.gem.dashboard.gemType') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.qtyUsed') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.weightUsed') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.inbound') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.outbound') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.currentStock') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.actions') }}</div>
+                  </div>
+                  <div
+                    v-for="summary in monthlyGemTransactionSummaries"
+                    :key="`${summary.groupName}-${summary.shape}-${summary.grade}`"
+                    class="table-row-container"
+                  >
+                    <div class="table-row main-row">
+                      <div class="col">
+                        <div class="gem-type-info">
+                          <strong>{{ summary.groupName }}</strong>
+                          <div class="gem-details">
+                            <small>{{ summary.shape }} - {{ summary.grade }}</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="transaction-count">
+                          <strong>{{ formatNumber(summary.totalTransactions) }}</strong>
+                          <div class="transaction-breakdown">
+                            <small
+                              >In: {{ formatNumber(summary.inboundTransactions) }} | Out:
+                              {{ formatNumber(summary.outboundTransactions) }}</small
+                            >
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="quantity-info">
+                          <strong>{{ formatNumber(summary.totalQuantityUsed) }}</strong>
+                          <div class="quantity-breakdown">
+                            <small
+                              >In: {{ formatNumber(summary.inboundQuantity) }} | Out:
+                              {{ formatNumber(summary.outboundQuantity) }}</small
+                            >
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="weight-info">
+                          <strong>{{ formatNumber(summary.totalWeightUsed, 3) }}</strong>
+                          <div class="weight-breakdown">
+                            <small
+                              >In: {{ formatNumber(summary.inboundWeight, 3) }} | Out:
+                              {{ formatNumber(summary.outboundWeight, 3) }}</small
+                            >
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="inbound-info">
+                          <strong>{{ formatNumber(summary.inboundQuantity) }}</strong>
+                          <div class="inbound-weight">
+                            <small>{{ formatNumber(summary.inboundWeight, 3) }} g</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="outbound-info">
+                          <strong>{{ formatNumber(summary.outboundQuantity) }}</strong>
+                          <div class="outbound-weight">
+                            <small>{{ formatNumber(summary.outboundWeight, 3) }} g</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="current-stock">
+                          <strong>{{ formatNumber(summary.currentQuantity) }}</strong>
+                          <div class="current-weight">
+                            <small>{{ formatNumber(summary.currentWeight, 3) }} g</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <button
+                          @click="toggleTransactionDetails(summary)"
+                          class="btn btn-sm btn-outline-secondary"
+                          :class="{ active: summary.showDetails }"
+                        >
+                          <i
+                            class="bi"
+                            :class="summary.showDetails ? 'bi-chevron-up' : 'bi-chevron-down'"
+                          ></i>
+                        </button>
                       </div>
                     </div>
-                  </div>
-                  <div class="col">
-                    <div class="transaction-count">
-                      <strong>{{ formatNumber(summary.totalTransactions) }}</strong>
-                      <div class="transaction-breakdown">
-                        <small>In: {{ formatNumber(summary.inboundTransactions) }} | Out: {{ formatNumber(summary.outboundTransactions) }}</small>
+
+                    <!-- Transaction Type Details -->
+                    <div v-if="summary.showDetails" class="transaction-details">
+                      <div class="details-header">
+                        <h6>{{ $t('view.stock.gem.dashboard.transactionTypeBreakdown') }}</h6>
                       </div>
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div class="quantity-info">
-                      <strong>{{ formatNumber(summary.totalQuantityUsed) }}</strong>
-                      <div class="quantity-breakdown">
-                        <small>In: {{ formatNumber(summary.inboundQuantity) }} | Out: {{ formatNumber(summary.outboundQuantity) }}</small>
+                      <div
+                        class="transaction-types-grid"
+                        v-if="summary.transactionsByType && summary.transactionsByType.length > 0"
+                      >
+                        <div
+                          v-for="transType in summary.transactionsByType"
+                          :key="transType.type"
+                          class="transaction-type-card"
+                        >
+                          <div class="type-header">
+                            <div class="type-icon">
+                              <i :class="getTransactionIcon(transType.type)"></i>
+                            </div>
+                            <div class="type-info">
+                              <h6>{{ transType.typeName }}</h6>
+                              <small>Type {{ transType.type }}</small>
+                            </div>
+                          </div>
+                          <div class="type-stats">
+                            <div class="stat-row">
+                              <span class="stat-label"
+                                >{{ $t('view.stock.gem.dashboard.count') }}:</span
+                              >
+                              <span class="stat-value">{{ formatNumber(transType.count) }}</span>
+                            </div>
+                            <div class="stat-row">
+                              <span class="stat-label"
+                                >{{ $t('view.stock.gem.dashboard.quantity') }}:</span
+                              >
+                              <span class="stat-value">{{
+                                formatNumber(transType.totalQuantity)
+                              }}</span>
+                            </div>
+                            <div class="stat-row">
+                              <span class="stat-label"
+                                >{{ $t('view.stock.gem.dashboard.weight') }}:</span
+                              >
+                              <span class="stat-value"
+                                >{{ formatNumber(transType.totalWeight, 3) }} g</span
+                              >
+                            </div>
+                            <div class="stat-row">
+                              <span class="stat-label"
+                                >{{ $t('view.stock.gem.dashboard.cost') }}:</span
+                              >
+                              <span class="stat-value">{{
+                                formatCurrency(transType.totalCost)
+                              }}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div class="weight-info">
-                      <strong>{{ formatNumber(summary.totalWeightUsed, 3) }}</strong>
-                      <div class="weight-breakdown">
-                        <small>In: {{ formatNumber(summary.inboundWeight, 3) }} | Out: {{ formatNumber(summary.outboundWeight, 3) }}</small>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div class="inbound-info">
-                      <strong>{{ formatNumber(summary.inboundQuantity) }}</strong>
-                      <div class="inbound-weight">
-                        <small>{{ formatNumber(summary.inboundWeight, 3) }} g</small>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div class="outbound-info">
-                      <strong>{{ formatNumber(summary.outboundQuantity) }}</strong>
-                      <div class="outbound-weight">
-                        <small>{{ formatNumber(summary.outboundWeight, 3) }} g</small>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div class="current-stock">
-                      <strong>{{ formatNumber(summary.currentQuantity) }}</strong>
-                      <div class="current-weight">
-                        <small>{{ formatNumber(summary.currentWeight, 3) }} g</small>
+                      <div v-else class="no-transaction-types">
+                        <p>{{ $t('view.stock.gem.dashboard.noTransactionTypes') }}</p>
                       </div>
                     </div>
                   </div>
@@ -540,7 +631,7 @@ import CategoryChart from './components/category-chart.vue'
 import TopMovementsTable from './components/top-movements-table.vue'
 import LastActivitiesTable from './components/last-activities-table.vue'
 import PriceAlertsPanel from './components/price-alerts-panel.vue'
-import AvailabilityStatus from './components/availability-status.vue'
+// import AvailabilityStatus from './components/availability-status.vue'
 
 export default {
   name: 'StockGemDashboardView',
@@ -549,8 +640,8 @@ export default {
     CategoryChart,
     TopMovementsTable,
     LastActivitiesTable,
-    PriceAlertsPanel,
-    AvailabilityStatus
+    PriceAlertsPanel
+    // AvailabilityStatus
   },
   setup() {
     const dashboardStore = useStockGemDashboardStore()
@@ -606,7 +697,6 @@ export default {
     lastActivities() {
       return this.dashboardStore.getLastActivities
     },
-    
 
     // Today's data
     todaySummary() {
@@ -748,7 +838,7 @@ export default {
 
     formatNumber(value, decimals = 0) {
       if (!value) return '0' + (decimals > 0 ? '.'.padEnd(decimals + 1, '0') : '')
-      return new Intl.NumberFormat('en-US', { 
+      return new Intl.NumberFormat('en-US', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
       }).format(value)
@@ -764,6 +854,14 @@ export default {
 
     formatDateTime(date) {
       return dayjs(date).format('DD/MM/YYYY HH:mm')
+    },
+
+    toggleTransactionDetails(summary) {
+      if (!summary.showDetails) {
+        summary.showDetails = true
+      } else {
+        summary.showDetails = false
+      }
     }
   }
 }
@@ -1127,89 +1225,193 @@ export default {
     }
   }
 
-  .transaction-summary-table {
-    .table-header {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-      gap: 15px;
-      padding: 12px 0;
-      font-weight: bold;
-      color: $base-font-color;
-      border-bottom: 2px solid $base-color;
-      font-size: 13px;
+  .transaction-summary-container {
+    .transaction-summary-table {
+      .table-header {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+        gap: 15px;
+        padding: 12px 0;
+        font-weight: bold;
+        color: $base-font-color;
+        border-bottom: 2px solid $base-color;
+        font-size: 13px;
+      }
+
+      .table-row-container {
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+
+      .table-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+        gap: 15px;
+        padding: 12px 0;
+        font-size: 13px;
+
+        &.main-row {
+          transition: background-color 0.2s ease;
+
+          &:hover {
+            background-color: #f8f9fa;
+          }
+        }
+      }
     }
 
-    .table-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-      gap: 15px;
-      padding: 12px 0;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 13px;
+    .transaction-details {
+      background: #f8f9fa;
+      padding: 15px;
+      border-top: 1px solid #e9ecef;
 
-      &:last-child {
-        border-bottom: none;
-      }
+      .details-header {
+        margin-bottom: 15px;
 
-      .col {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .gem-type-info {
-        strong {
-          font-weight: 600;
+        h6 {
           color: $base-font-color;
-          font-size: 14px;
+          font-weight: 600;
+          margin: 0;
         }
-        
-        .gem-details {
-          margin-top: 2px;
-          small {
-            color: $base-sub-color;
-            font-size: 11px;
+      }
+
+      .transaction-types-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 15px;
+
+        .transaction-type-card {
+          background: white;
+          border-radius: 8px;
+          padding: 15px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          border-left: 4px solid $base-color;
+
+          .type-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+
+            .type-icon {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              background-color: #f8f9fa;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 12px;
+
+              i {
+                font-size: 16px;
+              }
+            }
+
+            .type-info {
+              flex: 1;
+
+              h6 {
+                color: $base-font-color;
+                font-weight: 600;
+                margin: 0 0 2px 0;
+                font-size: 13px;
+              }
+
+              small {
+                color: $base-sub-color;
+                font-size: 11px;
+              }
+            }
+          }
+
+          .type-stats {
+            .stat-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 8px;
+              font-size: 12px;
+
+              &:last-child {
+                margin-bottom: 0;
+              }
+
+              .stat-label {
+                color: $base-sub-color;
+                font-weight: 500;
+              }
+
+              .stat-value {
+                color: $base-font-color;
+                font-weight: 600;
+              }
+            }
           }
         }
       }
+    }
 
-      .transaction-count,
-      .quantity-info,
-      .weight-info,
-      .inbound-info,
-      .outbound-info,
-      .current-stock {
-        strong {
-          font-weight: 600;
-          color: $base-font-color;
-          font-size: 14px;
-        }
-        
-        .transaction-breakdown,
-        .quantity-breakdown,
-        .weight-breakdown,
-        .inbound-weight,
-        .outbound-weight,
-        .current-weight {
-          margin-top: 2px;
-          small {
-            color: $base-sub-color;
-            font-size: 11px;
-          }
-        }
-      }
+    .col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
-      .inbound-info strong {
-        color: $base-green;
-      }
-
-      .outbound-info strong {
-        color: $base-red;
-      }
-
-      .current-stock strong {
+    .gem-type-info {
+      strong {
+        font-weight: 600;
         color: $base-font-color;
+        font-size: 14px;
       }
+
+      .gem-details {
+        margin-top: 2px;
+        small {
+          color: $base-sub-color;
+          font-size: 11px;
+        }
+      }
+    }
+
+    .transaction-count,
+    .quantity-info,
+    .weight-info,
+    .inbound-info,
+    .outbound-info,
+    .current-stock {
+      strong {
+        font-weight: 600;
+        color: $base-font-color;
+        font-size: 14px;
+      }
+
+      .transaction-breakdown,
+      .quantity-breakdown,
+      .weight-breakdown,
+      .inbound-weight,
+      .outbound-weight,
+      .current-weight {
+        margin-top: 2px;
+        small {
+          color: $base-sub-color;
+          font-size: 11px;
+        }
+      }
+    }
+
+    .inbound-info strong {
+      color: $base-green;
+    }
+
+    .outbound-info strong {
+      color: $base-red;
+    }
+
+    .current-stock strong {
+      color: $base-font-color;
     }
   }
 
@@ -1223,7 +1425,7 @@ export default {
               td {
                 padding: 8px 12px;
                 font-size: 12px;
-                
+
                 .gem-info {
                   .gem-code {
                     font-weight: 600;
@@ -1358,55 +1560,55 @@ export default {
       }
     }
   }
-}
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-// Responsive adjustments
-@media (max-width: 768px) {
-  .stock-gem-dashboard {
-    .dashboard-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 15px;
-
-      .header-controls {
-        width: 100%;
-        justify-content: space-between;
-      }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
     }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 
-    .stat-card .stat-card-body {
-      padding: 15px;
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .stock-gem-dashboard {
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
 
-      .stat-icon {
-        width: 50px;
-        height: 50px;
-        margin-right: 10px;
-
-        i {
-          font-size: 20px;
+        .header-controls {
+          width: 100%;
+          justify-content: space-between;
         }
       }
 
-      .stat-content h3 {
-        font-size: 24px;
+      .stat-card .stat-card-body {
+        padding: 15px;
+
+        .stat-icon {
+          width: 50px;
+          height: 50px;
+          margin-right: 10px;
+
+          i {
+            font-size: 20px;
+          }
+        }
+
+        .stat-content h3 {
+          font-size: 24px;
+        }
       }
-    }
 
-    .dashboard-tabs {
-      padding: 0 10px;
+      .dashboard-tabs {
+        padding: 0 10px;
 
-      .nav-link {
-        padding: 12px 15px;
-        font-size: 14px;
+        .nav-link {
+          padding: 12px 15px;
+          font-size: 14px;
+        }
       }
     }
   }

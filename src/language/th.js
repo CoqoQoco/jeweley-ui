@@ -133,6 +133,16 @@ export default {
           monthlyAnalysis: 'การวิเคราะห์รายเดือน',
           noMonthlyData: 'ไม่มีข้อมูลรายเดือน',
           noMonthlyTransactionData: 'ไม่มีข้อมูลธุรกรรมรายเดือน',
+          transactionTypeBreakdown: 'รายละเอียดตามประเภทธุรกรรม',
+          gemType: 'ประเภทอัญมณี',
+          qtyUsed: 'ปริมาณที่ใช้',
+          weightUsed: 'น้ำหนักที่ใช้',
+          inbound: 'เข้า',
+          outbound: 'ออก',
+          currentStock: 'สต็อกปัจจุบัน',
+          actions: 'การกระทำ',
+          cost: 'ค่าใช้จ่าย',
+          noTransactionTypes: 'ไม่มีข้อมูลประเภทธุรกรรม',
           
           // No data messages
           loadingChart: 'กำลังโหลดข้อมูล...',
