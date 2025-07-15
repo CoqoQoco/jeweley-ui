@@ -8,6 +8,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     todayReport: null,
     weeklyReport: null,
     monthlyReport: null,
+    monthlyGemTransactionSummaries: null,
     lastUpdated: null,
     error: null
   }),
@@ -53,6 +54,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     getMonthlyInventoryAnalysis: (state) => state.monthlyReport?.inventoryAnalysis || [],
     getMonthlyPriceAnalysis: (state) => state.monthlyReport?.priceAnalysis || [],
     getMonthlySupplierAnalysis: (state) => state.monthlyReport?.supplierAnalysis || [],
+    getMonthlyGemTransactionSummaries: (state) => state.monthlyGemTransactionSummaries || [],
 
     // Computed summary stats for dashboard cards
     getTotalGemTypes: (state) => state.dashboardData?.summary?.totalGemTypes || 0,
@@ -214,6 +216,33 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
       }
     },
 
+    // Fetch monthly gem transaction summaries
+    async fetchMonthlyGemTransactionSummaries(filters = {}) {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const requestData = {
+          dashboard: {
+            groupName: filters.groupName || null,
+            shape: filters.shape || null,
+            grade: filters.grade || null
+          }
+        }
+
+        const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Monthly/GemTransactionSummaries', requestData)
+
+        this.monthlyGemTransactionSummaries = response
+        this.lastUpdated = new Date()
+      } catch (error) {
+        console.error('Error fetching monthly gem transaction summaries:', error)
+        this.error = error.message || 'Failed to fetch monthly gem transaction summaries'
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     // Refresh all dashboard data
     async refreshAll(filters = {}) {
       try {
@@ -235,6 +264,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
       this.todayReport = null
       this.weeklyReport = null
       this.monthlyReport = null
+      this.monthlyGemTransactionSummaries = null
       this.lastUpdated = null
       this.error = null
     },

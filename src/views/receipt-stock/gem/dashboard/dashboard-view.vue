@@ -435,39 +435,92 @@
           </div>
         </div>
 
-        <!-- Monthly Analysis -->
+        <!-- Monthly Transaction Summary by Gem Type -->
         <div class="col-12">
           <div class="activities-card">
             <div class="activities-header">
-              <h5>{{ $t('view.stock.gem.dashboard.monthlyAnalysis') }}</h5>
+              <h5>{{ $t('view.stock.gem.dashboard.monthlyTransactionSummaries') }}</h5>
               <div class="activities-count">
-                <span class="badge bg-info">{{ monthlyMovements.length || 0 }}</span>
+                <span class="badge bg-info">{{ monthlyGemTransactionSummaries.length || 0 }}</span>
               </div>
             </div>
             <div class="activities-body">
-              <div v-if="monthlyMovements && monthlyMovements.length > 0" class="activities-list">
+              <div v-if="monthlyGemTransactionSummaries && monthlyGemTransactionSummaries.length > 0" class="transaction-summary-table">
+                <div class="table-header">
+                  <div class="col">{{ $t('view.stock.gem.dashboard.gemType') }}</div>
+                  <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
+                  <div class="col">{{ $t('view.stock.gem.dashboard.qtyUsed') }}</div>
+                  <div class="col">{{ $t('view.stock.gem.dashboard.weightUsed') }}</div>
+                  <div class="col">{{ $t('view.stock.gem.dashboard.inbound') }}</div>
+                  <div class="col">{{ $t('view.stock.gem.dashboard.outbound') }}</div>
+                  <div class="col">{{ $t('view.stock.gem.dashboard.currentStock') }}</div>
+                </div>
                 <div
-                  v-for="movement in monthlyMovements"
-                  :key="movement.id || movement.code"
-                  class="activity-item"
+                  v-for="summary in monthlyGemTransactionSummaries"
+                  :key="`${summary.groupName}-${summary.shape}-${summary.grade}`"
+                  class="table-row"
                 >
-                  <div class="activity-icon">
-                    <i class="bi bi-graph-up text-info"></i>
-                  </div>
-                  <div class="activity-content">
-                    <div class="activity-header">
-                      <h6>{{ movement.code || movement.title }}</h6>
-                      <span class="activity-time">{{ movement.date || movement.time }}</span>
+                  <div class="col">
+                    <div class="gem-type-info">
+                      <strong>{{ summary.groupName }}</strong>
+                      <div class="gem-details">
+                        <small>{{ summary.shape }} - {{ summary.grade }}</small>
+                      </div>
                     </div>
-                    <p class="activity-description">
-                      {{ movement.description || 'Monthly activity summary' }}
-                    </p>
+                  </div>
+                  <div class="col">
+                    <div class="transaction-count">
+                      <strong>{{ formatNumber(summary.totalTransactions) }}</strong>
+                      <div class="transaction-breakdown">
+                        <small>In: {{ formatNumber(summary.inboundTransactions) }} | Out: {{ formatNumber(summary.outboundTransactions) }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="quantity-info">
+                      <strong>{{ formatNumber(summary.totalQuantityUsed) }}</strong>
+                      <div class="quantity-breakdown">
+                        <small>In: {{ formatNumber(summary.inboundQuantity) }} | Out: {{ formatNumber(summary.outboundQuantity) }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="weight-info">
+                      <strong>{{ formatNumber(summary.totalWeightUsed, 3) }}</strong>
+                      <div class="weight-breakdown">
+                        <small>In: {{ formatNumber(summary.inboundWeight, 3) }} | Out: {{ formatNumber(summary.outboundWeight, 3) }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="inbound-info">
+                      <strong>{{ formatNumber(summary.inboundQuantity) }}</strong>
+                      <div class="inbound-weight">
+                        <small>{{ formatNumber(summary.inboundWeight, 3) }} g</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="outbound-info">
+                      <strong>{{ formatNumber(summary.outboundQuantity) }}</strong>
+                      <div class="outbound-weight">
+                        <small>{{ formatNumber(summary.outboundWeight, 3) }} g</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="current-stock">
+                      <strong>{{ formatNumber(summary.currentQuantity) }}</strong>
+                      <div class="current-weight">
+                        <small>{{ formatNumber(summary.currentWeight, 3) }} g</small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
               <div v-else class="activities-empty">
-                <i class="bi bi-clock-history"></i>
-                <p>{{ $t('view.stock.gem.dashboard.noMonthlyData') }}</p>
+                <i class="bi bi-gem"></i>
+                <p>{{ $t('view.stock.gem.dashboard.noMonthlyTransactionData') }}</p>
               </div>
             </div>
           </div>
@@ -578,6 +631,9 @@ export default {
     monthlyMovements() {
       return this.dashboardStore.getWeeklyComparisons
     },
+    monthlyGemTransactionSummaries() {
+      return this.dashboardStore.getMonthlyGemTransactionSummaries
+    },
 
     // Chart data
     categoryChartData() {
@@ -618,6 +674,7 @@ export default {
             break
           case 'monthly':
             await this.dashboardStore.fetchMonthlyReport(this.filters)
+            await this.dashboardStore.fetchMonthlyGemTransactionSummaries(this.filters)
             break
         }
       } catch (error) {
@@ -651,6 +708,21 @@ export default {
       }
     },
 
+    getTransactionIcon(type) {
+      switch (type) {
+        case 1:
+        case 2:
+        case 3:
+        case 6:
+          return 'bi bi-arrow-down-circle text-success'
+        case 4:
+        case 5:
+        case 7:
+          return 'bi bi-arrow-up-circle text-danger'
+        default:
+          return 'bi bi-arrow-left-right text-info'
+      }
+    },
 
     getTypeName(type) {
       // Map transaction type to Thai names (already handled by typeName from API)
@@ -674,9 +746,12 @@ export default {
       }
     },
 
-    formatNumber(value) {
-      if (!value) return '0'
-      return new Intl.NumberFormat().format(value)
+    formatNumber(value, decimals = 0) {
+      if (!value) return '0' + (decimals > 0 ? '.'.padEnd(decimals + 1, '0') : '')
+      return new Intl.NumberFormat('en-US', { 
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }).format(value)
     },
 
     formatCurrency(value) {
@@ -1048,6 +1123,92 @@ export default {
             }
           }
         }
+      }
+    }
+  }
+
+  .transaction-summary-table {
+    .table-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+      gap: 15px;
+      padding: 12px 0;
+      font-weight: bold;
+      color: $base-font-color;
+      border-bottom: 2px solid $base-color;
+      font-size: 13px;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+      gap: 15px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .col {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .gem-type-info {
+        strong {
+          font-weight: 600;
+          color: $base-font-color;
+          font-size: 14px;
+        }
+        
+        .gem-details {
+          margin-top: 2px;
+          small {
+            color: $base-sub-color;
+            font-size: 11px;
+          }
+        }
+      }
+
+      .transaction-count,
+      .quantity-info,
+      .weight-info,
+      .inbound-info,
+      .outbound-info,
+      .current-stock {
+        strong {
+          font-weight: 600;
+          color: $base-font-color;
+          font-size: 14px;
+        }
+        
+        .transaction-breakdown,
+        .quantity-breakdown,
+        .weight-breakdown,
+        .inbound-weight,
+        .outbound-weight,
+        .current-weight {
+          margin-top: 2px;
+          small {
+            color: $base-sub-color;
+            font-size: 11px;
+          }
+        }
+      }
+
+      .inbound-info strong {
+        color: $base-green;
+      }
+
+      .outbound-info strong {
+        color: $base-red;
+      }
+
+      .current-stock strong {
+        color: $base-font-color;
       }
     }
   }
