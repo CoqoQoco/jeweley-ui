@@ -453,10 +453,9 @@
                   <div class="table-header">
                     <div class="col">{{ $t('view.stock.gem.dashboard.gemType') }}</div>
                     <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.qtyUsed') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.weightUsed') }}</div>
                     <div class="col">{{ $t('view.stock.gem.dashboard.inbound') }}</div>
                     <div class="col">{{ $t('view.stock.gem.dashboard.outbound') }}</div>
+                    <div class="col">{{ $t('view.stock.gem.dashboard.processBorrow') }}</div>
                     <div class="col">{{ $t('view.stock.gem.dashboard.currentStock') }}</div>
                     <div class="col">{{ $t('view.stock.gem.dashboard.actions') }}</div>
                   </div>
@@ -478,48 +477,34 @@
                         <div class="transaction-count">
                           <strong>{{ formatNumber(summary.totalTransactions) }}</strong>
                           <div class="transaction-breakdown">
-                            <small
-                              >In: {{ formatNumber(summary.inboundTransactions) }} | Out:
-                              {{ formatNumber(summary.outboundTransactions) }}</small
-                            >
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <div class="quantity-info">
-                          <strong>{{ formatNumber(summary.totalQuantityUsed) }}</strong>
-                          <div class="quantity-breakdown">
-                            <small
-                              >In: {{ formatNumber(summary.inboundQuantity) }} | Out:
-                              {{ formatNumber(summary.outboundQuantity) }}</small
-                            >
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <div class="weight-info">
-                          <strong>{{ formatNumber(summary.totalWeightUsed, 3) }}</strong>
-                          <div class="weight-breakdown">
-                            <small
-                              >In: {{ formatNumber(summary.inboundWeight, 3) }} | Out:
-                              {{ formatNumber(summary.outboundWeight, 3) }}</small
-                            >
+                            <small>{{ $t('view.stock.gem.dashboard.total') }}</small>
                           </div>
                         </div>
                       </div>
                       <div class="col">
                         <div class="inbound-info">
-                          <strong>{{ formatNumber(summary.inboundQuantity) }}</strong>
-                          <div class="inbound-weight">
-                            <small>{{ formatNumber(summary.inboundWeight, 3) }} g</small>
+                          <strong>{{ formatNumber(summary.inboundTransactions) }}</strong>
+                          <div class="inbound-detail">
+                            <small>{{ formatNumber(summary.inboundQuantity) }} {{ $t('view.stock.gem.dashboard.pcs') }}</small>
+                            <small>{{ formatNumber(summary.inboundWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</small>
                           </div>
                         </div>
                       </div>
                       <div class="col">
                         <div class="outbound-info">
-                          <strong>{{ formatNumber(summary.outboundQuantity) }}</strong>
-                          <div class="outbound-weight">
-                            <small>{{ formatNumber(summary.outboundWeight, 3) }} g</small>
+                          <strong>{{ formatNumber(summary.outboundTransactions) }}</strong>
+                          <div class="outbound-detail">
+                            <small>{{ formatNumber(summary.outboundQuantity) }} {{ $t('view.stock.gem.dashboard.pcs') }}</small>
+                            <small>{{ formatNumber(summary.outboundWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="process-borrow-info">
+                          <strong>{{ formatNumber(summary.processBorrowTransactions || 0) }}</strong>
+                          <div class="process-borrow-detail">
+                            <small>{{ $t('view.stock.gem.dashboard.borrow') }}: {{ formatNumber(summary.processBorrowQuantity || 0) }}</small>
+                            <small>{{ $t('view.stock.gem.dashboard.return') }}: {{ formatNumber(summary.processBorrowReturnQuantity || 0) }}</small>
                           </div>
                         </div>
                       </div>
@@ -527,7 +512,7 @@
                         <div class="current-stock">
                           <strong>{{ formatNumber(summary.currentQuantity) }}</strong>
                           <div class="current-weight">
-                            <small>{{ formatNumber(summary.currentWeight, 3) }} g</small>
+                            <small>{{ formatNumber(summary.currentWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</small>
                           </div>
                         </div>
                       </div>
@@ -558,6 +543,7 @@
                           v-for="transType in summary.transactionsByType"
                           :key="transType.type"
                           class="transaction-type-card"
+                          :data-type="transType.type"
                         >
                           <div class="type-header">
                             <div class="type-icon">
@@ -565,7 +551,7 @@
                             </div>
                             <div class="type-info">
                               <h6>{{ transType.typeName }}</h6>
-                              <small>Type {{ transType.type }}</small>
+                              <small>{{ $t('view.stock.gem.dashboard.type') }} {{ transType.type }}</small>
                             </div>
                           </div>
                           <div class="type-stats">
@@ -588,7 +574,7 @@
                                 >{{ $t('view.stock.gem.dashboard.weight') }}:</span
                               >
                               <span class="stat-value"
-                                >{{ formatNumber(transType.totalWeight, 3) }} g</span
+                                >{{ formatNumber(transType.totalWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</span
                               >
                             </div>
                             <div class="stat-row">
@@ -801,16 +787,21 @@ export default {
     getTransactionIcon(type) {
       switch (type) {
         case 1:
+          return 'bi bi-plus-circle text-success' // รับเข้าคลัง [พลอยใหม่]
         case 2:
+          return 'bi bi-arrow-down-circle text-success' // รับเข้าคลัง [พลอยนอกสต๊อก]
         case 3:
-        case 6:
-          return 'bi bi-arrow-down-circle text-success'
+          return 'bi bi-arrow-return-left text-success' // รับเข้าคลัง [พลอยคืน]
         case 4:
+          return 'bi bi-arrow-up-circle text-danger' // จ่ายออกคลัง
         case 5:
+          return 'bi bi-arrow-up-right-circle text-warning' // ยืมออกคลัง
+        case 6:
+          return 'bi bi-arrow-return-right text-info' // คืนเข้าคลัง
         case 7:
-          return 'bi bi-arrow-up-circle text-danger'
+          return 'bi bi-arrow-up-circle text-danger' // เบิกออกคลัง
         default:
-          return 'bi bi-arrow-left-right text-info'
+          return 'bi bi-arrow-left-right text-secondary' // อื่นๆ
       }
     },
 
@@ -1229,7 +1220,7 @@ export default {
     .transaction-summary-table {
       .table-header {
         display: grid;
-        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
         gap: 15px;
         padding: 12px 0;
         font-weight: bold;
@@ -1248,7 +1239,7 @@ export default {
 
       .table-row {
         display: grid;
-        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
         gap: 15px;
         padding: 12px 0;
         font-size: 13px;
@@ -1289,6 +1280,29 @@ export default {
           padding: 15px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           border-left: 4px solid $base-color;
+          transition: transform 0.2s ease;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          }
+
+          // Different border colors for different transaction types
+          &[data-type="1"], &[data-type="2"], &[data-type="3"] {
+            border-left-color: $base-green;
+          }
+          
+          &[data-type="4"], &[data-type="7"] {
+            border-left-color: $base-red;
+          }
+          
+          &[data-type="5"] {
+            border-left-color: #f0ad4e;
+          }
+          
+          &[data-type="6"] {
+            border-left-color: #17a2b8;
+          }
 
           .type-header {
             display: flex;
@@ -1318,11 +1332,16 @@ export default {
                 font-weight: 600;
                 margin: 0 0 2px 0;
                 font-size: 13px;
+                line-height: 1.2;
               }
 
               small {
                 color: $base-sub-color;
                 font-size: 11px;
+                background: #e9ecef;
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-weight: 500;
               }
             }
           }
@@ -1381,6 +1400,7 @@ export default {
     .weight-info,
     .inbound-info,
     .outbound-info,
+    .process-borrow-info,
     .current-stock {
       strong {
         font-weight: 600;
@@ -1391,13 +1411,15 @@ export default {
       .transaction-breakdown,
       .quantity-breakdown,
       .weight-breakdown,
-      .inbound-weight,
-      .outbound-weight,
+      .inbound-detail,
+      .outbound-detail,
+      .process-borrow-detail,
       .current-weight {
         margin-top: 2px;
         small {
           color: $base-sub-color;
           font-size: 11px;
+          display: block;
         }
       }
     }
@@ -1408,6 +1430,10 @@ export default {
 
     .outbound-info strong {
       color: $base-red;
+    }
+
+    .process-borrow-info strong {
+      color: #6f42c1;
     }
 
     .current-stock strong {

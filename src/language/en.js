@@ -139,6 +139,13 @@ export default {
           actions: 'Actions',
           cost: 'Cost',
           noTransactionTypes: 'No transaction type data',
+          processBorrow: 'Process Borrow',
+          total: 'Total',
+          pcs: 'pcs',
+          borrow: 'Borrow',
+          return: 'Return',
+          type: 'Type',
+          grams: 'g',
           
           // No data messages
           loadingChart: 'Loading data...',

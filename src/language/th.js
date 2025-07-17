@@ -143,6 +143,13 @@ export default {
           actions: 'การกระทำ',
           cost: 'ค่าใช้จ่าย',
           noTransactionTypes: 'ไม่มีข้อมูลประเภทธุรกรรม',
+          processBorrow: 'การยืมในกระบวนการ',
+          total: 'รวมทั้งหมด',
+          pcs: 'ชิ้น',
+          borrow: 'ยืม',
+          return: 'คืน',
+          type: 'ประเภท',
+          grams: 'กรัม',
           
           // No data messages
           loadingChart: 'กำลังโหลดข้อมูล...',
