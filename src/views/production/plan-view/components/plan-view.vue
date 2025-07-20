@@ -42,7 +42,11 @@
           </span>
           <!-- <span>หลอม</span> -->
         </button>
-        <button class="btn btn-sm btn-green" @click="onCVDJob">
+        <button
+          :class="['btn btn-sm', isAllowCVD ? 'btn-secondary' : 'btn-green']"
+          @click="onCVDJob"
+          :disabled="isAllowCVD"
+        >
           <span> CVD </span>
           <!-- <span>หลอม</span> -->
         </button>
@@ -207,6 +211,14 @@ export default {
     },
     modelProductType() {
       return this.masterProductType
+    },
+
+    isAllowCVD() {
+      let res = true
+      console.log('isAllowCVD', this.modelValue.status)
+      const allow = [10, 49, 50, 59, 60, 69, 70, 79, 80, 85, 89, 90]
+      allow.includes(this.modelValue.status) ? (res = false) : (res = true)
+      return res
     }
   },
   watch: {
