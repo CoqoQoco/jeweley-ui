@@ -32,7 +32,7 @@
           :masterProductType="masterProductType"
           @onShowFormHeaderUpdate="onUpdated('plan')"
           @onMeltJob="onUpdated('process')"
-          @onCVDJob="onUpdated('process')"
+          @onCVDJob="fetchData('plan')"
         ></planView>
       </keep-alive>
       <keep-alive>

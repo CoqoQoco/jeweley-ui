@@ -47,8 +47,7 @@
           @click="onCVDJob"
           :disabled="isAllowCVD"
         >
-          <span> CVD </span>
-          <!-- <span>หลอม</span> -->
+          <span>CVD</span>
         </button>
       </div>
     </div>
@@ -168,6 +167,8 @@ import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
+import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
 
 //import planOverview from './PlanOverview.vue'
 
@@ -215,7 +216,7 @@ export default {
 
     isAllowCVD() {
       let res = true
-      console.log('isAllowCVD', this.modelValue.status)
+      //console.log('isAllowCVD', this.modelValue.status)
       const allow = [10, 49, 50, 59, 60, 69, 70, 79, 80, 85, 89, 90]
       allow.includes(this.modelValue.status) ? (res = false) : (res = true)
       return res
@@ -240,7 +241,8 @@ export default {
   data() {
     return {
       imageUrl: [],
-      isLoadingImage: false
+      isLoadingImage: false,
+      planUpdateStore: usePlanUpdateApiStore()
     }
   },
   methods: {
@@ -329,9 +331,60 @@ export default {
     onMeltJob() {
       this.$emit('onMeltJob')
     },
-    onCVDJob() {
-      //console.log('onCVDJob')
-      this.$emit('onCVDJob')
+    async onCVDJob() {
+      try {
+        const result = await swAlert.confirmSubmit('', 'ยืนยันการดำเนินการ CVD?', async () => {
+          return await this.processCVDJob()
+        })
+
+        console.log('CVD Job Result:', result)
+
+        // if (result) {
+        //   this.$emit('onCVDJob')
+        // }
+      } catch (error) {
+        console.error('CVD Job Error:', error)
+        swAlert.error('เกิดข้อผิดพลาด', 'ไม่สามารถดำเนินการ CVD ได้')
+      }
+    },
+
+    async processCVDJob() {
+      const selectedItem = {
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        id: this.model.id
+      }
+
+      // Step 1: Transfer to status 95
+      const step1Result = await this.planUpdateStore.submitTransfer({
+        formerStatus: this.model.status,
+        targetStatus: 95,
+        transferBy: null,
+        selectedItems: [selectedItem],
+        targetStatusCvd: true
+      })
+
+      console.log('Step 1 Result:', step1Result)
+
+      // Step 2: Transfer to status 100
+      if (step1Result.errors && step1Result.errors.length === 0) {
+        const step2Result = await this.planUpdateStore.submitTransfer({
+          formerStatus: 95,
+          targetStatus: 100,
+          transferBy: null,
+          selectedItems: [selectedItem],
+          targetStatusCvd: true
+        })
+        console.log('Step 2 Result:', step2Result)
+
+        this.$emit('onCVDJob')
+      } else {
+        swAlert.warning('', 'ไม่สามารถดำเนินการ CVD ได้ (โอนสินค้าไม่สำเร็จ)')
+        return false
+      }
+
+      //swAlert.success('สำเร็จ', 'ดำเนินการ CVD เสร็จสิ้น')
+      return true
     }
   },
   async created() {
