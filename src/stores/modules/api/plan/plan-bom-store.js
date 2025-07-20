@@ -131,7 +131,7 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
             QTY: item.qty,
             QTY_Price: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
             Weight: item.qtyWeight ? Number(item.qtyWeight).toFixed(3) : '0.000',
-            Weight_Price: item.weightPrice ? Number(item.weightPrice).toFixed(2) : '0.00',
+            Weight_Price: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
             Total_Price: Number(
               item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice
             ).toFixed(2)

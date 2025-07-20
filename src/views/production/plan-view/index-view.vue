@@ -32,6 +32,7 @@
           :masterProductType="masterProductType"
           @onShowFormHeaderUpdate="onUpdated('plan')"
           @onMeltJob="onUpdated('process')"
+          @onCVDJob="onUpdated('process')"
         ></planView>
       </keep-alive>
       <keep-alive>
@@ -331,7 +332,7 @@ export default {
       }
     },
     onUpdated(type) {
-      console.log('onUpdated', type)
+      //console.log('onUpdated', type)
       this.isUpdate[type] = true
     },
 

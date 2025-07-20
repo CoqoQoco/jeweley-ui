@@ -14,7 +14,7 @@
                 class="w-100"
                 v-model="form.start"
                 :max-date="form.end"
-                :manualInput="false"
+                :manualInput="true"
                 showIcon
                 placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
@@ -25,7 +25,7 @@
                 v-model="form.end"
                 :min-date="form.start"
                 showIcon
-                :manualInput="false"
+                :manualInput="true"
                 placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
               />

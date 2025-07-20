@@ -103,12 +103,12 @@ export default {
           sortable: true,
           width: '120px'
         },
-        // {
-        //   field: 'mold',
-        //   header: 'แม่พิมพ์',
-        //   sortable: true,
-        //   minWidth: '140px'
-        // },
+        {
+          field: 'mold',
+          header: 'แม่พิมพ์',
+          sortable: true,
+          width: '120px'
+        },
         // {
         //   field: 'productNumber',
         //   header: 'รหัสสินค้า',
@@ -124,7 +124,7 @@ export default {
         {
           field: 'name',
           header: 'รายการ',
-          sortable: true,
+          sortable: false,
           minWidth: '200px'
         },
         // {

@@ -36,10 +36,14 @@
           </span>
           <!-- <span>เเก้ไข</span> -->
         </button>
-        <button class="btn btn-sm btn-red" @click="onMeltJob">
+        <button class="btn btn-sm btn-red mr-2" @click="onMeltJob">
           <span>
             <i class="bi bi-trash"></i>
           </span>
+          <!-- <span>หลอม</span> -->
+        </button>
+        <button class="btn btn-sm btn-green" @click="onCVDJob">
+          <span> CVD </span>
           <!-- <span>หลอม</span> -->
         </button>
       </div>
@@ -312,6 +316,10 @@ export default {
     },
     onMeltJob() {
       this.$emit('onMeltJob')
+    },
+    onCVDJob() {
+      //console.log('onCVDJob')
+      this.$emit('onCVDJob')
     }
   },
   async created() {
