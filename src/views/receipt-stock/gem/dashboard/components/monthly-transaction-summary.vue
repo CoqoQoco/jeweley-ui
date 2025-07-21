@@ -57,17 +57,36 @@
       </div>
     </div>
 
-    <!-- Chart Display -->
+    <!-- Charts Display -->
     <div class="mt-2" v-if="chartData && chartData.report && chartData.report.length > 0">
-      <div class="chart-body">
-        <HorizontalBarChart
-          :data="chartData"
-          :title="chartTitle"
-          :height="1000"
-          :use-thai-labels="$i18n.locale === 'th'"
-          :show-data-labels="true"
-            :maxBarThickness="2"
-        />
+      <div class="row">
+        <!-- Quantity Chart -->
+        <div class="col-lg-6 col-md-12 mb-3">
+          <div class="chart-body">
+            <HorizontalBarChart
+              :data="quantityChartData"
+              :title="quantityChartTitle"
+              :height="1000"
+              :use-thai-labels="$i18n.locale === 'th'"
+              :show-data-labels="true"
+              :maxBarThickness="2"
+            />
+          </div>
+        </div>
+
+        <!-- Weight Chart -->
+        <div class="col-lg-6 col-md-12 mb-3">
+          <div class="chart-body">
+            <HorizontalBarChart
+              :data="weightChartData"
+              :title="weightChartTitle"
+              :height="1000"
+              :use-thai-labels="$i18n.locale === 'th'"
+              :show-data-labels="true"
+              :maxBarThickness="2"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -139,7 +158,7 @@
 
           <template #lastTransactionDateTemplate="{ data }">
             <div class="text-center">
-             {{ formatDateTime(data.lastTransactionDate) }}
+              {{ formatDateTime(data.lastTransactionDate) }}
             </div>
           </template>
         </DataTableWithPaging>
@@ -327,6 +346,46 @@ export default {
       }
       return `${this.getTransactionTypeName(this.selectedTransactionType)} - ${this.formatMonthYear(
         this.selectedMonth
+      )}`
+    },
+
+    quantityChartData() {
+      if (!this.chartData) return null
+
+      return {
+        report: this.chartData.report.map((item) => ({
+          ...item,
+          count: item.count // Use quantity data
+        }))
+      }
+    },
+
+    weightChartData() {
+      if (!this.chartData) return null
+
+      return {
+        report: this.chartData.report.map((item) => ({
+          ...item,
+          count: item.weight // Use weight data
+        }))
+      }
+    },
+
+    quantityChartTitle() {
+      if (!this.selectedTransactionType) {
+        return this.$t('view.stock.gem.dashboard.quantityChart')
+      }
+      return `${this.$t('view.stock.gem.dashboard.quantityChart')} - ${this.getTransactionTypeName(
+        this.selectedTransactionType
+      )}`
+    },
+
+    weightChartTitle() {
+      if (!this.selectedTransactionType) {
+        return this.$t('view.stock.gem.dashboard.weightChart')
+      }
+      return `${this.$t('view.stock.gem.dashboard.weightChart')} - ${this.getTransactionTypeName(
+        this.selectedTransactionType
       )}`
     }
   },
