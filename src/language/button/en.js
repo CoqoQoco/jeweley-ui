@@ -5,5 +5,7 @@ export default {
   },
   apply: 'Apply',
   clear: 'Clear',
-  refresh: 'Refresh'
+  refresh: 'Refresh',
+  search: 'Search',
+  exportExcel: 'Export Excel'
 }

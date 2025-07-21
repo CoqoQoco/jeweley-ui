@@ -9,6 +9,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     weeklyReport: null,
     monthlyReport: null,
     monthlyGemTransactionSummaries: null,
+    transactionTypeSummaries: null, // Store for GetTransactionSummariesByType API
     lastUpdated: null,
     error: null
   }),
@@ -55,6 +56,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     getMonthlyPriceAnalysis: (state) => state.monthlyReport?.priceAnalysis || [],
     getMonthlySupplierAnalysis: (state) => state.monthlyReport?.supplierAnalysis || [],
     getMonthlyGemTransactionSummaries: (state) => state.monthlyGemTransactionSummaries || [],
+    getTransactionTypeSummaries: (state) => state.transactionTypeSummaries || [],
 
     // Computed summary stats for dashboard cards
     getTotalGemTypes: (state) => state.dashboardData?.summary?.totalGemTypes || 0,
@@ -216,31 +218,160 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
       }
     },
 
-    // Fetch monthly gem transaction summaries
-    async fetchMonthlyGemTransactionSummaries(filters = {}) {
+    // Fetch transaction summaries by type (updated API)
+    async fetchTransactionSummariesByType(dateRange = {}) {
       this.isLoading = true
       this.error = null
 
       try {
+        // Ensure start and end dates are provided
+        const startDate = dateRange.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+        const endDate = dateRange.endDate || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+
         const requestData = {
-          dashboard: {
-            groupName: filters.groupName || null,
-            shape: filters.shape || null,
-            grade: filters.grade || null
-          }
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          groupName: dateRange.groupName || null,
+          shape: dateRange.shape || null,
+          grade: dateRange.grade || null
         }
 
-        const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Monthly/GemTransactionSummaries', requestData)
+        const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Monthly/GemTransactionSummaries', {
+          dashboard: requestData
+        })
 
-        this.monthlyGemTransactionSummaries = response
+        // Store raw response in the new state property
+        this.transactionTypeSummaries = response || []
         this.lastUpdated = new Date()
+        
+        return response
       } catch (error) {
-        console.error('Error fetching monthly gem transaction summaries:', error)
-        this.error = error.message || 'Failed to fetch monthly gem transaction summaries'
+        console.error('Error fetching transaction summaries by type:', error)
+        this.error = error.message || 'Failed to fetch transaction summaries by type'
         throw error
       } finally {
         this.isLoading = false
       }
+    },
+
+    // Transform new API response structure for existing UI compatibility
+    transformTransactionTypeResponse(transactionTypes) {
+      const transformedData = []
+      
+      transactionTypes.forEach(transactionType => {
+        // For Type 7 (เบิกออกคลัง), group by production type
+        if (transactionType.type === 7 && transactionType.gemDetails) {
+          const productionGroups = {}
+          
+          transactionType.gemDetails.forEach(gem => {
+            const productionKey = gem.productionType || 'Other'
+            
+            if (!productionGroups[productionKey]) {
+              productionGroups[productionKey] = {
+                groupName: `${transactionType.typeName} - ${gem.productionTypeName || gem.productionType || 'อื่นๆ'}`,
+                shape: transactionType.typeName,
+                grade: gem.productionTypeName || gem.productionType || 'อื่นๆ',
+                totalTransactions: 0,
+                totalQuantityUsed: 0,
+                totalWeightUsed: 0,
+                inboundTransactions: 0,
+                outboundTransactions: 0,
+                inboundQuantity: 0,
+                outboundQuantity: 0,
+                inboundWeight: 0,
+                outboundWeight: 0,
+                processBorrowTransactions: 0,
+                processBorrowReturnTransactions: 0,
+                processBorrowOutboundTransactions: 0,
+                processBorrowQuantity: 0,
+                processBorrowReturnQuantity: 0,
+                processBorrowOutboundQuantity: 0,
+                currentQuantity: 0,
+                currentWeight: 0,
+                transactionsByType: []
+              }
+            }
+            
+            productionGroups[productionKey].totalTransactions += gem.transactionCount
+            productionGroups[productionKey].totalQuantityUsed += gem.totalQuantity
+            productionGroups[productionKey].totalWeightUsed += gem.totalWeight
+            productionGroups[productionKey].outboundTransactions += gem.transactionCount
+            productionGroups[productionKey].outboundQuantity += gem.totalQuantity
+            productionGroups[productionKey].outboundWeight += gem.totalWeight
+            productionGroups[productionKey].processBorrowOutboundTransactions += gem.transactionCount
+            productionGroups[productionKey].processBorrowOutboundQuantity += gem.totalQuantity
+            productionGroups[productionKey].processBorrowOutboundWeight += gem.totalWeight
+            productionGroups[productionKey].currentQuantity += gem.currentQuantity
+            productionGroups[productionKey].currentWeight += gem.currentWeight
+          })
+          
+          Object.values(productionGroups).forEach(group => {
+            group.transactionsByType = [{
+              type: transactionType.type,
+              typeName: transactionType.typeName,
+              count: group.totalTransactions,
+              totalQuantity: group.totalQuantityUsed,
+              totalWeight: group.totalWeightUsed,
+              totalCost: 0
+            }]
+            transformedData.push(group)
+          })
+        } else {
+          // For other transaction types
+          const totalQuantity = transactionType.gemDetails?.reduce((sum, gem) => sum + gem.totalQuantity, 0) || 0
+          const totalWeight = transactionType.gemDetails?.reduce((sum, gem) => sum + gem.totalWeight, 0) || 0
+          const currentQuantity = transactionType.gemDetails?.reduce((sum, gem) => sum + gem.currentQuantity, 0) || 0
+          const currentWeight = transactionType.gemDetails?.reduce((sum, gem) => sum + gem.currentWeight, 0) || 0
+          
+          const transformedTransaction = {
+            groupName: transactionType.typeName,
+            shape: `Type ${transactionType.type}`,
+            grade: transactionType.typeName,
+            totalTransactions: transactionType.totalTransactions,
+            totalQuantityUsed: totalQuantity,
+            totalWeightUsed: totalWeight,
+            inboundTransactions: [1, 2, 3, 6].includes(transactionType.type) ? transactionType.totalTransactions : 0,
+            outboundTransactions: [4, 5, 7].includes(transactionType.type) ? transactionType.totalTransactions : 0,
+            inboundQuantity: [1, 2, 3, 6].includes(transactionType.type) ? totalQuantity : 0,
+            outboundQuantity: [4, 5, 7].includes(transactionType.type) ? totalQuantity : 0,
+            inboundWeight: [1, 2, 3, 6].includes(transactionType.type) ? totalWeight : 0,
+            outboundWeight: [4, 5, 7].includes(transactionType.type) ? totalWeight : 0,
+            processBorrowTransactions: transactionType.type === 5 ? transactionType.totalTransactions : 0,
+            processBorrowReturnTransactions: transactionType.type === 6 ? transactionType.totalTransactions : 0,
+            processBorrowOutboundTransactions: transactionType.type === 7 ? transactionType.totalTransactions : 0,
+            processBorrowQuantity: transactionType.type === 5 ? totalQuantity : 0,
+            processBorrowReturnQuantity: transactionType.type === 6 ? totalQuantity : 0,
+            processBorrowOutboundQuantity: transactionType.type === 7 ? totalQuantity : 0,
+            currentQuantity: currentQuantity,
+            currentWeight: currentWeight,
+            transactionsByType: [{
+              type: transactionType.type,
+              typeName: transactionType.typeName,
+              count: transactionType.totalTransactions,
+              totalQuantity: totalQuantity,
+              totalWeight: totalWeight,
+              totalCost: 0
+            }]
+          }
+          
+          transformedData.push(transformedTransaction)
+        }
+      })
+      
+      return transformedData
+    },
+
+    // Legacy method for compatibility - redirects to new method
+    async fetchMonthlyGemTransactionSummaries(filters = {}) {
+      const dateRange = {
+        startDate: filters.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        endDate: filters.endDate || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+        groupName: filters.groupName,
+        shape: filters.shape,
+        grade: filters.grade
+      }
+      
+      return await this.fetchTransactionSummariesByType(dateRange)
     },
 
     // Refresh all dashboard data
@@ -265,6 +396,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
       this.weeklyReport = null
       this.monthlyReport = null
       this.monthlyGemTransactionSummaries = null
+      this.transactionTypeSummaries = null
       this.lastUpdated = null
       this.error = null
     },

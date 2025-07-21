@@ -73,7 +73,7 @@
     </div>
 
     <!-- Dashboard Report Tabs -->
-    <div class="row mb-3">
+    <div class="row mb-2">
       <div class="col-12">
         <ul class="nav nav-tabs dashboard-tabs">
           <li class="nav-item">
@@ -376,233 +376,7 @@
 
     <!-- Monthly Tab -->
     <div v-show="activeTab === 'monthly'" class="tab-content">
-      <div class="row">
-        <!-- Monthly Summary Cards -->
-        <div class="col-12 mb-4">
-          <div class="row">
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-activity"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ monthlySummary.totalTransactions || 0 }}</h3>
-                    <p>{{ $t('view.stock.gem.dashboard.monthlyTransactions') }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-currency-exchange"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ monthlySummary.priceChanges || 0 }}</h3>
-                    <p>{{ $t('view.stock.gem.dashboard.priceChanges') }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-plus-circle"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ monthlySummary.newStockItems || 0 }}</h3>
-                    <p>{{ $t('view.stock.gem.dashboard.newItems') }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-exclamation-triangle"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ monthlySummary.lowStockAlerts || 0 }}</h3>
-                    <p>{{ $t('view.stock.gem.dashboard.lowStockAlerts') }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Monthly Transaction Summary by Gem Type -->
-        <div class="col-12">
-          <div class="activities-card">
-            <div class="activities-header">
-              <h5>{{ $t('view.stock.gem.dashboard.monthlyTransactionSummaries') }}</h5>
-              <div class="activities-count">
-                <span class="badge bg-info">{{ monthlyGemTransactionSummaries.length || 0 }}</span>
-              </div>
-            </div>
-            <div class="activities-body">
-              <div
-                v-if="monthlyGemTransactionSummaries && monthlyGemTransactionSummaries.length > 0"
-                class="transaction-summary-container"
-              >
-                <div class="transaction-summary-table">
-                  <div class="table-header">
-                    <div class="col">{{ $t('view.stock.gem.dashboard.gemType') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.inbound') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.outbound') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.processBorrow') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.currentStock') }}</div>
-                    <div class="col">{{ $t('view.stock.gem.dashboard.actions') }}</div>
-                  </div>
-                  <div
-                    v-for="summary in monthlyGemTransactionSummaries"
-                    :key="`${summary.groupName}-${summary.shape}-${summary.grade}`"
-                    class="table-row-container"
-                  >
-                    <div class="table-row main-row">
-                      <div class="col">
-                        <div class="gem-type-info">
-                          <strong>{{ summary.groupName }}</strong>
-                          <div class="gem-details">
-                            <small>{{ summary.shape }} - {{ summary.grade }}</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <div class="transaction-count">
-                          <strong>{{ formatNumber(summary.totalTransactions) }}</strong>
-                          <div class="transaction-breakdown">
-                            <small>{{ $t('view.stock.gem.dashboard.total') }}</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <div class="inbound-info">
-                          <strong>{{ formatNumber(summary.inboundTransactions) }}</strong>
-                          <div class="inbound-detail">
-                            <small>{{ formatNumber(summary.inboundQuantity) }} {{ $t('view.stock.gem.dashboard.pcs') }}</small>
-                            <small>{{ formatNumber(summary.inboundWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <div class="outbound-info">
-                          <strong>{{ formatNumber(summary.outboundTransactions) }}</strong>
-                          <div class="outbound-detail">
-                            <small>{{ formatNumber(summary.outboundQuantity) }} {{ $t('view.stock.gem.dashboard.pcs') }}</small>
-                            <small>{{ formatNumber(summary.outboundWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <div class="process-borrow-info">
-                          <strong>{{ formatNumber(summary.processBorrowTransactions || 0) }}</strong>
-                          <div class="process-borrow-detail">
-                            <small>{{ $t('view.stock.gem.dashboard.borrow') }}: {{ formatNumber(summary.processBorrowQuantity || 0) }}</small>
-                            <small>{{ $t('view.stock.gem.dashboard.return') }}: {{ formatNumber(summary.processBorrowReturnQuantity || 0) }}</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <div class="current-stock">
-                          <strong>{{ formatNumber(summary.currentQuantity) }}</strong>
-                          <div class="current-weight">
-                            <small>{{ formatNumber(summary.currentWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col">
-                        <button
-                          @click="toggleTransactionDetails(summary)"
-                          class="btn btn-sm btn-outline-secondary"
-                          :class="{ active: summary.showDetails }"
-                        >
-                          <i
-                            class="bi"
-                            :class="summary.showDetails ? 'bi-chevron-up' : 'bi-chevron-down'"
-                          ></i>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Transaction Type Details -->
-                    <div v-if="summary.showDetails" class="transaction-details">
-                      <div class="details-header">
-                        <h6>{{ $t('view.stock.gem.dashboard.transactionTypeBreakdown') }}</h6>
-                      </div>
-                      <div
-                        class="transaction-types-grid"
-                        v-if="summary.transactionsByType && summary.transactionsByType.length > 0"
-                      >
-                        <div
-                          v-for="transType in summary.transactionsByType"
-                          :key="transType.type"
-                          class="transaction-type-card"
-                          :data-type="transType.type"
-                        >
-                          <div class="type-header">
-                            <div class="type-icon">
-                              <i :class="getTransactionIcon(transType.type)"></i>
-                            </div>
-                            <div class="type-info">
-                              <h6>{{ transType.typeName }}</h6>
-                              <small>{{ $t('view.stock.gem.dashboard.type') }} {{ transType.type }}</small>
-                            </div>
-                          </div>
-                          <div class="type-stats">
-                            <div class="stat-row">
-                              <span class="stat-label"
-                                >{{ $t('view.stock.gem.dashboard.count') }}:</span
-                              >
-                              <span class="stat-value">{{ formatNumber(transType.count) }}</span>
-                            </div>
-                            <div class="stat-row">
-                              <span class="stat-label"
-                                >{{ $t('view.stock.gem.dashboard.quantity') }}:</span
-                              >
-                              <span class="stat-value">{{
-                                formatNumber(transType.totalQuantity)
-                              }}</span>
-                            </div>
-                            <div class="stat-row">
-                              <span class="stat-label"
-                                >{{ $t('view.stock.gem.dashboard.weight') }}:</span
-                              >
-                              <span class="stat-value"
-                                >{{ formatNumber(transType.totalWeight, 3) }} {{ $t('view.stock.gem.dashboard.grams') }}</span
-                              >
-                            </div>
-                            <div class="stat-row">
-                              <span class="stat-label"
-                                >{{ $t('view.stock.gem.dashboard.cost') }}:</span
-                              >
-                              <span class="stat-value">{{
-                                formatCurrency(transType.totalCost)
-                              }}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div v-else class="no-transaction-types">
-                        <p>{{ $t('view.stock.gem.dashboard.noTransactionTypes') }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="activities-empty">
-                <i class="bi bi-gem"></i>
-                <p>{{ $t('view.stock.gem.dashboard.noMonthlyTransactionData') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MonthlyTransactionSummary />
     </div>
   </div>
 </template>
@@ -617,6 +391,7 @@ import CategoryChart from './components/category-chart.vue'
 import TopMovementsTable from './components/top-movements-table.vue'
 import LastActivitiesTable from './components/last-activities-table.vue'
 import PriceAlertsPanel from './components/price-alerts-panel.vue'
+import MonthlyTransactionSummary from './components/monthly-transaction-summary.vue'
 // import AvailabilityStatus from './components/availability-status.vue'
 
 export default {
@@ -626,7 +401,8 @@ export default {
     CategoryChart,
     TopMovementsTable,
     LastActivitiesTable,
-    PriceAlertsPanel
+    PriceAlertsPanel,
+    MonthlyTransactionSummary
     // AvailabilityStatus
   },
   setup() {
@@ -750,7 +526,7 @@ export default {
             break
           case 'monthly':
             await this.dashboardStore.fetchMonthlyReport(this.filters)
-            await this.dashboardStore.fetchMonthlyGemTransactionSummaries(this.filters)
+            // Monthly transaction summaries now handled by MonthlyTransactionSummary component
             break
         }
       } catch (error) {
@@ -853,7 +629,8 @@ export default {
       } else {
         summary.showDetails = false
       }
-    }
+    },
+
   }
 }
 </script>
@@ -1595,6 +1372,7 @@ export default {
       transform: rotate(360deg);
     }
   }
+
 
   // Responsive adjustments
   @media (max-width: 768px) {

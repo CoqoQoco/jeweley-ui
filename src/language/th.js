@@ -110,6 +110,7 @@ export default {
           newItems: 'รายการใหม่',
           lowStockAlerts: 'แจ้งเตือนสต็อกต่ำ',
           quantity: 'จำนวน',
+          weight: 'น้ำหนัก',
           status: 'สถานะ',
           jobOrPo: 'งาน/PO',
           createBy: 'สร้างโดย',
@@ -148,8 +149,23 @@ export default {
           pcs: 'ชิ้น',
           borrow: 'ยืม',
           return: 'คืน',
-          type: 'ประเภท',
           grams: 'กรัม',
+          
+          // Monthly specific
+          monthSelection: 'เลือกเดือน',
+          selectedPeriod: 'ช่วงเวลาที่เลือก',
+          transactionSummariesByType: 'สรุปธุรกรรมแยกตามประเภท',
+          productionType: 'ประเภทการผลิต',
+          lastTransaction: 'ธุรกรรมล่าสุด',
+          noGemDetails: 'ไม่มีรายละเอียดอัญมณี',
+          noTransactionData: 'ไม่มีข้อมูลธุรกรรม',
+          selectMonthToView: 'กรุณาเลือกเดือนเพื่อดูข้อมูล',
+          loadingData: 'กำลังโหลดข้อมูล...',
+          selectTransactionType: 'เลือกประเภทธุรกรรม',
+          selectedType: 'ประเภทที่เลือก',
+          transactionChart: 'กราฟธุรกรรม',
+          transactionDetails: 'รายละเอียดธุรกรรม',
+          items: 'รายการ',
           
           // No data messages
           loadingChart: 'กำลังโหลดข้อมูล...',

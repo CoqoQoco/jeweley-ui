@@ -7,5 +7,7 @@ export default {
   },
   apply: 'นำไปใช้',
   clear: 'ล้าง',
-  refresh: 'รีเฟรช'
+  refresh: 'รีเฟรช',
+  search: 'ค้นหา',
+  exportExcel: 'ส่งออก Excel'
 }

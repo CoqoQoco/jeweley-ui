@@ -106,6 +106,7 @@ export default {
           newItems: 'New Items',
           lowStockAlerts: 'Low Stock Alerts',
           quantity: 'Quantity',
+          weight: 'Weight',
           status: 'Status',
           jobOrPo: 'Job/PO',
           createBy: 'Created By',
@@ -144,8 +145,23 @@ export default {
           pcs: 'pcs',
           borrow: 'Borrow',
           return: 'Return',
-          type: 'Type',
           grams: 'g',
+          
+          // Monthly specific
+          monthSelection: 'Month Selection',
+          selectedPeriod: 'Selected Period',
+          transactionSummariesByType: 'Transaction Summaries by Type',
+          productionType: 'Production Type',
+          lastTransaction: 'Last Transaction',
+          noGemDetails: 'No gem details',
+          noTransactionData: 'No transaction data',
+          selectMonthToView: 'Please select a month to view data',
+          loadingData: 'Loading data...',
+          selectTransactionType: 'Select Transaction Type',
+          selectedType: 'Selected Type',
+          transactionChart: 'Transaction Chart',
+          transactionDetails: 'Transaction Details',
+          items: 'items',
           
           // No data messages
           loadingChart: 'Loading data...',

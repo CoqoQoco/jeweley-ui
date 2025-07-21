@@ -1,5 +1,7 @@
 export default {
   alertTitle: {
-    warning: 'คำเตือน'
-  }
+    warning: 'Warning'
+  },
+  success: 'Success',
+  exportSuccess: 'Data exported successfully'
 }
