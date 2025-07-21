@@ -9,13 +9,15 @@
           <div class="col">{{ $t('view.stock.gem.dashboard.gemCode') }}</div>
           <div class="col">{{ $t('view.stock.gem.dashboard.category') }}</div>
           <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
-          <div class="col">{{ $t('view.stock.gem.dashboard.totalMoved') }}</div>
+          <div class="col">{{ $t('view.stock.gem.dashboard.quantity') }}</div>
+          <div class="col">{{ $t('view.stock.gem.dashboard.weight') }}</div>
         </div>
         <div v-for="movement in topMovements" :key="movement.code" class="table-row">
           <div class="col">{{ movement.code }}</div>
           <div class="col">{{ movement.groupName }} - {{ movement.shape }}</div>
           <div class="col">{{ movement.transactionCount }}</div>
           <div class="col">{{ formatNumber(movement.totalQuantityMoved) }}</div>
+          <div class="col">{{ formatNumber(movement.totalQuantityWeightMoved, 3) }}</div>
         </div>
       </div>
       <div v-else class="summary-empty">
@@ -36,9 +38,12 @@ export default {
     }
   },
   methods: {
-    formatNumber(value) {
-      if (!value) return '0'
-      return new Intl.NumberFormat().format(value)
+    formatNumber(value, decimals = 0) {
+      if (!value && value !== 0) return '0' + (decimals > 0 ? '.'.padEnd(decimals + 1, '0') : '')
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }).format(value)
     }
   }
 }

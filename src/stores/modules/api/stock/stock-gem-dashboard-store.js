@@ -231,8 +231,8 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
         const endDate = dateRange.endDate || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
 
         const requestData = {
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
+          startDate: typeof startDate === 'string' ? startDate : startDate.toISOString(),
+          endDate: typeof endDate === 'string' ? endDate : endDate.toISOString(),
           groupName: dateRange.groupName || null,
           shape: dateRange.shape || null,
           grade: dateRange.grade || null
@@ -458,7 +458,8 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
           return baseData
         })
 
-        const monthYear = formatDate(dateRange.startDate, 'MM-YYYY')
+        const startDateObj = typeof dateRange.startDate === 'string' ? new Date(dateRange.startDate) : dateRange.startDate
+        const monthYear = formatDate(startDateObj, 'MM-YYYY')
         const options = {
           filename: `gem-transactions-${transactionTypeName}-${monthYear}_[${formatDate(new Date())}].xlsx`,
           sheetName: transactionTypeName,

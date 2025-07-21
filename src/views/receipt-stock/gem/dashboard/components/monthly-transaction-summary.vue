@@ -8,7 +8,7 @@
           <Calendar
             v-model="selectedMonth"
             view="month"
-            dateFormat="mm/yy"
+            dateFormat="MM - yy"
             showIcon
             showButtonBar
             :manualInput="false"
@@ -185,6 +185,7 @@
 <script>
 import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
 import dayjs from 'dayjs'
+import { formatISOString } from '@/services/utils/dayjs.js'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -412,8 +413,8 @@ export default {
         const endDate = new Date(year, month + 1, 0) // Last day of month
 
         await this.dashboardStore.fetchTransactionSummariesByType({
-          startDate,
-          endDate
+          startDate: formatISOString(startDate),
+          endDate: formatISOString(endDate)
         })
 
         this.transactionTypeSummaries = this.dashboardStore.getTransactionTypeSummaries
@@ -440,7 +441,10 @@ export default {
         const endDate = new Date(year, month + 1, 0)
 
         await this.dashboardStore.exportTransactionSummariesByType({
-          dateRange: { startDate, endDate },
+          dateRange: { 
+            startDate: formatISOString(startDate), 
+            endDate: formatISOString(endDate) 
+          },
           selectedTransactionType: this.selectedTransactionType,
           transactionTypeName: this.getTransactionTypeName(this.selectedTransactionType)
         })
