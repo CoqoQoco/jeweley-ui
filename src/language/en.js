@@ -160,6 +160,8 @@ export default {
           selectTransactionType: 'Select Transaction Type',
           selectedType: 'Selected Type',
           transactionChart: 'Transaction Chart',
+          quantityChart: 'Quantity Chart',
+          weightChart: 'Weight Chart',
           transactionDetails: 'Transaction Details',
           items: 'items',
           

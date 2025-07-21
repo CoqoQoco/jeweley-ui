@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import axiosHelper from '@/axios/axios-helper.js'
+import { formatDate } from '@/services/utils/dayjs.js'
+import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
   state: () => ({
@@ -409,6 +411,85 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     // Set error state
     setError(error) {
       this.error = error
+    },
+
+    // Export transaction summaries to Excel
+    async exportTransactionSummariesByType({ dateRange, selectedTransactionType, transactionTypeName }) {
+      try {
+        // Fetch the data if not already loaded
+        if (!this.transactionTypeSummaries || this.transactionTypeSummaries.length === 0) {
+          await this.fetchTransactionSummariesByType(dateRange)
+        }
+
+        const selectedTypeData = this.transactionTypeSummaries.find(
+          (type) => type.type === selectedTransactionType
+        )
+
+        if (!selectedTypeData || !selectedTypeData.gemDetails) {
+          throw new Error('No data available for export')
+        }
+
+        // Map data for Excel export
+        const dataExcel = selectedTypeData.gemDetails.map((item) => {
+          const baseData = {
+            'Group Name': item.groupName,
+            'Transactions': item.transactionCount,
+            'Quantity': item.totalQuantity,
+            'Weight': item.totalWeight,
+            'Current Stock (Qty)': item.currentQuantity,
+            'Current Stock (Weight)': item.currentWeight,
+            'Last Transaction': formatDate(item.lastTransactionDate)
+          }
+
+          // Add production type column for type 7
+          if (selectedTransactionType === 7) {
+            return {
+              'Group Name': item.groupName,
+              'Production Type': item.productionTypeName || '-',
+              'Transactions': item.transactionCount,
+              'Quantity': item.totalQuantity,
+              'Weight': item.totalWeight,
+              'Current Stock (Qty)': item.currentQuantity,
+              'Current Stock (Weight)': item.currentWeight,
+              'Last Transaction': formatDate(item.lastTransactionDate)
+            }
+          }
+
+          return baseData
+        })
+
+        const monthYear = formatDate(dateRange.startDate, 'MM-YYYY')
+        const options = {
+          filename: `gem-transactions-${transactionTypeName}-${monthYear}_[${formatDate(new Date())}].xlsx`,
+          sheetName: transactionTypeName,
+          styles: {
+            ...ExcelHelper.defaultStyles,
+            headerFill: {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: '038387' } // Teal color
+            }
+          },
+          columnWidths: {
+            'Group Name': 25,
+            'Production Type': 20,
+            'Transactions': 15,
+            'Quantity': 15,
+            'Weight': 15,
+            'Current Stock (Qty)': 20,
+            'Current Stock (Weight)': 22,
+            'Last Transaction': 20
+          }
+        }
+
+        // Export to Excel
+        ExcelHelper.exportToExcel(dataExcel, options)
+        
+        return true
+      } catch (error) {
+        console.error('Error exporting transaction summaries:', error)
+        throw error
+      }
     }
   }
 })

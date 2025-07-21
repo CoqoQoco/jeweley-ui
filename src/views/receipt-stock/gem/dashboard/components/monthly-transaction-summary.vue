@@ -48,7 +48,7 @@
           <i class="bi bi-calendar"></i>
           {{ $t('view.stock.gem.dashboard.selectedPeriod') }}: {{ formatMonthYear(selectedMonth) }}
           <span v-if="selectedTransactionType" class="mr-3">
-            <spa>|</spa>
+            <span>|</span>
             <!-- <i class="bi bi-tag"></i> -->
             {{ $t('view.stock.gem.dashboard.selectedType') }}:
             {{ getTransactionTypeName(selectedTransactionType) }}
@@ -189,7 +189,6 @@ import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
 import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
-import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export default {
   name: 'MonthlyTransactionSummary',
@@ -432,47 +431,24 @@ export default {
     },
 
     async exportToExcel() {
-      if (!this.tableData.length) return
+      if (!this.tableData.length || !this.selectedTransactionType || !this.selectedMonth) return
 
       try {
-        const exportData = this.tableData.map((item) => ({
-          [this.$t('view.stock.gem.dashboard.groupName')]: item.groupName,
-          ...(this.selectedTransactionType === 7 && {
-            [this.$t('view.stock.gem.dashboard.productionType')]: item.productionTypeName || '-'
-          }),
-          [this.$t('view.stock.gem.dashboard.transactions')]: item.transactionCount,
-          [this.$t('view.stock.gem.dashboard.quantity')]: item.totalQuantity,
-          [this.$t('view.stock.gem.dashboard.weight')]: item.totalWeight,
-          [this.$t('view.stock.gem.dashboard.currentStock') +
-          ' (' +
-          this.$t('view.stock.gem.dashboard.quantity') +
-          ')']: item.currentQuantity,
-          [this.$t('view.stock.gem.dashboard.currentStock') +
-          ' (' +
-          this.$t('view.stock.gem.dashboard.weight') +
-          ')']: item.currentWeight,
-          [this.$t('view.stock.gem.dashboard.lastTransaction')]: this.formatDateTime(
-            item.lastTransactionDate
-          )
-        }))
+        const year = this.selectedMonth.getFullYear()
+        const month = this.selectedMonth.getMonth()
+        const startDate = new Date(year, month, 1)
+        const endDate = new Date(year, month + 1, 0)
 
-        const filename = `gem-transactions-${this.getTransactionTypeName(
-          this.selectedTransactionType
-        )}-${this.formatMonthYear(this.selectedMonth)}`
-
-        await ExcelHelper.exportWithDatetime(exportData, filename, {
-          sheetName: `${this.getTransactionTypeName(this.selectedTransactionType)}`,
-          columnWidths: {
-            [this.$t('view.stock.gem.dashboard.groupName')]: 20,
-            [this.$t('view.stock.gem.dashboard.productionType')]: 18,
-            [this.$t('view.stock.gem.dashboard.lastTransaction')]: 20
-          }
+        await this.dashboardStore.exportTransactionSummariesByType({
+          dateRange: { startDate, endDate },
+          selectedTransactionType: this.selectedTransactionType,
+          transactionTypeName: this.getTransactionTypeName(this.selectedTransactionType)
         })
 
         this.$swal.fire({
           icon: 'success',
-          title: this.$t('alerts.success'),
-          text: this.$t('alerts.exportSuccess'),
+          title: this.$t('alert.success'),
+          text: this.$t('alert.exportSuccess'),
           timer: 2000,
           showConfirmButton: false
         })

@@ -164,6 +164,8 @@ export default {
           selectTransactionType: 'เลือกประเภทธุรกรรม',
           selectedType: 'ประเภทที่เลือก',
           transactionChart: 'กราฟธุรกรรม',
+          quantityChart: 'กราฟจำนวน',
+          weightChart: 'กราฟน้ำหนัก',
           transactionDetails: 'รายละเอียดธุรกรรม',
           items: 'รายการ',
           

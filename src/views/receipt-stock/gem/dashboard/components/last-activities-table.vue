@@ -30,7 +30,16 @@
             <div class="d-flex align-items-center">
               <span><i class="me-1" :class="getTransactionIcon(rowData.type)"></i></span>
               <span class="ml-1">{{
-                rowData.qty ? Number(rowData.qty).toFixed(3).toLocaleString() : '0.000'
+                rowData.qty ? Number(rowData.qty).toFixed(2).toLocaleString() : '0.000'
+              }}</span>
+            </div>
+          </template>
+
+          <template #qtyWeightTemplate="{ data: rowData }">
+            <div class="d-flex align-items-center">
+              <span><i class="me-1" :class="getTransactionIcon(rowData.type)"></i></span>
+              <span class="ml-1">{{
+                rowData.qtyWeight ? Number(rowData.qtyWeight).toFixed(3).toLocaleString() : '0.000'
               }}</span>
             </div>
           </template>
@@ -120,8 +129,16 @@ export default {
           header: 'Quantity',
           sortable: false,
           minWidth: '100px',
-          format: 'decimal3',
+          format: 'decimal2',
           template: 'qtyTemplate'
+        },
+        {
+          field: 'qtyWeight',
+          header: 'Weight',
+          sortable: false,
+          minWidth: '100px',
+          format: 'decimal3',
+          template: 'qtyWeightTemplate'
         },
         {
           field: 'running',
@@ -170,6 +187,7 @@ export default {
           type: activity.type,
           typeName: activity.typeName,
           qty: activity.qty,
+          qtyWeight: activity.qtyWeight,
           running: activity.running,
           jobOrPo: activity.jobOrPo,
           status: activity.status,
