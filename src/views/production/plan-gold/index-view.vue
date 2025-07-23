@@ -172,18 +172,7 @@
                   v-model="form.returnMeltWeight"
                 />
               </div>
-              <div>
-                <span class="title-text">
-                  <span>คืนขี้เบ้า</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.returnMeltScrapWeight"
-                />
-              </div>
+              <div></div>
             </div>
             <div class="form-col-container mt-1">
               <div>
@@ -240,6 +229,27 @@
                   v-model="form.zillQty"
                   :disabled="!form.gold || !form.goldSize || !form.zill"
                 />
+              </div>
+            </div>
+
+            <!-- ขี้เบ้า -->
+            <div class="mt-3 filter-container-bg">
+              <div class="form-col-container">
+                <div>
+                  <span class="title-text-white">
+                    <span>คืนขี้เบ้า</span>
+                  </span>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    class="form-control"
+                    v-model="form.returnMeltScrapWeight"
+                  />
+                </div>
+                <div></div>
+                <div></div>
+                <div></div>
               </div>
             </div>
           </div>
@@ -349,18 +359,6 @@
             <div class="form-col-container mt-1">
               <div>
                 <span class="title-text">
-                  <span>คืนขี้เบ้า</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.returnCastScrapWeight"
-                />
-              </div>
-              <div>
-                <span class="title-text">
                   <span>คืนผงทอง</span>
                 </span>
                 <input
@@ -397,11 +395,35 @@
                   :disabled="form.castWeightLoss > 0"
                 />
               </div>
+              <div></div>
             </div>
-            <div class="title-text-lg mt-4 mt-1">
+
+            <!-- ขี้เบ้า -->
+            <div class="mt-3 filter-container-bg">
+              <div class="form-col-container">
+                <div>
+                  <span class="title-text-white">
+                    <span>คืนขี้เบ้า</span>
+                  </span>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    class="form-control"
+                    v-model="form.returnCastScrapWeight"
+                  />
+                </div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+
+            <div class="title-text-lg mt-4 mt-2">
               <span class="mr-2"><i class="bi bi-gem"></i></span>
               <span>คืนตัวเรือน</span>
             </div>
+
             <div class="form-col-container mt-1">
               <DataTable
                 class="p-datatable-sm"
@@ -591,7 +613,10 @@ const interfaceForm = {
   meltDate: null,
   meltWeight: null,
   returnMeltWeight: null,
+
   returnMeltScrapWeight: null,
+  returnMeltScrapWeightDate: new Date(),
+
   meltWeightLoss: null,
   meltWeightOver: null,
   castWeight: null,
@@ -600,7 +625,10 @@ const interfaceForm = {
   returnCastMoldWeight: null,
   returnCastBodyBrokenWeight: null,
   //returnCastBodyWeight: null,
+
   returnCastScrapWeight: null,
+  returnCastScrapWeightDate: new Date(),
+
   returnCastPowderWeight: null,
   castWeightLoss: null,
   castWeightOver: null,
