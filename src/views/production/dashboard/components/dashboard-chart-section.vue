@@ -1,26 +1,24 @@
 <template>
   <div class="dashboard-chart-section">
     <!-- Production Status Chart -->
-    <div class="chart-card">
-      <div class="chart-card-body">
-        <HorizontalBarChart
-          v-if="chartData && chartData.report.length > 0"
-          :data="chartData"
-          :title="$t('view.production.dashboard.productionStatus')"
-          :use-thai-labels="$i18n.locale === 'th'"
-          :height="600"
-          :show-data-labels="true"
-        />
-        <div v-else-if="isLoading" class="chart-loading">
-          <div class="loading-spinner">
-            <i class="bi bi-arrow-repeat"></i>
-          </div>
-          <p>{{ $t('view.production.dashboard.loadingChart') }}</p>
+    <div class="chart-card-body">
+      <HorizontalBarChart
+        v-if="chartData && chartData.report.length > 0"
+        :data="chartData"
+        :title="$t('view.production.dashboard.productionStatus')"
+        :use-thai-labels="$i18n.locale === 'th'"
+        :height="600"
+        :show-data-labels="true"
+      />
+      <div v-else-if="isLoading" class="chart-loading">
+        <div class="loading-spinner">
+          <i class="bi bi-arrow-repeat"></i>
         </div>
-        <div v-else class="chart-empty">
-          <i class="bi bi-graph-up"></i>
-          <p>{{ $t('view.production.dashboard.noData') }}</p>
-        </div>
+        <p>{{ $t('view.production.dashboard.loadingChart') }}</p>
+      </div>
+      <div v-else class="chart-empty">
+        <i class="bi bi-graph-up"></i>
+        <p>{{ $t('view.production.dashboard.noData') }}</p>
       </div>
     </div>
   </div>
@@ -59,7 +57,7 @@ export default {
   }
 
   .chart-card-body {
-    padding: 20px;
+    //padding: 20px;
 
     .chart-loading,
     .chart-empty {

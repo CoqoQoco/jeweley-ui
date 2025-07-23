@@ -53,6 +53,10 @@ export default {
         goldType: 'Gold Type',
         updatedBy: 'Updated By',
         viewDetails: 'View Details',
+        daily: 'Daily',
+        monthly: 'Monthly',
+        monthlyReport: 'Monthly Report',
+        monthlyComingSoon: 'Monthly Report Coming Soon'
       }
     },
     stock: {

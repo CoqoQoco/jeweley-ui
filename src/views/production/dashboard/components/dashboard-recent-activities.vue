@@ -4,9 +4,9 @@
     <div class="activities-card">
       <div class="activities-header">
         <h5>{{ $t('view.production.dashboard.recentActivities') }}</h5>
-        <div class="activities-count">
+        <!-- <div class="activities-count">
           <span class="badge bg-primary">{{ recentActivities.length }}</span>
-        </div>
+        </div> -->
       </div>
       <div class="activities-body">
         <BaseDataTable
@@ -15,7 +15,7 @@
           :totalRecords="recentActivities ? recentActivities.length : 0"
           :perPage="10"
           :pagingEnabled="true"
-          :paginator="true"
+          :paginator="false"
           :emptyMessage="$t('view.production.dashboard.noRecentActivities')"
         >
           <template #typeTemplate="slotProps">
@@ -105,13 +105,13 @@ export default {
         {
           field: 'title',
           header: 'กิจกรรม',
-          sortable: true,
+          sortable: false,
           width: '250px'
         },
         {
           field: 'date',
           header: 'วันที่',
-          sortable: true,
+          sortable: false,
           format: 'datetime',
           width: '150px',
           align: 'center'

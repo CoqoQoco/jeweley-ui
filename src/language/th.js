@@ -13,7 +13,7 @@ export default {
     pickinglist: { ...pickinglist },
     production: {
       dashboard: {
-        title: 'รายงานผลิตประจำวัน',
+        title: 'แดชบอร์ดงานผลิต',
         lastUpdate: 'อัปเดตล่าสุด',
         totalPlans: 'แผนงานทั้งหมด',
         allActivePlans: 'แผนงานที่ยังไม่สำเร็จ 100 %',
@@ -56,7 +56,11 @@ export default {
         status: 'สถานะ',
         goldType: 'ประเภททอง',
         updatedBy: 'อัปเดตโดย',
-        viewDetails: 'ดูรายละเอียด'
+        viewDetails: 'ดูรายละเอียด',
+        daily: 'รายวัน',
+        monthly: 'รายเดือน',
+        monthlyReport: 'รายงานรายเดือน',
+        monthlyComingSoon: 'รายงานรายเดือน เร็วๆ นี้'
       }
     },
     stock: {

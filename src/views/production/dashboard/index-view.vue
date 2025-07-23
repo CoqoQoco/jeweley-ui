@@ -2,7 +2,7 @@
   <div class="app-container production-dashboard">
     <div class="app-container">
       <!-- Dashboard Header with Refresh -->
-      <div class="row mb-3">
+      <div class="row">
         <div class="col-12">
           <div class="dashboard-header">
             <div class="header-info">
@@ -16,7 +16,7 @@
             </div>
             <button @click="refreshDashboard" class="btn btn-outline-main" :disabled="isLoading">
               <i class="bi bi-arrow-clockwise" :class="{ spinning: isLoading }"></i>
-              อัพเดตข้อมูล
+              {{ $t('view.stock.gem.dashboard.lastUpdate') }}
             </button>
           </div>
         </div>
@@ -29,11 +29,31 @@
             <li class="nav-item">
               <button
                 class="nav-link"
+                :class="{ active: activeTab === 'summary' }"
+                @click="activeTab = 'summary'"
+              >
+                <i class="bi bi-graph-up"></i>
+                สรุปภาพรวม
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
                 :class="{ active: activeTab === 'daily' }"
                 @click="activeTab = 'daily'"
               >
                 <i class="bi bi-calendar-day"></i>
                 {{ $t('view.production.dashboard.daily') }}
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
+                :class="{ active: activeTab === 'weekly' }"
+                @click="activeTab = 'weekly'"
+              >
+                <i class="bi bi-calendar-week"></i>
+                รายสัปดาห์
               </button>
             </li>
             <li class="nav-item">
@@ -50,8 +70,8 @@
         </div>
       </div>
 
-      <!-- Daily Tab Content -->
-      <div v-show="activeTab === 'daily'" class="tab-content">
+      <!-- Summary Tab Content -->
+      <div v-show="activeTab === 'summary'" class="tab-content">
         <!-- Dashboard Stats Cards Component -->
         <DashboardStatsCards
           :totalPlans="totalPlans"
@@ -65,10 +85,7 @@
         <div class="row">
           <!-- Dashboard Chart Section Component -->
           <div class="col-lg-8 col-md-12 mb-4">
-            <DashboardChartSection
-              :chartData="chartData"
-              :isLoading="isLoading"
-            />
+            <DashboardChartSection :chartData="chartData" :isLoading="isLoading" />
 
             <!-- Dashboard Summary Tables Component -->
             <DashboardSummaryTables
@@ -79,18 +96,44 @@
 
           <!-- Dashboard Status Trends Component -->
           <div class="col-lg-4 col-md-12 mb-4">
-            <DashboardStatusTrends
-              :statusTrends="statusTrends"
-            />
+            <DashboardStatusTrends :statusTrends="statusTrends" />
           </div>
         </div>
 
         <!-- Dashboard Recent Activities Component -->
         <div class="row">
           <div class="col-12">
-            <DashboardRecentActivities
-              :recentActivities="recentActivities"
-            />
+            <DashboardRecentActivities :recentActivities="recentActivities" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Tab Content -->
+      <div v-show="activeTab === 'daily'" class="tab-content">
+        <div class="row">
+          <div class="col-12">
+            <div class="tab-placeholder">
+              <div class="placeholder-content">
+                <i class="bi bi-calendar-day"></i>
+                <h4>รายงานรายวัน</h4>
+                <p>รายงานรายวัน เร็วๆ นี้</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Tab Content -->
+      <div v-show="activeTab === 'weekly'" class="tab-content">
+        <div class="row">
+          <div class="col-12">
+            <div class="tab-placeholder">
+              <div class="placeholder-content">
+                <i class="bi bi-calendar-week"></i>
+                <h4>รายงานรายสัปดาห์</h4>
+                <p>รายงานรายสัปดาห์ เร็วๆ นี้</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -99,7 +142,7 @@
       <div v-show="activeTab === 'monthly'" class="tab-content">
         <div class="row">
           <div class="col-12">
-            <div class="monthly-placeholder">
+            <div class="tab-placeholder">
               <div class="placeholder-content">
                 <i class="bi bi-calendar-month"></i>
                 <h4>{{ $t('view.production.dashboard.monthlyReport') }}</h4>
@@ -141,7 +184,7 @@ export default {
   },
   data() {
     return {
-      activeTab: 'daily',
+      activeTab: 'summary',
       breadcrumb: [
         {
           label: this.$t('breadcrumb.production.main'),
@@ -260,7 +303,7 @@ export default {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 
     .header-info {
       h3 {
@@ -284,32 +327,32 @@ export default {
     }
   }
 
-  // Dashboard Tabs Styling
+  // Dashboard Tabs Styling (matching gem dashboard)
   .dashboard-tabs {
-    .nav-item {
-      .nav-link {
-        border: none;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0 20px;
+
+    .nav-link {
+      border: none;
+      color: $base-sub-color;
+      padding: 15px 20px;
+      font-weight: 500;
+
+      &.active {
+        color: $base-font-color;
+        border-bottom: 3px solid $base-font-color;
         background: none;
-        color: $base-sub-color;
-        padding: 12px 20px;
-        border-radius: 8px 8px 0 0;
-        margin-right: 2px;
-        transition: all 0.2s ease;
+      }
 
-        &:hover {
-          background-color: lighten($base-color, 45%);
-          color: $base-font-color;
-        }
+      &:hover {
+        color: $base-font-color;
+        background: none;
+      }
 
-        &.active {
-          background-color: $base-font-color;
-          color: white;
-          font-weight: 600;
-        }
-
-        i {
-          margin-right: 8px;
-        }
+      i {
+        margin-right: 8px;
       }
     }
   }
@@ -318,11 +361,11 @@ export default {
   .tab-content {
     background: transparent;
     border: none;
-    padding: 20px 0;
+    //padding: 0px 0;
   }
 
-  // Monthly Placeholder
-  .monthly-placeholder {
+  // Tab Placeholder
+  .tab-placeholder {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -368,8 +411,10 @@ export default {
     }
 
     .dashboard-tabs {
-      .nav-item .nav-link {
-        padding: 10px 15px;
+      padding: 0 10px;
+
+      .nav-link {
+        padding: 12px 15px;
         font-size: 14px;
       }
     }

@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-stats-cards">
     <!-- Dashboard Stats Cards -->
-    <div class="row mb-4">
+    <div class="row">
       <!-- Total Plans -->
       <div class="col-lg-3 col-md-6 mb-3">
         <div class="stat-card total">
@@ -76,7 +76,7 @@
     </div>
 
     <!-- Summary Stats Row -->
-    <div class="row mb-4" v-if="summary">
+    <div class="row" v-if="summary">
       <!-- Overdue Plans -->
       <div class="col-lg-3 col-md-6 mb-3">
         <div class="stat-card overdue">

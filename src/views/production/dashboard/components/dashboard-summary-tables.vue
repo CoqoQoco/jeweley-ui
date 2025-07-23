@@ -74,20 +74,20 @@ export default {
         {
           field: 'productTypeName',
           header: 'ประเภทสินค้า',
-          sortable: true,
+          sortable: false,
           width: '2fr'
         },
         {
           field: 'count',
           header: 'จำนวนคำสั่ง',
-          sortable: true,
+          sortable: false,
           align: 'center',
           width: '1fr'
         },
         {
           field: 'totalQty',
           header: 'จำนวนชิ้น',
-          sortable: true,
+          sortable: false,
           align: 'center',
           width: '1fr'
         }
@@ -96,20 +96,20 @@ export default {
         {
           field: 'customerTypeName',
           header: 'ประเภทลูกค้า',
-          sortable: true,
+          sortable: false,
           width: '2fr'
         },
         {
           field: 'count',
           header: 'จำนวนคำสั่ง',
-          sortable: true,
+          sortable: false,
           align: 'center',
           width: '1fr'
         },
         {
           field: 'totalQty',
           header: 'จำนวนชิ้น',
-          sortable: true,
+          sortable: false,
           align: 'center',
           width: '1fr'
         }
