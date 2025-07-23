@@ -82,9 +82,9 @@
         />
 
         <!-- Charts and Summary Section -->
-        <div class="row">
+        <div class="row mb-2">
           <!-- Dashboard Chart Section Component -->
-          <div class="col-lg-8 col-md-12 mb-4">
+          <div class="col-lg-8 col-md-12">
             <DashboardChartSection :chartData="chartData" :isLoading="isLoading" />
 
             <!-- Dashboard Summary Tables Component -->
@@ -95,7 +95,7 @@
           </div>
 
           <!-- Dashboard Status Trends Component -->
-          <div class="col-lg-4 col-md-12 mb-4">
+          <div class="col-lg-4 col-md-12">
             <DashboardStatusTrends :statusTrends="statusTrends" />
           </div>
         </div>
