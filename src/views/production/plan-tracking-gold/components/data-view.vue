@@ -103,6 +103,13 @@
             </div>
             <div class="form-col-sm-container mr-3">
               <div></div>
+              <div class="text-main">วันที่คืนขี้เบ้า</div>
+              <div class="text-main text-right">
+                {{ formatDate(form.returnCastScrapWeightDate) }}
+              </div>
+            </div>
+            <div class="form-col-sm-container mr-3">
+              <div></div>
               <div class="text-main">คืนเเม่พิมพ์</div>
               <div class="text-main text-right">
                 {{ form.returnCastMoldWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2) }}
@@ -239,6 +246,7 @@ const interfaceForm = {
   meltWeight: null,
   returnMeltWeight: null,
   returnMeltScrapWeight: null,
+  returnMeltScrapWeightDate: null,
   meltWeightLoss: null,
   meltWeightOver: null,
   castWeight: null,
@@ -248,6 +256,7 @@ const interfaceForm = {
   returnCastBodyBrokenWeight: null,
   returnCastBodyWeight: null,
   returnCastScrapWeight: null,
+  returnCastScrapWeightDate: null,
   returnCastPowderWeight: null,
   castWeightLoss: null,
   castWeightOver: null,
@@ -341,6 +350,7 @@ export default {
         meltWeight: value.meltWeight,
         returnMeltWeight: value.returnMeltWeight,
         returnMeltScrapWeight: value.returnMeltScrapWeight,
+        returnMeltScrapWeightDate: value.returnMeltScrapWeightDate ? new Date(value.returnMeltScrapWeightDate) : null,
         meltWeightLoss: value.meltWeightLoss,
         meltWeightOver: value.meltWeightOver,
         castDate: value.castDate ? new Date(value.castDate) : null,
@@ -351,6 +361,7 @@ export default {
         returnCastBodyBrokenWeight: value.returnCastBodyBrokenWeight,
         returnCastBodyWeight: value.returnCastBodyWeightTotal,
         returnCastScrapWeight: value.returnCastScrapWeight,
+        returnCastScrapWeightDate: value.returnCastScrapWeightDate ? new Date(value.returnCastScrapWeightDate) : null,
         returnCastPowderWeight: value.returnCastPowderWeight,
         castWeightLoss: value.castWeightLoss,
         castWeightOver: value.castWeightOver,

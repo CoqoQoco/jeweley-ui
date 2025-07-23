@@ -171,20 +171,41 @@
                     v-model="form.returnMeltWeight"
                   />
                 </div>
-                <div>
-                  <span class="title-text">
-                    <span>คืนขี้เบ้า</span>
-                  </span>
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    class="form-control"
-                    v-model="form.returnMeltScrapWeight"
-                  />
+                <div></div>
+              </div>
+
+              <!-- ขี้เบ้า -->
+              <div class="mt-3 filter-container-bg">
+                <div class="form-col-container">
+                  <div>
+                    <span class="title-text-white">
+                      <span>คืนขี้เบ้า</span>
+                    </span>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      class="form-control"
+                      v-model="form.returnMeltScrapWeight"
+                    />
+                  </div>
+                  <div>
+                    <span class="title-text-white">
+                      <span>วันที่คืนขี้เบ้า</span>
+                    </span>
+                    <Calendar
+                      class="w-100"
+                      v-model="form.returnMeltScrapWeightDate"
+                      dateFormat="dd/mm/yy"
+                      showIcon
+                      showButtonBar
+                    />
+                  </div>
+                  <div></div>
+                  <div></div>
                 </div>
               </div>
-              <div class="form-col-container">
+              <div class="form-col-container mt-2">
                 <div>
                   <span class="title-text">
                     <span>น้ำหนักขาด</span>
@@ -345,18 +366,6 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>คืนขี้เบ้า</span>
-                  </span>
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    class="form-control"
-                    v-model="form.returnCastScrapWeight"
-                  />
-                </div>
-                <div>
-                  <span class="title-text">
                     <span>คืนผงทอง</span>
                   </span>
                   <input
@@ -393,8 +402,43 @@
                     :disabled="form.castWeightLoss > 0"
                   />
                 </div>
+                <div></div>
               </div>
-              <div class="title-text-lg mt-2">
+
+              <!-- ขี้เบ้า -->
+              <div class="mt-3 filter-container-bg">
+                <div class="form-col-container">
+                  <div>
+                    <span class="title-text-white">
+                      <span>คืนขี้เบ้า</span>
+                    </span>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      class="form-control"
+                      v-model="form.returnCastScrapWeight"
+                    />
+                  </div>
+                  <div>
+                    <span class="title-text-white">
+                      <span>วันที่คืนขี้เบ้า</span>
+                    </span>
+                    <Calendar
+                      class="w-100"
+                      v-model="form.returnCastScrapWeightDate"
+                      dateFormat="dd/mm/yy"
+                      showIcon
+                      showButtonBar
+                    />
+                  </div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+
+              <div class="title-text-lg mt-4 mt-2">
+                <span class="mr-2"><i class="bi bi-gem"></i></span>
                 <span>คืนตัวเรือน</span>
               </div>
               <div class="form-col-container">
@@ -589,6 +633,7 @@ const interfaceForm = {
   meltWeight: null,
   returnMeltWeight: null,
   returnMeltScrapWeight: null,
+  returnMeltScrapWeightDate: null,
   meltWeightLoss: null,
   meltWeightOver: null,
   castWeight: null,
@@ -598,6 +643,7 @@ const interfaceForm = {
   returnCastBodyBrokenWeight: null,
   returnCastBodyWeight: null,
   returnCastScrapWeight: null,
+  returnCastScrapWeightDate: null,
   returnCastPowderWeight: null,
   castWeightLoss: null,
   castWeightOver: null,
@@ -690,6 +736,9 @@ export default {
         meltWeight: value.meltWeight,
         returnMeltWeight: value.returnMeltWeight,
         returnMeltScrapWeight: value.returnMeltScrapWeight,
+        returnMeltScrapWeightDate: value.returnMeltScrapWeightDate
+          ? new Date(value.returnMeltScrapWeightDate)
+          : null,
         meltWeightLoss: value.meltWeightLoss,
         meltWeightOver: value.meltWeightOver,
         castDate: value.castDate ? new Date(value.castDate) : null,
@@ -700,6 +749,9 @@ export default {
         returnCastBodyBrokenWeight: value.returnCastBodyBrokenWeight,
         //returnCastBodyWeight: value.returnCastBodyWeight,
         returnCastScrapWeight: value.returnCastScrapWeight,
+        returnCastScrapWeightDate: value.returnCastScrapWeightDate
+          ? new Date(value.returnCastScrapWeightDate)
+          : null,
         returnCastPowderWeight: value.returnCastPowderWeight,
         castWeightLoss: value.castWeightLoss,
         castWeightOver: value.castWeightOver,
@@ -859,7 +911,13 @@ export default {
           goldSizeCode: this.form.goldSize.code,
           assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
           meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
-          castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null
+          castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null,
+          returnMeltScrapWeightDate: this.form.returnMeltScrapWeightDate
+            ? formatISOString(this.form.returnMeltScrapWeightDate)
+            : null,
+          returnCastScrapWeightDate: this.form.returnCastScrapWeightDate
+            ? formatISOString(this.form.returnCastScrapWeightDate)
+            : null
         }
         console.log(params)
 
