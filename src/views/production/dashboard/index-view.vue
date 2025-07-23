@@ -100,6 +100,13 @@
           </div>
         </div>
 
+        <!-- Dashboard Scrap Weight Component -->
+        <div class="row">
+          <div class="col-12">
+            <DashboardScrapWeight />
+          </div>
+        </div>
+
         <!-- Dashboard Recent Activities Component -->
         <div class="row">
           <div class="col-12">
@@ -163,6 +170,7 @@ import DashboardChartSection from './components/dashboard-chart-section.vue'
 import DashboardSummaryTables from './components/dashboard-summary-tables.vue'
 import DashboardRecentActivities from './components/dashboard-recent-activities.vue'
 import DashboardStatusTrends from './components/dashboard-status-trends.vue'
+import DashboardScrapWeight from './components/dashboard-scrap-weight.vue'
 
 import { useProductionDailyApiStore } from '@/stores/modules/api/plan/daily-store-api.js'
 import dayjs from 'dayjs'
@@ -174,7 +182,8 @@ export default {
     DashboardChartSection,
     DashboardSummaryTables,
     DashboardRecentActivities,
-    DashboardStatusTrends
+    DashboardStatusTrends,
+    DashboardScrapWeight
   },
   setup() {
     const dailyApiStore = useProductionDailyApiStore()

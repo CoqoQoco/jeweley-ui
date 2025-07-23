@@ -566,6 +566,18 @@ export const useProductionDailyApiStore = defineStore('productionDaily', {
       }
       this.clearAllCache()
       this.clearError()
+    },
+
+    // Fetch scrap weight dashboard data
+    async fetchScrapWeightDashboard() {
+      try {
+        this.setLoading(true)
+        const response = await api.jewelry.get('ProductionPlanCost/ScrapWeightDashboard')
+        this.setLoading(false)
+        return response
+      } catch (error) {
+        this.handleError(error, 'Failed to fetch scrap weight dashboard data')
+      }
     }
   }
 })
