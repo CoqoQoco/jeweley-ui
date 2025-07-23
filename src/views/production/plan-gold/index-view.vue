@@ -247,7 +247,18 @@
                     v-model="form.returnMeltScrapWeight"
                   />
                 </div>
-                <div></div>
+                <div>
+                  <span class="title-text-white">
+                    <span>วันที่คืนขี้เบ้า</span>
+                  </span>
+                  <Calendar
+                    class="w-100"
+                    v-model="form.returnMeltScrapWeightDate"
+                    dateFormat="dd/mm/yy"
+                    showIcon
+                    showButtonBar
+                  />
+                </div>
                 <div></div>
                 <div></div>
               </div>
@@ -413,7 +424,18 @@
                     v-model="form.returnCastScrapWeight"
                   />
                 </div>
-                <div></div>
+                <div>
+                  <span class="title-text-white">
+                    <span>วันที่คืนขี้เบ้า</span>
+                  </span>
+                  <Calendar
+                    class="w-100"
+                    v-model="form.returnCastScrapWeightDate"
+                    dateFormat="dd/mm/yy"
+                    showIcon
+                    showButtonBar
+                  />
+                </div>
                 <div></div>
                 <div></div>
               </div>
@@ -786,7 +808,14 @@ export default {
           goldSizeCode: this.form.goldSize.code,
           assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
           meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
-          castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null
+          castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null,
+
+          returnMeltScrapWeightDate: this.form.returnMeltScrapWeightDate
+            ? formatISOString(this.form.returnMeltScrapWeightDate)
+            : null,
+          returnCastScrapWeightDate: this.form.returnCastScrapWeightDate
+            ? formatISOString(this.form.returnCastScrapWeightDate)
+            : null
         }
         //console.log(params)
 
