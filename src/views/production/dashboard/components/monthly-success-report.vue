@@ -3,7 +3,7 @@
     <!-- Month Selection -->
     <div class="filter-container">
       <div>
-        <div class="title-text">เลือกเดือนสำหรับรายงานความสำเร็จ</div>
+        <div class="title-text">เลือกเดือน</div>
         <div class="form-col-container">
           <Calendar
             v-model="selectedMonth"
