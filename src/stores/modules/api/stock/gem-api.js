@@ -58,12 +58,15 @@ export const usrStockGemApiStore = defineStore('stockGem', {
             ขนาด: item.size,
             รูปร่าง: item.shape,
             เกรด: item.grade,
-            จำนวนคงคลัง: item.quantity
-              ? Number(item.quantity).toFixed(3).toLocaleString()
-              : '0.000',
-            จำนวนยืมคลัง: item.quantityOnProcess
-              ? Number(item.quantityOnProcess).toFixed(3).toLocaleString()
-              : '0.000',
+            // จำนวนคงคลัง: item.quantity
+            //   ? Number(item.quantity).toFixed(3).toLocaleString()
+            //   : '0.000',
+            // จำนวนยืมคลัง: item.quantityOnProcess
+            //   ? Number(item.quantityOnProcess).toFixed(3).toLocaleString()
+            //   : '0.000',
+            จำนวนคงคลัง: item.quantity ? Number(item.quantity) : '0',
+
+            จำนวนยืมคลัง: item.quantityOnProcess ? Number(item.quantityOnProcess) : '0',
             น้ำหนักคงคลัง: item.quantityWeight
               ? Number(item.quantityWeight).toFixed(3).toLocaleString()
               : '0.000',

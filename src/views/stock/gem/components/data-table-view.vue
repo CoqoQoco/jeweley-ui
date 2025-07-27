@@ -206,13 +206,13 @@ export default {
           field: 'quantity',
           header: 'จำนวนคงคลัง',
           sortable: true,
-          format: 'decimal3' // custom format with 3 decimal places
+          format: 'number' // custom format with 3 decimal places
         },
         {
           field: 'quantityOnProcess',
           header: 'จำนวนยืมคลัง',
           sortable: true,
-          format: 'decimal3'
+          format: 'number'
         },
         {
           field: 'quantityWeight',
