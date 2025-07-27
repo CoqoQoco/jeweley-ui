@@ -147,17 +147,7 @@
 
       <!-- Monthly Tab Content -->
       <div v-show="activeTab === 'monthly'" class="tab-content">
-        <div class="row">
-          <div class="col-12">
-            <div class="tab-placeholder">
-              <div class="placeholder-content">
-                <i class="bi bi-calendar-month"></i>
-                <h4>{{ $t('view.production.dashboard.monthlyReport') }}</h4>
-                <p>{{ $t('view.production.dashboard.monthlyComingSoon') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MonthlySuccessReport />
       </div>
     </div>
   </div>
@@ -172,6 +162,9 @@ import DashboardRecentActivities from './components/dashboard-recent-activities.
 import DashboardStatusTrends from './components/dashboard-status-trends.vue'
 import DashboardScrapWeight from './components/dashboard-scrap-weight.vue'
 
+// Import components
+import MonthlySuccessReport from './components/monthly-success-report.vue'
+
 import { useProductionDailyApiStore } from '@/stores/modules/api/plan/daily-store-api.js'
 import dayjs from 'dayjs'
 
@@ -183,7 +176,8 @@ export default {
     DashboardSummaryTables,
     DashboardRecentActivities,
     DashboardStatusTrends,
-    DashboardScrapWeight
+    DashboardScrapWeight,
+    MonthlySuccessReport
   },
   setup() {
     const dailyApiStore = useProductionDailyApiStore()
@@ -410,6 +404,7 @@ export default {
   }
 }
 
+
 // Responsive adjustments
 @media (max-width: 768px) {
   .production-dashboard {
@@ -427,6 +422,7 @@ export default {
         font-size: 14px;
       }
     }
+
   }
 }
 </style>
