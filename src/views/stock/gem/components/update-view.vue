@@ -51,7 +51,12 @@
                 />
               </div>
 
-              <div></div>
+              <div>
+                <div>
+                  <span class="title-text">เเหล่งผลิต</span>
+                </div>
+                <input type="text" class="form-control" v-model="form.region" />
+              </div>
             </div>
             <div class="form-col-container p-2">
               <!-- size -->
@@ -293,7 +298,8 @@ export default {
           shape: this.form.shape.code,
           grade: this.form.grade.description,
           gradeCode: this.form.grade.code,
-          remark: this.form.remark
+          remark: this.form.remark,
+          region: this.form.region
         }
         console.log('params', params)
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/UpdateGem', params)

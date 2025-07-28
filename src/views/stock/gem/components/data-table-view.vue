@@ -269,7 +269,11 @@ export default {
           header: 'เกรด',
           sortable: true
         },
-
+        {
+          field: 'region',
+          header: 'แหล่งผลิต',
+          sortable: true
+        },
         {
           field: 'remark1',
           header: 'หมายเหตุ-1',

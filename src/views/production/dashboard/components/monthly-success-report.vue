@@ -17,7 +17,7 @@
             class="me-2"
             placeholder="เลือกเดือนและปี"
           />
-
+          <div></div>
           <div></div>
           <div class="d-flex align-items-end justify-content-end">
             <button
@@ -33,23 +33,23 @@
         </div>
       </div>
 
-      <div class="selected-period-info mt-1" v-if="selectedMonth">
+      <div class=" ml-2 mt-1" v-if="selectedMonth">
         <small class="text-muted">
           <i class="bi bi-calendar"></i>
           เดือนที่เลือก: {{ formatMonthYear(selectedMonth) }}
           <span v-if="monthlyReportData">
-            | ประเภททอง: {{ planFinishByType.length }} รายการ
-            | ประเภทสินค้า: {{ planFinishByProductType.length }} รายการ  
-            | ประเภทลูกค้า: {{ planFinishByCustomerType.length }} รายการ
+            | ประเภททอง: {{ planFinishByType.length }} รายการ | ประเภทสินค้า:
+            {{ planFinishByProductType.length }} รายการ | ประเภทลูกค้า:
+            {{ planFinishByCustomerType.length }} รายการ
           </span>
         </small>
       </div>
     </div>
 
     <!-- Monthly Report Content -->
-    <div v-if="monthlyReportData" class="monthly-report-content">
+    <div v-if="monthlyReportData" class="monthly-report-content mt-4">
       <!-- Plan Finish by Type Section -->
-      <div class="row mb-4">
+      <div class="row mb-2">
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
@@ -99,7 +99,7 @@
       </div>
 
       <!-- Plan Finish by Product Type Section -->
-      <div class="row mb-4">
+      <div class="row mb-2">
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
@@ -149,7 +149,7 @@
       </div>
 
       <!-- Plan Finish by Customer Type Section -->
-      <div class="row mb-4">
+      <div class="row mb-2">
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
@@ -182,7 +182,9 @@
                 </thead>
                 <tbody>
                   <tr v-for="item in planFinishByCustomerType" :key="item.customerType">
-                    <td class="font-weight-bold">{{ item.customerTypeName || item.customerType }}</td>
+                    <td class="font-weight-bold">
+                      {{ item.customerTypeName || item.customerType }}
+                    </td>
                     <td class="text-center">
                       <span class="badge badge-success">{{ item.count }}</span>
                     </td>
