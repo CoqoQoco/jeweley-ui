@@ -109,12 +109,12 @@ export default {
           sortable: true,
           width: '120px'
         },
-        // {
-        //   field: 'productNumber',
-        //   header: 'รหัสสินค้า',
-        //   sortable: true,
-        //   minWidth: '140px'
-        // },
+        {
+          field: 'productTypeName',
+          header: 'สินค้า',
+          sortable: true,
+          minWidth: '120px'
+        },
         // {
         //   field: 'productType',
         //   header: 'ประเภทสินค้า',

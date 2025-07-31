@@ -121,7 +121,7 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
             'WO No.': item.woNumber,
 
             // เเม่พิมพ์: item.mold,
-            // รหัสสินค้า: item.productNumber,
+            สินค้า: item.productTypeName,
             // ประเภทสินค้า: item.productTypeName,
             // จำนวนสินค้า: item.productQty,
             // ประเภททอง_เงิน: item.gold,
