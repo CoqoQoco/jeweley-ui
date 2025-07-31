@@ -158,6 +158,8 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
                 (item.qtyWeight || 0) * (item.qtyWeightPrice || 0)
               acc[key].itemCount += 1
 
+              
+
               return acc
             }, {})
           ).sort((a, b) => {
