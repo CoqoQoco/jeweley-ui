@@ -115,18 +115,12 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
         }
         const res = await api.jewelry.post('Production/Bom/List', param, { skipLoading })
         if (res) {
+          // Sheet 1: Detailed Report (Original)
           const dataExcel = res.data.map((item) => ({
             วันที่: formatDate(item.completedDate),
             WO: item.wo,
             'WO No.': item.woNumber,
-
-            // เเม่พิมพ์: item.mold,
             สินค้า: item.productTypeName,
-            // ประเภทสินค้า: item.productTypeName,
-            // จำนวนสินค้า: item.productQty,
-            // ประเภททอง_เงิน: item.gold,
-            // ขนาดทอง_เงิน: item.goldSize
-
             รายการ: item.name,
             QTY: item.qty,
             QTY_Price: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
@@ -137,23 +131,103 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
             ).toFixed(2)
           }))
 
+          // Sheet 2: Grouped by Product Type Summary
+          const sortedGroupedData = Object.values(
+            res.data.reduce((acc, item) => {
+              const key = `${item.nameMaster}-${item.productType}-${item.productTypeName}`
+              if (!acc[key]) {
+                acc[key] = {
+                  nameMaster: item.nameMaster,
+                  productType: item.productType,
+                  productTypeName: item.productTypeName,
+                  totalQty: 0,
+                  totalQtyPrice: 0,
+                  totalWeight: 0,
+                  totalWeightPrice: 0,
+                  totalPrice: 0,
+                  itemCount: 0
+                }
+              }
+
+              acc[key].totalQty += item.qty || 0
+              acc[key].totalQtyPrice += (item.qtyPrice || 0) * (item.qty || 0)
+              acc[key].totalWeight += item.qtyWeight || 0
+              acc[key].totalWeightPrice += (item.qtyWeightPrice || 0) * (item.qtyWeight || 0)
+              acc[key].totalPrice +=
+                (item.qty || 0) * (item.qtyPrice || 0) +
+                (item.qtyWeight || 0) * (item.qtyWeightPrice || 0)
+              acc[key].itemCount += 1
+
+              return acc
+            }, {})
+          ).sort((a, b) => {
+            if (a.productType !== b.productType) {
+              return a.productType.localeCompare(b.productType)
+            }
+            return a.nameMaster.localeCompare(b.nameMaster)
+          })
+
+          const groupedExcel = Object.values(sortedGroupedData).map((group) => ({
+            ชื่อรายการ: group.nameMaster,
+            รหัสประเภทสินค้า: group.productType,
+            ประเภทสินค้า: group.productTypeName,
+            จำนวนรายการ: group.itemCount,
+            'QTY รวม': group.totalQty.toFixed(0),
+            'QTY_Price รวม': group.totalQtyPrice.toFixed(2),
+            'Weight รวม': group.totalWeight.toFixed(3),
+            'Weight_Price รวม': group.totalWeightPrice.toFixed(2),
+            'Total_Price รวม': group.totalPrice.toFixed(2)
+          }))
+
+          const sheets = [
+            {
+              data: dataExcel,
+              sheetName: 'รายงานวัถุดิบ',
+              columnWidths: {
+                วันที่: 15,
+                WO: 12,
+                'WO No.': 15,
+                สินค้า: 25,
+                รายการ: 30,
+                QTY: 10,
+                QTY_Price: 12,
+                Weight: 12,
+                Weight_Price: 15,
+                Total_Price: 15
+              }
+            },
+            {
+              data: groupedExcel,
+              sheetName: 'สรุปตามประเภทสินค้า',
+              columnWidths: {
+                รหัสประเภทสินค้า: 20,
+                ประเภทสินค้า: 25,
+                จำนวนรายการ: 15,
+                'QTY รวม': 12,
+                'QTY_Price รวม': 15,
+                'Weight รวม': 12,
+                'Weight_Price รวม': 15,
+                'Total_Price รวม': 15
+              }
+            }
+          ]
+
           const options = {
             filename: `รายงานวัถุดิบ_${formatDate(formValue.start)}-${formatDate(
               formValue.end
             )}.xlsx`,
-            sheetName: `รายงานวัถุดิบ`,
             styles: {
               ...ExcelHelper.defaultStyles,
               headerFill: {
                 type: 'pattern',
                 pattern: 'solid',
-                fgColor: { argb: '921313' } // สีน้ำเงินเข้ม
+                fgColor: { argb: '921313' }
               }
             }
           }
 
-          // เรียกใช้งาน
-          ExcelHelper.exportToExcel(dataExcel, options)
+          // Export with multiple sheets
+          ExcelHelper.exportToExcelMultiSheet(sheets, options)
         }
       } catch (error) {
         console.error('Error fetching delete data:', error)
