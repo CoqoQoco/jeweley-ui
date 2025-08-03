@@ -697,6 +697,7 @@ export default {
         switch (action) {
           case 'print':
             return this.status === 80 ? false : true
+          //return true
           case 'update':
             return this.data.createBy ? false : true
           case 'transfer': {
@@ -705,7 +706,13 @@ export default {
           }
         }
       } else {
-        return true
+        switch (action) {
+          case 'print':
+            return this.status === 80 ? false : true
+          default: {
+            return true
+          }
+        }
       }
     },
     updateStatus() {

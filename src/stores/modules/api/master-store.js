@@ -316,7 +316,8 @@ export const useMasterApiStore = defineStore('master', {
         id: form.id,
         code: form.code,
         nameTh: form.nameTh,
-        nameEn: form.nameEn
+        nameEn: form.nameEn,
+        color: form.color
       }
 
       return await api.jewelry.post('Master/UpdateMasterModel', param)
@@ -327,7 +328,8 @@ export const useMasterApiStore = defineStore('master', {
         id: form.id,
         code: form.code,
         nameTh: form.nameTh,
-        nameEn: form.nameEn
+        nameEn: form.nameEn,
+        color: form.color
       }
 
       return await api.jewelry.post('Master/CreateMasterModel', param)

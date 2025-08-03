@@ -60,6 +60,20 @@
               />
             </div>
 
+            <!-- color -->
+            <div class="mt-2">
+              <div class="title-text">
+                <span>สีพลอย</span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                :style="getBgColor(form.color)"
+                v-model="form.color"
+                placeholder="EX: พลอยสีแดง"
+              />
+            </div>
+
             <div class="submit-container">
               <button class="btn btn-sm btn-main" type="submit">
                 <span><i class="bi bi-calendar-check"></i></span>
@@ -84,6 +98,7 @@ const interfaceForm = {
   code: null,
   nameTh: null,
   nameEn: null,
+  color: null,
   prefix: null
 }
 export default {
@@ -158,6 +173,7 @@ export default {
       )
     },
     async submit() {
+      console.log('submit', this.form)
       const param = {
         type: 'GEM',
         ...this.form

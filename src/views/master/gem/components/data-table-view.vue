@@ -107,6 +107,12 @@ export default {
           sortable: true,
           minWidth: '150px'
         },
+          {
+          field: 'color',
+          header: 'สีพลอย',
+          sortable: true,
+          minWidth: '150px'
+        },
         {
           field: 'description',
           header: 'คำอธิบาย',
