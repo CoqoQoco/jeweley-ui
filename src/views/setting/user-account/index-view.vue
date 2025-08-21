@@ -113,8 +113,8 @@
           สิทธิ์การใช้งาน
         </h3>
         <BaseDataTable
-          :items="masterRoles"
-          :totalRecords="masterRoles.length"
+          :items="roles"
+          :totalRecords="roles.length"
           :columns="columns"
           :paginator="false"
           class="custom-data-table"
@@ -223,16 +223,20 @@ export default {
       await this.userStore.fetchGetUser()
     },
     mapUser() {
+
+      console.log('User:', this.user)
       // init roles
-      if (this.user.roles && this.user.roles.length > 0) {
-        this.roles = this.user.roles.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-            description: item.description
-          }
-        })
+      if (this.user.role && this.user.role.length > 0) {
+        // this.roles = this.user.roles.map((item) => {
+        //   return {
+        //     id: item.id,
+        //     name: item.name,
+        //     description: item.description
+        //   }
+        // })
+        this.roles = [...this.user.role]
       }
+      console.log('Roles:', this.role)
 
       // init masterRoles
       if (this.user.masterRoles && this.user.masterRoles.length > 0) {
