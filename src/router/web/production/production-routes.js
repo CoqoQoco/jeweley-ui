@@ -17,6 +17,9 @@ const PlanOrderTransferTracking = () =>
 const PlanBOMReport = () => import('@/views/production/plan-bom/index-view.vue')
 const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
 
+//E:\coqo_duangkeaw\Code\jeweley-ui\src\views\production\report\plan-completed-all-gold\index-view.vue
+const reportPlanCompletedWithAllGold = () => import('@/views/production/report/plan-completed-all-gold/index-view.vue')
+
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   {
@@ -177,6 +180,23 @@ const routes = [
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
+      },
+      {
+        path: '/report-plan-completed-with-all-gold',
+        name: 'report-plan-completed-with-all-gold',
+        component: reportPlanCompletedWithAllGold,
+        meta: {
+          Displayname: {
+            en: 'Plan BOM Tracking',
+            th: 'รายงานเผนผลิตสำเร็จ'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      /* The `// report` section in the JavaScript code is a commented-out block of code that contains
+      routes for generating production reports. These routes are currently disabled because they are
+      commented out using `//`. This means that the routes for generating production reports are not
+      active in the application at the moment. */
       },
       {
         path: '/plan-bom-report',
