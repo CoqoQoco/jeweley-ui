@@ -96,6 +96,12 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
 
     async fetchListReport({ take, skip, sort, formValue, skipLoading = false }) {
       try {
+        // หรือสร้าง helper function (แนะนำสำหรับการใช้งานซ้ำ)
+        const safeNumber = (value, decimalPlaces = 2) => {
+          if (value == null || isNaN(value)) return 0
+          return Number(Number(value).toFixed(decimalPlaces))
+        }
+
         const param = {
           take,
           skip,
@@ -123,12 +129,14 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
             สินค้า: item.productTypeName,
             รายการ: item.name,
             QTY: item.qty,
-            QTY_Price: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
-            Weight: item.qtyWeight ? Number(item.qtyWeight).toFixed(3) : '0.000',
-            Weight_Price: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
-            Total_Price: Number(
-              item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice
-            ).toFixed(2)
+            QTY_Price: safeNumber(item.qtyPrice, 2),
+            Weight: safeNumber(item.qtyWeight, 3),
+            Weight_Price: safeNumber(item.qtyWeightPrice, 2),
+
+            Total_Price: safeNumber(
+              item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice,
+              2
+            )
           }))
 
           // Sheet 2: Grouped by Product Type Summary
@@ -158,8 +166,6 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
                 (item.qtyWeight || 0) * (item.qtyWeightPrice || 0)
               acc[key].itemCount += 1
 
-              
-
               return acc
             }, {})
           ).sort((a, b) => {
@@ -169,16 +175,28 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
             return a.nameMaster.localeCompare(b.nameMaster)
           })
 
+          // const groupedExcel = Object.values(sortedGroupedData).map((group) => ({
+          //   ชื่อรายการ: group.nameMaster,
+          //   รหัสประเภทสินค้า: group.productType,
+          //   ประเภทสินค้า: group.productTypeName,
+          //   จำนวนรายการ: group.itemCount,
+          //   'QTY รวม': group.totalQty.toFixed(0),
+          //   'QTY_Price รวม': group.totalQtyPrice.toFixed(2),
+          //   'Weight รวม': group.totalWeight.toFixed(3),
+          //   'Weight_Price รวม': group.totalWeightPrice.toFixed(2),
+          //   'Total_Price รวม': group.totalPrice.toFixed(2)
+          // }))
+
           const groupedExcel = Object.values(sortedGroupedData).map((group) => ({
-            ชื่อรายการ: group.nameMaster,
-            รหัสประเภทสินค้า: group.productType,
-            ประเภทสินค้า: group.productTypeName,
-            จำนวนรายการ: group.itemCount,
-            'QTY รวม': group.totalQty.toFixed(0),
-            'QTY_Price รวม': group.totalQtyPrice.toFixed(2),
-            'Weight รวม': group.totalWeight.toFixed(3),
-            'Weight_Price รวม': group.totalWeightPrice.toFixed(2),
-            'Total_Price รวม': group.totalPrice.toFixed(2)
+            ชื่อรายการ: group.nameMaster || '',
+            รหัสประเภทสินค้า: group.productType || '',
+            ประเภทสินค้า: group.productTypeName || '',
+            จำนวนรายการ: safeNumber(group.itemCount, 0),
+            'QTY รวม': safeNumber(group.totalQty, 0),
+            'QTY_Price รวม': safeNumber(group.totalQtyPrice, 2),
+            'Weight รวม': safeNumber(group.totalWeight, 3),
+            'Weight_Price รวม': safeNumber(group.totalWeightPrice, 2),
+            'Total_Price รวม': safeNumber(group.totalPrice, 2)
           }))
 
           const sheets = [
