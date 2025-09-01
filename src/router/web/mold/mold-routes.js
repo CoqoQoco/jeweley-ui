@@ -1,5 +1,6 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 const MoldDesignCreate = () => import('@/views/mold/create-design/IndexView.vue')
+const MoldDesignCreateNew = () => import('@/views/mold/create-design-new/IndexView.vue')
 const MoldRededign = () => import('@/views/mold/plan-re-model/IndexView.vue')
 const MoldPlanList = () => import('@/views/mold/plan-list/IndexView.vue')
 const MoldPlanData = () => import('@/views/mold/plan-data/IndexView.vue')
@@ -33,6 +34,19 @@ const routes = [
           Displayname: {
             en: 'Design Mold',
             th: 'สร้างเเบบเเม่พิมพ์'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.MOLD_CREATE]
+        }
+      },
+       {
+        path: 'design-create-new',
+        name: 'design-create-new',
+        component: MoldDesignCreateNew,
+        meta: {
+          Displayname: {
+            en: 'Design Mold',
+            th: 'สร้างเเบบเเม่พิมพ์ (ใหม่)'
           },
           minorShow: true,
           permissions: [PERMISSIONS.MOLD_CREATE]

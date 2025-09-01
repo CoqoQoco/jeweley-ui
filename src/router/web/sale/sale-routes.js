@@ -32,6 +32,19 @@ const routes = [
           minorShow: true,
           permissions: [PERMISSIONS.SALE_CREATE]
         }
+      },
+      {
+        path: '/sale-quotation',
+        name: 'sale-quotation',
+        component: Quotation,
+        meta: {
+          Displayname: {
+            en: 'Quotation',
+            th: 'เสนอราคา'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
       }
     ]
   }

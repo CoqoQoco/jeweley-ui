@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <loading :isLoading="isLoading"> </loading>
-    <div class="filter-container">
+    <div class="filter-container-search">
       <pageTitle
         :title="`รายละเอียดตั้งเเม่พิมพ์`"
         description=""
