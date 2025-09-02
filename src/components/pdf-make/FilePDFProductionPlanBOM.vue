@@ -413,10 +413,9 @@ export default {
                         bold: true
                       }
                     ]
-                  ])
-                  //ต้นทุนต่อชิ้น
-                  [
-                    {
+                  ])[
+                    //ต้นทุนต่อชิ้น
+                    ({
                       // text: 'ต้นทุน/สินค้า',
                       // colSpan: 6,
                       // alignment: 'right',
@@ -428,10 +427,10 @@ export default {
                     {},
                     {},
                     {
-                      text: this.formatNumber(this.calculateTotal() / this.model.productQty, 2),
+                      text: this.formatNumber(this.calculateTotal(), 2),
                       alignment: 'right',
                       style: 'tableHeader'
-                    }
+                    })
                   ]
                 ]
               },
