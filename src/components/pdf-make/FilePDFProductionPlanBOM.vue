@@ -66,7 +66,10 @@ export default {
           imageName: `${this.model.mold}-Mold.png`
         }
         const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-        this.urlImage = `data:image/png;base64,${res}`
+
+        if (res) {
+          this.urlImage = `data:image/png;base64,${res}`
+        }
       } catch (error) {
         console.log(error)
         return null
@@ -411,25 +414,25 @@ export default {
                       }
                     ]
                   ])
-                  // ต้นทุนต่อชิ้น
-                  // [
-                  //   {
-                  //     text: 'ต้นทุน/สินค้า',
-                  //     colSpan: 6,
-                  //     alignment: 'right',
-                  //     style: 'tableHeader'
-                  //   },
-                  //   {},
-                  //   {},
-                  //   {},
-                  //   {},
-                  //   {},
-                  //   {
-                  //     text: this.formatNumber(this.calculateTotal() / this.model.productQty, 2),
-                  //     alignment: 'right',
-                  //     style: 'tableHeader'
-                  //   }
-                  // ]
+                  //ต้นทุนต่อชิ้น
+                  [
+                    {
+                      // text: 'ต้นทุน/สินค้า',
+                      // colSpan: 6,
+                      // alignment: 'right',
+                      // style: 'tableHeader'
+                    },
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {
+                      text: this.formatNumber(this.calculateTotal() / this.model.productQty, 2),
+                      alignment: 'right',
+                      style: 'tableHeader'
+                    }
+                  ]
                 ]
               },
               layout: {
@@ -439,14 +442,20 @@ export default {
                   if (i === node.table.body.length) return 1 // เส้นล่างสุดของตาราง
 
                   // เพิ่มเส้นเหนือแถวย่อยของแต่ละกลุ่ม (top line)
-                  if (node.table.body[i] && node.table.body[i][0].text && 
-                      node.table.body[i][0].text.toString().startsWith('ต้นทุน')) {
+                  if (
+                    node.table.body[i] &&
+                    node.table.body[i][0].text &&
+                    node.table.body[i][0].text.toString().startsWith('ต้นทุน')
+                  ) {
                     return 1
                   }
 
                   // เพิ่มเส้นใต้แถวย่อยของแต่ละกลุ่ม (bottom line)
-                  if (node.table.body[i - 1] && node.table.body[i - 1][0].text && 
-                      node.table.body[i - 1][0].text.toString().startsWith('ต้นทุน')) {
+                  if (
+                    node.table.body[i - 1] &&
+                    node.table.body[i - 1][0].text &&
+                    node.table.body[i - 1][0].text.toString().startsWith('ต้นทุน')
+                  ) {
                     return 1
                   }
 

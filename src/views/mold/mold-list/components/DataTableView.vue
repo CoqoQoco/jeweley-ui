@@ -90,7 +90,7 @@ import { defineAsyncComponent } from 'vue'
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
 import modalUpdate from './UpdateView.vue'
@@ -179,6 +179,13 @@ export default {
           field: 'description',
           header: 'รายละเอียด',
           sortable: false
+        },
+        {
+          field: 'updateDate',
+          header: 'เเก้ไขล่าสุด',
+          width: '200px',
+          format: "datetime",
+          sortable: true
         }
       ],
 
@@ -233,7 +240,10 @@ export default {
           skip: this.skip,
           sort: this.sort,
           search: {
-            text: this.form.text ?? null
+            text: this.form.text ?? null,
+            updateStart: this.form.updateStart ? formatISOString(this.form.updateStart) : null,
+            updateEnd: this.form.updateEnd ? formatISOString(this.form.updateEnd) : null,
+
           }
         }
         console.log('params', params)

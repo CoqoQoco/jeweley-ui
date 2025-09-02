@@ -16,7 +16,26 @@
             placeholder="รหัส/ประเภท/ช่าง..."
           />
         </div>
-        <div></div>
+        <div>
+          <span class="title-text">วันเเก้ไขเเม่พิมพ์ล่าสุด</span>
+          <div class="flex-group">
+            <Calendar
+              class="w-100"
+              v-model="form.updateStart"
+              :max-date="form.updateEnd"
+              showIcon
+              placeholder="เริ่มต้น"
+            />
+            <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+            <Calendar
+              class="w-100"
+              v-model="form.updateEnd"
+              :min-date="form.updateStart"
+              showIcon
+              placeholder="สิ้นสุด"
+            />
+          </div>
+        </div>
         <div></div>
         <div></div>
       </div>
@@ -38,12 +57,12 @@
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-//import Calendar from 'primevue/calendar'
+import Calendar from 'primevue/calendar'
 
 export default {
   components: {
-    pageTitle
-    //Calendar
+    pageTitle,
+    Calendar
   },
   props: {
     modelForm: {

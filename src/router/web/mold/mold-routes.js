@@ -125,32 +125,32 @@ const routes = [
           permissions: [PERMISSIONS.MOLD_EDIT]
         }
       },
-      {
-        path: 'report-plan-mold',
-        name: 'report-plan-mold',
-        component: MoldDesiged,
-        meta: {
-          Displayname: {
-            en: 'Picking Mold Summery',
-            th: 'รายงานแบบเเม่พิมพ์'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.MOLD_VIEW]
-        }
-      },
-      {
-        path: 'report-picking-list-mold',
-        name: 'report-picking-list-mold',
-        component: MoldDesiged,
-        meta: {
-          Displayname: {
-            en: 'Picking Mold Summery',
-            th: 'รายงานเบิกเเม่พิมพ์'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.MOLD_VIEW]
-        }
-      }
+      // {
+      //   path: 'report-plan-mold',
+      //   name: 'report-plan-mold',
+      //   component: MoldDesiged,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Picking Mold Summery',
+      //       th: 'รายงานแบบเเม่พิมพ์'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.MOLD_VIEW]
+      //   }
+      // },
+      // {
+      //   path: 'report-picking-list-mold',
+      //   name: 'report-picking-list-mold',
+      //   component: MoldDesiged,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Picking Mold Summery',
+      //       th: 'รายงานเบิกเเม่พิมพ์'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.MOLD_VIEW]
+      //   }
+      // }
     ]
   }
 ]

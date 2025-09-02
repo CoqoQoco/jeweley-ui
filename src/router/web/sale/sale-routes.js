@@ -2,6 +2,7 @@ import { PERMISSIONS } from '@/services/permission/config.js'
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const Quotation = () => import('@/views/sale/quotation/index-view.vue')
+const AccountView = () => import('@/views/setting/user-account/index-view.vue')
 
 const routes = [
   {
@@ -34,13 +35,52 @@ const routes = [
         }
       },
       {
-        path: '/sale-quotation',
-        name: 'sale-quotation',
-        component: Quotation,
+        path: '/sale-quotation-new',
+        name: 'sale-quotation-new',
+        component: AccountView,
         meta: {
           Displayname: {
             en: 'Quotation',
-            th: 'เสนอราคา'
+            th: 'เสนอราคา (ใหม่)'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/production-order',
+        name: 'production-order',
+        component: AccountView,
+        meta: {
+          Displayname: {
+            en: 'Production Order',
+            th: 'ใบสั่งผลิต'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/sale-order',
+        name: 'sale-order',
+        component: AccountView,
+        meta: {
+          Displayname: {
+            en: 'Sale Order',
+            th: 'ใบสั่งขาย'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/Invoice',
+        name: 'Invoice',
+        component: AccountView,
+        meta: {
+          Displayname: {
+            en: 'Invoice',
+            th: 'ใบเเจ้งนี้'
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_CREATE]

@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-search">
     <pageTitle
       title="กระบวนการสร้างเเบบเเม่พิมพ์"
       description=""
