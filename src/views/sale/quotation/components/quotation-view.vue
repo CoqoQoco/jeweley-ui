@@ -8,6 +8,7 @@
           groupRowsBy="nameGroup"
           stripedRows
           showGridlines
+          :rowClass="getRowClass"
         >
           <ColumnGroup type="header">
             <Row>
@@ -1003,23 +1004,43 @@ export default {
     onCloseEditStockModal(payload) {
       this.isShow.isEditStock = false
       if (payload && payload.action === 'save' && payload.data) {
-        // อัปเดตข้อมูลในตาราง
-        this.customer.quotationItems[this.editStockIndex] = payload.data
+        // อัปเดตข้อมูลในตาราง - ใช้ deep copy เพื่อป้องกัน reference issues
+        this.customer.quotationItems[this.editStockIndex] = JSON.parse(JSON.stringify(payload.data))
+        
         // sync discountPrice ถ้ามี priceDiscount (จาก modal)
         if (payload.data.priceDiscount !== undefined && payload.data.priceDiscount !== null) {
           this.customer.quotationItems[this.editStockIndex].discountPrice =
             payload.data.priceDiscount
         }
       }
+      // รีเซ็ต editing state
       this.modelEditStock = {}
       this.editStockIndex = null
     },
     copyItem(item) {
       // Deep copy the item
       const newItem = JSON.parse(JSON.stringify(item))
+      
+      // Reset identifiers to make it a true copy
       newItem.stockNumber = null
       newItem.stockNumberOrigin = null
-      //console.log('copyItem', newItem)
+      
+      // Generate unique ID for the copied item to prevent reference issues
+      newItem._copyId = Date.now() + Math.random()
+      
+      // Ensure materials array is a new instance
+      if (newItem.materials && Array.isArray(newItem.materials)) {
+        newItem.materials = newItem.materials.map(material => ({...material}))
+      }
+      
+      // Ensure priceTransactions array is a new instance  
+      if (newItem.priceTransactions && Array.isArray(newItem.priceTransactions)) {
+        newItem.priceTransactions = newItem.priceTransactions.map(transaction => ({...transaction}))
+      }
+      
+      // Reset any computed/calculated prices to ensure independent calculation
+      newItem.appraisalPrice = newItem.priceOrigin || newItem.price || 0
+      
       this.customer.quotationItems.push(newItem)
     },
 
@@ -1112,6 +1133,14 @@ export default {
           targetWindow: win1
         })
       })
+    },
+    
+    getRowClass(data, index) {
+      // เพิ่มสีไฮไลท์สำหรับ row ที่กำลังแก้ไข
+      if (this.editStockIndex === index) {
+        return 'editing-row'
+      }
+      return ''
     }
   },
 
@@ -1207,5 +1236,19 @@ export default {
   align-items: flex-start !important;
   justify-content: flex-start !important;
   display: flex;
+}
+
+/* Highlight row being edited */
+:deep(.editing-row) {
+  background-color: #fff3cd !important; /* Light yellow background */
+  border-left: 4px solid #ffc107 !important; /* Yellow left border */
+}
+
+:deep(.editing-row:hover) {
+  background-color: #fff3cd !important; /* Keep same color on hover */
+}
+
+:deep(.editing-row .p-column-body) {
+  background-color: transparent !important;
 }
 </style>

@@ -845,8 +845,8 @@ export default {
         const markup = this.$parent?.customer?.markup || 1
         this.stock.appraisalPrice = Number((this.costPerPiece * markup).toFixed(2))
       }
-      // ส่งข้อมูลกลับ parent
-      this.$emit('closeModal', { action: 'save', data: { ...this.stock } })
+      // ส่งข้อมูลกลับ parent - ใช้ deep copy เพื่อป้องกัน reference issues
+      this.$emit('closeModal', { action: 'save', data: JSON.parse(JSON.stringify(this.stock)) })
       this.onClear()
     },
     getBgColor(data) {
