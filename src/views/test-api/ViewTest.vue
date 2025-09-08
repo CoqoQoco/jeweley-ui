@@ -35,7 +35,7 @@ export default {
   data() {
     return {
       from: {
-        pathUrl: ''
+        pathUrl: 'ReceiptProduction/Transfer/18K'
       },
       data: {}
     }
