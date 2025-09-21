@@ -1,10 +1,11 @@
 <template>
   <div class="mt-2">
     <form @submit.prevent="onSave">
+      <!-- Customer Information Section -->
       <div class="base-customer">
         <div class="filter-container mt-2">
           <div class="form-col-container">
-            <!-- date -->
+            <!-- date and invoice number -->
             <div class="form-col-container">
               <div>
                 <span class="title-text">วันที่ใบเสนอราคา</span>
@@ -87,48 +88,69 @@
             </div>
           </div>
 
-          <div class="form-col-container mt-2">
-            <div>
-              <span class="title-text">ชื่อลูกค้า</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.name"
-              />
+          <!-- Customer Details Section -->
+          <div class="customer-details-section mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="title-text-lg">ข้อมูลลูกค้า</span>
+              <div>
+                <button
+                  class="btn btn-sm btn-main mr-2"
+                  type="button"
+                  @click="onSearchCustomer"
+                  title="ค้นหาลูกค้า"
+                >
+                  <i class="bi bi-search mr-1"></i>
+                  <span>ค้นหาลูกค้า</span>
+                </button>
+                <button
+                  class="btn btn-sm btn-green"
+                  type="button"
+                  @click="onCreateCustomer"
+                  title="เพิ่มลูกค้าใหม่"
+                >
+                  <i class="bi bi-person-plus mr-1"></i>
+                  <span>เพิ่มลูกค้าใหม่</span>
+                </button>
+              </div>
             </div>
-            <div>
-              <span class="title-text">ที่อยู่</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.address"
-              />
-            </div>
-            <div>
-              <span class="title-text">เบอร์โทร</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.tel"
-              />
-            </div>
-            <div>
-              <span class="title-text">อีเมล</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="email"
-                v-model.trim="customer.email"
-              />
-            </div>
-          </div>
-          <div class="form-col-container mt-2">
-            <div>
-              <span class="title-text">หมายเหตุ</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.remark"
-              />
+
+            <div class="customer-info-display">
+              <div class="form-col-container">
+                <div>
+                  <span class="title-text">ชื่อลูกค้า</span>
+                  <div class="customer-display-field">
+                    {{ customer.name || '-' }}
+                  </div>
+                </div>
+                <div>
+                  <span class="title-text">ที่อยู่</span>
+                  <div class="customer-display-field">
+                    {{ customer.address || '-' }}
+                  </div>
+                </div>
+                <div>
+                  <span class="title-text">เบอร์โทร</span>
+                  <div class="customer-display-field">
+                    {{ customer.tel || '-' }}
+                  </div>
+                </div>
+                <div>
+                  <span class="title-text">อีเมล</span>
+                  <div class="customer-display-field">
+                    {{ customer.email || '-' }}
+                  </div>
+                </div>
+              </div>
+              <div class="form-col-container mt-2">
+                <div>
+                  <span class="title-text">หมายเหตุ</span>
+                  <input
+                    :class="['form-control bg-input', 'input-bg']"
+                    type="text"
+                    v-model.trim="customer.remark"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -346,7 +368,7 @@
           </column>
 
           <column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
-            <template #body="slotProps">
+            <template #body>
               <div class="qty-container">
                 <span>{{
                   `${customer.discountPercent ? `${customer.discountPercent} %` : `0 %`}`
@@ -382,7 +404,7 @@
           </column>
 
           <column field="currencyMultiplier" header="แปลงเรท" style="min-width: 100px">
-            <template #body="slotProps">
+            <template #body>
               <div class="qty-container">
                 <span>{{ customer.currencyMultiplier }}</span>
               </div>
@@ -597,6 +619,19 @@
       @confirm="onConfirmItemsPerPage"
       @saveAndCreate="onSaveAndCreatePdfAndSave"
     />
+
+    <!-- Customer Modals -->
+    <CustomerSearchModal
+      :showModal="isShow.searchCustomer"
+      @closeModal="onCloseCustomerModal"
+      @customerSelected="onCustomerSelected"
+    />
+
+    <CustomerCreateModal
+      :showModal="isShow.createCustomer"
+      @closeModal="onCloseCustomerModal"
+      @customerCreated="onCustomerCreated"
+    />
   </div>
 </template>
 
@@ -611,6 +646,8 @@ import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 
 import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pdf-view.vue'
+import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
+import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -635,7 +672,9 @@ const interfaceForm = {
   discountPercent: 0
 }
 const interfaceShow = {
-  isEditStock: false
+  isEditStock: false,
+  searchCustomer: false,
+  createCustomer: false
 }
 
 export default {
@@ -649,8 +688,9 @@ export default {
     imagePreview,
     Calendar,
     editStockView,
-    ConfirmCreatePdfView
-    // ลบ PDialog, PInputNumber, PButton ออก (modal เดิมไม่ใช้แล้ว)
+    ConfirmCreatePdfView,
+    CustomerSearchModal,
+    CustomerCreateModal
   },
 
   setup() {
@@ -1142,6 +1182,44 @@ export default {
       })
     },
 
+    // Customer-related methods
+    onSearchCustomer() {
+      this.isShow.searchCustomer = true
+    },
+
+    onCreateCustomer() {
+      this.isShow.createCustomer = true
+    },
+
+    onCustomerSelected(customerData) {
+      this.customer = {
+        ...this.customer,
+        name: customerData.nameTh || customerData.nameEn || '',
+        address: customerData.address || '',
+        tel: customerData.telephone1 || '',
+        email: customerData.email || '',
+        customerId: customerData.id
+      }
+      this.isShow.searchCustomer = false
+    },
+
+    onCustomerCreated(customerData) {
+      this.customer = {
+        ...this.customer,
+        name: customerData.nameTh || customerData.nameEn || '',
+        address: customerData.address || '',
+        tel: customerData.telephone1 || '',
+        email: customerData.email || '',
+        customerId: customerData.id
+      }
+      this.isShow.createCustomer = false
+    },
+
+    onCloseCustomerModal() {
+      this.isShow.searchCustomer = false
+      this.isShow.createCustomer = false
+    },
+
     getRowClass(data, index) {
       // เพิ่มสีไฮไลท์สำหรับ row ที่กำลังแก้ไข
       if (this.editStockIndex === index) {
@@ -1257,5 +1335,37 @@ export default {
 
 :deep(.editing-row .p-column-body) {
   background-color: transparent !important;
+}
+
+/* Customer Section Styles */
+.customer-details-section {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #f8f9fa;
+}
+
+.customer-display-field {
+  background-color: white;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.375rem 0.75rem;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  color: #495057;
+  font-weight: 500;
+}
+
+.customer-display-field:empty:before {
+  content: '-';
+  color: #6c757d;
+  font-style: italic;
+}
+
+.title-text-lg {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--base-font-color);
 }
 </style>
