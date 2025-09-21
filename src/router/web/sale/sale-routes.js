@@ -2,6 +2,7 @@ import { PERMISSIONS } from '@/services/permission/config.js'
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const Quotation = () => import('@/views/sale/quotation/index-view.vue')
+const QuotationList = () => import('@/views/sale/quotation-list/index-view.vue')
 const AccountView = () => import('@/views/setting/user-account/index-view.vue')
 
 const routes = [
@@ -32,6 +33,19 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/sale-quotation-list',
+        name: 'sale-quotation-list',
+        component: QuotationList,
+        meta: {
+          Displayname: {
+            en: 'Quotation List',
+            th: 'รายการใบเสนอราคา'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_VIEW]
         }
       },
       {
