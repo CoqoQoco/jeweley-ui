@@ -1,7 +1,141 @@
 <template>
   <div class="mt-2">
     <form @submit.prevent="onSave">
-      <div class="base-datatable">
+      <div class="base-customer">
+        <div class="filter-container mt-2">
+          <div class="form-col-container">
+            <!-- date -->
+            <div class="form-col-container">
+              <div>
+                <span class="title-text">วันที่ใบเสนอราคา</span>
+                <Calendar
+                  class="w-100"
+                  v-model="customer.quotationDate"
+                  showIcon
+                  :manualInput="true"
+                  dateFormat="dd/mm/yy"
+                />
+              </div>
+
+              <div>
+                <span class="title-text">เลขที่ใบเสนอราคา</span>
+                <input
+                  :class="['form-control bg-input input-bg']"
+                  type="text"
+                  v-model.trim="customer.invoiceNumber"
+                />
+              </div>
+            </div>
+
+            <!-- convert price -->
+            <div class="form-col-container d-flex justify-content-end align-items-end">
+              <div class="">
+                <span class="title-text">Currency</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="text"
+                  v-model.trim="customer.currencyUnit"
+                  style="width: 100px"
+                />
+              </div>
+              <div class="">
+                <span class="title-text">Currency Rate</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.currencyMultiplier"
+                  min="0"
+                  step="any"
+                  style="width: 100px"
+                />
+              </div>
+              <div class="ml-2">
+                <span class="title-text">Markup</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.markup"
+                  min="0"
+                  step="any"
+                  style="width: 80px"
+                />
+              </div>
+              <div class="ml-2">
+                <span class="title-text">Discount (%)</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.discountPercent"
+                  min="0"
+                  max="100"
+                  step="any"
+                  style="width: 80px"
+                />
+              </div>
+              <div class="ml-2">
+                <span class="title-text">Gold (US$/Oz.)</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="number"
+                  v-model.number="customer.goldPerOz"
+                  min="0"
+                  max="10000"
+                  step="any"
+                  style="width: 80px"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-col-container mt-2">
+            <div>
+              <span class="title-text">ชื่อลูกค้า</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="text"
+                v-model.trim="customer.name"
+              />
+            </div>
+            <div>
+              <span class="title-text">ที่อยู่</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="text"
+                v-model.trim="customer.address"
+              />
+            </div>
+            <div>
+              <span class="title-text">เบอร์โทร</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="text"
+                v-model.trim="customer.tel"
+              />
+            </div>
+            <div>
+              <span class="title-text">อีเมล</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="email"
+                v-model.trim="customer.email"
+              />
+            </div>
+          </div>
+          <div class="form-col-container mt-2">
+            <div>
+              <span class="title-text">หมายเหตุ</span>
+              <input
+                :class="['form-control bg-input', 'input-bg']"
+                type="text"
+                v-model.trim="customer.remark"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- stock item -->
+      <div class="base-datatable mt-2">
         <DataTable
           :value="customer.quotationItems"
           rowGroupMode="subheader"
@@ -434,136 +568,7 @@
 
       <div class="base-customer">
         <div class="filter-container mt-2">
-          <div class="form-col-container">
-            <!-- date -->
-            <div class="form-col-container">
-              <div>
-                <span class="title-text">วันที่ใบเสนอราคา</span>
-                <Calendar
-                  class="w-100"
-                  v-model="customer.quotationDate"
-                  showIcon
-                  :manualInput="true"
-                  dateFormat="dd/mm/yy"
-                />
-              </div>
-
-              <div>
-                <span class="title-text">เลขที่ใบเสนอราคา</span>
-                <input
-                  :class="['form-control bg-input input-bg']"
-                  type="text"
-                  v-model.trim="customer.invoiceNumber"
-                />
-              </div>
-            </div>
-
-            <!-- convert price -->
-            <div class="form-col-container d-flex justify-content-end align-items-end">
-              <div class="">
-                <span class="title-text">Currency</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="text"
-                  v-model.trim="customer.currencyUnit"
-                  style="width: 100px"
-                />
-              </div>
-              <div class="">
-                <span class="title-text">Currency Rate</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
-                  v-model.number="customer.currencyMultiplier"
-                  min="0"
-                  step="any"
-                  style="width: 100px"
-                />
-              </div>
-              <div class="ml-2">
-                <span class="title-text">Markup</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
-                  v-model.number="customer.markup"
-                  min="0"
-                  step="any"
-                  style="width: 80px"
-                />
-              </div>
-              <div class="ml-2">
-                <span class="title-text">Discount (%)</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
-                  v-model.number="customer.discountPercent"
-                  min="0"
-                  max="100"
-                  step="any"
-                  style="width: 80px"
-                />
-              </div>
-              <div class="ml-2">
-                <span class="title-text">Gold (US$/Oz.)</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
-                  v-model.number="customer.goldPerOz"
-                  min="0"
-                  max="10000"
-                  step="any"
-                  style="width: 80px"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-col-container mt-2">
-            <div>
-              <span class="title-text">ชื่อลูกค้า</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.name"
-              />
-            </div>
-            <div>
-              <span class="title-text">ที่อยู่</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.address"
-              />
-            </div>
-            <div>
-              <span class="title-text">เบอร์โทร</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.tel"
-              />
-            </div>
-            <div>
-              <span class="title-text">อีเมล</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="email"
-                v-model.trim="customer.email"
-              />
-            </div>
-          </div>
-          <div class="form-col-container mt-2">
-            <div>
-              <span class="title-text">หมายเหตุ</span>
-              <input
-                :class="['form-control bg-input', 'input-bg']"
-                type="text"
-                v-model.trim="customer.remark"
-              />
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-center mt-3">
+          <div class="d-flex justify-content-center">
             <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
               <span>Quotation File</span>
             </button>
@@ -1006,7 +1011,7 @@ export default {
       if (payload && payload.action === 'save' && payload.data) {
         // อัปเดตข้อมูลในตาราง - ใช้ deep copy เพื่อป้องกัน reference issues
         this.customer.quotationItems[this.editStockIndex] = JSON.parse(JSON.stringify(payload.data))
-        
+
         // sync discountPrice ถ้ามี priceDiscount (จาก modal)
         if (payload.data.priceDiscount !== undefined && payload.data.priceDiscount !== null) {
           this.customer.quotationItems[this.editStockIndex].discountPrice =
@@ -1020,27 +1025,29 @@ export default {
     copyItem(item) {
       // Deep copy the item
       const newItem = JSON.parse(JSON.stringify(item))
-      
+
       // Reset identifiers to make it a true copy
       newItem.stockNumber = null
       newItem.stockNumberOrigin = null
-      
+
       // Generate unique ID for the copied item to prevent reference issues
       newItem._copyId = Date.now() + Math.random()
-      
+
       // Ensure materials array is a new instance
       if (newItem.materials && Array.isArray(newItem.materials)) {
-        newItem.materials = newItem.materials.map(material => ({...material}))
+        newItem.materials = newItem.materials.map((material) => ({ ...material }))
       }
-      
-      // Ensure priceTransactions array is a new instance  
+
+      // Ensure priceTransactions array is a new instance
       if (newItem.priceTransactions && Array.isArray(newItem.priceTransactions)) {
-        newItem.priceTransactions = newItem.priceTransactions.map(transaction => ({...transaction}))
+        newItem.priceTransactions = newItem.priceTransactions.map((transaction) => ({
+          ...transaction
+        }))
       }
-      
+
       // Reset any computed/calculated prices to ensure independent calculation
       newItem.appraisalPrice = newItem.priceOrigin || newItem.price || 0
-      
+
       this.customer.quotationItems.push(newItem)
     },
 
@@ -1134,7 +1141,7 @@ export default {
         })
       })
     },
-    
+
     getRowClass(data, index) {
       // เพิ่มสีไฮไลท์สำหรับ row ที่กำลังแก้ไข
       if (this.editStockIndex === index) {
