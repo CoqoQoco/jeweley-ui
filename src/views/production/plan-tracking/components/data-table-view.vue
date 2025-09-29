@@ -392,7 +392,7 @@ export default {
         formValue: this.form
       })
 
-      if (res.success) {
+      if (res) {
         //excel
       }
     },
