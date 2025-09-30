@@ -1134,6 +1134,8 @@ export default {
       }
     },
     async fetchGetQuotation() {
+
+      console.log('Fetching quotation with number:', this.modelQuotation)
       const formValue = {
         number: this.modelQuotation.number || null
       }

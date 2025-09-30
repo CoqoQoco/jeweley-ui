@@ -13,13 +13,13 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button 
+          <!-- <button 
             class="btn btn-sm btn-main" 
             title="แก้ไข" 
             @click="onEdit(data)"
           >
             <i class="bi bi-brush"></i>
-          </button>
+          </button> -->
           <button 
             class="btn btn-sm btn-green ml-2" 
             title="ดูรายละเอียด" 
@@ -111,7 +111,7 @@ export default {
         {
           field: 'action',
           header: '',
-          width: '120px',
+          width: '50px',
           sortable: false
         },
         {
@@ -244,7 +244,7 @@ export default {
     onEdit(data) {
       // Navigate to edit quotation
       this.$router.push({
-        path: '/sale/quotation',
+        path: '/sale-quotation',
         query: { number: data.number }
       })
     },
@@ -252,7 +252,7 @@ export default {
     onView(data) {
       // Navigate to view quotation
       this.$router.push({
-        path: '/sale/quotation',
+        path: '/sale-quotation',
         query: { number: data.number, mode: 'view' }
       })
     },

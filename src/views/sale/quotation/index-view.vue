@@ -31,7 +31,7 @@ const interfaceForm = {
 }
 
 const interfaceSearchQuotation = {
-  Number: null
+  number: null
 }
 
 export default {
@@ -40,6 +40,7 @@ export default {
     search,
     quotation
   },
+
   data() {
     return {
       form: { ...interfaceForm },
@@ -49,6 +50,7 @@ export default {
       quotation: {}
     }
   },
+
   methods: {
     onSearchFilter(data) {
       //console.log('onSearchFilter', data)
@@ -62,6 +64,37 @@ export default {
     onClearFilter() {
       //console.log('onClearFilter')
       this.form = { ...interfaceForm }
+    },
+
+    handleRouteParams() {
+      // Handle route query parameters for viewing/editing specific quotation
+      const { number, mode } = this.$route.query
+      if (number) {
+        
+        this.formQuotation.number = number
+        this.quotation = { number: number }
+        
+        // If mode is 'view', set to read-only mode
+        if (mode === 'view') {
+          // TODO: Implement read-only mode logic if needed
+          console.log('View mode for quotation:',  this.quotation)
+        }
+      }
+    }
+  },
+
+  mounted() {
+    // Check for route parameters when component mounts
+    this.handleRouteParams()
+  },
+
+  watch: {
+    '$route.query': {
+      handler() {
+        // Handle route changes
+        this.handleRouteParams()
+      },
+      immediate: true
     }
   }
 }
