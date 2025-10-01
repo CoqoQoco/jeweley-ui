@@ -129,180 +129,837 @@
       </div>
     </div>
 
-    <!-- Demo Actions Section -->
-    <div class="card-container mt-3" v-if="quotationItems.length === 0">
-      <div class="card-header">
-        <h6 class="mb-0">สำหรับการทดสอบระบบ</h6>
-      </div>
-      <div class="card-body">
-        <div class="alert alert-info" role="alert">
-          <i class="bi bi-info-circle mr-2"></i>
-          ยังไม่มีใบเสนอราคาในระบบ คุณสามารถโหลดข้อมูลตัวอย่างเพื่อทดสอบการทำงานได้
-        </div>
-        <div class="demo-actions">
-          <button
-            class="btn btn-outline-primary mr-2"
-            type="button"
-            @click="loadDemoQuotation1"
-          >
-            <i class="bi bi-file-text mr-1"></i>
-            โหลดใบเสนอราคา #1 (สินค้าคงคลัง)
-          </button>
-          <button
-            class="btn btn-outline-success mr-2"
-            type="button"
-            @click="loadDemoQuotation2"
-          >
-            <i class="bi bi-tools mr-1"></i>
-            โหลดใบเสนอราคา #2 (สินค้าผลิต)
-          </button>
-          <button
-            class="btn btn-outline-warning"
-            type="button"
-            @click="loadDemoQuotation3"
-          >
-            <i class="bi bi-collection mr-1"></i>
-            โหลดใบเสนอราคา #3 (สินค้าผสม)
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Customer Information Section -->
-    <div class="card-container mt-3" v-if="quotationItems.length > 0">
+    <!-- Customer Information Section (Like Quotation) -->
+    <div class="card-container mt-3">
       <div class="card-header">
         <h6 class="mb-0">ข้อมูลลูกค้า</h6>
       </div>
       <div class="card-body">
-        <div class="form-col-container">
-          <div>
-            <span class="title-text">ชื่อลูกค้า</span>
-            <div class="customer-info-display">
-              {{ formSaleOrder.customerName || '-' }}
+        <div class="">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <button
+                class="btn btn-sm btn-green mr-2"
+                type="button"
+                @click="onSearchCustomer"
+                title="ค้นหาลูกค้า"
+              >
+                <i class="bi bi-search mr-1"></i>
+                <span>ค้นหาลูกค้า</span>
+              </button>
+              <!-- <button
+                class="btn btn-sm btn-green"
+                type="button"
+                @click="onCreateCustomer"
+                title="เพิ่มลูกค้าใหม่"
+              >
+                <i class="bi bi-person-plus mr-1"></i>
+                <span>เพิ่มลูกค้าใหม่</span>
+              </button> -->
             </div>
           </div>
 
-          <div>
-            <span class="title-text">ที่อยู่</span>
-            <div class="customer-info-display">
-              {{ formSaleOrder.customerAddress || '-' }}
+          <div class="customer-info-display">
+            <div class="form-col-container">
+              <div>
+                <span class="title-text">ชื่อลูกค้า</span>
+                <div class="customer-display-field">
+                  {{ formSaleOrder.customerName || '-' }}
+                </div>
+              </div>
+              <div>
+                <span class="title-text">ที่อยู่</span>
+                <div class="customer-display-field">
+                  {{ formSaleOrder.customerAddress || '-' }}
+                </div>
+              </div>
+              <div>
+                <span class="title-text">เบอร์โทร</span>
+                <div class="customer-display-field">
+                  {{ formSaleOrder.customerPhone || '-' }}
+                </div>
+              </div>
+              <div>
+                <span class="title-text">อีเมล</span>
+                <div class="customer-display-field">
+                  {{ formSaleOrder.customerEmail || '-' }}
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div>
-            <span class="title-text">เบอร์โทร</span>
-            <div class="customer-info-display">
-              {{ formSaleOrder.customerPhone || '-' }}
-            </div>
-          </div>
-
-          <div>
-            <span class="title-text">อีเมล</span>
-            <div class="customer-info-display">
-              {{ formSaleOrder.customerEmail || '-' }}
+            <div class="form-col-container mt-2">
+              <div>
+                <span class="title-text">หมายเหตุ</span>
+                <input
+                  :class="['form-control bg-input', 'input-bg']"
+                  type="text"
+                  v-model.trim="formSaleOrder.customerRemark"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Quotation Items Selection Grid -->
+    <!-- Product Search Section (Like Quotation) -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">รายการสินค้าจากใบเสนอราคา</h6>
-        <div class="card-header-actions">
-          <label class="d-flex align-items-center">
+        <h6 class="mb-0">ค้นหาเพิ่มสินค้า</h6>
+      </div>
+      <div class="card-body">
+        <form @submit.prevent="onSearchProduct">
+          <div class="form-col-sm-container">
+            <!-- Stock number (new) -->
+            <div>
+              <span class="title-text">เลขที่ผลิต (ใหม่)</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="productSearch.stockNumber"
+                placeholder="EX: DK-2502-00X"
+              />
+            </div>
+
+            <!-- Stock number (old) -->
+            <div>
+              <span class="title-text">เลขที่ผลิต (เก่า)</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="productSearch.stockNumberOrigin"
+                placeholder="EX: AD054XX"
+              />
+            </div>
+
+            <!-- Product number -->
+            <div>
+              <span class="title-text">รหัสสินค้า</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="productSearch.productNumber"
+                placeholder="EX: R08X50XXXL"
+              />
+            </div>
+
+            <div class="btn-submit-container-custom">
+              <button class="btn btn-sm btn-green mr-2" type="submit" title="ค้นหา">
+                <i class="bi bi-search"></i>
+                <span class="ml-2">ค้นหา</span>
+              </button>
+            </div>
+          </div>
+        </form>
+        <div class="d-flex justify-content-start mt-2">
+          <div class="mr-2">
+            <span class="title-text">Currency</span>
             <input
-              type="checkbox"
-              :checked="allItemsSelected"
-              @change="toggleAllItems"
-              class="mr-2"
+              :class="['form-control bg-input', 'input-bg']"
+              type="text"
+              v-model.trim="formSaleOrder.currencyUnit"
+              style="width: 100px"
             />
-            <span>เลือกทั้งหมด</span>
-          </label>
+          </div>
+          <div class="mr-2">
+            <span class="title-text">Currency Rate</span>
+            <input
+              :class="['form-control bg-input', 'input-bg']"
+              type="number"
+              v-model.number="formSaleOrder.currencyRate"
+              min="0"
+              step="any"
+              style="width: 100px"
+              @input="recalculateAll"
+            />
+          </div>
+          <div class="mr-2">
+            <span class="title-text">Markup</span>
+            <input
+              :class="['form-control bg-input', 'input-bg']"
+              type="number"
+              v-model.number="formSaleOrder.markup"
+              min="0"
+              step="any"
+              style="width: 80px"
+              @input="recalculateAll"
+            />
+          </div>
+          <div class="mr-2">
+            <span class="title-text">Discount (%)</span>
+            <input
+              :class="['form-control bg-input', 'input-bg']"
+              type="number"
+              v-model.number="formSaleOrder.discountPercent"
+              min="0"
+              max="100"
+              step="any"
+              style="width: 80px"
+              @input="recalculateAll"
+            />
+          </div>
+          <div>
+            <span class="title-text">Gold (US$/Oz.)</span>
+            <input
+              :class="['form-control bg-input', 'input-bg']"
+              type="number"
+              v-model.number="formSaleOrder.goldPerOz"
+              min="0"
+              max="10000"
+              step="any"
+              style="width: 80px"
+              @input="recalculateAll"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Items Table (Like Quotation) -->
+    <div class="card-container mt-3">
+      <div class="card-header">
+        <h6 class="mb-0">รายการสินค้า</h6>
+        <div class="card-header-actions">
+          <span class="badge badge-success">{{ stockItems.length }} รายการ</span>
         </div>
       </div>
       <div class="card-body p-0">
-        <DataTableWithPaging
-          :items="quotationItems"
-          :columns="quotationItemColumns"
-          dataKey="productId"
-          :paginator="false"
-          scrollHeight="400px"
-          :selectionMode="false"
-          emptyMessage="ยังไม่มีรายการสินค้า กรุณาเลือกใบเสนอราคา"
+        <DataTable
+          :value="stockItems"
+          dataKey="stockNumber"
+          :scrollable="true"
+          scrollHeight="10000000px"
+          class="p-datatable-sm"
+          stripedRows
+          responsiveLayout="scroll"
+          showGridlines
         >
-          <!-- Custom Column Templates -->
-          <template #isSelectedTemplate="{ data }">
-            <input
-              type="checkbox"
-              v-model="data.isSelected"
-              @change="updateItemSelection(data)"
-              class="form-check-input"
-            />
-          </template>
+          <ColumnGroup type="header">
+            <Row>
+              <Column header="" :colspan="2" />
+              <Column header="" />
+              <Column header="เลขที่ผลิต" />
+              <Column header="รหัสสินค้า" />
+              <Column header="รายละเอียด" />
+              <Column header="Gold (gms)" />
+              <Column header="Diamond (cts)" />
+              <Column header="Stone (cts)" />
+              <Column header="ราคาขาย (THB)" />
+              <Column header="ราคาประเมิน (THB)" />
+              <Column header="ส่วนลด" />
+              <Column header="ราคาส่วนลด (THB)" />
+              <Column header="แปลงเรท" />
+              <Column :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '" />
+              <Column header="จำนวน" />
+              <Column :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '" />
+            </Row>
+          </ColumnGroup>
 
-          <template #itemTypeTemplate="{ data }">
-            <span :class="getItemTypeClass(data.itemType)">
-              <i :class="getItemTypeIcon(data.itemType)" class="mr-1"></i>
-              {{ getItemTypeText(data.itemType) }}
-            </span>
-          </template>
+          <Column field="index" style="width: 10px">
+            <template #body="slotProps">
+              <span>{{ slotProps.index + 1 }}</span>
+            </template>
+          </Column>
 
-          <template #productNumberTemplate="{ data }">
-            <span class="font-weight-bold">{{ data.productNumber }}</span>
-          </template>
-
-          <template #productNameTemplate="{ data }">
-            <div class="product-description">
-              {{ data.productName }}
-            </div>
-          </template>
-
-          <template #availabilityInfoTemplate="{ data }">
-            <div v-if="data.itemType === 'Stock'">
-              <div class="availability-info">
-                <span :class="getStockStatusClass(data.stockAvailable, data.quantity)">
-                  <i class="bi bi-box mr-1"></i>
-                  คงคลัง: {{ data.stockAvailable || 0 }}
-                </span>
+          <Column field="action" style="width: 10px">
+            <template #body="slotProps">
+              <div class="d-flex justify-content-center align-items-center">
+                <button
+                  class="btn btn-sm btn-red"
+                  type="button"
+                  title="ลบ"
+                  @click="deleteStockItem(slotProps.index)"
+                >
+                  <span class="bi bi-trash"></span>
+                </button>
+                <button
+                  class="btn btn-sm btn-main ml-2"
+                  type="button"
+                  title="แก้ไข"
+                  @click="onEditStock(slotProps.data, slotProps.index)"
+                >
+                  <span class="bi bi-brush"></span>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-dark ml-2"
+                  type="button"
+                  title="คัดลอก"
+                  @click="copyItem(slotProps.data)"
+                >
+                  <span class="bi bi-files"></span>
+                </button>
               </div>
-            </div>
-            <div v-else>
-              <div class="production-info">
-                <span class="badge badge-warning">
-                  <i class="bi bi-tools mr-1"></i>
-                  ผลิต {{ data.estimatedProductionDays || 0 }} วัน
-                </span>
+            </template>
+          </Column>
+
+          <Column field="image" header="" style="width: 50px">
+            <template #body="slotProps">
+              <div class="image-container">
+                <div v-if="slotProps.data.imagePath">
+                  <imagePreview
+                    :imageName="slotProps.data.imagePath"
+                    :path="slotProps.data.imagePath"
+                    :type="type"
+                    :width="25"
+                    :height="25"
+                    :emitImage="true"
+                    @image-loaded="handleImageLoaded($event, slotProps.index)"
+                  />
+                </div>
               </div>
-            </div>
-          </template>
+            </template>
+          </Column>
 
-          <template #quantityTemplate="{ data }">
-            <input
-              type="number"
-              min="1"
-              step="1"
-              v-model.number="data.quantity"
-              @input="updateItemTotal(data)"
-              :disabled="!data.isSelected"
-              class="form-control form-control-sm text-center"
-              :class="{ 'is-invalid': isQuantityInvalid(data) }"
-            />
-            <div v-if="isQuantityInvalid(data)" class="invalid-feedback">
-              จำนวนเกินคงคลัง
-            </div>
-          </template>
+          <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+            <template #body="slotProps">
+              <span>{{
+                `${
+                  slotProps.data.stockNumberOrigin
+                    ? slotProps.data.stockNumberOrigin || ''
+                    : slotProps.data.stockNumber || ''
+                }`
+              }}</span>
+            </template>
+          </Column>
 
-          <template #lineTotalTemplate="{ data }">
-            <div class="text-right font-weight-bold">
-              <span v-if="data.isSelected">
-                {{ formatCurrency(data.lineTotal) }}
-              </span>
-              <span v-else class="text-muted">-</span>
-            </div>
-          </template>
-        </DataTableWithPaging>
+          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+            <template #body="slotProps">
+              <div v-if="!slotProps.data.stockNumber">
+                <input
+                  v-model="slotProps.data.productNumber"
+                  type="text"
+                  class="form-control bg-input input-bg"
+                  @blur="onBlurDescription(slotProps.data, slotProps.index, 'productNumber')"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+              </div>
+              <div v-else>
+                <span>{{ slotProps.data.productNumber }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="description" header="รายละเอียด" style="min-width: 200px">
+            <template #body="slotProps">
+              <input
+                v-model="slotProps.data.description"
+                type="text"
+                class="form-control bg-input input-bg"
+                @blur="onBlurDescription(slotProps.data, slotProps.index, 'description')"
+                style="background-color: #b5dad4; width: 100%"
+              />
+            </template>
+          </Column>
+
+          <!-- Materials Columns like Quotation -->
+          <Column field="gold" style="min-width: 120px; max-width: 300px">
+            <template #body="slotProps">
+              <div v-if="slotProps.data.materials">
+                <div
+                  v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
+                  :key="idx"
+                  class="material-cell"
+                >
+                  <div class="material-typecode-gold">
+                    {{ item.typeCode }}
+                  </div>
+                  <div class="material-weight">
+                    {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="diamond" style="min-width: 140px; max-width: 300px">
+            <template #body="slotProps">
+              <div v-if="slotProps.data.materials">
+                <div
+                  v-for="(item, idx) in slotProps.data.materials.filter(
+                    (m) => m.type === 'Diamond'
+                  )"
+                  :key="idx"
+                  class="material-cell"
+                >
+                  <div class="material-typecode">
+                    {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  </div>
+                  <div class="material-weight">
+                    {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="gem" style="min-width: 140px; max-width: 300px">
+            <template #body="slotProps">
+              <div v-if="slotProps.data.materials">
+                <div
+                  v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
+                  :key="idx"
+                  class="material-cell"
+                >
+                  <div class="material-typecode">
+                    {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  </div>
+                  <div class="material-weight">
+                    {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2)
+                }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <input
+                  v-model.number="slotProps.data.appraisalPrice"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  step="any"
+                  @blur="onBlurPrice(slotProps.data, slotProps.index, 'appraisalPrice')"
+                  @input="recalculateAll"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+              </div>
+            </template>
+          </Column>
+
+          <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+            <template #body>
+              <div class="qty-container">
+                <span>{{
+                  `${formSaleOrder.discountPercent ? `${formSaleOrder.discountPercent} %` : `0 %`}`
+                }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  (
+                    Number(slotProps.data.appraisalPrice || 0) *
+                    (1 - (formSaleOrder.discountPercent || 0) / 100)
+                  ).toFixed(2)
+                }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
+            <template #body>
+              <div class="qty-container">
+                <span>{{ formSaleOrder.currencyRate }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column
+            field="priceAfterMultiply"
+            :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '"
+            style="min-width: 150px"
+          >
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  (
+                    (Number(slotProps.data.appraisalPrice || 0) *
+                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                    (formSaleOrder.currencyRate || 1)
+                  ).toFixed(2)
+                }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="qty" header="จำนวน" style="width: 80px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <input
+                  v-model.number="slotProps.data.qty"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  step="1"
+                  @blur="onBlurQty(slotProps.data, slotProps.index, 'qty')"
+                  @input="recalculateAll"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+              </div>
+            </template>
+          </Column>
+
+          <Column
+            field="total"
+            :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '"
+            style="min-width: 150px"
+          >
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  (
+                    ((Number(slotProps.data.appraisalPrice || 0) *
+                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                      (formSaleOrder.currencyRate || 1)) *
+                    (Number(slotProps.data.qty) || 0)
+                  ).toFixed(2)
+                }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <ColumnGroup type="footer">
+            <!-- total -->
+            <Row>
+              <Column :colspan="5">
+                <template #footer>
+                  <div class="text-left type-container">
+                    <span class="mr-2">Net Weight Of Merchandise</span>
+                    <span class="mr-2">{{ getNetWeight(stockItems) }}</span>
+                    <span>gms.</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>รวม</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getGoldWeight(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getDiamondWeight(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getGemWeight(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumAppraisalPrice(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumDiscountPrice(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumConvertedPrice(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumQty(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumTotalConvertedPrice(stockItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- freight -->
+            <Row>
+              <Column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>Freight & Insurance</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="qty-container">
+                    <input
+                      style="background-color: #b5dad4"
+                      v-model="formSaleOrder.freight"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      step="any"
+                      min="0"
+                      required
+                      @blur="onBlurFreight(formSaleOrder.freight)"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- total after discount -->
+            <Row>
+              <Column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ราคารวม</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ formatPrice(calculateGrandTotal()) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+          </ColumnGroup>
+        </DataTable>
+      </div>
+    </div>
+
+    <!-- Copy Items Table (without Stock ID - requires production) -->
+    <div class="card-container mt-3" v-if="copyItems.length > 0">
+      <div class="card-header">
+        <h6 class="mb-0">สินค้าสำเนา (ต้องออกใบสั่งผลิตก่อน)</h6>
+        <div class="card-header-actions">
+          <span class="badge badge-warning">{{ copyItems.length }} รายการ</span>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <DataTable
+          :value="copyItems"
+          dataKey="productNumber"
+          :scrollable="true"
+          scrollHeight="10000000px"
+          class="p-datatable-sm"
+          stripedRows
+          responsiveLayout="scroll"
+        >
+          <!-- Product Number Column -->
+          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+            <template #body="slotProps">
+              <span class="font-weight-bold">{{ slotProps.data.productNumber }}</span>
+            </template>
+          </Column>
+
+          <!-- Description Column -->
+          <Column field="description" header="รายละเอียด" style="min-width: 200px">
+            <template #body="slotProps">
+              <div class="product-description">
+                {{ slotProps.data.description }}
+              </div>
+            </template>
+          </Column>
+
+          <!-- Materials Columns like Quotation -->
+          <Column field="gold" header="ทอง" style="min-width: 120px">
+            <template #body="slotProps">
+              <div v-if="slotProps.data.materials">
+                <div
+                  v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
+                  :key="idx"
+                  class="material-cell"
+                >
+                  <div class="material-typecode-gold">
+                    {{ item.typeCode }}
+                  </div>
+                  <div class="material-weight">
+                    {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-muted">-</div>
+            </template>
+          </Column>
+
+          <Column field="diamond" header="เพชร" style="min-width: 140px">
+            <template #body="slotProps">
+              <div v-if="slotProps.data.materials">
+                <div
+                  v-for="(item, idx) in slotProps.data.materials.filter(
+                    (m) => m.type === 'Diamond'
+                  )"
+                  :key="idx"
+                  class="material-cell"
+                >
+                  <div class="material-typecode">
+                    {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  </div>
+                  <div class="material-weight">
+                    {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-muted">-</div>
+            </template>
+          </Column>
+
+          <Column field="gem" header="พลอย" style="min-width: 140px">
+            <template #body="slotProps">
+              <div v-if="slotProps.data.materials">
+                <div
+                  v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
+                  :key="idx"
+                  class="material-cell"
+                >
+                  <div class="material-typecode">
+                    {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  </div>
+                  <div class="material-weight">
+                    {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-muted">-</div>
+            </template>
+          </Column>
+
+          <!-- Original Price Column -->
+          <Column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{ formatCurrency(slotProps.data.price || 0) }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <!-- Appraisal Price Column (Editable) -->
+          <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <input
+                  v-model.number="slotProps.data.appraisalPrice"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  step="any"
+                  @blur="onBlurPrice(slotProps.data, slotProps.index, 'appraisalPrice')"
+                  @input="recalculateAll"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+              </div>
+            </template>
+          </Column>
+
+          <!-- Discount Percent Column -->
+          <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+            <template #body>
+              <div class="qty-container">
+                <span>{{ formSaleOrder.discountPercent || 0 }}%</span>
+              </div>
+            </template>
+          </Column>
+
+          <!-- Discount Price Column -->
+          <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{ formatCurrency(getDiscountedPrice(slotProps.data)) }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <!-- Currency Rate Column -->
+          <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
+            <template #body>
+              <div class="qty-container">
+                <span>{{ formSaleOrder.currencyRate || 1 }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <!-- Converted Price Column -->
+          <Column
+            field="priceAfterMultiply"
+            :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || 'USD') + ')'"
+            style="min-width: 150px"
+          >
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  formatCurrency(getConvertedPrice(slotProps.data), formSaleOrder.currencyUnit)
+                }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <!-- Quantity Column -->
+          <Column field="qty" header="จำนวน" style="width: 80px">
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{ slotProps.data.qty || 0 }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <!-- Total Converted Price Column -->
+          <Column
+            field="total"
+            :header="'รวมราคา (' + (formSaleOrder.currencyUnit || 'USD') + ')'"
+            style="min-width: 150px"
+          >
+            <template #body="slotProps">
+              <div class="text-right font-weight-bold text-warning">
+                {{
+                  formatCurrency(getTotalConvertedPrice(slotProps.data), formSaleOrder.currencyUnit)
+                }}
+              </div>
+            </template>
+          </Column>
+
+          <!-- Action Column -->
+          <Column header="จัดการ" style="width: 120px">
+            <template #body="slotProps">
+              <div class="btn-action-container">
+                <button
+                  class="btn btn-sm btn-warning mr-1"
+                  type="button"
+                  @click="createProductionOrder(slotProps.data)"
+                  title="สร้างใบสั่งผลิต"
+                >
+                  <i class="bi bi-tools"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-red"
+                  type="button"
+                  title="ลบ"
+                  @click="deleteCopyItem(slotProps.index)"
+                >
+                  <span class="bi bi-trash"></span>
+                </button>
+              </div>
+            </template>
+          </Column>
+        </DataTable>
       </div>
     </div>
 
@@ -341,7 +998,9 @@
               </div>
               <div class="summary-item" v-if="formSaleOrder.depositRequired">
                 <span>เงินมัดจำ ({{ formSaleOrder.depositPercentage || 0 }}%):</span>
-                <span class="font-weight-bold text-info">{{ formatCurrency(productionDepositAmount) }}</span>
+                <span class="font-weight-bold text-info">{{
+                  formatCurrency(productionDepositAmount)
+                }}</span>
               </div>
             </div>
           </div>
@@ -355,11 +1014,15 @@
               </div>
               <div class="summary-item" v-if="formSaleOrder.depositRequired">
                 <span>เงินมัดจำที่ต้องชำระ:</span>
-                <span class="font-weight-bold text-success">{{ formatCurrency(totalDepositAmount) }}</span>
+                <span class="font-weight-bold text-success">{{
+                  formatCurrency(totalDepositAmount)
+                }}</span>
               </div>
               <div class="summary-item border-top pt-2 mt-2">
                 <span class="h6">ยอดรวมใบสั่งขาย:</span>
-                <span class="h6 font-weight-bold text-primary">{{ formatCurrency(totalOrderAmount) }}</span>
+                <span class="h6 font-weight-bold text-primary">{{
+                  formatCurrency(totalOrderAmount)
+                }}</span>
               </div>
             </div>
           </div>
@@ -408,18 +1071,15 @@
               <span class="badge badge-info">{{ selectedProductionItemsCount }} รายการ</span>
             </div>
             <p class="text-muted">สินค้าที่ต้องผลิตตามคำสั่งซื้อ</p>
-            <button 
+            <button
               class="btn btn-warning mr-2"
-              @click="createProductionOrder"
+              @click="createProductionOrderForSale"
               :disabled="loading"
             >
               <i class="bi bi-tools mr-1"></i>
               สร้างใบสั่งผลิต
             </button>
-            <button 
-              class="btn btn-outline-info"
-              @click="viewProductionStatus"
-            >
+            <button class="btn btn-outline-info" @click="viewProductionStatus">
               <i class="bi bi-eye mr-1"></i>
               ดูสถานะการผลิต
             </button>
@@ -432,18 +1092,11 @@
               <span class="badge badge-success">{{ selectedStockItemsCount }} รายการ</span>
             </div>
             <p class="text-muted">สินค้าคงคลังที่ต้องจองสำหรับลูกค้า</p>
-            <button 
-              class="btn btn-info mr-2"
-              @click="createStockReservation"
-              :disabled="loading"
-            >
+            <button class="btn btn-info mr-2" @click="createStockReservation" :disabled="loading">
               <i class="bi bi-bookmark mr-1"></i>
               จองสต็อกสินค้า
             </button>
-            <button 
-              class="btn btn-outline-info"
-              @click="viewStockStatus"
-            >
+            <button class="btn btn-outline-info" @click="viewStockStatus">
               <i class="bi bi-eye mr-1"></i>
               ดูสถานะสต็อก
             </button>
@@ -456,11 +1109,7 @@
               <span class="badge badge-primary">พร้อมส่งมอบ</span>
             </div>
             <p class="text-muted">จัดส่งสินค้าให้ลูกค้าตามที่สั่งซื้อ</p>
-            <button 
-              class="btn btn-primary mr-2"
-              @click="createDeliveryNote"
-              :disabled="loading"
-            >
+            <button class="btn btn-primary mr-2" @click="createDeliveryNote" :disabled="loading">
               <i class="bi bi-truck mr-1"></i>
               สร้างใบส่งของ
             </button>
@@ -473,18 +1122,11 @@
               <span class="badge badge-warning">{{ formatCurrency(totalOrderAmount) }}</span>
             </div>
             <p class="text-muted">ออกใบแจ้งหนี้และติดตามการชำระเงิน</p>
-            <button 
-              class="btn btn-success mr-2"
-              @click="createInvoice"
-              :disabled="loading"
-            >
+            <button class="btn btn-success mr-2" @click="createInvoice" :disabled="loading">
               <i class="bi bi-receipt mr-1"></i>
               สร้างใบแจ้งหนี้
             </button>
-            <button 
-              class="btn btn-outline-success"
-              @click="viewPaymentStatus"
-            >
+            <button class="btn btn-outline-success" @click="viewPaymentStatus">
               <i class="bi bi-wallet2 mr-1"></i>
               ติดตามการชำระ
             </button>
@@ -504,31 +1146,28 @@
         <i class="bi bi-file-earmark mr-1"></i>
         บันทึกร่าง
       </button>
-      
+
       <button
         class="btn btn-success mr-2"
         type="button"
         @click="confirmOrder"
-        :disabled="loading || selectedItemsCount === 0 || hasValidationErrors || formSaleOrder.status === 'Confirmed'"
+        :disabled="
+          loading ||
+          selectedItemsCount === 0 ||
+          hasValidationErrors ||
+          formSaleOrder.status === 'Confirmed'
+        "
       >
         <i class="bi bi-check-circle mr-1"></i>
         {{ formSaleOrder.status === 'Confirmed' ? 'ยืนยันแล้ว' : 'ยืนยันใบสั่งขาย' }}
       </button>
 
-      <button
-        class="btn btn-secondary mr-2"
-        type="button"
-        @click="clearForm"
-      >
+      <button class="btn btn-secondary mr-2" type="button" @click="clearForm">
         <i class="bi bi-arrow-clockwise mr-1"></i>
         ล้างข้อมูล
       </button>
 
-      <button
-        class="btn btn-outline-danger mr-2"
-        type="button"
-        @click="cancelOrder"
-      >
+      <button class="btn btn-outline-danger mr-2" type="button" @click="cancelOrder">
         <i class="bi bi-x-circle mr-1"></i>
         ยกเลิก
       </button>
@@ -545,12 +1184,39 @@
       </button>
     </div>
   </div>
+
+  <!-- Edit Stock Modal -->
+  <edit-stock-view
+    :isShow="isShow.isEditStock"
+    :modelStock="modelEditStock"
+    @closeModal="onCloseEditStockModal"
+  />
+
+  <!-- Customer Modals -->
+  <CustomerSearchModal
+    :showModal="isShow.searchCustomer"
+    @closeModal="onCloseCustomerModal"
+    @customerSelected="onCustomerSelected"
+  />
+
+  <CustomerCreateModal
+    :showModal="isShow.createCustomer"
+    @closeModal="onCloseCustomerModal"
+    @customerCreated="onCustomerCreated"
+  />
 </template>
 
 <script>
-import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ColumnGroup from 'primevue/columngroup'
+import Row from 'primevue/row'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
+import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
+import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
+import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
@@ -558,12 +1224,19 @@ export default {
   name: 'SaleOrderView',
 
   components: {
-    DataTableWithPaging,
+    DataTable,
+    Column,
+    ColumnGroup,
+    Row,
     Calendar,
-    Dropdown
+    Dropdown,
+    imagePreview,
+    editStockView,
+    CustomerSearchModal,
+    CustomerCreateModal
   },
 
-  emits: ['update:modelForm', 'update:modelQuotation'],
+  emits: ['update:modelForm', 'update:modelQuotation', 'update:modelSaleOrder'],
 
   props: {
     modelForm: {
@@ -573,65 +1246,86 @@ export default {
     modelQuotation: {
       type: Object,
       default: () => ({})
+    },
+    modelSaleOrder: {
+      type: Object,
+      default: () => ({})
     }
   },
 
   data() {
     return {
       loading: false,
+      productSearch: {
+        stockNumber: '',
+        stockNumberOrigin: '',
+        productNumber: ''
+      },
       quotationItems: [], // Items from quotation
-      
-      // Column definition for DataTableWithPaging
+      stockItems: [], // Items with stock ID
+      copyItems: [], // Items without stock ID (copy items)
+      type: 'STOCK-PRODUCT',
+
+      // Modal states
+      isShow: {
+        isEditStock: false,
+        searchCustomer: false,
+        createCustomer: false
+      },
+      modelEditStock: {},
+      editStockIndex: null,
+
+      // Column definition for legacy support
       quotationItemColumns: [
-        { 
-          field: 'isSelected', 
-          header: 'เลือก', 
+        {
+          field: 'isSelected',
+          header: 'เลือก',
           width: '80px',
           sortable: false
         },
-        { 
-          field: 'itemType', 
-          header: 'ประเภท', 
+        {
+          field: 'itemType',
+          header: 'ประเภท',
           width: '100px'
         },
-        { 
-          field: 'productNumber', 
-          header: 'รหัสสินค้า', 
+        {
+          field: 'productNumber',
+          header: 'รหัสสินค้า',
           minWidth: '120px'
         },
-        { 
-          field: 'productName', 
-          header: 'ชื่อสินค้า', 
+        {
+          field: 'productName',
+          header: 'ชื่อสินค้า',
           minWidth: '200px'
         },
-        { 
-          field: 'availabilityInfo', 
-          header: 'สถานะ/ข้อมูลเพิ่มเติม', 
+        {
+          field: 'availabilityInfo',
+          header: 'สถานะ/ข้อมูลเพิ่มเติม',
           minWidth: '180px',
           sortable: false
         },
-        { 
-          field: 'quantity', 
-          header: 'จำนวน', 
+        {
+          field: 'quantity',
+          header: 'จำนวน',
           minWidth: '100px',
           sortable: false
         },
-        { 
-          field: 'unitPrice', 
-          header: 'ราคาต่อหน่วย', 
+        {
+          field: 'unitPrice',
+          header: 'ราคาต่อหน่วย',
           minWidth: '120px',
           align: 'right',
           format: 'currency'
         },
-        { 
-          field: 'lineTotal', 
-          header: 'ราคารวม', 
+        {
+          field: 'lineTotal',
+          header: 'ราคารวม',
           minWidth: '120px',
           align: 'right',
           sortable: false
         }
       ],
-      
+
       formSaleOrder: {
         salesOrderId: null,
         quotationId: null,
@@ -650,7 +1344,15 @@ export default {
         depositPercentage: 50,
         priority: 'normal',
         totalAmount: 0,
-        remark: ''
+        remark: '',
+        customerRemark: '',
+        // Currency and pricing properties
+        currencyUnit: 'US$',
+        currencyRate: 33.0,
+        markup: 3.5,
+        discountPercent: 0,
+        goldPerOz: 2000,
+        freight: 0
       },
 
       statusOptions: [
@@ -677,47 +1379,56 @@ export default {
   },
 
   computed: {
+    // Check if quotation data is loaded
+    hasQuotationData() {
+      return this.stockItems.length > 0 || this.copyItems.length > 0
+    },
+
     // Selection state
     allItemsSelected() {
-      return this.quotationItems.length > 0 && this.quotationItems.every(item => item.isSelected)
+      return this.quotationItems.length > 0 && this.quotationItems.every((item) => item.isSelected)
     },
 
     selectedItems() {
-      return this.quotationItems.filter(item => item.isSelected)
+      return this.quotationItems.filter((item) => item.isSelected)
     },
 
     selectedItemsCount() {
-      return this.selectedItems.length
+      return this.stockItems.length + this.copyItems.length
     },
 
     selectedStockItemsCount() {
-      return this.selectedItems.filter(item => item.itemType === 'Stock').length
+      return this.stockItems.length
     },
 
     selectedProductionItemsCount() {
-      return this.selectedItems.filter(item => item.itemType === 'Production').length
+      return this.copyItems.length
     },
 
     // Price calculations
     selectedItemsTotal() {
-      return this.selectedItems.reduce((sum, item) => sum + (item.lineTotal || 0), 0)
+      const stockTotal = this.stockItems.reduce(
+        (sum, item) => sum + (item.price || 0) * (item.qty || 0),
+        0
+      )
+      const copyTotal = this.copyItems.reduce(
+        (sum, item) => sum + (item.price || 0) * (item.qty || 0),
+        0
+      )
+      return stockTotal + copyTotal
     },
 
     stockItemsTotal() {
-      return this.selectedItems
-        .filter(item => item.itemType === 'Stock')
-        .reduce((sum, item) => sum + (item.lineTotal || 0), 0)
+      return this.stockItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 0), 0)
     },
 
     productionItemsTotal() {
-      return this.selectedItems
-        .filter(item => item.itemType === 'Production')
-        .reduce((sum, item) => sum + (item.lineTotal || 0), 0)
+      return this.copyItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 0), 0)
     },
 
     productionDepositAmount() {
       if (!this.formSaleOrder.depositRequired) return 0
-      return this.productionItemsTotal * (this.formSaleOrder.depositPercentage || 0) / 100
+      return (this.productionItemsTotal * (this.formSaleOrder.depositPercentage || 0)) / 100
     },
 
     totalDepositAmount() {
@@ -731,21 +1442,14 @@ export default {
     // Validation
     validationErrors() {
       const errors = []
-      
-      if (this.selectedItemsCount === 0) {
-        errors.push('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+
+      if (!this.hasQuotationData) {
+        errors.push('กรุณาเลือกใบเสนอราคาก่อน')
       }
 
-      // Check stock availability
-      this.selectedItems.forEach(item => {
-        if (item.itemType === 'Stock' && this.isQuantityInvalid(item)) {
-          errors.push(`${item.productName}: จำนวนเกินคงคลัง (คงคลัง: ${item.stockAvailable})`)
-        }
-      })
-
       // Check production items deposit requirement
-      if (this.selectedProductionItemsCount > 0 && !this.formSaleOrder.depositRequired) {
-        errors.push('สินค้าผลิตต้องการเงินมัดจำ กรุณาเลือก "ต้องการเงินมัดจำ"')
+      if (this.copyItems.length > 0 && !this.formSaleOrder.depositRequired) {
+        errors.push('สินค้าสำเนาต้องการเงินมัดจำ กรุณาเลือก "ต้องการเงินมัดจำ"')
       }
 
       return errors
@@ -773,152 +1477,129 @@ export default {
         }
       },
       deep: true
+    },
+
+    modelSaleOrder: {
+      handler(newVal) {
+        if (newVal && newVal.items && newVal.items.length > 0) {
+          this.loadQuotationData(newVal)
+        }
+      },
+      deep: true,
+      immediate: true
     }
   },
 
   methods: {
+    // Load quotation data and separate into tables
+    loadQuotationData(saleOrderData) {
+      if (!saleOrderData || !saleOrderData.items) return
+
+      // Update sale order form data
+      this.formSaleOrder = {
+        ...this.formSaleOrder,
+        quotationNumber: saleOrderData.quotationNumber,
+        customerName: saleOrderData.customer?.name || '',
+        customerAddress: saleOrderData.customer?.address || '',
+        customerPhone: saleOrderData.customer?.phone || '',
+        customerEmail: saleOrderData.customer?.email || '',
+        discountPercent: saleOrderData.discount || 0,
+        freight: saleOrderData.freight || 0,
+        // Copy currency settings from quotation if available
+        currencyUnit: saleOrderData.currencyUnit || 'US$',
+        currencyRate: saleOrderData.currencyRate || 33.0,
+        markup: saleOrderData.markup || 3.5,
+        goldPerOz: saleOrderData.goldPerOz || 2000
+      }
+
+      // Add appraisal price to items if not present
+      this.stockItems.forEach((item) => {
+        if (!item.appraisalPrice) {
+          item.appraisalPrice = item.price || 0
+        }
+      })
+      this.copyItems.forEach((item) => {
+        if (!item.appraisalPrice) {
+          item.appraisalPrice = item.price || 0
+        }
+      })
+
+      // Separate items based on stockId
+      this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
+      this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
+
+      console.log('Stock items:', this.stockItems)
+      console.log('Copy items:', this.copyItems)
+    },
+
+    // Product search method (like quotation)
+    async onSearchProduct() {
+      try {
+        this.loading = true
+
+        // TODO: Replace with actual API call like quotation
+        // const data = await this.productStore.fetchDataGet({ formValue: this.productSearch })
+
+        // Mock implementation for now
+        console.log('Search product:', this.productSearch)
+
+        // Simulate API response
+        const mockData = {
+          stockNumber: this.productSearch.stockNumber || 'DK-2025-001',
+          stockId: 'STK001',
+          productNumber: this.productSearch.productNumber || 'R08R50001L',
+          description: 'Gold Ring with Diamond',
+          price: 50000,
+          appraisalPrice: 55000,
+          qty: 1,
+          materials: [
+            { type: 'Gold', typeCode: '18K', weight: 5.5 },
+            { type: 'Diamond', typeCode: 'Round', weight: 0.5, qty: 1 }
+          ]
+        }
+
+        // Add product to stockItems (will go to appropriate table based on stockId)
+        if (mockData.stockId) {
+          this.stockItems.push(mockData)
+        } else {
+          this.copyItems.push(mockData)
+        }
+
+        // Clear search form
+        this.productSearch = {
+          stockNumber: '',
+          stockNumberOrigin: '',
+          productNumber: ''
+        }
+
+        console.log('Product added successfully')
+      } catch (error) {
+        console.error('Error searching product:', error)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Delete item methods (like quotation)
+    deleteStockItem(index) {
+      this.stockItems.splice(index, 1)
+      this.recalculateAll()
+      console.log('Stock item deleted at index:', index)
+    },
+
+    deleteCopyItem(index) {
+      this.copyItems.splice(index, 1)
+      this.recalculateAll()
+      console.log('Copy item deleted at index:', index)
+    },
+
+    // Create production order for copy items
+    createProductionOrder(item) {
+      console.log('Create production order for:', item)
+      // TODO: Implement production order creation
+    },
+
     // Demo data loading methods
-    loadDemoQuotation1() {
-      // สินค้าคงคลังเท่านั้น
-      this.loadDemoData({
-        quotationNumber: 'QUO-2025-001',
-        customerName: 'บริษัท ABC จำกัด',
-        customerAddress: '123 ถนนสุขุมวิท กรุงเทพฯ 10110',
-        customerPhone: '02-123-4567',
-        customerEmail: 'contact@abc.com',
-        items: [
-          {
-            productId: 1,
-            productNumber: 'R001',
-            productName: 'แหวนเพชรคู่ รุ่นคลาสสิค',
-            itemType: 'Stock',
-            quantity: 2,
-            unitPrice: 15000,
-            lineTotal: 30000,
-            isSelected: false,
-            stockAvailable: 5
-          },
-          {
-            productId: 2,
-            productNumber: 'B001',
-            productName: 'สร้อยข้อมือทองคำแท้ 18K',
-            itemType: 'Stock',
-            quantity: 1,
-            unitPrice: 12000,
-            lineTotal: 12000,
-            isSelected: false,
-            stockAvailable: 3
-          }
-        ]
-      })
-    },
-
-    loadDemoQuotation2() {
-      // สินค้าผลิตเท่านั้น
-      this.loadDemoData({
-        quotationNumber: 'QUO-2025-002',
-        customerName: 'คุณสมชาย ใจดี',
-        customerAddress: '456 ถนนเพชรบุรี กรุงเทพฯ 10400',
-        customerPhone: '08-987-6543',
-        customerEmail: 'somchai@email.com',
-        items: [
-          {
-            productId: 3,
-            productNumber: 'N002',
-            productName: 'สร้อยคอทองคำขาว สั่งทำพิเศษ',
-            itemType: 'Production',
-            quantity: 1,
-            unitPrice: 25000,
-            lineTotal: 25000,
-            isSelected: false,
-            estimatedProductionDays: 14
-          },
-          {
-            productId: 4,
-            productNumber: 'E001',
-            productName: 'ต่างหูเพชรแบบสั่งทำ',
-            itemType: 'Production',
-            quantity: 1,
-            unitPrice: 18000,
-            lineTotal: 18000,
-            isSelected: false,
-            estimatedProductionDays: 10
-          }
-        ]
-      })
-    },
-
-    loadDemoQuotation3() {
-      // สินค้าผสม (คงคลัง + ผลิต)
-      this.loadDemoData({
-        quotationNumber: 'QUO-2025-003',
-        customerName: 'บริษัท XYZ จำกัด',
-        customerAddress: '789 ถนนรัชดาภิเษก กรุงเทพฯ 10320',
-        customerPhone: '02-555-0123',
-        customerEmail: 'order@xyz.co.th',
-        items: [
-          {
-            productId: 5,
-            productNumber: 'R002',
-            productName: 'แหวนทองคำ 18K พร้อมส่ง',
-            itemType: 'Stock',
-            quantity: 3,
-            unitPrice: 8000,
-            lineTotal: 24000,
-            isSelected: false,
-            stockAvailable: 8
-          },
-          {
-            productId: 6,
-            productNumber: 'P001',
-            productName: 'จี้ดวงใจ สั่งทำตามแบบ',
-            itemType: 'Production',
-            quantity: 2,
-            unitPrice: 15000,
-            lineTotal: 30000,
-            isSelected: false,
-            estimatedProductionDays: 7
-          },
-          {
-            productId: 7,
-            productNumber: 'B002',
-            productName: 'กำไลเงินแท้ 925',
-            itemType: 'Stock',
-            quantity: 1,
-            unitPrice: 3500,
-            lineTotal: 3500,
-            isSelected: false,
-            stockAvailable: 2
-          }
-        ]
-      })
-    },
-
-    loadDemoData(data) {
-      // โหลดข้อมูลลูกค้า
-      this.formSaleOrder.customerName = data.customerName
-      this.formSaleOrder.customerAddress = data.customerAddress
-      this.formSaleOrder.customerPhone = data.customerPhone
-      this.formSaleOrder.customerEmail = data.customerEmail
-      this.formSaleOrder.quotationNumber = data.quotationNumber
-      
-      // โหลดรายการสินค้า
-      this.quotationItems = data.items
-      
-      // ตั้งค่าเลขที่ใบสั่งขายอัตโนมัติ
-      if (!this.formSaleOrder.number) {
-        this.formSaleOrder.number = 'SO-2025-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0')
-      }
-      
-      // ตั้งค่าวันที่คาดหวังส่งมอบ (14 วันจากวันนี้)
-      if (!this.formSaleOrder.expectedDeliveryDate) {
-        const deliveryDate = new Date()
-        deliveryDate.setDate(deliveryDate.getDate() + 14)
-        this.formSaleOrder.expectedDeliveryDate = deliveryDate
-      }
-      
-      console.log('โหลดข้อมูลตัวอย่างเรียบร้อย:', data.quotationNumber)
-    },
 
     async handleProductSearch(searchData) {
       console.log('Handle product search:', searchData)
@@ -928,48 +1609,16 @@ export default {
     async handleQuotationSearch(quotationData) {
       console.log('Handle quotation search:', quotationData)
       this.formSaleOrder.quotationNumber = quotationData.Number
-      await this.loadQuotationData(quotationData.Number)
+      await this.loadQuotationDataFromAPI()
     },
 
-    async loadQuotationData(quotationNumber) {
+    async loadQuotationDataFromAPI() {
       try {
         this.loading = true
-        
+
         // TODO: Replace with actual API call
         // const response = await this.quotationStore.fetchQuotationById(quotationId)
-        
-        // Mock data for demonstration
-        this.quotationItems = [
-          {
-            productId: 1,
-            productNumber: 'R001',
-            productName: 'Diamond Ring Set',
-            itemType: 'Stock',
-            quantity: 2,
-            unitPrice: 15000,
-            lineTotal: 30000,
-            isSelected: false,
-            stockAvailable: 5
-          },
-          {
-            productId: 2,
-            productNumber: 'N002', 
-            productName: 'Custom Gold Necklace',
-            itemType: 'Production',
-            quantity: 1,
-            unitPrice: 25000,
-            lineTotal: 25000,
-            isSelected: false,
-            estimatedProductionDays: 14
-          }
-        ]
-
-        // Update customer info from quotation
-        this.formSaleOrder.customerName = 'บริษัท ABC จำกัด'
-        this.formSaleOrder.customerAddress = '123 ถนนสุขุมวิท กรุงเทพฯ'
-        this.formSaleOrder.customerPhone = '02-123-4567'
-        this.formSaleOrder.customerEmail = 'contact@abc.com'
-        
+        // this.loadQuotationData(response.data)
       } catch (error) {
         console.error('Error loading quotation:', error)
       } finally {
@@ -980,7 +1629,7 @@ export default {
     // Selection methods
     toggleAllItems() {
       const newState = !this.allItemsSelected
-      this.quotationItems.forEach(item => {
+      this.quotationItems.forEach((item) => {
         item.isSelected = newState
         this.updateItemTotal(item)
       })
@@ -1045,7 +1694,7 @@ export default {
     async saveDraft() {
       try {
         this.loading = true
-        
+
         const saleOrderData = {
           ...this.formSaleOrder,
           status: 'Draft',
@@ -1054,7 +1703,7 @@ export default {
 
         console.log('Save draft:', saleOrderData)
         // TODO: Implement save draft API call
-        
+
         success('บันทึกร่างเรียบร้อยแล้ว', 'บันทึกสำเร็จ')
       } catch (error) {
         console.error('Error saving draft:', error)
@@ -1072,7 +1721,7 @@ export default {
 
       try {
         this.loading = true
-        
+
         const saleOrderData = {
           ...this.formSaleOrder,
           status: 'Confirmed',
@@ -1081,7 +1730,7 @@ export default {
 
         console.log('Confirm order:', saleOrderData)
         // TODO: Implement confirm order API call
-        
+
         success('ยืนยันใบสั่งขายเรียบร้อยแล้ว', 'ยืนยันสำเร็จ')
       } catch (error) {
         console.error('Error confirming order:', error)
@@ -1133,14 +1782,275 @@ export default {
       }
     },
 
-    formatCurrency(amount) {
-      return formatDecimal(amount, 2) + ' THB'
+    formatCurrency(amount, currency = 'THB') {
+      const formattedAmount = formatDecimal(amount, 2)
+      return currency === 'THB' ? formattedAmount + ' THB' : formattedAmount
+    },
+
+    // Price calculation methods like quotation
+    getAppraisalPrice(item) {
+      return item.appraisalPrice || item.price || 0
+    },
+
+    getDiscountedPrice(item) {
+      const appraisalPrice = this.getAppraisalPrice(item)
+      const discountPercent = this.formSaleOrder.discountPercent || 0
+      return appraisalPrice * (1 - discountPercent / 100)
+    },
+
+    getConvertedPrice(item) {
+      const discountedPrice = this.getDiscountedPrice(item)
+      const currencyRate = this.formSaleOrder.currencyRate || 1
+      return discountedPrice / currencyRate
+    },
+
+    getTotalConvertedPrice(item) {
+      const convertedPrice = this.getConvertedPrice(item)
+      const qty = item.qty || 0
+      return convertedPrice * qty
+    },
+
+    // Recalculate all prices when currency/rates change
+    recalculateAll() {
+      this.$forceUpdate()
+    },
+
+    // Handle price input blur event (like quotation)
+    onBlurPrice(item, index, fieldName) {
+      let newCal = {
+        ...item,
+        [fieldName]: item[fieldName] ? Number(item[fieldName]).toFixed(2) : 0,
+        totalPrice: Number(item.price).toFixed(2)
+      }
+      this.stockItems[index] = newCal
+      this.recalculateAll()
+    },
+
+    onBlurFreight(freight) {
+      this.formSaleOrder.freight = freight ? Number(freight).toFixed(2) : 0
+    },
+
+    onBlurQty(item, index, fieldName) {
+      let newCal = {
+        ...item,
+        [fieldName]: item[fieldName] ? Number(item[fieldName]) : 0
+      }
+      this.stockItems[index] = newCal
+    },
+
+    onBlurDescription(item, index, fieldName) {
+      let newCal = {
+        ...item,
+        [fieldName]: item[fieldName] ? item[fieldName] : ''
+      }
+      this.stockItems[index] = newCal
+    },
+
+    // Image handling
+    handleImageLoaded(imageData, index) {
+      if (this.stockItems[index]) {
+        this.stockItems[index] = {
+          ...this.stockItems[index],
+          imageBase64: imageData.base64
+        }
+      }
+    },
+
+    // Edit stock modal
+    onEditStock(item, index) {
+      this.modelEditStock = JSON.parse(JSON.stringify(item))
+      this.editStockIndex = index
+      this.isShow.isEditStock = true
+    },
+
+    onCloseEditStockModal(payload) {
+      this.isShow.isEditStock = false
+      if (payload && payload.action === 'save' && payload.data) {
+        this.stockItems[this.editStockIndex] = JSON.parse(JSON.stringify(payload.data))
+
+        if (payload.data.priceDiscount !== undefined && payload.data.priceDiscount !== null) {
+          this.stockItems[this.editStockIndex].discountPrice = payload.data.priceDiscount
+        }
+      }
+      this.modelEditStock = {}
+      this.editStockIndex = null
+    },
+
+    // Copy item functionality
+    copyItem(item) {
+      const newItem = JSON.parse(JSON.stringify(item))
+      newItem.stockNumber = null
+      newItem.stockNumberOrigin = null
+      newItem._copyId = Date.now() + Math.random()
+
+      if (newItem.materials && Array.isArray(newItem.materials)) {
+        newItem.materials = newItem.materials.map((material) => ({ ...material }))
+      }
+
+      if (newItem.priceTransactions && Array.isArray(newItem.priceTransactions)) {
+        newItem.priceTransactions = newItem.priceTransactions.map((transaction) => ({
+          ...transaction
+        }))
+      }
+
+      newItem.appraisalPrice = newItem.priceOrigin || newItem.price || 0
+      this.stockItems.push(newItem)
+    },
+
+    // Customer-related methods
+    onSearchCustomer() {
+      this.isShow.searchCustomer = true
+    },
+
+    onCreateCustomer() {
+      this.isShow.createCustomer = true
+    },
+
+    onCustomerSelected(customerData) {
+      this.formSaleOrder = {
+        ...this.formSaleOrder,
+        customerName: customerData.nameTh || customerData.nameEn || '',
+        customerAddress: customerData.address || '',
+        customerPhone: customerData.telephone1 || '',
+        customerEmail: customerData.email || '',
+        customerId: customerData.id
+      }
+      this.isShow.searchCustomer = false
+    },
+
+    onCustomerCreated(customerData) {
+      this.formSaleOrder = {
+        ...this.formSaleOrder,
+        customerName: customerData.nameTh || customerData.nameEn || '',
+        customerAddress: customerData.address || '',
+        customerPhone: customerData.telephone1 || '',
+        customerEmail: customerData.email || '',
+        customerId: customerData.id
+      }
+      this.isShow.createCustomer = false
+    },
+
+    onCloseCustomerModal() {
+      this.isShow.searchCustomer = false
+      this.isShow.createCustomer = false
+    },
+
+    // Format price like quotation
+    formatPrice(price) {
+      const numPrice = Number(price)
+      return numPrice.toLocaleString('th-TH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    },
+
+    // Calculate totals
+    calculateGrandTotal() {
+      const stockTotal = this.stockItems.reduce((sum, item) => {
+        return sum + this.getTotalConvertedPrice(item)
+      }, 0)
+      const copyTotal = this.copyItems.reduce((sum, item) => {
+        return sum + this.getTotalConvertedPrice(item)
+      }, 0)
+      return stockTotal + copyTotal + (this.formSaleOrder.freight || 0)
+    },
+
+    calculateStockTotal() {
+      return this.getSumTotalConvertedPrice(this.stockItems) + (this.formSaleOrder.freight || 0)
+    },
+
+    // Weight calculation methods
+    getNetWeight(items) {
+      return items
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials.reduce((matSum, mat) => {
+              return matSum + (mat.weight || 0)
+            }, 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    getGoldWeight(items) {
+      return items
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials
+              .filter((m) => m.type === 'Gold')
+              .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    getDiamondWeight(items) {
+      return items
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials
+              .filter((m) => m.type === 'Diamond')
+              .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    getGemWeight(items) {
+      return items
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials
+              .filter((m) => m.type === 'Gem')
+              .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    // Sum calculation methods
+    getSumAppraisalPrice(items) {
+      return items.reduce((sum, item) => {
+        return sum + this.getAppraisalPrice(item)
+      }, 0)
+    },
+
+    getSumDiscountPrice(items) {
+      return items.reduce((sum, item) => {
+        return sum + this.getDiscountedPrice(item)
+      }, 0)
+    },
+
+    getSumConvertedPrice(items) {
+      return items.reduce((sum, item) => {
+        return sum + this.getConvertedPrice(item)
+      }, 0)
+    },
+
+    getSumQty(items) {
+      return items.reduce((sum, item) => {
+        return sum + (item.qty || 0)
+      }, 0)
+    },
+
+    getSumTotalConvertedPrice(items) {
+      return items.reduce((sum, item) => {
+        return sum + this.getTotalConvertedPrice(item)
+      }, 0)
     },
 
     // Sales Flow Navigation Methods
-    createProductionOrder() {
-      const productionItems = this.selectedItems.filter(item => item.itemType === 'Production')
-      
+    createProductionOrderForSale() {
+      const productionItems = this.selectedItems.filter((item) => item.itemType === 'Production')
+
       if (productionItems.length === 0) {
         error('ไม่พบสินค้าที่ต้องผลิต', 'ไม่สามารถสร้างใบสั่งผลิตได้')
         return
@@ -1159,8 +2069,8 @@ export default {
     },
 
     createStockReservation() {
-      const stockItems = this.selectedItems.filter(item => item.itemType === 'Stock')
-      
+      const stockItems = this.selectedItems.filter((item) => item.itemType === 'Stock')
+
       if (stockItems.length === 0) {
         error('ไม่พบสินค้าคงคลังที่ต้องจอง', 'ไม่สามารถสร้างการจองได้')
         return
@@ -1254,23 +2164,63 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+@import '@/assets/scss/overide-prime-vue/data-table-dub.scss';
+
+/* Quotation table styles */
+.input-bg {
+  background-color: #b5dad4 !important;
+}
+
+/* Align cell content to top for all columns */
+:deep(.p-column-body),
+:deep(.p-cell-text) {
+  vertical-align: top !important;
+}
+
+:deep(.p-column-body) {
+  vertical-align: top !important;
+  padding: 0.5rem 0.75rem;
+}
+
+.qty-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.type-container {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--base-font-color);
+  padding: 5px;
+}
 @import '@/assets/scss/custom-style/standard-data-table.scss';
 
 .card-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: #f7f7f7;
+  //background-color: var(--base-color);
+  //padding: 10px;
+  //margin-top: 10px;
+  //overflow: auto;
 }
 
 .card-header {
-  background: #f8f9fa;
+  background: var(--base-font-color);
   border-bottom: 1px solid #e9ecef;
-  padding: 0.75rem 1rem;
-  border-radius: 8px 8px 0 0;
+  //padding: 0.75rem 1rem;
+  border-radius: 5px 5px 0px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  font-weight: 300;
+  color: white;
 }
 
 .card-header-actions {
@@ -1288,8 +2238,8 @@ export default {
   border-radius: 4px;
   padding: 8px 12px;
   min-height: 38px;
-  display: flex;
-  align-items: center;
+  //display: flex;
+  //align-items: center;
 }
 
 .product-description {
@@ -1297,7 +2247,8 @@ export default {
   line-height: 1.4;
 }
 
-.availability-info, .production-info {
+.availability-info,
+.production-info {
   .badge {
     padding: 0.25em 0.5em;
     font-size: 0.75em;
@@ -1310,22 +2261,22 @@ export default {
   font-size: 0.75em;
   border-radius: 0.25rem;
   font-weight: 600;
-  
+
   &.badge-info {
     background-color: #17a2b8;
     color: white;
   }
-  
+
   &.badge-warning {
     background-color: #ffc107;
     color: #212529;
   }
-  
+
   &.badge-success {
     background-color: #28a745;
     color: white;
   }
-  
+
   &.badge-danger {
     background-color: #dc3545;
     color: white;
@@ -1337,7 +2288,7 @@ export default {
   padding: 1rem;
   border-radius: 6px;
   height: 100%;
-  
+
   h6 {
     color: #495057;
     margin-bottom: 0.75rem;
@@ -1351,11 +2302,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   &.border-top {
     border-top: 1px solid #dee2e6;
     padding-top: 0.5rem;
@@ -1384,7 +2335,7 @@ export default {
   margin-bottom: 1rem;
   border: 1px solid transparent;
   border-radius: 0.25rem;
-  
+
   &.alert-warning {
     color: #856404;
     background-color: #fff3cd;
@@ -1424,6 +2375,131 @@ export default {
   color: #17a2b8 !important;
 }
 
+/* Customer Section Styles */
+.customer-details-section {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #f8f9fa;
+}
+
+.customer-display-field {
+  background-color: white;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.375rem 0.75rem;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  color: #495057;
+  font-weight: 500;
+}
+
+.customer-display-field:empty:before {
+  content: '-';
+  color: #6c757d;
+  font-style: italic;
+}
+
+.title-text-lg {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--base-font-color);
+}
+
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Fix form layout issues */
+.form-col-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.form-col-sm-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+
+/* Fix material cell layout */
+.material-cell {
+  display: block;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.material-typecode,
+.material-typecode-gold,
+.material-weight {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.material-typecode {
+  min-width: 60px;
+  margin-right: 8px;
+}
+
+.material-typecode-gold {
+  min-width: 40px;
+  margin-right: 8px;
+  text-align: center;
+}
+
+.material-weight {
+  min-width: 30px;
+  text-align: right;
+  font-weight: 500;
+}
+
+/* DataTable cell alignment fixes */
+:deep(.p-datatable-thead > tr > th) {
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.75rem 0.5rem;
+  font-weight: 600;
+}
+
+:deep(.p-datatable-tbody > tr > td) {
+  vertical-align: top;
+  padding: 0.5rem;
+}
+
+:deep(.p-datatable-tfoot > tr > td) {
+  vertical-align: middle;
+  padding: 0.5rem;
+  font-weight: 500;
+}
+
+/* Input field adjustments */
+.qty-container input,
+.form-control.bg-input {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.5rem;
+}
+
+/* Button spacing */
+.btn-action-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+}
+
+.btn-action-container .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
 .d-flex {
   display: flex;
 }
@@ -1455,6 +2531,13 @@ export default {
   margin-top: 1rem;
 }
 
+.btn-action-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 // Sales Flow Actions Styles
 .sales-flow-actions {
   display: grid;
@@ -1469,7 +2552,7 @@ export default {
   border-radius: 8px;
   padding: 1.5rem;
   transition: all 0.3s ease;
-  
+
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -1481,33 +2564,33 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
-  
+
   h6 {
     margin: 0;
     color: #495057;
     font-weight: 600;
-    
+
     i {
       color: #6c757d;
     }
   }
-  
+
   .badge {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
-    
+
     &.badge-info {
       background-color: #17a2b8;
     }
-    
+
     &.badge-success {
       background-color: #28a745;
     }
-    
+
     &.badge-primary {
       background-color: #007bff;
     }
-    
+
     &.badge-warning {
       background-color: #ffc107;
       color: #212529;
@@ -1526,7 +2609,7 @@ export default {
   font-size: 0.875rem;
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  
+
   &:not(:last-child) {
     margin-right: 0.5rem;
   }
@@ -1538,16 +2621,16 @@ export default {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .flow-section {
     padding: 1rem;
   }
-  
+
   .flow-section .btn {
     width: 100%;
     margin-right: 0;
     margin-bottom: 0.5rem;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
@@ -1559,11 +2642,18 @@ export default {
   margin-bottom: 1rem;
   border: 1px solid transparent;
   border-radius: 0.25rem;
-  
+
   &.alert-info {
     color: #0c5460;
     background-color: #d1ecf1;
     border-color: #bee5eb;
   }
+}
+
+.btn-submit-container-custom {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 20px;
 }
 </style>

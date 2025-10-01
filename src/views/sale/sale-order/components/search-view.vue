@@ -7,11 +7,23 @@
             title="Sale Order"
             description="สร้างใบสั่งขายจากใบเสนอราคา พร้อมจัดการข้อมูลการขายและการส่งมอบ"
             :isShowBtnClose="false"
-          />
+            :isShowRightSlot="true"
+          >
+            <template #rightSlot>
+              <button
+                class="btn btn-sm btn-green mr-2"
+                type="button"
+                @click="onSearchQuotation"
+                title="ค้นหาใบเสนอราคา"
+              >
+                <span><i class="bi bi-file-earmark-text"></i></span>
+                <span class="ml-2">ค้นหาใบเสนอราคา</span>
+              </button>
+            </template>
+          </pageTitle>
         </div>
 
-        <div class="form-col-container">
-          <!-- quotation search -->
+        <!-- <div class="form-col-container">
           <div>
             <span class="title-text">เลขที่ใบเสนอราคา</span>
             <input
@@ -21,65 +33,35 @@
               placeholder="EX: QUO-2025-001"
             />
           </div>
+        </div> -->
 
-          <!-- product search -->
-          <div>
-            <span class="title-text">เลขที่ผลิต (ใหม่)</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.stockNumber"
-              placeholder="EX: DK-2502-001"
-            />
-          </div>
+        <!-- <div class="btn-submit-container">
+          <button
+            class="btn btn-sm btn-success mr-2"
+            type="button"
+            @click="onSearchQuotation"
+            title="ค้นหาใบเสนอราคา"
+          >
+            <span><i class="bi bi-file-earmark-text"></i></span>
+            <span class="ml-2">ค้นหาใบเสนอราคา</span>
+          </button>
 
-          <div>
-            <span class="title-text">เลขที่ผลิต (เก่า)</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.stockNumberOrigin"
-              placeholder="EX: AD05401"
-            />
-          </div>
+          <button
+            class="btn btn-sm btn-main mr-2"
+            type="button"
+            @click="onConvertQuotation"
+            title="Convert ใบเสนอราคาเป็น Sale Order"
+            :disabled="!formQuotation.Number"
+          >
+            <span><i class="bi bi-arrow-right-circle"></i></span>
+            <span class="ml-2">Convert เป็น Sale Order</span>
+          </button>
 
-          <div>
-            <span class="title-text">รหัสสินค้า</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.productNumber"
-              placeholder="EX: R08R50001L"
-            />
-          </div>
-        </div>
-
-        <div class="btn-submit-container-between">
-          <div>
-            <!-- quotation search button -->
-            <button
-              class="btn btn-sm btn-success mr-2"
-              type="button"
-              @click="onSearchQuotation"
-              title="ค้นหาใบเสนอราคา"
-            >
-              <span><i class="bi bi-file-earmark-text"></i></span>
-              <span class="ml-2">ใบเสนอราคา</span>
-            </button>
-          </div>
-          <div>
-            <!-- product search button -->
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหาสินค้า">
-              <span><i class="bi bi-search"></i></span>
-              <span class="ml-2">ค้นหาสินค้า</span>
-            </button>
-
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
-              <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ล้าง</span>
-            </button>
-          </div>
-        </div>
+          <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <span><i class="bi bi-x-circle"></i></span>
+            <span class="ml-2">ล้าง</span>
+          </button>
+        </div> -->
       </div>
     </form>
 
@@ -104,7 +86,7 @@ export default {
     QuotationSearchModal
   },
 
-  emits: ['search', 'searchQuotation', 'clear', 'update:modelForm', 'update:quotation'],
+  emits: ['convertQuotation', 'clear', 'update:quotation'],
 
   props: {
     modelForm: {
@@ -141,8 +123,10 @@ export default {
   },
 
   methods: {
-    onSearch() {
-      this.$emit('search', this.form)
+    onConvertQuotation() {
+      if (this.formQuotation.Number) {
+        this.$emit('convertQuotation', this.formQuotation)
+      }
     },
 
     onSearchQuotation() {
@@ -155,7 +139,7 @@ export default {
 
     onQuotationSelected(quotation) {
       this.formQuotation.Number = quotation.number
-      this.$emit('searchQuotation', this.formQuotation)
+      this.$emit('convertQuotation', this.formQuotation)
       this.closeQuotationModal()
     },
 
