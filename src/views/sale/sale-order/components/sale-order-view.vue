@@ -1600,7 +1600,8 @@ export default {
     },
 
     selectedItemsCount() {
-      return this.stockItems.length + this.copyItems.length
+      // นับเฉพาะ stock items สำหรับใบสรุปใบสั่งขาย
+      return this.stockItems.length
     },
 
     selectedStockItemsCount() {
@@ -1611,17 +1612,13 @@ export default {
       return this.copyItems.length
     },
 
-    // Price calculations
+    // Price calculations - ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น
     selectedItemsTotal() {
-      const stockTotal = this.stockItems.reduce(
+      // รวมเฉพาะ stock items สำหรับใบสรุปใบสั่งขาย
+      return this.stockItems.reduce(
         (sum, item) => sum + (item.price || 0) * (item.qty || 0),
         0
       )
-      const copyTotal = this.copyItems.reduce(
-        (sum, item) => sum + (item.price || 0) * (item.qty || 0),
-        0
-      )
-      return stockTotal + copyTotal
     },
 
     stockItemsTotal() {
@@ -1642,6 +1639,7 @@ export default {
     },
 
     totalOrderAmount() {
+      // ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น
       return this.selectedItemsTotal
     },
 
@@ -2179,15 +2177,13 @@ export default {
       })
     },
 
-    // Calculate totals
+    // Calculate totals - ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น
     calculateGrandTotal() {
+      // รวมเฉพาะ stock items สำหรับใบสรุปใบสั่งขาย
       const stockTotal = this.stockItems.reduce((sum, item) => {
         return sum + this.getTotalConvertedPrice(item)
       }, 0)
-      const copyTotal = this.copyItems.reduce((sum, item) => {
-        return sum + this.getTotalConvertedPrice(item)
-      }, 0)
-      return stockTotal + copyTotal + (this.formSaleOrder.freight || 0)
+      return stockTotal + (this.formSaleOrder.freight || 0)
     },
 
     calculateStockTotal() {
@@ -2257,33 +2253,55 @@ export default {
 
     // Sum calculation methods
     getSumAppraisalPrice(items) {
-      return items.reduce((sum, item) => {
-        return sum + this.getAppraisalPrice(item)
+      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      
+      const total = items.reduce((sum, item) => {
+        const price = this.getAppraisalPrice(item)
+        return sum + (Number(price) || 0)
       }, 0)
+      
+      return Number(total).toFixed(2)
     },
 
     getSumDiscountPrice(items) {
-      return items.reduce((sum, item) => {
-        return sum + this.getDiscountedPrice(item)
+      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      
+      const total = items.reduce((sum, item) => {
+        const price = this.getDiscountedPrice(item)
+        return sum + (Number(price) || 0)
       }, 0)
+      
+      return Number(total).toFixed(2)
     },
 
     getSumConvertedPrice(items) {
-      return items.reduce((sum, item) => {
-        return sum + this.getConvertedPrice(item)
+      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      
+      const total = items.reduce((sum, item) => {
+        const price = this.getConvertedPrice(item)
+        return sum + (Number(price) || 0)
       }, 0)
+      
+      return Number(total).toFixed(2)
     },
 
     getSumQty(items) {
+      if (!items || !Array.isArray(items) || items.length === 0) return 0
+      
       return items.reduce((sum, item) => {
-        return sum + (item.qty || 0)
+        return sum + (Number(item.qty) || 0)
       }, 0)
     },
 
     getSumTotalConvertedPrice(items) {
-      return items.reduce((sum, item) => {
-        return sum + this.getTotalConvertedPrice(item)
+      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      
+      const total = items.reduce((sum, item) => {
+        const price = this.getTotalConvertedPrice(item)
+        return sum + (Number(price) || 0)
       }, 0)
+      
+      return Number(total).toFixed(2)
     },
 
     // Sales Flow Navigation Methods
