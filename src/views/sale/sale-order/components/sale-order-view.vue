@@ -2183,7 +2183,8 @@ export default {
       const stockTotal = this.stockItems.reduce((sum, item) => {
         return sum + this.getTotalConvertedPrice(item)
       }, 0)
-      return stockTotal + (this.formSaleOrder.freight || 0)
+      let freight = Number(this.formSaleOrder.freight || 0)
+      return stockTotal + freight
     },
 
     calculateStockTotal() {
