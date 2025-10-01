@@ -763,25 +763,118 @@
           class="p-datatable-sm"
           stripedRows
           responsiveLayout="scroll"
+          showGridlines
         >
-          <!-- Product Number Column -->
-          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+          <ColumnGroup type="header">
+            <Row>
+              <Column header="" :colspan="2" />
+              <Column header="" />
+              <Column header="เลขที่ผลิต" />
+              <Column header="รหัสสินค้า" />
+              <Column header="รายละเอียด" />
+              <Column header="Gold (gms)" />
+              <Column header="Diamond (cts)" />
+              <Column header="Stone (cts)" />
+              <Column header="ราคาขาย (THB)" />
+              <Column header="ราคาประเมิน (THB)" />
+              <Column header="ส่วนลด" />
+              <Column header="ราคาส่วนลด (THB)" />
+              <Column header="แปลงเรท" />
+              <Column :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '" />
+              <Column header="จำนวน" />
+              <Column :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '" />
+            </Row>
+          </ColumnGroup>
+
+          <Column field="index" style="width: 10px">
             <template #body="slotProps">
-              <span class="font-weight-bold">{{ slotProps.data.productNumber }}</span>
+              <span>{{ slotProps.index + 1 }}</span>
             </template>
           </Column>
 
-          <!-- Description Column -->
-          <Column field="description" header="รายละเอียด" style="min-width: 200px">
+          <Column field="action" style="width: 10px">
             <template #body="slotProps">
-              <div class="product-description">
-                {{ slotProps.data.description }}
+              <div class="d-flex justify-content-center align-items-center">
+                <button
+                  class="btn btn-sm btn-red"
+                  type="button"
+                  title="ลบ"
+                  @click="deleteCopyItem(slotProps.index)"
+                >
+                  <span class="bi bi-trash"></span>
+                </button>
+                <button
+                  class="btn btn-sm btn-main ml-2"
+                  type="button"
+                  title="แก้ไข"
+                  @click="onEditCopyItem(slotProps.data, slotProps.index)"
+                >
+                  <span class="bi bi-brush"></span>
+                </button>
+                <button
+                  class="btn btn-sm btn-warning ml-2"
+                  type="button"
+                  title="สร้างใบสั่งผลิต"
+                  @click="createProductionOrder(slotProps.data)"
+                >
+                  <span class="bi bi-tools"></span>
+                </button>
               </div>
             </template>
           </Column>
 
+          <Column field="image" header="" style="width: 50px">
+            <template #body="slotProps">
+              <div class="image-container">
+                <div v-if="slotProps.data.imagePath">
+                  <imagePreview
+                    :imageName="slotProps.data.imagePath"
+                    :path="slotProps.data.imagePath"
+                    :type="type"
+                    :width="25"
+                    :height="25"
+                    :emitImage="true"
+                    @image-loaded="handleImageLoaded($event, slotProps.index)"
+                  />
+                </div>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+            <template #body>
+              <span class="text-muted font-italic">ต้องผลิต</span>
+            </template>
+          </Column>
+
+          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+            <template #body="slotProps">
+              <div>
+                <input
+                  v-model="slotProps.data.productNumber"
+                  type="text"
+                  class="form-control bg-input input-bg"
+                  @blur="onBlurDescription(slotProps.data, slotProps.index, 'productNumber')"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+              </div>
+            </template>
+          </Column>
+
+          <Column field="description" header="รายละเอียด" style="min-width: 200px">
+            <template #body="slotProps">
+              <input
+                v-model="slotProps.data.description"
+                type="text"
+                class="form-control bg-input input-bg"
+                @blur="onBlurDescription(slotProps.data, slotProps.index, 'description')"
+                style="background-color: #b5dad4; width: 100%"
+              />
+            </template>
+          </Column>
+
           <!-- Materials Columns like Quotation -->
-          <Column field="gold" header="ทอง" style="min-width: 120px">
+          <Column field="gold" style="min-width: 120px; max-width: 300px">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
@@ -797,11 +890,10 @@
                   </div>
                 </div>
               </div>
-              <div v-else class="text-muted">-</div>
             </template>
           </Column>
 
-          <Column field="diamond" header="เพชร" style="min-width: 140px">
+          <Column field="diamond" style="min-width: 140px; max-width: 300px">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
@@ -819,11 +911,10 @@
                   </div>
                 </div>
               </div>
-              <div v-else class="text-muted">-</div>
             </template>
           </Column>
 
-          <Column field="gem" header="พลอย" style="min-width: 140px">
+          <Column field="gem" style="min-width: 140px; max-width: 300px">
             <template #body="slotProps">
               <div v-if="slotProps.data.materials">
                 <div
@@ -839,20 +930,19 @@
                   </div>
                 </div>
               </div>
-              <div v-else class="text-muted">-</div>
             </template>
           </Column>
 
-          <!-- Original Price Column -->
           <Column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
-                <span>{{ formatCurrency(slotProps.data.price || 0) }}</span>
+                <span>{{
+                  Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2)
+                }}</span>
               </div>
             </template>
           </Column>
 
-          <!-- Appraisal Price Column (Editable) -->
           <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
@@ -862,7 +952,7 @@
                   class="form-control text-right bg-input input-bg"
                   min="0"
                   step="any"
-                  @blur="onBlurPrice(slotProps.data, slotProps.index, 'appraisalPrice')"
+                  @blur="onBlurCopyPrice(slotProps.data, slotProps.index, 'appraisalPrice')"
                   @input="recalculateAll"
                   style="background-color: #b5dad4; width: 100%"
                 />
@@ -870,95 +960,210 @@
             </template>
           </Column>
 
-          <!-- Discount Percent Column -->
           <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
             <template #body>
               <div class="qty-container">
-                <span>{{ formSaleOrder.discountPercent || 0 }}%</span>
-              </div>
-            </template>
-          </Column>
-
-          <!-- Discount Price Column -->
-          <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
-            <template #body="slotProps">
-              <div class="qty-container">
-                <span>{{ formatCurrency(getDiscountedPrice(slotProps.data)) }}</span>
-              </div>
-            </template>
-          </Column>
-
-          <!-- Currency Rate Column -->
-          <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
-            <template #body>
-              <div class="qty-container">
-                <span>{{ formSaleOrder.currencyRate || 1 }}</span>
-              </div>
-            </template>
-          </Column>
-
-          <!-- Converted Price Column -->
-          <Column
-            field="priceAfterMultiply"
-            :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || 'USD') + ')'"
-            style="min-width: 150px"
-          >
-            <template #body="slotProps">
-              <div class="qty-container">
                 <span>{{
-                  formatCurrency(getConvertedPrice(slotProps.data), formSaleOrder.currencyUnit)
+                  `${formSaleOrder.discountPercent ? `${formSaleOrder.discountPercent} %` : `0 %`}`
                 }}</span>
               </div>
             </template>
           </Column>
 
-          <!-- Quantity Column -->
-          <Column field="qty" header="จำนวน" style="width: 80px">
+          <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
-                <span>{{ slotProps.data.qty || 0 }}</span>
+                <span>{{
+                  (
+                    Number(slotProps.data.appraisalPrice || 0) *
+                    (1 - (formSaleOrder.discountPercent || 0) / 100)
+                  ).toFixed(2)
+                }}</span>
               </div>
             </template>
           </Column>
 
-          <!-- Total Converted Price Column -->
+          <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
+            <template #body>
+              <div class="qty-container">
+                <span>{{ formSaleOrder.currencyRate }}</span>
+              </div>
+            </template>
+          </Column>
+
           <Column
-            field="total"
-            :header="'รวมราคา (' + (formSaleOrder.currencyUnit || 'USD') + ')'"
+            field="priceAfterMultiply"
+            :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '"
             style="min-width: 150px"
           >
             <template #body="slotProps">
-              <div class="text-right font-weight-bold text-warning">
-                {{
-                  formatCurrency(getTotalConvertedPrice(slotProps.data), formSaleOrder.currencyUnit)
-                }}
+              <div class="qty-container">
+                <span>{{
+                  (
+                    (Number(slotProps.data.appraisalPrice || 0) *
+                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                    (formSaleOrder.currencyRate || 1)
+                  ).toFixed(2)
+                }}</span>
               </div>
             </template>
           </Column>
 
-          <!-- Action Column -->
-          <Column header="จัดการ" style="width: 120px">
+          <Column field="qty" header="จำนวน" style="width: 80px">
             <template #body="slotProps">
-              <div class="btn-action-container">
-                <button
-                  class="btn btn-sm btn-warning mr-1"
-                  type="button"
-                  @click="createProductionOrder(slotProps.data)"
-                  title="สร้างใบสั่งผลิต"
-                >
-                  <i class="bi bi-tools"></i>
-                </button>
-                <button
-                  class="btn btn-sm btn-red"
-                  type="button"
-                  title="ลบ"
-                  @click="deleteCopyItem(slotProps.index)"
-                >
-                  <span class="bi bi-trash"></span>
-                </button>
+              <div class="qty-container">
+                <input
+                  v-model.number="slotProps.data.qty"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  step="1"
+                  @blur="onBlurCopyQty(slotProps.data, slotProps.index, 'qty')"
+                  @input="recalculateAll"
+                  style="background-color: #b5dad4; width: 100%"
+                />
               </div>
             </template>
           </Column>
+
+          <Column
+            field="total"
+            :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '"
+            style="min-width: 150px"
+          >
+            <template #body="slotProps">
+              <div class="qty-container">
+                <span>{{
+                  (
+                    ((Number(slotProps.data.appraisalPrice || 0) *
+                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                      (formSaleOrder.currencyRate || 1)) *
+                    (Number(slotProps.data.qty) || 0)
+                  ).toFixed(2)
+                }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <ColumnGroup type="footer">
+            <!-- total -->
+            <Row>
+              <Column :colspan="5">
+                <template #footer>
+                  <div class="text-left type-container">
+                    <span class="mr-2">Net Weight Of Merchandise</span>
+                    <span class="mr-2">{{ getNetWeight(copyItems) }}</span>
+                    <span>gms.</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>รวม</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getGoldWeight(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getDiamondWeight(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getGemWeight(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumAppraisalPrice(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumDiscountPrice(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="2">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumConvertedPrice(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumQty(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ getSumTotalConvertedPrice(copyItems) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- freight -->
+            <Row>
+              <Column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>Freight & Insurance (Copy Items)</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="qty-container">
+                    <input
+                      style="background-color: #b5dad4"
+                      v-model="formSaleOrder.copyFreight"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      step="any"
+                      min="0"
+                      @blur="onBlurCopyFreight(formSaleOrder.copyFreight)"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- total after discount -->
+            <Row>
+              <Column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ราคารวม (สินค้าสำเนา)</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ formatPrice(calculateCopyTotal()) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+          </ColumnGroup>
         </DataTable>
       </div>
     </div>
@@ -1352,7 +1557,8 @@ export default {
         markup: 3.5,
         discountPercent: 0,
         goldPerOz: 2000,
-        freight: 0
+        freight: 0,
+        copyFreight: 0
       },
 
       statusOptions: [
@@ -1846,6 +2052,35 @@ export default {
       this.stockItems[index] = newCal
     },
 
+    // Copy item specific event handlers
+    onBlurCopyPrice(item, index, fieldName) {
+      let newCal = {
+        ...item,
+        [fieldName]: item[fieldName] ? Number(item[fieldName]).toFixed(2) : 0,
+        totalPrice: Number(item.price).toFixed(2)
+      }
+      this.copyItems[index] = newCal
+      this.recalculateAll()
+    },
+
+    onBlurCopyQty(item, index, fieldName) {
+      let newCal = {
+        ...item,
+        [fieldName]: item[fieldName] ? Number(item[fieldName]) : 0
+      }
+      this.copyItems[index] = newCal
+    },
+
+    onBlurCopyFreight(freight) {
+      this.formSaleOrder.copyFreight = freight ? Number(freight).toFixed(2) : 0
+    },
+
+    onEditCopyItem(item, index) {
+      this.modelEditStock = JSON.parse(JSON.stringify(item))
+      this.editStockIndex = index
+      this.isShow.isEditStock = true
+    },
+
     // Image handling
     handleImageLoaded(imageData, index) {
       if (this.stockItems[index]) {
@@ -1957,6 +2192,10 @@ export default {
 
     calculateStockTotal() {
       return this.getSumTotalConvertedPrice(this.stockItems) + (this.formSaleOrder.freight || 0)
+    },
+
+    calculateCopyTotal() {
+      return this.getSumTotalConvertedPrice(this.copyItems) + (this.formSaleOrder.copyFreight || 0)
     },
 
     // Weight calculation methods
@@ -2164,8 +2403,8 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
-
-@import '@/assets/scss/overide-prime-vue/data-table-dub.scss';
+@import '@/assets/scss/custom-style/standard-data-table.scss';
+//@import '@/assets/scss/overide-prime-vue/data-table-dub.scss';
 
 /* Quotation table styles */
 .input-bg {
@@ -2196,7 +2435,6 @@ export default {
   color: var(--base-font-color);
   padding: 5px;
 }
-@import '@/assets/scss/custom-style/standard-data-table.scss';
 
 .card-container {
   border: 1px solid #dddddd;
@@ -2430,33 +2668,34 @@ export default {
 
 /* Fix material cell layout */
 .material-cell {
-  display: block;
-  margin-bottom: 2px;
-  line-height: 1.2;
+  display: flex;
+  gap: 1px;
+  align-items: flex-start;
+  min-width: 0;
 }
-
-.material-typecode,
-.material-typecode-gold,
-.material-weight {
-  display: inline-block;
+.material-typecode {
+  flex: 5;
+  text-align: left;
+  margin-right: 0.5rem;
+  min-width: 120px;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
   vertical-align: top;
 }
-
-.material-typecode {
-  min-width: 60px;
-  margin-right: 8px;
-}
-
 .material-typecode-gold {
-  min-width: 40px;
-  margin-right: 8px;
+  flex: 5;
   text-align: center;
+  margin-right: 0.5rem;
+  min-width: 0;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
 }
-
 .material-weight {
-  min-width: 30px;
-  text-align: right;
-  font-weight: 500;
+  flex: 1;
+  vertical-align: top;
 }
 
 /* DataTable cell alignment fixes */
