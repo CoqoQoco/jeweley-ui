@@ -70,7 +70,7 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
         if (response && response.data) {
           this.dataList = {
             data: [...response.data] || [],
-            total: response.data.length || 0
+            total: response.total || 0
           }
         }
 

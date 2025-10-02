@@ -42,6 +42,7 @@
               :manualInput="false"
               placeholder="เลือกวันที่"
               dateFormat="dd/mm/yy"
+              :disabled="isViewMode"
             />
           </div>
 
@@ -55,6 +56,7 @@
               :manualInput="false"
               placeholder="เลือกวันที่"
               dateFormat="dd/mm/yy"
+              :disabled="isViewMode"
             />
           </div>
 
@@ -68,6 +70,7 @@
               optionValue="value"
               placeholder="เลือกสถานะ"
               class="w-100"
+              :disabled="isViewMode"
             />
           </div>
         </div>
@@ -95,6 +98,7 @@
               optionValue="value"
               placeholder="เลือกเงื่อนไขการชำระ"
               class="w-100"
+              :disabled="isViewMode"
               @change="onPaymentTermsChange"
             />
           </div>
@@ -124,6 +128,7 @@
               step="0.01"
               v-model.number="formSaleOrder.depositPercentage"
               placeholder="50.00"
+              :readonly="isViewMode"
               @input="updateSummary"
             />
           </div>
@@ -138,6 +143,7 @@
               optionValue="value"
               placeholder="เลือกลำดับความสำคัญ"
               class="w-100"
+              :disabled="isViewMode"
             />
           </div>
         </div>
@@ -208,6 +214,7 @@
                   :class="['form-control bg-input', 'input-bg']"
                   type="text"
                   v-model.trim="formSaleOrder.customerRemark"
+                  :readonly="isViewMode"
                 />
               </div>
             </div>
@@ -273,6 +280,7 @@
               type="text"
               v-model.trim="formSaleOrder.currencyUnit"
               style="width: 100px"
+              :readonly="isViewMode"
             />
           </div>
           <div class="mr-2">
@@ -284,6 +292,7 @@
               min="0"
               step="any"
               style="width: 100px"
+              :readonly="isViewMode"
               @input="recalculateAll"
             />
           </div>
@@ -296,6 +305,7 @@
               min="0"
               step="any"
               style="width: 80px"
+              :readonly="isViewMode"
               @input="recalculateAll"
             />
           </div>
@@ -309,6 +319,7 @@
               max="100"
               step="any"
               style="width: 80px"
+              :readonly="isViewMode"
               @input="recalculateAll"
             />
           </div>
@@ -322,6 +333,7 @@
               max="10000"
               step="any"
               style="width: 80px"
+              :readonly="isViewMode"
               @input="recalculateAll"
             />
           </div>
@@ -733,6 +745,7 @@
                       step="any"
                       min="0"
                       required
+                      :readonly="isViewMode"
                       @blur="onBlurFreight(formSaleOrder.freight)"
                     />
                   </div>
@@ -1155,6 +1168,7 @@
                       class="form-control text-right bg-input input-bg"
                       step="any"
                       min="0"
+                      :readonly="isViewMode"
                       @blur="onBlurCopyFreight(formSaleOrder.copyFreight)"
                     />
                   </div>
@@ -1258,6 +1272,7 @@
                 rows="3"
                 v-model="formSaleOrder.remark"
                 placeholder="หมายเหตุเพิ่มเติมสำหรับใบสั่งขาย..."
+                :readonly="isViewMode"
               ></textarea>
             </div>
           </div>
@@ -1357,42 +1372,45 @@
 
     <!-- Action Buttons -->
     <div class="btn-submit-container mt-3">
-      <button
-        class="btn btn-outline-secondary mr-2"
-        type="button"
-        @click="saveDraft"
-        :disabled="loading || selectedItemsCount === 0 || formSaleOrder.status === 'Confirmed'"
-      >
-        <i class="bi bi-file-earmark mr-1"></i>
-        บันทึกร่าง
-      </button>
+      <!-- Edit Mode Buttons (hidden in view mode) -->
+      <template v-if="!isViewMode">
+        <button
+          class="btn btn-outline-secondary mr-2"
+          type="button"
+          @click="saveDraft"
+          :disabled="loading || selectedItemsCount === 0 || formSaleOrder.status === 'Confirmed'"
+        >
+          <i class="bi bi-file-earmark mr-1"></i>
+          บันทึกร่าง
+        </button>
 
-      <button
-        class="btn btn-success mr-2"
-        type="button"
-        @click="confirmOrder"
-        :disabled="
-          loading ||
-          selectedItemsCount === 0 ||
-          hasValidationErrors ||
-          formSaleOrder.status === 'Confirmed'
-        "
-      >
-        <i class="bi bi-check-circle mr-1"></i>
-        {{ formSaleOrder.status === 'Confirmed' ? 'ยืนยันแล้ว' : 'ยืนยันใบสั่งขาย' }}
-      </button>
+        <button
+          class="btn btn-success mr-2"
+          type="button"
+          @click="confirmOrder"
+          :disabled="
+            loading ||
+            selectedItemsCount === 0 ||
+            hasValidationErrors ||
+            formSaleOrder.status === 'Confirmed'
+          "
+        >
+          <i class="bi bi-check-circle mr-1"></i>
+          {{ formSaleOrder.status === 'Confirmed' ? 'ยืนยันแล้ว' : 'ยืนยันใบสั่งขาย' }}
+        </button>
 
-      <button class="btn btn-secondary mr-2" type="button" @click="clearForm">
-        <i class="bi bi-arrow-clockwise mr-1"></i>
-        ล้างข้อมูล
-      </button>
+        <button class="btn btn-secondary mr-2" type="button" @click="clearForm">
+          <i class="bi bi-arrow-clockwise mr-1"></i>
+          ล้างข้อมูล
+        </button>
 
-      <button class="btn btn-outline-danger mr-2" type="button" @click="cancelOrder">
-        <i class="bi bi-x-circle mr-1"></i>
-        ยกเลิก
-      </button>
+        <button class="btn btn-outline-danger mr-2" type="button" @click="cancelOrder">
+          <i class="bi bi-x-circle mr-1"></i>
+          ยกเลิก
+        </button>
+      </template>
 
-      <!-- Print Order Button -->
+      <!-- Print Order Button (always visible) -->
       <button
         class="btn btn-outline-primary mr-2"
         type="button"
@@ -1401,6 +1419,17 @@
       >
         <i class="bi bi-printer mr-1"></i>
         พิมพ์ใบสั่งขาย
+      </button>
+
+      <!-- Back to List Button (visible in view mode) -->
+      <button
+        v-if="isViewMode"
+        class="btn btn-secondary mr-2"
+        type="button"
+        @click="backToList"
+      >
+        <i class="bi bi-arrow-left mr-1"></i>
+        กลับรายการ
       </button>
     </div>
   </div>
@@ -1477,6 +1506,14 @@ export default {
     modelSaleOrder: {
       type: Object,
       default: () => ({})
+    },
+    isViewMode: {
+      type: Boolean,
+      default: false
+    },
+    isLoading: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -1705,8 +1742,25 @@ export default {
 
     modelSaleOrder: {
       handler(newVal) {
-        if (newVal && newVal.items && newVal.items.length > 0) {
-          this.loadQuotationData(newVal)
+        console.log('modelSaleOrder watcher triggered with:', newVal)
+        if (newVal && Object.keys(newVal).length > 0) {
+          console.log('Available keys in newVal:', Object.keys(newVal))
+          console.log('newVal.number:', newVal.number)
+          console.log('newVal.customer:', newVal.customer)
+          console.log('newVal.status:', newVal.status)
+          console.log('newVal.items:', newVal.items)
+          
+          // Check if this is quotation data (has items) or sale order data (has other properties)
+          if (newVal.items && Array.isArray(newVal.items) && newVal.items.length > 0) {
+            console.log('Loading as quotation data')
+            this.loadQuotationData(newVal)
+          } else if (newVal.number || newVal.customer || newVal.status || newVal.currencyUnit) {
+            console.log('Loading as sale order data')
+            this.loadSaleOrderData(newVal)
+          } else {
+            console.log('Data structure not recognized:', Object.keys(newVal))
+            console.log('Full newVal:', newVal)
+          }
         }
       },
       deep: true,
@@ -1757,6 +1811,78 @@ export default {
       console.log('Copy items:', this.copyItems)
 
       //this.generateSONumber()
+    },
+
+    // Load sale order data from API
+    loadSaleOrderData(saleOrderData) {
+
+      console.log('Loading sale order data step 1:', saleOrderData)
+      if (!saleOrderData) return
+
+      console.log('Loading sale order data:', saleOrderData)
+
+      // Update sale order form data using Object.assign for better reactivity
+      Object.assign(this.formSaleOrder, {
+        number: saleOrderData.number || '',
+        date: saleOrderData.date || new Date(),
+        expectedDeliveryDate: saleOrderData.expectedDeliveryDate || null,
+        status: saleOrderData.status || 'Draft',
+        quotationNumber: saleOrderData.quotationNumber || '',
+        paymentTerms: saleOrderData.paymentTerms || 'Cash',
+        depositRequired: saleOrderData.depositRequired || false,
+        depositPercentage: saleOrderData.depositAmount || 0,
+        priority: saleOrderData.priority || 'normal',
+        remark: saleOrderData.remark || '',
+        customerRemark: saleOrderData.customer?.remark || '',
+        
+        // Customer information
+        customerName: saleOrderData.customer?.name || '',
+        customerAddress: saleOrderData.customer?.address || '',
+        customerPhone: saleOrderData.customer?.phone || '',
+        customerEmail: saleOrderData.customer?.email || '',
+        
+        // Financial data
+        currencyUnit: saleOrderData.currencyUnit || 'US$',
+        currencyRate: saleOrderData.currencyRate || 33.0,
+        markup: saleOrderData.markup || 3.5,
+        discountPercent: saleOrderData.discount || 0,
+        goldPerOz: saleOrderData.goldPerOz || 2000,
+        freight: saleOrderData.freight || 0,
+        copyFreight: saleOrderData.copyFreight || 0
+      })
+      console.log('Updated formSaleOrder:', this.formSaleOrder)
+      
+      // Force Vue to update the UI
+      this.$nextTick(() => {
+        this.$forceUpdate()
+        console.log('Force update triggered')
+      })
+
+      // Load items if available
+      if (saleOrderData.items) {
+        console.log('Items structure:', saleOrderData.items)
+        
+        // Check if items is an object with stockItems/copyItems or an array
+        if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
+          // Items is an object with separated arrays
+          this.stockItems = saleOrderData.items.stockItems || []
+          this.copyItems = saleOrderData.items.copyItems || []
+        } else if (Array.isArray(saleOrderData.items)) {
+          // Items is a flat array - separate based on stockNumber
+          this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
+          this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
+        } else if (Array.isArray(saleOrderData.items.allItems)) {
+          // Items has allItems array
+          this.stockItems = saleOrderData.items.allItems.filter((item) => item.stockNumber != null)
+          this.copyItems = saleOrderData.items.allItems.filter((item) => item.stockNumber == null)
+        }
+        
+        console.log('Loaded stock items:', this.stockItems)
+        console.log('Loaded copy items:', this.copyItems)
+      }
+
+      // Recalculate totals
+      //this.recalculateAll()
     },
 
     // Product search method (like quotation)
@@ -2040,80 +2166,80 @@ export default {
       }
     },
 
-    async fetchGetSaleOrder(soNumber) {
-      try {
-        this.loading = true
-        const formValue = {
-          soNumber: soNumber
-        }
+    // async fetchGetSaleOrder(soNumber) {
+    //   try {
+    //     this.loading = true
+    //     const formValue = {
+    //       soNumber: soNumber
+    //     }
 
-        const res = await this.saleOrderStore.fetchGet({ formValue })
-        if (res && res.data) {
-          this.loadSaleOrderData(res.data)
-          return res.data
-        } else {
-          throw new Error('Sale order not found')
-        }
-      } catch (error) {
-        console.error('Error fetching sale order:', error)
-        error('ไม่พบใบสั่งขาย', 'ข้อผิดพลาด')
-      } finally {
-        this.loading = false
-      }
-    },
+    //     const res = await this.saleOrderStore.fetchGet({ formValue })
+    //     if (res && res.data) {
+    //       this.loadSaleOrderData(res.data)
+    //       return res.data
+    //     } else {
+    //       throw new Error('Sale order not found')
+    //     }
+    //   } catch (error) {
+    //     console.error('Error fetching sale order:', error)
+    //     error('ไม่พบใบสั่งขาย', 'ข้อผิดพลาด')
+    //   } finally {
+    //     this.loading = false
+    //   }
+    // },
 
-    loadSaleOrderData(saleOrderData) {
-      // Load sale order form data
-      this.formSaleOrder = {
-        ...this.formSaleOrder,
-        number: saleOrderData.soNumber || '',
-        date: saleOrderData.createDate ? new Date(saleOrderData.createDate) : new Date(),
-        expectedDeliveryDate: saleOrderData.deliveryDate
-          ? new Date(saleOrderData.deliveryDate)
-          : null,
-        status: saleOrderData.statusName || 'ร่าง',
-        quotationNumber: saleOrderData.refQuotation || '',
-        paymentTerms: saleOrderData.payment || 0,
-        depositRequired: (saleOrderData.depositPercent || 0) > 0,
-        depositPercentage: saleOrderData.depositPercent || 0,
-        priority: saleOrderData.priority || 'ปกติ',
+    // loadSaleOrderData(saleOrderData) {
+    //   // Load sale order form data
+    //   this.formSaleOrder = {
+    //     ...this.formSaleOrder,
+    //     number: saleOrderData.soNumber || '',
+    //     date: saleOrderData.createDate ? new Date(saleOrderData.createDate) : new Date(),
+    //     expectedDeliveryDate: saleOrderData.deliveryDate
+    //       ? new Date(saleOrderData.deliveryDate)
+    //       : null,
+    //     status: saleOrderData.statusName || 'ร่าง',
+    //     quotationNumber: saleOrderData.refQuotation || '',
+    //     paymentTerms: saleOrderData.payment || 0,
+    //     depositRequired: (saleOrderData.depositPercent || 0) > 0,
+    //     depositPercentage: saleOrderData.depositPercent || 0,
+    //     priority: saleOrderData.priority || 'ปกติ',
 
-        // Customer Information
-        customerName: saleOrderData.customerName || '',
-        customerCode: saleOrderData.customerCode || '',
-        customerAddress: saleOrderData.customerAddress || '',
-        customerPhone: saleOrderData.customerTel || '',
-        customerEmail: saleOrderData.customerEmail || '',
-        customerRemark: saleOrderData.customerRemark || '',
+    //     // Customer Information
+    //     customerName: saleOrderData.customerName || '',
+    //     customerCode: saleOrderData.customerCode || '',
+    //     customerAddress: saleOrderData.customerAddress || '',
+    //     customerPhone: saleOrderData.customerTel || '',
+    //     customerEmail: saleOrderData.customerEmail || '',
+    //     customerRemark: saleOrderData.customerRemark || '',
 
-        // Currency and Pricing
-        currencyUnit: saleOrderData.currencyUnit || 'THB',
-        currencyRate: saleOrderData.currencyRate || 1.0,
-        markup: saleOrderData.markup || 0,
-        discountPercent: saleOrderData.discount || 0,
-        goldPerOz: saleOrderData.goldRate || 0,
+    //     // Currency and Pricing
+    //     currencyUnit: saleOrderData.currencyUnit || 'THB',
+    //     currencyRate: saleOrderData.currencyRate || 1.0,
+    //     markup: saleOrderData.markup || 0,
+    //     discountPercent: saleOrderData.discount || 0,
+    //     goldPerOz: saleOrderData.goldRate || 0,
 
-        remark: saleOrderData.remark || ''
-      }
+    //     remark: saleOrderData.remark || ''
+    //   }
 
-      // Load items data from JSON
-      if (saleOrderData.data) {
-        try {
-          const itemsData = JSON.parse(saleOrderData.data)
-          this.stockItems = itemsData.stockItems || []
-          this.copyItems = itemsData.copyItems || []
-          this.formSaleOrder.freight = itemsData.freight || 0
-          this.formSaleOrder.copyFreight = itemsData.copyFreight || 0
-        } catch (error) {
-          console.error('Error parsing items data:', error)
-        }
-      }
+    //   // Load items data from JSON
+    //   if (saleOrderData.data) {
+    //     try {
+    //       const itemsData = JSON.parse(saleOrderData.data)
+    //       this.stockItems = itemsData.stockItems || []
+    //       this.copyItems = itemsData.copyItems || []
+    //       this.formSaleOrder.freight = itemsData.freight || 0
+    //       this.formSaleOrder.copyFreight = itemsData.copyFreight || 0
+    //     } catch (error) {
+    //       console.error('Error parsing items data:', error)
+    //     }
+    //   }
 
-      // Lock SO number when loading existing sale order
-      if (saleOrderData.soNumber) {
-        this.isSONumberLocked = true
-      }
-    },
+    //   // Lock SO number when loading existing sale order
+    //   if (saleOrderData.soNumber) {
+    //     this.isSONumberLocked = true
+    //   }
+    // },
 
     async confirmOrder() {
       if (this.hasValidationErrors) {
@@ -2604,6 +2730,11 @@ export default {
       } catch (error) {
         error('เกิดข้อผิดพลาดในการพิมพ์', 'พิมพ์ไม่สำเร็จ')
       }
+    },
+
+    backToList() {
+      // Navigate back to sale order list
+      this.$router.push({ path: '/sale-order-list' })
     }
   }
 }
