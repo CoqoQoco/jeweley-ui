@@ -8,6 +8,8 @@
     <saleOrder
       v-model:modelQuotation="quotation"
       v-model:modelSaleOrder="saleOrderData"
+      :isViewMode="isViewMode"
+      :isLoading="isLoading"
     ></saleOrder>
   </div>
 </template>
@@ -16,6 +18,7 @@
 import search from './components/search-view.vue'
 import saleOrder from './components/sale-order-view.vue'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
+import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 
 const interfaceSearchQuotation = {
   Number: null
@@ -53,7 +56,9 @@ export default {
     return {
       formQuotation: { ...interfaceSearchQuotation },
       quotation: {},
-      saleOrderData: { ...interfaceSaleOrder }
+      saleOrderData: { ...interfaceSaleOrder },
+      isViewMode: false,
+      isLoading: false
     }
   },
   methods: {
@@ -101,10 +106,87 @@ export default {
       }
     },
 
+    async loadSaleOrderData(soNumber) {
+      try {
+        this.isLoading = true
+        const saleOrderStore = usrSaleOrderApiStore()
+        const response = await saleOrderStore.fetchGet({
+          formValue: { soNumber: soNumber }
+        })
+
+        if (response) {
+          console.log('Raw API response:', response)
+          const saleOrderData = response
+
+          // Update sale order data from API
+          this.saleOrderData = {
+            ...this.saleOrderData,
+            number: saleOrderData.soNumber || '',
+            date: saleOrderData.createDate ? new Date(saleOrderData.createDate) : new Date(),
+            expectedDeliveryDate: saleOrderData.deliveryDate ? new Date(saleOrderData.deliveryDate) : null,
+            status: saleOrderData.statusName || 'Draft',
+            quotationNumber: saleOrderData.refQuotation || null,
+            paymentTerms: saleOrderData.paymentName || null,
+            depositRequired: saleOrderData.depositPercent ? true : false,
+            depositAmount: saleOrderData.depositPercent || 0,
+            priority: saleOrderData.priority || 'normal',
+            discount: saleOrderData.discount || 0,
+            freight: 0, // Add freight field to API response if needed
+            remark: saleOrderData.remark || null,
+            items: saleOrderData.data ? (() => {
+              try {
+                const parsedData = JSON.parse(saleOrderData.data)
+                console.log('Parsed data from API:', parsedData)
+                return parsedData
+              } catch (e) {
+                console.error('Error parsing data:', e)
+                return []
+              }
+            })() : [],
+            currencyUnit: saleOrderData.currencyUnit || 'US$',
+            currencyRate: saleOrderData.currencyRate || 33.0,
+            markup: saleOrderData.markup || 3.5,
+            goldPerOz: saleOrderData.goldRate || 2000,
+            customer: {
+              name: saleOrderData.customerName || '',
+              address: saleOrderData.customerAddress || '',
+              phone: saleOrderData.customerTel || '',
+              email: saleOrderData.customerEmail || '',
+              remark: saleOrderData.customerRemark || ''
+            }
+          }
+
+          console.log('Loaded sale order data:', this.saleOrderData)
+        } else {
+          console.warn('No sale order data found for number:', soNumber)
+        }
+      } catch (error) {
+        console.error('Error loading sale order:', error)
+        // Show error notification if needed
+        alert('ไม่สามารถโหลดข้อมูลใบสั่งขายได้: ' + error.message)
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     onClearFilter() {
       this.formQuotation = { ...interfaceSearchQuotation }
       this.quotation = {}
       this.saleOrderData = { ...interfaceSaleOrder }
+    }
+  },
+
+  async mounted() {
+    // Check if there are query parameters for loading sale order
+    const soNumber = this.$route.query.soNumber
+    const mode = this.$route.query.mode
+
+    if (soNumber) {
+      // Set view mode if specified
+      this.isViewMode = mode === 'view'
+      
+      // Load sale order data
+      await this.loadSaleOrderData(soNumber)
     }
   }
 }

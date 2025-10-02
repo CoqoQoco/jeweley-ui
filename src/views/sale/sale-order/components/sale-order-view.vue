@@ -1374,18 +1374,24 @@
     <div class="btn-submit-container mt-3">
       <!-- Edit Mode Buttons (hidden in view mode) -->
       <template v-if="!isViewMode">
-        <button
-          class="btn btn-outline-secondary mr-2"
+       
+         <button
+          class="btn btn-green mr-2"
           type="button"
-          @click="saveDraft"
-          :disabled="loading || selectedItemsCount === 0 || formSaleOrder.status === 'Confirmed'"
+          @click="confirmOrder"
+          :disabled="
+            loading ||
+            selectedItemsCount === 0 ||
+            hasValidationErrors ||
+            formSaleOrder.status === 'Confirmed'
+          "
         >
-          <i class="bi bi-file-earmark mr-1"></i>
-          บันทึกร่าง
+          <i class="bi bi-receipt mr-1"></i>
+           Invoice
         </button>
 
         <button
-          class="btn btn-success mr-2"
+          class="btn btn-green mr-2"
           type="button"
           @click="confirmOrder"
           :disabled="
@@ -1399,7 +1405,17 @@
           {{ formSaleOrder.status === 'Confirmed' ? 'ยืนยันแล้ว' : 'ยืนยันใบสั่งขาย' }}
         </button>
 
-        <button class="btn btn-secondary mr-2" type="button" @click="clearForm">
+        <button
+          class="btn btn-outline-main mr-2"
+          type="button"
+          @click="saveDraft"
+          :disabled="loading || selectedItemsCount === 0 || formSaleOrder.status === 'Confirmed'"
+        >
+          <i class="bi bi-file-earmark mr-1"></i>
+          บันทึกร่าง
+        </button>
+
+        <!-- <button class="btn btn-secondary mr-2" type="button" @click="clearForm">
           <i class="bi bi-arrow-clockwise mr-1"></i>
           ล้างข้อมูล
         </button>
@@ -1407,11 +1423,11 @@
         <button class="btn btn-outline-danger mr-2" type="button" @click="cancelOrder">
           <i class="bi bi-x-circle mr-1"></i>
           ยกเลิก
-        </button>
+        </button> -->
       </template>
 
       <!-- Print Order Button (always visible) -->
-      <button
+      <!-- <button
         class="btn btn-outline-primary mr-2"
         type="button"
         @click="printSaleOrder"
@@ -1419,7 +1435,7 @@
       >
         <i class="bi bi-printer mr-1"></i>
         พิมพ์ใบสั่งขาย
-      </button>
+      </button> -->
 
       <!-- Back to List Button (visible in view mode) -->
       <button
