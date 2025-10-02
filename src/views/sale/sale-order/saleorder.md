@@ -355,10 +355,159 @@ const useSaleOrderStore = defineStore('saleOrder', {
 
 ---
 *อัปเดตเมื่อ: 2025-01-28*
-*เวอร์ชัน: 1.3.1*
-*สถานะ: Footer Sum Functions และ Order Summary Fixed - แสดงทศนิยม 2 ตำแหน่ง และรวมเฉพาะ Stock Items*
+*เวอร์ชัน: 1.5.0*
+*สถานะ: SO Running Number Generation Complete - Auto generate SO numbers with validation*
 
-## การอัปเดตล่าสุด (v1.3.1)
+## การอัปเดตล่าสุด (v1.5.0)
+
+### ✨ SO Running Number Generation v1.5.0
+- **Auto Generate SO Number**: ระบบสร้างเลขที่ใบสั่งขายอัตโนมัติผ่าน API
+- **Readonly Input Field**: ป้องกันการ input free text เข้าช่องเลขที่ SO
+- **Generate Button**: ปุ่ม "สร้าง" สำหรับสร้างเลขที่ SO ใหม่
+- **Number Locking**: ล็อคเลขที่ SO หลังบันทึกร่างไม่ให้แก้ไขได้
+
+### 🔧 API Implementation v1.5.0
+- **Backend API**: `POST /SaleOrder/GenerateRunningNumber`
+- **Service Method**: `GenerateRunningNumber()` ใน SaleOrderService
+- **Running Number Service**: ใช้ prefix "SO" สำหรับเลขที่ใบสั่งขาย
+- **Frontend Store**: `fetchGenerateRunningNumber()` ใน sale-order-store
+
+### 🎯 UI/UX Changes v1.5.0
+- **Input Field**: เปลี่ยนจาก text input เป็น readonly input
+- **Generate Button**: ปุ่มสีฟ้า (btn-main) พร้อม icon plus-circle
+- **Placeholder Text**: "กดปุ่มสร้างเลขที่ใบสั่งขาย"
+- **Button States**: disable เมื่อ loading หรือ SO number ถูกล็อค
+
+### 🔒 Validation & Security v1.5.0
+- **Required SO Number**: ต้องสร้างเลขที่ SO ก่อนบันทึก
+- **Lock After Save**: ไม่สามารถแก้ไขเลขที่ SO หลังบันทึกร่าง
+- **Lock on Load**: เลขที่ SO ถูกล็อคเมื่อโหลดข้อมูลที่มีอยู่
+- **Error Handling**: แสดงข้อความเมื่อไม่สามารถสร้างเลขที่ได้
+
+### 📋 Technical Details v1.5.0
+```javascript
+// Frontend การสร้างเลขที่ SO
+async generateSONumber() {
+  const res = await this.saleOrderStore.fetchGenerateRunningNumber()
+  this.formSaleOrder.number = res.data
+  // Show success message
+}
+
+// Backend การสร้างเลขที่
+public async Task<string> GenerateRunningNumber() {
+  return await _runningNumberService.GenerateRunningNumberForGold("SO")
+}
+```
+
+### 🎨 UI Components v1.5.0
+```vue
+<!-- SO Number Input Field -->
+<div class="d-flex align-items-center">
+  <input
+    :class="['form-control bg-input mr-2']"
+    type="text"
+    v-model.trim="formSaleOrder.number"
+    readonly
+    :disabled="isSONumberLocked"
+  />
+  <button
+    class="btn btn-main btn-sm"
+    @click="generateSONumber"
+    :disabled="loading || isSONumberLocked"
+  >
+    <i class="bi bi-plus-circle mr-1"></i>
+    สร้าง
+  </button>
+</div>
+```
+
+### 🔄 Data Flow v1.5.0
+```
+1. User clicks "สร้าง" button
+2. Call API: POST /SaleOrder/GenerateRunningNumber
+3. Backend generates: SO2025001, SO2025002, etc.
+4. Frontend updates: formSaleOrder.number
+5. Save Draft: isSONumberLocked = true
+6. Cannot modify SO number anymore
+```
+
+## การอัปเดตก่อนหน้า (v1.4.0)
+
+### ✨ API Integration Complete v1.4.0
+- **Sale Order Store**: เพิ่ม Pinia store สำหรับจัดการ API calls
+- **Save/Update Functionality**: ระบบบันทึก/อัปเดตใบสั่งขายผ่าน API
+- **Load Sale Order**: ฟังก์ชันโหลดใบสั่งขายที่บันทึกไว้แล้ว
+- **API Error Handling**: จัดการ error และแสดงข้อความที่เหมาะสม
+
+### 🔧 Technical Implementation v1.4.0
+- **Store Integration**: ใช้ `usrSaleOrderApiStore` ตามแบบแผน quotation
+- **API Mapping**: แปลงข้อมูลฟอร์มให้ตรงกับ API specification
+- **JSON Data Storage**: เก็บรายการสินค้าในรูปแบบ JSON string
+- **Status Management**: จัดการสถานะใบสั่งขาย (ร่าง, ยืนยันแล้ว)
+
+### 📋 New API Methods v1.4.0
+| Method | Description | Usage |
+|--------|-------------|-------|
+| `fetchSaveSaleOrder()` | บันทึก/อัปเดตใบสั่งขาย | รองรับทั้ง Draft และ Confirmed |
+| `fetchGetSaleOrder()` | โหลดใบสั่งขายที่มีอยู่ | ใช้ soNumber ในการค้นหา |
+| `loadSaleOrderData()` | แปลงข้อมูล API มาแสดงในฟอร์ม | Parse JSON และกำหนดค่าฟิลด์ต่างๆ |
+| `saveDraft()` | บันทึกร่าง | เรียก fetchSaveSaleOrder('Draft') |
+| `confirmOrder()` | ยืนยันใบสั่งขาย | เรียก fetchSaveSaleOrder('ยืนยันแล้ว') |
+
+### 🎯 Data Flow v1.4.0
+```
+Frontend Form Data → API Request Format → .NET API → PostgreSQL Database
+     ↓                     ↓                  ↓              ↓
+- formSaleOrder        - TbtSaleOrder     - Service      - Database
+- stockItems           - JSON in data     - Controller   - Tables
+- copyItems            - Field mapping    - Store        - Records
+```
+
+### 📊 API Integration Details v1.4.0
+- **Store File**: `src/stores/modules/api/sale/sale-order-store.js`
+- **API Endpoints**: 
+  - `POST /SaleOrder/Upsert` - สร้าง/อัปเดตใบสั่งขาย
+  - `POST /SaleOrder/Get` - ดึงข้อมูลใบสั่งขาย
+  - `POST /SaleOrder/List` - รายการใบสั่งขาย
+- **Error Handling**: SweetAlert2 สำหรับแสดงผลลัพธ์
+- **Loading States**: แสดง loading indicator ระหว่างการเรียก API
+
+### 💾 Data Mapping v1.4.0
+```javascript
+// Frontend → API
+formSaleOrder.number → soNumber
+formSaleOrder.expectedDeliveryDate → deliveryDate
+formSaleOrder.customerName → customerName
+formSaleOrder.quotationNumber → refQuotation
+stockItems + copyItems → data (JSON string)
+
+// API → Frontend
+soNumber → formSaleOrder.number
+deliveryDate → formSaleOrder.expectedDeliveryDate
+customerName → formSaleOrder.customerName
+data (JSON) → stockItems + copyItems
+```
+
+## การอัปเดตก่อนหน้า (v1.3.2)
+
+### ✨ New Features v1.3.2
+- **Converted Currency Integration**: ใบสรุปใบสั่งขายใช้ราคาที่แปลงสกุลเงินแล้ว
+- **Freight Inclusion**: ยอดรวมใบสั่งขายรวม freight และ insurance แล้ว
+- **Enhanced Price Calculation**: ปรับปรุงการคำนวณราคาให้แม่นยำมากขึ้น
+
+### 🔧 Technical Changes v1.3.2
+- **selectedItemsTotal()**: ใช้ `getTotalConvertedPrice()` แทนการคูณราคาธรรมดา
+- **totalOrderAmount()**: รวม freight จากฟิลด์ `formSaleOrder.freight`
+- **calculateGrandTotal()**: มีการใช้ราคาแปลงแล้วอยู่แล้ว (ไม่เปลี่ยน)
+
+### 📊 Price Calculation Updates v1.3.2
+| ฟังก์ชัน | การเปลี่ยนแปลง | ผลลัพธ์ |
+|----------|----------------|---------|
+| `selectedItemsTotal()` | ใช้ `getTotalConvertedPrice()` | ราคาแปลงแล้วสำหรับ stock items |
+| `totalOrderAmount()` | + freight addition | ยอดรวมใบสั่งขาย + ค่าขนส่ง |
+| Order Summary Display | รวม freight & insurance | แสดงราคาสุทธิที่ลูกค้าจ่าย |
+
+## การอัปเดตก่อนหน้า (v1.3.1)
 
 ### 🔧 Bug Fixes v1.3.1
 - **Footer Sum Functions Fixed**: แก้ไขฟังก์ชัน sum ใน footer ให้แสดงทศนิยม 2 ตำแหน่งอย่างถูกต้อง

@@ -10,12 +10,26 @@
           <!-- Sale Order Number -->
           <div>
             <span class="title-text">เลขที่ใบสั่งขาย</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="formSaleOrder.number"
-              placeholder="SO-2025-001"
-            />
+            <div class="d-flex align-items-center">
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="formSaleOrder.number"
+                readonly
+                :disabled="isSONumberLocked"
+              />
+              <!-- <button
+                class="btn btn-main "
+                type="button"
+                @click="generateSONumber"
+                :disabled="loading || isSONumberLocked"
+                title="สร้างเลขที่ใบสั่งขาย"
+                he
+              >
+                <i class=" mr-1"></i>
+                สร้าง
+              </button> -->
+            </div>
           </div>
 
           <!-- Sale Order Date -->
@@ -86,7 +100,7 @@
           </div>
 
           <!-- Deposit Required -->
-          <div>
+          <!-- <div>
             <label class="d-flex align-items-center">
               <input
                 type="checkbox"
@@ -96,10 +110,11 @@
               />
               <span class="title-text">ต้องการเงินมัดจำ</span>
             </label>
-          </div>
+          </div> -->
 
           <!-- Deposit Percentage -->
-          <div v-if="formSaleOrder.depositRequired">
+          <!-- <div v-if="formSaleOrder.depositRequired"> -->
+          <div>
             <span class="title-text">เปอร์เซ็นต์เงินมัดจำ (%)</span>
             <input
               :class="['form-control bg-input']"
@@ -1424,6 +1439,8 @@ import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-mo
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
+import { formatISOString } from '@/services/utils/dayjs.js'
 
 export default {
   name: 'SaleOrderView',
@@ -1439,6 +1456,11 @@ export default {
     editStockView,
     CustomerSearchModal,
     CustomerCreateModal
+  },
+
+  setup() {
+    const saleOrderStore = usrSaleOrderApiStore()
+    return { saleOrderStore }
   },
 
   emits: ['update:modelForm', 'update:modelQuotation', 'update:modelSaleOrder'],
@@ -1461,6 +1483,7 @@ export default {
   data() {
     return {
       loading: false,
+      isSONumberLocked: false, // Lock SO number after saving draft
       productSearch: {
         stockNumber: '',
         stockNumberOrigin: '',
@@ -1562,24 +1585,24 @@ export default {
       },
 
       statusOptions: [
-        { name: 'ร่าง', value: 'Draft' },
-        { name: 'ยืนยันแล้ว', value: 'Confirmed' },
-        { name: 'ส่งมอบบางส่วน', value: 'PartiallyFulfilled' },
-        { name: 'ส่งมอบครบถ้วน', value: 'Fulfilled' }
+        { name: 'ร่าง', value: 'Draft', id: 1 },
+        { name: 'ยืนยันแล้ว', value: 'Confirmed', id: 2 },
+        { name: 'ส่งมอบบางส่วน', value: 'PartiallyFulfilled', id: 3 },
+        { name: 'ส่งมอบครบถ้วน', value: 'Fulfilled', id: 4 }
       ],
 
       paymentTermsOptions: [
-        { name: 'เงินสด', value: 'Cash' },
-        { name: 'เครดิต 30 วัน', value: 'Credit30' },
-        { name: 'เครดิต 60 วัน', value: 'Credit60' },
-        { name: 'มัดจำ + ยอดคงเหลือ', value: 'DepositAndBalance' }
+        { name: 'เงินสด', value: 'Cash', id: 1 },
+        { name: 'เครดิต 30 วัน', value: 'Credit30', id: 2 },
+        { name: 'เครดิต 60 วัน', value: 'Credit60', id: 3 },
+        { name: 'มัดจำ + ยอดคงเหลือ', value: 'DepositAndBalance', id: 4 }
       ],
 
       priorityOptions: [
-        { name: 'ปกติ', value: 'normal' },
-        { name: 'สำคัญ', value: 'high' },
-        { name: 'เร่งด่วน', value: 'urgent' },
-        { name: 'วิกฤต', value: 'critical' }
+        { name: 'ปกติ', value: 'normal', id: 1 },
+        { name: 'สำคัญ', value: 'high', id: 2 },
+        { name: 'เร่งด่วน', value: 'urgent', id: 3 },
+        { name: 'วิกฤต', value: 'critical', id: 4 }
       ]
     }
   },
@@ -1614,11 +1637,8 @@ export default {
 
     // Price calculations - ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น
     selectedItemsTotal() {
-      // รวมเฉพาะ stock items สำหรับใบสรุปใบสั่งขาย
-      return this.stockItems.reduce(
-        (sum, item) => sum + (item.price || 0) * (item.qty || 0),
-        0
-      )
+      // รวมเฉพาะ stock items สำหรับใบสรุปใบสั่งขาย (ใช้ราคาแปลงแล้ว)
+      return this.stockItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
     },
 
     stockItemsTotal() {
@@ -1639,8 +1659,8 @@ export default {
     },
 
     totalOrderAmount() {
-      // ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น
-      return this.selectedItemsTotal
+      // ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น (รวม freight)
+      return this.selectedItemsTotal + (Number(this.formSaleOrder.freight) || 0)
     },
 
     // Validation
@@ -1713,7 +1733,8 @@ export default {
         currencyUnit: saleOrderData.currencyUnit || 'US$',
         currencyRate: saleOrderData.currencyRate || 33.0,
         markup: saleOrderData.markup || 3.5,
-        goldPerOz: saleOrderData.goldPerOz || 2000
+        goldPerOz: saleOrderData.goldPerOz || 2000,
+        number: null
       }
 
       // Add appraisal price to items if not present
@@ -1734,6 +1755,8 @@ export default {
 
       console.log('Stock items:', this.stockItems)
       console.log('Copy items:', this.copyItems)
+
+      //this.generateSONumber()
     },
 
     // Product search method (like quotation)
@@ -1894,26 +1917,201 @@ export default {
       return 'text-danger'
     },
 
+    // SO Number generation
+    async generateSONumber() {
+      try {
+        this.loading = true
+        const res = await this.saleOrderStore.fetchGenerateRunningNumber()
+        if (res && res.data) {
+          this.formSaleOrder.number = res
+          success('สร้างเลขที่ใบสั่งขายเรียบร้อยแล้ว', 'สร้างเลขที่สำเร็จ')
+        } else {
+          throw new Error('Failed to generate SO number')
+        }
+      } catch (error) {
+        console.error('Error generating SO number:', error)
+        error('เกิดข้อผิดพลาดในการสร้างเลขที่ใบสั่งขาย', 'สร้างเลขที่ไม่สำเร็จ')
+      } finally {
+        this.loading = false
+      }
+    },
+
     // Action methods
     async saveDraft() {
       try {
         this.loading = true
-
-        const saleOrderData = {
-          ...this.formSaleOrder,
-          status: 'Draft',
-          items: this.selectedItems
-        }
-
-        console.log('Save draft:', saleOrderData)
-        // TODO: Implement save draft API call
-
+        await this.fetchSaveSaleOrder('Draft')
+        // Lock SO number after successful save
+        this.isSONumberLocked = true
         success('บันทึกร่างเรียบร้อยแล้ว', 'บันทึกสำเร็จ')
       } catch (error) {
         console.error('Error saving draft:', error)
         error('เกิดข้อผิดพลาดในการบันทึก', 'บันทึกไม่สำเร็จ')
       } finally {
         this.loading = false
+      }
+    },
+
+    async fetchSaveSaleOrder(status = 'Draft') {
+      // Check if SO number is generated
+      // if (!this.formSaleOrder.number) {
+      //   error('กรุณาสร้างเลขที่ใบสั่งขายก่อนบันทึก', 'ข้อมูลไม่ครบถ้วน')
+      //   return
+      // }
+
+      // Prepare data for API (similar to quotation pattern)
+      const stockItemsData = this.stockItems.map((item) => {
+        return {
+          ...item,
+          imageBase64: null
+        }
+      })
+
+      const copyItemsData = this.copyItems.map((item) => {
+        return {
+          ...item,
+          imageBase64: null
+        }
+      })
+
+      // Combine all items
+      const allItems = [...stockItemsData, ...copyItemsData]
+
+      const formValue = {
+        soNumber: this.formSaleOrder.number || '',
+
+        soDate: this.formSaleOrder.date
+          ? formatISOString(this.formSaleOrder.date)
+          : null,  
+        deliveryDate: this.formSaleOrder.expectedDeliveryDate
+          ? formatISOString(this.formSaleOrder.expectedDeliveryDate)
+          : null,
+
+        status: this.statusOptions.find((s) => s.name === status)?.id || 0,
+        statusName: status,
+
+        refQuotation: this.formSaleOrder.quotationNumber || '',
+
+        paymentName: this.formSaleOrder.paymentTerms || 0,
+        payment:
+          this.paymentTermsOptions.find((p) => p.value === this.formSaleOrder.paymentTerms)?.id ||
+          '',
+
+        depositPercent: this.formSaleOrder.depositPercentage || 0,
+
+        priority: this.formSaleOrder.priority || 'ปกติ',
+
+        // Customer Information
+        customerName: this.formSaleOrder.customerName || '',
+        customerCode: this.formSaleOrder.customerCode || 'CUST001',
+        customerAddress: this.formSaleOrder.customerAddress || '',
+        customerTel: this.formSaleOrder.customerPhone || '',
+        customerEmail: this.formSaleOrder.customerEmail || '',
+        customerRemark: this.formSaleOrder.customerRemark || '',
+
+        // Currency and Pricing
+        currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
+        currencyRate: this.formSaleOrder.currencyRate || 1.0,
+        markup: this.formSaleOrder.markup || 0,
+        discount: this.formSaleOrder.discountPercent || 0,
+        goldRate: this.formSaleOrder.goldPerOz || 0,
+
+        remark: this.formSaleOrder.remark || '',
+
+        // Items data as JSON string
+        data: JSON.stringify({
+          stockItems: stockItemsData,
+          copyItems: copyItemsData,
+          allItems: allItems,
+          freight: this.formSaleOrder.freight || 0,
+          copyFreight: this.formSaleOrder.copyFreight || 0
+        })
+      }
+
+      console.log('Saving sale order with data:', formValue)
+
+      const res = await this.saleOrderStore.fetchSave({ formValue })
+      if (res) {
+        // Update form with saved data
+        this.formSaleOrder.number = res
+        return res
+      } else {
+        throw new Error('Save failed')
+      }
+    },
+
+    async fetchGetSaleOrder(soNumber) {
+      try {
+        this.loading = true
+        const formValue = {
+          soNumber: soNumber
+        }
+
+        const res = await this.saleOrderStore.fetchGet({ formValue })
+        if (res && res.data) {
+          this.loadSaleOrderData(res.data)
+          return res.data
+        } else {
+          throw new Error('Sale order not found')
+        }
+      } catch (error) {
+        console.error('Error fetching sale order:', error)
+        error('ไม่พบใบสั่งขาย', 'ข้อผิดพลาด')
+      } finally {
+        this.loading = false
+      }
+    },
+
+    loadSaleOrderData(saleOrderData) {
+      // Load sale order form data
+      this.formSaleOrder = {
+        ...this.formSaleOrder,
+        number: saleOrderData.soNumber || '',
+        date: saleOrderData.createDate ? new Date(saleOrderData.createDate) : new Date(),
+        expectedDeliveryDate: saleOrderData.deliveryDate
+          ? new Date(saleOrderData.deliveryDate)
+          : null,
+        status: saleOrderData.statusName || 'ร่าง',
+        quotationNumber: saleOrderData.refQuotation || '',
+        paymentTerms: saleOrderData.payment || 0,
+        depositRequired: (saleOrderData.depositPercent || 0) > 0,
+        depositPercentage: saleOrderData.depositPercent || 0,
+        priority: saleOrderData.priority || 'ปกติ',
+
+        // Customer Information
+        customerName: saleOrderData.customerName || '',
+        customerCode: saleOrderData.customerCode || '',
+        customerAddress: saleOrderData.customerAddress || '',
+        customerPhone: saleOrderData.customerTel || '',
+        customerEmail: saleOrderData.customerEmail || '',
+        customerRemark: saleOrderData.customerRemark || '',
+
+        // Currency and Pricing
+        currencyUnit: saleOrderData.currencyUnit || 'THB',
+        currencyRate: saleOrderData.currencyRate || 1.0,
+        markup: saleOrderData.markup || 0,
+        discountPercent: saleOrderData.discount || 0,
+        goldPerOz: saleOrderData.goldRate || 0,
+
+        remark: saleOrderData.remark || ''
+      }
+
+      // Load items data from JSON
+      if (saleOrderData.data) {
+        try {
+          const itemsData = JSON.parse(saleOrderData.data)
+          this.stockItems = itemsData.stockItems || []
+          this.copyItems = itemsData.copyItems || []
+          this.formSaleOrder.freight = itemsData.freight || 0
+          this.formSaleOrder.copyFreight = itemsData.copyFreight || 0
+        } catch (error) {
+          console.error('Error parsing items data:', error)
+        }
+      }
+
+      // Lock SO number when loading existing sale order
+      if (saleOrderData.soNumber) {
+        this.isSONumberLocked = true
       }
     },
 
@@ -1925,16 +2123,7 @@ export default {
 
       try {
         this.loading = true
-
-        const saleOrderData = {
-          ...this.formSaleOrder,
-          status: 'Confirmed',
-          items: this.selectedItems
-        }
-
-        console.log('Confirm order:', saleOrderData)
-        // TODO: Implement confirm order API call
-
+        await this.fetchSaveSaleOrder('ยืนยันแล้ว')
         success('ยืนยันใบสั่งขายเรียบร้อยแล้ว', 'ยืนยันสำเร็จ')
       } catch (error) {
         console.error('Error confirming order:', error)
@@ -2255,40 +2444,40 @@ export default {
     // Sum calculation methods
     getSumAppraisalPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
-      
+
       const total = items.reduce((sum, item) => {
         const price = this.getAppraisalPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      
+
       return Number(total).toFixed(2)
     },
 
     getSumDiscountPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
-      
+
       const total = items.reduce((sum, item) => {
         const price = this.getDiscountedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      
+
       return Number(total).toFixed(2)
     },
 
     getSumConvertedPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
-      
+
       const total = items.reduce((sum, item) => {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      
+
       return Number(total).toFixed(2)
     },
 
     getSumQty(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return 0
-      
+
       return items.reduce((sum, item) => {
         return sum + (Number(item.qty) || 0)
       }, 0)
@@ -2296,12 +2485,12 @@ export default {
 
     getSumTotalConvertedPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
-      
+
       const total = items.reduce((sum, item) => {
         const price = this.getTotalConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      
+
       return Number(total).toFixed(2)
     },
 
