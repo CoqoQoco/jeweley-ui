@@ -7,13 +7,22 @@
     ></search>
     <dataTable 
       v-model:modelForm="search"
+      @create-invoice="onCreateInvoice"
     ></dataTable>
+
+    <!-- Invoice Modal -->
+    <invoiceModal
+      :isShowModal="showInvoiceModal"
+      :saleOrderData="selectedSaleOrder"
+      @close-modal="closeInvoiceModal"
+    />
   </div>
 </template>
 
 <script>
 import search from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'
+import invoiceModal from './modal/invoice-modal.vue'
 
 const interfaceForm = {
   soNumber: null,
@@ -33,14 +42,17 @@ export default {
 
   components: {
     search,
-    dataTable
+    dataTable,
+    invoiceModal
   },
 
   data() {
     return {
       isLoading: false,
       form: { ...interfaceForm },
-      search: {}
+      search: {},
+      showInvoiceModal: false,
+      selectedSaleOrder: {}
     }
   },
 
@@ -51,6 +63,17 @@ export default {
 
     onClearFilter() {
       this.form = { ...interfaceForm }
+    },
+
+    onCreateInvoice(saleOrderData) {
+      console.log('Creating invoice for sale order:', saleOrderData)
+      this.selectedSaleOrder = saleOrderData
+      this.showInvoiceModal = true
+    },
+
+    closeInvoiceModal() {
+      this.showInvoiceModal = false
+      this.selectedSaleOrder = {}
     }
   }
 }

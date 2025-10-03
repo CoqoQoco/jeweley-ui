@@ -27,6 +27,13 @@
           >
             <i class="bi bi-eye"></i>
           </button>
+          <button 
+            class="btn btn-sm btn-info ml-2" 
+            title="สร้าง Invoice" 
+            @click="onCreateInvoice(data)"
+          >
+            <i class="bi bi-receipt"></i>
+          </button>
         </div>
       </template>
 
@@ -268,6 +275,11 @@ export default {
         path: '/sale-order',
         query: { soNumber: data.soNumber, mode: 'view' }
       })
+    },
+
+    onCreateInvoice(data) {
+      // Show invoice modal for creating invoice from sale order
+      this.$emit('create-invoice', data)
     },
 
     // Status styling

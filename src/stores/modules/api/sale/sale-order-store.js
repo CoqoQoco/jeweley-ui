@@ -93,6 +93,21 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
         console.error('Error generating SO running number:', error)
         throw error
       }
+    },
+    async confirmStockItems({ soNumber, stockItems }) {
+      try {
+        const param = {
+          soNumber: soNumber,
+          stockItems: stockItems
+        }
+        
+        return await api.jewelry.post('SaleOrder/ConfirmStockItems', param, {
+          skipLoading: false
+        })
+      } catch (error) {
+        console.error('Error confirming stock items:', error)
+        throw error
+      }
     }
   }
 })

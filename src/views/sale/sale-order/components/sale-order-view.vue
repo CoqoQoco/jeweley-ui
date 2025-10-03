@@ -346,7 +346,7 @@
       <div class="card-header">
         <h6 class="mb-0">รายการสินค้า</h6>
         <div class="card-header-actions">
-          <span class="badge badge-success">{{ stockItems.length }} รายการ</span>
+          <span class="badge badge-warning">{{ stockItems.length }} รายการ</span>
         </div>
       </div>
       <div class="card-body p-0">
@@ -366,6 +366,7 @@
               <Column header="" />
               <Column header="เลขที่ผลิต" />
               <Column header="รหัสสินค้า" />
+              <Column header="สถานะการขาย" />
               <Column header="รายละเอียด" />
               <Column header="Gold (gms)" />
               <Column header="Diamond (cts)" />
@@ -461,6 +462,19 @@
               </div>
               <div v-else>
                 <span>{{ slotProps.data.productNumber }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <!-- Confirmation Status Column for Stock Items -->
+          <Column field="isConfirmed" header="สถานะการขาย" style="min-width: 120px">
+            <template #body="slotProps">
+              <div class="text-center">
+                <span
+                  :class="['badge', slotProps.data.isConfirmed ? 'badge-success' : 'badge-warning']"
+                >
+                  {{ slotProps.data.isConfirmed ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
+                </span>
               </div>
             </template>
           </Column>
@@ -649,10 +663,23 @@
             </template>
           </Column>
 
+          <!-- Confirmation Status Column for Stock Items -->
+          <!-- <Column field="isConfirmed" header="สถานะการขาย" style="min-width: 120px">
+            <template #body="slotProps">
+              <div class="text-center">
+                <span
+                  :class="['badge', slotProps.data.isConfirmed ? 'badge-success' : 'badge-warning']"
+                >
+                  {{ slotProps.data.isConfirmed ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
+                </span>
+              </div>
+            </template>
+          </Column> -->
+
           <ColumnGroup type="footer">
             <!-- total -->
             <Row>
-              <Column :colspan="5">
+              <Column :colspan="6">
                 <template #footer>
                   <div class="text-left type-container">
                     <span class="mr-2">Net Weight Of Merchandise</span>
@@ -724,10 +751,18 @@
                   </div>
                 </template>
               </Column>
+              <!-- Status column footer (empty) -->
+              <Column>
+                <template #footer>
+                  <div class="text-center">
+                    <span></span>
+                  </div>
+                </template>
+              </Column>
             </Row>
             <!-- freight -->
             <Row>
-              <Column :colspan="16">
+              <Column :colspan="17">
                 <template #footer>
                   <div class="text-right type-container">
                     <span>Freight & Insurance</span>
@@ -754,7 +789,7 @@
             </Row>
             <!-- total after discount -->
             <Row>
-              <Column :colspan="16">
+              <Column :colspan="17">
                 <template #footer>
                   <div class="text-right type-container">
                     <span>ราคารวม</span>
@@ -1150,7 +1185,7 @@
               </Column>
             </Row>
             <!-- freight -->
-            <Row>
+            <!-- <Row>
               <Column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
@@ -1168,13 +1203,13 @@
                       class="form-control text-right bg-input input-bg"
                       step="any"
                       min="0"
-                      :readonly="isViewMode"
+                     disabled
                       @blur="onBlurCopyFreight(formSaleOrder.copyFreight)"
                     />
                   </div>
                 </template>
               </Column>
-            </Row>
+            </Row> -->
             <!-- total after discount -->
             <Row>
               <Column :colspan="16">
@@ -1373,36 +1408,31 @@
     <!-- Action Buttons -->
     <div class="btn-submit-container mt-3">
       <!-- Edit Mode Buttons (hidden in view mode) -->
-      <template v-if="!isViewMode">
-       
-         <button
+     
+      <div v-if="!isViewMode" class="d-flex justify-content-end align-items-center">
+        <button
           class="btn btn-green mr-2"
           type="button"
-          @click="confirmOrder"
-          :disabled="
-            loading ||
-            selectedItemsCount === 0 ||
-            hasValidationErrors ||
-            formSaleOrder.status === 'Confirmed'
-          "
+          @click="openConfirmStockModal"
+          :disabled="loading || selectedItemsCount === 0 || hasValidationErrors"
         >
-          <i class="bi bi-receipt mr-1"></i>
-           Invoice
+          <i class="bi bi-check-square mr-1"></i>
+          ยืนยันการขาย
         </button>
 
         <button
           class="btn btn-green mr-2"
           type="button"
-          @click="confirmOrder"
+          @click="openInvoiceModal"
           :disabled="
             loading ||
             selectedItemsCount === 0 ||
             hasValidationErrors ||
-            formSaleOrder.status === 'Confirmed'
+            confirmedStockItemsCount === 0
           "
         >
-          <i class="bi bi-check-circle mr-1"></i>
-          {{ formSaleOrder.status === 'Confirmed' ? 'ยืนยันแล้ว' : 'ยืนยันใบสั่งขาย' }}
+          <i class="bi bi-receipt mr-1"></i>
+          Invoice
         </button>
 
         <button
@@ -1424,7 +1454,7 @@
           <i class="bi bi-x-circle mr-1"></i>
           ยกเลิก
         </button> -->
-      </template>
+      </div>
 
       <!-- Print Order Button (always visible) -->
       <!-- <button
@@ -1438,12 +1468,7 @@
       </button> -->
 
       <!-- Back to List Button (visible in view mode) -->
-      <button
-        v-if="isViewMode"
-        class="btn btn-secondary mr-2"
-        type="button"
-        @click="backToList"
-      >
+      <button v-if="isViewMode" class="btn btn-secondary mr-2" type="button" @click="backToList">
         <i class="bi bi-arrow-left mr-1"></i>
         กลับรายการ
       </button>
@@ -1469,6 +1494,23 @@
     @closeModal="onCloseCustomerModal"
     @customerCreated="onCustomerCreated"
   />
+
+  <!-- Confirm Stock Modal -->
+  <ConfirmStockModal
+    :isShowModal="isShow.confirmStockModal"
+    :saleOrderData="formSaleOrder"
+    :stockItems="stockItemsForInvoice"
+    @close-modal="onCloseConfirmStockModal"
+    @items-confirmed="onStockItemsConfirmed"
+  />
+
+  <!-- Invoice Modal -->
+  <SaleOrderInvoiceModal
+    :isShowModal="isShow.invoiceModal"
+    :saleOrderData="formSaleOrder"
+    :stockItems="confirmedStockItemsOnly"
+    @close-modal="onCloseInvoiceModal"
+  />
 </template>
 
 <script>
@@ -1482,6 +1524,8 @@ import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
+import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
+import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
@@ -1497,6 +1541,8 @@ export default {
     Row,
     Calendar,
     Dropdown,
+    SaleOrderInvoiceModal,
+    ConfirmStockModal,
     imagePreview,
     editStockView,
     CustomerSearchModal,
@@ -1551,7 +1597,9 @@ export default {
       isShow: {
         isEditStock: false,
         searchCustomer: false,
-        createCustomer: false
+        createCustomer: false,
+        invoiceModal: false,
+        confirmStockModal: false
       },
       modelEditStock: {},
       editStockIndex: null,
@@ -1688,6 +1736,25 @@ export default {
       return this.copyItems.length
     },
 
+    // Stock items for invoice (exclude copy items)
+    stockItemsForInvoice() {
+      return this.stockItems.map((item, index) => ({
+        ...item,
+        id: item.id || `stock_${index}_${Date.now()}`,
+        isConfirmed: item.isConfirmed || false
+      }))
+    },
+
+    // Only confirmed stock items for invoice
+    confirmedStockItemsOnly() {
+      return this.stockItemsForInvoice.filter((item) => item.isConfirmed)
+    },
+
+    // Count of confirmed stock items
+    confirmedStockItemsCount() {
+      return this.confirmedStockItemsOnly.length
+    },
+
     // Price calculations - ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น
     selectedItemsTotal() {
       // รวมเฉพาะ stock items สำหรับใบสรุปใบสั่งขาย (ใช้ราคาแปลงแล้ว)
@@ -1704,7 +1771,9 @@ export default {
 
     productionDepositAmount() {
       if (!this.formSaleOrder.depositRequired) return 0
-      return (this.productionItemsTotal * (this.formSaleOrder.depositPercentage || 0)) / 100
+
+      let stockTotal = this.stockItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
+      return ((stockTotal + 0)* (this.formSaleOrder.depositPercentage || 0)) / 100
     },
 
     totalDepositAmount() {
@@ -1765,7 +1834,7 @@ export default {
           console.log('newVal.customer:', newVal.customer)
           console.log('newVal.status:', newVal.status)
           console.log('newVal.items:', newVal.items)
-          
+
           // Check if this is quotation data (has items) or sale order data (has other properties)
           if (newVal.items && Array.isArray(newVal.items) && newVal.items.length > 0) {
             console.log('Loading as quotation data')
@@ -1831,7 +1900,6 @@ export default {
 
     // Load sale order data from API
     loadSaleOrderData(saleOrderData) {
-
       console.log('Loading sale order data step 1:', saleOrderData)
       if (!saleOrderData) return
 
@@ -1850,13 +1918,13 @@ export default {
         priority: saleOrderData.priority || 'normal',
         remark: saleOrderData.remark || '',
         customerRemark: saleOrderData.customer?.remark || '',
-        
+
         // Customer information
         customerName: saleOrderData.customer?.name || '',
         customerAddress: saleOrderData.customer?.address || '',
         customerPhone: saleOrderData.customer?.phone || '',
         customerEmail: saleOrderData.customer?.email || '',
-        
+
         // Financial data
         currencyUnit: saleOrderData.currencyUnit || 'US$',
         currencyRate: saleOrderData.currencyRate || 33.0,
@@ -1867,7 +1935,7 @@ export default {
         copyFreight: saleOrderData.copyFreight || 0
       })
       console.log('Updated formSaleOrder:', this.formSaleOrder)
-      
+
       // Force Vue to update the UI
       this.$nextTick(() => {
         this.$forceUpdate()
@@ -1877,7 +1945,7 @@ export default {
       // Load items if available
       if (saleOrderData.items) {
         console.log('Items structure:', saleOrderData.items)
-        
+
         // Check if items is an object with stockItems/copyItems or an array
         if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
           // Items is an object with separated arrays
@@ -1892,7 +1960,7 @@ export default {
           this.stockItems = saleOrderData.items.allItems.filter((item) => item.stockNumber != null)
           this.copyItems = saleOrderData.items.allItems.filter((item) => item.stockNumber == null)
         }
-        
+
         console.log('Loaded stock items:', this.stockItems)
         console.log('Loaded copy items:', this.copyItems)
       }
@@ -2122,9 +2190,7 @@ export default {
       const formValue = {
         soNumber: this.formSaleOrder.number || '',
 
-        soDate: this.formSaleOrder.date
-          ? formatISOString(this.formSaleOrder.date)
-          : null,  
+        soDate: this.formSaleOrder.date ? formatISOString(this.formSaleOrder.date) : null,
         deliveryDate: this.formSaleOrder.expectedDeliveryDate
           ? formatISOString(this.formSaleOrder.expectedDeliveryDate)
           : null,
@@ -2317,9 +2383,10 @@ export default {
       }
     },
 
-    formatCurrency(amount, currency = 'THB') {
+    formatCurrency(amount, currency = null) {
       const formattedAmount = formatDecimal(amount, 2)
-      return currency === 'THB' ? formattedAmount + ' THB' : formattedAmount
+      const displayCurrency = currency || this.formSaleOrder.currencyUnit || 'THB'
+      return formattedAmount + ' ' + displayCurrency
     },
 
     // Price calculation methods like quotation
@@ -2751,6 +2818,60 @@ export default {
     backToList() {
       // Navigate back to sale order list
       this.$router.push({ path: '/sale-order-list' })
+    },
+
+    // Invoice modal methods
+    openInvoiceModal() {
+      if (this.confirmedStockItemsCount === 0) {
+        alert('กรุณายืนยันสินค้าก่อนออก Invoice')
+        return
+      }
+
+      if (this.stockItems.length === 0) {
+        alert('ไม่พบสินค้าสำหรับออก Invoice')
+        return
+      }
+
+      this.isShow.invoiceModal = true
+    },
+
+    onCloseInvoiceModal() {
+      this.isShow.invoiceModal = false
+    },
+
+    // Confirm stock modal methods
+    openConfirmStockModal() {
+      if (this.stockItems.length === 0) {
+        alert('ไม่พบสินค้าสำหรับยืนยันการขาย')
+        return
+      }
+
+      this.isShow.confirmStockModal = true
+    },
+
+    onCloseConfirmStockModal() {
+      this.isShow.confirmStockModal = false
+    },
+
+    onStockItemsConfirmed(data) {
+      console.log('Stock items confirmed:', data)
+
+      // Update the confirmed status of items in stockItems array
+      data.confirmedItems.forEach((confirmedItem) => {
+        const index = this.stockItems.findIndex(
+          (item) => item.id === confirmedItem.id || item.stockNumber === confirmedItem.stockNumber
+        )
+        if (index !== -1) {
+          this.stockItems[index].isConfirmed = true
+          this.stockItems[index].confirmedAt = confirmedItem.confirmedAt
+        }
+      })
+
+      // Force reactivity update
+      this.$forceUpdate()
+
+      // Show success message with count
+      console.log(`Successfully confirmed ${data.totalConfirmed} items`)
     }
   }
 }
@@ -3249,5 +3370,23 @@ export default {
   justify-content: flex-end;
   align-items: center;
   margin-top: 20px;
+}
+
+// Badge styles for confirmation status
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+
+  &.badge-success {
+    background-color: #28a745;
+    color: white;
+  }
+
+  &.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+  }
 }
 </style>
