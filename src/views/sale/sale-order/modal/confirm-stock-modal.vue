@@ -204,9 +204,9 @@
                 <Column field="appraisalPrice" header="ราคาประเมิน" style="width: 140px">
                   <template #body="slotProps">
                     <div class="text-right">
-                      <div>{{ formatPriceWithCurrency(slotProps.data.appraisalPrice) }}</div>
+                      <div>{{ formatItemAppraisalPrice(slotProps.data) }}</div>
                       <small class="text-muted" v-if="saleOrderData.currencyRate && saleOrderData.currencyRate !== 1">
-                        ({{ formatCurrency(slotProps.data.appraisalPrice) }} THB)
+                        ({{ formatCurrency(getDiscountedPrice(slotProps.data)) }} THB)
                       </small>
                     </div>
                   </template>
@@ -215,9 +215,9 @@
                 <Column header="ราคารวม" style="width: 140px">
                   <template #body="slotProps">
                     <div class="text-right text-success font-weight-bold">
-                      <div>{{ formatPriceWithCurrency(slotProps.data.appraisalPrice * slotProps.data.qty) }}</div>
+                      <div>{{ formatItemTotalPrice(slotProps.data) }}</div>
                       <small class="text-muted" v-if="saleOrderData.currencyRate && saleOrderData.currencyRate !== 1">
-                        ({{ formatCurrency(slotProps.data.appraisalPrice * slotProps.data.qty) }} THB)
+                        ({{ formatCurrency(getTotalConvertedPrice(slotProps.data) * (saleOrderData.currencyRate || 1)) }} THB)
                       </small>
                     </div>
                   </template>
@@ -269,8 +269,10 @@
 
         <!-- Action Buttons -->
         <div class="btn-submit-container mt-4">
+          <div class="d-flex justify-content-end">
+            
           <button
-            class="btn btn-warning mr-2"
+            class="btn btn-green mr-2"
             type="button"
             @click="confirmSelectedItems"
             :disabled="loading || selectedItemsCount === 0"
@@ -285,6 +287,7 @@
             <i class="bi bi-x-circle mr-1"></i>
             ยกเลิก
           </button>
+          </div>
         </div>
       </template>
     </modal>
@@ -364,15 +367,13 @@ export default {
       )
       
       return selectedStockItems.reduce((total, item) => {
-        const convertedPrice = this.calculatePriceWithCurrencyRate(item.appraisalPrice)
-        return total + (convertedPrice * item.qty)
+        return total + this.getTotalConvertedPrice(item)
       }, 0)
     },
 
     grandTotalAmount() {
       return this.stockItems.reduce((total, item) => {
-        const convertedPrice = this.calculatePriceWithCurrencyRate(item.appraisalPrice)
-        return total + (convertedPrice * item.qty)
+        return total + this.getTotalConvertedPrice(item)
       }, 0)
     }
   },
@@ -425,17 +426,56 @@ export default {
       }).format(amount || 0)
     },
 
-    // คำนวณราคาตาม currency rate
+    // คำนวณราคาประเมิน
+    getAppraisalPrice(item) {
+      return item.appraisalPrice || item.price || 0
+    },
+
+    // คำนวณราคาหลังหักส่วนลด
+    getDiscountedPrice(item) {
+      const appraisalPrice = this.getAppraisalPrice(item)
+      const discountPercent = this.saleOrderData.discountPercent || 0
+      return appraisalPrice * (1 - discountPercent / 100)
+    },
+
+    // คำนวณราคาแปลงสกุลเงิน
+    getConvertedPrice(item) {
+      const discountedPrice = this.getDiscountedPrice(item)
+      const currencyRate = this.saleOrderData.currencyRate || 1
+      return discountedPrice / currencyRate
+    },
+
+    // คำนวณราคารวมของแต่ละรายการ
+    getTotalConvertedPrice(item) {
+      const convertedPrice = this.getConvertedPrice(item)
+      const qty = item.qty || 0
+      return convertedPrice * qty
+    },
+
+    // คำนวณราคาตาม currency rate (เก่า - เก็บไว้เพื่อ backward compatibility)
     calculatePriceWithCurrencyRate(price) {
       const rate = this.saleOrderData.currencyRate || 1
-      return (price || 0) * rate
+      return (price || 0) / rate  // แก้ไขจาก * rate เป็น / rate
     },
 
     // Format ราคาพร้อม currency
     formatPriceWithCurrency(price) {
-      const convertedPrice = this.calculatePriceWithCurrencyRate(price)
+      const currency = this.saleOrderData.currencyUnit || 'THB'
+      return `${this.formatCurrency(price)} ${currency}`
+    },
+
+    // Format ราคาประเมินพร้อม currency สำหรับแสดงในตาราง
+    formatItemAppraisalPrice(item) {
+      const convertedPrice = this.getConvertedPrice(item)
       const currency = this.saleOrderData.currencyUnit || 'THB'
       return `${this.formatCurrency(convertedPrice)} ${currency}`
+    },
+
+    // Format ราคารวมพร้อม currency สำหรับแสดงในตาราง
+    formatItemTotalPrice(item) {
+      const totalPrice = this.getTotalConvertedPrice(item)
+      const currency = this.saleOrderData.currencyUnit || 'THB'
+      return `${this.formatCurrency(totalPrice)} ${currency}`
     },
 
     formatDate(date) {

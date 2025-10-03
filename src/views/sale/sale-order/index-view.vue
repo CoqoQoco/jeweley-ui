@@ -38,6 +38,7 @@ const interfaceSaleOrder = {
   freight: 0,
   remark: null,
   items: [],
+  confirmedItems: [],
   customer: {
     name: null,
     address: null,
@@ -143,6 +144,7 @@ export default {
                 return []
               }
             })() : [],
+            confirmedItems: saleOrderData.stockConfirm || [],
             currencyUnit: saleOrderData.currencyUnit || 'US$',
             currencyRate: saleOrderData.currencyRate || 33.0,
             markup: saleOrderData.markup || 3.5,
@@ -156,7 +158,7 @@ export default {
             }
           }
 
-          console.log('Loaded sale order data:', this.saleOrderData)
+          console.log('Loaded sale order data api:', this.saleOrderData)
         } else {
           console.warn('No sale order data found for number:', soNumber)
         }

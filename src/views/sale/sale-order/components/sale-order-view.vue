@@ -1408,7 +1408,7 @@
     <!-- Action Buttons -->
     <div class="btn-submit-container mt-3">
       <!-- Edit Mode Buttons (hidden in view mode) -->
-     
+
       <div v-if="!isViewMode" class="d-flex justify-content-end align-items-center">
         <button
           class="btn btn-green mr-2"
@@ -1772,8 +1772,11 @@ export default {
     productionDepositAmount() {
       if (!this.formSaleOrder.depositRequired) return 0
 
-      let stockTotal = this.stockItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
-      return ((stockTotal + 0)* (this.formSaleOrder.depositPercentage || 0)) / 100
+      let stockTotal = this.stockItems.reduce(
+        (sum, item) => sum + this.getTotalConvertedPrice(item),
+        0
+      )
+      return ((stockTotal + 0) * (this.formSaleOrder.depositPercentage || 0)) / 100
     },
 
     totalDepositAmount() {
@@ -1964,6 +1967,13 @@ export default {
         console.log('Loaded stock items:', this.stockItems)
         console.log('Loaded copy items:', this.copyItems)
       }
+
+      //check confirm stock in saleOrderData.confirmedItems for stock item
+      this.stockItems.forEach((item) => {
+        if (saleOrderData.confirmedItems.includes(item.stockNumber)) {
+          item.isConfirmed = true
+        }
+      })
 
       // Recalculate totals
       //this.recalculateAll()
