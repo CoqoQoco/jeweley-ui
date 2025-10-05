@@ -86,28 +86,27 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
     },
     async fetchGenerateRunningNumber() {
       try {
-        return await api.jewelry.post('SaleOrder/GenerateRunningNumber', {}, {
-          skipLoading: false
-        })
+        return await api.jewelry.post(
+          'SaleOrder/GenerateRunningNumber',
+          {},
+          {
+            skipLoading: false
+          }
+        )
       } catch (error) {
         console.error('Error generating SO running number:', error)
         throw error
       }
     },
     async confirmStockItems({ soNumber, stockItems }) {
-      try {
-        const param = {
-          soNumber: soNumber,
-          stockItems: stockItems
-        }
-        
-        return await api.jewelry.post('SaleOrder/ConfirmStockItems', param, {
-          skipLoading: false
-        })
-      } catch (error) {
-        console.error('Error confirming stock items:', error)
-        throw error
+      const param = {
+        soNumber: soNumber,
+        stockItems: stockItems
       }
+
+      return await api.jewelry.post('SaleOrder/ConfirmStockItems', param, {
+        skipLoading: false
+      })
     }
   }
 })

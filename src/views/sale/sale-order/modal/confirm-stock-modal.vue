@@ -204,6 +204,7 @@
                       <imagePreview
                         :imageName="slotProps.data.imagePath"
                         :path="slotProps.data.imagePath"
+                        :type="type"
                         :width="50"
                         :height="50"
                         v-if="slotProps.data.imagePath"
@@ -385,7 +386,8 @@ export default {
   data() {
     return {
       loading: false,
-      selectedItems: []
+      selectedItems: [],
+      type: 'STOCK-PRODUCT'
     }
   },
 
@@ -555,57 +557,47 @@ export default {
     },
 
     async confirmSelectedItems() {
-      try {
-        if (this.selectedItemsCount === 0) {
-          alert('กรุณาเลือกสินค้าที่จะยืนยันอย่างน้อย 1 รายการ')
-          return
-        }
+      if (this.selectedItemsCount === 0) {
+        alert('กรุณาเลือกสินค้าที่จะยืนยันอย่างน้อย 1 รายการ')
+        return
+      }
 
-        this.loading = true
+      //this.loading = true
 
-        // Get selected items data
-        const selectedStockItems = this.stockItems.filter((item) =>
-          this.selectedItems.includes(item.id)
-        )
+      // Get selected items data
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
 
-        // Prepare data for API
-        const confirmData = {
-          soNumber: this.saleOrderData.number,
-          stockItems: selectedStockItems.map((item) => ({
-            id: item.id,
-            stockNumber: item.stockNumber,
-            productNumber: item.productNumber,
-            qty: item.qty,
-            appraisalPrice: item.appraisalPrice,
-            isConfirmed: true,
-            confirmedAt: new Date().toISOString()
-          }))
-        }
+      // Prepare data for API
+      const confirmData = {
+        soNumber: this.saleOrderData.number,
+        stockItems: selectedStockItems.map((item) => ({
+          id: item.id,
+          stockNumber: item.stockNumber,
+          productNumber: item.productNumber,
+          qty: item.qty,
+          appraisalPrice: item.appraisalPrice,
+          isConfirmed: true,
+          confirmedAt: new Date().toISOString()
+        }))
+      }
 
-        console.log('Confirming stock items:', confirmData)
+      console.log('Confirming stock items:', confirmData)
 
-        // Call API to confirm items
-        const saleOrderStore = usrSaleOrderApiStore()
-        const response = await saleOrderStore.confirmStockItems(confirmData)
+      // Call API to confirm items
+      const saleOrderStore = usrSaleOrderApiStore()
+      const response = await saleOrderStore.confirmStockItems(confirmData)
 
-        if (response && response.success) {
-          success('ยืนยันสินค้าเรียบร้อย', `ยืนยันสินค้า ${this.selectedItemsCount} รายการแล้ว`)
+      console.log('Confirming stock items:', response)
+      if (response && response.success) {
+        // Emit event to parent to refresh data
+        this.$emit('items-confirmed', {
+          confirmedItems: selectedStockItems,
+          totalConfirmed: this.selectedItemsCount
+        })
 
-          // Emit event to parent to refresh data
-          this.$emit('items-confirmed', {
-            confirmedItems: selectedStockItems,
-            totalConfirmed: this.selectedItemsCount
-          })
-
-          this.closeModal()
-        } else {
-          throw new Error(response?.message || 'ไม่สามารถยืนยันสินค้าได้')
-        }
-      } catch (err) {
-        console.error('Error confirming stock items:', err)
-        error('เกิดข้อผิดพลาด', `ไม่สามารถยืนยันสินค้าได้: ${err.message}`)
-      } finally {
-        this.loading = false
+        this.closeModal()
       }
     },
 

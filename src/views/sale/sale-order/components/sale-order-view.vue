@@ -1830,19 +1830,19 @@ export default {
 
     modelSaleOrder: {
       handler(newVal) {
-        console.log('modelSaleOrder watcher triggered with:', newVal)
+        //console.log('modelSaleOrder watcher triggered with:', newVal)
         if (newVal && Object.keys(newVal).length > 0) {
 
           // Check if this is quotation data (has items) or sale order data (has other properties)
           if (newVal.items && Array.isArray(newVal.items) && newVal.items.length > 0) {
-            console.log('Loading as quotation data')
+            //console.log('Loading as quotation data')
             this.loadQuotationData(newVal)
           } else if (newVal.number || newVal.customer || newVal.status || newVal.currencyUnit) {
-            console.log('Loading as sale order data')
+            //console.log('Loading as sale order data')
             this.loadSaleOrderData(newVal)
           } else {
-            console.log('Data structure not recognized:', Object.keys(newVal))
-            console.log('Full newVal:', newVal)
+            //console.log('Data structure not recognized:', Object.keys(newVal))
+            //console.log('Full newVal:', newVal)
           }
         }
       },
@@ -1890,18 +1890,18 @@ export default {
       this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
       this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
 
-      console.log('Stock items:', this.stockItems)
-      console.log('Copy items:', this.copyItems)
+      //console.log('Stock items:', this.stockItems)
+      //console.log('Copy items:', this.copyItems)
 
       //this.generateSONumber()
     },
 
     // Load sale order data from API
     loadSaleOrderData(saleOrderData) {
-      console.log('Loading sale order data step 1:', saleOrderData)
+      //console.log('Loading sale order data step 1:', saleOrderData)
       if (!saleOrderData) return
 
-      console.log('Loading sale order data:', saleOrderData)
+      //console.log('Loading sale order data:', saleOrderData)
 
       // Update sale order form data using Object.assign for better reactivity
       Object.assign(this.formSaleOrder, {
@@ -1932,17 +1932,17 @@ export default {
         freight: saleOrderData.freight || 0,
         copyFreight: saleOrderData.copyFreight || 0
       })
-      console.log('Updated formSaleOrder:', this.formSaleOrder)
+      //console.log('Updated formSaleOrder:', this.formSaleOrder)
 
       // Force Vue to update the UI
       this.$nextTick(() => {
         this.$forceUpdate()
-        console.log('Force update triggered')
+        //console.log('Force update triggered')
       })
 
       // Load items if available
       if (saleOrderData.items) {
-        console.log('Items structure:', saleOrderData.items)
+        //console.log('Items structure:', saleOrderData.items)
 
         // Check if items is an object with stockItems/copyItems or an array
         if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
@@ -1959,8 +1959,8 @@ export default {
           this.copyItems = saleOrderData.items.allItems.filter((item) => item.stockNumber == null)
         }
 
-        console.log('Loaded stock items:', this.stockItems)
-        console.log('Loaded copy items:', this.copyItems)
+        //console.log('Loaded stock items:', this.stockItems)
+        //console.log('Loaded copy items:', this.copyItems)
       }
 
       //check confirm stock in saleOrderData.confirmedItems for stock item
@@ -1983,7 +1983,7 @@ export default {
         // const data = await this.productStore.fetchDataGet({ formValue: this.productSearch })
 
         // Mock implementation for now
-        console.log('Search product:', this.productSearch)
+        //console.log('Search product:', this.productSearch)
 
         // Simulate API response
         const mockData = {
@@ -2014,7 +2014,7 @@ export default {
           productNumber: ''
         }
 
-        console.log('Product added successfully')
+        //console.log('Product added successfully')
       } catch (error) {
         console.error('Error searching product:', error)
       } finally {
@@ -2026,30 +2026,30 @@ export default {
     deleteStockItem(index) {
       this.stockItems.splice(index, 1)
       this.recalculateAll()
-      console.log('Stock item deleted at index:', index)
+      //console.log('Stock item deleted at index:', index)
     },
 
     deleteCopyItem(index) {
       this.copyItems.splice(index, 1)
       this.recalculateAll()
-      console.log('Copy item deleted at index:', index)
+      //console.log('Copy item deleted at index:', index)
     },
 
     // Create production order for copy items
     createProductionOrder(item) {
-      console.log('Create production order for:', item)
+      //console.log('Create production order for:', item)
       // TODO: Implement production order creation
     },
 
     // Demo data loading methods
 
     async handleProductSearch(searchData) {
-      console.log('Handle product search:', searchData)
+      //console.log('Handle product search:', searchData)
       // TODO: Implement product search and add to quotation items
     },
 
     async handleQuotationSearch(quotationData) {
-      console.log('Handle quotation search:', quotationData)
+      //console.log('Handle quotation search:', quotationData)
       this.formSaleOrder.quotationNumber = quotationData.Number
       await this.loadQuotationDataFromAPI()
     },
@@ -2241,7 +2241,7 @@ export default {
         })
       }
 
-      console.log('Saving sale order with data:', formValue)
+      //console.log('Saving sale order with data:', formValue)
 
       const res = await this.saleOrderStore.fetchSave({ formValue })
       if (res) {
@@ -2813,7 +2813,7 @@ export default {
     printSaleOrder() {
       try {
         // TODO: Implement PDF generation
-        console.log('Print Sale Order:', this.formSaleOrder)
+        //console.log('Print Sale Order:', this.formSaleOrder)
         success('กำลังสร้างไฟล์ PDF...', 'พิมพ์ใบสั่งขาย')
       } catch (error) {
         error('เกิดข้อผิดพลาดในการพิมพ์', 'พิมพ์ไม่สำเร็จ')
@@ -2859,7 +2859,7 @@ export default {
     },
 
     onStockItemsConfirmed(data) {
-      console.log('Stock items confirmed:', data)
+      //console.log('Stock items confirmed:', data)
 
       // Update the confirmed status of items in stockItems array
       data.confirmedItems.forEach((confirmedItem) => {
@@ -2876,7 +2876,7 @@ export default {
       this.$forceUpdate()
 
       // Show success message with count
-      console.log(`Successfully confirmed ${data.totalConfirmed} items`)
+      //console.log(`Successfully confirmed ${data.totalConfirmed} items`)
     }
   }
 }
