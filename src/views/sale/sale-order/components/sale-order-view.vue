@@ -1414,10 +1414,18 @@
           class="btn btn-green mr-2"
           type="button"
           @click="openConfirmStockModal"
-          :disabled="loading || selectedItemsCount === 0 || hasValidationErrors"
+          :disabled="
+            loading ||
+            selectedItemsCount === 0 ||
+            hasValidationErrors ||
+            pendingConfirmationStockItemsCount === 0
+          "
         >
           <i class="bi bi-check-square mr-1"></i>
           ยืนยันการขาย
+          <span v-if="pendingConfirmationStockItemsCount > 0" class="badge badge-warning ml-1">
+            {{ pendingConfirmationStockItemsCount }}
+          </span>
         </button>
 
         <button
@@ -1755,6 +1763,16 @@ export default {
       return this.confirmedStockItemsOnly.length
     },
 
+    // Stock items pending confirmation (not confirmed yet)
+    pendingConfirmationStockItems() {
+      return this.stockItemsForInvoice.filter((item) => !item.isConfirmed)
+    },
+
+    // Count of stock items pending confirmation
+    pendingConfirmationStockItemsCount() {
+      return this.pendingConfirmationStockItems.length
+    },
+
     // Price calculations - ใบสรุปใบสั่งขายรวมเฉพาะ stock items เท่านั้น
     selectedItemsTotal() {
       // รวมเฉพาะ stock items สำหรับใบสรุปใบสั่งขาย (ใช้ราคาแปลงแล้ว)
@@ -1832,7 +1850,6 @@ export default {
       handler(newVal) {
         //console.log('modelSaleOrder watcher triggered with:', newVal)
         if (newVal && Object.keys(newVal).length > 0) {
-
           // Check if this is quotation data (has items) or sale order data (has other properties)
           if (newVal.items && Array.isArray(newVal.items) && newVal.items.length > 0) {
             //console.log('Loading as quotation data')
@@ -2158,7 +2175,6 @@ export default {
         await this.fetchSaveSaleOrder('Draft')
         // Lock SO number after successful save
         this.isSONumberLocked = true
-        success('บันทึกร่างเรียบร้อยแล้ว', 'บันทึกสำเร็จ')
       } catch (error) {
         console.error('Error saving draft:', error)
         error('เกิดข้อผิดพลาดในการบันทึก', 'บันทึกไม่สำเร็จ')
@@ -2845,11 +2861,13 @@ export default {
     },
 
     // Confirm stock modal methods
-    openConfirmStockModal() {
+    async openConfirmStockModal() {
       if (this.stockItems.length === 0) {
         alert('ไม่พบสินค้าสำหรับยืนยันการขาย')
         return
       }
+
+      await this.fetchSaveSaleOrder('Draft')
 
       this.isShow.confirmStockModal = true
     },
