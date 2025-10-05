@@ -43,7 +43,8 @@ export class InvoicePdfIntegration {
         saleOrder,
         currencyUnit,
         currencyRate,
-        invoiceNo
+        invoiceNo,
+        10 // itemsPerPage
       )
 
       // Generate and download PDF

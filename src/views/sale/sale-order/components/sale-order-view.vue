@@ -1832,11 +1832,6 @@ export default {
       handler(newVal) {
         console.log('modelSaleOrder watcher triggered with:', newVal)
         if (newVal && Object.keys(newVal).length > 0) {
-          console.log('Available keys in newVal:', Object.keys(newVal))
-          console.log('newVal.number:', newVal.number)
-          console.log('newVal.customer:', newVal.customer)
-          console.log('newVal.status:', newVal.status)
-          console.log('newVal.items:', newVal.items)
 
           // Check if this is quotation data (has items) or sale order data (has other properties)
           if (newVal.items && Array.isArray(newVal.items) && newVal.items.length > 0) {
