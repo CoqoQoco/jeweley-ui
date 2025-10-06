@@ -58,13 +58,13 @@ const getTokenInfo = () => {
 // Axios instance for jewelry API
 const axiosInstance = axios.create({
   baseURL: jewelryUrl,
-  timeout: 30000
+  timeout: 100000
 })
 
 // Axios instance for printer API
 const printerAxiosInstance = axios.create({
   baseURL: ZebraPrinterUrl,
-  timeout: 30000
+  timeout: 100000
 })
 
 // Request tracking
