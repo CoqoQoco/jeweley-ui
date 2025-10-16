@@ -23,45 +23,7 @@
           </pageTitle>
         </div>
 
-        <!-- <div class="form-col-container">
-          <div>
-            <span class="title-text">เลขที่ใบเสนอราคา</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="formQuotation.Number"
-              placeholder="EX: QUO-2025-001"
-            />
-          </div>
-        </div> -->
 
-        <!-- <div class="btn-submit-container">
-          <button
-            class="btn btn-sm btn-success mr-2"
-            type="button"
-            @click="onSearchQuotation"
-            title="ค้นหาใบเสนอราคา"
-          >
-            <span><i class="bi bi-file-earmark-text"></i></span>
-            <span class="ml-2">ค้นหาใบเสนอราคา</span>
-          </button>
-
-          <button
-            class="btn btn-sm btn-main mr-2"
-            type="button"
-            @click="onConvertQuotation"
-            title="Convert ใบเสนอราคาเป็น Sale Order"
-            :disabled="!formQuotation.Number"
-          >
-            <span><i class="bi bi-arrow-right-circle"></i></span>
-            <span class="ml-2">Convert เป็น Sale Order</span>
-          </button>
-
-          <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
-            <span><i class="bi bi-x-circle"></i></span>
-            <span class="ml-2">ล้าง</span>
-          </button>
-        </div> -->
       </div>
     </form>
 

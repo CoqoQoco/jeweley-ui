@@ -18,17 +18,6 @@
                 readonly
                 :disabled="isSONumberLocked"
               />
-              <!-- <button
-                class="btn btn-main "
-                type="button"
-                @click="generateSONumber"
-                :disabled="loading || isSONumberLocked"
-                title="สร้างเลขที่ใบสั่งขาย"
-                he
-              >
-                <i class=" mr-1"></i>
-                สร้าง
-              </button> -->
             </div>
           </div>
 
@@ -103,21 +92,7 @@
             />
           </div>
 
-          <!-- Deposit Required -->
-          <!-- <div>
-            <label class="d-flex align-items-center">
-              <input
-                type="checkbox"
-                v-model="formSaleOrder.depositRequired"
-                @change="onDepositRequiredChange"
-                class="mr-2"
-              />
-              <span class="title-text">ต้องการเงินมัดจำ</span>
-            </label>
-          </div> -->
-
           <!-- Deposit Percentage -->
-          <!-- <div v-if="formSaleOrder.depositRequired"> -->
           <div>
             <span class="title-text">เปอร์เซ็นต์เงินมัดจำ (%)</span>
             <input
@@ -168,15 +143,6 @@
                 <i class="bi bi-search mr-1"></i>
                 <span>ค้นหาลูกค้า</span>
               </button>
-              <!-- <button
-                class="btn btn-sm btn-green"
-                type="button"
-                @click="onCreateCustomer"
-                title="เพิ่มลูกค้าใหม่"
-              >
-                <i class="bi bi-person-plus mr-1"></i>
-                <span>เพิ่มลูกค้าใหม่</span>
-              </button> -->
             </div>
           </div>
 
@@ -362,10 +328,10 @@
         >
           <ColumnGroup type="header">
             <Row>
-              <Column header="" :colspan="2" />
-              <Column header="" />
-              <Column header="เลขที่ผลิต" />
-              <Column header="รหัสสินค้า" />
+              <Column header="" :colspan="2" frozen />
+              <Column header="" frozen />
+              <Column header="เลขที่ผลิต" frozen />
+              <Column header="รหัสสินค้า" frozen />
               <Column header="สถานะการขาย" />
               <Column header="รายละเอียด" />
               <Column header="Gold (gms)" />
@@ -382,13 +348,13 @@
             </Row>
           </ColumnGroup>
 
-          <Column field="index" style="width: 10px">
+          <Column field="index" style="width: 10px" frozen>
             <template #body="slotProps">
               <span>{{ slotProps.index + 1 }}</span>
             </template>
           </Column>
 
-          <Column field="action" style="width: 10px">
+          <Column field="action" style="width: 10px" frozen>
             <template #body="slotProps">
               <div class="d-flex justify-content-center align-items-center">
                 <button
@@ -407,19 +373,19 @@
                 >
                   <span class="bi bi-brush"></span>
                 </button>
-                <button
+                <!-- <button
                   class="btn btn-sm btn-outline-dark ml-2"
                   type="button"
                   title="คัดลอก"
                   @click="copyItem(slotProps.data)"
                 >
                   <span class="bi bi-files"></span>
-                </button>
+                </button> -->
               </div>
             </template>
           </Column>
 
-          <Column field="image" header="" style="width: 50px">
+          <Column field="image" header="" style="width: 50px" frozen>
             <template #body="slotProps">
               <div class="image-container">
                 <div v-if="slotProps.data.imagePath">
@@ -437,7 +403,7 @@
             </template>
           </Column>
 
-          <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+          <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px" frozen>
             <template #body="slotProps">
               <span>{{
                 `${
@@ -449,7 +415,7 @@
             </template>
           </Column>
 
-          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px" frozen>
             <template #body="slotProps">
               <div v-if="!slotProps.data.stockNumber">
                 <input
@@ -679,7 +645,7 @@
           <ColumnGroup type="footer">
             <!-- total -->
             <Row>
-              <Column :colspan="6">
+              <Column :colspan="5" frozen>
                 <template #footer>
                   <div class="text-left type-container">
                     <span class="mr-2">Net Weight Of Merchandise</span>
@@ -688,6 +654,7 @@
                   </div>
                 </template>
               </Column>
+              <Column :colspan="1"></Column>
               <Column>
                 <template #footer>
                   <div class="text-right type-container">
@@ -1848,18 +1815,13 @@ export default {
 
     modelSaleOrder: {
       handler(newVal) {
-        //console.log('modelSaleOrder watcher triggered with:', newVal)
         if (newVal && Object.keys(newVal).length > 0) {
           // Check if this is quotation data (has items) or sale order data (has other properties)
           if (newVal.items && Array.isArray(newVal.items) && newVal.items.length > 0) {
-            //console.log('Loading as quotation data')
             this.loadQuotationData(newVal)
           } else if (newVal.number || newVal.customer || newVal.status || newVal.currencyUnit) {
-            //console.log('Loading as sale order data')
             this.loadSaleOrderData(newVal)
           } else {
-            //console.log('Data structure not recognized:', Object.keys(newVal))
-            //console.log('Full newVal:', newVal)
           }
         }
       },
@@ -1906,19 +1868,11 @@ export default {
       // Separate items based on stockId
       this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
       this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
-
-      //console.log('Stock items:', this.stockItems)
-      //console.log('Copy items:', this.copyItems)
-
-      //this.generateSONumber()
     },
 
     // Load sale order data from API
     loadSaleOrderData(saleOrderData) {
-      //console.log('Loading sale order data step 1:', saleOrderData)
       if (!saleOrderData) return
-
-      //console.log('Loading sale order data:', saleOrderData)
 
       // Update sale order form data using Object.assign for better reactivity
       Object.assign(this.formSaleOrder, {
@@ -1949,18 +1903,14 @@ export default {
         freight: saleOrderData.freight || 0,
         copyFreight: saleOrderData.copyFreight || 0
       })
-      //console.log('Updated formSaleOrder:', this.formSaleOrder)
 
       // Force Vue to update the UI
       this.$nextTick(() => {
         this.$forceUpdate()
-        //console.log('Force update triggered')
       })
 
       // Load items if available
       if (saleOrderData.items) {
-        //console.log('Items structure:', saleOrderData.items)
-
         // Check if items is an object with stockItems/copyItems or an array
         if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
           // Items is an object with separated arrays
@@ -1975,9 +1925,6 @@ export default {
           this.stockItems = saleOrderData.items.allItems.filter((item) => item.stockNumber != null)
           this.copyItems = saleOrderData.items.allItems.filter((item) => item.stockNumber == null)
         }
-
-        //console.log('Loaded stock items:', this.stockItems)
-        //console.log('Loaded copy items:', this.copyItems)
       }
 
       //check confirm stock in saleOrderData.confirmedItems for stock item
@@ -1988,7 +1935,6 @@ export default {
       })
 
       // Recalculate totals
-      //this.recalculateAll()
     },
 
     // Product search method (like quotation)
@@ -1996,11 +1942,7 @@ export default {
       try {
         this.loading = true
 
-        // TODO: Replace with actual API call like quotation
-        // const data = await this.productStore.fetchDataGet({ formValue: this.productSearch })
-
         // Mock implementation for now
-        //console.log('Search product:', this.productSearch)
 
         // Simulate API response
         const mockData = {
@@ -2030,8 +1972,6 @@ export default {
           stockNumberOrigin: '',
           productNumber: ''
         }
-
-        //console.log('Product added successfully')
       } catch (error) {
         console.error('Error searching product:', error)
       } finally {
@@ -2043,30 +1983,21 @@ export default {
     deleteStockItem(index) {
       this.stockItems.splice(index, 1)
       this.recalculateAll()
-      //console.log('Stock item deleted at index:', index)
     },
 
     deleteCopyItem(index) {
       this.copyItems.splice(index, 1)
       this.recalculateAll()
-      //console.log('Copy item deleted at index:', index)
     },
 
     // Create production order for copy items
-    createProductionOrder(item) {
-      //console.log('Create production order for:', item)
-      // TODO: Implement production order creation
-    },
+    createProductionOrder(item) {},
 
     // Demo data loading methods
 
-    async handleProductSearch(searchData) {
-      //console.log('Handle product search:', searchData)
-      // TODO: Implement product search and add to quotation items
-    },
+    async handleProductSearch(searchData) {},
 
     async handleQuotationSearch(quotationData) {
-      //console.log('Handle quotation search:', quotationData)
       this.formSaleOrder.quotationNumber = quotationData.Number
       await this.loadQuotationDataFromAPI()
     },
@@ -2074,10 +2005,6 @@ export default {
     async loadQuotationDataFromAPI() {
       try {
         this.loading = true
-
-        // TODO: Replace with actual API call
-        // const response = await this.quotationStore.fetchQuotationById(quotationId)
-        // this.loadQuotationData(response.data)
       } catch (error) {
         console.error('Error loading quotation:', error)
       } finally {
@@ -2184,12 +2111,6 @@ export default {
     },
 
     async fetchSaveSaleOrder(status = 'Draft') {
-      // Check if SO number is generated
-      // if (!this.formSaleOrder.number) {
-      //   error('กรุณาสร้างเลขที่ใบสั่งขายก่อนบันทึก', 'ข้อมูลไม่ครบถ้วน')
-      //   return
-      // }
-
       // Prepare data for API (similar to quotation pattern)
       const stockItemsData = this.stockItems.map((item) => {
         return {
@@ -2257,8 +2178,6 @@ export default {
         })
       }
 
-      //console.log('Saving sale order with data:', formValue)
-
       const res = await this.saleOrderStore.fetchSave({ formValue })
       if (res) {
         // Update form with saved data
@@ -2268,81 +2187,6 @@ export default {
         throw new Error('Save failed')
       }
     },
-
-    // async fetchGetSaleOrder(soNumber) {
-    //   try {
-    //     this.loading = true
-    //     const formValue = {
-    //       soNumber: soNumber
-    //     }
-
-    //     const res = await this.saleOrderStore.fetchGet({ formValue })
-    //     if (res && res.data) {
-    //       this.loadSaleOrderData(res.data)
-    //       return res.data
-    //     } else {
-    //       throw new Error('Sale order not found')
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching sale order:', error)
-    //     error('ไม่พบใบสั่งขาย', 'ข้อผิดพลาด')
-    //   } finally {
-    //     this.loading = false
-    //   }
-    // },
-
-    // loadSaleOrderData(saleOrderData) {
-    //   // Load sale order form data
-    //   this.formSaleOrder = {
-    //     ...this.formSaleOrder,
-    //     number: saleOrderData.soNumber || '',
-    //     date: saleOrderData.createDate ? new Date(saleOrderData.createDate) : new Date(),
-    //     expectedDeliveryDate: saleOrderData.deliveryDate
-    //       ? new Date(saleOrderData.deliveryDate)
-    //       : null,
-    //     status: saleOrderData.statusName || 'ร่าง',
-    //     quotationNumber: saleOrderData.refQuotation || '',
-    //     paymentTerms: saleOrderData.payment || 0,
-    //     depositRequired: (saleOrderData.depositPercent || 0) > 0,
-    //     depositPercentage: saleOrderData.depositPercent || 0,
-    //     priority: saleOrderData.priority || 'ปกติ',
-
-    //     // Customer Information
-    //     customerName: saleOrderData.customerName || '',
-    //     customerCode: saleOrderData.customerCode || '',
-    //     customerAddress: saleOrderData.customerAddress || '',
-    //     customerPhone: saleOrderData.customerTel || '',
-    //     customerEmail: saleOrderData.customerEmail || '',
-    //     customerRemark: saleOrderData.customerRemark || '',
-
-    //     // Currency and Pricing
-    //     currencyUnit: saleOrderData.currencyUnit || 'THB',
-    //     currencyRate: saleOrderData.currencyRate || 1.0,
-    //     markup: saleOrderData.markup || 0,
-    //     discountPercent: saleOrderData.discount || 0,
-    //     goldPerOz: saleOrderData.goldRate || 0,
-
-    //     remark: saleOrderData.remark || ''
-    //   }
-
-    //   // Load items data from JSON
-    //   if (saleOrderData.data) {
-    //     try {
-    //       const itemsData = JSON.parse(saleOrderData.data)
-    //       this.stockItems = itemsData.stockItems || []
-    //       this.copyItems = itemsData.copyItems || []
-    //       this.formSaleOrder.freight = itemsData.freight || 0
-    //       this.formSaleOrder.copyFreight = itemsData.copyFreight || 0
-    //     } catch (error) {
-    //       console.error('Error parsing items data:', error)
-    //     }
-    //   }
-
-    //   // Lock SO number when loading existing sale order
-    //   if (saleOrderData.soNumber) {
-    //     this.isSONumberLocked = true
-    //   }
-    // },
 
     async confirmOrder() {
       if (this.hasValidationErrors) {
@@ -2828,8 +2672,6 @@ export default {
 
     printSaleOrder() {
       try {
-        // TODO: Implement PDF generation
-        //console.log('Print Sale Order:', this.formSaleOrder)
         success('กำลังสร้างไฟล์ PDF...', 'พิมพ์ใบสั่งขาย')
       } catch (error) {
         error('เกิดข้อผิดพลาดในการพิมพ์', 'พิมพ์ไม่สำเร็จ')
@@ -2877,8 +2719,6 @@ export default {
     },
 
     onStockItemsConfirmed(data) {
-      //console.log('Stock items confirmed:', data)
-
       // Update the confirmed status of items in stockItems array
       data.confirmedItems.forEach((confirmedItem) => {
         const index = this.stockItems.findIndex(
@@ -2894,7 +2734,6 @@ export default {
       this.$forceUpdate()
 
       // Show success message with count
-      //console.log(`Successfully confirmed ${data.totalConfirmed} items`)
     }
   }
 }
@@ -2903,7 +2742,6 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/custom-style/standard-data-table.scss';
-//@import '@/assets/scss/overide-prime-vue/data-table-dub.scss';
 
 /* Quotation table styles */
 .input-bg {
@@ -2941,16 +2779,11 @@ export default {
 
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: #f7f7f7;
-  //background-color: var(--base-color);
-  //padding: 10px;
-  //margin-top: 10px;
-  //overflow: auto;
 }
 
 .card-header {
   background: var(--base-font-color);
   border-bottom: 1px solid #e9ecef;
-  //padding: 0.75rem 1rem;
   border-radius: 5px 5px 0px 0px;
   display: flex;
   justify-content: space-between;
@@ -2975,8 +2808,6 @@ export default {
   border-radius: 4px;
   padding: 8px 12px;
   min-height: 38px;
-  //display: flex;
-  //align-items: center;
 }
 
 .product-description {
