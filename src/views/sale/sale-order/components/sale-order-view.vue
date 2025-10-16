@@ -275,20 +275,6 @@
               @input="recalculateAll"
             />
           </div>
-          <div class="mr-2">
-            <span class="title-text">Discount (%)</span>
-            <input
-              :class="['form-control bg-input', 'input-bg']"
-              type="number"
-              v-model.number="formSaleOrder.discountPercent"
-              min="0"
-              max="100"
-              step="any"
-              style="width: 80px"
-              :readonly="isViewMode"
-              @input="recalculateAll"
-            />
-          </div>
           <div>
             <span class="title-text">Gold (US$/Oz.)</span>
             <input
@@ -358,18 +344,20 @@
             <template #body="slotProps">
               <div class="d-flex justify-content-center align-items-center">
                 <button
-                  class="btn btn-sm btn-red"
+                  :class="['btn', 'btn-sm', slotProps.data.isConfirmed ? 'btn-secondary' : 'btn-red']"
                   type="button"
                   title="ลบ"
                   @click="deleteStockItem(slotProps.index)"
+                  :disabled="slotProps.data.isConfirmed"
                 >
                   <span class="bi bi-trash"></span>
                 </button>
                 <button
-                  class="btn btn-sm btn-main ml-2"
+                  :class="['btn', 'btn-sm', 'ml-2', slotProps.data.isConfirmed ? 'btn-secondary' : 'btn-main']"
                   type="button"
                   title="แก้ไข"
                   @click="onEditStock(slotProps.data, slotProps.index)"
+                  :disabled="slotProps.data.isConfirmed"
                 >
                   <span class="bi bi-brush"></span>
                 </button>
@@ -419,12 +407,16 @@
             <template #body="slotProps">
               <div v-if="!slotProps.data.stockNumber">
                 <input
+                  v-if="!slotProps.data.isConfirmed"
                   v-model="slotProps.data.productNumber"
                   type="text"
                   class="form-control bg-input input-bg"
                   @blur="onBlurDescription(slotProps.data, slotProps.index, 'productNumber')"
                   style="background-color: #b5dad4; width: 100%"
                 />
+                <span v-else class="confirmed-text">
+                  {{ slotProps.data.productNumber || '-' }}
+                </span>
               </div>
               <div v-else>
                 <span>{{ slotProps.data.productNumber }}</span>
@@ -448,12 +440,16 @@
           <Column field="description" header="รายละเอียด" style="min-width: 200px">
             <template #body="slotProps">
               <input
+                v-if="!slotProps.data.isConfirmed"
                 v-model="slotProps.data.description"
                 type="text"
                 class="form-control bg-input input-bg"
                 @blur="onBlurDescription(slotProps.data, slotProps.index, 'description')"
                 style="background-color: #b5dad4; width: 100%"
               />
+              <span v-else class="confirmed-text">
+                {{ slotProps.data.description || '-' }}
+              </span>
             </template>
           </Column>
 
@@ -531,6 +527,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
+                  v-if="!slotProps.data.isConfirmed"
                   v-model.number="slotProps.data.appraisalPrice"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -540,16 +537,32 @@
                   @input="recalculateAll"
                   style="background-color: #b5dad4; width: 100%"
                 />
+                <span v-else class="confirmed-text text-right">
+                  {{ (slotProps.data.appraisalPrice || 0).toFixed(2) }}
+                </span>
               </div>
             </template>
           </Column>
 
           <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
-            <template #body>
+            <template #body="slotProps">
               <div class="qty-container">
-                <span>{{
-                  `${formSaleOrder.discountPercent ? `${formSaleOrder.discountPercent} %` : `0 %`}`
-                }}</span>
+                <input
+                  v-if="!slotProps.data.isConfirmed"
+                  v-model.number="slotProps.data.discountPercent"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  max="100"
+                  step="any"
+                  @blur="onBlurPrice(slotProps.data, slotProps.index, 'discountPercent')"
+                  @input="recalculateAll"
+                  style="background-color: #b5dad4; width: 100%"
+                  placeholder="0"
+                />
+                <span v-else class="confirmed-text text-right">
+                  {{ (slotProps.data.discountPercent || 0).toFixed(2) }}%
+                </span>
               </div>
             </template>
           </Column>
@@ -560,7 +573,7 @@
                 <span>{{
                   (
                     Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (formSaleOrder.discountPercent || 0) / 100)
+                    (1 - (slotProps.data.discountPercent || 0) / 100)
                   ).toFixed(2)
                 }}</span>
               </div>
@@ -585,7 +598,7 @@
                 <span>{{
                   (
                     (Number(slotProps.data.appraisalPrice || 0) *
-                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                      (1 - (slotProps.data.discountPercent || 0) / 100)) /
                     (formSaleOrder.currencyRate || 1)
                   ).toFixed(2)
                 }}</span>
@@ -597,6 +610,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
+                  v-if="!slotProps.data.isConfirmed"
                   v-model.number="slotProps.data.qty"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -606,6 +620,9 @@
                   @input="recalculateAll"
                   style="background-color: #b5dad4; width: 100%"
                 />
+                <span v-else class="confirmed-text text-right">
+                  {{ slotProps.data.qty || 0 }}
+                </span>
               </div>
             </template>
           </Column>
@@ -620,7 +637,7 @@
                 <span>{{
                   (
                     ((Number(slotProps.data.appraisalPrice || 0) *
-                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                      (1 - (slotProps.data.discountPercent || 0) / 100)) /
                       (formSaleOrder.currencyRate || 1)) *
                     (Number(slotProps.data.qty) || 0)
                   ).toFixed(2)
@@ -881,12 +898,16 @@
             <template #body="slotProps">
               <div>
                 <input
+                  v-if="!slotProps.data.isConfirmed"
                   v-model="slotProps.data.productNumber"
                   type="text"
                   class="form-control bg-input input-bg"
                   @blur="onBlurDescription(slotProps.data, slotProps.index, 'productNumber')"
                   style="background-color: #b5dad4; width: 100%"
                 />
+                <span v-else class="confirmed-text">
+                  {{ slotProps.data.productNumber || '-' }}
+                </span>
               </div>
             </template>
           </Column>
@@ -894,12 +915,16 @@
           <Column field="description" header="รายละเอียด" style="min-width: 200px">
             <template #body="slotProps">
               <input
+                v-if="!slotProps.data.isConfirmed"
                 v-model="slotProps.data.description"
                 type="text"
                 class="form-control bg-input input-bg"
                 @blur="onBlurDescription(slotProps.data, slotProps.index, 'description')"
                 style="background-color: #b5dad4; width: 100%"
               />
+              <span v-else class="confirmed-text">
+                {{ slotProps.data.description || '-' }}
+              </span>
             </template>
           </Column>
 
@@ -977,6 +1002,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
+                  v-if="!slotProps.data.isConfirmed"
                   v-model.number="slotProps.data.appraisalPrice"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -986,16 +1012,32 @@
                   @input="recalculateAll"
                   style="background-color: #b5dad4; width: 100%"
                 />
+                <span v-else class="confirmed-text text-right">
+                  {{ (slotProps.data.appraisalPrice || 0).toFixed(2) }}
+                </span>
               </div>
             </template>
           </Column>
 
           <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
-            <template #body>
+            <template #body="slotProps">
               <div class="qty-container">
-                <span>{{
-                  `${formSaleOrder.discountPercent ? `${formSaleOrder.discountPercent} %` : `0 %`}`
-                }}</span>
+                <input
+                  v-if="!slotProps.data.isConfirmed"
+                  v-model.number="slotProps.data.discountPercent"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  max="100"
+                  step="any"
+                  @blur="onBlurCopyPrice(slotProps.data, slotProps.index, 'discountPercent')"
+                  @input="recalculateAll"
+                  style="background-color: #b5dad4; width: 100%"
+                  placeholder="0"
+                />
+                <span v-else class="confirmed-text text-right">
+                  {{ (slotProps.data.discountPercent || 0).toFixed(2) }}%
+                </span>
               </div>
             </template>
           </Column>
@@ -1006,7 +1048,7 @@
                 <span>{{
                   (
                     Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (formSaleOrder.discountPercent || 0) / 100)
+                    (1 - (slotProps.data.discountPercent || 0) / 100)
                   ).toFixed(2)
                 }}</span>
               </div>
@@ -1031,7 +1073,7 @@
                 <span>{{
                   (
                     (Number(slotProps.data.appraisalPrice || 0) *
-                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                      (1 - (slotProps.data.discountPercent || 0) / 100)) /
                     (formSaleOrder.currencyRate || 1)
                   ).toFixed(2)
                 }}</span>
@@ -1066,7 +1108,7 @@
                 <span>{{
                   (
                     ((Number(slotProps.data.appraisalPrice || 0) *
-                      (1 - (formSaleOrder.discountPercent || 0) / 100)) /
+                      (1 - (slotProps.data.discountPercent || 0) / 100)) /
                       (formSaleOrder.currencyRate || 1)) *
                     (Number(slotProps.data.qty) || 0)
                   ).toFixed(2)
@@ -1654,7 +1696,6 @@ export default {
         currencyUnit: 'US$',
         currencyRate: 33.0,
         markup: 3.5,
-        discountPercent: 0,
         goldPerOz: 2000,
         freight: 0,
         copyFreight: 0
@@ -1843,7 +1884,6 @@ export default {
         customerAddress: saleOrderData.customer?.address || '',
         customerPhone: saleOrderData.customer?.phone || '',
         customerEmail: saleOrderData.customer?.email || '',
-        discountPercent: saleOrderData.discount || 0,
         freight: saleOrderData.freight || 0,
         // Copy currency settings from quotation if available
         currencyUnit: saleOrderData.currencyUnit || 'US$',
@@ -1898,7 +1938,6 @@ export default {
         currencyUnit: saleOrderData.currencyUnit || 'US$',
         currencyRate: saleOrderData.currencyRate || 33.0,
         markup: saleOrderData.markup || 3.5,
-        discountPercent: saleOrderData.discount || 0,
         goldPerOz: saleOrderData.goldPerOz || 2000,
         freight: saleOrderData.freight || 0,
         copyFreight: saleOrderData.copyFreight || 0
@@ -1953,6 +1992,8 @@ export default {
           price: 50000,
           appraisalPrice: 55000,
           qty: 1,
+          discountPercent: 0,
+          isConfirmed: false,
           materials: [
             { type: 'Gold', typeCode: '18K', weight: 5.5 },
             { type: 'Diamond', typeCode: 'Round', weight: 0.5, qty: 1 }
@@ -2163,7 +2204,6 @@ export default {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
         currencyRate: this.formSaleOrder.currencyRate || 1.0,
         markup: this.formSaleOrder.markup || 0,
-        discount: this.formSaleOrder.discountPercent || 0,
         goldRate: this.formSaleOrder.goldPerOz || 0,
 
         remark: this.formSaleOrder.remark || '',
@@ -2261,7 +2301,7 @@ export default {
 
     getDiscountedPrice(item) {
       const appraisalPrice = this.getAppraisalPrice(item)
-      const discountPercent = this.formSaleOrder.discountPercent || 0
+      const discountPercent = item.discountPercent || 0
       return appraisalPrice * (1 - discountPercent / 100)
     },
 
@@ -2390,6 +2430,8 @@ export default {
       }
 
       newItem.appraisalPrice = newItem.priceOrigin || newItem.price || 0
+      newItem.discountPercent = newItem.discountPercent || 0
+      newItem.isConfirmed = false
       this.stockItems.push(newItem)
     },
 
@@ -2849,6 +2891,42 @@ export default {
     background-color: #dc3545;
     color: white;
   }
+}
+
+/* Disabled confirmed item styles */
+.disabled-confirmed {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Button disabled styles */
+.btn.disabled, .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Custom disabled input styling */
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Confirmed text styling */
+.confirmed-text {
+  display: block;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  color: #495057;
+  font-weight: 500;
+  width: 100%;
+  min-height: 38px;
+  line-height: 1.5;
+}
+
+.confirmed-text.text-right {
+  text-align: right;
 }
 
 .summary-section {

@@ -124,14 +124,14 @@
               </div>
 
               <!-- Stock Items Table -->
+              <!-- scrollHeight="400px" -->
               <DataTable
                 :value="filteredStockItems"
                 dataKey="id"
-                :paginator="stockItems.length > 10"
+                :paginator="false"
                 :rows="10"
                 class="p-datatable-sm"
                 :scrollable="true"
-                scrollHeight="400px"
                 :loading="loading"
                 responsiveLayout="scroll"
               >
@@ -317,7 +317,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="btn-submit-container mt-4">
+        <div class="btn-submit-container mt-4 pb-2">
           <div class="d-flex justify-content-end">
             <button
               class="btn btn-green mr-2"
