@@ -303,7 +303,7 @@
       </div>
       <div class="card-body p-0">
         <DataTable
-          :value="stockItems"
+          :value="stockItemsWithGrouping"
           dataKey="stockNumber"
           :scrollable="true"
           scrollHeight="10000000px"
@@ -311,6 +311,10 @@
           stripedRows
           responsiveLayout="scroll"
           showGridlines
+          :rowGroupMode="'subheader'"
+          :groupRowsBy="'groupKey'"
+          :sortField="'sortOrder'"
+          :sortOrder="1"
         >
           <ColumnGroup type="header">
             <Row>
@@ -344,22 +348,44 @@
             <template #body="slotProps">
               <div class="d-flex justify-content-center align-items-center">
                 <button
-                  :class="['btn', 'btn-sm', slotProps.data.isConfirmed ? 'btn-secondary' : 'btn-red']"
+                  :class="[
+                    'btn',
+                    'btn-sm',
+                    slotProps.data.isConfirmed || slotProps.data.invoice
+                      ? 'btn-secondary'
+                      : 'btn-red'
+                  ]"
                   type="button"
                   title="ลบ"
                   @click="deleteStockItem(slotProps.index)"
-                  :disabled="slotProps.data.isConfirmed"
+                  :disabled="slotProps.data.isConfirmed || slotProps.data.invoice"
                 >
                   <span class="bi bi-trash"></span>
                 </button>
                 <button
-                  :class="['btn', 'btn-sm', 'ml-2', slotProps.data.isConfirmed ? 'btn-secondary' : 'btn-main']"
+                  :class="[
+                    'btn',
+                    'btn-sm',
+                    'ml-2',
+                    slotProps.data.isConfirmed || slotProps.data.invoice
+                      ? 'btn-secondary'
+                      : 'btn-main'
+                  ]"
                   type="button"
                   title="แก้ไข"
                   @click="onEditStock(slotProps.data, slotProps.index)"
-                  :disabled="slotProps.data.isConfirmed"
+                  :disabled="slotProps.data.isConfirmed || slotProps.data.invoice"
                 >
                   <span class="bi bi-brush"></span>
+                </button>
+                <button
+                  v-if="slotProps.data.isConfirmed && !slotProps.data.invoice"
+                  class="btn btn-sm btn-danger ml-2"
+                  type="button"
+                  title="ยกเลิกยืนยันการขาย"
+                  @click="confirmReverseStockConfirm(slotProps.data)"
+                >
+                  <span class="bi bi-arrow-counterclockwise"></span>
                 </button>
                 <!-- <button
                   class="btn btn-sm btn-outline-dark ml-2"
@@ -407,7 +433,7 @@
             <template #body="slotProps">
               <div v-if="!slotProps.data.stockNumber">
                 <input
-                  v-if="!slotProps.data.isConfirmed"
+                  v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                   v-model="slotProps.data.productNumber"
                   type="text"
                   class="form-control bg-input input-bg"
@@ -440,7 +466,7 @@
           <Column field="description" header="รายละเอียด" style="min-width: 200px">
             <template #body="slotProps">
               <input
-                v-if="!slotProps.data.isConfirmed"
+                v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                 v-model="slotProps.data.description"
                 type="text"
                 class="form-control bg-input input-bg"
@@ -527,7 +553,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
-                  v-if="!slotProps.data.isConfirmed"
+                  v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                   v-model.number="slotProps.data.appraisalPrice"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -538,7 +564,7 @@
                   style="background-color: #b5dad4; width: 100%"
                 />
                 <span v-else class="confirmed-text text-right">
-                  {{ (slotProps.data.appraisalPrice || 0).toFixed(2) }}
+                  {{ (Number(slotProps.data.appraisalPrice) || 0).toFixed(2) }}
                 </span>
               </div>
             </template>
@@ -548,7 +574,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
-                  v-if="!slotProps.data.isConfirmed"
+                  v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                   v-model.number="slotProps.data.discountPercent"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -610,7 +636,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
-                  v-if="!slotProps.data.isConfirmed"
+                  v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                   v-model.number="slotProps.data.qty"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -646,18 +672,44 @@
             </template>
           </Column>
 
-          <!-- Confirmation Status Column for Stock Items -->
-          <!-- <Column field="isConfirmed" header="สถานะการขาย" style="min-width: 120px">
-            <template #body="slotProps">
-              <div class="text-center">
-                <span
-                  :class="['badge', slotProps.data.isConfirmed ? 'badge-success' : 'badge-warning']"
-                >
-                  {{ slotProps.data.isConfirmed ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
-                </span>
-              </div>
-            </template>
-          </Column> -->
+          <!-- Row Group Template for Invoice Number -->
+          <template #groupheader="slotProps">
+            <!-- สินค้าที่มี Invoice แล้ว -->
+            <div
+              v-if="slotProps.data.invoice"
+              class="p-2"
+              style="background-color: #f8f9fa; border-left: 4px solid #038387"
+            >
+              <span class="font-weight-bold">เลขที่ Invoice: </span>
+              <a
+                href="#"
+                @click.prevent="openInvoiceDetail(slotProps.data.invoice)"
+                class="text-primary font-weight-bold"
+                style="text-decoration: underline; cursor: pointer"
+              >
+                {{ slotProps.data.invoice }}
+              </a>
+              <span class="ml-3 badge badge-success">มี Invoice แล้ว</span>
+            </div>
+            <!-- สินค้าที่ยืนยันแล้วแต่ยังไม่มี Invoice (รอออก Invoice) -->
+            <div
+              v-else-if="slotProps.data.isConfirmed"
+              class="p-2"
+              style="background-color: var(--base-green); border-left: 4px solid #038387"
+            >
+              <span class="font-weight-bold text-white">รอออก Invoice</span>
+              <span class="ml-3 badge badge-light">ยืนยันแล้ว</span>
+            </div>
+            <!-- สินค้าที่ยังไม่ได้ยืนยัน (รอยืนยันสินค้า) -->
+            <div
+              v-else
+              class="p-2"
+              style="background-color: #fff3cd; border-left: 4px solid #fabc3f"
+            >
+              <span class="font-weight-bold">รอยืนยันสินค้า</span>
+              <span class="ml-3 badge badge-warning">ยังไม่ยืนยัน</span>
+            </div>
+          </template>
 
           <ColumnGroup type="footer">
             <!-- total -->
@@ -898,7 +950,7 @@
             <template #body="slotProps">
               <div>
                 <input
-                  v-if="!slotProps.data.isConfirmed"
+                  v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                   v-model="slotProps.data.productNumber"
                   type="text"
                   class="form-control bg-input input-bg"
@@ -915,7 +967,7 @@
           <Column field="description" header="รายละเอียด" style="min-width: 200px">
             <template #body="slotProps">
               <input
-                v-if="!slotProps.data.isConfirmed"
+                v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                 v-model="slotProps.data.description"
                 type="text"
                 class="form-control bg-input input-bg"
@@ -1002,7 +1054,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
-                  v-if="!slotProps.data.isConfirmed"
+                  v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                   v-model.number="slotProps.data.appraisalPrice"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -1013,7 +1065,7 @@
                   style="background-color: #b5dad4; width: 100%"
                 />
                 <span v-else class="confirmed-text text-right">
-                  {{ (slotProps.data.appraisalPrice || 0).toFixed(2) }}
+                  {{ (Number(slotProps.data.appraisalPrice) || 0).toFixed(2) }}
                 </span>
               </div>
             </template>
@@ -1023,7 +1075,7 @@
             <template #body="slotProps">
               <div class="qty-container">
                 <input
-                  v-if="!slotProps.data.isConfirmed"
+                  v-if="!slotProps.data.isConfirmed && !slotProps.data.invoice"
                   v-model.number="slotProps.data.discountPercent"
                   type="number"
                   class="form-control text-right bg-input input-bg"
@@ -1519,6 +1571,7 @@
     :stockItems="stockItemsForInvoice"
     @close-modal="onCloseConfirmStockModal"
     @items-confirmed="onStockItemsConfirmed"
+    @save-draft="saveDraft"
   />
 
   <!-- Invoice Modal -->
@@ -1527,6 +1580,7 @@
     :saleOrderData="formSaleOrder"
     :stockItems="confirmedStockItemsOnly"
     @close-modal="onCloseInvoiceModal"
+    @invoice-created="onInvoiceCreated"
   />
 </template>
 
@@ -1544,7 +1598,7 @@ import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-mo
 import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
 import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
-import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 
@@ -1609,6 +1663,7 @@ export default {
       stockItems: [], // Items with stock ID
       copyItems: [], // Items without stock ID (copy items)
       type: 'STOCK-PRODUCT',
+      isLoadingData: false, // Flag to prevent recursive updates
 
       // Modal states
       isShow: {
@@ -1725,6 +1780,66 @@ export default {
   },
 
   computed: {
+    // Stock items with grouping field
+    // stockItemsWithGrouping() {
+    //   return this.stockItems.map((item) => {
+    //     // Add groupKey field for grouping
+    //     let groupKey = ''
+    //     if (item.invoice) {
+    //       groupKey = `invoice_${item.invoice}` // มี Invoice แล้ว
+    //     } else if (item.isConfirmed) {
+    //       groupKey = 'confirmed_pending_invoice' // ยืนยันแล้ว รอออก Invoice
+    //     } else {
+    //       groupKey = 'pending_confirmation' // รอยืนยันสินค้า
+    //     }
+
+    //     //order response by isInvoice, isConfirmed
+
+    //     return {
+    //       ...item,
+    //       groupKey
+    //     }
+    //   })
+    // },
+    stockItemsWithGrouping() {
+      return this.stockItems
+        .map((item) => {
+          // Add groupKey field for grouping
+          let groupKey = ''
+          let sortOrder = 0 // เพิ่ม sortOrder เพื่อใช้ในการเรียงลำดับ
+
+          if (item.invoice) {
+            groupKey = `invoice_${item.invoice}` // มี Invoice แล้ว
+            sortOrder = 1
+          } else if (item.isConfirmed) {
+            groupKey = 'confirmed_pending_invoice' // ยืนยันแล้ว รอออก Invoice
+            sortOrder = 2
+          } else {
+            groupKey = 'pending_confirmation' // รอยืนยันสินค้า
+            sortOrder = 3
+          }
+
+          return {
+            ...item,
+            groupKey,
+            sortOrder
+          }
+        })
+        .sort((a, b) => {
+          // เรียงตาม sortOrder ก่อน
+          if (a.sortOrder !== b.sortOrder) {
+            return a.sortOrder - b.sortOrder
+          }
+
+          // ถ้า sortOrder เท่ากัน ให้เรียงตาม invoice (ถ้ามี)
+          if (a.invoice && b.invoice) {
+            return a.invoice.localeCompare(b.invoice)
+          }
+
+          return 0
+        })
+    },
+
     // Check if quotation data is loaded
     hasQuotationData() {
       return this.stockItems.length > 0 || this.copyItems.length > 0
@@ -1856,6 +1971,9 @@ export default {
 
     modelSaleOrder: {
       handler(newVal) {
+        // Prevent recursive updates
+        if (this.isLoadingData) return
+
         if (newVal && Object.keys(newVal).length > 0) {
           // Check if this is quotation data (has items) or sale order data (has other properties)
           if (newVal.items && Array.isArray(newVal.items) && newVal.items.length > 0) {
@@ -1863,6 +1981,7 @@ export default {
           } else if (newVal.number || newVal.customer || newVal.status || newVal.currencyUnit) {
             this.loadSaleOrderData(newVal)
           } else {
+            //console.log('Loaded sale order data:', newVal)
           }
         }
       },
@@ -1876,104 +1995,158 @@ export default {
     loadQuotationData(saleOrderData) {
       if (!saleOrderData || !saleOrderData.items) return
 
-      // Update sale order form data
-      this.formSaleOrder = {
-        ...this.formSaleOrder,
-        quotationNumber: saleOrderData.quotationNumber,
-        customerName: saleOrderData.customer?.name || '',
-        customerAddress: saleOrderData.customer?.address || '',
-        customerPhone: saleOrderData.customer?.phone || '',
-        customerEmail: saleOrderData.customer?.email || '',
-        freight: saleOrderData.freight || 0,
-        // Copy currency settings from quotation if available
-        currencyUnit: saleOrderData.currencyUnit || 'US$',
-        currencyRate: saleOrderData.currencyRate || 33.0,
-        markup: saleOrderData.markup || 3.5,
-        goldPerOz: saleOrderData.goldPerOz || 2000,
-        number: null
+      // Set flag to prevent recursive updates
+      this.isLoadingData = true
+
+      try {
+        // Separate items based on stockId FIRST (before updating formSaleOrder)
+        const newStockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
+        const newCopyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
+
+        // Update sale order form data
+        this.formSaleOrder = {
+          ...this.formSaleOrder,
+          quotationNumber: saleOrderData.quotationNumber,
+          customerName: saleOrderData.customer?.name || '',
+          customerAddress: saleOrderData.customer?.address || '',
+          customerPhone: saleOrderData.customer?.phone || '',
+          customerEmail: saleOrderData.customer?.email || '',
+          freight: saleOrderData.freight || 0,
+          // Copy currency settings from quotation if available
+          currencyUnit: saleOrderData.currencyUnit || 'US$',
+          currencyRate: saleOrderData.currencyRate || 33.0,
+          markup: saleOrderData.markup || 3.5,
+          goldPerOz: saleOrderData.goldPerOz || 2000,
+          number: null
+        }
+
+        // Add appraisal price to items if not present
+        newStockItems.forEach((item) => {
+          if (!item.appraisalPrice) {
+            item.appraisalPrice = item.price || 0
+          }
+        })
+        newCopyItems.forEach((item) => {
+          if (!item.appraisalPrice) {
+            item.appraisalPrice = item.price || 0
+          }
+        })
+
+        // Assign items
+        this.stockItems = newStockItems
+        this.copyItems = newCopyItems
+      } finally {
+        // Reset flag after a short delay to allow reactivity to settle
+        this.$nextTick(() => {
+          this.isLoadingData = false
+        })
       }
-
-      // Add appraisal price to items if not present
-      this.stockItems.forEach((item) => {
-        if (!item.appraisalPrice) {
-          item.appraisalPrice = item.price || 0
-        }
-      })
-      this.copyItems.forEach((item) => {
-        if (!item.appraisalPrice) {
-          item.appraisalPrice = item.price || 0
-        }
-      })
-
-      // Separate items based on stockId
-      this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
-      this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
     },
 
     // Load sale order data from API
     loadSaleOrderData(saleOrderData) {
       if (!saleOrderData) return
 
-      // Update sale order form data using Object.assign for better reactivity
-      Object.assign(this.formSaleOrder, {
-        number: saleOrderData.number || '',
-        date: saleOrderData.date || new Date(),
-        expectedDeliveryDate: saleOrderData.expectedDeliveryDate || null,
-        status: saleOrderData.status || 'Draft',
-        quotationNumber: saleOrderData.quotationNumber || '',
-        paymentTerms: saleOrderData.paymentTerms || 'Cash',
-        depositRequired: saleOrderData.depositRequired || false,
-        depositPercentage: saleOrderData.depositAmount || 0,
-        priority: saleOrderData.priority || 'normal',
-        remark: saleOrderData.remark || '',
-        customerRemark: saleOrderData.customer?.remark || '',
+      // Set flag to prevent recursive updates
+      this.isLoadingData = true
 
-        // Customer information
-        customerName: saleOrderData.customer?.name || '',
-        customerAddress: saleOrderData.customer?.address || '',
-        customerPhone: saleOrderData.customer?.phone || '',
-        customerEmail: saleOrderData.customer?.email || '',
+      console.log('Loading sale order data:', saleOrderData)
 
-        // Financial data
-        currencyUnit: saleOrderData.currencyUnit || 'US$',
-        currencyRate: saleOrderData.currencyRate || 33.0,
-        markup: saleOrderData.markup || 3.5,
-        goldPerOz: saleOrderData.goldPerOz || 2000,
-        freight: saleOrderData.freight || 0,
-        copyFreight: saleOrderData.copyFreight || 0
-      })
+      try {
+        // Update sale order form data using Object.assign for better reactivity
+        Object.assign(this.formSaleOrder, {
+          number: saleOrderData.number || '',
+          date: saleOrderData.date || new Date(),
+          expectedDeliveryDate: saleOrderData.expectedDeliveryDate || null,
+          status: saleOrderData.status || 'Draft',
+          quotationNumber: saleOrderData.quotationNumber || '',
+          paymentTerms: saleOrderData.paymentTerms || 'Cash',
+          depositRequired: saleOrderData.depositRequired || false,
+          depositPercentage: saleOrderData.depositAmount || 0,
+          priority: saleOrderData.priority || 'normal',
+          remark: saleOrderData.remark || '',
+          customerRemark: saleOrderData.customer?.remark || '',
 
-      // Force Vue to update the UI
-      this.$nextTick(() => {
-        this.$forceUpdate()
-      })
+          // Customer information
+          customerName: saleOrderData.customer?.name || '',
+          customerAddress: saleOrderData.customer?.address || '',
+          customerPhone: saleOrderData.customer?.phone || '',
+          customerEmail: saleOrderData.customer?.email || '',
 
-      // Load items if available
-      if (saleOrderData.items) {
-        // Check if items is an object with stockItems/copyItems or an array
-        if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
-          // Items is an object with separated arrays
-          this.stockItems = saleOrderData.items.stockItems || []
-          this.copyItems = saleOrderData.items.copyItems || []
-        } else if (Array.isArray(saleOrderData.items)) {
-          // Items is a flat array - separate based on stockNumber
-          this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
-          this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
-        } else if (Array.isArray(saleOrderData.items.allItems)) {
-          // Items has allItems array
-          this.stockItems = saleOrderData.items.allItems.filter((item) => item.stockNumber != null)
-          this.copyItems = saleOrderData.items.allItems.filter((item) => item.stockNumber == null)
+          // Financial data
+          currencyUnit: saleOrderData.currencyUnit || 'US$',
+          currencyRate: saleOrderData.currencyRate || 33.0,
+          markup: saleOrderData.markup || 3.5,
+          goldPerOz: saleOrderData.goldPerOz || 2000,
+          freight: saleOrderData.freight || 0,
+          copyFreight: saleOrderData.copyFreight || 0
+        })
+
+        // Force Vue to update the UI
+        // this.$nextTick(() => {
+        //   this.$forceUpdate()
+        // })
+
+        // Load items if available
+        if (saleOrderData.items) {
+          // Check if items is an object with stockItems/copyItems or an array
+          if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
+            // Items is an object with separated arrays
+            this.stockItems = saleOrderData.items.stockItems || []
+            this.copyItems = saleOrderData.items.copyItems || []
+          } else if (Array.isArray(saleOrderData.items)) {
+            // Items is a flat array - separate based on stockNumber
+            this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
+            this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
+          } else if (Array.isArray(saleOrderData.items.allItems)) {
+            // Items has allItems array
+            this.stockItems = saleOrderData.items.allItems.filter(
+              (item) => item.stockNumber != null
+            )
+            this.copyItems = saleOrderData.items.allItems.filter((item) => item.stockNumber == null)
+          }
         }
+
+        //saleOrderData.confirmedItems = [...saleOrderData.stockConfirm]|| []
+        console.log('saleOrderData.confirmedItems', saleOrderData)
+        console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
+        //console.log('this.stockItems before set', this.stockItems)
+
+        //check confirm stock in saleOrderData.confirmedItems for stock item
+        this.stockItems.forEach((item) => {
+          //set default value
+          item.isConfirmed = false
+
+          item.isInvoice = false
+          item.invoice = null
+          item.invoiceItem = null
+
+          //set data by stockConfirm  id, isConfeim, isinvoice
+
+          const confirmedItem = saleOrderData.confirmedItems.find(
+            (ci) => ci.stockNumber === item.stockNumber
+          )
+
+          if (confirmedItem) {
+            item.id = confirmedItem.id
+            item.stockNumber = confirmedItem.stockNumber
+            item.isConfirmed = true
+
+            item.isInvoice = confirmedItem.isInvoice
+            item.invoice = confirmedItem.invoice
+            item.invoiceItem = confirmedItem.invoiceItem
+          }
+        })
+
+        ////console.log('this.stockItems after set', this.stockItems)
+
+        // Recalculate totals
+      } finally {
+        // Reset flag after a short delay to allow reactivity to settle
+        this.$nextTick(() => {
+          this.isLoadingData = false
+        })
       }
-
-      //check confirm stock in saleOrderData.confirmedItems for stock item
-      this.stockItems.forEach((item) => {
-        if (saleOrderData.confirmedItems.includes(item.stockNumber)) {
-          item.isConfirmed = true
-        }
-      })
-
-      // Recalculate totals
     },
 
     // Product search method (like quotation)
@@ -2041,16 +2214,6 @@ export default {
     async handleQuotationSearch(quotationData) {
       this.formSaleOrder.quotationNumber = quotationData.Number
       await this.loadQuotationDataFromAPI()
-    },
-
-    async loadQuotationDataFromAPI() {
-      try {
-        this.loading = true
-      } catch (error) {
-        console.error('Error loading quotation:', error)
-      } finally {
-        this.loading = false
-      }
     },
 
     // Selection methods
@@ -2728,12 +2891,12 @@ export default {
     // Invoice modal methods
     openInvoiceModal() {
       if (this.confirmedStockItemsCount === 0) {
-        alert('กรุณายืนยันสินค้าก่อนออก Invoice')
+        warning('กรุณายืนยันสินค้าก่อนออก Invoice')
         return
       }
 
       if (this.stockItems.length === 0) {
-        alert('ไม่พบสินค้าสำหรับออก Invoice')
+        warning('ไม่พบสินค้าสำหรับออก Invoice')
         return
       }
 
@@ -2744,10 +2907,109 @@ export default {
       this.isShow.invoiceModal = false
     },
 
+    openInvoiceDetail(invoiceNumber) {
+      // Navigate to invoice detail page
+      this.$router.push({
+        path: '/invoice-detail',
+        query: { invoiceNumber: invoiceNumber }
+      })
+    },
+
+    async onInvoiceCreated(invoiceData) {
+      //console.log('Invoice created:', invoiceData)
+
+      // Close the modal
+      this.isShow.invoiceModal = false
+
+      // Show success message
+      success(`เลขที่ Invoice: ${invoiceData.invoiceNumber}`, 'Invoice ถูกสร้างเรียบร้อยแล้ว')
+
+      // Refresh sale order data to show updated invoice status
+      try {
+        //const soNumber = this.formSaleOrder.number || this.formSaleOrder.soNumber
+        if (this.formSaleOrder.number) {
+          const response = await this.getSaleOrderData(this.formSaleOrder.number)
+
+          if (response) {
+            this.loadSaleOrderData(response)
+
+            //console.log('Sale order data refreshed after invoice creation')
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing sale order after invoice creation:', error)
+      }
+    },
+
+    async getSaleOrderData(soNumber) {
+      try {
+        const response = await this.saleOrderStore.fetchGet({
+          formValue: { soNumber: soNumber }
+        })
+
+        let saleOrderData = {}
+
+        if (response) {
+          //console.log('Raw API response:', response)
+          //const saleOrderData = null
+
+          // Update sale order data from API
+          saleOrderData = {
+            ...response,
+            number: soNumber || '',
+            date: response.createDate ? new Date(response.createDate) : new Date(),
+            expectedDeliveryDate: response.deliveryDate ? new Date(response.deliveryDate) : null,
+            status: response.statusName || 'Draft',
+            quotationNumber: response.refQuotation || null,
+            paymentTerms: response.paymentName || null,
+            depositRequired: response.depositPercent ? true : false,
+            depositAmount: response.depositPercent || 0,
+            priority: response.priority || 'normal',
+            discount: response.discount || 0,
+            freight: response.freight || 0, // Add freight field to API response if needed
+            remark: response.remark || null,
+            items: response.data
+              ? (() => {
+                  try {
+                    const parsedData = JSON.parse(response.data)
+                    //console.log('Parsed data from API:', parsedData)
+                    return parsedData
+                  } catch (e) {
+                    console.error('Error parsing data:', e)
+                    return []
+                  }
+                })()
+              : [],
+            confirmedItems: response.stockConfirm || [],
+            currencyUnit: response.currencyUnit || 'US$',
+            currencyRate: response.currencyRate || 33.0,
+            markup: response.markup || 3.5,
+            goldPerOz: response.goldRate || 2000,
+            customer: {
+              name: response.customerName || '',
+              address: response.customerAddress || '',
+              phone: response.customerTel || '',
+              email: response.customerEmail || '',
+              remark: response.customerRemark || ''
+            }
+          }
+
+          //console.log('Loaded sale order data api:', saleOrderData)
+        }
+
+        console.log('get new saleOrderData', saleOrderData)
+        return saleOrderData
+      } catch (err) {
+        console.error('Error loading sale order:', err)
+        // Show error notification if needed
+        error(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล', 'ไม่สามารถโหลดข้อมูลใบสั่งขายได้')
+      }
+    },
+
     // Confirm stock modal methods
     async openConfirmStockModal() {
       if (this.stockItems.length === 0) {
-        alert('ไม่พบสินค้าสำหรับยืนยันการขาย')
+        warning('ไม่พบสินค้าสำหรับยืนยันการขาย')
         return
       }
 
@@ -2760,22 +3022,135 @@ export default {
       this.isShow.confirmStockModal = false
     },
 
-    onStockItemsConfirmed(data) {
-      // Update the confirmed status of items in stockItems array
-      data.confirmedItems.forEach((confirmedItem) => {
-        const index = this.stockItems.findIndex(
-          (item) => item.id === confirmedItem.id || item.stockNumber === confirmedItem.stockNumber
-        )
-        if (index !== -1) {
-          this.stockItems[index].isConfirmed = true
-          this.stockItems[index].confirmedAt = confirmedItem.confirmedAt
+    async onStockItemsConfirmed(data) {
+      // Refresh sale order data from API to get updated confirmed items
+      try {
+        const saleOrderResponse = await this.saleOrderStore.fetchGet({
+          formValue: { soNumber: this.formSaleOrder.number }
+        })
+
+        if (saleOrderResponse) {
+          // Update the confirmed items data
+          this.formSaleOrder.confirmedItems = saleOrderResponse.stockConfirm || []
+
+          // Create a new array to trigger reactivity
+          this.stockItems = this.stockItems.map((item) => {
+            const confirmedItem = this.formSaleOrder.confirmedItems.find(
+              (ci) => ci.stockNumber === item.stockNumber
+            )
+            if (confirmedItem) {
+              // Return a new object with updated properties
+              return {
+                ...item,
+                id: confirmedItem.id,
+                isConfirmed: true,
+                invoice: confirmedItem.invoice,
+                invoiceItem: confirmedItem.invoiceItem
+              }
+            }
+            return item
+          })
+
+          //console.log('Stock items refreshed after confirmation:', this.stockItems)
         }
-      })
+      } catch (err) {
+        console.error('Error refreshing sale order data:', err)
+      }
+    },
 
-      // Force reactivity update
-      this.$forceUpdate()
+    // Reverse stock confirm methods - per item
+    async confirmReverseStockConfirm(item) {
+      // Validate that item can be unconfirmed
+      if (!item.isConfirmed || item.invoice) {
+        warning('ไม่สามารถยกเลิกการยืนยันได้', 'สินค้านี้ยังไม่ได้ยืนยันหรือออก Invoice แล้ว')
+        return
+      }
 
-      // Show success message with count
+      const stockNumber = item.stockNumberOrigin || item.stockNumber
+      const productInfo = item.productNumber ? `(${item.productNumber})` : ''
+
+      console.log('confirmReverseStockConfirm called for item:', item)
+
+      confirmSubmit(
+        `คุณต้องการยกเลิกการยืนยันสินค้า ${stockNumber} ${productInfo} หรือไม่?`,
+        'ยืนยันการยกเลิก',
+        async (result) => {
+          if (result.isConfirmed) {
+            await this.reverseStockConfirm(item)
+          }
+        },
+        {
+          confirmText: 'ยืนยัน',
+          cancelText: 'ยกเลิก'
+        },
+        'warning'
+      )
+    },
+
+    async reverseStockConfirm(item) {
+      try {
+        // Prepare single stock item for unconfirmation
+        const stockItemsToUnconfirm = [
+          {
+            id: item.id,
+            stockNumber: item.stockNumber
+          }
+        ]
+
+        // Call API to unconfirm
+        await this.saleOrderStore.unconfirmStockItems({
+          soNumber: this.formSaleOrder.number,
+          stockItems: stockItemsToUnconfirm
+        })
+
+        const stockNumber = item.stockNumberOrigin || item.stockNumber
+        success('ยกเลิกการยืนยันสำเร็จ', `ยกเลิกการยืนยันสินค้า ${stockNumber} แล้ว`)
+
+        // Refresh sale order data by reloading from API
+        // const saleOrderResponse = await this.saleOrderStore.fetchGet({
+        //   formValue: { soNumber: this.formSaleOrder.number }
+        // })
+
+        if (this.formSaleOrder.number) {
+          const response = await this.getSaleOrderData(this.formSaleOrder.number)
+
+          if (response) {
+            this.loadSaleOrderData(response)
+
+            //console.log('Sale order data refreshed after invoice creation')
+          }
+        }
+
+        // if (saleOrderResponse) {
+        //   // Update the confirmed items data
+        //   this.formSaleOrder.confirmedItems = saleOrderResponse.stockConfirm || []
+
+        //   // Update stock items confirmation status
+        //   this.stockItems.forEach((stockItem) => {
+        //     const confirmedItem = this.formSaleOrder.confirmedItems.find(
+        //       (ci) => ci.stockNumber === stockItem.stockNumber
+        //     )
+        //     if (confirmedItem) {
+        //       stockItem.id = confirmedItem.id
+        //       stockItem.isConfirmed = true
+        //       stockItem.invoice = confirmedItem.invoice
+        //       stockItem.invoiceItem = confirmedItem.invoiceItem
+        //     } else {
+        //       // Item was unconfirmed, reset status
+        //       stockItem.id = null
+        //       stockItem.isConfirmed = false
+        //       stockItem.invoice = null
+        //       stockItem.invoiceItem = null
+        //     }
+        //   })
+
+        //   // Force reactivity update
+        //   this.$forceUpdate()
+        // }
+      } catch (err) {
+        console.error('Error reversing stock confirm:', err)
+        //error(err.message || 'ไม่สามารถยกเลิกการยืนยันได้', 'เกิดข้อผิดพลาด')
+      }
     }
   }
 }
@@ -2900,7 +3275,8 @@ export default {
 }
 
 /* Button disabled styles */
-.btn.disabled, .btn:disabled {
+.btn.disabled,
+.btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

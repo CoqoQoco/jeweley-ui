@@ -352,7 +352,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
-import { success, error } from '@/services/alert/sweetAlerts.js'
+import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
@@ -381,7 +381,7 @@ export default {
     }
   },
 
-  emits: ['close-modal', 'items-confirmed'],
+  emits: ['close-modal', 'items-confirmed', 'save-draft'],
 
   data() {
     return {
@@ -558,46 +558,65 @@ export default {
 
     async confirmSelectedItems() {
       if (this.selectedItemsCount === 0) {
-        alert('กรุณาเลือกสินค้าที่จะยืนยันอย่างน้อย 1 รายการ')
+        warning('กรุณาเลือกสินค้าที่จะยืนยันอย่างน้อย 1 รายการ')
         return
       }
 
-      //this.loading = true
+      try {
+        //this.loading = true
 
-      // Get selected items data
-      const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
-      )
+        // Emit save-draft event to parent to save data before confirming
+        this.$emit('save-draft')
 
-      // Prepare data for API
-      const confirmData = {
-        soNumber: this.saleOrderData.number,
-        stockItems: selectedStockItems.map((item) => ({
-          id: item.id,
-          stockNumber: item.stockNumber,
-          productNumber: item.productNumber,
-          qty: item.qty,
-          appraisalPrice: item.appraisalPrice,
-          isConfirmed: true,
-          confirmedAt: new Date().toISOString()
-        }))
-      }
+        // Wait a moment for save to complete
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
-      console.log('Confirming stock items:', confirmData)
+        // Get selected items data
+        const selectedStockItems = this.stockItems.filter((item) =>
+          this.selectedItems.includes(item.id)
+        )
 
-      // Call API to confirm items
-      const saleOrderStore = usrSaleOrderApiStore()
-      const response = await saleOrderStore.confirmStockItems(confirmData)
+        // Prepare data for API
+        const confirmData = {
+          soNumber: this.saleOrderData.number,
+          stockItems: selectedStockItems.map((item) => ({
+            id: item.id,
+            stockNumber: item.stockNumber,
+            productNumber: item.productNumber,
+            qty: item.qty,
+            appraisalPrice: item.appraisalPrice,
+            isConfirmed: true,
+            confirmedAt: new Date().toISOString()
+          }))
+        }
 
-      console.log('Confirming stock items:', response)
-      if (response && response.success) {
-        // Emit event to parent to refresh data
-        this.$emit('items-confirmed', {
-          confirmedItems: selectedStockItems,
-          totalConfirmed: this.selectedItemsCount
-        })
+        console.log('Confirming stock items:', confirmData)
 
-        this.closeModal()
+        // Call API to confirm items
+        const saleOrderStore = usrSaleOrderApiStore()
+        const response = await saleOrderStore.confirmStockItems(confirmData)
+
+        console.log('Confirming stock items:', response)
+        if (response && response.success) {
+          // Emit event to parent to refresh data FIRST
+          this.$emit('items-confirmed', {
+            confirmedItems: selectedStockItems,
+            totalConfirmed: this.selectedItemsCount
+          })
+
+          // Wait for parent to refresh data before showing success and closing modal
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+
+          // Show success message
+          success('ยืนยันการขายสำเร็จ', `ยืนยันสินค้า ${this.selectedItemsCount} รายการเรียบร้อย`)
+
+          this.closeModal()
+        }
+      } catch (err) {
+        console.error('Error confirming stock items:', err)
+        error('เกิดข้อผิดพลาด', 'ไม่สามารถยืนยันการขายได้')
+      } finally {
+        this.loading = false
       }
     },
 

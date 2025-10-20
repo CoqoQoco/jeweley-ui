@@ -107,6 +107,16 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
       return await api.jewelry.post('SaleOrder/ConfirmStockItems', param, {
         skipLoading: false
       })
+    },
+    async unconfirmStockItems({ soNumber, stockItems }) {
+      const param = {
+        soNumber: soNumber,
+        stockItems: stockItems
+      }
+
+      return await api.jewelry.post('SaleOrder/UnconfirmStockItems', param, {
+        skipLoading: false
+      })
     }
   }
 })

@@ -102,13 +102,11 @@
 
               <!-- Stock Items Table -->
               <DataTable
-                :value="stockItems"
+                :value="availableItems"
                 dataKey="id"
-                :paginator="stockItems.length > 10"
                 :rows="10"
                 class="p-datatable-sm"
                 :scrollable="true"
-                scrollHeight="400px"
                 :loading="loading"
                 responsiveLayout="scroll"
               >
@@ -331,7 +329,8 @@ import { defineAsyncComponent } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
-import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { warning, error, success } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
@@ -360,19 +359,24 @@ export default {
     }
   },
 
-  emits: ['close-modal'],
+  emits: ['close-modal', 'invoice-created'],
 
   data() {
     return {
       loading: false,
-      selectedItems: []
+      selectedItems: [],
+      invoiceStore: useInvoiceApiStore()
     }
   },
 
   computed: {
-    // Only show confirmed items for invoice
+    // Only show confirmed items that don't have invoice yet
     availableItems() {
-      return this.stockItems.filter((item) => item.isConfirmed)
+      console.log(
+        'Available items for invoice:',
+        this.stockItems.filter((item) => item.isConfirmed && !item.invoice)
+      )
+      return this.stockItems.filter((item) => item.isConfirmed && !item.invoice)
     },
 
     isAllSelected() {
@@ -456,7 +460,7 @@ export default {
     // คำนวณราคาหลังหักส่วนลด
     getDiscountedPrice(item) {
       const appraisalPrice = this.getAppraisalPrice(item)
-      const discountPercent = this.saleOrderData.discountPercent || 0
+      const discountPercent = item.discountPercent || 0
       return appraisalPrice * (1 - discountPercent / 100)
     },
 
@@ -507,21 +511,32 @@ export default {
       }
     },
 
+    // Helper method to get payment ID from payment terms value
+    getPaymentId(paymentTerms) {
+      const paymentMapping = {
+        Cash: 1,
+        Credit30: 2,
+        Credit60: 3,
+        DepositAndBalance: 4
+      }
+      return paymentMapping[paymentTerms] || 1
+    },
+
     async generateInvoice() {
       try {
         if (this.selectedItemsCount === 0) {
-          alert('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+          warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
           return
         }
 
         // ตรวจสอบข้อมูล Sale Order ก่อน
         if (!this.saleOrderData || (!this.saleOrderData.soNumber && !this.saleOrderData.number)) {
-          alert('ไม่พบข้อมูลเลขที่ใบสั่งขาย กรุณาตรวจสอบข้อมูล')
+          warning('ไม่พบข้อมูลเลขที่ใบสั่งขาย กรุณาตรวจสอบข้อมูล')
           return
         }
 
         if (!this.saleOrderData.customerName) {
-          alert('ไม่พบชื่อลูกค้า กรุณาตรวจสอบข้อมูลใบสั่งขาย')
+          warning('ไม่พบชื่อลูกค้า กรุณาตรวจสอบข้อมูลใบสั่งขาย')
           return
         }
 
@@ -532,73 +547,88 @@ export default {
           this.selectedItems.includes(item.id)
         )
 
-        // Prepare invoice data
-        const invoiceData = {
-          saleOrder: {
-            ...this.saleOrderData,
-            soNumber: this.saleOrderData.soNumber || this.saleOrderData.number // แก้ไข: ให้ mapping soNumber ถูกต้อง
-          },
-          items: selectedStockItems,
-          customer: {
-            name: this.saleOrderData.customerName,
-            address: this.saleOrderData.customerAddress,
-            phone: this.saleOrderData.customerTel,
-            email: this.saleOrderData.customerEmail
-          },
-          currency: {
-            unit: this.saleOrderData.currencyUnit || 'THB',
-            rate: this.saleOrderData.currencyRate || 1
-          },
-          totals: {
-            subtotal: this.totalSelectedAmount,
-            total: this.totalSelectedAmount
-          }
+        // Prepare invoice data for API
+        const invoiceRequest = {
+          soNumber: this.saleOrderData.number || this.saleOrderData.soNumber,
+          customerCode: this.saleOrderData.customerCode || 'CUST-DEFAULT',
+          customerName: this.saleOrderData.customerName,
+          customerAddress: this.saleOrderData.customerAddress,
+          customerTel: this.saleOrderData.customerPhone || this.saleOrderData.customerTel,
+          customerEmail: this.saleOrderData.customerEmail,
+          customerRemark: this.saleOrderData.customerRemark,
+          currencyUnit: this.saleOrderData.currencyUnit || 'THB',
+          currencyRate: this.saleOrderData.currencyRate || 1.0,
+          deliveryDate: this.saleOrderData.expectedDeliveryDate || this.saleOrderData.deliveryDate,
+          depositPercent:
+            this.saleOrderData.depositPercentage || this.saleOrderData.depositPercent || 0,
+          discount: this.saleOrderData.discountPercent || 0,
+          goldRate: this.saleOrderData.goldPerOz || 0,
+          markup: this.saleOrderData.markup || 0,
+          paymentName: this.saleOrderData.paymentTerms,
+          payment: this.getPaymentId(this.saleOrderData.paymentTerms),
+          priority: this.saleOrderData.priority || 'normal',
+          refQuotation: this.saleOrderData.quotationNumber || '',
+          remark: this.saleOrderData.remark || '',
+          items: selectedStockItems.map((item) => ({
+            stockNumber: item.stockNumber,
+            stockNumberOrigin: item.stockNumberOrigin || item.stockNumber,
+            id: item.id,
+            priceOrigin: item.appraisalPrice || item.price || 0,
+            currencyUnit: this.saleOrderData.currencyUnit || 'THB',
+            currencyRate: this.saleOrderData.currencyRate || 1.0,
+            markup: this.saleOrderData.markup || 0,
+            discount: item.discountPercent || 0,
+            goldRate: this.saleOrderData.goldPerOz || 0,
+            remark: item.remark || '',
+            netPrice: String(this.getConvertedPrice(item)),
+            priceDiscount: this.getDiscountedPrice(item),
+            priceAfterCurrencyRate: this.getConvertedPrice(item),
+            qty: item.qty || 1
+          }))
         }
 
-        // Debug logging เพื่อตรวจสอบข้อมูล
-        console.log('Sale Order Data:', this.saleOrderData)
-        console.log('Prepared Invoice Data:', invoiceData)
-        console.log('SO Number check:', {
-          originalSoNumber: this.saleOrderData.soNumber,
-          originalNumber: this.saleOrderData.number,
-          finalSoNumber: invoiceData.saleOrder.soNumber
+        console.log('Creating invoice with data:', invoiceRequest)
+
+        // Call API to create invoice
+        const response = await this.invoiceStore.fetchCreate({
+          formValue: invoiceRequest
         })
 
-        // ตรวจสอบข้อมูลเบื้องต้นเพิ่มเติม
-        if (!invoiceData.saleOrder.soNumber) {
-          alert('ไม่พบเลขที่ใบสั่งขาย กรุณาตรวจสอบข้อมูล')
-          console.error('Missing SO Number:', invoiceData.saleOrder)
-          return
+        if (response) {
+          console.log('Invoice created successfully:', response)
+
+          const invoiceNumber = response.invoiceNumber || 'สร้างสำเร็จ'
+          success(`เลขที่ Invoice: ${invoiceNumber}`, 'สร้าง Invoice สำเร็จ')
+
+          // Emit event to parent to refresh sale order data
+          this.$emit('invoice-created', {
+            invoiceNumber: response.invoiceNumber,
+            selectedItems: this.selectedItems
+          })
+
+          this.closeModal()
+        } else {
+          throw new Error('ไม่ได้รับข้อมูลการตอบกลับจาก API')
         }
-
-        if (!selectedStockItems || selectedStockItems.length === 0) {
-          alert('ไม่พบรายการสินค้าที่เลือก')
-          return
-        }
-
-        // Validate data before generating PDF
-        const validation = invoicePdfService.previewInvoiceData(invoiceData)
-
-        if (!validation.valid) {
-          console.error('Invoice validation failed:', validation.errors)
-          alert('ข้อมูลไม่ถูกต้อง:\n' + validation.errors.join('\n'))
-          return
-        }
-
-        // Generate PDF using the service
-        console.log('Generating invoice PDF with data:', invoiceData)
-
-        await invoicePdfService.generateInvoicePDF(invoiceData, {
-          download: true,
-          open: false
-        })
-
-        alert('สร้าง Invoice PDF สำเร็จ')
-
-        this.closeModal()
       } catch (error) {
         console.error('Error generating invoice:', error)
-        alert('เกิดข้อผิดพลาดในการสร้าง Invoice: ' + error.message)
+
+        // Extract error message from API response
+        let errorMessage = 'ไม่สามารถสร้าง Invoice ได้'
+
+        if (error.response && error.response.data) {
+          if (error.response.data.message) {
+            errorMessage = error.response.data.message
+          } else if (error.response.data.error) {
+            errorMessage = error.response.data.error
+          } else if (typeof error.response.data === 'string') {
+            errorMessage = error.response.data
+          }
+        } else if (error.message) {
+          errorMessage = error.message
+        }
+
+        error(errorMessage, 'เกิดข้อผิดพลาดในการสร้าง Invoice')
       } finally {
         this.loading = false
       }

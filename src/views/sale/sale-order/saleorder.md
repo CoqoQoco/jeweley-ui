@@ -424,11 +424,540 @@ const useSaleOrderStore = defineStore('saleOrder', {
 3. ปรับ layout ใน card structures
 
 ---
-*อัปเดตเมื่อ: 2025-10-03*
-*เวอร์ชัน: 1.7.0*
-*สถานะ: Stock Confirmation & Currency Rate Fix Complete*
+*อัปเดตเมื่อ: 2025-10-20*
+*เวอร์ชัน: 2.1.0*
+*สถานะ: Invoice Grouping, Invoice Detail View & Reverse Stock Confirmation*
 
-## การอัปเดตล่าสุด (v1.6.0)
+## การอัปเดตล่าสุด (v2.1.0)
+
+### ✨ Reverse Stock Confirmation v2.1.0
+- **Per-Item Unconfirm**: ระบบยกเลิกการยืนยันสินค้าทีละรายการ
+- **Item-Level Button**: ปุ่มยกเลิกยืนยันอยู่ในแต่ละรายการสินค้า
+- **Selective Reversal**: ยกเลิกได้เฉพาะสินค้าที่ยืนยันแล้วและยังไม่มี Invoice
+- **Confirmation Alert**: แสดง alert ยืนยันก่อนยกเลิกการยืนยันสินค้า
+- **Auto Refresh**: อัปเดตข้อมูล Sale Order อัตโนมัติหลังยกเลิกสำเร็จ
+- **Stock Restoration**: คืนค่า QtySale ในสต็อกให้กลับมาว่างเหมือนเดิม
+
+### 🔄 Reverse Stock Confirmation Features v2.1.0
+- **Item-Level Button**: ปุ่มยกเลิกยืนยันอยู่ใน action column ของแต่ละรายการ
+- **Smart Display**: แสดงปุ่มเฉพาะสินค้าที่ยืนยันแล้วและยังไม่มี Invoice
+- **Icon Button**: ปุ่มสีแดงพร้อมไอคอน arrow-counterclockwise
+- **Validation**: ตรวจสอบว่าสินค้ายังไม่มี Invoice ก่อนอนุญาตให้ยกเลิก
+- **Transaction Safety**: ใช้ database transaction เพื่อความปลอดภัยของข้อมูล
+
+### 📋 API Implementation v2.1.0
+
+#### Backend API Endpoint
+```csharp
+POST /SaleOrder/UnconfirmStockItems
+
+Request:
+{
+  "soNumber": "SO-2025-001",
+  "stockItems": [
+    {
+      "id": 123,
+      "stockNumber": "DK-2502-001"
+    }
+  ]
+}
+
+Response:
+{
+  "success": true,
+  "message": "ยกเลิกการยืนยันสินค้า 3 รายการสำเร็จ",
+  "unconfirmedItemsCount": 3,
+  "unconfirmedStockNumbers": ["DK-2502-001", "DK-2502-002", "DK-2502-003"],
+  "unconfirmedDate": "2025-10-20T10:30:00"
+}
+```
+
+#### Service Logic (SaleOrderService.cs)
+```csharp
+public async Task<Response> UnconfirmStockItems(Request request)
+{
+    using var transaction = await _jewelryContext.Database.BeginTransactionAsync();
+
+    foreach (var stockItem in request.StockItems)
+    {
+        // 1. Find confirmed product
+        var confirmedProduct = await _jewelryContext.TbtSaleOrderProduct
+            .FirstOrDefaultAsync(p => p.Id == stockItem.Id);
+
+        // 2. Validate: Cannot unconfirm if has invoice
+        if (!string.IsNullOrEmpty(confirmedProduct.Invoice))
+        {
+            errors.Add($"Cannot unconfirm - already in invoice {confirmedProduct.Invoice}");
+            continue;
+        }
+
+        // 3. Find stock product
+        var stockProduct = await _jewelryContext.TbtStockProduct
+            .FirstOrDefaultAsync(s => s.StockNumber == stockItem.StockNumber);
+
+        // 4. Restore QtySale (reduce back)
+        stockProduct.QtySale -= confirmedProduct.Qty;
+
+        // 5. Remove confirmed entry
+        _jewelryContext.TbtSaleOrderProduct.Remove(confirmedProduct);
+    }
+
+    await _jewelryContext.SaveChangesAsync();
+    await transaction.CommitAsync();
+}
+```
+
+### 🎨 UI/UX Implementation v2.1.0
+
+#### Button in Action Column (sale-order-view.vue)
+```vue
+<!-- Action Column Template -->
+<Column header="การดำเนินการ" frozen alignFrozen="right" style="width: 120px">
+  <template #body="slotProps">
+    <div class="btn-group-action">
+      <!-- Delete Button -->
+      <button
+        :class="['btn', 'btn-sm', slotProps.data.isConfirmed || slotProps.data.invoice ? 'btn-secondary' : 'btn-red']"
+        type="button"
+        title="ลบ"
+        @click="deleteStockItem(slotProps.index)"
+        :disabled="slotProps.data.isConfirmed || slotProps.data.invoice"
+      >
+        <span class="bi bi-trash"></span>
+      </button>
+
+      <!-- Edit Button -->
+      <button
+        :class="['btn', 'btn-sm', 'ml-2', slotProps.data.isConfirmed || slotProps.data.invoice ? 'btn-secondary' : 'btn-main']"
+        type="button"
+        title="แก้ไข"
+        @click="onEditStock(slotProps.data, slotProps.index)"
+        :disabled="slotProps.data.isConfirmed || slotProps.data.invoice"
+      >
+        <span class="bi bi-brush"></span>
+      </button>
+
+      <!-- Reverse Confirm Button (NEW) -->
+      <button
+        v-if="slotProps.data.isConfirmed && !slotProps.data.invoice"
+        class="btn btn-sm btn-danger ml-2"
+        type="button"
+        title="ยกเลิกยืนยันการขาย"
+        @click="confirmReverseStockConfirm(slotProps.data)"
+      >
+        <span class="bi bi-arrow-counterclockwise"></span>
+      </button>
+    </div>
+  </template>
+</Column>
+```
+
+#### Methods (Per-Item Unconfirm)
+```javascript
+// Show confirmation alert for single item
+async confirmReverseStockConfirm(item) {
+  // Validate that item can be unconfirmed
+  if (!item.isConfirmed || item.invoice) {
+    warning('ไม่สามารถยกเลิกการยืนยันได้', 'สินค้านี้ยังไม่ได้ยืนยันหรือออก Invoice แล้ว')
+    return
+  }
+
+  const stockNumber = item.stockNumberOrigin || item.stockNumber
+  const productInfo = item.productNumber ? `(${item.productNumber})` : ''
+
+  confirmSubmit(
+    `คุณต้องการยกเลิกการยืนยันสินค้า ${stockNumber} ${productInfo} หรือไม่?`,
+    'ยืนยันการยกเลิก',
+    async (result) => {
+      if (result.isConfirmed) {
+        await this.reverseStockConfirm(item)
+      }
+    },
+    { confirmText: 'ยืนยัน', cancelText: 'ยกเลิก' },
+    'warning'
+  )
+},
+
+// Unconfirm single stock item
+async reverseStockConfirm(item) {
+  try {
+    // Prepare single stock item for unconfirmation
+    const stockItemsToUnconfirm = [{
+      id: item.id,
+      stockNumber: item.stockNumber
+    }]
+
+    // Call API to unconfirm
+    await this.saleOrderStore.unconfirmStockItems({
+      soNumber: this.formSaleOrder.number,
+      stockItems: stockItemsToUnconfirm
+    })
+
+    const stockNumber = item.stockNumberOrigin || item.stockNumber
+    success('ยกเลิกการยืนยันสำเร็จ', `ยกเลิกการยืนยันสินค้า ${stockNumber} แล้ว`)
+
+    // Refresh sale order data
+    const saleOrderResponse = await this.saleOrderStore.fetchGet({
+      formValue: { soNumber: this.formSaleOrder.number }
+    })
+
+    if (saleOrderResponse) {
+      // Update confirmed items and stock item status
+      this.formSaleOrder.confirmedItems = saleOrderResponse.stockConfirm || []
+      this.stockItems.forEach((stockItem) => {
+        const confirmedItem = this.formSaleOrder.confirmedItems.find(
+          (ci) => ci.stockNumber === stockItem.stockNumber
+        )
+        if (confirmedItem) {
+          stockItem.id = confirmedItem.id
+          stockItem.isConfirmed = true
+          stockItem.invoice = confirmedItem.invoice
+          stockItem.invoiceItem = confirmedItem.invoiceItem
+        } else {
+          // Item was unconfirmed, reset status
+          stockItem.id = null
+          stockItem.isConfirmed = false
+          stockItem.invoice = null
+          stockItem.invoiceItem = null
+        }
+      })
+      this.$forceUpdate()
+    }
+  } catch (err) {
+    console.error('Error reversing stock confirm:', err)
+    error(err.message || 'ไม่สามารถยกเลิกการยืนยันได้', 'เกิดข้อผิดพลาด')
+  }
+}
+```
+
+### 🛡️ Data Protection & Validation v2.1.0
+- **Invoice Check**: ตรวจสอบว่าสินค้ายังไม่มี Invoice ก่อนอนุญาตให้ยกเลิก
+- **Database Transaction**: ใช้ transaction เพื่อความปลอดภัยของข้อมูล
+- **Error Handling**: จัดการ error และแสดงข้อความที่ชัดเจน
+- **Rollback Safety**: หากมีข้อผิดพลาด transaction จะ rollback อัตโนมัติ
+- **State Consistency**: อัปเดต UI state ให้สอดคล้องกับข้อมูลจริงหลังยกเลิก
+
+### 🔄 Data Flow v2.1.0
+```
+1. User clicks reverse button on specific item
+2. Show confirmation alert with item details (stock number + product number)
+3. User confirms → Call API: POST /SaleOrder/UnconfirmStockItems (single item)
+4. Backend validates (no invoice check)
+5. Backend removes TbtSaleOrderProduct record
+6. Backend reduces QtySale in TbtStockProduct
+7. Transaction commits
+8. Frontend shows success message with item info
+9. Frontend refreshes sale order data
+10. UI updates stock item status (isConfirmed = false)
+11. Reverse button disappears from that item
+```
+
+### 📁 Modified Files v2.1.0
+```
+Backend:
+├── Jewelry.Service/Sale/SaleOrder/
+│   ├── SaleOrderService.cs              # Added UnconfirmStockItems()
+│   └── ISaleOrderService.cs             # Added interface method
+├── jewelry.Model/Sale/SaleOrder/
+│   ├── UnconfirmStock/Request.cs        # New request model
+│   └── UnconfirmStock/Response.cs       # New response model
+└── Jewelry.Api/Controllers/Sale/
+    └── SaleOrderController.cs           # Added UnconfirmStockItems endpoint
+
+Frontend:
+├── stores/modules/api/sale/
+│   └── sale-order-store.js              # Added unconfirmStockItems()
+└── views/sale/sale-order/components/
+    ├── sale-order-view.vue              # Added button and methods
+    └── saleorder.md                     # Updated documentation
+```
+
+### 💡 Use Cases v2.1.0
+- **การแก้ไขความผิดพลาด**: ยกเลิกการยืนยันเมื่อเลือกสินค้าผิด (ทีละรายการ)
+- **การเปลี่ยนแปลงคำสั่งซื้อ**: ลูกค้าเปลี่ยนใจสินค้าบางรายการก่อนออก Invoice
+- **การจัดการสต็อก**: ปรับปรุงการจัดสรรสต็อกแบบเฉพาะเจาะจง
+- **การแก้ไขข้อผิดพลาด**: แก้ไขข้อมูลการยืนยันที่ไม่ถูกต้องแบบ per-item
+
+### 🎯 Benefits v2.1.0
+- **Item-Level Control**: ยกเลิกทีละรายการได้ ไม่ต้องยกเลิกทั้งหมด
+- **Flexibility**: ให้ความยืดหยุ่นในการจัดการสินค้าแต่ละรายการ
+- **Data Integrity**: รักษาความถูกต้องของข้อมูลสต็อก
+- **User Control**: ผู้ใช้สามารถแก้ไขการยืนยันที่ผิดพลาดได้แบบเฉพาะเจาะจง
+- **Workflow Improvement**: ปรับปรุงกระบวนการทำงานให้ราบรื่นและยืดหยุ่นขึ้น
+- **Error Recovery**: สามารถกู้คืนจากข้อผิดพลาดได้ง่ายและแม่นยำ
+
+### 📊 Button Display Rules v2.1.0
+| สถานะสินค้า | Reverse Button | หมายเหตุ |
+|------------|----------------|-----------|
+| ยังไม่ยืนยัน | ❌ ซ่อน | ไม่มีการยืนยันให้ยกเลิก |
+| ยืนยันแล้ว + ไม่มี Invoice | ✅ แสดง | สามารถยกเลิกได้ |
+| ยืนยันแล้ว + มี Invoice แล้ว | ❌ ซ่อน | ไม่สามารถยกเลิกได้ |
+| Delete Button | 🔴 btn-red | Disabled เมื่อยืนยันหรือมี Invoice |
+| Edit Button | 🔵 btn-main | Disabled เมื่อยืนยันหรือมี Invoice |
+| Reverse Button | 🔴 btn-danger | แสดงเฉพาะเมื่อยืนยันและไม่มี Invoice |
+
+---
+
+## การอัปเดตก่อนหน้า (v2.0.0)
+
+### ✨ Invoice Grouping in Stock Items Table v2.0.0
+- **Row Grouping**: จัดกลุ่มสินค้าตาม Invoice Number โดยอัตโนมัติ
+- **Group Header**: แสดงเลขที่ Invoice พร้อมลิงก์ไปดูรายละเอียด
+- **Read-only Items**: สินค้าที่มี Invoice แล้วจะไม่สามารถแก้ไขหรือลบได้
+- **Visual Indicators**: แสดง badge สถานะ "มี Invoice แล้ว" หรือ "ยังไม่มี Invoice"
+
+### 📊 Stock Table Grouping Features v2.0.0
+- **Automatic Grouping**: ใช้ PrimeVue DataTable `rowGroupMode="subheader"` และ `groupRowsBy="invoice"`
+- **Clickable Invoice Number**: คลิกที่เลขที่ Invoice ใน group header เพื่อดูรายละเอียด
+- **Group Header Styling**:
+  - สีเขียว (มี Invoice): background #f8f9fa, border สีเขียว #038387
+  - สีเหลือง (ยังไม่มี Invoice): background #fff3cd, border สีเหลือง #fabc3f
+- **Disabled Actions**: ปุ่มลบและแก้ไขจะ disabled สำหรับสินค้าที่มี Invoice แล้ว
+
+### 🔗 Invoice Detail View v2.0.0
+- **New Route**: `/invoice-detail?invoiceNumber=XXX` สำหรับแสดงรายละเอียด Invoice
+- **Complete Invoice Info**: แสดงข้อมูลครบถ้วน - หัว Invoice, ข้อมูลลูกค้า, รายการสินค้า, ยอดรวม
+- **Read-only Display**: แสดงข้อมูลแบบ read-only เท่านั้น
+- **Reprint PDF Button**: ปุ่มสำหรับออก Invoice PDF ใหม่อีกครั้ง
+- **Back Navigation**: ปุ่มย้อนกลับไปหน้าเดิม
+
+### 📋 Invoice Detail Page Sections v2.0.0
+1. **Header with Actions**:
+   - ปุ่ม "Reprint PDF" (สีเขียว) - สร้าง Invoice PDF ใหม่
+   - ปุ่ม "ย้อนกลับ" (สีเทา) - กลับไปหน้าเดิม
+
+2. **Invoice Header Information**:
+   - เลขที่ Invoice, เลขที่ SO
+   - วันที่สร้าง, วันกำหนดส่ง
+   - สถานะ, เงื่อนไขการชำระ
+   - มัดจำ (%), ผู้สร้าง
+
+3. **Customer Information**:
+   - ชื่อลูกค้า, ที่อยู่
+   - เบอร์โทร, อีเมล
+
+4. **Invoice Items Table (Advanced Layout)**:
+   - รูปภาพสินค้า (50x50px)
+   - เลขที่ผลิต, รหัสสินค้า, รายละเอียด
+   - **วัตถุดิบ (Materials)**:
+     - Gold (gms) - แสดงเป็นสีทอง
+     - Diamond (cts) - จำนวนเม็ด + น้ำหนัก
+     - Stone (cts) - จำนวนเม็ด + น้ำหนัก
+   - **ราคา (Prices)**:
+     - ราคาขาย (THB)
+     - ราคาประเมิน (THB)
+     - ส่วนลด (%)
+     - ราคาส่วนลด (THB)
+     - ราคาแปลง (USD/THB)
+   - จำนวน, รวม
+
+5. **Price Summary**:
+   - หน่วยเงิน, อัตราแลกเปลี่ยน
+   - ส่วนลด
+   - ยอดรวมทั้งสิ้น
+
+6. **Remark**: หมายเหตุ (ถ้ามี)
+
+### 🔧 Technical Implementation v2.0.0
+```vue
+<!-- Row Grouping in Stock Table -->
+<DataTable
+  :value="stockItems"
+  :rowGroupMode="'subheader'"
+  :groupRowsBy="'invoice'"
+  :sortField="'invoice'"
+  :sortOrder="1"
+>
+  <template #groupheader="slotProps">
+    <div v-if="slotProps.data.invoice">
+      <a @click.prevent="openInvoiceDetail(slotProps.data.invoice)">
+        {{ slotProps.data.invoice }}
+      </a>
+      <span class="badge badge-success">มี Invoice แล้ว</span>
+    </div>
+    <div v-else>
+      <span>รอออก Invoice</span>
+      <span class="badge badge-warning">ยังไม่มี Invoice</span>
+    </div>
+  </template>
+</DataTable>
+
+<!-- Invoice Detail Route -->
+{
+  path: '/invoice-detail',
+  name: 'invoice-detail',
+  component: InvoiceDetail,
+  meta: {
+    permissions: [PERMISSIONS.SALE_VIEW]
+  }
+}
+
+<!-- Reprint PDF Implementation -->
+async reprintPDF() {
+  const pdfData = {
+    saleOrder: { /* SO data */ },
+    customer: { /* customer data */ },
+    currency: { /* currency info */ },
+    items: this.invoiceItems
+  }
+
+  const options = {
+    invoiceNo: this.invoiceData.invoiceNumber,
+    download: true
+  }
+
+  await invoicePdfService.generateInvoicePDF(pdfData, options)
+}
+```
+
+### 📁 New Files v2.0.0
+```
+invoice-detail/
+└── index-view.vue              # Invoice detail page (read-only)
+
+router/web/sale/
+└── sale-routes.js              # Updated with invoice-detail route
+```
+
+### 🎯 User Flow v2.0.0
+```
+1. เปิด Sale Order → 2. ดูตาราง Stock Items → 3. คลิกเลขที่ Invoice → 4. ดูรายละเอียด Invoice
+     ↓                       ↓                          ↓                       ↓
+ Load SO data         สินค้าถูก group              Navigate to          แสดงข้อมูล
+                     ตาม invoice                  /invoice-detail       Invoice ครบถ้วน
+```
+
+### 🛡️ Data Protection v2.0.0
+- **Read-only Enforcement**: สินค้าที่มี Invoice แล้วจะไม่สามารถแก้ไข/ลบได้
+- **Input Validation**: ตรวจสอบ `slotProps.data.invoice` ก่อนอนุญาตให้แก้ไข
+- **Button States**: ปุ่มทุกปุ่มจะ disabled เมื่อมี Invoice
+- **API Integration**: ใช้ `useInvoiceApiStore.fetchGet()` สำหรับดึงข้อมูล Invoice
+
+### 💡 Benefits v2.0.0
+- **Better Organization**: จัดกลุ่มสินค้าตาม Invoice ชัดเจน
+- **Easy Navigation**: คลิกดูรายละเอียด Invoice ได้ทันที
+- **Data Integrity**: ป้องกันการแก้ไขสินค้าที่มี Invoice แล้ว
+- **User Experience**: ผู้ใช้เห็นภาพรวมและรายละเอียดได้ง่าย
+
+---
+
+## การอัปเดตก่อนหน้า (v1.9.0)
+
+### 🐛 Bug Fixes - Invoice Modal v1.9.0
+- **Field Mapping Fix**: แก้ไขการ map field ใน invoice-modal.vue ให้ตรงกับ formSaleOrder
+- **Customer Phone Fix**: แก้ไข `customerTel` → `customerPhone` mapping
+- **Expected Delivery Date Fix**: แก้ไข `deliveryDate` → `expectedDeliveryDate` mapping
+- **Deposit Percentage Fix**: แก้ไข `depositPercent` → `depositPercentage` mapping
+- **Payment Terms Mapping**: เพิ่มฟังก์ชัน `getPaymentId()` สำหรับแปลง payment value เป็น ID
+
+### 🔧 Invoice API Request Improvements v1.9.0
+- **Field Defaults**: เพิ่ม fallback values สำหรับ fields ที่อาจเป็น null/undefined
+- **Safe Mapping**: ใช้ `||` operator เพื่อรองรับทั้ง field name เก่าและใหม่
+- **Payment ID Mapping**: แปลง payment terms string เป็น numeric ID ตามที่ API ต้องการ
+  ```javascript
+  {
+    'Cash': 1,
+    'Credit30': 2,
+    'Credit60': 3,
+    'DepositAndBalance': 4
+  }
+  ```
+
+### 🎯 Enhanced Error Handling v1.9.0
+- **API Error Extraction**: ปรับปรุงการดึง error message จาก API response
+- **Multiple Error Sources**: รองรับ error message จาก:
+  - `error.response.data.message`
+  - `error.response.data.error`
+  - `error.response.data` (string)
+  - `error.message`
+- **User-Friendly Messages**: แสดง error message ที่อ่านง่ายต่อผู้ใช้
+
+### 📋 Field Mapping Reference v1.9.0
+
+| formSaleOrder Field | Invoice API Field | Notes |
+|---------------------|-------------------|-------|
+| `number` | `soNumber` | Primary SO number |
+| `customerPhone` | `customerTel` | แก้ไขแล้ว |
+| `expectedDeliveryDate` | `deliveryDate` | แก้ไขแล้ว |
+| `depositPercentage` | `depositPercent` | แก้ไขแล้ว |
+| `paymentTerms` | `paymentName` + `payment` | แปลงเป็น ID |
+| `quotationNumber` | `refQuotation` | - |
+| `goldPerOz` | `goldRate` | - |
+
+### 🔍 Troubleshooting Guide v1.9.0
+
+**ปัญหา**: กดสร้าง Invoice แล้ว error bad request
+
+**สาเหตุที่พบ**:
+1. Field mapping ไม่ตรงกับที่ API ต้องการ
+2. Payment terms ส่งเป็น string แทน ID
+3. Required fields มีค่าเป็น null/undefined
+
+**วิธีแก้**:
+1. ตรวจสอบ console.log('Creating invoice with data:', invoiceRequest)
+2. ตรวจสอบ field mapping ทั้งหมด
+3. เพิ่ม fallback values สำหรับ optional fields
+4. ตรวจสอบ error message จาก API response
+
+### 💻 Technical Changes v1.9.0
+```javascript
+// Before
+customerTel: this.saleOrderData.customerTel
+
+// After (with fallback)
+customerTel: this.saleOrderData.customerPhone || this.saleOrderData.customerTel
+
+// Payment ID Mapping (New)
+getPaymentId(paymentTerms) {
+  const paymentMapping = {
+    'Cash': 1,
+    'Credit30': 2,
+    'Credit60': 3,
+    'DepositAndBalance': 4
+  }
+  return paymentMapping[paymentTerms] || 1
+}
+```
+
+### 📝 Confirm Stock Modal Updates v1.9.0
+- **Save Draft Integration**: เพิ่มการเรียก saveDraft ก่อนยืนยันสินค้า
+- **Event Emission**: emit 'save-draft' event ไปยัง parent component
+- **Loading States**: ปรับปรุงการจัดการ loading state
+- **Success Messages**: เพิ่ม success message เมื่อยืนยันสำเร็จ
+
+---
+
+## การอัปเดตก่อนหน้า (v1.8.0)
+
+### ✨ Invoice API Integration & Per-Item Discount v1.8.0
+- **Invoice API Service**: สร้าง API Service สำหรับจัดการ Invoice CRUD operations
+- **Invoice Store**: Pinia store สำหรับเชื่อมต่อ API และจัดการ state
+- **Per-Item Discount**: เปลี่ยนจาก global discount เป็น discount ตามรายการสินค้า
+- **Confirmed Items UI**: สินค้าที่ confirm แล้วจะแสดงเป็นข้อความเฉยๆ ไม่ใช่ disabled input
+- **Auto Refresh**: หลังสร้าง Invoice จะ refresh ข้อมูล Sale Order อัตโนมัติ
+
+### 🔧 Per-Item Discount System v1.8.0
+- **Individual Discount**: ทุกสินค้าสามารถตั้งส่วนลดได้แยกกัน
+- **Disabled for Confirmed**: สินค้าที่ confirm แล้วจะแก้ไขส่วนลดไม่ได้
+- **Price Calculation**: คำนวณราคาตามส่วนลดของแต่ละรายการ
+- **Display Update**: UI แสดงส่วนลดในรูปแบบพร้อมการแก้ไข
+
+### 📡 Invoice API Integration v1.8.0
+- **Backend API**: .NET Core API สำหรับ Invoice CRUD operations
+- **Database Update**: อัปเดต TbtSaleOrderProduct เมื่อสร้าง Invoice
+- **Store Integration**: Pinia store เชื่อมต่อ API endpoints
+- **Error Handling**: จัดการ error และ loading states อย่างถูกต้อง
+- **Success Feedback**: แจ้งเตือนและ refresh ข้อมูลหลังสำเร็จ
+
+### 🎨 UI/UX Improvements v1.8.0
+- **Confirmed Items Styling**: สินค้าที่ confirm แล้วจะมี styling พิเศษ
+- **Input Display Mode**: เปลี่ยนจาก disabled input เป็นการแสดงข้อความ
+- **Button State Management**: จัดการ button states ตามสถานะของสินค้า
+- **Visual Feedback**: ผู้ใช้เห็นสถานะการ confirm ได้ชัดเจน
+
+---
+
+## การอัปเดตก่อนหน้า (v1.6.0)
 
 ### ✨ Sale Order List & Invoice Generation v1.6.0
 - **Sale Order List UI**: หน้ารายการใบสั่งขายพร้อมการค้นหาและกรองข้อมูล

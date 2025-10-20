@@ -19,6 +19,7 @@ import search from './components/search-view.vue'
 import saleOrder from './components/sale-order-view.vue'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
+import { error } from '@/services/alert/sweetAlerts.js'
 
 const interfaceSearchQuotation = {
   Number: null
@@ -162,10 +163,10 @@ export default {
         } else {
           console.warn('No sale order data found for number:', soNumber)
         }
-      } catch (error) {
-        console.error('Error loading sale order:', error)
+      } catch (err) {
+        console.error('Error loading sale order:', err)
         // Show error notification if needed
-        alert('ไม่สามารถโหลดข้อมูลใบสั่งขายได้: ' + error.message)
+        error(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล', 'ไม่สามารถโหลดข้อมูลใบสั่งขายได้')
       } finally {
         this.isLoading = false
       }

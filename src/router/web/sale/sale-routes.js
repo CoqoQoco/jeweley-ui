@@ -13,6 +13,7 @@ const ProductionOrder = () => import('@/views/sale/production-order/index-view.v
 const StockReservation = () => import('@/views/sale/stock-reservation/index-view.vue')
 const DeliveryNote = () => import('@/views/sale/delivery-note/index-view.vue')
 const Invoice = () => import('@/views/sale/invoice/index-view.vue')
+const InvoiceDetail = () => import('@/views/sale/invoice-detail/index-view.vue')
 const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
 
 // Fallback for incomplete components
@@ -163,6 +164,19 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/invoice-detail',
+        name: 'invoice-detail',
+        component: InvoiceDetail,
+        meta: {
+          Displayname: {
+            en: 'Invoice Detail',
+            th: 'รายละเอียด Invoice'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_VIEW]
         }
       },
 
