@@ -65,7 +65,7 @@ export default {
   },
   methods: {
     async onConvertQuotation(formValue) {
-      console.log('Convert quotation:', formValue)
+      //console.log('Convert quotation:', formValue)
       this.quotation = { ...formValue }
 
       // Call API to fetch quotation data
@@ -97,7 +97,7 @@ export default {
             items: quotationData.data ? JSON.parse(quotationData.data) : []
           }
 
-          console.log('Loaded quotation data:', this.saleOrderData)
+          //console.log('Loaded quotation data:', this.saleOrderData)
         } else {
           console.warn('No quotation data found for number:', quotationNumber)
         }
@@ -117,7 +117,7 @@ export default {
         })
 
         if (response) {
-          console.log('Raw API response:', response)
+          //console.log('Raw API response:', response)
           const saleOrderData = response
 
           // Update sale order data from API
@@ -138,7 +138,7 @@ export default {
             items: saleOrderData.data ? (() => {
               try {
                 const parsedData = JSON.parse(saleOrderData.data)
-                console.log('Parsed data from API:', parsedData)
+                //console.log('Parsed data from API:', parsedData)
                 return parsedData
               } catch (e) {
                 console.error('Error parsing data:', e)
@@ -159,7 +159,7 @@ export default {
             }
           }
 
-          console.log('Loaded sale order data api:', this.saleOrderData)
+          //console.log('Loaded sale order data api:', this.saleOrderData)
         } else {
           console.warn('No sale order data found for number:', soNumber)
         }

@@ -158,3 +158,153 @@ import dayjs from 'dayjs'
 import StockSummaryCards from './components/stock-summary-cards.vue'
 import CategoryChart from './components/category-chart.vue'
 ```
+
+### Alert and Notification System
+**IMPORTANT**: NEVER use native JavaScript `alert()`, `confirm()`, or `prompt()`. Always use the centralized alert service.
+
+**Alert Service Location**: `src/services/alert/sweetAlerts.js`
+
+**Available Functions**:
+```javascript
+import { warning, error, success, info, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+
+// Warning messages (yellow)
+warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+warning('ข้อมูลไม่ครบถ้วน', 'กรุณาตรวจสอบข้อมูล')
+
+// Error messages (red)
+error('เกิดข้อผิดพลาดในการบันทึกข้อมูล')
+error(err.message, 'ไม่สามารถบันทึกข้อมูลได้')
+
+// Success messages (green)
+success('บันทึกข้อมูลสำเร็จ')
+success('เลขที่ใบสั่งขาย: SO-001', 'สร้างใบสั่งขายสำเร็จ')
+
+// Info messages (blue)
+info('ข้อมูลถูกส่งไปยังระบบแล้ว')
+
+// Confirmation dialogs
+confirmSubmit('คุณต้องการลบข้อมูลนี้หลือไม่?', 'ยืนยันการลบ', () => {
+  // Callback on confirm
+  deleteData()
+})
+```
+
+**Function Signatures**:
+- `warning(message, title, callback)` - Parameters: message (required), title (optional), callback (optional)
+- `error(message, title, callback, stacktrace)` - Parameters: message (required), title (optional), callback (optional), stacktrace (optional)
+- `success(message, title, callback)` - Parameters: message (required), title (optional), callback (optional)
+- `info(message, title, callback)` - Parameters: message (required), title (optional), callback (optional)
+- `confirmSubmit(message, title, callback, buttonInfo, icon, msgStyle)` - For confirmation dialogs
+
+**Best Practices**:
+```javascript
+// ❌ Bad - Never use native alerts
+alert('บันทึกสำเร็จ')
+confirm('คุณต้องการลบหรือไม่?')
+
+// ✅ Good - Use sweetAlerts service
+success('บันทึกสำเร็จ')
+confirmSubmit('คุณต้องการลบหรือไม่?', 'ยืนยันการลบ', handleDelete)
+
+// ❌ Bad - Missing context
+warning('กรุณากรอกข้อมูล')
+
+// ✅ Good - Clear and specific
+warning('กรุณากรอกชื่อลูกค้าและที่อยู่', 'ข้อมูลไม่ครบถ้วน')
+
+// ✅ Good - With error details
+error(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล', 'ไม่สามารถโหลดข้อมูลได้')
+```
+
+### Error Handling and Try-Catch Usage
+**IMPORTANT**: DO NOT use try-catch blocks in components unless absolutely necessary for specific error recovery logic.
+
+**Why**: The centralized axios configuration in `src/axios/axios-helper.js` already handles error detection and display automatically. Using try-catch blocks can interfere with this mechanism by catching errors before they reach the axios error interceptor.
+
+**Location**: `src/axios/axios-helper.js` - Error interceptors are configured
+
+**Best Practices**:
+```javascript
+// ❌ Bad - Unnecessary try-catch that blocks axios error handling
+async loadData() {
+  try {
+    const response = await this.store.fetchData()
+    this.data = response.data
+  } catch (err) {
+    error(err.message, 'ไม่สามารถโหลดข้อมูลได้')
+  }
+}
+
+// ✅ Good - Let axios handle errors automatically
+async loadData() {
+  const response = await this.store.fetchData()
+  this.data = response.data
+}
+
+// ✅ Good - Only use try-catch when you need specific error recovery logic
+async loadData() {
+  try {
+    const response = await this.store.fetchData()
+    this.data = response.data
+  } catch (err) {
+    // Specific recovery logic (e.g., retry, fallback)
+    this.data = this.getDefaultData()
+  }
+}
+```
+
+**When to use try-catch**:
+- Specific error recovery logic (retry, fallback data)
+- Need to prevent error propagation for non-critical operations
+- Complex error handling with multiple scenarios
+
+**When NOT to use try-catch**:
+- Standard API calls (axios handles errors automatically)
+- Simple data fetching operations
+- Form submissions without special error handling
+
+### Loading State Management
+**IMPORTANT**: DO NOT manually manage loading states (`this.loading` or `isLoading`) when calling API through Pinia stores.
+
+**Why**: The centralized axios configuration in `src/axios/axios-helper.js` already handles global loading states automatically for all API calls through middleware.
+
+**Location**: `src/axios/axios-helper.js` - Loading interceptors are configured
+
+**Best Practices**:
+```javascript
+// ❌ Bad - Manual loading state management
+async loadData() {
+  this.loading = true  // DON'T DO THIS
+  const response = await this.store.fetchData()
+  this.data = response.data
+  this.loading = false  // DON'T DO THIS
+}
+
+// ✅ Good - Let axios middleware handle loading automatically
+async loadData() {
+  const response = await this.store.fetchData()
+  this.data = response.data
+}
+
+// ✅ Good - Only use local loading for specific UI needs
+async loadData() {
+  // Only if you need component-specific loading indicator
+  // separate from global loading (e.g., button-specific spinner)
+  this.componentSpecificLoading = true
+  const response = await this.store.fetchData()
+  this.data = response.data
+  this.componentSpecificLoading = false
+}
+```
+
+**When to use local loading state**:
+- Component-specific UI needs (e.g., individual button loading spinners)
+- Multiple simultaneous API calls requiring individual tracking
+- Custom loading behavior different from global loading
+
+**When NOT to use local loading state**:
+- Standard API calls through Pinia stores (axios middleware handles it)
+- Page-level data fetching (axios middleware handles it)
+- Form submissions (axios middleware handles it)
+```

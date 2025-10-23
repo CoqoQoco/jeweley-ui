@@ -5,9 +5,12 @@
         <!-- Sale Order Information -->
         <div class="mb-3">
           <div class="title-text-lg-bg p-2 mb-3">
-            <i class="bi bi-receipt mr-2"></i>ข้อมูลใบสั่งขาย
+            <i class="bi bi-receipt mr-2"></i>
+            <span>ข้อมูลใบสั่งขาย : </span>
+            <span>{{ saleOrderData.number }}</span>
           </div>
-          <div class="form-col-container p-2">
+
+          <!-- <div class="form-col-container p-2">
             <div>
               <span class="title-text">เลขที่ใบสั่งขาย</span>
               <input
@@ -44,7 +47,7 @@
                 readonly
               />
             </div>
-          </div>
+          </div> -->
         </div>
 
         <!-- Stock Items Selection for Confirmation -->
@@ -93,11 +96,11 @@
               >
                 <div>
                   <label class="d-flex align-items-center mb-0">
-                    <input
-                      type="checkbox"
-                      :checked="isAllSelected"
-                      @change="toggleSelectAll"
+                    <Checkbox
+                      :modelValue="isAllSelected"
+                      @update:modelValue="toggleSelectAll"
                       :disabled="selectableItems.length === 0"
+                      :binary="true"
                       class="mr-2"
                     />
                     <span class="title-text"
@@ -138,11 +141,11 @@
                 <Column :exportable="false" style="width: 50px" header="เลือก">
                   <template #body="slotProps">
                     <div class="text-center">
-                      <input
-                        type="checkbox"
-                        :checked="selectedItems.includes(slotProps.data.id)"
-                        @change="toggleItemSelection(slotProps.data)"
+                      <Checkbox
+                        :modelValue="selectedItems.includes(slotProps.data.id)"
+                        @update:modelValue="toggleItemSelection(slotProps.data)"
                         :disabled="slotProps.data.isConfirmed"
+                        :binary="true"
                       />
                     </div>
                   </template>
@@ -350,6 +353,7 @@
 import { defineAsyncComponent } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import Checkbox from 'primevue/checkbox'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { success, error, warning } from '@/services/alert/sweetAlerts.js'
@@ -363,6 +367,7 @@ export default {
     modal,
     DataTable,
     Column,
+    Checkbox,
     imagePreview
   },
 
@@ -450,12 +455,12 @@ export default {
       console.log('Confirm modal loaded with stock items:', this.stockItems)
     },
 
-    toggleSelectAll() {
-      if (this.isAllSelected) {
-        this.selectedItems = []
-      } else {
-        // Only select items that are not already confirmed
+    toggleSelectAll(value) {
+      if (value) {
+        // Select all items that are not already confirmed
         this.selectedItems = this.selectableItems.map((item) => item.id)
+      } else {
+        this.selectedItems = []
       }
     },
 
@@ -566,7 +571,7 @@ export default {
         //this.loading = true
 
         // Emit save-draft event to parent to save data before confirming
-        this.$emit('save-draft')
+        //this.$emit('save-draft')
 
         // Wait a moment for save to complete
         await new Promise((resolve) => setTimeout(resolve, 500))
