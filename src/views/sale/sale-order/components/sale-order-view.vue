@@ -425,6 +425,11 @@
                   {{ slotProps.data.message }}
                 </span>
               </div>
+              <div class="text-center" v-else-if="slotProps.data.invoice">
+                <span class="badge badge-success">
+                  {{ slotProps.data.invoice }}
+                </span>
+              </div>
               <div class="text-center" v-else>
                 <span
                   :class="['badge', slotProps.data.isConfirm ? 'badge-success' : 'badge-warning']"
@@ -661,7 +666,7 @@
               >
                 {{ slotProps.data.invoice }}
               </a>
-              <span class="ml-3 badge badge-success">มี Invoice แล้ว</span>
+              <!-- <span class="ml-3 badge badge-success">มี Invoice แล้ว</span> -->
             </div>
             <!-- สินค้าที่ยืนยันแล้วแต่ยังไม่มี Invoice (รอออก Invoice) -->
             <div
@@ -670,7 +675,7 @@
               style="background-color: var(--base-green); border-left: 4px solid #038387"
             >
               <span class="font-weight-bold text-white">รอออก Invoice</span>
-              <span class="ml-3 badge badge-light">ยืนยันแล้ว</span>
+              <!-- <span class="ml-3 badge badge-light">ยืนยันแล้ว</span> -->
             </div>
             <!-- สินค้าที่ยังไม่ได้ยืนยัน (รอยืนยันสินค้า) -->
             <div
@@ -1890,10 +1895,13 @@ export default {
         priority: saleOrderData.priority || 'normal',
         remark: saleOrderData.remark || '',
         customerRemark: saleOrderData.customer?.remark || '',
+
+        customerCode: saleOrderData.customer?.code || '',
         customerName: saleOrderData.customer?.name || '',
         customerAddress: saleOrderData.customer?.address || '',
         customerPhone: saleOrderData.customer?.phone || '',
         customerEmail: saleOrderData.customer?.email || '',
+
         currencyUnit: saleOrderData.currencyUnit || 'US$',
         currencyRate: saleOrderData.currencyRate || 33.0,
         markup: saleOrderData.markup || 3.5,

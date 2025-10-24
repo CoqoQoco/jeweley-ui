@@ -151,6 +151,7 @@ export default {
             markup: saleOrderData.markup || 3.5,
             goldPerOz: saleOrderData.goldRate || 2000,
             customer: {
+              code: saleOrderData.customerCode || '',
               name: saleOrderData.customerName || '',
               address: saleOrderData.customerAddress || '',
               phone: saleOrderData.customerTel || '',

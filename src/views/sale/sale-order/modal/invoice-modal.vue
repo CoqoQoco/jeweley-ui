@@ -1,6 +1,6 @@
 <template>
   <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" :width="'100%'" :fitHeight="true">
+    <modal :showModal="isShowModal" @closeModal="closeModal" :width="'100%'">
       <template v-slot:content>
         <!-- Sale Order Information -->
         <div class="mb-3">
@@ -80,11 +80,11 @@
               >
                 <div>
                   <label class="d-flex align-items-center mb-0">
-                    <input
-                      type="checkbox"
-                      :checked="isAllSelected"
-                      @change="toggleSelectAll"
+                    <Checkbox
+                      :modelValue="isAllSelected"
+                      @update:modelValue="toggleSelectAll"
                       :disabled="availableItems.length === 0"
+                      :binary="true"
                       class="mr-2"
                     />
                     <span class="title-text"
@@ -138,11 +138,11 @@
                 <Column field="selected" style="width: 10px">
                   <template #body="slotProps">
                     <div class="text-center">
-                      <input
-                        type="checkbox"
-                        :checked="selectedItems.includes(slotProps.data.id)"
-                        @change="toggleItemSelection(slotProps.data)"
+                      <Checkbox
+                        :modelValue="selectedItems.includes(slotProps.data.id)"
+                        @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
                         :disabled="!slotProps.data.isConfirm"
+                        :binary="true"
                       />
                     </div>
                   </template>
@@ -668,7 +668,7 @@
               :disabled="loading || selectedItemsCount === 0"
             >
               <i class="bi bi-file-earmark-pdf mr-1"></i>
-              สร้าง Invoice PDF
+              สร้าง Invoice
               <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
               <span
                 v-if="loading"
@@ -695,6 +695,7 @@ import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import Dropdown from 'primevue/dropdown'
+import Checkbox from 'primevue/checkbox'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { warning, error, success } from '@/services/alert/sweetAlerts.js'
@@ -711,6 +712,7 @@ export default {
     ColumnGroup,
     Row,
     Dropdown,
+    Checkbox,
     imagePreview
   },
 
@@ -745,11 +747,11 @@ export default {
       paymentDays: 0, // ระยะเวลาการชำระเงิน (วัน)
       // Payment method options for Dropdown
       paymentMethodOptions: [
-        { name: 'เงินสด (Cash)', value: 'cash' },
-        { name: 'โอนเงิน (Transfer)', value: 'transfer' },
-        { name: 'เช็ค (Cheque)', value: 'cheque' },
-        { name: 'บัตรเครดิต (Credit Card)', value: 'credit_card' },
-        { name: 'เครดิต (Credit Term)', value: 'credit_term' }
+        { name: 'เงินสด (Cash)', value: 'cash', id: 1 },
+        { name: 'โอนเงิน (Transfer)', value: 'transfer', id: 2 },
+        { name: 'เช็ค (Cheque)', value: 'cheque', id: 3 },
+        { name: 'บัตรเครดิต (Credit Card)', value: 'credit_card', id: 4 },
+        { name: 'เครดิต (Credit Term)', value: 'credit_term', id: 5 }
       ]
     }
   },
@@ -814,26 +816,33 @@ export default {
       console.log('Invoice modal loaded with stock items:', this.stockItems)
     },
 
-    toggleSelectAll() {
-      if (this.isAllSelected) {
-        this.selectedItems = []
-      } else {
-        // Only select confirmed items
+    toggleSelectAll(value) {
+      if (value) {
+        // Select all confirmed items
         this.selectedItems = this.availableItems.map((item) => item.id)
+      } else {
+        // Deselect all
+        this.selectedItems = []
       }
     },
 
-    toggleItemSelection(item) {
+    toggleItemSelection(item, value) {
       // Don't allow selection of unconfirmed items
       if (!item.isConfirm) {
         return
       }
 
-      const index = this.selectedItems.indexOf(item.id)
-      if (index > -1) {
-        this.selectedItems.splice(index, 1)
+      if (value) {
+        // Add to selection if not already selected
+        if (!this.selectedItems.includes(item.id)) {
+          this.selectedItems.push(item.id)
+        }
       } else {
-        this.selectedItems.push(item.id)
+        // Remove from selection
+        const index = this.selectedItems.indexOf(item.id)
+        if (index > -1) {
+          this.selectedItems.splice(index, 1)
+        }
       }
     },
 
@@ -1048,15 +1057,7 @@ export default {
     },
 
     // Helper method to get payment ID from payment terms value
-    getPaymentId(paymentTerms) {
-      const paymentMapping = {
-        Cash: 1,
-        Credit30: 2,
-        Credit60: 3,
-        DepositAndBalance: 4
-      }
-      return paymentMapping[paymentTerms] || 1
-    },
+  
 
     async generateInvoice() {
       try {
@@ -1076,7 +1077,7 @@ export default {
           return
         }
 
-        this.loading = true
+        //this.loading = true
 
         // Get selected items
         const selectedStockItems = this.stockItems.filter((item) =>
@@ -1086,28 +1087,35 @@ export default {
         // Prepare invoice data for API
         const invoiceRequest = {
           soNumber: this.saleOrderData.number || this.saleOrderData.soNumber,
-          customerCode: this.saleOrderData.customerCode || 'CUST-DEFAULT',
+
+          customerCode: this.saleOrderData.customerCode,
           customerName: this.saleOrderData.customerName,
           customerAddress: this.saleOrderData.customerAddress,
           customerTel: this.saleOrderData.customerPhone || this.saleOrderData.customerTel,
           customerEmail: this.saleOrderData.customerEmail,
           customerRemark: this.saleOrderData.customerRemark,
+
           currencyUnit: this.saleOrderData.currencyUnit || 'THB',
           currencyRate: this.saleOrderData.currencyRate || 1.0,
+
           deliveryDate: this.saleOrderData.expectedDeliveryDate || this.saleOrderData.deliveryDate,
-          depositPercent:
-            this.saleOrderData.depositPercentage || this.saleOrderData.depositPercent || 0,
-          depositAmount: this.depositAmount || 0, // ราคามัดจำ
-          discount: this.saleOrderData.discountPercent || 0,
+          deposit: this.depositAmount || 0,
+
           specialDiscount: this.specialDiscount || 0, // ส่วนลดพิเศษ
           specialAddition: this.specialAddition || 0, // ส่วนเพิ่มพิเศษ
-          freight: this.freightAndInsurance || 0, // Freight & Insurance
+          freightAndInsurance: this.freightAndInsurance || 0, // Freight & Insurance
+
           goldRate: this.saleOrderData.goldPerOz || 0,
           markup: this.saleOrderData.markup || 0,
-          paymentMethod: this.paymentMethod, // วิธีการชำระเงิน
-          paymentDays: this.paymentDays || 0, // ระยะเวลาการชำระเงิน
-          paymentName: this.saleOrderData.paymentTerms,
-          payment: this.getPaymentId(this.saleOrderData.paymentTerms),
+
+          payment: this.paymentMethodOptions.find(
+            (pm) => pm.value === this.paymentMethod
+          )?.id, // รหัสวิธีการชำระเงิน
+          paymentName: this.paymentMethodOptions.find(
+            (pm) => pm.value === this.paymentMethod
+          )?.name, // ชื่อวิธีการชำระเงิน
+          paymentDay: this.paymentDays || 0, // ระยะเวลาการชำระเงิน
+
           priority: this.saleOrderData.priority || 'normal',
           refQuotation: this.saleOrderData.quotationNumber || '',
           remark: this.saleOrderData.remark || '',
