@@ -27,13 +27,21 @@ export class InvoicePdfBuilder {
     this.logoBase64 = null
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyRate = Number(currencyRate) || 1
-    this.freight = Number(saleOrderData.freight) || 0
+
+    // Financial adjustments from invoice data
+    this.specialDiscount = Number(saleOrderData.specialDiscount) || 0
+    this.specialAddition = Number(saleOrderData.specialAddition) || 0
+    this.freightAndInsurance = Number(saleOrderData.freightAndInsurance) || 0
+
+    // Legacy fields for backward compatibility
+    this.freight = Number(saleOrderData.freight) || this.freightAndInsurance
     this.discount = Number(saleOrderData.discount) || 0
     this.itemsPerPage = Number(itemsPerPage) || 10
 
-    // Calculate totals
+    // Calculate totals with new fields
     this.subtotal = this.calculateSubtotal()
-    this.totalAmount = this.subtotal + this.freight - this.discount
+    this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
+    this.totalAmount = this.totalAfterDiscountAndAddition + this.freightAndInsurance
   }
 
   calculateSubtotal() {
@@ -544,8 +552,8 @@ export class InvoicePdfBuilder {
   // สร้าง body ตาราง (หน้าสุดท้าย)
   buildFinalTableBody(items, pageNum) {
     const body = this.buildRegularTableBody(items, pageNum)
-    
-    // TOTAL row
+
+    // SUBTOTAL row (F.O.B Bangkok)
     body.push([
       {
         text: '',
@@ -558,14 +566,68 @@ export class InvoicePdfBuilder {
       { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
       {},
       {
-        text: this.roundNoDecimal(this.totalAmount),
+        text: this.roundNoDecimal(this.subtotal),
         style: 'totalSummaryLabelColored',
         alignment: 'right'
       }
     ])
 
-    // FREIGHT & INSURANCE
-    if (this.freight > 0) {
+    // SPECIAL DISCOUNT - แสดงเฉพาะเมื่อมีค่า
+    if (this.specialDiscount > 0) {
+      body.push([
+        {
+          text: '',
+          style: 'summaryLabel',
+          alignment: 'right',
+          colSpan: 7,
+          border: [true, false, false, false]
+        },
+        {}, {}, {}, {}, {}, {},
+        {
+          text: 'SPECIAL DISCOUNT',
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          colSpan: 2
+        },
+        {},
+        {
+          text: '-' + this.roundNoDecimal(this.specialDiscount),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          color: '#ff4d4d'
+        }
+      ])
+    }
+
+    // SPECIAL ADDITION - แสดงเฉพาะเมื่อมีค่า
+    if (this.specialAddition > 0) {
+      body.push([
+        {
+          text: '',
+          style: 'summaryLabel',
+          alignment: 'right',
+          colSpan: 7,
+          border: [true, false, false, false]
+        },
+        {}, {}, {}, {}, {}, {},
+        {
+          text: 'SPECIAL ADDITION',
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          colSpan: 2
+        },
+        {},
+        {
+          text: '+' + this.roundNoDecimal(this.specialAddition),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          color: '#038387'
+        }
+      ])
+    }
+
+    // FREIGHT & INSURANCE - แสดงเฉพาะเมื่อมีค่า
+    if (this.freightAndInsurance > 0) {
       body.push([
         {
           text: '',
@@ -583,15 +645,15 @@ export class InvoicePdfBuilder {
         },
         {},
         {
-          text: this.roundNoDecimal(this.freight),
+          text: this.roundNoDecimal(this.freightAndInsurance),
           style: 'totalSummaryLabelColored',
           alignment: 'right'
         }
       ])
     }
-    
-    // GRAND TOTAL
-    const grandTotal = this.totalAmount + this.freight - this.discount
+
+    // GRAND TOTAL (C.I.F)
+    const grandTotal = this.totalAmount
 
     body.push([
       {
@@ -609,7 +671,7 @@ export class InvoicePdfBuilder {
         alignment: 'right'
       }
     ])
-    
+
     return body
   }
 

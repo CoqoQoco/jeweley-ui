@@ -1246,13 +1246,18 @@ export default {
             expectedDeliveryDate: this.invoiceData.deliveryDate,
             paymentTerms: this.invoiceData.paymentName,
             depositPercent: this.invoiceData.depositPercent,
-            remark: this.invoiceData.remark
+            remark: this.invoiceData.remark,
+            // เพิ่มข้อมูลทางการเงินใหม่
+            specialDiscount: this.invoiceData.specialDiscount || 0,
+            specialAddition: this.invoiceData.specialAddition || 0,
+            freightAndInsurance: this.invoiceData.freightAndInsurance || 0
           },
           customer: {
             name: this.invoiceData.customerName,
             address: this.invoiceData.customerAddress,
             tel: this.invoiceData.customerTel,
-            email: this.invoiceData.customerEmail
+            email: this.invoiceData.customerEmail,
+            phone: this.invoiceData.customerTel
           },
           currency: {
             unit: this.invoiceData.currencyUnit || 'THB',
