@@ -1252,47 +1252,101 @@
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-4">
-            <!-- Selected Items Summary -->
+          <div class="col-md-3">
+            <!-- Invoice Items Summary -->
             <div class="summary-section">
-              <h6>รายการที่เลือก</h6>
+              <h6 class="text-success">
+                <i class="bi bi-receipt-cutoff mr-1"></i>สินค้ามี Invoice
+              </h6>
               <div class="summary-item">
-                <span>สินค้าคงคลัง:</span>
-                <span class="font-weight-bold">{{ selectedStockItemsCount }} รายการ</span>
+                <span>จำนวน:</span>
+                <span class="font-weight-bold text-success">{{ invoiceItemsCount }} รายการ</span>
               </div>
               <div class="summary-item">
-                <span>สินค้าผลิต:</span>
-                <span class="font-weight-bold">{{ selectedProductionItemsCount }} รายการ</span>
-              </div>
-              <div class="summary-item">
-                <span>รวมทั้งหมด:</span>
-                <span class="font-weight-bold">{{ selectedItemsCount }} รายการ</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <!-- Production Items Summary -->
-            <div class="summary-section" v-if="selectedProductionItemsCount > 0">
-              <h6>สินค้าผลิต</h6>
-              <div class="summary-item">
-                <span>ยอดสินค้าผลิต:</span>
-                <span class="font-weight-bold">{{ formatCurrency(productionItemsTotal) }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <!-- Total Summary -->
-            <div class="summary-section">
-              <h6>สรุปยอดรวม</h6>
-              <div class="summary-item">
-                <span>ยอดรวมรายการที่เลือก:</span>
-                <span class="font-weight-bold">{{ formatCurrency(selectedItemsTotal) }}</span>
-              </div>
-              <div class="summary-item border-top pt-2 mt-2">
-                <span class="h6">ยอดรวมใบสั่งขาย:</span>
-                <span class="h6 font-weight-bold text-primary">{{
-                  formatCurrency(totalOrderAmount)
+                <span>ยอดรวม:</span>
+                <span class="font-weight-bold text-success">{{
+                  formatCurrency(invoiceItemsTotal)
                 }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <!-- Confirmed Items Summary -->
+            <div class="summary-section">
+              <h6 class="text-primary"><i class="bi bi-check-circle mr-1"></i>สินค้ายืนยันแล้ว</h6>
+              <div class="summary-item">
+                <span>จำนวน:</span>
+                <span class="font-weight-bold text-primary">{{ confirmedItemsCount }} รายการ</span>
+              </div>
+              <div class="summary-item">
+                <span>ยอดรวม:</span>
+                <span class="font-weight-bold text-primary">{{
+                  formatCurrency(confirmedItemsTotal)
+                }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <!-- Pending Confirmation Items Summary -->
+            <div class="summary-section">
+              <h6 class="text-warning"><i class="bi bi-clock-history mr-1"></i>สินค้ารอยืนยัน</h6>
+              <div class="summary-item">
+                <span>จำนวน:</span>
+                <span class="font-weight-bold text-warning">{{ pendingItemsCount }} รายการ</span>
+              </div>
+              <div class="summary-item">
+                <span>ยอดรวม:</span>
+                <span class="font-weight-bold text-warning">{{
+                  formatCurrency(pendingItemsTotal)
+                }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <!-- Production Items Summary -->
+            <div class="summary-section">
+              <h6 class="text-info"><i class="bi bi-tools mr-1"></i>สินค้ารอสั่งผลิต</h6>
+              <div class="summary-item">
+                <span>จำนวน:</span>
+                <span class="font-weight-bold text-info">{{ productionItemsCount }} รายการ</span>
+              </div>
+              <div class="summary-item">
+                <span>ยอดรวม:</span>
+                <span class="font-weight-bold text-info">{{
+                  formatCurrency(productionItemsTotal)
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grand Total Row -->
+        <div class="row mt-3">
+          <div class="col-md-12">
+            <div class="summary-section border-top pt-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1">รวมทั้งหมด</h6>
+                  <small class="text-muted">{{ selectedItemsCount }} รายการ</small>
+                </div>
+                <div class="text-right">
+                  <div class="mb-1">
+                    <span class="mr-2">ยอดรวมสินค้า:</span>
+                    <span class="font-weight-bold">{{ formatCurrency(selectedItemsTotal) }}</span>
+                  </div>
+                  <div class="mb-1">
+                    <span class="mr-2">ค่าขนส่ง:</span>
+                    <span class="font-weight-bold">{{
+                      formatCurrency(formSaleOrder.freight || 0)
+                    }}</span>
+                  </div>
+                  <div class="border-top pt-2 mt-2">
+                    <span class="h6 mr-2">ยอดรวมใบสั่งขาย:</span>
+                    <span class="h5 font-weight-bold text-primary">{{
+                      formatCurrency(totalOrderAmount)
+                    }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1369,6 +1423,9 @@
           >
             <i class="bi bi-receipt mr-1"></i>
             Invoice
+            <span v-if="pendingInvoiceStockItemsCount > 0" class="badge badge-warning ml-1">
+              {{ pendingInvoiceStockItemsCount }}
+            </span>
           </button>
 
           <button
@@ -1603,7 +1660,7 @@ export default {
     },
 
     selectedItemsCount() {
-      return this.stockItems.length
+      return this.stockItems.length + this.copyItems.length
     },
 
     selectedStockItemsCount() {
@@ -1617,13 +1674,13 @@ export default {
     stockItemsForInvoice() {
       return this.stockItems.map((item, index) => ({
         ...item,
-        id: item.id || `stock_${index}_${Date.now()}`,
+        //id: item.id || `stock_${index}_${Date.now()}`,
         isConfirm: item.isConfirm || false
       }))
     },
 
     confirmedStockItemsOnly() {
-      return this.stockItemsForInvoice.filter((item) => item.isConfirm)
+      return this.stockItems.filter((item) => item.isConfirm && !item.isInvoice)
     },
 
     confirmedStockItemsCount() {
@@ -1638,8 +1695,23 @@ export default {
       return this.pendingConfirmationStockItems.length
     },
 
+    pendingInvoiceStockItems() {
+      return this.stockItemsForInvoice.filter((item) => item.isConfirm && !item.invoice)
+    },
+    pendingInvoiceStockItemsCount() {
+      return this.pendingInvoiceStockItems.length
+    },
+
     selectedItemsTotal() {
-      return this.stockItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
+      const stockTotal = this.stockItems.reduce(
+        (sum, item) => sum + this.getTotalConvertedPrice(item),
+        0
+      )
+      const copyTotal = this.copyItems.reduce(
+        (sum, item) => sum + this.getTotalConvertedPrice(item),
+        0
+      )
+      return stockTotal + copyTotal
     },
 
     stockItemsTotal() {
@@ -1647,7 +1719,53 @@ export default {
     },
 
     productionItemsTotal() {
-      return this.copyItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 0), 0)
+      return this.copyItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
+    },
+
+    // Summary by status - Invoice Items
+    invoiceItems() {
+      return this.stockItems.filter((item) => item.invoice)
+    },
+
+    invoiceItemsCount() {
+      return this.invoiceItems.length
+    },
+
+    invoiceItemsTotal() {
+      return this.invoiceItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
+    },
+
+    // Summary by status - Confirmed Items (no invoice yet)
+    confirmedItems() {
+      return this.stockItems.filter((item) => item.isConfirm && !item.invoice)
+    },
+
+    confirmedItemsCount() {
+      return this.confirmedItems.length
+    },
+
+    confirmedItemsTotal() {
+      return this.confirmedItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
+    },
+
+    // Summary by status - Pending Confirmation Items
+    pendingItems() {
+      return this.stockItems.filter(
+        (item) => !item.isConfirm && !item.invoice && item.isRemainProduct
+      )
+    },
+
+    pendingItemsCount() {
+      return this.pendingItems.length
+    },
+
+    pendingItemsTotal() {
+      return this.pendingItems.reduce((sum, item) => sum + this.getTotalConvertedPrice(item), 0)
+    },
+
+    // Summary by status - Production Items (Copy Items)
+    productionItemsCount() {
+      return this.copyItems.length
     },
 
     totalOrderAmount() {
@@ -1946,12 +2064,24 @@ export default {
           description: data.productNameEn,
           group: 'product',
           planQty: data.planQty || 1,
-          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber
+          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
+          isRemainProduct: true,
+          isConfirm: false,
+          isInvoice: false
         }
       }
 
       if (data.stockNumber) {
-        this.stockItems.push(data)
+        //check duplicate before push
+        const existingIndex = this.stockItems.findIndex(
+          (item) => item.stockNumber === data.stockNumber
+        )
+        if (existingIndex !== -1) {
+          warning(`สินค้าหมายเลข ${data.stockNumber} มีอยู่ในรายการแล้ว`)
+        } else {
+          this.stockItems.push(data)
+          this.recalculateAll()
+        }
       }
 
       this.productSearch = {
@@ -2033,28 +2163,12 @@ export default {
     },
 
     async onStockItemsConfirmed() {
-      const saleOrderResponse = await this.saleOrderStore.fetchGet({
-        formValue: { soNumber: this.formSaleOrder.number }
-      })
+      if (this.formSaleOrder.number) {
+        const response = await this.getSaleOrderData(this.formSaleOrder.number)
 
-      if (saleOrderResponse) {
-        this.formSaleOrder.confirmedItems = saleOrderResponse.stockConfirm || []
-
-        this.stockItems = this.stockItems.map((item) => {
-          const confirmedItem = this.formSaleOrder.confirmedItems.find(
-            (ci) => ci.stockNumber === item.stockNumber
-          )
-          if (confirmedItem) {
-            return {
-              ...item,
-              id: confirmedItem.id,
-              isConfirm: true,
-              invoice: confirmedItem.invoice,
-              invoiceItem: confirmedItem.invoiceItem
-            }
-          }
-          return item
-        })
+        if (response) {
+          this.loadSaleOrderData(response)
+        }
       }
     },
 
@@ -2769,12 +2883,24 @@ input:disabled {
   padding: 1rem;
   border-radius: 6px;
   height: 100%;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 
   h6 {
     color: #495057;
     margin-bottom: 0.75rem;
     border-bottom: 1px solid #dee2e6;
     padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    i {
+      font-size: 1.1rem;
+    }
   }
 }
 

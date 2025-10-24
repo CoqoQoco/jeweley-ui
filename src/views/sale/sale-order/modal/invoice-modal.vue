@@ -1,6 +1,6 @@
 <template>
   <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" :width="'95%'" :fitHeight="true">
+    <modal :showModal="isShowModal" @closeModal="closeModal" :width="'100%'" :fitHeight="true">
       <template v-slot:content>
         <!-- Sale Order Information -->
         <div class="mb-3">
@@ -104,186 +104,550 @@
               <DataTable
                 :value="availableItems"
                 dataKey="id"
-                :rows="10"
-                class="p-datatable-sm"
                 :scrollable="true"
-                :loading="loading"
+                scrollHeight="10000000px"
+                class="p-datatable-sm"
+                stripedRows
                 responsiveLayout="scroll"
+                showGridlines
               >
-                <Column :exportable="false" style="width: 50px" header="เลือก">
+                <ColumnGroup type="header">
+                  <Row>
+                    <Column header="" />
+                    <Column header="" />
+                    <Column header="เลขที่ผลิต (ใหม่)" />
+                    <Column header="เลขที่ผลิต (เก่า)" />
+                    <Column header="รหัสสินค้า" />
+                    <!-- <Column header="สถานะการขาย" /> -->
+                    <Column header="รายละเอียด" />
+                    <!-- <Column header="Gold (gms)" />
+                    <Column header="Diamond (cts)" />
+                    <Column header="Stone (cts)" /> -->
+                    <Column header="ราคาขาย (THB)" />
+                    <Column header="ราคาประเมิน (THB)" />
+                    <Column header="ส่วนลด (%)" />
+                    <Column header="ราคาส่วนลด (THB)" />
+                    <Column header="แปลงเรท" />
+                    <Column :header="'ราคาแปลง (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
+                    <Column header="จำนวน" />
+                    <Column :header="'รวมราคา (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
+                  </Row>
+                </ColumnGroup>
+
+                <!-- Selection Column -->
+                <Column field="selected" style="width: 10px">
                   <template #body="slotProps">
                     <div class="text-center">
                       <input
                         type="checkbox"
                         :checked="selectedItems.includes(slotProps.data.id)"
                         @change="toggleItemSelection(slotProps.data)"
-                        :disabled="!slotProps.data.isConfirmed"
+                        :disabled="!slotProps.data.isConfirm"
                       />
-                    </div>
-                  </template>
-                </Column>
-
-                <Column field="stockNumber" header="รหัสสต็อก" style="width: 120px">
-                  <template #body="slotProps">
-                    <span class="text-main">{{ slotProps.data.stockNumber }}</span>
-                  </template>
-                </Column>
-                <Column field="productNumber" header="รหัสสินค้า" style="width: 120px">
-                  <template #body="slotProps">
-                    <span class="text-main">{{ slotProps.data.productNumber }}</span>
-                  </template>
-                </Column>
-                <Column field="description" header="รายละเอียดสินค้า" style="min-width: 200px">
-                  <template #body="slotProps">
-                    <div>
-                      <div>{{ slotProps.data.description || 'ไม่มีรายละเอียด' }}</div>
-                      <small class="text-muted" v-if="slotProps.data.category">{{
-                        slotProps.data.category
-                      }}</small>
-                    </div>
-                  </template>
-                </Column>
-                <Column field="isConfirmed" header="สถานะ" style="width: 100px">
-                  <template #body="slotProps">
-                    <div class="text-center">
-                      <span
-                        :class="[
-                          'badge',
-                          slotProps.data.isConfirmed ? 'box-status-success' : 'box-status-show'
-                        ]"
-                      >
-                        <i
-                          :class="
-                            slotProps.data.isConfirmed
-                              ? 'bi bi-check-circle-fill mr-1'
-                              : 'bi bi-clock-fill mr-1'
-                          "
-                        ></i>
-                        {{ slotProps.data.isConfirmed ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
-                      </span>
-                      <div
-                        v-if="slotProps.data.isConfirmed && slotProps.data.confirmedDate"
-                        class="text-muted"
-                        style="font-size: 0.75rem"
-                      >
-                        {{ formatDate(slotProps.data.confirmedDate) }}
-                      </div>
                     </div>
                   </template>
                 </Column>
 
                 <!-- Image Column -->
-                <Column header="รูปภาพ" style="width: 80px">
+                <Column field="image" header="" style="width: 50px">
                   <template #body="slotProps">
-                    <div
-                      v-if="stockItems.length > 0 && slotProps.data.imagePath"
-                      class="text-center"
-                    >
-                      <imagePreview
-                        :imageName="slotProps.data.imagePath"
-                        :path="slotProps.data.imagePath"
-                        type="STOCK-PRODUCT"
-                        :width="50"
-                        :height="50"
-                        v-if="slotProps.data.imagePath"
-                      />
-                      <div
-                        v-else
-                        class="d-flex align-items-center justify-content-center"
-                        style="
-                          width: 50px;
-                          height: 50px;
-                          background-color: #f8f9fa;
-                          border: 1px solid #dee2e6;
-                          border-radius: 4px;
-                        "
-                      >
-                        <i class="bi bi-image text-muted"></i>
+                    <div class="image-container">
+                      <div v-if="slotProps.data.imagePath">
+                        <imagePreview
+                          :imageName="slotProps.data.imagePath"
+                          :path="slotProps.data.imagePath"
+                          type="STOCK-PRODUCT"
+                          :width="25"
+                          :height="25"
+                        />
                       </div>
+                    </div>
+                  </template>
+                </Column>
+
+                <!-- Stock Number Column -->
+                <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+                  <template #body="slotProps">
+                    <div class="d-flex flex-column">
+                      <span>{{ slotProps.data.stockNumber }}</span>
+                      <small v-if="slotProps.data.message" class="text-main">{{
+                        slotProps.data.message
+                      }}</small>
+                    </div>
+                  </template>
+                </Column>
+
+                <!-- Stock Number Origin Column -->
+                <Column field="stockNumberOrigin" header="เลขที่ผลิต" style="min-width: 150px">
+                  <template #body="slotProps">
+                    <span>{{
+                      slotProps.data.stockNumberOrigin
+                        ? slotProps.data.stockNumberOrigin || ''
+                        : slotProps.data.stockNumber || ''
+                    }}</span>
+                  </template>
+                </Column>
+
+                <!-- Product Number Column -->
+                <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+                  <template #body="slotProps">
+                    <span class="confirmed-text">
+                      {{ slotProps.data.productNumber || '-' }}
+                    </span>
+                  </template>
+                </Column>
+
+                <!-- Confirmation Status Column -->
+                <!-- <Column field="isConfirm" header="สถานะการขาย" style="min-width: 120px">
+                  <template #body="slotProps">
+                    <div class="text-center">
+                      <span
+                        :class="[
+                          'badge',
+                          slotProps.data.isConfirm ? 'badge-success' : 'badge-warning'
+                        ]"
+                      >
+                        {{ slotProps.data.isConfirm ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
+                      </span>
+                    </div>
+                  </template>
+                </Column> -->
+
+                <!-- Description Column -->
+                <Column field="description" header="รายละเอียด" style="min-width: 200px">
+                  <template #body="slotProps">
+                    <span class="confirmed-text">
+                      {{ slotProps.data.description || '-' }}
+                    </span>
+                  </template>
+                </Column>
+
+                <!-- Materials Columns -->
+                <!-- <Column field="gold" style="min-width: 120px; max-width: 300px">
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.materials">
+                      <div
+                        v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
+                        :key="idx"
+                        class="material-cell"
+                      >
+                        <div class="material-typecode-gold">
+                          {{ item.typeCode }}
+                        </div>
+                        <div class="material-weight">
+                          {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="diamond" style="min-width: 140px; max-width: 300px">
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.materials">
+                      <div
+                        v-for="(item, idx) in slotProps.data.materials.filter(
+                          (m) => m.type === 'Diamond'
+                        )"
+                        :key="idx"
+                        class="material-cell"
+                      >
+                        <div class="material-typecode">
+                          {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                        </div>
+                        <div class="material-weight">
+                          {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="gem" style="min-width: 140px; max-width: 300px">
+                  <template #body="slotProps">
+                    <div v-if="slotProps.data.materials">
+                      <div
+                        v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
+                        :key="idx"
+                        class="material-cell"
+                      >
+                        <div class="material-typecode">
+                          {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                        </div>
+                        <div class="material-weight">
+                          {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </Column> -->
+
+                <!-- Price Columns -->
+                <Column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+                  <template #body="slotProps">
+                    <div class="qty-container">
+                      <span>{{
+                        Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2)
+                      }}</span>
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
+                  <template #body="slotProps">
+                    <div class="qty-container">
+                      <span class="confirmed-text text-right">
+                        {{ (Number(slotProps.data.appraisalPrice) || 0).toFixed(2) }}
+                      </span>
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+                  <template #body="slotProps">
+                    <div class="qty-container">
+                      <span class="confirmed-text text-right">
+                        {{ (Number(slotProps.data.discountPercent) || 0).toFixed(2) }}%
+                      </span>
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+                  <template #body="slotProps">
+                    <div class="qty-container">
+                      <span>{{
+                        (
+                          Number(slotProps.data.appraisalPrice || 0) *
+                          (1 - (slotProps.data.discountPercent || 0) / 100)
+                        ).toFixed(2)
+                      }}</span>
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
+                  <template #body>
+                    <div class="qty-container">
+                      <span>{{ saleOrderData.currencyRate || 1 }}</span>
+                    </div>
+                  </template>
+                </Column>
+
+                <Column
+                  field="priceAfterMultiply"
+                  :header="'ราคาแปลง (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  style="min-width: 150px"
+                >
+                  <template #body="slotProps">
+                    <div class="qty-container">
+                      <span>{{
+                        (
+                          (Number(slotProps.data.appraisalPrice || 0) *
+                            (1 - (slotProps.data.discountPercent || 0) / 100)) /
+                          (saleOrderData.currencyRate || 1)
+                        ).toFixed(2)
+                      }}</span>
                     </div>
                   </template>
                 </Column>
 
                 <Column field="qty" header="จำนวน" style="width: 80px">
                   <template #body="slotProps">
-                    <div class="text-center">{{ slotProps.data.qty }}</div>
-                  </template>
-                </Column>
-
-                <Column field="appraisalPrice" header="ราคาประเมิน" style="width: 140px">
-                  <template #body="slotProps">
-                    <div class="text-right">
-                      <div>{{ formatItemAppraisalPrice(slotProps.data) }}</div>
-                      <small
-                        class="text-muted"
-                        v-if="saleOrderData.currencyRate && saleOrderData.currencyRate !== 1"
-                      >
-                        ({{ formatCurrency(getDiscountedPrice(slotProps.data)) }} THB)
-                      </small>
+                    <div class="qty-container">
+                      <span class="confirmed-text text-right">
+                        {{ slotProps.data.qty || 0 }}
+                      </span>
                     </div>
                   </template>
                 </Column>
 
-                <Column header="ราคารวม" style="width: 140px">
+                <Column
+                  field="total"
+                  :header="'รวมราคา (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  style="min-width: 150px"
+                >
                   <template #body="slotProps">
-                    <div class="text-right text-success font-weight-bold">
-                      <div>{{ formatItemTotalPrice(slotProps.data) }}</div>
-                      <small
-                        class="text-muted"
-                        v-if="saleOrderData.currencyRate && saleOrderData.currencyRate !== 1"
-                      >
-                        ({{
-                          formatCurrency(
-                            getTotalConvertedPrice(slotProps.data) *
-                              (saleOrderData.currencyRate || 1)
-                          )
-                        }}
-                        THB)
-                      </small>
+                    <div class="qty-container">
+                      <span>{{
+                        (
+                          ((Number(slotProps.data.appraisalPrice || 0) *
+                            (1 - (slotProps.data.discountPercent || 0) / 100)) /
+                            (saleOrderData.currencyRate || 1)) *
+                          (Number(slotProps.data.qty) || 0)
+                        ).toFixed(2)
+                      }}</span>
                     </div>
                   </template>
                 </Column>
+
+                <!-- Footer -->
+                <ColumnGroup type="footer">
+                  <!-- Total Row -->
+                  <Row>
+                    <Column :colspan="4">
+                      <template #footer>
+                        <div class="text-left type-container">
+                          <span class="mr-2">Net Weight Of Merchandise</span>
+                          <span class="mr-2">{{ getNetWeight() }}</span>
+                          <span>gms.</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column :colspan="1"></Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>รวม</span>
+                        </div>
+                      </template>
+                    </Column>
+
+                    <!-- <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getGoldWeight() }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getDiamondWeight() }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getGemWeight() }}</span>
+                        </div>
+                      </template>
+                    </Column> -->
+
+                    <Column :colspan="2">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getSumAppraisalPrice() }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column :colspan="2">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getSumDiscountPrice() }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column :colspan="2">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getSumConvertedPrice() }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getSumQty() }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ getSumTotalConvertedPrice() }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+
+                  <!-- ส่วนลดพิเศษ -->
+                  <Row>
+                    <Column :colspan="13">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>ส่วนลดพิเศษ:</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right qty-container">
+                          <input
+                            v-model.number="specialDiscount"
+                            type="number"
+                            class="form-control text-right bg-input input-bg"
+                            min="0"
+                            step="0.01"
+                            style="background-color: #b5dad4; width: 100%"
+                            @input="$forceUpdate()"
+                          />
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+
+                  <!-- ส่วนเพิ่มพิเศษ -->
+                  <Row>
+                    <Column :colspan="13">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>ส่วนเพิ่มพิเศษ:</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right qty-container">
+                          <input
+                            v-model.number="specialAddition"
+                            type="number"
+                            class="form-control text-right bg-input input-bg"
+                            min="0"
+                            step="0.01"
+                            style="background-color: #b5dad4; width: 100%"
+                            @input="$forceUpdate()"
+                          />
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+
+                  <!-- ยอดรวมหลังปรับ -->
+                  <Row>
+                    <Column :colspan="13">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span class="font-weight-bold">ยอดรวมหลังปรับ:</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span class="font-weight-bold">{{
+                            formatCurrency(totalAfterDiscountAndAddition)
+                          }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+
+                  <!-- Freight & Insurance -->
+                  <Row>
+                    <Column :colspan="13">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>Freight & Insurance:</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right qty-container">
+                          <input
+                            v-model.number="freightAndInsurance"
+                            type="number"
+                            class="form-control text-right bg-input input-bg"
+                            min="0"
+                            step="0.01"
+                            style="background-color: #b5dad4; width: 100%"
+                            @input="$forceUpdate()"
+                          />
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+
+                  <!-- ยอดรวมสุดท้าย -->
+                  <Row>
+                    <Column :colspan="13">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <h6 class="mb-0 text-primary">ยอดรวม Invoice:</h6>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <h6 class="mb-0 font-weight-bold text-primary">
+                            {{ formatCurrency(grandTotal) }}
+                          </h6>
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+                </ColumnGroup>
               </DataTable>
 
-              <!-- Summary -->
+              <!-- Payment and Deposit Information -->
               <div class="mt-3">
                 <div class="filter-container-search p-3">
-                  <div class="title-text-lg mb-3">สรุปข้อมูล Invoice</div>
+                  <div class="title-text-lg mb-3">ข้อมูลการชำระเงินและมัดจำ</div>
 
-                  <!-- Summary Sections using existing styles -->
                   <div class="row">
-                    <div class="col-md-6">
-                      <div class="summary-section">
-                        <h6>รายการสินค้า</h6>
-                        <div class="summary-item">
-                          <span>รายการที่เลือก:</span>
-                          <span class="font-weight-bold text-primary"
-                            >{{ selectedItemsCount }} รายการ</span
-                          >
-                        </div>
-                        <div class="summary-item">
-                          <span>ยืนยันแล้ว:</span>
-                          <span class="font-weight-bold text-success"
-                            >{{ confirmedItemsCount }} รายการ</span
-                          >
-                        </div>
+                    <!-- ราคามัดจำ -->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label class="title-text">ราคามัดจำ</label>
+                        <input
+                          v-model.number="depositAmount"
+                          type="number"
+                          class="form-control"
+                          min="0"
+                          step="0.01"
+                          :max="grandTotal"
+                          placeholder="0.00"
+                        />
+                        <small class="text-muted"
+                          >สูงสุด: {{ formatPriceWithCurrency(grandTotal) }}</small
+                        >
                       </div>
                     </div>
 
-                    <div class="col-md-6">
-                      <div class="summary-section">
-                        <h6>ยอดเงิน Invoice</h6>
-                        <div class="summary-item">
-                          <span>ยอดรวมที่เลือก:</span>
-                          <span class="font-weight-bold text-warning">{{
-                            formatPriceWithCurrency(totalSelectedAmount)
-                          }}</span>
-                        </div>
-                        <div class="summary-item border-top pt-2 mt-2">
-                          <span class="h6">ยอดรวม Invoice:</span>
-                          <span class="h6 font-weight-bold text-main">{{
-                            formatPriceWithCurrency(totalSelectedAmount)
-                          }}</span>
+                    <!-- วิธีการชำระเงิน -->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label class="title-text">วิธีการชำระเงิน</label>
+                        <Dropdown
+                          v-model="paymentMethod"
+                          :options="paymentMethodOptions"
+                          optionLabel="name"
+                          optionValue="value"
+                          placeholder="เลือกวิธีการชำระเงิน"
+                          class="w-100"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- ระยะเวลาการชำระเงิน (วัน) -->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label class="title-text">ระยะเวลาการชำระเงิน (วัน)</label>
+                        <input
+                          v-model.number="paymentDays"
+                          type="number"
+                          class="form-control"
+                          min="0"
+                          step="1"
+                          placeholder="0"
+                          :disabled="paymentMethod === 'cash'"
+                        />
+                        <small class="text-muted" v-if="paymentMethod === 'cash'">ชำระทันที</small>
+                        <small class="text-muted" v-else-if="paymentDays > 0"
+                          >ครบกำหนด: {{ calculateDueDate() }}</small
+                        >
+                      </div>
+                    </div>
+
+                    <!-- ยอดคงเหลือที่ต้องชำระ -->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label class="title-text">ยอดคงเหลือที่ต้องชำระ</label>
+                        <div class="form-control bg-light font-weight-bold text-primary">
+                          {{ formatPriceWithCurrency(grandTotal - (depositAmount || 0)) }}
                         </div>
                       </div>
                     </div>
@@ -328,6 +692,9 @@
 import { defineAsyncComponent } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import ColumnGroup from 'primevue/columngroup'
+import Row from 'primevue/row'
+import Dropdown from 'primevue/dropdown'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { warning, error, success } from '@/services/alert/sweetAlerts.js'
@@ -341,6 +708,9 @@ export default {
     modal,
     DataTable,
     Column,
+    ColumnGroup,
+    Row,
+    Dropdown,
     imagePreview
   },
 
@@ -365,7 +735,22 @@ export default {
     return {
       loading: false,
       selectedItems: [],
-      invoiceStore: useInvoiceApiStore()
+      invoiceStore: useInvoiceApiStore(),
+      // Additional invoice fields
+      specialDiscount: 0, // ส่วนลดพิเศษ
+      specialAddition: 0, // ส่วนเพิ่มพิเศษ
+      freightAndInsurance: 0, // ค่าขนส่งและประกันภัย
+      depositAmount: 0, // ราคามัดจำ
+      paymentMethod: 'cash', // วิธีการชำระเงิน
+      paymentDays: 0, // ระยะเวลาการชำระเงิน (วัน)
+      // Payment method options for Dropdown
+      paymentMethodOptions: [
+        { name: 'เงินสด (Cash)', value: 'cash' },
+        { name: 'โอนเงิน (Transfer)', value: 'transfer' },
+        { name: 'เช็ค (Cheque)', value: 'cheque' },
+        { name: 'บัตรเครดิต (Credit Card)', value: 'credit_card' },
+        { name: 'เครดิต (Credit Term)', value: 'credit_term' }
+      ]
     }
   },
 
@@ -374,9 +759,9 @@ export default {
     availableItems() {
       console.log(
         'Available items for invoice:',
-        this.stockItems.filter((item) => item.isConfirmed && !item.invoice)
+        this.stockItems.filter((item) => item.isConfirm && !item.invoice)
       )
-      return this.stockItems.filter((item) => item.isConfirmed && !item.invoice)
+      return this.stockItems.filter((item) => item.isConfirm && !item.invoice)
     },
 
     isAllSelected() {
@@ -390,17 +775,24 @@ export default {
     },
 
     confirmedItemsCount() {
-      return this.stockItems.filter((item) => item.isConfirmed).length
+      return this.stockItems.filter((item) => item.isConfirm).length
     },
 
     totalSelectedAmount() {
-      const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
-      )
+      return Number(this.getSumTotalConvertedPrice() || 0)
+    },
 
-      return selectedStockItems.reduce((total, item) => {
-        return total + this.getTotalConvertedPrice(item)
-      }, 0)
+    // ยอดรวมหลังหักส่วนลดพิเศษและเพิ่มส่วนพิเศษ
+    totalAfterDiscountAndAddition() {
+      const baseTotal = this.totalSelectedAmount
+      const afterDiscount = baseTotal - Number(this.specialDiscount || 0)
+      const afterAddition = afterDiscount + Number(this.specialAddition || 0)
+      return afterAddition
+    },
+
+    // ยอดรวมสุดท้ายรวมค่าขนส่ง
+    grandTotal() {
+      return this.totalAfterDiscountAndAddition + Number(this.freightAndInsurance || 0)
     }
   },
 
@@ -433,7 +825,7 @@ export default {
 
     toggleItemSelection(item) {
       // Don't allow selection of unconfirmed items
-      if (!item.isConfirmed) {
+      if (!item.isConfirm) {
         return
       }
 
@@ -511,6 +903,150 @@ export default {
       }
     },
 
+    // คำนวณวันครบกำหนดชำระเงิน
+    calculateDueDate() {
+      if (!this.paymentDays || this.paymentDays <= 0) return '-'
+      const dueDate = new Date()
+      dueDate.setDate(dueDate.getDate() + this.paymentDays)
+      return this.formatDate(dueDate)
+    },
+
+    // Footer calculation methods - matching sale-order-view.vue
+    getNetWeight() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      return selectedStockItems
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials.reduce((matSum, mat) => {
+              return matSum + (mat.weight || 0)
+            }, 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    getGoldWeight() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      return selectedStockItems
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials
+              .filter((m) => m.type === 'Gold')
+              .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    getDiamondWeight() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      return selectedStockItems
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials
+              .filter((m) => m.type === 'Diamond')
+              .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    getGemWeight() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      return selectedStockItems
+        .reduce((sum, item) => {
+          if (!item.materials) return sum
+          return (
+            sum +
+            item.materials
+              .filter((m) => m.type === 'Gem')
+              .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
+          )
+        }, 0)
+        .toFixed(2)
+    },
+
+    getSumAppraisalPrice() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
+
+      const total = selectedStockItems.reduce((sum, item) => {
+        const price = this.getAppraisalPrice(item)
+        return sum + (Number(price) || 0)
+      }, 0)
+
+      return Number(total).toFixed(2)
+    },
+
+    getSumDiscountPrice() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
+
+      const total = selectedStockItems.reduce((sum, item) => {
+        const price = this.getDiscountedPrice(item)
+        return sum + (Number(price) || 0)
+      }, 0)
+
+      return Number(total).toFixed(2)
+    },
+
+    getSumConvertedPrice() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
+
+      const total = selectedStockItems.reduce((sum, item) => {
+        const price = this.getConvertedPrice(item)
+        return sum + (Number(price) || 0)
+      }, 0)
+
+      return Number(total).toFixed(2)
+    },
+
+    getSumQty() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      if (!selectedStockItems || selectedStockItems.length === 0) return 0
+
+      return selectedStockItems.reduce((sum, item) => {
+        return sum + (Number(item.qty) || 0)
+      }, 0)
+    },
+
+    getSumTotalConvertedPrice() {
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
+      if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
+
+      const total = selectedStockItems.reduce((sum, item) => {
+        const price = this.getTotalConvertedPrice(item)
+        return sum + (Number(price) || 0)
+      }, 0)
+
+      return Number(total).toFixed(2)
+    },
+
     // Helper method to get payment ID from payment terms value
     getPaymentId(paymentTerms) {
       const paymentMapping = {
@@ -561,9 +1097,15 @@ export default {
           deliveryDate: this.saleOrderData.expectedDeliveryDate || this.saleOrderData.deliveryDate,
           depositPercent:
             this.saleOrderData.depositPercentage || this.saleOrderData.depositPercent || 0,
+          depositAmount: this.depositAmount || 0, // ราคามัดจำ
           discount: this.saleOrderData.discountPercent || 0,
+          specialDiscount: this.specialDiscount || 0, // ส่วนลดพิเศษ
+          specialAddition: this.specialAddition || 0, // ส่วนเพิ่มพิเศษ
+          freight: this.freightAndInsurance || 0, // Freight & Insurance
           goldRate: this.saleOrderData.goldPerOz || 0,
           markup: this.saleOrderData.markup || 0,
+          paymentMethod: this.paymentMethod, // วิธีการชำระเงิน
+          paymentDays: this.paymentDays || 0, // ระยะเวลาการชำระเงิน
           paymentName: this.saleOrderData.paymentTerms,
           payment: this.getPaymentId(this.saleOrderData.paymentTerms),
           priority: this.saleOrderData.priority || 'normal',
@@ -610,22 +1152,22 @@ export default {
         } else {
           throw new Error('ไม่ได้รับข้อมูลการตอบกลับจาก API')
         }
-      } catch (error) {
-        console.error('Error generating invoice:', error)
+      } catch (err) {
+        console.error('Error generating invoice:', err)
 
         // Extract error message from API response
         let errorMessage = 'ไม่สามารถสร้าง Invoice ได้'
 
-        if (error.response && error.response.data) {
-          if (error.response.data.message) {
-            errorMessage = error.response.data.message
-          } else if (error.response.data.error) {
-            errorMessage = error.response.data.error
-          } else if (typeof error.response.data === 'string') {
-            errorMessage = error.response.data
+        if (err.response && err.response.data) {
+          if (err.response.data.message) {
+            errorMessage = err.response.data.message
+          } else if (err.response.data.error) {
+            errorMessage = err.response.data.error
+          } else if (typeof err.response.data === 'string') {
+            errorMessage = err.response.data
           }
-        } else if (error.message) {
-          errorMessage = error.message
+        } else if (err.message) {
+          errorMessage = err.message
         }
 
         error(errorMessage, 'เกิดข้อผิดพลาดในการสร้าง Invoice')
@@ -711,6 +1253,20 @@ export default {
   span:last-child {
     text-align: right;
   }
+}
+
+.type-container {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--base-font-color);
+  padding: 5px;
+}
+
+.qty-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 5px;
 }
 
 // Responsive สำหรับมือถือ

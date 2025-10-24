@@ -1,6 +1,6 @@
 <template>
   <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" :width="'95%'" :fitHeight="true">
+    <modal :showModal="isShowModal" @closeModal="closeModal" :width="'80%'">
       <template v-slot:content>
         <!-- Sale Order Information -->
         <div class="mb-3">
@@ -109,7 +109,7 @@
                   </label>
                 </div>
                 <div>
-                  <button
+                  <!-- <button
                     class="btn btn-outline-main btn-sm mr-2"
                     @click="selectConfirmedOnly"
                     :disabled="confirmedItemsCount === 0"
@@ -122,7 +122,7 @@
                     :disabled="selectableItems.length === 0"
                   >
                     <i class="bi bi-clock mr-1"></i>แสดงรอยืนยัน
-                  </button>
+                  </button> -->
                 </div>
               </div>
 
@@ -144,7 +144,7 @@
                       <Checkbox
                         :modelValue="selectedItems.includes(slotProps.data.id)"
                         @update:modelValue="toggleItemSelection(slotProps.data)"
-                        :disabled="slotProps.data.isConfirmed"
+                        :disabled="slotProps.data.isConfirm"
                         :binary="true"
                       />
                     </div>
@@ -171,26 +171,26 @@
                     </div>
                   </template>
                 </Column>
-                <Column field="isConfirmed" header="สถานะ" style="width: 100px">
+                <Column field="isConfirm" header="สถานะ" style="width: 100px">
                   <template #body="slotProps">
                     <div class="text-center">
                       <span
                         :class="[
                           'badge',
-                          slotProps.data.isConfirmed ? 'box-status-success' : 'box-status-show'
+                          slotProps.data.isConfirm ? 'box-status-success' : 'box-status-show'
                         ]"
                       >
                         <i
                           :class="
-                            slotProps.data.isConfirmed
+                            slotProps.data.isConfirm
                               ? 'bi bi-check-circle-fill mr-1'
                               : 'bi bi-clock-fill mr-1'
                           "
                         ></i>
-                        {{ slotProps.data.isConfirmed ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
+                        {{ slotProps.data.isConfirm ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
                       </span>
                       <div
-                        v-if="slotProps.data.isConfirmed && slotProps.data.confirmedDate"
+                        v-if="slotProps.data.isConfirm && slotProps.data.confirmedDate"
                         class="text-muted"
                         style="font-size: 0.75rem"
                       >
@@ -320,7 +320,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="btn-submit-container mt-4 pb-2">
+        <div class="btn-submit-container mt-4 mb-2">
           <div class="d-flex justify-content-end">
             <button
               class="btn btn-green mr-2"
@@ -399,11 +399,13 @@ export default {
   computed: {
     // Only show unconfirmed items in the selection
     selectableItems() {
-      return this.stockItems.filter((item) => !item.isConfirmed)
+      return this.stockItems.filter((item) => !item.isConfirm && item.isRemainProduct === true)
     },
 
     filteredStockItems() {
-      return this.stockItems
+      return this.stockItems.filter(
+        (item) => item.isConfirm === false && item.isRemainProduct === true
+      )
     },
 
     isAllSelected() {
@@ -417,7 +419,7 @@ export default {
     },
 
     confirmedItemsCount() {
-      return this.stockItems.filter((item) => item.isConfirmed).length
+      return this.stockItems.filter((item) => item.isConfirm).length
     },
 
     totalSelectedAmount() {
@@ -466,7 +468,7 @@ export default {
 
     toggleItemSelection(item) {
       // Don't allow selection of already confirmed items
-      if (item.isConfirmed) {
+      if (item.isConfirm) {
         return
       }
 
@@ -567,61 +569,54 @@ export default {
         return
       }
 
-      try {
-        //this.loading = true
+      //this.loading = true
 
-        // Emit save-draft event to parent to save data before confirming
-        //this.$emit('save-draft')
+      // Emit save-draft event to parent to save data before confirming
+      //this.$emit('save-draft')
 
-        // Wait a moment for save to complete
-        await new Promise((resolve) => setTimeout(resolve, 500))
+      // Wait a moment for save to complete
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
-        // Get selected items data
-        const selectedStockItems = this.stockItems.filter((item) =>
-          this.selectedItems.includes(item.id)
-        )
+      // Get selected items data
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
 
-        // Prepare data for API
-        const confirmData = {
-          soNumber: this.saleOrderData.number,
-          stockItems: selectedStockItems.map((item) => ({
-            id: item.id,
-            stockNumber: item.stockNumber,
-            productNumber: item.productNumber,
-            qty: item.qty,
-            appraisalPrice: item.appraisalPrice,
-            isConfirmed: true,
-            confirmedAt: new Date().toISOString()
-          }))
-        }
+      // Prepare data for API
+      const confirmData = {
+        soNumber: this.saleOrderData.number,
+        stockItems: selectedStockItems.map((item) => ({
+          id: item.id,
+          stockNumber: item.stockNumber,
+          productNumber: item.productNumber,
+          qty: item.qty,
+          appraisalPrice: item.appraisalPrice,
+          isConfirm: true,
+          confirmedAt: new Date().toISOString()
+        }))
+      }
 
-        console.log('Confirming stock items:', confirmData)
+      console.log('Confirming stock items:', confirmData)
 
-        // Call API to confirm items
-        const saleOrderStore = usrSaleOrderApiStore()
-        const response = await saleOrderStore.confirmStockItems(confirmData)
+      // Call API to confirm items
+      const saleOrderStore = usrSaleOrderApiStore()
+      const response = await saleOrderStore.confirmStockItems(confirmData)
 
-        console.log('Confirming stock items:', response)
-        if (response && response.success) {
-          // Emit event to parent to refresh data FIRST
-          this.$emit('items-confirmed', {
-            confirmedItems: selectedStockItems,
-            totalConfirmed: this.selectedItemsCount
-          })
+      console.log('Confirming stock items:', response)
+      if (response && response.success) {
+        // Emit event to parent to refresh data FIRST
+        this.$emit('items-confirmed', {
+          confirmedItems: selectedStockItems,
+          totalConfirmed: this.selectedItemsCount
+        })
 
-          // Wait for parent to refresh data before showing success and closing modal
-          await new Promise((resolve) => setTimeout(resolve, 1000))
+        // Wait for parent to refresh data before showing success and closing modal
+        await new Promise((resolve) => setTimeout(resolve, 1000))
 
-          // Show success message
-          success('ยืนยันการขายสำเร็จ', `ยืนยันสินค้า ${this.selectedItemsCount} รายการเรียบร้อย`)
+        // Show success message
+        success('ยืนยันการขายสำเร็จ', `ยืนยันสินค้า ${this.selectedItemsCount} รายการเรียบร้อย`)
 
-          this.closeModal()
-        }
-      } catch (err) {
-        console.error('Error confirming stock items:', err)
-        error('เกิดข้อผิดพลาด', 'ไม่สามารถยืนยันการขายได้')
-      } finally {
-        this.loading = false
+        this.closeModal()
       }
     },
 
