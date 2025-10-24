@@ -32,105 +32,106 @@
 
     <!-- Invoice Detail Content -->
     <div v-else-if="invoiceData && invoiceData.invoiceNumber">
-      <!-- Invoice Header Information -->
+      <!-- Invoice and Customer Information -->
       <div class="card-container mb-3">
         <div class="card-header">
-          <h6 class="mb-0">ข้อมูล Invoice</h6>
+          <h6 class="mb-0"><i class="bi bi-file-earmark-text mr-2"></i>ข้อมูล Invoice และลูกค้า</h6>
         </div>
         <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">เลขที่ Invoice:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.invoiceNumber || '-' }}</p>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">เลขที่ SO:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">
-                    {{ invoiceData.soNumber || '-' }}
+          <!-- Invoice Information Section -->
+          <div class="info-section mb-4">
+            <h6 class="section-title mb-3"><i class="bi bi-receipt mr-2"></i>ข้อมูล Invoice</h6>
+            <div class="row">
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">เลขที่ Invoice</label>
+                  <p class="info-value font-weight-bold text-primary">
+                    {{ invoiceData.invoiceNumber || '-' }}
                   </p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">วันที่สร้าง:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ formatDate(invoiceData.createDate) }}</p>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">เลขที่ SO</label>
+                  <p class="info-value">{{ invoiceData.soNumber || '-' }}</p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">วันกำหนดส่ง:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ formatDate(invoiceData.deliveryDate) }}</p>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">วันที่สร้าง</label>
+                  <p class="info-value">{{ formatDate(invoiceData.createDate) }}</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">วันกำหนดส่ง</label>
+                  <p class="info-value">{{ formatDate(invoiceData.deliveryDate) }}</p>
                 </div>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">สถานะ:</label>
-                <div class="col-sm-8">
-                  <span :class="getStatusBadgeClass(invoiceData.statusName)">
-                    {{ invoiceData.statusName || '-' }}
-                  </span>
+            <div class="row mt-3">
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">สถานะ</label>
+                  <p class="info-value">
+                    <span :class="getStatusBadgeClass(invoiceData.statusName)">
+                      {{ invoiceData.statusName || '-' }}
+                    </span>
+                  </p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">เงื่อนไขการชำระ:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.paymentName || '-' }}</p>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">ผู้สร้าง</label>
+                  <p class="info-value">{{ invoiceData.createBy || '-' }}</p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">มัดจำ (%):</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.depositPercent || 0 }}%</p>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">สกุลเงิน</label>
+                  <p class="info-value">
+                    {{ invoiceData.currencyUnit || 'THB' }} ({{
+                      formatNumber(invoiceData.currencyRate)
+                    }})
+                  </p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">ผู้สร้าง:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.createBy || '-' }}</p>
-                </div>
-              </div>
+              <div class="col-md-3"></div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Customer Information -->
-      <div class="card-container mb-3">
-        <div class="card-header">
-          <h6 class="mb-0">ข้อมูลลูกค้า</h6>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">ชื่อลูกค้า:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.customerName || '-' }}</p>
+          <!-- Customer Information Section -->
+          <div class="info-section">
+            <h6 class="section-title mb-3"><i class="bi bi-person mr-2"></i>ข้อมูลลูกค้า</h6>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="info-item">
+                  <label class="info-label">ชื่อลูกค้า</label>
+                  <p class="info-value font-weight-bold">{{ invoiceData.customerName || '-' }}</p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">ที่อยู่:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.customerAddress || '-' }}</p>
+              <div class="col-md-4">
+                <div class="info-item">
+                  <label class="info-label">เบอร์โทร</label>
+                  <p class="info-value">
+                    <i class="bi bi-telephone mr-1"></i>{{ invoiceData.customerTel || '-' }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item">
+                  <label class="info-label">อีเมล</label>
+                  <p class="info-value">
+                    <i class="bi bi-envelope mr-1"></i>{{ invoiceData.customerEmail || '-' }}
+                  </p>
                 </div>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">เบอร์โทร:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.customerTel || '-' }}</p>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-4 col-form-label font-weight-bold">อีเมล:</label>
-                <div class="col-sm-8">
-                  <p class="form-control-plaintext">{{ invoiceData.customerEmail || '-' }}</p>
+            <div class="row mt-3">
+              <div class="col-md-12">
+                <div class="info-item">
+                  <label class="info-label">ที่อยู่</label>
+                  <p class="info-value">{{ invoiceData.customerAddress || '-' }}</p>
                 </div>
               </div>
             </div>
@@ -646,120 +647,111 @@
         </div>
       </div>
 
-      <!-- Payment and Deposit Information -->
+      <!-- Payment and Financial Summary -->
       <div class="card-container mb-3">
         <div class="card-header">
-          <h6 class="mb-0">ข้อมูลการชำระเงินและมัดจำ</h6>
+          <h6 class="mb-0"><i class="bi bi-credit-card mr-2"></i>ข้อมูลการชำระเงินและสรุปยอด</h6>
         </div>
         <div class="card-body">
-          <div class="row">
-            <!-- ราคามัดจำ -->
-            <div class="col-md-3">
-              <div class="form-group row">
-                <label class="col-sm-12 col-form-label font-weight-bold">ราคามัดจำ:</label>
-                <div class="col-sm-12">
-                  <p class="form-control-plaintext">
+          <!-- Payment Information Section -->
+          <div class="info-section mb-4">
+            <h6 class="section-title mb-3"><i class="bi bi-wallet2 mr-2"></i>ข้อมูลการชำระเงิน</h6>
+            <div class="row">
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">วิธีการชำระเงิน</label>
+                  <p class="info-value">
+                    <i class="bi bi-cash-stack mr-2"></i>{{ invoiceData.paymentName || '-' }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">ระยะเวลาชำระ (วัน)</label>
+                  <p class="info-value">
+                    <i class="bi bi-calendar-event mr-2"></i>{{ invoiceData.paymentDay || 0 }} วัน
+                    <span v-if="invoiceData.paymentDay > 0" class="text-muted ml-2"
+                      >({{ calculateDueDate() }})</span
+                    >
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">ราคามัดจำ</label>
+                  <p class="info-value font-weight-bold text-success">
                     {{ formatPriceWithCurrency(invoiceData.deposit || 0) }}
                   </p>
                 </div>
               </div>
-            </div>
-
-            <!-- วิธีการชำระเงิน -->
-            <div class="col-md-3">
-              <div class="form-group row">
-                <label class="col-sm-12 col-form-label font-weight-bold">วิธีการชำระเงิน:</label>
-                <div class="col-sm-12">
-                  <p class="form-control-plaintext">
-                    {{ invoiceData.paymentName || '-' }}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- ระยะเวลาการชำระเงิน (วัน) -->
-            <div class="col-md-3">
-              <div class="form-group row">
-                <label class="col-sm-12 col-form-label font-weight-bold"
-                  >ระยะเวลาการชำระเงิน (วัน):</label
-                >
-                <div class="col-sm-12">
-                  <p class="form-control-plaintext">
-                    {{ invoiceData.paymentDay || 0 }} วัน
-                    <span v-if="invoiceData.paymentDay > 0" class="text-muted">
-                      (ครบกำหนด: {{ calculateDueDate() }})
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- ยอดคงเหลือที่ต้องชำระ -->
-            <div class="col-md-3">
-              <div class="form-group row">
-                <label class="col-sm-12 col-form-label font-weight-bold"
-                  >ยอดคงเหลือที่ต้องชำระ:</label
-                >
-                <div class="col-sm-12">
-                  <p class="form-control-plaintext font-weight-bold text-primary">
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
+                  <p class="info-value font-weight-bold text-danger">
                     {{ formatPriceWithCurrency(grandTotal - (invoiceData.deposit || 0)) }}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Price Summary -->
-      <div class="card-container mb-3">
-        <div class="card-header">
-          <h6 class="mb-0">สรุปยอด</h6>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 offset-md-6">
-              <div class="form-group row">
-                <label class="col-sm-6 col-form-label font-weight-bold">หน่วยเงิน:</label>
-                <div class="col-sm-6 text-right">
-                  <p class="form-control-plaintext">{{ invoiceData.currencyUnit || 'THB' }}</p>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-6 col-form-label font-weight-bold">อัตราแลกเปลี่ยน:</label>
-                <div class="col-sm-6 text-right">
-                  <p class="form-control-plaintext">{{ formatNumber(invoiceData.currencyRate) }}</p>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-6 col-form-label font-weight-bold">ส่วนลดพิเศษ:</label>
-                <div class="col-sm-6 text-right">
-                  <p class="form-control-plaintext">
-                    {{ formatNumber(invoiceData.specialDiscount) }}
+          <!-- Financial Summary Section -->
+          <div class="info-section">
+            <h6 class="section-title mb-3"><i class="bi bi-calculator mr-2"></i>สรุปยอดเงิน</h6>
+            <div class="row">
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">สกุลเงิน</label>
+                  <p class="info-value">
+                    {{ invoiceData.currencyUnit || 'THB' }}
                   </p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-6 col-form-label font-weight-bold">ส่วนเพิ่มพิเศษ:</label>
-                <div class="col-sm-6 text-right">
-                  <p class="form-control-plaintext">
-                    {{ formatNumber(invoiceData.specialAddition) }}
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">อัตราแลกเปลี่ยน</label>
+                  <p class="info-value">{{ formatNumber(invoiceData.currencyRate) }}</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">ส่วนลดพิเศษ</label>
+                  <p class="info-value text-danger">
+                    -{{ formatNumber(invoiceData.specialDiscount || 0) }}
                   </p>
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-6 col-form-label font-weight-bold">Freight & Insurance:</label>
-                <div class="col-sm-6 text-right">
-                  <p class="form-control-plaintext">
-                    {{ formatNumber(invoiceData.freightAndInsurance) }}
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">ส่วนเพิ่มพิเศษ</label>
+                  <p class="info-value text-success">
+                    +{{ formatNumber(invoiceData.specialAddition || 0) }}
                   </p>
                 </div>
               </div>
-              <div class="form-group row border-top pt-2">
-                <label class="col-sm-6 col-form-label font-weight-bold">ยอดรวม Invoice:</label>
-                <div class="col-sm-6 text-right">
-                  <p class="form-control-plaintext font-weight-bold text-success">
-                    {{ formatNumber(grandTotal) }}
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label class="info-label">Freight & Insurance</label>
+                  <p class="info-value">
+                    {{ formatNumber(invoiceData.freightAndInsurance || 0) }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="info-item">
+                  <label class="info-label">ยอดรวมหลังปรับ</label>
+                  <p class="info-value font-weight-bold">
+                    {{ formatNumber(totalAfterDiscountAndAddition) }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="info-item highlight-total">
+                  <label class="info-label">ยอดรวม Invoice</label>
+                  <p class="info-value font-weight-bold text-primary">
+                    <i class="bi bi-receipt mr-2"></i>{{ formatPriceWithCurrency(grandTotal) }}
                   </p>
                 </div>
               </div>
@@ -922,7 +914,7 @@ export default {
       }
     },
 
-    loadSaleOrderData(saleOrderData, invoiceData) {
+    loadSaleOrderData(saleOrderData) {
       if (!saleOrderData) return
 
       ////console.log('Loading sale order data:', saleOrderData)
@@ -1471,5 +1463,59 @@ export default {
   justify-content: flex-end;
   align-items: center;
   margin-right: 5px;
+}
+
+// Info section styles
+.info-section {
+  position: relative;
+  padding: 1rem 0;
+
+  &:not(:last-child) {
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .section-title {
+    color: var(--base-font-color);
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    i {
+      color: var(--base-font-color);
+    }
+  }
+}
+
+.info-item {
+  ฝฝmargin-bottom: 0.5rem;
+
+  .info-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+
+  .info-value {
+    font-size: 0.95rem;
+    color: #2c3e50;
+    margin-bottom: 0;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+
+    i {
+      color: var(--base-font-color);
+      font-size: 0.9rem;
+    }
+  }
 }
 </style>
