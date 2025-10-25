@@ -46,13 +46,13 @@ export class InvoicePdfBuilder {
 
   calculateSubtotal() {
     if (!this.data || !Array.isArray(this.data)) return 0
-    
+
     let total = 0
     this.data.forEach(item => {
       const price = Number(item.appraisalPrice) || 0
       const qty = Number(item.qty) || 0
-      // Apply discount if any
-      const discountPercent = this.saleOrderData.discountPercent || 0
+      // Apply item-level discount
+      const discountPercent = Number(item.discountPercent) || 0
       const priceAfterDiscount = price * (1 - discountPercent / 100)
       // Convert currency
       const convertedPrice = priceAfterDiscount / this.currencyRate
@@ -367,7 +367,7 @@ export class InvoicePdfBuilder {
       // let pageTotal = 0
       // pageItems.forEach((item) => {
       //   const appraisalPrice = Number(item.appraisalPrice) || 0
-      //   const discountPercent = this.saleOrderData.discountPercent || 0
+      //   const discountPercent = Number(item.discountPercent) || 0
       //   const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
       //   const convertedPrice = priceAfterDiscount / this.currencyRate
       //   const totalConverted = convertedPrice * (item.qty || 0)
@@ -502,15 +502,16 @@ export class InvoicePdfBuilder {
     
     items.forEach((item, index) => {
       const actualIndex = pageNum * 10 + index
-      
+
       // คำนวณราคาและจำนวน
       const appraisalPrice = Number(item.appraisalPrice) || 0
       const qty = Number(item.qty) || 0
-      const discountPercent = this.saleOrderData.discountPercent || 0
+      // Use item-level discount percent
+      const discountPercent = Number(item.discountPercent) || 0
       const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
       const convertedPrice = priceAfterDiscount / this.currencyRate
       const amount = convertedPrice * qty
-      
+
       sumQty += qty
       sumAmount += amount
 

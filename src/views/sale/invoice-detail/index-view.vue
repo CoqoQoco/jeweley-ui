@@ -6,17 +6,37 @@
         <h5 class="mb-0">
           <i class="bi bi-file-earmark-text mr-2"></i>
           รายละเอียด Invoice
+          <span v-if="currentViewingVersion" class="badge badge-warning ml-2">
+            <i class="bi bi-eye mr-1"></i>
+            กำลังดู: {{ currentViewingVersion }}
+          </span>
         </h5>
         <div>
-          <button class="btn btn-success btn-sm mr-2" @click="reprintPDF">
+          <button
+            v-if="currentViewingVersion"
+            class="btn btn-info btn-sm mr-2"
+            @click="restoreOriginalView"
+          >
+            <i class="bi bi-arrow-left mr-1"></i>
+            กลับไปดูต้นฉบับ
+          </button>
+          <button class="btn btn-green btn-sm mr-2" @click="openVersionModal" style="width: 120px">
+            <i class="bi bi-plus-circle mr-1"></i>
+            เพิ่ม Version
+          </button>
+          <button class="btn btn-green btn-sm mr-2" @click="reprintPDF" style="width: 120px">
             <i class="bi bi-printer mr-1"></i>
-            Reprint PDF
+            พิมพ์เอกสาร
           </button>
-          <button class="btn btn-danger btn-sm mr-2" @click="confirmReverseInvoice">
+          <button
+            class="btn btn-red btn-sm mr-2"
+            @click="confirmReverseInvoice"
+            style="width: 120px"
+          >
             <i class="bi bi-arrow-counterclockwise mr-1"></i>
-            Reverse Invoice
+            Reverse
           </button>
-          <button class="btn btn-secondary btn-sm" @click="goBack">
+          <button class="btn btn-secondary btn-sm" @click="goBack" style="width: 120px">
             <i class="bi bi-arrow-left mr-1"></i>
             ย้อนกลับ
           </button>
@@ -107,7 +127,9 @@
               <div class="col-md-4">
                 <div class="info-item">
                   <label class="info-label">ชื่อลูกค้า</label>
-                  <p class="info-value font-weight-bold">{{ invoiceData.customerName || '-' }}</p>
+                  <p class="info-value font-weight-bold">
+                    {{ invoiceData.customerName || '-' }}
+                  </p>
                 </div>
               </div>
               <div class="col-md-4">
@@ -647,134 +669,205 @@
         </div>
       </div>
 
-      <!-- Payment and Financial Summary -->
-      <div class="card-container mb-3">
-        <div class="card-header">
-          <h6 class="mb-0"><i class="bi bi-credit-card mr-2"></i>ข้อมูลการชำระเงินและสรุปยอด</h6>
-        </div>
-        <div class="card-body">
-          <!-- Payment Information Section -->
-          <div class="info-section mb-4">
-            <h6 class="section-title mb-3"><i class="bi bi-wallet2 mr-2"></i>ข้อมูลการชำระเงิน</h6>
-            <div class="row">
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">วิธีการชำระเงิน</label>
-                  <p class="info-value">
-                    <i class="bi bi-cash-stack mr-2"></i>{{ invoiceData.paymentName || '-' }}
-                  </p>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">ระยะเวลาชำระ (วัน)</label>
-                  <p class="info-value">
-                    <i class="bi bi-calendar-event mr-2"></i>{{ invoiceData.paymentDay || 0 }} วัน
-                    <span v-if="invoiceData.paymentDay > 0" class="text-muted ml-2"
-                      >({{ calculateDueDate() }})</span
-                    >
-                  </p>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">ราคามัดจำ</label>
-                  <p class="info-value font-weight-bold text-success">
-                    {{ formatPriceWithCurrency(invoiceData.deposit || 0) }}
-                  </p>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
-                  <p class="info-value font-weight-bold text-danger">
-                    {{ formatPriceWithCurrency(grandTotal - (invoiceData.deposit || 0)) }}
-                  </p>
-                </div>
-              </div>
+      <!-- Payment and Financial Summary with Version List -->
+      <div class="form-content-payment-container">
+        <!-- Invoice Version List (3/12) -->
+        <div class="">
+          <div class="card-container mb-3">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="bi bi-clock-history mr-2"></i>Invoice Versions</h6>
             </div>
-          </div>
-
-          <!-- Financial Summary Section -->
-          <div class="info-section">
-            <h6 class="section-title mb-3"><i class="bi bi-calculator mr-2"></i>สรุปยอดเงิน</h6>
-            <div class="row">
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">สกุลเงิน</label>
-                  <p class="info-value">
-                    {{ invoiceData.currencyUnit || 'THB' }}
-                  </p>
-                </div>
+            <div class="card-body p-2">
+              <div v-if="versionList.length === 0" class="text-center text-muted py-3">
+                <i class="bi bi-inbox" style="font-size: 2rem"></i>
+                <p class="mb-0 mt-2">ไม่มี Version</p>
               </div>
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">อัตราแลกเปลี่ยน</label>
-                  <p class="info-value">{{ formatNumber(invoiceData.currencyRate) }}</p>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">ส่วนลดพิเศษ</label>
-                  <p class="info-value text-danger">
-                    -{{ formatNumber(invoiceData.specialDiscount || 0) }}
-                  </p>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">ส่วนเพิ่มพิเศษ</label>
-                  <p class="info-value text-success">
-                    +{{ formatNumber(invoiceData.specialAddition || 0) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="row mt-3">
-              <div class="col-md-6">
-                <div class="info-item">
-                  <label class="info-label">Freight & Insurance</label>
-                  <p class="info-value">
-                    {{ formatNumber(invoiceData.freightAndInsurance || 0) }}
-                  </p>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="info-item">
-                  <label class="info-label">ยอดรวมหลังปรับ</label>
-                  <p class="info-value font-weight-bold">
-                    {{ formatNumber(totalAfterDiscountAndAddition) }}
-                  </p>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="info-item highlight-total">
-                  <label class="info-label">ยอดรวม Invoice</label>
-                  <p class="info-value font-weight-bold text-primary">
-                    <i class="bi bi-receipt mr-2"></i>{{ formatPriceWithCurrency(grandTotal) }}
-                  </p>
+              <div v-else class="version-list">
+                <div
+                  v-for="version in versionList"
+                  :key="version.versionNumber"
+                  class="version-item"
+                  @click="viewVersion(version)"
+                >
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <div class="version-number">
+                        <i class="bi bi-file-earmark-pdf mr-1"></i>
+                        {{ version.versionNumber }}
+                      </div>
+                      <div class="version-meta">
+                        <small class="text-muted">
+                          <i class="bi bi-calendar3 mr-1"></i>
+                          {{ formatDate(version.createDate) }}
+                        </small>
+                      </div>
+                      <div class="version-meta">
+                        <small class="text-muted">
+                          <i class="bi bi-person mr-1"></i>
+                          {{ version.createBy }}
+                        </small>
+                      </div>
+                    </div>
+                    <div class="version-actions">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        @click.stop="printVersion(version)"
+                        title="พิมพ์ PDF"
+                      >
+                        <i class="bi bi-printer"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <!-- Payment and Financial Summary (9/12) -->
+        <div class="">
+          <div class="card-container mb-3">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="bi bi-credit-card mr-2"></i>ข้อมูลการชำระเงินและสรุปยอด
+              </h6>
+            </div>
+            <div class="card-body">
+              <!-- Payment Information Section -->
+              <div class="info-section mb-4">
+                <h6 class="section-title mb-3">
+                  <i class="bi bi-wallet2 mr-2"></i>ข้อมูลการชำระเงิน
+                </h6>
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">วิธีการชำระเงิน</label>
+                      <p class="info-value">
+                        <i class="bi bi-cash-stack mr-2"></i>{{ invoiceData.paymentName || '-' }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">ระยะเวลาชำระ (วัน)</label>
+                      <p class="info-value">
+                        <i class="bi bi-calendar-event mr-2"></i
+                        >{{ invoiceData.paymentDay || 0 }} วัน
+                        <span v-if="invoiceData.paymentDay > 0" class="text-muted ml-2"
+                          >({{ calculateDueDate() }})</span
+                        >
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">ราคามัดจำ</label>
+                      <p class="info-value font-weight-bold text-success">
+                        {{ formatPriceWithCurrency(invoiceData.deposit || 0) }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
+                      <p class="info-value font-weight-bold text-danger">
+                        {{ formatPriceWithCurrency(grandTotal - (invoiceData.deposit || 0)) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Financial Summary Section -->
+              <div class="info-section">
+                <h6 class="section-title mb-3"><i class="bi bi-calculator mr-2"></i>สรุปยอดเงิน</h6>
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">สกุลเงิน</label>
+                      <p class="info-value">
+                        {{ invoiceData.currencyUnit || 'THB' }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">อัตราแลกเปลี่ยน</label>
+                      <p class="info-value">{{ formatNumber(invoiceData.currencyRate) }}</p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">ส่วนลดพิเศษ</label>
+                      <p class="info-value text-danger">
+                        -{{ formatNumber(invoiceData.specialDiscount || 0) }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">ส่วนเพิ่มพิเศษ</label>
+                      <p class="info-value text-success">
+                        +{{ formatNumber(invoiceData.specialAddition || 0) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <label class="info-label">Freight & Insurance</label>
+                      <p class="info-value">
+                        {{ formatNumber(invoiceData.freightAndInsurance || 0) }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item">
+                      <label class="info-label">ยอดรวมหลังปรับ</label>
+                      <p class="info-value font-weight-bold">
+                        {{ formatNumber(totalAfterDiscountAndAddition) }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="info-item highlight-total">
+                      <label class="info-label">ยอดรวม Invoice</label>
+                      <p class="info-value font-weight-bold text-primary">
+                        <i class="bi bi-receipt mr-2"></i>{{ formatPriceWithCurrency(grandTotal) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Remark -->
+          <div v-if="invoiceData.remark" class="card-container mb-3">
+            <div class="card-header">
+              <h6 class="mb-0">หมายเหตุ</h6>
+            </div>
+            <div class="card-body">
+              <p class="mb-0">{{ invoiceData.remark }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Remark -->
-      <div v-if="invoiceData.remark" class="card-container mb-3">
-        <div class="card-header">
-          <h6 class="mb-0">หมายเหตุ</h6>
-        </div>
-        <div class="card-body">
-          <p class="mb-0">{{ invoiceData.remark }}</p>
-        </div>
-      </div>
-    </div>
+      <!-- No Data State -->
+      <!-- <div v-else class="alert alert-warning">
+        <i class="bi bi-info-circle mr-2"></i>
+        ไม่พบข้อมูล Invoice
+      </div> -->
 
-    <!-- No Data State -->
-    <div v-else class="alert alert-warning">
-      <i class="bi bi-info-circle mr-2"></i>
-      ไม่พบข้อมูล Invoice
+      <!-- Invoice Version Modal -->
+      <InvoiceVersionModal
+        :isShowModal="showVersionModal"
+        :invoiceData="invoiceData"
+        :invoiceItems="invoiceItems"
+        @close-modal="showVersionModal = false"
+        @save="handleSaveVersion"
+        @preview="handlePreviewVersion"
+      />
     </div>
   </div>
 </template>
@@ -785,6 +878,7 @@ import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import InvoiceVersionModal from './modal/invoice-version-modal.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
@@ -799,7 +893,8 @@ export default {
     Column,
     ColumnGroup,
     Row,
-    imagePreview
+    imagePreview,
+    InvoiceVersionModal
   },
 
   data() {
@@ -811,7 +906,12 @@ export default {
       saleOrderStore: usrSaleOrderApiStore(),
       fromRoute: null, // Store the route we came from
       formSaleOrder: {},
-      type: 'STOCK-PRODUCT'
+      type: 'STOCK-PRODUCT',
+      showVersionModal: false,
+      versionList: [],
+      originalInvoiceData: null,
+      originalInvoiceItems: [],
+      currentViewingVersion: null
     }
   },
 
@@ -911,6 +1011,79 @@ export default {
         // this.invoiceItems = saleOrderData.items.allItems.filter(
         //   (item) => item.stockNumber != null
         // )
+      }
+
+      // Store original data
+      this.originalInvoiceData = { ...this.invoiceData }
+      this.originalInvoiceItems = [...this.invoiceItems]
+
+      // Load invoice versions
+      await this.loadVersions()
+    },
+
+    async loadVersions() {
+      if (!this.invoiceData || !this.invoiceData.invoiceNumber) return
+
+      const response = await this.invoiceStore.fetchListVersions({
+        formValue: {
+          invoiceNumber: this.invoiceData.invoiceNumber,
+          soNumber: this.invoiceData.soNumber
+        }
+      })
+
+      if (response && response.data) {
+        this.versionList = response.data
+      }
+    },
+
+    async viewVersion(version) {
+      const response = await this.invoiceStore.fetchGetVersion({
+        formValue: {
+          versionNumber: version.versionNumber
+        }
+      })
+
+      if (response && response.data) {
+        const versionData = JSON.parse(response.data)
+
+        // Update invoice data with version data
+        this.currentViewingVersion = version.versionNumber
+        this.invoiceData = {
+          ...this.originalInvoiceData,
+          currencyUnit: versionData.currencyUnit,
+          currencyRate: versionData.currencyRate,
+          specialDiscount: versionData.specialDiscount,
+          specialAddition: versionData.specialAddition,
+          freightAndInsurance: versionData.freightAndInsurance
+        }
+
+        // Update invoice items with version items
+        this.invoiceItems = versionData.items || []
+
+        // Update form sale order currency
+        this.formSaleOrder.currencyUnit = versionData.currencyUnit
+        this.formSaleOrder.currencyRate = versionData.currencyRate
+      }
+    },
+
+    restoreOriginalView() {
+      this.currentViewingVersion = null
+      this.invoiceData = { ...this.originalInvoiceData }
+      this.invoiceItems = [...this.originalInvoiceItems]
+      this.formSaleOrder.currencyUnit = this.originalInvoiceData.currencyUnit
+      this.formSaleOrder.currencyRate = this.originalInvoiceData.currencyRate
+    },
+
+    async printVersion(version) {
+      const response = await this.invoiceStore.fetchGetVersion({
+        formValue: {
+          versionNumber: version.versionNumber
+        }
+      })
+
+      if (response && response.data) {
+        const versionData = JSON.parse(response.data)
+        this.generateVersionPDF(versionData, { open: true, download: false })
       }
     },
 
@@ -1345,6 +1518,68 @@ export default {
         console.error('Error reversing invoice:', err)
         error(err.message || 'ไม่สามารถยกเลิก Invoice ได้', 'เกิดข้อผิดพลาด')
       }
+    },
+    openVersionModal() {
+      this.showVersionModal = true
+    },
+    async handleSaveVersion(versionData) {
+      console.log('Saving version:', versionData)
+      // Reload version list after saving
+      await this.loadVersions()
+      this.showVersionModal = false
+    },
+    handlePreviewVersion(versionData) {
+      console.log('Previewing version:', versionData)
+      // Generate PDF preview with version data
+      this.generateVersionPDF(versionData, { open: true, download: false })
+    },
+    async generateVersionPDF(versionData, options = { open: false, download: true }) {
+      try {
+        // Prepare data for PDF generation with version data
+        const pdfData = {
+          saleOrder: {
+            soNumber: this.invoiceData.soNumber,
+            date: this.invoiceData.createDate,
+            expectedDeliveryDate: this.invoiceData.deliveryDate,
+            paymentTerms: this.invoiceData.paymentName,
+            depositPercent: this.invoiceData.depositPercent,
+            remark: this.invoiceData.remark,
+            // Use version data for financial calculations
+            specialDiscount: versionData.specialDiscount || 0,
+            specialAddition: versionData.specialAddition || 0,
+            freightAndInsurance: versionData.freightAndInsurance || 0
+          },
+          customer: {
+            name: this.invoiceData.customerName,
+            address: this.invoiceData.customerAddress,
+            tel: this.invoiceData.customerTel,
+            email: this.invoiceData.customerEmail,
+            phone: this.invoiceData.customerTel
+          },
+          currency: {
+            unit: versionData.currencyUnit || 'THB',
+            rate: versionData.currencyRate || 1
+          },
+          // Use version items instead of original items
+          items: versionData.items
+        }
+
+        const pdfOptions = {
+          invoiceNo: `${this.invoiceData.invoiceNumber}-V${versionData.versionNumber}`,
+          invoiceDate: dayjs(this.invoiceData.createDate).format('DD/MM/YYYY'),
+          download: options.download,
+          open: options.open
+        }
+
+        await invoicePdfService.generateInvoicePDF(pdfData, pdfOptions)
+
+        if (options.download) {
+          success('สร้าง PDF สำเร็จ', 'Invoice Version PDF')
+        }
+      } catch (err) {
+        console.error('Error generating version PDF:', err)
+        error(err.message || 'ไม่สามารถสร้าง PDF ได้', 'เกิดข้อผิดพลาด')
+      }
     }
   }
 }
@@ -1522,5 +1757,55 @@ export default {
       font-size: 0.9rem;
     }
   }
+}
+
+// Invoice Version List styles
+.version-list {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.version-item {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e9ecef;
+    border-color: var(--base-font-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .version-number {
+    font-weight: 600;
+    color: var(--base-font-color);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .version-meta {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .version-actions {
+    margin-left: 0.5rem;
+
+    .btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.form-content-payment-container {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  gap: 10px;
+  padding: 0px 0px;
 }
 </style>

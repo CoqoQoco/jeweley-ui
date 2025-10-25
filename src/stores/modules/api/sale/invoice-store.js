@@ -127,6 +127,35 @@ export const useInvoiceApiStore = defineStore('invoice', {
         throw error
       }
     },
+    // Invoice Version APIs
+    async fetchUpsertVersion({ formValue }) {
+      const param = {
+        invoiceNumber: formValue.invoiceNumber,
+        soNumber: formValue.soNumber,
+        data: formValue.data
+      }
+      return await api.jewelry.post('Invoice/Version/Upsert', param, {
+        skipLoading: false
+      })
+    },
+    async fetchGetVersion({ formValue }) {
+      const param = {
+        versionNumber: formValue.versionNumber
+      }
+      return await api.jewelry.post('Invoice/Version/Get', param, {
+        skipLoading: false
+      })
+    },
+    async fetchListVersions({ formValue }) {
+      const param = {
+        invoiceNumber: formValue.invoiceNumber || null,
+        soNumber: formValue.soNumber || null,
+        isActive: formValue.isActive !== undefined ? formValue.isActive : null
+      }
+      return await api.jewelry.post('Invoice/Version/List', param, {
+        skipLoading: false
+      })
+    },
     clearData() {
       this.dataSearch = {}
       this.dataSearchExport = {}
