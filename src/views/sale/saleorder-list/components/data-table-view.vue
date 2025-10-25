@@ -13,14 +13,10 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button 
-            class="btn btn-sm btn-main" 
-            title="แก้ไข" 
-            @click="onEdit(data)"
-          >
+          <button class="btn btn-sm btn-main" title="แก้ไข" @click="onEdit(data)">
             <i class="bi bi-brush"></i>
           </button>
-          <button 
+          <!-- <button 
             class="btn btn-sm btn-green ml-2" 
             title="ดูรายละเอียด" 
             @click="onView(data)"
@@ -33,7 +29,7 @@
             @click="onCreateInvoice(data)"
           >
             <i class="bi bi-receipt"></i>
-          </button>
+          </button> -->
         </div>
       </template>
 
@@ -62,15 +58,11 @@
       </template>
 
       <template #markupTemplate="{ data }">
-        <div class="text-right">
-          {{ Number(data.markup || 0).toFixed(2) }}%
-        </div>
+        <div class="text-right">{{ Number(data.markup || 0).toFixed(2) }}%</div>
       </template>
 
       <template #discountTemplate="{ data }">
-        <div class="text-right">
-          {{ Number(data.discount || 0).toFixed(2) }}%
-        </div>
+        <div class="text-right">{{ Number(data.discount || 0).toFixed(2) }}%</div>
       </template>
 
       <template #depositPercentTemplate="{ data }">
@@ -170,27 +162,27 @@ export default {
           minWidth: '120px',
           template: 'currencyRateTemplate'
         },
-        {
-          field: 'markup',
-          header: 'Markup (%)',
-          sortable: true,
-          minWidth: '100px',
-          template: 'markupTemplate'
-        },
-        {
-          field: 'discount',
-          header: 'ส่วนลด (%)',
-          sortable: true,
-          minWidth: '100px',
-          template: 'discountTemplate'
-        },
-        {
-          field: 'depositPercent',
-          header: 'มัดจำ (%)',
-          sortable: true,
-          minWidth: '100px',
-          template: 'depositPercentTemplate'
-        },
+        // {
+        //   field: 'markup',
+        //   header: 'Markup (%)',
+        //   sortable: true,
+        //   minWidth: '100px',
+        //   template: 'markupTemplate'
+        // },
+        // {
+        //   field: 'discount',
+        //   header: 'ส่วนลด (%)',
+        //   sortable: true,
+        //   minWidth: '100px',
+        //   template: 'discountTemplate'
+        // },
+        // {
+        //   field: 'depositPercent',
+        //   header: 'มัดจำ (%)',
+        //   sortable: true,
+        //   minWidth: '100px',
+        //   template: 'depositPercentTemplate'
+        // },
         {
           field: 'status',
           header: 'สถานะ',
@@ -285,10 +277,10 @@ export default {
     // Status styling
     getStatusBadgeClass(status) {
       const statusClasses = {
-        1: 'badge badge-warning',    // รอดำเนินการ
-        2: 'badge badge-info',       // กำลังดำเนินการ
-        3: 'badge badge-success',    // เสร็จสิ้น
-        4: 'badge badge-danger'      // ยกเลิก
+        1: 'badge badge-warning', // รอดำเนินการ
+        2: 'badge badge-info', // กำลังดำเนินการ
+        3: 'badge badge-success', // เสร็จสิ้น
+        4: 'badge badge-danger' // ยกเลิก
       }
       return statusClasses[status] || 'badge badge-secondary'
     },

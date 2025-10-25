@@ -108,49 +108,49 @@ const routes = [
       },
 
       // Production Section
-      {
-        path: '/sale/production-order',
-        name: 'sale-production-order',
-        component: ProductionOrder,
-        meta: {
-          Displayname: {
-            en: 'Production Order',
-            th: 'ใบสั่งผลิต'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.SALE_CREATE]
-        }
-      },
+      // {
+      //   path: '/sale/production-order',
+      //   name: 'sale-production-order',
+      //   component: ProductionOrder,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Production Order',
+      //       th: 'ใบสั่งผลิต'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.SALE_CREATE]
+      //   }
+      // },
 
       // Stock Management Section
-      {
-        path: '/sale/stock-reservation',
-        name: 'sale-stock-reservation',
-        component: StockReservation,
-        meta: {
-          Displayname: {
-            en: 'Stock Reservation',
-            th: 'จองสต็อก'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.SALE_CREATE]
-        }
-      },
+      // {
+      //   path: '/sale/stock-reservation',
+      //   name: 'sale-stock-reservation',
+      //   component: StockReservation,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Stock Reservation',
+      //       th: 'จองสต็อก'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.SALE_CREATE]
+      //   }
+      // },
 
       // Delivery Section
-      {
-        path: '/sale/delivery-note',
-        name: 'sale-delivery-note',
-        component: DeliveryNote,
-        meta: {
-          Displayname: {
-            en: 'Delivery Note',
-            th: 'ใบส่งของ'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.SALE_CREATE]
-        }
-      },
+      // {
+      //   path: '/sale/delivery-note',
+      //   name: 'sale-delivery-note',
+      //   component: DeliveryNote,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Delivery Note',
+      //       th: 'ใบส่งของ'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.SALE_CREATE]
+      //   }
+      // },
 
       // Invoice Section
       {
