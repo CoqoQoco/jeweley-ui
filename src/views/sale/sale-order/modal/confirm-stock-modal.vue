@@ -142,7 +142,7 @@
                   <template #body="slotProps">
                     <div class="text-center">
                       <Checkbox
-                        :modelValue="selectedItems.includes(slotProps.data.id)"
+                        :modelValue="selectedItems.includes(slotProps.data.stockNumber)"
                         @update:modelValue="toggleItemSelection(slotProps.data)"
                         :disabled="slotProps.data.isConfirm"
                         :binary="true"
@@ -460,7 +460,7 @@ export default {
     toggleSelectAll(value) {
       if (value) {
         // Select all items that are not already confirmed
-        this.selectedItems = this.selectableItems.map((item) => item.id)
+        this.selectedItems = this.selectableItems.map((item) => item.stockNumber)
       } else {
         this.selectedItems = []
       }
@@ -472,11 +472,11 @@ export default {
         return
       }
 
-      const index = this.selectedItems.indexOf(item.id)
+      const index = this.selectedItems.indexOf(item.stockNumber)
       if (index > -1) {
         this.selectedItems.splice(index, 1)
       } else {
-        this.selectedItems.push(item.id)
+        this.selectedItems.push(item.stockNumber)
       }
     },
 
@@ -579,7 +579,7 @@ export default {
 
       // Get selected items data
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.stockNumber)
       )
 
       // Prepare data for API

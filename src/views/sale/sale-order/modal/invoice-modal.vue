@@ -1084,12 +1084,14 @@ export default {
           this.selectedItems.includes(item.id)
         )
 
+        console.log('Selected stock items for invoice:', this.saleOrderData)
+
         // Prepare invoice data for API
         const invoiceRequest = {
           soNumber: this.saleOrderData.number || this.saleOrderData.soNumber,
 
-          customerCode: this.saleOrderData.customerCode,
-          customerName: this.saleOrderData.customerName,
+          customerCode: this.saleOrderData.customerCode ?? null,
+          customerName: this.saleOrderData.customerName ?? null,
           customerAddress: this.saleOrderData.customerAddress,
           customerTel: this.saleOrderData.customerPhone || this.saleOrderData.customerTel,
           customerEmail: this.saleOrderData.customerEmail,

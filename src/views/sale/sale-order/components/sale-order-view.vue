@@ -94,12 +94,12 @@
               <button
                 :class="[
                   'btn btn-sm mr-2',
-                  `${!hasSaleOrderNumber ? 'btn-secondary ' : 'btn-green '}`
+                  `${hasSaleOrderNumber ? 'btn-secondary ' : 'btn-green'}`
                 ]"
                 type="button"
                 @click="onSearchCustomer"
                 title="ค้นหาลูกค้า"
-                :disabled="!hasSaleOrderNumber"
+                :disabled="hasSaleOrderNumber"
               >
                 <i class="bi bi-search mr-1"></i>
                 <span>ค้นหาลูกค้า</span>
@@ -1388,7 +1388,7 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="btn-submit-container mt-4 pb-2">
+    <div class="mt-4 pb-2">
       <!-- Edit Mode Buttons (hidden in view mode) -->
 
       <div v-if="!isViewMode" class="form-col-container">
@@ -1407,7 +1407,8 @@
             :disabled="
               selectedItemsCount === 0 ||
               hasValidationErrors ||
-              pendingConfirmationStockItemsCount === 0
+              pendingConfirmationStockItemsCount === 0 ||
+              !hasSaleOrderNumber
             "
           >
             <i class="bi bi-check-square mr-1"></i>
@@ -1792,7 +1793,10 @@ export default {
     },
 
     hasSaleOrderNumber() {
-      return this.formSaleOrder === null
+      //return this.formSaleOrder.number === null
+      //return this.formSaleOrder.number && this.formSaleOrder.number.trim() !== ''
+      //เช็คว่าเคยมีเลขที่ใบสั่งขายหรือไม่
+      return this.formSaleOrder.number != null && this.formSaleOrder.number !== ''
     }
   },
 
@@ -1884,7 +1888,7 @@ export default {
 
       this.isLoadingData = true
 
-      //console.log('Loading sale order data:', saleOrderData)
+      ////console.log('Loading sale order data:', saleOrderData)
 
       Object.assign(this.formSaleOrder, {
         number: saleOrderData.number || '',
@@ -1923,8 +1927,8 @@ export default {
         }
       }
 
-      //console.log('saleOrderData.confirmedItems', saleOrderData)
-      //console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
+      ////console.log('saleOrderData.confirmedItems', saleOrderData)
+      ////console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
 
       this.stockItems.forEach((item) => {
         item.isConfirm = false
@@ -1956,7 +1960,7 @@ export default {
       this.$nextTick(() => {
         this.isLoadingData = false
       })
-      console.log('get sale order stock items', this.stockItems)
+      //console.log('get sale order stock items', this.stockItems)
     },
 
     async getSaleOrderData(soNumber) {
@@ -1984,7 +1988,7 @@ export default {
                   const parsedData = JSON.parse(response.data)
                   return parsedData
                 } catch (e) {
-                  console.error('Error parsing data:', e)
+                  //console.error('Error parsing data:', e)
                   return []
                 }
               })()
@@ -2004,7 +2008,7 @@ export default {
         }
       }
 
-      //console.log('get new saleOrderData', saleOrderData)
+      ////console.log('get new saleOrderData', saleOrderData)
       return saleOrderData
     },
 
@@ -2026,12 +2030,15 @@ export default {
     },
 
     onCustomerSelected(customerData) {
+
+      console.log('Selected customer data:', customerData)
       this.formSaleOrder = {
         ...this.formSaleOrder,
-        customerName: customerData.nameTh || customerData.nameEn || '',
-        customerAddress: customerData.address || '',
-        customerPhone: customerData.telephone1 || '',
-        customerEmail: customerData.email || '',
+        customerCode : customerData.code ,
+        customerName: customerData.nameTh || customerData.nameEn ,
+        customerAddress: customerData.address ,
+        customerPhone: customerData.telephone1 ,
+        customerEmail: customerData.email ,
         customerId: customerData.id
       }
       this.isShow.searchCustomer = false
@@ -2059,7 +2066,7 @@ export default {
     // ============================================
 
     async onSearchProduct() {
-      console.log('Searching product with', this.productSearch)
+      //console.log('Searching product with', this.productSearch)
       var data = await this.productStore.fetchDataGet({
         formValue: this.productSearch
       })
@@ -2101,7 +2108,7 @@ export default {
 
     deleteStockItem(stockNumber) {
       //this.stockItems.splice(index, 1)
-      //console.log('Deleting stock item', stockNumber)
+      ////console.log('Deleting stock item', stockNumber)
       this.stockItems = this.stockItems.filter(
         (item) => item.stockNumber !== stockNumber.stockNumber
       )
@@ -2253,14 +2260,14 @@ export default {
         deliveryDate: this.formSaleOrder.expectedDeliveryDate
           ? formatISOString(this.formSaleOrder.expectedDeliveryDate)
           : null,
-        refQuotation: this.formSaleOrder.quotationNumber || '',
-        priority: this.formSaleOrder.priority || 'ปกติ',
-        customerName: this.formSaleOrder.customerName || '',
-        customerCode: this.formSaleOrder.customerCode || 'CUST001',
-        customerAddress: this.formSaleOrder.customerAddress || '',
-        customerTel: this.formSaleOrder.customerPhone || '',
-        customerEmail: this.formSaleOrder.customerEmail || '',
-        customerRemark: this.formSaleOrder.customerRemark || '',
+        refQuotation: this.formSaleOrder.quotationNumber ?? null,
+        priority: this.formSaleOrder.priority || null,
+        customerName: this.formSaleOrder.customerName || null,
+        customerCode: this.formSaleOrder.customerCode || null,
+        customerAddress: this.formSaleOrder.customerAddress || null,
+        customerTel: this.formSaleOrder.customerPhone || null,
+        customerEmail: this.formSaleOrder.customerEmail || null,
+        customerRemark: this.formSaleOrder.customerRemark || null,
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
         currencyRate: this.formSaleOrder.currencyRate || 1.0,
         markup: this.formSaleOrder.markup || 0,
@@ -2275,15 +2282,21 @@ export default {
         })
       }
 
-      const res = await this.saleOrderStore.fetchSave({
-        formValue: formValue,
-        skipLoading: true
-      })
-      if (res) {
-        //this.formSaleOrder.number = res
-      }
+      try {
+        const res = await this.saleOrderStore.fetchSave({
+          formValue: formValue,
+          skipLoading: true
+        })
+        if (res) {
+          this.formSaleOrder.number = res
+        }
 
-      this.isOnDraft = false
+        //console.log('saveDraft completed', this.formSaleOrder)
+      } catch (error) {
+        ////console.error('Error saving draft:', error)
+      } finally {
+        this.isOnDraft = false
+      }
     },
 
     async confirmOrder() {
@@ -2345,13 +2358,13 @@ export default {
       const stockNumber = item.stockNumberOrigin || item.stockNumber
       const productInfo = item.productNumber ? `(${item.productNumber})` : ''
 
-      //console.log('reverseStockConfirm called for item:', item)
+      ////console.log('reverseStockConfirm called for item:', item)
 
       confirmSubmit(
         `คุณต้องการยกเลิกการยืนยันสินค้า ${stockNumber} ${productInfo} หรือไม่?`,
         'ยืนยันการยกเลิก',
         async (result) => {
-          //console.log('Confirmation result:', result)
+          ////console.log('Confirmation result:', result)
           if (result.isConfirmed) {
             await this.onReverseStockConfirm(item)
           }
@@ -2365,7 +2378,7 @@ export default {
     },
 
     async onReverseStockConfirm(item) {
-      //console.log('onReverseStockConfirm called for item:', item)
+      ////console.log('onReverseStockConfirm called for item:', item)
       const stockItemsToUnconfirm = [
         {
           id: item.id,
