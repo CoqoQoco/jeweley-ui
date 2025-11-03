@@ -20,23 +20,23 @@
             <i class="bi bi-arrow-left mr-1"></i>
             กลับไปดูต้นฉบับ
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="openVersionModal" style="width: 120px">
+          <button class="btn btn-green btn-sm mr-2" @click="openVersionModal" style="width: 130px">
             <i class="bi bi-plus-circle mr-1"></i>
             เพิ่ม Version
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="reprintPDF" style="width: 120px">
+          <button class="btn btn-green btn-sm mr-2" @click="reprintPDF" style="width: 130px">
             <i class="bi bi-printer mr-1"></i>
             พิมพ์เอกสาร
           </button>
           <button
             class="btn btn-red btn-sm mr-2"
             @click="confirmReverseInvoice"
-            style="width: 120px"
+            style="width: 130px"
           >
             <i class="bi bi-arrow-counterclockwise mr-1"></i>
-            Reverse
+            ยกเลิกเอกสาร
           </button>
-          <button class="btn btn-secondary btn-sm" @click="goBack" style="width: 120px">
+          <button class="btn btn-secondary btn-sm" @click="goBack" style="width: 130px">
             <i class="bi bi-arrow-left mr-1"></i>
             ย้อนกลับ
           </button>
@@ -868,6 +868,14 @@
         @save="handleSaveVersion"
         @preview="handlePreviewVersion"
       />
+
+      <!-- Invoice Confirm Print Modal -->
+      <InvoiceConfirmPrintModal
+        :isShowModal="showConfirmPrintModal"
+        :invoiceData="invoiceData"
+        @close-modal="showConfirmPrintModal = false"
+        @confirm-print="handleConfirmPrint"
+      />
     </div>
   </div>
 </template>
@@ -879,6 +887,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import InvoiceVersionModal from './modal/invoice-version-modal.vue'
+import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
@@ -894,7 +903,8 @@ export default {
     ColumnGroup,
     Row,
     imagePreview,
-    InvoiceVersionModal
+    InvoiceVersionModal,
+    InvoiceConfirmPrintModal
   },
 
   data() {
@@ -908,6 +918,7 @@ export default {
       formSaleOrder: {},
       type: 'STOCK-PRODUCT',
       showVersionModal: false,
+      showConfirmPrintModal: false,
       versionList: [],
       originalInvoiceData: null,
       originalInvoiceItems: [],
@@ -1405,55 +1416,8 @@ export default {
       this.$router.back()
     },
     async reprintPDF() {
-      try {
-        if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
-          error('ไม่พบข้อมูล Invoice', 'ไม่สามารถสร้าง PDF ได้')
-          return
-        }
-
-        // Prepare data for PDF generation matching the expected structure
-        const pdfData = {
-          saleOrder: {
-            soNumber: this.invoiceData.soNumber,
-            date: this.invoiceData.createDate,
-            expectedDeliveryDate: this.invoiceData.deliveryDate,
-            paymentTerms: this.invoiceData.paymentName,
-            depositPercent: this.invoiceData.depositPercent,
-            remark: this.invoiceData.remark,
-            // เพิ่มข้อมูลทางการเงินใหม่
-            specialDiscount: this.invoiceData.specialDiscount || 0,
-            specialAddition: this.invoiceData.specialAddition || 0,
-            freightAndInsurance: this.invoiceData.freightAndInsurance || 0
-          },
-          customer: {
-            name: this.invoiceData.customerName,
-            address: this.invoiceData.customerAddress,
-            tel: this.invoiceData.customerTel,
-            email: this.invoiceData.customerEmail,
-            phone: this.invoiceData.customerTel
-          },
-          currency: {
-            unit: this.invoiceData.currencyUnit || 'THB',
-            rate: this.invoiceData.currencyRate || 1
-          },
-          items: this.invoiceItems
-        }
-
-        const options = {
-          invoiceNo: this.invoiceData.invoiceNumber,
-          invoiceDate: dayjs(this.invoiceData.createDate).format('DD/MM/YYYY'),
-          download: true,
-          open: false
-        }
-
-        //////console.log('Generating PDF with data:', pdfData)
-
-        await invoicePdfService.generateInvoicePDF(pdfData, options)
-        success('สร้าง PDF สำเร็จ', 'Invoice PDF')
-      } catch (err) {
-        console.error('Error generating PDF:', err)
-        error(err.message || 'ไม่สามารถสร้าง PDF ได้', 'เกิดข้อผิดพลาด')
-      }
+      // Open confirm print modal instead of direct print
+      this.showConfirmPrintModal = true
     },
     getImageUrl(imagePath) {
       if (!imagePath) return ''
@@ -1532,6 +1496,72 @@ export default {
       console.log('Previewing version:', versionData)
       // Generate PDF preview with version data
       this.generateVersionPDF(versionData, { open: true, download: false })
+    },
+    async handleConfirmPrint(printData) {
+      try {
+        if (!printData || !printData.invoiceNumber) {
+          error('ไม่พบข้อมูล Invoice', 'ไม่สามารถสร้าง PDF ได้')
+          return
+        }
+
+        // Debug: Log received printData
+        console.log('Received printData:', printData)
+        console.log('Invoice Number:', printData.invoiceNumber)
+        console.log('Invoice Date (raw):', printData.invoiceDate)
+        console.log('Invoice Date type:', typeof printData.invoiceDate)
+
+        // Format date properly - handle both Date object and string
+        let formattedDate
+        if (printData.invoiceDate instanceof Date) {
+          formattedDate = dayjs(printData.invoiceDate)
+        } else {
+          formattedDate = dayjs(printData.invoiceDate)
+        }
+
+        console.log('Formatted Invoice Date:', formattedDate)
+
+        // Prepare data for PDF generation with modified invoice number and date
+        const pdfData = {
+          saleOrder: {
+            soNumber: this.invoiceData.soNumber,
+            date: this.invoiceData.createDate,
+            expectedDeliveryDate: this.invoiceData.deliveryDate,
+            paymentTerms: this.invoiceData.paymentName,
+            depositPercent: this.invoiceData.depositPercent,
+            remark: this.invoiceData.remark,
+            specialDiscount: this.invoiceData.specialDiscount || 0,
+            specialAddition: this.invoiceData.specialAddition || 0,
+            freightAndInsurance: this.invoiceData.freightAndInsurance || 0
+          },
+          customer: {
+            name: this.invoiceData.customerName,
+            address: this.invoiceData.customerAddress,
+            tel: this.invoiceData.customerTel,
+            email: this.invoiceData.customerEmail,
+            phone: this.invoiceData.customerTel
+          },
+          currency: {
+            unit: this.invoiceData.currencyUnit || 'THB',
+            rate: this.invoiceData.currencyRate || 1
+          },
+          items: this.invoiceItems
+        }
+
+        const options = {
+          invoiceNo: printData.invoiceNumber, // Use modified invoice number
+          invoiceDate: formattedDate, // Use modified and formatted invoice date
+          download: true,
+          open: false
+        }
+
+        console.log('PDF Options:', options)
+
+        await invoicePdfService.generateInvoicePDF(pdfData, options)
+        success('สร้าง PDF สำเร็จ', 'Invoice PDF')
+      } catch (err) {
+        console.error('Error generating PDF:', err)
+        error(err.message || 'ไม่สามารถสร้าง PDF ได้', 'เกิดข้อผิดพลาด')
+      }
     },
     async generateVersionPDF(versionData, options = { open: false, download: true }) {
       try {

@@ -15,7 +15,7 @@ export class InvoicePdfBuilder {
     this.data = data // ข้อมูลสินค้าที่เลือก
     this.customer = customer || {}
     this.saleOrderData = saleOrderData || {}
-    this.invoiceDate = invoiceDate || dayjs().format('DD/MM/YYYY')
+    this.invoiceDate = invoiceDate || dayjs()
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
       address: '200/16 Rama 6 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',

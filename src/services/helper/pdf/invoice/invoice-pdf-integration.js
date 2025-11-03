@@ -30,7 +30,7 @@ export class InvoicePdfIntegration {
       }
 
       // Prepare data for PDF builder
-      const invoiceDate = options.invoiceDate || dayjs().format('DD/MM/YYYY')
+      const invoiceDate = options.invoiceDate || dayjs()
       const invoiceNo = options.invoiceNo || this.generateInvoiceNumber()
       const currencyUnit = currency?.unit || 'THB'
       const currencyRate = currency?.rate || 1
