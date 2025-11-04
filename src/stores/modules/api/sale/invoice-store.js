@@ -156,6 +156,46 @@ export const useInvoiceApiStore = defineStore('invoice', {
         skipLoading: false
       })
     },
+    // Invoice Payment APIs
+    async createPayment(formData) {
+      try {
+        return await api.jewelry.post('Invoice/Payment/Create', formData, {
+          skipLoading: false,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+      } catch (error) {
+        console.error('Error creating payment:', error)
+        throw error
+      }
+    },
+    async fetchPaymentList({ formValue }) {
+      try {
+        const param = {
+          invoiceNumber: formValue.invoiceNumber
+        }
+        return await api.jewelry.post('Invoice/Payment/List', param, {
+          skipLoading: false
+        })
+      } catch (error) {
+        console.error('Error fetching payment list:', error)
+        throw error
+      }
+    },
+    async deletePayment({ formValue }) {
+      try {
+        const param = {
+          paymentRunning: formValue.paymentRunning
+        }
+        return await api.jewelry.post('Invoice/Payment/Delete', param, {
+          skipLoading: false
+        })
+      } catch (error) {
+        console.error('Error deleting payment:', error)
+        throw error
+      }
+    },
     clearData() {
       this.dataSearch = {}
       this.dataSearchExport = {}

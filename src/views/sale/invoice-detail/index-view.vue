@@ -730,6 +730,10 @@
               <h6 class="mb-0">
                 <i class="bi bi-credit-card mr-2"></i>ข้อมูลการชำระเงินและสรุปยอด
               </h6>
+              <button class="btn btn-sm btn-green" @click="showPaymentModal = true">
+                <i class="bi bi-cash-coin mr-1"></i>
+                บันทึกการเก็บเงิน
+              </button>
             </div>
             <div class="card-body">
               <!-- Payment Information Section -->
@@ -850,6 +854,125 @@
               <p class="mb-0">{{ invoiceData.remark }}</p>
             </div>
           </div>
+
+          <!-- Payment History Section -->
+          <div class="card-container mb-3">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="bi bi-clock-history mr-2"></i>ประวัติการชำระเงิน
+              </h6>
+            </div>
+            <div class="card-body">
+              <!-- Empty State -->
+              <div
+                v-if="!invoiceData.payments || invoiceData.payments.length === 0"
+                class="text-center text-muted py-4"
+              >
+                <i class="bi bi-inbox" style="font-size: 2rem"></i>
+                <p class="mb-0 mt-2">ยังไม่มีประวัติการชำระเงิน</p>
+              </div>
+
+              <!-- Payment History Table -->
+              <div v-else>
+                <BaseDataTable
+                  :items="invoiceData.payments"
+                  :totalRecords="invoiceData.payments.length"
+                  :columns="paymentColumns"
+                  :paginator="false"
+                  :scrollHeight="'300px'"
+                  dataKey="running"
+                >
+                  <!-- Index Column Template -->
+                  <template #indexTemplate="slotProps">
+                    <div class="text-center">{{ slotProps.index + 1 }}</div>
+                  </template>
+
+                  <!-- Image Column Template -->
+                  <template #imageTemplate="slotProps">
+                    <div class="image-container text-center">
+                      <imagePreview
+                        v-if="slotProps.data.imagePath"
+                        :imageName="slotProps.data.imagePath"
+                        path="Images/Payment"
+                        type="PATH"
+                        :width="40"
+                        :height="40"
+                        :emitImage="true"
+                      />
+                      <span v-else class="text-muted">-</span>
+                    </div>
+                  </template>
+
+                  <!-- Amount Column Template with Currency -->
+                  <template #amountTemplate="slotProps">
+                    <div class="text-right">
+                      {{ formatNumber(slotProps.data.amount) }} {{ slotProps.data.currencyUnit }}
+                    </div>
+                  </template>
+
+                  <!-- Action Column Template -->
+                  <template #actionTemplate="slotProps">
+                    <div class="text-center">
+                      <button
+                        class="btn btn-sm btn-danger"
+                        @click="confirmDeletePayment(slotProps.data)"
+                        title="ลบประวัติการชำระเงิน"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </template>
+                </BaseDataTable>
+
+                <!-- Payment Summary Footer -->
+                <div class="mt-3 pt-3 border-top">
+                  <div class="row mb-2">
+                    <div class="col-md-3">
+                      <div class="info-item">
+                        <label class="info-label">จำนวนครั้งที่ชำระ</label>
+                        <p class="info-value">{{ invoiceData.payments.length }} ครั้ง</p>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-item">
+                        <label class="info-label">ยอดรวม Invoice</label>
+                        <p class="info-value font-weight-bold">
+                          {{ formatNumber(grandTotal) }} {{ invoiceData.currencyUnit }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-item">
+                        <label class="info-label">มัดจำ</label>
+                        <p class="info-value text-info">
+                          {{ formatNumber(invoiceData.deposit || 0) }} {{ invoiceData.currencyUnit }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-item">
+                        <label class="info-label">ยอดชำระแล้ว</label>
+                        <p class="info-value text-success">
+                          {{ formatNumber(paidAmount) }} {{ invoiceData.currencyUnit }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-12">
+                      <div class="info-item highlight-total">
+                        <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
+                        <p class="info-value font-weight-bold text-danger " style="font-size: 1.1rem">
+                          {{ formatNumber(grandTotal - (invoiceData.deposit || 0) - paidAmount) }}
+                          {{ invoiceData.currencyUnit }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -876,6 +999,15 @@
         @close-modal="showConfirmPrintModal = false"
         @confirm-print="handleConfirmPrint"
       />
+
+      <!-- Payment Record Modal -->
+      <PaymentRecordModal
+        :isShowModal="showPaymentModal"
+        :invoiceData="invoiceData"
+        :paidAmount="paidAmount"
+        @close-modal="showPaymentModal = false"
+        @save-payment="handleSavePayment"
+      />
     </div>
   </div>
 </template>
@@ -886,8 +1018,10 @@ import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import InvoiceVersionModal from './modal/invoice-version-modal.vue'
 import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
+import PaymentRecordModal from './modal/payment-record-modal.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
@@ -903,8 +1037,10 @@ export default {
     ColumnGroup,
     Row,
     imagePreview,
+    BaseDataTable,
     InvoiceVersionModal,
-    InvoiceConfirmPrintModal
+    InvoiceConfirmPrintModal,
+    PaymentRecordModal
   },
 
   data() {
@@ -919,10 +1055,55 @@ export default {
       type: 'STOCK-PRODUCT',
       showVersionModal: false,
       showConfirmPrintModal: false,
+      showPaymentModal: false,
+      paidAmount: 0,
       versionList: [],
       originalInvoiceData: null,
       originalInvoiceItems: [],
-      currentViewingVersion: null
+      currentViewingVersion: null,
+      // Payment History Columns
+      paymentColumns: [
+        { field: 'index', header: '#', width: '50px', sortable: false, align: 'center' },
+        { field: 'image', header: 'หลักฐาน', width: '80px', sortable: false, align: 'center' },
+        {
+          field: 'paymentDate',
+          header: 'วันที่ชำระ',
+          minWidth: '120px',
+          sortable: true,
+          format: 'date'
+        },
+        {
+          field: 'amount',
+          header: 'จำนวนเงิน',
+          minWidth: '120px',
+          sortable: true,
+          align: 'right'
+        },
+        {
+          field: 'currencyUnit',
+          header: 'สกุลเงิน',
+          width: '100px',
+          sortable: false,
+          align: 'center'
+        },
+        { field: 'paymentMethod', header: 'วิธีชำระ', minWidth: '150px', sortable: true },
+        {
+          field: 'referenceNumber',
+          header: 'เลขที่อ้างอิง',
+          minWidth: '150px',
+          sortable: false
+        },
+        { field: 'remark', header: 'หมายเหตุ', minWidth: '200px', sortable: false },
+        { field: 'createBy', header: 'ผู้บันทึก', minWidth: '120px', sortable: true },
+        {
+          field: 'createDate',
+          header: 'วันที่บันทึก',
+          minWidth: '150px',
+          sortable: true,
+          format: 'datetime'
+        },
+        { field: 'action', header: 'จัดการ', width: '100px', sortable: false, align: 'center' }
+      ]
     }
   },
 
@@ -953,6 +1134,8 @@ export default {
     const invoiceNumber = this.$route.query.invoiceNumber
     if (invoiceNumber) {
       await this.loadInvoiceData(invoiceNumber)
+      // Load payment history after invoice data is loaded
+      await this.loadPaymentHistory()
     } else {
       this.loadError = 'ไม่พบเลขที่ Invoice ในระบบ'
     }
@@ -1609,6 +1792,101 @@ export default {
       } catch (err) {
         console.error('Error generating version PDF:', err)
         error(err.message || 'ไม่สามารถสร้าง PDF ได้', 'เกิดข้อผิดพลาด')
+      }
+    },
+    async handleSavePayment(paymentData) {
+      console.log('Saving payment record:', paymentData)
+
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('InvoiceNumber', paymentData.invoiceNumber)
+      formData.append('PaymentDate', paymentData.paymentDate.toISOString())
+      formData.append('Amount', paymentData.amount)
+      formData.append('Payment', paymentData.payment) // Payment method ID (int)
+      formData.append('PaymentName', paymentData.paymentName) // Payment method name (string)
+
+      if (paymentData.referenceNumber) {
+        formData.append('ReferenceNumber', paymentData.referenceNumber)
+      }
+
+      if (paymentData.remark) {
+        formData.append('Remark', paymentData.remark)
+      }
+
+      if (paymentData.receiptImage) {
+        formData.append('ReceiptImage', paymentData.receiptImage)
+      }
+
+      // Call API to save payment record
+      const response = await this.invoiceStore.createPayment(formData)
+
+      if (response) {
+        // Reload payment history
+        //await this.loadPaymentHistory()
+        await this.loadInvoiceData(paymentData.invoiceNumber)
+      }
+
+      // Close modal after processing
+      this.showPaymentModal = false
+    },
+
+    async loadPaymentHistory() {
+      // Load payment records from API
+      const response = await this.invoiceStore.fetchPaymentList({
+        formValue: {
+          invoiceNumber: this.invoiceData.invoiceNumber
+        }
+      })
+
+      if (response && response.data) {
+        // Calculate total paid amount
+        this.paidAmount = response.data.reduce((sum, payment) => {
+          return sum + payment.amount
+        }, 0)
+      }
+    },
+
+    async confirmDeletePayment(paymentData) {
+      try {
+        confirmSubmit(
+          `ลบประวัติการชำระเงิน ${this.formatNumber(paymentData.amount)} ${paymentData.currencyUnit}`,
+          'คุณต้องการลบประวัติการชำระเงินนี้หรือไม่?',
+          async (result) => {
+            if (result.isConfirmed) {
+              await this.deletePayment(paymentData)
+            }
+          },
+          {
+            confirmText: 'ยืนยัน',
+            cancelText: 'ยกเลิก'
+          },
+          'warning'
+        )
+      } catch (err) {
+        console.error('Error in confirmation:', err)
+      }
+    },
+
+    async deletePayment(paymentData) {
+      try {
+        if (!paymentData || !paymentData.running) {
+          error('ไม่พบข้อมูลการชำระเงิน', 'ไม่สามารถลบได้')
+          return
+        }
+
+        // Call delete API
+        await this.invoiceStore.deletePayment({
+          formValue: { paymentRunning: paymentData.running }
+        })
+
+        // Show success message
+        success('ลบประวัติการชำระเงินสำเร็จ', 'ข้อมูลได้ถูกลบแล้ว')
+
+        // Reload invoice data to refresh payment history
+        await this.loadInvoiceData(this.invoiceData.invoiceNumber)
+      } catch (err) {
+        console.error('Error deleting payment:', err)
+        error(err.message || 'ไม่สามารถลบประวัติการชำระเงินได้', 'เกิดข้อผิดพลาด')
       }
     }
   }
