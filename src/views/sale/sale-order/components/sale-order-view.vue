@@ -678,7 +678,11 @@
                 class="text-primary font-weight-bold"
                 style="text-decoration: underline; cursor: pointer"
               >
-                {{ slotProps.data.dkInvoiceNumber ? `${slotProps.data.invoice} ( DK No:  ${slotProps.data.dkInvoiceNumber} )` : slotProps.data.invoice }}
+                {{
+                  slotProps.data.dkInvoiceNumber
+                    ? `${slotProps.data.invoice} ( DK No:  ${slotProps.data.dkInvoiceNumber} )`
+                    : slotProps.data.invoice
+                }}
               </a>
               <!-- <span class="ml-3 badge badge-success">มี Invoice แล้ว</span> -->
             </div>
@@ -1952,8 +1956,6 @@ export default {
         item.invoiceItem = null
         item.dkInvoiceNumber = null
 
-        item.discountPercent = item.discountPercent || 0
-
         const confirmedItem = saleOrderData.confirmedItems.find(
           (ci) => ci.stockNumber === item.stockNumber
         )
@@ -1963,11 +1965,17 @@ export default {
           item.stockNumber = confirmedItem.stockNumber
 
           item.isConfirm = confirmedItem.isConfirm
+          item.invoiceItem = confirmedItem.invoiceItem
           item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
           item.isInvoice = confirmedItem.isInvoice
           item.invoice = confirmedItem.invoice
 
-          item.invoiceItem = confirmedItem.invoiceItem
+          if (confirmedItem.isConfirm) {
+            item.appraisalPrice = confirmedItem.priceOrigin
+            item.discountPercent = confirmedItem.discount
+            item.qty = confirmedItem.qty
+          }
+          //item.discountPercent = confirmedItem.discount || 0
 
           item.isRemainProduct = confirmedItem.isRemainProduct
           item.message = confirmedItem.message
@@ -2048,15 +2056,14 @@ export default {
     },
 
     onCustomerSelected(customerData) {
-
       //console.log('Selected customer data:', customerData)
       this.formSaleOrder = {
         ...this.formSaleOrder,
-        customerCode : customerData.code ,
-        customerName: customerData.nameTh || customerData.nameEn ,
-        customerAddress: customerData.address ,
-        customerPhone: customerData.telephone1 ,
-        customerEmail: customerData.email ,
+        customerCode: customerData.code,
+        customerName: customerData.nameTh || customerData.nameEn,
+        customerAddress: customerData.address,
+        customerPhone: customerData.telephone1,
+        customerEmail: customerData.email,
         customerId: customerData.id
       }
       this.isShow.searchCustomer = false
@@ -2772,21 +2779,18 @@ export default {
       }
 
       this.stockItems.forEach((item) => {
-
         if (item.isConfirm || item.isInvoice) {
           return
         }
-        
+
         const originalAppraisalPrice = item.appraisalPrice || item.price || 0
-        const discountedPrice =
-          originalAppraisalPrice * (1 - this.overallDiscountPercent / 100)
-        item.discountPercent = this.overallDiscountPercent
+        const discountedPrice = originalAppraisalPrice * (1 - this.overallDiscountPercent / 100)
+        item.discountPercent = this.overallDiscountPercent.toFixed(2)
         item.discountPrice = discountedPrice.toFixed(2)
       })
 
       this.recalculateAll()
     }
-    
   }
 }
 </script>

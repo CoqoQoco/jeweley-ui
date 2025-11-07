@@ -229,42 +229,54 @@
                   </template>
                 </Column>
 
+                <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="width: 140px">
+                  <template #body="slotProps">
+                    <div class="text-right">
+                      {{ formatCurrency(getAppraisalPrice(slotProps.data)) }}
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="discountPercent" header="ส่วนลด (%)" style="width: 100px">
+                  <template #body="slotProps">
+                    <div class="text-right">
+                      {{ formatCurrency(slotProps.data.discountPercent || 0) }}%
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="width: 140px">
+                  <template #body="slotProps">
+                    <div class="text-right">
+                      {{ formatCurrency(getDiscountedPrice(slotProps.data)) }}
+                    </div>
+                  </template>
+                </Column>
+
+                <Column
+                  :header="'ราคาแปลง (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  style="width: 140px"
+                >
+                  <template #body="slotProps">
+                    <div class="text-right">
+                      {{ formatCurrency(getConvertedPrice(slotProps.data)) }}
+                    </div>
+                  </template>
+                </Column>
+
                 <Column field="qty" header="จำนวน" style="width: 80px">
                   <template #body="slotProps">
                     <div class="text-center">{{ slotProps.data.qty }}</div>
                   </template>
                 </Column>
 
-                <Column field="appraisalPrice" header="ราคาประเมิน" style="width: 140px">
-                  <template #body="slotProps">
-                    <div class="text-right">
-                      <div>{{ formatItemAppraisalPrice(slotProps.data) }}</div>
-                      <small
-                        class="text-muted"
-                        v-if="saleOrderData.currencyRate && saleOrderData.currencyRate !== 1"
-                      >
-                        ({{ formatCurrency(getDiscountedPrice(slotProps.data)) }} THB)
-                      </small>
-                    </div>
-                  </template>
-                </Column>
-
-                <Column header="ราคารวม" style="width: 140px">
+                <Column
+                  :header="'รวมราคา (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  style="width: 140px"
+                >
                   <template #body="slotProps">
                     <div class="text-right text-success font-weight-bold">
-                      <div>{{ formatItemTotalPrice(slotProps.data) }}</div>
-                      <small
-                        class="text-muted"
-                        v-if="saleOrderData.currencyRate && saleOrderData.currencyRate !== 1"
-                      >
-                        ({{
-                          formatCurrency(
-                            getTotalConvertedPrice(slotProps.data) *
-                              (saleOrderData.currencyRate || 1)
-                          )
-                        }}
-                        THB)
-                      </small>
+                      {{ formatCurrency(getTotalConvertedPrice(slotProps.data)) }}
                     </div>
                   </template>
                 </Column>
@@ -424,7 +436,7 @@ export default {
 
     totalSelectedAmount() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.stockNumber)
       )
 
       return selectedStockItems.reduce((total, item) => {
@@ -495,7 +507,7 @@ export default {
     // คำนวณราคาหลังหักส่วนลด
     getDiscountedPrice(item) {
       const appraisalPrice = this.getAppraisalPrice(item)
-      const discountPercent = this.saleOrderData.discountPercent || 0
+      const discountPercent = item.discountPercent || 0
       return appraisalPrice * (1 - discountPercent / 100)
     },
 
@@ -523,20 +535,6 @@ export default {
     formatPriceWithCurrency(price) {
       const currency = this.saleOrderData.currencyUnit || 'THB'
       return `${this.formatCurrency(price)} ${currency}`
-    },
-
-    // Format ราคาประเมินพร้อม currency สำหรับแสดงในตาราง
-    formatItemAppraisalPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const currency = this.saleOrderData.currencyUnit || 'THB'
-      return `${this.formatCurrency(convertedPrice)} ${currency}`
-    },
-
-    // Format ราคารวมพร้อม currency สำหรับแสดงในตาราง
-    formatItemTotalPrice(item) {
-      const totalPrice = this.getTotalConvertedPrice(item)
-      const currency = this.saleOrderData.currencyUnit || 'THB'
-      return `${this.formatCurrency(totalPrice)} ${currency}`
     },
 
     formatDate(date) {
@@ -591,6 +589,7 @@ export default {
           productNumber: item.productNumber,
           qty: item.qty,
           appraisalPrice: item.appraisalPrice,
+          discount: item.discountPercent,
           isConfirm: true,
           confirmedAt: new Date().toISOString()
         }))

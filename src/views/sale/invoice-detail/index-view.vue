@@ -858,9 +858,7 @@
           <!-- Payment History Section -->
           <div class="card-container mb-3">
             <div class="card-header">
-              <h6 class="mb-0">
-                <i class="bi bi-clock-history mr-2"></i>ประวัติการชำระเงิน
-              </h6>
+              <h6 class="mb-0"><i class="bi bi-clock-history mr-2"></i>ประวัติการชำระเงิน</h6>
             </div>
             <div class="card-body">
               <!-- Empty State -->
@@ -945,7 +943,8 @@
                       <div class="info-item">
                         <label class="info-label">มัดจำ</label>
                         <p class="info-value text-info">
-                          {{ formatNumber(invoiceData.deposit || 0) }} {{ invoiceData.currencyUnit }}
+                          {{ formatNumber(invoiceData.deposit || 0) }}
+                          {{ invoiceData.currencyUnit }}
                         </p>
                       </div>
                     </div>
@@ -962,7 +961,10 @@
                     <div class="col-md-12">
                       <div class="info-item highlight-total">
                         <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
-                        <p class="info-value font-weight-bold text-danger " style="font-size: 1.1rem">
+                        <p
+                          class="info-value font-weight-bold text-danger"
+                          style="font-size: 1.1rem"
+                        >
                           {{ formatNumber(grandTotal - (invoiceData.deposit || 0) - paidAmount) }}
                           {{ invoiceData.currencyUnit }}
                         </p>
@@ -1151,7 +1153,7 @@ export default {
       const saleOrderData = await this.getSaleOrderData(invoiceResponse.soNumber)
       if (saleOrderData) {
         this.invoiceData = invoiceResponse
-        //console.log('saleOrderData', saleOrderData)
+        ////console.log('saleOrderData', saleOrderData)
         //this.loadSaleOrderData(response, invoiceResponse)
 
         this.formSaleOrder = {
@@ -1178,6 +1180,8 @@ export default {
           copyFreight: saleOrderData.copyFreight || 0
         }
 
+        //console.log('saleOrderData items', saleOrderData.items)
+
         //this.invoiceItems = saleOrderData.items.stockItems || []
 
         if (saleOrderData.items) {
@@ -1191,7 +1195,8 @@ export default {
             )
           }
 
-          console.log('invoice data items', invoiceResponse)
+          //console.log('invoice so items', this.invoiceItems)
+          //console.log('invoice data items', invoiceResponse)
 
           //filter this.invoiceItems in invoiceResponse.items
           this.invoiceItems = this.invoiceItems.filter((item) => {
@@ -1199,9 +1204,29 @@ export default {
               (invItem) => invItem.stockNumber === item.stockNumber
             )
           })
+
+          this.invoiceItems.forEach((item) => {
+            const confirmedItem = saleOrderData.stockConfirm.find(
+              (ci) => ci.stockNumber === item.stockNumber
+            )
+
+            if (confirmedItem) {
+              console.log('confirmedItem', confirmedItem)
+              item.id = confirmedItem.id
+              item.stockNumber = confirmedItem.stockNumber
+              item.appraisalPrice = confirmedItem.priceOrigin
+              item.qty = confirmedItem.qty
+              item.discountPercent = confirmedItem.discount
+              item.isConfirm = true
+              item.isInvoice = true
+              item.invoice = invoiceResponse.invoiceNumber
+              item.invoiceItem = confirmedItem.invoiceItem
+                 item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
+            }
+          })
         }
 
-        //console.log('this.saleOrderData', this.formSaleOrder)
+        ////console.log('this.saleOrderData', this.formSaleOrder)
         // this.invoiceItems = saleOrderData.items.allItems.filter(
         //   (item) => item.stockNumber != null
         // )
@@ -1281,77 +1306,83 @@ export default {
       }
     },
 
-    loadSaleOrderData(saleOrderData) {
-      if (!saleOrderData) return
+    // loadSaleOrderData(saleOrderData) {
+    //   if (!saleOrderData) return
 
-      ////console.log('Loading sale order data:', saleOrderData)
+    //   //////console.log('Loading sale order data:', saleOrderData)
 
-      Object.assign(this.formSaleOrder, {
-        number: saleOrderData.number || '',
-        date: saleOrderData.date || new Date(),
-        expectedDeliveryDate: saleOrderData.expectedDeliveryDate || null,
-        quotationNumber: saleOrderData.quotationNumber || '',
-        depositRequired: saleOrderData.depositRequired || false,
-        priority: saleOrderData.priority || 'normal',
-        remark: saleOrderData.remark || '',
-        customerRemark: saleOrderData.customer?.remark || '',
+    //   Object.assign(this.formSaleOrder, {
+    //     number: saleOrderData.number || '',
+    //     date: saleOrderData.date || new Date(),
+    //     expectedDeliveryDate: saleOrderData.expectedDeliveryDate || null,
+    //     quotationNumber: saleOrderData.quotationNumber || '',
+    //     depositRequired: saleOrderData.depositRequired || false,
+    //     priority: saleOrderData.priority || 'normal',
+    //     remark: saleOrderData.remark || '',
+    //     customerRemark: saleOrderData.customer?.remark || '',
 
-        customerCode: saleOrderData.customer?.code || '',
-        customerName: saleOrderData.customer?.name || '',
-        customerAddress: saleOrderData.customer?.address || '',
-        customerPhone: saleOrderData.customer?.phone || '',
-        customerEmail: saleOrderData.customer?.email || '',
+    //     customerCode: saleOrderData.customer?.code || '',
+    //     customerName: saleOrderData.customer?.name || '',
+    //     customerAddress: saleOrderData.customer?.address || '',
+    //     customerPhone: saleOrderData.customer?.phone || '',
+    //     customerEmail: saleOrderData.customer?.email || '',
 
-        currencyUnit: saleOrderData.currencyUnit || 'US$',
-        currencyRate: saleOrderData.currencyRate || 33.0,
-        markup: saleOrderData.markup || 3.5,
-        goldPerOz: saleOrderData.goldPerOz || 2000,
-        freight: saleOrderData.freight || 0,
-        copyFreight: saleOrderData.copyFreight || 0
-      })
+    //     currencyUnit: saleOrderData.currencyUnit || 'US$',
+    //     currencyRate: saleOrderData.currencyRate || 33.0,
+    //     markup: saleOrderData.markup || 3.5,
+    //     goldPerOz: saleOrderData.goldPerOz || 2000,
+    //     freight: saleOrderData.freight || 0,
+    //     copyFreight: saleOrderData.copyFreight || 0
+    //   })
 
-      if (saleOrderData.items) {
-        if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
-          this.invoiceItems = saleOrderData.items.stockItems || []
-        } else if (Array.isArray(saleOrderData.items)) {
-          this.invoiceItems = saleOrderData.items.filter((item) => item.stockNumber != null)
-        } else if (Array.isArray(saleOrderData.items.allItems)) {
-          this.invoiceItems = saleOrderData.items.allItems.filter(
-            (item) => item.stockNumber != null
-          )
-        }
-      }
+    //   if (saleOrderData.items) {
+    //     if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
+    //       this.invoiceItems = saleOrderData.items.stockItems || []
+    //     } else if (Array.isArray(saleOrderData.items)) {
+    //       this.invoiceItems = saleOrderData.items.filter((item) => item.stockNumber != null)
+    //     } else if (Array.isArray(saleOrderData.items.allItems)) {
+    //       this.invoiceItems = saleOrderData.items.allItems.filter(
+    //         (item) => item.stockNumber != null
+    //       )
+    //     }
+    //   }
 
-      ////console.log('saleOrderData.confirmedItems', saleOrderData)
-      ////console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
+    //   //console.log('saleOrderData.stockItems', this.stockItems)
+    //   //console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
 
-      this.stockItems.forEach((item) => {
-        item.isConfirm = false
-        item.isInvoice = false
-        item.invoice = null
-        item.invoiceItem = null
+    //   this.stockItems.forEach((item) => {
+    //     item.isConfirm = false
+    //     item.isInvoice = false
+    //     item.invoice = null
+    //     item.invoiceItem = null
 
-        item.discountPercent = item.discountPercent || 0
+    //     item.discountPercent = item.discountPercent || 0
 
-        const confirmedItem = saleOrderData.confirmedItems.find(
-          (ci) => ci.stockNumber === item.stockNumber
-        )
+    //     const confirmedItem = saleOrderData.confirmedItems.find(
+    //       (ci) => ci.stockNumber === item.stockNumber
+    //     )
 
-        if (confirmedItem) {
-          item.id = confirmedItem.id
-          item.stockNumber = confirmedItem.stockNumber
+    //     if (confirmedItem) {
+    //       item.id = confirmedItem.id
+    //       item.stockNumber = confirmedItem.stockNumber
 
-          item.isConfirm = confirmedItem.isConfirm
-          item.isInvoice = confirmedItem.isInvoice
-          item.invoice = confirmedItem.invoice
+    //       item.isConfirm = confirmedItem.isConfirm
+    //       item.isInvoice = confirmedItem.isInvoice
+    //       item.invoiceItem = confirmedItem.invoiceItem
+    //       item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
+    //       item.invoice = confirmedItem.invoice
 
-          item.invoiceItem = confirmedItem.invoiceItem
+    //       if (confirmedItem.isConfirm) {
+    //         item.appraisalPrice = confirmedItem.priceOrigin
+    //         item.discountPercent = confirmedItem.discount
+    //         item.qty = confirmedItem.qty
+    //       }
 
-          item.isRemainProduct = confirmedItem.isRemainProduct
-          item.message = confirmedItem.message
-        }
-      })
-    },
+    //       item.isRemainProduct = confirmedItem.isRemainProduct
+    //       item.message = confirmedItem.message
+    //     }
+    //   })
+    // },
 
     async getSaleOrderData(soNumber) {
       const response = await this.saleOrderStore.fetchGet({
@@ -1368,10 +1399,10 @@ export default {
           expectedDeliveryDate: response.deliveryDate ? new Date(response.deliveryDate) : null,
           quotationNumber: response.refQuotation || null,
           depositRequired: response.depositPercent ? true : false,
-          priority: response.priority || 'normal',
-          discount: response.discount || 0,
-          freight: response.freight || 0,
-          remark: response.remark || null,
+          priority: response.priority,
+          discount: response.discount,
+          freight: response.freight,
+          remark: response.remark,
           items: response.data
             ? (() => {
                 try {
@@ -1383,11 +1414,11 @@ export default {
                 }
               })()
             : [],
-          confirmedItems: response.stockConfirm || [],
-          currencyUnit: response.currencyUnit || 'US$',
-          currencyRate: response.currencyRate || 33.0,
-          markup: response.markup || 3.5,
-          goldPerOz: response.goldRate || 2000,
+          confirmedItems: response.stockConfirm,
+          currencyUnit: response.currencyUnit,
+          currencyRate: response.currencyRate,
+          markup: response.markup,
+          goldPerOz: response.goldRate,
           customer: {
             name: response.customerName || '',
             address: response.customerAddress || '',
@@ -1398,7 +1429,7 @@ export default {
         }
       }
 
-      ////console.log('get new saleOrderData', saleOrderData)
+      //////console.log('get new saleOrderData', saleOrderData)
       return saleOrderData
     },
 
@@ -1670,13 +1701,13 @@ export default {
       this.showVersionModal = true
     },
     async handleSaveVersion(versionData) {
-      console.log('Saving version:', versionData)
+      //console.log('Saving version:', versionData)
       // Reload version list after saving
       await this.loadVersions()
       this.showVersionModal = false
     },
     handlePreviewVersion(versionData) {
-      console.log('Previewing version:', versionData)
+      //console.log('Previewing version:', versionData)
       // Generate PDF preview with version data
       this.generateVersionPDF(versionData, { open: true, download: false })
     },
@@ -1688,10 +1719,10 @@ export default {
         }
 
         // Debug: Log received printData
-        console.log('Received printData:', printData)
-        console.log('Invoice Number:', printData.invoiceNumber)
-        console.log('Invoice Date (raw):', printData.invoiceDate)
-        console.log('Invoice Date type:', typeof printData.invoiceDate)
+        //console.log('Received printData:', printData)
+        //console.log('Invoice Number:', printData.invoiceNumber)
+        //console.log('Invoice Date (raw):', printData.invoiceDate)
+        //console.log('Invoice Date type:', typeof printData.invoiceDate)
 
         // Format date properly - handle both Date object and string
         let formattedDate
@@ -1701,7 +1732,7 @@ export default {
           formattedDate = dayjs(printData.invoiceDate)
         }
 
-        console.log('Formatted Invoice Date:', formattedDate)
+        //console.log('Formatted Invoice Date:', formattedDate)
 
         // Prepare data for PDF generation with modified invoice number and date
         const pdfData = {
@@ -1737,7 +1768,7 @@ export default {
           open: false
         }
 
-        console.log('PDF Options:', options)
+        //console.log('PDF Options:', options)
 
         await invoicePdfService.generateInvoicePDF(pdfData, options)
         success('สร้าง PDF สำเร็จ', 'Invoice PDF')
@@ -1795,7 +1826,7 @@ export default {
       }
     },
     async handleSavePayment(paymentData) {
-      console.log('Saving payment record:', paymentData)
+      //console.log('Saving payment record:', paymentData)
 
       // Create FormData for file upload
       const formData = new FormData()
@@ -1849,7 +1880,9 @@ export default {
     async confirmDeletePayment(paymentData) {
       try {
         confirmSubmit(
-          `ลบประวัติการชำระเงิน ${this.formatNumber(paymentData.amount)} ${paymentData.currencyUnit}`,
+          `ลบประวัติการชำระเงิน ${this.formatNumber(paymentData.amount)} ${
+            paymentData.currencyUnit
+          }`,
           'คุณต้องการลบประวัติการชำระเงินนี้หรือไม่?',
           async (result) => {
             if (result.isConfirmed) {
