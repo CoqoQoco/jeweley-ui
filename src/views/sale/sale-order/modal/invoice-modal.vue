@@ -661,26 +661,38 @@
         <!-- Action Buttons -->
         <div class="btn-submit-container mt-4 pb-2">
           <div class="d-flex justify-content-end">
-            <button
-              class="btn btn-green mr-2"
-              type="button"
-              @click="generateInvoice"
-              :disabled="loading || selectedItemsCount === 0"
-            >
-              <i class="bi bi-file-earmark-pdf mr-1"></i>
-              สร้าง Invoice
-              <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
-              <span
-                v-if="loading"
-                class="spinner-border spinner-border-sm ml-2"
-                role="status"
-              ></span>
-            </button>
+            <div>
+              <span class="title-text">Invoice no. (DK)</span>
+              <input
+                class="form-control bg-input"
+                type="text"
+                v-model.number="dkInvoiceNumber"
+                :disabled="loading || selectedItemsCount === 0"
+              />
+            </div>
 
-            <button class="btn btn-secondary mr-2" type="button" @click="closeModal">
-              <i class="bi bi-x-circle mr-1"></i>
-              ยกเลิก
-            </button>
+            <div class="ml-4 mt-4 pb-2">
+              <button
+                class="btn btn-green mr-2"
+                type="button"
+                @click="generateInvoice"
+                :disabled="loading || selectedItemsCount === 0"
+              >
+                <i class="bi bi-file-earmark-pdf mr-1"></i>
+                สร้าง Invoice
+                <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
+                <span
+                  v-if="loading"
+                  class="spinner-border spinner-border-sm ml-2"
+                  role="status"
+                ></span>
+              </button>
+
+              <button class="btn btn-secondary mr-2" type="button" @click="closeModal">
+                <i class="bi bi-x-circle mr-1"></i>
+                ยกเลิก
+              </button>
+            </div>
           </div>
         </div>
       </template>
@@ -745,6 +757,7 @@ export default {
       depositAmount: 0, // ราคามัดจำ
       paymentMethod: 'cash', // วิธีการชำระเงิน
       paymentDays: 0, // ระยะเวลาการชำระเงิน (วัน)
+      dkInvoiceNumber: null,
       // Payment method options for Dropdown
       paymentMethodOptions: [
         { name: 'เงินสด (Cash)', value: 'cash', id: 1 },
@@ -814,6 +827,7 @@ export default {
       // Reset selections when modal opens
       this.selectedItems = []
       console.log('Invoice modal loaded with stock items:', this.stockItems)
+      console.log('Invoice modal loaded with stock items:', this.saleOrderData)
     },
 
     toggleSelectAll(value) {
@@ -1057,7 +1071,6 @@ export default {
     },
 
     // Helper method to get payment ID from payment terms value
-  
 
     async generateInvoice() {
       try {
@@ -1089,6 +1102,7 @@ export default {
         // Prepare invoice data for API
         const invoiceRequest = {
           soNumber: this.saleOrderData.number || this.saleOrderData.soNumber,
+          dkInvoiceNumber: this.dkInvoiceNumber || null,
 
           customerCode: this.saleOrderData.customerCode ?? null,
           customerName: this.saleOrderData.customerName ?? null,
@@ -1110,12 +1124,9 @@ export default {
           goldRate: this.saleOrderData.goldPerOz || 0,
           markup: this.saleOrderData.markup || 0,
 
-          payment: this.paymentMethodOptions.find(
-            (pm) => pm.value === this.paymentMethod
-          )?.id, // รหัสวิธีการชำระเงิน
-          paymentName: this.paymentMethodOptions.find(
-            (pm) => pm.value === this.paymentMethod
-          )?.name, // ชื่อวิธีการชำระเงิน
+          payment: this.paymentMethodOptions.find((pm) => pm.value === this.paymentMethod)?.id, // รหัสวิธีการชำระเงิน
+          paymentName: this.paymentMethodOptions.find((pm) => pm.value === this.paymentMethod)
+            ?.name, // ชื่อวิธีการชำระเงิน
           paymentDay: this.paymentDays || 0, // ระยะเวลาการชำระเงิน
 
           priority: this.saleOrderData.priority || 'normal',
@@ -1188,6 +1199,16 @@ export default {
 
     closeModal() {
       this.selectedItems = []
+
+      //cleare other fields
+      this.specialDiscount = 0
+      this.specialAddition = 0
+      this.freightAndInsurance = 0
+      this.depositAmount = 0
+      this.paymentMethod = 'cash'
+      this.paymentDays = 0
+      this.dkInvoiceNumber = null
+
       this.$emit('close-modal')
     }
   }

@@ -225,7 +225,21 @@
               @input="recalculateAll"
             />
           </div>
-          <div class="mr-2">
+          <div>
+            <span class="title-text">Adjust Discount All (%)</span>
+            <input
+              :class="['form-control bg-input', 'input-bg']"
+              type="number"
+              v-model.number="overallDiscountPercent"
+              min="0"
+              max="100"
+              step="any"
+              style="width: 150px"
+              :readonly="isViewMode"
+              @input="applyOverallDiscount"
+            />
+          </div>
+          <!-- <div class="mr-2">
             <span class="title-text">Markup</span>
             <input
               :class="['form-control bg-input', 'input-bg']"
@@ -251,7 +265,7 @@
               :readonly="isViewMode"
               @input="recalculateAll"
             />
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -664,7 +678,7 @@
                 class="text-primary font-weight-bold"
                 style="text-decoration: underline; cursor: pointer"
               >
-                {{ slotProps.data.invoice }}
+                {{ slotProps.data.dkInvoiceNumber ? `${slotProps.data.invoice} ( DK No:  ${slotProps.data.dkInvoiceNumber} )` : slotProps.data.invoice }}
               </a>
               <!-- <span class="ml-3 badge badge-success">มี Invoice แล้ว</span> -->
             </div>
@@ -1589,6 +1603,7 @@ export default {
       },
       modelEditStock: {},
       editStockNumber: null,
+      overallDiscountPercent: 0,
 
       formSaleOrder: {
         salesOrderId: null,
@@ -1888,7 +1903,7 @@ export default {
 
       this.isLoadingData = true
 
-      ////console.log('Loading sale order data:', saleOrderData)
+      //////console.log('Loading sale order data:', saleOrderData)
 
       Object.assign(this.formSaleOrder, {
         number: saleOrderData.number || '',
@@ -1927,14 +1942,15 @@ export default {
         }
       }
 
-      ////console.log('saleOrderData.confirmedItems', saleOrderData)
-      ////console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
+      //////console.log('saleOrderData.confirmedItems', saleOrderData)
+      //////console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
 
       this.stockItems.forEach((item) => {
         item.isConfirm = false
         item.isInvoice = false
         item.invoice = null
         item.invoiceItem = null
+        item.dkInvoiceNumber = null
 
         item.discountPercent = item.discountPercent || 0
 
@@ -1947,6 +1963,7 @@ export default {
           item.stockNumber = confirmedItem.stockNumber
 
           item.isConfirm = confirmedItem.isConfirm
+          item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
           item.isInvoice = confirmedItem.isInvoice
           item.invoice = confirmedItem.invoice
 
@@ -1960,7 +1977,7 @@ export default {
       this.$nextTick(() => {
         this.isLoadingData = false
       })
-      //console.log('get sale order stock items', this.stockItems)
+      ////console.log('get sale order stock items', this.stockItems)
     },
 
     async getSaleOrderData(soNumber) {
@@ -1999,6 +2016,7 @@ export default {
           markup: response.markup || 3.5,
           goldPerOz: response.goldRate || 2000,
           customer: {
+            code: response.customerCode || '',
             name: response.customerName || '',
             address: response.customerAddress || '',
             phone: response.customerTel || '',
@@ -2008,7 +2026,7 @@ export default {
         }
       }
 
-      ////console.log('get new saleOrderData', saleOrderData)
+      //console.log('get new saleOrderData', saleOrderData)
       return saleOrderData
     },
 
@@ -2031,7 +2049,7 @@ export default {
 
     onCustomerSelected(customerData) {
 
-      console.log('Selected customer data:', customerData)
+      //console.log('Selected customer data:', customerData)
       this.formSaleOrder = {
         ...this.formSaleOrder,
         customerCode : customerData.code ,
@@ -2066,7 +2084,7 @@ export default {
     // ============================================
 
     async onSearchProduct() {
-      //console.log('Searching product with', this.productSearch)
+      ////console.log('Searching product with', this.productSearch)
       var data = await this.productStore.fetchDataGet({
         formValue: this.productSearch
       })
@@ -2108,7 +2126,7 @@ export default {
 
     deleteStockItem(stockNumber) {
       //this.stockItems.splice(index, 1)
-      ////console.log('Deleting stock item', stockNumber)
+      //////console.log('Deleting stock item', stockNumber)
       this.stockItems = this.stockItems.filter(
         (item) => item.stockNumber !== stockNumber.stockNumber
       )
@@ -2291,7 +2309,7 @@ export default {
           this.formSaleOrder.number = res
         }
 
-        //console.log('saveDraft completed', this.formSaleOrder)
+        ////console.log('saveDraft completed', this.formSaleOrder)
       } catch (error) {
         ////console.error('Error saving draft:', error)
       } finally {
@@ -2358,13 +2376,13 @@ export default {
       const stockNumber = item.stockNumberOrigin || item.stockNumber
       const productInfo = item.productNumber ? `(${item.productNumber})` : ''
 
-      ////console.log('reverseStockConfirm called for item:', item)
+      //////console.log('reverseStockConfirm called for item:', item)
 
       confirmSubmit(
         `คุณต้องการยกเลิกการยืนยันสินค้า ${stockNumber} ${productInfo} หรือไม่?`,
         'ยืนยันการยกเลิก',
         async (result) => {
-          ////console.log('Confirmation result:', result)
+          //////console.log('Confirmation result:', result)
           if (result.isConfirmed) {
             await this.onReverseStockConfirm(item)
           }
@@ -2378,7 +2396,7 @@ export default {
     },
 
     async onReverseStockConfirm(item) {
-      ////console.log('onReverseStockConfirm called for item:', item)
+      //////console.log('onReverseStockConfirm called for item:', item)
       const stockItemsToUnconfirm = [
         {
           id: item.id,
@@ -2745,7 +2763,30 @@ export default {
 
     updateSummary() {
       this.formSaleOrder.totalAmount = this.totalOrderAmount
+    },
+
+    applyOverallDiscount() {
+      if (this.overallDiscountPercent < 0 || this.overallDiscountPercent > 100) {
+        warning('เปอร์เซ็นต์ส่วนลดต้องอยู่ระหว่าง 0 ถึง 100')
+        return
+      }
+
+      this.stockItems.forEach((item) => {
+
+        if (item.isConfirm || item.isInvoice) {
+          return
+        }
+        
+        const originalAppraisalPrice = item.appraisalPrice || item.price || 0
+        const discountedPrice =
+          originalAppraisalPrice * (1 - this.overallDiscountPercent / 100)
+        item.discountPercent = this.overallDiscountPercent
+        item.discountPrice = discountedPrice.toFixed(2)
+      })
+
+      this.recalculateAll()
     }
+    
   }
 }
 </script>
