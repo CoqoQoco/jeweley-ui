@@ -20,23 +20,27 @@
             <i class="bi bi-arrow-left mr-1"></i>
             กลับไปดูต้นฉบับ
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="openVersionModal" style="width: 130px">
+          <button class="btn btn-green btn-sm mr-2" @click="openVersionModal" style="width: 140px">
             <i class="bi bi-plus-circle mr-1"></i>
             เพิ่ม Version
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="reprintPDF" style="width: 130px">
+          <button class="btn btn-green btn-sm mr-2" @click="reprintPDF" style="width: 140px">
             <i class="bi bi-printer mr-1"></i>
-            พิมพ์เอกสาร
+            พิมพ์ใบเเจ้งหนี้
+          </button>
+          <button class="btn btn-green btn-sm mr-2" @click="printDeliveryNote" style="width: 140px">
+            <i class="bi bi-truck mr-1"></i>
+            พิมพ์ใบส่งสินค้า
           </button>
           <button
             class="btn btn-red btn-sm mr-2"
             @click="confirmReverseInvoice"
-            style="width: 130px"
+            style="width: 140px"
           >
             <i class="bi bi-arrow-counterclockwise mr-1"></i>
             ยกเลิกเอกสาร
           </button>
-          <button class="btn btn-secondary btn-sm" @click="goBack" style="width: 130px">
+          <button class="btn btn-secondary btn-sm" @click="goBack" style="width: 140px">
             <i class="bi bi-arrow-left mr-1"></i>
             ย้อนกลับ
           </button>
@@ -59,8 +63,8 @@
         </div>
         <div class="card-body">
           <!-- Invoice Information Section -->
-          <div class="info-section mb-4">
-            <h6 class="section-title mb-3"><i class="bi bi-receipt mr-2"></i>ข้อมูล Invoice</h6>
+          <div class="info-section mb-2">
+            <h6 class="section-title mb-2"><i class="bi bi-receipt mr-2"></i>ข้อมูล Invoice</h6>
             <div class="row">
               <div class="col-md-3">
                 <div class="info-item">
@@ -89,7 +93,7 @@
                 </div>
               </div>
             </div>
-            <div class="row mt-3">
+            <div class="row mt-1">
               <div class="col-md-3">
                 <div class="info-item">
                   <label class="info-label">สถานะ</label>
@@ -122,7 +126,7 @@
 
           <!-- Customer Information Section -->
           <div class="info-section">
-            <h6 class="section-title mb-3"><i class="bi bi-person mr-2"></i>ข้อมูลลูกค้า</h6>
+            <h6 class="section-title mb-2"><i class="bi bi-person mr-2"></i>ข้อมูลลูกค้า</h6>
             <div class="row">
               <div class="col-md-4">
                 <div class="info-item">
@@ -149,7 +153,7 @@
                 </div>
               </div>
             </div>
-            <div class="row mt-3">
+            <div class="row mt-1">
               <div class="col-md-12">
                 <div class="info-item">
                   <label class="info-label">ที่อยู่</label>
@@ -645,6 +649,42 @@
                 </Column>
               </Row>
 
+              <!-- ยอดรวมก่อน VAT -->
+              <Row>
+                <Column :colspan="16">
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                    </div>
+                  </template>
+                </Column>
+                <Column>
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <span class="font-weight-bold">{{ formatNumber(totalBeforeVat) }}</span>
+                    </div>
+                  </template>
+                </Column>
+              </Row>
+
+              <!-- VAT % และจำนวนเงิน VAT -->
+              <Row>
+                <Column :colspan="16">
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <span>VAT ({{ invoiceData.vatPercent || 0 }}%):</span>
+                    </div>
+                  </template>
+                </Column>
+                <Column>
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <span>{{ formatNumber(vatAmount) }}</span>
+                    </div>
+                  </template>
+                </Column>
+              </Row>
+
               <!-- ยอดรวมสุดท้าย -->
               <Row>
                 <Column :colspan="16">
@@ -817,7 +857,7 @@
                   </div>
                 </div>
                 <div class="row mt-3">
-                  <div class="col-md-6">
+                  <div class="col-md-4">
                     <div class="info-item">
                       <label class="info-label">Freight & Insurance</label>
                       <p class="info-value">
@@ -825,7 +865,7 @@
                       </p>
                     </div>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <div class="info-item">
                       <label class="info-label">ยอดรวมหลังปรับ</label>
                       <p class="info-value font-weight-bold">
@@ -833,7 +873,33 @@
                       </p>
                     </div>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
+                    <div class="info-item">
+                      <label class="info-label">ยอดรวมก่อน VAT</label>
+                      <p class="info-value font-weight-bold">
+                        {{ formatNumber(totalBeforeVat) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-md-4">
+                    <div class="info-item">
+                      <label class="info-label">VAT (%)</label>
+                      <p class="info-value">
+                        {{ invoiceData.vatPercent || 0 }}%
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="info-item">
+                      <label class="info-label">VAT Amount</label>
+                      <p class="info-value">
+                        {{ formatNumber(vatAmount) }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
                     <div class="info-item highlight-total">
                       <label class="info-label">ยอดรวม Invoice</label>
                       <p class="info-value font-weight-bold text-primary">
@@ -1002,6 +1068,14 @@
         @confirm-print="handleConfirmPrint"
       />
 
+      <!-- Delivery Note Confirm Print Modal -->
+      <DeliveryConfirmPrintModal
+        :isShowModal="showDeliveryPrintModal"
+        :invoiceData="invoiceData"
+        @close-modal="showDeliveryPrintModal = false"
+        @confirm-print="handleConfirmDeliveryPrint"
+      />
+
       <!-- Payment Record Modal -->
       <PaymentRecordModal
         :isShowModal="showPaymentModal"
@@ -1023,11 +1097,13 @@ import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import InvoiceVersionModal from './modal/invoice-version-modal.vue'
 import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
+import DeliveryConfirmPrintModal from './modal/delivery-confirm-print-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import dayjs from 'dayjs'
 
 export default {
@@ -1042,6 +1118,7 @@ export default {
     BaseDataTable,
     InvoiceVersionModal,
     InvoiceConfirmPrintModal,
+    DeliveryConfirmPrintModal,
     PaymentRecordModal
   },
 
@@ -1057,6 +1134,7 @@ export default {
       type: 'STOCK-PRODUCT',
       showVersionModal: false,
       showConfirmPrintModal: false,
+      showDeliveryPrintModal: false,
       showPaymentModal: false,
       paidAmount: 0,
       versionList: [],
@@ -1122,9 +1200,20 @@ export default {
       return afterAddition
     },
 
-    // ยอดรวมสุดท้ายรวมค่าขนส่ง
-    grandTotal() {
+    // ยอดรวมก่อน VAT (รวม Freight & Insurance แล้ว)
+    totalBeforeVat() {
       return this.totalAfterDiscountAndAddition + Number(this.invoiceData?.freightAndInsurance || 0)
+    },
+
+    // คำนวณค่า VAT จากเปอร์เซ็นต์
+    vatAmount() {
+      const vatPercent = Number(this.invoiceData?.vatPercent || 0)
+      return (this.totalBeforeVat * vatPercent) / 100
+    },
+
+    // ยอดรวมสุดท้ายรวม VAT
+    grandTotal() {
+      return this.totalBeforeVat + this.vatAmount
     }
   },
 
@@ -1152,7 +1241,11 @@ export default {
 
       const saleOrderData = await this.getSaleOrderData(invoiceResponse.soNumber)
       if (saleOrderData) {
-        this.invoiceData = invoiceResponse
+        this.invoiceData = {
+          ...invoiceResponse,
+          vatPercent: invoiceResponse.vat || 0
+        }
+        
         ////console.log('saleOrderData', saleOrderData)
         //this.loadSaleOrderData(response, invoiceResponse)
 
@@ -1633,6 +1726,63 @@ export default {
       // Open confirm print modal instead of direct print
       this.showConfirmPrintModal = true
     },
+    async printDeliveryNote() {
+      // Open delivery print modal instead of direct print
+      this.showDeliveryPrintModal = true
+    },
+    async handleConfirmDeliveryPrint(printData) {
+      try {
+        if (!printData || !printData.deliveryNumber) {
+          error('ไม่พบข้อมูล Delivery Note', 'ไม่สามารถสร้าง PDF ได้')
+          return
+        }
+
+        // Prepare data for Delivery Note PDF generation
+        const deliveryData = {
+          saleOrder: {
+            soNumber: this.invoiceData.soNumber,
+            date: this.invoiceData.createDate,
+            expectedDeliveryDate: this.invoiceData.deliveryDate,
+            paymentTerms: this.invoiceData.paymentName,
+            depositPercent: this.invoiceData.depositPercent,
+            remark: this.invoiceData.remark
+          },
+          customer: {
+            name: this.invoiceData.customerName,
+            address: this.invoiceData.customerAddress,
+            tel: this.invoiceData.customerTel,
+            email: this.invoiceData.customerEmail,
+            phone: this.invoiceData.customerTel
+          },
+          currency: {
+            unit: this.invoiceData.currencyUnit || 'THB',
+            rate: this.invoiceData.currencyRate || 1
+          },
+          items: this.invoiceItems
+        }
+
+        // Format date properly
+        let formattedDate
+        if (printData.deliveryDate instanceof Date) {
+          formattedDate = dayjs(printData.deliveryDate)
+        } else {
+          formattedDate = dayjs(printData.deliveryDate)
+        }
+
+        const options = {
+          deliveryNo: printData.deliveryNumber,
+          deliveryDate: formattedDate,
+          download: true,
+          open: false
+        }
+
+        await deliveryPdfService.generateDeliveryPDF(deliveryData, options)
+        success('สร้าง Delivery Note PDF สำเร็จ', 'Delivery Note')
+      } catch (err) {
+        console.error('Error generating Delivery Note PDF:', err)
+        error(err.message || 'ไม่สามารถสร้าง Delivery Note PDF ได้', 'เกิดข้อผิดพลาด')
+      }
+    },
     getImageUrl(imagePath) {
       if (!imagePath) return ''
       // Construct full image URL based on API base path
@@ -2049,53 +2199,54 @@ export default {
 // Info section styles
 .info-section {
   position: relative;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
 
   &:not(:last-child) {
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
   }
 
   .section-title {
     color: var(--base-font-color);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 
     i {
       color: var(--base-font-color);
+      font-size: 0.85rem;
     }
   }
 }
 
 .info-item {
-  ฝฝmargin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 
   .info-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #6c757d;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.15rem;
     display: block;
   }
 
   .info-value {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: #2c3e50;
     margin-bottom: 0;
-    padding: 0.5rem;
+    padding: 0.35rem 0.5rem;
     background-color: #f8f9fa;
-    border-radius: 4px;
-    min-height: 38px;
+    border-radius: 3px;
+    min-height: 30px;
     display: flex;
     align-items: center;
 
     i {
       color: var(--base-font-color);
-      font-size: 0.9rem;
+      font-size: 0.8rem;
     }
   }
 }

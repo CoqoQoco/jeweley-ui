@@ -1,21 +1,21 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 
-export class InvoicePdfBuilder {
+export class DeliveryPdfBuilder {
   constructor(
     data,
     customer,
-    invoiceDate,
+    deliveryDate,
     saleOrderData,
     currencyUnit,
     currencyRate,
-    invoiceNo,
+    deliveryNo,
     itemsPerPage
   ) {
     this.data = data // ข้อมูลสินค้าที่เลือก
     this.customer = customer || {}
     this.saleOrderData = saleOrderData || {}
-    this.invoiceDate = invoiceDate || dayjs()
+    this.deliveryDate = deliveryDate || dayjs()
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
       address: '200/16 Rama 6 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
@@ -23,42 +23,12 @@ export class InvoicePdfBuilder {
       fax: 'FAX: (+662) 2710834',
       email: 'admin@dkbangkok.com'
     }
-    this.invoiceNo = invoiceNo || this.generateInvoiceNumber()
+    this.deliveryNo = deliveryNo || this.generateDeliveryNumber()
     this.logoBase64 = null
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyRate = Number(currencyRate) || 1
 
-    // Financial adjustments from invoice data
-    this.specialDiscount = Number(saleOrderData.specialDiscount) || 0
-    this.specialAddition = Number(saleOrderData.specialAddition) || 0
-    this.freightAndInsurance = Number(saleOrderData.freightAndInsurance) || 0
-
-    // Legacy fields for backward compatibility
-    this.freight = Number(saleOrderData.freight) || this.freightAndInsurance
-    this.discount = Number(saleOrderData.discount) || 0
     this.itemsPerPage = Number(itemsPerPage) || 10
-
-    // Calculate totals with new fields
-    this.subtotal = this.calculateSubtotal()
-    this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
-    this.totalAmount = this.totalAfterDiscountAndAddition + this.freightAndInsurance
-  }
-
-  calculateSubtotal() {
-    if (!this.data || !Array.isArray(this.data)) return 0
-
-    let total = 0
-    this.data.forEach(item => {
-      const price = Number(item.appraisalPrice) || 0
-      const qty = Number(item.qty) || 0
-      // Apply item-level discount
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = price * (1 - discountPercent / 100)
-      // Convert currency
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      total += convertedPrice * qty
-    })
-    return total
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -154,10 +124,10 @@ export class InvoicePdfBuilder {
                   ]
                 },
                 {
-                  // Right side - Invoice title
+                  // Right side - Delivery Note title
                   stack: [
                     {
-                      text: 'INVOICE',
+                      text: 'DELIVERY NOTE',
                       fontSize: 20,
                       color: '#393939',
                       alignment: 'center',
@@ -173,7 +143,7 @@ export class InvoicePdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: this.invoiceNo || '',
+                          text: this.deliveryNo || '',
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',
@@ -193,7 +163,7 @@ export class InvoicePdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.invoiceDate).format('MMM DD, YYYY'),
+                          text: dayjs(this.deliveryDate).format('MMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',
@@ -246,7 +216,7 @@ export class InvoicePdfBuilder {
           ]
         },
 
-        // --- Company details and Invoice To section ---
+        // --- Company details and Delivery To section ---
         {
           margin: [0, 0, 0, 0],
           columns: [
@@ -291,7 +261,7 @@ export class InvoicePdfBuilder {
               width: '50%',
               stack: [
                 {
-                  text: `Invoice To: ${this.customer.name || ''}`,
+                  text: `Delivery To: ${this.customer.name || ''}`,
                   fontSize: 14,
                   bold: true,
                   color: '#8B0000',
@@ -313,12 +283,6 @@ export class InvoicePdfBuilder {
                   text: 'E-mail: ' + (this.customer.email || ''),
                   fontSize: 10,
                   color: '#393939'
-                },
-                {
-                  text: `Currency: ${this.currencyUnit} (Rate: ${this.currencyRate})`,
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 5, 0, 0]
                 }
               ]
             }
@@ -344,15 +308,14 @@ export class InvoicePdfBuilder {
     }
   }
 
-  // แก้ไขเมธอด createPages ให้ทุกหน้ามี total และ getSummarySection
+  // แก้ไขเมธอด createPages
   createPages() {
-    const itemsPerPage = this.itemsPerPage // ใช้ค่าจาก instance
+    const itemsPerPage = this.itemsPerPage
     const pages = []
-    const totalItems = this.data ? this.data.length : 0 // เพิ่มการตรวจสอบ
+    const totalItems = this.data ? this.data.length : 0
     const totalPages = Math.ceil(totalItems / itemsPerPage)
 
     if (totalPages === 0) {
-      // ถ้าไม่มีข้อมูล ให้สร้างหน้าเปล่า
       pages.push(this.getEmptyPageContent())
       return pages
     }
@@ -362,17 +325,6 @@ export class InvoicePdfBuilder {
       const endIdx = Math.min(startIdx + itemsPerPage, totalItems)
       const pageItems = this.data.slice(startIdx, endIdx)
       const isLastPage = pageNum === totalPages - 1
-
-      // คำนวณ pageTotal สำหรับแต่ละหน้า (ไม่ได้ใช้ในขณะนี้ แต่เก็บไว้สำหรับอนาคต)
-      // let pageTotal = 0
-      // pageItems.forEach((item) => {
-      //   const appraisalPrice = Number(item.appraisalPrice) || 0
-      //   const discountPercent = Number(item.discountPercent) || 0
-      //   const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-      //   const convertedPrice = priceAfterDiscount / this.currencyRate
-      //   const totalConverted = convertedPrice * (item.qty || 0)
-      //   pageTotal += totalConverted
-      // })
 
       const pageContent = []
 
@@ -408,7 +360,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
+        widths: [15, 30, '*', '*', '*', '*', '*', 20], // 8 columns (ไม่มี Price และ Amount)
         body: [
           [
             this.setTableHeader('No.'),
@@ -418,9 +370,7 @@ export class InvoicePdfBuilder {
             this.setTableHeader('Gold (gms)'),
             this.setTableHeader('Diamond (cts)'),
             this.setTableHeader('Gem (cts)'),
-            this.setTableHeader('Qty'),
-            this.setTableHeader('Price (' + this.currencyUnit + ')'),
-            this.setTableHeader('Amount')
+            this.setTableHeader('Qty')
           ]
         ]
       },
@@ -441,7 +391,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
+        widths: [15, 30, 70, 70, 45, 55, '*', 20], // 8 columns
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -450,18 +400,18 @@ export class InvoicePdfBuilder {
         },
         vLineWidth: function () {
           return 0.5
-        } // border left/right
+        }
       }
     }
   }
 
-  // ตารางหน้าสุดท้าย (มี total, freight, discount, grand total)
+  // ตารางหน้าสุดท้าย
   getFinalPageTableContent(items, pageNum) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
+        widths: [15, 30, 70, 70, 45, 55, '*', 20], // 8 columns
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -470,7 +420,7 @@ export class InvoicePdfBuilder {
         },
         vLineWidth: function () {
           return 0.5
-        } // border left/right
+        }
       }
     }
   }
@@ -487,33 +437,20 @@ export class InvoicePdfBuilder {
       this.setTableHeader('Gold (gms)'),
       this.setTableHeader('Diamond (cts)'),
       this.setTableHeader('Gem (cts)'),
-      this.setTableHeader('Qty'),
-      this.setTableHeader('Price (' + this.currencyUnit + ')'),
-      this.setTableHeader('Amount (' + this.currencyUnit + ')')
+      this.setTableHeader('Qty')
     ])
-    
+
     // Content rows
     let sumGold = 0,
       sumDiamond = 0,
       sumGem = 0,
-      sumQty = 0,
-      sumAmount = 0
+      sumQty = 0
     items = items || []
-    
+
     items.forEach((item, index) => {
       const actualIndex = pageNum * 10 + index
-
-      // คำนวณราคาและจำนวน
-      const appraisalPrice = Number(item.appraisalPrice) || 0
       const qty = Number(item.qty) || 0
-      // Use item-level discount percent
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      const amount = convertedPrice * qty
-
       sumQty += qty
-      sumAmount += amount
 
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
@@ -527,13 +464,11 @@ export class InvoicePdfBuilder {
         this.buildMaterialTable(item.materials, 'Gold'),
         this.buildMaterialTable(item.materials, 'Diamond'),
         this.buildMaterialTable(item.materials, 'Gem'),
-        this.setTableCellRight(qty ? qty.toString() : '0'),
-        this.setTableCellRight(this.formatPrice(Number(convertedPrice))),
-        this.setTableCellRight(this.roundNoDecimal(amount))
+        this.setTableCellRight(qty ? qty.toString() : '0')
       ])
     })
-    
-    // Footer: Total weight, qty, amount
+
+    // Footer: Total weight, qty
     body.push([
       { text: 'Total', style: 'summaryLabelColored', alignment: 'right', colSpan: 4 },
       { text: '', style: 'summaryLabelColored', alignment: 'right' },
@@ -542,142 +477,19 @@ export class InvoicePdfBuilder {
       { text: this.formatPrice(sumGold), style: 'summaryLabelColored', alignment: 'right' },
       { text: this.formatPrice(sumDiamond), style: 'summaryLabelColored', alignment: 'right' },
       { text: this.formatPrice(sumGem), style: 'summaryLabelColored', alignment: 'right' },
-      { text: sumQty, style: 'summaryLabelColored', alignment: 'right' },
-      { text: '', style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.roundNoDecimal(sumAmount), style: 'summaryLabelColored', alignment: 'right' }
+      { text: sumQty, style: 'summaryLabelColored', alignment: 'right' }
     ])
-    
+
     return body
   }
 
   // สร้าง body ตาราง (หน้าสุดท้าย)
   buildFinalTableBody(items, pageNum) {
-    const body = this.buildRegularTableBody(items, pageNum)
-
-    // SUBTOTAL row (F.O.B Bangkok)
-    body.push([
-      {
-        text: '',
-        style: 'summaryLabel',
-        alignment: 'right',
-        colSpan: 7,
-        border: [true, false, false, false]
-      },
-      {}, {}, {}, {}, {}, {},
-      { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-      {},
-      {
-        text: this.roundNoDecimal(this.subtotal),
-        style: 'totalSummaryLabelColored',
-        alignment: 'right'
-      }
-    ])
-
-    // SPECIAL DISCOUNT - แสดงเฉพาะเมื่อมีค่า
-    if (this.specialDiscount > 0) {
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {}, {}, {}, {}, {}, {},
-        {
-          text: 'SPECIAL DISCOUNT',
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
-        {},
-        {
-          text: '-' + this.roundNoDecimal(this.specialDiscount),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          color: '#ff4d4d'
-        }
-      ])
-    }
-
-    // SPECIAL ADDITION - แสดงเฉพาะเมื่อมีค่า
-    if (this.specialAddition > 0) {
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {}, {}, {}, {}, {}, {},
-        {
-          text: 'SPECIAL ADDITION',
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
-        {},
-        {
-          text: '+' + this.roundNoDecimal(this.specialAddition),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          color: '#038387'
-        }
-      ])
-    }
-
-    // FREIGHT & INSURANCE - แสดงเฉพาะเมื่อมีค่า
-    if (this.freightAndInsurance > 0) {
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {}, {}, {}, {}, {}, {},
-        {
-          text: 'FREIGHT & INSURANCE',
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
-        {},
-        {
-          text: this.roundNoDecimal(this.freightAndInsurance),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right'
-        }
-      ])
-    }
-
-    // GRAND TOTAL (C.I.F)
-    const grandTotal = this.totalAmount
-
-    body.push([
-      {
-        text: this.convertNumberToWords(grandTotal),
-        style: 'summaryLabelColored',
-        alignment: 'left',
-        colSpan: 7
-      },
-      {}, {}, {}, {}, {}, {},
-      { text: 'C.I.F', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-      {},
-      {
-        text: this.roundNoDecimal(grandTotal),
-        style: 'totalSummaryLabelColored',
-        alignment: 'right'
-      }
-    ])
-
-    return body
+    return this.buildRegularTableBody(items, pageNum)
   }
 
   getSummarySection() {
-    // Calculate net weight like sumNetWeight in quotation-view.vue
+    // Calculate net weight
     let gold = 0
     let diamond = 0
     let gem = 0
@@ -693,11 +505,8 @@ export class InvoicePdfBuilder {
       })
     }
     const net = (diamond + gem) / 5 + gold
-     const netWeightText = `NET WEIGHT OF MERCHANDISES ${net ? net.toFixed(2) : (0).toFixed(2)} (gms.)`
-    // const netWeightText = `${
-    //   net ? net.toFixed(2) : (0).toFixed(2)
-    // } NET WEIGHT OF MERCHANDISES (gms.)`
-    
+    const netWeightText = `NET WEIGHT OF MERCHANDISES ${net ? net.toFixed(2) : (0).toFixed(2)} (gms.)`
+
     return [
       {
         columns: [
@@ -717,7 +526,7 @@ export class InvoicePdfBuilder {
               {
                 columns: [
                   {
-                    text: 'WE CERTIFY THAT THIS INVOICE TRUE AND CORRECT.',
+                    text: 'WE CERTIFY THAT THIS DELIVERY NOTE TRUE AND CORRECT.',
                     style: 'certifyText',
                     alignment: 'left'
                   }
@@ -816,102 +625,6 @@ export class InvoicePdfBuilder {
     }
   }
 
-  convertNumberToWords(number) {
-    const prefix = this.currencyUnit ? `(${this.currencyUnit})` : ''
-    const numInWords = prefix + ' ' + this.numberToWords(Math.floor(number)) + ' ONLY'
-    return numInWords
-  }
-
-  numberToWords(num) {
-    const units = [
-      '',
-      'ONE',
-      'TWO',
-      'THREE',
-      'FOUR',
-      'FIVE',
-      'SIX',
-      'SEVEN',
-      'EIGHT',
-      'NINE',
-      'TEN',
-      'ELEVEN',
-      'TWELVE',
-      'THIRTEEN',
-      'FOURTEEN',
-      'FIFTEEN',
-      'SIXTEEN',
-      'SEVENTEEN',
-      'EIGHTEEN',
-      'NINETEEN'
-    ]
-    const tens = [
-      '',
-      '',
-      'TWENTY',
-      'THIRTY',
-      'FORTY',
-      'FIFTY',
-      'SIXTY',
-      'SEVENTY',
-      'EIGHTY',
-      'NINETY'
-    ]
-
-    if (num === 0) return 'ZERO'
-
-    function convertLessThanThousand(num) {
-      if (num === 0) return ''
-      if (num < 20) return units[num]
-
-      const unit = num % 10
-      const ten = Math.floor(num / 10) % 10
-      const hundred = Math.floor(num / 100) % 10
-
-      let result = ''
-      if (hundred > 0) {
-        result += units[hundred] + ' HUNDRED'
-        if (ten > 0 || unit > 0) result += ' '
-      }
-
-      if (ten > 1) {
-        result += tens[ten]
-        if (unit > 0) result += '-' + units[unit]
-      } else {
-        result += units[ten * 10 + unit]
-      }
-
-      return result
-    }
-
-    let words = ''
-    const billion = Math.floor(num / 1000000000)
-    const million = Math.floor((num % 1000000000) / 1000000)
-    const thousand = Math.floor((num % 1000000) / 1000)
-    const remainder = num % 1000
-
-    if (billion > 0) {
-      words += convertLessThanThousand(billion) + ' BILLION'
-      if (million > 0 || thousand > 0 || remainder > 0) words += ' '
-    }
-
-    if (million > 0) {
-      words += convertLessThanThousand(million) + ' MILLION'
-      if (thousand > 0 || remainder > 0) words += ' '
-    }
-
-    if (thousand > 0) {
-      words += convertLessThanThousand(thousand) + ' THOUSAND'
-      if (remainder > 0) words += ' '
-    }
-
-    if (remainder > 0) {
-      words += convertLessThanThousand(remainder)
-    }
-
-    return words
-  }
-
   setTableHeader(text) {
     return {
       text: text,
@@ -970,11 +683,6 @@ export class InvoicePdfBuilder {
     })
   }
 
-  roundNoDecimal(num) {
-    if (typeof num !== 'number' || isNaN(num)) return '0.00'
-    return Math.round(num).toFixed(2)
-  }
-
   getDocDefinition() {
     return {
       pageSize: 'A4',
@@ -1008,7 +716,7 @@ export class InvoicePdfBuilder {
           bold: true,
           margin: [0, 0, 0, 0]
         },
-        invoiceTitle: {
+        deliveryTitle: {
           fontSize: 22,
           bold: true,
           alignment: 'center',
@@ -1023,12 +731,6 @@ export class InvoicePdfBuilder {
           bold: true,
           color: 'white',
           fillColor: '#8B0000'
-        },
-        totalSummaryLabelColored: {
-          fontSize: 12,
-          bold: true,
-          color: '#8B0000',
-          fillColor: '#e0e0e0'
         },
         parcelText: {
           fontSize: 9
@@ -1046,10 +748,10 @@ export class InvoicePdfBuilder {
     }
   }
 
-  generateInvoiceNumber() {
+  generateDeliveryNumber() {
     const date = dayjs()
     const timestamp = date.format('YYMMDDHHmmss')
-    return `INV-${timestamp}`
+    return `DN-${timestamp}`
   }
 
   async generatePDF() {
@@ -1067,8 +769,8 @@ export class InvoicePdfBuilder {
   async downloadPDF() {
     try {
       const pdf = await this.generatePDF()
-      const invoiceFileName = `Invoice_${this.invoiceNo}_${dayjs().format('YYYYMMDD')}.pdf`
-      pdf.download(invoiceFileName)
+      const deliveryFileName = `DeliveryNote_${this.deliveryNo}_${dayjs().format('YYYYMMDD')}.pdf`
+      pdf.download(deliveryFileName)
     } catch (error) {
       console.error('Error downloading PDF:', error)
       throw error

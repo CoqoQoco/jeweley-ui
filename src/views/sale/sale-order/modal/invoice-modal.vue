@@ -352,7 +352,7 @@
                   </template>
                 </Column>
 
-                <Column field="qty" header="จำนวน" style="width: 80px">
+                <Column field="qty" header="จำนวน" style="width: 100px">
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span class="confirmed-text text-right">
@@ -560,6 +560,54 @@
                     </Column>
                   </Row>
 
+                  <!-- ยอดรวมก่อน VAT -->
+                  <Row>
+                    <Column :colspan="13">
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                        </div>
+                      </template>
+                    </Column>
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span class="font-weight-bold">{{ formatCurrency(totalBeforeVat) }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+
+                  <!-- VAT % และจำนวนเงิน VAT -->
+                  <Row>
+                    <Column :colspan="13">
+                      <template #footer>
+                        <div class="text-right type-container d-flex align-items-center justify-content-end">
+                          <span class="mr-2 mt-1">VAT (%) : </span>
+                          <input
+                            v-model.number="vatPercent"
+                            type="number"
+                            class="form-control text-right bg-input input-bg"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            style="background-color: #b5dad4; width: 80px"
+                            @input="$forceUpdate()"
+                            placeholder="0"
+                          />
+                        </div>
+                      </template>
+                    </Column>
+                   
+                    <Column>
+                      <template #footer>
+                        <div class="text-right type-container">
+                          <span>{{ formatCurrency(vatAmount) }}</span>
+                        </div>
+                      </template>
+                    </Column>
+                  </Row>
+
                   <!-- ยอดรวมสุดท้าย -->
                   <Row>
                     <Column :colspan="13">
@@ -754,6 +802,7 @@ export default {
       specialDiscount: 0, // ส่วนลดพิเศษ
       specialAddition: 0, // ส่วนเพิ่มพิเศษ
       freightAndInsurance: 0, // ค่าขนส่งและประกันภัย
+      vatPercent: 0, // VAT เป็นเปอร์เซ็นต์
       depositAmount: 0, // ราคามัดจำ
       paymentMethod: 'cash', // วิธีการชำระเงิน
       paymentDays: 0, // ระยะเวลาการชำระเงิน (วัน)
@@ -805,9 +854,20 @@ export default {
       return afterAddition
     },
 
-    // ยอดรวมสุดท้ายรวมค่าขนส่ง
-    grandTotal() {
+    // ยอดรวมก่อน VAT (รวม Freight & Insurance แล้ว)
+    totalBeforeVat() {
       return this.totalAfterDiscountAndAddition + Number(this.freightAndInsurance || 0)
+    },
+
+    // คำนวณค่า VAT จากเปอร์เซ็นต์
+    vatAmount() {
+      const vatPercent = Number(this.vatPercent || 0)
+      return (this.totalBeforeVat * vatPercent) / 100
+    },
+
+    // ยอดรวมสุดท้ายรวม VAT
+    grandTotal() {
+      return this.totalBeforeVat + this.vatAmount
     }
   },
 
@@ -1120,6 +1180,7 @@ export default {
           specialDiscount: this.specialDiscount || 0, // ส่วนลดพิเศษ
           specialAddition: this.specialAddition || 0, // ส่วนเพิ่มพิเศษ
           freightAndInsurance: this.freightAndInsurance || 0, // Freight & Insurance
+          vat: this.vatPercent || 0, // VAT เป็นเปอร์เซ็นต์
 
           goldRate: this.saleOrderData.goldPerOz || 0,
           markup: this.saleOrderData.markup || 0,
@@ -1204,6 +1265,7 @@ export default {
       this.specialDiscount = 0
       this.specialAddition = 0
       this.freightAndInsurance = 0
+      this.vatPercent = 0
       this.depositAmount = 0
       this.paymentMethod = 'cash'
       this.paymentDays = 0

@@ -78,7 +78,13 @@
 
                   <Column field="description" header="รายละเอียด" style="min-width: 200px">
                     <template #body="slotProps">
-                      <span>{{ slotProps.data.description || '-' }}</span>
+                      <!-- <span>{{ slotProps.data.description || '-' }}</span> -->
+                      <input
+                        v-model.number="slotProps.data.description"
+                        type="text"
+                        class="form-control text-right bg-input input-bg"
+                        style="background-color: #b5dad4; width: 100%"
+                      />
                     </template>
                   </Column>
 
@@ -272,7 +278,8 @@
 
                 <button class="btn btn-green mr-2" type="button" @click="onSaveAndPrint">
                   <i class="bi bi-printer mr-1"></i>
-                  บันทึกและพิมพ์
+                  <!-- บันทึกและพิมพ์ -->
+                  บันทึก
                 </button>
 
                 <button class="btn btn-secondary" type="button" @click="closeModal">
@@ -462,11 +469,11 @@ export default {
         createdBy: 'Current User' // TODO: Get from auth store
       }
 
-      console.log('versionDataToSave:', versionDataToSave)
-      console.log('Calling API with:', {
-        invoiceNumber: this.invoiceData.invoiceNumber,
-        soNumber: this.invoiceData.soNumber
-      })
+      //console.log('versionDataToSave:', versionDataToSave)
+      //console.log('Calling API with:', {
+      //   invoiceNumber: this.invoiceData.invoiceNumber,
+      //   soNumber: this.invoiceData.soNumber
+      // })
 
       // Call API to save version
       const response = await this.invoiceStore.fetchUpsertVersion({
@@ -477,7 +484,7 @@ export default {
         }
       })
 
-      console.log('API Response:', response)
+      //console.log('API Response:', response)
 
       if (response && response) {
         const savedVersionData = {
@@ -493,7 +500,7 @@ export default {
         this.$emit('save', savedVersionData)
 
         // Print preview
-        this.$emit('preview', savedVersionData)
+        //this.$emit('preview', savedVersionData)
 
         // Close modal
         this.closeModal()
