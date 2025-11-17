@@ -17,8 +17,11 @@
           <button class="btn btn-sm btn-green mr-2" title="เเก้ไข" @click="onShowUpdate(rowData)">
             <span class="bi bi-pencil"></span>
           </button>
-          <button class="btn btn-sm btn-green" title="ราคา" @click="onShowPrice(rowData)">
+          <button class="btn btn-sm btn-green mr-2" title="ราคา" @click="onShowPrice(rowData)">
             <span class="bi bi-cash-coin"></span>
+          </button>
+          <button class="btn btn-sm btn-green" title="พิมพ์ป้าย" @click="onPrintBarcode(rowData)">
+            <i class="bi bi-upc-scan"></i>
           </button>
         </div>
       </template>
@@ -40,6 +43,13 @@
       :modelGroupName="groupOptions"
       @closeModal="closeModal"
     ></updateView>
+
+    <barcodePreviewModal
+      :isShow="isShow.barcodePreview"
+      :barcodeData="barcodePreviewData"
+      @close="closeBarcodePreview"
+      @confirm="onConfirmPrint"
+    ></barcodePreviewModal>
   </div>
 </template>
 
@@ -52,14 +62,18 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import priceView from './price-view.vue'
 import historyView from './history-view.vue'
 import updateView from './update-view.vue'
+import barcodePreviewModal from './barcode-preview-modal.vue'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'
+import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
+import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 
 const isShowModal = {
   isPrice: false,
   isHistory: false,
-  update: false
+  update: false,
+  barcodePreview: false
 }
 
 export default {
@@ -68,7 +82,8 @@ export default {
     BaseDataTable,
     priceView,
     historyView,
-    updateView
+    updateView,
+    barcodePreviewModal
   },
 
   setup() {
@@ -175,6 +190,8 @@ export default {
       price: {},
       history: {},
       updateGem: {},
+      barcodePreviewData: {},
+      currentRowData: null,
 
       //--------- table ---------//
       totalRecords: 0,
@@ -374,6 +391,57 @@ export default {
       this.updateGem = {}
       this.updateGem = { ...data }
       this.isShow.update = true
+    },
+    onPrintBarcode(rowData) {
+      console.log('onPrintBarcode', rowData)
+
+      // ตรวจสอบข้อมูลที่จำเป็น
+      if (!rowData.code) {
+        warning('ไม่พบรหัสพัสดุ', 'ข้อมูลไม่ครบถ้วน')
+        return
+      }
+
+      // เก็บข้อมูลสำหรับพิมพ์
+      this.currentRowData = rowData
+
+      // เตรียมข้อมูลสำหรับแสดง preview
+      this.barcodePreviewData = {
+        stockCode: `*${rowData.code}*`,
+        barcode: rowData.code,
+        description: `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''}`.trim() || 'N/A',
+        date: formatDate(new Date()),
+        goldType: rowData.grade || 'N/A'
+      }
+
+      // เปิด modal preview
+      this.isShow.barcodePreview = true
+    },
+
+    closeBarcodePreview() {
+      this.isShow.barcodePreview = false
+      this.barcodePreviewData = {}
+      this.currentRowData = null
+    },
+
+    async onConfirmPrint(copies) {
+      console.log('onConfirmPrint', copies)
+
+      // พิมพ์บาร์โค้ดตามจำนวนที่ระบุ
+      if (copies === 1) {
+        // พิมพ์ 1 ใบ
+        const result = await gemBarcodeService.printBarcode(this.barcodePreviewData)
+        if (result.success) {
+          success('พิมพ์ป้ายสำเร็จ')
+          this.closeBarcodePreview()
+        }
+      } else {
+        // พิมพ์หลายใบ
+        const result = await gemBarcodeService.printBarcodes([this.barcodePreviewData], copies)
+        if (result.success) {
+          success(result.message)
+          this.closeBarcodePreview()
+        }
+      }
     }
   },
 
