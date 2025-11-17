@@ -32,6 +32,7 @@ export class InvoicePdfBuilder {
     this.specialDiscount = Number(saleOrderData.specialDiscount) || 0
     this.specialAddition = Number(saleOrderData.specialAddition) || 0
     this.freightAndInsurance = Number(saleOrderData.freightAndInsurance) || 0
+    this.vatPercent = Number(saleOrderData.vatPercent) || Number(saleOrderData.vat) || 0
 
     // Legacy fields for backward compatibility
     this.freight = Number(saleOrderData.freight) || this.freightAndInsurance
@@ -41,7 +42,9 @@ export class InvoicePdfBuilder {
     // Calculate totals with new fields
     this.subtotal = this.calculateSubtotal()
     this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
-    this.totalAmount = this.totalAfterDiscountAndAddition + this.freightAndInsurance
+    this.totalBeforeVat = this.totalAfterDiscountAndAddition + this.freightAndInsurance
+    this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
+    this.totalAmount = this.totalBeforeVat + this.vatAmount
   }
 
   calculateSubtotal() {
@@ -647,6 +650,32 @@ export class InvoicePdfBuilder {
         {},
         {
           text: this.roundNoDecimal(this.freightAndInsurance),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
+    // VAT - แสดงเฉพาะเมื่อมีค่า
+    if (this.vatPercent > 0) {
+      body.push([
+        {
+          text: '',
+          style: 'summaryLabel',
+          alignment: 'right',
+          colSpan: 7,
+          border: [true, false, false, false]
+        },
+        {}, {}, {}, {}, {}, {},
+        {
+          text: `VAT (${this.vatPercent}%)`,
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          colSpan: 2
+        },
+        {},
+        {
+          text: this.roundNoDecimal(this.vatAmount),
           style: 'totalSummaryLabelColored',
           alignment: 'right'
         }

@@ -131,7 +131,7 @@ export default {
       return `${data.qty ?? `0`}${data.qtyUnit ? ` ${data.qtyUnit}` : ''}`
     },
     getWeight(data) {
-      return `${data.weight ?? `0`}${data.weightUnit ? ` ${data.weightUnit}` : ''}`
+      return `${data.weight.toFixed(3) ?? `0`}${data.weightUnit ? ` ${data.weightUnit}` : ''}`
     }
   }
 }

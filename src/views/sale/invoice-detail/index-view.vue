@@ -28,6 +28,10 @@
             <i class="bi bi-printer mr-1"></i>
             พิมพ์ใบเเจ้งหนี้
           </button>
+          <button class="btn btn-green btn-sm mr-2" @click="exportInvoiceExcel" style="width: 140px">
+            <i class="bi bi-file-earmark-excel mr-1"></i>
+            Export Excel
+          </button>
           <button class="btn btn-green btn-sm mr-2" @click="printDeliveryNote" style="width: 140px">
             <i class="bi bi-truck mr-1"></i>
             พิมพ์ใบส่งสินค้า
@@ -1076,6 +1080,14 @@
         @confirm-print="handleConfirmDeliveryPrint"
       />
 
+      <!-- Invoice Confirm Excel Modal -->
+      <InvoiceConfirmExcelModal
+        :isShowModal="showConfirmExcelModal"
+        :invoiceData="invoiceData"
+        @close-modal="showConfirmExcelModal = false"
+        @confirm-export="handleConfirmExcelExport"
+      />
+
       <!-- Payment Record Modal -->
       <PaymentRecordModal
         :isShowModal="showPaymentModal"
@@ -1098,11 +1110,13 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import InvoiceVersionModal from './modal/invoice-version-modal.vue'
 import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
 import DeliveryConfirmPrintModal from './modal/delivery-confirm-print-modal.vue'
+import InvoiceConfirmExcelModal from './modal/invoice-confirm-excel-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import dayjs from 'dayjs'
 
@@ -1119,6 +1133,7 @@ export default {
     InvoiceVersionModal,
     InvoiceConfirmPrintModal,
     DeliveryConfirmPrintModal,
+    InvoiceConfirmExcelModal,
     PaymentRecordModal
   },
 
@@ -1135,6 +1150,7 @@ export default {
       showVersionModal: false,
       showConfirmPrintModal: false,
       showDeliveryPrintModal: false,
+      showConfirmExcelModal: false,
       showPaymentModal: false,
       paidAmount: 0,
       versionList: [],
@@ -1729,6 +1745,66 @@ export default {
     async printDeliveryNote() {
       // Open delivery print modal instead of direct print
       this.showDeliveryPrintModal = true
+    },
+    async exportInvoiceExcel() {
+      // Open confirm excel modal instead of direct export
+      this.showConfirmExcelModal = true
+    },
+    async handleConfirmExcelExport(exportData) {
+      try {
+        if (!exportData || !exportData.invoiceNumber) {
+          error('ไม่พบข้อมูล Invoice', 'ไม่สามารถ Export Excel ได้')
+          return
+        }
+
+        // Format date properly - handle both Date object and string
+        let formattedDate
+        if (exportData.invoiceDate instanceof Date) {
+          formattedDate = dayjs(exportData.invoiceDate)
+        } else {
+          formattedDate = dayjs(exportData.invoiceDate)
+        }
+
+        // Prepare data for Excel export with modified invoice number and date
+        const excelData = {
+          saleOrder: {
+            soNumber: this.invoiceData.soNumber,
+            date: this.invoiceData.createDate,
+            expectedDeliveryDate: this.invoiceData.deliveryDate,
+            paymentTerms: this.invoiceData.paymentName,
+            depositPercent: this.invoiceData.depositPercent,
+            remark: this.invoiceData.remark,
+            specialDiscount: this.invoiceData.specialDiscount || 0,
+            specialAddition: this.invoiceData.specialAddition || 0,
+            freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
+            vatPercent: this.invoiceData.vatPercent || this.invoiceData.vat || 0
+          },
+          customer: {
+            name: this.invoiceData.customerName,
+            address: this.invoiceData.customerAddress,
+            tel: this.invoiceData.customerTel,
+            email: this.invoiceData.customerEmail,
+            phone: this.invoiceData.customerTel
+          },
+          currency: {
+            unit: this.invoiceData.currencyUnit || 'THB',
+            rate: this.invoiceData.currencyRate || 1
+          },
+          items: this.invoiceItems
+        }
+
+        const options = {
+          invoiceNo: exportData.invoiceNumber, // Use modified invoice number
+          invoiceDate: formattedDate, // Use modified and formatted invoice date
+          download: true
+        }
+
+        await invoiceExcelService.generateInvoiceExcel(excelData, options)
+        success('Export Excel สำเร็จ', 'Invoice Excel')
+      } catch (err) {
+        console.error('Error exporting Excel:', err)
+        error(err.message || 'ไม่สามารถ Export Excel ได้', 'เกิดข้อผิดพลาด')
+      }
     },
     async handleConfirmDeliveryPrint(printData) {
       try {
