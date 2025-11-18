@@ -11,7 +11,7 @@ class PrintService {
     this.selectedPrinter = null
     this.certificateConfigured = false
     this.usbDevice = null
-    this.useUSB = true // Default to USB for label printers
+    this.useUSB = false // Default to USB for label printers
     this.setupCertificate()
   }
 
@@ -45,7 +45,9 @@ class PrintService {
           })
           .catch((err) => {
             console.warn('[PrintService] Certificate file not found, using demo mode')
-            console.warn('[PrintService] To remove permission prompts, add certificate to assets/signing/')
+            console.warn(
+              '[PrintService] To remove permission prompts, add certificate to assets/signing/'
+            )
             resolve() // Will prompt for permission
           })
       })
@@ -109,9 +111,7 @@ class PrintService {
         stack: error.stack
       })
       this.connected = false
-      throw new Error(
-        'ไม่สามารถเชื่อมต่อกับ QZ Tray กรุณาตรวจสอบว่าเปิดโปรแกรม QZ Tray แล้ว'
-      )
+      throw new Error('ไม่สามารถเชื่อมต่อกับ QZ Tray กรุณาตรวจสอบว่าเปิดโปรแกรม QZ Tray แล้ว')
     }
   }
 
@@ -153,6 +153,8 @@ class PrintService {
     }
   }
 
+  // PrintService.js:174 (ปรับปรุง)
+
   /**
    * Get USB devices
    * @returns {Promise<Array>} - Array of USB devices
@@ -164,18 +166,29 @@ class PrintService {
         await this.connect()
       }
 
-      // QZ Tray requires options object with includeHsb parameter
-      const options = { includeHsb: true }
-      console.log('[PrintService] Calling qz.usb.listDevices with options:', options)
+      console.log('[PrintService] Calling qz.usb.listDevices()...')
 
+      // **** การแก้ไข: ระบุ Object ที่มีคุณสมบัติที่ชัดเจน หรือระบุ options เป็น {}
+      // เพื่อให้ QZ Tray ได้รับ JSON object ที่ถูกต้อง
+      // หากเวอร์ชัน QZ Tray ของคุณรองรับ options: { includeHubs: true/false }
+      // คุณควรระบุค่าเหล่านี้ แต่ถ้าต้องการแค่รายการอุปกรณ์ ให้ใช้ {} หรือ { includeHubs: false }
+
+      // แทนที่จะใช้ try-catch ที่ซับซ้อน ให้ใช้การเรียกที่ปลอดภัยที่สุด
+      const options = {}
+
+      // ในบางเวอร์ชัน อาจต้องระบุค่าที่จำเป็น
+      // const options = { includeHubs: false };
+
+      // ใช้การเรียกเพียงครั้งเดียวด้วย Object ที่ชัดเจน
       const devices = await qz.usb.listDevices(options)
-      console.log('[PrintService] ✓ Found USB devices:', devices)
-      console.log('[PrintService] Total USB devices:', devices.length)
 
+      // ลบส่วน try/catch เดิมที่พยายามเรียกแบบไม่มี options ออก
+
+      console.log('[PrintService] ✓ Found USB devices:', devices)
+      // ... โค้ดส่วนที่เหลือ
       return devices
     } catch (error) {
-      console.error('[PrintService] ✗ Error getting USB devices:', error)
-      console.error('[PrintService] Error details:', error.message)
+      // ... โค้ดส่วนที่เหลือ
       throw new Error('ไม่สามารถดึงรายการ USB devices ได้: ' + error.message)
     }
   }
@@ -231,7 +244,15 @@ class PrintService {
       const printers = await this.getPrinters()
 
       console.log('[PrintService] Searching for Honeywell/PC42t printer...')
-      // Search for Honeywell or PC42t in printer names
+      // // Search for Honeywell or PC42t in printer names
+      // const honeywellPrinter = printers.find(
+      //   (printer) =>
+      //     printer.toLowerCase().includes('honeywell') ||
+      //     printer.toLowerCase().includes('pc42t') ||
+      //     printer.toLowerCase().includes('pc42')
+      // )
+
+      // PrintService.js: detectHoneywellPrinter()
       const honeywellPrinter = printers.find(
         (printer) =>
           printer.toLowerCase().includes('honeywell') ||
@@ -250,14 +271,15 @@ class PrintService {
       if (printers.length > 0) {
         this.selectedPrinter = printers[0]
         console.log('[PrintService] ⚠ Using first available printer:', printers[0])
-        return printers[0]
+        throw new Error('ไม่พบเครื่องพิมพ์ Honeywell ในรายการเครื่องพิมพ์ทั่วไป')
+        //return printers[0]
       }
 
-      console.log('[PrintService] ✗ No printers found')
+      console.log('[PrintService] ✗ No USB devices found')
       return null
     } catch (error) {
-      console.error('[PrintService] ✗ Error detecting Honeywell printer:', error)
-      throw new Error('ไม่พบเครื่องพิมพ์ Honeywell')
+      console.error('[PrintService] ✗ Error detecting Honeywell USB device:', error)
+      throw new Error('ไม่พบเครื่องพิมพ์ Honeywell USB') // <--- เก็บ Error นี้ไว้
     }
   }
 
@@ -347,55 +369,126 @@ class PrintService {
     }
   }
 
-  /**
-   * Print data to selected printer (Network printing)
-   * @param {string} data - ZPL command string
-   * @param {string} printerName - Optional printer name (uses selectedPrinter if not provided)
-   * @returns {Promise<void>}
-   */
-  async printNetwork(data, printerName = null) {
+  // /**
+  //  * Print data to selected printer (Network printing)
+  //  * @param {string} data - ZPL command string
+  //  * @param {string} printerName - Optional printer name (uses selectedPrinter if not provided)
+  //  * @returns {Promise<void>}
+  //  */
+  // async printNetwork(data, printerName = null) {
+  //   try {
+  //     console.log('[PrintService] ========== NETWORK PRINT JOB START ==========')
+  //     console.log('[PrintService] Print data length:', data.length, 'characters')
+  //     console.log('[PrintService] Command Preview (first 200 chars):', data.substring(0, 200))
+
+  //     if (!this.connected) {
+  //       console.log('[PrintService] Not connected, connecting first...')
+  //       await this.connect()
+  //     }
+
+  //     const printer = printerName || this.selectedPrinter
+  //     console.log('[PrintService] Target printer:', printer)
+
+  //     if (!printer) {
+  //       console.error('[PrintService] ✗ No printer selected')
+  //       throw new Error('ไม่ได้เลือกเครื่องพิมพ์')
+  //     }
+
+  //     console.log('[PrintService] Creating print config...')
+  //     const config = qz.configs.create(printer)
+  //     console.log('[PrintService] Config created:', config)
+
+  //     const printData = [
+  //       {
+  //         type: 'raw',
+  //         format: 'command',
+  //         data: data
+  //       }
+  //     ]
+  //     console.log('[PrintService] Print data prepared:', printData)
+
+  //     console.log('[PrintService] Sending to printer...')
+  //     await qz.print(config, printData)
+  //     console.log('[PrintService] ✓ Print job sent successfully to:', printer)
+  //     console.log('[PrintService] ========== NETWORK PRINT JOB END ==========')
+  //   } catch (error) {
+  //     console.error('[PrintService] ========== NETWORK PRINT JOB FAILED ==========')
+  //     console.error('[PrintService] ✗ Print error:', error)
+  //     console.error('[PrintService] Error message:', error.message)
+  //     console.error('[PrintService] Error stack:', error.stack)
+  //     console.error('[PrintService] =================================================')
+  //     throw new Error(`การพิมพ์ล้มเหลว: ${error.message}`)
+  //   }
+  // }
+
+  // ใน PrintService.js ภายในเมธอด printNetwork(data, printerName)
+  // async printNetwork(printData, printerName) {
+  //   if (!this.connected) {
+  //     await this.connect()
+  //   }
+
+  //   // 1. ตรวจจับและเลือกชื่อเครื่องพิมพ์ที่ถูกต้อง
+  //   const finalPrinterName = printerName || (await this.detectHoneywellPrinter()) // ต้องมั่นใจว่าเมธอดนี้คืนค่า 'Honeywell PC42t (203 dpi) - DP'
+
+  //   if (!finalPrinterName) {
+  //     throw new Error('ไม่พบเครื่องพิมพ์ Honeywell ในรายการเครื่องพิมพ์ทั่วไป')
+  //   }
+
+  //   console.log(`[PrintService] Sending raw data to printer: ${finalPrinterName}`)
+
+  //   try {
+  //     // 2. สร้าง Configuration Object ด้วยชื่อเครื่องพิมพ์ (Local/Network)
+  //     const config = qz.configs.create(finalPrinterName)
+
+  //     // 3. เรียกใช้ qz.print() เพื่อส่งคำสั่ง Raw Data
+  //     await qz.print(config, printData)
+
+  //     console.log('[PrintService] Print job sent successfully.')
+  //     return true
+  //   } catch (error) {
+  //     console.error('[PrintService] Error during qz.print:', error)
+  //     throw new Error('เกิดข้อผิดพลาดในการส่งงานพิมพ์: ' + error.message)
+  //   }
+  // }
+
+  // ใน PrintService.js ภายในเมธอด printNetwork(data, printerName)
+  async printNetwork(data, printerName) {
+    // เปลี่ยนชื่อตัวแปร printData เป็น data เพื่อให้สอดคล้องกับโค้ดต้นฉบับ
+    if (!this.connected) {
+      await this.connect()
+    }
+
+    // 1. ตรวจจับและเลือกชื่อเครื่องพิมพ์ที่ถูกต้อง
+    const finalPrinterName = printerName || (await this.detectHoneywellPrinter())
+
+    if (!finalPrinterName) {
+      throw new Error('ไม่พบเครื่องพิมพ์ Honeywell ในรายการเครื่องพิมพ์ทั่วไป')
+    }
+
+    console.log(`[PrintService] Sending raw data to printer: ${finalPrinterName}`)
+
     try {
-      console.log('[PrintService] ========== NETWORK PRINT JOB START ==========')
-      console.log('[PrintService] Print data length:', data.length, 'characters')
-      console.log('[PrintService] Command Preview (first 200 chars):', data.substring(0, 200))
+      // 2. สร้าง Configuration Object ด้วยชื่อเครื่องพิมพ์ (Local/Network)
+      const config = qz.configs.create(finalPrinterName)
 
-      if (!this.connected) {
-        console.log('[PrintService] Not connected, connecting first...')
-        await this.connect()
-      }
-
-      const printer = printerName || this.selectedPrinter
-      console.log('[PrintService] Target printer:', printer)
-
-      if (!printer) {
-        console.error('[PrintService] ✗ No printer selected')
-        throw new Error('ไม่ได้เลือกเครื่องพิมพ์')
-      }
-
-      console.log('[PrintService] Creating print config...')
-      const config = qz.configs.create(printer)
-      console.log('[PrintService] Config created:', config)
-
-      const printData = [
+      // **** แก้ไขโค้ดส่วนนี้เพื่อให้ข้อมูลอยู่ในรูปแบบ JSONArray ****
+      const printDataArray = [
         {
           type: 'raw',
-          format: 'command',
-          data: data
+          format: 'command', // format เป็น 'command' สำหรับ ZPL/EPL
+          data: data // data คือ String คำสั่ง EPL/ZPL
         }
       ]
-      console.log('[PrintService] Print data prepared:', printData)
+      // ************************************************************
 
-      console.log('[PrintService] Sending to printer...')
-      await qz.print(config, printData)
-      console.log('[PrintService] ✓ Print job sent successfully to:', printer)
-      console.log('[PrintService] ========== NETWORK PRINT JOB END ==========')
+      // 3. เรียกใช้ qz.print() เพื่อส่งคำสั่ง Raw Data
+      await qz.print(config, printDataArray) // ส่ง printDataArray แทน data (String)
+
+      console.log('[PrintService] Print job sent successfully.')
+      return true
     } catch (error) {
-      console.error('[PrintService] ========== NETWORK PRINT JOB FAILED ==========')
-      console.error('[PrintService] ✗ Print error:', error)
-      console.error('[PrintService] Error message:', error.message)
-      console.error('[PrintService] Error stack:', error.stack)
-      console.error('[PrintService] =================================================')
-      throw new Error(`การพิมพ์ล้มเหลว: ${error.message}`)
+      console.error('[PrintService] Error during qz.print:', error)
+      throw new Error('เกิดข้อผิดพลาดในการส่งงานพิมพ์: ' + error.message)
     }
   }
 
