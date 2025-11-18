@@ -2,17 +2,24 @@
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1200px">
       <template v-slot:content>
+        <!-- Header -->
         <div class="title-text-lg-bg">
-          <span><i class="bi bi-brush mr-2"></i></span>
-          <span>{{ `เเก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
+          <span><i class="bi bi-brush-fill mr-2"></i></span>
+          <span>{{ `แก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
         </div>
 
-        <form @submit.prevent="onSubmit" class="p-2">
-          <!-- image -->
-          <div class="form-col-container">
-            <div v-if="imageStage === 'SHOW'" class="image-container">
-              <div class="filter-container-img">
-                <!-- ส่วนแสดงรูป -->
+        <form @submit.prevent="onSubmit" class="form-content">
+          <!-- Image Section -->
+          <div class="section-container">
+            <div class="section-header">
+              <div class="section-title">
+                <i class="bi bi-image-fill"></i>
+                <span>รูปภาพสินค้า</span>
+              </div>
+            </div>
+
+            <div v-if="imageStage === 'SHOW'" class="image-upload-container">
+              <div class="image-preview-box">
                 <div class="image-preview">
                   <imagePreview
                     v-if="stock.imagePath"
@@ -29,295 +36,277 @@
                     src="@/assets/no-image.png"
                     :width="150"
                     :height="150"
-                    alt="Image"
-                    class="image-body"
+                    alt="No Image"
+                    class="image-body no-image"
                   />
                 </div>
 
-                <!-- ส่วนปุ่มควบคุม -->
-                <div class="image-controls mt-1">
+                <button
+                  class="btn btn-green btn-sm mt-3"
+                  type="button"
+                  @click="onSelectImage('SELECT')"
+                >
+                  <i class="bi bi-images mr-1"></i>
+                  <span>เลือกรูปสินค้า</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="imageStage === 'SELECT'" class="image-select-container">
+              <div class="search-box mb-3">
+                <div class="input-group">
+                  <input
+                    class="form-control"
+                    type="text"
+                    v-model="search"
+                    placeholder="ค้นหาด้วยชื่อรูปภาพ..."
+                    @keyup.enter="fetchLatestImage"
+                  />
                   <button
-                    class="btn btn-green btn-sm ms-2"
                     type="button"
-                    @click="onSelectImage('SELECT')"
+                    class="btn btn-main"
+                    @click="fetchLatestImage"
                   >
-                    <span class="bi bi-image"></span>
-                    <span>เลือกรูปสินค้า</span>
+                    <i class="bi bi-search"></i>
                   </button>
                 </div>
               </div>
-            </div>
-            <div v-if="imageStage === 'SELECT'" class="image-container">
-              <div class="input-group input-group-sm">
-                <div class="input-group input-group-inner">
-                  <input
-                    class="form-control"
-                    :style="getBgColor(search)"
-                    type="text"
-                    autocomplete="off"
-                    autocorrect="off"
-                    autocapitalize="off"
-                    spellcheck="false"
-                    v-model="search"
-                    placeholder="ค้นหาด้วยชื่อรูปภาพ"
-                    required
-                  />
-                  <div class="input-group-append">
-                    <button
-                      type="button"
-                      class="btn btn-main btn-sm btn-input-group mt-1"
-                      @click="fetchLatestImage"
-                    >
-                      <span class="bi bi-search"></span>
-                    </button>
+
+              <BaseDataTable
+                scrollHeight="250px"
+                :items="latestImage"
+                :totalRecords="latestImageTotalRecords"
+                :columns="imageColumns"
+                :perPage="take"
+                :rowsPerPageOptions="[10, 20, 50]"
+                :selectionMode="true"
+                :itemsSelection="selectedItems"
+                :selectionType="selectionType"
+                @update:itemsSelection="updateSelection"
+                @page="handlePageChange"
+                @sort="handleSortChange"
+              >
+                <template #imageTemplate="{ data }">
+                  <div class="table-image">
+                    <imagePreview
+                      :imageName="data.path"
+                      :path="data.path"
+                      :type="type"
+                      :width="40"
+                      :height="40"
+                      :preview="true"
+                    />
                   </div>
-                </div>
+                </template>
+
+                <template #paginator-buttons>
+                  <button
+                    class="btn btn-sm btn-secondary mr-2"
+                    type="button"
+                    @click="onSelectImage('SHOW')"
+                  >
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                  <button
+                    :class="['btn btn-sm', !selectedItems.length ? 'btn-secondary' : 'btn-main']"
+                    type="button"
+                    :disabled="!selectedItems.length"
+                    @click="onSelect"
+                  >
+                    <i class="bi bi-check-lg mr-1"></i>
+                    เลือก
+                  </button>
+                </template>
+              </BaseDataTable>
+            </div>
+          </div>
+
+          <!-- Product Information Section -->
+          <div class="section-container">
+            <div class="section-header">
+              <div class="section-title">
+                <i class="bi bi-clipboard2-check-fill"></i>
+                <span>ข้อมูลสินค้า</span>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <!-- Mold -->
+              <div class="form-group full-width">
+                <label class="form-label">
+                  <i class="bi bi-box mr-1"></i>
+                  แม่พิมพ์
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  class="form-control"
+                  :class="{ 'has-value': stock.mold }"
+                  type="text"
+                  v-model="stock.mold"
+                  placeholder="ระบุแม่พิมพ์"
+                  required
+                />
               </div>
 
-              <div>
-                <BaseDataTable
-                  scrollHeight="200px"
-                  :items="latestImage"
-                  :totalRecords="latestImageTotalRecords"
-                  :columns="imageColumns"
-                  :perPage="take"
-                  :rowsPerPageOptions="[10, 20, 50]"
-                  :selectionMode="true"
-                  :itemsSelection="selectedItems"
-                  :selectionType="selectionType"
-                  @update:itemsSelection="updateSelection"
-                  @page="handlePageChange"
-                  @sort="handleSortChange"
-                >
-                  <!-- Image Column -->
-                  <template #imageTemplate="{ data }">
-                    <div>
-                      <imagePreview
-                        :imageName="data.path"
-                        :path="data.path"
-                        :type="type"
-                        :width="30"
-                        :height="30"
-                        :preview="true"
-                      />
-                    </div>
-                  </template>
+              <!-- Product Name EN -->
+              <div class="form-group">
+                <label class="form-label">
+                  ชื่อสินค้า (EN)
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  class="form-control"
+                  :class="{ 'has-value': stock.productNameEn }"
+                  type="text"
+                  v-model="stock.productNameEn"
+                  placeholder="Product Name (English)"
+                  required
+                />
+              </div>
 
-                  <!-- Custom Footer/Paginator Buttons -->
-                  <template #paginator-buttons>
-                    <button
-                      class="btn btn-sm btn-dark mr-2"
-                      type="button"
-                      @click="onSelectImage('SHOW')"
-                    >
-                      <span><i class="bi bi-x"></i></span>
-                    </button>
-                    <button
-                      :class="[
-                        'btn btn-sm',
-                        !selectedItems.length > 0 ? 'btn-secondary' : 'btn-main'
-                      ]"
-                      type="button"
-                      :disabled="!selectedItems.length > 0"
-                      title="ปรับปรุง"
-                      @click="onSelect"
-                    >
-                      <span><i class="bi bi-pencil-square"></i></span>
-                    </button>
-                  </template>
-                </BaseDataTable>
+              <!-- Product Name TH -->
+              <div class="form-group">
+                <label class="form-label">
+                  ชื่อสินค้า (TH)
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  class="form-control"
+                  :class="{ 'has-value': stock.productNameTh }"
+                  type="text"
+                  v-model="stock.productNameTh"
+                  placeholder="ชื่อสินค้า (ไทย)"
+                  required
+                />
+              </div>
+
+              <!-- Quantity -->
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="bi bi-boxes mr-1"></i>
+                  จำนวน
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  class="form-control"
+                  :class="{ 'has-value': stock.qty }"
+                  type="number"
+                  step="any"
+                  min="0"
+                  v-model="stock.qty"
+                  placeholder="0"
+                  required
+                />
+              </div>
+
+              <!-- Price -->
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="bi bi-cash mr-1"></i>
+                  ราคาขาย
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  class="form-control"
+                  :class="{ 'has-value': stock.productPrice }"
+                  type="number"
+                  step="any"
+                  min="0"
+                  v-model="stock.productPrice"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <!-- Size -->
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="bi bi-rulers mr-1"></i>
+                  ขนาด
+                </label>
+                <input
+                  class="form-control"
+                  :class="{ 'has-value': stock.size }"
+                  type="text"
+                  v-model="stock.size"
+                  placeholder="ระบุขนาด"
+                  :required="isRequiredSizeField(stock.productType)"
+                />
+              </div>
+
+              <!-- Location -->
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="bi bi-geo-alt mr-1"></i>
+                  คลังจัดเก็บ
+                </label>
+                <input
+                  class="form-control"
+                  type="text"
+                  v-model="stock.location"
+                  placeholder="คลังจัดเก็บ"
+                  disabled
+                />
               </div>
             </div>
           </div>
 
-          <div class="data-container mt-4">
-            <div class="d-flex justify-content-between">
-              <div class="vertical-center-container">
-                <span class="title-text-lg bi bi-clipboard2-check-fill"></span>
-                <span class="title-text-lg ml-2">ข้อมูลสินค้า</span>
+          <!-- Materials Section -->
+          <div class="section-container">
+            <div class="section-header">
+              <div class="section-title">
+                <i class="bi bi-gem"></i>
+                <span>ทอง | เพชร | พลอย</span>
               </div>
-              <div></div>
-            </div>
-            <div class="filter-container data-container pt-3 pb-4">
-              <!-- mold -->
-              <div class="form-col-sm-container">
-                <div>
-                  <div>
-                    <span class="title-text">เเม่พิมพ์</span>
-                    <span class="title-text"> *</span>
-                  </div>
-                  <input
-                    class="form-control form-control-sm"
-                    :style="getBgColor(stock.mold)"
-                    type="text"
-                    v-model="stock.mold"
-                    required
-                  />
-                </div>
-                <div></div>
-              </div>
-
-              <!-- name -->
-              <div class="form-col-sm-container mt-2">
-                <div>
-                  <div>
-                    <span class="title-text">ชื่อสินค้า EN</span>
-                    <span class="title-text"> *</span>
-                  </div>
-                  <input
-                    class="form-control form-control-sm"
-                    :style="getBgColor(stock.productNameEn)"
-                    type="text"
-                    v-model="stock.productNameEn"
-                    required
-                  />
-                </div>
-                <div>
-                  <div>
-                    <span class="title-text">ชื่อสินค้า TH</span>
-                    <span class="title-text"> *</span>
-                  </div>
-                  <input
-                    class="form-control form-control-sm"
-                    :style="getBgColor(stock.productNameTh)"
-                    type="text"
-                    v-model="stock.productNameTh"
-                    required
-                  />
-                </div>
-              </div>
-
-              <!-- qty && price -->
-              <div class="form-col-sm-container mt-2">
-                <div>
-                  <div>
-                    <span class="title-text">จำนวน</span>
-                    <span class="title-text"> *</span>
-                  </div>
-                  <input
-                    class="form-control form-control-sm"
-                    :style="getBgColor(stock.qty)"
-                    type="number"
-                    step="any"
-                    min="0"
-                    v-model="stock.qty"
-                    required
-                  />
-                </div>
-                <div>
-                  <div>
-                    <span class="title-text">ราคาขาย</span>
-                    <span class="title-text"> *</span>
-                  </div>
-                  <input
-                    class="form-control form-control-sm"
-                    :style="getBgColor(stock.productPrice)"
-                    type="number"
-                    step="any"
-                    min="0"
-                    v-model="stock.productPrice"
-                    required
-                  />
-                </div>
-              </div>
-
-              <!-- size && location -->
-              <div class="form-col-sm-container mt-2">
-                <div>
-                  <div>
-                    <span class="title-text">ขนาด</span>
-                    <!-- <span class="title-text"> *</span> -->
-                  </div>
-                  <input
-                    class="form-control form-control-sm"
-                    :style="getBgColor(stock.size)"
-                    type="text"
-                    v-model="stock.size"
-                    :required="isRequiredSizeField(stock.productType)"
-                  />
-                </div>
-                <div>
-                  <div>
-                    <span class="title-text">คลังจัดเก็บ</span>
-                    <!-- <span class="title-text"> *</span> -->
-                  </div>
-                  <input
-                    class="form-control form-control-sm"
-                    type="text"
-                    v-model="stock.location"
-                    autocomplete="off"
-                    autocorrect="off"
-                    autocapitalize="off"
-                    spellcheck="false"
-                    disabled
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="data-container mt-4">
-            <div class="d-flex justify-content-between">
-              <div class="vertical-center-container">
-                <span class="title-text-lg bi bi-gem"></span>
-                <span class="title-text-lg ml-2">ทอง | เพชร | พลอย</span>
-              </div>
-              <!-- Add button -->
-              <div class="d-flex justify-content-center mt-2">
-                <div type="button" class="pr-2 text-dark" @click="addMaterialItem(stock.materials)">
-                  <span class="bi bi-plus-lg"></span>
-                  <span></span>
-                </div>
-              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-green"
+                @click="addMaterialItem(stock.materials)"
+              >
+                <i class="bi bi-plus-lg mr-1"></i>
+                เพิ่มวัสดุ
+              </button>
             </div>
 
-            <BaseDataTable :items="stock.materials" :columns="materialColumns" :paginator="false">
-              <template #typeTemplate="{ data }">
-                <div class="d-flex justify-content-center">
+            <div class="material-table-wrapper">
+              <BaseDataTable
+                :items="stock.materials"
+                :columns="materialColumns"
+                :paginator="false"
+              >
+                <template #typeTemplate="{ data }">
                   <Dropdown
                     v-model="data.type"
                     :options="masterMaterialType"
                     optionLabel="description"
                     optionValue="value"
-                    class="w-full md:w-14rem"
-                    :class="data.type === true ? `p-invalid` : ``"
+                    placeholder="เลือกประเภท"
+                    class="w-full"
                   />
-                </div>
-              </template>
+                </template>
 
-              <template #typeCodeTemplate="{ data }">
-                <div class="">
+                <template #typeCodeTemplate="{ data }">
                   <div v-if="data.type === 'Gold' || data.type === 'Silver'">
                     <Dropdown
                       v-model="data.typeCode"
                       :options="masterGold"
                       optionLabel="description"
                       optionValue="code"
-                      class="w-full md:w-14rem"
                       placeholder="เลือกทอง"
-                      :showClear="data.typeCode ? true : false"
-                    >
-                    </Dropdown>
+                      :showClear="!!data.typeCode"
+                      class="w-full"
+                    />
                   </div>
                   <div v-else-if="data.type === 'Diamond'">
-                    <!-- <input
-                              type="text"
-                              v-model="data.typeCode"
-                              class="form-control"
-                              placeholder="เกรดเพชร"
-                              :style="getBgColor(false, data.typeCode)"
-                              @input="updateTypeBarcode(data, slotProps.data.stockReceiptNumber)"
-                            /> -->
                     <Dropdown
                       v-model="data.typeCode"
                       :options="masterDiamondGrade"
                       optionLabel="description"
                       optionValue="nameEn"
-                      class="w-full md:w-14rem"
-                      placeholder="เลือกพลอย"
-                      :showClear="data.typeCode ? true : false"
-                    >
-                    </Dropdown>
+                      placeholder="เลือกเพชร"
+                      :showClear="!!data.typeCode"
+                      class="w-full"
+                    />
                   </div>
                   <div v-else-if="data.type === 'Gem'">
                     <Dropdown
@@ -325,119 +314,102 @@
                       :options="masterGem"
                       optionLabel="description"
                       optionValue="nameEn"
-                      class="w-full md:w-14rem"
                       placeholder="เลือกพลอย"
-                      :showClear="data.typeCode ? true : false"
-                    >
-                    </Dropdown>
+                      :showClear="!!data.typeCode"
+                      class="w-full"
+                    />
                   </div>
-                  <div v-else class="vertical-center-container text-center">
-                    <span> --- โปรดระบุประเภท ---</span>
+                  <div v-else class="text-muted text-center">
+                    <small>กรุณาเลือกประเภท</small>
                   </div>
-                </div>
-              </template>
+                </template>
 
-              <template #sizeTemplate="{ data }">
-                <div class="d-flex justify-content-center">
+                <template #sizeTemplate="{ data }">
                   <input
                     type="text"
                     v-model="data.size"
-                    class="form-control"
-                    :style="getBgColor(data.size)"
+                    class="form-control form-control-sm"
+                    placeholder="ขนาด"
                   />
-                </div>
-              </template>
+                </template>
 
-              <template #regionTemplate="{ data }">
-                <div class="d-flex justify-content-center">
+                <template #regionTemplate="{ data }">
                   <input
                     type="text"
                     v-model="data.region"
-                    class="form-control"
-                    :style="getBgColor(data.region)"
+                    class="form-control form-control-sm"
+                    placeholder="แหล่งผลิต"
                   />
-                </div>
-              </template>
+                </template>
 
-              <template #qtyTemplate="{ data }">
-                <div class="d-flex justify-content-center">
-                  <input
-                    type="number"
-                    v-model="data.qty"
-                    class="form-control"
-                    :style="getBgColor(data.qty)"
-                    placeholder="จำนวน"
-                    min="0"
-                  />
-                  <input
-                    type="text"
-                    style="margin-left: 1px"
-                    v-model="data.qtyUnit"
-                    class="form-control"
-                    :style="getBgColor(data.qtyUnit)"
-                    placeholder="หน่วย"
-                    min="0"
-                  />
-                </div>
-              </template>
+                <template #qtyTemplate="{ data }">
+                  <div class="input-pair">
+                    <input
+                      type="number"
+                      v-model="data.qty"
+                      class="form-control form-control-sm"
+                      placeholder="จำนวน"
+                      min="0"
+                    />
+                    <input
+                      type="text"
+                      v-model="data.qtyUnit"
+                      class="form-control form-control-sm"
+                      placeholder="หน่วย"
+                    />
+                  </div>
+                </template>
 
-              <template #weightTemplate="{ data }">
-                <div class="d-flex justify-content-center">
-                  <input
-                    type="number"
-                    v-model="data.weight"
-                    class="form-control"
-                    :style="getBgColor(data.weight)"
-                    placeholder="น้ำหนัก"
-                    min="0"
-                    step="0.01"
-                  />
-                  <input
-                    type="text"
-                    style="margin-left: 1px"
-                    v-model="data.weightUnit"
-                    class="form-control"
-                    :style="getBgColor(data.qtyUnit)"
-                    placeholder="หน่วย"
-                    min="0"
-                  />
-                </div>
-              </template>
+                <template #weightTemplate="{ data }">
+                  <div class="input-pair">
+                    <input
+                      type="number"
+                      v-model="data.weight"
+                      class="form-control form-control-sm"
+                      placeholder="น้ำหนัก"
+                      min="0"
+                      step="0.01"
+                    />
+                    <input
+                      type="text"
+                      v-model="data.weightUnit"
+                      class="form-control form-control-sm"
+                      placeholder="หน่วย"
+                    />
+                  </div>
+                </template>
 
-              <template #priceTemplate="{ data }">
-                <div class="d-flex justify-content-center">
+                <template #priceTemplate="{ data }">
                   <input
                     type="number"
                     v-model="data.price"
-                    class="form-control"
-                    :style="getBgColor(data.price)"
+                    class="form-control form-control-sm"
+                    placeholder="ราคา"
                     min="0"
                     step="0.01"
                   />
-                </div>
-              </template>
+                </template>
 
-              <template #actionTemplate="{ index }">
-                <div class="d-flex align-items-center mt-1">
+                <template #actionTemplate="{ index }">
                   <button
                     type="button"
                     class="btn btn-red btn-sm"
                     @click="removeMaterialItem(stock, index)"
+                    title="ลบรายการ"
                   >
                     <i class="bi bi-trash"></i>
                   </button>
-                </div>
-              </template>
-            </BaseDataTable>
+                </template>
+              </BaseDataTable>
+            </div>
           </div>
 
-          <div class="data-container mt-4 pb-4">
-            <div class="d-flex justify-content-center">
-              <button class="btn btn-sm btn-green" type="submit">
-                <span class="bi bi-calendar-check mr-2"></span>
-                <span>เเก้ไขสินค้า</span>
-              </button>
-            </div>
+          <!-- Submit Button -->
+          <div class="submit-container">
+            <button class="btn btn-green btn-submit" type="submit">
+              <i class="bi bi-check-circle mr-2"></i>
+              <span>บันทึกการแก้ไข</span>
+            </button>
           </div>
         </form>
       </template>
@@ -484,7 +456,7 @@ export default {
     modelStock: {
       type: Object,
       required: true,
-      default: () => {}
+      default: () => ({})
     }
   },
 
@@ -503,7 +475,6 @@ export default {
   watch: {
     isShow: {
       handler(val) {
-        //console.log('isShow', val)
         this.isShowModal = val
       },
       immediate: true
@@ -522,7 +493,6 @@ export default {
       isShowModal: false,
       type: 'STOCK-PRODUCT',
       imageStage: 'SHOW',
-
       stock: {},
       search: null,
 
@@ -530,16 +500,15 @@ export default {
         {
           field: 'image',
           header: '',
-          width: '50px',
+          width: '60px',
           sortable: false,
           align: 'center'
         },
-
         {
           field: 'name',
           header: 'ชื่อ',
           sortable: false,
-          minWidth: '150px'
+          minWidth: '200px'
         },
         {
           field: 'createDate',
@@ -548,73 +517,24 @@ export default {
           format: 'datetime',
           minWidth: '150px'
         }
-        // {
-        //   field: 'remark',
-        //   header: 'รายละเอียด',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // }
       ],
-      tableHeight: '800px',
       take: 10,
       skip: 0,
       sort: [],
-
       latestImage: [],
       latestImageTotalRecords: 0,
       selectedItems: [],
       selectionType: 'single',
 
       materialColumns: [
-        {
-          field: 'type',
-          header: 'ประเภท',
-          sortable: false,
-          width: '100px'
-        },
-        {
-          field: 'typeCode',
-          header: 'รหัส',
-          sortable: false,
-          minWidth: '100px'
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: false,
-          width: '100px'
-        },
-        {
-          field: 'region',
-          header: 'เเหล่งผลิต',
-          sortable: false,
-          width: '80px'
-        },
-        {
-          field: 'qty',
-          header: 'จำนวน',
-          sortable: false,
-          width: '200px'
-        },
-        {
-          field: 'weight',
-          header: 'น้ำหนัก',
-          sortable: false,
-          width: '200px'
-        },
-        {
-          field: 'price',
-          header: 'ราคา',
-          sortable: false,
-          width: '100px'
-        },
-
-        {
-          field: 'action',
-          header: '',
-          sortable: false,
-          width: '50px'
-        }
+        { field: 'type', header: 'ประเภท', sortable: false, width: '120px' },
+        { field: 'typeCode', header: 'รหัส', sortable: false, minWidth: '150px' },
+        { field: 'size', header: 'ขนาด', sortable: false, width: '100px' },
+        { field: 'region', header: 'แหล่งผลิต', sortable: false, width: '120px' },
+        { field: 'qty', header: 'จำนวน', sortable: false, width: '180px' },
+        { field: 'weight', header: 'น้ำหนัก', sortable: false, width: '180px' },
+        { field: 'price', header: 'ราคา', sortable: false, width: '120px' },
+        { field: 'action', header: '', sortable: false, width: '60px' }
       ],
       masterMaterialType: [
         { value: 'Gold', description: 'ทอง' },
@@ -629,21 +549,16 @@ export default {
     onClear() {
       this.stock = {}
       this.imageStage = 'SHOW'
-      ;(this.search = null), (this.selectedItems = [])
+      this.search = null
+      this.selectedItems = []
       this.latestImage = []
     },
+
     closeModal() {
       this.$emit('closeModal')
       this.onClear()
     },
 
-    getBgColor(data) {
-      if (data) {
-        return 'background-color: #b5dad4'
-      } else {
-        return 'background-color: #dad4b5'
-      }
-    },
     isRequiredSizeField(data) {
       return ['G', 'B', 'R'].includes(data)
     },
@@ -651,6 +566,7 @@ export default {
     removeMaterialItem(item, index) {
       item.materials.splice(index, 1)
     },
+
     addMaterialItem(data) {
       data.push({
         type: '',
@@ -667,6 +583,7 @@ export default {
       this.take = e.rows
       this.fetchLatestImage()
     },
+
     handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
@@ -676,6 +593,7 @@ export default {
       }))
       this.fetchLatestImage()
     },
+
     async fetchLatestImage() {
       this.selectedItems = []
       const res = await this.stockProductImageStore.fetchListImage({
@@ -691,41 +609,41 @@ export default {
 
       if (res) {
         this.latestImageTotalRecords = res.total
-        this.latestImage = res.data.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-            year: item.year,
-            remark: item.remark,
-            path: item.namePath,
-            createDate: item.createDate
-          }
-        })
+        this.latestImage = res.data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          year: item.year,
+          remark: item.remark,
+          path: item.namePath,
+          createDate: item.createDate
+        }))
       }
     },
+
     updateSelection(newSelection) {
       this.selectedItems = newSelection
     },
+
     onSelectImage(stage) {
       this.imageStage = stage
-      this.fetchLatestImage()
+      if (stage === 'SELECT') {
+        this.fetchLatestImage()
+      }
     },
+
     onSelect() {
       this.stock.imagePath = this.selectedItems[0].path
       this.stock.name = this.selectedItems[0].name
-      console.log('stock:', this.stock)
-
       this.imageStage = 'SHOW'
     },
 
     onSubmit() {
-      console.log('submit', this.stock)
       swAlert.confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
         this.fetchConfirm()
       })
     },
+
     async fetchConfirm() {
-      //set type barcode
       if (this.stock.materials && this.stock.materials.length > 0) {
         this.stock.materials.forEach((item) => {
           item.typeBarcode = this.getBarcode(item)
@@ -741,6 +659,7 @@ export default {
         this.onClear()
       }
     },
+
     getBarcode(item) {
       let display = ''
 
@@ -771,83 +690,227 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form';
 
-.form-col-fix-2-container {
-  display: grid;
-  //gap: 10px;
-  padding: 0px;
-  grid-template-columns: 4fr 2fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
+.form-content {
+  padding: 1.5rem;
 }
 
-.image-container {
-  padding: 0px 100px;
+.section-container {
+  margin-bottom: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.data-container {
-  padding: 0px 100px;
-}
-
-.gem-container {
-  padding: 0px 10px;
-}
-
-.filter-container-img {
+.section-header {
+  background: linear-gradient(135deg, var(--base-green) 0%, #026b6e 100%);
+  padding: 1rem 1.5rem;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+
+  i {
+    font-size: 1.3rem;
+  }
+}
+
+// Image Upload Section
+.image-upload-container {
+  padding: 2rem;
+}
+
+.image-preview-box {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  //gap: 1rem;
-  padding: 1.5rem;
-  border: 2px dashed #dddddd;
-  border-radius: 8px;
-  background-color: #f8f9fa;
+  justify-content: center;
+  padding: 2rem;
+  border: 2px dashed #ddd;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
   transition: all 0.3s ease;
-  height: 299px;
 
   &:hover {
-    border-color: #adb5bd;
+    border-color: var(--base-green);
+    background: linear-gradient(145deg, #fff 0%, #f8f9fa 100%);
   }
 
   .image-preview {
-    //width: 200px;
-    //height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: f8f9fa;
-    border-radius: 4px;
-    //box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
   }
 
-  .image-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
+  .image-body {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
 
     &:hover {
-      transform: translateY(-1px);
+      transform: scale(1.05);
+    }
+
+    &.no-image {
+      opacity: 0.6;
     }
   }
 }
 
-.image-body {
-  //height: 100px;
-  //width: 100px;
-  border: 1px solid var(--base-color);
+.image-select-container {
+  padding: 1.5rem;
 }
 
-.btn-input-group {
-  height: 35px;
-  padding: 6px 12px;
-  margin-top: 5px !important;
+.search-box {
+  .input-group {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+
+    input {
+      border: 1px solid #dee2e6;
+      border-right: none;
+      padding: 0.75rem 1rem;
+
+      &:focus {
+        border-color: var(--base-green);
+        box-shadow: none;
+      }
+    }
+
+    .btn {
+      border: 1px solid var(--base-green);
+      padding: 0.75rem 1.5rem;
+    }
+  }
+}
+
+.table-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Form Grid
+.form-grid {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--base-sub-color);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+
+  i {
+    color: var(--base-green);
+  }
+
+  .text-danger {
+    color: var(--base-red);
+    margin-left: 0.25rem;
+  }
+}
+
+.form-control {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  transition: all 0.2s ease;
+  background: #fff;
+
+  &:focus {
+    border-color: var(--base-green);
+    box-shadow: 0 0 0 0.2rem rgba(3, 131, 135, 0.15);
+  }
+
+  &.has-value {
+    background: #e8f5f3;
+    border-color: var(--base-green);
+  }
+
+  &:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+  }
+}
+
+// Material Table
+.material-table-wrapper {
+  padding: 1.5rem;
+
+  .input-pair {
+    display: flex;
+    gap: 0.25rem;
+
+    input:first-child {
+      flex: 2;
+    }
+
+    input:last-child {
+      flex: 1;
+    }
+  }
+}
+
+// Submit Button
+.submit-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(to bottom, transparent, rgba(3, 131, 135, 0.05));
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-submit {
+  padding: 0.75rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(3, 131, 135, 0.3);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(3, 131, 135, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
 }
 </style>
