@@ -3,6 +3,7 @@ import { printService } from './PrintService.js'
 /**
  * GemBarcodeService - Service for generating and printing jewelry barcode labels
  * Supports Honeywell PC42t printer with 4cm x 3cm sticker size
+ * Supports both ZPL and EPL printer languages
  */
 class GemBarcodeService {
   constructor() {
@@ -10,6 +11,60 @@ class GemBarcodeService {
     // 4cm x 3cm = 1.57" x 1.18" = 319 x 240 dots
     this.labelWidth = 319
     this.labelHeight = 240
+
+    // Printer language: 'EPL' or 'ZPL'
+    // PC42t default is EPL
+    this.printerLanguage = 'EPL'
+  }
+
+  /**
+   * Set printer language
+   * @param {string} language - 'EPL' or 'ZPL'
+   */
+  setPrinterLanguage(language) {
+    if (language !== 'EPL' && language !== 'ZPL') {
+      throw new Error('Printer language must be EPL or ZPL')
+    }
+    console.log('[GemBarcodeService] Setting printer language to:', language)
+    this.printerLanguage = language
+  }
+
+  /**
+   * Generate EPL command for jewelry barcode (PC42t default)
+   * @param {Object} data - Barcode data
+   * @param {string} data.stockCode - Stock code (e.g., "*SA0126*")
+   * @param {string} data.barcode - Barcode value (e.g., "SA0126")
+   * @param {string} data.description - Product description
+   * @param {string} data.date - Date string
+   * @param {string} data.goldType - Gold type (e.g., "18K-A")
+   * @returns {string} - EPL command string
+   */
+  generateEPL(data) {
+    const { stockCode, barcode, description, date, goldType } = data
+
+    // EPL Template for 4cm x 3cm sticker (Honeywell PC42t - 203 DPI)
+    // Label size: 319 x 240 dots
+    const epl = `
+N
+q319
+Q240,24
+S4
+
+A10,10,0,3,1,1,N,"${this.escapeEPL(stockCode)}"
+
+B90,50,0,1,2,3,60,N,"${this.escapeEPL(barcode)}"
+
+A10,120,0,2,1,1,N,"${this.escapeEPL(description)}"
+
+A10,150,0,1,1,1,N,"${this.escapeEPL(date)}"
+A200,150,0,1,1,1,N,"${this.escapeEPL(goldType)}"
+
+A10,180,0,1,1,1,N,"Duang Kaew Jewelry"
+
+P1
+`
+
+    return epl.trim()
   }
 
   /**
@@ -74,6 +129,31 @@ class GemBarcodeService {
   }
 
   /**
+   * Generate command based on selected printer language
+   * @param {Object} data - Barcode data
+   * @returns {string} - EPL or ZPL command string
+   */
+  generateCommand(data) {
+    console.log('[GemBarcodeService] Generating command in', this.printerLanguage, 'format')
+    if (this.printerLanguage === 'EPL') {
+      return this.generateEPL(data)
+    } else {
+      return this.generateZPL(data)
+    }
+  }
+
+  /**
+   * Escape special characters for EPL
+   * @param {string} text - Input text
+   * @returns {string} - Escaped text
+   */
+  escapeEPL(text) {
+    if (!text) return ''
+    // EPL uses quotes, so escape them
+    return text.replace(/"/g, '\\"')
+  }
+
+  /**
    * Escape special characters for ZPL
    * @param {string} text - Input text
    * @returns {string} - Escaped text
@@ -96,31 +176,54 @@ class GemBarcodeService {
    */
   async printBarcode(data, printerName = null) {
     try {
-      // Validate data
-      this.validateBarcodeData(data)
+      console.log('[GemBarcodeService] ========== PRINT BARCODE START ==========')
+      console.log('[GemBarcodeService] Barcode data:', JSON.stringify(data, null, 2))
 
-      // Generate ZPL
-      const zpl = this.generateZPL(data)
+      // Validate data
+      console.log('[GemBarcodeService] Validating barcode data...')
+      this.validateBarcodeData(data)
+      console.log('[GemBarcodeService] ✓ Validation passed')
+
+      // Generate command (EPL or ZPL)
+      console.log('[GemBarcodeService] Generating', this.printerLanguage, 'command...')
+      const command = this.generateCommand(data)
+      console.log('[GemBarcodeService] ✓', this.printerLanguage, 'command generated')
+      console.log('[GemBarcodeService] Command length:', command.length, 'characters')
+      console.log('[GemBarcodeService] Command preview:', command.substring(0, 150))
 
       // Connect to QZ Tray if not connected
       if (!printService.isConnected()) {
+        console.log('[GemBarcodeService] QZ Tray not connected, connecting...')
         await printService.connect()
+      } else {
+        console.log('[GemBarcodeService] QZ Tray already connected')
       }
 
       // Auto-detect printer if not specified
       if (!printerName && !printService.selectedPrinter) {
+        console.log('[GemBarcodeService] No printer selected, auto-detecting...')
         await printService.detectHoneywellPrinter()
+      } else {
+        console.log('[GemBarcodeService] Using printer:', printerName || printService.selectedPrinter)
       }
 
       // Print
-      await printService.print(zpl, printerName)
+      console.log('[GemBarcodeService] Sending to printer...')
+      await printService.print(command, printerName)
+
+      console.log('[GemBarcodeService] ✓ Print completed successfully')
+      console.log('[GemBarcodeService] ========== PRINT BARCODE END ==========')
 
       return {
         success: true,
         message: 'พิมพ์บาร์โค้ดสำเร็จ'
       }
     } catch (error) {
-      console.error('Error printing barcode:', error)
+      console.error('[GemBarcodeService] ========== PRINT BARCODE FAILED ==========')
+      console.error('[GemBarcodeService] ✗ Error printing barcode:', error)
+      console.error('[GemBarcodeService] Error message:', error.message)
+      console.error('[GemBarcodeService] Error stack:', error.stack)
+      console.error('[GemBarcodeService] ================================================')
       throw error
     }
   }
@@ -134,33 +237,55 @@ class GemBarcodeService {
    */
   async printBarcodes(dataArray, copiesPerItem = 1, printerName = null) {
     try {
+      console.log('[GemBarcodeService] ========== BATCH PRINT START ==========')
+      console.log('[GemBarcodeService] Items to print:', dataArray.length)
+      console.log('[GemBarcodeService] Copies per item:', copiesPerItem)
+      console.log('[GemBarcodeService] Total labels:', dataArray.length * copiesPerItem)
+
       // Validate all data
-      dataArray.forEach((data) => this.validateBarcodeData(data))
+      console.log('[GemBarcodeService] Validating all barcode data...')
+      dataArray.forEach((data, index) => {
+        console.log(`[GemBarcodeService] Validating item ${index + 1}:`, data.barcode)
+        this.validateBarcodeData(data)
+      })
+      console.log('[GemBarcodeService] ✓ All validations passed')
 
       // Connect to QZ Tray if not connected
       if (!printService.isConnected()) {
+        console.log('[GemBarcodeService] QZ Tray not connected, connecting...')
         await printService.connect()
       }
 
       // Auto-detect printer if not specified
       if (!printerName && !printService.selectedPrinter) {
+        console.log('[GemBarcodeService] No printer selected, auto-detecting...')
         await printService.detectHoneywellPrinter()
       }
 
-      // Generate ZPL commands for all items with copies
-      const zplCommands = []
-      dataArray.forEach((data) => {
+      // Generate commands for all items with copies
+      console.log('[GemBarcodeService] Generating', this.printerLanguage, 'commands...')
+      const commands = []
+      dataArray.forEach((data, index) => {
+        console.log(`[GemBarcodeService] Generating ${copiesPerItem} copies for item ${index + 1}`)
         for (let i = 0; i < copiesPerItem; i++) {
-          zplCommands.push(this.generateZPL(data))
+          commands.push(this.generateCommand(data))
         }
       })
+      console.log('[GemBarcodeService] ✓ Generated', commands.length, this.printerLanguage, 'commands')
 
       // Print batch
-      const results = await printService.printBatch(zplCommands, printerName)
+      console.log('[GemBarcodeService] Starting batch print...')
+      const results = await printService.printBatch(commands, printerName)
 
       // Count successes and failures
       const successCount = results.filter((r) => r.success).length
       const failCount = results.filter((r) => !r.success).length
+
+      console.log('[GemBarcodeService] ========== BATCH PRINT RESULTS ==========')
+      console.log('[GemBarcodeService] Total:', results.length)
+      console.log('[GemBarcodeService] Success:', successCount)
+      console.log('[GemBarcodeService] Failed:', failCount)
+      console.log('[GemBarcodeService] ============================================')
 
       return {
         success: failCount === 0,
@@ -171,7 +296,10 @@ class GemBarcodeService {
         message: `พิมพ์สำเร็จ ${successCount} จาก ${results.length} รายการ`
       }
     } catch (error) {
-      console.error('Error printing barcodes:', error)
+      console.error('[GemBarcodeService] ========== BATCH PRINT FAILED ==========')
+      console.error('[GemBarcodeService] ✗ Error printing barcodes:', error)
+      console.error('[GemBarcodeService] Error message:', error.message)
+      console.error('[GemBarcodeService] =============================================')
       throw error
     }
   }
@@ -196,7 +324,22 @@ class GemBarcodeService {
   }
 
   /**
-   * Preview barcode data (return ZPL for testing)
+   * Preview barcode data (return command for testing)
+   * @param {Object} data - Barcode data
+   * @returns {string} - EPL or ZPL command string
+   */
+  previewCommand(data) {
+    try {
+      this.validateBarcodeData(data)
+      return this.generateCommand(data)
+    } catch (error) {
+      console.error('[GemBarcodeService] Error generating preview:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Preview ZPL command (backward compatibility)
    * @param {Object} data - Barcode data
    * @returns {string} - ZPL command string
    */
@@ -205,7 +348,22 @@ class GemBarcodeService {
       this.validateBarcodeData(data)
       return this.generateZPL(data)
     } catch (error) {
-      console.error('Error generating preview:', error)
+      console.error('[GemBarcodeService] Error generating ZPL preview:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Preview EPL command
+   * @param {Object} data - Barcode data
+   * @returns {string} - EPL command string
+   */
+  previewEPL(data) {
+    try {
+      this.validateBarcodeData(data)
+      return this.generateEPL(data)
+    } catch (error) {
+      console.error('[GemBarcodeService] Error generating EPL preview:', error)
       throw error
     }
   }
@@ -216,22 +374,41 @@ class GemBarcodeService {
    */
   async testPrinter() {
     try {
+      console.log('[GemBarcodeService] ========== PRINTER TEST START ==========')
+
       if (!printService.isConnected()) {
+        console.log('[GemBarcodeService] Connecting to QZ Tray...')
         await printService.connect()
       }
 
+      console.log('[GemBarcodeService] Getting printer list...')
       const printers = await printService.getPrinters()
+
+      console.log('[GemBarcodeService] Detecting Honeywell printer...')
       const honeywellPrinter = await printService.detectHoneywellPrinter()
+
+      const qzVersion = await printService.getVersion()
+
+      console.log('[GemBarcodeService] ========== PRINTER TEST RESULTS ==========')
+      console.log('[GemBarcodeService] QZ Tray version:', qzVersion)
+      console.log('[GemBarcodeService] Available printers:', printers)
+      console.log('[GemBarcodeService] Selected printer:', honeywellPrinter)
+      console.log('[GemBarcodeService] ✓ Test completed successfully')
+      console.log('[GemBarcodeService] ============================================')
 
       return {
         success: true,
         connected: true,
-        qzVersion: await printService.getVersion(),
+        qzVersion: qzVersion,
         printers: printers,
         selectedPrinter: honeywellPrinter,
         message: 'เชื่อมต่อเครื่องพิมพ์สำเร็จ'
       }
     } catch (error) {
+      console.error('[GemBarcodeService] ========== PRINTER TEST FAILED ==========')
+      console.error('[GemBarcodeService] ✗ Error:', error.message)
+      console.error('[GemBarcodeService] ==========================================')
+
       return {
         success: false,
         connected: false,
@@ -246,6 +423,8 @@ class GemBarcodeService {
    * @returns {Promise<void>}
    */
   async printTestLabel() {
+    console.log('[GemBarcodeService] ========== TEST LABEL PRINT ==========')
+
     const testData = {
       stockCode: '*TEST001*',
       barcode: 'TEST001',
@@ -254,7 +433,14 @@ class GemBarcodeService {
       goldType: 'TEST'
     }
 
-    return await this.printBarcode(testData)
+    console.log('[GemBarcodeService] Test data:', testData)
+    console.log('[GemBarcodeService] Printing test label...')
+
+    const result = await this.printBarcode(testData)
+
+    console.log('[GemBarcodeService] ========== TEST LABEL COMPLETE ==========')
+
+    return result
   }
 }
 

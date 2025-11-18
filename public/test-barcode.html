@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Barcode Printing - Honeywell PC42t</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #921313;
+            border-bottom: 3px solid #921313;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #038387;
+            margin-top: 30px;
+        }
+        .info-box {
+            background: #fffbea;
+            border-left: 4px solid #fabc3f;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .success-box {
+            background: #e8f5f5;
+            border-left: 4px solid #038387;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .code-box {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            background: #038387;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #026d70;
+        }
+        button.secondary {
+            background: #921313;
+        }
+        button.secondary:hover {
+            background: #700f0f;
+        }
+        .radio-group {
+            margin: 20px 0;
+        }
+        .radio-group label {
+            margin-right: 20px;
+            font-size: 16px;
+        }
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖨️ ทดสอบพิมพ์บาร์โค้ด - Honeywell PC42t</h1>
+
+        <div class="info-box">
+            <strong>ℹ️ ข้อมูลเครื่องพิมพ์:</strong><br>
+            รุ่น: Honeywell PC42t<br>
+            ความละเอียด: 203 DPI<br>
+            ขนาดสติกเกอร์: 4cm × 3cm (319 × 240 dots)<br>
+            รองรับ: EPL (default), ZPL
+        </div>
+
+        <h2>1. เลือกภาษาเครื่องพิมพ์</h2>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="language" value="EPL" checked>
+                <strong>EPL</strong> (แนะนำสำหรับ PC42t)
+            </label>
+            <label>
+                <input type="radio" name="language" value="ZPL">
+                <strong>ZPL</strong> (สำหรับทดสอบ)
+            </label>
+        </div>
+
+        <div class="success-box" id="selectedLanguage">
+            <strong>ภาษาที่เลือก:</strong> <span id="currentLanguage">EPL</span>
+        </div>
+
+        <h2>2. ข้อมูลทดสอบ</h2>
+        <div class="code-box" id="testData">{
+  "stockCode": "*SA0126*",
+  "barcode": "SA0126",
+  "description": "แหวนทองคำขาว",
+  "date": "18/11/2567",
+  "goldType": "18K-A"
+}</div>
+
+        <h2>3. คำสั่งที่จะส่งไปยังเครื่องพิมพ์</h2>
+        <div class="code-box" id="commandPreview">กรุณาเลือกภาษาและกดปุ่ม "แสดงคำสั่ง"</div>
+
+        <h2>4. ทดสอบการพิมพ์</h2>
+        <button onclick="showCommand()">📄 แสดงคำสั่ง</button>
+        <button onclick="testPrint()" class="secondary">🖨️ ทดสอบพิมพ์</button>
+        <button onclick="copyCommand()">📋 คัดลอกคำสั่ง</button>
+
+        <div id="status" class="status"></div>
+
+        <h2>5. คำแนะนำ</h2>
+        <div class="info-box">
+            <strong>วิธีใช้งาน:</strong><br>
+            1. เลือกภาษาเครื่องพิมพ์ (EPL หรือ ZPL)<br>
+            2. กดปุ่ม "แสดงคำสั่ง" เพื่อดูคำสั่งที่จะส่งไป<br>
+            3. กดปุ่ม "ทดสอบพิมพ์" เพื่อส่งคำสั่งไปยังเครื่องพิมพ์<br>
+            4. ตรวจสอบผลลัพธ์ที่เครื่องพิมพ์<br>
+            <br>
+            <strong>หมายเหตุ:</strong><br>
+            - PC42t ใช้ EPL เป็นภาษาหลัก (default)<br>
+            - ถ้าพิมพ์ไม่ออก ให้ลองเปลี่ยนเป็น ZPL<br>
+            - ต้องเปิด QZ Tray ก่อนทดสอบพิมพ์
+        </div>
+    </div>
+
+    <script type="module">
+        // Import service (adjust path as needed)
+        import { gemBarcodeService } from '../src/services/barcode/gem-barcode.js';
+
+        const testData = {
+            stockCode: "*SA0126*",
+            barcode: "SA0126",
+            description: "แหวนทองคำขาว",
+            date: "18/11/2567",
+            goldType: "18K-A"
+        };
+
+        // Listen to language change
+        document.querySelectorAll('input[name="language"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const language = e.target.value;
+                document.getElementById('currentLanguage').textContent = language;
+                gemBarcodeService.setPrinterLanguage(language);
+                console.log('Language changed to:', language);
+            });
+        });
+
+        // Show command preview
+        window.showCommand = function() {
+            try {
+                const command = gemBarcodeService.previewCommand(testData);
+                document.getElementById('commandPreview').textContent = command;
+                showStatus('แสดงคำสั่งสำเร็จ', 'success');
+            } catch (error) {
+                console.error('Error showing command:', error);
+                showStatus('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        };
+
+        // Test print
+        window.testPrint = async function() {
+            try {
+                showStatus('กำลังส่งคำสั่งไปยังเครื่องพิมพ์...', 'success');
+                const result = await gemBarcodeService.printBarcode(testData);
+                showStatus('✓ พิมพ์สำเร็จ! ตรวจสอบสติกเกอร์ที่เครื่องพิมพ์', 'success');
+                console.log('Print result:', result);
+            } catch (error) {
+                console.error('Print error:', error);
+                showStatus('✗ เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        };
+
+        // Copy command to clipboard
+        window.copyCommand = function() {
+            const command = document.getElementById('commandPreview').textContent;
+            navigator.clipboard.writeText(command).then(() => {
+                showStatus('คัดลอกคำสั่งแล้ว', 'success');
+            }).catch(err => {
+                showStatus('ไม่สามารถคัดลอกได้', 'error');
+            });
+        };
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Initialize with EPL
+        gemBarcodeService.setPrinterLanguage('EPL');
+        console.log('Test page loaded. Default language: EPL');
+    </script>
+</body>
+</html>
