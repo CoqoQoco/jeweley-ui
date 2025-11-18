@@ -10,7 +10,18 @@ class PrintService {
     this.connected = false
     this.selectedPrinter = null
     this.certificateConfigured = false
+    this.usbDevice = null
+    this.useUSB = true // Default to USB for label printers
     this.setupCertificate()
+  }
+
+  /**
+   * Set printing method (USB or Network)
+   * @param {boolean} useUSB - true for USB, false for network printing
+   */
+  setUseUSB(useUSB) {
+    console.log('[PrintService] Setting print method to:', useUSB ? 'USB' : 'Network')
+    this.useUSB = useUSB
   }
 
   /**
@@ -143,7 +154,67 @@ class PrintService {
   }
 
   /**
-   * Auto-detect Honeywell printer
+   * Get USB devices
+   * @returns {Promise<Array>} - Array of USB devices
+   */
+  async getUSBDevices() {
+    try {
+      console.log('[PrintService] Getting USB devices...')
+      if (!this.connected) {
+        await this.connect()
+      }
+      const devices = await qz.usb.listDevices()
+      console.log('[PrintService] ✓ Found USB devices:', devices)
+      return devices
+    } catch (error) {
+      console.error('[PrintService] ✗ Error getting USB devices:', error)
+      throw new Error('ไม่สามารถดึงรายการ USB devices ได้')
+    }
+  }
+
+  /**
+   * Auto-detect Honeywell USB device
+   * @returns {Promise<Object|null>} - USB device object or null if not found
+   */
+  async detectHoneywellUSB() {
+    try {
+      console.log('[PrintService] Auto-detecting Honeywell USB device...')
+      const devices = await this.getUSBDevices()
+
+      console.log('[PrintService] Searching for Honeywell/PC42t USB device...')
+      // Search for Honeywell in USB devices (by vendor ID or product name)
+      // Honeywell vendor ID is typically 0x0C2E
+      const honeywellDevice = devices.find(
+        (device) =>
+          device.vendorId === 3118 || // 0x0C2E in decimal
+          (device.manufacturer && device.manufacturer.toLowerCase().includes('honeywell')) ||
+          (device.product && device.product.toLowerCase().includes('pc42'))
+      )
+
+      if (honeywellDevice) {
+        this.usbDevice = honeywellDevice
+        console.log('[PrintService] ✓ Honeywell USB device detected:', honeywellDevice)
+        return honeywellDevice
+      }
+
+      console.log('[PrintService] ⚠ Honeywell USB device not found')
+      // If no Honeywell found, use first USB device
+      if (devices.length > 0) {
+        this.usbDevice = devices[0]
+        console.log('[PrintService] ⚠ Using first available USB device:', devices[0])
+        return devices[0]
+      }
+
+      console.log('[PrintService] ✗ No USB devices found')
+      return null
+    } catch (error) {
+      console.error('[PrintService] ✗ Error detecting Honeywell USB device:', error)
+      throw new Error('ไม่พบเครื่องพิมพ์ Honeywell USB')
+    }
+  }
+
+  /**
+   * Auto-detect Honeywell printer (Network)
    * @returns {Promise<string|null>} - Printer name or null if not found
    */
   async detectHoneywellPrinter() {
@@ -193,16 +264,92 @@ class PrintService {
   }
 
   /**
-   * Print data to selected printer
+   * Print via USB (for label printers like Honeywell PC42t)
+   * @param {string} data - EPL/ZPL command string
+   * @param {Object} device - USB device object (optional, uses detected device if not provided)
+   * @returns {Promise<void>}
+   */
+  async printUSB(data, device = null) {
+    try {
+      console.log('[PrintService] ========== USB PRINT JOB START ==========')
+      console.log('[PrintService] Print data length:', data.length, 'characters')
+      console.log('[PrintService] Command Preview (first 200 chars):', data.substring(0, 200))
+
+      if (!this.connected) {
+        console.log('[PrintService] Not connected, connecting first...')
+        await this.connect()
+      }
+
+      const usbDevice = device || this.usbDevice
+      console.log('[PrintService] Target USB device:', usbDevice)
+
+      if (!usbDevice) {
+        console.log('[PrintService] No USB device selected, auto-detecting...')
+        await this.detectHoneywellUSB()
+        if (!this.usbDevice) {
+          console.error('[PrintService] ✗ No USB device found')
+          throw new Error('ไม่พบเครื่องพิมพ์ USB')
+        }
+      }
+
+      console.log('[PrintService] Claiming USB device...')
+      await qz.usb.claimDevice(this.usbDevice)
+      console.log('[PrintService] ✓ USB device claimed')
+
+      console.log('[PrintService] Opening USB device...')
+      await qz.usb.openDevice(this.usbDevice)
+      console.log('[PrintService] ✓ USB device opened')
+
+      console.log('[PrintService] Sending data to USB device...')
+      // Convert string to bytes for USB transmission
+      const encoder = new TextEncoder()
+      const bytes = encoder.encode(data)
+      console.log('[PrintService] Data encoded to', bytes.length, 'bytes')
+
+      await qz.usb.sendData(this.usbDevice, bytes)
+      console.log('[PrintService] ✓ Data sent successfully')
+
+      console.log('[PrintService] Closing USB device...')
+      await qz.usb.closeDevice(this.usbDevice)
+      console.log('[PrintService] ✓ USB device closed')
+
+      console.log('[PrintService] Releasing USB device...')
+      await qz.usb.releaseDevice(this.usbDevice)
+      console.log('[PrintService] ✓ USB device released')
+
+      console.log('[PrintService] ========== USB PRINT JOB END ==========')
+    } catch (error) {
+      console.error('[PrintService] ========== USB PRINT JOB FAILED ==========')
+      console.error('[PrintService] ✗ USB Print error:', error)
+      console.error('[PrintService] Error message:', error.message)
+      console.error('[PrintService] Error stack:', error.stack)
+      console.error('[PrintService] ================================================')
+
+      // Try to clean up on error
+      try {
+        if (this.usbDevice) {
+          await qz.usb.closeDevice(this.usbDevice)
+          await qz.usb.releaseDevice(this.usbDevice)
+        }
+      } catch (cleanupError) {
+        console.error('[PrintService] Error during cleanup:', cleanupError)
+      }
+
+      throw new Error(`การพิมพ์ผ่าน USB ล้มเหลว: ${error.message}`)
+    }
+  }
+
+  /**
+   * Print data to selected printer (Network printing)
    * @param {string} data - ZPL command string
    * @param {string} printerName - Optional printer name (uses selectedPrinter if not provided)
    * @returns {Promise<void>}
    */
-  async print(data, printerName = null) {
+  async printNetwork(data, printerName = null) {
     try {
-      console.log('[PrintService] ========== PRINT JOB START ==========')
+      console.log('[PrintService] ========== NETWORK PRINT JOB START ==========')
       console.log('[PrintService] Print data length:', data.length, 'characters')
-      console.log('[PrintService] ZPL Preview (first 200 chars):', data.substring(0, 200))
+      console.log('[PrintService] Command Preview (first 200 chars):', data.substring(0, 200))
 
       if (!this.connected) {
         console.log('[PrintService] Not connected, connecting first...')
@@ -233,14 +380,29 @@ class PrintService {
       console.log('[PrintService] Sending to printer...')
       await qz.print(config, printData)
       console.log('[PrintService] ✓ Print job sent successfully to:', printer)
-      console.log('[PrintService] ========== PRINT JOB END ==========')
+      console.log('[PrintService] ========== NETWORK PRINT JOB END ==========')
     } catch (error) {
-      console.error('[PrintService] ========== PRINT JOB FAILED ==========')
+      console.error('[PrintService] ========== NETWORK PRINT JOB FAILED ==========')
       console.error('[PrintService] ✗ Print error:', error)
       console.error('[PrintService] Error message:', error.message)
       console.error('[PrintService] Error stack:', error.stack)
-      console.error('[PrintService] ==========================================')
+      console.error('[PrintService] =================================================')
       throw new Error(`การพิมพ์ล้มเหลว: ${error.message}`)
+    }
+  }
+
+  /**
+   * Print data (auto-select USB or Network based on useUSB setting)
+   * @param {string} data - EPL/ZPL command string
+   * @param {string|Object} target - Printer name (network) or USB device (usb)
+   * @returns {Promise<void>}
+   */
+  async print(data, target = null) {
+    console.log('[PrintService] Print method:', this.useUSB ? 'USB' : 'Network')
+    if (this.useUSB) {
+      return await this.printUSB(data, target)
+    } else {
+      return await this.printNetwork(data, target)
     }
   }
 

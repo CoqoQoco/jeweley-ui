@@ -111,7 +111,23 @@
             รองรับ: EPL (default), ZPL
         </div>
 
-        <h2>1. เลือกภาษาเครื่องพิมพ์</h2>
+        <h2>1. เลือกวิธีการเชื่อมต่อ</h2>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="connection" value="USB" checked>
+                <strong>USB</strong> (แนะนำสำหรับ PC42t)
+            </label>
+            <label>
+                <input type="radio" name="connection" value="Network">
+                <strong>Network</strong> (สำหรับทดสอบ)
+            </label>
+        </div>
+
+        <div class="success-box" id="selectedConnection">
+            <strong>การเชื่อมต่อ:</strong> <span id="currentConnection">USB</span>
+        </div>
+
+        <h2>2. เลือกภาษาเครื่องพิมพ์</h2>
         <div class="radio-group">
             <label>
                 <input type="radio" name="language" value="EPL" checked>
@@ -127,7 +143,7 @@
             <strong>ภาษาที่เลือก:</strong> <span id="currentLanguage">EPL</span>
         </div>
 
-        <h2>2. ข้อมูลทดสอบ</h2>
+        <h2>3. ข้อมูลทดสอบ</h2>
         <div class="code-box" id="testData">{
   "stockCode": "*SA0126*",
   "barcode": "SA0126",
@@ -136,34 +152,42 @@
   "goldType": "18K-A"
 }</div>
 
-        <h2>3. คำสั่งที่จะส่งไปยังเครื่องพิมพ์</h2>
+        <h2>4. คำสั่งที่จะส่งไปยังเครื่องพิมพ์</h2>
         <div class="code-box" id="commandPreview">กรุณาเลือกภาษาและกดปุ่ม "แสดงคำสั่ง"</div>
 
-        <h2>4. ทดสอบการพิมพ์</h2>
+        <h2>5. ทดสอบการพิมพ์</h2>
         <button onclick="showCommand()">📄 แสดงคำสั่ง</button>
         <button onclick="testPrint()" class="secondary">🖨️ ทดสอบพิมพ์</button>
         <button onclick="copyCommand()">📋 คัดลอกคำสั่ง</button>
 
         <div id="status" class="status"></div>
 
-        <h2>5. คำแนะนำ</h2>
+        <h2>6. คำแนะนำ</h2>
         <div class="info-box">
             <strong>วิธีใช้งาน:</strong><br>
-            1. เลือกภาษาเครื่องพิมพ์ (EPL หรือ ZPL)<br>
-            2. กดปุ่ม "แสดงคำสั่ง" เพื่อดูคำสั่งที่จะส่งไป<br>
-            3. กดปุ่ม "ทดสอบพิมพ์" เพื่อส่งคำสั่งไปยังเครื่องพิมพ์<br>
-            4. ตรวจสอบผลลัพธ์ที่เครื่องพิมพ์<br>
+            1. เลือกวิธีการเชื่อมต่อ (USB แนะนำ หรือ Network)<br>
+            2. เลือกภาษาเครื่องพิมพ์ (EPL แนะนำ หรือ ZPL)<br>
+            3. กดปุ่ม "แสดงคำสั่ง" เพื่อดูคำสั่งที่จะส่งไป<br>
+            4. กดปุ่ม "ทดสอบพิมพ์" เพื่อส่งคำสั่งไปยังเครื่องพิมพ์<br>
+            5. ตรวจสอบผลลัพธ์ที่เครื่องพิมพ์<br>
             <br>
-            <strong>หมายเหตุ:</strong><br>
-            - PC42t ใช้ EPL เป็นภาษาหลัก (default)<br>
-            - ถ้าพิมพ์ไม่ออก ให้ลองเปลี่ยนเป็น ZPL<br>
-            - ต้องเปิด QZ Tray ก่อนทดสอบพิมพ์
+            <strong>แนะนำสำหรับ PC42t:</strong><br>
+            - ใช้ USB (ไม่ใช่ Network)<br>
+            - ใช้ EPL (ไม่ใช่ ZPL)<br>
+            - ต้องเปิด QZ Tray ก่อนทดสอบพิมพ์<br>
+            - ต้องเชื่อมต่อเครื่องพิมพ์ผ่าน USB<br>
+            <br>
+            <strong>การแก้ปัญหา:</strong><br>
+            - ถ้าไม่พบ USB device ให้ตรวจสอบสาย USB<br>
+            - ถ้าพิมพ์ไม่ออก ลองเปลี่ยนเป็น ZPL<br>
+            - เปิด Console (F12) เพื่อดู logs ละเอียด
         </div>
     </div>
 
     <script type="module">
-        // Import service (adjust path as needed)
+        // Import services (adjust path as needed)
         import { gemBarcodeService } from '../src/services/barcode/gem-barcode.js';
+        import { printService } from '../src/services/barcode/PrintService.js';
 
         const testData = {
             stockCode: "*SA0126*",
@@ -172,6 +196,16 @@
             date: "18/11/2567",
             goldType: "18K-A"
         };
+
+        // Listen to connection change
+        document.querySelectorAll('input[name="connection"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const connection = e.target.value;
+                document.getElementById('currentConnection').textContent = connection;
+                printService.setUseUSB(connection === 'USB');
+                console.log('Connection changed to:', connection);
+            });
+        });
 
         // Listen to language change
         document.querySelectorAll('input[name="language"]').forEach(radio => {
@@ -231,9 +265,10 @@
             }
         }
 
-        // Initialize with EPL
+        // Initialize with USB and EPL
+        printService.setUseUSB(true);
         gemBarcodeService.setPrinterLanguage('EPL');
-        console.log('Test page loaded. Default language: EPL');
+        console.log('Test page loaded. Default: USB + EPL');
     </script>
 </body>
 </html>

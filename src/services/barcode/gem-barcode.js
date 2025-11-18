@@ -199,12 +199,21 @@ P1
         console.log('[GemBarcodeService] QZ Tray already connected')
       }
 
-      // Auto-detect printer if not specified
-      if (!printerName && !printService.selectedPrinter) {
-        console.log('[GemBarcodeService] No printer selected, auto-detecting...')
-        await printService.detectHoneywellPrinter()
+      // Auto-detect printer/device if not specified
+      if (printService.useUSB) {
+        if (!printService.usbDevice) {
+          console.log('[GemBarcodeService] No USB device selected, auto-detecting...')
+          await printService.detectHoneywellUSB()
+        } else {
+          console.log('[GemBarcodeService] Using USB device:', printService.usbDevice)
+        }
       } else {
-        console.log('[GemBarcodeService] Using printer:', printerName || printService.selectedPrinter)
+        if (!printerName && !printService.selectedPrinter) {
+          console.log('[GemBarcodeService] No printer selected, auto-detecting...')
+          await printService.detectHoneywellPrinter()
+        } else {
+          console.log('[GemBarcodeService] Using printer:', printerName || printService.selectedPrinter)
+        }
       }
 
       // Print
@@ -256,10 +265,17 @@ P1
         await printService.connect()
       }
 
-      // Auto-detect printer if not specified
-      if (!printerName && !printService.selectedPrinter) {
-        console.log('[GemBarcodeService] No printer selected, auto-detecting...')
-        await printService.detectHoneywellPrinter()
+      // Auto-detect printer/device if not specified
+      if (printService.useUSB) {
+        if (!printService.usbDevice) {
+          console.log('[GemBarcodeService] No USB device selected, auto-detecting...')
+          await printService.detectHoneywellUSB()
+        }
+      } else {
+        if (!printerName && !printService.selectedPrinter) {
+          console.log('[GemBarcodeService] No printer selected, auto-detecting...')
+          await printService.detectHoneywellPrinter()
+        }
       }
 
       // Generate commands for all items with copies
