@@ -163,12 +163,20 @@ class PrintService {
       if (!this.connected) {
         await this.connect()
       }
-      const devices = await qz.usb.listDevices()
+
+      // QZ Tray requires options object with includeHsb parameter
+      const options = { includeHsb: true }
+      console.log('[PrintService] Calling qz.usb.listDevices with options:', options)
+
+      const devices = await qz.usb.listDevices(options)
       console.log('[PrintService] ✓ Found USB devices:', devices)
+      console.log('[PrintService] Total USB devices:', devices.length)
+
       return devices
     } catch (error) {
       console.error('[PrintService] ✗ Error getting USB devices:', error)
-      throw new Error('ไม่สามารถดึงรายการ USB devices ได้')
+      console.error('[PrintService] Error details:', error.message)
+      throw new Error('ไม่สามารถดึงรายการ USB devices ได้: ' + error.message)
     }
   }
 
