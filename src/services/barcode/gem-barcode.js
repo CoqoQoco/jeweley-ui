@@ -14,7 +14,7 @@ class GemBarcodeService {
 
     // Printer language: 'EPL' or 'ZPL'
     // PC42t default is EPL
-    this.printerLanguage = 'ZPL'
+    this.printerLanguage = 'EPL'
   }
 
   /**
