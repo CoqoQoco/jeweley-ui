@@ -24,7 +24,7 @@ export class GemBarcodePdfBuilder {
         JsBarcode(canvas, this.barcode, {
           format: 'CODE128',
           width: 2,
-          height: 40,
+          height: 30,
           displayValue: false,
           margin: 0
         })
@@ -72,14 +72,14 @@ export class GemBarcodePdfBuilder {
               columns: [
                 {
                   text: this.stockCode,
-                  fontSize: 9,
+                  fontSize: 12,
                   bold: true,
                   width: '*',
                   alignment: 'left'
                 },
                 {
                   text: this.date,
-                  fontSize: 9,
+                  fontSize: 12,
                   bold: true,
                   width: 'auto',
                   alignment: 'right'
@@ -109,7 +109,7 @@ export class GemBarcodePdfBuilder {
               applied to the left and right sides of the document to ensure
               proper spacing and alignment of the content within the PDF. */
               exposedLiner * 2) - 4, // Full width minus margins
-              height: 40,
+              height: 30,
               alignment: 'center',
               margin: [0, 0, 0, 1]
             },
@@ -117,7 +117,8 @@ export class GemBarcodePdfBuilder {
             // Row 3: Description
             {
               text: this.description,
-              fontSize: 8,
+              fontSize: 12,
+              bold: true,
               alignment: 'left',
               margin: [0, 0, 0, 0]
             }
