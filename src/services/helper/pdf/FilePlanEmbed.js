@@ -283,6 +283,8 @@ export class EmbedSlipPdfBuilder {
   setTablePriceRowTextRight(text) {
     return {
       text,
+      fontSize: 12,
+      bold: true,
       alignment: 'right',
       border: [false, false, false, false]
     }
