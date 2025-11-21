@@ -20,7 +20,19 @@
           <button class="btn btn-sm btn-green mr-2" title="ราคา" @click="onShowPrice(rowData)">
             <span class="bi bi-cash-coin"></span>
           </button>
-          <button class="btn btn-sm btn-green" title="พิมพ์ป้าย" @click="onPrintBarcode(rowData)">
+          <!-- <button
+            class="btn btn-sm btn-green mr-2"
+            title="พิมพ์ป้าย"
+            @click="onPrintBarcode(rowData)"
+          >
+            <i class="bi bi-upc-scan"></i>
+          </button> -->
+
+          <button
+            class="btn btn-sm btn-green"
+            title="พิมพ์ป้าย PDF"
+            @click="onPrintBarcodePDF(rowData)"
+          >
             <i class="bi bi-upc-scan"></i>
           </button>
         </div>
@@ -67,6 +79,7 @@ import barcodePreviewModal from './barcode-preview-modal.vue'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'
 import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
+import { gemBarcodePdfService } from '@/services/helper/pdf/gem-barcode/gem-barcode-pdf-integration.js'
 import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 
 const isShowModal = {
@@ -408,7 +421,8 @@ export default {
       this.barcodePreviewData = {
         stockCode: `*${rowData.code}*`,
         barcode: rowData.code,
-        description: `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''}`.trim() || 'N/A',
+        description:
+          `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''}`.trim() || 'N/A',
         date: formatDate(new Date()),
         goldType: rowData.grade || 'N/A'
       }
@@ -441,6 +455,36 @@ export default {
           success(result.message)
           this.closeBarcodePreview()
         }
+      }
+    },
+
+    async onPrintBarcodePDF(rowData) {
+      console.log('onPrintBarcodePDF', rowData)
+
+      // ตรวจสอบข้อมูลที่จำเป็น
+      if (!rowData.code) {
+        warning('ไม่พบรหัสพัสดุ', 'ข้อมูลไม่ครบถ้วน')
+        return
+      }
+
+      // เตรียมข้อมูลสำหรับ PDF
+      const barcodeData = {
+        stockCode: `*${rowData.code}*`,
+        barcode: rowData.code,
+        description:
+          `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''}`.trim() || 'N/A',
+        date: formatDate(new Date()),
+        goldType: rowData.grade || 'N/A'
+      }
+
+      // สร้างและดาวน์โหลด PDF
+      const result = await gemBarcodePdfService.generateGemBarcodePDF(barcodeData, {
+        print: false,
+        open: true
+      })
+
+      if (result.success) {
+        success('สร้าง PDF Barcode สำเร็จ')
       }
     }
   },
