@@ -32,7 +32,9 @@ const interfaceForm = {
   woText: null,
   size: null,
 
-  productType: []
+  productType: [],
+  gold: null,
+  goldSize: null
 }
 
 export default {
@@ -90,8 +92,10 @@ export default {
   async created() {
     this.$nextTick(async () => {
       await this.masterStore.fetchGold()
-      await this.masterStore.fetchGem()
-      await this.masterStore.fetchDiamondGrade()
+      await this.masterStore.fetchGoldSize()
+      await this.masterStore.fetchProductType()
+      //await this.masterStore.fetchGem()
+      //await this.masterStore.fetchDiamondGrade()
     })
   }
 }

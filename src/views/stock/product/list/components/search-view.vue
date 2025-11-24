@@ -163,6 +163,34 @@
                   />
                 </div>
               </div>
+
+              <!-- gold -->
+              <div>
+                <span class="title-text">สีของทอง/เงิน</span>
+                <div>
+                  <MultiSelect
+                    v-model="form.gold"
+                    :options="masterGold"
+                    optionLabel="nameTh"
+                    optionValue="nameEn"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
+              </div>
+
+              <!-- gold size -->
+              <div>
+                <span class="title-text">ประเภททอง/เงิน</span>
+                <div>
+                  <MultiSelect
+                    v-model="form.goldSize"
+                    :options="masterGoldSize"
+                    optionLabel="nameTh"
+                    optionValue="nameEn"
+                    class="w-full md:w-14rem"
+                  />
+                </div>
+              </div>
             </div>
           </template>
         </dialogView>
@@ -253,6 +281,12 @@ export default {
     },
     masterProductType() {
       return this.masterStore.productType
+    },
+    masterGold() {
+      return this.masterStore.gold
+    },
+    masterGoldSize() {
+      return this.masterStore.goldSize
     }
   },
 
@@ -310,7 +344,7 @@ export default {
 
   created() {
     this.$nextTick(async () => {
-      await this.masterStore.fetchProductType()
+      //await this.masterStore.fetchProductType()
     })
   }
 }
