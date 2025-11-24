@@ -422,6 +422,18 @@ export default {
         return groups
       }, [])
       return groupedData
+    },
+
+    necklaceData() {
+      // ค้นหาข้อมูลสร้อยคอใน tbtProductionPlanStatusGem
+      if (this.modelValue.tbtProductionPlanStatusGem) {
+        let necklace = this.modelValue.tbtProductionPlanStatusGem.find((x) =>
+          x.name.includes('สร้อยคอ')
+        )
+        return necklace || null
+      }
+
+      return null
     }
   },
 
@@ -674,6 +686,8 @@ export default {
         { field: 'qty', header: 'จำนวน', width: '100px', sortable: false },
         { field: 'weight', header: 'น้ำหนัก', width: '100px', sortable: false },
         { field: 'unit', header: 'หน่วย', width: '100px', sortable: false },
+        { field: 'length', header: 'ความยาว', width: '100px', sortable: false },
+        { field: 'lengthUnit', header: 'หน่วยความยาว', width: '100px', sortable: false },
         { field: 'price', header: 'ราคา', width: '100px', sortable: false }
       ]
     }

@@ -391,6 +391,28 @@
                   }}
                 </template>
               </Column>
+
+              <Column field="length" header="ความยาว" style="width: 100px">
+                <template #editor="{ data, field }">
+                  <input type="number" step="any" class="form-control" v-model="data[field]" />
+                </template>
+                <template #body="slotProps">
+                  {{
+                    slotProps.data && slotProps.data.length
+                      ? Number(slotProps.data.length).toFixed(3).toLocaleString()
+                      : '0.000'
+                  }}
+                </template>
+              </Column>
+              <Column field="lengthUnit" header="หน่วยความยาว" style="width: 100px">
+                <template #editor="{ data, field }">
+                  <input type="text" class="form-control" v-model="data[field]" />
+                </template>
+                <template #body="slotProps">
+                  {{ slotProps.data.lengthUnit }}
+                </template>
+              </Column>
+
               <Column field="price" header="ราคา" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" step="any" class="form-control" v-model="data[field]" />
@@ -702,7 +724,9 @@ export default {
                 gem: await this.onSearchGemById(thing.id),
                 qty: thing.qty,
                 weight: thing.weight,
-                price: thing.price
+                price: thing.price,
+                length : thing.length,
+                lengthUnit : thing.lengthUnit,
               }
             })
           )
@@ -750,7 +774,11 @@ export default {
         outboundRunning: null,
         gem: null,
         qty: null,
-        weight: null
+        weight: null,
+
+        length : null,
+        lengthUnit : null,
+        price: null
       }
       this.gemAssign.push(add)
     },
@@ -820,7 +848,10 @@ export default {
             name: item.gem?.name,
             qty: item.qty,
             weight: item.weight,
-            price: item.price
+            price: item.price,
+
+            length : item.length,
+            lengthUnit : item.lengthUnit,
           }
         })
 
