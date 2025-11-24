@@ -484,7 +484,7 @@ export default {
       })
 
       if (result.success) {
-        success('สร้าง PDF Barcode สำเร็จ')
+        //success('สร้าง PDF Barcode สำเร็จ')
       }
     }
   },

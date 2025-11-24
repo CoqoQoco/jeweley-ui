@@ -72,20 +72,20 @@ export class GemBarcodePdfBuilder {
               columns: [
                 {
                   text: this.stockCode,
-                  fontSize: 12,
+                  fontSize: 14,
                   bold: true,
                   width: '*',
                   alignment: 'left'
                 },
                 {
                   text: this.date,
-                  fontSize: 12,
+                  fontSize: 14,
                   bold: true,
                   width: 'auto',
                   alignment: 'right'
                 }
               ],
-              margin: [0, 0, 0, 1]
+              margin: [0, 0, 0, 0]
             },
 
             // Row 2: Barcode Image
@@ -111,13 +111,13 @@ export class GemBarcodePdfBuilder {
               exposedLiner * 2) - 4, // Full width minus margins
               height: 30,
               alignment: 'center',
-              margin: [0, 0, 0, 1]
+              margin: [0, 0, 0, 0]
             },
 
             // Row 3: Description
             {
               text: this.description,
-              fontSize: 12,
+              fontSize: 14,
               bold: true,
               alignment: 'left',
               margin: [0, 0, 0, 0]
