@@ -24,7 +24,7 @@ export class GemBarcodePdfBuilder {
         JsBarcode(canvas, this.barcode, {
           format: 'CODE128',
           width: 2,
-          height: 30,
+          height: 25,
           displayValue: false,
           margin: 0
         })
@@ -63,7 +63,7 @@ export class GemBarcodePdfBuilder {
         width: pageWidth,
         height: pageHeight
       },
-      pageMargins: [exposedLiner, 2, exposedLiner, 2], // [left, top, right, bottom]
+      pageMargins: [exposedLiner, 1, exposedLiner, 1], // [left, top, right, bottom]
       content: [
         {
           stack: [
@@ -72,14 +72,14 @@ export class GemBarcodePdfBuilder {
               columns: [
                 {
                   text: this.stockCode,
-                  fontSize: 14,
+                  fontSize: 16,
                   bold: true,
                   width: '*',
                   alignment: 'left'
                 },
                 {
                   text: this.date,
-                  fontSize: 14,
+                  fontSize: 16,
                   bold: true,
                   width: 'auto',
                   alignment: 'right'
@@ -109,7 +109,7 @@ export class GemBarcodePdfBuilder {
               applied to the left and right sides of the document to ensure
               proper spacing and alignment of the content within the PDF. */
               exposedLiner * 2) - 4, // Full width minus margins
-              height: 30,
+              height: 25,
               alignment: 'center',
               margin: [0, 0, 0, 0]
             },
@@ -117,7 +117,7 @@ export class GemBarcodePdfBuilder {
             // Row 3: Description
             {
               text: this.description,
-              fontSize: 14,
+              fontSize: 16,
               bold: true,
               alignment: 'left',
               margin: [0, 0, 0, 0]
@@ -126,7 +126,7 @@ export class GemBarcodePdfBuilder {
         }
       ],
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: 'AngsanaNew',
         fontSize: 8
       }
     }
