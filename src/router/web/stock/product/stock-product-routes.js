@@ -1,6 +1,7 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
 const List = () => import('@/views/stock/product/list/index-view.vue')
 
 const GRProductionList = () =>
@@ -32,6 +33,23 @@ const routes = [
       permissions: [PERMISSIONS.STOCK_PRODUCT]
     },
     children: [
+      // Product Dashboard
+      {
+        path: '/stock-product-dashboard',
+        name: 'stock-product-dashboard',
+        component: ProductDashboard,
+        menuId: 'Dashboard',
+        meta: {
+          Displayname: {
+            en: 'Dashboard',
+            th: 'เเดชบอร์ด'
+          },
+          minorShow: true,
+          menuId: `stock-product-dashboard`,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
       // stock product
       {
         path: '/stock-product-list',
