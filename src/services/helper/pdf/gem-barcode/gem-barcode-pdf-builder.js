@@ -72,14 +72,14 @@ export class GemBarcodePdfBuilder {
               columns: [
                 {
                   text: this.stockCode,
-                  fontSize: 16,
+                  fontSize: 18,
                   bold: true,
                   width: '*',
                   alignment: 'left'
                 },
                 {
                   text: this.date,
-                  fontSize: 16,
+                  fontSize: 18,
                   bold: true,
                   width: 'auto',
                   alignment: 'right'
@@ -117,7 +117,7 @@ export class GemBarcodePdfBuilder {
             // Row 3: Description
             {
               text: this.description,
-              fontSize: 16,
+              fontSize: 18,
               bold: true,
               alignment: 'left',
               margin: [0, 0, 0, 0]
