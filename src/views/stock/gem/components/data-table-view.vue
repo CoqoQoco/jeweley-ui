@@ -159,7 +159,7 @@ export default {
     },
     modelFormExport: {
       handler(val) {
-        console.log('watch modelFormExport', val)
+       // console.log('watch modelFormExport', val)
         //this.export = { ...val }
         this.fetchDataExport()
       },
@@ -167,7 +167,7 @@ export default {
     },
     data: {
       handler(val) {
-        console.log('watch data', val)
+       // console.log('watch data', val)
         val.data && val.data.length > 0 ? this.$emit('export', true) : this.$emit('export', false)
       },
       deep: true
@@ -357,7 +357,7 @@ export default {
       return formatDate(date)
     },
     stringToArray(str) {
-      console.log('stringToArray', str)
+     // console.log('stringToArray', str)
       if (str && typeof str === 'string') {
         // ตัดช่องว่างหน้าและหลังสตริง
         str = str.trim()
@@ -388,25 +388,25 @@ export default {
       }
     },
     onShowPrice(data) {
-      console.log('onShowPrice', data)
+     // console.log('onShowPrice', data)
       this.price = {}
       this.price = { ...data }
       this.isShow.isPrice = true
     },
     onShowHistory(data) {
-      console.log('onShowHistory', data)
+     // console.log('onShowHistory', data)
       this.history = {}
       this.history = { ...data }
       this.isShow.isHistory = true
     },
     onShowUpdate(data) {
-      console.log('onShowUpdate', data)
+     // console.log('onShowUpdate', data)
       this.updateGem = {}
       this.updateGem = { ...data }
       this.isShow.update = true
     },
     onPrintBarcode(rowData) {
-      console.log('onPrintBarcode', rowData)
+     // console.log('onPrintBarcode', rowData)
 
       // ตรวจสอบข้อมูลที่จำเป็น
       if (!rowData.code) {
@@ -438,7 +438,7 @@ export default {
     },
 
     async onConfirmPrint(copies) {
-      console.log('onConfirmPrint', copies)
+     // console.log('onConfirmPrint', copies)
 
       // พิมพ์บาร์โค้ดตามจำนวนที่ระบุ
       if (copies === 1) {
@@ -459,13 +459,17 @@ export default {
     },
 
     async onPrintBarcodePDF(rowData) {
-      console.log('onPrintBarcodePDF', rowData)
+     console.log('onPrintBarcodePDF', rowData)
 
       // ตรวจสอบข้อมูลที่จำเป็น
       if (!rowData.code) {
         warning('ไม่พบรหัสพัสดุ', 'ข้อมูลไม่ครบถ้วน')
         return
       }
+
+      let price = rowData.unit === "Q" ? rowData.priceQty : rowData.price
+      const displayPrice = `[${rowData.unit}] ${price ? Number(price).toFixed(2) : '0.00'}`
+     console.log('displayPrice', displayPrice)
 
       // เตรียมข้อมูลสำหรับ PDF
       const barcodeData = {
@@ -474,7 +478,8 @@ export default {
         description:
           `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''}`.trim() || 'N/A',
         date: formatDate(new Date()),
-        goldType: rowData.grade || 'N/A'
+        goldType: rowData.grade || 'N/A',
+        price: displayPrice
       }
 
       // สร้างและดาวน์โหลด PDF
@@ -490,7 +495,7 @@ export default {
   },
 
   created() {
-    console.log('created', this.modelForm)
+   // console.log('created', this.modelForm)
     this.form = { ...this.modelForm }
     this.$nextTick(() => {
       //this.fetchData()

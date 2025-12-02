@@ -190,7 +190,7 @@ export default {
       return this.masterGemShape
     },
     grade() {
-      console.log('masterGrade', this.masterGrade)
+      //console.log('masterGrade', this.masterGrade)
       return this.masterGrade
     },
     model() {
@@ -215,14 +215,14 @@ export default {
     },
     modelGem: {
       handler(val) {
-        console.log('modelGem', val)
+        //console.log('modelGem', val)
         this.form = {
           ...val,
           remark: val.remark1 ?? '',
           grade: this.grade.find((el) => el.nameTh === val.grade),
           shape: this.gemShape.find((el) => el.code === val.shape)
         }
-        console.log('modelvalue', this.form)
+        //console.log('modelvalue', this.form)
       },
       immediate: true,
       deep: true
@@ -263,13 +263,13 @@ export default {
       return isValid
     },
     onSubmit() {
-      console.log('onSubmit')
+      //console.log('onSubmit')
       if (this.validateForm()) {
         swAlert.confirmSubmit(
           `${this.form.code}`,
           `ยืนยันเเก้ไขวัถุดิบ`,
           async () => {
-            //console.log('call submitPlan')
+            ////console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -282,7 +282,7 @@ export default {
       this.suggestionsGroupName = this.groupName.filter((el) =>
         el.value.toLowerCase().includes(query.toLowerCase())
       )
-      console.log('searchGroupName', query, this.suggestionsGroupN)
+      //console.log('searchGroupName', query, this.suggestionsGroupN)
     },
 
     // ---------------- APIs
@@ -290,7 +290,7 @@ export default {
       try {
         this.isLoading = true
 
-        console.log('this.form', this.form)
+        //console.log('this.form', this.form)
         const params = {
           code: this.form.code,
           groupName: this.form.groupName.value ? this.form.groupName.value : this.form.groupName,
@@ -301,7 +301,7 @@ export default {
           remark: this.form.remark,
           region: this.form.region
         }
-        console.log('params', params)
+        //console.log('params', params)
         const res = await api.jewelry.post('ReceiptAndIssueStockGem/UpdateGem', params)
         if (res) {
           swAlert.success(
@@ -319,7 +319,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //console.log(error)
       }
     }
   }

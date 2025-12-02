@@ -80,19 +80,19 @@ export default {
   methods: {
     //  ---------------- event --------
     onSearchFilter(data) {
-      console.log('onSearchFilter', data)
+      //////console.log('onSearchFilter', data)
       this.search = { ...data }
     },
     onClearFilter() {
-      console.log('onClearFilter')
+      //////console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
     exportExcel(data) {
-      console.log('exportExcel', data)
+      //////console.log('exportExcel', data)
       this.exportData = { ...data }
     },
     exportExcelFlag(value) {
-      console.log('exportExcelFlag', value)
+      //////console.log('exportExcelFlag', value)
       this.isExport = value
     },
 
@@ -105,7 +105,7 @@ export default {
           type: 'GROUPGEM',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.groupOptions = [...res]
@@ -113,7 +113,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
     async fetchShapeOptions() {
@@ -124,7 +124,7 @@ export default {
           type: 'SHAPE',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.shapeOptions = [...res]
@@ -132,7 +132,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
 
@@ -144,7 +144,7 @@ export default {
           type: 'SIZE',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.sizeOptions = [...res]
@@ -152,7 +152,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
 
@@ -164,7 +164,7 @@ export default {
           type: 'GRADE',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.gradeOptions = [...res]
@@ -172,7 +172,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
     async fetchMasterGemShape() {
@@ -184,7 +184,7 @@ export default {
         }
         this.isLoading = false
       } catch (error) {
-        console.log(error)
+        //////console.log(error)
         this.isLoading = false
       }
     },
@@ -197,7 +197,7 @@ export default {
         }
         this.isLoading = false
       } catch (error) {
-        console.log(error)
+        //////console.log(error)
         this.isLoading = false
       }
     }

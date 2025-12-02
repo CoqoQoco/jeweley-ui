@@ -86,7 +86,8 @@ export class GemBarcodePdfIntegration {
         barcode: barcodeData.barcode,
         description: barcodeData.description,
         date: barcodeData.date,
-        goldType: barcodeData.goldType
+        goldType: barcodeData.goldType,
+        price: barcodeData.price
       }
     }
   }

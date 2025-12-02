@@ -9,6 +9,7 @@ export class GemBarcodePdfBuilder {
     this.description = barcodeData.description || ''
     this.date = barcodeData.date || dayjs().format('DD/MM/YYYY')
     this.goldType = barcodeData.goldType || ''
+    this.price = barcodeData.price || ''
   }
 
   /**
@@ -91,24 +92,26 @@ export class GemBarcodePdfBuilder {
             // Row 2: Barcode Image
             {
               image: this.barcodeImage,
-              width: pageWidth - (/* `exposedLiner` is a variable used to define the margin size in
+              width:
+                pageWidth /* `exposedLiner` is a variable used to define the margin size in
               points for the exposed liner on the PDF document. In this case, it
               is set to 0.05 inches, which is then converted to points (1 inch =
               72 points) to determine the actual margin size in points. This
               margin is applied to the left and right sides of the document to
-              ensure proper spacing for the content within the PDF. */
-              /* `exposedLiner` is a variable used to define the margin size in
+              ensure proper spacing for the content within the PDF. */ -
+                /* `exposedLiner` is a variable used to define the margin size in
               points for the exposed liner on the PDF document. In this case, it
               is set to 0.05 inches, which is then converted to points (1 inch =
               72 points) to determine the actual margin size in the PDF
               document. */
-              /* `exposedLiner` is a variable used to define the margin size in
+                /* `exposedLiner` is a variable used to define the margin size in
               points for the exposed liner on the PDF document. In this case, it
               is set to 0.05 inches, which is then converted to points (1 inch =
               72 points) to determine the margin size in points. This margin is
               applied to the left and right sides of the document to ensure
               proper spacing and alignment of the content within the PDF. */
-              exposedLiner * 2) - 4, // Full width minus margins
+                exposedLiner * 2 -
+                4, // Full width minus margins
               height: 25,
               alignment: 'center',
               margin: [0, 0, 0, 0]
@@ -116,11 +119,28 @@ export class GemBarcodePdfBuilder {
 
             // Row 3: Description
             {
-              text: this.description,
-              fontSize: 18,
-              bold: true,
-              alignment: 'left',
+              columns: [
+                {
+                  text: this.description,
+                  fontSize: 18,
+                  bold: true,
+                  width: '*',
+                  alignment: 'left'
+                },
+                {
+                  text: this.price,
+                  fontSize: 15,
+                  bold: true,
+                  width: 'auto',
+                  alignment: 'right'
+                }
+              ],
               margin: [0, 0, 0, 0]
+              // text: this.description,
+              // fontSize: 18,
+              // bold: true,
+              // alignment: 'left',
+              // margin: [0, 0, 0, 0]
             }
           ]
         }
