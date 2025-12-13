@@ -25,7 +25,7 @@ export class GemBarcodePdfBuilder {
         JsBarcode(canvas, this.barcode, {
           format: 'CODE128',
           width: 2,
-          height: 25,
+          height: 20,
           displayValue: false,
           margin: 0
         })
@@ -72,15 +72,15 @@ export class GemBarcodePdfBuilder {
             {
               columns: [
                 {
-                  text: this.stockCode,
-                  fontSize: 18,
+                  text: `${this.stockCode}`,
+                  fontSize: 16,
                   bold: true,
                   width: '*',
                   alignment: 'left'
                 },
                 {
                   text: this.date,
-                  fontSize: 18,
+                  fontSize: 16,
                   bold: true,
                   width: 'auto',
                   alignment: 'right'
@@ -88,6 +88,13 @@ export class GemBarcodePdfBuilder {
               ],
               margin: [0, 0, 0, 0]
             },
+            // {
+            //   text: this.description,
+            //   fontSize: 13,
+            //   bold: true,
+            //   width: '*',
+            //   alignment: 'left'
+            // },
 
             // Row 2: Barcode Image
             {
@@ -112,36 +119,47 @@ export class GemBarcodePdfBuilder {
               proper spacing and alignment of the content within the PDF. */
                 exposedLiner * 2 -
                 4, // Full width minus margins
-              height: 25,
+              height: 20,
               alignment: 'center',
               margin: [0, 0, 0, 0]
             },
+            {
+              text: this.description,
+              fontSize: 13,
+              //bold: true,
+              width: 'auto',
+              alignment: 'left',
+              margin: [0, 0, 0, 0]
+            },
+            {
+              text: this.price,
+              fontSize: 13,
+              //bold: true,
+              width: 'auto',
+              alignment: 'left',
+              margin: [0, 0, 0, 0]
+            }
 
             // Row 3: Description
-            {
-              columns: [
-                {
-                  text: this.description,
-                  fontSize: 18,
-                  bold: true,
-                  width: '*',
-                  alignment: 'left'
-                },
-                {
-                  text: this.price,
-                  fontSize: 15,
-                  bold: true,
-                  width: 'auto',
-                  alignment: 'right'
-                }
-              ],
-              margin: [0, 0, 0, 0]
-              // text: this.description,
-              // fontSize: 18,
-              // bold: true,
-              // alignment: 'left',
-              // margin: [0, 0, 0, 0]
-            }
+            // {
+            //   columns: [
+            //     {
+            //       text: this.description,
+            //       fontSize: 15,
+            //       //bold: true,
+            //       width: '*',
+            //       alignment: 'left'
+            //     },
+            //     {
+            //       text: this.price,
+            //       fontSize: 15,
+            //       //bold: true,
+            //       width: 'auto',
+            //       alignment: 'right'
+            //     }
+            //   ],
+            //   margin: [0, 0, 0, 0]
+            // }
           ]
         }
       ],

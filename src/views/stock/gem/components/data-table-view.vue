@@ -476,7 +476,7 @@ export default {
         stockCode: `*${rowData.code}*`,
         barcode: rowData.code,
         description:
-          `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''}`.trim() || 'N/A',
+          `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''} ${rowData.grade || ''}`.trim() || 'N/A',
         date: formatDate(new Date()),
         goldType: rowData.grade || 'N/A',
         price: displayPrice
