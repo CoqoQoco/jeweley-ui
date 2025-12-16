@@ -25,7 +25,7 @@ export class GemBarcodePdfBuilder {
         JsBarcode(canvas, this.barcode, {
           format: 'CODE128',
           width: 2,
-          height: 20,
+          height: 18,
           displayValue: false,
           margin: 0
         })
@@ -119,7 +119,7 @@ export class GemBarcodePdfBuilder {
               proper spacing and alignment of the content within the PDF. */
                 exposedLiner * 2 -
                 4, // Full width minus margins
-              height: 20,
+              height: 18,
               alignment: 'center',
               margin: [0, 0, 0, 0]
             },
