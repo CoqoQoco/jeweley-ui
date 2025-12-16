@@ -125,16 +125,16 @@ export class GemBarcodePdfBuilder {
             },
             {
               text: this.description,
-              fontSize: 13,
-              //bold: true,
+              fontSize: 14,
+              bold: true,
               width: 'auto',
               alignment: 'left',
               margin: [0, 0, 0, 0]
             },
             {
               text: this.price,
-              fontSize: 13,
-              //bold: true,
+              fontSize: 14,
+              bold: true,
               width: 'auto',
               alignment: 'left',
               margin: [0, 0, 0, 0]
