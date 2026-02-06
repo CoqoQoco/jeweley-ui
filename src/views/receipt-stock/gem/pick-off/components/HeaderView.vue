@@ -25,7 +25,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const scanInput = defineAsyncComponent(() => import('@/components/custom/scanInput.vue'))
+const scanInput = defineAsyncComponent(() => import('@/components/custom/ScanInput.vue'))
 
 export default {
   components: {
