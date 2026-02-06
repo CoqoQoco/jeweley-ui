@@ -154,7 +154,7 @@ const pdf = defineAsyncComponent(() =>
   import('@/components/pdf-make/FilePDFProductionPlanView.vue')
 )
 
-import Gallery from '@/components/prime-vue/galleryView.vue'
+import Gallery from '@/components/prime-vue/GalleryView.vue'
 
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
