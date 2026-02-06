@@ -12,6 +12,7 @@ import router from '@/router'
 //const jewelryUrl = 'https://localhost:7001/'
 
 //production online
+//dk-api-c2btgkcka3gjfpf0.southeastasia-01.azurewebsites.net/
 const jewelryUrl = 'https://dk-api-c2btgkcka3gjfpf0.southeastasia-01.azurewebsites.net/'
 const ZebraPrinterUrl = 'http://localhost:7003/'
 
