@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import headerBar from './components/headerView.vue'
+import headerBar from './components/HeaderView.vue'
 //import dataTable from './components/DataTableView.vue'
 
 const interfaceForm = {}
