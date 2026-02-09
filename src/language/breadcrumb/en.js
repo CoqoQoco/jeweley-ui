@@ -1,3 +1,9 @@
 export default {
-  dashboard: 'Dashboard'
+  dashboard: 'Dashboard',
+  
+  //production
+  production: {
+    main: 'Production',
+    dashboard: 'Dashboard'
+  }
 }

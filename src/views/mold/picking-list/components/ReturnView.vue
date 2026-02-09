@@ -6,7 +6,7 @@
         <div class="title-text-lg-header">
           <span>{{ `คืนเเม่พิมพ์ - ${model.mold}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
             <!-- image -->
             <div class="image-container filter-container">

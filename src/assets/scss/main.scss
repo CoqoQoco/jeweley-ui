@@ -25,6 +25,12 @@ html {
     margin: 0;
   }
 }
+
+#modal-container {
+  position: relative;
+  z-index: 1000;
+}
+
 .app-container {
   padding: 10px 10px 10px 10px;
 }
@@ -40,10 +46,50 @@ button {
   /* ใช้ฟอนต์จาก #app */
   /* สไตล์อื่น ๆ ที่คุณต้องการใช้งานในปุ่ม */
 }
+
 button.btn-main {
   background-color: $base-font-color;
   color: white;
+
+  &:hover {
+    background-color: darken(#921313, 5%);
+  }
 }
+button.btn-outline-main {
+  background-color: #ffff;
+  color: var(--base-font-color);
+  border-color: var(--base-font-color);
+
+  &:hover {
+    background-color: darken(#921313, 5%);
+    color: #ffff;
+  }
+
+  &.outline {
+    background-color: transparent;
+    color: $base-font-color;
+    border: 2px solid $base-font-color;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: $base-font-color;
+      color: white;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    //cursor: not-allowed;
+    //border-color: lighten($base-font-color, 20%);
+    //color: lighten($base-font-color, 20%);
+
+    &:hover {
+      background-color: transparent; // ไม่เปลี่ยนสีพื้นหลังเมื่อ hover บนปุ่มที่ disabled
+      color: lighten($base-font-color, 20%); // ไม่เปลี่ยนสีข้อความ
+    }
+  }
+}
+
 button.btn-sub-main {
   background-color: $base-font-sub-color;
   color: white;
@@ -51,10 +97,18 @@ button.btn-sub-main {
 button.btn-green {
   background-color: $base-green;
   color: white;
+
+  &:hover {
+    background-color: darken(#038387, 5%);
+  }
 }
 button.btn-red {
   background-color: $base-red;
   color: white;
+
+  &:hover {
+    background-color: darken(#ff4d4d, 5%);
+  }
 }
 
 button.btn-main:hover {
@@ -72,8 +126,20 @@ button.btn-red:hover {
 
 input {
   margin-top: 5px !important;
+
+  &:hover {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
+
+  &:focus {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
 }
 input[type='text'],
+input[type='email'],
+input[type='tel'],
 input[type='number'] {
   font-size: $base-font-size !important;
 }

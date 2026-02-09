@@ -2,8 +2,8 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
-        <form @submit.prevent="onSubmit">
-          <div class="mt-3">
+        <form @submit.prevent="onSubmit" class="p-2">
+          <div>
             <stepperStatus :events="events" :eventsIdActive="6"></stepperStatus>
           </div>
           <div class="filter-container-highlight mt-2">

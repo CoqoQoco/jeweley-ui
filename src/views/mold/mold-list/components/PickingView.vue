@@ -5,21 +5,71 @@
         <div class="title-text-lg-header">
           <span>{{ `เบิกเเม่พิมพ์ - ${model.code}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
-            <!-- image -->
-            <div class="image-container filter-container">
-              <div class="upload-preview">
-                <div v-if="urlImage">
-                  <img :src="urlImage" alt="Preview" class="preview-image" />
-                  <!-- <i class="bi bi-x del-iamge-x"></i> -->
+            <!-- main image -->
+            <div class="mt-2">
+              <div class="image-container">
+                <div class="upload-btn">
+                  <!-- <input
+                    class="hidden-input"
+                    type="file"
+                    ref="fileInput"
+                    accept=".jpg, .png"
+                    @change="onSelectImageMain"
+                  />
+                  <button class="btn btn-sm btn-upload-custom" type="button">
+                    <span><i class="bi bi-image"></i></span>
+                    <span>เเก้ไข</span>
+                  </button> -->
+                </div>
+                <div class="upload-preview">
+                  <div v-if="urlImage">
+                    <img :src="urlImage" alt="Preview" class="preview-image" />
+                  </div>
+                </div>
+                <div class="upload-title title-upload-custom">
+                  <span>รูปที่ 1</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- sub image -->
+            <div class="mt-2">
+              <div class="image-container">
+                <div class="upload-btn">
+                  <!-- <input
+                    class="hidden-input"
+                    type="file"
+                    ref="fileInput"
+                    accept=".jpg, .png"
+                    @change="onSelectImageSub"
+                  />
+                  <button class="btn btn-sm btn-upload-custom" type="button">
+                    <span><i class="bi bi-image"></i></span>
+                    <span>เเก้ไข</span>
+                  </button> -->
+                </div>
+                <div class="upload-preview">
+                  <div v-if="urlImageSub">
+                    <img :src="urlImageSub" alt="Preview" class="preview-image" />
+                  </div>
+                  <div v-else>
+                    <div class="no-image-container" style="height: 100%">
+                      <img src="@/assets/no-image.png" class="preview-no-image" />
+                      <span class="desc-text">ไม่มีรูปภาพ</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="upload-title title-upload-custom">
+                  <span>รูปที่ 2</span>
                 </div>
               </div>
             </div>
 
             <!-- data -->
-            <div>
-              <div class="form-col-container filter-container-highlight custom-continer-data">
+            <div class="filter-container mt-2">
+              <div class="form-col-sm-container filter-container-highlight custom-container-data">
                 <div class="d-flex flex-column">
                   <span class="title-text-white">รหัส</span>
                   <span class="desc-text-white">{{ form.code }}</span>
@@ -31,7 +81,7 @@
                   }}</span>
                 </div>
               </div>
-              <div class="form-col-container">
+              <div class="form-col-container mt-2">
                 <div>
                   <div>
                     <span class="title-text">วันที่เบิก</span>
@@ -54,7 +104,7 @@
                   <input type="text" required class="form-control" v-model="form.checkOutName" />
                 </div>
               </div>
-              <div class="form-col-container">
+              <div class="form-col-container mt-2">
                 <div>
                   <div>
                     <span class="title-text">วันที่คืน</span>
@@ -71,7 +121,7 @@
                 </div>
                 <div></div>
               </div>
-              <div class="form-col-container">
+              <div class="form-col-container mt-2">
                 <div>
                   <div>
                     <span class="title-text">เหตุผลการเบิก</span>
@@ -85,15 +135,15 @@
                   />
                 </div>
               </div>
+              <div class="d-flex justify-content-end mt-2">
+                <button class="btn btn-sm btn-green" type="submit">
+                  <span class="mr-2">
+                    <i class="bi bi-calendar-check"></i>
+                  </span>
+                  <span>บันทึก</span>
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="d-flex justify-content-end mt-1">
-            <button class="btn btn-sm btn-main" type="submit">
-              <span class="mr-2">
-                <i class="bi bi-gem"></i>
-              </span>
-              <span>เบิกเเม่พิมพ์</span>
-            </button>
           </div>
         </form>
       </template>
@@ -112,6 +162,7 @@ import Calendar from 'primevue/calendar'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 
 const interfaceForm = {
   mold: null,
@@ -135,6 +186,12 @@ export default {
     //Dropdown,
     Calendar
   },
+
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
+  },
+
   props: {
     isShow: {
       type: Boolean,
@@ -149,6 +206,9 @@ export default {
   computed: {
     model() {
       return this.modelValue
+    },
+    user() {
+      return this.authStore.user
     }
   },
   watch: {
@@ -161,9 +221,18 @@ export default {
         moldBy: value.moldBy,
         description: value.description,
         category: value.category,
-        categoryCode: value.categoryCode
+        categoryCode: value.categoryCode,
+
+        checkOutName: this.user?.firstName
       }
-      await this.fetchImageData(value.code)
+
+      if (value.code) {
+        await this.fetchImageData(value.code, false)
+      }
+
+      if (value.imageDraft1) {
+        await this.fetchImageData(value.code, true)
+      }
     },
     'form.checkOutDate'() {
       if (this.form.checkOutDate) {
@@ -185,7 +254,8 @@ export default {
       masterProduct: [],
 
       // image
-      urlImage: ''
+      urlImage: '',
+      urlImageSub: ''
     }
   },
   methods: {
@@ -269,18 +339,23 @@ export default {
     },
 
     // -------- APIs --------------- //
-    async fetchImageData(path) {
+    // -------- APIs --------------- //
+    async fetchImageData(path, sub) {
       try {
         //console.log
         switch (this.type) {
           case 'ORDERPLAN': {
             const param = {
-              imageName: `${path}-Mold.png`
+              imageName: sub ? `${path}-Sub-Mold.png` : `${path}-Mold.png`
             }
             const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
 
             if (res) {
-              this.urlImage = `data:image/png;base64,${res}`
+              if (sub) {
+                this.urlImageSub = `data:image/png;base64,${res}`
+              } else {
+                this.urlImage = `data:image/png;base64,${res}`
+              }
             }
           }
         }
@@ -338,6 +413,8 @@ export default {
   created() {
     this.$nextTick(() => {
       //this.fetchMasterProductType()
+      //console.log('this.user', this.user)
+      //this.form.checkOutName = this.user?.firstName
     })
     //this.fetchMasterProductType()
   }
@@ -346,23 +423,97 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.custom-container-data {
+  padding: 10px 10px;
+}
+
 .image-container {
-  //border: 1px solid var(--base-color);
+  position: relative;
+  border: 1px solid var(--base-color);
   background-color: #ffff;
-  padding: 0px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.upload-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+.upload-title {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
+.hidden-input {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.btn-upload-custom {
+  padding: 5px 10px;
+  background-color: var(--base-green);
+  border-color: var(--base-warning);
+  color: #ffff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.title-upload-custom {
+  padding: 5px 10px;
+  background-color: var(--base-sub-color);
+  color: #ffff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .upload-preview {
   display: grid;
   place-items: center;
+  height: 28rem;
+  background-color: #f8f9fa;
 }
+
 .preview-image {
-  width: 20rem;
-  height: 20rem;
-  margin: 10px 0px;
+  max-width: 20rem;
+  max-height: 20rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 10px;
   border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-.custom-continer-data {
-  padding: 20px 20px;
+.preview-no-image {
+  max-width: 10rem;
+  max-height: 10rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.no-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 300px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
 </style>

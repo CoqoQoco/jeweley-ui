@@ -4,6 +4,12 @@ import { vfs } from '@/assets/fonts/pdf-fonts.js'
 export const initPdfMake = () => {
   pdfMake.vfs = vfs
   pdfMake.fonts = {
+    AngsanaNew: {
+      normal: "Angsana New Regular.ttf",
+      bold: "Angsana New Bold.ttf",
+      italics: "Angsana New Italic.ttf",
+      bolditalics: "Angsana New Bold Italic.ttf"
+    },
     THSarabunNew: {
       normal: 'THSarabunNew.ttf',
       bold: 'THSarabunNew Bold.ttf',

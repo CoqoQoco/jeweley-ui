@@ -1,0 +1,299 @@
+<template>
+  <div class="horizontal-bar-chart">
+    <div class="chart-container">
+      <h4 v-if="title" class="chart-title">{{ title }}</h4>
+      <Chart
+        type="bar"
+        :data="chartData"
+        :options="chartOptions"
+        :width="width"
+        :height="height"
+        class="chart-component"
+      />
+    </div>
+  </div>
+</template>
+
+<script>
+import Chart from 'primevue/chart'
+
+export default {
+  name: 'HorizontalBarChart',
+  components: {
+    Chart
+  },
+  props: {
+    data: {
+      type: Object,
+      required: true,
+      default: () => ({ report: [] })
+    },
+    title: {
+      type: String,
+      default: 'Chart'
+    },
+    height: {
+      type: [String, Number],
+      default: 800
+    },
+    width: {
+      type: [String, Number],
+      default: 100
+    },
+    useThaiLabels: {
+      type: Boolean,
+      default: true
+    },
+    showDataLabels: {
+      type: Boolean,
+      default: true
+    },
+    colors: {
+      type: Array,
+      default: () => ['#038387', '#638387', '#421313', '#921313']
+    },
+    // เพิ่ม prop สำหรับกำหนด datasets ที่ต้องการแสดง
+    datasetFields: {
+      type: Array,
+      default: () => [{ key: 'count', label: 'Count', labelTH: 'จำนวน' }]
+    },
+    chartName: {
+      type: String,
+      default: 'normal'
+    },
+    // Props สำหรับกำหนดความกว้างของแท่ง
+    barThickness: {
+      type: [Number, String],
+      default: 25 // ความหนาของแท่งแต่ละอัน (pixels)
+    },
+    maxBarThickness: {
+      type: [Number, String],
+      default: 20 // ความหนาสูงสุดของแท่ง
+    },
+    categoryPercentage: {
+      type: Number,
+      default: 0.8 // เปอร์เซ็นต์ของพื้นที่ที่ category จะใช้ (0-1)
+    },
+    barPercentage: {
+      type: Number,
+      default: 0.9 // เปอร์เซ็นต์ของพื้นที่ที่แท่งจะใช้ใน category (0-1)
+    }
+  },
+  computed: {
+    chartOptions() {
+      return {
+        indexAxis: 'y', // This makes it horizontal
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: false // We handle title separately
+          },
+          legend: {
+            display: this.datasetFields.length > 1, // Show legend only for multiple datasets
+            position: 'top',
+            labels: {
+              color: 'var(--base-font-color)',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              title: (context) => {
+                const index = context[0].dataIndex
+                const report = this.data.report[index]
+                return this.useThaiLabels ? report.statusNameTH : report.statusNameEN
+              },
+              label: (context) => {
+                const index = context.dataIndex
+                const report = this.data.report[index]
+                const datasetLabel = context.dataset.label
+
+                if (this.chartName == 'stock-gem-dashboard') {
+                  return [`${datasetLabel}: ${context.parsed.x}`]
+                }
+                return [
+                  `${datasetLabel}: ${context.parsed.x}`,
+                  `Status Code: ${report.status}`,
+                  `Description: ${report.description || 'N/A'}`
+                ]
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Count',
+              color: 'var(--base-font-color)',
+              font: {
+                size: 14
+              }
+            },
+            grid: {
+              color: 'var(--base-color)',
+              borderColor: 'var(--base-sub-color)'
+            },
+            ticks: {
+              color: 'var(--base-sub-color)',
+              font: {
+                size: 12
+              }
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Description',
+              color: 'var(--base-font-color)',
+              font: {
+                size: 14
+              }
+            },
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: 'var(--base-sub-color)',
+              font: {
+                size: 12
+              }
+            }
+          }
+        },
+        elements: {
+          bar: {
+            borderWidth: 1,
+            borderColor: 'var(--base-sub-color)'
+          }
+        }
+      }
+    },
+    chartData() {
+      console.log('Generating chart data...', this.data)
+
+      if (!this.data || !this.data.report) return { labels: [], datasets: [] }
+
+      const labels = this.data.report.map((item) =>
+        this.useThaiLabels ? item.statusNameTH : item.statusNameEN
+      )
+
+      // สร้าง datasets หลายชุดตาม datasetFields
+      const datasets = this.datasetFields.map((field, fieldIndex) => {
+        const data = this.data.report.map((item) => item[field.key] || 0)
+
+        return {
+          label: this.useThaiLabels ? field.labelTH : field.label,
+          data: data,
+          backgroundColor: this.getColorWithAlpha(fieldIndex, '80'),
+          borderColor: this.getColor(fieldIndex),
+          borderWidth: 1,
+          barThickness: this.barThickness, // ลดขนาดแท่งเล็กน้อยเพื่อให้แท่งหลายแท่งไม่แออัด
+          maxBarThickness: this.maxBarThickness,
+          barPercentage: this.barPercentage,
+          categoryPercentage: this.categoryPercentage,
+        }
+      })
+
+      return {
+        labels: labels,
+        datasets: datasets
+      }
+    }
+  },
+  methods: {
+    getColor(index) {
+      const baseColors =
+        this.colors.length > 0
+          ? this.colors
+          : ['#921313', '#038387', '#fabc3f', '#ff4d4d', '#e0e0e0', '#393939', '#DAD4B5']
+      return baseColors[index % baseColors.length]
+    },
+    getColorWithAlpha(index, alpha) {
+      return this.getColor(index) + alpha
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+@import '@/assets/scss/variable.scss';
+
+.horizontal-bar-chart {
+  width: 100%;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: ChakraPetch-Regular, sans-serif;
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+
+    .chart-title {
+      color: $base-font-color;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid $base-color;
+    }
+
+    .chart-component {
+      position: relative;
+      width: 100%;
+      min-height: 400px;
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    padding: 10px;
+
+    .chart-container {
+      .chart-title {
+        font-size: 16px;
+        margin-bottom: 15px;
+      }
+
+      .chart-component {
+        min-height: 300px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px;
+
+    .chart-container {
+      .chart-title {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .chart-component {
+        min-height: 250px;
+      }
+    }
+  }
+}
+
+// Chart.js specific overrides
+:deep(.chartjs-render-monitor) {
+  background: transparent;
+}
+
+:deep(.chart-component canvas) {
+  max-width: 100% !important;
+  height: auto !important;
+}
+</style>

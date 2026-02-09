@@ -15,15 +15,23 @@ export const useMasterApiStore = defineStore('master', {
     planStatus: [],
     gold: [],
     goldSize: [],
+    gem: [],
+    gemShape: [],
     customerType: [],
     productType: [],
+    workerType: [],
+    diamondGrade: [],
     error: null,
     cacheTimestamps: {
       planStatus: null,
       gold: null,
       goldSize: null,
+      gem: [],
+      gemShape: [],
       customerType: null,
-      productType: null
+      productType: null,
+      workerType: null,
+      diamondGrade: null
     },
     overPlanOptions: [
       { id: 0, description: 'ทั้งหมด' },
@@ -48,8 +56,12 @@ export const useMasterApiStore = defineStore('master', {
     isPlanStatusCacheValid: (state) => isCacheValid(state.cacheTimestamps.planStatus),
     isGoldCacheValid: (state) => isCacheValid(state.cacheTimestamps.gold),
     isGoldSizeCacheValid: (state) => isCacheValid(state.cacheTimestamps.goldSize),
+    isGemCacheValid: (state) => isCacheValid(state.cacheTimestamps.Gem),
+    isGemShapeCacheValid: (state) => isCacheValid(state.cacheTimestamps.GemShape),
     isCustomerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.customerType),
-    isProductTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.productType)
+    isProductTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.productType),
+    isWorkerTypeCacheValid: (state) => isCacheValid(state.cacheTimestamps.workerType),
+    isDiamondGradeCacheValid: (state) => isCacheValid(state.cacheTimestamps.diamondGrade)
   },
 
   actions: {
@@ -86,8 +98,12 @@ export const useMasterApiStore = defineStore('master', {
       this.planStatus = []
       this.gold = []
       this.goldSize = []
+      this.gem = []
+      this.gemShape = []
       this.customerType = []
       this.productType = []
+      this.workerType = []
+      this.diamondGrade = []
       this.error = null
       this.clearAllCache()
     },
@@ -117,6 +133,14 @@ export const useMasterApiStore = defineStore('master', {
           fetchPromises.push(api.jewelry.get('Master/MasterGoldSize', null, { skipLoading: true }))
           fetchKeys.push('goldSize')
         }
+        if (forceFetch || !this.isGemCacheValid) {
+          fetchPromises.push(api.jewelry.get('Master/MasterGem', null, { skipLoading: true }))
+          fetchKeys.push('gem')
+        }
+        if (forceFetch || !this.isGemShapeCacheValid) {
+          fetchPromises.push(api.jewelry.get('Master/MasterGemShape', null, { skipLoading: true }))
+          fetchKeys.push('gemShape')
+        }
         if (forceFetch || !this.isCustomerTypeCacheValid) {
           fetchPromises.push(
             api.jewelry.get('Master/MasterCustomerType', null, { skipLoading: true })
@@ -129,6 +153,18 @@ export const useMasterApiStore = defineStore('master', {
           )
           fetchKeys.push('productType')
         }
+        if (forceFetch || !this.isWorkerTypeCacheValid) {
+          fetchPromises.push(
+            api.jewelry.get('Worker/GetWorkerProductionType', null, { skipLoading: true })
+          )
+          fetchKeys.push('workerType')
+        }
+        if (forceFetch || !this.isDiamondGradeCacheValid) {
+          fetchPromises.push(
+            api.jewelry.get('Master/MasterDiamondGrade', null, { skipLoading: true })
+          )
+          fetchKeys.push('diamondGrade')
+        }
 
         // If all caches are valid and no force fetch, return early
         if (fetchPromises.length === 0) {
@@ -137,6 +173,8 @@ export const useMasterApiStore = defineStore('master', {
             planStatus: this.planStatus,
             gold: this.gold,
             goldSize: this.goldSize,
+            gem: this.gem,
+            gemShape: this.gemShape,
             customerType: this.customerType,
             productType: this.productType
           }
@@ -157,6 +195,8 @@ export const useMasterApiStore = defineStore('master', {
           planStatus: this.planStatus,
           gold: this.gold,
           goldSize: this.goldSize,
+          gem: this.gem,
+          gemShape: this.gemShape,
           customerType: this.customerType,
           productType: this.productType
         }
@@ -165,15 +205,14 @@ export const useMasterApiStore = defineStore('master', {
       }
     },
 
-    // Individual fetch methods with cache check
-    async fetchWithCache(key, url, errorMessage) {
+    async fetchWithCache(key, url, errorMessage, forceFetch = false) {
       if (!forceFetch && this.isCacheValid(key)) {
         return this[key]
       }
 
       try {
         this.clearError()
-        const response = await api.jewelry.get(url)
+        const response = await api.jewelry.get(url, null, { skipLoading: true })
         this[key] = response || []
         this.updateCacheTimestamp(key)
         return response
@@ -182,8 +221,25 @@ export const useMasterApiStore = defineStore('master', {
       }
     },
 
+    // Individual fetch methods with cache check
+    // async fetchWithCache(key, url, errorMessage) {
+    //   if (!forceFetch && this.isCacheValid(key)) {
+    //     return this[key]
+    //   }
+
+    //   try {
+    //     this.clearError()
+    //     const response = await api.jewelry.get(url)
+    //     this[key] = response || []
+    //     this.updateCacheTimestamp(key)
+    //     return response
+    //   } catch (error) {
+    //     return this.handleError(error, errorMessage)
+    //   }
+    // },
+
     // Updated individual fetch methods
-    async fetchPlanStatus(forceFetch = false) {
+    async fetchPlanStatus() {
       return this.fetchWithCache(
         'planStatus',
         'ProductionPlan/GetProductionPlanStatus',
@@ -191,15 +247,23 @@ export const useMasterApiStore = defineStore('master', {
       )
     },
 
-    async fetchGold(forceFetch = false) {
+    async fetchGold() {
       return this.fetchWithCache('gold', 'Master/MasterGold', 'Error fetching gold')
     },
 
-    async fetchGoldSize(forceFetch = false) {
+    async fetchGoldSize() {
       return this.fetchWithCache('goldSize', 'Master/MasterGoldSize', 'Error fetching gold size')
     },
 
-    async fetchCustomerType(forceFetch = false) {
+    async fetchGem() {
+      return this.fetchWithCache('gem', 'Master/MasterGem', 'Error fetching gem')
+    },
+
+    async fetchGemShape() {
+      return this.fetchWithCache('gemShape', 'Master/MasterGemShape', 'Error fetching gem shape')
+    },
+
+    async fetchCustomerType() {
       return this.fetchWithCache(
         'customerType',
         'Master/MasterCustomerType',
@@ -207,11 +271,25 @@ export const useMasterApiStore = defineStore('master', {
       )
     },
 
-    async fetchProductType(forceFetch = false) {
+    async fetchProductType() {
       return this.fetchWithCache(
         'productType',
         'Master/MasterProductType',
         'Error fetching product type'
+      )
+    },
+    async fetchWorkerType() {
+      return this.fetchWithCache(
+        'workerType',
+        'Worker/GetWorkerProductionType',
+        'Error fetching product type'
+      )
+    },
+    async fetchDiamondGrade() {
+      return this.fetchWithCache(
+        'diamondGrade',
+        'Master/MasterDiamondGrade',
+        'Error fetching diamond grade'
       )
     },
 
@@ -238,7 +316,8 @@ export const useMasterApiStore = defineStore('master', {
         id: form.id,
         code: form.code,
         nameTh: form.nameTh,
-        nameEn: form.nameEn
+        nameEn: form.nameEn,
+        color: form.color
       }
 
       return await api.jewelry.post('Master/UpdateMasterModel', param)
@@ -249,10 +328,17 @@ export const useMasterApiStore = defineStore('master', {
         id: form.id,
         code: form.code,
         nameTh: form.nameTh,
-        nameEn: form.nameEn
+        nameEn: form.nameEn,
+        color: form.color
       }
 
       return await api.jewelry.post('Master/CreateMasterModel', param)
+    },
+    async updateMaster({ formValue, skipLoading = false }) {
+      return await api.jewelry.post('Master/UpdateMasterModel', formValue, { skipLoading })
+    },
+    async createMaster({ formValue, skipLoading = false }) {
+      return await api.jewelry.post('Master/CreateMasterModel', formValue, { skipLoading })
     }
   }
 })

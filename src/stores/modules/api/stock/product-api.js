@@ -133,15 +133,6 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.error('Error fetching update stock product data:', error)
         throw error
       }
-    },
-
-    async fetchAddProductCostDeatialVersion({ formValue }) {
-      try {
-        return await api.jewelry.post('StockProduct/AddProductCostDeatialVersion', formValue)
-      } catch (error) {
-        console.error('Error adding product cost detail:', error)
-        throw error
-      }
     }
   }
 })

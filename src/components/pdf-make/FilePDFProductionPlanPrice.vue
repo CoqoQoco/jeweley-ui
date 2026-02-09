@@ -2,12 +2,12 @@
   <div>
     <button
       :class="['btn btn-sm ml-2', isVisible ? 'btn-primary' : 'btn-secondary']"
-      title="พิมพ์แบบ"
+      title="พิมพ์แบบบัตรต้นทุน"
       @click="generatePDF"
       :disabled="!visible"
       type="button"
     >
-      <span class="bi bi-printer"></span>
+      <span class="bi bi-journal-check"></span>
     </button>
   </div>
 </template>
@@ -92,7 +92,8 @@ export default {
         Gold: 'รายการทอง',
         Worker: 'รายการงานช่าง',
         Gem: 'รายการเพชรและพลอย',
-        ETC: 'รายการเพิ่มเติม'
+        ETC: 'รายการเพิ่มเติม',
+        Embed: 'รายการฝัง'
       }
       return titles[groupName] || groupName
     },
@@ -106,6 +107,10 @@ export default {
 
     calculateTotal() {
       return this.price.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
+    },
+    calculateTotalPerQty() {
+      return this.calculateTotal() / (this.model.productQty || 1)
+      //return '0.00'
     },
 
     async generatePDF() {
@@ -151,7 +156,7 @@ export default {
                   [
                     {
                       columns: [
-                        ` ใบจ่าย-รับคืนงาน เลขที่ : ${this.model.wo}-${this.model.woNumber}`,
+                        ` เลขที่แผนผลิต [W.O.] : ${this.model.wo}-${this.model.woNumber}`,
                         { text: this.formatDate(this.price[0].date), alignment: 'right' }
                       ],
                       //bold: true,
@@ -167,105 +172,47 @@ export default {
               margin: [0, 0, 0, 5]
             },
 
-            // ------- img -------
+            // ------- img & details -------
             {
               style: 'tableExample',
               table: {
-                widths: [80, 160, '*', '*', '*'],
+                widths: [80, '*', '*', '*', '*'], // เปลี่ยนเป็น 5 columns
                 body: [
-                  //row 1
                   [
-                    //image
+                    // รูป
                     {
                       rowSpan: 2,
                       image: this.urlImage,
-                      //fit: [50, 50],
-                      margin: [0, 5, 0, 0],
-                      width: 70,
-                      height: 70,
+                      width: 50,
+                      height: 50,
                       border: [true, true, true, true],
-                      alignment: 'center'
+                      alignment: 'center',
+                      margin: [0, 5, 0, 0]
                     },
-                    //wo
+
+                    // Column 2
                     {
-                      margin: [30, 0, 0, 0],
-                      stack: [
-                        { text: 'เลขที่ W.O.', style: 'title' },
-                        {
-                          text: this.model.wo,
-                          style: 'desc'
-                        }
-                      ]
-                    },
-                    //wo number
-                    {
-                      stack: [
-                        { text: 'ลำดับ W.O.', style: 'title' },
-                        {
-                          text: this.model.woNumber,
-                          style: 'desc'
-                        }
-                      ]
-                    },
-                    //create date
-                    {
-                      stack: [
-                        { text: 'วันสร้างใบงาน', style: 'title' },
-                        {
-                          text: formatDate(this.model.createDate),
-                          style: 'desc'
-                        }
-                      ]
-                    },
-                    //send date
-                    {
-                      stack: [
-                        { text: 'วันส่งงาน', style: 'title' },
-                        {
-                          text: formatDate(this.model.requestDate),
-                          style: 'desc'
-                        }
-                      ]
-                    }
-                  ],
-                  //row 2
-                  [
-                    //image
-                    '',
-                    //mode
-                    {
-                      //colSpan: 2,
-                      margin: [30, 0, 0, 0],
+                      //margin: [30, 0, 0, 0],
                       stack: [
                         { text: 'เเม่พิมพ์', style: 'title' },
-                        {
-                          text: this.model.mold,
-                          style: 'desc'
-                        }
+                        { text: this.model.mold, style: 'desc' }
                       ]
                     },
-                    //product code
+                    // Column 3
                     {
                       stack: [
                         { text: 'รหัสสินค้า', style: 'title' },
-                        {
-                          text: this.model.productNumber,
-                          style: 'desc'
-                        }
+                        { text: this.model.productNumber, style: 'desc' }
                       ]
                     },
-                    //product name
+                    // Column 4
                     {
-                      //colSpan: 2,
                       stack: [
                         { text: 'ชื่อสินค้า', style: 'title' },
-                        {
-                          text: this.model.productName,
-                          style: 'desc'
-                        }
+                        { text: this.model.productName, style: 'desc' }
                       ]
                     },
-                    //product type
+                    // Column 5
                     {
                       stack: [
                         { text: 'จำนวนสินค้า', style: 'title' },
@@ -274,63 +221,38 @@ export default {
                           style: 'desc'
                         }
                       ]
+                      //border: [true, true, true, true]
                     }
                   ],
-                  //row 3
                   [
-                    //image
+                    '', // สำหรับ rowSpan ของรูป
+                    // Column 2
                     {
-                      image: this.textToBase64Barcode(`${this.model.wo}-${this.model.woNumber}`),
-                      //fit: [50, 50],
-                      margin: [0, 5, 0, 0],
-                      width: 80,
-                      height: 30,
-                      border: [false, false, false, false],
-                      alignment: 'center'
-                    },
-                    //customer code
-                    {
-                      margin: [30, 0, 0, 0],
+                      //margin: [30, 0, 0, 0],
                       stack: [
                         { text: 'รหัสลูกค้า', style: 'title' },
-                        {
-                          text: ` ${
-                            this.model.customerName
-                              ? `${this.model.customerNumber} : ${this.model.customerName}`
-                              : this.model.customerNumber
-                          }`,
-                          style: 'desc'
-                        }
+                        { text: this.model.customerNumber, style: 'desc' }
                       ]
                     },
-                    //customer type
+                    // Column 3
                     {
                       stack: [
                         { text: 'ประเภทลูกค้า', style: 'title' },
-                        {
-                          text: `${this.model.customerTypeName}`,
-                          style: 'desc'
-                        }
+                        { text: this.model.customerTypeName, style: 'desc' }
                       ]
                     },
-                    //remark
+                    // Column 4
                     {
                       stack: [
-                        { text: 'ประเภทสินค้า', style: 'title' },
-                        {
-                          text: this.model.productTypeName,
-                          style: 'desc'
-                        }
+                        { text: 'วันสร้างใบงาน', style: 'title' },
+                        { text: formatDate(this.model.createDate), style: 'desc' }
                       ]
                     },
+                    // Column 5
                     {
-                      //colSpan: 2,
                       stack: [
-                        { text: 'หมายเหตุ', style: 'title' },
-                        {
-                          text: this.model.remark,
-                          style: 'desc'
-                        }
+                        { text: 'วันส่งงาน', style: 'title' },
+                        { text: formatDate(this.model.requestDate), style: 'desc' }
                       ]
                     }
                   ]
@@ -342,20 +264,31 @@ export default {
               margin: [0, 0, 0, 5]
             },
 
-            // ------- product detail ---------
+            // ------- barcode & product detail ---------
             {
-              style: 'tableExample',
               table: {
-                widths: ['*'],
+                widths: [80, '*'],
                 body: [
-                  //row 1
                   [
+                    // barcode
+                    {
+                      image: this.textToBase64Barcode(`${this.model.wo}${this.model.woNumber}`),
+                      width: 70,
+                      height: 25,
+                      alignment: 'center',
+                      border: [false, false, false, false]
+                    },
+                    // product detail
                     {
                       stack: [
-                        { text: 'รายละเอียดสินค้า', style: '' },
+                        { text: 'รายละเอียดสินค้า', style: 'title' },
                         {
                           text: this.model.productDetail,
-                          style: 'desc'
+                          style: 'desc',
+                          // เพิ่มการจัดการข้อความยาว
+                          maxHeight: 100,
+                          lineHeight: 1.2,
+                          wrap: true // เพิ่มการ wrap text
                         }
                       ],
                       border: [true, true, true, true]
@@ -373,7 +306,7 @@ export default {
             {
               table: {
                 headerRows: 1,
-                widths: [20, '*', 60, 60, 60, 60, 80],
+                widths: [15, '*', 50, 50, 50, 50, 70, 50], // ปรับขนาดคอลัมน์ให้แคบลง
                 body: [
                   // Header Row (with bottom border)
                   [
@@ -383,10 +316,11 @@ export default {
                     { text: 'ราคา/จำนวน', style: 'tableHeader', alignment: 'right' },
                     { text: 'น้ำหนัก', style: 'tableHeader', alignment: 'right' },
                     { text: 'ราคา/น้ำหนัก', style: 'tableHeader', alignment: 'right' },
+                    { text: 'ราคา/สินค้า', style: 'tableHeader', alignment: 'right' },
                     { text: 'ราคารวม', style: 'tableHeader', alignment: 'right' }
                   ],
 
-                  // Group Headers and Data
+                  // แก้ไขส่วนการสร้าง body ของตาราง
                   ...Object.entries(this.groupItems()).flatMap(([groupName, items]) => [
                     // Group Header
                     [
@@ -400,6 +334,7 @@ export default {
                       {},
                       {},
                       {},
+                      {},
                       {}
                     ],
                     // Group Items
@@ -408,48 +343,117 @@ export default {
                       { text: item.nameDescription },
                       { text: this.formatNumber(item.qty), alignment: 'right' },
                       { text: this.formatNumber(item.qtyPrice, 2), alignment: 'right' },
-                      { text: this.formatNumber(item.qtyWeight, 2), alignment: 'right' },
+                      { text: this.formatNumber(item.qtyWeight, 3), alignment: 'right' },
                       { text: this.formatNumber(item.qtyWeightPrice, 2), alignment: 'right' },
+                      {
+                        text: this.formatNumber(0, 2),
+                        alignment: 'right'
+                      },
                       { text: this.formatNumber(item.totalPrice, 2), alignment: 'right' }
-                    ])
+                    ]),
+                    // Subtotal Row สำหรับแต่ละกลุ่ม
+                    [
+                      {
+                        text: `ต้นทุน${this.getGroupTitle(groupName)}`,
+                        colSpan: 6,
+                        alignment: 'right',
+                        bold: true,
+                        fontSize: 11
+                      },
+                      {},
+                      {},
+                      {},
+                      {},
+                      {},
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0) /
+                            (this.model.productQty || 1),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      },
+                      {
+                        text: this.formatNumber(
+                          items.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+                          2
+                        ),
+                        alignment: 'right',
+                        bold: true
+                      }
+                    ]
                   ]),
-                  // Total Row
+                  // Grand Total Row (ผลรวมทั้งหมด)
                   [
-                    { text: 'ต้นทุนรวม', colSpan: 6, alignment: 'right', style: 'tableHeader' },
+                    {
+                      text: 'ต้นทุน',
+                      colSpan: 6,
+                      alignment: 'right',
+                      style: 'tableHeader'
+                    },
                     {},
                     {},
                     {},
                     {},
                     {},
                     {
+                      text: this.formatNumber(this.calculateTotalPerQty(), 2),
+                      alignment: 'right',
+                      style: 'tableHeader'
+                    },
+                    {
                       text: this.formatNumber(this.calculateTotal(), 2),
                       alignment: 'right',
                       style: 'tableHeader'
                     }
                   ]
+                  // ต้นทุนต่อชิ้น
+                  // [
+                  //   {
+                  //     text: 'ต้นทุน/สินค้า',
+                  //     colSpan: 6,
+                  //     alignment: 'right',
+                  //     style: 'tableHeader'
+                  //   },
+                  //   {},
+                  //   {},
+                  //   {},
+                  //   {},
+                  //   {},
+                  //   {
+                  //     text: this.formatNumber(this.calculateTotal() / this.model.productQty, 2),
+                  //     alignment: 'right',
+                  //     style: 'tableHeader'
+                  //   }
+                  // ]
                 ]
               },
               layout: {
                 hLineWidth: function (i, node) {
-                  if (i === 0) return 1
-                  if (i === 1) return 1
-                  if (i === node.table.body.length - 1) return 1
-                  if (i === node.table.body.length) return 1
+                  if (i === 0) return 1 // เส้นบนสุดของตาราง
+                  if (i === 1) return 1 // เส้นใต้ header
+                  if (i === node.table.body.length) return 1 // เส้นล่างสุดของตาราง
+
+                  // เพิ่มเส้นเหนือแถวต้นทุนรวม
+                  // หาตำแหน่งของแถว "ต้นทุนรวม" โดยนับจากด้านล่าง
+                  const totalRowIndex = node.table.body.length - 1 // -2 เพราะมีแถว "ต้นทุนต่อชิ้น" ต่อท้าย
+                  if (i === totalRowIndex) return 1
+
                   return 0
                 },
                 vLineWidth: function (i) {
                   return 0
                 },
                 paddingLeft: function (i) {
-                  return 4
+                  return 2 // ลดจาก 4
                 },
                 paddingRight: function (i) {
-                  return 4
+                  return 2 // ลดจาก 4
                 },
-                // ปรับ padding top และ bottom แบบมีเงื่อนไข
                 paddingTop: function (i, node) {
                   // สำหรับ header row
-                  if (i === 0) return 4
+                  if (i === 0) return 2 // ลดจาก 4
                   // สำหรับ row ที่เป็น group name
                   if (
                     node.table.body[i] &&
@@ -457,16 +461,17 @@ export default {
                     (node.table.body[i][0].text === 'รายการทอง' ||
                       node.table.body[i][0].text === 'รายการงานช่าง' ||
                       node.table.body[i][0].text === 'รายการเพชรและพลอย' ||
-                      node.table.body[i][0].text === 'รายการเพิ่มเติม')
+                      node.table.body[i][0].text === 'รายการเพิ่มเติม' ||
+                      node.table.body[i][0].text === 'รายการฝัง')
                   ) {
-                    return 8 // เพิ่มระยะห่างด้านบนสำหรับ group name
+                    return 4 // ลดจาก 8
                   }
                   // สำหรับ row ปกติ
-                  return 1 // ลดระยะห่างสำหรับ row ทั่วไป
+                  return 1
                 },
                 paddingBottom: function (i, node) {
                   // สำหรับ header row
-                  if (i === 0) return 4
+                  if (i === 0) return 2 // ลดจาก 4
                   // สำหรับ row ที่เป็น group name
                   if (
                     node.table.body[i] &&
@@ -474,12 +479,13 @@ export default {
                     (node.table.body[i][0].text === 'รายการทอง' ||
                       node.table.body[i][0].text === 'รายการงานช่าง' ||
                       node.table.body[i][0].text === 'รายการเพชรและพลอย' ||
-                      node.table.body[i][0].text === 'รายการเพิ่มเติม')
+                      node.table.body[i][0].text === 'รายการเพิ่มเติม' ||
+                      node.table.body[i][0].text === 'รายการฝัง')
                   ) {
-                    return 4 // เพิ่มระยะห่างด้านล่างสำหรับ group name
+                    return 2 // ลดจาก 4
                   }
                   // สำหรับ row ปกติ
-                  return 1 // ลดระยะห่างสำหรับ row ทั่วไป
+                  return 1
                 },
                 hLineColor: function (i, node) {
                   return '#000000'
@@ -490,23 +496,23 @@ export default {
 
           styles: {
             tableHeader: {
-              fontSize: 12,
+              fontSize: 11, // ลดจาก 12
               bold: true,
               alignment: 'center',
-              margin: [0, 4, 0, 4]
+              margin: [0, 2, 0, 2] // ลดจาก [0, 4, 0, 4]
             },
             desc: {
-              fontSize: 12,
+              fontSize: 11, // ลดจาก 12
               bold: true
             },
             title: {
-              fontSize: 10,
-            },
+              fontSize: 10
+            }
           },
 
           defaultStyle: {
             font: 'THSarabunNew',
-            fontSize: 12
+            fontSize: 11 // ลดจาก 12
           }
         }
 

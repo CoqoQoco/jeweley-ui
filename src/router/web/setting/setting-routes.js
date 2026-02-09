@@ -1,9 +1,10 @@
 //import Dashboard from '@/views/dashboard/WelcomePage.vue'
 import Layout from '@/layout/web/LayoutDashboard.vue'
 
-import account from '@/views/setting/user-account/IndexView.vue'
-import EditAccount from '@/views/setting/edit-account/IndexView.vue'
-import EditAccountView from '@/views/setting/edit-account/view/AccountView.vue'
+import account from '@/views/setting/user-account/index-view.vue'
+import EditAccount from '@/views/setting/edit-account/index-view.vue'
+import EditAccountView from '@/views/setting/edit-account/view/account-view.vue'
+import testApi from '@/views/Admin/dev/call-api/index-view.vue'
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
@@ -30,7 +31,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'User Account',
-            th: 'ข้อมูลส่วนบุคคล'
+            th: 'ข้อมูลบุคคล'
           },
           minorShow: true
         }
@@ -58,9 +59,22 @@ const routes = [
             th: 'จัดการบัญชีผู้ใช้'
           },
           minorShow: false,
-          permissions: [PERMISSIONS.USER_EDIT]
+          permissions: [PERMISSIONS.USER_DEV]
         }
-      }
+      },
+       {
+        path: '/test-api',
+        name: 'test-api',
+        component: testApi,
+        meta: {
+          Displayname: {
+            en: 'API TEST',
+            th: 'API TEST'
+          },
+          minorShow: true,
+           permissions: [PERMISSIONS.USER_EDIT]
+        }
+      },
     ]
   }
 ]

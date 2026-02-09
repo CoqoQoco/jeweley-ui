@@ -110,22 +110,34 @@
       :isShow="isShow.isShowCastingSilverCreate"
       :modelValue="update"
       @closeModal="oncloseCreatePlan"
+       @refresh="refreshPage"
     ></createCastingSilver>
     <createCasting
       :isShow="isShow.isShowCastingCreate"
       :modelValue="update"
       @closeModal="oncloseCreatePlan"
+       @refresh="refreshPage"
     ></createCasting>
     <createCutting
       :isShow="isShow.isShowCuttingCreate"
       :modelValue="update"
       @closeModal="oncloseCreatePlan"
+       @refresh="refreshPage"
     ></createCutting>
+
+
     <createStore
       :isShow="isShow.isShowStoreCreate"
       :modelValue="update"
       @closeModal="oncloseCreatePlan"
+       @refresh="refreshPage"
     ></createStore>
+    <newCreateStore
+      :isShow="isShow.isShowNewStoreCreate"
+      :modelValue="update"
+      @closeModal="oncloseCreatePlan"
+       @refresh="refreshPage"
+    ></newCreateStore>
   </div>
 </template>
 
@@ -156,6 +168,10 @@ const createStore = defineAsyncComponent(() =>
   import('@/views/mold/components/create/StoreView.vue')
 )
 
+const newCreateStore = defineAsyncComponent(() =>
+  import('@/views/mold/components/create/new-store-view.vue')
+)
+
 //const createResin = () => import('@views/mold/components/create/ResinView.vue')
 //import createResin from '@views/mold/components/create/ResinView.vue'
 
@@ -164,7 +180,8 @@ const interfaceIsShow = {
   isShowCastingSilverCreate: false,
   isShowCastingCreate: false,
   isShowCuttingCreate: false,
-  isShowStoreCreate: false
+  isShowStoreCreate: false,
+  isShowNewStoreCreate: false
 }
 
 export default {
@@ -176,7 +193,8 @@ export default {
     createCastingSilver,
     createCasting,
     createCutting,
-    createStore
+    createStore,
+    newCreateStore
   },
   props: {
     modelForm: {
@@ -361,9 +379,12 @@ export default {
       //this.fetchData()
     },
     refreshPage() {
-      setTimeout(() => {
-        window.location.reload()
-      }, 100) // ปรับเวลาตามความเหมาะสม
+      // setTimeout(() => {
+      //   window.location.reload()
+      // }, 100) // ปรับเวลาตามความเหมาะสม
+
+      this.fetchData()
+      this.oncloseCreatePlan()
     },
     onShowCreatePlan(item) {
       console.log('onShowCreatePlan', item)
@@ -381,7 +402,12 @@ export default {
         this.isShow.isShowCuttingCreate = true
       }
       if (item.nextStatus === 60) {
-        this.isShow.isShowStoreCreate = true
+        if (item.isNewProcess) {
+          this.isShow.isShowNewStoreCreate = true
+          //console.log('isNewProcess', item)
+        } else {
+          this.isShow.isShowStoreCreate = true
+        }
       }
     }
   },

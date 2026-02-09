@@ -2,14 +2,17 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 
 const stockGem = () => import('@/views/stock/gem/IndexView.vue')
-const stockGemTransection = () => import('@/views/receipt-stock/gem/transection/IndexView.vue')
+const stockGemDashboard = () => import('@/views/receipt-stock/gem/dashboard/dashboard-view.vue')
+//src\views\receipt-stock\gem\dashboard
+const stockGemTransection = () => import('@/views/receipt-stock/gem/transaction/index-view.vue')
+const stockGemTransactionOnProcess = () => import('@/views/receipt-stock/gem/transaction-on-process/index-view.vue')
 
 const stockGemInbound = () => import('@/views/receipt-stock/gem/inbound/IndexView.vue')
 const stockGemOutbound = () => import('@/views/receipt-stock/gem/outbound/IndexView.vue')
 
 const stockGemPickOff = () => import('@/views/receipt-stock/gem/pick-off/IndexView.vue')
 const stockGemPickReturnAndOutbound = () =>
-  import('@/views/receipt-stock/gem/pick-return-and-outbound/IndexView.vue')
+  import('@/views/receipt-stock/gem/pick-return-and-outbound/index-view.vue')
 const stockGemPickReturnAndOutboundCreate = () =>
   import(
     '@/views/receipt-stock/gem/pick-return-and-outbound/components/create/PickReturnAndOutbound.vue'
@@ -34,6 +37,22 @@ const routes = [
       permissions: [PERMISSIONS.STOCK_GEM_VIEW]
     },
     children: [
+      // stock Gem Dashboard
+      {
+        path: '/stock-gem-dashboard',
+        name: 'stock-gem-dashboard',
+        component: stockGemDashboard,
+        menuId: 'DASHBOARD',
+        meta: {
+          Displayname: {
+            en: 'Dashboard',
+            th: 'แดชบอร์ด'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
+
       // stock Gem
       {
         path: '/stock-gem-list',
@@ -141,7 +160,22 @@ const routes = [
           minorShow: false,
           permissions: [PERMISSIONS.STOCK_GEM_EDIT]
         }
-      }
+      },
+
+      {
+        path: '/stock-gem-transaction-on-process',
+        name: 'stock-gem-transaction',
+        component: stockGemTransactionOnProcess,
+        menuId: 'STOCK-GEM-TRANSACTION-ON-PROCESS',
+        meta: {
+          Displayname: {
+            en: 'Transection on Process',
+            th: 'ติดตามยืมออกคลัง'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
       // pick-outbound
     ]
   }

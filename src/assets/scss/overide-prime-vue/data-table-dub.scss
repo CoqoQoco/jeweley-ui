@@ -1,0 +1,302 @@
+.base-datatable {
+  :deep(.p-datatable) {
+    font-size: 14px !important;
+
+    // Header Styles
+    .p-datatable-thead > tr > th {
+      background-color: var(--base-font-color) !important;
+      padding: 0.5rem 1rem !important;
+      border: 1px solid #dee2e6 !important;
+      color: #ffffff !important;
+
+      .p-column-header-content {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+
+        .p-column-title {
+          color: #ffffff !important;
+          font-weight: normal !important;
+          margin-right: 0.5rem !important;
+        }
+
+        .p-sortable-column-icon,
+        .pi {
+          color: #ffffff !important;
+          font-size: 0.8rem !important;
+        }
+
+        .p-sortable-column-badge {
+          background-color: #ffffff !important;
+          color: var(--base-font-color) !important;
+          font-size: 0.7rem !important;
+          margin-left: 0.2rem !important;
+        }
+      }
+
+      &.p-sortable-column {
+        &:hover {
+          background-color: var(--base-font-color) !important;
+          .p-sortable-column-icon,
+          .pi {
+            color: #ffffff !important;
+          }
+        }
+
+        &.p-highlight {
+          background-color: var(--base-font-color) !important;
+
+          .p-sortable-column-icon,
+          .pi {
+            color: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    // Body Styles
+    .p-datatable-tbody > tr {
+      &.p-highlight {
+        // เพิ่ม style สำหรับ row ที่ถูก select
+        background-color: #e3f2fd !important; // สีฟ้าอ่อน
+
+        // ถ้าต้องการให้ยังคง hover effect
+        &:hover {
+          background-color: #bbdefb !important; // สีฟ้าที่เข้มขึ้นเมื่อ hover
+        }
+
+        // สำหรับ striped rows
+        &:nth-child(even) {
+          background-color: #e3f2fd !important;
+        }
+      }
+
+      > td {
+        padding: 3px 10px !important;
+        font-size: 14px !important;
+        //color: #7a1010;
+        //border: 1px solid #dee2e6 !important;
+      }
+
+      &:nth-child(even) {
+        background-color: #f8f9fa !important;
+      }
+
+      &:hover {
+        background-color: #e9ecef !important;
+      }
+    }
+
+    // Empty Message
+    .p-datatable-emptymessage > td {
+      text-align: center !important;
+      padding: 2rem !important;
+    }
+  }
+
+  // Paginator Styles
+  :deep(.p-paginator) {
+    font-size: 14px !important;
+    padding: 5px !important;
+    background: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 0px !important;
+
+    .p-paginator-first,
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-last,
+    .p-paginator-page {
+      min-width: 2rem !important;
+      height: 2rem !important;
+      margin: 0 0.1rem !important;
+      border: 1px solid #dee2e6 !important;
+
+      &:not(.p-disabled):not(.p-highlight):hover {
+        background: #e9ecef !important;
+        border-color: #dee2e6 !important;
+      }
+
+      &.p-highlight {
+        background: var(--base-font-color) !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .p-dropdown {
+      height: 2rem !important;
+      width: 100px !important;
+      margin: 0 0.5rem !important;
+
+      .p-dropdown-label {
+        font-size: 14px !important;
+        padding: 0.25rem 0.5rem !important;
+      }
+
+      .p-dropdown-trigger {
+        width: 2rem !important;
+      }
+    }
+
+    .p-paginator-current {
+      margin: 0 0.5rem !important;
+      color: #6c757d !important;
+    }
+  }
+
+  // Empty Message
+  :deep(.empty-message) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+    text-align: center !important;
+    color: #6c757d !important;
+
+    i {
+      font-size: 2rem !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    p {
+      margin: 0 !important;
+      font-size: 14px !important;
+    }
+  }
+
+  // Action Buttons
+  .btn-action-container {
+    display: flex !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+
+    .btn {
+      padding: 0.25rem 0.5rem !important;
+
+      i {
+        font-size: 1rem !important;
+      }
+    }
+  }
+
+  // Loading Overlay
+  :deep(.p-datatable-loading-overlay) {
+    background: rgba(255, 255, 255, 0.8) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  // Table Scrollbar
+  :deep(.p-datatable-wrapper) {
+    &::-webkit-scrollbar {
+      width: 6px !important;
+      height: 6px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #c1c1c1 !important;
+      border-radius: 3px !important;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: #f1f1f1 !important;
+    }
+  }
+
+  // Resize Handle
+  :deep(.p-column-resizer) {
+    &:hover {
+      background-color: var(--base-font) !important;
+    }
+  }
+
+  // Override for sort icons
+  :deep(.p-datatable .p-sortable-column),
+  :deep(.p-datatable .p-sortable-column.p-highlight) {
+    .p-sortable-column-icon,
+    .pi-sort,
+    .pi-sort-amount-up-alt,
+    .pi-sort-amount-down,
+    .p-sortable-column-badge {
+      color: #ffffff !important;
+    }
+  }
+
+  :deep(.p-datatable .p-datatable-tfoot > tr > td) {
+    text-align: left !important;
+    padding: 2px 5px !important;
+    border: 1px solid #e5e7eb !important;
+    //border-width: 0 0 1px 0 !important;
+    font-weight: 700 !important;
+    color: #4d4b4b !important;
+    background: #f9fafb ;
+  }
+
+  // เพิ่ม style สำหรับ expanded content
+  :deep(.expanded-row-content) {
+    background-color: #f8f9fa;
+    //padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  // Style สำหรับ expand button
+  :deep(.p-row-toggler) {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: var(--row-hover-bg);
+    }
+
+    .p-row-toggler-icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Action Buttons
+.btn-action-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+
+  .btn {
+    padding: 0.25rem 0.5rem;
+
+    i {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Custom CSS Variables
+:root {
+  --base-font-size: 14px;
+  --header-bg-color: var(--base-font-color);
+  --header-text-color: #ffffff;
+  --header-hover-bg-color: #7a1010;
+  --row-alternate-bg: #f8f9fa;
+  --row-hover-bg: #e9ecef;
+  --paginator-bg: #ffffff;
+  --paginator-border: 1px solid #dee2e6;
+  --paginator-button-color: #6c757d;
+  --paginator-button-hover-bg: #e9ecef;
+  --paginator-button-hover-color: #343a40;
+  --paginator-text-color: #6c757d;
+  --sort-icon-color: #ffffff;
+}
+@keyframes sortIconFade {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}

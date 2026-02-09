@@ -32,8 +32,49 @@
           </div>
         </div>
       </div>
+
       <div class="col-8">
-        <div class="form-col-sm-container">
+        <div v-if="value.isNewProcess">
+          <div class="form-col-sm-container">
+            <div class="d-flex flex-column">
+              <span class="title-text">รหัสเเม่พิมพ์</span>
+              <span class="desc-text">{{ item?.code }}</span>
+            </div>
+            <div class="d-flex flex-column">
+              <span class="title-text">จัดเก็บพิมพ์</span>
+              <span class="desc-text">{{ getLocationName(item?.location) }}</span>
+            </div>
+            <div class="d-flex flex-column">
+              <span class="title-text">ช่างพิมพ์</span>
+              <span class="desc-text">{{ item?.workBy }}</span>
+            </div>
+          </div>
+          <div class="form-col-sm-container mt-2">
+            <div class="d-flex flex-column">
+              <span class="title-text">น้ำหนักเรซิ่น</span>
+              <span class="desc-text">{{ item?.qtyResin }}</span>
+            </div>
+            <div class="d-flex flex-column">
+              <span class="title-text">น้ำหนักพิมพ์เงิน</span>
+              <span class="desc-text">{{ item?.qtySilverCast}}</span>
+            </div>
+            <div class="d-flex flex-column"></div>
+          </div>
+          <div class="form-col-sm-container mt-2">
+            <div class="d-flex flex-column">
+              <span class="title-text">เเต่งพิมพ์โดย</span>
+              <span class="desc-text">{{ item?.printBy }}</span>
+            </div>
+            <div class="d-flex flex-column">
+              <span class="title-text">ผ่าพิมพ์โดย</span>
+              <span class="desc-text">{{ item?.cuttingBy }}</span>
+            </div>
+            <div class="d-flex flex-column">
+             
+            </div>
+          </div>
+        </div>
+        <div v-else class="form-col-sm-container">
           <!-- <div class="d-flex flex-column">
                 <span class="title-text">น้ำหนักรับ</span>
                 <span class="desc-text">{{ item?.qtyReceive }}</span>

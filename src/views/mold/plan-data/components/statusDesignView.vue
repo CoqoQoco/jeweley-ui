@@ -29,7 +29,21 @@
 
       <div class="col-8">
         <!-- row 1  -->
-        <div class="form-col-sm-container">
+        <div v-if="value.isNewProcess" class="form-col-sm-container">
+           <div class="d-flex flex-column">
+            <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
+            <span class="desc-text">{{ valueDesign?.moldCode }}</span>
+          </div>
+           <div class="d-flex flex-column">
+            <span class="title-text">ออกกเเบบโดย</span>
+            <span class="desc-text">{{ valueDesign?.workBy }}</span>
+          </div>
+           <div class="d-flex flex-column">
+            <span class="title-text">ปริ้นเรซิ่นโดย</span>
+            <span class="desc-text">{{ valueDesign?.resinBy }}</span>
+          </div>
+        </div>
+        <div v-else class="form-col-sm-container">
           <div class="d-flex flex-column">
             <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
             <span class="desc-text">{{ valueDesign?.moldCode }}</span>

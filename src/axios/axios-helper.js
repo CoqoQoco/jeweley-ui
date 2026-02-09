@@ -5,16 +5,21 @@ import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import router from '@/router'
 
-// Load API URLs from environment variables
-const jewelryUrl = import.meta.env.VITE_JEWELRY_API_URL || 'https://localhost:7001/'
-const ZebraPrinterUrl = import.meta.env.VITE_PRINTER_API_URL || 'http://localhost:7003/'
-const apiTimeout = parseInt(import.meta.env.VITE_API_TIMEOUT) || 100000
-const maxLoadingTime = parseInt(import.meta.env.VITE_MAX_LOADING_TIME) || 10000
+//production onsite
+//const jewelryUrl = 'http://192.168.1.41:2001/'
+
+//dev
+//const jewelryUrl = 'https://localhost:7001/'
+
+//production online
+//dk-api-c2btgkcka3gjfpf0.southeastasia-01.azurewebsites.net/
+const jewelryUrl = 'https://dk-api-c2btgkcka3gjfpf0.southeastasia-01.azurewebsites.net/'
+const ZebraPrinterUrl = 'http://localhost:7003/'
 
 // Loading state management
 const loadingManager = {
   timeoutId: null,
-  maxLoadingTime: maxLoadingTime, // Use value from environment variables
+  maxLoadingTime: 10000, // 10 seconds maximum loading time
 
   showLoading() {
     const loadingStore = useLoadingStore()
@@ -57,13 +62,13 @@ const getTokenInfo = () => {
 // Axios instance for jewelry API
 const axiosInstance = axios.create({
   baseURL: jewelryUrl,
-  timeout: apiTimeout
+  timeout: 100000
 })
 
 // Axios instance for printer API
 const printerAxiosInstance = axios.create({
   baseURL: ZebraPrinterUrl,
-  timeout: apiTimeout
+  timeout: 100000
 })
 
 // Request tracking

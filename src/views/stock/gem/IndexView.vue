@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-  
     <headerBar
       v-model:modelForm="form"
       :isExport="isExport"
@@ -10,6 +9,7 @@
       :masterSizeOptions="gradeOptions"
       :masterGemShapeData="masterGemShape"
       :masterGradeData="masterGrade"
+      :masterTypeCheckOption="masterTypeCheck"
       @search="onSearchFilter"
       @export="exportExcel"
       @clear="onClearFilter"
@@ -30,12 +30,10 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-import headerBar from './components/headerView.vue'
-import dataTable from './components/DataTableView.vue'
+import headerBar from './components/search-view.vue'
+import dataTable from './components/data-table-view.vue'
 
 import api from '@/axios/axios-helper.js'
 
@@ -45,14 +43,17 @@ const interfaceForm = {
   groupName: [],
   grade: [],
   shape: [],
-  size: []
+  size: [],
+
+  typeCheck: []
 }
 export default {
   components: {
     //pageTitle,
     headerBar,
-    dataTable,
+    dataTable
   },
+
   data() {
     return {
       isLoading: false,
@@ -66,25 +67,32 @@ export default {
       sizeOptions: [],
       gradeOptions: [],
       masterGemShape: [],
-      masterGrade: []
+      masterGrade: [],
+      masterTypeCheck: [
+        { id: 1, name: 'มีจำนวนคงคลัง', value: 'qty-remain' },
+        { id: 2, name: 'มีจำนวนยืมคลัง', value: 'qty-process-remain' },
+        { id: 3, name: 'มีน้ำหนักคงคลัง', value: 'qty-weight-remain' },
+        { id: 3, name: 'มีน้ำหนักยืมคลัง', value: 'qty-weight-process-remain' }
+      ]
     }
   },
+
   methods: {
     //  ---------------- event --------
     onSearchFilter(data) {
-      console.log('onSearchFilter', data)
+      //////console.log('onSearchFilter', data)
       this.search = { ...data }
     },
     onClearFilter() {
-      console.log('onClearFilter')
+      //////console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
     exportExcel(data) {
-      console.log('exportExcel', data)
+      //////console.log('exportExcel', data)
       this.exportData = { ...data }
     },
     exportExcelFlag(value) {
-      console.log('exportExcelFlag', value)
+      //////console.log('exportExcelFlag', value)
       this.isExport = value
     },
 
@@ -97,7 +105,7 @@ export default {
           type: 'GROUPGEM',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.groupOptions = [...res]
@@ -105,7 +113,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
     async fetchShapeOptions() {
@@ -116,7 +124,7 @@ export default {
           type: 'SHAPE',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.shapeOptions = [...res]
@@ -124,7 +132,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
 
@@ -136,7 +144,7 @@ export default {
           type: 'SIZE',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.sizeOptions = [...res]
@@ -144,7 +152,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
 
@@ -156,7 +164,7 @@ export default {
           type: 'GRADE',
           Value: null
         }
-        console.log('params', params)
+        //////console.log('params', params)
         const res = await api.jewelry.post('StockGem/GroupGemData', params)
         if (res) {
           this.gradeOptions = [...res]
@@ -164,7 +172,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
-        console.log(error)
+        //////console.log(error)
       }
     },
     async fetchMasterGemShape() {
@@ -176,7 +184,7 @@ export default {
         }
         this.isLoading = false
       } catch (error) {
-        console.log(error)
+        //////console.log(error)
         this.isLoading = false
       }
     },
@@ -189,11 +197,12 @@ export default {
         }
         this.isLoading = false
       } catch (error) {
-        console.log(error)
+        //////console.log(error)
         this.isLoading = false
       }
     }
   },
+
   created() {
     this.$nextTick(() => {
       this.fetchGroupOptions()

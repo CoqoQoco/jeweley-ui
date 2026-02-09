@@ -2,11 +2,11 @@
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="600px">
       <template v-slot:content>
-        <div class="title-text-lg mb-2">
-          <span class="mr-2"><i class="bi bi-house-add-fill"></i></span>
+        <div class="title-text-lg-bg">
+          <span class="mr-2"><i class="bi bi-house-gear-fill"></i></span>
           <span>ยืนยันยืมวัถุดิบ</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <!-- type -->
           <div class="form-col-container">
             <div>
@@ -66,14 +66,28 @@
             </div>
           </div>
 
-            <!-- operator by -->
-            <div class="form-col-container mt-1">
+          <!-- operator by -->
+          <div class="form-col-container mt-1">
             <div>
               <div>
                 <span class="title-text">ผู้ยืม</span>
                 <span class="txt-required"> *</span>
               </div>
-              <input
+              <AutoComplete
+                v-model="form.operator"
+                :suggestions="workerItemSearch"
+                @complete="onSearchWorker"
+                optionLabel="description"
+                forceSelection
+                :class="val.isOperator === true ? `p-invalid` : ``"
+              >
+                <template #option="slotProps">
+                  <div class="flex align-options-center">
+                    <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
+                  </div>
+                </template>
+              </AutoComplete>
+              <!-- <input
                 type="text"
                 class="form-control"
                 v-model="form.operator"
@@ -82,7 +96,7 @@
                 autocapitalize="off"
                 spellcheck="false"
                 required
-              />
+              /> -->
             </div>
           </div>
 
@@ -147,6 +161,7 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
+import AutoComplete from 'primevue/autocomplete'
 import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
 
@@ -156,6 +171,7 @@ import { formatISOString } from '@/services/utils/dayjs'
 
 const interfaceIsVal = {
   isType: false,
+  isOperator: false,
   isRequestDate: false,
   isReturnDate: false
 }
@@ -164,7 +180,8 @@ export default {
   components: {
     modal,
     Dropdown,
-    Calendar
+    Calendar,
+    AutoComplete
   },
   props: {
     isShow: {
@@ -183,7 +200,8 @@ export default {
       isLoading: false,
       form: null,
       val: { ...interfaceIsVal },
-      masterType: [{ id: 5, description: 'ยืมออกคลัง' }]
+      masterType: [{ id: 5, description: 'ยืมออกคลัง' }],
+      workerItemSearch: []
     }
   },
   watch: {
@@ -204,6 +222,11 @@ export default {
     'form.type'() {
       if (this.form.type) {
         this.val.isType = false
+      }
+    },
+    'form.operator'() {
+      if (this.form.operator) {
+        this.val.isOperator = false
       }
     },
     'form.requestDate'() {
@@ -231,6 +254,10 @@ export default {
         this.val.isType = true
         return
       }
+      if (!this.form.operator) {
+        this.val.isOperator = true
+        return
+      }
       if (!this.form.requestDate) {
         this.val.isRequestDate = true
         return
@@ -247,10 +274,12 @@ export default {
     // ----- APIs
     async submit() {
       this.isLoading = true
+
+      console.log(this.form.operator)
       try {
         const params = {
           type: this.form.type,
-          operatorBy: this.form.operator,
+          operatorBy: this.form.operator.nameTh,
           remark: this.form.remark,
           pass: this.form.pass,
           requestDate: formatISOString(this.form.requestDate),
@@ -283,6 +312,37 @@ export default {
     onClear() {
       //this.form = {}
       this.val = { ...interfaceIsVal }
+    },
+
+    async onSearchWorker(e) {
+      try {
+        //this.isLoading = true
+        //console.log(this.formValue)
+        const params = {
+          take: 0,
+          skip: 0,
+          search: {
+            text: e.query ?? null,
+            //type: this.status,
+            active: 1
+          }
+        }
+        const res = await api.jewelry.post('Worker/Search', params, { skipLoading: true })
+        if (res) {
+          //console.log(res)
+          //this.workerItemSearch = [...res.data]
+          this.workerItemSearch = res.data.map((item) => {
+            return {
+              ...item,
+              description: `${item.code} - ${item.nameTh}`
+            }
+          })
+        }
+        //this.isLoading = false
+      } catch (error) {
+        console.log(error)
+        //this.isLoading = false
+      }
     }
   }
 }

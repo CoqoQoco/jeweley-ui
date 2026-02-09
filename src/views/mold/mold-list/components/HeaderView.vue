@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-searchBar">
     <pageTitle :title="title" description="" :isShowBtnClose="false" :isShowRightSlot="false">
       <template #rightSlot>
         <button class="btn btn-sm btn-main" @click="onCreate">สร้างเเบบเเม่พิมพ์ใหม่</button>
@@ -9,20 +9,44 @@
       <div class="form-col-container">
         <div>
           <span class="title-text">ค้นหา</span>
-          <input type="text" class="form-control" v-model="form.text" placeholder="รหัส/ประเภท/ช่าง..." />
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.text"
+            placeholder="รหัส/ประเภท/ช่าง..."
+          />
         </div>
-        <div></div>
+        <div>
+          <span class="title-text">วันเเก้ไขเเม่พิมพ์ล่าสุด</span>
+          <div class="flex-group">
+            <Calendar
+              class="w-100"
+              v-model="form.updateStart"
+              :max-date="form.updateEnd"
+              showIcon
+              placeholder="เริ่มต้น"
+            />
+            <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+            <Calendar
+              class="w-100"
+              v-model="form.updateEnd"
+              :min-date="form.updateStart"
+              showIcon
+              placeholder="สิ้นสุด"
+            />
+          </div>
+        </div>
         <div></div>
         <div></div>
       </div>
       <div class="btn-submit-container">
         <button class="btn btn-sm btn-main mr-2" type="submit">
-          <span><i class="bi bi-search mr-2"></i></span>
-          <span>ค้นหา</span>
+          <span><i class="bi bi-search"></i></span>
+          <!-- <span>ค้นหา</span> -->
         </button>
         <button class="btn btn-sm btn-secondary" @click="onClear" type="button">
-          <span><i class="bi bi-x mr-2"></i></span>
-          <span>ล้าง</span>
+          <span><i class="bi bi-x"></i></span>
+          <!-- <span>ล้าง</span> -->
         </button>
       </div>
     </form>
@@ -33,12 +57,12 @@
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-//import Calendar from 'primevue/calendar'
+import Calendar from 'primevue/calendar'
 
 export default {
   components: {
-    pageTitle
-    //Calendar
+    pageTitle,
+    Calendar
   },
   props: {
     modelForm: {

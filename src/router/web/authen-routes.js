@@ -3,24 +3,26 @@ import mold from '../web/mold/mold-routes.js'
 import production from '../web/production/production-routes.js'
 import stockGem from '../web/stock/gem/stock-gem-routes.js'
 import stockProduct from '../web/stock/product/stock-product-routes.js'
+import sale from '../web/sale/sale-routes.js'
 import settingRoutes from '../web/setting/setting-routes.js'
 
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
 
 const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
-const Customer = () => import('@/views/customer/IndexView.vue')
+const Customer = () => import('@/views/customer/list-customer/index-view.vue')
 
 //worker
-const WorkerList = () => import('@/views/worker/worker-list/IndexView.vue')
-const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/IndexView.vue')
+const WorkerList = () => import('@/views/worker/worker-list/index-view.vue')
+const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/index-view.vue')
 
 // ----- master ------ //
-const GemView = () => import('@/views/master/gem/IndexView.vue')
-const GemShapeView = () => import('@/views/master/gemShape/GemShapeView.vue')
-const GoldSizeView = () => import('@/views/master/goldSize/GoldSizeView.vue')
-const ProductTypeView = () => import('@/views/master/productType/ProductTypeView.vue')
-const ZillView = () => import('@/views/master/zill/IndexView.vue')
+const GemView = () => import('@/views/master/gem/index-view.vue')
+const GemShapeView = () => import('@/views/master/gemShape/index-view.vue')
+const GoldSizeView = () => import('@/views/master/goldSize/index-view.vue')
+const ProductTypeView = () => import('@/views/master/productType/index-view.vue')
+const ZillView = () => import('@/views/master/zill/index-view.vue')
+const DiamondGrade = () => import('@/views/master/diamond-grade/index-view.vue')
 
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
@@ -64,6 +66,7 @@ const routes = [
   // --------- stock
   ...stockProduct,
   ...stockGem,
+  ...sale,
 
   // ------------------ customer -------------------
   {
@@ -121,7 +124,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Worker Name',
-            th: 'ข้อมูลพนักงาน (ช่าง)'
+            th: 'ข้อมูลช่าง'
           },
           minorShow: true,
           permissions: [PERMISSIONS.WORKER_VIEW]
@@ -252,6 +255,19 @@ const routes = [
           Displayname: {
             en: 'Zill',
             th: 'ข้อมูลซิล'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
+        }
+      },
+      {
+        path: '/master-diamond-grade',
+        name: 'master-diamond-grade',
+        component: DiamondGrade,
+        meta: {
+          Displayname: {
+            en: 'Diamond Grade',
+            th: 'ข้อมูลเกรดเพรช'
           },
           minorShow: true,
           permissions: [PERMISSIONS.MASTER_VIEW]

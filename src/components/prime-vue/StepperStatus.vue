@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-content-center w-100 filter-container">
+  <div class="flex justify-content-center w-100 filter-container-custom">
     <pageTitle :title="eventsName" description="" :isShowBtnClose="false"> </pageTitle>
     <Stepper linear :activeStep="activeTab">
       <StepperPanel v-for="event in events" :key="event.id" :header="event.header">
@@ -31,6 +31,7 @@
 import Stepper from 'primevue/stepper'
 
 import { defineAsyncComponent } from 'vue'
+
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import StepperPanel from 'primevue/stepperpanel'
@@ -39,7 +40,7 @@ export default {
   components: {
     Stepper,
     StepperPanel,
-    pageTitle
+    pageTitle,
   },
   data() {
     return {}
@@ -77,7 +78,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.filter-container {
+.filter-container-custom {
   border: 1px solid #dddddd;
   border-radius: 5px;
 

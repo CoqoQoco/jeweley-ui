@@ -11,6 +11,9 @@ import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const usePlanWorkerApiStore = defineStore('PlanWorker', {
   state: () => ({
+    dataSearch: [],
+    dataSearchTotalRecord: 0,
+
     dataSearcTotalRecord: 0
   }),
   actions: {
@@ -21,6 +24,55 @@ export const usePlanWorkerApiStore = defineStore('PlanWorker', {
           createEnd: form?.end ? formatISOString(form.end) : null,
           text: form?.textl
         }
+      }
+    },
+
+    async fetchSearch({ take, skip, sort, formValue }) {
+      try {
+        this.dataSearch = []
+        this.dataSearchTotalRecord = 0
+
+        const params = {
+          take: take,
+          skip: skip,
+          sort: sort,
+          search: {
+            text: formValue.text,
+            type: formValue.type,
+            active: formValue.active
+          }
+        }
+
+        const res = await api.jewelry.post('Worker/Search', params)
+
+        if (res) {
+          this.dataSearch = [...res.data]
+          this.dataSearchTotalRecord = res.total
+        }
+      } catch (error) {
+        console.error('Error fetching search:', error)
+      }
+    },
+    async fetchReturnSearch({ take, skip, sort, formValue }) {
+      try {
+        this.dataSearch = []
+        this.dataSearchTotalRecord = 0
+
+        const params = {
+          take: take,
+          skip: skip,
+          sort: sort,
+          search: {
+            code: formValue.code,
+            text: formValue.text,
+            type: formValue.type,
+            active: formValue.active
+          }
+        }
+
+        return await api.jewelry.post('Worker/Search', params)
+      } catch (error) {
+        console.error('Error fetching fetchReturnSearch:', error)
       }
     },
 
@@ -97,6 +149,37 @@ export const usePlanWorkerApiStore = defineStore('PlanWorker', {
       } catch (error) {
         console.error('Error fetching plan worker export data:', error)
         throw error
+      }
+    },
+
+    async fetchCreate({ formValue }) {
+      try {
+        const params = {
+          code: formValue.code,
+          type: formValue.type,
+          nameTh: formValue.nameTh,
+          nameEn: formValue.nameEn
+        }
+        //console.log(params)
+
+        return await api.jewelry.post('Worker/Create', params)
+      } catch (error) {
+        console.error('Error fetching plan worker create data:', error)
+      }
+    },
+    async fetchUpdate({ formValue }) {
+      try {
+        const params = {
+          code: formValue.code,
+          type: formValue.type,
+          nameTh: formValue.nameTh,
+          nameEn: formValue.nameEn
+        }
+        //console.log(params)
+
+        return await api.jewelry.post('Worker/Update', params)
+      } catch (error) {
+        console.error('Error fetching plan worker create data:', error)
       }
     }
   }

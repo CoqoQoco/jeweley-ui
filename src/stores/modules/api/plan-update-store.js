@@ -20,45 +20,51 @@ export const usePlanUpdateApiStore = defineStore('planUpdate', {
   actions: {
     // ... actions อื่นๆ
 
-    async submitTransfer({ formerStatus, targetStatus, transferBy, selectedItems }) {
-      try {
-        const param = {
-          formerStatus,
-          targetStatus,
-          transferBy,
-          plans: selectedItems.map((item) => ({
-            wo: item.wo,
-            woNumber: item.woNumber,
-            id: item.id
-          }))
-        }
+    async submitTransfer({
+      formerStatus,
+      targetStatus,
+      transferBy,
+      selectedItems,
+      workerName = null,
+      workerCode = null,
+      targetStatusCvd = false
+    }) {
+      const param = {
+        formerStatus,
+        targetStatus,
+        transferBy,
+        targetStatusCvd,
+        plans: selectedItems.map((item) => ({
+          wo: item.wo,
+          woNumber: item.woNumber,
+          id: item.id
+        })),
+        workerName,
+        workerCode
+      }
 
-        const res = await api.jewelry.post('Production/Plan/Transfer', param)
-        if (res) {
-          if (res.errors.length > 0) {
-            const msg = res.errors
-              .map((item) => `${item.wo}-${item.woNumber} : ${item.message}`)
-              .join('<br>')
-            swAlert.warning(msg, `พบข้อผิดพลาด`, () => {
-              return {
-                success: true,
-                errors: res.errors,
-                receiptNumber: res.receiptNumber,
-                transferNumber: res.transferNumber
-              }
-            })
-          } else {
+      const res = await api.jewelry.post('Production/Plan/Transfer', param)
+      if (res) {
+        if (res.errors.length > 0) {
+          const msg = res.errors
+            .map((item) => `${item.wo}-${item.woNumber} : ${item.message}`)
+            .join('<br>')
+          swAlert.warning(msg, `พบข้อผิดพลาด`, () => {
             return {
               success: true,
               errors: res.errors,
               receiptNumber: res.receiptNumber,
               transferNumber: res.transferNumber
             }
+          })
+        } else {
+          return {
+            success: true,
+            errors: res.errors,
+            receiptNumber: res.receiptNumber,
+            transferNumber: res.transferNumber
           }
         }
-      } catch (error) {
-        console.error('Error submitting transfer:', error)
-        return { success: false, message: 'เกิดข้อผิดพลาดในการทำรายการ' }
       }
     },
 

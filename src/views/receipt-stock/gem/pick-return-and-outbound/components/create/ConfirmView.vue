@@ -3,11 +3,11 @@
   
     <modal :showModal="isShowModal" @closeModal="closeModal" width="600px">
       <template v-slot:content>
-        <div class="title-text-lg mb-2">
-          <span class="mr-2"><i class="bi bi-house-add-fill"></i></span>
+        <div class="title-text-lg-bg">
+          <span class="mr-2"><i class="bi bi-house-exclamation"></i></span>
           <span>ยืนยันคืนเข้าคลังเเละเบิกออกคลัง วัถุดิบ</span>
         </div>
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="p-2">
           <!-- type && request date -->
           <div class="form-col-container">
             <div>

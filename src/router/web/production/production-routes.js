@@ -1,26 +1,31 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
-const PlanOrder = () => import('@/views/production/plan-create/IndexView.vue')
-const PlanGoldOrder = () => import('@/views/production/plan-gold/IndexView.vue')
-const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/IndexView.vue')
-const PlanOrderTracking = () => import('@/views/production/plan-tracking/IndexView.vue')
+const ProductionDashboard = () => import('@/views/production/dashboard/index-view.vue')
+const PlanOrder = () => import('@/views/production/plan-create/index-view.vue')
+const PlanGoldOrder = () => import('@/views/production/plan-gold/index-view.vue')
+const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/index-view.vue')
+const PlanOrderTracking = () => import('@/views/production/plan-tracking/index-view.vue')
 const PlanOrderTrackingStatus = () =>
-  import('@/views/production/plan-tracking-status/IndexView.vue')
+  import('@/views/production/plan-tracking-status/index-view.vue')
 const PlanOrderTrackingWorker = () =>
-  import('@/views/production/plan-tracking-worker/IndexView.vue')
-const PlanOrderTrackingView = () => import('@/views/production/plan-update/IndexView.vue')
+  import('@/views/production/plan-tracking-worker/index-view.vue')
+const PlanOrderTrackingView = () => import('@/views/production/plan-view/index-view.vue')
 const PlanOrderTransferTracking = () =>
-  import('@/views/production/plan-tracking-transfer/IndexView.vue')
-const ReportProduction = () => import('@/views/report-production/IndexView.vue')
-const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
+  import('@/views/production/plan-tracking-transfer/index-view.vue')
+//const ReportProduction = () => import('@/views/report-production/IndexView.vue')
+//const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
+const PlanBOMReport = () => import('@/views/production/plan-bom/index-view.vue')
 const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
+
+//E:\coqo_duangkeaw\Code\jeweley-ui\src\views\production\report\plan-completed-all-gold\index-view.vue
+const reportPlanCompletedWithAllGold = () => import('@/views/production/report/plan-completed-all-gold/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   {
     path: '/production',
     component: Layout,
-    redirect: '/mold',
+    redirect: '/production-dashboard',
     name: 'prodution',
     meta: {
       Displayname: {
@@ -33,6 +38,19 @@ const routes = [
       permissions: [PERMISSIONS.PRODUCTION_VIEW]
     },
     children: [
+      {
+        path: '/production-dashboard',
+        name: 'production-dashboard',
+        component: ProductionDashboard,
+        meta: {
+          Displayname: {
+            en: 'Dashboard',
+            th: 'แดชบอร์ด'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
       {
         path: '/plan-order',
         name: 'plan-order',
@@ -163,34 +181,68 @@ const routes = [
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
-
-      // report
       {
-        path: '/report-production',
-        name: 'report-production',
-        component: ReportProduction,
+        path: '/report-plan-completed-with-all-gold',
+        name: 'report-plan-completed-with-all-gold',
+        component: reportPlanCompletedWithAllGold,
         meta: {
           Displayname: {
-            en: 'Production Plan Report',
-            th: 'รายงานผลิต'
+            en: 'Plan BOM Tracking',
+            th: 'รายงานเผนผลิตสำเร็จ'
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
+      /* The `// report` section in the JavaScript code is a commented-out block of code that contains
+      routes for generating production reports. These routes are currently disabled because they are
+      commented out using `//`. This means that the routes for generating production reports are not
+      active in the application at the moment. */
       },
       {
-        path: '/report-production-plan-gold',
-        name: 'report-production-plan-gold',
-        component: ReportProductionGoldCost,
+        path: '/plan-bom-report',
+        name: 'plan-bom-report',
+        component: PlanBOMReport,
         meta: {
           Displayname: {
-            en: 'Plan Gold Report',
-            th: 'รายงานใบเบิกผสมทอง'
+            en: 'Plan BOM Tracking',
+            th: 'รายงานวัถุดิบ'
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
-      }
+      /* The `// report` section in the JavaScript code is a commented-out block of code that contains
+      routes for generating production reports. These routes are currently disabled because they are
+      commented out using `//`. This means that the routes for generating production reports are not
+      active in the application at the moment. */
+      },
+
+      // report
+      // {
+      //   path: '/report-production',
+      //   name: 'report-production',
+      //   component: ReportProduction,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Production Plan Report',
+      //       th: 'รายงานผลิต'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.PRODUCTION_VIEW]
+      //   }
+      // },
+      // {
+      //   path: '/report-production-plan-gold',
+      //   name: 'report-production-plan-gold',
+      //   component: ReportProductionGoldCost,
+      //   meta: {
+      //     Displayname: {
+      //       en: 'Plan Gold Report',
+      //       th: 'รายงานใบเบิกผสมทอง'
+      //     },
+      //     minorShow: true,
+      //     permissions: [PERMISSIONS.PRODUCTION_VIEW]
+      //   }
+      // }
     ]
   }
 ]

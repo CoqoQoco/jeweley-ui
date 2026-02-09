@@ -3,17 +3,13 @@
     <div class="filter-container-highlight">
       <div class="d-flex justify-content-between">
         <div class="title-text-white vertical-center-container">
-          <span>แผนงานผลิตส่วนประกอบทอง</span>
+          <span class="bi bi-list-check mr-2"></span>
+          <span>แผนผลิตผสมทอง</span>
         </div>
         <div>
-          <button
-            class="btn btn-sm btn-warning"
-            title="เพิ่ม"
-            type="button"
-            @click="onShowFormMaterialUpdate"
-          >
+          <div class="btn-add" title="เพิ่ม" type="button" @click="onShowFormMaterialUpdate">
             <span class="bi bi-plus"></span>
-          </button>
+          </div>
         </div>
       </div>
     </div>
@@ -127,6 +123,7 @@
     <div class="filter-container-highlight mt-3">
       <div class="d-flex justify-content-between">
         <div class="title-text-white vertical-center-container">
+          <span class="bi bi-list-check mr-2"></span>
           <span>รายการเบิกผสมทอง</span>
         </div>
       </div>
@@ -151,12 +148,17 @@
         <Column field="cost" header="ราคา" style="min-width: 100px"> </Column>
         <Column header="วันที่" field="assignDate" style="min-width: 150px">
           <template #body="prop">
-            <div >
+            <div>
               <span>{{ formatDate(prop.data.assignDate) }}</span>
             </div>
           </template>
         </Column>
       </DataTable>
+    </div>
+
+    <!-- plan gold history -->
+    <div class="mt-3">
+      <planOverview :modelValue="modelHerder"></planOverview>
     </div>
   </div>
 </template>
@@ -169,10 +171,13 @@ import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
+import planOverview from './PlanOverview.vue'
+
 export default {
   components: {
     DataTable,
-    Column
+    Column,
+    planOverview
   },
   props: {
     modelValue: {
@@ -198,6 +203,9 @@ export default {
     },
     modelGold() {
       return this.modelGoldItem
+    },
+    modelHerder() {
+      return this.modelValue
     }
   },
 
@@ -270,4 +278,11 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.btn-add{
+  display: grid;
+  place-items: center;
+  background-color: white;
+  width: 20px;
+}
 </style>

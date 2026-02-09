@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container-search">
     <pageTitle
       title="ใบรับวัถุดิบ"
       description="รับวัถุดิบเข้าคลัง ระบุรหัส จำนวน และรายละเอียดอื่นๆ"
@@ -25,7 +25,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const scanInput = defineAsyncComponent(() => import('@/components/custom/scanInput.vue'))
+const scanInput = defineAsyncComponent(() => import('@/components/custom/ScanInput.vue'))
 
 export default {
   components: {

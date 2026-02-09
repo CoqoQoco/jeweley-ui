@@ -1,11 +1,45 @@
 @import '../variable.scss';
 
+// @import '@/assets/scss/custom-style/standard-form.scss';
+
 .filter-container {
   border: 1px solid #dddddd;
   border-radius: 5px;
 
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: #f7f7f7;
+  //background-color: var(--base-color);
+  padding: 10px;
+  //margin-top: 10px;
+  overflow: auto;
+}
+.filter-container-main {
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: #f7f7f7;
+  //background-color: var(--base-color);
+  padding: 10px;
+  //margin-top: 10px;
+}
+.filter-container-bg {
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--base-green);
+  //background-color: var(--base-color);
+  padding: 10px;
+  //margin-top: 10px;
+  overflow: auto;
+}
+.filter-container-bg-focus {
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--base-color);
   //background-color: var(--base-color);
   padding: 10px;
   //margin-top: 10px;
@@ -29,6 +63,26 @@
   padding: 10px;
   //margin-top: 10px;
 }
+.filter-container-highlight-green {
+  border: 1px solid var(--base-green);
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--base-green);
+  //background-color: var(--base-color);
+  padding: 5px;
+  //margin-top: 10px;
+}
+.filter-container-highlight-focus {
+  border: 1px solid #dad4b5;
+  border-radius: 5px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--base-green);
+  //background-color: var(--base-color);
+  padding: 5px;
+  //margin-top: 10px;
+}
 .filter-container-content {
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -46,6 +100,10 @@
   display: flex;
   align-items: center;
 }
+.vertical-end-container {
+  display: flex;
+  align-items: flex-end;
+}
 .center-container {
   display: grid;
   place-items: center;
@@ -55,6 +113,16 @@
   display: grid;
   place-items: right;
   width: 100%;
+}
+.left-container {
+  display: grid;
+  place-items: left;
+  width: 100%;
+}
+
+.border-container {
+  border: 1px solid #dddddd;
+  border-radius: 0px 0px 10px 10px;
 }
 
 .form-col-container {
@@ -66,15 +134,31 @@
 .form-col-sm-container {
   display: grid;
   gap: 10px;
-  padding: 10px 0;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.form-col-fix-2-container {
+  display: grid;
+  gap: 10px;
+  padding: 0px;
+  grid-template-columns: 2fr 4fr; /* แก้จาก repeat(auto-fit) เป็นการกำหนด 2 คอลัมน์แบบตายตัว */
 }
 
 .submit-container {
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
-  padding-top: 8px;
+  padding: 10px 0px;
+  //border-top: 1px solid var(--base-font-color);
+  // button{
+  //     width: 200px;
+  // }
+}
+.submit-container-start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 10px 0px;
   //border-top: 1px solid var(--base-font-color);
   // button{
   //     width: 200px;
@@ -83,6 +167,7 @@
 
 .title-text {
   color: var(--base-font-color);
+  font-weight: 700;
 }
 .title-text-white {
   color: var(--base-color);
@@ -108,15 +193,15 @@
   background-color: var(--base-font-color);
   border-radius: 5px 5px 0px 0px;
 }
-// .desc-container{
-//     display: flex;
-//     flex-direction: column;
-//     overflow: auto;
-// }
+
 .desc-text {
   font-size: 20px;
   font-weight: 700;
 }
+.desc-text-required {
+  color: white;
+}
+
 .desc-text-white {
   font-size: 20px;
   font-weight: 700;
@@ -141,7 +226,20 @@
   justify-content: space-between;
   align-items: center;
 }
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+.flex-start {
+  display: flex;
+  justify-content: start;
+}
 
+.dis-input-container {
+  background-color: #afaeae;
+}
+
+// ----- status tag -----
 .box-status-show {
   display: flex;
   justify-content: center;

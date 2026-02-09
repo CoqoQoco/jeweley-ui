@@ -10,11 +10,13 @@
 
 //const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-import headerBar from './components/headerView.vue'
+import headerBar from './components/HeaderView.vue'
 import dataTable from './components/DataTableView.vue'
 
 const interfaceForm = {
-  text: null
+  text: null,
+  updateStart: null,
+  updateEnd: null
 }
 export default {
   components: {

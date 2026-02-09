@@ -22,7 +22,7 @@ export class EmbedSlipPdfBuilder {
       ],
       bold: true,
       fontSize: 15,
-      margin: [0, 0, 0, 0],
+      margin: [5, 0, 5, 0],
       border: [false, false, false, true]
     }
   }
@@ -173,14 +173,15 @@ export class EmbedSlipPdfBuilder {
                       margin: [5, 0, 0, 0],
                       stack: [
                         { text: 'เลขที่ W.O.', style: 'title' },
-                        { text: this.data.wo, style: 'desc' }
+                        { text: `${this.data.wo}`, style: 'desc' },
+                        { text: `[ ${this.data.mold} ]`, style: 'desc' }
                       ]
                     },
                     // Gold Info
                     {
                       margin: [0, 0, 0, 0],
                       stack: [
-                        { text: 'สินค้า', style: 'title' },
+                        { text: 'รหัสสินค้าสินค้า', style: 'title' },
                         { text: this.data.product, style: 'desc' }
                       ]
                     },
@@ -282,6 +283,8 @@ export class EmbedSlipPdfBuilder {
   setTablePriceRowTextRight(text) {
     return {
       text,
+      fontSize: 12,
+      bold: true,
       alignment: 'right',
       border: [false, false, false, false]
     }

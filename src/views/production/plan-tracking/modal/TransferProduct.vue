@@ -16,7 +16,7 @@
                   </span>
                 </div>
                 <div>
-                  <span class="mr-4 desc-text-white">
+                  <span class="mr-5 desc-text-white">
                     {{ `จำนวนทั้งหมด ${planSearchStore.dataPlanTransfer.total} รายการ` }}
                   </span>
                 </div>
@@ -24,92 +24,94 @@
             </div>
           </div>
 
-          <!-- target status -->
-          <div class="form-col-container mt-1">
-            <!-- <div>
+          <div class="p-2">
+            <!-- target status -->
+            <div class="form-col-container mt-1">
+              <!-- <div>
               <div>
                 <span class="title-text">แผนกรับโอน</span>
                
                 <div class="text-custom">{{ `คลังสินค้าสำเร็จ` }}</div>
               </div>
             </div> -->
-            <div>
-              <!-- <span class="title-text">ผู้โอน</span>
+              <div>
+                <!-- <span class="title-text">ผู้โอน</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
                 v-model.trim="form.name"
                 required
               /> -->
-            </div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-
-          <div class="mt-2">
-            <BaseDataTable
-              :items="planSearchStore.dataPlanTransfer.data"
-              :totalRecords="planSearchStore.dataPlanTransfer.total"
-              :columns="columns"
-              dataKey="id"
-              scrollHeight="350px"
-              :selectionMode="true"
-              :paginator="false"
-              :itemsSelection="selectedValue"
-              @update:itemsSelection="selectedValue = $event"
-            >
-              <!-- WO Template -->
-              <template #woTemplate="{ data }">
-                {{ `${data.wo}-${data.woNumber}` }}
-              </template>
-
-              <!-- Last Update Status Template -->
-              <template #lastUpdateStatusTemplate="{ data }">
-                <div class="notification">
-                  <span>{{ formatDate(data.lastUpdateStatus) }}</span>
-                </div>
-              </template>
-
-              <!-- Request Date Template -->
-              <template #requestDateTemplate="{ data }">
-                <div class="notification">
-                  <span>{{ formatDate(data.requestDate) }}</span>
-                  <span v-if="data.isOverPlan" class="overdue-tag">เกินกำหนด</span>
-                </div>
-              </template>
-
-              <!-- Create Date Template -->
-              <template #createDateTemplate="{ data }">
-                {{ formatDate(data.createDate) }}
-              </template>
-            </BaseDataTable>
-          </div>
-
-          <div class="filter-container mt-1">
-            <div class="d-flex justify-content-between vertical-center-container">
-              <div class="title-text">
-                <span>{{
-                  `จำนวนที่เลือก ${selectedValue.length} รายการ [เลือกได้สูงสุด ${this.allowItem} รายการ]`
-                }}</span>
               </div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+
+            <div class="mt-2">
+              <BaseDataTable
+                :items="planSearchStore.dataPlanTransfer.data"
+                :totalRecords="planSearchStore.dataPlanTransfer.total"
+                :columns="columns"
+                dataKey="id"
+                scrollHeight="350px"
+                :selectionMode="true"
+                :paginator="false"
+                :itemsSelection="selectedValue"
+                @update:itemsSelection="selectedValue = $event"
+              >
+                <!-- WO Template -->
+                <template #woTemplate="{ data }">
+                  {{ `${data.wo}-${data.woNumber}` }}
+                </template>
+
+                <!-- Last Update Status Template -->
+                <template #lastUpdateStatusTemplate="{ data }">
+                  <div class="notification">
+                    <span>{{ formatDate(data.lastUpdateStatus) }}</span>
+                  </div>
+                </template>
+
+                <!-- Request Date Template -->
+                <template #requestDateTemplate="{ data }">
+                  <div class="notification">
+                    <span>{{ formatDate(data.requestDate) }}</span>
+                    <span v-if="data.isOverPlan" class="overdue-tag">เกินกำหนด</span>
+                  </div>
+                </template>
+
+                <!-- Create Date Template -->
+                <template #createDateTemplate="{ data }">
+                  {{ formatDate(data.createDate) }}
+                </template>
+              </BaseDataTable>
+            </div>
+
+            <div class="filter-container mt-1">
               <div class="d-flex justify-content-between vertical-center-container">
-                <div class="check-excel-container">
-                  <Checkbox v-model="form.isExportReceipt" :binary="true" />
-                  <span for="ingredient1" class="ml-2">ออกเอกสารรับสินค้า</span>
+                <div class="title-text">
+                  <span>{{
+                    `จำนวนที่เลือก ${selectedValue.length} รายการ [เลือกได้สูงสุด ${this.allowItem} รายการ]`
+                  }}</span>
                 </div>
-                <button
-                  :class="[
-                    'btn btn-sm ml-2',
-                    selectedValue.length > 0 ? 'btn-main' : 'btn-secondary'
-                  ]"
-                  style="height: 34px"
-                  :disabled="!selectedValue.length > 0"
-                  type="submit"
-                >
-                  <span><i class="bi bi-box-arrow-up"></i></span>
-                  <span class="ml-2">โอนสินค้า</span>
-                </button>
+                <div class="d-flex justify-content-between vertical-center-container">
+                  <div class="check-excel-container">
+                    <Checkbox v-model="form.isExportReceipt" :binary="true" />
+                    <span for="ingredient1" class="ml-2">ออกเอกสารรับสินค้า</span>
+                  </div>
+                  <button
+                    :class="[
+                      'btn btn-sm ml-2',
+                      selectedValue.length > 0 ? 'btn-main' : 'btn-secondary'
+                    ]"
+                    style="height: 34px"
+                    :disabled="!selectedValue.length > 0"
+                    type="submit"
+                  >
+                    <span><i class="bi bi-cart-check-fill"></i></span>
+                    <span class="ml-2">โอนสินค้า</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

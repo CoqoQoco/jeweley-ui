@@ -2,16 +2,34 @@
   <div class="form-custom-col-container">
     <!-- img -->
     <div class="filter-container">
-      <div class="image-container">
+      <!-- image -->
+      <!-- <div class="image-container">
         <img v-if="imageUrl" class="image-preview" :src="imageUrl" alt="Image" preview />
         <div v-else class="spinner-border" role="status">
           <span class="sr-only">Loading...</span>
         </div>
+      </div> -->
+
+      <div class="image-container mt-1">
+        <Gallery v-if="this.imageUrl.length > 0" :urls="imageUrl" :autoPlay="true"> </Gallery>
       </div>
+
       <div class="line"></div>
+
+      <!-- action -->
       <div class="d-flex justify-content-center">
-        <pdf class="btn btn-sm btn-primary btn-custom mr-2" :modelValue="model" :matValue="modelMat">
+        <pdf
+          class="btn btn-sm btn-primary btn-custom mr-2"
+          :modelValue="model"
+          :matValue="modelMat"
+        >
         </pdf>
+        <button class="btn btn-sm btn-green btn-custom mr-2" @click="generatePDF">
+          <span>
+            <i class="bi bi-printer mr-2"></i>
+          </span>
+          <span>NEW</span>
+        </button>
         <button class="btn btn-sm btn-warning mr-2" @click="onShowFormHeaderUpdate">
           <span>
             <i class="bi bi-brush"></i>
@@ -116,7 +134,6 @@
         </div>
       </div>
 
-
       <div class="line"></div>
       <div class="form-col-container pl-3 mt-4">
         <div class="d-flex flex-column">
@@ -126,6 +143,8 @@
       </div>
     </div>
   </div>
+
+  <!-- <planOverview class="mt-2" :modelValue="model"></planOverview> -->
 </template>
 
 <script>
@@ -135,13 +154,20 @@ const pdf = defineAsyncComponent(() =>
   import('@/components/pdf-make/FilePDFProductionPlanView.vue')
 )
 
+import Gallery from '@/components/prime-vue/GalleryView.vue'
+
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
+
+//import planOverview from './PlanOverview.vue'
 
 export default {
   components: {
-    pdf
+    pdf,
+    Gallery
+    //planOverview
   },
   props: {
     modelValue: {
@@ -167,7 +193,6 @@ export default {
   },
   computed: {
     model() {
-      this.fetchImageData(this.modelValue.mold)
       return this.modelValue
     },
     modelMat() {
@@ -181,14 +206,25 @@ export default {
     }
   },
   watch: {
-    async 'model.mold'() {
-      await this.fetchImageData()
+    async model(value) {
+      let param = []
+      //console.log(value)
+      if (value.mold) {
+        param.push(value.mold)
+      }
+      if (value.moldSub) {
+        param.push(value.moldSub)
+      }
+      //console.log('watch param:', param)
+      if (param.length > 0) {
+        await this.fetchImageData(param)
+      }
     }
   },
   data() {
     return {
-      imageUrl: '',
-      txt: 'Bootstrap is developed mobile first, a strategy in which we optimize code for mobile devices first and then scale up components as necessary using CSS media queries. To ensure proper rendering and touch zooming for all devices, add the responsive viewport meta tag to your <head>.Bootstrap is developed mobile first, a strategy in which we optimize code for mobile devices first and then scale up components as necessary using CSS media queries. To ensure proper rendering and touch zooming for all devices, add the responsive viewport meta tag to your <head>.'
+      imageUrl: [],
+      isLoadingImage: false
     }
   },
   methods: {
@@ -222,20 +258,87 @@ export default {
     // --- APIs --- //
     async fetchImageData(mold) {
       try {
-        const param = {
-          imageName: `${mold}-Mold.png`
-        }
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-
-        if (res) {
-          this.imageUrl = `data:image/png;base64,${res}`
+        //console.log('fetchImageData:', mold)
+        if (mold && mold.length > 0) {
+          //loop mold for call api
+          this.imageUrl = []
+          for (const param in mold) {
+            const res = await api.jewelry.get(
+              'FileExtension/GetMoldImage',
+              {
+                imageName: `${mold[param]}-Mold.png`
+              },
+              { skipLoading: true }
+            )
+            if (res) {
+              if (this.imageUrl.length > 0) {
+                this.imageUrl = [...this.imageUrl, `data:image/png;base64,${res}`]
+              } else {
+                this.imageUrl = [`data:image/png;base64,${res}`]
+              }
+            }
+          }
 
           if (this.form) {
             this.form.requestDate = this.showDate(this.form.requestDate)
           }
+
+          //console.log('fetchImageData Images:', this.imageUrl)
         }
       } catch (error) {
+        //this.isLoadingImage = false
+        //this.imageUrl = []
         console.log(error)
+      }
+    },
+    async generatePDF() {
+      try {
+        // โหลดรูปภาพ
+        const param = {
+          imageName: `${this.model.mold}-Mold.png`
+        }
+        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+        const urlImage = `data:image/png;base64,${res}`
+
+        // สร้าง PDF builder
+        const pdfBuilder = new FilePlanProduction(this.model, this.modelMat, urlImage)
+        //const pdfBuilder = new FilePlanProduction(this.modelValue, this.urlImage)
+
+        // สร้างและเปิด PDF
+        pdfBuilder.generatePDF().open()
+      } catch (error) {
+        console.error('Failed to generate PDF:', error)
+      }
+    }
+  },
+  async created() {
+    //console.log('created this.modelValue:', this.modelValue)
+
+    this.$nextTick(async () => {})
+  },
+  unmounted() {
+    //console.log('unmounted:', this.imageUrl)
+  },
+  // เพิ่ม activated hook ใน component
+  activated() {
+    //console.log('activated - component reactivated')
+    // เรียกโหลดข้อมูลใหม่เมื่อกลับมาที่ component
+    if (this.model) {
+      let param = []
+
+      if (this.model.mold) {
+        param.push(this.model.mold)
+      }
+
+      if (this.model.moldSub) {
+        param.push(this.model.moldSub)
+      }
+
+      //console.log('activated param:', param)
+
+      if (param.length > 0) {
+        // รีเซ็ตอาร์เรย์รูปภาพก่อนโหลดใหม่เมื่อ activated
+        this.fetchImageData(param)
       }
     }
   }
@@ -256,8 +359,8 @@ export default {
   display: grid;
   gap: 10px;
   padding: 0px;
-  grid-template-columns: 4fr 5fr;
-  height: calc(100vh - 170px);
+  grid-template-columns: 5fr 5fr;
+  height: calc(100vh - 220px);
 }
 .form-custom-one-col-container {
   display: grid;
@@ -271,7 +374,7 @@ export default {
   align-items: center;
   overflow: hidden;
   position: relative;
-  height: calc(100vh - 250px);
+  height: calc(100vh - 300px);
 }
 .image-preview {
   width: auto;

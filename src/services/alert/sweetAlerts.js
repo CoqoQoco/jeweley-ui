@@ -114,7 +114,7 @@ export function info(msg, title, callback) {
     if (callback) callback()
   })
 }
-export function confirmSubmit(msg, title, callback, buttonInfo, icon) {
+export function confirmSubmit(msg, title, callback, buttonInfo, icon, msgStyle) {
   const showDenyButton = buttonInfo && buttonInfo.denyText ? true : false
 
   let titleShow = null
@@ -125,6 +125,15 @@ export function confirmSubmit(msg, title, callback, buttonInfo, icon) {
   if (msg) msgShow = msg
   else msgShow = ''
 
+  // Apply custom styling to the message if provided
+  if (msgStyle) {
+    msgShow = `<div style="${msgStyle}">${msgShow}</div>`
+  } else {
+    // Apply default styling to the message
+    msgShow = `<div style="color: #921313; font-weight: 700;">${msgShow}</div>`
+    titleShow = `<div style="color: #921313; font-weight: 700;">${titleShow}</div>`
+  }
+
   Swal.fire({
     title: titleShow,
     html: msgShow,
@@ -133,10 +142,10 @@ export function confirmSubmit(msg, title, callback, buttonInfo, icon) {
     showCancelButton: true,
     showDenyButton: showDenyButton,
     denyButtonText: buttonInfo && buttonInfo.denyText,
-    confirmButtonText: buttonInfo && buttonInfo.confirmText ? buttonInfo.confirmText : 'ยืนยัน',
-    confirmButtonColor: '#921313',
     cancelButtonText: buttonInfo && buttonInfo.cancelText ? buttonInfo.cancelText : 'ยกเลิก',
-    cancelButtonColor: '#FFC21B'
+    cancelButtonColor: '#393939',
+    confirmButtonText: buttonInfo && buttonInfo.confirmText ? buttonInfo.confirmText : 'ยืนยัน',
+    confirmButtonColor: '#921313'
   }).then((res) => {
     if (!res.isDismissed) callback(res)
   })
@@ -148,5 +157,6 @@ export default {
   info,
   warning,
   confirmSubmit
+
   //submit,
 }

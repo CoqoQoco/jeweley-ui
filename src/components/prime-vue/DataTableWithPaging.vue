@@ -1,4 +1,3 @@
-// src/components/common/BaseDataTable.vue
 <template>
   <div class="base-datatable">
     <DataTable
@@ -27,8 +26,86 @@
       :currentPageReportTemplate="currentPageReportTemplate"
       v-bind="$attrs"
     >
+      <!-- Expander Column -->
+      <Column v-if="expandable" :expander="true" headerStyle="width: 50px" />
+
+      <!-- Expanded Row Template -->
+      <template #expansion="slotProps">
+        <slot name="expansion" v-bind="slotProps">
+          <div class="expanded-row-content">
+            {{ slotProps.data }}
+          </div>
+        </slot>
+      </template>
+
       <!-- select template -->
-      <Column v-if="selectionMode" selectionMode="multiple" headerStyle="width: 50px"></Column>
+      <!-- <Column v-if="selectionMode" selectionMode="multiple" headerStyle="width: 50px"></Column> -->
+
+      <!-- <Column v-if="selectionMode" selectionMode="null" headerStyle="width: 50px">
+        <template #body="slotProps">
+          <div class="flex align-items-center justify-content-center">
+            <Checkbox
+              :modelValue="isSelected(slotProps.data)"
+              :disabled="isDisabled(slotProps.data)"
+              @change="onSelectionChange($event, slotProps.data)"
+              :binary="true"
+              :class="{ 'selected-row': isSelected(slotProps.data) }"
+              :data-pre-selected="isPreSelected(slotProps.data)"
+            />
+          </div>
+        </template>
+
+
+        <template #header>
+          <div class="flex align-items-center justify-content-center">
+            <Checkbox
+              :modelValue="isAllSelected"
+              :disabled="false"
+              @update:modelValue="onSelectAllChange"
+              :binary="true"
+            />
+          </div>
+        </template>
+      </Column> -->
+
+      <Column v-if="selectionMode" selectionMode="null" headerStyle="width: 50px">
+        <template #body="slotProps">
+          <div class="flex align-items-center justify-content-center">
+            <template v-if="selectionType === 'single'">
+              <RadioButton
+                :modelValue="isSelectedSingle(slotProps.data)"
+                :disabled="isDisabled(slotProps.data)"
+                @change="onSingleSelectionChange($event, slotProps.data)"
+                :binary="true"
+                :class="{ 'selected-row': isSelectedSingle(slotProps.data) }"
+                name="selection-group"
+              />
+            </template>
+            <template v-else>
+              <Checkbox
+                :modelValue="isSelected(slotProps.data)"
+                :disabled="isDisabled(slotProps.data)"
+                @change="onSelectionChange($event, slotProps.data)"
+                :binary="true"
+                :class="{ 'selected-row': isSelected(slotProps.data) }"
+                :data-pre-selected="isPreSelected(slotProps.data)"
+              />
+            </template>
+          </div>
+        </template>
+
+        <!-- เพิ่ม header template เพื่อจัดการ check all (เฉพาะ multiple mode) -->
+        <template #header v-if="selectionType === 'multiple'">
+          <div class="flex align-items-center justify-content-center" style="width: 10px !important">
+            <Checkbox
+              :modelValue="isAllSelected"
+              :disabled="false"
+              @update:modelValue="onSelectAllChange"
+              :binary="true"
+            />
+          </div>
+        </template>
+      </Column>
 
       <!-- Dynamic Columns -->
       <template v-for="col in columns" :key="col.field">
@@ -36,11 +113,13 @@
           v-bind="col"
           :sortable="col.sortable !== false"
           :style="{
-            'min-width': col.minWidth || '150px',
-            width: col.width || 'auto'
+            'min-width': col.minWidth,
+            width: col.width || 'auto',
+            backgroundColor: col.backgroundColor || 'transparent'
           }"
           :alignHeader="col.align || 'left'"
           :bodyStyle="{ textAlign: col.align || 'left' }"
+          :class="col.className"
         >
           <template #header v-if="$slots[`header-${col.field}`]">
             <slot :name="`header-${col.field}`"></slot>
@@ -97,6 +176,9 @@
 </template>
 
 <script>
+import Checkbox from 'primevue/checkbox'
+import RadioButton from 'primevue/radiobutton'
+
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
@@ -106,7 +188,9 @@ export default {
 
   components: {
     DataTable,
-    Column
+    Column,
+    Checkbox,
+    RadioButton
   },
 
   props: {
@@ -125,6 +209,11 @@ export default {
     selectionMode: {
       type: Boolean,
       default: false
+    },
+    selectionType: {
+      type: String,
+      default: 'multiple',
+      validator: (value) => ['single', 'multiple'].includes(value)
     },
     columns: {
       type: Array,
@@ -148,7 +237,7 @@ export default {
     },
     scrollHeight: {
       type: String,
-      default: 'calc(100vh - 280px)'
+      default: 'calc(100vh - 340px)'
     },
     showActions: {
       type: Boolean,
@@ -174,10 +263,75 @@ export default {
     emptyMessage: {
       type: String,
       default: 'ไม่พบข้อมูล'
+    },
+    // ถ้าต้องการให้ parent component ควบคุม expanded rows
+    modelValue: {
+      type: Array,
+      default: () => []
+    },
+    expandable: {
+      type: Boolean,
+      default: false
+    },
+    disabledItems: {
+      type: Array,
+      default: () => []
+    },
+    preSelectedItems: {
+      // สำหรับ items ที่ต้องการให้ติ๊กถูกไว้
+      type: Array,
+      default: () => []
     }
   },
 
-  emits: ['page', 'sort', 'update:itemsSelection'],
+  emits: [
+    'page',
+    'sort',
+    'update:itemsSelection',
+    'update:modelValue', // สำหรับ v-model ของ expanded rows
+    'row-expand', // เมื่อ row ถูก expand
+    'row-collapse' // เมื่อ row ถูก collapse
+  ],
+
+  computed: {
+    isAllSelected() {
+      if (this.items.length === 0) return false
+
+      // Count only selectable items (non-preselected and non-disabled)
+      const selectableItems = this.items.filter((item) => {
+        const isPreSelected = this.preSelectedItems.some(
+          (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+        )
+        const isDisabled = this.isDisabled(item)
+        return !isPreSelected && !isDisabled
+      })
+
+      // Check if all selectable items are selected
+      return (
+        selectableItems.length > 0 &&
+        selectableItems.every((item) =>
+          this.itemsSelection.some((selected) => selected[this.dataKey] === item[this.dataKey])
+        )
+      )
+    }
+  },
+
+  watch: {
+    // ถ้าต้องการให้ parent component ควบคุม expanded rows
+    modelValue: {
+      handler(newVal) {
+        this.expandedRows = newVal
+      },
+      deep: true
+    },
+
+    expandedRows: {
+      handler(newVal) {
+        this.$emit('update:modelValue', newVal)
+      },
+      deep: true
+    }
+  },
 
   data() {
     return {
@@ -243,7 +397,128 @@ export default {
           }
           return value
       }
+    },
+
+    // เช็คว่า item นั้นถูกเลือกหรือไม่
+    isSelected(item) {
+      return (
+        this.itemsSelection.some((selected) => selected[this.dataKey] === item[this.dataKey]) ||
+        this.preSelectedItems.some(
+          (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+        )
+      )
+    },
+
+    // เช็คว่า item นั้นถูก disable หรือไม่
+    isDisabled(item) {
+      return this.disabledItems.some((disabled) => disabled[this.dataKey] === item[this.dataKey])
+    },
+
+    // จัดการการเปลี่ยนแปลงการเลือก
+    onSelectAllChange(value) {
+      // เปลี่ยนชื่อ parameter ให้ชัดเจนขึ้น
+      //console.log('select all value:', value) // debug
+      let newSelection = [...this.itemsSelection]
+
+      if (value) {
+        // Check all
+        this.items.forEach((item) => {
+          if (this.isPreSelected(item) || this.isDisabled(item)) return
+
+          const exists = newSelection.some(
+            (selected) => selected[this.dataKey] === item[this.dataKey]
+          )
+          if (!exists) {
+            newSelection.push(item)
+          }
+        })
+      } else {
+        // Uncheck all - เก็บแค่ preSelected items
+        //newSelection = [...this.preSelectedItems] // ทำ shallow copy
+        newSelection = []
+      }
+
+      this.$emit('update:itemsSelection', newSelection)
+    },
+
+    // helper method
+    isPreSelected(item) {
+      return this.preSelectedItems.some(
+        (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+      )
+    },
+
+    onSelectionChange(checked, item) {
+      //console.log('checked', checked, 'item', item)
+
+      if (this.isDisabled(item)) return
+
+      // เพิ่มเช็คว่าอยู่ใน preSelectedItems หรือไม่
+      const isPreSelected = this.preSelectedItems.some(
+        (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+      )
+
+      // ถ้าเป็น preSelected item ให้ return ออกไปเลย
+      if (isPreSelected) {
+        console.log('isPreSelected return')
+        //return
+      }
+
+      let newSelection = [...this.itemsSelection]
+
+      if (checked) {
+        // ตรวจสอบว่า item นี้มีอยู่แล้วหรือไม่
+        const exists = newSelection.some(
+          (selected) => selected[this.dataKey] === item[this.dataKey]
+        )
+        if (!exists) {
+          newSelection.push(item)
+        } else {
+          newSelection = newSelection.filter(
+            (selected) => selected[this.dataKey] !== item[this.dataKey]
+          )
+        }
+      } else {
+        newSelection = newSelection.filter(
+          (selected) => selected[this.dataKey] !== item[this.dataKey]
+        )
+      }
+
+      //console.log('newSelection', newSelection)
+      this.$emit('update:itemsSelection', newSelection)
+    },
+
+    // เช็คว่า item นั้นถูกเลือกหรือไม่ในโหมด single
+    isSelectedSingle(item) {
+      return (
+        this.itemsSelection.length === 1 &&
+        this.itemsSelection[0][this.dataKey] === item[this.dataKey]
+      )
+    },
+
+    // จัดการการเปลี่ยนแปลงการเลือกในโหมด single
+    onSingleSelectionChange(checked, item) {
+      //console.log('checked', checked, 'item', item)
+      if (this.isDisabled(item)) return
+
+      // ถ้าเป็น preSelected item ให้ return ออกไปเลย
+      if (this.isPreSelected(item)) return
+
+      let newSelection = []
+
+      if (checked) {
+        newSelection = [item]
+      }
+
+      this.$emit('update:itemsSelection', newSelection)
     }
+
+    // เช็คว่า item อยู่ใน preSelectedItems หรือไม่
+    // isPreSelected(item) {
+    //   return this.preSelectedItems.some(
+    //     (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
+    //   )
+    // }
   }
 }
 </script>
@@ -307,9 +582,25 @@ export default {
 
     // Body Styles
     .p-datatable-tbody > tr {
+      &.p-highlight {
+        // เพิ่ม style สำหรับ row ที่ถูก select
+        background-color: #e3f2fd !important; // สีฟ้าอ่อน
+
+        // ถ้าต้องการให้ยังคง hover effect
+        &:hover {
+          background-color: #bbdefb !important; // สีฟ้าที่เข้มขึ้นเมื่อ hover
+        }
+
+        // สำหรับ striped rows
+        &:nth-child(even) {
+          background-color: #e3f2fd !important;
+        }
+      }
+
       > td {
         padding: 3px 10px !important;
         font-size: 14px !important;
+        //color: #7a1010;
         //border: 1px solid #dee2e6 !important;
       }
 
@@ -456,6 +747,32 @@ export default {
     .pi-sort-amount-down,
     .p-sortable-column-badge {
       color: #ffffff !important;
+    }
+  }
+
+  // เพิ่ม style สำหรับ expanded content
+  :deep(.expanded-row-content) {
+    background-color: #f8f9fa;
+    //padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  // Style สำหรับ expand button
+  :deep(.p-row-toggler) {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: var(--row-hover-bg);
+    }
+
+    .p-row-toggler-icon {
+      font-size: 1rem;
     }
   }
 }

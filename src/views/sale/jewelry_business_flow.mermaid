@@ -1,0 +1,109 @@
+
+graph TD
+    A[Customer Inquiry] --> B[Create Quotation]
+    B --> C{Quote Items}
+    
+    C --> D[From Stock Items]
+    C --> E[To-be-Produced Items]
+    
+    B --> F[Send Quotation to Customer]
+    F --> G{Customer Decision}
+    
+    G -->|Accept All| H[Create Sales Order]
+    G -->|Accept Partial| I[Create Sales Order<br/>Selected Items Only]
+    G -->|Reject| J[End Process]
+    
+    I --> K{Check Payment Terms}
+    H --> K
+    
+    K --> K1{Production Deposit<br/>Required?}
+    K1 -->|Yes| K2[Create Deposit Invoice]
+    K1 -->|No| L1[Reserve Stock Items]
+    K2 --> K3[Wait for Deposit Payment]
+    K3 --> L1
+    
+    L1 --> L[Stock Items: Reserved<br/>Can be Un-reserved]
+    L1 --> M[Production Items:<br/>Create Production Orders]
+    
+    L --> L2{Customer Changes Mind?}
+    L2 -->|Yes| L3[Un-reserve Items<br/>Update Sales Order]
+    L2 -->|No| N1[Stock Items Ready for Delivery]
+    L3 --> L4[Cancel/Modify Process]
+    M --> O[Production Process]
+    O --> P[Quality Check]
+    P --> Q[Production Item Complete]
+    Q --> N2[Production Item Ready for Delivery]
+    
+    N1 --> R1[Create Delivery Note<br/>for Ready Items]
+    N2 --> R1
+    
+    R1 --> R2{Delivery Decision}
+    
+    S --> S1{Payment Terms}
+    T --> T1{Payment Terms}
+    
+    R2 -->|Deliver Available Items| S[Create Delivery Note<br/>for Selected Items]
+    R2 -->|Wait for More Items| W1[Hold for Later Delivery]
+    
+    S --> S1{Payment Terms}
+    
+    S1 -->|Pay on Delivery| S2[Invoice + Collect Payment<br/>for Delivered Items]
+    S1 -->|Credit Terms| S3[Invoice for Delivered Items]
+    S1 -->|Prepaid| S4[Update Account Balance]
+    
+    S2 --> S21[Payment Follow-up<br/>for This Invoice]
+    S3 --> S31[Payment Follow-up<br/>for This Invoice]
+    S4 --> S41[Account Updated]
+    
+    S21 --> W{More Items in Sales Order?}
+    S31 --> W
+    S41 --> W
+    
+    W -->|Yes| W2[Continue Production/Delivery Process]
+    W -->|No| X1{All Invoices Status}
+    
+    X1 --> X2{All Invoices Paid?}
+    X2 -->|Yes| X3[Sales Order Complete]
+    X2 -->|No| X4[Outstanding Payment Follow-up]
+    
+    X4 --> X5{Payment Method}
+    X5 -->|Credit Terms| X6[Send Payment Reminder]
+    X5 -->|Collection Required| X7[Debt Collection Process]
+    
+    X6 --> X8[Monitor Payment Status]
+    X7 --> X8
+    X8 --> X9{Payment Received?}
+    X9 -->|Yes| X3
+    X9 -->|No| X10[Escalate Collection]
+    
+    X10 --> X11{Business Decision}
+    X11 -->|Continue Collection| X7
+    X11 -->|Write-off| X12[Bad Debt Write-off]
+    X11 -->|Legal Action| X13[Legal Collection Process]
+    
+    X12 --> X14[Update Customer Credit Rating]
+    X13 --> X15[Legal Process]
+    X14 --> Z[Final Process Complete]
+    X15 --> Z
+    X3 --> Z
+    
+    W1 --> W3[Monitor Other Items Progress]
+    W3 --> R1
+    
+    W2 --> W21[Additional Billing Options]
+    W21 --> W22{Business Decision}
+    W22 -->|Bill Now for Future Items| W23[Create Advance Invoice]
+    W22 -->|Wait for Delivery| N1
+    W22 -->|Bill Production Progress| W24[Progress Billing]
+    
+    W23 --> W25[Collect Advance Payment]
+    W24 --> W26[Collect Progress Payment]
+    
+    W25 --> N1
+    W26 --> N1
+    
+    style B fill:#e1f5fe
+    style H fill:#c8e6c9
+    style I fill:#c8e6c9
+    style M fill:#fff3e0
+    style V fill:#f3e5f5

@@ -1,6 +1,5 @@
 @import './variable.scss';
 
-
 // ----- table ---- //
 .p-datatable {
   font-size: $base-font-size !important;
@@ -72,8 +71,8 @@
   .p-calendar-w-btn,
   .p-datepicker-trigger {
     background-color: $base-font-color !important;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-top-right-radius: 5px !important;
+    border-bottom-right-radius: 5px !important;
     border-color: $base-font-color !important;
     //height: 35px !important;
     //padding-top: 500px !important;
@@ -83,6 +82,16 @@
     font-size: $base-font-size !important;
     padding: 10px !important;
     margin: 0px !important;
+
+    &:hover {
+      border-color: var(--base-font-color) !important;
+      box-shadow: none !important;
+    }
+
+    &:focus {
+      border-color: var(--base-font-color) !important;
+      box-shadow: none !important;
+    }
   }
   svg {
     width: 15px;
@@ -162,6 +171,17 @@
 .p-multiselect {
   width: 100% !important;
   margin-top: 5px !important;
+
+  &:hover {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
+
+  &:focus {
+    border-color: var(--base-font-color) !important;
+    box-shadow: none !important;
+  }
+
   svg {
     width: 10px;
     height: 10px;
@@ -184,6 +204,23 @@
 .p-checkbox.p-highlight .p-checkbox-box {
   border-color: #921313 !important;
   background: #921313 !important;
+}
+
+/* สำหรับสีพื้นหลังปุ่ม Radio */
+.p-radiobutton-box.p-highlight,
+.p-radiobutton.p-component.p-highlight .p-radiobutton-box,
+div[data-pc-name='radiobutton'] .p-radiobutton-box.p-highlight,
+.p-radiobutton.p-component.p-highlight.selected-row .p-radiobutton-box {
+  border-color: #921313 !important;
+  background: #ffffff !important;
+}
+
+/* สำหรับจุดสีขาวตรงกลาง */
+.p-radiobutton-box.p-highlight .p-radiobutton-icon,
+.p-radiobutton.p-component.p-highlight .p-radiobutton-box .p-radiobutton-icon,
+div[data-pc-name='radiobutton'] .p-radiobutton-box.p-highlight .p-radiobutton-icon,
+.p-radiobutton.p-component.p-highlight.selected-row .p-radiobutton-box .p-radiobutton-icon {
+  background-color: #921313 !important;
 }
 
 // --------- stepper ---------- //
@@ -261,4 +298,9 @@
 .p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container .p-inputtext {
   //padding-right: 1.75rem;
   height: 35px !important;
+}
+
+// ------------ side bar ------------ //
+.p-sidebar .p-sidebar-content {
+  padding: 0px !important;
 }

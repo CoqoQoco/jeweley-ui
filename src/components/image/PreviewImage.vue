@@ -22,6 +22,8 @@ import api from '@/axios/axios-helper.js'
 //import Avatar from 'primevue/avatar'
 import Image from 'primevue/image'
 export default {
+  name: 'PreviewImage',
+  inheritAttrs: false, // ป้องกัน
   components: {
     //Avatar
     Image

@@ -1,108 +1,73 @@
 <template>
   <div>
-    <DataTable
+    <BaseDataTable
+      :items="data.data"
       :totalRecords="data.total"
-      :value="data.data"
-      v-model:expandedRows="expnadData"
-      dataKey="id"
-      ref="dt"
-      class="p-datatable-sm"
-      scrollable
-      scrollHeight="calc(100vh - 290px)"
-      resizableColumns
-      :paginator="true"
-      :lazy="true"
+      :columns="columns"
       @page="handlePageChange"
-      @sort="handlePageChangeSort"
-      :rows="take"
-      removableSort
-      sortMode="multiple"
+      @sort="handleSortChange"
+      :perPage="take"
       :rowsPerPageOptions="[10, 30]"
-      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
-      <Column field="tbtProductionPlanImage" header="รูปเเม่พิมพ์" style="width: 80px">
-        <template #body="slotProps">
-          <div class="image-container">
-            <!-- <loading :isLoading="isLoadingImage"></loading> -->
-            <!-- <img :src="fetchIamge(slotProps)" alt="Preview Image" /> -->
-            <imagePreview :imageName="slotProps.data.code" type="MOLD"></imagePreview>
+      <!-- Custom Column Templates -->
+      <template #imageTemplate="slotProps">
+        <div class="image-container">
+          <div>
+            <imagePreview
+              :imageName="slotProps.data.code"
+              type="MOLD"
+              :width="25"
+              :height="25"
+            ></imagePreview>
           </div>
-        </template>
-      </Column>
-      <Column header="สถานะ" sortable field="status" style="width: 150px">
-        <template #body="slotProps">
-          <div class="d-flex">
-            <div
-              class="box-status-show mr-2"
-              :class="slotProps.data.status === 1 ? 'box-status-success' : 'box-status-show'"
-            >
-              {{ getMoldStatus(slotProps.data.status) }}
-            </div>
-            <button
-              :class="[
-                'btn btn-sm mr-1',
-                slotProps.data.status !== 1 ? 'btn-secondary' : 'btn-green'
-              ]"
-              title="เบิกเเม่พิมพ์"
-              @click="showModalPicking(slotProps.data)"
-              :disabled="slotProps.data.status !== 1"
-            >
-              <i class="bi bi-arrow-bar-up"></i>
-            </button>
-            <button
-              class="btn btn-sm btn btn-warning mr-1"
-              title="เเก้ไข"
-              @click="showModalUpdate(slotProps.data)"
-            >
-              <i class="bi bi-brush"></i>
-            </button>
-            <button
-              :class="['btn btn-sm', slotProps.data.planId ? 'btn-main' : 'btn-secondary']"
-              title="ตรวจสอบ"
-              @click="viewplan(slotProps.data)"
-              :disabled="!slotProps.data.planId"
-            >
-              <i class="bi bi-search"></i>
-            </button>
+          <div class="ml-2" v-if="slotProps.data.imageDraft1">
+            <imagePreview
+              :imageName="`${slotProps.data.code}-Sub`"
+              type="MOLD"
+              :width="25"
+              :height="25"
+            ></imagePreview>
           </div>
-        </template>
-      </Column>
-      <!-- <Column style="width: 80px">
-        <template #body="slotProps">
-          <div class="btn-action-container">
-            <button
-              :class="['btn btn-sm mr-1', slotProps.data.status !== 1 ? 'btn-se' : 'btn-info']"
-              title="เบิกเเม่พิมพ์"
-              @click="showModalPicking(slotProps.data)"
-              :disabled="slotProps.data.status !== 1"
-            >
-              <i class="bi bi-arrow-bar-up"></i>
-            </button>
-            <button
-              class="btn btn-sm btn btn-warning mr-1"
-              title="เเก้ไข"
-              @click="showModalUpdate(slotProps.data)"
-            >
-              <i class="bi bi-brush"></i>
-            </button>
-            <button
-              :class="['btn btn-sm', slotProps.data.planId ? 'btn-main' : 'btn-secondary']"
-              title="ตรวจสอบ"
-              @click="viewplan(slotProps.data)"
-              :disabled="!slotProps.data.planId"
-            >
-              <i class="bi bi-search"></i>
-            </button>
+        </div>
+      </template>
+
+      <template #statusTemplate="slotProps">
+        <div class="d-flex">
+          <div
+            class="box-status-show mr-2"
+            :class="slotProps.data.status === 1 ? 'box-status-success' : 'box-status-show'"
+          >
+            {{ getMoldStatus(slotProps.data.status) }}
           </div>
-        </template>
-      </Column> -->
-      <Column header="รหัส" sortable field="code" style="width: 150px"></Column>
-      <Column header="ประเภท" sortable field="category" style="width: 150px"></Column>
-      <Column header="ช่างขึ้นพิมพ์" sortable field="moldBy" style="width: 150px"></Column>
-      <Column header="แปลงแบบ" sortable field="reModelMold" style="width: 150px"></Column>
-      <Column header="รายละเอียด" field="description"></Column>
-    </DataTable>
+          <button
+            :class="[
+              'btn btn-sm mr-1',
+              slotProps.data.status !== 1 ? 'btn-secondary' : 'btn-green'
+            ]"
+            title="เบิกเเม่พิมพ์"
+            @click="showModalPicking(slotProps.data)"
+            :disabled="slotProps.data.status !== 1"
+          >
+            <i class="bi bi-arrow-bar-up"></i>
+          </button>
+          <button
+            class="btn btn-sm btn btn-warning mr-1"
+            title="เเก้ไข"
+            @click="showModalUpdate(slotProps.data)"
+          >
+            <i class="bi bi-brush"></i>
+          </button>
+          <button
+            :class="['btn btn-sm', slotProps.data.planId ? 'btn-main' : 'btn-secondary']"
+            title="ตรวจสอบ"
+            @click="viewplan(slotProps.data)"
+            :disabled="!slotProps.data.planId"
+          >
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </template>
+    </BaseDataTable>
 
     <modalUpdate
       :isShow="isShowUpdate"
@@ -123,19 +88,16 @@
 import { defineAsyncComponent } from 'vue'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
 import modalUpdate from './UpdateView.vue'
 import modalPicking from './PickingView.vue' // ยังไม่ได้ใช้
 export default {
   components: {
-    DataTable,
-    Column,
+    BaseDataTable,
     imagePreview,
     modalUpdate,
     modalPicking
@@ -176,30 +138,97 @@ export default {
       expnadData: [],
       form: null,
 
+      columns: [
+        {
+          field: 'image',
+          header: '',
+          //width: '80px',
+          sortable: false
+        },
+        {
+          field: 'status',
+          header: 'สถานะ',
+          width: '150px',
+          sortable: true
+        },
+        {
+          field: 'code',
+          header: 'รหัส',
+          width: '150px',
+          sortable: true
+        },
+        {
+          field: 'category',
+          header: 'ประเภท',
+          width: '150px',
+          sortable: true
+        },
+        {
+          field: 'moldBy',
+          header: 'ช่างขึ้นพิมพ์',
+          width: '150px',
+          sortable: true
+        },
+        {
+          field: 'reModelMold',
+          header: 'แปลงแบบ',
+          width: '150px',
+          sortable: true
+        },
+        {
+          field: 'description',
+          header: 'รายละเอียด',
+          sortable: false
+        },
+        {
+          field: 'updateDate',
+          header: 'เเก้ไขล่าสุด',
+          width: '200px',
+          format: "datetime",
+          sortable: true
+        }
+      ],
+
       //--------- dataUpdate ---------//
       update: {},
       picking: {}
     }
   },
   methods: {
-    // ----------- table ----------- //
+    // ----- data table hnadle
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
       this.fetchData()
     },
-    handlePageChangeSort(e) {
+
+    handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
+      this.sort = e.multiSortMeta.map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
+
+    // handlePageChange(e) {
+    //   this.skip = e.first
+    //   this.take = e.rows
+    //   this.sort = e.multiSortMeta.map((item) => {
+    //     return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
+    //   })
+    //   //console.log(e)
+    //   this.fetchData()
+    // },
+    // handlePageChangeSort(e) {
+    //   this.skip = e.first
+    //   this.take = e.rows
+    //   this.sort = e.multiSortMeta.map((item) => {
+    //     return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
+    //   })
+    //   this.fetchData()
+    // },
 
     // ----------- APIs ----------- //
     async fetchData() {
@@ -211,7 +240,10 @@ export default {
           skip: this.skip,
           sort: this.sort,
           search: {
-            text: this.form.text ?? null
+            text: this.form.text ?? null,
+            updateStart: this.form.updateStart ? formatISOString(this.form.updateStart) : null,
+            updateEnd: this.form.updateEnd ? formatISOString(this.form.updateEnd) : null,
+
           }
         }
         console.log('params', params)
@@ -362,5 +394,11 @@ export default {
 .box-image-show {
   display: flex;
   gap: 5px;
+}
+.image-container {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  margin-left: 4px;
 }
 </style>

@@ -1,9 +1,19 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
-//const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
-const List = () => import('@/views/stock/product/list/IndexView.vue')
+const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
+const List = () => import('@/views/stock/product/list/index-view.vue')
 
-const productCost = () => import('@/views/stock/product/cost/IndexView.vue')
+const GRProductionList = () =>
+  import('@/views/receipt-stock/product/production-receipt-list/index-view.vue')
+const GRProduction = () => import('@/views/receipt-stock/product/new-gr-production/index-view.vue')
+const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-view.vue')
+
+const StockImage = () => import('@/views/stock/product/image/IndexView.vue')
+
+const Barcode = () => import('@/views/receipt-stock/product/test-barcode/index-view.vue')
+
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 const routes = [
   {
@@ -19,9 +29,27 @@ const routes = [
       },
       classIcon: 'bi bi-gem',
       majorShow: true,
-      btsubLineShow: true
+      btsubLineShow: true,
+      permissions: [PERMISSIONS.STOCK_PRODUCT]
     },
     children: [
+      // Product Dashboard
+      {
+        path: '/stock-product-dashboard',
+        name: 'stock-product-dashboard',
+        component: ProductDashboard,
+        menuId: 'Dashboard',
+        meta: {
+          Displayname: {
+            en: 'Dashboard',
+            th: 'เเดชบอร์ด'
+          },
+          minorShow: true,
+          menuId: `stock-product-dashboard`,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
       // stock product
       {
         path: '/stock-product-list',
@@ -34,22 +62,95 @@ const routes = [
             th: 'ตรวจคลัง'
           },
           minorShow: true,
-          menuId: `stock-product`
+          menuId: `stock-product`,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       },
-      // cost
+
+      //gr product from production
       {
-        path: '/product-cost/:id',
-        name: 'product-cost',
-        component: productCost,
-        menuId: 'Product-Cost',
+        path: '/goods-receipt-production-list',
+        name: 'goods-receipt-production-list',
+        component: GRProductionList,
+        menuId: 'create',
         meta: {
           Displayname: {
-            en: 'Product Cost',
-            th: 'ประเมินราคาสินค้า'
+            en: 'Goods Receipt Production',
+            th: 'รับสินค้างานผลิต'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION]
+        }
+      },
+      {
+        path: '/goods-receipt-production/:id',
+        name: 'goods-receipt-production',
+        component: GRProduction,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Production',
+            th: 'รับสินค้างานผลิต'
           },
           minorShow: false,
-          menuId: `product-cost`
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
+        }
+      },
+
+      //gr product from outsource
+      {
+        path: '/goods-receipt-outsource',
+        name: 'goods-receipt-outsource',
+        component: Dashboard,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Outsource',
+            th: 'รับสินค้างานนอก'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
+        }
+      },
+
+      //update product img
+      {
+        path: '/goods-receipt-image',
+        name: 'goods-receipt-image',
+        component: StockImage,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Image',
+            th: 'รูปภาพสินค้า'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_IMAGE_CREATE]
+        }
+      },
+
+      {
+        path: '/goods-receipt-report',
+        name: 'goods-receipt-report',
+        component: ReportGR,
+        meta: {
+          Displayname: {
+            en: 'Report',
+            th: 'รายงานรับสินค้า'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
+      {
+        path: '/goods-receipt-barcode',
+        name: 'goods-receipt-barcode',
+        component: Barcode,
+        meta: {
+          Displayname: {
+            en: '',
+            th: 'Barcode'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
         }
       }
     ]

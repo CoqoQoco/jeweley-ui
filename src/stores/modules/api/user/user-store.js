@@ -51,20 +51,49 @@ export const useUserApiStore = defineStore('userStore', {
         console.error('Error fetching user list:', error)
       }
     },
-    async fetchGetAccount({ id }) {
+
+    async fetchGetAccount({ id, skipLoading = false }) {
       try {
         const param = {
           id
         }
 
-        const res = await api.jewelry.get('User/GetAccount', param)
+        const res = await api.jewelry.get('User/GetAccount', param, { skipLoading })
         if (res) {
+          localStorage.setItem('profile-dk', JSON.stringify(this.user))
           return res
         } else {
           return {}
         }
       } catch (error) {
         console.error('Error fetching user get account:', error)
+      }
+    },
+    async fetchGetUser() {
+      try {
+        const res = await api.jewelry.get('User/Get')
+        if (res) {
+          localStorage.removeItem('user-dk')
+          localStorage.setItem('user-dk', JSON.stringify(res))
+        }
+      } catch (error) {
+        console.error('Error fetching user get user:', error)
+      }
+    },
+
+    async fetchUpdateAccount({ formValue }) {
+      try {
+        let restOptions = {
+          headers: {
+            'Content-Type': `multipart/form-data`
+          }
+        }
+        return await api.jewelry.post('User/UpdateAccount', formValue, {
+          skipLoading: true,
+          restOptions: restOptions
+        })
+      } catch (error) {
+        console.error('Error fetching UpdateAccount:', error)
       }
     },
     async fetchActiveAccount({ form }) {

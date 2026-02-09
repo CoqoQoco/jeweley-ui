@@ -3,7 +3,7 @@
     v-model="isShowModal"
     :click-out="clickToClose"
     :max-width="width"
-    teleportTarget="#layoutDashboard"
+    teleportTarget="#modal-container"
   >
     <!-- Loading -->
     <div class="slot-loading-for-call-api-modal">
@@ -17,11 +17,11 @@
           <slot name="title"></slot>
         </div>
         <button class="btn float-close" @click="closeModal">
-          <i class="bi bi-x"></i>
+          <i class="bi-x-square-fill text-custom"></i>
         </button>
       </div>
       <!-- Content -->
-      <div class="app-container">
+      <div class="content-container">
         <slot name="content"></slot>
       </div>
       <!-- Footer (BTN Action) -->
@@ -94,7 +94,7 @@ export default {
   &__header {
     position: relative;
     //padding: 20px;
-    border-bottom: 1px solid #dddddd;
+    //border-bottom: 1px solid #dddddd;
     width: 100%;
   }
   &__operation {
@@ -112,15 +112,24 @@ export default {
   word-wrap: break-word;
   background-color: #fff;
   background-clip: border-box;
-  // border: 1px solid transparent;
+  //border: 1px solid transparent;
   border-radius: 0.25rem;
+  //padding: 0px 0px 0px 0px;
 }
 
 .float-close {
   position: absolute;
   top: 0;
   right: 0;
-  font-size: 15px;
+  font-size: 20px;
+  //color: var(--base-sub-color);
+  //border: 1px solid var(--base-sub-color);
+  z-index: 10000;
+
+  .text-custom {
+    //color: var(--base-sub-color);
+    background-color: var(--base-font-color);
+  }
 }
 // Override Class
 // .k-animation-container {
