@@ -1,0 +1,13 @@
+// ============================================================================
+// Responsive Styles - Main Index
+// ============================================================================
+// Purpose: Central import file for all responsive utilities
+// Usage: @import '@/assets/scss/responsive-style';
+// ============================================================================
+
+@import './responsive-utilities.scss';
+
+// Future responsive files can be added here:
+// @import './responsive-tables.scss';
+// @import './responsive-forms.scss';
+// @import './responsive-cards.scss';

@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
 import {
-  formatISOString,
+  //formatISOString,
   formatDate
   //formatDateTime
 } from '@/services/utils/dayjs.js'
+
+import { formatDecimal } from '@/services/utils/decimal.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 //import { CsvHelper } from '@/services/utils/export-excel.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
@@ -15,33 +17,17 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
     dataSearchExport: {}
   }),
   actions: {
-    initSearchRequeast(form) {
-      console.log('initSearchRequeast', form)
-      return {
-        search: {
-          recieptStart: form.recieptStart ? formatISOString(form.recieptStart) : null,
-          recieptEnd: form.recieptEnd ? formatISOString(form.recieptEnd) : null,
-
-          receiptNumber: form.receiptNumber,
-          stockNumber: form.stockNumber,
-
-          mold: form.mold,
-          woText: form.woText,
-
-          productType: form.productType ? [...form.productType] : null,
-          productNumber: form.productNumber
-        }
-      }
-    },
-
-    async fetchDataSearch({ take, skip, sort, form }) {
+    async fetchDataSearch({ take, skip, sort, formValue }) {
       try {
+        //console.log('formValue', formValue)
         this.dataSearch = {}
         const param = {
-          take,
-          skip,
-          sort,
-          ...this.initSearchRequeast(form)
+          take: take,
+          skip: skip,
+          sort: sort,
+          search: {
+            ...formValue
+          }
         }
 
         const res = await api.jewelry.post('StockProduct/List', param)
@@ -52,33 +38,54 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         }
       } catch (error) {
         console.error('Error fetching stock product data:', error)
-        throw error
       }
     },
-    async fetchDataSearchReceiptExport({ sort, form, title }) {
+    async fetchDataGet({ formValue }) {
+      try {
+        //console.log('formValue', formValue)
+        this.dataSearch = {}
+        const param = {
+          ...formValue
+        }
+
+        return await api.jewelry.post('StockProduct/Get', param, {
+          skipLoading: true
+        })
+      } catch (error) {
+        console.error('Error get stock product data:', error)
+      }
+    },
+
+    async fetchDataSearchReceiptExport({ sort, formValue, title }) {
       try {
         this.dataSearchExport = {}
         const param = {
           take: 0,
           skip: 0,
           sort: sort,
-          ...this.initSearchRequeast(form)
+          search: {
+            ...formValue
+          }
         }
 
         const res = await api.jewelry.post('StockProduct/List', param)
         if (res) {
           const dataExcel = res.data.map((item) => ({
-            WO: item.wo,
-            'WO No.': item.woNumber,
-            เลขที่รับสินค้า: item.receiptNumber,
-            วันที่รับสินค้า: formatDate(item.receiptDate),
-            เลขที่สินค้า: item.stockNumber,
-            เเม่พิมพ์: item.mold,
+            วันรับสินค้า: formatDate(item.receiptDate),
+            เลขที่ผลิต: item.stockNumber,
             รหัสสินค้า: item.productNumber,
+            'ชื่อสินค้า EN': item.productNameEn,
+            'ชื่อสินค้า TH': item.productNameTh,
             ประเภทสินค้า: item.productTypeName,
-            จำนวนสินค้า: item.productQty,
-            ประเภททอง_เงิน: item.gold,
-            ขนาดทอง_เงิน: item.goldSize
+            ขนาด: item.size,
+            เเม่พิมพ์: item.mold,
+            'สีของทอง/เงิน': item.productionType,
+            'ประเภททอง/เงิน': item.productionTypeSize,
+            'W.O.': `${item.wo}-${item.woNumber}`,
+            จัดเก็บ: item.location,
+            ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
+            ผู้รับสินค้า: item.createBy,
+            หมายเหตุ: item.remark
           }))
 
           console.log('dataExcel title', title)
@@ -104,6 +111,35 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         }
       } catch (error) {
         console.error('Error fetching stock product export data:', error)
+        throw error
+      }
+    },
+
+    async fetchUpdateStockProduct({ formValue }) {
+      try {
+        return await api.jewelry.post('StockProduct/Update', formValue)
+      } catch (error) {
+        console.error('Error fetching update stock product data:', error)
+        throw error
+      }
+    },
+
+    async fetchDataSearchProductName({ formValue, skipLoading }) {
+      try {
+        return await api.jewelry.post('StockProduct/ListName', formValue, {
+          skipLoading: skipLoading
+        })
+      } catch (error) {
+        console.error('Error fetching update stock product data:', error)
+        throw error
+      }
+    },
+
+    async fetchAddProductCostDeatialVersion({ formValue }) {
+      try {
+        return await api.jewelry.post('StockProduct/AddProductCostDeatialVersion', formValue)
+      } catch (error) {
+        console.error('Error adding product cost detail:', error)
         throw error
       }
     }
