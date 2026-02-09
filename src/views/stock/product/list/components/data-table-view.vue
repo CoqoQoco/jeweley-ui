@@ -16,8 +16,18 @@
           <button class="btn btn-sm btn btn-green" title="พิมพ์ป้าย" @click="onPrintBarcode(data)">
             <i class="bi bi-upc-scan"></i>
           </button>
-          <button class="btn btn-sm btn btn-main ml-2" title="เเก้ไข" @click="onUpdate(data)">
+          <button class="btn btn-sm btn btn-main ml-2" title="แก้ไข" @click="onUpdate(data)">
             <i class="bi bi-brush"></i>
+          </button>
+          <button class="btn btn-sm btn-info ml-2" title="ดูต้นทุนสินค้า" @click="onViewCost(data)">
+            <i class="bi bi-calculator"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-secondary ml-2"
+            title="ดูประวัติตีราคา"
+            @click="onViewHistory(data)"
+          >
+            <i class="bi bi-clock-history"></i>
           </button>
         </div>
       </template>
@@ -281,6 +291,12 @@ export default {
     onUpdate(val) {
       this.modelStock = val
       this.isShow.isUpdate = true
+    },
+    onViewCost(val) {
+      this.$emit('view-cost', val)
+    },
+    onViewHistory(val) {
+      this.$emit('view-history', val)
     },
 
     async fetchData() {

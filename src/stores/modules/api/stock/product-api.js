@@ -142,6 +142,30 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.error('Error adding product cost detail:', error)
         throw error
       }
+    },
+
+    async fetchGetStockCostDetail(stockNumber) {
+      try {
+        return await api.jewelry.post(
+          'StockProduct/GetStockCostDetail',
+          null,
+          {
+            params: { stockNumber }
+          }
+        )
+      } catch (error) {
+        console.error('Error fetching stock cost detail:', error)
+        throw error
+      }
+    },
+
+    async fetchGetProductCostDetailVersion(stockNumber) {
+      try {
+        return await api.jewelry.get('StockProduct/GetProductCostDetailVersion', { stockNumber })
+      } catch (error) {
+        console.error('Error fetching product cost detail version:', error)
+        throw error
+      }
     }
   }
 })
