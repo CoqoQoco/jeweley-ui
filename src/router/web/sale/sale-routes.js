@@ -16,6 +16,9 @@ const Invoice = () => import('@/views/sale/invoice/index-view.vue')
 const InvoiceDetail = () => import('@/views/sale/invoice-detail/index-view.vue')
 const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
 
+// Cost Stock - Appraisal
+const CostStockEdit = () => import('@/views/sale/cost-stock/web/cost-edit/index-view.vue')
+
 // Fallback for incomplete components
 const AccountView = () => import('@/views/setting/user-account/index-view.vue')
 
@@ -47,6 +50,21 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+
+      // Cost Stock - Appraisal Section
+      {
+        path: '/sale/cost-stock-edit',
+        name: 'cost-stock-edit',
+        component: CostStockEdit,
+        meta: {
+          Displayname: {
+            en: 'Stock Appraisal',
+            th: 'ตีราคาสินค้า'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_CREATE]
         }
       },
 

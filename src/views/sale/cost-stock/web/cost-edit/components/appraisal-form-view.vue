@@ -515,7 +515,7 @@ export default {
 
       // Hardcoded Gold master list (combined with API)
       hardcodedGoldList: [
-        { code: 'RINGP'  , name: 'น้ำหนักแป้น' }
+        { code: 'น้ำหนักแป้น'  , name: 'น้ำหนักแป้น' }
         
       ],
 
