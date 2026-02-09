@@ -22,6 +22,17 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
+        env:
+          # Jewelry API Configuration (Production Azure)
+          VITE_JEWELRY_API_URL: https://dk-api-c2btgkcka3gjfpf0.southeastasia-01.azurewebsites.net/
+          # Zebra Printer Service Configuration
+          VITE_PRINTER_API_URL: http://localhost:7003/
+          # API Timeout (milliseconds) - 100 seconds
+          VITE_API_TIMEOUT: 100000
+          # Maximum Loading Time (milliseconds) - 10 seconds
+          VITE_MAX_LOADING_TIME: 10000
+          # Environment
+          VITE_ENV: production-online
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_FIELD_0F7A40F00 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
