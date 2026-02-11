@@ -23,7 +23,8 @@
     <!-- Error Message -->
     <div v-if="errorMessage" class="scanner-error">
       <i class="bi bi-exclamation-triangle"></i>
-      <p>{{ errorMessage }}</p>
+      <p class="error-text">{{ errorMessage }}</p>
+      <p v-if="debugInfo" class="debug-info">{{ debugInfo }}</p>
     </div>
 
     <!-- Control Buttons -->
@@ -71,7 +72,8 @@ export default {
       errorMessage: '',
       instructions: 'วาง QR Code หรือ Barcode ในกรอบ',
       cameras: [],
-      currentCameraIndex: 0
+      currentCameraIndex: 0,
+      debugInfo: ''
     }
   },
 
@@ -84,8 +86,55 @@ export default {
   methods: {
     async startScanning() {
       this.errorMessage = ''
+      this.debugInfo = ''
 
       try {
+        // Check if HTTPS or localhost
+        const isSecureContext = window.isSecureContext
+        const protocol = window.location.protocol
+        const hostname = window.location.hostname
+
+        this.debugInfo = `Protocol: ${protocol}, Host: ${hostname}, Secure: ${isSecureContext}`
+
+        if (!isSecureContext && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+          this.errorMessage =
+            'กล้องทำงานได้เฉพาะ HTTPS หรือ localhost เท่านั้น\n' +
+            'กรุณาเข้าใช้งานผ่าน:\n' +
+            '- https://... (สำหรับ production)\n' +
+            '- http://localhost:... (สำหรับ development)'
+          return
+        }
+
+        // Check MediaDevices API support
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          this.errorMessage = 'เบราว์เซอร์นี้ไม่รองรับการใช้งานกล้อง'
+          return
+        }
+
+        // Request camera permission explicitly first
+        try {
+          await navigator.mediaDevices.getUserMedia({ video: true })
+        } catch (permErr) {
+          console.error('Permission error:', permErr)
+
+          if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+            this.errorMessage =
+              'ไม่ได้รับอนุญาตให้เข้าถึงกล้อง\n\n' +
+              'วิธีแก้ไข:\n' +
+              '1. คลิกไอคอนกล้อง/ล็อค ที่แถบ URL\n' +
+              '2. เลือก "อนุญาต" สำหรับกล้อง\n' +
+              '3. Refresh หน้าเว็บ\n\n' +
+              'หรือไปที่:\n' +
+              'Chrome: Settings > Privacy > Site Settings > Camera\n' +
+              'Safari: Settings > Safari > Camera'
+          } else if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
+            this.errorMessage = 'ไม่พบกล้องบนอุปกรณ์นี้'
+          } else {
+            this.errorMessage = `เกิดข้อผิดพลาด: ${permErr.message}`
+          }
+          return
+        }
+
         // Get available cameras
         const devices = await Html5Qrcode.getCameras()
 
@@ -97,11 +146,15 @@ export default {
         this.cameras = devices
         this.currentCameraIndex = 0
 
+        console.log('Available cameras:', devices)
+
         // Initialize scanner
         this.html5QrCode = new Html5Qrcode('qr-reader')
 
         // Start scanning with back camera (if available) or first camera
         const cameraId = this.getPreferredCamera()
+
+        console.log('Starting scanner with camera:', cameraId)
 
         await this.html5QrCode.start(
           cameraId,
@@ -115,9 +168,16 @@ export default {
         )
 
         this.isScanning = true
+        console.log('Scanner started successfully')
       } catch (err) {
         console.error('Error starting scanner:', err)
-        this.errorMessage = 'ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการเข้าถึงกล้องในการตั้งค่าเบราว์เซอร์'
+        this.errorMessage =
+          `ไม่สามารถเปิดกล้องได้\n\n` +
+          `ข้อผิดพลาด: ${err.message || err}\n\n` +
+          `กรุณาตรวจสอบ:\n` +
+          `1. เข้าใช้งานผ่าน HTTPS หรือ localhost\n` +
+          `2. อนุญาตการเข้าถึงกล้องในเบราว์เซอร์\n` +
+          `3. ปิดแอพอื่นที่ใช้กล้องอยู่`
       }
     },
 
@@ -308,11 +368,25 @@ export default {
     color: #ff9800;
   }
 
-  p {
+  .error-text {
     margin: 0;
     font-size: 0.9rem;
     color: #856404;
-    text-align: center;
+    text-align: left;
+    white-space: pre-line;
+    width: 100%;
+  }
+
+  .debug-info {
+    margin: 8px 0 0 0;
+    padding: 8px;
+    font-size: 0.75rem;
+    color: #666;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    font-family: monospace;
+    width: 100%;
+    word-break: break-all;
   }
 }
 
