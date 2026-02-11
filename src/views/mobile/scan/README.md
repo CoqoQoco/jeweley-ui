@@ -9,7 +9,8 @@ Mobile-optimized scan feature for stock products with QR/Barcode scanning capabi
 src/views/mobile/scan/
 ├── index-view.vue                    # Main scan interface
 └── components/
-    └── product-detail-card.vue       # Product detail display component
+    ├── product-detail-card.vue       # Product detail display component
+    └── qr-scanner.vue                # QR/Barcode camera scanner
 ```
 
 ## Features Implemented
@@ -23,8 +24,13 @@ src/views/mobile/scan/
   - Gems (พลอย)
 
 ### 2. Scanning Interface
+- **QR/Barcode Camera Scanner**: Real-time camera scanning using `html5-qrcode` library
+  - Auto-detects available cameras
+  - Prefers back camera for better scanning
+  - Support for switching between cameras
+  - Visual scanner frame with corner indicators
+  - Automatic stop after successful scan
 - **Manual Input**: User can manually enter stock number or product code
-- **QR/Barcode Scanner Placeholder**: Ready for future integration (commented code available)
 - Uses API: `productStore.fetchDataGet({ formValue })`
   - Searches by both `stockNumber` and `productNumber`
 
@@ -68,8 +74,14 @@ All buttons are currently disabled with a note: "ฟีเจอร์การ�
 2. Select Scan Type (e.g., "สแกนสินค้า")
    ↓
 3. Scanner Interface
-   ├─ Option A: Manual input (stock number/product code)
-   └─ Option B: QR/Barcode scan (future)
+   ├─ Option A: Camera scanning
+   │   ├─ Click "เปิดกล้อง"
+   │   ├─ Grant camera permission
+   │   ├─ Scan QR/Barcode
+   │   └─ Auto-search after scan
+   └─ Option B: Manual input
+       ├─ Enter stock number/product code
+       └─ Click search or press Enter
    ↓
 4. Product Detail Display
    ├─ View product information
@@ -91,12 +103,28 @@ All buttons are currently disabled with a note: "ฟีเจอร์การ�
   - Includes preview functionality
 
 ### New Components
-- `ProductDetailCard` (`./components/product-detail-card.vue`)
-  - Reusable mobile-optimized product display
-  - Props:
-    - `product` (Object): Product data from API
-    - `imageType` (String): Image type for ImagePreview
-    - `imageSize` (Number): Image dimensions
+
+#### ProductDetailCard (`./components/product-detail-card.vue`)
+- Reusable mobile-optimized product display
+- Props:
+  - `product` (Object): Product data from API
+  - `imageType` (String): Image type for ImagePreview
+  - `imageSize` (Number): Image dimensions
+
+#### QrScanner (`./components/qr-scanner.vue`)
+- Real-time QR/Barcode camera scanner
+- Uses `html5-qrcode` library
+- Features:
+  - Auto camera detection
+  - Camera switching support
+  - Visual scanner frame overlay
+  - Error handling for permissions
+- Events:
+  - `@scan(decodedText, decodedResult)`: Emitted when code is successfully scanned
+- Camera Configuration:
+  - FPS: 10 frames per second
+  - Scanner Box: 250x250px
+  - Aspect Ratio: 1.0
 
 ## API Integration
 
@@ -169,20 +197,29 @@ Key mobile classes used:
 - `.mobile-btn-icon` - Icon-only button
 - `.mobile-btn-block` - Full-width button
 
-## Future Enhancements
+## Dependencies
 
-### QR/Barcode Scanner Integration
-The code includes a placeholder for scanner integration:
-```vue
-<!-- TODO: QR/Barcode Scanner Integration -->
-<!-- <div class="scanner-camera-zone">
-  <qr-scanner @scan="handleScan"></qr-scanner>
-</div> -->
+### html5-qrcode
+```bash
+npm install html5-qrcode
 ```
 
-Suggested libraries:
-- `html5-qrcode` - Popular QR/Barcode scanner
-- `@zxing/browser` - ZXing barcode scanner
+Library for QR/Barcode scanning using device camera:
+- Support for both QR codes and various barcode formats
+- Cross-browser compatibility
+- Mobile-friendly
+- No external dependencies
+- Documentation: https://github.com/mebjas/html5-qrcode
+
+## Camera Permissions
+
+The app requires camera permission to scan QR/Barcode:
+- Browser will prompt for camera access on first use
+- Permission is required for HTTPS or localhost only (security requirement)
+- User can grant/deny permission in browser settings
+- Clear error message shown if permission denied
+
+## Future Enhancements
 
 ### Additional Scan Types
 Commented examples in code for:
@@ -201,14 +238,31 @@ Future implementations for:
 ## Testing
 
 ### Manual Testing Steps
+
+#### Camera Scanning:
+1. Navigate to `/mobile/scan` on mobile device or desktop with camera
+2. Select "สแกนสินค้า"
+3. Click "เปิดกล้อง" button
+4. Grant camera permission when prompted
+5. Point camera at QR code or barcode containing stock number
+6. Verify automatic search after successful scan
+7. Check product details display correctly
+8. Test "สลับกล้อง" button (if multiple cameras available)
+
+#### Manual Input:
 1. Navigate to `/mobile/scan`
 2. Select "สแกนสินค้า"
-3. Enter a valid stock number or product code
-4. Press "ค้นหา" or Enter
-5. Verify product details display correctly
-6. Verify image loads correctly
-7. Test "สแกนอีกครั้ง" button
-8. Test back button to return to type selection
+3. Scroll down to manual input section
+4. Enter a valid stock number or product code
+5. Press "ค้นหา" or Enter
+6. Verify product details display correctly
+7. Verify image loads correctly
+
+#### General:
+1. Test "สแกนอีกครั้ง" button
+2. Test back button to return to type selection
+3. Test error handling (invalid stock number, camera permission denied)
+4. Test on different devices (iPhone, Android, Desktop)
 
 ### Test Data
 Use existing stock numbers from your database to test the search functionality.

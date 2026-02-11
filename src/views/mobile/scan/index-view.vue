@@ -36,34 +36,29 @@
           </div>
         </div>
 
-        <!-- Scanner Section (Placeholder) -->
+        <!-- Scanner Section -->
         <div v-if="!scannedProduct" class="scanner-section">
-          <div class="scanner-placeholder">
-            <div class="scanner-icon">
-              <i class="bi bi-qr-code-scan"></i>
-            </div>
-            <p class="scanner-instruction">วาง QR Code หรือ Barcode ในกรอบ</p>
-            <p class="scanner-note">หรือป้อนข้อมูลด้วยตนเอง</p>
+          <!-- QR/Barcode Scanner -->
+          <QrScanner @scan="handleScan" />
 
-            <!-- Manual Input -->
-            <div class="manual-input-section">
-              <input
-                v-model="manualInput"
-                type="text"
-                class="form-control"
-                placeholder="กรอกเลขที่ผลิตหรือรหัสสินค้า"
-                @keyup.enter="handleManualSearch"
-              />
-              <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
-                <i class="bi bi-search"></i>
-                ค้นหา
-              </button>
-            </div>
+          <!-- Divider -->
+          <div class="scanner-divider">
+            <span>หรือ</span>
+          </div>
 
-            <!-- TODO: QR/Barcode Scanner Integration -->
-            <!-- <div class="scanner-camera-zone">
-              <qr-scanner @scan="handleScan"></qr-scanner>
-            </div> -->
+          <!-- Manual Input -->
+          <div class="manual-input-section">
+            <input
+              v-model="manualInput"
+              type="text"
+              class="form-control"
+              placeholder="กรอกเลขที่ผลิตหรือรหัสสินค้า"
+              @keyup.enter="handleManualSearch"
+            />
+            <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
+              <i class="bi bi-search"></i>
+              ค้นหา
+            </button>
           </div>
         </div>
 
@@ -117,12 +112,14 @@
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { warning, error } from '@/services/alert/sweetAlerts.js'
 import ProductDetailCard from './components/product-detail-card.vue'
+import QrScanner from './components/qr-scanner.vue'
 
 export default {
   name: 'MobileScanView',
 
   components: {
-    ProductDetailCard
+    ProductDetailCard,
+    QrScanner
   },
 
   setup() {
@@ -190,10 +187,10 @@ export default {
       await this.searchProduct(this.manualInput.trim())
     },
 
-    async handleScan(scanData) {
-      // This will be called by QR/Barcode scanner component in the future
-      if (!scanData) return
-      await this.searchProduct(scanData)
+    async handleScan(decodedText) {
+      // Called by QR/Barcode scanner component
+      if (!decodedText) return
+      await this.searchProduct(decodedText)
     },
 
     async searchProduct(searchValue) {
@@ -327,40 +324,25 @@ export default {
   margin-bottom: 16px;
 }
 
-.scanner-placeholder {
-  background: white;
-  border-radius: 12px;
-  padding: 32px 20px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.scanner-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+  position: relative;
 
-  .scanner-icon {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 16px;
-    background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    i {
-      font-size: 3.5rem;
-      color: white;
-    }
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e0e0e0;
   }
 
-  .scanner-instruction {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 4px;
-  }
-
-  .scanner-note {
+  span {
+    padding: 0 16px;
+    color: #999;
     font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 24px;
   }
 }
 
