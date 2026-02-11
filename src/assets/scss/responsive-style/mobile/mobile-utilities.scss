@@ -112,6 +112,15 @@
     }
   }
 
+  &-warning {
+    background: var(--base-warning);
+    color: #333;
+
+    &:active {
+      opacity: 0.9;
+    }
+  }
+
   &-outline {
     background: transparent;
     color: var(--base-font-color);

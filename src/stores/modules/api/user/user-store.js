@@ -14,7 +14,9 @@ import api from '@/axios/axios-helper.js'
 export const useUserApiStore = defineStore('userStore', {
   state: () => ({
     listUser: {},
-    listUserTotal: 0
+    listUserTotal: 0,
+    listMyJob: {},
+    listMyJobTotal: 0
   }),
 
   actions: {
@@ -118,6 +120,31 @@ export const useUserApiStore = defineStore('userStore', {
         }
       } catch (error) {
         console.error('Error fetching user inactive account:', error)
+      }
+    },
+
+    async fetchListMyJob({ take = 10, skip = 0, sort = null, search = {} } = {}) {
+      try {
+        this.listMyJob = {}
+        const param = {
+          take,
+          skip,
+          sort,
+          search
+        }
+
+        const res = await api.jewelry.post('User/ListMyJob', param)
+        if (res) {
+          this.listMyJobTotal = res.total
+          return res
+        } else {
+          this.listMyJobTotal = 0
+          return {}
+        }
+      } catch (error) {
+        console.error('Error fetching list my job:', error)
+        this.listMyJobTotal = 0
+        return {}
       }
     }
   }

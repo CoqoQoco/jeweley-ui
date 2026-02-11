@@ -74,6 +74,16 @@
             </div>
 
             <div class="action-buttons">
+              <!-- Cost Plan Button -->
+              <button
+                v-if="scannedProduct.priceTransactions && scannedProduct.priceTransactions.length > 0"
+                class="mobile-btn mobile-btn-primary"
+                @click="handleCreateCostPlan"
+              >
+                <i class="bi bi-file-earmark-plus"></i>
+                ออกแผนตีราคา
+              </button>
+
               <!-- Future actions will be added here -->
               <button class="mobile-btn mobile-btn-outline" disabled>
                 <i class="bi bi-box-seam"></i>
@@ -91,7 +101,7 @@
 
             <p class="action-note">
               <i class="bi bi-info-circle"></i>
-              ฟีเจอร์การดำเนินการจะพัฒนาในอนาคต
+              ฟีเจอร์การดำเนินการบางส่วนจะพัฒนาในอนาคต
             </p>
           </div>
 
@@ -110,7 +120,7 @@
 
 <script>
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
-import { warning, error } from '@/services/alert/sweetAlerts.js'
+import { warning, error, success } from '@/services/alert/sweetAlerts.js'
 import ProductDetailCard from './components/product-detail-card.vue'
 import QrScanner from './components/qr-scanner.vue'
 
@@ -218,6 +228,18 @@ export default {
       } else {
         error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบเลขที่ผลิตหรือรหัสสินค้า')
         this.scannedProduct = null
+      }
+    },
+
+    async handleCreateCostPlan() {
+      const response = await this.productStore.fetchCreateProductCostDeatialPlan({
+        stockNumber: this.scannedProduct.stockNumber,
+        remark: ''
+      })
+
+      if (response) {
+        const planNumber = response.planNumber || response
+        success(`เลขที่แผนตีราคา: ${planNumber}`, 'ออกแผนตีราคาสำเร็จ')
       }
     }
   }
