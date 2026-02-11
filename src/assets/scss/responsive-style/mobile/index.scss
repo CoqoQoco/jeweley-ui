@@ -1,0 +1,14 @@
+/**
+ * Mobile SCSS Utilities
+ * สำหรับ Mobile view เท่านั้น (< 768px)
+ *
+ * Import ใน component:
+ * @import '@/assets/scss/responsive-style/mobile';
+ */
+
+// Import mobile utilities
+@import './mobile-utilities.scss';
+
+// Import shared variables and mixins
+@import '../../variable.scss';
+@import '../../mixin.scss';

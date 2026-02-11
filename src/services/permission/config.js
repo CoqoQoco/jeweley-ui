@@ -48,7 +48,23 @@ export const PERMISSIONS = {
 
   //sale
   SALE_VIEW: 'sale:view',
-  SALE_CREATE: 'sale:create'
+  SALE_CREATE: 'sale:create',
+
+  // ========== Mobile-Specific Features ==========
+  // Mobile Dashboard (ทุกคนเข้าได้)
+  MOBILE_DASHBOARD: 'mobile:dashboard',
+
+  // Mobile Scan QR (สำหรับ stock, production tracking)
+  MOBILE_SCAN: 'mobile:scan',
+
+  // Mobile Tasks (งานของฉัน - สำหรับพนักงานผลิต)
+  MOBILE_TASKS: 'mobile:tasks',
+
+  // Mobile Profile (ทุกคนเข้าได้)
+  MOBILE_PROFILE: 'mobile:profile',
+
+  // Mobile Notifications
+  MOBILE_NOTIFICATIONS: 'mobile:notifications'
 }
 
 // Role Permission Mapping
@@ -92,7 +108,14 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MASTER_VIEW,
 
     PERMISSIONS.SALE_VIEW,
-    PERMISSIONS.SALE_CREATE
+    PERMISSIONS.SALE_CREATE,
+
+    // Mobile Features (Dev มีสิทธิ์ทั้งหมด)
+    PERMISSIONS.MOBILE_DASHBOARD,
+    PERMISSIONS.MOBILE_SCAN,
+    PERMISSIONS.MOBILE_TASKS,
+    PERMISSIONS.MOBILE_PROFILE,
+    PERMISSIONS.MOBILE_NOTIFICATIONS
   ],
 
   Admin: [
@@ -124,20 +147,38 @@ export const ROLE_PERMISSIONS = {
 
     PERMISSIONS.REPORT_VIEW,
 
-    PERMISSIONS.MASTER_VIEW
+    PERMISSIONS.MASTER_VIEW,
+
+    // Mobile Features (Admin มีสิทธิ์ทั้งหมด)
+    PERMISSIONS.MOBILE_DASHBOARD,
+    PERMISSIONS.MOBILE_SCAN,
+    PERMISSIONS.MOBILE_TASKS,
+    PERMISSIONS.MOBILE_PROFILE,
+    PERMISSIONS.MOBILE_NOTIFICATIONS
   ],
 
   StockOperator: [
     PERMISSIONS.STOCK_PRODUCT,
     PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION,
     PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE,
-    PERMISSIONS.STOCK_PRODUCT_GR_IMAGE_CREATE
+    PERMISSIONS.STOCK_PRODUCT_GR_IMAGE_CREATE,
+
+    // Mobile Features (เฉพาะ stock-related)
+    PERMISSIONS.MOBILE_DASHBOARD,
+    PERMISSIONS.MOBILE_SCAN, // สแกน QR สต็อก
+    PERMISSIONS.MOBILE_PROFILE
   ],
 
   ProductionOperator: [
     PERMISSIONS.PRODUCTION_VIEW,
     PERMISSIONS.PRODUCTION_CREATE,
-    PERMISSIONS.PRODUCTION_EDIT
+    PERMISSIONS.PRODUCTION_EDIT,
+
+    // Mobile Features (เฉพาะ production-related)
+    PERMISSIONS.MOBILE_DASHBOARD,
+    PERMISSIONS.MOBILE_SCAN, // สแกน QR สำหรับการผลิต
+    PERMISSIONS.MOBILE_TASKS, // งานการผลิต
+    PERMISSIONS.MOBILE_PROFILE
   ],
 
   Operator: [
@@ -163,8 +204,22 @@ export const ROLE_PERMISSIONS = {
 
     PERMISSIONS.WORKER_VIEW,
     PERMISSIONS.WORKER_CREATE,
-    PERMISSIONS.WORKER_EDIT
+    PERMISSIONS.WORKER_EDIT,
+
+    // Mobile Features (Operator มีสิทธิ์ส่วนใหญ่)
+    PERMISSIONS.MOBILE_DASHBOARD,
+    PERMISSIONS.MOBILE_SCAN,
+    PERMISSIONS.MOBILE_TASKS,
+    PERMISSIONS.MOBILE_PROFILE,
+    PERMISSIONS.MOBILE_NOTIFICATIONS
   ],
 
-  Sale: [PERMISSIONS.SALE_VIEW, PERMISSIONS.SALE_CREATE]
+  Sale: [
+    PERMISSIONS.SALE_VIEW,
+    PERMISSIONS.SALE_CREATE,
+
+    // Mobile Features (เฉพาะพื้นฐาน)
+    PERMISSIONS.MOBILE_DASHBOARD,
+    PERMISSIONS.MOBILE_PROFILE
+  ]
 }

@@ -1,44 +1,86 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import authenRoutes from './web/authen-routes.js'
-import landingRoutes from './web/landing-route.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { useDeviceStore } from '@/stores/modules/device/device-store.js'
 import { PermissionService } from '@/services/permission/permission.js'
 
-const routes = [...landingRoutes, ...authenRoutes]
+// Web routes (Desktop/Tablet)
+import authenRoutes from './web/authen-routes.js'
+import landingRoutes from './web/landing-route.js'
+
+// Mobile routes
+import mobileAuthenRoutes from './mobile/authen-routes.js'
+import mobileLandingRoutes from './mobile/landing-route.js'
+
+const routes = [...landingRoutes, ...authenRoutes, ...mobileLandingRoutes, ...mobileAuthenRoutes]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 
-// Navigation guard
+// Helper: Check route permission
+const checkRoutePermission = (user, route) => {
+  // อนุญาต dashboard และ user-account เสมอ (ทั้ง web และ mobile)
+  const allowedRoutes = ['dashboard', 'user-account', 'mobile-dashboard', 'mobile-profile']
+  if (allowedRoutes.includes(route.name)) return true
+
+  // ถ้าไม่มี user หรือไม่มี role ไม่อนุญาตให้เข้าถึง route อื่น
+  if (!user?.role || user.role.length === 0) return false
+
+  // ถ้าไม่มี permissions metadata ให้อนุญาต (เช่น mobile-specific features)
+  if (!route.meta?.permissions) return true
+
+  // เช็ค permissions ปกติ
+  const permissionService = new PermissionService(user)
+  return permissionService.hasAnyPermission(route.meta.permissions)
+}
+
+// Navigation guard with device detection
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  const deviceStore = useDeviceStore()
   const { isAuthenticated, user } = authStore
 
-  // ตรวจสอบว่าเป็น public route หรือไม่
-  const isPublicRoute = landingRoutes.some(
+  // === 1. Device-based Auto-Redirect ===
+  const shouldUseMobile = deviceStore.shouldUseMobileView
+  const isWebRoute = !to.path.startsWith('/mobile')
+  const isMobileRoute = to.path.startsWith('/mobile')
+
+  // Mobile device พยายามเข้า web route → redirect to mobile (ถ้ามี mobile route)
+  if (shouldUseMobile && isWebRoute && to.name !== 'routes-login') {
+    const mobilePath = `/mobile${to.path}`
+    const mobileRouteExists = router.resolve(mobilePath).matched.length > 0
+
+    if (mobileRouteExists) {
+      return next({
+        path: mobilePath,
+        query: to.query // รักษา query parameters
+      })
+    }
+    // ถ้าไม่มี mobile route ให้ไปหน้า dashboard
+    if (isAuthenticated) {
+      return next('/mobile/dashboard')
+    }
+  }
+
+  // Desktop/Tablet device พยายามเข้า mobile route → redirect to web
+  if (!shouldUseMobile && isMobileRoute) {
+    const webPath = to.path.replace('/mobile', '') || '/dashboard'
+    return next({
+      path: webPath,
+      query: to.query // รักษา query parameters
+    })
+  }
+
+  // === 2. Authentication Check ===
+  const allPublicRoutes = [...landingRoutes, ...mobileLandingRoutes]
+  const isPublicRoute = allPublicRoutes.some(
     (route) =>
       route.path === to.path ||
       (route.children && route.children.some((child) => child.path === to.path))
   )
 
-  // ตรวจสอบ permission
-  // router guard
-  const checkRoutePermission = (user, route) => {
-    // อนุญาต dashboard และ user-account เสมอ
-    if (route.name === 'dashboard' || route.name === 'user-account') return true
-
-    // ถ้าไม่มี user หรือไม่มี role ไม่อนุญาตให้เข้าถึง route อื่น
-    if (!user?.role || user.role.length === 0) return false
-
-    // เช็ค permissions ปกติ
-    if (!route.meta?.permissions) return false
-    const permissionService = new PermissionService(user)
-    return permissionService.hasAnyPermission(route.meta.permissions)
-  }
-
-  // 1. ถ้ายังไม่ login และพยายามเข้า private route
+  // ยังไม่ login และพยายามเข้า private route
   if (!isPublicRoute && !isAuthenticated) {
     return next({
       path: '/login',
@@ -46,12 +88,14 @@ router.beforeEach(async (to, from, next) => {
     })
   }
 
-  // 2. ถ้า login แล้วพยายามเข้า public route
+  // Login แล้วพยายามเข้า public route → redirect to dashboard
   if (isPublicRoute && isAuthenticated) {
-    return next({ path: '/dashboard' })
+    const dashboardPath = shouldUseMobile ? '/mobile/dashboard' : '/dashboard'
+    return next({ path: dashboardPath })
   }
 
-  // 3. ถ้า login แล้วแต่ยังไม่มีข้อมูล user
+  // === 3. User Profile Check ===
+  // Login แล้วแต่ยังไม่มีข้อมูล user → fetch profile
   if (isAuthenticated && !user) {
     try {
       await authStore.fetchUserProfile()
@@ -59,7 +103,8 @@ router.beforeEach(async (to, from, next) => {
 
       // เช็ค permission หลังจากได้ข้อมูล user
       if (!checkRoutePermission(updatedUser, to)) {
-        return next({ path: '/dashboard' })
+        const dashboardPath = shouldUseMobile ? '/mobile/dashboard' : '/dashboard'
+        return next({ path: dashboardPath })
       }
 
       return next()
@@ -69,9 +114,10 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // 4. ตรวจสอบ permission สำหรับ route ที่ต้องการเข้าถึง
+  // === 4. Permission Check ===
   if (isAuthenticated && user && !checkRoutePermission(user, to)) {
-    return next({ path: '/dashboard' })
+    const dashboardPath = shouldUseMobile ? '/mobile/dashboard' : '/dashboard'
+    return next({ path: dashboardPath })
   }
 
   return next()

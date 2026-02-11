@@ -47,7 +47,14 @@ document.body.appendChild(modalContainer);
 //App.config.productionTip = false
 const app = createApp(App)
 
-app.use(createPinia())
+const pinia = createPinia()
+app.use(pinia)
+
+// Initialize device store for mobile/web detection
+import { useDeviceStore } from '@/stores/modules/device/device-store.js'
+const deviceStore = useDeviceStore()
+deviceStore.initResizeListener()
+
 app.use(router)
 app.use(i18n)
 app.use(VueApexCharts)
