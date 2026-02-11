@@ -114,6 +114,75 @@
         </div>
       </div>
 
+      <!-- Cost Details Section - Collapsible -->
+      <div v-if="hasCostData" class="cost-details-section">
+        <div class="cost-header" @click="toggleCostDetails">
+          <div class="cost-header-left">
+            <i class="bi bi-calculator"></i>
+            <span>ต้นทุนสินค้า</span>
+          </div>
+          <div class="cost-header-right">
+            <span class="total-amount">{{ formatCurrency(totalCost) }} บาท</span>
+            <i :class="['bi', showCostDetails ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
+          </div>
+        </div>
+
+        <!-- Expandable Details -->
+        <transition name="slide-fade">
+          <div v-if="showCostDetails" class="cost-details-content">
+            <!-- Cost Groups Summary -->
+            <div class="cost-groups-compact">
+              <div v-for="group in groupedCostData" :key="group.key" class="cost-group-compact">
+                <div class="group-compact-header" @click="toggleGroup(group.key)">
+                  <div class="group-compact-left">
+                    <i :class="['bi', group.icon, 'group-icon']"></i>
+                    <span class="group-name">{{ group.name }}</span>
+                    <span class="group-count">({{ group.items.length }})</span>
+                  </div>
+                  <div class="group-compact-right">
+                    <span class="group-total">{{ formatCurrency(getGroupTotal(group.items)) }}</span>
+                    <i :class="['bi', 'bi-chevron-compact-' + (expandedGroups[group.key] ? 'up' : 'down')]"></i>
+                  </div>
+                </div>
+
+                <!-- Group Items Detail -->
+                <transition name="slide-fade">
+                  <div v-if="expandedGroups[group.key]" class="group-items-detail">
+                    <div v-for="(item, index) in group.items" :key="index" class="cost-item-compact">
+                      <div class="item-compact-header">
+                        <span class="item-name">{{ item.nameDescription }}</span>
+                      </div>
+                      <div class="item-compact-table">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td class="label">จำนวน</td>
+                              <td class="value">{{ formatNumber(item.qty) }}</td>
+                              <td class="label">ราคา/หน่วย</td>
+                              <td class="value">{{ formatCurrency(item.qtyPrice) }}</td>
+                            </tr>
+                            <tr>
+                              <td class="label">น้ำหนัก</td>
+                              <td class="value">{{ formatNumber(item.qtyWeight) }}</td>
+                              <td class="label">ราคา/น้ำหนัก</td>
+                              <td class="value">{{ formatCurrency(item.qtyWeightPrice) }}</td>
+                            </tr>
+                            <tr class="total-row">
+                              <td class="label total-label" colspan="3">รวม</td>
+                              <td class="value total-value">{{ formatCurrency(item.totalPrice) }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </transition>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </div>
+
       <!-- Remark -->
       <div v-if="product.remark" class="info-group">
         <div class="info-row remark-row">
@@ -141,6 +210,10 @@ export default {
       required: true,
       default: () => ({})
     },
+    priceTransactions: {
+      type: Array,
+      default: () => []
+    },
     imageType: {
       type: String,
       default: 'STOCK-PRODUCT'
@@ -151,6 +224,13 @@ export default {
     }
   },
 
+  data() {
+    return {
+      showCostDetails: false,
+      expandedGroups: {}
+    }
+  },
+
   computed: {
     hasMaterials() {
       return (
@@ -158,6 +238,38 @@ export default {
         (this.product.diamondTotal && this.product.diamondTotal > 0) ||
         (this.product.gemTotal && this.product.gemTotal > 0)
       )
+    },
+
+    hasCostData() {
+      return this.priceTransactions && this.priceTransactions.length > 0
+    },
+
+    groupedCostData() {
+      if (!this.hasCostData) return []
+
+      const groups = {
+        Gold: { name: 'รายการทอง', items: [], icon: 'bi-coin', order: 1 },
+        Gem: { name: 'รายการวัถุดิบ', items: [], icon: 'bi-gem', order: 2 },
+        Worker: { name: 'รายการงานช่าง', items: [], icon: 'bi-tools', order: 3 },
+        Embed: { name: 'รายการงานฝัง', items: [], icon: 'bi-grid-3x3', order: 4 },
+        ETC: { name: 'รายการเพิ่มเติม', items: [], icon: 'bi-plus-circle', order: 5 }
+      }
+
+      this.priceTransactions.forEach((item) => {
+        if (groups[item.nameGroup]) {
+          groups[item.nameGroup].items.push(item)
+        }
+      })
+
+      return Object.entries(groups)
+        .filter(([, group]) => group.items.length > 0)
+        .map(([key, group]) => ({ key, ...group }))
+        .sort((a, b) => a.order - b.order)
+    },
+
+    totalCost() {
+      if (!this.hasCostData) return 0
+      return this.priceTransactions.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
     }
   },
 
@@ -176,6 +288,35 @@ export default {
         minimumFractionDigits: 3,
         maximumFractionDigits: 3
       }).format(value)
+    },
+
+    formatCurrency(value) {
+      if (value === null || value === undefined || value === '') return '-'
+      return new Intl.NumberFormat('th-TH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(Number(value))
+    },
+
+    formatNumber(value) {
+      if (value === null || value === undefined || value === '') return '-'
+      return new Intl.NumberFormat('th-TH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(Number(value))
+    },
+
+    toggleCostDetails() {
+      this.showCostDetails = !this.showCostDetails
+    },
+
+    toggleGroup(groupKey) {
+      this.expandedGroups[groupKey] = !this.expandedGroups[groupKey]
+    },
+
+    getGroupTotal(items) {
+      if (!items || !Array.isArray(items)) return 0
+      return items.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
     }
   }
 }
@@ -327,5 +468,221 @@ export default {
     color: #333;
     font-weight: 500;
   }
+}
+
+// Cost Details Section - Compact & Collapsible
+.cost-details-section {
+  margin-bottom: 12px;
+
+  .cost-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--base-green) 0%, #026266 100%);
+    padding: 12px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(3, 131, 135, 0.15);
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    .cost-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+
+    .cost-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+
+      .total-amount {
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+
+      i {
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+      }
+    }
+  }
+
+  .cost-details-content {
+    margin-top: 10px;
+  }
+
+  .cost-groups-compact {
+    .cost-group-compact {
+      margin-bottom: 8px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .group-compact-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 10px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        border-left: 3px solid var(--base-green);
+
+        &:active {
+          background: #e9ecef;
+        }
+
+        .group-compact-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .group-icon {
+            color: var(--base-green);
+            font-size: 0.95rem;
+          }
+
+          .group-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+          }
+
+          .group-count {
+            font-size: 0.75rem;
+            color: #666;
+          }
+        }
+
+        .group-compact-right {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .group-total {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--base-green);
+          }
+
+          i {
+            font-size: 0.8rem;
+            color: #666;
+          }
+        }
+      }
+
+      .group-items-detail {
+        margin-top: 6px;
+        padding-left: 8px;
+
+        .cost-item-compact {
+          background: white;
+          border: 1px solid #e8e8e8;
+          border-radius: 6px;
+          padding: 8px 10px;
+          margin-bottom: 6px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          .item-compact-header {
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #f0f0f0;
+
+            .item-name {
+              font-size: 0.8rem;
+              font-weight: 600;
+              color: #333;
+            }
+          }
+
+          .item-compact-table {
+            table {
+              width: 100%;
+              border-collapse: collapse;
+
+              tbody {
+                tr {
+                  &:not(.total-row) {
+                    border-bottom: 1px solid #f5f5f5;
+                  }
+
+                  &.total-row {
+                    border-top: 1px solid #ddd;
+
+                    .total-label {
+                      font-weight: 600;
+                      color: #333;
+                      text-align: right;
+                      padding-right: 8px;
+                    }
+
+                    .total-value {
+                      font-weight: 700;
+                      color: var(--base-green);
+                      font-size: 0.85rem;
+                    }
+                  }
+
+                  td {
+                    padding: 4px 2px;
+
+                    &.label {
+                      font-size: 0.7rem;
+                      color: #666;
+                      width: 28%;
+                      padding-right: 4px;
+                    }
+
+                    &.value {
+                      font-size: 0.75rem;
+                      color: #333;
+                      font-weight: 500;
+                      text-align: right;
+                      width: 22%;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Transition animations
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
 }
 </style>

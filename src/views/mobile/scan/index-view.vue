@@ -64,7 +64,7 @@
 
         <!-- Product Detail Section -->
         <div v-if="scannedProduct" class="product-section">
-          <ProductDetailCard :product="scannedProduct" :imageType="imageType" />
+          <ProductDetailCard :product="scannedProduct" :priceTransactions="scannedProduct.priceTransactions" :imageType="imageType" />
 
           <!-- Action Zone (Placeholder for future features) -->
           <div class="action-zone mobile-mt-3">
@@ -207,14 +207,14 @@ export default {
 
     async searchStockProduct(searchValue) {
       const formValue = {
-        stockNumber: searchValue,
-        productNumber: searchValue
+        stockNumber: searchValue
+        //productNumber: searchValue
       }
 
       const response = await this.productStore.fetchDataGet({ formValue })
 
-      if (response && response.data) {
-        this.scannedProduct = response.data
+      if (response) {
+        this.scannedProduct = response
       } else {
         error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบเลขที่ผลิตหรือรหัสสินค้า')
         this.scannedProduct = null

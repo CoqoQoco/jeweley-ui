@@ -18,7 +18,7 @@
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="mobile-container">
+    <!-- <div class="mobile-container">
       <div class="mobile-grid-2">
         <div class="stat-card stat-card-primary">
           <div class="stat-icon">
@@ -40,11 +40,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Quick Actions -->
     <div class="mobile-container mobile-mt-2">
-      <h3 class="mobile-subtitle mobile-mb-2">เมนูด่วน</h3>
+      <h3 class="mobile-subtitle mobile-mb-2">หัวข้องาน</h3>
 
       <div class="mobile-grid-2">
         <div class="action-card" @click="navigateTo('/mobile/scan')">
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Recent Activities -->
-    <div class="mobile-container mobile-mt-2">
+    <!-- <div class="mobile-container mobile-mt-2">
       <div class="mobile-flex mobile-flex-between mobile-mb-2">
         <h3 class="mobile-subtitle">กิจกรรมล่าสุด</h3>
         <button class="text-link" @click="viewAllActivities">ดูทั้งหมด</button>
@@ -89,7 +89,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Empty State Example (ซ่อนไว้ ใช้เมื่อไม่มีข้อมูล) -->
     <!-- <div class="mobile-empty-state" v-if="!hasData">
