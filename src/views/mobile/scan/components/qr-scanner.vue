@@ -37,50 +37,27 @@ export default {
       if (this.html5QrcodeScanner) {
         this.html5QrcodeScanner.clear()
       }
-    },
-
-    onScanError() {
-      // This is called when scan fails
-      // We don't show error for every failed scan attempt
-      // Only log to console for debugging
     }
   },
 
   mounted() {
     try {
-      // Check if HTTPS or localhost
+      // Debug info (optional - for troubleshooting)
       const isSecureContext = window.isSecureContext
       const protocol = window.location.protocol
       const hostname = window.location.hostname
-
       this.debugInfo = `Protocol: ${protocol}, Host: ${hostname}, Secure: ${isSecureContext}`
-
-      if (!isSecureContext && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-        this.errorMessage =
-          'กล้องทำงานได้เฉพาะ HTTPS หรือ localhost เท่านั้น\n' +
-          'กรุณาเข้าใช้งานผ่าน:\n' +
-          '- https://... (สำหรับ production)\n' +
-          '- http://localhost:... (สำหรับ development)'
-        return
-      }
+      console.log('Scanner context:', this.debugInfo)
 
       // Initialize Html5QrcodeScanner
+      // Based on working example from html5-qrcode repository
       this.html5QrcodeScanner = new Html5QrcodeScanner(
         'qr-reader',
-        {
-          fps: 10,
-          qrbox: 250,
-          aspectRatio: 1.0,
-          // Prefer back camera on mobile
-          videoConstraints: {
-            facingMode: 'environment'
-          }
-        },
-        false // verbose logging
+        { fps: 10, qrbox: 250 }
       )
 
-      // Render the scanner
-      this.html5QrcodeScanner.render(this.onScanSuccess, this.onScanError)
+      // Render with only success callback (like in examples)
+      this.html5QrcodeScanner.render(this.onScanSuccess)
 
       console.log('Html5QrcodeScanner initialized successfully')
     } catch (err) {
