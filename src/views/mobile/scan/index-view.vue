@@ -190,6 +190,11 @@ export default {
     async handleScan(decodedText) {
       // Called by QR/Barcode scanner component
       if (!decodedText) return
+
+      // Show scanned value in input
+      this.manualInput = decodedText
+
+      // Search product
       await this.searchProduct(decodedText)
     },
 
