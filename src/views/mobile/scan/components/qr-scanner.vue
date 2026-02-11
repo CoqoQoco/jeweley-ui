@@ -1,24 +1,7 @@
 <template>
   <div class="qr-scanner-wrapper">
     <!-- Scanner Container -->
-    <div v-if="isScanning" class="scanner-container">
-      <div id="qr-reader" ref="qrReader"></div>
-
-      <!-- Scanner Overlay -->
-      <div class="scanner-overlay">
-        <div class="scanner-frame">
-          <div class="corner corner-tl"></div>
-          <div class="corner corner-tr"></div>
-          <div class="corner corner-bl"></div>
-          <div class="corner corner-br"></div>
-        </div>
-      </div>
-
-      <!-- Instructions -->
-      <div class="scanner-instructions">
-        <p>{{ instructions }}</p>
-      </div>
-    </div>
+    <div id="qr-reader"></div>
 
     <!-- Error Message -->
     <div v-if="errorMessage" class="scanner-error">
@@ -26,218 +9,100 @@
       <p class="error-text">{{ errorMessage }}</p>
       <p v-if="debugInfo" class="debug-info">{{ debugInfo }}</p>
     </div>
-
-    <!-- Control Buttons -->
-    <div class="scanner-controls">
-      <button
-        v-if="!isScanning"
-        class="mobile-btn mobile-btn-primary"
-        @click="startScanning"
-      >
-        <i class="bi bi-camera"></i>
-        เปิดกล้อง
-      </button>
-      <button
-        v-else
-        class="mobile-btn mobile-btn-secondary"
-        @click="stopScanning"
-      >
-        <i class="bi bi-x-circle"></i>
-        ปิดกล้อง
-      </button>
-
-      <!-- Switch Camera Button (if multiple cameras) -->
-      <button
-        v-if="isScanning && hasMultipleCameras"
-        class="mobile-btn mobile-btn-outline mobile-btn-sm mobile-mt-2"
-        @click="switchCamera"
-      >
-        <i class="bi bi-arrow-repeat"></i>
-        สลับกล้อง
-      </button>
-    </div>
   </div>
 </template>
 
 <script>
-import { Html5Qrcode } from 'html5-qrcode'
+import { Html5QrcodeScanner } from 'html5-qrcode'
 
 export default {
   name: 'QrScanner',
 
   data() {
     return {
-      html5QrCode: null,
-      isScanning: false,
+      html5QrcodeScanner: null,
       errorMessage: '',
-      instructions: 'วาง QR Code หรือ Barcode ในกรอบ',
-      cameras: [],
-      currentCameraIndex: 0,
       debugInfo: ''
     }
   },
 
-  computed: {
-    hasMultipleCameras() {
-      return this.cameras.length > 1
-    }
-  },
-
   methods: {
-    async startScanning() {
-      this.errorMessage = ''
-      this.debugInfo = ''
-
-      try {
-        // Check if HTTPS or localhost
-        const isSecureContext = window.isSecureContext
-        const protocol = window.location.protocol
-        const hostname = window.location.hostname
-
-        this.debugInfo = `Protocol: ${protocol}, Host: ${hostname}, Secure: ${isSecureContext}`
-
-        if (!isSecureContext && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-          this.errorMessage =
-            'กล้องทำงานได้เฉพาะ HTTPS หรือ localhost เท่านั้น\n' +
-            'กรุณาเข้าใช้งานผ่าน:\n' +
-            '- https://... (สำหรับ production)\n' +
-            '- http://localhost:... (สำหรับ development)'
-          return
-        }
-
-        // Check MediaDevices API support
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          this.errorMessage = 'เบราว์เซอร์นี้ไม่รองรับการใช้งานกล้อง'
-          return
-        }
-
-        // Request camera permission explicitly first
-        try {
-          await navigator.mediaDevices.getUserMedia({ video: true })
-        } catch (permErr) {
-          console.error('Permission error:', permErr)
-
-          if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
-            this.errorMessage =
-              'ไม่ได้รับอนุญาตให้เข้าถึงกล้อง\n\n' +
-              'วิธีแก้ไข:\n' +
-              '1. คลิกไอคอนกล้อง/ล็อค ที่แถบ URL\n' +
-              '2. เลือก "อนุญาต" สำหรับกล้อง\n' +
-              '3. Refresh หน้าเว็บ\n\n' +
-              'หรือไปที่:\n' +
-              'Chrome: Settings > Privacy > Site Settings > Camera\n' +
-              'Safari: Settings > Safari > Camera'
-          } else if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
-            this.errorMessage = 'ไม่พบกล้องบนอุปกรณ์นี้'
-          } else {
-            this.errorMessage = `เกิดข้อผิดพลาด: ${permErr.message}`
-          }
-          return
-        }
-
-        // Get available cameras
-        const devices = await Html5Qrcode.getCameras()
-
-        if (!devices || devices.length === 0) {
-          this.errorMessage = 'ไม่พบกล้องบนอุปกรณ์นี้'
-          return
-        }
-
-        this.cameras = devices
-        this.currentCameraIndex = 0
-
-        console.log('Available cameras:', devices)
-
-        // Initialize scanner
-        this.html5QrCode = new Html5Qrcode('qr-reader')
-
-        // Start scanning with back camera (if available) or first camera
-        const cameraId = this.getPreferredCamera()
-
-        console.log('Starting scanner with camera:', cameraId)
-
-        await this.html5QrCode.start(
-          cameraId,
-          {
-            fps: 10, // Frames per second for scanning
-            qrbox: { width: 250, height: 250 }, // Scanner box size
-            aspectRatio: 1.0
-          },
-          this.onScanSuccess,
-          this.onScanFailure
-        )
-
-        this.isScanning = true
-        console.log('Scanner started successfully')
-      } catch (err) {
-        console.error('Error starting scanner:', err)
-        this.errorMessage =
-          `ไม่สามารถเปิดกล้องได้\n\n` +
-          `ข้อผิดพลาด: ${err.message || err}\n\n` +
-          `กรุณาตรวจสอบ:\n` +
-          `1. เข้าใช้งานผ่าน HTTPS หรือ localhost\n` +
-          `2. อนุญาตการเข้าถึงกล้องในเบราว์เซอร์\n` +
-          `3. ปิดแอพอื่นที่ใช้กล้องอยู่`
-      }
-    },
-
-    async stopScanning() {
-      if (this.html5QrCode && this.isScanning) {
-        try {
-          await this.html5QrCode.stop()
-          await this.html5QrCode.clear()
-          this.isScanning = false
-        } catch (err) {
-          console.error('Error stopping scanner:', err)
-        }
-      }
-    },
-
-    async switchCamera() {
-      if (!this.hasMultipleCameras) return
-
-      await this.stopScanning()
-
-      // Switch to next camera
-      this.currentCameraIndex = (this.currentCameraIndex + 1) % this.cameras.length
-
-      await this.startScanning()
-    },
-
-    getPreferredCamera() {
-      // Try to find back camera (usually better for scanning)
-      const backCamera = this.cameras.find(
-        (camera) =>
-          camera.label.toLowerCase().includes('back') ||
-          camera.label.toLowerCase().includes('rear') ||
-          camera.label.toLowerCase().includes('environment')
-      )
-
-      if (backCamera) {
-        return backCamera.id
-      }
-
-      // Otherwise use the selected camera
-      return this.cameras[this.currentCameraIndex].id
-    },
-
     onScanSuccess(decodedText, decodedResult) {
+      console.log('Scan success:', decodedText)
+
       // Emit scan result to parent
       this.$emit('scan', decodedText, decodedResult)
 
-      // Stop scanning after successful scan
-      this.stopScanning()
+      // Clear scanner after successful scan
+      if (this.html5QrcodeScanner) {
+        this.html5QrcodeScanner.clear()
+      }
     },
 
-    onScanFailure() {
-      // This is called when no QR code is detected in frame
-      // We don't need to show error here as it's normal
+    onScanError() {
+      // This is called when scan fails
+      // We don't show error for every failed scan attempt
+      // Only log to console for debugging
+    }
+  },
+
+  mounted() {
+    try {
+      // Check if HTTPS or localhost
+      const isSecureContext = window.isSecureContext
+      const protocol = window.location.protocol
+      const hostname = window.location.hostname
+
+      this.debugInfo = `Protocol: ${protocol}, Host: ${hostname}, Secure: ${isSecureContext}`
+
+      if (!isSecureContext && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+        this.errorMessage =
+          'กล้องทำงานได้เฉพาะ HTTPS หรือ localhost เท่านั้น\n' +
+          'กรุณาเข้าใช้งานผ่าน:\n' +
+          '- https://... (สำหรับ production)\n' +
+          '- http://localhost:... (สำหรับ development)'
+        return
+      }
+
+      // Initialize Html5QrcodeScanner
+      this.html5QrcodeScanner = new Html5QrcodeScanner(
+        'qr-reader',
+        {
+          fps: 10,
+          qrbox: 250,
+          aspectRatio: 1.0,
+          // Prefer back camera on mobile
+          videoConstraints: {
+            facingMode: 'environment'
+          }
+        },
+        false // verbose logging
+      )
+
+      // Render the scanner
+      this.html5QrcodeScanner.render(this.onScanSuccess, this.onScanError)
+
+      console.log('Html5QrcodeScanner initialized successfully')
+    } catch (err) {
+      console.error('Error initializing scanner:', err)
+      this.errorMessage =
+        `ไม่สามารถเริ่มต้น Scanner ได้\n\n` +
+        `ข้อผิดพลาด: ${err.message || err}\n\n` +
+        `กรุณาตรวจสอบ:\n` +
+        `1. เข้าใช้งานผ่าน HTTPS หรือ localhost\n` +
+        `2. อนุญาตการเข้าถึงกล้องในเบราว์เซอร์`
     }
   },
 
   beforeUnmount() {
     // Clean up when component is destroyed
-    this.stopScanning()
+    if (this.html5QrcodeScanner) {
+      try {
+        this.html5QrcodeScanner.clear()
+      } catch (err) {
+        console.error('Error clearing scanner:', err)
+      }
+    }
   }
 }
 </script>
@@ -249,16 +114,7 @@ export default {
   width: 100%;
 }
 
-.scanner-container {
-  position: relative;
-  width: 100%;
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-// QR Reader (camera feed)
+// QR Reader (built-in UI from html5-qrcode)
 #qr-reader {
   width: 100%;
   border: none;
@@ -266,88 +122,43 @@ export default {
   // Override default styles from html5-qrcode
   :deep(video) {
     border-radius: 12px;
+    width: 100% !important;
   }
 
   :deep(#qr-shaded-region) {
     border: none !important;
   }
-}
 
-// Scanner Overlay (decorative frame)
-.scanner-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
+  // Style the built-in buttons
+  :deep(button) {
+    background: var(--base-font-color) !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    margin: 8px 4px !important;
 
-.scanner-frame {
-  position: relative;
-  width: 250px;
-  height: 250px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-
-  .corner {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-color: var(--base-font-color);
-    border-style: solid;
-
-    &.corner-tl {
-      top: -2px;
-      left: -2px;
-      border-width: 3px 0 0 3px;
-      border-radius: 12px 0 0 0;
-    }
-
-    &.corner-tr {
-      top: -2px;
-      right: -2px;
-      border-width: 3px 3px 0 0;
-      border-radius: 0 12px 0 0;
-    }
-
-    &.corner-bl {
-      bottom: -2px;
-      left: -2px;
-      border-width: 0 0 3px 3px;
-      border-radius: 0 0 0 12px;
-    }
-
-    &.corner-br {
-      bottom: -2px;
-      right: -2px;
-      border-width: 0 3px 3px 0;
-      border-radius: 0 0 12px 0;
+    &:hover {
+      opacity: 0.9 !important;
     }
   }
-}
 
-// Scanner Instructions
-.scanner-instructions {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  padding: 0 20px;
-  pointer-events: none;
+  // Style the file input section
+  :deep(#html5-qrcode-button-file-selection) {
+    background: #f0f0f0 !important;
+    color: #333 !important;
+  }
 
-  p {
-    margin: 0;
-    padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    display: inline-block;
+  // Style select dropdown
+  :deep(select) {
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    border: 1px solid #ddd !important;
+    font-size: 0.9rem !important;
+    margin: 8px 4px !important;
   }
 }
 
@@ -361,7 +172,7 @@ export default {
   background: #fff3cd;
   border: 1px solid #ffc107;
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-top: 16px;
 
   i {
     font-size: 2rem;
@@ -388,12 +199,5 @@ export default {
     width: 100%;
     word-break: break-all;
   }
-}
-
-// Scanner Controls
-.scanner-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 </style>
