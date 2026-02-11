@@ -1,7 +1,7 @@
 <template>
   <div class="mobile-scan-view">
-    <div class="mobile-container mobile-mt-2">
-      <h2 class="mobile-title">สแกน QR / Barcode</h2>
+    <div class="mobile-container">
+      <!-- <h2 class="mobile-title">สแกน QR / Barcode</h2> -->
 
       <!-- Step 1: Select Scan Type -->
       <div v-if="!selectedScanType" class="scan-type-selection">
@@ -230,7 +230,7 @@ export default {
 .mobile-scan-view {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 80px;
+  //padding-bottom: 80px;
 }
 
 // Scan Type Selection
@@ -299,11 +299,11 @@ export default {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
-    padding: 12px;
+    //margin-bottom: 16px;
+    //padding: 12px;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    //border-radius: 12px;
+    //box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
     .mobile-btn-icon {
       flex-shrink: 0;

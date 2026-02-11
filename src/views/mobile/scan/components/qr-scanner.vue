@@ -51,10 +51,11 @@ export default {
 
       // Initialize Html5QrcodeScanner
       // Based on working example from html5-qrcode repository
-      this.html5QrcodeScanner = new Html5QrcodeScanner(
-        'qr-reader',
-        { fps: 10, qrbox: 250 }
-      )
+      // qrbox: wider for barcode support
+      this.html5QrcodeScanner = new Html5QrcodeScanner('qr-reader', {
+        fps: 10,
+        qrbox: { width: 300, height: 150 }
+      })
 
       // Render with only success callback (like in examples)
       this.html5QrcodeScanner.render(this.onScanSuccess)
@@ -93,14 +94,18 @@ export default {
 
 // QR Reader (built-in UI from html5-qrcode)
 #qr-reader {
-  max-width: 400px;
+  width: 100%;
+  //height: 20px;
+  //max-width: 500px;
   margin: 0 auto;
   border: none;
 
   // Override default styles from html5-qrcode
   :deep(video) {
-    border-radius: 12px;
     width: 100% !important;
+    ///height: 200px !important;
+    object-fit: cover !important;
+    //border-radius: 12px;
   }
 
   :deep(#qr-shaded-region) {
