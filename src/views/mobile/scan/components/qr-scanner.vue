@@ -93,7 +93,7 @@ export default {
 
 // QR Reader (built-in UI from html5-qrcode)
 #qr-reader {
-  width: 100%;
+  width: 50px;
   border: none;
 
   // Override default styles from html5-qrcode
