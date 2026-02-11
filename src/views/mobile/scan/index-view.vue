@@ -38,35 +38,8 @@
 
         <!-- Scanner Section -->
         <div v-if="!scannedProduct" class="scanner-section">
-          <!-- Scanner Mode Toggle -->
-          <div class="scanner-mode-toggle mobile-mb-2">
-            <button
-              class="mode-btn"
-              :class="{ active: scannerMode === 'camera' }"
-              @click="scannerMode = 'camera'"
-            >
-              <i class="bi bi-camera-video"></i>
-              เปิดกล้อง Live
-            </button>
-            <button
-              class="mode-btn"
-              :class="{ active: scannerMode === 'photo' }"
-              @click="scannerMode = 'photo'"
-            >
-              <i class="bi bi-camera"></i>
-              ถ่ายรูป
-            </button>
-          </div>
-
-          <!-- Camera Live Scanner -->
-          <div v-if="scannerMode === 'camera'">
-            <QrScanner @scan="handleScan" />
-          </div>
-
-          <!-- Photo Scanner -->
-          <div v-else>
-            <SimpleScanner @scan="handleScan" />
-          </div>
+          <!-- QR/Barcode Scanner -->
+          <QrScanner @scan="handleScan" />
 
           <!-- Divider -->
           <div class="scanner-divider">
@@ -140,15 +113,13 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { warning, error } from '@/services/alert/sweetAlerts.js'
 import ProductDetailCard from './components/product-detail-card.vue'
 import QrScanner from './components/qr-scanner.vue'
-import SimpleScanner from './components/simple-scanner.vue'
 
 export default {
   name: 'MobileScanView',
 
   components: {
     ProductDetailCard,
-    QrScanner,
-    SimpleScanner
+    QrScanner
   },
 
   setup() {
@@ -162,7 +133,6 @@ export default {
       manualInput: '',
       scannedProduct: null,
       imageType: 'STOCK-PRODUCT',
-      scannerMode: 'photo', // 'camera' or 'photo' - default to photo (easier)
 
       // Scan types configuration
       scanTypes: [
@@ -352,47 +322,6 @@ export default {
 // Scanner Section
 .scanner-section {
   margin-bottom: 16px;
-}
-
-// Scanner Mode Toggle
-.scanner-mode-toggle {
-  display: flex;
-  gap: 8px;
-  background: white;
-  padding: 8px;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  .mode-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 12px 16px;
-    border: 2px solid #e0e0e0;
-    background: white;
-    color: #666;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    i {
-      font-size: 1.1rem;
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-
-    &.active {
-      border-color: var(--base-font-color);
-      background: var(--base-font-color);
-      color: white;
-    }
-  }
 }
 
 .scanner-divider {
