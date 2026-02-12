@@ -67,7 +67,12 @@
     <div class="mobile-container mobile-mt-2">
       <div class="mobile-flex mobile-flex-between mobile-mb-2">
         <h3 class="mobile-subtitle">งานของฉัน</h3>
-        <button class="text-link" @click="navigateTo('/mobile/tasks')">ดูทั้งหมด</button>
+        <div class="header-actions-group">
+          <button class="icon-btn-small" @click="refreshJobs" :disabled="isRefreshing">
+            <i class="bi bi-arrow-clockwise" :class="{ 'spin-animation': isRefreshing }"></i>
+          </button>
+          <button class="text-link" @click="navigateTo('/mobile/tasks')">ดูทั้งหมด</button>
+        </div>
       </div>
 
       <!-- Loading State -->
@@ -157,7 +162,7 @@
 <script>
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
-import { getJobTypeName } from '@/constants/job-type.js'
+import { getJobTypeName, JOB_TYPE } from '@/constants/job-type.js'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
@@ -176,6 +181,7 @@ export default {
     return {
       myJobs: [],
       isLoading: false,
+      isRefreshing: false,
       // Placeholder data
       recentActivities: [
         {
@@ -247,6 +253,30 @@ export default {
       }
     },
 
+    async refreshJobs() {
+      try {
+        this.isRefreshing = true
+        const result = await this.userApiStore.fetchListMyJob({
+          take: 5,
+          skip: 0,
+          search: {
+            isActive: true
+          }
+        })
+
+        if (result && result.data) {
+          this.myJobs = result.data
+        }
+      } catch (error) {
+        console.error('Error refreshing jobs:', error)
+      } finally {
+        // Add small delay to show animation
+        setTimeout(() => {
+          this.isRefreshing = false
+        }, 500)
+      }
+    },
+
     viewAllActivities() {
       // Navigate to activities page
       console.log('View all activities')
@@ -257,10 +287,21 @@ export default {
     },
 
     viewJob(job) {
-      // Navigate to job detail page
-      console.log('View job:', job)
-      // TODO: Navigate to job detail page when implemented
-      // this.$router.push(`/mobile/job/${job.id}`)
+      // Check if job is "Plan Stock Cost" and "Completed"
+      // jobTypeId === 10 (PLAN_STOCK_COST) && statusId === 100 (Completed)
+      if (job.jobTypeId === JOB_TYPE.PLAN_STOCK_COST && job.statusId === 100) {
+        // Navigate to cost version detail page
+        this.$router.push({
+          name: 'mobile-cost-version-detail',
+          params: {
+            jobRunning: job.jobRunning
+          }
+        })
+      } else {
+        console.log('View job:', job)
+        // TODO: Navigate to other job detail pages
+        // this.$router.push(`/mobile/job/${job.id}`)
+      }
     },
 
     getStatusColor(statusId) {
@@ -469,6 +510,39 @@ export default {
   &:active {
     transform: scale(0.98);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn-small {
+  background: none;
+  border: none;
+  color: var(--base-font-color);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  &:active:not(:disabled) {
+    background: rgba(146, 19, 19, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  i.spin-animation {
+    animation: spin 1s linear infinite;
   }
 }
 

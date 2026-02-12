@@ -179,6 +179,35 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.error('Error creating product cost detail plan:', error)
         throw error
       }
+    },
+
+    async fetchListStockCostPlan({ take, skip, sort, formValue }) {
+      try {
+        const param = {
+          take: take,
+          skip: skip,
+          sort: sort,
+          search: {
+            ...formValue
+          }
+        }
+        return await api.jewelry.post('StockProduct/ListStockCostPlan', param)
+      } catch (error) {
+        console.error('Error fetching stock cost plan list:', error)
+        throw error
+      }
+    },
+
+    async fetchGetCostVersion(planRunning) {
+      try {
+        const param = {
+          planRunning: planRunning
+        }
+        return await api.jewelry.post('StockProduct/GetCostVersion', param)
+      } catch (error) {
+        console.error('Error fetching cost version by plan running:', error)
+        throw error
+      }
     }
   }
 })

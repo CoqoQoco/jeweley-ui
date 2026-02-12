@@ -79,7 +79,7 @@
 
 <script>
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
-import { getJobTypeName } from '@/constants/job-type.js'
+import { getJobTypeName, JOB_TYPE } from '@/constants/job-type.js'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
@@ -193,9 +193,21 @@ export default {
     },
 
     viewJobDetail(job) {
-      console.log('View job detail:', job)
-      // TODO: Navigate to job detail page
-      // this.$router.push(`/mobile/job/${job.id}`)
+      // Check if job is "Plan Stock Cost" and "Completed"
+      // jobTypeId === 10 (PLAN_STOCK_COST) && statusId === 100 (Completed)
+      if (job.jobTypeId === JOB_TYPE.PLAN_STOCK_COST && job.statusId === 100) {
+        // Navigate to cost version detail page
+        this.$router.push({
+          name: 'mobile-cost-version-detail',
+          params: {
+            jobRunning: job.jobRunning
+          }
+        })
+      } else {
+        console.log('View job detail:', job)
+        // TODO: Navigate to other job detail pages
+        // this.$router.push(`/mobile/job/${job.id}`)
+      }
     },
 
     getStatusColor(statusId) {

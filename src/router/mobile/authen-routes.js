@@ -59,6 +59,18 @@ const routes = [
         }
       },
 
+      // 🆕 Cost Version Detail (Mobile Only)
+      {
+        path: 'cost-version/:jobRunning',
+        name: 'mobile-cost-version-detail',
+        component: () => import('@/views/mobile/cost-version-detail/index-view.vue'),
+        meta: {
+          Displayname: { en: 'Cost Version Detail', th: 'รายละเอียดการตีราคา' },
+          requiresAuth: true,
+          permissions: ['mobile:tasks']
+        }
+      },
+
       // ========== Shared Features (มีทั้ง Web & Mobile) ==========
       // แต่ UI/UX ต่างกัน - Mobile เน้น touch-friendly, quick actions
 
