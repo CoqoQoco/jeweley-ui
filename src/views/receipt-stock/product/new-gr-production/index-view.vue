@@ -86,6 +86,7 @@ import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/recei
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import headerView from './components/production-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
@@ -736,16 +737,9 @@ export default {
         switch (this.imgTest.type) {
           case 'MOLD':
             {
-              const param = {
-                imageName: `${this.imgTest.imageName}-Mold.png`
-              }
-              const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
+              // Build Azure Blob URL for mold image
+              const blobPath = `Mold/${this.imgTest.imageName}-Mold.png`
+              this.urlImage = getAzureBlobUrl(blobPath)
             }
             break
         }

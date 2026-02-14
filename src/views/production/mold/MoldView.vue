@@ -138,6 +138,7 @@ import { defineAsyncComponent } from 'vue'
 //import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions'
 //import Card from 'primevue/card'
 import api from '@/axios/axios-helper.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -253,19 +254,12 @@ export default {
     async fetchImageData(item) {
       try {
         console.log(item)
-        const param = {
-          imageName: `${item}-Mold.png`
-        }
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-
-        console.log(res)
-        if (res) {
-          return `data:image/png;base64,${res}`
-        } else {
-          return ''
-        }
+        // Build Azure Blob URL for mold image
+        const blobPath = `Mold/${item}-Mold.png`
+        return getAzureBlobUrl(blobPath)
       } catch (error) {
         console.log(error)
+        return ''
       }
     }
   },

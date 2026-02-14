@@ -221,8 +221,6 @@
                       :type="type"
                       :width="25"
                       :height="25"
-                      :emitImage="true"
-                      @image-loaded="handleImageLoaded($event, slotProps.data.stockNumber)"
                     />
                   </div>
                 </div>

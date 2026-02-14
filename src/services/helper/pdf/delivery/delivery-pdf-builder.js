@@ -454,7 +454,9 @@ export class DeliveryPdfBuilder {
 
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
-        item.imageBase64 ? this.setTabImageCell(item.imageBase64) : this.setTableCell(''),
+        item.imageBase64 || item.imageBlobPath
+          ? this.setTabImageCell(item.imageBase64, item.imageBlobPath)
+          : this.setTableCell(''),
         this.setTableCell(
           item.stockNumber && item.productNumber
             ? `${item.stockNumber}/${item.productNumber}`
@@ -645,24 +647,50 @@ export class DeliveryPdfBuilder {
     }
   }
 
-  setTabImageCell(imageBase64) {
-    if (!imageBase64) {
+  /**
+   * สร้าง image cell สำหรับตาราง PDF
+   * รองรับทั้ง base64 (legacy) และ blobPath (ใหม่)
+   * @param {string} imageBase64 - Base64 string (deprecated)
+   * @param {string} imageBlobPath - Azure Blob path
+   * @returns {object} - pdfmake table cell object
+   */
+  setTabImageCell(imageBase64, imageBlobPath = null) {
+    // ถ้าไม่มีทั้ง base64 และ blobPath ให้ return empty cell
+    if (!imageBase64 && !imageBlobPath) {
       return {
         text: '',
         alignment: 'center'
       }
     }
 
-    const imageData = imageBase64.startsWith('data:image')
-      ? imageBase64
-      : `data:image/png;base64,${imageBase64}`
+    // กรณีที่ 1: มี base64 (legacy support)
+    if (imageBase64) {
+      const imageData = imageBase64.startsWith('data:image')
+        ? imageBase64
+        : `data:image/png;base64,${imageBase64}`
 
-    return {
-      image: imageData,
-      width: 25,
-      height: 25,
-      alignment: 'center',
-      margin: [2, 5, 2, 5]
+      return {
+        image: imageData,
+        width: 25,
+        height: 25,
+        alignment: 'center',
+        margin: [2, 5, 2, 5]
+      }
+    }
+
+    // กรณีที่ 2: มี blobPath (แปลงเป็น Azure Blob URL)
+    if (imageBlobPath) {
+      // Import getAzureBlobUrl จาก azure-storage-config
+      const { getAzureBlobUrl } = require('@/config/azure-storage-config.js')
+      const imageUrl = getAzureBlobUrl(imageBlobPath)
+
+      return {
+        image: imageUrl,
+        width: 25,
+        height: 25,
+        alignment: 'center',
+        margin: [2, 5, 2, 5]
+      }
     }
   }
 

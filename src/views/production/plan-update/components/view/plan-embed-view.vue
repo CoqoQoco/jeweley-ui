@@ -320,6 +320,7 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { calculateWeightDifference } from '@/services/helper/match.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import { EmbedSlipPdfBuilder } from '@/services/helper/pdf/FilePlanEmbed.js'
 
@@ -548,12 +549,9 @@ export default {
     async fetchImage() {
       try {
         //console.log(this.modelValue)
-        const param = {
-          imageName: `${this.modelValue.mold}-Mold.png`
-        }
-
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-        this.urlImage = `data:image/png;base64,${res}`
+        // Build Azure Blob URL for mold image
+        const blobPath = `Mold/${this.modelValue.mold}-Mold.png`
+        this.urlImage = getAzureBlobUrl(blobPath)
         //console.log(this.urlImage)
       } catch (error) {
         console.log(error)

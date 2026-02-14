@@ -26,6 +26,7 @@ import { vfs } from '@/assets/fonts/pdf-fonts.js'
 
 import { formatDate } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 export default {
   components: {
@@ -124,14 +125,9 @@ export default {
     // --- APIs --- //
     async fetchIamge() {
       try {
-        //console.log(this.modelValue)
-        const param = {
-          imageName: `${this.modelValue.mold}-Mold.png`
-        }
-
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-        this.urlImage = `data:image/png;base64,${res}`
-        //console.log(this.urlImage)
+        // Build Azure Blob URL for mold image
+        const blobPath = `Mold/${this.modelValue.mold}-Mold.png`
+        this.urlImage = getAzureBlobUrl(blobPath)
       } catch (error) {
         console.log(error)
         return null

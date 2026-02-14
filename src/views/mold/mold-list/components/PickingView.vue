@@ -163,6 +163,7 @@ import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 const interfaceForm = {
   mold: null,
@@ -339,23 +340,19 @@ export default {
     },
 
     // -------- APIs --------------- //
-    // -------- APIs --------------- //
     async fetchImageData(path, sub) {
       try {
         //console.log
         switch (this.type) {
           case 'ORDERPLAN': {
-            const param = {
-              imageName: sub ? `${path}-Sub-Mold.png` : `${path}-Mold.png`
-            }
-            const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+            // Build Azure Blob URL for mold image
+            const blobPath = sub ? `Mold/${path}-Sub-Mold.png` : `Mold/${path}-Mold.png`
+            const imageUrl = getAzureBlobUrl(blobPath)
 
-            if (res) {
-              if (sub) {
-                this.urlImageSub = `data:image/png;base64,${res}`
-              } else {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
+            if (sub) {
+              this.urlImageSub = imageUrl
+            } else {
+              this.urlImage = imageUrl
             }
           }
         }

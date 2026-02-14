@@ -483,6 +483,7 @@ import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import modifyPlanView from '../modal/modify-plan-view.vue'
 
@@ -767,16 +768,9 @@ export default {
     },
     async onSelectMold(e) {
       try {
-        const param = {
-          imageName: `${e.value}-Mold.png`
-        }
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
-          skipLoading: true
-        })
-
-        if (res) {
-          this.imageurl = `data:image/png;base64,${res}`
-        }
+        // Build Azure Blob URL for mold image
+        const blobPath = `Mold/${e.value}-Mold.png`
+        this.imageurl = getAzureBlobUrl(blobPath)
       } catch (error) {
         console.log(error)
       }
@@ -948,16 +942,9 @@ export default {
         material: []
       }
 
-      //get image
-      const param = {
-        imageName: `${item.data.mold}-Mold.png`
-      }
-      const image = await api.jewelry.get('FileExtension/GetMoldImage', param, {
-        skipLoading: true
-      })
-      if (image) {
-        this.imageurl = `data:image/png;base64,${image}`
-      }
+      //get image - Build Azure Blob URL
+      const blobPath = `Mold/${item.data.mold}-Mold.png`
+      this.imageurl = getAzureBlobUrl(blobPath)
 
       if (item.headerMat.length > 0) {
         this.form.material = item.headerMat.map((x) => {

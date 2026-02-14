@@ -13,6 +13,7 @@ import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import api from '@/axios/axios-helper.js'
 import jsbarcode from 'jsbarcode'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 export default {
   props: {
@@ -56,15 +57,10 @@ export default {
       return formatDate(date)
     },
     async fetchIamge() {
-      //console.log(item.data.tbtProductionPlanImage[0].path)
-
       try {
-        const param = {
-          imageName: `${this.modelValue.mold}-Mold.png`
-        }
-
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-        this.urlImage = `data:image/png;base64,${res}`
+        // Build Azure Blob URL for mold image
+        const blobPath = `Mold/${this.modelValue.mold}-Mold.png`
+        this.urlImage = getAzureBlobUrl(blobPath)
       } catch (error) {
         console.log(error)
         return null
