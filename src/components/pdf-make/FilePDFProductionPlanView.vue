@@ -13,6 +13,7 @@ import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import api from '@/axios/axios-helper.js'
 import jsbarcode from 'jsbarcode'
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 export default {
   props: {
@@ -56,18 +57,21 @@ export default {
       return formatDate(date)
     },
     async fetchIamge() {
-      //console.log(item.data.tbtProductionPlanImage[0].path)
-
       try {
-        const param = {
-          imageName: `${this.modelValue.mold}-Mold.png`
-        }
+        // Build Azure Blob path and convert to Base64 for pdfMake
+        const blobPath = `Mold/${this.modelValue.mold}-Mold.png`
+        const base64Image = await getAzureBlobAsBase64(blobPath)
 
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-        this.urlImage = `data:image/png;base64,${res}`
+        // ตรวจสอบว่าได้ Base64 กลับมาหรือไม่
+        if (base64Image && base64Image.length > 0) {
+          this.urlImage = base64Image
+        } else {
+          console.warn('No image found for mold:', this.modelValue.mold)
+          this.urlImage = null
+        }
       } catch (error) {
-        console.log(error)
-        return null
+        console.error('Error fetching image:', error)
+        this.urlImage = null
       }
     },
 
@@ -165,16 +169,27 @@ export default {
                 //row 1
                 [
                   //image
-                  {
-                    rowSpan: 2,
-                    image: this.urlImage,
-                    //fit: [50, 50],
-                    margin: [0, 5, 0, 0],
-                    width: 70,
-                    height: 70,
-                    border: [true, true, true, true],
-                    alignment: 'center'
-                  },
+                  this.urlImage
+                    ? {
+                        rowSpan: 2,
+                        image: this.urlImage,
+                        margin: [0, 5, 0, 0],
+                        width: 70,
+                        height: 70,
+                        border: [true, true, true, true],
+                        alignment: 'center'
+                      }
+                    : {
+                        rowSpan: 2,
+                        text: 'ไม่มีรูป',
+                        margin: [0, 5, 0, 0],
+                        width: 70,
+                        height: 70,
+                        border: [true, true, true, true],
+                        alignment: 'center',
+                        fontSize: 10,
+                        color: '#999999'
+                      },
                   //wo
                   {
                     margin: [30, 0, 0, 0],

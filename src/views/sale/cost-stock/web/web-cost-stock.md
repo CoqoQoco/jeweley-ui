@@ -244,3 +244,190 @@
   - Stock fetch logic: `quotation-view.vue` line 970
   - Original appraisal screen: `edit-stock-view.vue` ~line 100
   - AutoComplete pattern: `update-process-view.vue` line 333
+
+## 2. กรณีมีแผน (Plan-based Appraisal) - Web Version
+
+  **Flow**: ออกแบบแผนตีราคา (Mobile) → **เลือกแผน (Web)** → ตีราคา → บันทึก → อัพเดทสถานะแผน
+
+  **Location**: Same as กรณีไม่มีแผน - `/sale/cost-stock-edit`
+
+  ### Component Structure:
+  ```
+  /cost-stock/web/cost-edit/
+  ├── index-view.vue (Main orchestrator with plan handling)
+  ├── components/
+  │   ├── search-stock-view.vue (Stock search + Plan list button with badge)
+  │   ├── stock-cost-plan-modal.vue (Plan selection modal) ✨ NEW
+  │   └── appraisal-form-view.vue (Appraisal form with plan info display)
+
+  /components/prime-vue/
+  ├── DataTableWithPaging.vue (Reusable DataTable with pagination)
+  └── Dialog.vue (PrimeVue Dialog for modal)
+  ```
+
+  ### Features Implemented:
+
+  ✅ **Plan List Button with Notification Badge**
+     - Location: `search-stock-view.vue`
+     - ปุ่ม "รายการแผนตีราคา" (สีเหลือง warning)
+     - Badge แสดงจำนวนแผนที่ `isActive = true` AND `statusId = 10` (Pending)
+     - Auto-refresh badge count on component mount
+     - Position: ด้านขวาของหัวข้อ "ค้นหาสินค้า"
+
+  ✅ **Plan Selection Modal** (`stock-cost-plan-modal.vue`)
+     - DataTable with pagination, sorting, filtering
+     - Single selection mode (Radio button)
+     - Columns:
+       - เลขที่แผน (Running)
+       - เลขที่ผลิต (Stock Number)
+       - สถานะ (Status) with color-coded badges
+       - หมายเหตุ (Remark)
+       - ผู้สร้าง (Create By)
+       - วันที่สร้าง (Create Date)
+       - ผู้แก้ไข (Update By)
+       - วันที่แก้ไข (Update Date)
+     - Filter: Only shows plans with `isActive = true` AND `statusId = 10` (Pending)
+     - Action: "เลือกแผนนี้" button to confirm selection
+
+  ✅ **Plan Information Display** (`appraisal-form-view.vue`)
+     - Only shown when `planRunning` exists (from plan selection)
+     - Section: "ข้อมูลแผนตีราคา"
+     - Background: สีเหลืองอ่อน (#fff9e6) with yellow border
+     - Fields displayed:
+       - เลขที่แผน (Plan Running Number)
+       - วันที่สร้างแผน (Plan Create Date) - formatted
+       - ผู้สร้างแผน (Plan Create By)
+     - Position: Between "ข้อมูลสินค้า" and "ข้อมูลลูกค้า"
+
+  ✅ **Automatic Plan Status Update**
+     - When saving appraisal with `planRunning`:
+       - Backend updates plan status to `Completed` (statusId = 100)
+       - Sets `versionRunning` to the created cost version running
+       - Plan disappears from list (no longer Pending)
+       - Badge count auto-decreases
+
+  ### API Integration:
+
+  #### 1. List Stock Cost Plans API
+  - ✅ **Endpoint**: `POST /StockProduct/ListStockCostPlan`
+  - API Store: `usrStockProductApiStore.fetchListStockCostPlan()`
+  - Request parameters:
+    - `take`, `skip`, `sort` (pagination & sorting)
+    - `search.isActive`: true (filter active plans only)
+    - `search.statusId`: 10 (filter Pending status only)
+    - `search.stockNumber`: optional (filter by stock)
+  - Response: DataSourceResult with plan list and total count
+
+  #### 2. Save Appraisal with Plan Reference
+  - ✅ **Endpoint**: `POST /StockProduct/AddProductCostDeatialVersion`
+  - Additional field: `planRunning` (string, nullable)
+  - Backend logic when `planRunning` is provided:
+    1. Create cost version as normal
+    2. Find plan by running number
+    3. Update plan:
+       - `versionRunning` = new cost version running
+       - `statusId` = 100 (Completed)
+       - `statusName` = "Completed"
+       - `updateBy` = current user
+       - `updateDate` = current datetime
+
+  ### Job Status Constants
+
+  **Location**: `jewelry.Model.Constant.JobStatus.cs`
+
+  ```csharp
+  public static class JobStatus
+  {
+      public static int Pending = 10;      // รอดำเนินการ
+      public static int Assigned = 20;     // มอบหมายแล้ว
+      public static int Started = 30;      // เริ่มงาน
+      public static int InProgress = 40;   // กำลังดำเนินการ
+      public static int OnHold = 50;       // พักงาน
+      public static int Completed = 100;   // เสร็จสิ้น
+      public static int Cancelled = 500;   // ยกเลิก
+  }
+  ```
+
+  **Frontend filters**:
+  - Badge count: `statusId: 10` (Pending only)
+  - Plan modal: `statusId: 10` (Pending only)
+
+  ### Complete Flow:
+
+  ```
+  1. [Mobile] สร้างแผนตีราคา
+     → TbtStockCostPlan created
+     → statusId = 10 (Pending)
+     → isActive = true
+
+  2. [Web] เปิดหน้าตีราคา
+     → API call: fetchListStockCostPlan (isActive=true, statusId=10)
+     → Badge shows count of pending plans
+     → แสดงจำนวนแผนที่รออยู่
+
+  3. [Web] คลิกปุ่ม "รายการแผนตีราคา"
+     → Modal opens
+     → DataTable shows filtered plans (Pending + Active only)
+     → User selects plan (radio button)
+     → Click "เลือกแผนนี้"
+
+  4. [Web] System loads stock with plan data
+     → Fetch stock by plan.stockNumber
+     → Attach plan metadata:
+       - planRunning
+       - planRemark
+       - planCreateDate
+       - planCreateBy
+     → Display plan info section (yellow background)
+
+  5. [Web] User completes appraisal
+     → Fill in transaction items
+     → Click "บันทึก" or "บันทึกและใช้เป็นต้นทุนหลัก"
+     → Request includes planRunning
+
+  6. [Backend] Update plan status
+     → Create TbtStockCostVersion
+     → Find plan by planRunning
+     → Update plan:
+       - statusId = 100 (Completed)
+       - versionRunning = new version running
+       - updateBy, updateDate
+
+  7. [Web] Plan removed from list
+     → Plan no longer shows in modal (status != Pending)
+     → Badge count decreases automatically
+     → Ready for next plan
+  ```
+
+  ### Key Differences from Non-Plan Mode:
+
+  | Feature | Without Plan | With Plan |
+  |---------|--------------|-----------|
+  | Entry Point | Manual stock search | Plan selection modal |
+  | Plan Info Display | ❌ Hidden | ✅ Shows running, date, creator |
+  | Badge Notification | ❌ N/A | ✅ Shows pending count |
+  | Status Update | ❌ N/A | ✅ Auto-updates plan to Completed |
+  | `planRunning` Field | `null` | Plan running number |
+
+  ### Files Modified/Created:
+
+  **Backend**:
+  - ✅ `jewelry.Model/Stock/Product/ListStockCostPlan/Request.cs` - NEW
+  - ✅ `jewelry.Model/Stock/Product/ListStockCostPlan/Response.cs` - NEW
+  - ✅ `ProductService.cs` - Added `ListStockCostPlan()` method
+  - ✅ `ProductService.cs` - Modified `AddProductCostDeatialVersion()` to update plan status
+  - ✅ `IProductService.cs` - Added interface method
+  - ✅ `StockProductController.cs` - Added `ListStockCostPlan` endpoint
+  - ✅ `AddProductCost/Request.cs` - Already has `PlanRunning` field
+
+  **Frontend**:
+  - ✅ `product-api.js` - Added `fetchListStockCostPlan()`
+  - ✅ `stock-cost-plan-modal.vue` - NEW component
+  - ✅ `search-stock-view.vue` - Added plan button + badge + modal
+  - ✅ `appraisal-form-view.vue` - Added plan info section + send planRunning
+  - ✅ `index-view.vue` - Handle plan selection event
+
+  ### Notes:
+  - ⚠️ Badge notification auto-refreshes only on component mount, not real-time
+  - ⚠️ Plan status update happens synchronously during save
+  - ⚠️ Only Pending + Active plans are shown in list (statusId=10, isActive=true)

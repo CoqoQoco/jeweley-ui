@@ -121,6 +121,7 @@ const pdf = defineAsyncComponent(() => import('@/components/pdf-make/FilePDFProd
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 export default {
   components: {
@@ -203,17 +204,12 @@ export default {
     // --- APIs --- //
     async fetchImageData(mold) {
       try {
-        const param = {
-          imageName: `${mold}-Mold.png`
-        }
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
+        // Build Azure Blob URL for mold image
+        const blobPath = `Mold/${mold}-Mold.png`
+        this.imageUrl = getAzureBlobUrl(blobPath)
 
-        if (res) {
-          this.imageUrl = `data:image/png;base64,${res}`
-
-          if (this.form) {
-            this.form.requestDate = this.showDate(this.form.requestDate)
-          }
+        if (this.form) {
+          this.form.requestDate = this.showDate(this.form.requestDate)
         }
       } catch (error) {
         console.log(error)

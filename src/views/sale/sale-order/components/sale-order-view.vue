@@ -2178,7 +2178,7 @@ export default {
       if (realIndex !== -1) {
         this.stockItems[realIndex] = {
           ...this.stockItems[realIndex],
-          imageBase64: imageData.base64
+          imageBlobPath: imageData.blobPath // เก็บ blobPath แทน base64
         }
       }
     },
@@ -2266,14 +2266,14 @@ export default {
       const stockItemsData = this.stockItems.map((item) => {
         return {
           ...item,
-          imageBase64: null
+          imageBlobPath: null // ไม่เก็บ blob path ลง database
         }
       })
 
       const copyItemsData = this.copyItems.map((item) => {
         return {
           ...item,
-          imageBase64: null
+          imageBlobPath: null // ไม่เก็บ blob path ลง database
         }
       })
 

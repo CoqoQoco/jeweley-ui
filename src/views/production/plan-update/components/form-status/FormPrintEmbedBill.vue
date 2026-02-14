@@ -26,6 +26,7 @@ import { vfs } from '@/assets/fonts/pdf-fonts.js'
 
 import { formatDate } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 export default {
   components: {
@@ -124,17 +125,20 @@ export default {
     // --- APIs --- //
     async fetchIamge() {
       try {
-        //console.log(this.modelValue)
-        const param = {
-          imageName: `${this.modelValue.mold}-Mold.png`
-        }
+        // Build Azure Blob path and convert to Base64 for pdfMake
+        const blobPath = `Mold/${this.modelValue.mold}-Mold.png`
+        const base64Image = await getAzureBlobAsBase64(blobPath)
 
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-        this.urlImage = `data:image/png;base64,${res}`
-        //console.log(this.urlImage)
+        // Check if Base64 is valid
+        if (base64Image && base64Image.length > 0) {
+          this.urlImage = base64Image
+        } else {
+          console.warn('No image found for mold:', this.modelValue.mold)
+          this.urlImage = null
+        }
       } catch (error) {
-        console.log(error)
-        return null
+        console.error('Error fetching image:', error)
+        this.urlImage = null
       }
     },
 
@@ -338,14 +342,23 @@ export default {
                           [
                             {
                               stack: [
-                                {
-                                  image: this.urlImage,
-                                  width: 70,
-                                  height: 70,
-                                  //border: [true, true, true, false],
-                                  alignment: 'center',
-                                  margin: [0, 4, 0, 4]
-                                }
+                                this.urlImage
+                                  ? {
+                                      image: this.urlImage,
+                                      width: 70,
+                                      height: 70,
+                                      alignment: 'center',
+                                      margin: [0, 4, 0, 4]
+                                    }
+                                  : {
+                                      text: 'ไม่มีรูป',
+                                      width: 70,
+                                      height: 70,
+                                      alignment: 'center',
+                                      fontSize: 10,
+                                      color: '#999999',
+                                      margin: [0, 25, 0, 0]
+                                    }
                               ]
                             }
                           ]

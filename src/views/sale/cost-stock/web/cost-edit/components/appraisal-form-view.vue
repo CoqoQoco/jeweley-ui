@@ -44,6 +44,40 @@
           <div></div>
         </div>
 
+        <!-- Plan Information (Only show when planRunning exists) -->
+        <template v-if="localStock.planRunning">
+          <div class="line mt-3 mb-3"></div>
+
+          <div class="vertical-center-container mb-2">
+            <span class="title-text-lg bi bi-list-check mr-2"></span>
+            <span class="title-text-lg">ข้อมูลแผนตีราคา</span>
+          </div>
+
+          <div class="plan-info-display">
+            <div class="form-col-sm-container">
+              <div>
+                <span class="title-text">เลขที่แผน</span>
+                <div class="plan-display-field">
+                  {{ localStock.planRunning }}
+                </div>
+              </div>
+              <div>
+                <span class="title-text">วันที่สร้างแผน</span>
+                <div class="plan-display-field">
+                  {{ formatDate(localStock.planCreateDate) }}
+                </div>
+              </div>
+              <div>
+                <span class="title-text">ผู้สร้างแผน</span>
+                <div class="plan-display-field">
+                  {{ localStock.planCreateBy }}
+                </div>
+              </div>
+              <div></div>
+            </div>
+          </div>
+        </template>
+
         <!-- Customer Information -->
         <div class="line mt-3 mb-3"></div>
 
@@ -383,6 +417,7 @@ import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-mo
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { formatDate } from '@/services/utils/dayjs.js'
 
 export default {
   name: 'AppraisalFormView',
@@ -411,7 +446,7 @@ export default {
   setup() {
     const masterStore = useMasterApiStore()
     const productStore = usrStockProductApiStore()
-    return { masterStore, productStore }
+    return { masterStore, productStore, formatDate }
   },
 
   computed: {
@@ -621,6 +656,7 @@ export default {
       // Mapping data to match API request structure
       const requestData = {
         stockNumber: this.localStock.stockNumber || this.localStock.stockNumberOrigin,
+        planRunning: this.localStock.planRunning || null,
         customerCode: this.localStock.customerCode || null,
         customerName: this.localStock.customerName || null,
         customerAddress: this.localStock.customerAddress || null,
@@ -835,6 +871,29 @@ textarea {
 
 :deep(.p-autocomplete .p-component) {
   margin-top: 0px !important;
+}
+
+// Plan Display Field Styles
+.plan-info-display {
+  margin-top: 10px;
+}
+
+.plan-display-field {
+  background-color: #fff9e6;
+  border: 1px solid #fabc3f;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-top: 5px;
+  min-height: 36px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+
+  @media (max-width: 1024px) {
+    font-size: 13px;
+    padding: 6px 10px;
+    min-height: 34px;
+  }
 }
 
 // Customer Display Field Styles

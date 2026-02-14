@@ -145,13 +145,23 @@ export class EmbedSlipPdfBuilder {
                   [
                     {
                       stack: [
-                        {
-                          image: this.urlImage,
-                          width: 70,
-                          height: 70,
-                          alignment: 'center',
-                          margin: [0, 2, 0, 2]
-                        }
+                        this.urlImage
+                          ? {
+                              image: this.urlImage,
+                              width: 70,
+                              height: 70,
+                              alignment: 'center',
+                              margin: [0, 2, 0, 2]
+                            }
+                          : {
+                              text: 'ไม่มีรูป',
+                              width: 70,
+                              height: 70,
+                              alignment: 'center',
+                              fontSize: 10,
+                              color: '#999999',
+                              margin: [0, 25, 0, 0]
+                            }
                       ]
                     }
                   ]

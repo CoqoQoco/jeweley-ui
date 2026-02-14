@@ -18,7 +18,7 @@
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="mobile-container">
+    <!-- <div class="mobile-container">
       <div class="mobile-grid-2">
         <div class="stat-card stat-card-primary">
           <div class="stat-icon">
@@ -40,11 +40,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Quick Actions -->
     <div class="mobile-container mobile-mt-2">
-      <h3 class="mobile-subtitle mobile-mb-2">เมนูด่วน</h3>
+      <h3 class="mobile-subtitle mobile-mb-2">หัวข้องาน</h3>
 
       <div class="mobile-grid-2">
         <div class="action-card" @click="navigateTo('/mobile/scan')">
@@ -54,17 +54,70 @@
           <div class="action-label">สแกน QR</div>
         </div>
 
-        <div class="action-card" @click="navigateTo('/mobile/tasks')">
+        <!-- <div class="action-card" @click="navigateTo('/mobile/tasks')">
           <div class="action-icon">
             <i class="bi bi-list-task"></i>
           </div>
           <div class="action-label">งานของฉัน</div>
+        </div> -->
+      </div>
+    </div>
+
+    <!-- My Jobs List -->
+    <div class="mobile-container mobile-mt-2">
+      <div class="mobile-flex mobile-flex-between mobile-mb-2">
+        <h3 class="mobile-subtitle">งานของฉัน</h3>
+        <div class="header-actions-group">
+          <button class="icon-btn-small" @click="refreshJobs" :disabled="isRefreshing">
+            <i class="bi bi-arrow-clockwise" :class="{ 'spin-animation': isRefreshing }"></i>
+          </button>
+          <button class="text-link" @click="navigateTo('/mobile/tasks')">ดูทั้งหมด</button>
         </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="isLoading" class="mobile-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">กำลังโหลด...</div>
+      </div>
+
+      <!-- Jobs List -->
+      <div v-else-if="myJobs.length > 0" class="mobile-list">
+        <div
+          v-for="job in myJobs"
+          :key="job.id"
+          class="mobile-list-item mobile-list-item-clickable"
+          @click="viewJob(job)"
+        >
+          <div class="list-icon" :style="{ background: getStatusColor(job.statusId) + '20' }">
+            <i class="bi bi-briefcase" :style="{ color: getStatusColor(job.statusId) }"></i>
+          </div>
+          <div class="list-content">
+            <div class="list-title">{{ getJobTypeNameTh(job.jobTypeId) }}</div>
+            <div class="list-subtitle">{{ job.jobRunning }}</div>
+            <div class="list-meta">
+              <span class="status-badge" :style="{ background: getStatusColor(job.statusId) }">
+                {{ job.statusName }}
+              </span>
+              <span class="date-text">{{ formatDate(job.createDate) }}</span>
+            </div>
+          </div>
+          <div class="list-action">
+            <i class="bi bi-chevron-right"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="mobile-empty-state">
+        <i class="bi bi-inbox"></i>
+        <div class="empty-title">ไม่มีงาน</div>
+        <div class="empty-subtitle">ยังไม่มีงานในระบบ</div>
       </div>
     </div>
 
     <!-- Recent Activities -->
-    <div class="mobile-container mobile-mt-2">
+    <!-- <div class="mobile-container mobile-mt-2">
       <div class="mobile-flex mobile-flex-between mobile-mb-2">
         <h3 class="mobile-subtitle">กิจกรรมล่าสุด</h3>
         <button class="text-link" @click="viewAllActivities">ดูทั้งหมด</button>
@@ -89,7 +142,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Empty State Example (ซ่อนไว้ ใช้เมื่อไม่มีข้อมูล) -->
     <!-- <div class="mobile-empty-state" v-if="!hasData">
@@ -108,6 +161,8 @@
 
 <script>
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
+import { getJobTypeName, JOB_TYPE } from '@/constants/job-type.js'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
@@ -118,11 +173,15 @@ export default {
 
   setup() {
     const authStore = useAuthStore()
-    return { authStore }
+    const userApiStore = useUserApiStore()
+    return { authStore, userApiStore }
   },
 
   data() {
     return {
+      myJobs: [],
+      isLoading: false,
+      isRefreshing: false,
       // Placeholder data
       recentActivities: [
         {
@@ -153,6 +212,10 @@ export default {
     }
   },
 
+  mounted() {
+    this.loadMyJobs()
+  },
+
   computed: {
     userName() {
       const user = this.authStore.user
@@ -169,6 +232,51 @@ export default {
       this.$router.push(path)
     },
 
+    async loadMyJobs() {
+      try {
+        this.isLoading = true
+        const result = await this.userApiStore.fetchListMyJob({
+          take: 5,
+          skip: 0,
+          search: {
+            isActive: true
+          }
+        })
+
+        if (result && result.data) {
+          this.myJobs = result.data
+        }
+      } catch (error) {
+        console.error('Error loading my jobs:', error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async refreshJobs() {
+      try {
+        this.isRefreshing = true
+        const result = await this.userApiStore.fetchListMyJob({
+          take: 5,
+          skip: 0,
+          search: {
+            isActive: true
+          }
+        })
+
+        if (result && result.data) {
+          this.myJobs = result.data
+        }
+      } catch (error) {
+        console.error('Error refreshing jobs:', error)
+      } finally {
+        // Add small delay to show animation
+        setTimeout(() => {
+          this.isRefreshing = false
+        }, 500)
+      }
+    },
+
     viewAllActivities() {
       // Navigate to activities page
       console.log('View all activities')
@@ -176,6 +284,55 @@ export default {
 
     viewActivity(activity) {
       console.log('View activity:', activity)
+    },
+
+    viewJob(job) {
+      // Check if job is "Plan Stock Cost" and "Completed"
+      // jobTypeId === 10 (PLAN_STOCK_COST) && statusId === 100 (Completed)
+      if (job.jobTypeId === JOB_TYPE.PLAN_STOCK_COST && job.statusId === 100) {
+        // Navigate to cost version detail page
+        this.$router.push({
+          name: 'mobile-cost-version-detail',
+          params: {
+            jobRunning: job.jobRunning
+          }
+        })
+      } else {
+        console.log('View job:', job)
+        // TODO: Navigate to other job detail pages
+        // this.$router.push(`/mobile/job/${job.id}`)
+      }
+    },
+
+    getStatusColor(statusId) {
+      // Based on JobStatus.cs constants
+      // Pending = 10, Assigned = 20, Started = 30, InProgress = 40, OnHold = 50, Completed = 100, Cancelled = 500
+      switch (statusId) {
+        case 500: // Cancelled
+          return '#f44336' // Red
+        case 100: // Completed
+          return '#4caf50' // Green
+        case 50: // OnHold
+          return '#ff9800' // Orange
+        case 40: // InProgress
+          return '#ff9800' // Orange
+        case 30: // Started
+          return '#2196f3' // Blue
+        case 20: // Assigned
+          return '#2196f3' // Blue
+        case 10: // Pending
+          return '#9e9e9e' // Gray
+        default:
+          return '#9e9e9e' // Default Gray
+      }
+    },
+
+    formatDate(dateString) {
+      return dayjs(dateString).format('DD/MM/YYYY HH:mm')
+    },
+
+    getJobTypeNameTh(jobTypeId) {
+      return getJobTypeName(jobTypeId)
     }
   }
 }
@@ -356,6 +513,39 @@ export default {
   }
 }
 
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn-small {
+  background: none;
+  border: none;
+  color: var(--base-font-color);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  &:active:not(:disabled) {
+    background: rgba(146, 19, 19, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  i.spin-animation {
+    animation: spin 1s linear infinite;
+  }
+}
+
 .text-link {
   background: none;
   border: none;
@@ -367,6 +557,90 @@ export default {
 
   &:active {
     opacity: 0.7;
+  }
+}
+
+.list-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    color: white;
+    font-weight: 500;
+  }
+
+  .date-text {
+    font-size: 0.7rem;
+    color: #999;
+  }
+}
+
+.mobile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 12px;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--base-font-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .loading-text {
+    margin-top: 16px;
+    color: #666;
+    font-size: 0.9rem;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.mobile-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 12px;
+  text-align: center;
+
+  i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 16px;
+  }
+
+  .empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .empty-subtitle {
+    font-size: 0.85rem;
+    color: #999;
   }
 }
 </style>

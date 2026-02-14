@@ -1,218 +1,319 @@
 <template>
-  <div class="image-container">
-    <!-- <img class="image-preview" :src="urlImage" alt="PreviewImage" /> -->
+  <div>
     <Image
-      v-if="urlImage && !loading"
-      :class="borderShow ? `image-preview` : ``"
-      :src="urlImage"
-      alt="Image"
+      v-if="imageUrl"
+      :src="imageUrl"
+      :alt="alt"
       :width="width"
       :height="height"
       :preview="preview"
+      :style="imageStyle"
     />
-    <!-- แทนที่ spinner ด้วย Skeleton -->
-    <div v-else class="skeleton-container" :style="{ width: `${width}px`, height: `${height}px` }">
-      <Skeleton :width="width + 'px'" :height="height + 'px'" />
+    <div v-else-if="isLoading" :style="loadingStyle">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div v-else :style="placeholderStyle">
+      <i class="bi bi-image"></i>
     </div>
   </div>
 </template>
 
 <script>
-import api from '@/axios/axios-helper.js'
-//import Avatar from 'primevue/avatar'
 import Image from 'primevue/image'
-import Skeleton from 'primevue/skeleton' // เพิ่ม import Skeleton
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
+/**
+ * ImagePreviewEmit - Component สำหรับแสดง image จาก Azure Blob Storage
+ * พร้อม emit ข้อมูล blob path กลับไปให้ parent component
+ *
+ * รองรับทั้ง:
+ * 1. Azure Blob path จาก database (แนะนำ) - เช่น "Mold/ABC-001-Mold.png"
+ * 2. imageName กับ type (backward compatible สำหรับ code เดิม)
+ *
+ * @example
+ * // วิธีใหม่ - ส่ง blob path โดยตรง (แนะนำ)
+ * <image-preview-emit
+ *   image-name="Mold/ABC-001-Mold.png"
+ *   :width="150"
+ *   :height="150"
+ *   @image-loaded="handleImageLoaded"
+ * />
+ *
+ * // วิธีเดิม - ใช้ type และ imageName (backward compatible)
+ * <image-preview-emit
+ *   type="MOLD"
+ *   image-name="ABC-001"
+ *   :width="150"
+ *   :height="150"
+ *   @image-loaded="handleImageLoaded"
+ * />
+ *
+ * // Event payload:
+ * {
+ *   blobPath: "Mold/ABC-001-Mold.png",  // Blob path for Azure Storage
+ *   imageName: "ABC-001",                // Original image name
+ *   path: "",                            // Original path (if provided)
+ *   type: "MOLD"                         // Original type (if provided)
+ * }
+ */
 export default {
-  name: 'PreviewImage',
-  inheritAttrs: false, // ป้องกัน
+  name: 'ImagePreviewEmit',
   components: {
-    //Avatar
-    Image,
-    Skeleton
+    Image
   },
-
   props: {
+    // ชื่อ image หรือ blob path
     imageName: {
       type: String,
       required: true,
-      default: () => ''
+      default: ''
     },
+    // Path สำหรับ type='PATH' (deprecated - ใช้ imageName โดยตรงแทน)
     path: {
       type: String,
-      default: () => ''
+      default: ''
     },
+    // Type ของ image สำหรับ backward compatibility
+    // ถ้าไม่ระบุ จะถือว่า imageName เป็น blob path โดยตรง
     type: {
       type: String,
-      required: true,
-      default: () => ''
+      default: ''
     },
+    // ความกว้างของ image
     width: {
       type: Number,
-      default: () => 60
+      default: 60
     },
+    // ความสูงของ image
     height: {
       type: Number,
-      default: () => 60
+      default: 60
     },
+    // แสดง border รอบ image หรือไม่
     borderShow: {
       type: Boolean,
-      default: () => true
+      default: true
     },
+    // เปิดใช้งาน preview (zoom) หรือไม่
     preview: {
       type: Boolean,
-      default: () => true
+      default: true
     },
-    // เพิ่ม prop ใหม่เพื่อกำหนดว่าต้องการ emit ข้อมูลรูปภาพหรือไม่
+    // Alt text สำหรับ accessibility
+    alt: {
+      type: String,
+      default: 'Preview Image'
+    },
+    // เปิดใช้งาน emit ข้อมูลรูปภาพหรือไม่
     emitImage: {
       type: Boolean,
-      default: () => false
+      default: true
     }
   },
-
-  watch: {
-    imageName: {
-      handler: 'fetchImageData',
-      immediate: true
-    }
-  },
-
   data() {
     return {
-      urlImage: null,
-      imageBase64: null, // เพิ่มตัวแปรเก็บรูปภาพในรูปแบบ base64
-      name: null,
-      loading: true // เพิ่ม state สำหรับติดตามการโหลด
+      imageUrl: null,
+      isLoading: false
     }
   },
+  computed: {
+    /**
+     * แปลง imageName และ type เป็น blob path
+     * @returns {string} - Blob path สำหรับใช้กับ Azure Blob Storage
+     */
+    imagePath() {
+      // ถ้าไม่มี imageName ให้ return empty string
+      if (!this.imageName) return ''
 
-  methods: {
-    async fetchImageData() {
-      try {
-        this.loading = true // เริ่มการโหลด
-        let base64Data = null
+      // ถ้า imageName เป็น blob path อยู่แล้ว (มี "/" อยู่ใน path)
+      // หรือไม่มี type ให้ return imageName โดยตรง
+      if (!this.type || this.imageName.includes('/')) {
+        return this.imageName
+      }
 
-        switch (this.type) {
-          case 'PATH':
-            {
-              const param = {
-                imageName: `${this.imageName}`,
-                path: this.path
-              }
-              base64Data = await api.jewelry.get('FileExtension/GetImage', param, {
-                skipLoading: true
-              })
-            }
-            break
-          case 'ORDERPLAN':
-            {
-              const param = {
-                imageName: this.imageName
-              }
-              base64Data = await api.jewelry.get('FileExtension/GetPlanImage', param, {
-                skipLoading: true
-              })
-            }
-            break
-          case 'MOLD':
-            {
-              const param = {
-                imageName: `${this.imageName}-Mold.png`
-              }
-              base64Data = await api.jewelry.get('FileExtension/GetMoldImage', param, {
-                skipLoading: true
-              })
-            }
-            break
-          case 'PLANMOLD':
-            {
-              const param = {
-                imageName: `${this.imageName}`
-              }
-              base64Data = await api.jewelry.get('FileExtension/GetPlanMoldDesignImage', param, {
-                skipLoading: true
-              })
-            }
-            break
-          case 'PLANMOLDRESIN':
-            {
-              const param = {
-                imageName: `${this.imageName}`
-              }
-              base64Data = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param, {
-                skipLoading: true
-              })
-            }
-            break
-          case 'STOCK-PRODUCT':
-            {
-              const param = {
-                imageName: `${this.path}`
-              }
-              base64Data = await api.jewelry.get('FileExtension/GetStockProductImage', param, {
-                skipLoading: true
-              })
-            }
-            break
-        }
-
-        if (base64Data) {
-          this.imageBase64 = base64Data // เก็บ base64 ไว้
-          this.urlImage = `data:image/png;base64,${base64Data}`
-
-          // ถ้า prop emitImage เป็น true หรือมีการรับฟัง event 'image-loaded'
-          // ให้ส่ง emit ข้อมูลรูปภาพกลับไปยัง parent component
-          if (this.emitImage || (this.$listeners && this.$listeners['image-loaded'])) {
-            this.$emit('image-loaded', {
-              base64: base64Data,
-              imageName: this.imageName,
-              path: this.path,
-              type: this.type
-            })
-          }
-        }
-
-        // ใส่ setTimeout เพื่อแสดง skeleton สักครู่แม้ว่าโหลดเร็ว (ถ้าต้องการ)
-        setTimeout(() => {
-          this.loading = false // สิ้นสุดการโหลด
-        }, 200)
-      } catch (error) {
-        console.log(error)
-        this.loading = false // กรณีเกิด error ก็ยังต้องปิด loading
+      // สร้าง blob path จาก type และ imageName (backward compatible)
+      return this.buildBlobPathFromType()
+    },
+    /**
+     * สร้าง style object สำหรับ image
+     * @returns {object} - Style object
+     */
+    imageStyle() {
+      return {
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        objectFit: 'contain'
+      }
+    },
+    /**
+     * สร้าง style object สำหรับ loading placeholder
+     * @returns {object} - Style object
+     */
+    loadingStyle() {
+      return {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        backgroundColor: '#f0f0f0',
+        color: '#999'
+      }
+    },
+    /**
+     * สร้าง style object สำหรับ placeholder
+     * @returns {object} - Style object
+     */
+    placeholderStyle() {
+      return {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        backgroundColor: '#f5f5f5',
+        color: '#ccc'
       }
     }
   },
+  watch: {
+    /**
+     * Watch imagePath และโหลดรูปภาพเมื่อมีการเปลี่ยนแปลง
+     */
+    imagePath: {
+      handler(newPath) {
+        if (newPath) {
+          this.loadImage()
+        } else {
+          this.imageUrl = null
+        }
+      },
+      immediate: true
+    }
+  },
+  mounted() {
+    if (this.imagePath) {
+      this.loadImage()
+    }
+  },
+  methods: {
+    /**
+     * โหลดรูปภาพจาก Azure Blob Storage แบบ async
+     */
+    async loadImage() {
+      if (!this.imagePath) {
+        this.imageUrl = null
+        return
+      }
 
-  onUnmounted() {
-    // ทำความสะอาดข้อมูลเมื่อคอมโพเนนต์ถูกยกเลิกการติดตาม
-    this.urlImage = null
-    this.imageBase64 = null
+      try {
+        this.isLoading = true
+
+        // โหลดรูปภาพเป็น Base64 ผ่าน API proxy
+        const base64Image = await getAzureBlobAsBase64(this.imagePath)
+
+        if (base64Image && base64Image.length > 0) {
+          this.imageUrl = base64Image
+
+          // Emit ข้อมูลรูปภาพถ้าเปิดใช้งาน
+          if (this.emitImage) {
+            this.emitImageData()
+          }
+        } else {
+          console.warn('No image found for blob path:', this.imagePath)
+          this.imageUrl = null
+        }
+      } catch (error) {
+        console.error('Error loading image:', error)
+        this.imageUrl = null
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    /**
+     * สร้าง blob path จาก type และ imageName สำหรับ backward compatibility
+     * @returns {string} - Blob path
+     */
+    buildBlobPathFromType() {
+      const cleanImageName = this.imageName.trim()
+
+      switch (this.type) {
+        case 'MOLD':
+          // MOLD type: "Mold/{imageName}-Mold.png"
+          return `Mold/${cleanImageName}-Mold.png`
+
+        case 'PLANMOLD':
+        case 'PLANMOLDDESIGN':
+          // PLANMOLD type: "MoldPlanDesign/{imageName}"
+          return `MoldPlanDesign/${cleanImageName}`
+
+        case 'PLANMOLDRESIN':
+          // PLANMOLDRESIN type: "MoldPlanResin/{imageName}"
+          return `MoldPlanResin/${cleanImageName}`
+
+        case 'PLANMOLDCASTINGSILVER':
+          // PLANMOLDCASTINGSILVER type: "MoldPlanCastingSilver/{imageName}"
+          return `MoldPlanCastingSilver/${cleanImageName}`
+
+        case 'PLANMOLDCASTING':
+          // PLANMOLDCASTING type: "MoldPlanCasting/{imageName}"
+          return `MoldPlanCasting/${cleanImageName}`
+
+        case 'PLANMOLDCUTTING':
+          // PLANMOLDCUTTING type: "MoldPlanCutting/{imageName}"
+          return `MoldPlanCutting/${cleanImageName}`
+
+        case 'ORDERPLAN':
+        case 'PRODUCTIONPLAN':
+          // ORDERPLAN/PRODUCTIONPLAN type: "ProductionPlan/{imageName}"
+          return `ProductionPlan/${cleanImageName}`
+
+        case 'STOCK':
+        case 'STOCK-PRODUCT':
+          // STOCK type: "Stock/{imageName}"
+          // ถ้ามี path ให้ใช้ path แทน imageName
+          return this.path ? `Stock/${this.path}` : `Stock/${cleanImageName}`
+
+        case 'USER':
+          // USER type: "User/{imageName}"
+          return `User/${cleanImageName}`
+
+        case 'PAYMENT':
+          // PAYMENT type: "Payment/{imageName}"
+          return `Payment/${cleanImageName}`
+
+        case 'PATH':
+          // PATH type: ใช้ path ที่ระบุมา
+          return this.path ? `${this.path}/${cleanImageName}` : cleanImageName
+
+        default:
+          // ถ้าไม่ตรงกับ type ไหน ให้ return imageName โดยตรง
+          console.warn(`Unknown image type: ${this.type}. Using imageName directly.`)
+          return cleanImageName
+      }
+    },
+
+    /**
+     * Emit ข้อมูลรูปภาพกลับไปให้ parent component
+     * แทนที่จะ emit base64 ให้ emit blobPath แทน (เนื่องจากใช้ Azure Blob Storage)
+     */
+    emitImageData() {
+      this.$emit('image-loaded', {
+        blobPath: this.imagePath, // Blob path สำหรับ Azure Storage
+        imageName: this.imageName, // Original image name
+        path: this.path, // Original path (ถ้ามี)
+        type: this.type // Original type (ถ้ามี)
+      })
+    }
   }
-
-  //   onDestroyed() {
-  //     // ทำความสะอาดข้อมูลเมื่อคอมโพเนนต์ถูกทำลาย
-  //     this.urlImage = null
-  //     this.imageBase64 = null
-  //   }
 }
 </script>
 
 <style lang="scss" scoped>
-.image-container {
-  //display: grid;
-  //place-content: center start;
-  padding: 5px 0px 5px 0px;
-}
-.image-preview {
-  //height: 100px;
-  //width: 100px;
-  border: 1px solid var(--base-color);
-}
-.skeleton-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--surface-d, #dee2e6);
-  border-radius: 4px;
-}
+// ไม่ต้องมี style เพราะใช้ style จาก azure-blob-image component
 </style>

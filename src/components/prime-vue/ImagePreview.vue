@@ -1,217 +1,188 @@
 <template>
-  <div class="image-container">
-    <!-- <img class="image-preview" :src="urlImage" alt="PreviewImage" /> -->
+  <div>
     <Image
-      v-if="urlImage && !loading"
-      :class="borderShow ? `image-preview` : ``"
-      :src="urlImage"
-      alt="Image"
+      :src="imageUrl"
+      :alt="alt"
       :width="width"
       :height="height"
       :preview="preview"
+      :style="imageStyle"
     />
-    <!-- แทนที่ spinner ด้วย Skeleton -->
-    <div v-else class="skeleton-container" :style="{ width: `${width}px`, height: `${height}px` }">
-      <Skeleton :width="width + 'px'" :height="height + 'px'" />
-    </div>
   </div>
 </template>
 
 <script>
-import api from '@/axios/axios-helper.js'
-//import Avatar from 'primevue/avatar'
 import Image from 'primevue/image'
-import Skeleton from 'primevue/skeleton' // เพิ่ม import Skeleton
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
+/**
+ * ImagePreview - Component สำหรับแสดง image จาก Azure Blob Storage
+ *
+ * รองรับทั้ง:
+ * 1. Azure Blob path จาก database (แนะนำ) - เช่น "Mold/ABC-001-Mold.png"
+ * 2. imageName กับ type (backward compatible สำหรับ code เดิม)
+ *
+ * @example
+ * // วิธีใหม่ - ส่ง blob path โดยตรง (แนะนำ)
+ * <image-preview image-name="Mold/ABC-001-Mold.png" :width="150" :height="150" />
+ *
+ * // วิธีเดิม - ใช้ type และ imageName (backward compatible)
+ * <image-preview type="MOLD" image-name="ABC-001" :width="150" :height="150" />
+ */
 export default {
-  name: 'PreviewImage',
-  inheritAttrs: false, // ป้องกัน
+  name: 'ImagePreview',
   components: {
-    //Avatar
-    Image,
-    Skeleton
+    Image
   },
-
   props: {
+    // ชื่อ image หรือ blob path
     imageName: {
       type: String,
       required: true,
-      default: () => ''
+      default: ''
     },
+    // Path สำหรับ type='PATH' (deprecated - ใช้ imageName โดยตรงแทน)
     path: {
       type: String,
-      default: () => ''
+      default: ''
     },
+    // Type ของ image สำหรับ backward compatibility
+    // ถ้าไม่ระบุ จะถือว่า imageName เป็น blob path โดยตรง
     type: {
       type: String,
-      required: true,
-      default: () => ''
+      default: ''
     },
+    // ความกว้างของ image
     width: {
       type: Number,
-      default: () => 60
+      default: 60
     },
+    // ความสูงของ image
     height: {
       type: Number,
-      default: () => 60
+      default: 60
     },
+    // แสดง border รอบ image หรือไม่
     borderShow: {
       type: Boolean,
-      default: () => true
+      default: true
     },
+    // เปิดใช้งาน preview (zoom) หรือไม่
     preview: {
       type: Boolean,
-      default: () => true
-    }
-    // fetch: {
-    //   type: Number,
-    //   required: true,
-    //   default: () => 0
-    // }
-  },
-
-  watch: {
-    imageName: {
-      handler: 'fetchImageData',
-      immediate: true
+      default: true
+    },
+    // Alt text สำหรับ accessibility
+    alt: {
+      type: String,
+      default: 'Preview Image'
     }
   },
+  computed: {
+    /**
+     * แปลง imageName และ type เป็น blob path
+     * @returns {string} - Blob path สำหรับใช้กับ Azure Blob Storage
+     */
+    imagePath() {
+      // ถ้าไม่มี imageName ให้ return empty string
+      if (!this.imageName) return ''
 
-  data() {
-    return {
-      urlImage: null,
-      imageBase64: null, // เพิ่มตัวแปรเก็บรูปภาพในรูปแบบ base64
-      name: null,
-      loading: true // เพิ่ม state สำหรับติดตามการโหลด
-    }
-  },
+      // ถ้า imageName เป็น blob path อยู่แล้ว (มี "/" อยู่ใน path)
+      // หรือไม่มี type ให้ return imageName โดยตรง
+      if (!this.type || this.imageName.includes('/')) {
+        return this.imageName
+      }
 
-  methods: {
-    async fetchImageData() {
-      try {
-        this.loading = true // เริ่มการโหลด
-        switch (this.type) {
-          case 'PATH':
-            {
-              const param = {
-                imageName: `${this.imageName}`,
-                path: this.path
-              }
-              const res = await api.jewelry.get('FileExtension/GetImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
-            }
-            break
-          case 'ORDERPLAN':
-            {
-              const param = {
-                imageName: this.imageName
-              }
-              const res = await api.jewelry.get('FileExtension/GetPlanImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
-            }
-            break
-          case 'MOLD':
-            {
-              const param = {
-                imageName: `${this.imageName}-Mold.png`
-              }
-              const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
-            }
-            break
-          case 'PLANMOLD':
-            {
-              const param = {
-                imageName: `${this.imageName}`
-              }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldDesignImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
-            }
-            break
-          case 'PLANMOLDRESIN':
-            {
-              const param = {
-                imageName: `${this.imageName}`
-              }
-              const res = await api.jewelry.get('FileExtension/GetPlanMoldResinImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
-            }
-            break
-          case 'STOCK-PRODUCT':
-            {
-              const param = {
-                imageName: `${this.path}`
-              }
-              const res = await api.jewelry.get('FileExtension/GetStockProductImage', param, {
-                skipLoading: true
-              })
-
-              //console.log('STOCK-PRODUCT-IMAGE', res)
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
-            }
-            break
-        }
-
-        // ใส่ setTimeout เพื่อแสดง skeleton สักครู่แม้ว่าโหลดเร็ว (ถ้าต้องการ)
-        setTimeout(() => {
-          this.loading = false // สิ้นสุดการโหลด
-        }, 200)
-      } catch (error) {
-        console.log(error)
-        this.loading = false // กรณีเกิด error ก็ยังต้องปิด loading
+      // สร้าง blob path จาก type และ imageName (backward compatible)
+      return this.buildBlobPathFromType()
+    },
+    /**
+     * สร้าง Azure Blob URL จาก blob path
+     * @returns {string} - Azure Blob URL
+     */
+    imageUrl() {
+      if (!this.imagePath) return ''
+      return getAzureBlobUrl(this.imagePath)
+    },
+    /**
+     * สร้าง style object สำหรับ image
+     * @returns {object} - Style object
+     */
+    imageStyle() {
+      return {
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        objectFit: 'contain'
       }
     }
   },
+  methods: {
+    /**
+     * สร้าง blob path จาก type และ imageName สำหรับ backward compatibility
+     * @returns {string} - Blob path
+     */
+    buildBlobPathFromType() {
+      const cleanImageName = this.imageName.trim()
 
-  async created() {
-    //await this.fetchImageData()
+      switch (this.type) {
+        case 'MOLD':
+          // MOLD type: "Mold/{imageName}-Mold.png"
+          return `Mold/${cleanImageName}-Mold.png`
+
+        case 'PLANMOLD':
+        case 'PLANMOLDDESIGN':
+          // PLANMOLD type: "MoldPlanDesign/{imageName}"
+          return `MoldPlanDesign/${cleanImageName}`
+
+        case 'PLANMOLDRESIN':
+          // PLANMOLDRESIN type: "MoldPlanResin/{imageName}"
+          return `MoldPlanResin/${cleanImageName}`
+
+        case 'PLANMOLDCASTINGSILVER':
+          // PLANMOLDCASTINGSILVER type: "MoldPlanCastingSilver/{imageName}"
+          return `MoldPlanCastingSilver/${cleanImageName}`
+
+        case 'PLANMOLDCASTING':
+          // PLANMOLDCASTING type: "MoldPlanCasting/{imageName}"
+          return `MoldPlanCasting/${cleanImageName}`
+
+        case 'PLANMOLDCUTTING':
+          // PLANMOLDCUTTING type: "MoldPlanCutting/{imageName}"
+          return `MoldPlanCutting/${cleanImageName}`
+
+        case 'ORDERPLAN':
+        case 'PRODUCTIONPLAN':
+          // ORDERPLAN/PRODUCTIONPLAN type: "ProductionPlan/{imageName}"
+          return `ProductionPlan/${cleanImageName}`
+
+        case 'STOCK':
+        case 'STOCK-PRODUCT':
+          // STOCK type: "Stock/{imageName}"
+          // ถ้ามี path ให้ใช้ path แทน imageName
+          return this.path ? `Stock/${this.path}` : `Stock/${cleanImageName}`
+
+        case 'USER':
+          // USER type: "User/{imageName}"
+          return `User/${cleanImageName}`
+
+        case 'PAYMENT':
+          // PAYMENT type: "Payment/{imageName}"
+          return `Payment/${cleanImageName}`
+
+        case 'PATH':
+          // PATH type: ใช้ path ที่ระบุมา
+          return this.path ? `${this.path}/${cleanImageName}` : cleanImageName
+
+        default:
+          // ถ้าไม่ตรงกับ type ไหน ให้ return imageName โดยตรง
+          console.warn(`Unknown image type: ${this.type}. Using imageName directly.`)
+          return cleanImageName
+      }
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.image-container {
-  //display: grid;
-  //place-content: center start;
-  padding: 5px 0px 5px 0px;
-}
-.image-preview {
-  //height: 100px;
-  //width: 100px;
-  border: 1px solid var(--base-color);
-}
-.skeleton-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--surface-d, #dee2e6);
-  border-radius: 4px;
-}
+// ไม่ต้องมี style เพราะใช้ style จาก azure-blob-image component
 </style>

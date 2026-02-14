@@ -125,6 +125,7 @@ import { formatDate, formatDateTime, formatISOString } from '@/services/utils/da
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import api from '@/axios/axios-helper.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 
@@ -255,13 +256,10 @@ export default {
     async fetchIamge(item) {
       if (item.data.tbtProductionPlanImage && item.data.tbtProductionPlanImage.length) {
         try {
-          const param = {
-            imageName: item.data.tbtProductionPlanImage[0].path
-          }
-
-          const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
-          const response = `data:image/png;base64,${res}`
-          return response
+          // Build Azure Blob URL for production plan image
+          const imagePath = item.data.tbtProductionPlanImage[0].path
+          const blobPath = `ProductionPlan/${imagePath}`
+          return getAzureBlobUrl(blobPath)
         } catch (error) {
           console.log(error)
           return null

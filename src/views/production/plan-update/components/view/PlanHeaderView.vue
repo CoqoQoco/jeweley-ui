@@ -157,9 +157,9 @@ const pdf = defineAsyncComponent(() =>
 import Gallery from '@/components/prime-vue/GalleryView.vue'
 
 import moment from 'dayjs'
-import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 //import planOverview from './PlanOverview.vue'
 
@@ -260,23 +260,12 @@ export default {
       try {
         //console.log('fetchImageData:', mold)
         if (mold && mold.length > 0) {
-          //loop mold for call api
+          // Build Azure Blob URLs for mold images
           this.imageUrl = []
           for (const param in mold) {
-            const res = await api.jewelry.get(
-              'FileExtension/GetMoldImage',
-              {
-                imageName: `${mold[param]}-Mold.png`
-              },
-              { skipLoading: true }
-            )
-            if (res) {
-              if (this.imageUrl.length > 0) {
-                this.imageUrl = [...this.imageUrl, `data:image/png;base64,${res}`]
-              } else {
-                this.imageUrl = [`data:image/png;base64,${res}`]
-              }
-            }
+            const blobPath = `Mold/${mold[param]}-Mold.png`
+            const imageUrl = getAzureBlobUrl(blobPath)
+            this.imageUrl.push(imageUrl)
           }
 
           if (this.form) {
@@ -293,14 +282,11 @@ export default {
     },
     async generatePDF() {
       try {
-        // โหลดรูปภาพ
-        const param = {
-          imageName: `${this.model.mold}-Mold.png`
-        }
-        const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-        const urlImage = `data:image/png;base64,${res}`
+        // Build Azure Blob URL for mold image
+        const blobPath = `Mold/${this.model.mold}-Mold.png`
+        const urlImage = getAzureBlobUrl(blobPath)
 
-        // สร้าง PDF builder
+        // สร้าง PDF builder (supports both Base64 and URL)
         const pdfBuilder = new FilePlanProduction(this.model, this.modelMat, urlImage)
         //const pdfBuilder = new FilePlanProduction(this.modelValue, this.urlImage)
 

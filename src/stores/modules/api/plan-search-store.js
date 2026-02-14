@@ -205,14 +205,9 @@ export const usePlanSearchApiStore = defineStore('planSearch', {
 
     async fetchPlanMoldImage(imagePath) {
       if (imagePath) {
-        try {
-          const param = { imageName: imagePath }
-          const res = await api.jewelry.get('FileExtension/GetPlanImage', param)
-          return `data:image/png;base64,${res}`
-        } catch (error) {
-          console.error('Error fetching image:', error)
-          return null
-        }
+        // Return Azure Blob path instead of fetching Base64 from API
+        // Components will use azure-blob-image component to display
+        return `ProductionPlan/${imagePath}`
       }
       return null
     },

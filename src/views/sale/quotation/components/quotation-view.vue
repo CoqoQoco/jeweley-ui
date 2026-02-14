@@ -986,11 +986,11 @@ export default {
       }
     },
     handleImageLoaded(imageData, index) {
-      // อัปเดตข้อมูลใน quotationItems ด้วยข้อมูลรูปภาพ
+      // อัปเดตข้อมูลใน quotationItems ด้วยข้อมูล blob path
       if (this.customer.quotationItems[index]) {
         this.customer.quotationItems[index] = {
           ...this.customer.quotationItems[index],
-          imageBase64: imageData.base64 // เก็บ base64 ไว้ใช้ในการสร้าง PDF
+          imageBlobPath: imageData.blobPath // เก็บ blobPath ไว้ใช้ในการสร้าง PDF (สามารถแปลงเป็น URL ได้)
         }
       }
     },
@@ -1100,7 +1100,7 @@ export default {
       const dataSave = this.customer.quotationItems.map((item) => {
         return {
           ...item,
-          imageBase64: null
+          imageBlobPath: null // ไม่เก็บ blob path ลง database (เก็บแค่ imagePath ปกติ)
         }
       })
 

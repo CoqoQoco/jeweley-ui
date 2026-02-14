@@ -74,7 +74,38 @@ export class InvoicePdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+
+    // Pre-load all product images from Azure Blob Storage
+    await this.prepareImages()
+
     return this
+  }
+
+  // เมธอดสำหรับโหลดรูปภาพสินค้าจาก Azure Blob Storage
+  async prepareImages() {
+    if (!this.data || !Array.isArray(this.data)) return
+
+    const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
+
+    // โหลดรูปภาพทั้งหมดพร้อมกัน
+    await Promise.all(
+      this.data.map(async (item) => {
+        // ถ้ามี imageBlobPath ให้โหลดเป็น Base64
+        if (item.imageBlobPath && !item.imageBase64) {
+          try {
+            const base64Image = await getAzureBlobAsBase64(item.imageBlobPath, 'mold')
+
+            if (base64Image && base64Image.length > 0) {
+              item.imageBase64 = base64Image
+            } else {
+              console.warn('No image found for blob path:', item.imageBlobPath)
+            }
+          } catch (error) {
+            console.error('Error loading image:', item.imageBlobPath, error)
+          }
+        }
+      })
+    )
   }
 
   // เมธอดสำหรับโหลดและแปลงรูปภาพเป็น base64
@@ -520,7 +551,9 @@ export class InvoicePdfBuilder {
 
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
-        item.imageBase64 ? this.setTabImageCell(item.imageBase64) : this.setTableCell(''),
+        item.imageBase64 || item.imageBlobPath
+          ? this.setTabImageCell(item.imageBase64, item.imageBlobPath)
+          : this.setTableCell(''),
         this.setTableCell(
           item.stockNumber && item.productNumber
             ? `${item.stockNumber}/${item.productNumber}`
@@ -961,24 +994,47 @@ export class InvoicePdfBuilder {
     }
   }
 
-  setTabImageCell(imageBase64) {
-    if (!imageBase64) {
+  /**
+   * สร้าง image cell สำหรับตาราง PDF
+   * รองรับทั้ง base64 (legacy) และ blobPath (ใหม่)
+   * @param {string} imageBase64 - Base64 string (deprecated)
+   * @param {string} imageBlobPath - Azure Blob path
+   * @returns {object} - pdfmake table cell object
+   */
+  setTabImageCell(imageBase64, imageBlobPath = null) {
+    // ถ้าไม่มีทั้ง base64 และ blobPath ให้ return empty cell
+    if (!imageBase64 && !imageBlobPath) {
       return {
         text: '',
         alignment: 'center'
       }
     }
 
-    const imageData = imageBase64.startsWith('data:image')
-      ? imageBase64
-      : `data:image/png;base64,${imageBase64}`
+    // กรณีที่ 1: มี base64 (legacy support)
+    if (imageBase64) {
+      const imageData = imageBase64.startsWith('data:image')
+        ? imageBase64
+        : `data:image/png;base64,${imageBase64}`
 
-    return {
-      image: imageData,
-      width: 25,
-      height: 25,
-      alignment: 'center',
-      margin: [2, 5, 2, 5]
+      return {
+        image: imageData,
+        width: 25,
+        height: 25,
+        alignment: 'center',
+        margin: [2, 5, 2, 5]
+      }
+    }
+
+    // กรณีที่ 2: มี blobPath ให้ return empty cell
+    // (ต้อง pre-load เป็น Base64 ก่อนสร้าง PDF แล้ว)
+    if (imageBlobPath) {
+      return {
+        text: 'No Image',
+        fontSize: 8,
+        color: '#999999',
+        alignment: 'center',
+        margin: [2, 5, 2, 5]
+      }
     }
   }
 

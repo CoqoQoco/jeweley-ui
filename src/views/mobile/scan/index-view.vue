@@ -1,7 +1,7 @@
 <template>
   <div class="mobile-scan-view">
-    <div class="mobile-container mobile-mt-2">
-      <h2 class="mobile-title">สแกน QR / Barcode</h2>
+    <div class="mobile-container">
+      <!-- <h2 class="mobile-title">สแกน QR / Barcode</h2> -->
 
       <!-- Step 1: Select Scan Type -->
       <div v-if="!selectedScanType" class="scan-type-selection">
@@ -64,7 +64,7 @@
 
         <!-- Product Detail Section -->
         <div v-if="scannedProduct" class="product-section">
-          <ProductDetailCard :product="scannedProduct" :imageType="imageType" />
+          <ProductDetailCard :product="scannedProduct" :priceTransactions="scannedProduct.priceTransactions" :imageType="imageType" />
 
           <!-- Action Zone (Placeholder for future features) -->
           <div class="action-zone mobile-mt-3">
@@ -74,6 +74,16 @@
             </div>
 
             <div class="action-buttons">
+              <!-- Cost Plan Button -->
+              <button
+                v-if="scannedProduct.priceTransactions && scannedProduct.priceTransactions.length > 0"
+                class="mobile-btn mobile-btn-primary"
+                @click="handleCreateCostPlan"
+              >
+                <i class="bi bi-file-earmark-plus"></i>
+                ออกแผนตีราคา
+              </button>
+
               <!-- Future actions will be added here -->
               <button class="mobile-btn mobile-btn-outline" disabled>
                 <i class="bi bi-box-seam"></i>
@@ -91,7 +101,7 @@
 
             <p class="action-note">
               <i class="bi bi-info-circle"></i>
-              ฟีเจอร์การดำเนินการจะพัฒนาในอนาคต
+              ฟีเจอร์การดำเนินการบางส่วนจะพัฒนาในอนาคต
             </p>
           </div>
 
@@ -110,7 +120,7 @@
 
 <script>
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
-import { warning, error } from '@/services/alert/sweetAlerts.js'
+import { warning, error, success } from '@/services/alert/sweetAlerts.js'
 import ProductDetailCard from './components/product-detail-card.vue'
 import QrScanner from './components/qr-scanner.vue'
 
@@ -190,6 +200,11 @@ export default {
     async handleScan(decodedText) {
       // Called by QR/Barcode scanner component
       if (!decodedText) return
+
+      // Show scanned value in input
+      this.manualInput = decodedText
+
+      // Search product
       await this.searchProduct(decodedText)
     },
 
@@ -202,17 +217,29 @@ export default {
 
     async searchStockProduct(searchValue) {
       const formValue = {
-        stockNumber: searchValue,
-        productNumber: searchValue
+        stockNumber: searchValue
+        //productNumber: searchValue
       }
 
       const response = await this.productStore.fetchDataGet({ formValue })
 
-      if (response && response.data) {
-        this.scannedProduct = response.data
+      if (response) {
+        this.scannedProduct = response
       } else {
         error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบเลขที่ผลิตหรือรหัสสินค้า')
         this.scannedProduct = null
+      }
+    },
+
+    async handleCreateCostPlan() {
+      const response = await this.productStore.fetchCreateProductCostDeatialPlan({
+        stockNumber: this.scannedProduct.stockNumber,
+        remark: ''
+      })
+
+      if (response) {
+        const planNumber = response.planNumber || response
+        success(`เลขที่แผนตีราคา: ${planNumber}`, 'ออกแผนตีราคาสำเร็จ')
       }
     }
   }
@@ -225,7 +252,7 @@ export default {
 .mobile-scan-view {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 80px;
+  //padding-bottom: 80px;
 }
 
 // Scan Type Selection
@@ -294,11 +321,11 @@ export default {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
-    padding: 12px;
+    //margin-bottom: 16px;
+    //padding: 12px;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    //border-radius: 12px;
+    //box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
     .mobile-btn-icon {
       flex-shrink: 0;

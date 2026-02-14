@@ -115,6 +115,7 @@ import Calendar from 'primevue/calendar'
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString, formatDate } from '@/services/utils/dayjs'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 const interfaceForm = {
   returnName: null,
@@ -271,14 +272,9 @@ export default {
         //console.log
         switch (this.type) {
           case 'ORDERPLAN': {
-            const param = {
-              imageName: `${path}-Mold.png`
-            }
-            const res = await api.jewelry.get('FileExtension/GetMoldImage', param)
-
-            if (res) {
-              this.urlImage = `data:image/png;base64,${res}`
-            }
+            // Build Azure Blob URL for mold image
+            const blobPath = `Mold/${path}-Mold.png`
+            this.urlImage = getAzureBlobUrl(blobPath)
           }
         }
       } catch (error) {

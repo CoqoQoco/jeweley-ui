@@ -689,6 +689,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -1410,16 +1411,9 @@ export default {
         switch (this.imgTest.type) {
           case 'MOLD':
             {
-              const param = {
-                imageName: `${this.imgTest.imageName}-Mold.png`
-              }
-              const res = await api.jewelry.get('FileExtension/GetMoldImage', param, {
-                skipLoading: true
-              })
-
-              if (res) {
-                this.urlImage = `data:image/png;base64,${res}`
-              }
+              // Build Azure Blob URL for mold image
+              const blobPath = `Mold/${this.imgTest.imageName}-Mold.png`
+              this.urlImage = getAzureBlobUrl(blobPath)
             }
             break
         }
