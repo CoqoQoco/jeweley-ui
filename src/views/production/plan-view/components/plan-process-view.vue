@@ -319,7 +319,7 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { calculateWeightDifference } from '@/services/helper/match.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { EmbedSlipPdfBuilder } from '@/services/helper/pdf/FilePlanEmbed.js'
-import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 const interfaceIsShow = {
   selectGold: false
@@ -756,14 +756,20 @@ export default {
     },
     async fetchImage() {
       try {
-        //console.log(this.modelValue)
-        // Build Azure Blob URL for mold image
+        // Build Azure Blob path and convert to Base64 for pdfMake
         const blobPath = `Mold/${this.modelValue.mold}-Mold.png`
-        this.urlImage = getAzureBlobUrl(blobPath)
-        //console.log(this.urlImage)
+        const base64Image = await getAzureBlobAsBase64(blobPath)
+
+        // Check if Base64 is valid
+        if (base64Image && base64Image.length > 0) {
+          this.urlImage = base64Image
+        } else {
+          console.warn('No image found for mold:', this.modelValue.mold)
+          this.urlImage = null
+        }
       } catch (error) {
-        console.log(error)
-        return null
+        console.error('Error fetching image:', error)
+        this.urlImage = null
       }
     },
 

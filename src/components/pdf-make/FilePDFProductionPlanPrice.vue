@@ -18,7 +18,7 @@ import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import api from '@/axios/axios-helper.js'
 import jsbarcode from 'jsbarcode'
-import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 export default {
   props: {
@@ -63,9 +63,9 @@ export default {
     },
     async fetchIamge() {
       try {
-        // Build Azure Blob URL for mold image
+        // Build Azure Blob path and convert to Base64 for pdfMake
         const blobPath = `Mold/${this.model.mold}-Mold.png`
-        this.urlImage = getAzureBlobUrl(blobPath)
+        this.urlImage = await getAzureBlobAsBase64(blobPath)
       } catch (error) {
         console.log(error)
         return null

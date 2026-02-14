@@ -1,17 +1,19 @@
 <template>
-  <azure-blob-image
-    :blob-path="imagePath"
-    :width="width"
-    :height="height"
-    :border-show="borderShow"
-    :preview="preview"
-    :alt="alt"
-    :show-placeholder="true"
-  />
+  <div>
+    <Image
+      :src="imageUrl"
+      :alt="alt"
+      :width="width"
+      :height="height"
+      :preview="preview"
+      :style="imageStyle"
+    />
+  </div>
 </template>
 
 <script>
-import AzureBlobImage from '@/components/prime-vue/azure-blob-image.vue'
+import Image from 'primevue/image'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 /**
  * ImagePreview - Component สำหรับแสดง image จาก Azure Blob Storage
@@ -30,7 +32,7 @@ import AzureBlobImage from '@/components/prime-vue/azure-blob-image.vue'
 export default {
   name: 'ImagePreview',
   components: {
-    AzureBlobImage
+    Image
   },
   props: {
     // ชื่อ image หรือ blob path
@@ -93,6 +95,25 @@ export default {
 
       // สร้าง blob path จาก type และ imageName (backward compatible)
       return this.buildBlobPathFromType()
+    },
+    /**
+     * สร้าง Azure Blob URL จาก blob path
+     * @returns {string} - Azure Blob URL
+     */
+    imageUrl() {
+      if (!this.imagePath) return ''
+      return getAzureBlobUrl(this.imagePath)
+    },
+    /**
+     * สร้าง style object สำหรับ image
+     * @returns {object} - Style object
+     */
+    imageStyle() {
+      return {
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        objectFit: 'contain'
+      }
     }
   },
   methods: {

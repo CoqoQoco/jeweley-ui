@@ -63,7 +63,38 @@ export class InvoicePdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+
+    // Pre-load all product images from Azure Blob Storage
+    await this.prepareImages()
+
     return this
+  }
+
+  // เมธอดสำหรับโหลดรูปภาพสินค้าจาก Azure Blob Storage
+  async prepareImages() {
+    if (!this.data || !Array.isArray(this.data)) return
+
+    const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
+
+    // โหลดรูปภาพทั้งหมดพร้อมกัน
+    await Promise.all(
+      this.data.map(async (item) => {
+        // ถ้ามี imageBlobPath ให้โหลดเป็น Base64
+        if (item.imageBlobPath && !item.imageBase64) {
+          try {
+            const base64Image = await getAzureBlobAsBase64(item.imageBlobPath, 'mold')
+
+            if (base64Image && base64Image.length > 0) {
+              item.imageBase64 = base64Image
+            } else {
+              console.warn('No image found for blob path:', item.imageBlobPath)
+            }
+          } catch (error) {
+            console.error('Error loading image:', item.imageBlobPath, error)
+          }
+        }
+      })
+    )
   }
 
   // เมธอดสำหรับโหลดและแปลงรูปภาพเป็น base64
@@ -961,16 +992,13 @@ export class InvoicePdfBuilder {
       }
     }
 
-    // กรณีที่ 2: มี blobPath (แปลงเป็น Azure Blob URL)
+    // กรณีที่ 2: มี blobPath ให้ return empty cell
+    // (ต้อง pre-load เป็น Base64 ก่อนสร้าง PDF แล้ว)
     if (imageBlobPath) {
-      // Import getAzureBlobUrl จาก azure-storage-config
-      const { getAzureBlobUrl } = require('@/config/azure-storage-config.js')
-      const imageUrl = getAzureBlobUrl(imageBlobPath)
-
       return {
-        image: imageUrl,
-        width: 25,
-        height: 25,
+        text: 'No Image',
+        fontSize: 8,
+        color: '#999999',
         alignment: 'center',
         margin: [2, 5, 2, 5]
       }

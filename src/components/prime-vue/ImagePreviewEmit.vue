@@ -1,17 +1,26 @@
 <template>
-  <azure-blob-image
-    :blob-path="imagePath"
-    :width="width"
-    :height="height"
-    :border-show="borderShow"
-    :preview="preview"
-    :alt="alt"
-    :show-placeholder="true"
-  />
+  <div>
+    <Image
+      v-if="imageUrl"
+      :src="imageUrl"
+      :alt="alt"
+      :width="width"
+      :height="height"
+      :preview="preview"
+      :style="imageStyle"
+    />
+    <div v-else-if="isLoading" :style="loadingStyle">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div v-else :style="placeholderStyle">
+      <i class="bi bi-image"></i>
+    </div>
+  </div>
 </template>
 
 <script>
-import AzureBlobImage from '@/components/prime-vue/azure-blob-image.vue'
+import Image from 'primevue/image'
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 /**
  * ImagePreviewEmit - Component สำหรับแสดง image จาก Azure Blob Storage
@@ -50,7 +59,7 @@ import AzureBlobImage from '@/components/prime-vue/azure-blob-image.vue'
 export default {
   name: 'ImagePreviewEmit',
   components: {
-    AzureBlobImage
+    Image
   },
   props: {
     // ชื่อ image หรือ blob path
@@ -101,6 +110,12 @@ export default {
       default: true
     }
   },
+  data() {
+    return {
+      imageUrl: null,
+      isLoading: false
+    }
+  },
   computed: {
     /**
      * แปลง imageName และ type เป็น blob path
@@ -118,22 +133,108 @@ export default {
 
       // สร้าง blob path จาก type และ imageName (backward compatible)
       return this.buildBlobPathFromType()
+    },
+    /**
+     * สร้าง style object สำหรับ image
+     * @returns {object} - Style object
+     */
+    imageStyle() {
+      return {
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        objectFit: 'contain'
+      }
+    },
+    /**
+     * สร้าง style object สำหรับ loading placeholder
+     * @returns {object} - Style object
+     */
+    loadingStyle() {
+      return {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        backgroundColor: '#f0f0f0',
+        color: '#999'
+      }
+    },
+    /**
+     * สร้าง style object สำหรับ placeholder
+     * @returns {object} - Style object
+     */
+    placeholderStyle() {
+      return {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        backgroundColor: '#f5f5f5',
+        color: '#ccc'
+      }
     }
   },
   watch: {
     /**
-     * Watch imagePath และ emit ข้อมูลเมื่อมีการเปลี่ยนแปลง
+     * Watch imagePath และโหลดรูปภาพเมื่อมีการเปลี่ยนแปลง
      */
     imagePath: {
       handler(newPath) {
-        if (newPath && this.emitImage) {
-          this.emitImageData()
+        if (newPath) {
+          this.loadImage()
+        } else {
+          this.imageUrl = null
         }
       },
       immediate: true
     }
   },
+  mounted() {
+    if (this.imagePath) {
+      this.loadImage()
+    }
+  },
   methods: {
+    /**
+     * โหลดรูปภาพจาก Azure Blob Storage แบบ async
+     */
+    async loadImage() {
+      if (!this.imagePath) {
+        this.imageUrl = null
+        return
+      }
+
+      try {
+        this.isLoading = true
+
+        // โหลดรูปภาพเป็น Base64 ผ่าน API proxy
+        const base64Image = await getAzureBlobAsBase64(this.imagePath)
+
+        if (base64Image && base64Image.length > 0) {
+          this.imageUrl = base64Image
+
+          // Emit ข้อมูลรูปภาพถ้าเปิดใช้งาน
+          if (this.emitImage) {
+            this.emitImageData()
+          }
+        } else {
+          console.warn('No image found for blob path:', this.imagePath)
+          this.imageUrl = null
+        }
+      } catch (error) {
+        console.error('Error loading image:', error)
+        this.imageUrl = null
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     /**
      * สร้าง blob path จาก type และ imageName สำหรับ backward compatibility
      * @returns {string} - Blob path
