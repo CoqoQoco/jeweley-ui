@@ -69,14 +69,18 @@ export const useAuthStore = defineStore('auth', {
           password
         })
 
+
         if (response) {
+
           const token = response.token
+
 
           // Set authentication data
           this.token = response.token
 
           // Save to localStorage
           localStorage.setItem('token-dk', `Bearer ${token}`)
+
 
           // Fetch user profile after successful login
           await this.fetchUserProfile()
@@ -139,6 +143,27 @@ export const useAuthStore = defineStore('auth', {
         // Get user profile data
         const userProfile = await api.jewelry.get('User/Get')
 
+        // Get user image from Azure Blob Storage
+        if (userProfile.imageName) {
+          // Import helper function
+          const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
+
+          // Build blob path
+          // If imageName already has path like "User/admin-1.png", use as-is
+          // Otherwise, prepend "User/" folder
+          const blobPath = userProfile.imageName.includes('/')
+            ? userProfile.imageName
+            : `User/Profile/${userProfile.imageName}`
+
+          // Get image as base64
+          const base64Image = await getAzureBlobAsBase64(blobPath, 'user')
+
+          // Add to user profile
+          if (base64Image) {
+            userProfile.image = base64Image
+          }
+        }
+
         // Get permissions and menus in parallel
         // const [permissions, userMenus] = await Promise.all([
         //   api.jewelry.get('auth/permissions'),
@@ -150,7 +175,7 @@ export const useAuthStore = defineStore('auth', {
         //this.permissions = permissions || []
         //this.userMenus = userMenus || []
 
-        // Update user in localStorag
+        // Update user in localStorage
         localStorage.setItem('user-dk', JSON.stringify(this.user))
 
         loadingStore.hideLoading()

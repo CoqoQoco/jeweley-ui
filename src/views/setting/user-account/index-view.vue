@@ -38,11 +38,7 @@
 
             <!-- ตัวเลือกถ่ายภาพหรืออัปโหลด (แสดงเมื่อคลิกที่รูป) -->
             <div class="avatar-options" v-if="showAvatarOptions">
-              <div
-                class="option"
-                @click="removeProfileImage"
-                v-if="profileImage || user.image"
-              >
+              <div class="option" @click="removeProfileImage" v-if="profileImage || user.image">
                 <i class="bi bi-trash"></i>
                 <span>ลบรูปภาพ</span>
               </div>
@@ -223,7 +219,6 @@ export default {
       await this.userStore.fetchGetUser()
     },
     mapUser() {
-
       console.log('User:', this.user)
       // init roles
       if (this.user.role && this.user.role.length > 0) {
@@ -244,7 +239,8 @@ export default {
       }
 
       if (this.user.image) {
-        this.originalProfileImage = `data:image/png;base64,${this.user.image}`
+        //this.originalProfileImage = `data:image/png;base64,${this.user.image}`
+        this.originalProfileImage = this.user.image
         this.profileImage = this.originalProfileImage
       }
 

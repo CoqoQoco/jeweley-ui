@@ -33,7 +33,7 @@
         <div class="user-profile">
           <div class="avatar">
             <div v-if="userImage" class="avatar-image">
-              <img :src="`data:image/png;base64,${userImage}`" alt="User Avatar" />
+              <img :src="userImage" alt="User Avatar" />
             </div>
             <i v-else class="bi bi-person-circle"></i>
           </div>

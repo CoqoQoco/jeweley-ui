@@ -222,7 +222,8 @@ export default {
         }
 
         if (res.image) {
-          this.originalProfileImage = `data:image/png;base64,${res.image}`
+          //this.originalProfileImage = `data:image/png;base64,${res.image}`
+          this.originalProfileImage = res.image
           console.log('originalProfileImage', this.originalProfileImage)
         }
 

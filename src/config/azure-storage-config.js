@@ -46,8 +46,8 @@ export const isAzureBlobPath = (path) => {
  *
  * NOTE: ใช้ API backend เป็นตัวกลางเพื่อหลีก CORS issue
  *
- * @param {string} blobPath - Path ของ blob เช่น "Mold/ABC-001-Mold.png"
- * @param {string} imageType - ประเภทของรูป 'mold' หรือ 'plan' (default: 'mold')
+ * @param {string} blobPath - Path ของ blob เช่น "Mold/ABC-001-Mold.png" หรือ "User/admin-1.png"
+ * @param {string} imageType - ประเภทของรูป 'mold', 'plan', 'user' (default: 'mold')
  * @returns {Promise<string>} - Base64 dataURL เช่น "data:image/png;base64,..."
  */
 export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
@@ -76,6 +76,15 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
       // ดึงรูป Production Plan
       const res = await api.jewelry.get('FileExtension/GetPlanImage', {
         imageName: fileName
+      })
+      if (res) {
+        base64String = `data:image/png;base64,${res}`
+      }
+    } else if (imageType === 'user' || blobPath.startsWith('User/')) {
+      // ดึงรูป User Profile
+      const res = await api.jewelry.get('FileExtension/GetImage', {
+        imageName: fileName,
+        path: 'User/Profile' // ระบุ path สำหรับ user profile
       })
       if (res) {
         base64String = `data:image/png;base64,${res}`
