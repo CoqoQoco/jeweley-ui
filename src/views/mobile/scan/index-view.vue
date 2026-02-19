@@ -38,6 +38,23 @@
 
         <!-- Scanner Section -->
         <div v-if="!scannedProduct" class="scanner-section">
+          <!-- Search Field Selector -->
+          <div class="search-field-selector">
+            <label class="field-selector-label">ค้นหาด้วย</label>
+            <div class="field-selector-options">
+              <button
+                v-for="option in searchFieldOptions"
+                :key="option.value"
+                class="field-option-btn"
+                :class="{ active: searchField === option.value }"
+                @click="searchField = option.value"
+              >
+                <i :class="option.icon"></i>
+                {{ option.label }}
+              </button>
+            </div>
+          </div>
+
           <!-- QR/Barcode Scanner -->
           <QrScanner @scan="handleScan" />
 
@@ -52,7 +69,7 @@
               v-model="manualInput"
               type="text"
               class="form-control"
-              placeholder="กรอกเลขที่ผลิตหรือรหัสสินค้า"
+              :placeholder="searchFieldPlaceholder"
               @keyup.enter="handleManualSearch"
             />
             <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
@@ -143,6 +160,11 @@ export default {
       manualInput: '',
       scannedProduct: null,
       imageType: 'STOCK-PRODUCT',
+      searchField: 'stockNumber',
+      searchFieldOptions: [
+        { value: 'stockNumber', label: 'รหัสสินค้าใหม่', icon: 'bi bi-upc-scan' },
+        { value: 'productNumber', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
+      ],
 
       // Scan types configuration
       scanTypes: [
@@ -169,6 +191,14 @@ export default {
         //   apiMethod: 'fetchMold'
         // }
       ]
+    }
+  },
+
+  computed: {
+    searchFieldPlaceholder() {
+      return this.searchField === 'stockNumber'
+        ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
+        : 'กรอกรหัสสินค้าเก่า (Product Number)'
     }
   },
 
@@ -217,8 +247,7 @@ export default {
 
     async searchStockProduct(searchValue) {
       const formValue = {
-        stockNumber: searchValue
-        //productNumber: searchValue
+        [this.searchField]: searchValue
       }
 
       const response = await this.productStore.fetchDataGet({ formValue })
@@ -342,6 +371,60 @@ export default {
       i {
         font-size: 1.2rem;
       }
+    }
+  }
+}
+
+// Search Field Selector
+.search-field-selector {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .field-selector-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .field-selector-options {
+    display: flex;
+    gap: 8px;
+  }
+
+  .field-option-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    background: white;
+    color: #666;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    i {
+      font-size: 1rem;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &.active {
+      border-color: var(--base-font-color);
+      background: rgba(146, 19, 19, 0.05);
+      color: var(--base-font-color);
+      font-weight: 600;
     }
   }
 }

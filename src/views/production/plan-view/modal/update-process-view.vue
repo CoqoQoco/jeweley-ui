@@ -687,6 +687,9 @@ export default {
           headerId: _.get(value, 'id', 0)
         }
 
+        console.log('initForm form', this.form)
+        console.log('initForm value', value.tbtProductionPlanStatusDetail)
+
         //set mat >> tbtProductionPlanStatusDetail
         if (value.tbtProductionPlanStatusDetail) {
           this.matAssign = await Promise.all(
@@ -711,6 +714,8 @@ export default {
           )
         }
 
+        console.log('initForm matAssign', this.matAssign) 
+
         // กรณีเป็นการคัดพลอย
         if (this.status === 70 && value.tbtProductionPlanStatusGem) {
           this.gemAssign = await Promise.all(
@@ -732,7 +737,7 @@ export default {
           )
         }
       }
-      //console.log('initForm ed 2', this.form)
+     //console.log('initForm ed 2', this.form)
     },
 
     // ----- event

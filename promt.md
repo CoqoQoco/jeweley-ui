@@ -2,6 +2,26 @@
 #### ถ้ามีการใช้ prime-vue components >> ตรวจสอบว่ามี generic-components ไหม >> ไม่มีให้สร้างไว้เพื่อ re-used >> 
 
 
-   ปรับปรุง E:\coqo_duangkeaw\Code\jeweley-ui\src\views\mobile\cost-version-detail
-    - สามารถ โฟลด pdf ได้เหมือน E:\coqo_duangkeaw\Code\jeweley-ui\src\views\stock\product\list\components\cost-history-modal.vue 
+
+ที่ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\scan\components\simple-scanner.vue
+เพิ่ม dropdow เพื่อเลือกว่าจะใช้ 
+ รหัสสินค้าเก่า --> productNumber
+ รหัสสินค้าใหม่ --> stockNumber
+
+  async searchStockProduct(searchValue) {
+      const formValue = {
+        stockNumber: searchValue,
+        productNumber: searchValue
+      }
+
+      const response = await this.productStore.fetchDataGet({ formValue })
+
+      if (response) {
+        this.scannedProduct = response
+      } else {
+        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบเลขที่ผลิตหรือรหัสสินค้า')
+        this.scannedProduct = null
+      }
+    },
+
 
