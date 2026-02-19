@@ -38,7 +38,6 @@
           <div v-if="data.imagePath">
             <imagePreview
               :imageName="data.imagePath"
-              :path="data.imagePath"
               :type="type"
               :width="25"
               :height="25"

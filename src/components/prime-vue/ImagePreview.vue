@@ -159,7 +159,7 @@ export default {
         case 'STOCK-PRODUCT':
           // STOCK type: "Stock/{imageName}"
           // ถ้ามี path ให้ใช้ path แทน imageName
-          return this.path ? `Stock/${this.path}` : `Stock/${cleanImageName}`
+          return this.path ? `Stock/Product/${this.path}` : `Stock/Product/${cleanImageName}`
 
         case 'USER':
           // USER type: "User/{imageName}"
