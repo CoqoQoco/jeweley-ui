@@ -55,6 +55,10 @@
             <span class="info-label">ผู้สร้าง:</span>
             <span class="info-value">{{ soData.createBy || '-' }}</span>
           </div>
+          <div v-if="soData.currencyUnit" class="info-row">
+            <span class="info-label">สกุลเงิน:</span>
+            <span class="info-value">{{ soData.currencyUnit }} (Rate: {{ soData.currencyRate || 1 }})</span>
+          </div>
         </div>
       </div>
 
@@ -94,6 +98,7 @@
             v-for="(item, index) in soItems"
             :key="item.stockNumber + '-' + index"
             :item="item"
+            :currencyUnit="soData.currencyUnit || 'THB'"
           />
         </div>
       </div>
@@ -107,6 +112,10 @@
         <div class="summary-divider"></div>
         <div class="summary-row total">
           <span class="summary-label">ยอดรวมทั้งหมด</span>
+          <span class="summary-value">{{ formatCurrency(displayTotalAmount) }} {{ displayCurrency }}</span>
+        </div>
+        <div v-if="hasCurrencyConversion" class="summary-row reference">
+          <span class="summary-label">เทียบเท่า</span>
           <span class="summary-value">{{ formatCurrency(totalAmount) }} บาท</span>
         </div>
       </div>
@@ -230,6 +239,21 @@ export default {
         const discountPercent = Number(item.discountPercent) || 0
         return sum + (price * qty * (1 - discountPercent / 100))
       }, 0)
+    },
+
+    displayCurrency() {
+      return this.soData?.currencyUnit || 'THB'
+    },
+
+    hasCurrencyConversion() {
+      const rate = Number(this.soData?.currencyRate)
+      return !!(this.soData?.currencyUnit && rate && rate !== 1)
+    },
+
+    displayTotalAmount() {
+      if (!this.hasCurrencyConversion) return this.totalAmount
+      const rate = Number(this.soData?.currencyRate) || 1
+      return this.totalAmount / rate
     }
   },
 
@@ -312,7 +336,10 @@ export default {
           items: this.soItems,
           totalAmount: this.totalAmount
         }
-        const pdfBuilder = new SaleOrderPdfBuilder(pdfData)
+        const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
+          currencyUnit: this.soData.currencyUnit || 'THB',
+          currencyRate: Number(this.soData.currencyRate) || 1
+        })
         const pdf = await pdfBuilder.generatePDF()
         const filename = `SO_${this.soData.soNumber}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
         pdf.download(filename)
@@ -336,17 +363,24 @@ export default {
     },
 
     async createInvoice() {
-      // Step 1: Confirm all stock items (เฉพาะที่มี stockNumber)
-      const confirmableItems = this.stockItems
-        .filter((item) => item.stockNumber)
-        .map((item) => ({
-          stockNumber: item.stockNumber
-        }))
+      // Step 1: Confirm stock items ที่ยังไม่ได้ confirm (ตาม web version)
+      const unconfirmedItems = this.stockItems.filter(
+        (item) => item.stockNumber && !item.isConfirm
+      )
 
-      if (confirmableItems.length > 0) {
+      if (unconfirmedItems.length > 0) {
         const confirmResult = await this.saleOrderStore.confirmStockItems({
           soNumber: this.soNumber,
-          stockItems: confirmableItems
+          stockItems: unconfirmedItems.map((item) => ({
+            id: item.id || null,
+            stockNumber: item.stockNumber,
+            productNumber: item.productNumber || '',
+            qty: Number(item.qty) || 1,
+            appraisalPrice: Number(item.appraisalPrice) || Number(item.price) || 0,
+            discount: Number(item.discountPercent) || 0,
+            isConfirm: true,
+            confirmedAt: new Date().toISOString()
+          }))
         })
 
         if (!confirmResult) {
@@ -355,15 +389,63 @@ export default {
         }
       }
 
-      // Step 2: Create Invoice
+      // Step 2: Create Invoice (payload ตาม web version)
+      const currencyUnit = this.soData.currencyUnit || 'THB'
+      const currencyRate = Number(this.soData.currencyRate) || 1
+
+      const invoiceItems = this.stockItems
+        .filter((item) => item.stockNumber)
+        .map((item) => {
+          const appraisalPrice = Number(item.appraisalPrice) || Number(item.price) || 0
+          const discountPercent = Number(item.discountPercent) || 0
+          const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
+          const convertedPrice = priceAfterDiscount / currencyRate
+
+          return {
+            stockNumber: item.stockNumber,
+            stockNumberOrigin: item.stockNumberOrigin || item.stockNumber,
+            id: item.id || null,
+            priceOrigin: appraisalPrice,
+            currencyUnit: currencyUnit,
+            currencyRate: currencyRate,
+            markup: 0,
+            discount: discountPercent,
+            goldRate: 0,
+            remark: '',
+            netPrice: String(convertedPrice),
+            priceDiscount: priceAfterDiscount,
+            priceAfterCurrencyRate: convertedPrice,
+            qty: Number(item.qty) || 1
+          }
+        })
+
       const invoiceResult = await this.invoiceStore.fetchCreate({
         formValue: {
           soNumber: this.soNumber,
-          customerName: this.soData.customerName || '',
-          customerTel: this.soData.customerTel || '',
+          dkInvoiceNumber: null,
+          customerCode: this.soData.customerCode || null,
+          customerName: this.soData.customerName || null,
           customerAddress: this.soData.customerAddress || '',
+          customerTel: this.soData.customerTel || '',
+          customerEmail: this.soData.customerEmail || '',
+          customerRemark: '',
+          currencyUnit: currencyUnit,
+          currencyRate: currencyRate,
+          deliveryDate: null,
+          deposit: 0,
+          specialDiscount: 0,
+          specialAddition: 0,
+          freightAndInsurance: 0,
+          vat: 0,
+          goldRate: 0,
+          markup: 0,
+          payment: 1,
+          paymentName: 'เงินสด (Cash)',
+          paymentDay: 0,
+          priority: this.soData.priority || 'mobile',
+          refQuotation: '',
           remark: this.soData.remark || '',
-          totalAmount: this.totalAmount
+          items: invoiceItems
         }
       })
 
@@ -625,6 +707,15 @@ export default {
         font-size: 1.15rem;
         font-weight: 700;
         color: var(--base-font-color);
+      }
+    }
+
+    &.reference {
+      .summary-label,
+      .summary-value {
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: #999;
       }
     }
   }

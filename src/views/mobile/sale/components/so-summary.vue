@@ -6,16 +6,12 @@
         <span class="summary-value">{{ itemCount }} รายการ</span>
       </div>
       <div class="summary-divider"></div>
-      <div class="summary-row">
-        <span class="summary-label">ยอดรวม (THB)</span>
-        <span class="summary-value">{{ formatCurrency(totalAmountTHB) }} บาท</span>
+      <div class="summary-row total">
+        <span class="summary-label">ยอดรวม</span>
+        <span class="summary-value">{{ formatCurrency(displayTotal) }} {{ displayCurrencyUnit }}</span>
       </div>
-      <div v-if="hasCurrencyConversion" class="summary-row total">
-        <span class="summary-label">ยอดรวม ({{ currencyUnit }})</span>
-        <span class="summary-value">{{ formatCurrency(totalAmountConverted) }} {{ currencyUnit }}</span>
-      </div>
-      <div v-else class="summary-row total">
-        <span class="summary-label">ยอดรวมทั้งหมด</span>
+      <div v-if="hasCurrencyConversion" class="summary-row reference">
+        <span class="summary-label">เทียบเท่า</span>
         <span class="summary-value">{{ formatCurrency(totalAmountTHB) }} บาท</span>
       </div>
     </div>
@@ -62,6 +58,14 @@ export default {
     totalAmountConverted() {
       if (!this.currencyRate || this.currencyRate === 0) return this.totalAmountTHB
       return this.totalAmountTHB / this.currencyRate
+    },
+
+    displayCurrencyUnit() {
+      return this.currencyUnit || 'THB'
+    },
+
+    displayTotal() {
+      return this.hasCurrencyConversion ? this.totalAmountConverted : this.totalAmountTHB
     }
   },
 
@@ -118,6 +122,15 @@ export default {
         font-size: 1.15rem;
         font-weight: 700;
         color: var(--base-font-color);
+      }
+    }
+
+    &.reference {
+      .summary-label,
+      .summary-value {
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: #999;
       }
     }
   }

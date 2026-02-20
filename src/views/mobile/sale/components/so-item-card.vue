@@ -22,7 +22,7 @@
       </div>
       <div class="detail-row">
         <span class="detail-label">ราคา</span>
-        <span class="detail-value">{{ formatCurrency(displayPrice) }}</span>
+        <span class="detail-value">{{ formatCurrency(displayPrice) }} บาท</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">จำนวน</span>
@@ -49,6 +49,10 @@ export default {
     item: {
       type: Object,
       required: true
+    },
+    currencyUnit: {
+      type: String,
+      default: 'THB'
     }
   },
 

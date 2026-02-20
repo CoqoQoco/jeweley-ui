@@ -14,9 +14,17 @@
 
     <div class="item-name">{{ item.description || '-' }}</div>
 
+    <div class="cost-info" v-if="item.costPrice">
+      <span class="cost-label">ต้นทุน</span>
+      <span class="cost-value">{{ formatCurrency(item.costPrice) }} บาท</span>
+      <span v-if="item.tagPriceMultiplier > 1" class="multiplier-badge">
+        x{{ item.tagPriceMultiplier }}
+      </span>
+    </div>
+
     <div class="item-fields">
       <div class="field-group">
-        <label>ราคา/ชิ้น</label>
+        <label>ราคาป้าย/ชิ้น</label>
         <input
           type="number"
           :value="item.appraisalPrice || item.price"
@@ -67,6 +75,10 @@ export default {
     index: {
       type: Number,
       required: true
+    },
+    currencyUnit: {
+      type: String,
+      default: 'THB'
     }
   },
 
@@ -160,7 +172,37 @@ export default {
   .item-name {
     font-size: 0.8rem;
     color: #666;
+    margin-bottom: 6px;
+  }
+
+  .cost-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: #fff8e1;
+    border-radius: 6px;
     margin-bottom: 10px;
+
+    .cost-label {
+      font-size: 0.75rem;
+      color: #999;
+    }
+
+    .cost-value {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #e65100;
+    }
+
+    .multiplier-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: white;
+      background: #ff9800;
+      padding: 1px 6px;
+      border-radius: 8px;
+    }
   }
 
   .item-fields {

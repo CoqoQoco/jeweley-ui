@@ -5,10 +5,16 @@
         <i class="bi bi-person"></i>
         ข้อมูลลูกค้า
       </h3>
-      <button class="btn-search-customer" @click="showSearchModal = true">
-        <i class="bi bi-search"></i>
-        ค้นหาลูกค้า
-      </button>
+      <div class="header-actions">
+        <button class="btn-search-customer" @click="showSearchModal = true">
+          <i class="bi bi-search"></i>
+          ค้นหาลูกค้า
+        </button>
+        <button class="btn-create-customer" @click="showCreateModal = true">
+          <i class="bi bi-person-plus"></i>
+          เพิ่มลูกค้าใหม่
+        </button>
+      </div>
     </div>
 
     <div class="form-card">
@@ -81,17 +87,26 @@
       @close="showSearchModal = false"
       @customer-selected="onCustomerSelected"
     />
+
+    <!-- Customer Create Modal -->
+    <CustomerCreateModal
+      :visible="showCreateModal"
+      @close="showCreateModal = false"
+      @customer-created="onCustomerCreated"
+    />
   </div>
 </template>
 
 <script>
 import CustomerSearchModal from './customer-search-modal.vue'
+import CustomerCreateModal from './customer-create-modal.vue'
 
 export default {
   name: 'CustomerForm',
 
   components: {
-    CustomerSearchModal
+    CustomerSearchModal,
+    CustomerCreateModal
   },
 
   props: {
@@ -112,7 +127,8 @@ export default {
 
   data() {
     return {
-      showSearchModal: false
+      showSearchModal: false,
+      showCreateModal: false
     }
   },
 
@@ -134,6 +150,18 @@ export default {
         customerAddress: customerData.address || ''
       })
       this.showSearchModal = false
+    },
+
+    onCustomerCreated(customerData) {
+      this.$emit('update:customer', {
+        ...this.customer,
+        customerCode: customerData.code || '',
+        customerName: customerData.nameTh || customerData.nameEn || '',
+        customerTel: customerData.telephone1 || '',
+        customerEmail: customerData.email || '',
+        customerAddress: customerData.address || ''
+      })
+      this.showCreateModal = false
     },
 
     clearCustomer() {
@@ -178,16 +206,21 @@ export default {
   }
 }
 
-.btn-search-customer {
+.header-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-search-customer,
+.btn-create-customer {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
-  background: var(--base-font-color);
+  padding: 6px 10px;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
 
@@ -198,6 +231,14 @@ export default {
   i {
     font-size: 0.8rem;
   }
+}
+
+.btn-search-customer {
+  background: var(--base-font-color);
+}
+
+.btn-create-customer {
+  background: #43a047;
 }
 
 .form-card {

@@ -13,6 +13,7 @@
         :key="item.stockNumber + '-' + index"
         :item="item"
         :index="index"
+        :currencyUnit="currencyUnit"
         @update="onUpdateItem"
         @remove="onRemoveItem"
       />
@@ -39,6 +40,10 @@ export default {
     items: {
       type: Array,
       default: () => []
+    },
+    currencyUnit: {
+      type: String,
+      default: 'THB'
     }
   },
 

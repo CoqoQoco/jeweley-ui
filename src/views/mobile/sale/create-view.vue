@@ -39,6 +39,23 @@
 
         <!-- Tab B: Scan -->
         <div v-if="addItemTab === 'scan'" class="scan-section">
+          <!-- Search Field Selector -->
+          <div class="search-field-selector">
+            <label class="field-selector-label">ค้นหาด้วย</label>
+            <div class="field-selector-options">
+              <button
+                v-for="option in searchFieldOptions"
+                :key="option.value"
+                class="field-option-btn"
+                :class="{ active: searchField === option.value }"
+                @click="searchField = option.value"
+              >
+                <i :class="option.icon"></i>
+                {{ option.label }}
+              </button>
+            </div>
+          </div>
+
           <!-- QR Scanner -->
           <QrScanner @scan="handleScan" />
 
@@ -53,7 +70,7 @@
               v-model="scanInput"
               type="text"
               class="form-control"
-              placeholder="กรอกเลขที่ผลิต (Stock Number)"
+              :placeholder="searchFieldPlaceholder"
               @keyup.enter="handleManualSearch"
             />
             <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
@@ -67,6 +84,7 @@
       <!-- Section 2: Item List -->
       <ItemList
         :items="items"
+        :currencyUnit="currencyUnit"
         @update-item="updateItem"
         @remove-item="removeItem"
       />
@@ -174,6 +192,11 @@ export default {
     return {
       addItemTab: 'appraisal',
       scanInput: '',
+      searchField: 'stockNumber',
+      searchFieldOptions: [
+        { value: 'stockNumber', label: 'รหัสสินค้าใหม่', icon: 'bi bi-upc-scan' },
+        { value: 'stockNumberOrigin', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
+      ],
       items: [],
       currencyUnit: 'US$',
       currencyRate: 33.0,
@@ -185,6 +208,14 @@ export default {
         customerAddress: '',
         remark: ''
       }
+    }
+  },
+
+  computed: {
+    searchFieldPlaceholder() {
+      return this.searchField === 'stockNumber'
+        ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
+        : 'กรอกรหัสสินค้าเก่า (Origin)'
     }
   },
 
@@ -217,11 +248,11 @@ export default {
 
     async searchAndAddProduct(searchValue) {
       const response = await this.productStore.fetchDataGet({
-        formValue: { stockNumber: searchValue }
+        formValue: { [this.searchField]: searchValue }
       })
 
       if (!response) {
-        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบเลขที่ผลิต')
+        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบรหัสสินค้า')
         return
       }
 
@@ -232,17 +263,21 @@ export default {
         return
       }
 
-      const productPrice = Number(response.productPrice) || 0
+      const costPrice = Number(response.productPrice) || 0
+      const tagPriceMultiplier = Number(response.tagPriceMultiplier) || 1
+      const tagPrice = costPrice * tagPriceMultiplier
 
       this.items.push({
         stockNumber: response.stockNumber,
         productNumber: response.productNumber || '',
         description: response.productNameTh || response.productNameEn || '',
-        price: productPrice,
-        appraisalPrice: productPrice,
+        costPrice: costPrice,
+        price: tagPrice,
+        appraisalPrice: tagPrice,
+        tagPriceMultiplier: tagPriceMultiplier,
         discountPercent: 0,
         qty: 1,
-        materials: [],
+        materials: response.materials || [],
         imagePath: response.imagePath || '',
         source: 'scan'
       })
@@ -272,15 +307,6 @@ export default {
     },
 
     async saveOrder(status) {
-      // Generate SO number
-      const runningResult = await this.saleOrderStore.fetchGenerateRunningNumber()
-      if (!runningResult) {
-        error('ไม่สามารถสร้างเลขที่ใบสั่งขายได้')
-        return
-      }
-
-      const soNumber = runningResult.soNumber || runningResult
-
       // สร้าง stockItems ตาม format ของ web
       const stockItems = this.items
         .filter((item) => item.stockNumber)
@@ -288,8 +314,10 @@ export default {
           stockNumber: item.stockNumber,
           productNumber: item.productNumber || '',
           description: item.description || '',
+          costPrice: Number(item.costPrice) || 0,
           price: Number(item.price) || 0,
           appraisalPrice: Number(item.appraisalPrice) || Number(item.price) || 0,
+          tagPriceMultiplier: Number(item.tagPriceMultiplier) || 1,
           discountPercent: Number(item.discountPercent) || 0,
           qty: Number(item.qty) || 1,
           materials: item.materials || [],
@@ -304,8 +332,10 @@ export default {
           stockNumber: null,
           productNumber: item.productNumber || '',
           description: item.description || '',
+          costPrice: Number(item.costPrice) || 0,
           price: Number(item.price) || 0,
           appraisalPrice: Number(item.appraisalPrice) || Number(item.price) || 0,
+          tagPriceMultiplier: Number(item.tagPriceMultiplier) || 1,
           discountPercent: Number(item.discountPercent) || 0,
           qty: Number(item.qty) || 1,
           materials: item.materials || [],
@@ -314,7 +344,7 @@ export default {
         }))
 
       const formValue = {
-        soNumber: soNumber,
+        soNumber: '',
         status: status,
         customerCode: this.customer.customerCode || null,
         customerName: this.customer.customerName || '',
@@ -338,6 +368,7 @@ export default {
       const result = await this.saleOrderStore.fetchSave({ formValue })
 
       if (result) {
+        const soNumber = result.soNumber || result
         const statusLabel = status === 'Draft' ? 'บันทึกร่าง' : 'สร้างใบสั่งขาย'
         success(`เลขที่: ${soNumber}`, `${statusLabel}สำเร็จ`, () => {
           this.$router.push({
@@ -427,6 +458,51 @@ export default {
 }
 
 .scan-section {
+  .search-field-selector {
+    margin-bottom: 12px;
+
+    .field-selector-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .field-selector-options {
+      display: flex;
+      gap: 8px;
+    }
+
+    .field-option-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #e0e0e0;
+      background: white;
+      color: #666;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &.active {
+        border-color: var(--base-font-color);
+        background: rgba(146, 19, 19, 0.05);
+        color: var(--base-font-color);
+        font-weight: 600;
+      }
+    }
+  }
+
   .scanner-divider {
     display: flex;
     align-items: center;

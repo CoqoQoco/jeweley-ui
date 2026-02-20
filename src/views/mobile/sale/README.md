@@ -18,11 +18,12 @@ src/views/mobile/sale/
 └── components/
     ├── add-item-method-selector.vue    # Tab toggle: ตีราคา | สแกน
     ├── appraisal-job-list.vue          # รายการ Job ตีราคาที่ Completed
-    ├── item-card.vue                   # การ์ดสินค้า (แก้ราคา/จำนวน/ส่วนลดได้)
+    ├── item-card.vue                   # การ์ดสินค้า (แก้ราคาป้าย/จำนวน/ส่วนลดได้ + แสดงต้นทุน)
     ├── item-list.vue                   # รายการสินค้าที่เพิ่มแล้ว
-    ├── customer-form.vue               # ฟอร์มลูกค้า (เลือกจาก DB + แสดงข้อมูล)
+    ├── customer-form.vue               # ฟอร์มลูกค้า (ค้นหาจาก DB + เพิ่มลูกค้าใหม่)
     ├── customer-search-modal.vue       # Full-screen modal ค้นหาลูกค้าจาก DB
-    ├── so-summary.vue                  # สรุปราคา (THB + สกุลเงินแปลง)
+    ├── customer-create-modal.vue       # Full-screen modal เพิ่มลูกค้าใหม่ (auto-gen code)
+    ├── so-summary.vue                  # สรุปราคา (แสดงในสกุลเงินที่เลือก + อ้างอิงบาท)
     └── so-item-card.vue                # การ์ดสินค้าใน detail (read-only + status badge)
 
 src/services/helper/pdf/sale-order/
@@ -60,12 +61,13 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
         └── Card list: Invoice number, ลูกค้า, วันที่, จำนวนรายการ, ยอดรวม, status badge
     ↓
 สร้าง SO (create-view)
-  ├── Tab A: เลือกจากรายการตีราคา (Job ที่ Completed) → ได้ราคาตีราคาใหม่
-  ├── Tab B: สแกน QR / พิมพ์ stock number → ได้ราคาต้นทุนจริง
-  ├── แก้ราคา / จำนวน / ส่วนลด % ได้ทุกรายการ
+  ├── Tab A: เลือกจากรายการตีราคา (Job ที่ Completed) → ได้ราคาป้าย (ต้นทุน × ตัวคูณ)
+  ├── Tab B: สแกน QR / พิมพ์ stock number/origin → ได้ราคาป้าย (ต้นทุน × ตัวคูณ)
+  │     └── เลือกค้นหาด้วย "รหัสสินค้าใหม่" หรือ "รหัสสินค้าเก่า"
+  ├── แก้ราคาป้าย / จำนวน / ส่วนลด % ได้ทุกรายการ
   ├── ตั้งค่าสกุลเงิน (Currency Unit + Rate)
-  ├── เลือกลูกค้าจากฐานข้อมูล (Customer Search)
-  └── บันทึก: "สร้างใบสั่งขาย" (Confirmed)
+  ├── เลือกลูกค้าจากฐานข้อมูล หรือเพิ่มลูกค้าใหม่ (auto-gen code: CUST-YYMMDD-XXXX)
+  └── บันทึก: "สร้างใบสั่งขาย" (Confirmed) — backend gen SO number อัตโนมัติ
     ↓
 รายละเอียด SO (detail-view)
   ├── ข้อมูล SO + ข้อมูลลูกค้า + รายการสินค้า (read-only)
@@ -90,51 +92,61 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
 
 **Section 1 - เพิ่มสินค้า (2 tabs)**
 - **Tab A "จากรายการตีราคา"**: ดึง MyJob ที่ `jobTypeId === PLAN_STOCK_COST && statusId === 100`
-  - กดเลือก → fetchGetCostVersion → fetchDataGet → เพิ่มสินค้าพร้อมราคาตีราคา
+  - กดเลือก → fetchGetCostVersion → fetchDataGet → เพิ่มสินค้าพร้อมราคาป้าย + materials
 - **Tab B "สแกนสินค้า"**: ใช้ QrScanner + manual input
-  - สแกน/พิมพ์ stock number → fetchDataGet → เพิ่มสินค้าพร้อมราคาต้นทุนจริง
+  - **เลือกค้นหาด้วย**: รหัสสินค้าใหม่ (`stockNumber`) หรือ รหัสสินค้าเก่า (`stockNumberOrigin`)
+  - สแกน/พิมพ์ → fetchDataGet → เพิ่มสินค้าพร้อมราคาป้าย + materials
 
 **Section 2 - รายการสินค้า**
 - แสดงรายการที่เพิ่มแล้ว (item-card.vue)
-- แก้ไขราคา / จำนวน / ส่วนลด % ได้
-- ลบรายการได้
-- คำนวณ total อัตโนมัติ: `price * qty * (1 - discountPercent / 100)`
+- แสดง **ต้นทุน** (read-only, สีส้ม, หน่วย "บาท" เสมอ) + badge ตัวคูณ
+- แก้ไข **ราคาป้าย** / จำนวน / ส่วนลด % ได้
+- ลบรายการได้ + เพิ่มกลับได้
+- รวมต่อรายการ (หน่วย "บาท") คำนวณอัตโนมัติ: `appraisalPrice * qty * (1 - discountPercent / 100)`
 
 **Section 3 - สกุลเงิน (Currency)**
 - Currency Unit (default: `US$`)
 - Currency Rate (default: `33.0`)
-- สรุปราคาแสดงทั้ง THB และสกุลเงินที่แปลง
 - ส่งค่า `currencyUnit` + `currencyRate` ไปกับ formValue ตอนบันทึก
 
-**Section 4 - ข้อมูลลูกค้า (Customer Search)**
+**Section 4 - ข้อมูลลูกค้า (Customer)**
 - ปุ่ม "ค้นหาลูกค้า" → เปิด full-screen modal ค้นหาจากฐานข้อมูล
-- ใช้ `useCustomerDetailApiStore().fetchCustomerSearch()` — API: `Customer/Search`
-- เมื่อเลือกลูกค้า → auto-fill: customerCode, customerName, customerTel, customerEmail, customerAddress
-- ข้อมูลลูกค้า read-only (ยกเว้นหมายเหตุ) — ต้องเลือกจาก DB เท่านั้น
-- **Required**: ต้องเลือกลูกค้าก่อนบันทึก SO (API ต้องการ `customerCode`)
+- ปุ่ม "เพิ่มลูกค้าใหม่" → เปิด full-screen modal สร้างลูกค้าใหม่
+  - ฟิลด์: รหัสลูกค้า* (auto-gen `CUST-YYMMDD-XXXX` + refresh ได้), ประเภทลูกค้า*, ชื่อ TH*, ชื่อ EN, ที่อยู่, เบอร์โทร, อีเมล, บุคคลติดต่อ, หมายเหตุ
+  - ใช้ `Master/MasterCustomerType` สำหรับ dropdown ประเภทลูกค้า (native `<select>`)
+  - ใช้ `Customer/CreateCustomer` API สร้างลูกค้า
+  - สร้างสำเร็จ → auto-fill ข้อมูลลูกค้าในฟอร์ม
+- เมื่อเลือก/สร้างลูกค้า → auto-fill: customerCode, customerName, customerTel, customerEmail, customerAddress
+- ข้อมูลลูกค้า read-only (ยกเว้นหมายเหตุ)
+- **Required**: ต้องมี `customerCode` ก่อนบันทึก SO
 
 **Section 5 - สรุป + บันทึก**
 - แสดงจำนวนรายการ
-- ยอดรวม THB + ยอดรวมแปลงสกุลเงิน (ถ้า rate ≠ 1)
+- ยอดรวมในสกุลเงินที่เลือก (แปลงจากบาท ÷ rate)
+- แสดง "เทียบเท่า xxx บาท" เป็นข้อมูลอ้างอิง (เฉพาะกรณี rate ≠ 1)
 - ปุ่ม "สร้างใบสั่งขาย" (status: Confirmed)
-- Validation: ต้องมีสินค้า ≥ 1 + ต้องเลือกลูกค้า + ต้องระบุ currency
+- Validation: ต้องมีสินค้า ≥ 1 + ต้องมี customerCode + ต้องระบุ currency
+
+**การบันทึก SO:**
+- ไม่ต้องเรียก `fetchGenerateRunningNumber()` — ส่ง `soNumber: ''` ให้ backend gen อัตโนมัติผ่าน `SaleOrder/Upsert`
+- รับ SO number จาก response: `result.soNumber`
 
 **formValue ที่ส่งไป API (saveOrder):**
 ```javascript
 {
-  soNumber: 'SO-2025-001',
+  soNumber: '',                    // backend gen อัตโนมัติ
   status: 'Confirmed',
-  customerCode: 'CUST-001',         // ← required (จาก customer search)
+  customerCode: 'CUST-001',
   customerName: 'ชื่อลูกค้า',
   customerTel: '081-xxx-xxxx',
   customerEmail: 'email@example.com',
   customerAddress: 'ที่อยู่',
   remark: 'หมายเหตุ',
-  currencyUnit: 'US$',               // ← required (default: US$)
-  currencyRate: 33.0,                 // ← required (default: 33.0)
+  currencyUnit: 'US$',
+  currencyRate: 33.0,
   priority: 'mobile',
   data: JSON.stringify({
-    stockItems: [...],
+    stockItems: [...],      // แต่ละ item มี costPrice, tagPriceMultiplier, appraisalPrice, materials
     copyItems: [...],
     allItems: [...],
     freight: 0,
@@ -146,11 +158,70 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
 ### หน้า 3: รายละเอียด SO (`detail-view.vue`)
 - ข้อมูล SO: เลข SO, วันที่, ผู้สร้าง, status badge
 - ข้อมูลลูกค้า: ชื่อ, เบอร์, ที่อยู่
-- รายการสินค้า (read-only, so-item-card.vue)
-- สรุปราคา
+- รายการสินค้า (read-only, so-item-card.vue) — ราคาแสดงหน่วย "บาท"
+- สรุปราคา — ยอดรวมในสกุลเงินที่เลือก + "เทียบเท่า xxx บาท" (ถ้า rate ≠ 1)
 - ข้อมูล Invoice (ถ้าออกแล้ว)
-- **ปุ่ม "พิมพ์ใบสั่งขาย"** → สร้าง PDF download
+- **ปุ่ม "พิมพ์ใบสั่งขาย"** → สร้าง PDF download (ราคาแปลงเป็นสกุลเงินที่เลือก)
 - **ปุ่ม "ออก Invoice"** → Confirm Stock + Create Invoice (ซ่อนถ้าออก Invoice แล้ว)
+
+### ราคาป้าย (Tag Price)
+
+```
+ต้นทุน (costPrice) × ตัวคูณ (tagPriceMultiplier) = ราคาป้าย (appraisalPrice)
+```
+
+- **ต้นทุน (costPrice)**: ราคาต้นทุนรวมของสินค้า — read-only, แสดงเป็นข้อมูลอ้างอิง (หน่วย "บาท" เสมอ)
+- **ตัวคูณ (tagPriceMultiplier)**: ค่าที่ตั้งไว้ตอนตีราคา (เช่น 1.5, 2.0) — เก็บใน DB `tag_price_multiplier`
+- **ราคาป้าย (appraisalPrice)**: ราคาขายเริ่มต้น — แก้ไขได้ใน item-card (หน่วย "บาท")
+- item-card แสดง: ต้นทุน (สีส้ม, read-only, บาท) + badge ตัวคูณ + ราคาป้าย/ชิ้น (editable) + รวม (บาท)
+- **PDF ใบสั่งขาย**: แสดงราคาป้ายเท่านั้น (ไม่แสดงต้นทุน) แปลงเป็นสกุลเงินที่เลือก
+
+**Data flow:**
+```
+appraisal-job-list.vue
+  → fetchGetCostVersion(jobRunning)
+  → costData.prictransection → sum → totalCost
+  → costData.tagPriceMultiplier → tagPrice = totalCost × multiplier
+  → fetchDataGet(stockNumber) → materials
+  → emit('add-item', { costPrice: totalCost, appraisalPrice: tagPrice, tagPriceMultiplier, materials })
+
+create-view.vue (scan)
+  → fetchDataGet({ stockNumber | stockNumberOrigin })
+  → response.productPrice → costPrice
+  → response.tagPriceMultiplier → tagPrice = costPrice × multiplier
+  → response.materials → materials
+  → items.push({ costPrice, appraisalPrice: tagPrice, tagPriceMultiplier, materials })
+```
+
+### Currency Display
+
+**หลักการ: ราคาใน items เก็บเป็น "บาท" เสมอ แปลงสกุลเงินเฉพาะตอนแสดงยอดรวมและ PDF**
+
+```
+ราคาระดับ item (บาท)                     ยอดรวม (สกุลเงินที่เลือก)
+┌──────────────────────┐                 ┌───────────────────────────────┐
+│ item-card.vue        │                 │ so-summary.vue                │
+│  ต้นทุน: 10,000 บาท  │    sum / rate   │  ยอดรวม: 454.55 US$           │
+│  ราคาป้าย: 15,000    │ ──────────────→ │  เทียบเท่า: 15,000.00 บาท    │
+│  รวม: 15,000 บาท     │                 └───────────────────────────────┘
+└──────────────────────┘
+                                         ┌───────────────────────────────┐
+┌──────────────────────┐                 │ detail-view.vue (summary)     │
+│ so-item-card.vue     │    sum / rate   │  ยอดรวม: 454.55 US$           │
+│  ราคา: 15,000 บาท    │ ──────────────→ │  เทียบเท่า: 15,000.00 บาท    │
+│  รวม: 15,000 บาท     │                 └───────────────────────────────┘
+└──────────────────────┘
+                                         ┌───────────────────────────────┐
+                                         │ PDF (sale-order-pdf-builder)  │
+                                    ──→  │  ราคาแปลงเป็นสกุลเงินที่เลือก │
+                                         │  ยอดรวม: 454.55 US$           │
+                                         └───────────────────────────────┘
+```
+
+- **item-card.vue / so-item-card.vue**: แสดงราคาหน่วย "บาท" เสมอ (เพราะ costPrice + appraisalPrice เก็บเป็น THB)
+- **so-summary.vue**: แปลง totalAmountTHB ÷ currencyRate → แสดงในสกุลเงินที่เลือก + แสดง "เทียบเท่า xxx บาท" เป็น reference
+- **detail-view.vue**: แปลง totalAmount ÷ currencyRate → แสดงในสกุลเงินที่เลือก + "เทียบเท่า xxx บาท"
+- **PDF builder**: แปลงราคาทุกรายการเป็นสกุลเงินที่เลือก (รับ `currencyUnit` + `currencyRate` จาก options)
 
 ### PDF (`sale-order-pdf-builder.js`)
 
@@ -163,6 +234,7 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
 - Company info (From:) + Customer info
 - **10-column table** (เหมือน Invoice):
   - No., Image, Style/Product, Description, Gold(gms), Diamond(cts), Gem(cts), Qty, Price, Amount
+- **ใช้ราคาป้าย (appraisalPrice) เท่านั้น** — ไม่แสดงต้นทุน — แปลงเป็นสกุลเงินที่เลือก
 - **Material breakdown** — Gold, Diamond, Gem แยก column (sub-table per cell)
 - **Multi-page support** — itemsPerPage (default 10), header repeat ทุกหน้า
 - **Financial summary** (เหมือน Invoice):
@@ -201,19 +273,21 @@ azure-storage-config.js
 | Component | Props | Events | Description |
 |-----------|-------|--------|-------------|
 | `add-item-method-selector` | `activeTab` (String) | `update:activeTab` | Toggle tabs ตีราคา/สแกน |
-| `appraisal-job-list` | `selectedItems` (Array) | `add-item` | รายการ Job ตีราคา Completed |
-| `item-card` | `item` (Object), `index` (Number) | `update`, `remove` | การ์ดสินค้า editable |
-| `item-list` | `items` (Array) | `update-item`, `remove-item` | Wrapper สำหรับ item cards |
-| `customer-form` | `customer` (Object) | `update:customer` | ฟอร์มลูกค้า + ปุ่มค้นหา DB |
+| `appraisal-job-list` | `selectedItems` (Array) | `add-item` | รายการ Job ตีราคา (ตรวจซ้ำจาก selectedItems prop) |
+| `item-card` | `item` (Object), `index` (Number) | `update`, `remove` | การ์ดสินค้า: แสดงต้นทุน(บาท) + แก้ราคาป้าย/จำนวน/ส่วนลด + รวม(บาท) |
+| `item-list` | `items` (Array), `currencyUnit` (String) | `update-item`, `remove-item` | Wrapper สำหรับ item cards |
+| `customer-form` | `customer` (Object) | `update:customer` | ฟอร์มลูกค้า + ปุ่มค้นหา + ปุ่มเพิ่มใหม่ |
 | `customer-search-modal` | `visible` (Boolean) | `close`, `customer-selected` | Full-screen modal ค้นหาลูกค้าจาก DB |
-| `so-summary` | `items`, `currencyUnit`, `currencyRate` | - | สรุปราคา THB + แปลงสกุลเงิน |
-| `so-item-card` | `item` (Object) | - | การ์ดสินค้า read-only + status |
+| `customer-create-modal` | `visible` (Boolean) | `close`, `customer-created` | Full-screen modal เพิ่มลูกค้าใหม่ (auto-gen code: CUST-YYMMDD-XXXX) |
+| `so-summary` | `items`, `currencyUnit`, `currencyRate` | - | สรุปราคาในสกุลเงินที่เลือก + อ้างอิงบาท |
+| `so-item-card` | `item` (Object) | - | การ์ดสินค้า read-only + status (ราคาหน่วยบาท) |
 
 ### Reused Components
 
 | Component | Source | Usage |
 |-----------|--------|-------|
-| `QrScanner` | `mobile/scan/components/qr-scanner.vue` | สแกน QR/Barcode ใน Tab B |
+| `QrScanner` | `mobile/scan/components/qr-scanner.vue` | สแกน QR/Barcode ใน Tab B (กล้องเปิดตลอด auto-start) |
+| `JobCard` | `mobile/components/job-card.vue` | การ์ดแสดง Job ตีราคา (แสดง stockNumber จาก dataJob) |
 | `sweetAlerts` | `services/alert/sweetAlerts.js` | warning, error, success, confirmSubmit |
 | Mobile SCSS | `assets/scss/responsive-style/mobile` | Utility classes ทั้งหมด |
 
@@ -223,32 +297,33 @@ azure-storage-config.js
 
 | Store | File | Methods Used |
 |-------|------|--------------|
-| `usrSaleOrderApiStore` | `stores/modules/api/sale/sale-order-store.js` | `fetchList`, `fetchGet`, `fetchSave`, `fetchGenerateRunningNumber`, `confirmStockItems` |
+| `usrSaleOrderApiStore` | `stores/modules/api/sale/sale-order-store.js` | `fetchList`, `fetchGet`, `fetchSave`, `confirmStockItems` |
 | `useInvoiceApiStore` | `stores/modules/api/sale/invoice-store.js` | `fetchList`, `fetchCreate` |
 | `usrStockProductApiStore` | `stores/modules/api/stock/product-api.js` | `fetchDataGet`, `fetchGetCostVersion` |
 | `useUserApiStore` | `stores/modules/api/user/user-store.js` | `fetchListMyJob` |
 | `useAuthStore` | `stores/modules/authen/authen-store.js` | `getUser` (username สำหรับ filter createBy) |
-| `useCustomerDetailApiStore` | `stores/modules/api/customer/customer-detail-store.js` | `fetchCustomerSearch` (ค้นหาลูกค้าจาก DB) |
+| `useCustomerDetailApiStore` | `stores/modules/api/customer/customer-detail-store.js` | `fetchCustomerSearch`, `fetchCreateCustomer` |
+| `useMasterApiStore` | `stores/modules/api/master-store.js` | `fetchCustomerType` (ประเภทลูกค้า) |
 
-### Customer Search Flow
+### Customer Flow
 
 ```
 customer-form.vue
-  ├── ปุ่ม "ค้นหาลูกค้า" → showSearchModal = true
-  └── customer-search-modal.vue (full-screen overlay)
-        ├── Input search text → fetchCustomerSearch({ formValue: { text } })
-        ├── แสดงรายการลูกค้า (code, name, tel, email, address)
-        ├── Pagination "โหลดเพิ่มเติม"
-        └── กดเลือก → emit('customer-selected', customerData)
-              ↓
-        customer-form.vue onCustomerSelected()
-          → populate: customerCode, customerName, customerTel, customerEmail, customerAddress
-              ↓
-        create-view.vue customer object
-          → ส่งไป formValue ตอน saveOrder()
+  ├── ปุ่ม "ค้นหาลูกค้า" → customer-search-modal.vue (full-screen)
+  │     ├── Input search text → Customer/Search API
+  │     ├── แสดงรายการลูกค้า (code, name, tel, email, address)
+  │     ├── Pagination "โหลดเพิ่มเติม"
+  │     └── กดเลือก → emit('customer-selected')
+  │
+  └── ปุ่ม "เพิ่มลูกค้าใหม่" → customer-create-modal.vue (full-screen)
+        ├── Auto-gen รหัสลูกค้า: CUST-YYMMDD-XXXX (refresh ได้)
+        ├── กรอก: ประเภท*, ชื่อ TH*, ชื่อ EN, ที่อยู่, เบอร์โทร, อีเมล, ผู้ติดต่อ, หมายเหตุ
+        ├── ประเภทลูกค้า: native <select> จาก Master/MasterCustomerType
+        ├── Submit → Customer/CreateCustomer API
+        └── สำเร็จ → emit('customer-created') → auto-fill ฟอร์ม
 ```
 
-**Customer data จาก API (Customer/Search):**
+**Customer data จาก API (Customer/Search หรือ CreateCustomer):**
 ```javascript
 {
   code: 'CUST-001',
@@ -267,19 +342,36 @@ create-view.vue
   ├── currencyUnit: 'US$' (default)
   ├── currencyRate: 33.0 (default)
   │
+  ├── item-card.vue: ราคาแสดงหน่วย "บาท" (เก็บเป็น THB ภายใน)
+  │
   ├── so-summary.vue รับ props:
-  │   ├── ยอดรวม THB = sum(appraisalPrice * qty * (1 - discountPercent/100))
-  │   └── ยอดรวม converted = THB / currencyRate
+  │   ├── ยอดรวมบาท = sum(appraisalPrice * qty * (1 - discountPercent/100))
+  │   ├── ยอดรวมแปลง = ยอดรวมบาท / currencyRate → แสดงเป็นสกุลเงินที่เลือก
+  │   └── "เทียบเท่า xxx บาท" (ถ้า rate ≠ 1)
   │
   └── saveOrder() → formValue includes:
       ├── currencyUnit: 'US$'
       └── currencyRate: 33.0
+
+detail-view.vue
+  ├── ยอดรวม: totalAmount / currencyRate → แสดงเป็นสกุลเงินที่เลือก
+  ├── "เทียบเท่า xxx บาท" (ถ้า rate ≠ 1)
+  └── PDF: ส่ง { currencyUnit, currencyRate } → แปลงราคาทุกรายการ
 ```
 
-**Reference**: Web version `sale-order-view.vue` uses same pattern:
-- Currency inputs: `currencyUnit` (text), `currencyRate` (number)
-- Price conversion: `price / currencyRate`
-- Default: `US$` / `33.0`
+### Search Field Selector (Tab B - สแกน)
+
+```
+create-view.vue
+  ├── searchField: 'stockNumber' (default)
+  ├── searchFieldOptions:
+  │   ├── { value: 'stockNumber', label: 'รหัสสินค้าใหม่' }
+  │   └── { value: 'stockNumberOrigin', label: 'รหัสสินค้าเก่า' }
+  │
+  └── fetchDataGet({ [searchField]: searchValue })
+      ├── stockNumber → POST StockProduct/Get { stockNumber: 'xxx' }
+      └── stockNumberOrigin → POST StockProduct/Get { stockNumberOrigin: 'xxx' }
+```
 
 ## Item Data Structure
 
@@ -292,8 +384,10 @@ create-view.vue
   stockNumber: 'STK-001',           // เลขที่ผลิต (null ถ้าเป็น copyItem)
   productNumber: 'PRD-001',         // รหัสสินค้า
   description: 'แหวนทอง',           // ชื่อสินค้า
-  price: 15000,                     // ราคาจากระบบ
-  appraisalPrice: 15000,            // ราคาตีราคา (ราคาขาย)
+  costPrice: 10000,                 // ต้นทุน (read-only, แสดงอ้างอิง, หน่วยบาทเสมอ)
+  price: 15000,                     // ราคาป้าย (= costPrice × tagPriceMultiplier, หน่วยบาท)
+  appraisalPrice: 15000,            // ราคาขาย (= ราคาป้าย, แก้ไขได้, หน่วยบาท)
+  tagPriceMultiplier: 1.5,          // ตัวคูณราคาป้าย
   discountPercent: 0,               // ส่วนลด %
   qty: 1,                           // จำนวน
   materials: [                      // วัตถุดิบ (แสดงใน PDF แยก Gold/Diamond/Gem)
@@ -304,10 +398,12 @@ create-view.vue
   imagePath: 'Stock/image.png',     // รูปสินค้า (จาก product API, ใช้ดึงรูปใน PDF)
   imageBlobPath: null,              // Azure Blob path (สำรอง, ปัจจุบัน null)
   imageBase64: null,                // Base64 image (PDF builder โหลดอัตโนมัติจาก imagePath)
-  source: 'appraisal' | 'scan'     // แหล่งที่มา (ใน create view)
+  source: 'appraisal' | 'scan',    // แหล่งที่มา (ใน create view)
+  jobRunning: 'JOB-001'            // เลข Job (เฉพาะ source: appraisal, ใช้ตรวจซ้ำ)
 }
 
-// คำนวณราคารวม: appraisalPrice * qty * (1 - discountPercent / 100)
+// คำนวณราคารวม: appraisalPrice * qty * (1 - discountPercent / 100) — หน่วยบาท
+// แปลงเป็นสกุลเงิน: รวม / currencyRate — เฉพาะ summary + PDF
 ```
 
 ## Files Modified
@@ -346,6 +442,7 @@ Key classes ที่ใช้:
 - ใช้ sweetAlerts เท่านั้น (ไม่ใช้ native alert/confirm)
 - Kebab-case filenames ทุกไฟล์
 - `@import '@/assets/scss/responsive-style/mobile'` ทุก component
+- ไม่ใช้ PrimeVue Dropdown ใน mobile — ใช้ native `<select>` แทน (lightweight, ใช้ native OS picker)
 
 ## Related Files
 
@@ -357,9 +454,11 @@ Key classes ที่ใช้:
 - Product Store: `src/stores/modules/api/stock/product-api.js`
 - User Store: `src/stores/modules/api/user/user-store.js`
 - Customer Store: `src/stores/modules/api/customer/customer-detail-store.js`
+- Master Store: `src/stores/modules/api/master-store.js`
 - PDF Builder: `src/services/helper/pdf/sale-order/sale-order-pdf-builder.js`
 - Invoice PDF Builder: `src/services/helper/pdf/invoice/invoice-pdf-builder.js` (reference style)
 - Azure Storage Config: `src/config/azure-storage-config.js` (เพิ่ม stock type)
 - QR Scanner: `src/views/mobile/scan/components/qr-scanner.vue`
+- Job Card: `src/views/mobile/components/job-card.vue`
 - Sweet Alerts: `src/services/alert/sweetAlerts.js`
 - Mobile Styles: `src/assets/scss/responsive-style/mobile/`

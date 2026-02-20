@@ -59,8 +59,7 @@ export default {
   data() {
     return {
       jobs: [],
-      isLoading: false,
-      selectedJobIds: []
+      isLoading: false
     }
   },
 
@@ -88,7 +87,7 @@ export default {
     },
 
     isSelected(job) {
-      return this.selectedJobIds.includes(job.id)
+      return this.selectedItems.some((item) => item.jobRunning === job.jobRunning)
     },
 
     async selectJob(job) {
@@ -119,22 +118,25 @@ export default {
           return
         }
 
-        // Calculate total price from appraisal
-        const totalPrice = costData.prictransection
+        // Calculate total cost from appraisal
+        const totalCost = costData.prictransection
           ? costData.prictransection.reduce((sum, t) => sum + (t.totalPrice || 0), 0)
           : 0
 
-        this.selectedJobIds.push(job.id)
+        const tagPriceMultiplier = Number(costData.tagPriceMultiplier) || 1
+        const tagPrice = totalCost * tagPriceMultiplier
 
         this.$emit('add-item', {
           stockNumber: costData.stockNumber,
           productNumber: stockData?.productNumber || '',
           description: stockData?.productNameTh || stockData?.productNameEn || '',
-          price: totalPrice,
-          appraisalPrice: totalPrice,
+          costPrice: totalCost,
+          price: tagPrice,
+          appraisalPrice: tagPrice,
+          tagPriceMultiplier: tagPriceMultiplier,
           discountPercent: 0,
           qty: 1,
-          materials: [],
+          materials: stockData?.materials || [],
           source: 'appraisal',
           jobRunning: job.jobRunning,
           imagePath: stockData?.imagePath || ''

@@ -202,7 +202,7 @@ export class SaleOrderPdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.soData.createDate).format('MMM DD, YYYY'),
+                          text: dayjs(this.soData.createDate).locale('en').format('MMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',
@@ -1012,7 +1012,10 @@ export class SaleOrderPdfBuilder {
 
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
-    return Math.round(num).toFixed(2)
+    return Math.round(num).toLocaleString('th-TH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
   }
 
   getDocDefinition() {
