@@ -2,26 +2,13 @@
 #### ถ้ามีการใช้ prime-vue components >> ตรวจสอบว่ามี generic-components ไหม >> ไม่มีให้สร้างไว้เพื่อ re-used >> 
 
 
+ตรวจสอบที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\cost-stock\web\cost-edit\components\appraisal-form-view.vue
+ - เพิ่ม row ราคาป้ายใต้ ต้นทุนรวมครับ โดยเราสามารถ input mutipier เพื่อ * ต้นทุนรวมเเล้วได้ราคาป้าย
 
-ที่ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\scan\components\simple-scanner.vue
-เพิ่ม dropdow เพื่อเลือกว่าจะใช้ 
- รหัสสินค้าเก่า --> productNumber
- รหัสสินค้าใหม่ --> stockNumber
+ พร้อมส่ง ตัวคูรเข้า api submit ด้วยครับ ช่วยตั้งชื่อให้สื่อด้วยนะครับ
 
-  async searchStockProduct(searchValue) {
-      const formValue = {
-        stockNumber: searchValue,
-        productNumber: searchValue
-      }
 
-      const response = await this.productStore.fetchDataGet({ formValue })
 
-      if (response) {
-        this.scannedProduct = response
-      } else {
-        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบเลขที่ผลิตหรือรหัสสินค้า')
-        this.scannedProduct = null
-      }
-    },
+## update D:\DuangKeaw\code\jeweley-ui\src\views\mobile\sale\README.md
 
 

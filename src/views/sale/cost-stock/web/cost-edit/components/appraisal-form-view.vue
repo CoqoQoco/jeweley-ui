@@ -342,6 +342,36 @@
                 </template>
               </Column>
             </Row>
+            <Row>
+              <Column :colspan="5">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ราคาป้าย</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="2">
+                <template #footer>
+                  <div class="tag-price-multiplier">
+                    <span class="multiplier-label">ต้นทุน ×</span>
+                    <input
+                      v-model="tagPriceMultiplier"
+                      type="number"
+                      class="form-control form-control-sm text-right"
+                      step="any"
+                      min="0"
+                    />
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="1">
+                <template #footer>
+                  <div class="text-right type-container tag-price-value">
+                    <span>{{ tagPrice }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
           </ColumnGroup>
         </DataTable>
         </div>
@@ -450,6 +480,11 @@ export default {
   },
 
   computed: {
+    tagPrice() {
+      const total = this.tranItems.reduce((sum, item) => sum + Number(item.totalPrice), 0)
+      return (total * (Number(this.tagPriceMultiplier) || 0)).toFixed(2)
+    },
+
     masterGoldList() {
       // Combine hardcoded gold list with API gold list
       const apiGold = this.masterStore.gold || []
@@ -475,6 +510,7 @@ export default {
       handler(val) {
         if (!val) return
         this.localStock = { ...val }
+        this.tagPriceMultiplier = val.tagPriceMultiplier || 1
 
         // Initialize transaction items from priceTransactions only
         if (this.localStock.priceTransactions && this.localStock.priceTransactions.length > 0) {
@@ -528,6 +564,7 @@ export default {
     return {
       localStock: {},
       tranItems: [],
+      tagPriceMultiplier: 1,
       masterValue: 'ETC',
       showCustomerSearch: false,
       showCustomerCreate: false,
@@ -663,6 +700,7 @@ export default {
         customerTel: this.localStock.customerPhone || null,
         customerEmail: this.localStock.customerEmail || null,
         remark: this.localStock.remark || null,
+        tagPriceMultiplier: Number(this.tagPriceMultiplier) || 1,
         prictransection: this.tranItems.map((item, index) => ({
           no: index + 1,
           name: item.nameGroup || '',
@@ -936,6 +974,39 @@ textarea {
     input.form-control {
       font-size: 13px;
     }
+  }
+}
+
+// Tag Price Multiplier Row
+.tag-price-multiplier {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  .multiplier-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--base-font-color);
+    white-space: nowrap;
+  }
+
+  input {
+    max-width: 120px;
+    background-color: #b5dad4 !important;
+
+    @media (max-width: 1024px) {
+      max-width: 100px;
+    }
+  }
+}
+
+.tag-price-value {
+  font-size: 15px;
+  color: #e65100;
+
+  @media (max-width: 1024px) {
+    font-size: 14px;
   }
 }
 

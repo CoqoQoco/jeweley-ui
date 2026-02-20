@@ -163,7 +163,7 @@ export default {
       searchField: 'stockNumber',
       searchFieldOptions: [
         { value: 'stockNumber', label: 'รหัสสินค้าใหม่', icon: 'bi bi-upc-scan' },
-        { value: 'productNumber', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
+        { value: 'stockNumberOrigin', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
       ],
 
       // Scan types configuration
@@ -198,7 +198,7 @@ export default {
     searchFieldPlaceholder() {
       return this.searchField === 'stockNumber'
         ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
-        : 'กรอกรหัสสินค้าเก่า (Product Number)'
+        : 'กรอกรหัสสินค้าเก่า (Origin)'
     }
   },
 

@@ -71,6 +71,39 @@ const routes = [
         }
       },
 
+      // 🆕 Sale Order (Mobile)
+      {
+        path: 'sale',
+        name: 'mobile-sale',
+        component: () => import('@/views/mobile/sale/index-view.vue'),
+        meta: {
+          Displayname: { en: 'Sale Order', th: 'ใบสั่งขาย' },
+          classIcon: 'bi bi-receipt',
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+      {
+        path: 'sale/create',
+        name: 'mobile-sale-create',
+        component: () => import('@/views/mobile/sale/create-view.vue'),
+        meta: {
+          Displayname: { en: 'Create Sale Order', th: 'สร้างใบสั่งขาย' },
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+      {
+        path: 'sale/detail/:soNumber',
+        name: 'mobile-sale-detail',
+        component: () => import('@/views/mobile/sale/detail-view.vue'),
+        meta: {
+          Displayname: { en: 'Sale Order Detail', th: 'รายละเอียดใบสั่งขาย' },
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+
       // ========== Shared Features (มีทั้ง Web & Mobile) ==========
       // แต่ UI/UX ต่างกัน - Mobile เน้น touch-friendly, quick actions
 

@@ -40,12 +40,12 @@ export const useInvoiceApiStore = defineStore('invoice', {
     },
     async fetchList({ take = 10, skip = 0, sort = [], formValue = {} }) {
       try {
-        // Create search object with form values
+        // DataSourceRequest format (same as SaleOrder)
         const search = {
           invoiceNumber: formValue.invoiceNumber || null,
+          dkInvoiceNumber: formValue.dkInvoiceNumber || null,
           customerName: formValue.customerName || null,
           customerCode: formValue.customerCode || null,
-          soNumber: formValue.soNumber || null,
           status: formValue.status || null,
           createBy: formValue.createBy || null,
           createDateFrom: formValue.createDateFrom || null,
@@ -54,41 +54,33 @@ export const useInvoiceApiStore = defineStore('invoice', {
           deliveryDateTo: formValue.deliveryDateTo || null
         }
 
-        // Add sorting
-        let orderBy = null
-        let orderDirection = 'DESC'
-
-        if (sort && sort.length > 0) {
-          const sortField = sort[0]
-          orderBy = sortField.field
-          orderDirection = sortField.dir?.toUpperCase() || 'DESC'
-        } else {
-          orderBy = 'createDate'
+        const request = {
+          take,
+          skip,
+          sort: sort.map((s) => ({
+            field: s.field,
+            dir: s.dir
+          })),
+          search
         }
 
-        const param = {
-          ...search,
-          skip: skip,
-          take: take,
-          orderBy: orderBy,
-          orderDirection: orderDirection
-        }
-
-        const response = await api.jewelry.post('Invoice/List', param, {
-          skipLoading: false
-        })
+        const response = await api.jewelry.post('Invoice/List', request)
 
         if (response && response.data) {
           this.dataList = {
-            data: response.data.data || [],
-            total: response.data.total || 0
+            data: [...response.data] || [],
+            total: response.total || 0
           }
         }
 
-        return response
+        return this.dataList
       } catch (error) {
         console.error('Error fetching invoice list:', error)
-        throw error
+        this.dataList = {
+          data: [],
+          total: 0
+        }
+        return this.dataList
       }
     },
     async fetchDelete({ formValue }) {

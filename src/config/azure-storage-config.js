@@ -80,6 +80,14 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
       if (res) {
         base64String = `data:image/png;base64,${res}`
       }
+    } else if (imageType === 'stock' || blobPath.startsWith('Stock/')) {
+      // ดึงรูป Stock Product
+      const res = await api.jewelry.get('FileExtension/GetStockProductImage', {
+        imageName: fileName
+      })
+      if (res) {
+        base64String = `data:image/png;base64,${res}`
+      }
     } else if (imageType === 'user' || blobPath.startsWith('User/')) {
       // ดึงรูป User Profile
       const res = await api.jewelry.get('FileExtension/GetImage', {

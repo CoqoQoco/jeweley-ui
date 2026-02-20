@@ -64,7 +64,10 @@ export const PERMISSIONS = {
   MOBILE_PROFILE: 'mobile:profile',
 
   // Mobile Notifications
-  MOBILE_NOTIFICATIONS: 'mobile:notifications'
+  MOBILE_NOTIFICATIONS: 'mobile:notifications',
+
+  // Mobile Sale Order
+  MOBILE_SALE: 'mobile:sale'
 }
 
 // Role Permission Mapping
@@ -115,7 +118,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MOBILE_SCAN,
     PERMISSIONS.MOBILE_TASKS,
     PERMISSIONS.MOBILE_PROFILE,
-    PERMISSIONS.MOBILE_NOTIFICATIONS
+    PERMISSIONS.MOBILE_NOTIFICATIONS,
+    PERMISSIONS.MOBILE_SALE
   ],
 
   Admin: [
@@ -154,7 +158,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MOBILE_SCAN,
     PERMISSIONS.MOBILE_TASKS,
     PERMISSIONS.MOBILE_PROFILE,
-    PERMISSIONS.MOBILE_NOTIFICATIONS
+    PERMISSIONS.MOBILE_NOTIFICATIONS,
+    PERMISSIONS.MOBILE_SALE
   ],
 
   StockOperator: [
@@ -218,8 +223,9 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.SALE_VIEW,
     PERMISSIONS.SALE_CREATE,
 
-    // Mobile Features (เฉพาะพื้นฐาน)
+    // Mobile Features (เฉพาะพื้นฐาน + Sale)
     PERMISSIONS.MOBILE_DASHBOARD,
-    PERMISSIONS.MOBILE_PROFILE
+    PERMISSIONS.MOBILE_PROFILE,
+    PERMISSIONS.MOBILE_SALE
   ]
 }

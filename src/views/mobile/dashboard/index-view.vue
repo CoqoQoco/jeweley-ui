@@ -54,12 +54,12 @@
           <div class="action-label">สแกน QR</div>
         </div>
 
-        <!-- <div class="action-card" @click="navigateTo('/mobile/tasks')">
+        <div class="action-card" @click="navigateTo('/mobile/sale')">
           <div class="action-icon">
-            <i class="bi bi-list-task"></i>
+            <i class="bi bi-receipt"></i>
           </div>
-          <div class="action-label">งานของฉัน</div>
-        </div> -->
+          <div class="action-label">ใบสั่งขาย</div>
+        </div>
       </div>
     </div>
 
@@ -83,29 +83,12 @@
 
       <!-- Jobs List -->
       <div v-else-if="myJobs.length > 0" class="mobile-list">
-        <div
+        <JobCard
           v-for="job in myJobs"
           :key="job.id"
-          class="mobile-list-item mobile-list-item-clickable"
-          @click="viewJob(job)"
-        >
-          <div class="list-icon" :style="{ background: getStatusColor(job.statusId) + '20' }">
-            <i class="bi bi-briefcase" :style="{ color: getStatusColor(job.statusId) }"></i>
-          </div>
-          <div class="list-content">
-            <div class="list-title">{{ getJobTypeNameTh(job.jobTypeId) }}</div>
-            <div class="list-subtitle">{{ job.jobRunning }}</div>
-            <div class="list-meta">
-              <span class="status-badge" :style="{ background: getStatusColor(job.statusId) }">
-                {{ job.statusName }}
-              </span>
-              <span class="date-text">{{ formatDate(job.createDate) }}</span>
-            </div>
-          </div>
-          <div class="list-action">
-            <i class="bi bi-chevron-right"></i>
-          </div>
-        </div>
+          :job="job"
+          @click="viewJob"
+        />
       </div>
 
       <!-- Empty State -->
@@ -162,7 +145,8 @@
 <script>
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
-import { getJobTypeName, JOB_TYPE } from '@/constants/job-type.js'
+import { JOB_TYPE } from '@/constants/job-type.js'
+import JobCard from '@/views/mobile/components/job-card.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
@@ -170,6 +154,10 @@ dayjs.locale('th')
 
 export default {
   name: 'MobileDashboard',
+
+  components: {
+    JobCard
+  },
 
   setup() {
     const authStore = useAuthStore()
@@ -287,52 +275,14 @@ export default {
     },
 
     viewJob(job) {
-      // Check if job is "Plan Stock Cost" and "Completed"
-      // jobTypeId === 10 (PLAN_STOCK_COST) && statusId === 100 (Completed)
       if (job.jobTypeId === JOB_TYPE.PLAN_STOCK_COST && job.statusId === 100) {
-        // Navigate to cost version detail page
         this.$router.push({
           name: 'mobile-cost-version-detail',
-          params: {
-            jobRunning: job.jobRunning
-          }
+          params: { jobRunning: job.jobRunning }
         })
       } else {
         console.log('View job:', job)
-        // TODO: Navigate to other job detail pages
-        // this.$router.push(`/mobile/job/${job.id}`)
       }
-    },
-
-    getStatusColor(statusId) {
-      // Based on JobStatus.cs constants
-      // Pending = 10, Assigned = 20, Started = 30, InProgress = 40, OnHold = 50, Completed = 100, Cancelled = 500
-      switch (statusId) {
-        case 500: // Cancelled
-          return '#f44336' // Red
-        case 100: // Completed
-          return '#4caf50' // Green
-        case 50: // OnHold
-          return '#ff9800' // Orange
-        case 40: // InProgress
-          return '#ff9800' // Orange
-        case 30: // Started
-          return '#2196f3' // Blue
-        case 20: // Assigned
-          return '#2196f3' // Blue
-        case 10: // Pending
-          return '#9e9e9e' // Gray
-        default:
-          return '#9e9e9e' // Default Gray
-      }
-    },
-
-    formatDate(dateString) {
-      return dayjs(dateString).format('DD/MM/YYYY HH:mm')
-    },
-
-    getJobTypeNameTh(jobTypeId) {
-      return getJobTypeName(jobTypeId)
     }
   }
 }
@@ -557,27 +507,6 @@ export default {
 
   &:active {
     opacity: 0.7;
-  }
-}
-
-.list-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-
-  .status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    color: white;
-    font-weight: 500;
-  }
-
-  .date-text {
-    font-size: 0.7rem;
-    color: #999;
   }
 }
 

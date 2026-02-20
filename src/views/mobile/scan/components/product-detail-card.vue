@@ -127,6 +127,15 @@
           </div>
         </div>
 
+        <!-- Tag Price -->
+        <div v-if="tagPriceMultiplier > 0" class="tag-price-bar">
+          <div class="tag-price-left">
+            <i class="bi bi-tag"></i>
+            <span>ราคาป้าย (× {{ tagPriceMultiplier }})</span>
+          </div>
+          <span class="tag-price-amount">{{ formatCurrency(tagPrice) }} บาท</span>
+        </div>
+
         <!-- Expandable Details -->
         <transition name="slide-fade">
           <div v-if="showCostDetails" class="cost-details-content">
@@ -270,6 +279,14 @@ export default {
     totalCost() {
       if (!this.hasCostData) return 0
       return this.priceTransactions.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
+    },
+
+    tagPriceMultiplier() {
+      return this.product?.tagPriceMultiplier || 1
+    },
+
+    tagPrice() {
+      return this.totalCost * this.tagPriceMultiplier
     }
   },
 
@@ -517,6 +534,35 @@ export default {
         font-size: 0.9rem;
         transition: transform 0.3s ease;
       }
+    }
+  }
+
+  .tag-price-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    margin-top: 6px;
+    background: #fff3e0;
+    border-radius: 6px;
+
+    .tag-price-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #e65100;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      i {
+        font-size: 0.85rem;
+      }
+    }
+
+    .tag-price-amount {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #e65100;
     }
   }
 

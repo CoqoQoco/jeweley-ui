@@ -228,6 +228,22 @@
                   </template>
                 </Column>
               </Row>
+              <Row v-if="tagPriceMultiplier > 0">
+                <Column :colspan="5">
+                  <template #footer>
+                    <div class="text-right type-container tag-price-row">
+                      <span>ราคาป้าย (ตัวคูณ × {{ tagPriceMultiplier }})</span>
+                    </div>
+                  </template>
+                </Column>
+                <Column :colspan="1">
+                  <template #footer>
+                    <div class="text-right type-container tag-price-row">
+                      <span>{{ formatCurrency(tagPrice) }}</span>
+                    </div>
+                  </template>
+                </Column>
+              </Row>
             </ColumnGroup>
           </DataTable>
         </div>
@@ -316,6 +332,12 @@ export default {
         return 0
       }
       return this.priceTransactions.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
+    },
+    tagPriceMultiplier() {
+      return this.stockData?.tagPriceMultiplier || 1
+    },
+    tagPrice() {
+      return this.totalPrice * this.tagPriceMultiplier
     }
   },
   watch: {
@@ -427,6 +449,10 @@ textarea {
       font-size: 13px;
     }
   }
+}
+
+.tag-price-row {
+  color: #e65100;
 }
 
 // Responsive Column widths for Tablet
