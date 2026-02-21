@@ -21,8 +21,8 @@ export class InvoicePdfBuilder {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
       address: '200/16 Rama 6 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
       phone: '(+662) 6196601-4',
-      fax: 'FAX: (+662) 2710834',
-      email: 'admin@dkbangkok.com'
+      fax: ' (+662) 2710834',
+      email: 'info@dkbkk.com'
     }
     this.invoiceNo = invoiceNo || this.generateInvoiceNumber()
     this.logoBase64 = null
@@ -1059,7 +1059,7 @@ export class InvoicePdfBuilder {
 
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
-    return Math.round(num).toLocaleString('th-TH', {
+    return num.toLocaleString('th-TH', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })

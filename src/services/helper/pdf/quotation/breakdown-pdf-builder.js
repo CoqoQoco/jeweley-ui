@@ -16,8 +16,8 @@ export class BreakdownPdfBuilder {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
       address: '200/16 Rama 6 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
       phone: '(+662) 6196601-4',
-      fax: 'FAX: (+662) 2710834',
-      email: 'admin@dkbangkok.com'
+      fax: ' (+662) 2710834',
+      email: 'info@dkbkk.com'
     }
   }
 

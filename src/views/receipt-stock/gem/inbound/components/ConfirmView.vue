@@ -53,10 +53,12 @@
                 type="text"
                 class="form-control"
                 v-model="form.operator"
-                autocomplete="off"
+                autocomplete="new-password"
                 autocorrect="off"
                 autocapitalize="off"
                 spellcheck="false"
+                data-lpignore="true"
+                data-1p-ignore
                 required
               />
             </div>
@@ -127,10 +129,12 @@
                 class="form-control"
                 :style="[form.pass ? 'background-color: #b5dad4' : ' background-color:#dad4b5']"
                 v-model="form.pass"
-                autocomplete="off"
+                autocomplete="new-password"
                 autocorrect="off"
                 autocapitalize="off"
                 spellcheck="false"
+                data-lpignore="true"
+                data-1p-ignore
               />
             </div>
           </div>
