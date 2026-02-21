@@ -70,6 +70,7 @@
               type="text"
               class="form-control"
               :placeholder="searchFieldPlaceholder"
+              @input="onManualInput"
               @keyup.enter="handleManualSearch"
             />
             <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
@@ -216,6 +217,40 @@ export default {
     resetProduct() {
       this.manualInput = ''
       this.scannedProduct = null
+    },
+
+    /**
+     * Auto-format รหัสสินค้าใหม่: DK18K1XR2001 → DK-18K-1XR-2001
+     * Pattern: XX-XXX-XXX-XXXX (2-3-3-4 คั่นด้วย -)
+     * ทำงานเฉพาะเมื่อ searchField = stockNumber
+     */
+    onManualInput() {
+      // uppercase เสมอทุก searchField
+      const upper = this.manualInput.toUpperCase()
+
+      // auto-format dash เฉพาะรหัสสินค้าใหม่
+      if (this.searchField === 'stockNumber') {
+        const raw = upper.replace(/-/g, '')
+        if (!raw) return
+
+        let formatted = ''
+        const segments = [2, 3, 3, 4] // DK-18K-1XR-2001
+        let pos = 0
+
+        for (let i = 0; i < segments.length && pos < raw.length; i++) {
+          if (i > 0) formatted += '-'
+          formatted += raw.substring(pos, pos + segments[i])
+          pos += segments[i]
+        }
+
+        if (pos < raw.length) {
+          formatted += raw.substring(pos)
+        }
+
+        this.manualInput = formatted
+      } else {
+        this.manualInput = upper
+      }
     },
 
     async handleManualSearch() {

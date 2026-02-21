@@ -27,27 +27,48 @@
 
       <!-- Search Form -->
       <form @submit.prevent="onSearch">
-        <div class="form-col-container">
-          <!-- Stock Number Input -->
+        <div class="form-col-sm-container">
+          <!-- Stock Number (New) -->
           <div>
-            <span class="title-text">เลขที่ผลิต / รหัสสินค้า</span>
-            <div class="input-group input-group-sm">
-              <input
-                class="form-control"
-                type="text"
-                v-model="form.stockNumber"
-                placeholder="ค้นหาด้วยเลขที่ผลิตหรือรหัสสินค้า"
-                autocomplete="off"
-              />
-              <div class="input-group-append">
-                <button
-                  type="submit"
-                  class="btn btn-main btn-sm btn-input-group mt-1"
-                >
-                  <span class="bi bi-search"></span>
-                </button>
-              </div>
-            </div>
+            <span class="title-text">เลขที่ผลิต (ใหม่)</span>
+            <input
+              :class="['form-control bg-input']"
+              type="text"
+              v-model.trim="form.stockNumber"
+              placeholder="EX: DK-2502-00X"
+              autocomplete="off"
+            />
+          </div>
+
+          <!-- Stock Number Origin (Old) -->
+          <div>
+            <span class="title-text">เลขที่ผลิต (เก่า)</span>
+            <input
+              :class="['form-control bg-input']"
+              type="text"
+              v-model.trim="form.stockNumberOrigin"
+              placeholder="EX: AD054XX"
+              autocomplete="off"
+            />
+          </div>
+
+          <!-- Product Number -->
+          <div>
+            <span class="title-text">รหัสสินค้า</span>
+            <input
+              :class="['form-control bg-input']"
+              type="text"
+              v-model.trim="form.productNumber"
+              placeholder="EX: R08X50XXXL"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="btn-submit-container-custom">
+            <button class="btn btn-sm btn-green mr-2 mt-4" type="submit" title="ค้นหา">
+              <i class="bi bi-search"></i>
+              <span class="ml-2">ค้นหา</span>
+            </button>
           </div>
         </div>
       </form>
@@ -83,7 +104,9 @@ export default {
   data() {
     return {
       form: {
-        stockNumber: null
+        stockNumber: '',
+        stockNumberOrigin: '',
+        productNumber: ''
       },
       showPlanModal: false,
       planCount: 0
@@ -96,8 +119,8 @@ export default {
 
   methods: {
     async onSearch() {
-      if (!this.form.stockNumber) {
-        warning('กรุณากรอกเลขที่ผลิตหรือรหัสสินค้า', 'ข้อมูลไม่ครบถ้วน')
+      if (!this.form.stockNumber && !this.form.stockNumberOrigin && !this.form.productNumber) {
+        warning('กรุณากรอกเลขที่ผลิตหรือรหัสสินค้าอย่างน้อย 1 ช่อง', 'ข้อมูลไม่ครบถ้วน')
         return
       }
 
@@ -120,7 +143,11 @@ export default {
         }
 
         this.$emit('stock-selected', stockData)
-        this.form.stockNumber = null
+        this.form = {
+          stockNumber: '',
+          stockNumberOrigin: '',
+          productNumber: ''
+        }
       }
     },
 
@@ -161,12 +188,6 @@ export default {
 
 .search-stock-container {
   margin-top: 10px;
-}
-
-.btn-input-group {
-  //height: 35px;
-  padding: 6px 12px;
-  margin-top: 5px !important;
 }
 
 .position-relative {

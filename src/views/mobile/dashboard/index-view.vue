@@ -294,7 +294,7 @@ export default {
 .mobile-dashboard {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 80px; // เว้นที่สำหรับ bottom nav
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); // เว้นที่สำหรับ bottom nav + safe area
 }
 
 .dashboard-header {

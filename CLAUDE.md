@@ -31,6 +31,7 @@ This is a Vue 3 jewelry management application with the following key architectu
 - **SCSS Styling**:
   - Legacy: `custom-style/` (Bootstrap 4 based - Do NOT modify)
   - New Web: `responsive-style/web/` (Responsive utilities for Tablet & Desktop)
+  - Mobile: `responsive-style/mobile/` (Mobile utility classes + safe area)
   - Shared: `variable.scss`, `mixin.scss`
 
 ### Authentication & Authorization
@@ -61,11 +62,11 @@ This is a Vue 3 jewelry management application with the following key architectu
     - `invoice/` - Invoice management
     - `cost-stock/web/cost-edit/` - Stock appraisal (product pricing)
   - `setting/` - User and system settings
-- **Mobile Routes** (To be implemented):
-  - Separate route structure for mobile devices
-  - Different menu and navigation for mobile users
+- **Mobile Routes** (`src/router/mobile/authen-routes.js`):
+  - Separate route structure + layout (`LayoutMobile.vue`) for mobile devices
+  - Bottom navigation + optional top bar
   - Path convention: `/mobile/feature-name/`
-  - Example: `/mobile/cost-stock/` for mobile stock appraisal
+  - Features: dashboard, sale (SO + Invoice), scan, tasks, profile, notifications, cost-version-detail
 
 ### Component Organization
 - `src/components/` - Reusable components
@@ -371,9 +372,13 @@ src/assets/scss/
 ├── variable.scss               # Shared variables
 ├── mixin.scss                  # Shared mixins
 └── responsive-style/           # ✨ New styles directory
-    └── web/                    # Web-specific styles (Tablet & Desktop)
+    ├── web/                    # Web-specific styles (Tablet & Desktop)
+    │   ├── index.scss          # Main import file
+    │   ├── responsive-utilities.scss  # All responsive utility classes
+    │   └── README.md           # Documentation
+    └── mobile/                 # Mobile-specific styles
         ├── index.scss          # Main import file
-        ├── responsive-utilities.scss  # All responsive utility classes
+        ├── mobile-utilities.scss  # Mobile utility classes
         └── README.md           # Documentation
 ```
 
@@ -611,10 +616,12 @@ src/assets/scss/
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│ Mobile Components (Separate Implementation)                  │
+│ Mobile Components (Implemented)                              │
 │ ├── Routes: /mobile/*                                        │
-│ ├── Layouts: Separate mobile layouts                        │
-│ └── Styles: Will be created separately when needed          │
+│ ├── Layout: src/layout/mobile/LayoutMobile.vue              │
+│ ├── Styles: responsive-style/mobile/                        │
+│ ├── No PrimeVue — use native HTML (select, input, checkbox) │
+│ └── Safe area: viewport-fit=cover + env(safe-area-inset-*)  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -656,12 +663,136 @@ src/assets/scss/
 |----------|--------|--------|
 | Existing component | `custom-style/standard-form.scss` | ❌ Keep unchanged |
 | New web component | `responsive-style/web` | ✅ Use for new dev |
-| Mobile component | `responsive-style/mobile` | 🔮 Future - not yet created |
+| Mobile component | `responsive-style/mobile` | ✅ Use for mobile dev |
 | Need both | Import both files | ✅ OK if needed |
 
 **Path Reference:**
 - Legacy: `@/assets/scss/custom-style/standard-form.scss`
 - New Web: `@/assets/scss/responsive-style/web`
+- Mobile: `@/assets/scss/responsive-style/mobile`
 - Variables: `@/assets/scss/variable.scss` (shared by all)
 - Mixins: `@/assets/scss/mixin.scss` (shared by all)
+```
+
+### Mobile Development Guidelines
+
+**IMPORTANT**: Mobile components have different conventions from Web components. Follow these rules strictly.
+
+#### Mobile Layout Architecture
+
+```
+index.html
+  └── viewport-fit=cover (enables safe area insets)
+
+LayoutMobile.vue (src/layout/mobile/)
+  ├── mobile-topbar-container (sticky top, optional per route)
+  ├── mobile-content-wrapper (scrollable, padding-bottom for bottom nav + safe area)
+  └── mobile-bottom-nav-container (fixed bottom: 0, padding-bottom: safe area)
+```
+
+#### iOS Safari Safe Area (CRITICAL)
+
+**Problem**: iOS Safari has a bottom toolbar/home indicator that overlaps `position: fixed; bottom: 0` elements.
+
+**Solution**: `viewport-fit=cover` + `env(safe-area-inset-bottom)` on all fixed/sticky bottom elements.
+
+**Rules**:
+1. `index.html` MUST have `viewport-fit=cover` in meta viewport tag
+2. ALL `position: fixed; bottom` elements MUST use `env(safe-area-inset-bottom, 0px)`
+3. ALL mobile view `padding-bottom` that accounts for bottom nav MUST include safe area
+
+**Best Practices**:
+```scss
+// ❌ Bad - Safari bottom bar overlaps content
+.my-fixed-bottom {
+  position: fixed;
+  bottom: 0;
+}
+
+.my-view {
+  padding-bottom: 80px;
+}
+
+.my-sticky-btn {
+  position: fixed;
+  bottom: 70px;
+}
+
+// ✅ Good - Accounts for Safari safe area
+.my-fixed-bottom {
+  position: fixed;
+  bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.my-view {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+.my-sticky-btn {
+  position: fixed;
+  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+}
+```
+
+**Key values**:
+- Bottom nav height: ~60px (padding 8px top/bottom + content)
+- Content wrapper: `padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px))`
+- Sticky buttons above nav: `bottom: calc(70px + env(safe-area-inset-bottom, 0px))`
+- Views with bottom nav: `padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px))`
+- Views with sticky btn + bottom nav: `padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px))`
+
+**Safe area utility classes** (in `mobile-utilities.scss`):
+```scss
+.mobile-safe-top    { padding-top: env(safe-area-inset-top); }
+.mobile-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+```
+
+#### Mobile Component Conventions
+
+| Rule | Web | Mobile |
+|------|-----|--------|
+| **UI Framework** | PrimeVue (DataTable, Dropdown, Checkbox, etc.) | Native HTML (`<select>`, `<input>`, `<checkbox>`) |
+| **SCSS Import** | `@import '@/assets/scss/responsive-style/web'` | `@import '@/assets/scss/responsive-style/mobile'` |
+| **API Pattern** | Options API | Options API |
+| **Alerts** | sweetAlerts | sweetAlerts |
+| **Try-catch** | No (axios middleware) | No (axios middleware) |
+| **Loading state** | No manual (axios middleware) | No manual (axios middleware) |
+| **File naming** | kebab-case | kebab-case |
+| **Date picker** | PrimeVue Calendar | Native `<input type="date">` |
+| **Dropdown/Select** | PrimeVue Dropdown | Native `<select>` |
+
+```vue
+<!-- ✅ Good - Mobile component template -->
+<style lang="scss" scoped>
+@import '@/assets/scss/responsive-style/mobile';
+
+.my-mobile-view {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+</style>
+```
+
+#### Mobile Key CSS Classes
+
+| Class | Usage |
+|-------|-------|
+| `.mobile-container` | Container with padding |
+| `.mobile-mt-{1-3}` | Margin top (8px, 16px, 24px) |
+| `.mobile-btn` + `.mobile-btn-primary` / `.mobile-btn-outline` / `.mobile-btn-success` | Buttons |
+| `.mobile-form-group` | Form styling |
+| `.mobile-empty-state` | Empty state |
+| `.mobile-grid-2` | 2-column grid |
+| `.mobile-safe-top` / `.mobile-safe-bottom` | Safe area padding |
+
+#### Mobile Z-Index Hierarchy
+
+```
+9999  - Loading Overlay
+1000  - Full-screen Modal Overlays (customer search/create)
+100   - Bottom Nav Container + Top Bar Container
+99    - Sticky Bottom Buttons (above bottom nav)
+10    - Sticky Table Headers
 ```

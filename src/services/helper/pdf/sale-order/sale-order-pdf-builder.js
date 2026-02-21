@@ -202,7 +202,7 @@ export class SaleOrderPdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.soData.createDate).locale('en').format('MMM DD, YYYY'),
+                          text: dayjs(this.soData.createDate).locale('en').format('MMMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',
@@ -311,7 +311,8 @@ export class SaleOrderPdfBuilder {
                     }
                   : null,
                 {
-                  text: `Currency: ${this.currencyUnit} (Rate: ${this.currencyRate})`,
+                  //text: `Currency: ${this.currencyUnit} (Rate: ${this.currencyRate})`,
+                    text: "",
                   fontSize: 10,
                   color: '#393939',
                   margin: [0, 5, 0, 0]

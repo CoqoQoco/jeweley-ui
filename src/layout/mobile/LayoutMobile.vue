@@ -126,7 +126,7 @@ export default {
 
 .mobile-content-wrapper {
   flex: 1;
-  padding-bottom: 70px; /* ระยะสำหรับ bottom nav (60px + 10px buffer) */
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); /* bottom nav + safe area */
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -149,8 +149,8 @@ export default {
   background: white;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 
-  // Safe area for iPhone notch
-  padding-bottom: env(safe-area-inset-bottom);
+  // Safe area for iPhone (Safari bottom bar + notch)
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 </style>
 

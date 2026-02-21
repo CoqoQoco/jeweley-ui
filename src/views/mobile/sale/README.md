@@ -24,6 +24,7 @@ src/views/mobile/sale/
     ├── customer-form.vue               # ฟอร์มลูกค้า (ค้นหาจาก DB + เพิ่มลูกค้าใหม่)
     ├── customer-search-modal.vue       # Full-screen modal ค้นหาลูกค้าจาก DB
     ├── customer-create-modal.vue       # Full-screen modal เพิ่มลูกค้าใหม่ (auto-gen code)
+    ├── invoice-creation-form.vue       # ฟอร์มสร้าง Invoice (เลือกสินค้า + ราคาท้ายบิล + ชำระเงิน)
     ├── so-summary.vue                  # สรุปราคา (แสดงในสกุลเงินที่เลือก + อ้างอิงบาท)
     └── so-item-card.vue                # การ์ดสินค้าใน detail (read-only + status badge)
 
@@ -81,7 +82,9 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
   │     ├── สินค้าที่ออก Invoice แล้ว → ล็อค (read-only, icon กุญแจ)
   │     └── ปุ่ม "บันทึกการแก้ไข" → Upsert SO (ส่ง soNumber เดิม)
   ├── ปุ่ม "พิมพ์ใบสั่งขาย" → สร้าง PDF (A4, style เหมือน Invoice)
-  └── ปุ่ม "ออก Invoice" → Confirm Stock + Create Invoice รวมขั้นตอนเดียว
+  └── ปุ่ม "ออก Invoice" → เปิดฟอร์มสร้าง Invoice (InvoiceCreationForm)
+        ├── เลือกสินค้า (checkbox) + กรอกราคาท้ายบิล + ข้อมูลชำระเงิน
+        ├── กด "สร้าง Invoice" → Confirm Stock + Create Invoice
         └── Disabled ถ้าทุกสินค้าออก Invoice แล้ว
     ↓
 รายละเอียด Invoice (invoice-detail-view)
@@ -184,7 +187,28 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
 - ข้อมูล Invoice (ถ้าออกแล้ว)
 - **ปุ่ม "แก้ไขรายการ"** → เข้า Edit Mode (ซ่อนถ้าทุก item ออก Invoice แล้ว)
 - **ปุ่ม "พิมพ์ใบสั่งขาย"** → สร้าง PDF download (ราคาแปลงเป็นสกุลเงินที่เลือก)
-- **ปุ่ม "ออก Invoice"** → Confirm Stock + Create Invoice (disabled ถ้าทุก item ออก Invoice แล้ว)
+- **ปุ่ม "ออก Invoice"** → เปิดฟอร์มสร้าง Invoice (disabled ถ้าทุก item ออก Invoice แล้ว)
+
+**Invoice Creation Form** (`showInvoiceForm = true`):
+- แสดง `InvoiceCreationForm` component แทนปุ่ม action
+- **เลือกสินค้า**: checkbox เลือก item ที่จะออก Invoice (default = เลือกทั้งหมด)
+- **DK Invoice Number**: ระบุเลข Invoice DK (ไม่บังคับ)
+- **สรุปราคา (สกุลเงินจาก SO)**:
+  - F.O.B Bangkok (รวมสินค้าที่เลือก)
+  - ส่วนลดพิเศษ (input)
+  - ส่วนเพิ่มพิเศษ (input)
+  - ยอดรวมหลังปรับ
+  - Freight & Insurance (input)
+  - ยอดรวมก่อน VAT
+  - VAT % (input) + จำนวนเงิน VAT
+  - ยอดรวม Invoice
+- **ข้อมูลการชำระเงิน**:
+  - วิธีการชำระเงิน (native `<select>`: เงินสด/โอน/เช็ค/บัตรเครดิต/เครดิต)
+  - ระยะเวลาการชำระเงิน (วัน)
+  - ราคามัดจำ
+  - ยอดคงเหลือที่ต้องชำระ
+- **ปุ่ม "สร้าง Invoice"** → confirmSubmit → Confirm Stock + Invoice/Create
+- **ปุ่ม "ยกเลิก"** → ปิดฟอร์มกลับ View Mode
 
 **Edit Mode** (`isEditing = true`):
 - **เพิ่มสินค้า** — 2 tabs เหมือน create-view:
@@ -196,10 +220,11 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
 - **ปุ่ม "บันทึกการแก้ไข"** → merge invoicedItems + editItems → fetchSave (ส่ง `soNumber` เดิม)
 - **ปุ่ม "ยกเลิก"** → discard changes กลับ View Mode
 
-**Invoice Flow** (2 ขั้นตอนรวมเป็น 1 กด):
-1. `confirmStockItems()` — ยืนยัน stock เฉพาะ items ที่ยังไม่ confirm
-2. `Invoice/Create` — สร้าง Invoice เฉพาะ items ที่ยังไม่ออก Invoice
-3. แสดง success + เลข Invoice → reload SO data
+**Invoice Flow** (ผ่าน InvoiceCreationForm component):
+1. กดปุ่ม "ออก Invoice" → `showInvoiceForm = true` → แสดงฟอร์ม
+2. เลือกสินค้า + กรอกราคาท้ายบิล (ส่วนลด/เพิ่มพิเศษ, Freight, VAT) + ข้อมูลชำระเงิน
+3. กด "สร้าง Invoice" → confirmSubmit → `confirmStockItems()` (เฉพาะ unconfirmed) → `Invoice/Create`
+4. แสดง success + เลข Invoice → emit `invoice-created` → reload SO data
 
 **Invoice Button Disable Logic:**
 ```javascript
@@ -351,6 +376,7 @@ azure-storage-config.js
 | `customer-search-modal` | `visible` (Boolean) | `close`, `customer-selected` | Full-screen modal ค้นหาลูกค้าจาก DB |
 | `customer-create-modal` | `visible` (Boolean) | `close`, `customer-created` | Full-screen modal เพิ่มลูกค้าใหม่ (auto-gen code: CUST-YYMMDD-XXXX) |
 | `so-summary` | `items`, `currencyUnit`, `currencyRate` | - | สรุปราคาในสกุลเงินที่เลือก + อ้างอิงบาท |
+| `invoice-creation-form` | `soData` (Object), `stockItems` (Array) | `invoice-created`, `cancel` | ฟอร์มสร้าง Invoice: เลือกสินค้า + ราคาท้ายบิล (ส่วนลด/เพิ่มพิเศษ, Freight, VAT) + ข้อมูลชำระเงิน |
 | `so-item-card` | `item` (Object) | - | การ์ดสินค้า read-only + status (ราคาหน่วยบาท) — ใช้ใน view mode + locked section (edit mode) |
 
 ### Reused Components

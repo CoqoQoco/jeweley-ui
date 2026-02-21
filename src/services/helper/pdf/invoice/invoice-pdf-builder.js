@@ -91,19 +91,19 @@ export class InvoicePdfBuilder {
     // โหลดรูปภาพทั้งหมดพร้อมกัน
     await Promise.all(
       this.data.map(async (item) => {
-        // ถ้ามี imageBlobPath ให้โหลดเป็น Base64
-        if (item.imageBlobPath && !item.imageBase64) {
-          try {
-            const base64Image = await getAzureBlobAsBase64(item.imageBlobPath, 'mold')
+        if (item.imageBase64) return
 
-            if (base64Image && base64Image.length > 0) {
-              item.imageBase64 = base64Image
-            } else {
-              console.warn('No image found for blob path:', item.imageBlobPath)
-            }
-          } catch (error) {
-            console.error('Error loading image:', item.imageBlobPath, error)
+        // ใช้ imageBlobPath ก่อน, ถ้าไม่มีใช้ imagePath
+        const blobPath = item.imageBlobPath || item.imagePath
+        if (!blobPath) return
+
+        try {
+          const base64Image = await getAzureBlobAsBase64(blobPath, 'stock')
+          if (base64Image && base64Image.length > 0) {
+            item.imageBase64 = base64Image
           }
+        } catch (error) {
+          console.error('Error loading image:', blobPath, error)
         }
       })
     )
@@ -228,7 +228,7 @@ export class InvoicePdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.invoiceDate).locale('en').format('MMM DD, YYYY'),
+                          text: dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',
@@ -350,7 +350,8 @@ export class InvoicePdfBuilder {
                   color: '#393939'
                 },
                 {
-                  text: `Currency: ${this.currencyUnit} (Rate: ${this.currencyRate})`,
+                  //text: `Currency: ${this.currencyUnit} (Rate: ${this.currencyRate})`,
+                  text: "",
                   fontSize: 10,
                   color: '#393939',
                   margin: [0, 5, 0, 0]
@@ -1058,7 +1059,10 @@ export class InvoicePdfBuilder {
 
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
-    return Math.round(num).toFixed(2)
+    return Math.round(num).toLocaleString('th-TH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
   }
 
   getDocDefinition() {

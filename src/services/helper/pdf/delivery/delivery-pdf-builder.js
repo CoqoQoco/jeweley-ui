@@ -195,7 +195,7 @@ export class DeliveryPdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.deliveryDate).locale('en').format('MMM DD, YYYY'),
+                          text: dayjs(this.deliveryDate).locale('en').format('MMMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',

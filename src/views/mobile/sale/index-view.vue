@@ -302,7 +302,7 @@ export default {
 .mobile-sale-view {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 140px;
+  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
 }
 
 .main-tabs {
@@ -441,12 +441,10 @@ export default {
 
 .sticky-bottom-btn {
   position: fixed;
-  bottom: 70px;
+  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   padding: 0px 10px 16px 10px;
-  //background: white;
-  //box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   z-index: 99;
 
   .mobile-btn {

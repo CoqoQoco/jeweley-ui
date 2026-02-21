@@ -196,7 +196,7 @@ export default {
 .mobile-tasks-view {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 80px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 .tasks-header {

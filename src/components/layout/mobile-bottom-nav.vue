@@ -233,10 +233,6 @@ export default {
   }
 }
 
-// Safe area padding for devices with notch (iPhone X+)
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .mobile-bottom-nav {
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  }
-}
+// Safe area จัดการที่ .mobile-bottom-nav-container ใน LayoutMobile.vue แล้ว
+// ไม่ต้องเพิ่ม env(safe-area-inset-bottom) ที่นี่ซ้ำ
 </style>

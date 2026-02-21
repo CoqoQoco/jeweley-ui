@@ -209,7 +209,7 @@ export class InvoicePdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.invoiceDate).locale('en').format('MMM DD, YYYY'),
+                          text: dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',

@@ -213,8 +213,18 @@
         </div>
       </div>
 
+      <!-- ==================== INVOICE CREATION FORM ==================== -->
+      <div v-if="showInvoiceForm" class="mobile-mt-2">
+        <InvoiceCreationForm
+          :soData="soData"
+          :stockItems="stockItems"
+          @invoice-created="onInvoiceCreated"
+          @cancel="showInvoiceForm = false"
+        />
+      </div>
+
       <!-- ==================== ACTION BUTTONS ==================== -->
-      <div class="action-buttons mobile-mt-3">
+      <div v-else class="action-buttons mobile-mt-3">
         <template v-if="isEditing">
           <button
             class="mobile-btn mobile-btn-primary"
@@ -254,7 +264,7 @@
           <!-- Create Invoice -->
           <button
             class="mobile-btn mobile-btn-success"
-            @click="handleCreateInvoice"
+            @click="showInvoiceForm = true"
             :disabled="allItemsInvoiced"
           >
             <i class="bi bi-file-earmark-check"></i>
@@ -281,14 +291,14 @@
 
 <script>
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
-import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
-import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 import SoItemCard from './components/so-item-card.vue'
 import AddItemMethodSelector from './components/add-item-method-selector.vue'
 import AppraisalJobList from './components/appraisal-job-list.vue'
 import ItemList from './components/item-list.vue'
+import InvoiceCreationForm from './components/invoice-creation-form.vue'
 import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
@@ -303,14 +313,14 @@ export default {
     AddItemMethodSelector,
     AppraisalJobList,
     ItemList,
+    InvoiceCreationForm,
     QrScanner
   },
 
   setup() {
     const saleOrderStore = usrSaleOrderApiStore()
-    const invoiceStore = useInvoiceApiStore()
     const productStore = usrStockProductApiStore()
-    return { saleOrderStore, invoiceStore, productStore }
+    return { saleOrderStore, productStore }
   },
 
   data() {
@@ -320,6 +330,8 @@ export default {
       copyItems: [],
       isLoading: false,
       exportingPDF: false,
+      // Invoice form
+      showInvoiceForm: false,
       // Edit mode
       isEditing: false,
       editItems: [],
@@ -644,113 +656,9 @@ export default {
     },
 
     // ==================== Invoice ====================
-    handleCreateInvoice() {
-      confirmSubmit(
-        'ยืนยันสินค้าและออก Invoice?',
-        'ออก Invoice',
-        async () => {
-          await this.createInvoice()
-        }
-      )
-    },
-
-    async createInvoice() {
-      const unconfirmedItems = this.stockItems.filter(
-        (item) => item.stockNumber && !item.isConfirm
-      )
-
-      if (unconfirmedItems.length > 0) {
-        const confirmResult = await this.saleOrderStore.confirmStockItems({
-          soNumber: this.soNumber,
-          stockItems: unconfirmedItems.map((item) => ({
-            id: item.id || null,
-            stockNumber: item.stockNumber,
-            productNumber: item.productNumber || '',
-            qty: Number(item.qty) || 1,
-            appraisalPrice: Number(item.appraisalPrice) || Number(item.price) || 0,
-            discount: Number(item.discountPercent) || 0,
-            isConfirm: true,
-            confirmedAt: new Date().toISOString()
-          }))
-        })
-
-        if (!confirmResult) {
-          error('ไม่สามารถยืนยันสินค้าได้')
-          return
-        }
-      }
-
-      const currencyUnit = this.soData.currencyUnit || 'THB'
-      const currencyRate = Number(this.soData.currencyRate) || 1
-
-      // เฉพาะ items ที่ยังไม่ได้ออก invoice
-      const invoiceItems = this.stockItems
-        .filter((item) => item.stockNumber && !item.isInvoice)
-        .map((item) => {
-          const appraisalPrice = Number(item.appraisalPrice) || Number(item.price) || 0
-          const discountPercent = Number(item.discountPercent) || 0
-          const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-          const convertedPrice = priceAfterDiscount / currencyRate
-
-          return {
-            stockNumber: item.stockNumber,
-            stockNumberOrigin: item.stockNumberOrigin || item.stockNumber,
-            id: item.id || null,
-            priceOrigin: appraisalPrice,
-            currencyUnit: currencyUnit,
-            currencyRate: currencyRate,
-            markup: 0,
-            discount: discountPercent,
-            goldRate: 0,
-            remark: '',
-            netPrice: String(convertedPrice),
-            priceDiscount: priceAfterDiscount,
-            priceAfterCurrencyRate: convertedPrice,
-            qty: Number(item.qty) || 1
-          }
-        })
-
-      if (invoiceItems.length === 0) {
-        warning('ไม่มีสินค้าที่สามารถออก Invoice ได้')
-        return
-      }
-
-      const invoiceResult = await this.invoiceStore.fetchCreate({
-        formValue: {
-          soNumber: this.soNumber,
-          dkInvoiceNumber: null,
-          customerCode: this.soData.customerCode || null,
-          customerName: this.soData.customerName || null,
-          customerAddress: this.soData.customerAddress || '',
-          customerTel: this.soData.customerTel || '',
-          customerEmail: this.soData.customerEmail || '',
-          customerRemark: '',
-          currencyUnit: currencyUnit,
-          currencyRate: currencyRate,
-          deliveryDate: null,
-          deposit: 0,
-          specialDiscount: 0,
-          specialAddition: 0,
-          freightAndInsurance: 0,
-          vat: 0,
-          goldRate: 0,
-          markup: 0,
-          payment: 1,
-          paymentName: 'เงินสด (Cash)',
-          paymentDay: 0,
-          priority: this.soData.priority || 'mobile',
-          refQuotation: '',
-          remark: this.soData.remark || '',
-          items: invoiceItems
-        }
-      })
-
-      if (invoiceResult) {
-        const invoiceNumber = invoiceResult.invoiceNumber || invoiceResult
-        success(`เลขที่ Invoice: ${invoiceNumber}`, 'ออก Invoice สำเร็จ', () => {
-          this.loadSaleOrder()
-        })
-      }
+    onInvoiceCreated() {
+      this.showInvoiceForm = false
+      this.loadSaleOrder()
     },
 
     // ==================== Helpers ====================
