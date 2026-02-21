@@ -14,6 +14,7 @@ src/views/mobile/sale/
 ├── index-view.vue                      # รายการ SO + Invoice (2 tabs, filter by createBy)
 ├── create-view.vue                     # สร้าง SO (add items + currency + customer + save)
 ├── detail-view.vue                     # รายละเอียด SO + ออก Invoice
+├── invoice-detail-view.vue             # รายละเอียด Invoice + พิมพ์ PDF
 ├── README.md                           # เอกสารนี้
 └── components/
     ├── add-item-method-selector.vue    # Tab toggle: ตีราคา | สแกน
@@ -37,6 +38,7 @@ src/services/helper/pdf/sale-order/
 | `/mobile/sale` | `mobile-sale` | `index-view.vue` |
 | `/mobile/sale/create` | `mobile-sale-create` | `create-view.vue` |
 | `/mobile/sale/detail/:soNumber` | `mobile-sale-detail` | `detail-view.vue` |
+| `/mobile/sale/invoice/:invoiceNumber` | `mobile-invoice-detail` | `invoice-detail-view.vue` |
 
 ## Permissions
 
@@ -58,7 +60,8 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
   │
   └── Tab "Invoice"
         ├── ดึงรายการ Invoice เฉพาะที่ user ปัจจุบันสร้าง (filter: createBy)
-        └── Card list: Invoice number, ลูกค้า, วันที่, จำนวนรายการ, ยอดรวม, status badge
+        ├── Card list: Invoice number, ลูกค้า, วันที่, จำนวนรายการ, ยอดรวม, status badge
+        └── กดเข้าดูรายละเอียด Invoice ได้
     ↓
 สร้าง SO (create-view)
   ├── Tab A: เลือกจากรายการตีราคา (Job ที่ Completed) → ได้ราคาป้าย (ต้นทุน × ตัวคูณ)
@@ -70,9 +73,25 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
   └── บันทึก: "สร้างใบสั่งขาย" (Confirmed) — backend gen SO number อัตโนมัติ
     ↓
 รายละเอียด SO (detail-view)
-  ├── ข้อมูล SO + ข้อมูลลูกค้า + รายการสินค้า (read-only)
+  ├── ข้อมูล SO + ข้อมูลลูกค้า + รายการสินค้า
+  ├── ปุ่ม "แก้ไขรายการ" → Edit mode (เพิ่ม/ลบ/แก้ไข สินค้า + บันทึก)
+  │     ├── เพิ่มสินค้าจาก Job ตีราคา หรือ สแกน QR/พิมพ์ stock number
+  │     ├── แก้ราคาป้าย / จำนวน / ส่วนลด % ได้
+  │     ├── ลบสินค้าได้ (เฉพาะที่ยังไม่ออก Invoice)
+  │     ├── สินค้าที่ออก Invoice แล้ว → ล็อค (read-only, icon กุญแจ)
+  │     └── ปุ่ม "บันทึกการแก้ไข" → Upsert SO (ส่ง soNumber เดิม)
   ├── ปุ่ม "พิมพ์ใบสั่งขาย" → สร้าง PDF (A4, style เหมือน Invoice)
   └── ปุ่ม "ออก Invoice" → Confirm Stock + Create Invoice รวมขั้นตอนเดียว
+        └── Disabled ถ้าทุกสินค้าออก Invoice แล้ว
+    ↓
+รายละเอียด Invoice (invoice-detail-view)
+  ├── ข้อมูล Invoice + ข้อมูลลูกค้า + รายการสินค้า
+  ├── สรุปราคา: F.O.B Bangkok, Discount/Addition, Freight, VAT, Grand Total
+  ├── ข้อมูลการชำระเงิน
+  ├── ปุ่ม "พิมพ์ Invoice" → เปิด print customization form (inline)
+  │     ├── กำหนด Invoice Number + Date ก่อนพิมพ์
+  │     └── ปุ่ม "พิมพ์เอกสาร" → สร้าง Invoice PDF (reuse InvoicePdfBuilder)
+  └── ปุ่ม "ย้อนกลับ" → กลับหน้ารายการ
 ```
 
 ## Features
@@ -156,13 +175,65 @@ Dashboard [ปุ่ม "ใบสั่งขาย"]
 ```
 
 ### หน้า 3: รายละเอียด SO (`detail-view.vue`)
-- ข้อมูล SO: เลข SO, วันที่, ผู้สร้าง, status badge
+
+**View Mode (default)**:
+- ข้อมูล SO: เลข SO, วันที่, ผู้สร้าง, สกุลเงิน, status badge
 - ข้อมูลลูกค้า: ชื่อ, เบอร์, ที่อยู่
 - รายการสินค้า (read-only, so-item-card.vue) — ราคาแสดงหน่วย "บาท"
 - สรุปราคา — ยอดรวมในสกุลเงินที่เลือก + "เทียบเท่า xxx บาท" (ถ้า rate ≠ 1)
 - ข้อมูล Invoice (ถ้าออกแล้ว)
+- **ปุ่ม "แก้ไขรายการ"** → เข้า Edit Mode (ซ่อนถ้าทุก item ออก Invoice แล้ว)
 - **ปุ่ม "พิมพ์ใบสั่งขาย"** → สร้าง PDF download (ราคาแปลงเป็นสกุลเงินที่เลือก)
-- **ปุ่ม "ออก Invoice"** → Confirm Stock + Create Invoice (ซ่อนถ้าออก Invoice แล้ว)
+- **ปุ่ม "ออก Invoice"** → Confirm Stock + Create Invoice (disabled ถ้าทุก item ออก Invoice แล้ว)
+
+**Edit Mode** (`isEditing = true`):
+- **เพิ่มสินค้า** — 2 tabs เหมือน create-view:
+  - Tab A "จากรายการตีราคา": เลือก Job ตีราคา → เพิ่มสินค้าพร้อมราคาป้าย
+  - Tab B "สแกนสินค้า": QR Scanner + manual input (เลือกค้นหาด้วย stockNumber/stockNumberOrigin)
+- **สินค้าที่ออก Invoice แล้ว** → แสดงเป็น locked section (read-only, icon กุญแจ, สี gray)
+- **สินค้าที่ยังไม่ออก Invoice** → แก้ราคาป้าย/จำนวน/ส่วนลด/ลบได้ (ใช้ ItemList + ItemCard)
+- **ตรวจซ้ำ**: เช็ค duplicate ทั้ง invoicedItems + editItems
+- **ปุ่ม "บันทึกการแก้ไข"** → merge invoicedItems + editItems → fetchSave (ส่ง `soNumber` เดิม)
+- **ปุ่ม "ยกเลิก"** → discard changes กลับ View Mode
+
+**Invoice Flow** (2 ขั้นตอนรวมเป็น 1 กด):
+1. `confirmStockItems()` — ยืนยัน stock เฉพาะ items ที่ยังไม่ confirm
+2. `Invoice/Create` — สร้าง Invoice เฉพาะ items ที่ยังไม่ออก Invoice
+3. แสดง success + เลข Invoice → reload SO data
+
+**Invoice Button Disable Logic:**
+```javascript
+// allItemsInvoiced computed
+const stockWithNumber = stockItems.filter(item => item.stockNumber)
+return stockWithNumber.every(item => item.isInvoice)
+// → disabled + label "ออก Invoice แล้วทั้งหมด"
+```
+
+### หน้า 4: รายละเอียด Invoice (`invoice-detail-view.vue`)
+
+**ข้อมูลที่แสดง:**
+- ข้อมูล Invoice: เลข Invoice, เลข SO, วันที่สร้าง, สถานะ, สกุลเงิน (Rate), ผู้สร้าง
+- ข้อมูลลูกค้า: ชื่อ, เบอร์, ที่อยู่
+- รายการสินค้า (read-only, so-item-card.vue) — ราคาหน่วยบาท
+- สรุปราคา: F.O.B Bangkok, Special Discount/Addition, Freight & Insurance, VAT, Grand Total (C.I.F)
+- ข้อมูลการชำระเงิน: วิธีชำระ, ระยะเวลา, มัดจำ
+- หมายเหตุ (ถ้ามี)
+
+**Actions:**
+- **ปุ่ม "พิมพ์ Invoice"** → เปิด print customization form (inline)
+  - ฟิลด์: Invoice Number (pre-fill) + Invoice Date (native date picker, default = today)
+  - หมายเหตุ: "การเปลี่ยนแปลงมีผลเฉพาะเอกสารที่พิมพ์ ข้อมูลต้นฉบับไม่เปลี่ยน"
+  - ปุ่ม "พิมพ์เอกสาร" → generate PDF (reuse `invoicePdfService.generateInvoicePDF()`)
+  - ปุ่ม "ยกเลิก" → ปิด form
+- **ปุ่ม "ย้อนกลับ"** → `router.back()`
+
+**Data Loading:**
+1. `Invoice/Get(invoiceNumber)` → invoiceData
+2. `SaleOrder/Get(soNumber)` → soData → parse JSON data → stockItems
+3. Filter: เฉพาะ items ที่อยู่ใน `invoiceResponse.confirmedItems`
+4. Map: `stockConfirm` → set id, appraisalPrice, qty, discountPercent, isConfirm, isInvoice
+
+**Currency:** มาจาก SO (`soResponse.currencyUnit`, `soResponse.currencyRate`)
 
 ### ราคาป้าย (Tag Price)
 
@@ -280,7 +351,7 @@ azure-storage-config.js
 | `customer-search-modal` | `visible` (Boolean) | `close`, `customer-selected` | Full-screen modal ค้นหาลูกค้าจาก DB |
 | `customer-create-modal` | `visible` (Boolean) | `close`, `customer-created` | Full-screen modal เพิ่มลูกค้าใหม่ (auto-gen code: CUST-YYMMDD-XXXX) |
 | `so-summary` | `items`, `currencyUnit`, `currencyRate` | - | สรุปราคาในสกุลเงินที่เลือก + อ้างอิงบาท |
-| `so-item-card` | `item` (Object) | - | การ์ดสินค้า read-only + status (ราคาหน่วยบาท) |
+| `so-item-card` | `item` (Object) | - | การ์ดสินค้า read-only + status (ราคาหน่วยบาท) — ใช้ใน view mode + locked section (edit mode) |
 
 ### Reused Components
 
@@ -354,10 +425,49 @@ create-view.vue
       └── currencyRate: 33.0
 
 detail-view.vue
-  ├── ยอดรวม: totalAmount / currencyRate → แสดงเป็นสกุลเงินที่เลือก
+  ├── View mode: ยอดรวม = sum(soItems) / currencyRate
+  ├── Edit mode: ยอดรวม = sum(invoicedItems + editItems) / currencyRate
   ├── "เทียบเท่า xxx บาท" (ถ้า rate ≠ 1)
   └── PDF: ส่ง { currencyUnit, currencyRate } → แปลงราคาทุกรายการ
 ```
+
+### Edit Mode (detail-view.vue)
+
+**Data Flow:**
+```
+View Mode                          Edit Mode
+┌──────────────────┐              ┌──────────────────────────────────┐
+│ soItems (readonly)│  startEdit  │ invoicedItems (locked, readonly) │
+│  = stockItems     │ ─────────→ │  = stockItems.filter(isInvoice)  │
+│  + copyItems      │             │                                  │
+└──────────────────┘              │ editItems (working copy)         │
+                                  │  = soItems.filter(!isInvoice)    │
+                                  │  + เพิ่มใหม่จาก scan/ตีราคา      │
+                                  └──────────────────────────────────┘
+                                              │ saveChanges
+                                              ▼
+                                  ┌──────────────────────────────────┐
+                                  │ merge: invoicedItems + editItems │
+                                  │ → fetchSave({ soNumber: เดิม }) │
+                                  │ → reload SO data                │
+                                  └──────────────────────────────────┘
+```
+
+**Key computed properties:**
+```javascript
+invoicedItems    // stockItems.filter(item => item.isInvoice) — ล็อค แก้ไม่ได้
+allItemsInvoiced // ทุก stockItem ที่มี stockNumber ออก invoice แล้ว → disable ปุ่ม
+allCurrentItems  // isEditing ? invoicedItems + editItems : soItems — ใช้คำนวณ summary
+displayItemCount // allCurrentItems.length
+currentTotalAmountTHB // sum of allCurrentItems prices (บาท)
+```
+
+**Edit mode ใช้ components เหมือน create-view:**
+- `AddItemMethodSelector` — toggle tab ตีราคา/สแกน
+- `AppraisalJobList` — รายการ Job ตีราคา
+- `QrScanner` — สแกน QR/Barcode
+- `ItemList` / `ItemCard` — รายการสินค้าที่แก้ไขได้
+- `SoItemCard` — สินค้าที่ออก Invoice แล้ว (locked section)
 
 ### Search Field Selector (Tab B - สแกน)
 

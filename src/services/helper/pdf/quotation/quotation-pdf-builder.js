@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 
 export class InvoicePdfBuilder {
@@ -208,7 +209,7 @@ export class InvoicePdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.invoiceDate).format('MMM DD, YYYY'),
+                          text: dayjs(this.invoiceDate).locale('en').format('MMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',

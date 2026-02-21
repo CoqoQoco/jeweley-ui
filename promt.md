@@ -2,9 +2,15 @@
 #### ถ้ามีการใช้ prime-vue components >> ตรวจสอบว่ามี generic-components ไหม >> ไม่มีให้สร้างไว้เพื่อ re-used >> 
 
 
-ตรวจสอบที่ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\sale\detail-view.vue
- - รองรับเเก้ไข so ดังนี เพิ่ม/ลบ สินค้าได้ ทั้งจาก ตีราคา หรือ scan สินค้าใหม่ เเละบันทึก so
- - disable invoice ถ้าทุกสินค้าออก invoice เเล้ว
+ตรวจสอบที่ tab invoice ให้ตรวจสอบของเดิม ที่
+ - D:\DuangKeaw\code\jeweley-ui\src\views\sale\invoice
+  D:\DuangKeaw\code\jeweley-ui\src\views\sale\invoice-detail
+
+  เสร้จเเล้ว
+  - สามารถกดเข้าไปดูรายละเอียดได้ 
+  - ออก invoice pdf ได้ reuse ที่ D:\DuangKeaw\code\jeweley-ui\src\services\helper\pdf\invoice
+  - ดู ยกด invoice มี customise บางส่วนให้ทำได้เหมือนกันครับ (invoice number, date)
+  - currecy ต้อเป็นที่มากับ so ด้วยครับ
 
 
 ## update D:\DuangKeaw\code\jeweley-ui\src\views\mobile\sale\README.md

@@ -1,25 +1,5 @@
 <template>
   <div class="mobile-sale-detail-view">
-    <!-- Header -->
-    <!-- <div class="sale-header">
-      <div class="mobile-container">
-        <button class="mobile-btn-icon" @click="$router.push('/mobile/sale')">
-          <i class="bi bi-arrow-left"></i>
-        </button>
-        <div class="header-content">
-          <h2 class="mobile-title">รายละเอียดใบสั่งขาย</h2>
-          <p class="header-subtitle">{{ soNumber }}</p>
-        </div>
-        <button
-          class="mobile-btn-icon"
-          @click="handlePrintPDF"
-          :disabled="exportingPDF || !soData"
-        >
-          <i class="bi" :class="exportingPDF ? 'bi-hourglass-split' : 'bi-printer'"></i>
-        </button>
-      </div>
-    </div> -->
-
     <!-- Loading -->
     <div v-if="isLoading" class="mobile-container mobile-mt-2">
       <div class="mobile-loading">
@@ -84,30 +64,118 @@
         </div>
       </div>
 
-      <!-- Items List -->
-      <div class="items-section mobile-mt-2">
-        <div class="section-header">
-          <h3 class="section-title">
-            <i class="bi bi-box-seam"></i>
-            รายการสินค้า ({{ soItems.length }})
-          </h3>
+      <!-- ==================== EDIT MODE ==================== -->
+      <template v-if="isEditing">
+        <!-- Add Item Section -->
+        <div class="section-card mobile-mt-2">
+          <div class="section-header-bar">
+            <h3 class="section-title">
+              <i class="bi bi-plus-circle"></i>
+              เพิ่มสินค้า
+            </h3>
+          </div>
+
+          <AddItemMethodSelector
+            :activeTab="addItemTab"
+            @update:activeTab="addItemTab = $event"
+          />
+
+          <!-- Tab A: Appraisal Jobs -->
+          <div v-if="addItemTab === 'appraisal'">
+            <AppraisalJobList
+              :selectedItems="editItems"
+              @add-item="addEditItem"
+            />
+          </div>
+
+          <!-- Tab B: Scan -->
+          <div v-if="addItemTab === 'scan'" class="scan-section">
+            <div class="search-field-selector">
+              <label class="field-selector-label">ค้นหาด้วย</label>
+              <div class="field-selector-options">
+                <button
+                  v-for="option in searchFieldOptions"
+                  :key="option.value"
+                  class="field-option-btn"
+                  :class="{ active: searchField === option.value }"
+                  @click="searchField = option.value"
+                >
+                  <i :class="option.icon"></i>
+                  {{ option.label }}
+                </button>
+              </div>
+            </div>
+
+            <QrScanner @scan="handleScan" />
+
+            <div class="scanner-divider"><span>หรือ</span></div>
+
+            <div class="manual-input-section">
+              <input
+                v-model="scanInput"
+                type="text"
+                class="form-control"
+                :placeholder="searchFieldPlaceholder"
+                @keyup.enter="handleManualSearch"
+              />
+              <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
+                <i class="bi bi-search"></i>
+                ค้นหาสินค้า
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="items-container">
-          <SoItemCard
-            v-for="(item, index) in soItems"
-            :key="item.stockNumber + '-' + index"
-            :item="item"
-            :currencyUnit="soData.currencyUnit || 'THB'"
-          />
+        <!-- Invoiced Items (read-only, locked) -->
+        <div v-if="invoicedItems.length > 0" class="items-section mobile-mt-2">
+          <div class="section-header">
+            <h3 class="section-title locked-title">
+              <i class="bi bi-lock"></i>
+              ออก Invoice แล้ว ({{ invoicedItems.length }})
+            </h3>
+          </div>
+          <div class="items-container">
+            <SoItemCard
+              v-for="(item, index) in invoicedItems"
+              :key="'inv-' + item.stockNumber + '-' + index"
+              :item="item"
+            />
+          </div>
         </div>
-      </div>
+
+        <!-- Editable Items -->
+        <ItemList
+          :items="editItems"
+          @update-item="updateEditItem"
+          @remove-item="removeEditItem"
+        />
+      </template>
+
+      <!-- ==================== VIEW MODE ==================== -->
+      <template v-else>
+        <!-- Items List (read-only) -->
+        <div class="items-section mobile-mt-2">
+          <div class="section-header">
+            <h3 class="section-title">
+              <i class="bi bi-box-seam"></i>
+              รายการสินค้า ({{ soItems.length }})
+            </h3>
+          </div>
+          <div class="items-container">
+            <SoItemCard
+              v-for="(item, index) in soItems"
+              :key="item.stockNumber + '-' + index"
+              :item="item"
+            />
+          </div>
+        </div>
+      </template>
 
       <!-- Summary -->
       <div class="summary-card mobile-mt-2">
         <div class="summary-row">
           <span class="summary-label">จำนวนรายการ</span>
-          <span class="summary-value">{{ soItems.length }} รายการ</span>
+          <span class="summary-value">{{ displayItemCount }} รายการ</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row total">
@@ -116,7 +184,7 @@
         </div>
         <div v-if="hasCurrencyConversion" class="summary-row reference">
           <span class="summary-label">เทียบเท่า</span>
-          <span class="summary-value">{{ formatCurrency(totalAmount) }} บาท</span>
+          <span class="summary-value">{{ formatCurrency(currentTotalAmountTHB) }} บาท</span>
         </div>
       </div>
 
@@ -145,27 +213,54 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- ==================== ACTION BUTTONS ==================== -->
       <div class="action-buttons mobile-mt-3">
-        <!-- Print PDF -->
-        <button
-          class="mobile-btn mobile-btn-outline"
-          @click="handlePrintPDF"
-          :disabled="exportingPDF"
-        >
-          <i class="bi" :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"></i>
-          {{ exportingPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์ใบสั่งขาย' }}
-        </button>
+        <template v-if="isEditing">
+          <button
+            class="mobile-btn mobile-btn-primary"
+            @click="saveChanges"
+            :disabled="editItems.length === 0 && invoicedItems.length === 0"
+          >
+            <i class="bi bi-check-circle"></i>
+            บันทึกการแก้ไข
+          </button>
+          <button class="mobile-btn mobile-btn-outline" @click="cancelEdit">
+            <i class="bi bi-x-circle"></i>
+            ยกเลิก
+          </button>
+        </template>
 
-        <!-- Create Invoice (only if not already invoiced) -->
-        <button
-          v-if="soData.status !== 'Invoiced'"
-          class="mobile-btn mobile-btn-success"
-          @click="handleCreateInvoice"
-        >
-          <i class="bi bi-file-earmark-check"></i>
-          ออก Invoice
-        </button>
+        <template v-else>
+          <!-- Edit SO -->
+          <button
+            v-if="!allItemsInvoiced"
+            class="mobile-btn mobile-btn-outline"
+            @click="startEdit"
+          >
+            <i class="bi bi-pencil-square"></i>
+            แก้ไขรายการ
+          </button>
+
+          <!-- Print PDF -->
+          <button
+            class="mobile-btn mobile-btn-outline"
+            @click="handlePrintPDF"
+            :disabled="exportingPDF"
+          >
+            <i class="bi" :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"></i>
+            {{ exportingPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์ใบสั่งขาย' }}
+          </button>
+
+          <!-- Create Invoice -->
+          <button
+            class="mobile-btn mobile-btn-success"
+            @click="handleCreateInvoice"
+            :disabled="allItemsInvoiced"
+          >
+            <i class="bi bi-file-earmark-check"></i>
+            {{ allItemsInvoiced ? 'ออก Invoice แล้วทั้งหมด' : 'ออก Invoice' }}
+          </button>
+        </template>
       </div>
     </div>
 
@@ -187,9 +282,14 @@
 <script>
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import SoItemCard from './components/so-item-card.vue'
+import AddItemMethodSelector from './components/add-item-method-selector.vue'
+import AppraisalJobList from './components/appraisal-job-list.vue'
+import ItemList from './components/item-list.vue'
+import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
@@ -199,13 +299,18 @@ export default {
   name: 'MobileSaleDetailView',
 
   components: {
-    SoItemCard
+    SoItemCard,
+    AddItemMethodSelector,
+    AppraisalJobList,
+    ItemList,
+    QrScanner
   },
 
   setup() {
     const saleOrderStore = usrSaleOrderApiStore()
     const invoiceStore = useInvoiceApiStore()
-    return { saleOrderStore, invoiceStore }
+    const productStore = usrStockProductApiStore()
+    return { saleOrderStore, invoiceStore, productStore }
   },
 
   data() {
@@ -214,7 +319,17 @@ export default {
       stockItems: [],
       copyItems: [],
       isLoading: false,
-      exportingPDF: false
+      exportingPDF: false,
+      // Edit mode
+      isEditing: false,
+      editItems: [],
+      addItemTab: 'scan',
+      scanInput: '',
+      searchField: 'stockNumber',
+      searchFieldOptions: [
+        { value: 'stockNumber', label: 'รหัสสินค้าใหม่', icon: 'bi bi-upc-scan' },
+        { value: 'stockNumberOrigin', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
+      ]
     }
   },
 
@@ -232,12 +347,34 @@ export default {
       return !!(this.soData.customerName || this.soData.customerTel || this.soData.customerAddress)
     },
 
-    totalAmount() {
-      return this.soItems.reduce((sum, item) => {
+    // items ที่ออก invoice แล้ว (ล็อค แก้ไขไม่ได้)
+    invoicedItems() {
+      return this.stockItems.filter((item) => item.isInvoice)
+    },
+
+    // ตรวจว่าทุก item ออก invoice แล้วหรือยัง
+    allItemsInvoiced() {
+      if (this.soItems.length === 0) return false
+      const stockWithNumber = this.stockItems.filter((item) => item.stockNumber)
+      if (stockWithNumber.length === 0) return false
+      return stockWithNumber.every((item) => item.isInvoice)
+    },
+
+    // items ทั้งหมดรวม edit + invoiced (สำหรับคำนวณ summary ตอน edit)
+    allCurrentItems() {
+      return this.isEditing ? [...this.invoicedItems, ...this.editItems] : this.soItems
+    },
+
+    displayItemCount() {
+      return this.allCurrentItems.length
+    },
+
+    currentTotalAmountTHB() {
+      return this.allCurrentItems.reduce((sum, item) => {
         const price = Number(item.appraisalPrice || item.price) || 0
         const qty = Number(item.qty) || 1
         const discountPercent = Number(item.discountPercent) || 0
-        return sum + (price * qty * (1 - discountPercent / 100))
+        return sum + price * qty * (1 - discountPercent / 100)
       }, 0)
     },
 
@@ -251,9 +388,15 @@ export default {
     },
 
     displayTotalAmount() {
-      if (!this.hasCurrencyConversion) return this.totalAmount
+      if (!this.hasCurrencyConversion) return this.currentTotalAmountTHB
       const rate = Number(this.soData?.currencyRate) || 1
-      return this.totalAmount / rate
+      return this.currentTotalAmountTHB / rate
+    },
+
+    searchFieldPlaceholder() {
+      return this.searchField === 'stockNumber'
+        ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
+        : 'กรอกรหัสสินค้าเก่า (Origin)'
     }
   },
 
@@ -262,6 +405,7 @@ export default {
   },
 
   methods: {
+    // ==================== Load ====================
     async loadSaleOrder() {
       this.isLoading = true
       this.soData = null
@@ -280,7 +424,6 @@ export default {
     },
 
     parseItems(response) {
-      // Items อยู่ในฟิลด์ data เป็น JSON string
       let parsedData = null
       if (response.data && typeof response.data === 'string') {
         try {
@@ -294,7 +437,6 @@ export default {
 
       if (!parsedData) return
 
-      // แยก stockItems กับ copyItems
       if (parsedData.stockItems || parsedData.copyItems) {
         this.stockItems = parsedData.stockItems || []
         this.copyItems = parsedData.copyItems || []
@@ -306,7 +448,6 @@ export default {
         this.copyItems = parsedData.filter((item) => item.stockNumber == null)
       }
 
-      // Merge stockConfirm data เข้า items
       const stockConfirm = response.stockConfirm || []
       if (stockConfirm.length > 0) {
         this.stockItems.forEach((item) => {
@@ -322,6 +463,157 @@ export default {
       }
     },
 
+    // ==================== Edit Mode ====================
+    startEdit() {
+      // copy non-invoiced items เป็น working copy
+      const nonInvoiced = this.soItems.filter((item) => !item.isInvoice)
+      this.editItems = nonInvoiced.map((item) => ({ ...item }))
+      this.isEditing = true
+    },
+
+    cancelEdit() {
+      this.isEditing = false
+      this.editItems = []
+      this.scanInput = ''
+    },
+
+    addEditItem(item) {
+      this.editItems.push(item)
+    },
+
+    updateEditItem(index, updatedItem) {
+      this.editItems[index] = updatedItem
+    },
+
+    removeEditItem(index) {
+      this.editItems.splice(index, 1)
+    },
+
+    async handleScan(decodedText) {
+      if (!decodedText) return
+      this.scanInput = decodedText
+      await this.searchAndAddProduct(decodedText)
+    },
+
+    async handleManualSearch() {
+      if (!this.scanInput || !this.scanInput.trim()) {
+        warning('กรุณากรอกเลขที่ผลิต')
+        return
+      }
+      await this.searchAndAddProduct(this.scanInput.trim())
+    },
+
+    async searchAndAddProduct(searchValue) {
+      const response = await this.productStore.fetchDataGet({
+        formValue: { [this.searchField]: searchValue }
+      })
+
+      if (!response) {
+        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบรหัสสินค้า')
+        return
+      }
+
+      // Check duplicate ทั้ง editItems + invoicedItems
+      const allItems = [...this.invoicedItems, ...this.editItems]
+      const exists = allItems.some((item) => item.stockNumber === response.stockNumber)
+      if (exists) {
+        warning('สินค้านี้ถูกเพิ่มในรายการแล้ว')
+        return
+      }
+
+      const costPrice = Number(response.productPrice) || 0
+      const tagPriceMultiplier = Number(response.tagPriceMultiplier) || 1
+      const tagPrice = costPrice * tagPriceMultiplier
+
+      this.editItems.push({
+        stockNumber: response.stockNumber,
+        productNumber: response.productNumber || '',
+        description: response.productNameTh || response.productNameEn || '',
+        costPrice: costPrice,
+        price: tagPrice,
+        appraisalPrice: tagPrice,
+        tagPriceMultiplier: tagPriceMultiplier,
+        discountPercent: 0,
+        qty: 1,
+        materials: response.materials || [],
+        imagePath: response.imagePath || '',
+        source: 'scan'
+      })
+
+      this.scanInput = ''
+      success('เพิ่มสินค้าสำเร็จ', `${response.stockNumber}`)
+    },
+
+    async saveChanges() {
+      // รวม invoicedItems + editItems กลับเป็น stockItems / copyItems
+      const allItems = [...this.invoicedItems, ...this.editItems]
+
+      const newStockItems = allItems
+        .filter((item) => item.stockNumber)
+        .map((item) => ({
+          stockNumber: item.stockNumber,
+          productNumber: item.productNumber || '',
+          description: item.description || '',
+          costPrice: Number(item.costPrice) || 0,
+          price: Number(item.price) || 0,
+          appraisalPrice: Number(item.appraisalPrice) || Number(item.price) || 0,
+          tagPriceMultiplier: Number(item.tagPriceMultiplier) || 1,
+          discountPercent: Number(item.discountPercent) || 0,
+          qty: Number(item.qty) || 1,
+          materials: item.materials || [],
+          imagePath: item.imagePath || '',
+          imageBlobPath: item.imageBlobPath || null
+        }))
+
+      const newCopyItems = allItems
+        .filter((item) => !item.stockNumber)
+        .map((item) => ({
+          stockNumber: null,
+          productNumber: item.productNumber || '',
+          description: item.description || '',
+          costPrice: Number(item.costPrice) || 0,
+          price: Number(item.price) || 0,
+          appraisalPrice: Number(item.appraisalPrice) || Number(item.price) || 0,
+          tagPriceMultiplier: Number(item.tagPriceMultiplier) || 1,
+          discountPercent: Number(item.discountPercent) || 0,
+          qty: Number(item.qty) || 1,
+          materials: item.materials || [],
+          imagePath: null,
+          imageBlobPath: null
+        }))
+
+      const formValue = {
+        soNumber: this.soData.soNumber,
+        status: this.soData.status || 'Confirmed',
+        customerCode: this.soData.customerCode || null,
+        customerName: this.soData.customerName || '',
+        customerTel: this.soData.customerTel || '',
+        customerEmail: this.soData.customerEmail || '',
+        customerAddress: this.soData.customerAddress || '',
+        remark: this.soData.remark || '',
+        currencyUnit: this.soData.currencyUnit || 'US$',
+        currencyRate: this.soData.currencyRate || 33.0,
+        priority: this.soData.priority || 'mobile',
+        data: JSON.stringify({
+          stockItems: newStockItems,
+          copyItems: newCopyItems,
+          allItems: [...newStockItems, ...newCopyItems],
+          freight: 0,
+          copyFreight: 0
+        })
+      }
+
+      const result = await this.saleOrderStore.fetchSave({ formValue })
+
+      if (result) {
+        this.isEditing = false
+        this.editItems = []
+        success('บันทึกการแก้ไขสำเร็จ')
+        await this.loadSaleOrder()
+      }
+    },
+
+    // ==================== PDF ====================
     async handlePrintPDF() {
       if (!this.soData) {
         warning('ไม่พบข้อมูลใบสั่งขาย')
@@ -330,11 +622,10 @@ export default {
 
       this.exportingPDF = true
       try {
-        // ส่ง soData + parsed items ให้ PDF builder
         const pdfData = {
           ...this.soData,
           items: this.soItems,
-          totalAmount: this.totalAmount
+          totalAmount: this.currentTotalAmountTHB
         }
         const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
           currencyUnit: this.soData.currencyUnit || 'THB',
@@ -352,6 +643,7 @@ export default {
       }
     },
 
+    // ==================== Invoice ====================
     handleCreateInvoice() {
       confirmSubmit(
         'ยืนยันสินค้าและออก Invoice?',
@@ -363,7 +655,6 @@ export default {
     },
 
     async createInvoice() {
-      // Step 1: Confirm stock items ที่ยังไม่ได้ confirm (ตาม web version)
       const unconfirmedItems = this.stockItems.filter(
         (item) => item.stockNumber && !item.isConfirm
       )
@@ -389,12 +680,12 @@ export default {
         }
       }
 
-      // Step 2: Create Invoice (payload ตาม web version)
       const currencyUnit = this.soData.currencyUnit || 'THB'
       const currencyRate = Number(this.soData.currencyRate) || 1
 
+      // เฉพาะ items ที่ยังไม่ได้ออก invoice
       const invoiceItems = this.stockItems
-        .filter((item) => item.stockNumber)
+        .filter((item) => item.stockNumber && !item.isInvoice)
         .map((item) => {
           const appraisalPrice = Number(item.appraisalPrice) || Number(item.price) || 0
           const discountPercent = Number(item.discountPercent) || 0
@@ -418,6 +709,11 @@ export default {
             qty: Number(item.qty) || 1
           }
         })
+
+      if (invoiceItems.length === 0) {
+        warning('ไม่มีสินค้าที่สามารถออก Invoice ได้')
+        return
+      }
 
       const invoiceResult = await this.invoiceStore.fetchCreate({
         formValue: {
@@ -457,6 +753,7 @@ export default {
       }
     },
 
+    // ==================== Helpers ====================
     getStatusColor(status) {
       switch (status) {
         case 'Draft':
@@ -506,59 +803,6 @@ export default {
   min-height: 100vh;
   background: #f5f5f5;
   padding-bottom: 40px;
-}
-
-.sale-header {
-  background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
-  padding: 16px 0;
-  color: white;
-  margin-bottom: 8px;
-
-  .mobile-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .mobile-btn-icon {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:active:not(:disabled) {
-      background: rgba(255, 255, 255, 0.25);
-      transform: scale(0.95);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    i.bi-hourglass-split {
-      animation: spin 2s linear infinite;
-    }
-  }
-
-  .header-content {
-    flex: 1;
-
-    .header-subtitle {
-      margin: 2px 0 0 0;
-      opacity: 0.9;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-  }
 }
 
 .info-card {
@@ -647,6 +891,7 @@ export default {
   line-height: 1.5;
 }
 
+// ==================== Items Section ====================
 .items-section {
   .section-header {
     margin-bottom: 10px;
@@ -664,6 +909,14 @@ export default {
     i {
       color: var(--base-font-color);
     }
+
+    &.locked-title {
+      color: #999;
+
+      i {
+        color: #999;
+      }
+    }
   }
 
   .items-container {
@@ -673,6 +926,110 @@ export default {
   }
 }
 
+// ==================== Edit Mode - Add Item ====================
+.section-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.section-header-bar {
+  margin-bottom: 12px;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+
+    i {
+      color: var(--base-font-color);
+    }
+  }
+}
+
+.scan-section {
+  .search-field-selector {
+    margin-bottom: 12px;
+
+    .field-selector-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .field-selector-options {
+      display: flex;
+      gap: 8px;
+    }
+
+    .field-option-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #e0e0e0;
+      background: white;
+      color: #666;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &.active {
+        border-color: var(--base-font-color);
+        background: rgba(146, 19, 19, 0.05);
+        color: var(--base-font-color);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .scanner-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    span {
+      padding: 0 16px;
+      color: #999;
+      font-size: 0.9rem;
+    }
+  }
+
+  .manual-input-section {
+    max-width: 300px;
+    margin: 0 auto;
+
+    input {
+      text-align: center;
+    }
+  }
+}
+
+// ==================== Summary ====================
 .summary-card {
   background: white;
   border-radius: 10px;
@@ -727,6 +1084,7 @@ export default {
   }
 }
 
+// ==================== Action Buttons ====================
 .action-buttons {
   display: flex;
   flex-direction: column;
@@ -760,7 +1118,7 @@ export default {
     font-weight: 600;
     cursor: pointer;
 
-    &:active {
+    &:active:not(:disabled) {
       opacity: 0.9;
     }
   }

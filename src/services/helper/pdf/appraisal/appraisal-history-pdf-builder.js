@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { formatDecimal } from '@/services/utils/decimal.js'
 
@@ -140,7 +141,7 @@ export class AppraisalHistoryPdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: dayjs(this.versionData.createDate).format('MMM DD, YYYY'),
+                          text: dayjs(this.versionData.createDate).locale('en').format('MMM DD, YYYY'),
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',

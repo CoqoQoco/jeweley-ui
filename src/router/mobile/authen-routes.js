@@ -94,6 +94,16 @@ const routes = [
         }
       },
       {
+        path: 'sale/invoice/:invoiceNumber',
+        name: 'mobile-invoice-detail',
+        component: () => import('@/views/mobile/sale/invoice-detail-view.vue'),
+        meta: {
+          Displayname: { en: 'Invoice Detail', th: 'รายละเอียด Invoice' },
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+      {
         path: 'sale/detail/:soNumber',
         name: 'mobile-sale-detail',
         component: () => import('@/views/mobile/sale/detail-view.vue'),

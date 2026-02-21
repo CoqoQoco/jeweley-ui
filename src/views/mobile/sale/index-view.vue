@@ -75,6 +75,7 @@
           v-for="inv in invoiceList"
           :key="inv.invoiceNumber"
           class="list-card"
+          @click="viewInvoiceDetail(inv)"
         >
           <div class="list-card-header">
             <span class="card-number">{{ inv.invoiceNumber }}</span>
@@ -260,6 +261,13 @@ export default {
         this.invoiceList.push(...result.data)
         this.invoiceHasMore = result.data.length >= this.pageSize
       }
+    },
+
+    viewInvoiceDetail(inv) {
+      this.$router.push({
+        name: 'mobile-invoice-detail',
+        params: { invoiceNumber: inv.invoiceNumber }
+      })
     },
 
     // ========== Shared ==========
