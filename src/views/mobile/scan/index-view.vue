@@ -220,9 +220,11 @@ export default {
     },
 
     /**
-     * Auto-format รหัสสินค้าใหม่: DK18K1XR2001 → DK-18K-1XR-2001
-     * Pattern: XX-XXX-XXX-XXXX (2-3-3-4 คั่นด้วย -)
-     * ทำงานเฉพาะเมื่อ searchField = stockNumber
+     * Auto-format รหัสสินค้าใหม่
+     * DK-18K-1XR-2001 (2-3-3-4)
+     * DK-9K-1XR-2001  (2-2-3-4)
+     * DX-SIL-1XR-2001 (2-3-3-4)
+     * Segment 2: ถ้าตัวที่ 4 (index 3) เป็น K → 9K (2 ตัว), นอกนั้น 3 ตัว
      */
     onManualInput() {
       // uppercase เสมอทุก searchField
@@ -233,8 +235,11 @@ export default {
         const raw = upper.replace(/-/g, '')
         if (!raw) return
 
+        // segment 2: ถ้าตัวที่ 4 (index 3) เป็น K = 9K (2 ตัว), นอกนั้น 3 ตัว (18K, SIL, 14K)
+        const seg2 = raw.length > 3 && raw[3] === 'K' ? 2 : 3
+        const segments = [2, seg2, 3, 4]
+
         let formatted = ''
-        const segments = [2, 3, 3, 4] // DK-18K-1XR-2001
         let pos = 0
 
         for (let i = 0; i < segments.length && pos < raw.length; i++) {

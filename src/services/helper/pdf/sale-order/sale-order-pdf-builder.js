@@ -779,6 +779,26 @@ export class SaleOrderPdfBuilder {
                     width: '30%'
                   }
                 ]
+              },
+              // Conditions
+              {
+                margin: [0, 10, 0, 0],
+                stack: [
+                  // { text: 'Price is F.O.B. Bangkok', style: 'conditionText' },
+                  // { text: 'Production time within 4-6 weeks', style: 'conditionText' },
+                  // { text: '50% deposit upon order, 50% balance before shipment.', style: 'conditionText' },
+                  // { text: 'Gold weight, Diamond weight and Stones weight are approximately', style: 'conditionText' },
+                  // { text: 'W.C.P.F.R stand for Wax, Casting, Polising, Fliding, Rhodium', style: 'conditionText' },
+                  // { text: 'Minimun order 10 pcs per design', style: 'conditionText' },
+                  // { text: 'The price quotation is current gold price market at www.kitco.com', style: 'conditionText' },
+                  { text: 'Price is F.O.B. Bangkok not inclued freight and insurance', style: 'conditionText' },
+                  { text: 'Production time within 5-7 weeks', style: 'conditionText' },
+                  { text: '40% payment of tt, 60% before the shipment.', style: 'conditionText' },
+                  { text: 'Gold weight, Diamond weight and Stones weight are approximately, the actual weight will be known after production is completed', style: 'conditionText' },
+                  // { text: 'W.C.P.F.R stand for Wax, Casting, Polising, Fliding, Rhodium', style: 'conditionText' },
+                  { text: 'Minimun order 10 pcs per design / Minimun purchase US$ 5,000', style: 'conditionText' },
+                  { text: 'The price quotation is current gold price market at www.kitco.com (please confirm within 2 days)', style: 'conditionText' }
+                ]
               }
             ],
             width: '90%'
@@ -1079,6 +1099,11 @@ export class SaleOrderPdfBuilder {
         },
         madeInText: {
           fontSize: 9
+        },
+        conditionText: {
+          fontSize: 8,
+          color: '#393939',
+          margin: [0, 1, 0, 1]
         }
       }
     }
