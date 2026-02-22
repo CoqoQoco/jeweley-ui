@@ -109,18 +109,19 @@
             ></textarea>
           </div>
 
-          <!-- Actions -->
-          <div class="create-actions">
-            <button class="mobile-btn mobile-btn-outline" type="button" @click="onCancel">
-              <i class="bi bi-x"></i>
-              ยกเลิก
-            </button>
-            <button class="mobile-btn mobile-btn-primary" type="submit">
-              <i class="bi bi-check-circle"></i>
-              บันทึกลูกค้า
-            </button>
-          </div>
         </form>
+      </div>
+
+      <!-- Fixed Bottom Actions -->
+      <div class="create-actions">
+        <button class="mobile-btn mobile-btn-outline" type="button" @click="onCancel">
+          <i class="bi bi-x"></i>
+          ยกเลิก
+        </button>
+        <button class="mobile-btn mobile-btn-primary" type="button" @click="onSubmit">
+          <i class="bi bi-check-circle"></i>
+          บันทึกลูกค้า
+        </button>
       </div>
     </div>
   </div>
@@ -321,6 +322,7 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom, 34px));
 
   .mobile-form-group {
     margin-bottom: 14px;
@@ -405,10 +407,17 @@ export default {
 }
 
 .create-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   gap: 10px;
-  margin-top: 20px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 34px));
+  background: white;
+  border-top: 1px solid #e8e8e8;
+  z-index: 1001;
 
   .mobile-btn {
     flex: 1;
