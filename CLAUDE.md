@@ -796,3 +796,91 @@ LayoutMobile.vue (src/layout/mobile/)
 99    - Sticky Bottom Buttons (above bottom nav)
 10    - Sticky Table Headers
 ```
+
+### Image System (Azure Blob Storage)
+
+Images are stored in Azure Blob Storage and accessed through two mechanisms. Understanding which to use is critical to avoid broken images.
+
+#### Image Components
+
+| Component | File | How it loads | When to use |
+|-----------|------|-------------|-------------|
+| **ImagePreview** | `src/components/prime-vue/ImagePreview.vue` | Direct Azure Blob URL (`getAzureBlobUrl`) | Displaying images in tables and views |
+| **ImagePreviewEmit** | `src/components/prime-vue/ImagePreviewEmit.vue` | API proxy as Base64 (`getAzureBlobAsBase64`) | Only when you need the `@image-loaded` event to get blobPath |
+
+**IMPORTANT**: Always prefer `ImagePreview.vue` for displaying images. Only use `ImagePreviewEmit.vue` if you specifically need the emitted blob path data.
+
+```javascript
+// ✅ Good - Use ImagePreview for display
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
+
+// ❌ Avoid - ImagePreviewEmit unless you need @image-loaded event
+import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+```
+
+#### Image Display in Views (Template)
+
+```vue
+<!-- ✅ Correct pattern (same as stock product data-table-view) -->
+<imagePreview
+  :imageName="item.imagePath"
+  :type="type"
+  :width="25"
+  :height="25"
+/>
+<!-- type = 'STOCK-PRODUCT' → builds path: Stock/Product/{imagePath} -->
+```
+
+#### Blob Path Mapping (ImagePreview `buildBlobPathFromType`)
+
+| Type | Blob Path | Azure URL |
+|------|-----------|-----------|
+| `STOCK` / `STOCK-PRODUCT` | `Stock/Product/{imageName}` | `https://...blob.../jewelry-images/Stock/Product/{imageName}` |
+| `MOLD` | `Mold/{imageName}-Mold.png` | `https://...blob.../jewelry-images/Mold/{imageName}-Mold.png` |
+| `ORDERPLAN` / `PRODUCTIONPLAN` | `ProductionPlan/{imageName}` | `https://...blob.../jewelry-images/ProductionPlan/{imageName}` |
+| `USER` | `User/{imageName}` | `https://...blob.../jewelry-images/User/{imageName}` |
+| `PAYMENT` | `Payment/{imageName}` | `https://...blob.../jewelry-images/Payment/{imageName}` |
+
+#### Image Loading in PDF Builders
+
+PDF generation uses `getAzureBlobAsBase64` to convert images to base64 for embedding in pdfmake.
+
+**Reference pattern** (`sale-order-pdf-builder.js`):
+```javascript
+async prepareImages() {
+  const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
+
+  await Promise.all(
+    this.items.map(async (item) => {
+      if (item.imageBase64) return
+
+      // ใช้ imageBlobPath ก่อน, ถ้าไม่มีใช้ imagePath
+      const blobPath = item.imageBlobPath || item.imagePath
+      if (!blobPath) return
+
+      const base64Image = await getAzureBlobAsBase64(blobPath, 'stock')
+      if (base64Image && base64Image.length > 0) {
+        item.imageBase64 = base64Image
+      }
+    })
+  )
+}
+```
+
+**Rules for PDF image loading**:
+- Always follow the sale-order-pdf-builder pattern above
+- Use `item.imageBlobPath || item.imagePath` as blobPath (no manual prefix)
+- Pass the correct `imageType` as second argument: `'stock'`, `'mold'`, `'plan'`, `'user'`
+
+#### `getAzureBlobAsBase64` (azure-storage-config.js)
+
+This function resolves images via backend API proxy. It determines which API endpoint to call:
+
+| Resolved Type | API Endpoint | Trigger |
+|---------------|-------------|---------|
+| `stock` | `FileExtension/GetStockProductImage` | `blobPath.startsWith('Stock/')` or `imageType === 'stock'` |
+| `mold` | `FileExtension/GetMoldImage` | `blobPath.startsWith('Mold/')` or `imageType === 'mold'` |
+| `plan` | `FileExtension/GetPlanImage` | `blobPath.startsWith('ProductionPlan/')` or `imageType === 'plan'` |
+| `user` | `FileExtension/GetImage` | `blobPath.startsWith('User/')` or `imageType === 'user'` |
+
+**IMPORTANT**: blobPath prefix is checked **first** and takes priority over `imageType` parameter. This prevents the default `imageType='mold'` from overriding the actual path type.

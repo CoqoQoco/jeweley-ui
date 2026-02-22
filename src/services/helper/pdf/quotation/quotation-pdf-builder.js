@@ -12,7 +12,10 @@ export class InvoicePdfBuilder {
     invoiceNo,
     currencyUnit,
     currencyMultiplier,
-    itemsPerPage // เพิ่ม parameter นี้
+    itemsPerPage, // เพิ่ม parameter นี้
+    specialDiscount,
+    specialAddition,
+    vatPercent
   ) {
     this.data = data // ข้อมูลสินค้า
     this.customer = customer || {}
@@ -27,6 +30,9 @@ export class InvoicePdfBuilder {
     this.invoiceNo = invoiceNo
     this.freight = Number(freight) || 0
     this.discount = Number(discount) || 0
+    this.specialDiscount = Number(specialDiscount) || 0
+    this.specialAddition = Number(specialAddition) || 0
+    this.vatPercent = Number(vatPercent) || 0
     this.logoBase64 = null
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyMultiplier = Number(currencyMultiplier) || 1
@@ -77,22 +83,22 @@ export class InvoicePdfBuilder {
 
     const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
 
-    // โหลดรูปภาพทั้งหมดพร้อมกัน
+    // โหลดรูปภาพทั้งหมดพร้อมกัน (pattern เดียวกับ sale-order-pdf-builder)
     await Promise.all(
       this.data.map(async (item) => {
-        // ถ้ามี imageBlobPath ให้โหลดเป็น Base64
-        if (item.imageBlobPath && !item.imageBase64) {
-          try {
-            const base64Image = await getAzureBlobAsBase64(item.imageBlobPath, 'mold')
+        if (item.imageBase64) return
 
-            if (base64Image && base64Image.length > 0) {
-              item.imageBase64 = base64Image
-            } else {
-              console.warn('No image found for blob path:', item.imageBlobPath)
-            }
-          } catch (error) {
-            console.error('Error loading image:', item.imageBlobPath, error)
+        // ใช้ imageBlobPath ก่อน, ถ้าไม่มีใช้ imagePath
+        const blobPath = item.imageBlobPath || item.imagePath
+        if (!blobPath) return
+
+        try {
+          const base64Image = await getAzureBlobAsBase64(blobPath, 'stock')
+          if (base64Image && base64Image.length > 0) {
+            item.imageBase64 = base64Image
           }
+        } catch (error) {
+          console.error('Error loading image:', blobPath, error)
         }
       })
     )
@@ -658,8 +664,8 @@ export class InvoicePdfBuilder {
       ])
     }
 
-    // TOTAL row
-    body.push([
+    // Helper: empty left cells for summary rows
+    const emptyLeftCells = [
       {
         text: '',
         style: 'summaryLabel',
@@ -672,54 +678,108 @@ export class InvoicePdfBuilder {
       {},
       {},
       {},
-      {},
-      { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-      {},
-      {
-        text: this.roundNoDecimal(this.totalAmount),
-        style: 'totalSummaryLabelColored',
-        alignment: 'right'
-      }
-    ])
+      {}
+    ]
 
-    // FREIGHT & INSURANCE
-    body.push([
-      {
-        text: '',
-        style: 'summaryLabel',
-        alignment: 'right',
-        colSpan: 7,
-        border: [true, false, false, false]
-      },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {
-        text: 'FREIGHT & INSURANCE',
-        style: 'totalSummaryLabelColored',
-        alignment: 'right',
-        colSpan: 2
-      },
-      {},
-      {
-        text: this.roundNoDecimal(this.freight),
-        style: 'totalSummaryLabelColored',
-        alignment: 'right'
-      }
-    ])
-    // DISCOUNT
-    // body.push([
-    //   { text: 'DISCOUNT', style: 'summaryLabel', alignment: 'right', colSpan: 8 },
-    //   { text: '' },
-    //   { text: this.formatPrice(this.discount), style: 'summaryLabel', alignment: 'right' }
-    // ])
-    // GRAND TOTAL (colSpan:7, 2 empty, label, value)
-    //const grandTotal = this.totalAmount + this.freight - this.discount
-     const grandTotal = this.totalAmount + this.freight
+    // Calculate grand total with special items and VAT
+    const hasSpecialDiscount = this.specialDiscount > 0
+    const hasSpecialAddition = this.specialAddition > 0
+    const hasFreight = this.freight > 0
+    const hasVat = this.vatPercent > 0
+    const hasAnyExtra = hasSpecialDiscount || hasSpecialAddition || hasFreight || hasVat
 
+    const totalAfterSpecial = this.totalAmount - this.specialDiscount + this.specialAddition
+    const subTotal = totalAfterSpecial + this.freight
+    const vatAmount = subTotal * (this.vatPercent / 100)
+    const grandTotal = subTotal + vatAmount
+
+    // F.O.B Bangkok row — แสดงเฉพาะเมื่อมี row อื่นต่อท้าย (ถ้าไม่มีอะไรเลย ข้ามไปแสดง C.I.F เลย)
+    if (hasAnyExtra) {
+      body.push([
+        ...emptyLeftCells,
+        { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: this.roundNoDecimal(this.totalAmount),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
+    // SPECIAL DISCOUNT row
+    if (hasSpecialDiscount) {
+      body.push([
+        ...emptyLeftCells,
+        { text: 'SPECIAL DISCOUNT', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: '-' + this.roundNoDecimal(this.specialDiscount),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
+    // SPECIAL ADDITION row
+    if (hasSpecialAddition) {
+      body.push([
+        ...emptyLeftCells,
+        { text: 'SPECIAL ADDITION', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: this.roundNoDecimal(this.specialAddition),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
+    // FREIGHT & INSURANCE row
+    if (hasFreight) {
+      body.push([
+        ...emptyLeftCells,
+        {
+          text: 'FREIGHT & INSURANCE',
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          colSpan: 2
+        },
+        {},
+        {
+          text: this.roundNoDecimal(this.freight),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
+    // SUB TOTAL + VAT rows
+    if (hasVat) {
+      body.push([
+        ...emptyLeftCells,
+        { text: 'SUB TOTAL', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: this.roundNoDecimal(subTotal),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+
+      body.push([
+        ...emptyLeftCells,
+        { text: `VAT (${this.vatPercent}%)`, style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: this.roundNoDecimal(vatAmount),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
+    // GRAND TOTAL / C.I.F row
     body.push([
       {
         text: this.convertNumberToWords(grandTotal),

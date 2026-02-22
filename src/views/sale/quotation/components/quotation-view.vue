@@ -20,11 +20,22 @@
 
               <div>
                 <span class="title-text">เลขที่ใบเสนอราคา</span>
-                <input
-                  :class="['form-control bg-input input-bg']"
-                  type="text"
-                  v-model.trim="customer.invoiceNumber"
-                />
+                <div class="d-flex align-items-center gap-1">
+                  <input
+                    :class="['form-control bg-input input-bg']"
+                    type="text"
+                    v-model.trim="customer.invoiceNumber"
+                    readonly
+                  />
+                  <button
+                    class="btn btn-main btn-sm"
+                    type="button"
+                    @click="generateQuotationNumber"
+                    title="สร้างเลขที่ใบเสนอราคาใหม่"
+                  >
+                    <i class="bi bi-arrow-clockwise"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -240,12 +251,9 @@
                 <div v-if="slotProps.data.imagePath">
                   <imagePreview
                     :imageName="slotProps.data.imagePath"
-                    :path="slotProps.data.imagePath"
                     :type="type"
                     :width="25"
                     :height="25"
-                    :emitImage="true"
-                    @image-loaded="handleImageLoaded($event, slotProps.index)"
                   />
                 </div>
               </div>
@@ -765,7 +773,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import Calendar from 'primevue/calendar'
 
-import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 
 import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pdf-view.vue'
@@ -1011,6 +1019,12 @@ export default {
   },
 
   methods: {
+    generateQuotationNumber() {
+      const now = dayjs()
+      const dateStr = now.format('YYYYMMDD')
+      const timeStr = now.format('HHmmss')
+      this.customer.invoiceNumber = `QT-${dateStr}-${timeStr}`
+    },
     delItem(index) {
       this.customer.quotationItems.splice(index, 1)
     },
@@ -1127,16 +1141,6 @@ export default {
         this.customer.quotationItems.push(data)
       }
     },
-    handleImageLoaded(imageData, index) {
-      // อัปเดตข้อมูลใน quotationItems ด้วยข้อมูล blob path
-      if (this.customer.quotationItems[index]) {
-        this.customer.quotationItems[index] = {
-          ...this.customer.quotationItems[index],
-          imageBlobPath: imageData.blobPath // เก็บ blobPath ไว้ใช้ในการสร้าง PDF (สามารถแปลงเป็น URL ได้)
-        }
-      }
-    },
-
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
@@ -1291,12 +1295,7 @@ export default {
     async fetchSaveQuotation() {
       //console.log('fetchSaveQuotation', this.customer)
 
-      const dataSave = this.customer.quotationItems.map((item) => {
-        return {
-          ...item,
-          imageBlobPath: null // ไม่เก็บ blob path ลง database (เก็บแค่ imagePath ปกติ)
-        }
-      })
+      const dataSave = this.customer.quotationItems
 
       const formValue = {
         number: this.customer.invoiceNumber,
@@ -1436,6 +1435,7 @@ export default {
   },
 
   async created() {
+    this.generateQuotationNumber()
     this.$nextTick(async () => {
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()

@@ -46,7 +46,10 @@ export function generateInvoicePdf({
         customer.invoiceNumber,
         customer.currencyUnit, // currency unit
         customer.currencyMultiplier, // currency multiplier
-        itemsPerPage // ส่งค่า itemsPerPage เข้าไป
+        itemsPerPage, // ส่งค่า itemsPerPage เข้าไป
+        customer.specialDiscount, // ส่วนลดพิเศษ
+        customer.specialAddition, // ส่วนเพิ่มพิเศษ
+        customer.vatPercent // VAT %
       )
 
       invoiceBuilder

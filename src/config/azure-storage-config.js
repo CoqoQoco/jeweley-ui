@@ -61,10 +61,17 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
     // เช่น "Mold/ABC-001-Mold.png" -> "ABC-001-Mold.png"
     const fileName = blobPath.includes('/') ? blobPath.split('/').pop() : blobPath
 
+    // ตรวจ blobPath prefix ก่อน แล้ว fallback ไปใช้ imageType
+    let resolvedType = imageType
+    if (blobPath.startsWith('Stock/')) resolvedType = 'stock'
+    else if (blobPath.startsWith('Mold/')) resolvedType = 'mold'
+    else if (blobPath.startsWith('ProductionPlan/')) resolvedType = 'plan'
+    else if (blobPath.startsWith('User/')) resolvedType = 'user'
+
     // เรียก API backend เพื่อดึงรูป (backend จะดึงจาก Azure Blob)
     let base64String = ''
 
-    if (imageType === 'mold' || blobPath.startsWith('Mold/')) {
+    if (resolvedType === 'mold') {
       // ดึงรูป Mold
       const res = await api.jewelry.get('FileExtension/GetMoldImage', {
         imageName: fileName
@@ -72,7 +79,7 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
       if (res) {
         base64String = `data:image/png;base64,${res}`
       }
-    } else if (imageType === 'plan' || blobPath.startsWith('ProductionPlan/')) {
+    } else if (resolvedType === 'plan') {
       // ดึงรูป Production Plan
       const res = await api.jewelry.get('FileExtension/GetPlanImage', {
         imageName: fileName
@@ -80,7 +87,7 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
       if (res) {
         base64String = `data:image/png;base64,${res}`
       }
-    } else if (imageType === 'stock' || blobPath.startsWith('Stock/')) {
+    } else if (resolvedType === 'stock') {
       // ดึงรูป Stock Product
       const res = await api.jewelry.get('FileExtension/GetStockProductImage', {
         imageName: fileName
@@ -88,7 +95,7 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
       if (res) {
         base64String = `data:image/png;base64,${res}`
       }
-    } else if (imageType === 'user' || blobPath.startsWith('User/')) {
+    } else if (resolvedType === 'user') {
       // ดึงรูป User Profile
       const res = await api.jewelry.get('FileExtension/GetImage', {
         imageName: fileName,
