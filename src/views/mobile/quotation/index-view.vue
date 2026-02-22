@@ -66,6 +66,7 @@
 
 <script>
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
+import { formatISOString } from '@/services/utils/dayjs.js'
 import dayjs from 'dayjs'
 
 export default {
@@ -104,8 +105,8 @@ export default {
         skip: 0,
         sort: [{ field: 'date', dir: 'desc' }],
         formValue: {
-          quotationDateStart: this.filterDate,
-          quotationDateEnd: this.filterDate
+          quotationDateStart: formatISOString(this.filterDate),
+          quotationDateEnd: formatISOString(this.filterDate)
         }
       })
 
@@ -123,8 +124,8 @@ export default {
         skip: this.page * this.pageSize,
         sort: [{ field: 'date', dir: 'desc' }],
         formValue: {
-          quotationDateStart: this.filterDate,
-          quotationDateEnd: this.filterDate
+          quotationDateStart: formatISOString(this.filterDate),
+          quotationDateEnd: formatISOString(this.filterDate)
         }
       })
 
