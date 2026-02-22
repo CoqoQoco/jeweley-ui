@@ -1,6 +1,7 @@
 <template>
-  <div v-if="isVisible" class="customer-create-overlay">
-    <div class="customer-create-container">
+  <Teleport to="body">
+    <div v-if="isVisible" class="customer-create-overlay">
+      <div class="customer-create-container">
       <!-- Form (scrollable, action row is first item) -->
       <div class="create-form-section">
         <form @submit.prevent="onSubmit">
@@ -113,8 +114,9 @@
 
         </form>
       </div>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -271,8 +273,8 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  padding-bottom: 40px;
-  -webkit-overflow-scrolling: touch;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 
   .create-action-row {
     display: flex;

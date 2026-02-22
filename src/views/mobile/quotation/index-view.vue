@@ -7,11 +7,13 @@
           <i class="bi bi-calendar3"></i>
           วันที่ใบเสนอราคา
         </label>
-        <input
-          type="date"
-          class="form-control"
+        <CalendarGeneric
           v-model="filterDate"
-          @change="onDateChange"
+          dateFormat="dd/mm/yy"
+          placeholder="เลือกวันที่"
+          :showIcon="true"
+          :showButtonBar="true"
+          @date-select="onDateChange"
         />
       </div>
     </div>
@@ -66,11 +68,15 @@
 
 <script>
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
-import { formatISOString } from '@/services/utils/dayjs.js'
-import dayjs from 'dayjs'
+import { formatDate as formatDateUtil, formatISOString } from '@/services/utils/dayjs.js'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 
 export default {
   name: 'MobileQuotationIndexView',
+
+  components: {
+    CalendarGeneric
+  },
 
   setup() {
     const quotationStore = usrQuotationApiStore()
@@ -79,7 +85,7 @@ export default {
 
   data() {
     return {
-      filterDate: dayjs().format('YYYY-MM-DD'),
+      filterDate: new Date(),
       pageSize: 20,
       quotationList: [],
       page: 0,
@@ -144,7 +150,7 @@ export default {
 
     formatDate(dateString) {
       if (!dateString) return '-'
-      return dayjs(dateString).format('DD/MM/YYYY')
+      return formatDateUtil(dateString)
     }
   }
 }
@@ -179,10 +185,6 @@ export default {
     }
   }
 
-  .form-control {
-    width: 100%;
-    border-radius: 8px;
-  }
 }
 
 .card-list {

@@ -137,7 +137,6 @@ export default {
 
   // Smooth scrolling
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-bottom-nav-container {

@@ -1,6 +1,7 @@
 <template>
-  <div v-if="isVisible" class="customer-search-overlay">
-    <div class="customer-search-container">
+  <Teleport to="body">
+    <div v-if="isVisible" class="customer-search-overlay">
+      <div class="customer-search-container">
       <!-- Header -->
       <div class="search-header">
         <button class="btn-close-modal" @click="onClose">
@@ -78,8 +79,9 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -204,6 +206,7 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
   background: white;
   border-bottom: 1px solid #e8e8e8;
 

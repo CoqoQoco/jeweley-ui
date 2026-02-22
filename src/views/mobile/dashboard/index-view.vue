@@ -54,6 +54,13 @@
           <div class="action-label">สแกน QR</div>
         </div>
 
+        <div class="action-card" @click="navigateTo('/mobile/quotation')">
+          <div class="action-icon">
+            <i class="bi bi-file-earmark-text"></i>
+          </div>
+          <div class="action-label">ใบเสนอราคา</div>
+        </div>
+        
         <div class="action-card" @click="navigateTo('/mobile/sale')">
           <div class="action-icon">
             <i class="bi bi-receipt"></i>
@@ -61,12 +68,6 @@
           <div class="action-label">ใบสั่งขาย</div>
         </div>
 
-        <div class="action-card" @click="navigateTo('/mobile/quotation')">
-          <div class="action-icon">
-            <i class="bi bi-file-earmark-text"></i>
-          </div>
-          <div class="action-label">ใบเสนอราคา</div>
-        </div>
       </div>
     </div>
 

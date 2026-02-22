@@ -759,7 +759,7 @@ LayoutMobile.vue (src/layout/mobile/)
 | **Try-catch** | No (axios middleware) | No (axios middleware) |
 | **Loading state** | No manual (axios middleware) | No manual (axios middleware) |
 | **File naming** | kebab-case | kebab-case |
-| **Date picker** | PrimeVue Calendar | Native `<input type="date">` |
+| **Date picker** | PrimeVue Calendar | PrimeVue Calendar (ผ่าน CalendarGeneric) |
 | **Dropdown/Select** | PrimeVue Dropdown | Native `<select>` |
 
 ```vue
@@ -884,3 +884,29 @@ This function resolves images via backend API proxy. It determines which API end
 | `user` | `FileExtension/GetImage` | `blobPath.startsWith('User/')` or `imageType === 'user'` |
 
 **IMPORTANT**: blobPath prefix is checked **first** and takes priority over `imageType` parameter. This prevents the default `imageType='mold'` from overriding the actual path type.
+
+### Generic PrimeVue Components
+
+Reusable PrimeVue wrapper components อยู่ใน `src/components/prime-vue/`:
+
+| Component | File | หน้าที่ |
+|-----------|------|---------|
+| `CalendarGeneric` | `CalendarGeneric.vue` | Date picker — wrapper PrimeVue Calendar พร้อม mobile-friendly styling |
+| `AutoCompleteGeneric` | `AutoCompleteGeneric.vue` | Autocomplete — รองรับ API mode + static list mode |
+| `ImagePreview` | `ImagePreview.vue` | แสดงรูปจาก Azure Blob (direct URL) |
+| `ImagePreviewEmit` | `ImagePreviewEmit.vue` | แสดงรูปจาก Azure Blob พร้อม emit blobPath |
+| `DataTableWithPaging` | `DataTableWithPaging.vue` | DataTable พร้อม pagination |
+
+**CalendarGeneric Usage**:
+```vue
+<CalendarGeneric
+  v-model="selectedDate"
+  dateFormat="dd/mm/yy"
+  placeholder="เลือกวันที่"
+  :showIcon="true"
+  :showButtonBar="true"
+  @date-select="onDateSelect"
+/>
+```
+
+**หมายเหตุ**: v-model ใช้ `Date` object (ไม่ใช่ string) — ใช้ `formatISOString(date)` จาก `src/services/utils/dayjs.js` เพื่อแปลงเป็น ISO string สำหรับ API
