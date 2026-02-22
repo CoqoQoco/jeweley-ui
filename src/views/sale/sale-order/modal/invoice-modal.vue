@@ -886,6 +886,11 @@ export default {
     loadInitialData() {
       // Reset selections when modal opens
       this.selectedItems = []
+      // Pre-fill special fields from SO data
+      this.specialDiscount = Number(this.saleOrderData.specialDiscount) || 0
+      this.specialAddition = Number(this.saleOrderData.specialAddition) || 0
+      this.freightAndInsurance = Number(this.saleOrderData.freight) || 0
+      this.vatPercent = Number(this.saleOrderData.vatPercent) || 0
       console.log('Invoice modal loaded with stock items:', this.stockItems)
       console.log('Invoice modal loaded with stock items:', this.saleOrderData)
     },

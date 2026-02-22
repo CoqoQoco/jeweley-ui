@@ -74,15 +74,25 @@
               </div>
               <div class="ml-2">
                 <span class="title-text">Discount (%)</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
-                  v-model.number="customer.discountPercent"
-                  min="0"
-                  max="100"
-                  step="any"
-                  style="width: 80px"
-                />
+                <div class="d-flex align-items-center gap-1">
+                  <input
+                    :class="['form-control bg-input', 'input-bg']"
+                    type="number"
+                    v-model.number="customer.discountPercent"
+                    min="0"
+                    max="100"
+                    step="any"
+                    style="width: 80px"
+                  />
+                  <button
+                    class="btn btn-main btn-sm"
+                    type="button"
+                    @click="applyGlobalDiscount"
+                    title="กำหนดส่วนลดให้ทุกรายการ"
+                  >
+                    กำหนดทั้งหมด
+                  </button>
+                </div>
               </div>
               <div class="ml-2">
                 <span class="title-text">Gold (US$/Oz.)</span>
@@ -386,11 +396,18 @@
           </column>
 
           <column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
-            <template #body>
+            <template #body="slotProps">
               <div class="qty-container">
-                <span>{{
-                  `${customer.discountPercent ? `${customer.discountPercent} %` : `0 %`}`
-                }}</span>
+                <input
+                  v-model.number="slotProps.data.discountPercent"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  max="100"
+                  step="any"
+                  style="background-color: #b5dad4; width: 100%"
+                  placeholder="0"
+                />
               </div>
             </template>
           </column>
@@ -414,7 +431,7 @@
                 <span>{{
                   (
                     Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (customer.discountPercent || 0) / 100)
+                    (1 - (slotProps.data.discountPercent || 0) / 100)
                   ).toFixed(2)
                 }}</span>
               </div>
@@ -439,7 +456,7 @@
                 <span>{{
                   (
                     (Number(slotProps.data.appraisalPrice || 0) *
-                      (1 - (customer.discountPercent || 0) / 100)) /
+                      (1 - (slotProps.data.discountPercent || 0) / 100)) /
                     (customer.currencyMultiplier || 1)
                   ).toFixed(2)
                 }}</span>
@@ -472,7 +489,7 @@
                 <span>{{
                   (
                     ((Number(slotProps.data.appraisalPrice || 0) *
-                      (1 - (customer.discountPercent || 0) / 100)) /
+                      (1 - (slotProps.data.discountPercent || 0) / 100)) /
                       (customer.currencyMultiplier || 1)) *
                     (Number(slotProps.data.qty) || 0)
                   ).toFixed(2)
@@ -917,7 +934,7 @@ export default {
     sumDiscountPrice() {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
-        sum += (Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)
+        sum += (Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)
       })
       return sum.toFixed(2)
     },
@@ -925,7 +942,7 @@ export default {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
         sum +=
-          ((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
+          ((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
           (this.customer.currencyMultiplier || 1)
       })
       return sum.toFixed(2)
@@ -934,7 +951,7 @@ export default {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
         sum +=
-          (((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
+          (((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
             (this.customer.currencyMultiplier || 1)) *
           (Number(item.qty) || 0)
       })
@@ -1040,10 +1057,10 @@ export default {
       return sum.toFixed(2)
     },
     calTotalPriceAfterDiscount(items) {
-      // ใช้ currencyMultiplier และ discountPercent ในการคำนวณราคารวมหลังหักส่วนลด
+      // ใช้ currencyMultiplier และ per-item discountPercent ในการคำนวณราคารวมหลังหักส่วนลด
       const sum = items.reduce((total, item) => {
         const priceAfterDiscount =
-          (((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
+          (((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
             (this.customer.currencyMultiplier || 1)) *
           (Number(item.qty) || 1)
         return total + priceAfterDiscount
@@ -1123,6 +1140,11 @@ export default {
       })
     },
 
+    applyGlobalDiscount() {
+      this.customer.quotationItems.forEach((item) => {
+        item.discountPercent = this.customer.discountPercent || 0
+      })
+    },
     async fetchGetData() {
       var data = await this.productStore.fetchDataGet({ formValue: this.form })
 
@@ -1134,7 +1156,8 @@ export default {
           description: data.productNameEn,
           group: 'product',
           planQty: data.planQty || 1,
-          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber
+          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
+          discountPercent: this.customer.discountPercent || 0
         }
 
         //data is object
@@ -1282,7 +1305,8 @@ export default {
           materials: data.materials || [],
           priceTransactions: priceTransactions,
           source: 'costVersion',
-          costVersionRunning: version.running
+          costVersionRunning: version.running,
+          discountPercent: this.customer.discountPercent || 0
         }
 
         this.customer.quotationItems.push(item)

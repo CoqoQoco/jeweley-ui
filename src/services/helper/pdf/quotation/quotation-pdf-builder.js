@@ -48,7 +48,7 @@ export class InvoicePdfBuilder {
     if (this.data && Array.isArray(this.data)) {
       this.data.forEach((item) => {
         const appraisalPrice = Number(item.appraisalPrice) || 0
-        const discountPercent = this.customer.discountPercent || 0
+        const discountPercent = item.discountPercent || 0
         const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
 
         const qtyVal = Number(item.qty) || 0
@@ -578,13 +578,9 @@ export class InvoicePdfBuilder {
       // --- ปรับ logic ตรงนี้ ---
 
       const price = this.roundNoDecimal(
-        ((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
+        ((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
           this.currencyMultiplier
       )
-
-      // const price =
-      // ((Number(item.appraisalPrice) || 0) * (1 - (this.customer.discountPercent || 0) / 100)) /
-      // this.currencyMultiplier
 
       const amount = price * qty
       sumQty += qty

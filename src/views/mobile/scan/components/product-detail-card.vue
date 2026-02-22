@@ -115,7 +115,7 @@
       </div>
 
       <!-- Cost Details Section - Collapsible -->
-      <div v-if="hasCostData" class="cost-details-section">
+      <!-- <div v-if="hasCostData" class="cost-details-section">
         <div class="cost-header" @click="toggleCostDetails">
           <div class="cost-header-left">
             <i class="bi bi-calculator"></i>
@@ -125,21 +125,20 @@
             <span class="total-amount">{{ formatCurrency(totalCost) }} บาท</span>
             <i :class="['bi', showCostDetails ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
           </div>
-        </div>
+        </div> -->
 
         <!-- Tag Price -->
-        <div v-if="tagPriceMultiplier > 0" class="tag-price-bar">
+        <!-- <div v-if="tagPriceMultiplier > 0" class="tag-price-bar">
           <div class="tag-price-left">
             <i class="bi bi-tag"></i>
             <span>ราคาป้าย (× {{ tagPriceMultiplier }})</span>
           </div>
           <span class="tag-price-amount">{{ formatCurrency(tagPrice) }} บาท</span>
-        </div>
+        </div> -->
 
         <!-- Expandable Details -->
-        <transition name="slide-fade">
+        <!-- <transition name="slide-fade">
           <div v-if="showCostDetails" class="cost-details-content">
-            <!-- Cost Groups Summary -->
             <div class="cost-groups-compact">
               <div v-for="group in groupedCostData" :key="group.key" class="cost-group-compact">
                 <div class="group-compact-header" @click="toggleGroup(group.key)">
@@ -154,7 +153,6 @@
                   </div>
                 </div>
 
-                <!-- Group Items Detail -->
                 <transition name="slide-fade">
                   <div v-if="expandedGroups[group.key]" class="group-items-detail">
                     <div v-for="(item, index) in group.items" :key="index" class="cost-item-compact">
@@ -189,7 +187,7 @@
               </div>
             </div>
           </div>
-        </transition>
+        </transition> -->
       </div>
 
       <!-- Remark -->

@@ -449,6 +449,11 @@ export default {
 
       if (!parsedData) return
 
+      // Extract freight from parsed data JSON into soData for PDF builder
+      if (parsedData.freight != null) {
+        this.soData.freight = Number(parsedData.freight) || 0
+      }
+
       if (parsedData.stockItems || parsedData.copyItems) {
         this.stockItems = parsedData.stockItems || []
         this.copyItems = parsedData.copyItems || []

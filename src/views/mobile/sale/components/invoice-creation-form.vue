@@ -339,6 +339,11 @@ export default {
   mounted() {
     // Auto-select all available items
     this.selectedItems = this.availableItems.map(item => item.stockNumber)
+    // Pre-fill special fields from SO data
+    this.specialDiscount = Number(this.soData?.specialDiscount) || 0
+    this.specialAddition = Number(this.soData?.specialAddition) || 0
+    this.freightAndInsurance = Number(this.soData?.freight) || 0
+    this.vatPercent = Number(this.soData?.vatPercent) || 0
   },
 
   methods: {

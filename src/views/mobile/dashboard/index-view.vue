@@ -60,6 +60,13 @@
           </div>
           <div class="action-label">ใบสั่งขาย</div>
         </div>
+
+        <div class="action-card" @click="navigateTo('/mobile/quotation')">
+          <div class="action-icon">
+            <i class="bi bi-file-earmark-text"></i>
+          </div>
+          <div class="action-label">ใบเสนอราคา</div>
+        </div>
       </div>
     </div>
 

@@ -818,7 +818,144 @@
                 </template>
               </Column>
             </Row> -->
-            <!-- total after discount -->
+            <!-- ส่วนลดพิเศษ -->
+            <Row>
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ส่วนลดพิเศษ:</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right qty-container">
+                    <input
+                      v-model.number="formSaleOrder.specialDiscount"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      min="0"
+                      step="0.01"
+                      style="background-color: #b5dad4; width: 100%"
+                      :readonly="isViewMode"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- ส่วนเพิ่มพิเศษ -->
+            <Row>
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ส่วนเพิ่มพิเศษ:</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right qty-container">
+                    <input
+                      v-model.number="formSaleOrder.specialAddition"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      min="0"
+                      step="0.01"
+                      style="background-color: #b5dad4; width: 100%"
+                      :readonly="isViewMode"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- ยอดรวมหลังปรับ -->
+            <Row>
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">ยอดรวมหลังปรับ:</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">{{ formatPrice(soTotalAfterSpecial) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- freight -->
+            <Row>
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>Freight & Insurance:</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="qty-container">
+                    <input
+                      style="background-color: #b5dad4"
+                      v-model.number="formSaleOrder.freight"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      step="any"
+                      min="0"
+                      :readonly="isViewMode"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- ยอดรวมก่อน VAT -->
+            <Row>
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">{{ formatPrice(soTotalBeforeVat) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- VAT -->
+            <Row>
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container d-flex align-items-center justify-content-end">
+                    <span class="mr-2 mt-1">VAT (%) :</span>
+                    <input
+                      v-model.number="formSaleOrder.vatPercent"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      style="background-color: #b5dad4; width: 80px"
+                      placeholder="0"
+                      :readonly="isViewMode"
+                    />
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ formatPrice(soVatAmount) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- ราคารวม (Grand Total) -->
             <Row>
               <Column :colspan="18">
                 <template #footer>
@@ -830,7 +967,7 @@
               <Column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ formatPrice(calculateGrandTotal()) }}</span>
+                    <span>{{ formatPrice(soGrandTotal) }}</span>
                   </div>
                 </template>
               </Column>
@@ -1463,6 +1600,18 @@
             <i class="bi bi-file-earmark mr-1"></i>
             บันทึกร่าง
           </button>
+
+          <button
+            class="btn btn-outline-main"
+            type="button"
+            style="width: 200px"
+            @click="exportPDF"
+            :disabled="stockItems.length === 0 || isExportingPDF"
+          >
+            <span v-if="isExportingPDF" class="spinner-border spinner-border-sm mr-2"></span>
+            <i v-else class="bi bi-file-earmark-pdf mr-1"></i>
+            Export PDF
+          </button>
         </div>
       </div>
 
@@ -1531,6 +1680,7 @@ import { formatDecimal } from '@/services/utils/decimal.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 
+import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
@@ -1587,6 +1737,7 @@ export default {
     return {
       isSONumberLocked: false,
       isOnDraft: false,
+      isExportingPDF: false,
       productSearch: {
         stockNumber: '',
         stockNumberOrigin: '',
@@ -1631,7 +1782,10 @@ export default {
         markup: 3.5,
         goldPerOz: 2000,
         freight: 0,
-        copyFreight: 0
+        copyFreight: 0,
+        specialDiscount: 0,
+        specialAddition: 0,
+        vatPercent: 0
       },
 
       priorityOptions: [
@@ -1816,6 +1970,20 @@ export default {
       //return this.formSaleOrder.number && this.formSaleOrder.number.trim() !== ''
       //เช็คว่าเคยมีเลขที่ใบสั่งขายหรือไม่
       return this.formSaleOrder.number != null && this.formSaleOrder.number !== ''
+    },
+
+    soTotalAfterSpecial() {
+      const total = Number(this.getSumTotalConvertedPrice(this.stockItems)) || 0
+      return total - (this.formSaleOrder.specialDiscount || 0) + (this.formSaleOrder.specialAddition || 0)
+    },
+    soTotalBeforeVat() {
+      return this.soTotalAfterSpecial + Number(this.formSaleOrder.freight || 0)
+    },
+    soVatAmount() {
+      return this.soTotalBeforeVat * ((this.formSaleOrder.vatPercent || 0) / 100)
+    },
+    soGrandTotal() {
+      return this.soTotalBeforeVat + this.soVatAmount
     }
   },
 
@@ -1880,7 +2048,10 @@ export default {
         currencyRate: saleOrderData.currencyRate || 33.0,
         markup: saleOrderData.markup || 3.5,
         goldPerOz: saleOrderData.goldPerOz || 2000,
-        number: null
+        number: null,
+        specialDiscount: saleOrderData.specialDiscount || 0,
+        specialAddition: saleOrderData.specialAddition || 0,
+        vatPercent: saleOrderData.vatPercent || 0
       }
 
       newStockItems.forEach((item) => {
@@ -1930,7 +2101,10 @@ export default {
         markup: saleOrderData.markup || 3.5,
         goldPerOz: saleOrderData.goldPerOz || 2000,
         freight: saleOrderData.freight || 0,
-        copyFreight: saleOrderData.copyFreight || 0
+        copyFreight: saleOrderData.copyFreight || 0,
+        specialDiscount: saleOrderData.specialDiscount || 0,
+        specialAddition: saleOrderData.specialAddition || 0,
+        vatPercent: saleOrderData.vatPercent || 0
       })
 
       if (saleOrderData.items) {
@@ -2006,6 +2180,9 @@ export default {
           priority: response.priority || 'normal',
           discount: response.discount || 0,
           freight: response.freight || 0,
+          specialDiscount: response.specialDiscount || 0,
+          specialAddition: response.specialAddition || 0,
+          vatPercent: response.vat || 0,
           remark: response.remark || null,
           items: response.data
             ? (() => {
@@ -2297,6 +2474,9 @@ export default {
         currencyRate: this.formSaleOrder.currencyRate || 1.0,
         markup: this.formSaleOrder.markup || 0,
         goldRate: this.formSaleOrder.goldPerOz || 0,
+        specialDiscount: this.formSaleOrder.specialDiscount || 0,
+        specialAddition: this.formSaleOrder.specialAddition || 0,
+        vat: this.formSaleOrder.vatPercent || 0,
         remark: this.formSaleOrder.remark || '',
         data: JSON.stringify({
           stockItems: stockItemsData,
@@ -2322,6 +2502,37 @@ export default {
       } finally {
         this.isOnDraft = false
       }
+    },
+
+    async exportPDF() {
+      if (this.stockItems.length === 0) {
+        warning('ไม่มีสินค้าสำหรับสร้าง PDF')
+        return
+      }
+
+      this.isExportingPDF = true
+      const pdfData = {
+        soNumber: this.formSaleOrder.number,
+        createDate: this.formSaleOrder.date,
+        customerName: this.formSaleOrder.customerName,
+        customerAddress: this.formSaleOrder.customerAddress,
+        customerTel: this.formSaleOrder.customerPhone,
+        customerEmail: this.formSaleOrder.customerEmail,
+        remark: this.formSaleOrder.remark,
+        specialDiscount: this.formSaleOrder.specialDiscount || 0,
+        specialAddition: this.formSaleOrder.specialAddition || 0,
+        freight: this.formSaleOrder.freight || 0,
+        vatPercent: this.formSaleOrder.vatPercent || 0,
+        items: this.stockItems
+      }
+      const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
+        currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
+        currencyRate: Number(this.formSaleOrder.currencyRate) || 1
+      })
+      const pdf = await pdfBuilder.generatePDF()
+      const soNumber = this.formSaleOrder.number || 'DRAFT'
+      pdf.download(`SO_${soNumber}.pdf`)
+      this.isExportingPDF = false
     },
 
     async confirmOrder() {
