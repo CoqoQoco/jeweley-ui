@@ -3,12 +3,31 @@
     <div class="customer-create-container">
       <!-- Header + Actions -->
       <div class="create-header">
+        <!-- <button class="btn-close-modal" @click="onCancel">
+          <i class="bi bi-x-lg"></i>
+        </button> -->
+        <h3 class="create-title">
+          <i class="bi bi-person-plus"></i>
+          เพิ่มลูกค้าใหม่
+        </h3>
+        <!-- <button class="btn-save-header" type="button" @click="onSubmit">
+          <i class="bi bi-check-circle"></i>
+          บันทึก
+        </button> -->
+      </div>
+
+      <!-- Form -->
+      <div class="create-form-section">
+        <form @submit.prevent="onSubmit">
+
+
+            <div class="create-header">
         <button class="btn-close-modal" @click="onCancel">
           <i class="bi bi-x-lg"></i>
         </button>
         <h3 class="create-title">
-          <i class="bi bi-person-plus"></i>
-          เพิ่มลูกค้าใหม่
+          <!-- <i class="bi bi-person-plus"></i>
+          เพิ่มลูกค้าใหม่ -->
         </h3>
         <button class="btn-save-header" type="button" @click="onSubmit">
           <i class="bi bi-check-circle"></i>
@@ -16,9 +35,7 @@
         </button>
       </div>
 
-      <!-- Form -->
-      <div class="create-form-section">
-        <form @submit.prevent="onSubmit">
+          
           <div class="mobile-form-group">
             <label>รหัสลูกค้า <span class="required">*</span></label>
             <div class="code-input-row">
