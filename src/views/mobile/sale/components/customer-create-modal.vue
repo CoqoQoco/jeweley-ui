@@ -408,7 +408,7 @@ export default {
   display: flex;
   gap: 10px;
   margin-top: 20px;
-  padding-bottom: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 
   .mobile-btn {
     flex: 1;

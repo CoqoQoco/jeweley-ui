@@ -388,7 +388,7 @@ export default {
 .mobile-sale-create-view {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 40px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
 .sale-header {

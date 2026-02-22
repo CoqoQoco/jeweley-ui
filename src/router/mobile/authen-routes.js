@@ -114,6 +114,29 @@ const routes = [
         }
       },
 
+      // ========== Quotation (Mobile) ==========
+      {
+        path: 'quotation',
+        name: 'mobile-quotation',
+        component: () => import('@/views/mobile/quotation/index-view.vue'),
+        meta: {
+          Displayname: { en: 'Quotation', th: 'ใบเสนอราคา' },
+          classIcon: 'bi bi-file-earmark-text',
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+      {
+        path: 'quotation/:number',
+        name: 'mobile-quotation-detail',
+        component: () => import('@/views/mobile/quotation/detail-view.vue'),
+        meta: {
+          Displayname: { en: 'Quotation Detail', th: 'รายละเอียดใบเสนอราคา' },
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+
       // ========== Shared Features (มีทั้ง Web & Mobile) ==========
       // แต่ UI/UX ต่างกัน - Mobile เน้น touch-friendly, quick actions
 

@@ -622,3 +622,63 @@ Key classes ที่ใช้:
 - Job Card: `src/views/mobile/components/job-card.vue`
 - Sweet Alerts: `src/services/alert/sweetAlerts.js`
 - Mobile Styles: `src/assets/scss/responsive-style/mobile/`
+
+---
+
+# Mobile Quotation
+
+## Overview
+หน้า mobile สำหรับดู Quotation list และออก PDF ใบเสนอราคา กรองด้วยวันที่ (default = วันนี้)
+
+## Structure
+
+```
+src/views/mobile/quotation/
+├── index-view.vue         # รายการใบเสนอราคา (filter วันที่ + card list + pagination)
+└── detail-view.vue        # รายละเอียดใบเสนอราคา + Export PDF
+```
+
+## Routes
+
+| Path | Name | Component |
+|------|------|-----------|
+| `/mobile/quotation` | `mobile-quotation` | `index-view.vue` |
+| `/mobile/quotation/:number` | `mobile-quotation-detail` | `detail-view.vue` |
+
+## Permissions
+
+- Permission key: `mobile:sale` (ใช้ร่วมกับ Sale Order)
+
+## Data Flow
+
+```
+List (index-view.vue)
+  ├── Date filter (default = วันนี้)
+  ├── quotationStore.fetchList({ quotationDateStart, quotationDateEnd })
+  ├── Card list: เลขที่ quotation, ชื่อลูกค้า, วันที่, สกุลเงิน
+  └── กดการ์ด → router.push('mobile-quotation-detail', { number })
+      ↓
+Detail (detail-view.vue)
+  ├── quotationStore.fetchGet({ number })
+  ├── Parse items จาก res.data (JSON string)
+  ├── แสดง: ข้อมูลใบเสนอราคา, ลูกค้า, รายการสินค้า, สรุปราคา
+  └── Export PDF → generateInvoicePdf() (download)
+```
+
+## API Integration
+
+| Store | Methods Used |
+|-------|-------------|
+| `usrQuotationApiStore` | `fetchList`, `fetchGet` |
+
+## PDF Export
+
+ใช้ `generateInvoicePdf()` จาก `quotation-pdf-integration.js` โดยสร้าง customer object:
+```javascript
+{
+  name, address, tel, email, note,
+  freight, discount, invoiceNumber,
+  currencyUnit, currencyMultiplier,
+  specialDiscount, specialAddition, vatPercent
+}
+```

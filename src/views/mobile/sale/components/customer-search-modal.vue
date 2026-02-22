@@ -286,6 +286,7 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
 .customer-list {

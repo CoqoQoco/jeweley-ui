@@ -676,7 +676,9 @@ export default {
 
       // Hardcoded Gold master list (combined with API)
       hardcodedGoldList: [
-        { code: 'น้ำหนักแป้น'  , name: 'น้ำหนักแป้น' }
+        { code: 'น้ำหนักแป้น'  , name: 'น้ำหนักแป้น' },
+        { code: 'Gold Loss'  , name: 'Gold Loss' },
+        { code: 'Alloy'  , name: 'Alloy' }
         
       ],
 

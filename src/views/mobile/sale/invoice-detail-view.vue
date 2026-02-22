@@ -469,7 +469,7 @@ export default {
 .mobile-invoice-detail-view {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: 40px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
 .info-card {

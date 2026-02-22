@@ -496,7 +496,7 @@ export default {
 @import '@/assets/scss/responsive-style/mobile';
 
 .invoice-form-section {
-  padding-bottom: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
 
 .form-section-header {
