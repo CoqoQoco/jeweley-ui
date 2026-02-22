@@ -188,7 +188,7 @@
             </div>
           </div>
         </transition> -->
-      </div>
+      <!-- </div> -->
 
       <!-- Remark -->
       <div v-if="product.remark" class="info-group">
