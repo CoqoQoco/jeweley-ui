@@ -477,9 +477,13 @@ grandTotal                     = totalBeforeVat + vatAmount
 ```
 1. confirmSubmit() — ถามยืนยัน
 2. Invoice/Delete — soft-delete invoice (ลบ invoice link จาก SO products)
-3. SaleOrder/UnconfirmStockItems — คืน stock (unconfirm items ที่เคย confirm ใน invoice นี้)
-4. Navigate ไป SO detail
+3. SaleOrder/UnconfirmStockItems — คืน stock (try-catch: ถ้า fail ก็ navigate ออกเพราะ invoice ลบแล้ว)
+4. success() พร้อม callback → Navigate ไป SO detail หลัง user กดตกลง
 ```
+
+**สำคัญ**:
+- Step 3 ครอบ try-catch เพราะ invoice ถูกลบแล้ว (step 2) → ต้อง navigate ออกเสมอไม่ว่า unconfirm จะสำเร็จหรือไม่
+- `$router.push()` อยู่ใน callback ของ `success()` เพื่อรอ user กดตกลงก่อนค่อย navigate (ป้องกัน iOS Safari navigation issues ขณะ SweetAlert เปิดอยู่)
 
 **Backend Behavior**:
 | API | สิ่งที่เกิดขึ้น |

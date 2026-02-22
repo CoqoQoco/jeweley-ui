@@ -106,6 +106,10 @@ export default {
 
   methods: {
     onDateSelect(event) {
+      // Force v-model sync update ก่อน date-select event
+      // เพราะ watcher บน localValue ใช้ flush:'pre' (async)
+      // ต้อง emit update:modelValue ตรงนี้เพื่อให้ parent ได้ค่าใหม่ทันที
+      this.$emit('update:modelValue', this.localValue)
       this.$emit('date-select', event)
     }
   }

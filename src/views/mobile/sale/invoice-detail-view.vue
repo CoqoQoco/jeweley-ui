@@ -456,27 +456,37 @@ export default {
             return
           }
 
-          // Step 2: Unconfirm stock items
-          const stockConfirm = this.soData?.stockConfirm || []
-          const itemsToUnconfirm = stockConfirm.filter(c =>
-            c.invoice === this.invoiceNumber && c.isConfirm
-          )
+          // เก็บ soNumber ก่อน (ป้องกัน this.invoiceData เปลี่ยนค่า)
+          const soNumber = this.invoiceData.soNumber
 
-          if (itemsToUnconfirm.length > 0) {
-            await this.saleOrderStore.unconfirmStockItems({
-              soNumber: this.invoiceData.soNumber,
-              stockItems: itemsToUnconfirm.map(item => ({
-                id: item.id,
-                stockNumber: item.stockNumber
-              }))
-            })
+          // Step 2: Unconfirm stock items
+          // try-catch เพราะ invoice ถูกลบแล้ว — ต้อง navigate ออกไม่ว่า unconfirm จะสำเร็จหรือไม่
+          try {
+            const stockConfirm = this.soData?.stockConfirm || []
+            const itemsToUnconfirm = stockConfirm.filter(c =>
+              c.invoice === this.invoiceNumber && c.isConfirm
+            )
+
+            if (itemsToUnconfirm.length > 0) {
+              await this.saleOrderStore.unconfirmStockItems({
+                soNumber: soNumber,
+                stockItems: itemsToUnconfirm.map(item => ({
+                  id: item.id,
+                  stockNumber: item.stockNumber
+                }))
+              })
+            }
+          } catch (err) {
+            console.error('Error unconfirming stock items:', err)
           }
 
+          // Step 3: Navigate — ใน success callback เพื่อให้ user กดตกลงก่อนค่อย navigate
           this.cancelling = false
-          success('ยกเลิก Invoice และคืนสินค้าสำเร็จ')
-          this.$router.push({
-            name: 'mobile-sale-detail',
-            params: { soNumber: this.invoiceData.soNumber }
+          success('ยกเลิก Invoice และคืนสินค้าสำเร็จ', 'สำเร็จ', () => {
+            this.$router.push({
+              name: 'mobile-sale-detail',
+              params: { soNumber }
+            })
           })
         }
       )
