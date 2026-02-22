@@ -4,7 +4,7 @@
       <div class="item-info">
         <span class="item-stock-number">{{ item.stockNumber }}</span>
         <span class="item-source-badge" :class="item.source">
-          {{ item.source === 'appraisal' ? 'ตีราคา' : 'สแกน' }}
+          {{ item.source === 'appraisal' ? 'ตีราคา' : item.source === 'quotation' ? 'ใบเสนอราคา' : 'สแกน' }}
         </span>
       </div>
       <button class="btn-remove" @click="$emit('remove', index)">
@@ -151,6 +151,10 @@ export default {
 
       &.scan {
         background: #2196f3;
+      }
+
+      &.quotation {
+        background: #9c27b0;
       }
     }
 

@@ -1,41 +1,22 @@
 <template>
   <div v-if="isVisible" class="customer-create-overlay">
     <div class="customer-create-container">
-      <!-- Header + Actions -->
-      <div class="create-header">
-        <!-- <button class="btn-close-modal" @click="onCancel">
-          <i class="bi bi-x-lg"></i>
-        </button> -->
-        <h3 class="create-title">
-          <i class="bi bi-person-plus"></i>
-          เพิ่มลูกค้าใหม่
-        </h3>
-        <!-- <button class="btn-save-header" type="button" @click="onSubmit">
-          <i class="bi bi-check-circle"></i>
-          บันทึก
-        </button> -->
-      </div>
-
-      <!-- Form -->
+      <!-- Form (scrollable, action row is first item) -->
       <div class="create-form-section">
         <form @submit.prevent="onSubmit">
+          <!-- Action Row -->
+          <div class="create-action-row">
+            <button class="btn-close-form" type="button" @click="onCancel">
+              <i class="bi bi-x-lg"></i>
+              ปิด
+            </button>
+            <span class="action-row-title">เพิ่มลูกค้าใหม่</span>
+            <button class="btn-save-form" type="button" @click="onSubmit">
+              <i class="bi bi-check-circle"></i>
+              บันทึก
+            </button>
+          </div>
 
-
-            <div class="create-header">
-        <button class="btn-close-modal" @click="onCancel">
-          <i class="bi bi-x-lg"></i>
-        </button>
-        <h3 class="create-title">
-          <!-- <i class="bi bi-person-plus"></i>
-          เพิ่มลูกค้าใหม่ -->
-        </h3>
-        <button class="btn-save-header" type="button" @click="onSubmit">
-          <i class="bi bi-check-circle"></i>
-          บันทึก
-        </button>
-      </div>
-
-          
           <div class="mobile-form-group">
             <label>รหัสลูกค้า <span class="required">*</span></label>
             <div class="code-input-row">
@@ -132,7 +113,6 @@
 
         </form>
       </div>
-
     </div>
   </div>
 </template>
@@ -287,77 +267,76 @@ export default {
   height: 100%;
 }
 
-.create-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  padding-top: calc(12px + env(safe-area-inset-top, 0px));
-  background: white;
-  border-bottom: 1px solid #e8e8e8;
-
-  .btn-close-modal {
-    background: none;
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    font-size: 1.1rem;
-    cursor: pointer;
-
-    &:active {
-      background: #f0f0f0;
-    }
-  }
-
-  .create-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-    flex: 1;
-
-    i {
-      color: var(--base-font-color);
-    }
-  }
-
-  .btn-save-header {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: var(--base-font-color);
-    color: white;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-
-    i {
-      font-size: 0.9rem;
-    }
-
-    &:active {
-      opacity: 0.8;
-    }
-  }
-}
-
 .create-form-section {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  padding-bottom: 20px;
+  padding-bottom: 40px;
+  -webkit-overflow-scrolling: touch;
+
+  .create-action-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    .btn-close-form {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      background: white;
+      color: #666;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
+
+      i {
+        font-size: 0.85rem;
+      }
+
+      &:active {
+        background: #f0f0f0;
+      }
+    }
+
+    .action-row-title {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #333;
+      text-align: center;
+    }
+
+    .btn-save-form {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: var(--base-font-color);
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+
+      i {
+        font-size: 0.9rem;
+      }
+
+      &:active {
+        opacity: 0.8;
+      }
+    }
+  }
 
   .mobile-form-group {
     margin-bottom: 14px;
@@ -440,5 +419,4 @@ export default {
     }
   }
 }
-
 </style>

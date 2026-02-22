@@ -1,6 +1,6 @@
 <template>
   <div class="mobile-quotation-detail-view">
-    <!-- Header with Back Button -->
+    <!-- Header with Back Button
     <div class="quotation-header">
       <div class="mobile-container">
         <button class="mobile-btn-icon" @click="goBack">
@@ -18,7 +18,7 @@
           <i class="bi" :class="exportingPDF ? 'bi-hourglass-split' : 'bi-file-pdf'"></i>
         </button>
       </div>
-    </div>
+    </div> -->
 
     <!-- Quotation Details -->
     <div v-if="quotation" class="mobile-container mobile-mt-2">
@@ -151,18 +151,23 @@
         </div>
       </div>
 
-      <!-- Export PDF Button -->
-      <div class="mobile-mt-3">
+      <!-- Action Buttons -->
+      <div class="action-buttons mobile-mt-3">
         <button
-          class="mobile-btn mobile-btn-success mobile-btn-block"
+          class="mobile-btn mobile-btn-primary"
+          @click="createSaleOrder"
+          :disabled="!quotation || items.length === 0"
+        >
+          <i class="bi bi-cart-plus"></i>
+          สร้างใบสั่งขาย
+        </button>
+        <button
+          class="mobile-btn mobile-btn-success"
           @click="handleExportPDF"
           :disabled="exportingPDF || !quotation"
         >
-          <i
-            class="bi"
-            :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"
-          ></i>
-          <span>{{ exportingPDF ? 'กำลัง Export PDF...' : 'Export PDF' }}</span>
+          <i class="bi" :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"></i>
+          {{ exportingPDF ? 'กำลัง Export PDF...' : 'Export PDF' }}
         </button>
       </div>
     </div>
@@ -313,6 +318,13 @@ export default {
       } finally {
         this.exportingPDF = false
       }
+    },
+
+    createSaleOrder() {
+      this.$router.push({
+        name: 'mobile-sale-create',
+        query: { fromQuotation: this.quotation.number }
+      })
     },
 
     goBack() {
@@ -612,6 +624,30 @@ export default {
           font-size: 1.1rem;
         }
       }
+    }
+  }
+}
+
+// Action buttons
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+
+  .mobile-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    i {
+      font-size: 1.1rem;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 }

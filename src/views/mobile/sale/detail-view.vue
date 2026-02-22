@@ -178,9 +178,35 @@
           <span class="summary-value">{{ displayItemCount }} รายการ</span>
         </div>
         <div class="summary-divider"></div>
-        <div class="summary-row total">
-          <span class="summary-label">ยอดรวมทั้งหมด</span>
+        <div class="summary-row">
+          <span class="summary-label">F.O.B Bangkok (รวมสินค้า)</span>
           <span class="summary-value">{{ formatCurrency(displayTotalAmount) }} {{ displayCurrency }}</span>
+        </div>
+        <div v-if="Number(soData.specialDiscount) > 0" class="summary-row">
+          <span class="summary-label">ส่วนลดพิเศษ</span>
+          <span class="summary-value discount">-{{ formatCurrency(soData.specialDiscount) }}</span>
+        </div>
+        <div v-if="Number(soData.specialAddition) > 0" class="summary-row">
+          <span class="summary-label">ส่วนเพิ่มพิเศษ</span>
+          <span class="summary-value addition">+{{ formatCurrency(soData.specialAddition) }}</span>
+        </div>
+        <div v-if="Number(soData.freight) > 0" class="summary-row">
+          <span class="summary-label">Freight & Insurance</span>
+          <span class="summary-value">{{ formatCurrency(soData.freight) }}</span>
+        </div>
+        <div v-if="hasFinancialFields" class="summary-divider"></div>
+        <div v-if="hasFinancialFields" class="summary-row">
+          <span class="summary-label">ยอดรวมก่อน VAT</span>
+          <span class="summary-value">{{ formatCurrency(soTotalBeforeVat) }} {{ displayCurrency }}</span>
+        </div>
+        <div v-if="Number(soData.vat) > 0" class="summary-row">
+          <span class="summary-label">VAT ({{ soData.vat }}%)</span>
+          <span class="summary-value">{{ formatCurrency(soVatAmount) }}</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span class="summary-label">{{ hasFinancialFields ? 'ยอดรวมสุทธิ' : 'ยอดรวมทั้งหมด' }}</span>
+          <span class="summary-value">{{ formatCurrency(soGrandTotal) }} {{ displayCurrency }}</span>
         </div>
         <div v-if="hasCurrencyConversion" class="summary-row reference">
           <span class="summary-label">เทียบเท่า</span>
@@ -268,7 +294,9 @@
             :disabled="allItemsInvoiced"
           >
             <i class="bi bi-file-earmark-check"></i>
-            {{ allItemsInvoiced ? 'ออก Invoice แล้วทั้งหมด' : 'ออก Invoice' }}
+            {{ allItemsInvoiced ? 'ออก Invoice แล้วทั้งหมด'
+               : hasUnconfirmedItems ? 'Confirm Stock + ออก Invoice'
+               : 'ออก Invoice' }}
           </button>
         </template>
       </div>
@@ -364,6 +392,11 @@ export default {
       return this.stockItems.filter((item) => item.isInvoice)
     },
 
+    // ตรวจว่ามี items ที่ยังไม่ confirm (มี stockNumber แต่ยังไม่ isConfirm และยังไม่ isInvoice)
+    hasUnconfirmedItems() {
+      return this.stockItems.some(item => item.stockNumber && !item.isConfirm && !item.isInvoice)
+    },
+
     // ตรวจว่าทุก item ออก invoice แล้วหรือยัง
     allItemsInvoiced() {
       if (this.soItems.length === 0) return false
@@ -409,11 +442,43 @@ export default {
       return this.searchField === 'stockNumber'
         ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
         : 'กรอกรหัสสินค้าเก่า (Origin)'
+    },
+
+    hasFinancialFields() {
+      if (!this.soData) return false
+      return Number(this.soData.specialDiscount) > 0
+        || Number(this.soData.specialAddition) > 0
+        || Number(this.soData.freight) > 0
+        || Number(this.soData.vat) > 0
+    },
+
+    soTotalAfterSpecial() {
+      return this.displayTotalAmount
+        - Number(this.soData?.specialDiscount || 0)
+        + Number(this.soData?.specialAddition || 0)
+    },
+
+    soTotalBeforeVat() {
+      return this.soTotalAfterSpecial + Number(this.soData?.freight || 0)
+    },
+
+    soVatAmount() {
+      const vatPercent = Number(this.soData?.vat || 0)
+      return (this.soTotalBeforeVat * vatPercent) / 100
+    },
+
+    soGrandTotal() {
+      if (!this.hasFinancialFields) return this.displayTotalAmount
+      return this.soTotalBeforeVat + this.soVatAmount
     }
   },
 
   mounted() {
-    this.loadSaleOrder()
+    this.loadSaleOrder().then(() => {
+      if (this.$route.query.openInvoice === 'true') {
+        this.showInvoiceForm = true
+      }
+    })
   },
 
   methods: {
@@ -599,9 +664,10 @@ export default {
           imageBlobPath: null
         }))
 
+      const existingFreight = Number(this.soData.freight) || 0
+
       const formValue = {
         soNumber: this.soData.soNumber,
-        status: this.soData.status || 'Confirmed',
         customerCode: this.soData.customerCode || null,
         customerName: this.soData.customerName || '',
         customerTel: this.soData.customerTel || '',
@@ -611,12 +677,21 @@ export default {
         currencyUnit: this.soData.currencyUnit || 'US$',
         currencyRate: this.soData.currencyRate || 33.0,
         priority: this.soData.priority || 'mobile',
+        soDate: this.soData.soDate || null,
+        deliveryDate: this.soData.deliveryDate || null,
+        refQuotation: this.soData.refQuotation || null,
+        markup: this.soData.markup || null,
+        goldRate: this.soData.goldRate || null,
+        specialDiscount: this.soData.specialDiscount || 0,
+        specialAddition: this.soData.specialAddition || 0,
+        vat: this.soData.vat || 0,
+        freight: existingFreight,
         data: JSON.stringify({
           stockItems: newStockItems,
           copyItems: newCopyItems,
           allItems: [...newStockItems, ...newCopyItems],
-          freight: 0,
-          copyFreight: 0
+          freight: existingFreight,
+          copyFreight: existingFreight
         })
       }
 
@@ -964,6 +1039,14 @@ export default {
       font-size: 0.9rem;
       font-weight: 600;
       color: #333;
+
+      &.discount {
+        color: #f44336;
+      }
+
+      &.addition {
+        color: #4caf50;
+      }
     }
 
     &.total {

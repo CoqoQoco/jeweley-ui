@@ -14,6 +14,12 @@
     </div> -->
 
     <div class="mobile-container mobile-mt-1">
+      <!-- Quotation Reference Banner -->
+      <div v-if="refQuotation" class="quotation-ref-banner">
+        <i class="bi bi-link-45deg"></i>
+        <span>อ้างอิงใบเสนอราคา: <strong>{{ refQuotation }}</strong></span>
+      </div>
+
       <!-- Section 1: Add Items -->
       <div class="section-card">
         <div class="section-header-bar">
@@ -120,6 +126,30 @@
               />
             </div>
           </div>
+          <div class="currency-row" style="margin-top: 10px;">
+            <div class="currency-field">
+              <label>Markup</label>
+              <input
+                v-model.number="markup"
+                type="number"
+                class="currency-input"
+                min="0"
+                step="any"
+                placeholder="3.5"
+              />
+            </div>
+            <div class="currency-field">
+              <label>Gold (US$/oz)</label>
+              <input
+                v-model.number="goldPerOz"
+                type="number"
+                class="currency-input"
+                min="0"
+                step="any"
+                placeholder="2000"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -138,21 +168,28 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons mobile-mt-2">
-        <!-- <button
+        <button
           class="mobile-btn mobile-btn-outline"
-          @click="saveDraft"
+          @click="createSaleOrderOnly"
           :disabled="items.length === 0"
         >
           <i class="bi bi-save"></i>
-          บันทึกร่าง
-        </button> -->
+          บันทึกใบสั่งขาย
+        </button>
         <button
           class="mobile-btn mobile-btn-primary"
-          @click="createSaleOrder"
+          @click="createSaleOrderAndInvoice"
           :disabled="items.length === 0"
         >
-          <i class="bi bi-check-circle"></i>
-          บันทึกใบสั่งขาย
+          <i class="bi bi-file-earmark-check"></i>
+          สร้าง SO + ออก Invoice
+        </button>
+        <button
+          class="mobile-btn mobile-btn-outline"
+          @click="cancelCreate"
+        >
+          <i class="bi bi-x-circle"></i>
+          ยกเลิก
         </button>
       </div>
     </div>
@@ -162,6 +199,7 @@
 <script>
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 import AddItemMethodSelector from './components/add-item-method-selector.vue'
 import AppraisalJobList from './components/appraisal-job-list.vue'
@@ -185,7 +223,8 @@ export default {
   setup() {
     const saleOrderStore = usrSaleOrderApiStore()
     const productStore = usrStockProductApiStore()
-    return { saleOrderStore, productStore }
+    const quotationStore = usrQuotationApiStore()
+    return { saleOrderStore, productStore, quotationStore }
   },
 
   data() {
@@ -200,6 +239,8 @@ export default {
       items: [],
       currencyUnit: 'US$',
       currencyRate: 33.0,
+      markup: 3.5,
+      goldPerOz: 2000,
       customer: {
         customerCode: '',
         customerName: '',
@@ -207,7 +248,21 @@ export default {
         customerEmail: '',
         customerAddress: '',
         remark: ''
+      },
+      refQuotation: '',
+      quotationFinancials: {
+        specialDiscount: 0,
+        specialAddition: 0,
+        vat: 0,
+        freight: 0
       }
+    }
+  },
+
+  async mounted() {
+    const fromQuotation = this.$route.query.fromQuotation
+    if (fromQuotation) {
+      await this.loadFromQuotation(fromQuotation)
     }
   },
 
@@ -220,6 +275,56 @@ export default {
   },
 
   methods: {
+    async loadFromQuotation(quotationNumber) {
+      const response = await this.quotationStore.fetchGet({
+        formValue: { number: quotationNumber }
+      })
+      if (!response) return
+
+      this.refQuotation = quotationNumber
+
+      // Currency
+      this.currencyUnit = response.currency || 'US$'
+      this.currencyRate = response.currencyRate || 33.0
+      this.markup = response.markUp || 3.5
+      this.goldPerOz = response.goldPerOz || 2000
+
+      // Financial fields
+      this.quotationFinancials = {
+        specialDiscount: Number(response.specialDiscount) || 0,
+        specialAddition: Number(response.specialAddition) || 0,
+        vat: Number(response.vat) || 0,
+        freight: Number(response.freight) || 0
+      }
+
+      // Customer display (ไม่มี customerCode → user ต้องเลือกจาก search modal)
+      this.customer = {
+        customerCode: '',
+        customerName: response.customerName || '',
+        customerTel: response.customerPhone || '',
+        customerEmail: response.customerEmail || '',
+        customerAddress: response.customerAddress || '',
+        remark: response.remark || ''
+      }
+
+      // Items mapping
+      const quotationItems = response.data ? JSON.parse(response.data) : []
+      this.items = quotationItems.map(item => ({
+        stockNumber: item.stockNumber || '',
+        productNumber: item.productNumber || '',
+        description: item.description || '',
+        costPrice: 0,
+        price: Number(item.appraisalPrice || item.productPrice || item.price || 0),
+        appraisalPrice: Number(item.appraisalPrice || item.productPrice || item.price || 0),
+        tagPriceMultiplier: 1,
+        discountPercent: Number(item.discountPercent) || 0,
+        qty: Number(item.qty) || 1,
+        materials: [],
+        imagePath: item.imagePath || '',
+        source: 'quotation'
+      }))
+    },
+
     addItem(item) {
       this.items.push(item)
     },
@@ -286,24 +391,47 @@ export default {
       success('เพิ่มสินค้าสำเร็จ', `${response.stockNumber}`)
     },
 
-    async saveDraft() {
-      await this.saveOrder('Draft')
-    },
-
-    async createSaleOrder() {
+    validateBeforeSave() {
       if (this.items.length === 0) {
         warning('กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ')
-        return
+        return false
       }
       if (!this.customer.customerCode) {
         warning('กรุณาเลือกลูกค้า', 'ข้อมูลไม่ครบถ้วน')
-        return
+        return false
       }
       if (!this.currencyUnit) {
         warning('กรุณาระบุสกุลเงิน', 'ข้อมูลไม่ครบถ้วน')
-        return
+        return false
       }
-      await this.saveOrder('Confirmed')
+      return true
+    },
+
+    async createSaleOrderOnly() {
+      if (!this.validateBeforeSave()) return
+      const soNumber = await this.saveOrder('Confirmed')
+      if (soNumber) {
+        this.$router.push({
+          name: 'mobile-sale-detail',
+          params: { soNumber }
+        })
+      }
+    },
+
+    async createSaleOrderAndInvoice() {
+      if (!this.validateBeforeSave()) return
+      const soNumber = await this.saveOrder('Confirmed')
+      if (soNumber) {
+        this.$router.push({
+          name: 'mobile-sale-detail',
+          params: { soNumber },
+          query: { openInvoice: 'true' }
+        })
+      }
+    },
+
+    cancelCreate() {
+      this.$router.back()
     },
 
     async saveOrder(status) {
@@ -345,7 +473,6 @@ export default {
 
       const formValue = {
         soNumber: '',
-        status: status,
         customerCode: this.customer.customerCode || null,
         customerName: this.customer.customerName || '',
         customerTel: this.customer.customerTel || '',
@@ -355,12 +482,21 @@ export default {
         currencyUnit: this.currencyUnit || 'US$',
         currencyRate: this.currencyRate || 33.0,
         priority: 'mobile',
+        soDate: new Date().toISOString(),
+        deliveryDate: null,
+        refQuotation: this.refQuotation || null,
+        markup: this.markup || null,
+        goldRate: this.goldPerOz || null,
+        specialDiscount: this.quotationFinancials.specialDiscount || 0,
+        specialAddition: this.quotationFinancials.specialAddition || 0,
+        vat: this.quotationFinancials.vat || 0,
+        freight: this.quotationFinancials.freight || 0,
         // items เป็น JSON string ในฟิลด์ data
         data: JSON.stringify({
           stockItems: stockItems,
           copyItems: copyItems,
           allItems: [...stockItems, ...copyItems],
-          freight: 0,
+          freight: this.quotationFinancials.freight || 0,
           copyFreight: 0
         })
       }
@@ -370,13 +506,10 @@ export default {
       if (result) {
         const soNumber = result.soNumber || result
         const statusLabel = status === 'Draft' ? 'บันทึกร่าง' : 'สร้างใบสั่งขาย'
-        success(`เลขที่: ${soNumber}`, `${statusLabel}สำเร็จ`, () => {
-          this.$router.push({
-            name: 'mobile-sale-detail',
-            params: { soNumber: soNumber }
-          })
-        })
+        success(`เลขที่: ${soNumber}`, `${statusLabel}สำเร็จ`)
+        return soNumber
       }
+      return null
     }
   }
 }
@@ -429,6 +562,23 @@ export default {
       opacity: 0.9;
       font-size: 0.8rem;
     }
+  }
+}
+
+.quotation-ref-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f3e5f5;
+  border: 1px solid #ce93d8;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: #6a1b9a;
+
+  i {
+    font-size: 1.1rem;
   }
 }
 
@@ -600,6 +750,7 @@ export default {
 
 .action-buttons {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
 

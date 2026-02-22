@@ -197,6 +197,14 @@
           <i class="bi bi-printer"></i>
           พิมพ์ Invoice
         </button>
+        <button
+          class="mobile-btn mobile-btn-danger"
+          @click="handleCancelInvoice"
+          :disabled="cancelling"
+        >
+          <i class="bi" :class="cancelling ? 'bi-hourglass-split spin-icon' : 'bi-x-octagon'"></i>
+          {{ cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก Invoice + Confirm' }}
+        </button>
         <button class="mobile-btn mobile-btn-outline" @click="$router.back()">
           <i class="bi bi-arrow-left"></i>
           ย้อนกลับ
@@ -223,7 +231,7 @@
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
-import { success, error } from '@/services/alert/sweetAlerts.js'
+import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import SoItemCard from './components/so-item-card.vue'
 import dayjs from 'dayjs'
 
@@ -249,7 +257,9 @@ export default {
       showPrintForm: false,
       printInvoiceNumber: '',
       printInvoiceDate: '',
-      exportingPDF: false
+      exportingPDF: false,
+      // Cancel
+      cancelling: false
     }
   },
 
@@ -427,6 +437,49 @@ export default {
       } finally {
         this.exportingPDF = false
       }
+    },
+
+    // ==================== Cancel Invoice ====================
+    handleCancelInvoice() {
+      confirmSubmit(
+        'ระบบจะยกเลิก Invoice และคืนสินค้ากลับสู่สถานะยังไม่ยืนยัน (Unconfirm)',
+        'ยืนยันการยกเลิก?',
+        async () => {
+          this.cancelling = true
+
+          // Step 1: Delete Invoice
+          const deleteResult = await this.invoiceStore.fetchDelete({
+            formValue: { invoiceNumber: this.invoiceNumber }
+          })
+          if (!deleteResult) {
+            this.cancelling = false
+            return
+          }
+
+          // Step 2: Unconfirm stock items
+          const stockConfirm = this.soData?.stockConfirm || []
+          const itemsToUnconfirm = stockConfirm.filter(c =>
+            c.invoice === this.invoiceNumber && c.isConfirm
+          )
+
+          if (itemsToUnconfirm.length > 0) {
+            await this.saleOrderStore.unconfirmStockItems({
+              soNumber: this.invoiceData.soNumber,
+              stockItems: itemsToUnconfirm.map(item => ({
+                id: item.id,
+                stockNumber: item.stockNumber
+              }))
+            })
+          }
+
+          this.cancelling = false
+          success('ยกเลิก Invoice และคืนสินค้าสำเร็จ')
+          this.$router.push({
+            name: 'mobile-sale-detail',
+            params: { soNumber: this.invoiceData.soNumber }
+          })
+        }
+      )
     },
 
     // ==================== Helpers ====================
