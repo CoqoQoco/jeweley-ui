@@ -1,7 +1,7 @@
 <template>
   <div v-if="isVisible" class="customer-create-overlay">
     <div class="customer-create-container">
-      <!-- Header -->
+      <!-- Header + Actions -->
       <div class="create-header">
         <button class="btn-close-modal" @click="onCancel">
           <i class="bi bi-x-lg"></i>
@@ -10,6 +10,10 @@
           <i class="bi bi-person-plus"></i>
           เพิ่มลูกค้าใหม่
         </h3>
+        <button class="btn-save-header" type="button" @click="onSubmit">
+          <i class="bi bi-check-circle"></i>
+          บันทึก
+        </button>
       </div>
 
       <!-- Form -->
@@ -112,17 +116,6 @@
         </form>
       </div>
 
-      <!-- Fixed Bottom Actions -->
-      <div class="create-actions">
-        <button class="mobile-btn mobile-btn-outline" type="button" @click="onCancel">
-          <i class="bi bi-x"></i>
-          ยกเลิก
-        </button>
-        <button class="mobile-btn mobile-btn-primary" type="button" @click="onSubmit">
-          <i class="bi bi-check-circle"></i>
-          บันทึกลูกค้า
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -311,9 +304,33 @@ export default {
     font-weight: 600;
     color: #333;
     margin: 0;
+    flex: 1;
 
     i {
       color: var(--base-font-color);
+    }
+  }
+
+  .btn-save-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--base-font-color);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+
+    i {
+      font-size: 0.9rem;
+    }
+
+    &:active {
+      opacity: 0.8;
     }
   }
 }
@@ -322,7 +339,7 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  padding-bottom: calc(90px + env(safe-area-inset-bottom, 34px));
+  padding-bottom: 20px;
 
   .mobile-form-group {
     margin-bottom: 14px;
@@ -406,29 +423,4 @@ export default {
   }
 }
 
-.create-actions {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  gap: 10px;
-  padding: 12px 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 34px));
-  background: white;
-  border-top: 1px solid #e8e8e8;
-  z-index: 1001;
-
-  .mobile-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-
-    i {
-      font-size: 1rem;
-    }
-  }
-}
 </style>
