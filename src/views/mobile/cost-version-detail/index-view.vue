@@ -86,6 +86,29 @@
         </div>
       </div>
 
+      <!-- Currency Conversion Card -->
+      <div class="info-card mobile-mt-2">
+        <div class="card-header currency-header" @click="showCurrencyInput = !showCurrencyInput">
+          <i class="bi bi-currency-exchange"></i>
+          <span>แปลงสกุลเงิน</span>
+          <i :class="['bi', showCurrencyInput ? 'bi-chevron-up' : 'bi-chevron-down']" style="margin-left: auto"></i>
+        </div>
+        <transition name="slide-fade">
+          <div v-if="showCurrencyInput" class="card-body">
+            <div class="currency-form">
+              <div class="currency-field">
+                <label>สกุลเงิน</label>
+                <input type="text" class="form-control" v-model.trim="currencyUnit" placeholder="เช่น US$, EUR" />
+              </div>
+              <div class="currency-field">
+                <label>อัตราแลกเปลี่ยน (1 หน่วย = ? บาท)</label>
+                <input type="number" class="form-control" v-model.number="currencyRate" min="0" step="0.01" placeholder="เช่น 33.50" />
+              </div>
+            </div>
+          </div>
+        </transition>
+      </div>
+
       <!-- Cost Details Card -->
       <div v-if="hasCostData" class="cost-card mobile-mt-2">
         <div class="cost-card-header" @click="toggleCostDetails">
@@ -94,7 +117,12 @@
             <span>รายการต้นทุน</span>
           </div>
           <div class="cost-header-right">
-            <span class="total-amount">{{ formatCurrency(totalCost) }} บาท</span>
+            <div>
+              <span class="total-amount">{{ formatCurrency(displayTotalCost) }} {{ displayCurrency }}</span>
+              <div v-if="hasCurrencyConversion" class="reference-line">
+                เทียบเท่า {{ formatCurrency(totalCost) }} บาท
+              </div>
+            </div>
             <i :class="['bi', showCostDetails ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
           </div>
         </div>
@@ -105,7 +133,12 @@
             <i class="bi bi-tag"></i>
             <span>ราคาป้าย (× {{ tagPriceMultiplier }})</span>
           </div>
-          <span class="tag-price-amount">{{ formatCurrency(tagPrice) }} บาท</span>
+          <div>
+            <span class="tag-price-amount">{{ formatCurrency(displayTagPrice) }} {{ displayCurrency }}</span>
+            <div v-if="hasCurrencyConversion" class="tag-reference-line">
+              เทียบเท่า {{ formatCurrency(tagPrice) }} บาท
+            </div>
+          </div>
         </div>
 
         <!-- Expandable Cost Details -->
@@ -238,7 +271,10 @@ export default {
       isLoading: false,
       exportingPDF: false,
       showCostDetails: false,
-      expandedGroups: {}
+      expandedGroups: {},
+      showCurrencyInput: false,
+      currencyUnit: '',
+      currencyRate: null
     }
   },
 
@@ -300,6 +336,24 @@ export default {
 
     tagPrice() {
       return this.totalCost * this.tagPriceMultiplier
+    },
+
+    hasCurrencyConversion() {
+      return !!(this.currencyUnit && this.currencyRate && this.currencyRate > 0 && this.currencyRate !== 1)
+    },
+
+    displayCurrency() {
+      return this.hasCurrencyConversion ? this.currencyUnit : 'THB'
+    },
+
+    displayTotalCost() {
+      if (!this.hasCurrencyConversion) return this.totalCost
+      return this.totalCost / this.currencyRate
+    },
+
+    displayTagPrice() {
+      if (!this.hasCurrencyConversion) return this.tagPrice
+      return this.tagPrice / this.currencyRate
     }
   },
 
@@ -317,6 +371,12 @@ export default {
 
         if (response) {
           this.costVersion = response
+          // Load currency from saved data
+          if (response.currencyUnit) {
+            this.currencyUnit = response.currencyUnit
+            this.currencyRate = response.currencyRate || null
+            this.showCurrencyInput = true
+          }
           // Load stock data for PDF export
           if (response.stockNumber) {
             await this.loadStockData(response.stockNumber)
@@ -355,8 +415,11 @@ export default {
 
       this.exportingPDF = true
       try {
-        // Create PDF builder
-        const pdfBuilder = new AppraisalHistoryPdfBuilder(this.stockData, this.costVersion)
+        // Create PDF builder with currency options
+        const pdfOptions = this.hasCurrencyConversion
+          ? { currencyUnit: this.currencyUnit, currencyRate: this.currencyRate }
+          : {}
+        const pdfBuilder = new AppraisalHistoryPdfBuilder(this.stockData, this.costVersion, pdfOptions)
 
         // Generate PDF
         const pdf = await pdfBuilder.generatePDF()
@@ -552,6 +615,45 @@ export default {
   font-size: 0.9rem;
   color: #333;
   line-height: 1.5;
+}
+
+// Currency Conversion Card
+.currency-header {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  &:active { transform: scale(0.98); }
+}
+
+.currency-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .currency-field {
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 4px;
+    }
+  }
+}
+
+.reference-line,
+.tag-reference-line {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+  margin-top: 2px;
+}
+
+.tag-reference-line {
+  color: #e65100;
+  opacity: 0.7;
+  text-align: right;
+  font-size: 0.75rem;
+  margin-top: 2px;
 }
 
 // Cost Card Styles (similar to product-detail-card)

@@ -198,6 +198,11 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
       }
     },
 
+    async fetchListCostVersion({ take, skip, sort, formValue }) {
+      const param = { take, skip, sort, search: { ...formValue } }
+      return await api.jewelry.post('StockProduct/ListCostVersion', param)
+    },
+
     async fetchGetCostVersion(planRunning) {
       try {
         const param = {

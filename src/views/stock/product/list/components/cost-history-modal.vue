@@ -205,150 +205,13 @@
             </div>
           </div>
 
-          <!-- Price Appraisal Table -->
-          <div class="filter-container mt-3">
-            <div class="vertical-center-container mb-2">
-              <span class="title-text-lg bi bi-calculator mr-2"></span>
-              <span class="title-text-lg">รายการตีราคา</span>
-            </div>
-
-            <div class="responsive-table-wrapper">
-              <DataTable
-                :value="groupedVersionTransactions"
-                rowGroupMode="subheader"
-                groupRowsBy="nameGroup"
-                :sortOrder="1"
-                :sortField="'groupOrder'"
-                stripedRows
-                showGridlines
-              >
-                <ColumnGroup type="header">
-                  <Row>
-                    <Column header="รายการ" />
-                    <Column header="จำนวน" />
-                    <Column header="ราคา/หน่วย" />
-                    <Column header="น้ำหนัก" />
-                    <Column header="ราคา/น้ำหนัก" />
-                    <Column header="รวม" />
-                  </Row>
-                </ColumnGroup>
-
-                <Column field="nameDescription">
-                  <template #body="slotProps">
-                    <input
-                      type="text"
-                      class="form-control"
-                      :value="slotProps.data.nameDescription"
-                      readonly
-                      disabled
-                    />
-                  </template>
-                </Column>
-
-                <Column field="qty" style="width: 130px">
-                  <template #body="slotProps">
-                    <input
-                      type="text"
-                      class="form-control text-right"
-                      :value="formatNumber(slotProps.data.qty)"
-                      readonly
-                      disabled
-                    />
-                  </template>
-                </Column>
-
-                <Column field="qtyPrice" style="width: 110px">
-                  <template #body="slotProps">
-                    <input
-                      type="text"
-                      class="form-control text-right"
-                      :value="formatCurrency(slotProps.data.qtyPrice)"
-                      readonly
-                      disabled
-                    />
-                  </template>
-                </Column>
-
-                <Column field="qtyWeight" style="width: 110px">
-                  <template #body="slotProps">
-                    <input
-                      type="text"
-                      class="form-control text-right"
-                      :value="formatNumber(slotProps.data.qtyWeight)"
-                      readonly
-                      disabled
-                    />
-                  </template>
-                </Column>
-
-                <Column field="qtyWeightPrice" style="width: 110px">
-                  <template #body="slotProps">
-                    <input
-                      type="text"
-                      class="form-control text-right"
-                      :value="formatCurrency(slotProps.data.qtyWeightPrice)"
-                      readonly
-                      disabled
-                    />
-                  </template>
-                </Column>
-
-                <Column field="totalPrice" style="width: 150px">
-                  <template #body="slotProps">
-                    <input
-                      type="text"
-                      class="form-control text-right"
-                      :value="formatCurrency(slotProps.data.totalPrice)"
-                      readonly
-                      disabled
-                    />
-                  </template>
-                </Column>
-
-                <template #groupheader="slotProps">
-                  <div class="flex align-items-center gap-2 type-container">
-                    <span><i class="bi bi-clipboard2-check mr-2"></i></span>
-                    <span>{{ getGroupLabel(slotProps.data.nameGroup) }}</span>
-                  </div>
-                </template>
-
-                <ColumnGroup type="footer">
-                  <Row>
-                    <Column :colspan="5">
-                      <template #footer>
-                        <div class="text-right type-container">
-                          <span>รวมราคาทุกรายการ</span>
-                        </div>
-                      </template>
-                    </Column>
-                    <Column :colspan="1">
-                      <template #footer>
-                        <div class="text-right type-container">
-                          <span>{{ formatCurrency(selectedVersion.totalPrice) }}</span>
-                        </div>
-                      </template>
-                    </Column>
-                  </Row>
-                  <Row v-if="selectedVersionTagMultiplier > 0">
-                    <Column :colspan="5">
-                      <template #footer>
-                        <div class="text-right type-container tag-price-row">
-                          <span>ราคาป้าย (ตัวคูณ × {{ selectedVersionTagMultiplier }})</span>
-                        </div>
-                      </template>
-                    </Column>
-                    <Column :colspan="1">
-                      <template #footer>
-                        <div class="text-right type-container tag-price-row">
-                          <span>{{ formatCurrency(selectedVersionTagPrice) }}</span>
-                        </div>
-                      </template>
-                    </Column>
-                  </Row>
-                </ColumnGroup>
-              </DataTable>
-            </div>
-          </div>
+          <!-- Cost Detail Table (Shared Component) -->
+          <cost-detail-table-view
+            :transactions="selectedVersion.priceTransactions"
+            :tag-price-multiplier="selectedVersion.tagPriceMultiplier"
+            :currency-unit="selectedVersion.currencyUnit"
+            :currency-rate="selectedVersion.currencyRate"
+          />
         </div>
 
         <!-- Empty State -->
@@ -385,11 +248,8 @@
 
 <script>
 import Dialog from 'primevue/dialog'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import ColumnGroup from 'primevue/columngroup'
-import Row from 'primevue/row'
 import ProgressSpinner from 'primevue/progressspinner'
+import CostDetailTableView from '@/components/cost/cost-detail-table-view.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import dayjs from 'dayjs'
@@ -400,11 +260,8 @@ export default {
   name: 'CostHistoryModal',
   components: {
     Dialog,
-    DataTable,
-    Column,
-    ColumnGroup,
-    Row,
-    ProgressSpinner
+    ProgressSpinner,
+    CostDetailTableView
   },
   props: {
     visible: {
@@ -427,37 +284,7 @@ export default {
       versions: [],
       selectedVersion: null,
       loading: false,
-      exportingPDF: false,
-      groupOrder: {
-        Gold: 1,
-        Gem: 2,
-        Worker: 3,
-        Embed: 4,
-        ETC: 5
-      }
-    }
-  },
-  computed: {
-    groupedVersionTransactions() {
-      if (
-        !this.selectedVersion ||
-        !this.selectedVersion.priceTransactions ||
-        !Array.isArray(this.selectedVersion.priceTransactions)
-      ) {
-        return []
-      }
-
-      // Add group order for sorting
-      return this.selectedVersion.priceTransactions.map((item) => ({
-        ...item,
-        groupOrder: this.groupOrder[item.nameGroup] || 999
-      }))
-    },
-    selectedVersionTagMultiplier() {
-      return this.selectedVersion?.tagPriceMultiplier || 1
-    },
-    selectedVersionTagPrice() {
-      return (this.selectedVersion?.totalPrice || 0) * this.selectedVersionTagMultiplier
+      exportingPDF: false
     }
   },
   watch: {
@@ -538,28 +365,12 @@ export default {
       return version && (version.customerCode || version.customerName || version.customerNumber)
     },
 
-    getGroupLabel(group) {
-      const labels = {
-        Gold: 'รายการทอง',
-        Gem: 'รายการวัถุดิบ',
-        Worker: 'รายการงานช่าง',
-        Embed: 'รายการงานฝัง',
-        ETC: 'รายการเพิ่มเติม'
-      }
-      return labels[group] || group
-    },
-
     formatDate(date) {
       if (!date) return '-'
       return dayjs(date).format('DD/MM/YYYY')
     },
 
     formatCurrency(value) {
-      if (value === null || value === undefined || value === '') return '-'
-      return formatDecimal(Number(value), 2)
-    },
-
-    formatNumber(value) {
       if (value === null || value === undefined || value === '') return '-'
       return formatDecimal(Number(value), 2)
     },
@@ -572,8 +383,11 @@ export default {
 
       this.exportingPDF = true
       try {
-        // Create PDF builder
-        const pdfBuilder = new AppraisalHistoryPdfBuilder(this.stockData, this.selectedVersion)
+        // Create PDF builder with currency options from saved data
+        const pdfOptions = this.selectedVersion.currencyUnit
+          ? { currencyUnit: this.selectedVersion.currencyUnit, currencyRate: this.selectedVersion.currencyRate }
+          : {}
+        const pdfBuilder = new AppraisalHistoryPdfBuilder(this.stockData, this.selectedVersion, pdfOptions)
 
         // Generate PDF
         const pdf = await pdfBuilder.generatePDF()
@@ -706,17 +520,6 @@ export default {
   }
 }
 
-.type-container {
-  font-size: 15px;
-  font-weight: bold;
-  color: var(--base-font-color);
-  padding: 5px;
-
-  @media (max-width: 1024px) {
-    font-size: 14px;
-  }
-}
-
 input,
 textarea {
   margin-top: 5px !important;
@@ -748,50 +551,6 @@ textarea {
   }
 }
 
-// Responsive DataTable styles for Tablet
-:deep(.p-datatable) {
-  font-size: 14px;
-
-  @media (max-width: 1024px) {
-    font-size: 13px;
-
-    .p-datatable-thead > tr > th {
-      padding: 0.5rem 0.4rem;
-    }
-
-    .p-datatable-tbody > tr > td {
-      padding: 0.5rem 0.4rem;
-    }
-
-    input.form-control {
-      font-size: 13px;
-    }
-  }
-}
-
-.tag-price-row {
-  color: #e65100;
-}
-
-// Responsive Column widths for Tablet
-:deep(.p-datatable) {
-  @media (max-width: 1024px) {
-    th[style*='width: 130px'],
-    td[style*='width: 130px'] {
-      width: 110px !important;
-    }
-
-    th[style*='width: 110px'],
-    td[style*='width: 110px'] {
-      width: 95px !important;
-    }
-
-    th[style*='width: 150px'],
-    td[style*='width: 150px'] {
-      width: 130px !important;
-    }
-  }
-}
 
 // Scrollbar styling
 .version-sidebar::-webkit-scrollbar,

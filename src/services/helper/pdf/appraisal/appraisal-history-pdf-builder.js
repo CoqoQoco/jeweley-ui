@@ -4,7 +4,7 @@ import { initPdfMake } from '@/services/utils/pdf-make'
 import { formatDecimal } from '@/services/utils/decimal.js'
 
 export class AppraisalHistoryPdfBuilder {
-  constructor(stockData, versionData) {
+  constructor(stockData, versionData, options = {}) {
     this.stockData = stockData || {}
     this.versionData = versionData || {}
     this.companyInfo = {
@@ -22,6 +22,8 @@ export class AppraisalHistoryPdfBuilder {
       Embed: 4,
       ETC: 5
     }
+    this.currencyUnit = options.currencyUnit || ''
+    this.currencyRate = options.currencyRate || null
   }
 
   async preparePDF() {
@@ -385,6 +387,50 @@ export class AppraisalHistoryPdfBuilder {
     )
   }
 
+  hasCurrencyConversion() {
+    return !!(this.currencyUnit && this.currencyRate && this.currencyRate > 0 && this.currencyRate !== 1)
+  }
+
+  convertPrice(value) {
+    if (!this.hasCurrencyConversion() || !value) return value
+    return value / this.currencyRate
+  }
+
+  getCurrencyLabel() {
+    return this.hasCurrencyConversion() ? this.currencyUnit : 'THB'
+  }
+
+  getCurrencyInfoSection() {
+    if (!this.hasCurrencyConversion()) return null
+
+    return {
+      margin: [0, 0, 0, 5],
+      table: {
+        widths: ['*'],
+        body: [
+          [
+            {
+              text: [
+                { text: 'Currency: ', bold: true, fontSize: 11 },
+                { text: this.currencyUnit, fontSize: 11, bold: true, color: '#8B0000' },
+                { text: '  |  ', fontSize: 11, color: '#999' },
+                { text: 'Rate: 1 ' + this.currencyUnit + ' = ' + this.formatCurrency(this.currencyRate) + ' THB', fontSize: 11 }
+              ],
+              fillColor: '#FFF8E1',
+              margin: [10, 6, 10, 6]
+            }
+          ]
+        ]
+      },
+      layout: {
+        hLineWidth: function () { return 0.5 },
+        vLineWidth: function () { return 0.5 },
+        hLineColor: function () { return '#FFE082' },
+        vLineColor: function () { return '#FFE082' }
+      }
+    }
+  }
+
   getAppraisalTableContent() {
     const priceTransactions = this.versionData.prictransection || []
 
@@ -404,16 +450,18 @@ export class AppraisalHistoryPdfBuilder {
       groupedData[item.nameGroup].push(item)
     })
 
+    const hasCurrency = this.hasCurrencyConversion()
+    const currencyLabel = this.getCurrencyLabel()
     const tableBody = []
 
     // Header
     tableBody.push([
       this.setTableHeader('รายการ'),
       this.setTableHeader('จำนวน'),
-      this.setTableHeader('ราคา/หน่วย'),
+      this.setTableHeader('ราคา/หน่วย (' + currencyLabel + ')'),
       this.setTableHeader('น้ำหนัก'),
-      this.setTableHeader('ราคา/น้ำหนัก'),
-      this.setTableHeader('รวม')
+      this.setTableHeader('ราคา/น้ำหนัก (' + currencyLabel + ')'),
+      this.setTableHeader('รวม (' + currencyLabel + ')')
     ])
 
     // Group rows
@@ -441,19 +489,24 @@ export class AppraisalHistoryPdfBuilder {
         tableBody.push([
           this.setTableCell(item.nameDescription),
           this.setTableCellRight(this.formatNumber(item.qty)),
-          this.setTableCellRight(this.formatCurrency(item.qtyPrice)),
+          this.setTableCellRight(this.formatCurrency(this.convertPrice(item.qtyPrice))),
           this.setTableCellRight(this.formatNumber(item.qtyWeight)),
-          this.setTableCellRight(this.formatCurrency(item.qtyWeightPrice)),
-          this.setTableCellRight(this.formatCurrency(item.totalPrice))
+          this.setTableCellRight(this.formatCurrency(this.convertPrice(item.qtyWeightPrice))),
+          this.setTableCellRight(this.formatCurrency(this.convertPrice(item.totalPrice)))
         ])
       })
     })
 
     // Total row
-    const totalPrice = priceTransactions.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
+    const totalPriceTHB = priceTransactions.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
+    const displayTotal = this.convertPrice(totalPriceTHB)
+    const totalLabel = hasCurrency
+      ? 'รวมราคาทุกรายการ (' + currencyLabel + ')'
+      : 'รวมราคาทุกรายการ'
+
     tableBody.push([
       {
-        text: 'รวมราคาทุกรายการ',
+        text: totalLabel,
         bold: true,
         fontSize: 12,
         alignment: 'right',
@@ -467,7 +520,7 @@ export class AppraisalHistoryPdfBuilder {
       {},
       {},
       {
-        text: this.formatCurrency(totalPrice),
+        text: this.formatCurrency(displayTotal),
         bold: true,
         fontSize: 12,
         alignment: 'right',
@@ -476,6 +529,89 @@ export class AppraisalHistoryPdfBuilder {
         margin: [5, 5, 5, 5]
       }
     ])
+
+    // THB reference row (when currency conversion is active)
+    if (hasCurrency) {
+      tableBody.push([
+        {
+          text: 'เทียบเท่า (THB)',
+          fontSize: 10,
+          alignment: 'right',
+          color: '#666',
+          colSpan: 5,
+          margin: [5, 3, 5, 3]
+        },
+        {},
+        {},
+        {},
+        {},
+        {
+          text: this.formatCurrency(totalPriceTHB),
+          fontSize: 10,
+          alignment: 'right',
+          color: '#666',
+          margin: [5, 3, 5, 3]
+        }
+      ])
+    }
+
+    // Tag Price row
+    const tagPriceMultiplier = this.versionData.tagPriceMultiplier || 0
+    if (tagPriceMultiplier > 0) {
+      const tagPriceTHB = totalPriceTHB * tagPriceMultiplier
+      const displayTagPrice = this.convertPrice(tagPriceTHB)
+
+      tableBody.push([
+        {
+          text: 'ราคาป้าย (× ' + tagPriceMultiplier + ')' + (hasCurrency ? ' (' + currencyLabel + ')' : ''),
+          bold: true,
+          fontSize: 12,
+          alignment: 'right',
+          fillColor: '#FFF3E0',
+          color: '#E65100',
+          colSpan: 5,
+          margin: [5, 5, 5, 5]
+        },
+        {},
+        {},
+        {},
+        {},
+        {
+          text: this.formatCurrency(displayTagPrice),
+          bold: true,
+          fontSize: 12,
+          alignment: 'right',
+          fillColor: '#FFF3E0',
+          color: '#E65100',
+          margin: [5, 5, 5, 5]
+        }
+      ])
+
+      // THB reference for tag price
+      if (hasCurrency) {
+        tableBody.push([
+          {
+            text: 'เทียบเท่า (THB)',
+            fontSize: 10,
+            alignment: 'right',
+            color: '#666',
+            colSpan: 5,
+            margin: [5, 3, 5, 3]
+          },
+          {},
+          {},
+          {},
+          {},
+          {
+            text: this.formatCurrency(tagPriceTHB),
+            fontSize: 10,
+            alignment: 'right',
+            color: '#666',
+            margin: [5, 3, 5, 3]
+          }
+        ])
+      }
+    }
 
     return {
       margin: [0, 10, 0, 10],

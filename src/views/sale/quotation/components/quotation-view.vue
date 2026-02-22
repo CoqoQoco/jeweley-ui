@@ -156,6 +156,16 @@
         </div>
       </div>
 
+      <!-- Item Source Actions -->
+      <div class="filter-container mt-2">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-main" type="button" @click="onOpenCostVersionPicker">
+            <i class="bi bi-clock-history mr-1"></i>
+            <span>ดึงจากรายการตีราคา</span>
+          </button>
+        </div>
+      </div>
+
       <!-- stock item -->
       <div class="base-datatable mt-2">
         <DataTable
@@ -539,6 +549,71 @@
                 </template>
               </column>
             </Row>
+            <!-- ส่วนลดพิเศษ -->
+            <Row>
+              <column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ส่วนลดพิเศษ:</span>
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right qty-container">
+                    <input
+                      v-model.number="customer.specialDiscount"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      min="0"
+                      step="0.01"
+                      style="background-color: #b5dad4; width: 100%"
+                    />
+                  </div>
+                </template>
+              </column>
+            </Row>
+            <!-- ส่วนเพิ่มพิเศษ -->
+            <Row>
+              <column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ส่วนเพิ่มพิเศษ:</span>
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right qty-container">
+                    <input
+                      v-model.number="customer.specialAddition"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      min="0"
+                      step="0.01"
+                      style="background-color: #b5dad4; width: 100%"
+                    />
+                  </div>
+                </template>
+              </column>
+            </Row>
+            <!-- ยอดรวมหลังปรับ -->
+            <Row>
+              <column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">ยอดรวมหลังปรับ:</span>
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">{{ formatPrice(totalAfterDiscountAndAddition) }}</span>
+                  </div>
+                </template>
+              </column>
+            </Row>
             <!-- freight -->
             <Row>
               <column :colspan="16">
@@ -565,7 +640,51 @@
                 </template>
               </column>
             </Row>
-            <!-- total after discount -->
+            <!-- ยอดรวมก่อน VAT -->
+            <Row>
+              <column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">{{ formatPrice(totalBeforeVat) }}</span>
+                  </div>
+                </template>
+              </column>
+            </Row>
+            <!-- VAT -->
+            <Row>
+              <column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container d-flex align-items-center justify-content-end">
+                    <span class="mr-2 mt-1">VAT (%) :</span>
+                    <input
+                      v-model.number="customer.vatPercent"
+                      type="number"
+                      class="form-control text-right bg-input input-bg"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      style="background-color: #b5dad4; width: 80px"
+                      placeholder="0"
+                    />
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>{{ formatPrice(vatAmount) }}</span>
+                  </div>
+                </template>
+              </column>
+            </Row>
+            <!-- ราคารวม (Grand Total) -->
             <Row>
               <column :colspan="16">
                 <template #footer>
@@ -577,9 +696,7 @@
               <column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{
-                      formatPrice(calTotalPriceAfterDiscount(customer.quotationItems))
-                    }}</span>
+                    <span>{{ formatPrice(grandTotal) }}</span>
                   </div>
                 </template>
               </column>
@@ -632,6 +749,12 @@
       @closeModal="onCloseCustomerModal"
       @customerCreated="onCustomerCreated"
     />
+
+    <CostVersionPickerModal
+      :showModal="isShow.costVersionPicker"
+      @closeModal="isShow.costVersionPicker = false"
+      @itemSelected="onCostVersionItemSelected"
+    />
   </div>
 </template>
 
@@ -648,6 +771,7 @@ import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pdf-view.vue'
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
+import CostVersionPickerModal from '@/views/sale/quotation/modal/cost-version-picker-modal.vue'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -669,12 +793,16 @@ const interfaceForm = {
   currencyMultiplier: 33.0,
   currencyUnit: 'US$',
   markup: 3.5,
-  discountPercent: 0
+  discountPercent: 0,
+  specialDiscount: 0,
+  specialAddition: 0,
+  vatPercent: 0
 }
 const interfaceShow = {
   isEditStock: false,
   searchCustomer: false,
-  createCustomer: false
+  createCustomer: false,
+  costVersionPicker: false
 }
 
 export default {
@@ -690,7 +818,8 @@ export default {
     editStockView,
     ConfirmCreatePdfView,
     CustomerSearchModal,
-    CustomerCreateModal
+    CustomerCreateModal,
+    CostVersionPickerModal
   },
 
   setup() {
@@ -818,6 +947,19 @@ export default {
       })
       const net = (diamond + gem) / 5 + gold
       return net ? net.toFixed(2) : (0).toFixed(2)
+    },
+    totalAfterDiscountAndAddition() {
+      const total = Number(this.sumTotalConvertedPrice) || 0
+      return total - (this.customer.specialDiscount || 0) + (this.customer.specialAddition || 0)
+    },
+    totalBeforeVat() {
+      return this.totalAfterDiscountAndAddition + Number(this.customer.freight || 0)
+    },
+    vatAmount() {
+      return this.totalBeforeVat * ((this.customer.vatPercent || 0) / 100)
+    },
+    grandTotal() {
+      return (this.totalBeforeVat + this.vatAmount).toFixed(2)
     },
     masterGold() {
       return this.masterStore.gold
@@ -1091,6 +1233,58 @@ export default {
       this.customer.quotationItems.push(newItem)
     },
 
+    onOpenCostVersionPicker() {
+      this.isShow.costVersionPicker = true
+    },
+
+    async onCostVersionItemSelected(version) {
+      this.isShow.costVersionPicker = false
+
+      // 1. Fetch stock product data (materials, imagePath, etc.)
+      const data = await this.productStore.fetchDataGet({
+        formValue: { stockNumber: version.stockNumber }
+      })
+
+      if (data) {
+        // 2. Calculate appraisal price from cost version
+        const costTotal = (version.prictransection || []).reduce(
+          (sum, t) => sum + (t.totalPrice || 0),
+          0
+        )
+        const appraisalPrice = costTotal * (version.tagPriceMultiplier || 1)
+
+        // 3. Map prictransection → priceTransactions format
+        const priceTransactions = (version.prictransection || []).map((t) => ({
+          nameGroup: t.nameGroup,
+          nameDescription: t.nameDescription,
+          qty: t.qty,
+          qtyPrice: t.qtyPrice,
+          qtyWeight: t.qtyWeight,
+          qtyWeightPrice: t.qtyWeightPrice,
+          totalPrice: t.totalPrice
+        }))
+
+        // 4. Add item to quotation
+        const item = {
+          ...data,
+          price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          priceOrigin: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          appraisalPrice: Number(appraisalPrice).toFixed(2),
+          description: data.productNameEn,
+          group: 'product',
+          planQty: data.planQty || 1,
+          qty: 1,
+          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
+          materials: data.materials || [],
+          priceTransactions: priceTransactions,
+          source: 'costVersion',
+          costVersionRunning: version.running
+        }
+
+        this.customer.quotationItems.push(item)
+      }
+    },
+
     onSave() {
       this.fetchSaveQuotation()
     },
@@ -1121,6 +1315,11 @@ export default {
         freight: this.customer.freight || 0,
         date: this.customer.quotationDate ? formatISOString(this.customer.quotationDate) : '',
         remark: this.customer.remark ? this.customer.remark.trim() : '',
+
+        specialDiscount: this.customer.specialDiscount || 0,
+        specialAddition: this.customer.specialAddition || 0,
+        vat: this.customer.vatPercent || 0,
+        goldPerOz: this.customer.goldPerOz || 0,
 
         //data is quoatationItems in parse in json string
         data: JSON.stringify(dataSave || [])
@@ -1161,7 +1360,12 @@ export default {
           name: res.customerName || '',
           address: res.customerAddress || '',
           tel: res.customerPhone || '',
-          email: res.customerEmail || ''
+          email: res.customerEmail || '',
+
+          specialDiscount: res.specialDiscount || 0,
+          specialAddition: res.specialAddition || 0,
+          vatPercent: res.vat || 0,
+          goldPerOz: res.goldPerOz || 0
         }
         console.log('fetchGetQuotation', res)
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()

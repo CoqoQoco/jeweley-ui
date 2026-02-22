@@ -1,3 +1,18 @@
+## Web Quotation Module (Updated)
+
+### New Features (2026-02)
+1. **ดึงสินค้าจากรายการตีราคา** — เปิด Modal เลือก Cost Version → ใช้ราคาจากการตี
+2. **รายการพิเศษ** — ส่วนลดพิเศษ, ส่วนเพิ่มพิเศษ, VAT (%) เหมือน Invoice
+3. **ต่อยอด SO → Invoice** — Quotation ส่ง currency/markup/special items ให้ SO
+
+### Quotation → SO → Invoice Flow
+```
+Quotation → Sale Order (ดึงข้อมูลลูกค้า + items + currency + special items)
+  → Invoice (สร้างจาก SO ที่มีข้อมูลครบ)
+```
+
+---
+
 # Mobile Sale Order + Invoice
 
 ## Overview
@@ -579,6 +594,15 @@ Key classes ที่ใช้:
 - Kebab-case filenames ทุกไฟล์
 - `@import '@/assets/scss/responsive-style/mobile'` ทุก component
 - ไม่ใช้ PrimeVue Dropdown ใน mobile — ใช้ native `<select>` แทน (lightweight, ใช้ native OS picker)
+
+## Cost Version Detail — Currency Conversion
+
+หน้า `cost-version-detail/index-view.vue` (mobile) มีฟีเจอร์แปลงสกุลเงิน (frontend-only):
+
+- **API ไม่รองรับ**: `StockProduct/GetCostVersion` ไม่มี `currencyUnit` / `currencyRate` ใน request, response, หรือ DB model
+- **Solution**: User กรอก currency unit + rate เอง (collapsible card)
+- แปลงสกุลเงินเฉพาะ **totalCost** และ **tagPrice** (รายการย่อยยังแสดง "บาท" เสมอ — เหมือน SO ที่ item ราคาเป็นบาท แต่ summary แปลง)
+- Export PDF ยังเป็นบาท (ไม่ได้แปลง)
 
 ## Related Files
 

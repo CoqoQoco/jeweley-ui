@@ -28,6 +28,13 @@
       @plan-selected="onPlanSelected"
     />
 
+    <!-- Cost Version List -->
+    <cost-version-list-view
+      v-if="!selectedStock"
+      @view-detail="onViewCostVersion"
+      @duplicate="onDuplicate"
+    />
+
     <!-- Appraisal Form Section -->
     <appraisal-form-view
       v-if="selectedStock"
@@ -35,6 +42,12 @@
       @save="onSave"
       @save-and-new="onSaveAndNew"
       @cancel="onCancel"
+    />
+
+    <!-- Cost Version Detail Modal -->
+    <cost-version-detail-modal
+      v-model:visible="showCostVersionDetail"
+      :version="selectedCostVersion"
     />
   </div>
 </template>
@@ -47,6 +60,12 @@ const SearchStockView = defineAsyncComponent(() =>
 const AppraisalFormView = defineAsyncComponent(() =>
   import('./components/appraisal-form-view.vue')
 )
+const CostVersionListView = defineAsyncComponent(() =>
+  import('./components/cost-version-list-view.vue')
+)
+const CostVersionDetailModal = defineAsyncComponent(() =>
+  import('./components/cost-version-detail-modal.vue')
+)
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { success } from '@/services/alert/sweetAlerts.js'
@@ -56,7 +75,9 @@ export default {
 
   components: {
     SearchStockView,
-    AppraisalFormView
+    AppraisalFormView,
+    CostVersionListView,
+    CostVersionDetailModal
   },
 
   setup() {
@@ -66,7 +87,9 @@ export default {
 
   data() {
     return {
-      selectedStock: null
+      selectedStock: null,
+      showCostVersionDetail: false,
+      selectedCostVersion: null
     }
   },
 
@@ -126,6 +149,40 @@ export default {
 
     onReset() {
       this.selectedStock = null
+    },
+
+    onViewCostVersion(version) {
+      this.selectedCostVersion = version
+      this.showCostVersionDetail = true
+    },
+
+    async onDuplicate(version) {
+      const data = await this.productStore.fetchDataGet({
+        formValue: { stockNumber: version.stockNumber }
+      })
+      if (data) {
+        const stockData = {
+          ...data,
+          price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          appraisalPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          description: data.productNameEn,
+          group: 'product',
+          planQty: data.planQty || 1,
+          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
+          materials: data.materials || [],
+          priceTransactions: version.prictransection || [],
+          customerCode: version.customerCode || null,
+          customerName: version.customerName || null,
+          customerAddress: version.customerAddress || null,
+          customerPhone: version.customerTel || null,
+          customerEmail: version.customerEmail || null,
+          remark: version.remark || null,
+          tagPriceMultiplier: version.tagPriceMultiplier || 1,
+          currencyUnit: version.currencyUnit || '',
+          currencyRate: version.currencyRate || null
+        }
+        this.selectedStock = stockData
+      }
     }
   }
 }

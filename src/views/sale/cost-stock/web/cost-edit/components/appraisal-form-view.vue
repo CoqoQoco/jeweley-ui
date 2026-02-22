@@ -330,7 +330,7 @@
               <Column :colspan="7">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ต้นทุนรวมทั้งหมด</span>
+                    <span>ต้นทุนรวมทั้งหมด (THB)</span>
                   </div>
                 </template>
               </Column>
@@ -342,11 +342,27 @@
                 </template>
               </Column>
             </Row>
+            <Row v-if="hasCurrencyConversion">
+              <Column :colspan="7">
+                <template #footer>
+                  <div class="text-right type-container currency-summary-row">
+                    <span>ต้นทุนรวม ({{ displayCurrency }})</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="1">
+                <template #footer>
+                  <div class="text-right type-container currency-summary-row">
+                    <span>{{ displayTotalCost }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
             <Row>
               <Column :colspan="5">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ราคาป้าย</span>
+                    <span>ราคาป้าย ({{ displayCurrency }})</span>
                   </div>
                 </template>
               </Column>
@@ -367,6 +383,22 @@
               <Column :colspan="1">
                 <template #footer>
                   <div class="text-right type-container tag-price-value">
+                    <span>{{ displayTagPrice }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <Row v-if="hasCurrencyConversion">
+              <Column :colspan="7">
+                <template #footer>
+                  <div class="text-right type-container tag-reference-text">
+                    <span>ราคาป้าย (THB)</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="1">
+                <template #footer>
+                  <div class="text-right type-container tag-reference-text">
                     <span>{{ tagPrice }}</span>
                   </div>
                 </template>
@@ -395,6 +427,39 @@
             <span><i class="bi bi-plus mr-1"></i></span>
             <span>เพิ่มรายการ</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Currency Conversion Section -->
+      <div class="filter-container mt-3">
+        <div class="vertical-center-container mb-2">
+          <span class="title-text-lg bi bi-currency-exchange mr-2"></span>
+          <span class="title-text-lg">สกุลเงิน (Currency)</span>
+        </div>
+        <div class="form-col-sm-container">
+          <div>
+            <span class="title-text">สกุลเงิน</span>
+            <input
+              class="form-control form-control-sm"
+              type="text"
+              v-model.trim="currencyUnit"
+              placeholder="เช่น US$, EUR (เว้นว่างถ้าเป็นบาท)"
+              autocomplete="off"
+            />
+          </div>
+          <div>
+            <span class="title-text">อัตราแลกเปลี่ยน (1 หน่วย = ? บาท)</span>
+            <input
+              class="form-control form-control-sm"
+              type="number"
+              v-model.number="currencyRate"
+              min="0"
+              step="0.01"
+              placeholder="เช่น 33.50"
+            />
+          </div>
+          <div></div>
+          <div></div>
         </div>
       </div>
 
@@ -485,6 +550,26 @@ export default {
       return (total * (Number(this.tagPriceMultiplier) || 0)).toFixed(2)
     },
 
+    hasCurrencyConversion() {
+      return !!(this.currencyUnit && this.currencyRate && this.currencyRate > 0 && this.currencyRate !== 1)
+    },
+
+    displayCurrency() {
+      return this.hasCurrencyConversion ? this.currencyUnit : 'THB'
+    },
+
+    displayTotalCost() {
+      const total = this.tranItems.reduce((sum, item) => sum + Number(item.totalPrice), 0)
+      if (!this.hasCurrencyConversion) return total.toFixed(2)
+      return (total / this.currencyRate).toFixed(2)
+    },
+
+    displayTagPrice() {
+      const tagPriceNum = Number(this.tagPrice) || 0
+      if (!this.hasCurrencyConversion) return tagPriceNum.toFixed(2)
+      return (tagPriceNum / this.currencyRate).toFixed(2)
+    },
+
     masterGoldList() {
       // Combine hardcoded gold list with API gold list
       const apiGold = this.masterStore.gold || []
@@ -511,6 +596,8 @@ export default {
         if (!val) return
         this.localStock = { ...val }
         this.tagPriceMultiplier = val.tagPriceMultiplier || 1
+        this.currencyUnit = val.currencyUnit || ''
+        this.currencyRate = val.currencyRate || null
 
         // Initialize transaction items from priceTransactions only
         if (this.localStock.priceTransactions && this.localStock.priceTransactions.length > 0) {
@@ -565,6 +652,8 @@ export default {
       localStock: {},
       tranItems: [],
       tagPriceMultiplier: 1,
+      currencyUnit: '',
+      currencyRate: null,
       masterValue: 'ETC',
       showCustomerSearch: false,
       showCustomerCreate: false,
@@ -701,6 +790,8 @@ export default {
         customerEmail: this.localStock.customerEmail || null,
         remark: this.localStock.remark || null,
         tagPriceMultiplier: Number(this.tagPriceMultiplier) || 1,
+        currencyUnit: this.currencyUnit || null,
+        currencyRate: this.currencyRate ? Number(this.currencyRate) : null,
         prictransection: this.tranItems.map((item, index) => ({
           no: index + 1,
           name: item.nameGroup || '',
@@ -1008,6 +1099,16 @@ textarea {
   @media (max-width: 1024px) {
     font-size: 14px;
   }
+}
+
+.currency-summary-row {
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.tag-reference-text {
+  color: #999;
+  font-size: 12px;
 }
 
 // Responsive Column widths for Tablet

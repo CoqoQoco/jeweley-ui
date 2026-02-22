@@ -94,7 +94,15 @@ export default {
             },
             discount: quotationData.discount || 0,
             freight: quotationData.freight || 0,
-            items: quotationData.data ? JSON.parse(quotationData.data) : []
+            items: quotationData.data ? JSON.parse(quotationData.data) : [],
+            // currency, markup, special items from quotation
+            currencyUnit: quotationData.currency || 'US$',
+            currencyRate: quotationData.currencyRate || 33.0,
+            markup: quotationData.markUp || 3.5,
+            goldPerOz: quotationData.goldPerOz || 0,
+            specialDiscount: quotationData.specialDiscount || 0,
+            specialAddition: quotationData.specialAddition || 0,
+            vat: quotationData.vat || 0
           }
 
           //console.log('Loaded quotation data:', this.saleOrderData)
