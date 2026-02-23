@@ -199,6 +199,8 @@ formValue = {
 | `copyItems` | array | `[]` | items ที่ไม่มี stockNumber |
 | `isEditing` | boolean | `false` | edit mode |
 | `editItems` | array | `[]` | working copy ของ items ที่แก้ไขได้ |
+| `editCurrencyUnit` | string | `''` | working copy ของ currencyUnit (edit mode) |
+| `editCurrencyRate` | number | `null` | working copy ของ currencyRate (edit mode) |
 | `showInvoiceForm` | boolean | `false` | แสดง form สร้าง Invoice |
 | `exportingPDF` | boolean | `false` | กำลัง generate PDF |
 
@@ -231,6 +233,7 @@ soGrandTotal          = hasFinancialFields ? soTotalBeforeVat + soVatAmount : di
 - แสดง Invoice info (ถ้ามี invoiceNumber)
 
 ### Edit Mode Features
+- **Currency Edit Card**: เปลี่ยน currencyUnit (AutoCompleteGeneric + CURRENCY_UNITS) และ currencyRate (number input) — ค่าเริ่มต้นจาก soData, บันทึกผ่าน working copy
 - **Invoiced items**: แสดงแบบ locked (แก้ไข/ลบไม่ได้)
 - **Editable items**: items ที่ยังไม่มี invoice — เพิ่ม/แก้ไข/ลบได้
 - เพิ่ม item ด้วย Appraisal หรือ Scan (เหมือน create-view)
@@ -250,8 +253,8 @@ formValue = {
   customerName: soData.customerName,
   customerCode: soData.customerCode,
   // ... customer fields ...
-  currencyUnit: soData.currencyUnit,
-  currencyRate: soData.currencyRate,
+  currencyUnit: editCurrencyUnit || soData.currencyUnit,   // ← working copy (edit mode)
+  currencyRate: editCurrencyRate || soData.currencyRate,  // ← working copy (edit mode)
   markup: soData.markup,
   goldRate: soData.goldRate,
   specialDiscount: soData.specialDiscount,

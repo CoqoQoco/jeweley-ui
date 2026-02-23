@@ -1,135 +1,269 @@
-# PLAN: แก้ปัญหา Calendar ส่งวันที่ไม่ตรง (เลือก 21 ได้ 22, เลือก 23 ได้ 22)
+# PLAN: เพิ่ม Currency Edit ใน Mobile SO Detail (Edit Mode)
 
-## สถานะ: Pending Confirmation
+## ผลการตรวจสอบ
+
+หน้าแก้ไข SO (`detail-view.vue`) **ไม่สามารถเปลี่ยนสกุลเงินได้ในปัจจุบัน**
+
+### หลักฐาน
+
+| จุด | สถานะ |
+|-----|--------|
+| View mode (บรรทัด 38-41) | แสดงค่า currency แบบ read-only เท่านั้น |
+| Edit mode template | ไม่มี UI input สำหรับ currency unit / rate |
+| `saveChanges()` (บรรทัด 677-678) | ใช้ `this.soData.currencyUnit` / `this.soData.currencyRate` โดยตรง (ค่าเดิมจาก API — ไม่มี working copy) |
+
+### CLAUDE.md violations ที่พบในไฟล์เดิม (แก้ควบคู่กัน)
+
+| Violation | บรรทัด | วิธีแก้ |
+|-----------|--------|---------|
+| `isLoading: false` ใน data() | 359 | ลบออก |
+| `this.isLoading = true/false` ใน `loadSaleOrder()` | 487, 500 | ลบออก |
+| Template `v-if="isLoading"` spinner card | 4-9 | ลบออก (global LoadingOverlay จัดการ) |
+| `v-else-if="soData"` → ต้องแก้ | 12 | เปลี่ยนเป็น `v-if="soData"` |
 
 ---
 
-## 1. Root Cause Analysis
+## Files ที่เปลี่ยน
 
-### ปัญหาที่เกิด
-หน้า `quotation/index-view.vue` เมื่อเลือกวันที่ใน CalendarGeneric เช่น เลือกวันที่ 21 แต่ API ได้รับวันที่ 22 หรือเลือก 23 แต่ได้ 22 — วันที่ที่ส่งไป API เป็นค่า **เก่า** เสมอ ไม่ใช่ค่าที่เลือกใหม่
+| File | Action |
+|------|--------|
+| `src/views/mobile/sale/detail-view.vue` | เพิ่ม currency edit UI + data props + methods + fix CLAUDE violations |
+| `src/views/mobile/sale/SALE_MOBILES_FLOW.md` | อัปเดต Section 5 (Edit Mode) |
 
-### สาเหตุที่แท้จริง: Vue Watcher Timing Issue
+---
 
-**ลำดับเหตุการณ์ที่เกิดขึ้น:**
+## 1. Imports ที่เพิ่ม
 
-```
-1. User คลิกวันที่ใน PrimeVue Calendar
-2. PrimeVue Calendar อัปเดต v-model → localValue ใน CalendarGeneric เปลี่ยน ✅
-3. PrimeVue Calendar emit "date-select" event → CalendarGeneric ส่งต่อ → parent onDateChange() ถูกเรียก
-4. onDateChange() → loadList() → อ่าน this.filterDate ← ยังเป็นค่าเก่า! ❌
-5. (ภายหลัง) Vue watcher บน localValue ทำงาน → emit update:modelValue → parent filterDate อัปเดต
-```
-
-**ปัญหาอยู่ที่ขั้นตอน 4-5**: Vue 3 Options API watcher ใช้ `flush: 'pre'` (default) ซึ่ง **ไม่ทำงานทันที** เมื่อ data เปลี่ยน แต่จะถูก queue ไว้ทำงานก่อน render ถัดไป
-
-ดังนั้น เมื่อ `date-select` event ถูก emit จาก CalendarGeneric ไปยัง parent:
-- `localValue` ใน CalendarGeneric **เปลี่ยนแล้ว** (v-model binding เป็น sync)
-- แต่ watcher ที่ `emit('update:modelValue', newVal)` **ยังไม่ทำงาน** (queued)
-- parent `filterDate` **ยังเป็นค่าเก่า**
-- `onDateChange()` → `loadList()` อ่าน `this.filterDate` ได้ค่าเก่า
-
-### ทำไมอาการเป็น +1 หรือ -1 ไม่แน่นอน?
-
-เพราะค่าที่ API ได้รับคือ **ค่าเก่า** (วันที่ก่อนหน้าที่เลือกอยู่) ไม่ใช่ค่าใหม่:
-- `filterDate` เริ่มต้น = วันนี้ (22)
-- เลือกวันที่ 21 → API ได้ 22 (ค่าเก่า) → ดูเหมือน +1
-- เลือกวันที่ 23 → API ได้ 22 (ค่าเก่า) → ดูเหมือน -1
-
-### โค้ดที่มีปัญหา
-
-**CalendarGeneric.vue** (บรรทัด 98-110):
 ```javascript
-watch: {
-  modelValue(newVal) {
-    this.localValue = newVal
-  },
-  localValue(newVal) {
-    // ← watcher นี้ถูก queue ไว้ ไม่ทำงานทันที!
-    this.$emit('update:modelValue', newVal)
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import { CURRENCY_UNITS } from '@/constants/currency-units.js'
+```
+
+เพิ่มใน `components`:
+```javascript
+AutoCompleteGeneric
+```
+
+---
+
+## 2. data() — เพิ่ม 3 fields, ลบ isLoading
+
+```javascript
+data() {
+  return {
+    soData: null,
+    stockItems: [],
+    copyItems: [],
+    // isLoading: false,  ← ลบออก (CLAUDE violation)
+    exportingPDF: false,
+    CURRENCY_UNITS,          // ← เพิ่ม (expose ให้ template)
+    editCurrencyUnit: '',    // ← เพิ่ม working copy สำหรับ edit mode
+    editCurrencyRate: null,  // ← เพิ่ม working copy สำหรับ edit mode
+    // ... existing fields ไม่เปลี่ยน
+  }
+}
+```
+
+---
+
+## 3. Methods — เพิ่ม/แก้ไข 4 จุด
+
+### 3a. `loadSaleOrder()` — ลบ isLoading (CLAUDE fix)
+
+```javascript
+async loadSaleOrder() {
+  // this.isLoading = true  ← ลบออก
+  this.soData = null
+  this.stockItems = []
+  this.copyItems = []
+
+  const response = await this.saleOrderStore.fetchGet({
+    formValue: { soNumber: this.soNumber }
+  })
+
+  if (response) {
+    this.soData = response
+    this.parseItems(response)
+  }
+  // this.isLoading = false  ← ลบออก
+},
+```
+
+### 3b. `startEdit()` — copy currency values เป็น working copy
+
+```javascript
+startEdit() {
+  const nonInvoiced = this.soItems.filter((item) => !item.isInvoice)
+  this.editItems = nonInvoiced.map((item) => ({ ...item }))
+  this.editCurrencyUnit = this.soData.currencyUnit || 'US$'    // ← เพิ่ม
+  this.editCurrencyRate = this.soData.currencyRate || 33.0     // ← เพิ่ม
+  this.isEditing = true
+},
+```
+
+### 3c. `cancelEdit()` — reset currency working copy
+
+```javascript
+cancelEdit() {
+  this.isEditing = false
+  this.editItems = []
+  this.editCurrencyUnit = ''    // ← เพิ่ม
+  this.editCurrencyRate = null  // ← เพิ่ม
+  this.scanInput = ''
+},
+```
+
+### 3d. `saveChanges()` — ใช้ edit copy แทน soData โดยตรง
+
+```javascript
+// เปลี่ยนจาก:
+currencyUnit: this.soData.currencyUnit || 'US$',
+currencyRate: this.soData.currencyRate || 33.0,
+
+// เป็น:
+currencyUnit: this.editCurrencyUnit || this.soData.currencyUnit || 'US$',
+currencyRate: Number(this.editCurrencyRate) || this.soData.currencyRate || 33.0,
+```
+
+### 3e. `onCurrencyChange(value)` — handler ใหม่ (AutoCompleteGeneric emit object หรือ string)
+
+```javascript
+onCurrencyChange(value) {
+  if (typeof value === 'object' && value !== null) {
+    this.editCurrencyUnit = value.code || ''
+  } else {
+    this.editCurrencyUnit = value || ''
   }
 },
-
-methods: {
-  onDateSelect(event) {
-    // ← event นี้ถูก emit ก่อนที่ watcher ข้างบนจะทำงาน
-    this.$emit('date-select', event)
-  }
-}
-```
-
-**index-view.vue** (บรรทัด 101-103):
-```javascript
-onDateChange() {
-  // ← this.filterDate ยังเป็นค่าเก่า ณ จุดนี้
-  this.loadList()
-},
 ```
 
 ---
 
-## 2. วิธีแก้ไข
+## 4. Template — แก้ 2 จุด
 
-### แก้ที่ CalendarGeneric.vue (Root Cause Fix)
+### 4a. ลบ loading block + แก้ v-if (CLAUDE fix)
 
-**วิธีแก้**: ใน `onDateSelect()` ให้ emit `update:modelValue` แบบ synchronous ก่อน emit `date-select` — เพื่อให้ parent v-model อัปเดตก่อนที่ event handler จะทำงาน
+```html
+<!-- ลบออก: -->
+<!-- <div v-if="isLoading" class="mobile-container mobile-mt-2">
+  <div class="mobile-loading">...</div>
+</div> -->
 
-**ไฟล์**: `src/components/prime-vue/CalendarGeneric.vue`
-
-```javascript
-// ก่อนแก้:
-methods: {
-  onDateSelect(event) {
-    this.$emit('date-select', event)
-  }
-}
-
-// หลังแก้:
-methods: {
-  onDateSelect(event) {
-    // Force v-model sync update ก่อน date-select event
-    // เพราะ watcher บน localValue ใช้ flush:'pre' (async)
-    // ต้อง emit update:modelValue ตรงนี้เพื่อให้ parent ได้ค่าใหม่ทันที
-    this.$emit('update:modelValue', this.localValue)
-    this.$emit('date-select', event)
-  }
-}
+<!-- เปลี่ยน v-else-if → v-if: -->
+<div v-if="soData" class="mobile-container mobile-mt-1">
 ```
 
-**เหตุผล**:
-- `this.$emit()` ใน Vue 3 trigger parent event handler แบบ **synchronous**
-- เมื่อ `onDateSelect` ถูกเรียก, `localValue` เปลี่ยนเป็นค่าใหม่แล้ว (v-model กับ PrimeVue Calendar เป็น sync)
-- โดย emit `update:modelValue` ก่อน `date-select` → parent `filterDate` จะอัปเดตก่อน `onDateChange()` ทำงาน
-- watcher ที่ queued อยู่จะยังทำงานทีหลัง แต่ emit ค่าเดิมซ้ำ ซึ่งไม่มีผลข้างเคียง (Vue ไม่ re-render ถ้าค่าเท่าเดิม)
+### 4b. เพิ่ม Currency Edit Card ใน `<template v-if="isEditing">`
 
-### ลำดับเหตุการณ์หลังแก้
+ตำแหน่ง: **ก่อน** "เพิ่มสินค้า" section card
 
-```
-1. User คลิกวันที่ใน PrimeVue Calendar
-2. PrimeVue Calendar อัปเดต v-model → localValue เปลี่ยน ✅
-3. PrimeVue Calendar emit "date-select" → CalendarGeneric.onDateSelect() ถูกเรียก
-4. onDateSelect() emit "update:modelValue" → parent filterDate อัปเดตทันที ✅
-5. onDateSelect() emit "date-select" → parent onDateChange() ถูกเรียก
-6. onDateChange() → loadList() → อ่าน this.filterDate → ได้ค่าใหม่ ✅
+```html
+<!-- Currency Edit -->
+<div class="section-card mobile-mt-2">
+  <div class="section-header-bar">
+    <h3 class="section-title">
+      <i class="bi bi-currency-exchange"></i>
+      สกุลเงิน
+    </h3>
+  </div>
+  <div class="currency-edit-row">
+    <div class="currency-edit-field">
+      <label class="currency-edit-label">สกุลเงิน</label>
+      <AutoCompleteGeneric
+        :modelValue="editCurrencyUnit"
+        :staticOptions="CURRENCY_UNITS"
+        :useStaticList="true"
+        optionLabel="code"
+        placeholder="เช่น US$, EUR"
+        :forceSelection="false"
+        customClass="currency-ac"
+        @update:modelValue="onCurrencyChange"
+      >
+        <template #option="{ option }">
+          <span>{{ option.label }}</span>
+        </template>
+      </AutoCompleteGeneric>
+    </div>
+    <div class="currency-edit-field">
+      <label class="currency-edit-label">อัตราแลกเปลี่ยน</label>
+      <input
+        v-model="editCurrencyRate"
+        type="number"
+        class="form-control"
+        placeholder="เช่น 33.5"
+        min="0"
+        step="0.01"
+      />
+    </div>
+  </div>
+</div>
 ```
 
 ---
 
-## 3. สรุปไฟล์ที่ต้องแก้ไข
+## 5. Style — เพิ่ม currency edit styles
 
-| # | ไฟล์ | สิ่งที่เปลี่ยน |
-|---|------|--------------|
-| 1 | `src/components/prime-vue/CalendarGeneric.vue` | เพิ่ม `this.$emit('update:modelValue', this.localValue)` ใน `onDateSelect()` ก่อน emit `date-select` |
+```scss
+// ==================== Currency Edit ====================
+.currency-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 
-**หมายเหตุ**: แก้แค่ 1 ไฟล์, 1 บรรทัด — เป็น root cause fix ที่ CalendarGeneric ทำให้ทุก component ที่ใช้ CalendarGeneric ได้ประโยชน์
+.currency-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.currency-edit-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #888;
+}
+
+:deep(.currency-ac) {
+  width: 100%;
+
+  .p-autocomplete-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: var(--base-font-color);
+    }
+
+    &::placeholder {
+      color: #bbb;
+    }
+  }
+}
+```
 
 ---
 
-## 4. Verification
+## 6. SALE_MOBILES_FLOW.md — อัปเดต Section 5 (Edit Mode)
 
-1. เปิดหน้า Quotation List (mobile)
-2. ค่าเริ่มต้นเป็นวันนี้ → รายการแสดงถูกต้อง
-3. เลือกวันที่อื่น (เช่น เมื่อวาน) → รายการต้อง reload เป็นของวันนั้น ไม่ใช่วันเดิม
-4. เลือกวันที่อีกครั้ง (เช่น พรุ่งนี้) → รายการต้อง reload เป็นของวันใหม่
-5. กด Today ใน button bar → กลับเป็นวันนี้ถูกต้อง
-6. ตรวจสอบ Network tab: `quotationDateStart` / `quotationDateEnd` ต้องตรงกับวันที่ที่เลือก
+เพิ่ม currency edit ใน edit mode description และ data properties table
+
+---
+
+## Verification
+
+1. กด "แก้ไขรายการ" → currency card แสดงค่าปัจจุบันของ SO ใน input fields
+2. เปลี่ยน currency unit → dropdown กรอง → เลือก → input แสดง code ("US$")
+3. เปลี่ยน rate → กรอกตัวเลขใหม่
+4. กด "บันทึกการแก้ไข" → API body มี `currencyUnit` และ `currencyRate` ค่าใหม่
+5. กด "ยกเลิก" → ฟอร์มถูก reset — currency กลับค่าเดิม (ไม่ถูกบันทึก)
+6. View mode แสดง currency ที่อัปเดตหลัง reload
+7. ไม่มี local loading spinner อีกต่อไป — global LoadingOverlay จัดการแทน
+
+---
+
+*Last updated: 2026-02-23 — รอ confirm ก่อน implement*

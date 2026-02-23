@@ -1,15 +1,7 @@
 <template>
   <div class="mobile-sale-detail-view">
-    <!-- Loading -->
-    <div v-if="isLoading" class="mobile-container mobile-mt-2">
-      <div class="mobile-loading">
-        <div class="spinner"></div>
-        <div class="loading-text">กำลังโหลดข้อมูล...</div>
-      </div>
-    </div>
-
     <!-- SO Detail Content -->
-    <div v-else-if="soData" class="mobile-container mobile-mt-1">
+    <div v-if="soData" class="mobile-container mobile-mt-1">
       <!-- SO Info Card -->
       <div class="info-card">
         <div class="card-header">
@@ -66,6 +58,46 @@
 
       <!-- ==================== EDIT MODE ==================== -->
       <template v-if="isEditing">
+        <!-- Currency Edit -->
+        <div class="section-card mobile-mt-2">
+          <div class="section-header-bar">
+            <h3 class="section-title">
+              <i class="bi bi-currency-exchange"></i>
+              สกุลเงิน
+            </h3>
+          </div>
+          <div class="currency-edit-row">
+            <div class="currency-edit-field">
+              <label class="currency-edit-label">สกุลเงิน</label>
+              <AutoCompleteGeneric
+                :modelValue="editCurrencyUnit"
+                :staticOptions="CURRENCY_UNITS"
+                :useStaticList="true"
+                optionLabel="code"
+                placeholder="เช่น US$, EUR"
+                :forceSelection="false"
+                customClass="currency-ac"
+                @update:modelValue="onCurrencyChange"
+              >
+                <template #option="{ option }">
+                  <span>{{ option.label }}</span>
+                </template>
+              </AutoCompleteGeneric>
+            </div>
+            <div class="currency-edit-field">
+              <label class="currency-edit-label">อัตราแลกเปลี่ยน</label>
+              <input
+                v-model="editCurrencyRate"
+                type="number"
+                class="form-control currency-edit-input"
+                placeholder="เช่น 33.5"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+        </div>
+
         <!-- Add Item Section -->
         <div class="section-card mobile-mt-2">
           <div class="section-header-bar">
@@ -322,6 +354,8 @@ import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { success, error, warning } from '@/services/alert/sweetAlerts.js'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import SoItemCard from './components/so-item-card.vue'
 import AddItemMethodSelector from './components/add-item-method-selector.vue'
 import AppraisalJobList from './components/appraisal-job-list.vue'
@@ -342,7 +376,8 @@ export default {
     AppraisalJobList,
     ItemList,
     InvoiceCreationForm,
-    QrScanner
+    QrScanner,
+    AutoCompleteGeneric
   },
 
   setup() {
@@ -356,8 +391,10 @@ export default {
       soData: null,
       stockItems: [],
       copyItems: [],
-      isLoading: false,
       exportingPDF: false,
+      CURRENCY_UNITS,
+      editCurrencyUnit: '',
+      editCurrencyRate: null,
       // Invoice form
       showInvoiceForm: false,
       // Edit mode
@@ -484,7 +521,6 @@ export default {
   methods: {
     // ==================== Load ====================
     async loadSaleOrder() {
-      this.isLoading = true
       this.soData = null
       this.stockItems = []
       this.copyItems = []
@@ -497,7 +533,6 @@ export default {
         this.soData = response
         this.parseItems(response)
       }
-      this.isLoading = false
     },
 
     parseItems(response) {
@@ -550,12 +585,16 @@ export default {
       // copy non-invoiced items เป็น working copy
       const nonInvoiced = this.soItems.filter((item) => !item.isInvoice)
       this.editItems = nonInvoiced.map((item) => ({ ...item }))
+      this.editCurrencyUnit = this.soData.currencyUnit || 'US$'
+      this.editCurrencyRate = this.soData.currencyRate || 33.0
       this.isEditing = true
     },
 
     cancelEdit() {
       this.isEditing = false
       this.editItems = []
+      this.editCurrencyUnit = ''
+      this.editCurrencyRate = null
       this.scanInput = ''
     },
 
@@ -569,6 +608,14 @@ export default {
 
     removeEditItem(index) {
       this.editItems.splice(index, 1)
+    },
+
+    onCurrencyChange(value) {
+      if (typeof value === 'object' && value !== null) {
+        this.editCurrencyUnit = value.code || ''
+      } else {
+        this.editCurrencyUnit = value || ''
+      }
     },
 
     async handleScan(decodedText) {
@@ -674,8 +721,8 @@ export default {
         customerEmail: this.soData.customerEmail || '',
         customerAddress: this.soData.customerAddress || '',
         remark: this.soData.remark || '',
-        currencyUnit: this.soData.currencyUnit || 'US$',
-        currencyRate: this.soData.currencyRate || 33.0,
+        currencyUnit: this.editCurrencyUnit || this.soData.currencyUnit || 'US$',
+        currencyRate: Number(this.editCurrencyRate) || this.soData.currencyRate || 33.0,
         priority: this.soData.priority || 'mobile',
         soDate: this.soData.soDate || null,
         deliveryDate: this.soData.deliveryDate || null,
@@ -786,6 +833,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/mobile';
+
+input {
+  margin-top: 0px !important;
+}
 
 .mobile-sale-detail-view {
   min-height: 100vh;
@@ -1077,6 +1128,66 @@ export default {
     height: 1px;
     background: #f0f0f0;
     margin: 6px 0;
+  }
+}
+
+// ==================== Currency Edit ====================
+.currency-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.currency-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.currency-edit-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #888;
+  
+}
+
+.currency-edit-input {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  height: 35px;
+
+  &:focus {
+    border-color: var(--base-font-color);
+  }
+
+  &::placeholder {
+    color: #bbb;
+  }
+}
+
+:deep(.currency-ac) {
+  width: 100%;
+
+  .p-autocomplete-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: var(--base-font-color);
+    }
+
+    &::placeholder {
+      color: #bbb;
+    }
   }
 }
 
