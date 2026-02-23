@@ -2,11 +2,11 @@
 #### ถ้ามีการใช้ prime-vue components >> ตรวจสอบว่ามี generic-components ไหม >> ไม่มีให้สร้างไว้เพื่อ re-used >> 
 
 
-ที่ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\quotation\index-view.vue 
-   อยากให้เปลี่ยน date-picker เป็นของ prime-vue ตาม claude.md
-   - ถ้าจำเป็นตจ้องสร้าง genaric class ก็ได้ครับ
-   - เสนอ plan มาก่อนครับ
+ตรวจสอบ D:\DuangKeaw\code\jeweley-ui\src\components\layout\LoadingOverlay.vue เเละ เขียน md ที่ D:\DuangKeaw\code\jeweley-ui\src\components\layout\Loading_OVERLAY.md
 
+  - ผมอยากปรับให้เล็กลงถ้าเป็น mobile ครับ
+  - ช่วย plan ออกมาก่อนครับ
+  
 
 
 

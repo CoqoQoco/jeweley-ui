@@ -235,6 +235,27 @@ export default {
   margin-bottom: 8px;
 }
 
+@media (max-width: 768px) {
+  .loader {
+    --size: 180px;
+  }
+
+  .svg {
+    width: 70px;
+  }
+
+  .loader-container {
+    padding: 1rem;
+  }
+
+  .cancel-loading-container {
+    font-size: 14px;
+    padding: 1rem;
+    margin-top: 1rem;
+    max-width: 280px;
+  }
+}
+
 @keyframes ripple {
   0% {
     transform: scale(1);
