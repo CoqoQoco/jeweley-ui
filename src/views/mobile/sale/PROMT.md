@@ -3,6 +3,9 @@
 #### ถ้ามีการใช้ prime-vue components >> ตรวจสอบว่ามี generic-components ไหม >> ไม่มีให้สร้างไว้เพื่อ re-used >> 
 #### read and update D:\DuangKeaw\code\jeweley-ui\src\views\mobile\sale\SALE_MOBILES_FLOW.md
 
- ตรวจสอบ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\quotation\index-view.vue calenda ส่ง date ไม่ตรงครับ บางที่เลือก 21 ได้ 22 หรือ เลือก 23 ได้ 22 dH,u
+สร้าง autocompleate currency uni ที่ D:\DuangKeaw\code\jeweley-ui\src\components\sale เเล้วนำมาใช้ที่ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\sale\create-view.vue
+
+ - รองรับ re-usd ในหน้าอื่นๆ
+ - สร้าง master currency unit ให้เลย ครับ เเต่ยังไม่มต้องมี currecy rate
 
 ### Plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\sale\PLAN.md เเล้วรอ confirm เพื่อ implement ครับ        

@@ -4,7 +4,7 @@
 
 **Web Sale Flow**: ดู `src/views/sale/SALES_FLOW.md`
 **Mobile Layout**: `src/layout/mobile/LayoutMobile.vue`
-**UI Framework**: Native HTML (ไม่ใช้ PrimeVue)
+**UI Framework**: Native HTML (ไม่ใช้ raw PrimeVue) — Generic wrappers OK: AutoCompleteGeneric, CalendarGeneric
 **SCSS**: `@import '@/assets/scss/responsive-style/mobile'`
 
 ---
@@ -111,8 +111,8 @@ src/views/mobile/sale/
 | `items` | array | `[]` | รายการ items ที่เพิ่ม |
 | `currencyUnit` | string | `'US$'` | สกุลเงิน |
 | `currencyRate` | number | `33.0` | อัตราแลกเปลี่ยน |
-| `markup` | number | `3.5` | Markup multiplier |
-| `goldPerOz` | number | `2000` | ราคาทอง US$/oz |
+| ~~`markup`~~ | ~~number~~ | ~~`3.5`~~ | ~~Markup multiplier~~ — **commented out (ยังไม่ได้ใช้)** |
+| ~~`goldPerOz`~~ | ~~number~~ | ~~`2000`~~ | ~~ราคาทอง US$/oz~~ — **commented out (ยังไม่ได้ใช้)** |
 | `customer` | object | `{}` | ข้อมูลลูกค้า (customerCode, customerName, customerTel, customerEmail, customerAddress, remark) |
 | `refQuotation` | string | `''` | เลข Quotation ที่อ้างอิง (จาก query param `fromQuotation`) |
 | `quotationFinancials` | object | `{ specialDiscount: 0, specialAddition: 0, vat: 0, freight: 0 }` | ค่า financial จาก Quotation (ส่งตอน save) |
@@ -181,7 +181,7 @@ formValue = {
 | Special Discount/Addition/VAT inputs | มี input ในหน้า SO | **ไม่มี input** (ส่ง null) |
 | Freight input | มี | **ไม่มี** (ส่ง null) |
 | Priority selector | มี | **ไม่มี** (default Normal) |
-| Markup / Gold Per Oz | มี | **มี** (default 3.5 / 2000) |
+| Markup / Gold Per Oz | มี | **ซ่อนไว้ก่อน** (commented out — ยังไม่ได้ใช้ตอนนี้) |
 
 ---
 
@@ -616,7 +616,7 @@ Invoice Detail (Mobile ดู):
 - ดู Invoice detail
 - Print SO PDF / Invoice PDF
 - QR code scan เพื่อเพิ่ม item
-- Markup / Gold Per Oz inputs ตอนสร้าง SO
+- ~~Markup / Gold Per Oz inputs ตอนสร้าง SO~~ (commented out — ยังไม่ได้ใช้)
 - Financial summary ครบ (F.O.B, discount, addition, freight, VAT, grand total)
 - โหลด items จาก Quotation (navigate จาก Quotation detail → pre-fill items, currency, customer display, financials)
 
@@ -682,4 +682,63 @@ getStatusColor(statusName) {
 
 ---
 
+---
+
+## 13. Shared Components & Constants
+
+### Currency Unit Field — AutoCompleteGeneric + CURRENCY_UNITS
+
+| Item | Value |
+|------|-------|
+| **Component** | `AutoCompleteGeneric` (`src/components/prime-vue/AutoCompleteGeneric.vue`) |
+| **Constants** | `src/constants/currency-units.js` |
+| **Used in** | `create-view.vue` (Currency Unit field) |
+
+ใช้ `AutoCompleteGeneric` ใน static list mode — ไม่ต้อง call API, รองรับ free-text, กรองตาม `code`
+
+**Usage ใน create-view.vue:**
+```vue
+<AutoCompleteGeneric
+  :modelValue="currencyUnit"
+  :staticOptions="CURRENCY_UNITS"
+  :useStaticList="true"
+  optionLabel="code"
+  placeholder="เช่น US$, EUR"
+  :forceSelection="false"
+  customClass="currency-ac"
+  @update:modelValue="onCurrencyChange"
+>
+  <template #option="{ option }">
+    <span>{{ option.label }}</span>
+  </template>
+</AutoCompleteGeneric>
+```
+
+**Handler:**
+```javascript
+onCurrencyChange(value) {
+  if (typeof value === 'string') {
+    this.currencyUnit = value
+  } else if (value && typeof value === 'object') {
+    this.currencyUnit = value.code || ''
+  }
+}
+```
+
+**Behavior:**
+| | ผล |
+|--|--|
+| Input หลังเลือก | แสดง `"US$"` (code) |
+| Dropdown items | แสดง `"US$ — US Dollar"` (ผ่าน #option slot) |
+| Free-text | พิมพ์ได้ปกติ (forceSelection: false) |
+| Filter | กรองตาม code (พิมพ์ "US" → "US$") |
+
+### CURRENCY_UNITS
+
+11 สกุลเงินที่ใช้ใน jewelry export: US$, EUR, GBP, JPY, SGD, HKD, AUD, CAD, THB, CNY, AED
+
+---
+
 *Last updated: 2026-02-23 — Added: Quotation → SO flow (create-view loadFromQuotation, quotation detail-view "สร้างใบสั่งขาย" button, item-card quotation badge)*
+*Updated: 2026-02-23 — create-view: commented out markup + goldPerOz inputs (ยังไม่ได้ใช้ตอนนี้)*
+*Updated: 2026-02-23 — Section 13: สลับ CurrencyUnitSelect → AutoCompleteGeneric (static list mode)*

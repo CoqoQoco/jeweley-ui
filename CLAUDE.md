@@ -620,7 +620,8 @@ src/assets/scss/
 │ ├── Routes: /mobile/*                                        │
 │ ├── Layout: src/layout/mobile/LayoutMobile.vue              │
 │ ├── Styles: responsive-style/mobile/                        │
-│ ├── No PrimeVue — use native HTML (select, input, checkbox) │
+│ ├── No raw PrimeVue directly — use native HTML (select, input, checkbox)  │
+│ ├── ✅ Generic PrimeVue wrappers OK: AutoCompleteGeneric, CalendarGeneric, ImagePreview │
 │ └── Safe area: viewport-fit=cover + env(safe-area-inset-*)  │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -752,7 +753,7 @@ LayoutMobile.vue (src/layout/mobile/)
 
 | Rule | Web | Mobile |
 |------|-----|--------|
-| **UI Framework** | PrimeVue (DataTable, Dropdown, Checkbox, etc.) | Native HTML (`<select>`, `<input>`, `<checkbox>`) |
+| **UI Framework** | PrimeVue (DataTable, Dropdown, Checkbox, etc.) | Native HTML (`<select>`, `<input>`, `<checkbox>`) สำหรับ controls ทั่วไป ❌ raw PrimeVue — ✅ Generic wrappers: AutoCompleteGeneric, CalendarGeneric, ImagePreview |
 | **SCSS Import** | `@import '@/assets/scss/responsive-style/web'` | `@import '@/assets/scss/responsive-style/mobile'` |
 | **API Pattern** | Options API | Options API |
 | **Alerts** | sweetAlerts | sweetAlerts |
@@ -910,3 +911,51 @@ Reusable PrimeVue wrapper components อยู่ใน `src/components/prime-vu
 ```
 
 **หมายเหตุ**: v-model ใช้ `Date` object (ไม่ใช่ string) — ใช้ `formatISOString(date)` จาก `src/services/utils/dayjs.js` เพื่อแปลงเป็น ISO string สำหรับ API
+
+**AutoCompleteGeneric — Static List Mode (สำหรับ dropdown ที่มี master list ตายตัว):**
+
+ใช้เมื่อ: มี list ตายตัว (เช่น currency units, job types) ไม่ต้อง call API
+
+```vue
+<AutoCompleteGeneric
+  :modelValue="currencyUnit"
+  :staticOptions="CURRENCY_UNITS"
+  :useStaticList="true"
+  optionLabel="code"
+  placeholder="เช่น US$, EUR"
+  :forceSelection="false"
+  customClass="currency-ac"
+  @update:modelValue="onCurrencyChange"
+>
+  <template #option="{ option }">
+    <span>{{ option.label }}</span>
+  </template>
+</AutoCompleteGeneric>
+```
+
+Props ที่ต้องใช้:
+- `useStaticList: true` — กรองจาก `staticOptions` (ไม่ call API)
+- `staticOptions` — array ของ options
+- `optionLabel` — field ที่ใช้กรอง + แสดงใน input หลังเลือก
+- `forceSelection: false` — รับ free-text ได้
+
+เมื่อ user เลือก option → emit ด้วย full object, ต้อง extract field ที่ต้องการใน handler:
+```javascript
+onCurrencyChange(value) {
+  this.currencyUnit = typeof value === 'object' ? value.code : value
+}
+```
+
+Style (:deep สำหรับ PrimeVue component ที่อยู่ใน child):
+```scss
+:deep(.currency-ac) {
+  width: 100%;
+  .p-autocomplete-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+}
+```

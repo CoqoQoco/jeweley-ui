@@ -107,12 +107,20 @@
           <div class="currency-row">
             <div class="currency-field">
               <label>Currency Unit</label>
-              <input
-                v-model.trim="currencyUnit"
-                type="text"
-                class="currency-input"
-                placeholder="US$"
-              />
+              <AutoCompleteGeneric
+                :modelValue="currencyUnit"
+                :staticOptions="CURRENCY_UNITS"
+                :useStaticList="true"
+                optionLabel="code"
+                placeholder="เช่น US$, EUR"
+                :forceSelection="false"
+                customClass="currency-ac"
+                @update:modelValue="onCurrencyChange"
+              >
+                <template #option="{ option }">
+                  <span>{{ option.label }}</span>
+                </template>
+              </AutoCompleteGeneric>
             </div>
             <div class="currency-field">
               <label>Currency Rate</label>
@@ -126,6 +134,7 @@
               />
             </div>
           </div>
+          <!-- markup / gold per oz — ยังไม่ได้ใช้ตอนนี้
           <div class="currency-row" style="margin-top: 10px;">
             <div class="currency-field">
               <label>Markup</label>
@@ -150,6 +159,7 @@
               />
             </div>
           </div>
+          -->
         </div>
       </div>
 
@@ -174,7 +184,7 @@
           :disabled="items.length === 0"
         >
           <i class="bi bi-save"></i>
-          บันทึกใบสั่งขาย
+          สร้าง SO
         </button>
         <button
           class="mobile-btn mobile-btn-primary"
@@ -207,6 +217,8 @@ import ItemList from './components/item-list.vue'
 import CustomerForm from './components/customer-form.vue'
 import SoSummary from './components/so-summary.vue'
 import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 
 export default {
   name: 'MobileSaleCreateView',
@@ -217,7 +229,8 @@ export default {
     ItemList,
     CustomerForm,
     SoSummary,
-    QrScanner
+    QrScanner,
+    AutoCompleteGeneric
   },
 
   setup() {
@@ -229,6 +242,7 @@ export default {
 
   data() {
     return {
+      CURRENCY_UNITS,
       addItemTab: 'appraisal',
       scanInput: '',
       searchField: 'stockNumber',
@@ -239,8 +253,8 @@ export default {
       items: [],
       currencyUnit: 'US$',
       currencyRate: 33.0,
-      markup: 3.5,
-      goldPerOz: 2000,
+      // markup: 3.5,     // ยังไม่ได้ใช้ตอนนี้
+      // goldPerOz: 2000, // ยังไม่ได้ใช้ตอนนี้
       customer: {
         customerCode: '',
         customerName: '',
@@ -286,8 +300,8 @@ export default {
       // Currency
       this.currencyUnit = response.currency || 'US$'
       this.currencyRate = response.currencyRate || 33.0
-      this.markup = response.markUp || 3.5
-      this.goldPerOz = response.goldPerOz || 2000
+      // this.markup = response.markUp || 3.5       // ยังไม่ได้ใช้ตอนนี้
+      // this.goldPerOz = response.goldPerOz || 2000 // ยังไม่ได้ใช้ตอนนี้
 
       // Financial fields
       this.quotationFinancials = {
@@ -323,6 +337,14 @@ export default {
         imagePath: item.imagePath || '',
         source: 'quotation'
       }))
+    },
+
+    onCurrencyChange(value) {
+      if (typeof value === 'string') {
+        this.currencyUnit = value
+      } else if (value && typeof value === 'object') {
+        this.currencyUnit = value.code || ''
+      }
     },
 
     addItem(item) {
@@ -485,8 +507,8 @@ export default {
         soDate: new Date().toISOString(),
         deliveryDate: null,
         refQuotation: this.refQuotation || null,
-        markup: this.markup || null,
-        goldRate: this.goldPerOz || null,
+        // markup: this.markup || null,      // ยังไม่ได้ใช้ตอนนี้
+        // goldRate: this.goldPerOz || null, // ยังไม่ได้ใช้ตอนนี้
         specialDiscount: this.quotationFinancials.specialDiscount || 0,
         specialAddition: this.quotationFinancials.specialAddition || 0,
         vat: this.quotationFinancials.vat || 0,
@@ -517,6 +539,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/mobile';
+
+input {
+  margin-top: 0px !important;
+}
 
 .mobile-sale-create-view {
   min-height: 100vh;
@@ -714,6 +740,7 @@ export default {
 
   .currency-row {
     display: flex;
+    align-items: flex-start;
     gap: 12px;
 
     .currency-field {
@@ -729,12 +756,14 @@ export default {
 
       .currency-input {
         width: 100%;
-        padding: 10px 12px;
+        height: 35px;
+        padding: 0 12px;
         border: 1px solid #e0e0e0;
         border-radius: 8px;
         font-size: 0.9rem;
         outline: none;
         transition: border-color 0.2s ease;
+        box-sizing: border-box;
 
         &:focus {
           border-color: var(--base-font-color);
@@ -744,6 +773,7 @@ export default {
           color: #bbb;
         }
       }
+
     }
   }
 }
@@ -768,6 +798,28 @@ export default {
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+  }
+}
+
+:deep(.currency-ac) {
+  width: 100%;
+
+  .p-autocomplete-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: var(--base-font-color);
+    }
+
+    &::placeholder {
+      color: #bbb;
     }
   }
 }
