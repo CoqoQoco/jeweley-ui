@@ -39,7 +39,12 @@
       <span v-if="selected" class="job-card__check">
         <i class="bi bi-check-circle-fill"></i>
       </span>
-      <i v-else class="bi bi-chevron-right"></i>
+      <template v-else>
+        <button v-if="showInactive" class="job-card__inactive-btn" @click.stop="$emit('inactive', job)">
+          <i class="bi bi-trash3"></i>
+        </button>
+        <i v-else class="bi bi-chevron-right"></i>
+      </template>
     </div>
   </div>
 </template>
@@ -67,10 +72,14 @@ export default {
     compact: {
       type: Boolean,
       default: false
+    },
+    showInactive: {
+      type: Boolean,
+      default: false
     }
   },
 
-  emits: ['click'],
+  emits: ['click', 'inactive'],
 
   computed: {
     parsedDataJob() {
@@ -252,6 +261,33 @@ export default {
     i {
       color: #ccc;
       font-size: 1rem;
+    }
+  }
+
+  &__inactive-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    color: #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    i {
+      font-size: 1rem;
+      color: #bbb;
+    }
+
+    &:active {
+      background: #fff0f0;
+      color: #e53935;
+
+      i {
+        color: #e53935;
+      }
     }
   }
 }

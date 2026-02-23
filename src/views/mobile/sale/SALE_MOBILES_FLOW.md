@@ -4,7 +4,7 @@
 
 **Web Sale Flow**: ดู `src/views/sale/SALES_FLOW.md`
 **Mobile Layout**: `src/layout/mobile/LayoutMobile.vue`
-**UI Framework**: Native HTML (ไม่ใช้ raw PrimeVue) — Generic wrappers OK: AutoCompleteGeneric, CalendarGeneric
+**UI Framework**: ✅ PrimeVue — same as Web (Generic wrappers preferred: AutoCompleteGeneric, CalendarGeneric)
 **SCSS**: `@import '@/assets/scss/responsive-style/mobile'`
 
 ---

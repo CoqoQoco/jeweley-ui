@@ -83,19 +83,15 @@
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="isLoading" class="mobile-loading">
-        <div class="spinner"></div>
-        <div class="loading-text">กำลังโหลด...</div>
-      </div>
-
       <!-- Jobs List -->
-      <div v-else-if="myJobs.length > 0" class="mobile-list">
+      <div v-if="myJobs.length > 0" class="mobile-list">
         <JobCard
           v-for="job in myJobs"
           :key="job.id"
           :job="job"
+          :showInactive="true"
           @click="viewJob"
+          @inactive="onInactiveJob"
         />
       </div>
 
@@ -154,6 +150,7 @@
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
 import { JOB_TYPE } from '@/constants/job-type.js'
+import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import JobCard from '@/views/mobile/components/job-card.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
@@ -176,7 +173,6 @@ export default {
   data() {
     return {
       myJobs: [],
-      isLoading: false,
       isRefreshing: false,
       // Placeholder data
       recentActivities: [
@@ -229,48 +225,40 @@ export default {
     },
 
     async loadMyJobs() {
-      try {
-        this.isLoading = true
-        const result = await this.userApiStore.fetchListMyJob({
-          take: 5,
-          skip: 0,
-          search: {
-            isActive: true
-          }
-        })
-
-        if (result && result.data) {
-          this.myJobs = result.data
-        }
-      } catch (error) {
-        console.error('Error loading my jobs:', error)
-      } finally {
-        this.isLoading = false
+      const result = await this.userApiStore.fetchListMyJob({
+        take: 5,
+        skip: 0,
+        search: { isActive: true }
+      })
+      if (result && result.data) {
+        this.myJobs = result.data
       }
     },
 
     async refreshJobs() {
-      try {
-        this.isRefreshing = true
-        const result = await this.userApiStore.fetchListMyJob({
-          take: 5,
-          skip: 0,
-          search: {
-            isActive: true
-          }
-        })
-
-        if (result && result.data) {
-          this.myJobs = result.data
-        }
-      } catch (error) {
-        console.error('Error refreshing jobs:', error)
-      } finally {
-        // Add small delay to show animation
-        setTimeout(() => {
-          this.isRefreshing = false
-        }, 500)
+      this.isRefreshing = true
+      const result = await this.userApiStore.fetchListMyJob({
+        take: 5,
+        skip: 0,
+        search: { isActive: true }
+      })
+      if (result && result.data) {
+        this.myJobs = result.data
       }
+      setTimeout(() => {
+        this.isRefreshing = false
+      }, 500)
+    },
+
+    onInactiveJob(job) {
+      confirmSubmit(
+        `ต้องการยกเลิกงาน "${job.jobRunning}" ใช่หรือไม่?`,
+        'ยืนยันการยกเลิก',
+        async () => {
+          await this.userApiStore.fetchInactiveMyJob({ id: job.id, jobRunning: job.jobRunning })
+          await this.loadMyJobs()
+        }
+      )
     },
 
     viewAllActivities() {

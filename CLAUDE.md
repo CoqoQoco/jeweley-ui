@@ -620,9 +620,9 @@ src/assets/scss/
 │ ├── Routes: /mobile/*                                        │
 │ ├── Layout: src/layout/mobile/LayoutMobile.vue              │
 │ ├── Styles: responsive-style/mobile/                        │
-│ ├── No raw PrimeVue directly — use native HTML (select, input, checkbox)  │
-│ ├── ✅ Generic PrimeVue wrappers OK: AutoCompleteGeneric, CalendarGeneric, ImagePreview │
-│ └── Safe area: viewport-fit=cover + env(safe-area-inset-*)  │
+│ ├── ✅ PrimeVue allowed — same as Web (Dropdown, DataTable, etc.)          │
+│ ├── ✅ Generic wrappers preferred: AutoCompleteGeneric, CalendarGeneric    │
+│ └── Safe area: viewport-fit=cover + env(safe-area-inset-*)                │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -753,15 +753,15 @@ LayoutMobile.vue (src/layout/mobile/)
 
 | Rule | Web | Mobile |
 |------|-----|--------|
-| **UI Framework** | PrimeVue (DataTable, Dropdown, Checkbox, etc.) | Native HTML (`<select>`, `<input>`, `<checkbox>`) สำหรับ controls ทั่วไป ❌ raw PrimeVue — ✅ Generic wrappers: AutoCompleteGeneric, CalendarGeneric, ImagePreview |
+| **UI Framework** | PrimeVue (DataTable, Dropdown, Checkbox, etc.) | ✅ PrimeVue — same as Web. Generic wrappers preferred: AutoCompleteGeneric, CalendarGeneric, ImagePreview |
 | **SCSS Import** | `@import '@/assets/scss/responsive-style/web'` | `@import '@/assets/scss/responsive-style/mobile'` |
 | **API Pattern** | Options API | Options API |
 | **Alerts** | sweetAlerts | sweetAlerts |
 | **Try-catch** | No (axios middleware) | No (axios middleware) |
 | **Loading state** | No manual (axios middleware) | No manual (axios middleware) |
 | **File naming** | kebab-case | kebab-case |
-| **Date picker** | PrimeVue Calendar | PrimeVue Calendar (ผ่าน CalendarGeneric) |
-| **Dropdown/Select** | PrimeVue Dropdown | Native `<select>` |
+| **Date picker** | PrimeVue Calendar | PrimeVue Calendar (ผ่าน CalendarGeneric preferred) |
+| **Dropdown/Select** | PrimeVue Dropdown | PrimeVue Dropdown |
 
 ```vue
 <!-- ✅ Good - Mobile component template -->
@@ -912,7 +912,7 @@ Reusable PrimeVue wrapper components อยู่ใน `src/components/prime-vu
 
 **หมายเหตุ**: v-model ใช้ `Date` object (ไม่ใช่ string) — ใช้ `formatISOString(date)` จาก `src/services/utils/dayjs.js` เพื่อแปลงเป็น ISO string สำหรับ API
 
-**AutoCompleteGeneric — Static List Mode (สำหรับ dropdown ที่มี master list ตายตัว):**
+**AutoCompleteGeneric — Static List Mode (สำหรับ dropdown ที่มี master list ตายตัว — ใช้ได้ทั้ง Web และ Mobile):**
 
 ใช้เมื่อ: มี list ตายตัว (เช่น currency units, job types) ไม่ต้อง call API
 

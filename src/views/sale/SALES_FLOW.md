@@ -763,7 +763,7 @@ Soft-delete payment record (`IsDelete = true`)
 
 | File | Class | Output |
 |------|-------|--------|
-| `pdf/quotation/quotation-pdf-builder.js` | `InvoicePdfBuilder` | Quotation PDF (item table + per-item discount + footer totals) |
+| `pdf/quotation/quotation-pdf-builder.js` | `InvoicePdfBuilder` | Quotation PDF (item table + per-item discount + footer totals + conditions) |
 | `pdf/quotation/breakdown-pdf-builder.js` | `BreakdownPdfBuilder` | Cost Breakdown PDF (รายละเอียดต้นทุนต่อ item) |
 | `pdf/sale-order/sale-order-pdf-builder.js` | `SaleOrderPdfBuilder` | SO PDF (เหมือน Quotation + รูปสินค้า) |
 | `pdf/invoice/invoice-pdf-builder.js` | `InvoicePdfBuilder` | Invoice PDF |
@@ -962,4 +962,4 @@ Mobile SO/Invoice ส่ง fields ครบเหมือน Web — ดูร
 
 ---
 
-*Last updated: 2026-02-22 — แยก Mobile Sale เป็น SALE_MOBILES_FLOW.md, Bug fixes: Quotation DB fields, SO freight+soDate in API*
+*Last updated: 2026-02-23 — ย้าย Conditions block จาก Sale Order PDF → Quotation PDF*

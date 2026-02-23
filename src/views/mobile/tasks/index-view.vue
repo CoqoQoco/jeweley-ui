@@ -26,19 +26,15 @@
 
     <!-- Jobs List -->
     <div class="mobile-container mobile-mt-2">
-      <!-- Loading State -->
-      <div v-if="isLoading" class="mobile-loading">
-        <div class="spinner"></div>
-        <div class="loading-text">กำลังโหลด...</div>
-      </div>
-
       <!-- Jobs List -->
-      <div v-else-if="myJobs.length > 0" class="mobile-list">
+      <div v-if="myJobs.length > 0" class="mobile-list">
         <JobCard
           v-for="job in myJobs"
           :key="job.id"
           :job="job"
+          :showInactive="true"
           @click="viewJobDetail"
+          @inactive="onInactiveJob"
         />
       </div>
 
@@ -50,7 +46,7 @@
       </div>
 
       <!-- Load More Button -->
-      <div v-if="hasMore && !isLoading" class="mobile-mt-2">
+      <div v-if="hasMore" class="mobile-mt-2">
         <button class="mobile-btn mobile-btn-secondary mobile-btn-block" @click="loadMore">
           <i class="bi bi-arrow-down-circle"></i>
           โหลดเพิ่มเติม
@@ -63,6 +59,7 @@
 <script>
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
 import { JOB_TYPE } from '@/constants/job-type.js'
+import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import JobCard from '@/views/mobile/components/job-card.vue'
 
 export default {
@@ -80,7 +77,6 @@ export default {
   data() {
     return {
       myJobs: [],
-      isLoading: false,
       activeFilter: 'all',
       currentPage: 0,
       pageSize: 20,
@@ -99,54 +95,47 @@ export default {
 
   methods: {
     async loadJobs() {
-      try {
-        this.isLoading = true
-        this.currentPage = 0
-        this.myJobs = []
+      this.currentPage = 0
+      this.myJobs = []
 
-        const searchFilter = this.getSearchFilter()
+      const result = await this.userApiStore.fetchListMyJob({
+        take: this.pageSize,
+        skip: 0,
+        sort: [{ field: 'createDate', dir: 'desc' }],
+        search: this.getSearchFilter()
+      })
 
-        const result = await this.userApiStore.fetchListMyJob({
-          take: this.pageSize,
-          skip: 0,
-          sort: [{ field: 'createDate', dir: 'desc' }],
-          search: searchFilter
-        })
-
-        if (result && result.data) {
-          this.myJobs = result.data
-          this.hasMore = result.data.length >= this.pageSize
-        }
-      } catch (error) {
-        console.error('Error loading jobs:', error)
-      } finally {
-        this.isLoading = false
+      if (result && result.data) {
+        this.myJobs = result.data
+        this.hasMore = result.data.length >= this.pageSize
       }
     },
 
     async loadMore() {
-      try {
-        this.isLoading = true
-        this.currentPage++
+      this.currentPage++
 
-        const searchFilter = this.getSearchFilter()
+      const result = await this.userApiStore.fetchListMyJob({
+        take: this.pageSize,
+        skip: this.currentPage * this.pageSize,
+        sort: [{ field: 'createDate', dir: 'desc' }],
+        search: this.getSearchFilter()
+      })
 
-        const result = await this.userApiStore.fetchListMyJob({
-          take: this.pageSize,
-          skip: this.currentPage * this.pageSize,
-          sort: [{ field: 'createDate', dir: 'desc' }],
-          search: searchFilter
-        })
-
-        if (result && result.data) {
-          this.myJobs.push(...result.data)
-          this.hasMore = result.data.length >= this.pageSize
-        }
-      } catch (error) {
-        console.error('Error loading more jobs:', error)
-      } finally {
-        this.isLoading = false
+      if (result && result.data) {
+        this.myJobs.push(...result.data)
+        this.hasMore = result.data.length >= this.pageSize
       }
+    },
+
+    onInactiveJob(job) {
+      confirmSubmit(
+        `ต้องการยกเลิกงาน "${job.jobRunning}" ใช่หรือไม่?`,
+        'ยืนยันการยกเลิก',
+        async () => {
+          await this.userApiStore.fetchInactiveMyJob({ id: job.id, jobRunning: job.jobRunning })
+          await this.loadJobs()
+        }
+      )
     },
 
     changeFilter(filterValue) {

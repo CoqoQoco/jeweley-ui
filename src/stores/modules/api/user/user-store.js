@@ -146,6 +146,10 @@ export const useUserApiStore = defineStore('userStore', {
         this.listMyJobTotal = 0
         return {}
       }
+    },
+
+    async fetchInactiveMyJob({ id, jobRunning }) {
+      return await api.jewelry.post('User/InactiveMyJob', { id, jobRunning })
     }
   }
 })
