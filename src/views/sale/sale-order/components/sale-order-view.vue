@@ -1601,17 +1601,31 @@
             บันทึกร่าง
           </button>
 
-          <button
-            class="btn btn-outline-main"
-            type="button"
-            style="width: 200px"
-            @click="exportPDF"
-            :disabled="stockItems.length === 0 || isExportingPDF"
-          >
-            <span v-if="isExportingPDF" class="spinner-border spinner-border-sm mr-2"></span>
-            <i v-else class="bi bi-file-earmark-pdf mr-1"></i>
-            Export PDF
-          </button>
+          <div class="d-flex align-items-center" style="gap: 8px">
+            <button
+              class="btn btn-outline-main"
+              type="button"
+              style="width: 200px"
+              @click="exportPDF"
+              :disabled="stockItems.length === 0 || isExportingPDF"
+            >
+              <span v-if="isExportingPDF" class="spinner-border spinner-border-sm mr-2"></span>
+              <i v-else class="bi bi-file-earmark-pdf mr-1"></i>
+              Export PDF
+            </button>
+            <div
+              class="d-flex align-items-center"
+              style="gap: 4px; cursor: pointer; white-space: nowrap"
+              @click="pdfShowCifLabel = !pdfShowCifLabel"
+            >
+              <input
+                type="checkbox"
+                v-model="pdfShowCifLabel"
+                style="width: 14px; height: 14px; cursor: pointer"
+              />
+              <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1738,6 +1752,7 @@ export default {
       isSONumberLocked: false,
       isOnDraft: false,
       isExportingPDF: false,
+      pdfShowCifLabel: true,
       productSearch: {
         stockNumber: '',
         stockNumberOrigin: '',
@@ -2527,7 +2542,8 @@ export default {
       }
       const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
-        currencyRate: Number(this.formSaleOrder.currencyRate) || 1
+        currencyRate: Number(this.formSaleOrder.currencyRate) || 1,
+        showCifLabel: this.pdfShowCifLabel
       })
       const pdf = await pdfBuilder.generatePDF()
       const soNumber = this.formSaleOrder.number || 'DRAFT'

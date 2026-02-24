@@ -16,6 +16,7 @@ export class SaleOrderPdfBuilder {
     this.currencyUnit = options.currencyUnit || 'THB'
     this.currencyRate = Number(options.currencyRate) || 1
     this.itemsPerPage = Number(options.itemsPerPage) || 10
+    this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
 
     // Financial adjustments
     this.specialDiscount = Number(soData.specialDiscount) || 0
@@ -387,7 +388,7 @@ export class SaleOrderPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, '*', '*', '*', '*', '*', 20, 60, 60],
+        widths: [15, 45, '*', '*', '*', '*', '*', 20, 55, 50],
         body: [
           [
             this.setTableHeader('No.'),
@@ -419,7 +420,7 @@ export class SaleOrderPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60],
+        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50],
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -438,7 +439,7 @@ export class SaleOrderPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60],
+        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50],
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -696,7 +697,7 @@ export class SaleOrderPdfBuilder {
       {},
       {},
       {},
-      { text: 'C.I.F', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+      { text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
       {},
       {
         text: this.roundNoDecimal(grandTotal),
@@ -988,10 +989,10 @@ export class SaleOrderPdfBuilder {
 
       return {
         image: imageData,
-        width: 25,
-        height: 25,
+        width: 38,
+        height: 38,
         alignment: 'center',
-        margin: [2, 5, 2, 5]
+        margin: [2, 3, 2, 3]
       }
     }
 

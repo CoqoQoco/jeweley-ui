@@ -318,6 +318,18 @@
             <i class="bi" :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"></i>
             {{ exportingPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์ใบสั่งขาย' }}
           </button>
+          <div
+            class="d-flex align-items-center"
+            style="gap: 6px; cursor: pointer; padding: 4px 0"
+            @click="pdfShowCifLabel = !pdfShowCifLabel"
+          >
+            <input
+              type="checkbox"
+              v-model="pdfShowCifLabel"
+              style="width: 15px; height: 15px; cursor: pointer"
+            />
+            <span style="font-size: 0.8rem; color: #555; cursor: pointer">แสดงป้าย C.I.F</span>
+          </div>
 
           <!-- Create Invoice -->
           <button
@@ -392,6 +404,7 @@ export default {
       stockItems: [],
       copyItems: [],
       exportingPDF: false,
+      pdfShowCifLabel: true,
       CURRENCY_UNITS,
       editCurrencyUnit: '',
       editCurrencyRate: null,
@@ -768,7 +781,8 @@ export default {
         }
         const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
           currencyUnit: this.soData.currencyUnit || 'THB',
-          currencyRate: Number(this.soData.currencyRate) || 1
+          currencyRate: Number(this.soData.currencyRate) || 1,
+          showCifLabel: this.pdfShowCifLabel
         })
         const pdf = await pdfBuilder.generatePDF()
         const filename = `SO_${this.soData.soNumber}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`

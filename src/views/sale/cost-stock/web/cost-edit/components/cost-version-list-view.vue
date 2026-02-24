@@ -45,7 +45,7 @@
         :totalRecords="data.total"
         :columns="columns"
         :perPage="take"
-        :scrollHeight="'calc(100vh - 400px)'"
+        :scrollHeight="'calc(100vh - 450px)'"
         @page="handlePageChange"
         @sort="handleSortChange"
       >

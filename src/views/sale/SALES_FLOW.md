@@ -425,7 +425,137 @@ Generate SO running number (preview) — ไม่สร้าง record
 
 ---
 
-## 4. Invoice Flow
+## 4. Cost Stock / Stock Appraisal Flow (ตีราคาสินค้า)
+
+> **ดูรายละเอียด implementation ครบที่**: `src/views/sale/cost-stock/web/web-cost-stock.md`
+
+### ภาพรวม
+
+ระบบตีราคาสินค้า (Stock Appraisal) — คำนวณต้นทุนวัสดุต่อชิ้น แล้วบันทึกเป็น Cost Version ของสินค้า
+
+```
+[Mobile] สร้างแผนตีราคา (CreateProductCostDeatialPlan)
+       ↓
+[Web] เปิดหน้า cost-stock-edit → เลือกแผนหรือค้นหา stock เอง
+       ↓
+[Web] ตีราคา (กรอก transaction items: Gold, Gem, Worker, Embed, ETC)
+       ↓
+[Web] บันทึก (AddProductCostDeatialVersion)
+       ├── isOriginCost = false → บันทึก version เท่านั้น
+       └── isOriginCost = true  → บันทึก + เขียน cost กลับลง TbtStockProduct
+```
+
+### File Structure
+
+```
+src/views/sale/cost-stock/
+└── web/
+    ├── web-cost-stock.md                            -- documentation (implementation notes)
+    └── cost-edit/
+        ├── index-view.vue                           -- orchestrator: สลับ search ↔ appraisal form
+        └── components/
+            ├── search-stock-view.vue                -- ค้นหา stock + ปุ่มแผนตีราคา (badge count)
+            ├── appraisal-form-view.vue              -- form ตีราคา (transaction table + customer)
+            ├── stock-cost-plan-modal.vue            -- modal เลือกแผนตีราคา (Pending plans)
+            ├── cost-version-list-view.vue           -- รายการ cost versions ที่บันทึกแล้ว
+            └── cost-version-detail-modal.vue        -- modal ดูรายละเอียด cost version
+```
+
+**Route**: `/sale/cost-stock-edit` → `cost-stock-edit`
+
+### 2 Mode การใช้งาน
+
+#### Mode A: ไม่มีแผน (Manual Search)
+
+```
+1. ค้นหา stock (search-stock-view) ด้วย StockNumber หรือ ProductCode
+2. ระบบ fetch stock + pre-fill transaction items จาก PriceTransactions
+3. User กรอก/แก้ไข transaction items
+4. กด "บันทึก" (isOriginCost=false) หรือ "บันทึกและใช้เป็นต้นทุนหลัก" (isOriginCost=true)
+```
+
+#### Mode B: มีแผน (Plan-based)
+
+```
+1. [Mobile] สร้างแผน → TbtStockCostPlan (statusId=10 Pending, isActive=true)
+2. [Web] กด "รายการแผนตีราคา" (ปุ่มสีเหลือง + badge count ของ Pending plans)
+3. Modal เปิด → เลือกแผน (DataTable + radio)
+4. ระบบ fetch stock ตาม plan.stockNumber + แสดง plan info (สีเหลือง)
+5. User กรอก transaction items
+6. กดบันทึก → Backend อัปเดต plan statusId = 100 (Completed)
+7. Badge count ลดลงอัตโนมัติ
+```
+
+### Transaction Item Groups
+
+| Group | Label | Source |
+|-------|-------|--------|
+| `Gold` | ทอง | Hardcoded (RINGP) + API `Master/MasterGold` |
+| `Gem` | วัตถุดิบ | API `StockGem/Search` (min 3 chars, auto-fill price) |
+| `Worker` | งานช่าง | Static list (ค่าชุบ, ค่าแม่พิมพ์, ค่ายิงเลเซอร์, ค่าแรงทำแป้น, ค่าคัดพลอย) |
+| `Embed` | งานฝัง | Static list (งานฝังพลอย, งานฝังเพชร, งานฝังเกสร, งานฝังแบบตัวเรือน) |
+| `ETC` | รายการเพิ่มเติม | Static list (ค่าบรรจุภัณฑ์, ค่าขนส่ง, ค่าธรรมเนียม, ...) |
+
+**หมายเหตุ**: ทุก group ใช้ `AutoCompleteGeneric` (free text allowed, forceSelection=false)
+
+**Auto-add RINGP**: ถ้า `productType === 'R'` (แหวน) → เพิ่ม "น้ำหนักแป้น (RINGP)" ใน Gold group อัตโนมัติ
+
+### Price Calculation (per row)
+
+```
+totalPrice = (qty * qtyPrice) + (qtyWeight * qtyWeightPrice)
+```
+
+### Save API
+
+**Endpoint**: `POST /StockProduct/AddProductCostDeatialVersion`
+
+| Field | หมายเหตุ |
+|-------|---------|
+| `stockNumber` | เลข stock |
+| `planRunning` | เลขแผน (null ถ้า Mode A) |
+| `isOriginCost` | false = save version, true = บันทึกเป็นต้นทุนหลักของสินค้า |
+| `tagPriceMultiplier` | ตัวคูณราคา tag |
+| `currencyUnit`, `currencyRate` | สกุลเงิน |
+| `customerCode/Name/Address/Tel/Email` | ข้อมูลลูกค้า (optional) |
+| `prictransection[]` | รายการต้นทุน (No, Name, NameGroup, Qty, QtyPrice, QtyWeight, QtyWeightPrice) |
+
+**เมื่อ isOriginCost = true:**
+- `TbtStockProduct.ProductCostDetail` = JSON ของ prictransection
+- `TbtStockProduct.ProductCost` = SUM(TotalPrice)
+- `TbtStockProduct.TagPriceMultiplier` = tagPriceMultiplier
+
+**เมื่อมี planRunning:**
+- `TbtStockCostPlan.StatusId` → 100 (Completed)
+- `TbtStockCostPlan.VersionRunning` = running ของ cost version ใหม่
+
+### Cost Version List & Detail
+
+หน้า `cost-stock-edit` ยังแสดง **รายการ cost versions ที่บันทึกแล้ว** (`cost-version-list-view.vue`):
+- ดึงจาก `GET /StockProduct/GetProductCostDetailVersion?stockNumber=...`
+- กด "ดูรายละเอียด" → เปิด `cost-version-detail-modal.vue`
+- กด "Duplicate" → copy transaction items เข้า appraisal form ใหม่
+
+### DB Tables ที่เกี่ยวข้อง
+
+| Table | หน้าที่ |
+|-------|---------|
+| `TbtStockProduct` | สินค้าหลัก — อัปเดต ProductCostDetail, ProductCost, TagPriceMultiplier เมื่อ isOriginCost=true |
+| `TbtStockCostPlan` | แผนตีราคา (running prefix `CP`) — สร้างจาก Mobile, อัปเดต Status จาก Web |
+| `TbtStockCostVersion` | ผลการตีราคา (running prefix `CV`) — สร้างทุกครั้งที่กด Save |
+| `TbtMyJob` | งานที่ assign ให้ user (Mobile) — สร้างพร้อม Plan, อัปเดต Status พร้อม Plan |
+
+### JobStatus Constants
+
+| statusId | StatusName | ความหมาย |
+|---------|-----------|---------|
+| 10 | Pending | รอดำเนินการ (แสดงใน badge + modal) |
+| 100 | Completed | เสร็จสิ้น (ไม่แสดงใน list) |
+| 500 | Cancelled | ยกเลิก |
+
+---
+
+## 5. Invoice Flow
 
 ### File Structure
 
@@ -650,7 +780,7 @@ Soft-delete payment record (`IsDelete = true`)
 
 ---
 
-## 5. Stock Product APIs (ที่เกี่ยวข้องกับ Sale)
+## 6. Stock Product APIs (ที่เกี่ยวข้องกับ Sale)
 
 **Controller**: `StockProductController` — Route: `/StockProduct`
 **Service**: `ProductService`
@@ -733,7 +863,7 @@ Soft-delete payment record (`IsDelete = true`)
 
 ---
 
-## 6. Customer APIs
+## 7. Customer APIs
 
 **Controller**: `CustomerController` — Route: `/Customer`
 
@@ -759,7 +889,7 @@ Soft-delete payment record (`IsDelete = true`)
 
 ---
 
-## 7. PDF Builders
+## 8. PDF Builders
 
 | File | Class | Output |
 |------|-------|--------|
@@ -778,9 +908,37 @@ Soft-delete payment record (`IsDelete = true`)
 - `vatPercent` — VAT %
 - Per-item `discountPercent` — ส่วนลดต่อ item
 
+### Column Widths (ทุก builder ใช้ค่าเดียวกัน)
+
+| Column | Index | Width | หมายเหตุ |
+|--------|-------|-------|---------|
+| No. | 0 | 15 | |
+| Image | 1 | 45 | image 38×38 px |
+| Style/Product | 2 | 70 | |
+| Description | 3 | 70 | |
+| Gold (gms) | 4 | 35 | |
+| Diamond (cts) | 5 | 45 | |
+| Gem (cts) | 6 | `*` | ยืดหยุ่น |
+| Qty | 7 | 20 | |
+| Price | 8 | 55 | |
+| Amount | 9 | 50 | |
+
+### CIF Label Toggle (`showCifLabel`)
+
+Grand total row แสดง "C.I.F" label — สามารถ toggle ได้ แต่ amount ยังแสดงเสมอ
+
+| Builder | รับผ่าน | Default |
+|---------|---------|---------|
+| `SaleOrderPdfBuilder` | `options.showCifLabel` | `true` |
+| quotation `InvoicePdfBuilder` | `customer.showCifLabel` | `true` |
+| invoice `InvoicePdfBuilder` | `saleOrderData.showCifLabel` | `true` |
+
+- `showCifLabel: true` → แสดง "C.I.F" (backward compatible)
+- `showCifLabel: false` → ซ่อน label แต่ grand total amount ยังแสดง
+
 ---
 
-## 8. Pinia Stores
+## 9. Pinia Stores
 
 ### Sale-related Stores
 
@@ -801,7 +959,7 @@ Items (quotationItems, SO stockItems) ถูก serialize เป็น **JSON st
 
 ---
 
-## 9. Running Number Prefixes
+## 10. Running Number Prefixes
 
 | Prefix | ใช้กับ | Generated by |
 |--------|-------|-------------|
@@ -814,7 +972,7 @@ Items (quotationItems, SO stockItems) ถูก serialize เป็น **JSON st
 
 ---
 
-## 10. DB Tables (Sale)
+## 11. DB Tables (Sale)
 
 | Table | Description |
 |-------|-------------|
@@ -831,7 +989,7 @@ Items (quotationItems, SO stockItems) ถูก serialize เป็น **JSON st
 
 ---
 
-## 11. Key Design Notes
+## 12. Key Design Notes
 
 ### Items stored as JSON
 
@@ -876,7 +1034,7 @@ Mobile SO/Invoice ส่ง fields ครบเหมือน Web — ดูร
 
 ---
 
-## 12. All Backend API Endpoints (Quick Reference)
+## 13. All Backend API Endpoints (Quick Reference)
 
 ### Sale Module
 
@@ -962,4 +1120,4 @@ Mobile SO/Invoice ส่ง fields ครบเหมือน Web — ดูร
 
 ---
 
-*Last updated: 2026-02-23 — ย้าย Conditions block จาก Sale Order PDF → Quotation PDF*
+*Last updated: 2026-02-24 — เพิ่ม Section 4 Cost Stock / Stock Appraisal Flow (ตีราคาสินค้า)*

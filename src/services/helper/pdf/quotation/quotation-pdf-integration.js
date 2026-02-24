@@ -39,7 +39,7 @@ export function generateInvoicePdf({
       // สร้าง instance ของ InvoicePdfBuilder
       const invoiceBuilder = new InvoicePdfBuilder(
         formattedItems,
-        customer, // Pass the full customer object
+        { ...customer, showCifLabel: customer.showCifLabel !== undefined ? customer.showCifLabel : true }, // Pass the full customer object
         invoiceDate,
         customer.freight,
         customer.discount,

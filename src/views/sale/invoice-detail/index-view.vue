@@ -1989,7 +1989,8 @@ export default {
           invoiceNo: printData.invoiceNumber, // Use modified invoice number
           invoiceDate: formattedDate, // Use modified and formatted invoice date
           download: true,
-          open: false
+          open: false,
+          showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true
         }
 
         //console.log('PDF Options:', options)

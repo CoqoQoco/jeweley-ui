@@ -1,124 +1,242 @@
-# Plan: ย้าย Conditions Block จาก Sale Order PDF → Quotation PDF
+# Plan: PDF Builders — ขยาย Image + CIF Toggle
 
-## Summary
+## Context
 
-ย้าย conditions block (ข้อความท้ายเอกสาร) จาก `sale-order-pdf-builder.js` ไปใส่ใน `quotation-pdf-builder.js` แทน
-- Sale Order PDF → comment out ทั้ง Conditions block ออก (ไม่แสดงอีกต่อไป)
-- Quotation PDF → เพิ่ม Conditions block เข้าไป + เพิ่ม `conditionText` style
+ปรับปรุง 3 PDF builders:
+1. **ขยายขนาด Image** — เพิ่ม image column width + image size โดยลด price/amount column เพื่อชดเชย
+2. **CIF Toggle** — ให้กำหนด on/off ป้ายกำกับ "C.I.F" ได้ แต่ยังคงแสดง grand total amount ไว้เสมอ
 
 ---
 
-## Files ที่เปลี่ยน
+## Files ที่จะแก้ไข
 
 | File | Action |
 |------|--------|
-| `src/services/helper/pdf/sale-order/sale-order-pdf-builder.js` | Comment out ทั้ง Conditions block ใน `getSummarySection()` |
-| `src/services/helper/pdf/quotation/quotation-pdf-builder.js` | เพิ่ม Conditions block ใน `getSummarySection()` + เพิ่ม `conditionText` style |
-| `src/views/sale/SALES_FLOW.md` | อัปเดต Section 7 (PDF Builders) |
+| `pdf/quotation/quotation-pdf-builder.js` | column widths + image size + CIF toggle |
+| `pdf/sale-order/sale-order-pdf-builder.js` | column widths + image size + CIF toggle |
+| `pdf/invoice/invoice-pdf-builder.js` | column widths + image size + CIF toggle |
+| `src/views/sale/SALES_FLOW.md` | อัปเดต Section 8 |
 
 ---
 
-## 1. sale-order-pdf-builder.js — Comment out Conditions block
+## สิ่งที่ยังไม่เปลี่ยน (out of scope for this plan)
 
-### ตำแหน่ง
-`getSummarySection()` → ใน `stack: [ ... ]` ของ column ที่มี `width: '90%'`
+- Modal UI สำหรับ toggle CIF (confirm-create-pdf-view.vue, etc.) — แยก implement ทีหลัง
+- Caller files (quotation-pdf-integration.js, invoice-pdf-integration.js, sale-order-view.vue) — อัปเดตพร้อมกันใน session เดียวกัน
 
-### ปัจจุบัน (มี active lines):
+---
+
+## Change 1 — ขยาย Image Column + Image Size
+
+### ก่อน / หลัง
+
+| | ก่อน | หลัง |
+|--|------|------|
+| Image column width (index 1) | `30` | `45` |
+| Image size (width/height) | `25 × 25` | `38 × 38` |
+| Image margin | `[2, 5, 2, 5]` | `[2, 3, 2, 3]` |
+| Price column (index 8) | `60` | `55` |
+| Amount column (index 9) | `60` | `50` |
+| **Net width change** | — | +15 - 5 - 10 = **0** (balanced) |
+
+### Column Widths — ทุก PDF builder เปลี่ยนเหมือนกัน
+
 ```javascript
-              // Conditions
-              {
-                margin: [0, 10, 0, 0],
-                stack: [
-                  // { text: 'Price is F.O.B. Bangkok', style: 'conditionText' },
-                  // ...
-                  { text: 'Price is F.O.B. Bangkok not inclued freight and insurance', style: 'conditionText' },
-                  { text: 'Production time within 5-7 weeks', style: 'conditionText' },
-                  { text: '40% payment of tt, 60% before the shipment.', style: 'conditionText' },
-                  { text: 'Gold weight, Diamond weight and Stones weight are approximately, the actual weight will be known after production is completed', style: 'conditionText' },
-                  // { text: 'W.C.P.F.R stand for Wax, Casting, Polising, Fliding, Rhodium', style: 'conditionText' },
-                  { text: 'Minimun order 10 pcs per design / Minimun purchase US$ 5,000', style: 'conditionText' },
-                  { text: 'The price quotation is current gold price market at www.kitco.com (please confirm within 2 days)', style: 'conditionText' }
-                ]
-              }
+// Empty page table (header only):
+widths: [15, 45, '*', '*', '*', '*', '*', 20, 55, 50]  // เดิม: [15, 30, '*', '*', '*', '*', '*', 20, 60, 60]
+
+// Regular + Final page table:
+widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50]      // เดิม: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60]
 ```
 
-### หลังแก้ไข — comment out ทั้ง block:
+### setTabImageCell — ทุก PDF builder เปลี่ยนเหมือนกัน
+
 ```javascript
-              // Conditions
-              // {
-              //   margin: [0, 10, 0, 0],
-              //   stack: [
-              //     { text: 'Price is F.O.B. Bangkok not inclued freight and insurance', style: 'conditionText' },
-              //     { text: 'Production time within 5-7 weeks', style: 'conditionText' },
-              //     { text: '40% payment of tt, 60% before the shipment.', style: 'conditionText' },
-              //     { text: 'Gold weight, Diamond weight and Stones weight are approximately, the actual weight will be known after production is completed', style: 'conditionText' },
-              //     { text: 'Minimun order 10 pcs per design / Minimun purchase US$ 5,000', style: 'conditionText' },
-              //     { text: 'The price quotation is current gold price market at www.kitco.com (please confirm within 2 days)', style: 'conditionText' }
-              //   ]
-              // }
+// ก่อน:
+return {
+  image: imageData,
+  width: 25,
+  height: 25,
+  alignment: 'center',
+  margin: [2, 5, 2, 5]
+}
+
+// หลัง:
+return {
+  image: imageData,
+  width: 38,
+  height: 38,
+  alignment: 'center',
+  margin: [2, 3, 2, 3]
+}
 ```
 
 ---
 
-## 2. quotation-pdf-builder.js — เพิ่ม 2 จุด
+## Change 2 — CIF Label Toggle
 
-### 2a. เพิ่ม Conditions block ใน getSummarySection()
+### สิ่งที่เกิดขึ้นในแต่ละ builder
 
-ตำแหน่ง: ต่อจาก `(Authorized Signature and Company Stamp)` block — ก่อน `],` ปิด outer stack
-
+CIF row (grand total row) ปัจจุบัน — เหมือนกันทุก builder:
 ```javascript
-              // Conditions
-              {
-                margin: [0, 10, 0, 0],
-                stack: [
-                  { text: 'Price is F.O.B. Bangkok not inclued freight and insurance', style: 'conditionText' },
-                  { text: 'Production time within 5-7 weeks', style: 'conditionText' },
-                  { text: '40% payment of tt, 60% before the shipment.', style: 'conditionText' },
-                  { text: 'Gold weight, Diamond weight and Stones weight are approximately, the actual weight will be known after production is completed', style: 'conditionText' },
-                  { text: 'Minimun order 10 pcs per design / Minimun purchase US$ 5,000', style: 'conditionText' },
-                  { text: 'The price quotation is current gold price market at www.kitco.com (please confirm within 2 days)', style: 'conditionText' }
-                ]
-              }
+body.push([
+  { text: this.convertNumberToWords(grandTotal), style: 'summaryLabelColored', alignment: 'left', colSpan: 7 },
+  {}, {}, {}, {}, {}, {},
+  { text: 'C.I.F', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },  // ← label นี้
+  {},
+  { text: this.roundNoDecimal(grandTotal), style: 'totalSummaryLabelColored', alignment: 'right' }  // ← price คงไว้
+])
 ```
 
-### 2b. เพิ่ม conditionText style ใน getDocDefinition() → styles
-
-ปัจจุบัน `quotation-pdf-builder.js` ไม่มี `conditionText` style — ต้องเพิ่ม:
-
-```javascript
-        conditionText: {
-          fontSize: 8,
-          color: '#393939',
-          margin: [0, 1, 0, 1]
-        }
-```
-
-ตำแหน่ง: ต่อจาก `totalWordsInTable` style (style สุดท้ายใน `styles` object)
+**Goal**: Label "C.I.F" on/off ได้ แต่ `grandTotal` amount แสดงเสมอ
 
 ---
 
-## 3. SALES_FLOW.md — อัปเดต Section 7
+### 2a. SaleOrderPdfBuilder — เพิ่มใน `options` object (ง่ายสุด)
 
-อัปเดต row ของ `quotation-pdf-builder.js` ใน PDF Builders table เพื่อระบุว่ามี Conditions block:
+**Constructor** (`sale-order-pdf-builder.js`):
+```javascript
+// เพิ่มใน constructor:
+this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
+```
 
-**ก่อน**:
-```
-| `pdf/quotation/quotation-pdf-builder.js` | `InvoicePdfBuilder` | Quotation PDF (item table + per-item discount + footer totals) |
+**CIF row**:
+```javascript
+{ text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
 ```
 
-**หลัง**:
+**Caller** (`sale-order-view.vue` + `mobile/sale/detail-view.vue`):
+```javascript
+const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
+  currencyUnit: ...,
+  currencyRate: ...,
+  showCifLabel: true  // ← เพิ่ม (default true = backward compatible)
+})
 ```
-| `pdf/quotation/quotation-pdf-builder.js` | `InvoicePdfBuilder` | Quotation PDF (item table + per-item discount + footer totals + conditions) |
+
+---
+
+### 2b. quotation InvoicePdfBuilder — รับผ่าน `customer` object
+
+**Constructor** (`quotation-pdf-builder.js`):
+```javascript
+// เพิ่มใน constructor (customer param มีอยู่แล้ว):
+this.showCifLabel = customer?.showCifLabel !== undefined ? customer.showCifLabel : true
 ```
+
+**CIF row**:
+```javascript
+{ text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+```
+
+**Caller** (`quotation-pdf-integration.js`):
+```javascript
+const invoiceBuilder = new InvoicePdfBuilder(
+  formattedItems,
+  { ...customer, showCifLabel: customer.showCifLabel !== undefined ? customer.showCifLabel : true },
+  // ... ที่เหลือเดิม
+)
+```
+
+---
+
+### 2c. invoice InvoicePdfBuilder — รับผ่าน `saleOrderData` object
+
+**Constructor** (`invoice-pdf-builder.js`):
+```javascript
+// เพิ่มใน constructor (saleOrderData param มีอยู่แล้ว):
+this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
+```
+
+**CIF row**:
+```javascript
+{ text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+```
+
+**Caller** (`invoice-pdf-integration.js`):
+```javascript
+this.pdfBuilder = new InvoicePdfBuilder(
+  items,
+  customer,
+  invoiceDate,
+  { ...saleOrder, showCifLabel: options.showCifLabel !== undefined ? options.showCifLabel : true },
+  currencyUnit,
+  currencyRate,
+  invoiceNo,
+  10
+)
+```
+
+---
+
+## Change 3 — SALES_FLOW.md Section 8 Update
+
+อัปเดต Section 8 (PDF Builders) เพิ่ม:
+1. Column widths ใหม่
+2. `showCifLabel` option
+
+### เพิ่ม sub-section ใน Section 8:
+```
+### Image & Column Widths (ทุก builder ใช้ค่าเดียวกัน)
+
+| Column | Index | Width |
+|--------|-------|-------|
+| No. | 0 | 15 |
+| Image | 1 | 45 |
+| Style/Product | 2 | 70 |
+| Description | 3 | 70 |
+| Gold (gms) | 4 | 35 |
+| Diamond (cts) | 5 | 45 |
+| Gem (cts) | 6 | * |
+| Qty | 7 | 20 |
+| Price | 8 | 55 |
+| Amount | 9 | 50 |
+
+Image size: 38×38 px
+
+### CIF Label Toggle (showCifLabel)
+
+| Builder | รับผ่าน | Default |
+|---------|---------|---------|
+| SaleOrderPdfBuilder | `options.showCifLabel` | `true` |
+| quotation InvoicePdfBuilder | `customer.showCifLabel` | `true` |
+| invoice InvoicePdfBuilder | `saleOrderData.showCifLabel` | `true` |
+
+- `showCifLabel: true` → แสดง "C.I.F" label (เหมือนเดิม)
+- `showCifLabel: false` → ซ่อน label (แต่ยังแสดง grand total amount เสมอ)
+```
+
+---
+
+## Summary ของ Changes
+
+| # | File | What | จำนวน Occurrences |
+|---|------|------|-------------------|
+| 1a | `quotation-pdf-builder.js` | Column widths (empty/regular/final) | 3 จุด |
+| 1b | `quotation-pdf-builder.js` | setTabImageCell size | 1 จุด |
+| 1c | `quotation-pdf-builder.js` | CIF toggle: constructor + `this.showCifLabel` | 2 จุด |
+| 2a | `sale-order-pdf-builder.js` | Column widths | 3 จุด |
+| 2b | `sale-order-pdf-builder.js` | setTabImageCell size | 1 จุด |
+| 2c | `sale-order-pdf-builder.js` | CIF toggle: constructor + `this.showCifLabel` | 2 จุด |
+| 3a | `invoice-pdf-builder.js` | Column widths | 3 จุด |
+| 3b | `invoice-pdf-builder.js` | setTabImageCell size | 1 จุด |
+| 3c | `invoice-pdf-builder.js` | CIF toggle: constructor + `this.showCifLabel` | 2 จุด |
+| 4 | `sale-order-view.vue` | Add `showCifLabel` to SaleOrderPdfBuilder call | 1 จุด |
+| 5 | `mobile/sale/detail-view.vue` | Add `showCifLabel` to SaleOrderPdfBuilder call | 1 จุด |
+| 6 | `quotation-pdf-integration.js` | Spread `showCifLabel` into customer | 1 จุด |
+| 7 | `invoice-pdf-integration.js` | Spread `showCifLabel` into saleOrder | 1 จุด |
+| 8 | `SALES_FLOW.md` | อัปเดต Section 8 | — |
 
 ---
 
 ## Verification
 
-1. เปิด Quotation PDF → ต้องเห็น conditions text 6 บรรทัดท้ายเอกสาร (font 8px สีเทา)
-2. เปิด Sale Order PDF → ไม่มี conditions text อีกต่อไป
-3. Layout/font/style ของ Quotation PDF ส่วนอื่นไม่เปลี่ยนแปลง
+1. เปิด Quotation PDF → รูปสินค้าควรใหญ่ขึ้น (38×38 แทน 25×25)
+2. Price/Amount column ยังแสดงตัวเลขครบ ไม่ truncate
+3. `showCifLabel: true` → PDF แสดง "C.I.F" label
+4. `showCifLabel: false` → "C.I.F" หายไป แต่ grand total amount ยังแสดง
+5. Layout หน้า PDF ไม่พัง (เพราะ net width change = 0)
 
 ---
 
-*Last updated: 2026-02-23 — รอ confirm ก่อน implement*
+*Last updated: 2026-02-24 — รอ confirm ก่อน implement*

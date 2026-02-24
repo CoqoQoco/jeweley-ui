@@ -3,7 +3,14 @@
 #### read and update D:\DuangKeaw\code\jeweley-ui\src\views\sale\SALES_FLOW.md
 
 
- ตรวจสอบ D:\DuangKeaw\code\jeweley-ui\src\views\sale\SALES_FLOW.md หน้าเเก้ไข so สารมารถเปลี่ยนเเปลงสกุลเงินได้ไหมครับ
- ### ออกเเบบ plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนครับ เเละรอ confirm inplement
+ ตรวจสอบ 
+  - D:\DuangKeaw\code\jeweley-ui\src\services\helper\pdf\quotation\quotation-pdf-builder.js
+  - D:\DuangKeaw\code\jeweley-ui\src\services\helper\pdf\sale-order\sale-order-pdf-builder.js
+  - D:\DuangKeaw\code\jeweley-ui\src\services\helper\pdf\invoice\invoice-pdf-builder.js
+
+    - อยากให้ขยายขนาด image ครับอาจจะไปลดขนาด col price เเทน
+    - ตรวจสอบ row "CIF" ว่าถ้าต้องการให้สามารถกำหนดเปิดปิดได้ต้องทำอย่างไร เเต่ยังคงราคาตัวหนังสือไว้นะครับ
+
+ ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
 
  

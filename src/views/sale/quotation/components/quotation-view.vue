@@ -1184,7 +1184,7 @@ export default {
       }
       this.showItemsPerPageModal = true
     },
-    onConfirmItemsPerPage(itemsPerPage) {
+    onConfirmItemsPerPage(itemsPerPage, showCifLabel) {
       this.showItemsPerPageModal = false
       if (!this.pendingInvoiceParams) return
       // เปิด window ที่นี่เพื่อหลีกเลี่ยง popup block เฉพาะตอนยืนยัน
@@ -1192,7 +1192,8 @@ export default {
       generateInvoicePdf({
         ...this.pendingInvoiceParams,
         itemsPerPage: itemsPerPage,
-        targetWindow: win1
+        targetWindow: win1,
+        customer: { ...this.pendingInvoiceParams.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true }
       })
       this.pendingInvoiceParams = null
     },
@@ -1394,14 +1395,14 @@ export default {
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
       }
     },
-    onSaveAndCreatePdfAndSave(itemsPerPage) {
+    onSaveAndCreatePdfAndSave(itemsPerPage, showCifLabel) {
       // Save the quotation first
       this.fetchSaveQuotation().then(() => {
         // After saving, generate and open the PDF
         const win1 = window.open('', '_blank')
         generateInvoicePdf({
           items: this.customer.quotationItems,
-          customer: this.customer,
+          customer: { ...this.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true },
           invoiceDate: this.customer.quotationDate,
           filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
           openInNewTab: true,

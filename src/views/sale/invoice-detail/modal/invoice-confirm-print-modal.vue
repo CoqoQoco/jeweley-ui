@@ -48,6 +48,20 @@
                       ค่าเดิม: {{ formatDate(originalData.invoiceDate) }}
                     </small>
                   </div>
+
+                  <div class="form-group mb-3">
+                    <div class="d-flex align-items-center" style="gap: 8px; cursor: pointer" @click="printData.showCifLabel = !printData.showCifLabel">
+                      <input
+                        id="invoiceCifLabelInput"
+                        type="checkbox"
+                        v-model="printData.showCifLabel"
+                        style="width: 16px; height: 16px; cursor: pointer"
+                      />
+                      <label class="form-label mb-0" for="invoiceCifLabelInput" style="cursor: pointer">
+                        <i class="bi bi-tag mr-1"></i>แสดงป้าย C.I.F
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -127,7 +141,8 @@ export default {
       },
       printData: {
         invoiceNumber: '',
-        invoiceDate: ''
+        invoiceDate: '',
+        showCifLabel: true
       }
     }
   },
@@ -156,7 +171,8 @@ export default {
       // Invoice Date: default to today's date
       this.printData = {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
-        invoiceDate: new Date() // Default to current date
+        invoiceDate: new Date(), // Default to current date
+        showCifLabel: true
       }
     },
 
@@ -195,7 +211,8 @@ export default {
       const printDataToEmit = {
         ...this.invoiceData,
         invoiceNumber: this.printData.invoiceNumber.trim(), // Override with modified value
-        invoiceDate: normalizedDate // Override with normalized date (time = 00:00:00)
+        invoiceDate: normalizedDate, // Override with normalized date (time = 00:00:00)
+        showCifLabel: this.printData.showCifLabel
       }
 
       console.log('Modal - Emitting printDataToEmit:', printDataToEmit)

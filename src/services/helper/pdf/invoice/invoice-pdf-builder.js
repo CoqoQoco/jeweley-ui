@@ -39,6 +39,7 @@ export class InvoicePdfBuilder {
     this.freight = Number(saleOrderData.freight) || this.freightAndInsurance
     this.discount = Number(saleOrderData.discount) || 0
     this.itemsPerPage = Number(itemsPerPage) || 10
+    this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
 
     // Calculate totals with new fields
     this.subtotal = this.calculateSubtotal()
@@ -444,7 +445,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, '*', '*', '*', '*', '*', 20, 60, 60], // 10 columns
+        widths: [15, 45, '*', '*', '*', '*', '*', 20, 55, 50], // 10 columns
         body: [
           [
             this.setTableHeader('No.'),
@@ -477,7 +478,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
+        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50], // 10 columns
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -497,7 +498,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 35, 45, '*', 20, 60, 60], // 10 columns
+        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50], // 10 columns
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -728,7 +729,7 @@ export class InvoicePdfBuilder {
         colSpan: 7
       },
       {}, {}, {}, {}, {}, {},
-      { text: 'C.I.F', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+      { text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
       {},
       {
         text: this.roundNoDecimal(grandTotal),
@@ -1020,10 +1021,10 @@ export class InvoicePdfBuilder {
 
       return {
         image: imageData,
-        width: 25,
-        height: 25,
+        width: 38,
+        height: 38,
         alignment: 'center',
-        margin: [2, 5, 2, 5]
+        margin: [2, 3, 2, 3]
       }
     }
 
