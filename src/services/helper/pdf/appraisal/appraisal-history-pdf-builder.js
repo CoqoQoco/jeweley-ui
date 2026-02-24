@@ -375,6 +375,13 @@ export class AppraisalHistoryPdfBuilder {
                 }
               ],
               margin: [0, 3, 0, 0]
+            },
+            {
+              text: [
+                { text: 'แม่พิมพ์: ', bold: true, fontSize: 10 },
+                { text: this.stockData.mold || '-', fontSize: 10 }
+              ],
+              margin: [0, 3, 0, 0]
             }
           ]
         }

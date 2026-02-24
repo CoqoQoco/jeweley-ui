@@ -42,6 +42,17 @@
           </div>
 
           <div>
+            <span class="title-text">แม่พิมพ์</span>
+            <input
+              class="form-control form-control-sm"
+              type="text"
+              :value="localStock.mold || '-'"
+              readonly
+              disabled
+            />
+          </div>
+
+          <div>
             <span class="title-text">เลขที่ WO</span>
             <input
               class="form-control form-control-sm"
