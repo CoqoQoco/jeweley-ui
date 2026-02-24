@@ -1149,6 +1149,17 @@ Mobile SO/Invoice ส่ง fields ครบเหมือน Web — ดูร
 
 ---
 
+### Preview PDF — Sale Order & Quotation
+
+**`sale-order-view.vue`**:
+- ปุ่ม **"Preview PDF"** (btn-outline-main) อยู่ข้างปุ่ม Export PDF
+- `previewPDF()` — สร้าง PDF ด้วย `SaleOrderPdfBuilder` เหมือนกัน แต่ใช้ `pdf.open()` แทน `pdf.download()`
+- ใช้ `isPreviewingPDF` state สำหรับ spinner บน button
+
+**`quotation-view.vue`**:
+- ปุ่ม **"Preview Quotation"** (btn-outline-main) อยู่ข้าง "Quotation File"
+- `previewInvoice()` — ข้าม `ConfirmCreatePdfView` modal, เรียก `generateInvoicePdf()` ตรงด้วย default settings (`itemsPerPage=10`, `showCifLabel=true`)
+
 ### Preview PDF (ไม่ต้องบันทึก)
 
 `appraisal-form-view.vue` มีปุ่ม **"พิมพ์ตัวอย่าง PDF"** ในส่วน Action Buttons:

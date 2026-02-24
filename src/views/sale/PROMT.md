@@ -3,8 +3,9 @@
 #### read and update D:\DuangKeaw\code\jeweley-ui\src\views\sale\SALES_FLOW.md
 
 
-ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\cost-stock\web\cost-edit\components\appraisal-form-view.vue
-   สามารถพิมตัวอย่าง pdf ได้เลยที่หน้านี้โดยไม่ต้องบันทึกครับ
+ที่ เพิ่มปุ่ม preview pdf  ที่ 
+ - D:\DuangKeaw\code\jeweley-ui\src\views\sale\sale-order\components\sale-order-view.vue
+ - D:\DuangKeaw\code\jeweley-ui\src\views\sale\quotation\components\quotation-view.vue
  ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
 
  

@@ -1613,6 +1613,16 @@
               <i v-else class="bi bi-file-earmark-pdf mr-1"></i>
               Export PDF
             </button>
+            <button
+              class="btn btn-outline-main"
+              type="button"
+              @click="previewPDF"
+              :disabled="stockItems.length === 0 || isPreviewingPDF"
+            >
+              <span v-if="isPreviewingPDF" class="spinner-border spinner-border-sm mr-2"></span>
+              <i v-else class="bi bi-eye mr-1"></i>
+              Preview PDF
+            </button>
             <div
               class="d-flex align-items-center"
               style="gap: 4px; cursor: pointer; white-space: nowrap"
@@ -1752,6 +1762,7 @@ export default {
       isSONumberLocked: false,
       isOnDraft: false,
       isExportingPDF: false,
+      isPreviewingPDF: false,
       pdfShowCifLabel: true,
       productSearch: {
         stockNumber: '',
@@ -2549,6 +2560,37 @@ export default {
       const soNumber = this.formSaleOrder.number || 'DRAFT'
       pdf.download(`SO_${soNumber}.pdf`)
       this.isExportingPDF = false
+    },
+
+    async previewPDF() {
+      if (this.stockItems.length === 0) {
+        warning('ไม่มีสินค้าสำหรับสร้าง PDF')
+        return
+      }
+
+      this.isPreviewingPDF = true
+      const pdfData = {
+        soNumber: this.formSaleOrder.number,
+        createDate: this.formSaleOrder.date,
+        customerName: this.formSaleOrder.customerName,
+        customerAddress: this.formSaleOrder.customerAddress,
+        customerTel: this.formSaleOrder.customerPhone,
+        customerEmail: this.formSaleOrder.customerEmail,
+        remark: this.formSaleOrder.remark,
+        specialDiscount: this.formSaleOrder.specialDiscount || 0,
+        specialAddition: this.formSaleOrder.specialAddition || 0,
+        freight: this.formSaleOrder.freight || 0,
+        vatPercent: this.formSaleOrder.vatPercent || 0,
+        items: this.stockItems
+      }
+      const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
+        currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
+        currencyRate: Number(this.formSaleOrder.currencyRate) || 1,
+        showCifLabel: this.pdfShowCifLabel
+      })
+      const pdf = await pdfBuilder.generatePDF()
+      pdf.open()
+      this.isPreviewingPDF = false
     },
 
     async confirmOrder() {

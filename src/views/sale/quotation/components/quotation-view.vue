@@ -749,14 +749,20 @@
 
       <div class="base-customer">
         <div class="filter-container mt-2">
-          <div class="d-flex justify-content-center">
+          <div class="d-flex justify-content-center" style="flex-wrap: wrap; gap: 6px;">
             <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
+              <i class="bi bi-file-earmark-pdf mr-1"></i>
               <span>Quotation File</span>
             </button>
-            <button class="btn btn-sm btn-green ml-2" type="button" @click="printBreakdown()">
+            <button class="btn btn-sm btn-outline-main" type="button" @click="previewInvoice()">
+              <i class="bi bi-eye mr-1"></i>
+              <span>Preview Quotation</span>
+            </button>
+            <button class="btn btn-sm btn-green" type="button" @click="printBreakdown()">
+              <i class="bi bi-file-earmark-pdf mr-1"></i>
               <span>Breakdown File</span>
             </button>
-            <button class="btn btn-sm btn-main ml-2" type="submit">
+            <button class="btn btn-sm btn-main" type="submit">
               <span>Save Quotation</span>
             </button>
           </div>
@@ -1224,6 +1230,18 @@ export default {
       })
       this.pendingInvoiceParams = null
     },
+    previewInvoice() {
+      const win1 = window.open('', '_blank')
+      generateInvoicePdf({
+        items: this.customer.quotationItems,
+        customer: { ...this.customer, showCifLabel: true },
+        invoiceDate: this.customer.quotationDate,
+        filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
+        openInNewTab: true,
+        targetWindow: win1
+      })
+    },
+
     printBreakdown() {
       const filename = `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
       const win1 = window.open('', '_blank')
