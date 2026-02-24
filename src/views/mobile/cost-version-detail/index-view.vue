@@ -416,9 +416,10 @@ export default {
       this.exportingPDF = true
       try {
         // Create PDF builder with currency options
-        const pdfOptions = this.hasCurrencyConversion
-          ? { currencyUnit: this.currencyUnit, currencyRate: this.currencyRate }
-          : {}
+        const pdfOptions = {
+          ...(this.hasCurrencyConversion ? { currencyUnit: this.currencyUnit, currencyRate: this.currencyRate } : {}),
+          ...(this.costVersion?.customStockInfo?.length ? { customStockInfo: this.costVersion.customStockInfo } : {})
+        }
         const pdfBuilder = new AppraisalHistoryPdfBuilder(this.stockData, this.costVersion, pdfOptions)
 
         // Generate PDF

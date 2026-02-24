@@ -15,6 +15,7 @@ export class AppraisalHistoryPdfBuilder {
       email: 'info@dkbangkok.com'
     }
     this.logoBase64 = null
+    this.productImageBase64 = null
     this.groupOrder = {
       Gold: 1,
       Gem: 2,
@@ -24,6 +25,7 @@ export class AppraisalHistoryPdfBuilder {
     }
     this.currencyUnit = options.currencyUnit || ''
     this.currencyRate = options.currencyRate || null
+    this.customStockInfo = options.customStockInfo || null
   }
 
   async preparePDF() {
@@ -35,7 +37,23 @@ export class AppraisalHistoryPdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+    await this.prepareImages()
     return this
+  }
+
+  async prepareImages() {
+    const blobPath = this.stockData.imagePath
+    if (!blobPath) return
+
+    const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
+    try {
+      const base64Image = await getAzureBlobAsBase64(blobPath, 'stock')
+      if (base64Image && base64Image.length > 0) {
+        this.productImageBase64 = base64Image
+      }
+    } catch (error) {
+      console.error('Error loading product image:', blobPath, error)
+    }
   }
 
   async loadImageAsBase64(path) {
@@ -254,6 +272,22 @@ export class AppraisalHistoryPdfBuilder {
   }
 
   getStockInfoSection() {
+    const imageColumn = this.productImageBase64
+      ? {
+          width: 90,
+          stack: [
+            {
+              image: this.productImageBase64.startsWith('data:image')
+                ? this.productImageBase64
+                : `data:image/png;base64,${this.productImageBase64}`,
+              width: 80,
+              height: 80,
+              margin: [0, 0, 8, 0]
+            }
+          ]
+        }
+      : null
+
     return {
       margin: [0, 10, 0, 10],
       stack: [
@@ -266,68 +300,107 @@ export class AppraisalHistoryPdfBuilder {
         },
         {
           columns: [
+            ...(imageColumn ? [imageColumn] : []),
+            { width: '*', stack: [this._getStockInfoContent()] }
+          ]
+        }
+      ]
+    }
+  }
+
+  _getStockInfoContent() {
+    if (this.customStockInfo && this.customStockInfo.length > 0) {
+      return this._renderCustomStockInfo()
+    }
+    return this._renderDefaultStockInfo()
+  }
+
+  _renderDefaultStockInfo() {
+    return {
+      columns: [
+        {
+          width: '33%',
+          stack: [
             {
-              width: '33%',
-              stack: [
-                {
-                  text: [
-                    { text: 'เลขที่ผลิต: ', bold: true, fontSize: 10 },
-                    { text: this.stockData.stockNumber || '-', fontSize: 10 }
-                  ]
-                },
-                {
-                  text: [
-                    { text: 'รหัสสินค้า: ', bold: true, fontSize: 10 },
-                    { text: this.stockData.productNumber || '-', fontSize: 10 }
-                  ],
-                  margin: [0, 3, 0, 0]
-                }
+              text: [
+                { text: 'เลขที่ผลิต: ', bold: true, fontSize: 10 },
+                { text: this.stockData.stockNumber || '-', fontSize: 10 }
               ]
             },
             {
-              width: '33%',
-              stack: [
-                {
-                  text: [
-                    { text: 'ชื่อสินค้า (TH): ', bold: true, fontSize: 10 },
-                    { text: this.stockData.productNameTh || '-', fontSize: 10 }
-                  ]
-                },
-                {
-                  text: [
-                    { text: 'ชื่อสินค้า (EN): ', bold: true, fontSize: 10 },
-                    { text: this.stockData.productNameEn || '-', fontSize: 10 }
-                  ],
-                  margin: [0, 3, 0, 0]
-                }
+              text: [
+                { text: 'รหัสสินค้า: ', bold: true, fontSize: 10 },
+                { text: this.stockData.productNumber || '-', fontSize: 10 }
+              ],
+              margin: [0, 3, 0, 0]
+            }
+          ]
+        },
+        {
+          width: '33%',
+          stack: [
+            {
+              text: [
+                { text: 'ชื่อสินค้า (TH): ', bold: true, fontSize: 10 },
+                { text: this.stockData.productNameTh || '-', fontSize: 10 }
               ]
             },
             {
-              width: '34%',
-              stack: [
-                {
-                  text: [
-                    { text: 'ประเภทสินค้า: ', bold: true, fontSize: 10 },
-                    { text: this.stockData.productTypeName || '-', fontSize: 10 }
-                  ]
-                },
-                {
-                  text: [
-                    { text: 'W.O.: ', bold: true, fontSize: 10 },
-                    {
-                      text:
-                        this.stockData.wo && this.stockData.woNumber
-                          ? `${this.stockData.wo}-${this.stockData.woNumber}`
-                          : '-',
-                      fontSize: 10
-                    }
-                  ],
-                  margin: [0, 3, 0, 0]
-                }
+              text: [
+                { text: 'ชื่อสินค้า (EN): ', bold: true, fontSize: 10 },
+                { text: this.stockData.productNameEn || '-', fontSize: 10 }
+              ],
+              margin: [0, 3, 0, 0]
+            }
+          ]
+        },
+        {
+          width: '34%',
+          stack: [
+            {
+              text: [
+                { text: 'ประเภทสินค้า: ', bold: true, fontSize: 10 },
+                { text: this.stockData.productTypeName || '-', fontSize: 10 }
               ]
+            },
+            {
+              text: [
+                { text: 'W.O.: ', bold: true, fontSize: 10 },
+                {
+                  text:
+                    this.stockData.wo && this.stockData.woNumber
+                      ? `${this.stockData.wo}-${this.stockData.woNumber}`
+                      : '-',
+                  fontSize: 10
+                }
+              ],
+              margin: [0, 3, 0, 0]
             }
           ]
         }
+      ]
+    }
+  }
+
+  _renderCustomStockInfo() {
+    const items = this.customStockInfo
+    const mid = Math.ceil(items.length / 2)
+    const leftItems = items.slice(0, mid)
+    const rightItems = items.slice(mid)
+
+    const makeStack = (list) =>
+      list.map((item, i) => ({
+        text: [
+          { text: (item.label || '') + ': ', bold: true, fontSize: 10 },
+          { text: item.value || '-', fontSize: 10 }
+        ],
+        margin: i === 0 ? [0, 0, 0, 0] : [0, 3, 0, 0]
+      }))
+
+    return {
+      columns: [
+        { width: '50%', stack: makeStack(leftItems) },
+        { width: '50%', stack: makeStack(rightItems) }
       ]
     }
   }
@@ -530,31 +603,6 @@ export class AppraisalHistoryPdfBuilder {
       }
     ])
 
-    // THB reference row (when currency conversion is active)
-    if (hasCurrency) {
-      tableBody.push([
-        {
-          text: 'เทียบเท่า (THB)',
-          fontSize: 10,
-          alignment: 'right',
-          color: '#666',
-          colSpan: 5,
-          margin: [5, 3, 5, 3]
-        },
-        {},
-        {},
-        {},
-        {},
-        {
-          text: this.formatCurrency(totalPriceTHB),
-          fontSize: 10,
-          alignment: 'right',
-          color: '#666',
-          margin: [5, 3, 5, 3]
-        }
-      ])
-    }
-
     // Tag Price row
     const tagPriceMultiplier = this.versionData.tagPriceMultiplier || 0
     if (tagPriceMultiplier > 0) {
@@ -587,30 +635,6 @@ export class AppraisalHistoryPdfBuilder {
         }
       ])
 
-      // THB reference for tag price
-      if (hasCurrency) {
-        tableBody.push([
-          {
-            text: 'เทียบเท่า (THB)',
-            fontSize: 10,
-            alignment: 'right',
-            color: '#666',
-            colSpan: 5,
-            margin: [5, 3, 5, 3]
-          },
-          {},
-          {},
-          {},
-          {},
-          {
-            text: this.formatCurrency(tagPriceTHB),
-            fontSize: 10,
-            alignment: 'right',
-            color: '#666',
-            margin: [5, 3, 5, 3]
-          }
-        ])
-      }
     }
 
     return {

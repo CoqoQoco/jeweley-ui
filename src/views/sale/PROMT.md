@@ -4,9 +4,9 @@
 
 
  ตรวจสอบ 
-  - D:\DuangKeaw\code\jeweley-ui\src\views\sale\cost-stock\web\cost-edit\components\appraisal-form-view.vue อยากให้โชว์ ต้นทุนจากเเผนผลิตสินค้าถ้ามีครับ 
-  - ต้นทุนจริงของแผนผลิตดูได้ที่ D:\DuangKeaw\code\jeweley-ui\src\views\production\plan-view\components\plan-price-view.vue
-  - ดูการ get data ว่าต้องการอะไรเพิ่มครับ
+  - Custom stock info: options.customStockInfo = [{label, value}] → แทนที่ข้อมูล stock ปกติด้วย custom fields (รูปยังแสดงถ้ามี)
+  ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\cost-stock\web\cost-edit\components\appraisal-form-view.vue ต้องเเก้ไข form ไหมครับ เเละอยาก svae ลง db ด้วยตรวจสอบ D:\DuangKeaw\code\jewelry-api\Jewelry.Api\Jewelry.Service\Stock\Product\ProductService.cs
+   ว่าผมต้องเพิ่ม feild อะไรใน db ครับ เพราะตอนนี้ผม scffold ไม่ได้ครับ
 
  ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
 

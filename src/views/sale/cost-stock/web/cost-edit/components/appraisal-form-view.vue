@@ -85,18 +85,61 @@
               <div></div>
             </div>
 
-            <div v-if="hasPlanProductionCost" class="mt-3">
-              <button
-                class="btn btn-sm btn-main"
-                type="button"
-                @click="showPlanCostModal = true"
-              >
-                <i class="bi bi-graph-up mr-1"></i>
-                <span>ดูต้นทุนจากแผนผลิต</span>
-              </button>
             </div>
-          </div>
         </template>
+
+        <!-- Plan Cost Button — แสดงตลอด -->
+        <div class="mt-3">
+          <button
+            class="btn btn-sm btn-main"
+            type="button"
+            @click="showPlanCostModal = true"
+          >
+            <i class="bi bi-graph-up mr-1"></i>
+            <span>ดูต้นทุนจากแผนผลิต</span>
+          </button>
+        </div>
+
+        <!-- Custom Stock Info -->
+        <div class="line mt-3 mb-3"></div>
+
+        <div class="vertical-center-container mb-2">
+          <span class="title-text-lg bi bi-pencil-square mr-2"></span>
+          <span class="title-text-lg">ข้อมูลสินค้าแบบกำหนดเอง (Custom)</span>
+        </div>
+        <div class="responsive-text-note mb-2">
+          * ถ้ากรอก จะแสดงแทนข้อมูลสินค้าปกติใน PDF
+        </div>
+
+        <div
+          v-for="(item, index) in customInfoItems"
+          :key="index"
+          class="custom-info-row mb-2"
+        >
+          <input
+            class="form-control form-control-sm custom-info-label"
+            type="text"
+            v-model="item.label"
+            placeholder="หัวข้อ เช่น ชื่อสินค้า"
+          />
+          <input
+            class="form-control form-control-sm custom-info-value"
+            type="text"
+            v-model="item.value"
+            placeholder="ค่า เช่น แหวนทองคำ"
+          />
+          <button
+            class="btn btn-sm btn-red"
+            type="button"
+            @click="removeCustomInfoItem(index)"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+
+        <button class="btn btn-sm btn-main mt-1" type="button" @click="addCustomInfoItem">
+          <i class="bi bi-plus mr-1"></i>เพิ่มรายการ
+        </button>
 
         <!-- Customer Information -->
         <div class="line mt-3 mb-3"></div>
@@ -665,6 +708,10 @@ export default {
         this.tagPriceMultiplier = val.tagPriceMultiplier || 1
         this.currencyUnit = val.currencyUnit || ''
         this.currencyRate = val.currencyRate || null
+        this.customInfoItems = (val.customStockInfo || []).map((item) => ({
+          label: item.label || '',
+          value: item.value || ''
+        }))
 
         // Initialize transaction items from priceTransactions only
         if (this.localStock.priceTransactions && this.localStock.priceTransactions.length > 0) {
@@ -726,6 +773,7 @@ export default {
       showCustomerSearch: false,
       showCustomerCreate: false,
       showPlanCostModal: false,
+      customInfoItems: [],
 
       masterType: [
         { code: 'Gold', name: 'รายการทอง' },
@@ -778,6 +826,14 @@ export default {
   },
 
   methods: {
+    addCustomInfoItem() {
+      this.customInfoItems.push({ label: '', value: '' })
+    },
+
+    removeCustomInfoItem(index) {
+      this.customInfoItems.splice(index, 1)
+    },
+
     addTranItem() {
       this.tranItems.push({
         nameGroup: this.masterValue ?? 'ETC',
@@ -871,6 +927,9 @@ export default {
         tagPriceMultiplier: Number(this.tagPriceMultiplier) || 1,
         currencyUnit: this.currencyUnit || null,
         currencyRate: this.currencyRate ? Number(this.currencyRate) : null,
+        customStockInfo: this.customInfoItems
+          .filter((i) => i.label.trim())
+          .map((i) => ({ label: i.label.trim(), value: i.value.trim() })),
         prictransection: this.tranItems.map((item, index) => ({
           no: index + 1,
           name: item.nameGroup || '',
@@ -1239,6 +1298,26 @@ textarea {
       box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
       outline: 0;
     }
+  }
+}
+
+// Custom Stock Info row
+.custom-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .custom-info-label {
+    width: 200px;
+    flex-shrink: 0;
+
+    @media (max-width: 1024px) {
+      width: 150px;
+    }
+  }
+
+  .custom-info-value {
+    flex: 1;
   }
 }
 

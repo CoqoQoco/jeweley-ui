@@ -179,7 +179,8 @@ export default {
           remark: version.remark || null,
           tagPriceMultiplier: version.tagPriceMultiplier || 1,
           currencyUnit: version.currencyUnit || '',
-          currencyRate: version.currencyRate || null
+          currencyRate: version.currencyRate || null,
+          customStockInfo: version.customStockInfo || []
         }
         this.selectedStock = stockData
       }

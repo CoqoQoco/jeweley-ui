@@ -224,9 +224,10 @@ export default {
           return
         }
 
-        const pdfOptions = this.version.currencyUnit
-          ? { currencyUnit: this.version.currencyUnit, currencyRate: this.version.currencyRate }
-          : {}
+        const pdfOptions = {
+          ...(this.version.currencyUnit ? { currencyUnit: this.version.currencyUnit, currencyRate: this.version.currencyRate } : {}),
+          ...(this.version.customStockInfo?.length ? { customStockInfo: this.version.customStockInfo } : {})
+        }
         const pdfBuilder = new AppraisalHistoryPdfBuilder(stockData, this.version, pdfOptions)
         const pdf = await pdfBuilder.generatePDF()
         const filename = `Appraisal_${this.version.stockNumber}_${this.version.running}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`

@@ -898,6 +898,35 @@ Soft-delete payment record (`IsDelete = true`)
 | `pdf/sale-order/sale-order-pdf-builder.js` | `SaleOrderPdfBuilder` | SO PDF (เหมือน Quotation + รูปสินค้า) |
 | `pdf/invoice/invoice-pdf-builder.js` | `InvoicePdfBuilder` | Invoice PDF |
 | `pdf/delivery/delivery-pdf-builder.js` | — | Delivery Note PDF |
+| `pdf/appraisal/appraisal-history-pdf-builder.js` | `AppraisalHistoryPdfBuilder` | Appraisal History PDF (ใบตีราคาสินค้า) |
+
+### AppraisalHistoryPdfBuilder
+
+**Constructor**: `new AppraisalHistoryPdfBuilder(stockData, versionData, options)`
+
+| options field | Type | Default | Description |
+|---------------|------|---------|-------------|
+| `currencyUnit` | string | `''` | สกุลเงิน เช่น `'US$'` |
+| `currencyRate` | number | `null` | อัตราแลกเปลี่ยน (1 unit = ? THB) |
+| `customStockInfo` | `Array<{label,value}>` | `null` | แทนที่ stock info ปกติด้วย custom fields (สำหรับแผนสินค้าใหม่ที่ยังไม่มีใน stock) |
+
+**ฟีเจอร์**:
+- แสดงรูปสินค้าจาก Azure Blob (`stockData.imagePath`) ใน stock info section
+- `customStockInfo` — ปิดข้อมูล stock ปกติ แล้วแสดง custom key-value pairs แทน (image ยังแสดงถ้ามี)
+- ไม่แสดง row "เทียบเท่า (THB)" (ถูกลบออกแล้ว)
+
+**`customStockInfo` — DB Storage**:
+- บันทึกใน `tbt_stock_cost_version.custom_stock_info` เป็น JSON text
+- User กรอกใน `appraisal-form-view.vue` section "ข้อมูลสินค้าแบบกำหนดเอง (Custom)"
+- ส่งผ่าน `AddProductCost.Request.CustomStockInfo` → serialize → save
+- Response ทุก endpoint (`GetCostVersion`, `ListProductCost`, `ListCostVersion`) return `customStockInfo` array
+- ทุก PDF caller pass `customStockInfo` จาก version data → `options.customStockInfo` → Builder
+
+**Callers** (ทุกที่อัปเดตแล้ว — pass `customStockInfo` automatically):
+- `cost-version-list-view.vue` — list view พิมพ์ PDF
+- `cost-version-detail-modal.vue` — detail modal พิมพ์ PDF
+- `cost-history-modal.vue` (stock product list) — พิมพ์ PDF
+- `mobile/cost-version-detail/index-view.vue` — mobile พิมพ์ PDF
 
 ### Financial Fields ใน PDF
 
