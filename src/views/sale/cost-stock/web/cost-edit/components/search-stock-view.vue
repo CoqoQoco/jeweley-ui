@@ -152,22 +152,18 @@ export default {
     },
 
     async fetchPlanCount() {
-      try {
-        const response = await this.productStore.fetchListStockCostPlan({
-          take: 1,
-          skip: 0,
-          sort: [],
-          formValue: {
-            isActive: true,
-            statusId: 10 // Pending status (JobStatus.Pending = 10)
-          }
-        })
-
-        if (response && response.total) {
-          this.planCount = response.total
+      const response = await this.productStore.fetchListStockCostPlan({
+        take: 1,
+        skip: 0,
+        sort: [],
+        formValue: {
+          isActive: true,
+          statusId: 10 // Pending status (JobStatus.Pending = 10)
         }
-      } catch (error) {
-        console.error('Error fetching plan count:', error)
+      })
+
+      if (response && response.total) {
+        this.planCount = response.total
       }
     },
 

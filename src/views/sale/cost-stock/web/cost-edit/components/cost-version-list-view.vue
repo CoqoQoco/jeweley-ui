@@ -59,18 +59,18 @@
               <i class="bi bi-eye"></i>
             </button>
             <button
-              class="btn btn-sm btn-success"
+              class="btn btn-sm btn-main"
               @click="onExportPDF(data)"
               title="Export PDF"
             >
               <i class="bi bi-file-pdf"></i>
             </button>
             <button
-              class="btn btn-sm btn-warning"
+              class="btn btn-sm btn-green"
               @click="onDuplicate(data)"
               title="ตีราคาใหม่จากรายการนี้"
             >
-              <i class="bi bi-copy"></i>
+              <i class="bi bi-clipboard-plus"></i>
             </button>
           </div>
         </template>

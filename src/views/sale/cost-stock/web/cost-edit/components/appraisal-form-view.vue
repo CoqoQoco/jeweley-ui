@@ -41,7 +41,16 @@
             />
           </div>
 
-          <div></div>
+          <div>
+            <span class="title-text">เลขที่ WO</span>
+            <input
+              class="form-control form-control-sm"
+              type="text"
+              :value="localStock.wo && localStock.woNumber ? `${localStock.wo}${localStock.woNumber}` : (localStock.wo || '-')"
+              readonly
+              disabled
+            />
+          </div>
         </div>
 
         <!-- Plan Information (Only show when planRunning exists) -->
@@ -439,13 +448,20 @@
         <div class="form-col-sm-container">
           <div>
             <span class="title-text">สกุลเงิน</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              v-model.trim="currencyUnit"
-              placeholder="เช่น US$, EUR (เว้นว่างถ้าเป็นบาท)"
-              autocomplete="off"
-            />
+            <AutoCompleteGeneric
+              :modelValue="currencyUnit"
+              :staticOptions="CURRENCY_UNITS"
+              :useStaticList="true"
+              optionLabel="code"
+              placeholder="เช่น US$, EUR"
+              :forceSelection="false"
+              customClass="appraisal-currency-ac"
+              @update:modelValue="onCurrencyChange"
+            >
+              <template #option="{ option }">
+                <span>{{ option.label }}</span>
+              </template>
+            </AutoCompleteGeneric>
           </div>
           <div>
             <span class="title-text">อัตราแลกเปลี่ยน (1 หน่วย = ? บาท)</span>
@@ -460,6 +476,22 @@
           </div>
           <div></div>
           <div></div>
+        </div>
+
+        <!-- Currency Rate Summary Preview -->
+        <div v-if="hasCurrencyConversion" class="currency-preview-block mt-3">
+          <div class="currency-preview-row">
+            <span class="currency-preview-label">อัตราแลกเปลี่ยน</span>
+            <span class="currency-preview-value">1 {{ currencyUnit }} = {{ currencyRate?.toFixed(2) }} THB</span>
+          </div>
+          <div class="currency-preview-row">
+            <span class="currency-preview-label">ต้นทุนรวม ({{ currencyUnit }})</span>
+            <span class="currency-preview-value font-weight-bold">{{ displayTotalCost }}</span>
+          </div>
+          <div class="currency-preview-row">
+            <span class="currency-preview-label">ราคาป้าย ({{ currencyUnit }})</span>
+            <span class="currency-preview-value font-weight-bold">{{ displayTagPrice }}</span>
+          </div>
         </div>
       </div>
 
@@ -506,6 +538,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
 
@@ -649,6 +682,7 @@ export default {
 
   data() {
     return {
+      CURRENCY_UNITS,
       localStock: {},
       tranItems: [],
       tagPriceMultiplier: 1,
@@ -727,6 +761,14 @@ export default {
 
     delTranItem(index) {
       this.tranItems.splice(index, 1)
+    },
+
+    onCurrencyChange(value) {
+      if (typeof value === 'object' && value !== null) {
+        this.currencyUnit = value.code || ''
+      } else {
+        this.currencyUnit = value || ''
+      }
     },
 
     onBluePrice(item, fieldName) {
@@ -1111,6 +1153,58 @@ textarea {
 .tag-reference-text {
   color: #999;
   font-size: 12px;
+}
+
+// Currency Preview Block (ใต้ currency form inputs)
+.currency-preview-block {
+  background: #f0f7ff;
+  border: 1px solid #b3d4f5;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 400px;
+}
+
+.currency-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.currency-preview-label {
+  color: #555;
+}
+
+.currency-preview-value {
+  color: #1565c0;
+}
+
+// AutoCompleteGeneric — match form-control-sm sizing
+:deep(.appraisal-currency-ac) {
+  width: 100%;
+
+  .p-autocomplete,
+  .p-autocomplete-input {
+    width: 100%;
+  }
+
+  .p-autocomplete-input {
+    height: calc(1.5em + 0.5rem + 2px);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.2rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    &:focus {
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      outline: 0;
+    }
+  }
 }
 
 // Responsive Column widths for Tablet
