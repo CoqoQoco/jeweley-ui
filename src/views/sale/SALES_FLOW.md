@@ -1149,6 +1149,14 @@ Mobile SO/Invoice ส่ง fields ครบเหมือน Web — ดูร
 
 ---
 
+### Preview PDF (ไม่ต้องบันทึก)
+
+`appraisal-form-view.vue` มีปุ่ม **"พิมพ์ตัวอย่าง PDF"** ในส่วน Action Buttons:
+- สร้าง `versionData` จาก form state ปัจจุบัน (`tranItems`, `tagPriceMultiplier`, `currencyUnit`, `customInfoItems`, etc.) โดยไม่เรียก API
+- `running: 'Preview'`, `createDate: now`, `createBy: '-'`
+- ใช้ `AppraisalHistoryPdfBuilder` เหมือน caller อื่น — download ทันที
+- filename: `Preview_{stockNumber}_{timestamp}.pdf`
+
 ### External Links ใน appraisal-form-view.vue
 
 | ลิงก์ | URL | ตำแหน่ง |

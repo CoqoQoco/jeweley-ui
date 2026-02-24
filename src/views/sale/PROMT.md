@@ -4,7 +4,7 @@
 
 
 ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\cost-stock\web\cost-edit\components\appraisal-form-view.vue
-  ให้เพิ่ม  btn ตรวจสอบราคาทองวันนี้ เเนบลิ้ง "https://www.kitco.com/" ไว้ข้างปุ้มตรวจสอบต้นทุนเเผนผลิตครับ ใช้ btn-main เหมือนกันครับ
+   สามารถพิมตัวอย่าง pdf ได้เลยที่หน้านี้โดยไม่ต้องบันทึกครับ
  ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
 
  

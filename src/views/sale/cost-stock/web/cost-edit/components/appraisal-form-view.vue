@@ -568,6 +568,15 @@
             <span class="bi bi-save mr-2"></span>
             <span>บันทึกและใช้เป็นต้นทุนหลัก</span>
           </button>
+          <button
+            class="btn btn-sm btn-main"
+            type="button"
+            @click="onPreviewPDF"
+            :disabled="exportingPreviewPDF"
+          >
+            <span class="bi bi-file-pdf mr-2"></span>
+            <span>{{ exportingPreviewPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์ตัวอย่าง PDF' }}</span>
+          </button>
           <button class="btn btn-sm btn-secondary" type="button" @click="onCancel">
             <span class="bi bi-x mr-2"></span>
             <span>ยกเลิก</span>
@@ -618,6 +627,8 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatDate } from '@/services/utils/dayjs.js'
+import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
+import dayjs from 'dayjs'
 
 export default {
   name: 'AppraisalFormView',
@@ -780,6 +791,7 @@ export default {
       masterValue: 'ETC',
       showCustomerSearch: false,
       showCustomerCreate: false,
+      exportingPreviewPDF: false,
       showPlanCostModal: false,
       customInfoItems: [],
 
@@ -976,6 +988,44 @@ export default {
 
     openKitco() {
       window.open('https://www.kitco.com/', '_blank', 'noopener,noreferrer')
+    },
+
+    async onPreviewPDF() {
+      this.exportingPreviewPDF = true
+      const versionData = {
+        running: 'Preview',
+        createDate: new Date().toISOString(),
+        createBy: '-',
+        remark: this.localStock.remark || null,
+        customerName: this.localStock.customerName || null,
+        customerCode: this.localStock.customerCode || null,
+        customerTel: this.localStock.customerPhone || null,
+        tagPriceMultiplier: Number(this.tagPriceMultiplier) || 1,
+        currencyUnit: this.currencyUnit || '',
+        currencyRate: this.currencyRate || null,
+        prictransection: this.tranItems.map((item, index) => ({
+          no: index + 1,
+          name: item.nameGroup || '',
+          nameDescription: item.nameDescription || '',
+          nameGroup: item.nameGroup || '',
+          qty: Number(item.qty) || 0,
+          qtyPrice: Number(item.qtyPrice) || 0,
+          qtyWeight: Number(item.qtyWeight) || 0,
+          qtyWeightPrice: Number(item.qtyWeightPrice) || 0,
+          totalPrice: Number(item.totalPrice) || 0
+        }))
+      }
+      const customStockInfo = this.customInfoItems
+        .filter((i) => i.label.trim())
+        .map((i) => ({ label: i.label.trim(), value: i.value.trim() }))
+      const pdfOptions = {
+        ...(this.currencyUnit ? { currencyUnit: this.currencyUnit, currencyRate: this.currencyRate } : {}),
+        ...(customStockInfo.length ? { customStockInfo } : {})
+      }
+      const pdfBuilder = new AppraisalHistoryPdfBuilder(this.localStock, versionData, pdfOptions)
+      const pdf = await pdfBuilder.generatePDF()
+      pdf.open()
+      this.exportingPreviewPDF = false
     },
 
     onCustomerSelected(customerData) {
