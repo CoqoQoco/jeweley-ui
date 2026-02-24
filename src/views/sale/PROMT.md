@@ -4,12 +4,9 @@
 
 
  ตรวจสอบ 
-  - D:\DuangKeaw\code\jeweley-ui\src\services\helper\pdf\quotation\quotation-pdf-builder.js
-  - D:\DuangKeaw\code\jeweley-ui\src\services\helper\pdf\sale-order\sale-order-pdf-builder.js
-  - D:\DuangKeaw\code\jeweley-ui\src\services\helper\pdf\invoice\invoice-pdf-builder.js
-
-    - อยากให้ขยายขนาด image ครับอาจจะไปลดขนาด col price เเทน
-    - ตรวจสอบ row "CIF" ว่าถ้าต้องการให้สามารถกำหนดเปิดปิดได้ต้องทำอย่างไร เเต่ยังคงราคาตัวหนังสือไว้นะครับ
+  - D:\DuangKeaw\code\jeweley-ui\src\views\sale\cost-stock\web\cost-edit\components\appraisal-form-view.vue อยากให้โชว์ ต้นทุนจากเเผนผลิตสินค้าถ้ามีครับ 
+  - ต้นทุนจริงของแผนผลิตดูได้ที่ D:\DuangKeaw\code\jeweley-ui\src\views\production\plan-view\components\plan-price-view.vue
+  - ดูการ get data ว่าต้องการอะไรเพิ่มครับ
 
  ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
 

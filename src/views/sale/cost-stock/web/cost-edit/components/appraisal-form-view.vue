@@ -84,6 +84,17 @@
               </div>
               <div></div>
             </div>
+
+            <div v-if="hasPlanProductionCost" class="mt-3">
+              <button
+                class="btn btn-sm btn-main"
+                type="button"
+                @click="showPlanCostModal = true"
+              >
+                <i class="bi bi-graph-up mr-1"></i>
+                <span>ดูต้นทุนจากแผนผลิต</span>
+              </button>
+            </div>
           </div>
         </template>
 
@@ -527,6 +538,15 @@
       @closeModal="onCloseCustomerModal"
       @customerCreated="onCustomerCreated"
     />
+
+    <!-- Plan Cost Modal -->
+    <PlanCostModal
+      v-model:visible="showPlanCostModal"
+      :planPriceItems="planPriceItems"
+      :planQty="planProductQty"
+      :wo="localStock.wo"
+      :woNumber="localStock.woNumber"
+    />
   </div>
 </template>
 
@@ -541,6 +561,7 @@ import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
+import PlanCostModal from './plan-cost-modal.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
@@ -558,7 +579,8 @@ export default {
     Row,
     AutoCompleteGeneric,
     CustomerSearchModal,
-    CustomerCreateModal
+    CustomerCreateModal,
+    PlanCostModal
   },
 
   props: {
@@ -619,6 +641,18 @@ export default {
       })
 
       return combined
+    },
+
+    planPriceItems() {
+      return this.localStock.planPriceItems || []
+    },
+
+    hasPlanProductionCost() {
+      return this.planPriceItems.length > 0
+    },
+
+    planProductQty() {
+      return Number(this.localStock.planQty) || 1
     }
   },
 
@@ -650,7 +684,7 @@ export default {
         }
 
         // Auto-add "น้ำหนักแป้น" for Ring products (productType === 'R')
-        if (this.localStock.productType === 'R') {
+        if (this.localStock.productType === 'ES') {
           const hasRingP = this.tranItems.some(
             (item) =>
               item.nameGroup === 'Gold' &&
@@ -691,6 +725,7 @@ export default {
       masterValue: 'ETC',
       showCustomerSearch: false,
       showCustomerCreate: false,
+      showPlanCostModal: false,
 
       masterType: [
         { code: 'Gold', name: 'รายการทอง' },
@@ -1226,4 +1261,5 @@ textarea {
     }
   }
 }
+
 </style>
