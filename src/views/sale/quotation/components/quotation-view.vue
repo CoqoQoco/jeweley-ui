@@ -258,7 +258,24 @@
           <column field="image" header="" style="width: 50px">
             <template #body="slotProps">
               <div class="image-container">
-                <div v-if="slotProps.data.imagePath">
+                <!-- Copied item: clickable zone สำหรับ one-time image (ไม่ save DB) -->
+                <div
+                  v-if="slotProps.data._copyId"
+                  class="copy-img-wrap"
+                  title="คลิกเพื่อเพิ่ม/เปลี่ยนรูป (ใช้สำหรับ PDF เท่านั้น ไม่บันทึก)"
+                  @click="onUploadCopyImage(slotProps.data)"
+                >
+                  <img
+                    v-if="slotProps.data.imageBase64"
+                    :src="slotProps.data.imageBase64"
+                    class="copy-img-thumb"
+                  />
+                  <div v-else class="copy-img-placeholder">
+                    <i class="bi bi-camera"></i>
+                  </div>
+                </div>
+                <!-- Real stock: Azure Blob image -->
+                <div v-else-if="slotProps.data.imagePath">
                   <imagePreview
                     :imageName="slotProps.data.imagePath"
                     :type="type"
@@ -747,6 +764,15 @@
       </div>
     </form>
 
+    <!-- Hidden file input for one-time copy image -->
+    <input
+      ref="copyImageInput"
+      type="file"
+      accept="image/*"
+      style="display: none"
+      @change="onCopyImageChange"
+    />
+
     <edit-stock-view
       :isShow="isShow.isEditStock"
       :modelStock="modelEditStock"
@@ -1029,6 +1055,7 @@ export default {
       isShow: { ...interfaceShow, isEditStock: false },
       modelEditStock: {},
       editStockIndex: null,
+      _copyUploadTarget: null,
       showItemsPerPageModal: false,
       itemsPerPageInput: 10,
       pendingInvoiceParams: null
@@ -1261,6 +1288,24 @@ export default {
       this.customer.quotationItems.push(newItem)
     },
 
+    onUploadCopyImage(item) {
+      this._copyUploadTarget = item
+      this.$refs.copyImageInput.value = ''
+      this.$refs.copyImageInput.click()
+    },
+
+    onCopyImageChange(event) {
+      const file = event.target.files[0]
+      if (!file || !this._copyUploadTarget) return
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        this._copyUploadTarget.imageBase64 = e.target.result
+        this._copyUploadTarget = null
+      }
+      reader.readAsDataURL(file)
+    },
+
     onOpenCostVersionPicker() {
       this.isShow.costVersionPicker = true
     },
@@ -1489,6 +1534,42 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.copy-img-wrap {
+  width: 34px;
+  height: 34px;
+  border: 1.5px dashed #bbb;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+
+  &:hover {
+    border-color: var(--base-font-color);
+    background: #f0f0f0;
+  }
+
+  .copy-img-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .copy-img-placeholder {
+    color: #bbb;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &:hover .copy-img-placeholder {
+    color: var(--base-font-color);
+  }
 }
 .qty-container {
   display: flex;

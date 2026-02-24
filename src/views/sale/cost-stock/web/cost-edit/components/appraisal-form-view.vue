@@ -89,7 +89,7 @@
         </template>
 
         <!-- Plan Cost Button — แสดงตลอด -->
-        <div class="mt-3">
+        <div class="mt-3 d-flex gap-2 ">
           <button
             class="btn btn-sm btn-main"
             type="button"
@@ -97,6 +97,14 @@
           >
             <i class="bi bi-graph-up mr-1"></i>
             <span>ดูต้นทุนจากแผนผลิต</span>
+          </button>
+          <button
+            class="btn btn-sm btn-main ml-2"
+            type="button"
+            @click="openKitco"
+          >
+            <i class="bi bi-currency-dollar mr-1"></i>
+            <span>ตรวจสอบราคาทองวันนี้</span>
           </button>
         </div>
 
@@ -964,6 +972,10 @@ export default {
 
     onCreateCustomer() {
       this.showCustomerCreate = true
+    },
+
+    openKitco() {
+      window.open('https://www.kitco.com/', '_blank', 'noopener,noreferrer')
     },
 
     onCustomerSelected(customerData) {

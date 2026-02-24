@@ -1149,4 +1149,12 @@ Mobile SO/Invoice ส่ง fields ครบเหมือน Web — ดูร
 
 ---
 
-*Last updated: 2026-02-24 — เพิ่ม Section 4 Cost Stock / Stock Appraisal Flow (ตีราคาสินค้า)*
+### External Links ใน appraisal-form-view.vue
+
+| ลิงก์ | URL | ตำแหน่ง |
+|-------|-----|---------|
+| ตรวจสอบราคาทองวันนี้ | `https://www.kitco.com/` | ข้างปุ่ม "ดูต้นทุนจากแผนผลิต" (เปิด tab ใหม่) |
+
+---
+
+*Last updated: 2026-02-24 — เพิ่ม External Links section (Kitco gold price) + Section 4 Cost Stock / Stock Appraisal Flow*
