@@ -1210,22 +1210,17 @@ export default {
         items: this.customer.quotationItems,
         customer: this.customer,
         invoiceDate: this.customer.quotationDate,
-        filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
-        openInNewTab: true
-        // ไม่ต้องเปิด window ตรงนี้ ให้ไปเปิดใน onConfirmItemsPerPage แทน
-        // targetWindow: window.open('', '_blank')
+        filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
       }
       this.showItemsPerPageModal = true
     },
     onConfirmItemsPerPage(itemsPerPage, showCifLabel) {
       this.showItemsPerPageModal = false
       if (!this.pendingInvoiceParams) return
-      // เปิด window ที่นี่เพื่อหลีกเลี่ยง popup block เฉพาะตอนยืนยัน
-      const win1 = window.open('', '_blank')
       generateInvoicePdf({
         ...this.pendingInvoiceParams,
         itemsPerPage: itemsPerPage,
-        targetWindow: win1,
+        openInNewTab: false,
         customer: { ...this.pendingInvoiceParams.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true }
       })
       this.pendingInvoiceParams = null
@@ -1244,16 +1239,12 @@ export default {
 
     printBreakdown() {
       const filename = `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
-      const win1 = window.open('', '_blank')
-
-      console.log('printBreakdown', this.customer.quotationItems, this.customer)
       generateBreakdownPdf({
         items: this.customer.quotationItems,
         customer: this.customer,
         invoiceDate: this.customer.quotationDate,
         filename,
-        openInNewTab: true,
-        targetWindow: win1
+        openInNewTab: false
       })
     },
     onEditStock(item, index) {
@@ -1461,16 +1452,14 @@ export default {
     onSaveAndCreatePdfAndSave(itemsPerPage, showCifLabel) {
       // Save the quotation first
       this.fetchSaveQuotation().then(() => {
-        // After saving, generate and open the PDF
-        const win1 = window.open('', '_blank')
+        // After saving, generate and download the PDF
         generateInvoicePdf({
           items: this.customer.quotationItems,
           customer: { ...this.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true },
           invoiceDate: this.customer.quotationDate,
           filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
-          openInNewTab: true,
-          itemsPerPage: itemsPerPage,
-          targetWindow: win1
+          openInNewTab: false,
+          itemsPerPage: itemsPerPage
         })
       })
     },
