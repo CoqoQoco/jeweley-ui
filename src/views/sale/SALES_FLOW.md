@@ -188,6 +188,23 @@ grandTotal              = totalBeforeVat + vatAmount
 
 **Response**: DataSourceResult of `{ Number, Running, CustomerName, CustomerPhone, CustomerEmail, CustomerAddress, Currency, CurrencyRate, MarkUp, Discount, Freight, SpecialDiscount, SpecialAddition, Vat, GoldPerOz, Remark, Date, CreateDate, CreateBy, UpdateDate, UpdateBy }`
 
+### Quotation List — Merge Feature (รวม Quotation)
+
+**File**: `src/views/sale/quotation-list/components/`
+- `data-table-view.vue` — selectionMode + merge toolbar
+- `merge-quotation-modal.vue` — conflict resolution + confirm
+
+**Flow**:
+1. User เช็ค checkbox ≥2 ใบ → Merge Toolbar ปรากฏ
+2. กด "รวม N Quotation" → fetch full data ทุกใบ (Quotation/Get parallel)
+3. Modal เปิด → แสดง conflicts (radio) + merged items table
+4. User resolve + confirm → Quotation/Upsert (number: `QT-YYYYMMDD-HHmmss` generate client-side)
+5. Navigate ไป `/sale-quotation?number={newNumber}`
+
+**Conflict detection fields**: customerName, customerAddress, customerPhone, customerEmail, currency, currencyRate, markUp, discount, freight, remark, date, specialDiscount, specialAddition, vat, goldPerOz
+
+**Items merge**: รวมทุก item จากทุก quotation ไว้ใน merged list (ไม่ deduplicate — user จัดการเองในหน้า quotation)
+
 ---
 
 ## 3. Sale Order Flow

@@ -1,28 +1,39 @@
 <template>
   <div class="mt-2">
+    <!-- Merge Toolbar -->
+    <div v-if="selectedQuotations.length >= 2" class="merge-toolbar">
+      <span class="merge-info">
+        <i class="bi bi-check2-square mr-1"></i>
+        เลือก {{ selectedQuotations.length }} ใบ
+      </span>
+      <button class="btn btn-sm btn-main ml-2" @click="onMergeClick">
+        <i class="bi bi-diagram-2 mr-1"></i>
+        รวม {{ selectedQuotations.length }} Quotation
+      </button>
+      <button class="btn btn-sm btn-outline-main ml-2" @click="selectedQuotations = []">
+        ยกเลิก
+      </button>
+    </div>
+
     <BaseDataTable
       :items="quotationStore.dataList.data"
       :totalRecords="quotationStore.dataList.total"
       dataKey="number"
       :columns="columns"
       :perPage="take"
-      :scrollHeight="'calc(100vh - 340px)'"
+      :scrollHeight="'calc(100vh - 380px)'"
       class="base-data-table"
+      :selectionMode="true"
+      selectionType="multiple"
+      v-model:itemsSelection="selectedQuotations"
       @page="handlePageChange"
       @sort="handleSortChange"
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <!-- <button 
-            class="btn btn-sm btn-main" 
-            title="แก้ไข" 
-            @click="onEdit(data)"
-          >
-            <i class="bi bi-brush"></i>
-          </button> -->
-          <button 
-            class="btn btn-sm btn-green ml-2" 
-            title="ดูรายละเอียด" 
+          <button
+            class="btn btn-sm btn-green"
+            title="ดูรายละเอียด"
             @click="onView(data)"
           >
             <i class="bi bi-eye"></i>
@@ -72,19 +83,32 @@
         </div>
       </template>
     </BaseDataTable>
+
+    <!-- Merge Modal -->
+    <mergeModal
+      v-if="showMergeModal"
+      :isShow="showMergeModal"
+      :quotations="mergeQuotationsData"
+      @close="onMergeClose"
+      @merge-done="onMergeDone"
+    />
   </div>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+
+const mergeModal = defineAsyncComponent(() => import('./merge-quotation-modal.vue'))
 
 export default {
   name: 'QuotationListDataTableView',
 
   components: {
-    BaseDataTable
+    BaseDataTable,
+    mergeModal
   },
 
   props: {
@@ -105,6 +129,11 @@ export default {
       take: 10,
       skip: 0,
       sort: [],
+
+      // Merge feature
+      selectedQuotations: [],
+      showMergeModal: false,
+      mergeQuotationsData: [],
 
       // Columns Configuration
       columns: [
@@ -267,6 +296,29 @@ export default {
       })
     },
 
+    // Merge quotation methods
+    async onMergeClick() {
+      const results = await Promise.all(
+        this.selectedQuotations.map((q) =>
+          this.quotationStore.fetchGet({ formValue: { number: q.number } })
+        )
+      )
+      this.mergeQuotationsData = results.filter((r) => r)
+      this.showMergeModal = true
+    },
+
+    onMergeClose() {
+      this.showMergeModal = false
+      this.mergeQuotationsData = []
+    },
+
+    onMergeDone(newNumber) {
+      this.showMergeModal = false
+      this.selectedQuotations = []
+      this.mergeQuotationsData = []
+      this.$router.push({ path: '/sale-quotation', query: { number: newNumber } })
+    },
+
     // Format helpers
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
@@ -286,6 +338,22 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form';
+
+.merge-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #fdf2f2;
+  border: 1px solid var(--base-font-color);
+  border-radius: 4px;
+
+  .merge-info {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--base-font-color);
+  }
+}
 
 .btn-action-container {
   display: flex;

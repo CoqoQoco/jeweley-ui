@@ -3,8 +3,12 @@
 #### read and update D:\DuangKeaw\code\jeweley-ui\src\views\sale\SALES_FLOW.md
 
 
-ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\quotation\components\quotation-view.vue
-    เเก้ไข btn export excel ให้เป็นการ dowload เเทนครับ
- ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
+ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\quotation-list
+
+    - เพิ่ม feature รวม quatation ครับ 
+       - ถ้า มีข้อมูลตรงไหนซ้ำขึ้นให้เลือกครับ
+       - จะได้เลข quatation ใหม่
+       
+ ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplementมี
 
  
