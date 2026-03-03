@@ -1193,4 +1193,42 @@ Mobile SO/Invoice ส่ง fields ครบเหมือน Web — ดูร
 
 ---
 
-*Last updated: 2026-02-24 — เพิ่ม External Links section (Kitco gold price) + Section 4 Cost Stock / Stock Appraisal Flow*
+## Excel Export — Quotation & Invoice
+
+### Generic Component: `ExcelExportConfirmModal`
+
+**Location**: `src/components/modal/ExcelExportConfirmModal.vue`
+
+Modal ที่ใช้ร่วมกันระหว่าง Quotation และ Invoice เพื่อยืนยันก่อน Export Excel
+- ให้ผู้ใช้แก้ไข document number และ date ก่อน export (ไม่กระทบข้อมูลในระบบ)
+- Props: `isShowModal`, `documentNumber`, `documentDate`, `numberLabel`, `dateLabel`, `title`
+- Emits: `confirm-export({ documentNumber, documentDate })`
+
+### Quotation Excel Export
+
+**File**: `quotation-view.vue`
+
+| Element | รายละเอียด |
+|---------|-----------|
+| ปุ่ม | `btn-green` — "Export Excel" (ระหว่าง Preview Quotation และ Breakdown File) |
+| Disabled | เมื่อ `quotationItems` ว่างเปล่า |
+| Modal | `ExcelExportConfirmModal` — numberLabel="Quotation Number", dateLabel="Quotation Date" |
+| Builder | `InvoiceExcelBuilder` (จาก `src/services/helper/excel/invoice/`) |
+
+```javascript
+// documentNumber ใช้ customer.invoiceNumber (เลขที่ใบเสนอราคา)
+// Builder signature: new InvoiceExcelBuilder(items, customer, dayjs(date), saleOrderData, currencyUnit, currencyRate, invoiceNo)
+```
+
+### Invoice Excel Export
+
+**File**: `invoice-detail/index-view.vue`
+
+| Element | รายละเอียด |
+|---------|-----------|
+| Modal | `ExcelExportConfirmModal` — numberLabel="Invoice Number", dateLabel="Invoice Date" |
+| Service | `invoiceExcelService.generateInvoiceExcel(excelData, options)` |
+
+---
+
+*Last updated: 2026-03-03 — เพิ่ม Excel Export section (ExcelExportConfirmModal generic component, Quotation + Invoice export)*

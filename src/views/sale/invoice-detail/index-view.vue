@@ -1079,9 +1079,12 @@
       />
 
       <!-- Invoice Confirm Excel Modal -->
-      <InvoiceConfirmExcelModal
+      <ExcelExportConfirmModal
         :isShowModal="showConfirmExcelModal"
-        :invoiceData="invoiceData"
+        :documentNumber="invoiceData.invoiceNumber || ''"
+        :documentDate="invoiceData.invoiceDate ? new Date(invoiceData.invoiceDate) : new Date()"
+        numberLabel="Invoice Number"
+        dateLabel="Invoice Date"
         @close-modal="showConfirmExcelModal = false"
         @confirm-export="handleConfirmExcelExport"
       />
@@ -1108,7 +1111,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import InvoiceVersionModal from './modal/invoice-version-modal.vue'
 import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
 import DeliveryConfirmPrintModal from './modal/delivery-confirm-print-modal.vue'
-import InvoiceConfirmExcelModal from './modal/invoice-confirm-excel-modal.vue'
+import ExcelExportConfirmModal from '@/components/modal/ExcelExportConfirmModal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
@@ -1131,7 +1134,7 @@ export default {
     InvoiceVersionModal,
     InvoiceConfirmPrintModal,
     DeliveryConfirmPrintModal,
-    InvoiceConfirmExcelModal,
+    ExcelExportConfirmModal,
     PaymentRecordModal
   },
 
@@ -1748,61 +1751,42 @@ export default {
       // Open confirm excel modal instead of direct export
       this.showConfirmExcelModal = true
     },
-    async handleConfirmExcelExport(exportData) {
-      try {
-        if (!exportData || !exportData.invoiceNumber) {
-          error('ไม่พบข้อมูล Invoice', 'ไม่สามารถ Export Excel ได้')
-          return
-        }
-
-        // Format date properly - handle both Date object and string
-        let formattedDate
-        if (exportData.invoiceDate instanceof Date) {
-          formattedDate = dayjs(exportData.invoiceDate)
-        } else {
-          formattedDate = dayjs(exportData.invoiceDate)
-        }
-
-        // Prepare data for Excel export with modified invoice number and date
-        const excelData = {
-          saleOrder: {
-            soNumber: this.invoiceData.soNumber,
-            date: this.invoiceData.createDate,
-            expectedDeliveryDate: this.invoiceData.deliveryDate,
-            paymentTerms: this.invoiceData.paymentName,
-            depositPercent: this.invoiceData.depositPercent,
-            remark: this.invoiceData.remark,
-            specialDiscount: this.invoiceData.specialDiscount || 0,
-            specialAddition: this.invoiceData.specialAddition || 0,
-            freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
-            vatPercent: this.invoiceData.vatPercent || this.invoiceData.vat || 0
-          },
-          customer: {
-            name: this.invoiceData.customerName,
-            address: this.invoiceData.customerAddress,
-            tel: this.invoiceData.customerTel,
-            email: this.invoiceData.customerEmail,
-            phone: this.invoiceData.customerTel
-          },
-          currency: {
-            unit: this.invoiceData.currencyUnit || 'THB',
-            rate: this.invoiceData.currencyRate || 1
-          },
-          items: this.invoiceItems
-        }
-
-        const options = {
-          invoiceNo: exportData.invoiceNumber, // Use modified invoice number
-          invoiceDate: formattedDate, // Use modified and formatted invoice date
-          download: true
-        }
-
-        await invoiceExcelService.generateInvoiceExcel(excelData, options)
-        success('Export Excel สำเร็จ', 'Invoice Excel')
-      } catch (err) {
-        console.error('Error exporting Excel:', err)
-        error(err.message || 'ไม่สามารถ Export Excel ได้', 'เกิดข้อผิดพลาด')
+    async handleConfirmExcelExport({ documentNumber, documentDate }) {
+      const excelData = {
+        saleOrder: {
+          soNumber: this.invoiceData.soNumber,
+          date: this.invoiceData.createDate,
+          expectedDeliveryDate: this.invoiceData.deliveryDate,
+          paymentTerms: this.invoiceData.paymentName,
+          depositPercent: this.invoiceData.depositPercent,
+          remark: this.invoiceData.remark,
+          specialDiscount: this.invoiceData.specialDiscount || 0,
+          specialAddition: this.invoiceData.specialAddition || 0,
+          freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
+          vatPercent: this.invoiceData.vatPercent || this.invoiceData.vat || 0
+        },
+        customer: {
+          name: this.invoiceData.customerName,
+          address: this.invoiceData.customerAddress,
+          tel: this.invoiceData.customerTel,
+          email: this.invoiceData.customerEmail,
+          phone: this.invoiceData.customerTel
+        },
+        currency: {
+          unit: this.invoiceData.currencyUnit || 'THB',
+          rate: this.invoiceData.currencyRate || 1
+        },
+        items: this.invoiceItems
       }
+
+      const options = {
+        invoiceNo: documentNumber,
+        invoiceDate: dayjs(documentDate),
+        download: true
+      }
+
+      await invoiceExcelService.generateInvoiceExcel(excelData, options)
+      success('Export Excel สำเร็จ', 'Invoice Excel')
     },
     async handleConfirmDeliveryPrint(printData) {
       try {

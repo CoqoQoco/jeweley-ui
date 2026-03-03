@@ -758,6 +758,15 @@
               <i class="bi bi-eye mr-1"></i>
               <span>Preview Quotation</span>
             </button>
+            <button
+              class="btn btn-sm btn-green"
+              type="button"
+              @click="exportQuotationExcel"
+              :disabled="!customer.quotationItems || customer.quotationItems.length === 0"
+            >
+              <i class="bi bi-file-earmark-excel mr-1"></i>
+              <span>Export Excel</span>
+            </button>
             <button class="btn btn-sm btn-green" type="button" @click="printBreakdown()">
               <i class="bi bi-file-earmark-pdf mr-1"></i>
               <span>Breakdown File</span>
@@ -812,6 +821,17 @@
       @closeModal="isShow.costVersionPicker = false"
       @itemSelected="onCostVersionItemSelected"
     />
+
+    <ExcelExportConfirmModal
+      :isShowModal="showExcelModal"
+      :documentNumber="customer.invoiceNumber || ''"
+      :documentDate="customer.quotationDate"
+      numberLabel="Quotation Number"
+      dateLabel="Quotation Date"
+      title="ยืนยันการ Export Excel (Quotation)"
+      @close-modal="showExcelModal = false"
+      @confirm-export="handleConfirmExcelExport"
+    />
   </div>
 </template>
 
@@ -834,10 +854,13 @@ import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
+import { InvoiceExcelBuilder } from '@/services/helper/excel/invoice/invoice-excel-builder.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
-//import swAlert from '@/services/alert/sweetAlerts.js'
+import { warning, success } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
+
+import ExcelExportConfirmModal from '@/components/modal/ExcelExportConfirmModal.vue'
 
 const interfaceForm = {
   discount: 0,
@@ -876,7 +899,8 @@ export default {
     ConfirmCreatePdfView,
     CustomerSearchModal,
     CustomerCreateModal,
-    CostVersionPickerModal
+    CostVersionPickerModal,
+    ExcelExportConfirmModal
   },
 
   setup() {
@@ -1064,7 +1088,8 @@ export default {
       _copyUploadTarget: null,
       showItemsPerPageModal: false,
       itemsPerPageInput: 10,
-      pendingInvoiceParams: null
+      pendingInvoiceParams: null,
+      showExcelModal: false
     }
   },
 
@@ -1500,6 +1525,45 @@ export default {
     onCloseCustomerModal() {
       this.isShow.searchCustomer = false
       this.isShow.createCustomer = false
+    },
+
+    // Excel Export
+    exportQuotationExcel() {
+      if (!this.customer.quotationItems || this.customer.quotationItems.length === 0) {
+        warning('ไม่มีสินค้าสำหรับสร้าง Excel', 'ข้อมูลไม่ครบถ้วน')
+        return
+      }
+      this.showExcelModal = true
+    },
+
+    async handleConfirmExcelExport({ documentNumber, documentDate }) {
+      const saleOrderData = {
+        soNumber: documentNumber,
+        specialDiscount: this.customer.specialDiscount || 0,
+        specialAddition: this.customer.specialAddition || 0,
+        freightAndInsurance: this.customer.freight || 0,
+        vatPercent: this.customer.vatPercent || 0
+      }
+      const customerData = {
+        name: this.customer.name || '',
+        address: this.customer.address || '',
+        tel: this.customer.tel || '',
+        email: this.customer.email || '',
+        phone: this.customer.tel || ''
+      }
+      const builder = new InvoiceExcelBuilder(
+        this.customer.quotationItems,
+        customerData,
+        dayjs(documentDate),
+        saleOrderData,
+        this.customer.currencyUnit || 'US$',
+        this.customer.currencyMultiplier || 1,
+        documentNumber,
+        10,
+        { documentTitle: 'QUOTATION' }
+      )
+      await builder.downloadExcel()
+      success('Export Excel สำเร็จ', `Quotation: ${documentNumber}`)
     },
 
     getRowClass(data, index) {

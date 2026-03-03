@@ -198,6 +198,61 @@ import StockSummaryCards from './components/stock-summary-cards.vue'
 import CategoryChart from './components/category-chart.vue'
 ```
 
+### Button System & Color Theme
+
+**Color Theme** defined in `src/assets/scss/variable.scss` and `src/assets/scss/main.scss`:
+
+| CSS Variable | Hex | ใช้เป็น |
+|---|---|---|
+| `--base-font-color` | `#921313` | Primary theme color (dark red) |
+| `--base-green` | `#038387` | Secondary/success action (teal) |
+| `--base-warning` | `#fabc3f` | Warning indicator (yellow) |
+| `--base-red` | `#ff4d4d` | Destructive/error |
+
+**Button Classes** (defined globally in `main.scss`):
+
+| Class | Color | ใช้เมื่อ |
+|---|---|---|
+| `btn-main` | `#921313` (dark red) | **Primary action** — บันทึก, ยืนยัน, รวม, ดำเนินการหลัก |
+| `btn-outline-main` | outline `#921313` | Secondary action — ยกเลิก, ล้าง, ปุ่มรอง |
+| `btn-green` | `#038387` (teal) | View/read action — ดูรายละเอียด, ค้นหาเพิ่มเติม |
+| `btn-sub-main` | `#921313` | Sub primary (same color as btn-main) |
+| `btn-red` | `#ff4d4d` | Destructive — ลบ, ยกเลิกรายการ |
+
+**IMPORTANT Rules**:
+- ❌ **ห้ามใช้** `btn-warning` (Bootstrap yellow) สำหรับ primary actions
+- ❌ **ห้ามใช้** `btn-outline-dark` / `btn-outline-secondary` สำหรับ cancel buttons
+- ✅ ใช้ `btn-main` เสมอสำหรับ primary action ของ feature
+- ✅ ใช้ `btn-outline-main` สำหรับ cancel / secondary button
+- ✅ สีใน component (border, background tint, text highlight) ควรใช้ `var(--base-font-color)` และ `var(--base-green)` เท่านั้น — ไม่ใช้ Bootstrap colors โดยตรง
+
+```vue
+<!-- ✅ Good - ใช้ theme buttons -->
+<button class="btn btn-sm btn-main">ยืนยัน</button>
+<button class="btn btn-sm btn-outline-main">ยกเลิก</button>
+<button class="btn btn-sm btn-green">ดูรายละเอียด</button>
+<button class="btn btn-sm btn-red">ลบ</button>
+
+<!-- ❌ Bad - ใช้ Bootstrap colors ที่ไม่ตรง theme -->
+<button class="btn btn-sm btn-warning">ยืนยัน</button>
+<button class="btn btn-sm btn-outline-dark">ยกเลิก</button>
+```
+
+```scss
+/* ✅ Good - ใช้ CSS variables */
+.my-toolbar {
+  border: 1px solid var(--base-font-color);
+  background: #fdf2f2;  /* light tint ของ --base-font-color */
+  color: var(--base-font-color);
+}
+
+/* ❌ Bad - ใช้ hardcoded Bootstrap colors */
+.my-toolbar {
+  border: 1px solid #ffc107;
+  background: #fff3cd;
+}
+```
+
 ### Alert and Notification System
 **IMPORTANT**: NEVER use native JavaScript `alert()`, `confirm()`, or `prompt()`. Always use the centralized alert service.
 

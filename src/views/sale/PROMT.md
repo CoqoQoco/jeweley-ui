@@ -3,12 +3,9 @@
 #### read and update D:\DuangKeaw\code\jeweley-ui\src\views\sale\SALES_FLOW.md
 
 
-ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\quotation-list
-
-    - เพิ่ม feature รวม quatation ครับ 
-       - ถ้า มีข้อมูลตรงไหนซ้ำขึ้นให้เลือกครับ
-       - จะได้เลข quatation ใหม่
+D:\DuangKeaw\code\jeweley-ui\src\views\sale\quotation
+   อยากให้ออก quatation สามารถออก excel ได้ด้วยครับ
        
- ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplementมี
+ ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
 
  

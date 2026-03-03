@@ -39,7 +39,8 @@ export class InvoiceExcelIntegration {
         currencyUnit,
         currencyRate,
         invoiceNo,
-        10 // itemsPerPage (not used in Excel, but kept for consistency)
+        10, // itemsPerPage (not used in Excel, but kept for consistency)
+        { documentTitle: 'INVOICE', consignedLabel: 'Invoice To', showConditions: false }
       )
 
       // Generate and download Excel
