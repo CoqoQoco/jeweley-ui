@@ -124,8 +124,9 @@ export class InvoicePdfBuilder {
     }
   }
 
-  getHeaderContent() {
+  getHeaderContent(forcePageBreak = false) {
     return {
+      ...(forcePageBreak ? { pageBreak: 'before' } : {}),
       stack: [
         // --- Main Header with dark blue background and green accent ---
         {
@@ -386,9 +387,9 @@ export class InvoicePdfBuilder {
 
       const pageContent = []
 
-      // ใส่ส่วนหัวตารางในทุกหน้า (ถ้าไม่ใช่หน้าแรก)
+      // ใส่ส่วนหัวตารางในทุกหน้า (ถ้าไม่ใช่หน้าแรก) + force page break ก่อนหน้า
       if (pageNum > 0) {
-        pageContent.push(this.getHeaderContent())
+        pageContent.push(this.getHeaderContent(true))
       }
 
       // เพิ่มตารางพร้อม total
@@ -400,11 +401,6 @@ export class InvoicePdfBuilder {
 
       // เพิ่ม Summary Section
       pageContent.push(...this.getSummarySection())
-
-      // เพิ่ม pageBreak ในทุกหน้ายกเว้นหน้าสุดท้าย
-      if (pageNum < totalPages - 1) {
-        pageContent.push({ text: '', pageBreak: 'after' })
-      }
 
       pages.push(...pageContent)
     }
@@ -509,7 +505,7 @@ export class InvoicePdfBuilder {
       sumAmount = 0
     items = items || []
     items.forEach((item, index) => {
-      const actualIndex = pageNum * 10 + index
+      const actualIndex = pageNum * this.itemsPerPage + index
       // Gold, Diamond, Gem columns (format like UI)
       function buildMaterialTable(materials, type) {
         if (!materials || !Array.isArray(materials)) return ''
