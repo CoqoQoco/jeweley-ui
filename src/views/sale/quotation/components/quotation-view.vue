@@ -20,22 +20,17 @@
 
               <div>
                 <span class="title-text">เลขที่ใบเสนอราคา</span>
-                <div class="d-flex align-items-center gap-1">
-                  <input
-                    :class="['form-control bg-input input-bg']"
-                    type="text"
-                    v-model.trim="customer.invoiceNumber"
-                    readonly
-                  />
-                  <button
-                    class="btn btn-main btn-sm"
-                    type="button"
-                    @click="generateQuotationNumber"
-                    title="สร้างเลขที่ใบเสนอราคาใหม่"
-                  >
+                <InputWithButton
+                  v-model="customer.invoiceNumber"
+                  type="text"
+                  :readonly="true"
+                  btnTitle="สร้างเลขที่ใบเสนอราคาใหม่"
+                  @btn-click="generateQuotationNumber"
+                >
+                  <template #btn-content>
                     <i class="bi bi-arrow-clockwise"></i>
-                  </button>
-                </div>
+                  </template>
+                </InputWithButton>
               </div>
             </div>
 
@@ -74,25 +69,20 @@
               </div>
               <div class="ml-2">
                 <span class="title-text">Discount (%)</span>
-                <div class="d-flex align-items-center gap-1">
-                  <input
-                    :class="['form-control bg-input', 'input-bg']"
-                    type="number"
-                    v-model.number="customer.discountPercent"
-                    min="0"
-                    max="100"
-                    step="any"
-                    style="width: 80px"
-                  />
-                  <button
-                    class="btn btn-main btn-sm"
-                    type="button"
-                    @click="applyGlobalDiscount"
-                    title="กำหนดส่วนลดให้ทุกรายการ"
-                  >
-                    กำหนดทั้งหมด
-                  </button>
-                </div>
+                <InputWithButton
+                  v-model.number="customer.discountPercent"
+                  type="number"
+                  width="80px"
+                  min="0"
+                  max="100"
+                  step="any"
+                  btnTitle="กำหนดส่วนลดให้ทุกรายการ"
+                  @btn-click="applyGlobalDiscount"
+                >
+                   <template #btn-content>
+                    <i class="bi bi-check-all"></i>
+                  </template>
+                </InputWithButton>
               </div>
               <div class="ml-2">
                 <span class="title-text">Gold (US$/Oz.)</span>
@@ -843,6 +833,7 @@ import Row from 'primevue/row'
 import Calendar from 'primevue/calendar'
 
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
+import InputWithButton from '@/components/input/InputWithButton.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 
 import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pdf-view.vue'
@@ -900,7 +891,8 @@ export default {
     CustomerSearchModal,
     CustomerCreateModal,
     CostVersionPickerModal,
-    ExcelExportConfirmModal
+    ExcelExportConfirmModal,
+    InputWithButton
   },
 
   setup() {

@@ -2,6 +2,52 @@
 
 ระบบงานขายครบวงจรสำหรับ Jewelry Management System
 
+---
+
+## Generic Components (Reusable)
+
+### InputWithButton
+
+**File**: `src/components/inputv/InputWithButton.vue`
+
+Native HTML `<input>` + `<button>` pair สำหรับ pattern input-action ที่ใช้ซ้ำในหน้าขาย
+
+**Props หลัก**:
+| Prop | Type | Default | หน้าที่ |
+|------|------|---------|--------|
+| `modelValue` | String\|Number | `''` | v-model |
+| `type` | String | `'text'` | input type |
+| `width` | String | `null` | กำหนด width เช่น `"80px"` |
+| `readonly` | Boolean | `false` | |
+| `disabled` | Boolean | `false` | |
+| `min/max/step` | String\|Number | `null` | สำหรับ type="number" |
+| `btnClass` | String | `'btn btn-main btn-sm'` | CSS button |
+| `btnTitle` | String | `''` | tooltip |
+
+**Slot**: `#btn-content` — เนื้อหาใน button (icon หรือ text)
+
+**Emit**: `btn-click` — เมื่อ button ถูกกด
+
+**ใช้งานใน**:
+- `quotation-view.vue` → เลขที่ใบเสนอราคา (icon refresh)
+- `quotation-view.vue` → Discount % (text "กำหนดทั้งหมด")
+
+```vue
+<!-- icon button -->
+<InputWithButton v-model="value" type="text" :readonly="true"
+  btnTitle="..." @btn-click="handler">
+  <template #btn-content><i class="bi bi-arrow-clockwise"></i></template>
+</InputWithButton>
+
+<!-- text button -->
+<InputWithButton v-model.number="value" type="number" width="80px"
+  min="0" max="100" step="any" @btn-click="handler">
+  <template #btn-content>กำหนดทั้งหมด</template>
+</InputWithButton>
+```
+
+---
+
 **Backend Codebase**: `jewelry-api/Jewelry.Api/`
 **Frontend Codebase**: `jeweley-ui/src/`
 **Route Pattern**: ไม่มี prefix `api/` — ใช้ `/{Controller}/{Action}` ตรง

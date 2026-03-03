@@ -163,7 +163,7 @@ export default {
 
         case 'USER':
           // USER type: "User/{imageName}"
-          return `User/${cleanImageName}`
+          return `User/Profile/${cleanImageName}`
 
         case 'PAYMENT':
           // PAYMENT type: "Payment/{imageName}"

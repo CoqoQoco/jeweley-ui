@@ -98,7 +98,7 @@ export default {
       sort: [],
       data: {},
 
-      type: 'PATH',
+      type: 'USER',
       path: 'Images/User/Profile',
 
       // Columns Configuration
