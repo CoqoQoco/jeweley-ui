@@ -1,195 +1,147 @@
-# Plan: Generic InputWithButton Component
+# Plan: edit-stock-view.vue — Image Fix + Size/Region Editing
 
-## Objective
+## 1. Image ไม่แสดง
 
-สร้าง generic `InputWithButton.vue` ที่ `src/components/inputv/` เพื่อ re-use pattern
-**input + button** ที่ใช้ซ้ำหลายจุดใน quotation-view.vue และ feature อื่นๆ
+### Root Cause
 
----
+ใน `edit-stock-view.vue` (บรรทัด 17-26):
+```html
+<imagePreview
+  v-if="stock.imagePath"
+  :imageName="stock.imagePath"
+  :path="stock.imagePath"   ← redundant (ค่าเดียวกับ imageName)
+  :type="type"
+/>
+```
 
-## 1. Pattern ที่ต้องแทนที่ใน quotation-view.vue
+`type` = `'STOCK-PRODUCT'` (hardcoded ใน data())
 
-### Pattern A — เลขที่ใบเสนอราคา (บรรทัด 22-39)
+**ปัญหา**: `:path` prop ซ้ำกับ `:imageName` ทำให้ใน `ImagePreview.vue` (บรรทัด 162):
+```javascript
+case 'STOCK-PRODUCT':
+  return this.path ? `Stock/Product/${this.path}` : `Stock/Product/${cleanImageName}`
+```
+
+เมื่อ `stock.imagePath` = `"DK001.jpg"` (ไม่มี `/`):
+- `imageName` = `"DK001.jpg"` → `buildBlobPathFromType()` → `this.path = "DK001.jpg"` → `"Stock/Product/DK001.jpg"` ✅
+
+เมื่อ `stock.imagePath` = `"Stock/Product/DK001.jpg"` (มี `/`):
+- ImagePreview บรรทัด 92: `imageName.includes('/')` → returns `imageName` directly = `"Stock/Product/DK001.jpg"` ✅
+
+**ปัญหาจริง**: `stock.imagePath` เป็น null/undefined สำหรับ items บางประเภท
+ทำให้ `v-if="stock.imagePath"` = false → แสดง no-image.png แทน
+
+### Fix
+
+ลบ redundant `:path` prop ออก — ไม่ได้ช่วยอะไรและทำให้ code อ่านยาก:
 
 ```html
 <!-- เดิม -->
-<div class="d-flex align-items-center gap-1">
-  <input
-    :class="['form-control bg-input input-bg']"
-    type="text"
-    v-model.trim="customer.invoiceNumber"
-    readonly
-  />
-  <button class="btn btn-main btn-sm" type="button"
-    @click="generateQuotationNumber" title="สร้างเลขที่ใบเสนอราคาใหม่">
-    <i class="bi bi-arrow-clockwise"></i>
-  </button>
-</div>
+<imagePreview
+  v-if="stock.imagePath"
+  :imageName="stock.imagePath"
+  :path="stock.imagePath"
+  :type="type"
+  :width="150"
+  :height="150"
+  :preview="true"
+  class="image-body"
+/>
+
+<!-- ใหม่ -->
+<imagePreview
+  v-if="stock.imagePath"
+  :imageName="stock.imagePath"
+  :type="type"
+  :width="150"
+  :height="150"
+  :preview="true"
+  class="image-body"
+/>
 ```
 
-- type: `text`
-- readonly: `true`
-- width: full (ไม่มี inline style)
-- button content: icon `bi-arrow-clockwise`
+> หมายเหตุ: ถ้า image ยังไม่แสดงหลัง fix นี้ ปัญหาอยู่ที่ `stock.imagePath` เป็น null
+> ซึ่งต้องตรวจสอบ API response ว่า field ชื่ออะไร (อาจเป็น `imageBlob` หรือ `imageBlobPath`)
 
 ---
 
-### Pattern B — Discount (%) (บรรทัด 77-95)
+## 2. เพิ่ม ขนาด (size) และ แหล่งผลิต (region) แก้ไขได้สำหรับ Diamond/Gem
 
-```html
-<!-- เดิม -->
-<div class="d-flex align-items-center gap-1">
-  <input
-    :class="['form-control bg-input', 'input-bg']"
-    type="number"
-    v-model.number="customer.discountPercent"
-    min="0" max="100" step="any"
-    style="width: 80px"
-  />
-  <button class="btn btn-main btn-sm" type="button"
-    @click="applyGlobalDiscount" title="กำหนดส่วนลดให้ทุกรายการ">
-    กำหนดทั้งหมด
-  </button>
-</div>
+### สถานะปัจจุบัน
+
+`materialColumns` (บรรทัด 723-733) มี column `size` และ `region` แล้ว:
+```javascript
+{ field: 'size', header: 'ขนาด', sortable: false, width: '100px' },
+{ field: 'region', header: 'เเหล่งผลิต', sortable: false, width: '80px' }
 ```
 
-- type: `number`
-- width: `80px`
-- min/max/step
-- button content: text "กำหนดทั้งหมด"
+แต่ใน BaseDataTable **ไม่มี** `#sizeTemplate` และ `#regionTemplate` → แสดงเป็น text read-only
 
----
+### Fix
 
-## 2. Component ที่จะสร้าง
+#### A. เพิ่ม `size` และ `region` ใน `addMaterialItem()`
 
-**File**: `src/components/inputv/InputWithButton.vue`
-
-### Props
-
-| Prop | Type | Default | หน้าที่ |
-|------|------|---------|--------|
-| `modelValue` | String\|Number | `''` | v-model value |
-| `type` | String | `'text'` | input type |
-| `placeholder` | String | `''` | placeholder |
-| `readonly` | Boolean | `false` | readonly |
-| `disabled` | Boolean | `false` | disabled input + button |
-| `width` | String | `null` | กำหนด width input เช่น `"80px"`, `"100%"` |
-| `min` | String\|Number | `null` | สำหรับ type="number" |
-| `max` | String\|Number | `null` | สำหรับ type="number" |
-| `step` | String\|Number | `null` | สำหรับ type="number" |
-| `inputClass` | String | `''` | CSS classes เพิ่มเติมสำหรับ input |
-| `btnClass` | String | `'btn btn-main btn-sm'` | CSS classes สำหรับ button |
-| `btnTitle` | String | `''` | title tooltip บน button |
-| `btnDisabled` | Boolean | `false` | disable เฉพาะ button |
-
-### Slot
-
-| Slot | หน้าที่ |
-|------|--------|
-| `#btn-content` | เนื้อหาภายใน button (icon หรือ text) |
-
-### Emits
-
-| Event | Payload | หน้าที่ |
-|-------|---------|--------|
-| `update:modelValue` | new value | v-model sync |
-| `btn-click` | - | เมื่อ button ถูกกด |
-
-### Height
-
-ใช้ `form-control` class จาก Bootstrap (height: 38px ตาม `.form-control` default) ให้ตรงกับ inputs อื่นๆ ในหน้า เช่น Calendar, Currency, Markup — ทุก input ในหน้าใช้ `form-control` เหมือนกัน
-
-### Template Structure
-
-```html
-<div class="input-with-btn-group">
-  <input
-    class="form-control bg-input input-bg"
-    :class="inputClass"
-    :type="type"
-    :value="modelValue"
-    :readonly="readonly"
-    :disabled="disabled"
-    :style="width ? { width } : {}"
-    :min="min ?? undefined"
-    :max="max ?? undefined"
-    :step="step ?? undefined"
-    :placeholder="placeholder"
-    @input="$emit('update:modelValue', type === 'number' ? Number($event.target.value) : $event.target.value)"
-  />
-  <button
-    :class="btnClass"
-    type="button"
-    :title="btnTitle"
-    :disabled="disabled || btnDisabled"
-    @click="$emit('btn-click')"
-  >
-    <slot name="btn-content" />
-  </button>
-</div>
-```
-
-### Style
-
-```scss
-.input-with-btn-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+```javascript
+addMaterialItem(data) {
+  data.push({
+    type: '',
+    qty: 1,
+    qtyUnit: 'pc',
+    weight: null,
+    weightUnit: 'ct.',
+    description: '',
+    size: '',      // ← เพิ่ม
+    region: ''     // ← เพิ่ม
+  })
 }
 ```
 
----
+#### B. เพิ่ม `#sizeTemplate` ใน BaseDataTable
 
-## 3. Usage หลัง implement ใน quotation-view.vue
-
-### Pattern A — เลขที่ใบเสนอราคา
+สำหรับ Diamond/Gem → แสดง input; สำหรับ Gold/Silver → แสดง `—`
 
 ```html
-<InputWithButton
-  v-model="customer.invoiceNumber"
-  type="text"
-  :readonly="true"
-  btnTitle="สร้างเลขที่ใบเสนอราคาใหม่"
-  @btn-click="generateQuotationNumber"
->
-  <template #btn-content>
-    <i class="bi bi-arrow-clockwise"></i>
-  </template>
-</InputWithButton>
+<template #sizeTemplate="{ data }">
+  <div v-if="data.type === 'Diamond' || data.type === 'Gem'">
+    <input
+      type="text"
+      v-model="data.size"
+      class="form-control"
+      placeholder="ขนาด"
+    />
+  </div>
+  <div v-else class="text-center">—</div>
+</template>
 ```
 
-### Pattern B — Discount (%)
+#### C. เพิ่ม `#regionTemplate` ใน BaseDataTable
 
 ```html
-<InputWithButton
-  v-model.number="customer.discountPercent"
-  type="number"
-  width="80px"
-  min="0"
-  max="100"
-  step="any"
-  btnTitle="กำหนดส่วนลดให้ทุกรายการ"
-  @btn-click="applyGlobalDiscount"
->
-  <template #btn-content>กำหนดทั้งหมด</template>
-</InputWithButton>
+<template #regionTemplate="{ data }">
+  <div v-if="data.type === 'Diamond' || data.type === 'Gem'">
+    <input
+      type="text"
+      v-model="data.region"
+      class="form-control"
+      placeholder="แหล่งผลิต"
+    />
+  </div>
+  <div v-else class="text-center">—</div>
+</template>
 ```
 
 ---
 
-## 4. Files ที่แก้ไข
+## 3. Files ที่แก้ไข
 
 | File | Action |
 |------|--------|
-| `src/components/inputv/InputWithButton.vue` | **สร้างใหม่** |
-| `src/views/sale/quotation/components/quotation-view.vue` | **แก้ไข** — import + แทน 2 patterns |
-| `src/views/sale/SALES_FLOW.md` | **อัปเดต** — เพิ่ม Generic Components section |
+| `src/views/sale/quotation/modal/edit-stock-view.vue` | **แก้ไข** — ลบ `:path` prop, เพิ่ม size/region templates, update addMaterialItem |
 
 ---
 
-## 5. ไม่เปลี่ยนแปลง
+## 4. ไม่เปลี่ยนแปลง
 
-- Logic ทั้งหมดใน quotation-view.vue ไม่เปลี่ยน
-- `generateQuotationNumber()` และ `applyGlobalDiscount()` ไม่เปลี่ยน
-- Input อื่นๆ (Currency, Currency Rate, Markup, Gold) ที่ไม่มี button คู่ — ไม่แตะ
+- `materialColumns` data ไม่เปลี่ยน (มี field อยู่แล้ว)
+- Logic อื่นๆ ใน edit-stock-view.vue ไม่เปลี่ยน
+- `ImagePreview.vue` ไม่เปลี่ยน

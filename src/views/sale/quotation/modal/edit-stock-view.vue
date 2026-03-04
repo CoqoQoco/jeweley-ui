@@ -14,10 +14,17 @@
               <div class="filter-container-img">
                 <!-- ส่วนแสดงรูป -->
                 <div class="image-preview">
+                  <img
+                    v-if="stock.imageBase64"
+                    :src="stock.imageBase64"
+                    :width="150"
+                    :height="150"
+                    alt="Preview Image"
+                    class="image-body"
+                  />
                   <imagePreview
-                    v-if="stock.imagePath"
+                    v-else-if="stock.imagePath"
                     :imageName="stock.imagePath"
-                    :path="stock.imagePath"
                     :type="type"
                     :width="150"
                     :height="150"
@@ -255,6 +262,28 @@
                     <span> --- โปรดระบุประเภท ---</span>
                   </div>
                 </div>
+              </template>
+              <template #sizeTemplate="{ data }">
+                <div v-if="data.type === 'Diamond' || data.type === 'Gem'">
+                  <input
+                    type="text"
+                    v-model="data.size"
+                    class="form-control"
+                    placeholder="ขนาด"
+                  />
+                </div>
+                <div v-else class="text-center">—</div>
+              </template>
+              <template #regionTemplate="{ data }">
+                <div v-if="data.type === 'Diamond' || data.type === 'Gem'">
+                  <input
+                    type="text"
+                    v-model="data.region"
+                    class="form-control"
+                    placeholder="แหล่งผลิต"
+                  />
+                </div>
+                <div v-else class="text-center">—</div>
               </template>
               <template #qtyTemplate="{ data }">
                 <div class="d-flex justify-content-center">
@@ -562,6 +591,7 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 export default {
   components: {
@@ -622,6 +652,8 @@ export default {
       handler(val) {
         if (!val) return
         this.stock = { ...val }
+
+        console.log('modelStock changed:', this.stock)
         // ใช้ข้อมูล priceTransactions เสมอถ้ามี ต้องหารด้วย planQty เพื่อทำเป็นข้อมูลต่อชิ้น
         if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
           const planQty = 1
@@ -870,7 +902,9 @@ export default {
         qtyUnit: 'pc',
         weight: null,
         weightUnit: 'ct.',
-        description: ''
+        description: '',
+        size: '',
+        region: ''
       })
     },
 
@@ -922,11 +956,13 @@ export default {
       this.imageStage = stage
       this.fetchLatestImage()
     },
-    onSelect() {
-      this.stock.imagePath = this.selectedItems[0].path
-      this.stock.name = this.selectedItems[0].name
-      console.log('stock:', this.stock)
-
+    async onSelect() {
+      const selected = this.selectedItems[0]
+      const blobPath = selected.namePath  // "Stock/NAME.PNG"
+      this.stock.imagePath = blobPath
+      this.stock.name = selected.name
+      // fetch base64 เพื่อเก็บใน quotation JSON
+      this.stock.imageBase64 = await getAzureBlobAsBase64(blobPath)
       this.imageStage = 'SHOW'
     },
 
@@ -1076,40 +1112,15 @@ export default {
         return
       }
       try {
-        // บีบอัดไฟล์ก่อนอัปโหลด
         const compressedFile = await compressOptimalImage(file)
-        // สร้าง preview ทันที
-        this.stock.imagePath = URL.createObjectURL(compressedFile)
-        // เตรียมข้อมูลสำหรับอัปโหลดจริง
-        const formData = new FormData()
-        // สร้างชื่อไฟล์ใหม่แบบ unique โดยต่อท้ายวันที่และเวลา (ไม่ต้องใส่นามสกุล)
-        const now = new Date()
-        const pad = (n) => n.toString().padStart(2, '0')
-        const yyyy = now.getFullYear()
-        const MM = pad(now.getMonth() + 1)
-        const dd = pad(now.getDate())
-        const hh = pad(now.getHours())
-        const mm = pad(now.getMinutes())
-        const ss = pad(now.getSeconds())
-        // ใช้ stock.imageName ถ้ามี ไม่งั้น fallback เป็นชื่อไฟล์เดิม (และตัดนามสกุลออก)
-        const base =
-          this.stock.imageName && this.stock.imageName.trim() !== ''
-            ? this.stock.imageName.replace(/\.[^/.]+$/, '')
-            : file.name.substring(0, file.name.lastIndexOf('.'))
-        const uniqueName = `${base}_${yyyy}${MM}${dd}_${hh}${mm}${ss}` // ไม่ต้องใส่ .ext
-        formData.append('name', uniqueName)
-        formData.append('image', compressedFile)
-        // อัปโหลดไปยัง backend (ใช้ API เดียวกับหน้า create-view)
-        const res = await this.stockProductImageStore.fetchSaveImage({ form: formData })
-        if (res) {
-          this.stock.imagePath = `${uniqueName}.png` // ใช้ path จริงหลังอัปโหลด
-          this.stock.name = uniqueName // อัปเดตชื่อไฟล์ใน stock ด้วย
-
-          console.log('อัปโหลดรูปสำเร็จ:', this.stock)
-          swAlert.success('', 'อัปโหลดรูปสำเร็จ')
+        // เก็บเป็น base64 ใน quotation JSON โดยตรง (ไม่อัปโหลด Azure)
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+          this.stock.imageBase64 = ev.target.result
         }
+        reader.readAsDataURL(compressedFile)
       } catch (error) {
-        swAlert.error('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ')
+        swAlert.error('เกิดข้อผิดพลาดในการโหลดรูปภาพ')
       }
     },
     removeImage() {
