@@ -117,6 +117,10 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
       return await api.jewelry.post('SaleOrder/UnconfirmStockItems', param, {
         skipLoading: false
       })
+    },
+
+    async fetchInactive({ soNumber }) {
+      return await api.jewelry.post('SaleOrder/Inactive', { soNumber })
     }
   }
 })

@@ -272,7 +272,8 @@ formValue = {
 | ปุ่ม | เมื่อไหร่ | Action |
 |------|----------|--------|
 | แก้ไข | view mode, ไม่ใช่ทุก item invoiced | เข้า edit mode |
-| Print PDF | view mode | สร้าง SO PDF (SaleOrderPdfBuilder) |
+| Print PDF | view mode | สร้าง SO PDF (SaleOrderPdfBuilder) — `pdfShowCifLabel` inline toggle อยู่ข้างปุ่ม |
+| ลบใบสั่งขาย | view mode | ⚠️ **ยังไม่ implement** — `SaleOrder/Inactive` (Status=0) + auto-unconfirm confirmed items (ดู PLAN.md) |
 | Confirm Stock + ออก Invoice | view mode, มี items ยังไม่ confirm | เปิด InvoiceCreationForm (auto-confirm ตอนสร้าง) |
 | ออก Invoice | view mode, items confirm แล้วแต่ยังไม่ invoice | เปิด InvoiceCreationForm |
 | ออก Invoice แล้วทั้งหมด | view mode, ทุก item มี invoice | disabled |
@@ -298,7 +299,8 @@ hasUnconfirmedItems = stockItems.some(item => item.stockNumber && !item.isConfir
 | โหลด SO | `SaleOrder/Get` (by soNumber) |
 | ค้นหา product | `StockProduct/Get` |
 | บันทึกแก้ไข | `SaleOrder/Upsert` |
-| Print PDF | SaleOrderPdfBuilder (frontend only) |
+| Print PDF | SaleOrderPdfBuilder (frontend only) — ควบคุม `showCifLabel` ผ่าน `pdfShowCifLabel` data property |
+| Inactive SO | `SaleOrder/Inactive` — ⚠️ ยังไม่ implement |
 
 ---
 
@@ -745,3 +747,5 @@ onCurrencyChange(value) {
 *Last updated: 2026-02-23 — Added: Quotation → SO flow (create-view loadFromQuotation, quotation detail-view "สร้างใบสั่งขาย" button, item-card quotation badge)*
 *Updated: 2026-02-23 — create-view: commented out markup + goldPerOz inputs (ยังไม่ได้ใช้ตอนนี้)*
 *Updated: 2026-02-23 — Section 13: สลับ CurrencyUnitSelect → AutoCompleteGeneric (static list mode)*
+*Updated: 2026-03-06 — detail-view: pdfShowCifLabel inline toggle สำหรับ Print PDF (เหมือน sale-order-view.vue)*
+*Updated: 2026-03-06 — detail-view: เพิ่ม "ลบใบสั่งขาย" button (SaleOrder/Inactive + auto-unconfirm) — ยังไม่ implement*

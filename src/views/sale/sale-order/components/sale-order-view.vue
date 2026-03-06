@@ -1548,7 +1548,8 @@
 
       <div v-if="!isViewMode" class="form-col-container">
         <div class="d-flex justify-content-start align-items-center">
-          <button class="btn btn-outline-main mr-2" type="button" style="width: 200px">
+          <button class="btn btn-red mr-2" type="button" style="width: 200px"
+                  @click="inactiveSaleOrder()">
             <i class="bi bi-trash mr-1"></i>
             ลบใบสั่งขาย
           </button>
@@ -2795,6 +2796,38 @@ export default {
 
     backToList() {
       this.$router.push({ path: '/sale-order-list' })
+    },
+
+    inactiveSaleOrder() {
+      if (!this.hasSaleOrderNumber) {
+        confirmSubmit(
+          'ต้องการยกเลิกการสร้างใบสั่งขายนี้หรือไม่?',
+          'ยืนยันการยกเลิก',
+          () => {
+            this.clearForm()
+            success('ยกเลิกการสร้างใบสั่งขายแล้ว')
+          }
+        )
+        return
+      }
+
+      if (this.invoiceItemsCount > 0) {
+        warning(
+          'ไม่สามารถลบใบสั่งขายได้ เนื่องจากมีสินค้าที่ออก Invoice แล้ว กรุณายกเลิก Invoice ก่อน',
+          'ไม่สามารถลบได้'
+        )
+        return
+      }
+
+      const msg = this.confirmedStockItemsCount > 0
+        ? `ใบสั่งขาย ${this.formSaleOrder.number} มีสินค้าที่ยืนยันแล้ว ${this.confirmedStockItemsCount} รายการ\nระบบจะยกเลิกการยืนยันสินค้าทั้งหมดและลบใบสั่งขายนี้ ต้องการดำเนินการหรือไม่?`
+        : `ต้องการลบใบสั่งขายเลขที่ ${this.formSaleOrder.number} หรือไม่?`
+
+      confirmSubmit(msg, 'ยืนยันการลบ', async () => {
+        await this.saleOrderStore.fetchInactive({ soNumber: this.formSaleOrder.number })
+        success('ลบใบสั่งขายสำเร็จ')
+        this.$router.push({ path: '/sale-order-list' })
+      })
     },
 
     // ============================================

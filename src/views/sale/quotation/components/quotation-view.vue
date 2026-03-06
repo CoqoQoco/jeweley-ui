@@ -748,6 +748,12 @@
               <i class="bi bi-eye mr-1"></i>
               <span>Preview Quotation</span>
             </button>
+            <div class="d-flex align-items-center" style="gap: 4px; cursor: pointer; white-space: nowrap"
+                 @click="pdfShowCifLabel = !pdfShowCifLabel">
+              <input type="checkbox" v-model="pdfShowCifLabel"
+                     style="width: 14px; height: 14px; cursor: pointer" />
+              <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
+            </div>
             <button
               class="btn btn-sm btn-green"
               type="button"
@@ -788,6 +794,7 @@
       :showModal="showItemsPerPageModal"
       :defaultItemsPerPage="itemsPerPageInput"
       :quotationNumber="customer.invoiceNumber"
+      :defaultShowCifLabel="pdfShowCifLabel"
       @closeModal="showItemsPerPageModal = false"
       @confirm="onConfirmItemsPerPage"
       @saveAndCreate="onSaveAndCreatePdfAndSave"
@@ -1081,6 +1088,7 @@ export default {
       _copyUploadTarget: null,
       showItemsPerPageModal: false,
       itemsPerPageInput: 10,
+      pdfShowCifLabel: true,
       pendingInvoiceParams: null,
       showExcelModal: false
     }
@@ -1252,7 +1260,7 @@ export default {
       const win1 = window.open('', '_blank')
       generateInvoicePdf({
         items: this.customer.quotationItems,
-        customer: { ...this.customer, showCifLabel: true },
+        customer: { ...this.customer, showCifLabel: this.pdfShowCifLabel },
         invoiceDate: this.customer.quotationDate,
         filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
         openInNewTab: true,

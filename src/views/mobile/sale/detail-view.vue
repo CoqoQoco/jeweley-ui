@@ -342,6 +342,15 @@
                : hasUnconfirmedItems ? 'Confirm Stock + ออก Invoice'
                : 'ออก Invoice' }}
           </button>
+
+          <!-- Delete SO -->
+          <button
+            class="mobile-btn mobile-btn-danger"
+            @click="inactiveSaleOrder()"
+          >
+            <i class="bi bi-trash"></i>
+            ลบใบสั่งขาย
+          </button>
         </template>
       </div>
     </div>
@@ -365,7 +374,7 @@
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
-import { success, error, warning } from '@/services/alert/sweetAlerts.js'
+import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import SoItemCard from './components/so-item-card.vue'
@@ -445,6 +454,10 @@ export default {
     // ตรวจว่ามี items ที่ยังไม่ confirm (มี stockNumber แต่ยังไม่ isConfirm และยังไม่ isInvoice)
     hasUnconfirmedItems() {
       return this.stockItems.some(item => item.stockNumber && !item.isConfirm && !item.isInvoice)
+    },
+
+    confirmedStockItemsCount() {
+      return this.stockItems.filter((item) => item.isConfirm && !item.isInvoice).length
     },
 
     // ตรวจว่าทุก item ออก invoice แล้วหรือยัง
@@ -794,6 +807,27 @@ export default {
       } finally {
         this.exportingPDF = false
       }
+    },
+
+    // ==================== Inactive ====================
+    inactiveSaleOrder() {
+      if (this.invoicedItems.length > 0) {
+        warning(
+          'ไม่สามารถลบใบสั่งขายได้ เนื่องจากมีสินค้าที่ออก Invoice แล้ว กรุณายกเลิก Invoice ก่อน',
+          'ไม่สามารถลบได้'
+        )
+        return
+      }
+
+      const msg = this.confirmedStockItemsCount > 0
+        ? `ใบสั่งขาย ${this.soData.soNumber} มีสินค้าที่ยืนยันแล้ว ${this.confirmedStockItemsCount} รายการ\nระบบจะยกเลิกการยืนยันสินค้าทั้งหมดและลบใบสั่งขายนี้ ต้องการดำเนินการหรือไม่?`
+        : `ต้องการลบใบสั่งขายเลขที่ ${this.soData.soNumber} หรือไม่?`
+
+      confirmSubmit(msg, 'ยืนยันการลบ', async () => {
+        await this.saleOrderStore.fetchInactive({ soNumber: this.soData.soNumber })
+        success('ลบใบสั่งขายสำเร็จ')
+        this.$router.back()
+      })
     },
 
     // ==================== Invoice ====================
@@ -1231,6 +1265,21 @@ input {
 
   .mobile-btn-success {
     background: var(--base-green, #4caf50);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:active:not(:disabled) {
+      opacity: 0.9;
+    }
+  }
+
+  .mobile-btn-danger {
+    background: var(--base-red, #ff4d4d);
     color: white;
     border: none;
     padding: 12px 16px;

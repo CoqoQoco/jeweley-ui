@@ -64,14 +64,15 @@ export default {
   props: {
     showModal: { type: Boolean, default: false },
     defaultItemsPerPage: { type: Number, default: 10 },
-    quotationNumber: { type: String, default: '' } // เพิ่ม prop รับเลขที่ quotation
+    quotationNumber: { type: String, default: '' },
+    defaultShowCifLabel: { type: Boolean, default: true }
   },
 
   data() {
     return {
       isShowModal: this.showModal,
       itemsPerPage: this.defaultItemsPerPage,
-      showCifLabel: true
+      showCifLabel: this.defaultShowCifLabel
     }
   },
   watch: {
@@ -80,6 +81,9 @@ export default {
     },
     isShowModal(val) {
       if (!val) this.$emit('closeModal')
+    },
+    defaultShowCifLabel(val) {
+      this.showCifLabel = val
     }
   },
   methods: {

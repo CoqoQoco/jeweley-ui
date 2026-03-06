@@ -2,9 +2,9 @@
 #### ถ้ามีการใช้ prime-vue components >> ตรวจสอบว่ามี generic-components ไหม >> ไม่มีให้สร้างไว้เพื่อ re-used >> 
 #### read and update D:\DuangKeaw\code\jeweley-ui\src\views\sale\SALES_FLOW.md
 
- ตรวจสอบ D:\DuangKeaw\code\jeweley-ui\src\views\sale\quotation\modal\edit-stock-view.vue
-   - image ไม่เเสดงครับ
-   - ในรายการเพชรพลอย อยากให้เเก้ ขนาด เเละเเหล่งผลิตได้ด้วยครับ
+ ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\sale-order\components\sale-order-view.vue
+
+    ตรวจสอบ btn "ลบใบสั่งขาย" ว่าทำงานยังไงครับ
 
        
  ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
