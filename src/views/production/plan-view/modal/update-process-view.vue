@@ -300,8 +300,8 @@
             </DataTable>
           </div>
 
-          <!-- gems - เฉพาะคัดพลอย -->
-          <div class="form-col-container mt-3" v-if="status === 70">
+          <!-- gems - คัดพลอย และ แต่ง -->
+          <div class="form-col-container mt-3" v-if="status === 70 || status === 50">
             <DataTable
               class="p-datatable-sm"
               showGridlines
@@ -716,8 +716,8 @@ export default {
 
         console.log('initForm matAssign', this.matAssign) 
 
-        // กรณีเป็นการคัดพลอย
-        if (this.status === 70 && value.tbtProductionPlanStatusGem) {
+        // กรณีเป็นการคัดพลอย หรือ แต่ง
+        if ((this.status === 70 || this.status === 50) && value.tbtProductionPlanStatusGem) {
           this.gemAssign = await Promise.all(
             value.tbtProductionPlanStatusGem.map(async (thing) => {
               return {

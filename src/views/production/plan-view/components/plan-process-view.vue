@@ -202,12 +202,12 @@
     </div>
 
     <!-- gem -->
-    <div v-if="status === 70">
+    <div v-if="status === 70 || status === 50">
       <div class="filter-container-highlight mt-3">
         <div class="d-flex justify-content-between">
           <div>
             <span class="desc-text-white bi bi-gem mr-2"></span>
-            <span class="desc-text-white">รายละเอียดพลอย</span>
+            <span class="desc-text-white">{{status === 50 ? 'รายละเอียดสร้อย' : 'รายละเอียดพลอย'}}</span>
           </div>
           <div>
             <button
@@ -440,7 +440,7 @@ export default {
   watch: {
     status: {
       handler(newVal) {
-        //console.log('status', newVal)
+        console.log('status', newVal)
         const header = this.modelValue.tbtProductionPlanStatusHeader
 
         if (header) {
@@ -702,10 +702,12 @@ export default {
       return date ? formatDate(date) : ''
     },
     calculateWeightDifference(weightSend, weightReceived) {
-      return calculateWeightDifference(weightSend, weightReceived)
+      return calculateWeightDifference(weightSend ?? 0, weightReceived ?? 0)
     },
 
     checkBtn(action) {
+
+      //console.log('checkBtn', this.data)
       const disStatus = [100, 500]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
