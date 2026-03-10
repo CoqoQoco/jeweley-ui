@@ -300,6 +300,97 @@
             </DataTable>
           </div>
 
+          <!-- gold loss - เฉพาะฝัง -->
+          <div class="mt-3" v-if="status === 80">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="title-text">คำนวณ Gold Loss</span>
+              <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center">
+                  <span class="title-text mr-2" style="white-space: nowrap">ราคาทอง (บาท/กรัม)</span>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    class="form-control form-control-sm"
+                    style="width: 130px"
+                    v-model.number="goldLossPrice"
+                    placeholder="0.00"
+                  />
+                </div>
+                <button type="button" class="btn btn-sm btn-main ml-2" @click="saveGoldLoss">บันทึก Gold Loss</button>
+              </div>
+            </div>
+            <BaseDataTable
+              :items="goldLossRows"
+              :columns="goldLossColumns"
+              dataKey="id"
+              :paginator="false"
+              :showGridlines="true"
+              scrollHeight="300px"
+            >
+              <template #weightDiffTemplate="slotProps">
+                <div
+                  style="font-weight: 600"
+                  :style="calculateWeightDifference(slotProps.data.goldWeightSend, slotProps.data.goldWeightCheck).style"
+                >
+                  <span>{{ calculateWeightDifference(slotProps.data.goldWeightSend, slotProps.data.goldWeightCheck).difference }}</span>
+                  <span class="ml-1">({{ calculateWeightDifference(slotProps.data.goldWeightSend, slotProps.data.goldWeightCheck).percentage }})</span>
+                </div>
+              </template>
+              <template #lossPercentTemplate="slotProps">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  max="100"
+                  class="form-control form-control-sm text-right"
+                  :value="goldLossPercents[slotProps.data.itemNo] ?? 0"
+                  @input="goldLossPercents[slotProps.data.itemNo] = $event.target.value !== '' ? Number($event.target.value) : 0"
+                  placeholder="0"
+                />
+              </template>
+              <template #weightLossAllowedTemplate="slotProps">
+                <span style="font-weight: 600">{{ fmt2(slotProps.data.weightLossAllowed) }}</span>
+              </template>
+              <template #weightLossActualTemplate="slotProps">
+                <span
+                  style="font-weight: 600"
+                  :style="slotProps.data.weightLossActual > 0 ? 'color: #038387' : slotProps.data.weightLossActual < 0 ? 'color: #ff4d4d' : ''"
+                >
+                  {{ fmtSign2(slotProps.data.weightLossActual) }}
+                </span>
+              </template>
+              <template #moneyDiffTemplate="slotProps">
+                <span
+                  style="font-weight: 600"
+                  :style="slotProps.data.moneyDiff > 0 ? 'color: #038387' : slotProps.data.moneyDiff < 0 ? 'color: #ff4d4d' : ''"
+                >
+                  {{ fmtSign2(slotProps.data.moneyDiff) }}
+                </span>
+              </template>
+              <template #remarkTemplate="slotProps">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  :value="goldLossRemarks[slotProps.data.itemNo] ?? ''"
+                  @input="goldLossRemarks[slotProps.data.itemNo] = $event.target.value"
+                  placeholder="รายละเอียด..."
+                />
+              </template>
+              <template #footer>
+                <div class="d-flex justify-content-end title-text">
+                  <span class="mr-2">รวมเงิน ได้/ขาด :</span>
+                  <span
+                    style="font-weight: 600"
+                    :style="goldLossMoneyTotal > 0 ? 'color: #038387' : goldLossMoneyTotal < 0 ? 'color: #ff4d4d' : ''"
+                  >
+                    {{ fmtSign2(goldLossMoneyTotal) }}
+                  </span>
+                </div>
+              </template>
+            </BaseDataTable>
+          </div>
+
           <!-- gems - คัดพลอย และ แต่ง -->
           <div class="form-col-container mt-3" v-if="status === 70 || status === 50">
             <DataTable
@@ -492,6 +583,8 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
 import planOverview from '../components/plan-overview.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import { calculateWeightDifference } from '@/services/helper/match.js'
 
 const interfaceForm = {
   status: null,
@@ -521,7 +614,8 @@ export default {
     Dropdown,
     DataTable,
     Column,
-    planOverview
+    planOverview,
+    BaseDataTable
   },
 
   props: {
@@ -617,6 +711,22 @@ export default {
         default:
           return ''
       }
+    },
+    goldLossRows() {
+      if (this.status !== 80) return []
+      return this.matAssign.map((item) => {
+        const lossPercent = Number(this.goldLossPercents[item.itemNo] ?? 0)
+        const weightSend = item.goldWeightSend ?? 0
+        const weightCheck = item.goldWeightCheck ?? 0
+        const rawLoss = weightSend - weightCheck
+        const weightLossAllowed = weightSend * (lossPercent / 100)
+        const weightLossActual = weightLossAllowed - rawLoss  // + = ได้ (เขียว), - = ขาด (แดง)
+        const moneyDiff = weightLossActual * (this.goldLossPrice ?? 0)
+        return { ...item, weightDiff: weightSend - weightCheck, lossPercent, weightLossAllowed, weightLossActual, moneyDiff }
+      })
+    },
+    goldLossMoneyTotal() {
+      return this.goldLossRows.reduce((sum, row) => sum + (row.moneyDiff ?? 0), 0)
     }
   },
 
@@ -644,12 +754,45 @@ export default {
       workerItemSearch: [],
       gemItemSearch: [],
 
-      user: null
+      user: null,
+
+      // --- gold loss (status 80) --- //
+      goldLossPrice: null,
+      goldLossPercents: {},
+      goldLossRemarks: {},
+      goldLossColumns: [
+        { field: 'gold', header: 'ทอง', minWidth: '80px', sortable: false },
+        { field: 'requestDate', header: 'วันที่', minWidth: '120px', format: 'datetime', sortable: false },
+        { field: 'goldQTYSend', header: 'จำนวนจ่าย [ชิ้น]', minWidth: '120px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'goldWeightSend', header: 'น้ำหนักจ่าย', minWidth: '110px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'goldQTYCheck', header: 'จำนวนฝัง [เม็ด]', minWidth: '120px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'goldWeightCheck', header: 'น้ำหนักรับ', minWidth: '110px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'weightDiff', header: 'น้ำหนัก ขาด/เกิน', minWidth: '150px', align: 'right', sortable: false },
+        { field: 'lossPercent', header: '%loss', minWidth: '90px', align: 'center', sortable: false },
+        { field: 'weightLossAllowed', header: 'น้ำหนักที่ loss ได้', minWidth: '130px', align: 'right', sortable: false },
+        { field: 'weightLossActual', header: 'น้ำหนัก loss', minWidth: '120px', align: 'right', sortable: false },
+        { field: 'moneyDiff', header: 'เงิน ได้/ขาด', minWidth: '120px', align: 'right', sortable: false },
+        { field: 'remark', header: 'รายละเอียด', minWidth: '160px', sortable: false }
+      ]
     }
   },
 
   methods: {
     // ------ helper ------//
+    fmt3(val) {
+      return val != null ? Number(val).toFixed(3) : '0.000'
+    },
+    fmt2(val) {
+      return val != null ? Number(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0.00'
+    },
+    fmtSign2(val) {
+      if (val == null) return '0.00'
+      const sign = val >= 0 ? '+' : '-'
+      return `${sign}${Math.abs(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+    },
+    calculateWeightDifference(weightSend, weightReceived) {
+      return calculateWeightDifference(weightSend ?? 0, weightReceived ?? 0)
+    },
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
@@ -696,6 +839,7 @@ export default {
             value.tbtProductionPlanStatusDetail.map(async (thing) => {
               return {
                 id: ++this.autoId,
+                itemNo: thing.itemNo,
                 gold: thing.gold,
                 goldQTYSend: thing.goldQtySend,
                 goldWeightSend: thing.goldWeightSend,
@@ -735,6 +879,19 @@ export default {
               }
             })
           )
+        }
+
+        // โหลด gold loss data สำหรับ status 80
+        if (this.status === 80) {
+          this.goldLossPrice = value.goldLossPrice ?? null
+          const percents = {}
+          const remarks = {}
+          ;(value.tbtProductionPlanStatusDetail || []).forEach((detail) => {
+            if (detail.lossPercent != null) percents[detail.itemNo] = detail.lossPercent
+            if (detail.lossRemark) remarks[detail.itemNo] = detail.lossRemark
+          })
+          this.goldLossPercents = percents
+          this.goldLossRemarks = remarks
         }
       }
      //console.log('initForm ed 2', this.form)
@@ -796,6 +953,9 @@ export default {
       }
       this.matAssign = [...this.tempMatAssign]
       this.gemAssign = []
+      this.goldLossPercents = {}
+      this.goldLossRemarks = {}
+      this.goldLossPrice = null
     },
     closeModal() {
       this.onClear()
@@ -906,6 +1066,22 @@ export default {
         }
       } catch (error) {
         console.error('Error in submit:', error)
+      }
+    },
+    async saveGoldLoss() {
+      if (!this.form.headerId) return
+      const payload = {
+        headerId: this.form.headerId,
+        goldLossPrice: this.goldLossPrice,
+        items: this.matAssign.map((item) => ({
+          itemNo: item.itemNo,
+          lossPercent: this.goldLossPercents[item.itemNo] ?? null,
+          lossRemark: this.goldLossRemarks[item.itemNo] ?? null
+        }))
+      }
+      const res = await api.jewelry.post('ProductionPlan/GoldLossUpdate', payload)
+      if (res !== undefined) {
+        swAlert.success('บันทึก Gold Loss สำเร็จ')
       }
     },
     async onSearchWorker(e) {

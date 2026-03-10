@@ -201,6 +201,72 @@
       </div>
     </div>
 
+    <!-- gold loss - เฉพาะฝัง -->
+    <div class="mt-3" v-if="status === 80">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="title-text">คำนวณ Gold Loss</span>
+        <div v-if="data.goldLossPrice" class="d-flex align-items-center">
+          <span class="title-text mr-2">ราคาทอง (บาท/กรัม):</span>
+          <span class="title-text" style="font-weight: 600">{{ fmt2(data.goldLossPrice) }}</span>
+        </div>
+      </div>
+      <BaseDataTable
+        :items="goldLossRows"
+        :columns="goldLossColumns"
+        dataKey="id"
+        :paginator="false"
+        :showGridlines="true"
+        scrollHeight="300px"
+      >
+        <template #weightDiffTemplate="slotProps">
+          <div
+            style="font-weight: 600"
+            :style="calculateWeightDifference(slotProps.data.goldWeightSend, slotProps.data.goldWeightCheck).style"
+          >
+            <span>{{ calculateWeightDifference(slotProps.data.goldWeightSend, slotProps.data.goldWeightCheck).difference }}</span>
+            <span class="ml-1">({{ calculateWeightDifference(slotProps.data.goldWeightSend, slotProps.data.goldWeightCheck).percentage }})</span>
+          </div>
+        </template>
+        <template #lossPercentTemplate="slotProps">
+          <span>{{ slotProps.data.lossPercent }}</span>
+        </template>
+        <template #weightLossAllowedTemplate="slotProps">
+          <span style="font-weight: 600">{{ fmt2(slotProps.data.weightLossAllowed) }}</span>
+        </template>
+        <template #weightLossActualTemplate="slotProps">
+          <span
+            style="font-weight: 600"
+            :style="slotProps.data.weightLossActual > 0 ? 'color: #038387' : slotProps.data.weightLossActual < 0 ? 'color: #ff4d4d' : ''"
+          >
+            {{ fmtSign2(slotProps.data.weightLossActual) }}
+          </span>
+        </template>
+        <template #moneyDiffTemplate="slotProps">
+          <span
+            style="font-weight: 600"
+            :style="slotProps.data.moneyDiff > 0 ? 'color: #038387' : slotProps.data.moneyDiff < 0 ? 'color: #ff4d4d' : ''"
+          >
+            {{ fmtSign2(slotProps.data.moneyDiff) }}
+          </span>
+        </template>
+        <template #remarkTemplate="slotProps">
+          <span>{{ slotProps.data.lossRemark }}</span>
+        </template>
+        <template #footer>
+          <div class="d-flex justify-content-between title-text">
+            <span>{{ goldLossRows.length }} รายการ</span>
+            <div class="d-flex align-items-center">
+              <span class="mr-2">รวมเงิน ได้/ขาด :</span>
+              <span
+                style="font-weight: 600"
+                :style="goldLossMoneyTotal > 0 ? 'color: #038387' : goldLossMoneyTotal < 0 ? 'color: #ff4d4d' : ''"
+              >{{ fmtSign2(goldLossMoneyTotal) }}</span>
+            </div>
+          </div>
+        </template>
+      </BaseDataTable>
+    </div>
+
     <!-- gem -->
     <div v-if="status === 70 || status === 50">
       <div class="filter-container-highlight mt-3">
@@ -391,6 +457,23 @@ export default {
     showTotalWages() {
       return this.status !== 70 // ไม่แสดงในสถานะคัดพลอย
     },
+    goldLossRows() {
+      if (this.status !== 80 || !this.data || !this.data.tbtProductionPlanStatusDetail) return []
+      const goldPrice = this.data.goldLossPrice ?? 0
+      return this.data.tbtProductionPlanStatusDetail.map((item) => {
+        const lossPercent = Number(item.lossPercent ?? 0)
+        const weightSend = item.goldWeightSend ?? 0
+        const weightCheck = item.goldWeightCheck ?? 0
+        const rawLoss = weightSend - weightCheck
+        const weightLossAllowed = weightSend * (lossPercent / 100)
+        const weightLossActual = weightLossAllowed - rawLoss
+        const moneyDiff = weightLossActual * goldPrice
+        return { ...item, weightDiff: rawLoss, lossPercent, weightLossAllowed, weightLossActual, moneyDiff }
+      })
+    },
+    goldLossMoneyTotal() {
+      return this.goldLossRows.reduce((sum, row) => sum + (row.moneyDiff ?? 0), 0)
+    },
     groupGold() {
       //console.log(this.modelValueStatus)
 
@@ -474,6 +557,22 @@ export default {
         ...interfaceIsShow
       },
       urlImage: '',
+
+      // --- gold loss (status 80) --- //
+      goldLossColumns: [
+        { field: 'gold', header: 'ทอง', minWidth: '100px', sortable: false },
+        { field: 'requestDate', header: 'วันที่', minWidth: '120px', format: 'date', sortable: false },
+        { field: 'goldQtySend', header: 'จำนวนจ่าย [ชิ้น]', minWidth: '120px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'goldWeightSend', header: 'น้ำหนักจ่าย', minWidth: '110px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'goldQtyCheck', header: 'จำนวนฝัง [เม็ด]', minWidth: '120px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'goldWeightCheck', header: 'น้ำหนักรับ', minWidth: '110px', align: 'right', format: 'decimal2', sortable: false },
+        { field: 'weightDiff', header: 'น้ำหนัก ขาด/เกิน', minWidth: '150px', align: 'right', sortable: false },
+        { field: 'lossPercent', header: '%loss', minWidth: '90px', align: 'center', sortable: false },
+        { field: 'weightLossAllowed', header: 'น้ำหนักที่ loss ได้', minWidth: '130px', align: 'right', sortable: false },
+        { field: 'weightLossActual', header: 'น้ำหนัก loss', minWidth: '120px', align: 'right', sortable: false },
+        { field: 'moneyDiff', header: 'เงิน ได้/ขาด', minWidth: '120px', align: 'right', sortable: false },
+        { field: 'remark', header: 'รายละเอียด', minWidth: '160px', sortable: false }
+      ],
 
       columns: [],
       baseColumns: [
@@ -695,6 +794,17 @@ export default {
 
   methods: {
     // ----- helper
+    fmt3(val) {
+      return val != null ? Number(val).toFixed(3) : '0.000'
+    },
+    fmt2(val) {
+      return val != null ? Number(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0.00'
+    },
+    fmtSign2(val) {
+      if (val == null) return '0.00'
+      const sign = val >= 0 ? '+' : '-'
+      return `${sign}${Math.abs(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+    },
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
