@@ -233,6 +233,123 @@ export class EmbedSlipPdfBuilder {
     }
   }
 
+  buildGoldLossBody() {
+    const goldLossPrice = Number(this.data.goldLossPrice ?? 0)
+    const signColor = (val) => (val >= 0 ? '#007060' : '#cc0000')
+    const fmtSign = (val) => {
+      const sign = val >= 0 ? '+' : '-'
+      return `${sign}${Math.abs(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+    }
+    const fmt3 = (val) => Number(val).toFixed(3)
+
+    const body = []
+
+    // Header
+    body.push([
+      this.setTablePriceTitle('รายละเอียด'),
+      this.setTablePriceTitleTextRight('น.จ่าย'),
+      this.setTablePriceTitleTextRight('น.รับ'),
+      this.setTablePriceTitleTextRight('ขาด/เกิน'),
+      this.setTablePriceTitleTextRight('%loss'),
+      this.setTablePriceTitleTextRight('น.loss ได้'),
+      this.setTablePriceTitleTextRight('น.loss'),
+      this.setTablePriceTitleTextRight('เงิน ได้/ขาด')
+    ])
+
+    let moneyTotal = 0
+
+    this.data.values.forEach((item) => {
+      const weightSend = Number(item.goldWeightSend ?? 0)
+      const weightCheck = Number(item.goldWeightCheck ?? 0)
+      const rawLoss = weightSend - weightCheck
+      const lossPercent = Number(item.lossPercent ?? 0)
+      const weightLossAllowed = weightSend * (lossPercent / 100)
+      const weightLossActual = weightLossAllowed - rawLoss
+      const moneyDiff = weightLossActual * goldLossPrice
+      moneyTotal += moneyDiff
+
+      body.push([
+        this.setTablePriceRow(item.lossRemark ?? ''),
+        this.setTablePriceRowTextRight(fmt3(weightSend)),
+        this.setTablePriceRowTextRight(fmt3(weightCheck)),
+        {
+          text: fmtSign(-rawLoss),
+          alignment: 'right',
+          fontSize: 11,
+          bold: true,
+          color: signColor(-rawLoss),
+          border: [false, false, false, false]
+        },
+        this.setTablePriceRowTextRight(`${lossPercent.toFixed(2)}%`),
+        this.setTablePriceRowTextRight(fmt3(weightLossAllowed)),
+        {
+          text: fmtSign(weightLossActual),
+          alignment: 'right',
+          fontSize: 11,
+          bold: true,
+          color: signColor(weightLossActual),
+          border: [false, false, false, false]
+        },
+        {
+          text: fmtSign(moneyDiff),
+          alignment: 'right',
+          fontSize: 11,
+          bold: true,
+          color: signColor(moneyDiff),
+          border: [false, false, false, false]
+        }
+      ])
+    })
+
+    // Footer
+    body.push([
+      this.setTablePriceFooter(''),
+      this.setTablePriceFooter(''),
+      this.setTablePriceFooter(''),
+      this.setTablePriceFooter(''),
+      this.setTablePriceFooter(''),
+      this.setTablePriceFooter(''),
+      this.setTablePriceFooterTextRight('รวมเงิน ได้/ขาด'),
+      {
+        text: fmtSign(moneyTotal),
+        bold: true,
+        alignment: 'right',
+        color: signColor(moneyTotal),
+        border: [false, true, false, false]
+      }
+    ])
+
+    return body
+  }
+
+  getGoldLossSection() {
+    const goldLossPrice = Number(this.data.goldLossPrice ?? 0)
+    return {
+      margin: [0, 8, 0, 0],
+      stack: [
+        {
+          columns: [
+            { text: 'คำนวณ Gold Loss', bold: true, fontSize: 12 },
+            {
+              text: `ราคาทอง: ${goldLossPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} บาท/กรัม`,
+              alignment: 'right',
+              fontSize: 11
+            }
+          ],
+          margin: [0, 0, 0, 3]
+        },
+        {
+          fontSize: 11,
+          table: {
+            headerRows: 1,
+            widths: ['*', 36, 36, 38, 28, 40, 38, 48],
+            body: this.buildGoldLossBody()
+          }
+        }
+      ]
+    }
+  }
+
   getSignatureSection() {
     return {
       table: {
@@ -318,26 +435,30 @@ export class EmbedSlipPdfBuilder {
   }
 
   getDocDefinition() {
+    // แสดง Gold Loss section เฉพาะเมื่อบันทึกข้อมูลครบทั้งคู่:
+    // 1) ราคาทองมีค่า > 0  2) มีแถวที่กรอก %loss > 0 แล้ว
+    const hasGoldLoss =
+      Number(this.data.goldLossPrice ?? 0) > 0 &&
+      this.data.values.some((v) => Number(v.lossPercent ?? 0) > 0)
+
     return {
       pageSize: {
-        // ปรับขนาดกระดาษให้ตอบโจทย์การใช้งาน
-        width: 595.28, // A4 width
-        height: 'auto' // ความสูงอัตโนมัติ
+        width: 595.28,
+        height: 'auto'
       },
-      // ลด margins ลง
-      pageMargins: [10, 10, 10, 10], // [left, top, right, bottom]
+      pageMargins: [10, 10, 10, 10],
 
-      // ปรับ layout ให้กระชับขึ้น
       content: [
         this.getHeaderContent(),
         {
           ...this.getSubHeaderContent(),
-          margin: [0, 0, 0, 2] // ลด margin ด้านล่าง
+          margin: [0, 0, 0, 2]
         },
         {
           ...this.getMainContentTable(),
-          margin: [0, 0, 0, 2] // ลด margin ด้านล่าง
+          margin: [0, 0, 0, 2]
         },
+        ...(hasGoldLoss ? [this.getGoldLossSection()] : []),
         this.getSignatureSection()
       ],
 

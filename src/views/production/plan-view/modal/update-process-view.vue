@@ -304,20 +304,17 @@
           <div class="mt-3" v-if="status === 80">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="title-text">คำนวณ Gold Loss</span>
-              <div class="d-flex align-items-center gap-2">
-                <div class="d-flex align-items-center">
-                  <span class="title-text mr-2" style="white-space: nowrap">ราคาทอง (บาท/กรัม)</span>
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    class="form-control form-control-sm"
-                    style="width: 130px"
-                    v-model.number="goldLossPrice"
-                    placeholder="0.00"
-                  />
-                </div>
-                <button type="button" class="btn btn-sm btn-main ml-2" @click="saveGoldLoss">บันทึก Gold Loss</button>
+              <div class="d-flex align-items-center">
+                <span class="title-text mr-2" style="white-space: nowrap">ราคาทอง (บาท/กรัม)</span>
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  class="form-control form-control-sm"
+                  style="width: 130px"
+                  v-model.number="goldLossPrice"
+                  placeholder="0.00"
+                />
               </div>
             </div>
             <BaseDataTable
@@ -1033,11 +1030,15 @@ export default {
           remark1: this.form.remark1,
           remark2: this.form.remark2,
           totalWages: this.form.totalWages,
-          golds: [...this.matAssign],
+          goldLossPrice: this.status === 80 ? (this.goldLossPrice ?? null) : undefined,
+          golds: this.matAssign.map((item) => ({
+            ...item,
+            lossPercent: this.status === 80 ? (this.goldLossPercents[item.itemNo] ?? null) : undefined,
+            lossRemark: this.status === 80 ? (this.goldLossRemarks[item.itemNo] ?? null) : undefined
+          })),
           gems: [...this.gemAssign]
         }
 
-        console.log(param)
         let url = 'ProductionPlan/ProductionPlanUpdateStatusDetail'
 
         if ([500].includes(this.status)) {
@@ -1069,9 +1070,19 @@ export default {
       }
     },
     async saveGoldLoss() {
-      if (!this.form.headerId) return
+      let headerId = this.form.headerId
+      if (!headerId) {
+        const header = (this.model.tbtProductionPlanStatusHeader || []).find(
+          (x) => x.status === this.status
+        )
+        headerId = header?.id
+      }
+      if (!headerId) {
+        swAlert.warning('ไม่พบข้อมูล กรุณาบันทึกข้อมูลก่อน')
+        return
+      }
       const payload = {
-        headerId: this.form.headerId,
+        headerId,
         goldLossPrice: this.goldLossPrice,
         items: this.matAssign.map((item) => ({
           itemNo: item.itemNo,

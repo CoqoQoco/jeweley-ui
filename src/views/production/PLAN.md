@@ -285,12 +285,18 @@ getGoldLossSection() {
 
 ### แก้ `getDocDefinition()` — เพิ่ม gold loss section
 
-เงื่อนไข: แสดงเฉพาะเมื่อ `goldLossPrice > 0` หรือมี row ที่มี `lossPercent > 0`
+เงื่อนไข: แสดงเฉพาะเมื่อ **ทั้งสองเงื่อนไขครบ**:
+1. `goldLossPrice > 0` — ราคาทองถูกบันทึกแล้ว
+2. มีอย่างน้อย 1 row ที่ `lossPercent > 0` — มีการกรอก %loss แล้ว
+
+ขาดเงื่อนไขใดเงื่อนไขหนึ่ง → **ไม่แสดง section**
 
 ```javascript
 getDocDefinition() {
-  // ตรวจสอบว่ามี gold loss data ไหม
-  const hasGoldLoss = (this.data.goldLossPrice > 0) ||
+  // แสดง Gold Loss section เฉพาะเมื่อบันทึกข้อมูลครบทั้งคู่:
+  // 1) ราคาทองมีค่า  2) มีแถวที่กรอก %loss แล้ว
+  const hasGoldLoss =
+    Number(this.data.goldLossPrice ?? 0) > 0 &&
     this.data.values.some(v => Number(v.lossPercent ?? 0) > 0)
 
   return {
@@ -300,7 +306,7 @@ getDocDefinition() {
       this.getHeaderContent(),
       { ...this.getSubHeaderContent(), margin: [0, 0, 0, 2] },
       { ...this.getMainContentTable(), margin: [0, 0, 0, 2] },
-      // เพิ่ม Gold Loss Section เฉพาะเมื่อมีข้อมูล
+      // เพิ่ม Gold Loss Section เฉพาะเมื่อมีข้อมูลครบ
       ...(hasGoldLoss ? [this.getGoldLossSection()] : []),
       this.getSignatureSection()
     ],
@@ -351,12 +357,18 @@ Gold Loss section (ต่อจากตารางค่าแรง):
 
 ## เงื่อนไขแสดง Gold Loss Section
 
-Gold Loss section จะ **ปรากฏใน PDF** เมื่อ:
-```
-goldLossPrice > 0  หรือ  มีอย่างน้อย 1 row ที่ lossPercent > 0
-```
+Gold Loss section จะ **ปรากฏใน PDF** ต่อเมื่อ **ครบทั้งสองเงื่อนไข**:
 
-ถ้า gold loss ยังไม่ได้กรอก (ทุก field เป็น 0/null) → **ไม่แสดง section** (ไม่กระทบ layout เดิม)
+| เงื่อนไข | ความหมาย |
+|---------|---------|
+| `goldLossPrice > 0` | ผู้ใช้กดบันทึก "ราคาทอง" ใน update-process แล้ว |
+| มีแถวที่ `lossPercent > 0` | ผู้ใช้กรอก `%loss` อย่างน้อย 1 แถว แล้วกดบันทึก |
+
+**กรณีที่ไม่แสดง** (ขาดเงื่อนไขใดข้อหนึ่ง):
+- ยังไม่ได้กรอกราคาทอง → ไม่แสดง
+- กรอกราคาทองแล้วแต่ยังไม่ได้กรอก %loss → ไม่แสดง
+- กรอก %loss แต่ไม่ได้กรอกราคาทอง → ไม่แสดง
+- ยังไม่ได้ทำ gold loss เลย → ไม่แสดง (layout สลิปเหมือนเดิมทุกอย่าง)
 
 ---
 

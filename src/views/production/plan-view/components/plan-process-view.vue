@@ -522,30 +522,16 @@ export default {
 
   watch: {
     status: {
-      handler(newVal) {
-        console.log('status', newVal)
-        const header = this.modelValue.tbtProductionPlanStatusHeader
-
-        if (header) {
-          const getData = header.find((x) => x.status === this.status)
-          //console.log('modelValue getData', this.getData)
-          if (getData) {
-            this.data = getData
-          } else {
-            this.data = {
-              ...interfaceData
-            }
-          }
-          this.getColumns()
-        } else {
-          this.data = {
-            ...interfaceData
-          }
-        }
-
-        //console.log('modelValue', this.data)
+      handler() {
+        this.syncData()
       },
       immediate: true
+    },
+    modelValue: {
+      handler() {
+        this.syncData()
+      },
+      deep: true
     }
   },
 
@@ -793,6 +779,17 @@ export default {
   },
 
   methods: {
+    syncData() {
+      const header = this.modelValue?.tbtProductionPlanStatusHeader
+      if (header) {
+        const getData = header.find((x) => x.status === this.status)
+        this.data = getData ?? { ...interfaceData }
+      } else {
+        this.data = { ...interfaceData }
+      }
+      this.getColumns()
+    },
+
     // ----- helper
     fmt3(val) {
       return val != null ? Number(val).toFixed(3) : '0.000'
@@ -856,10 +853,11 @@ export default {
 
     async generatePDF(data) {
       try {
-        console.log('generatePDF', data)
-        // สร้าง PDF
-        console.log('data', data)
-        const pdfBuilder = new EmbedSlipPdfBuilder(data, this.urlImage)
+        const enrichedData = {
+          ...data,
+          goldLossPrice: this.data.goldLossPrice ?? 0
+        }
+        const pdfBuilder = new EmbedSlipPdfBuilder(enrichedData, this.urlImage)
         const pdf = pdfBuilder.generatePDF()
         pdf.open()
       } catch (error) {
