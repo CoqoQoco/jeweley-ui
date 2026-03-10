@@ -280,7 +280,7 @@ export class EmbedSlipPdfBuilder {
           color: signColor(-rawLoss),
           border: [false, false, false, false]
         },
-        this.setTablePriceRowTextRight(`${lossPercent.toFixed(2)}%`),
+        this.setTablePriceRowTextRight(`${lossPercent.toFixed(0)}%`),
         this.setTablePriceRowTextRight(fmt3(weightLossAllowed)),
         {
           text: fmtSign(weightLossActual),
