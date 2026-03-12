@@ -277,7 +277,7 @@ export class EmbedSlipPdfBuilder {
           alignment: 'right',
           fontSize: 11,
           bold: true,
-          color: signColor(-rawLoss),
+          //color: signColor(-rawLoss),
           border: [false, false, false, false]
         },
         this.setTablePriceRowTextRight(`${lossPercent.toFixed(0)}%`),
@@ -287,7 +287,7 @@ export class EmbedSlipPdfBuilder {
           alignment: 'right',
           fontSize: 11,
           bold: true,
-          color: signColor(weightLossActual),
+          //color: signColor(weightLossActual),
           border: [false, false, false, false]
         },
         {
@@ -295,7 +295,7 @@ export class EmbedSlipPdfBuilder {
           alignment: 'right',
           fontSize: 11,
           bold: true,
-          color: signColor(moneyDiff),
+          //color: signColor(moneyDiff),
           border: [false, false, false, false]
         }
       ])
@@ -309,12 +309,12 @@ export class EmbedSlipPdfBuilder {
       this.setTablePriceFooter(''),
       this.setTablePriceFooter(''),
       this.setTablePriceFooter(''),
-      this.setTablePriceFooterTextRight('รวมเงิน ได้/ขาด'),
+      this.setTablePriceFooterTextRight('รวม ได้/ขาด'),
       {
         text: fmtSign(moneyTotal),
         bold: true,
         alignment: 'right',
-        color: signColor(moneyTotal),
+        //color: signColor(moneyTotal),
         border: [false, true, false, false]
       }
     ])

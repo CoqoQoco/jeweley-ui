@@ -5,7 +5,7 @@
 
 
  ที่ D:\DuangKeaw\code\jeweley-ui\src\views\production\plan-view
-        - เพิ่ม ถ้า gold loss ยังไม่มีค่า หรือยังไม่ได้ทำต้องไม่เเสดงใน slip ครับ
+        - เช็คน่ำหนักขาดเกินว่าคำนวนยังไง เเล้วใช้ที่ไหนบ้างครับ
         
 
  ### ออกเเบบเเละเขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\src\views\production\PLAN.md ก่อนอนครับ ยังไม่ต้อง implement เเละรอ confirm inplement
