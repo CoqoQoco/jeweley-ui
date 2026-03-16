@@ -267,21 +267,67 @@
       </BaseDataTable>
     </div>
 
-    <!-- gem -->
-    <div v-if="status === 70 || status === 50">
+    <!-- gem — status 50 (แต่ง): แสดงวัตถุดิบสร้อยคอจากคัดพลอย (read-only) -->
+    <div v-if="status === 50">
       <div class="filter-container-highlight mt-3">
         <div class="d-flex justify-content-between">
           <div>
             <span class="desc-text-white bi bi-gem mr-2"></span>
-            <span class="desc-text-white">{{status === 50 ? 'รายละเอียดสร้อย' : 'รายละเอียดพลอย'}}</span>
+            <span class="desc-text-white">วัตถุดิบสร้อยคอ (จากคัดพลอย)</span>
+          </div>
+        </div>
+      </div>
+      <div v-if="necklaceGemFromStatus70.length === 0" class="pl-2 pt-2 desc-text">
+        ไม่มีรายการสร้อยคอจากคัดพลอย
+      </div>
+      <BaseDataTable
+        v-else
+        :value="necklaceGemFromStatus70"
+        :columns="gemColumns"
+        dataKey="id"
+        scrollable
+        stripedRows
+        scrollHeight="calc(100vh - 160px)"
+        :showGridlines="true"
+        :paginator="false"
+      >
+        <template #outboundDateTemplate="slotProps">
+          <div class="text-left">
+            {{ formatDateTime(slotProps.data.outboundDate) }}
+          </div>
+        </template>
+        <template #qtyTemplate="slotProps">
+          {{ slotProps.data.qty ? Number(slotProps.data.qty).toFixed(3).toLocaleString() : '0.000' }}
+        </template>
+        <template #weightTemplate="slotProps">
+          {{ slotProps.data.weight ? Number(slotProps.data.weight).toFixed(3).toLocaleString() : '0.000' }}
+        </template>
+        <template #priceTemplate="slotProps">
+          {{ slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.000' }}
+        </template>
+        <template #footer>
+          <div class="d-flex justify-content-between title-text">
+            <div>
+              <span class="mr-2">จำนวน</span>
+              <span class="mr-2">{{ necklaceGemFromStatus70.reduce((acc, item) => acc + item.qty, 0) }}</span>
+              <span>รายการ</span>
+            </div>
+          </div>
+        </template>
+      </BaseDataTable>
+    </div>
+
+    <!-- gem — status 70 (คัดพลอย): คงเดิม + ปุ่ม CSV -->
+    <div v-if="status === 70">
+      <div class="filter-container-highlight mt-3">
+        <div class="d-flex justify-content-between">
+          <div>
+            <span class="desc-text-white bi bi-gem mr-2"></span>
+            <span class="desc-text-white">รายละเอียดพลอย</span>
           </div>
           <div>
             <button
-              :class="
-                data.tbtProductionPlanStatusGem.length
-                  ? 'btn btn-sm btn-primary'
-                  : 'btn btn-sm btn-secondary'
-              "
+              :class="data.tbtProductionPlanStatusGem.length ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary'"
               @click="exportGemCsv"
               :disabled="!data.tbtProductionPlanStatusGem.length"
             >
@@ -301,42 +347,25 @@
         :showGridlines="true"
         :paginator="false"
       >
-        <!-- ระบุ template สำหรับคอลัมน์ที่ต้องการฟอร์แมต -->
         <template #outboundDateTemplate="slotProps">
           <div class="text-left">
             {{ formatDateTime(slotProps.data.outboundDate) }}
           </div>
         </template>
-
         <template #qtyTemplate="slotProps">
-          {{
-            slotProps.data.qty ? Number(slotProps.data.qty).toFixed(3).toLocaleString() : '0.000'
-          }}
+          {{ slotProps.data.qty ? Number(slotProps.data.qty).toFixed(3).toLocaleString() : '0.000' }}
         </template>
-
         <template #weightTemplate="slotProps">
-          {{
-            slotProps.data.weight
-              ? Number(slotProps.data.weight).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          {{ slotProps.data.weight ? Number(slotProps.data.weight).toFixed(3).toLocaleString() : '0.000' }}
         </template>
-
         <template #priceTemplate="slotProps">
-          {{
-            slotProps.data.price
-              ? Number(slotProps.data.price).toFixed(3).toLocaleString()
-              : '0.000'
-          }}
+          {{ slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.000' }}
         </template>
-
         <template #footer>
           <div class="d-flex justify-content-between title-text">
             <div>
               <span class="mr-2">จำนวน</span>
-              <span class="mr-2">
-                {{ data.tbtProductionPlanStatusGem.reduce((acc, item) => acc + item.qty, 0) }}
-              </span>
+              <span class="mr-2">{{ data.tbtProductionPlanStatusGem.reduce((acc, item) => acc + item.qty, 0) }}</span>
               <span>รายการ</span>
             </div>
           </div>
@@ -507,16 +536,12 @@ export default {
       return groupedData
     },
 
-    necklaceData() {
-      // ค้นหาข้อมูลสร้อยคอใน tbtProductionPlanStatusGem
-      if (this.modelValue.tbtProductionPlanStatusGem) {
-        let necklace = this.modelValue.tbtProductionPlanStatusGem.find((x) =>
-          x.name.includes('สร้อยคอ')
-        )
-        return necklace || null
-      }
-
-      return null
+    necklaceGemFromStatus70() {
+      const header = this.modelValue?.tbtProductionPlanStatusHeader
+      if (!header) return []
+      const status70 = header.find((x) => x.status === 70)
+      if (!status70?.tbtProductionPlanStatusGem) return []
+      return status70.tbtProductionPlanStatusGem.filter((x) => x.name?.includes('สร้อยคอ'))
     }
   },
 
