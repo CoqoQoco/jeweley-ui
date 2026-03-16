@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Read:*",
+      "Bash:git:*",
+      "Write:src/**",
+      "Write:.claude/**",
+      "Write:CLAUDE.md"
+    ],
+    "deny": [
+      "Write:src/assets/scss/custom-style/**"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-legacy.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

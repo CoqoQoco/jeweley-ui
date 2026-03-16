@@ -1,17 +1,4 @@
-#### ช่วยเขียนเเละเเก้ไข code ตามรูปเเบบใน E:\coqo_duangkeaw\Code\jeweley-ui\CLAUDE.md เท่านั้นครับ 
-#### ถ้ามีการใช้ prime-vue components >> ตรวจสอบว่ามี generic-components ไหม >> ไม่มีให้สร้างไว้เพื่อ re-used >> 
-
-
-กลับที่ D:\DuangKeaw\code\jeweley-ui\src\views\mobile\tasks\TASKS_MOBILE_FLOW.md
-  - ผมต้องการเพิ่ม feature inactive my job
-  - ตรวจสอบต้องสร้าง api ใหม่ครับ โดยสามารถ inactive ได้เเค่task ที่เราสร้างเท่านั้น
-  - สามารภกด inactive ได้ที่ หน้า dashboard เเละ tasks 
-
-  - ช่วย plan เเละเเจ้งให้ทราบก่อนครับ
-
-
-
-
-
-
-
+#### ช่วยเขียนและแก้ไข code ตามรูปแบบใน CLAUDE.md เท่านั้นครับ
+#### ทุก task → เสนอ Plan ก่อนเสมอ → รอ confirm → ค่อย implement
+#### ถ้ามีการใช้ PrimeVue components → ตรวจสอบ @.claude/skills/generic-components/SKILL.md ก่อนเสมอ → ถ้าไม่มี generic wrapper ให้สร้างก่อน
+#### การเขียน/แก้ไข .md ให้ดู @.claude/skills/md-instruction/SKILL.md
