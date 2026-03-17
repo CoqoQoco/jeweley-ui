@@ -19,6 +19,9 @@ const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/i
 // Cost Stock - Appraisal
 const CostStockEdit = () => import('@/views/sale/cost-stock/web/cost-edit/index-view.vue')
 
+// Sale Document
+const SaleDocument = () => import('@/views/sale/document/index-view.vue')
+
 // Fallback for incomplete components
 const AccountView = () => import('@/views/setting/user-account/index-view.vue')
 
@@ -194,6 +197,21 @@ const routes = [
             th: 'รายละเอียด Invoice'
           },
           minorShow: false,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+
+      // Sale Document
+      {
+        path: '/sale/document',
+        name: 'sale-document',
+        component: SaleDocument,
+        meta: {
+          Displayname: {
+            en: 'Sale Document',
+            th: 'เอกสารสินค้า'
+          },
+          minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]
         }
       },

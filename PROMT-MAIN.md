@@ -3,11 +3,15 @@
 #### ถ้ามีการใช้ PrimeVue components → ตรวจสอบ @.claude/skills/generic-components/SKILL.md ก่อนเสมอ → ถ้าไม่มี generic wrapper ให้สร้างก่อน
 #### การเขียน/แก้ไข .md ให้ดู @.claude/skills/md-instruction/SKILL.md
 
+ที่ D:\DuangKeaw\code\jeweley-ui\src\views\sale
+  - สร้าง slide-menu ใหม่, view ใหม่ ที่ทำหน้าที่ upload , dowload เอกสารสินค้า (pdf) ประจำเดือนไปเก็บไว้ที่ azure storage ครับ
+  - เลือกดูเเละ dowmload เอกสารย้อยหลัง filter ตามเดดือน
+  - tag เอกสารได้
+  - ลบเอกสารได้ (inactive)
+  - สร้าง table เก็บเอกสารด้วยครับ
+  - api จัดการ file ที่ D:\DuangKeaw\code\jewelry-api\Jewelry.Api\Jewelry.Api\Controllers\FileExtensionController.cs ถ้าไม่มีต้องเพิ่มครับ
+  - ui เเสดง list เอกสาร, upload เอกสาร
 
-ที่ D:\DuangKeaw\code\jeweley-ui\src\views\production\plan-view
->> อ่าน D:\DuangKeaw\code\jeweley-ui\src\views\production\PRDUCTION_FLOW.md
-  วิเคราะ D:\DuangKeaw\code\jeweley-ui\src\views\production\plan-view\components\plan-process-view.vue เเละ D:\DuangKeaw\code\jeweley-ui\src\views\production\plan-view\modal\update-process-view.vue
+  มีอะไรเพิ่มเติม สามารถเสนอเเนะได้นะครับ
 
-  จะเเก้ไขการเเสดงวัถดิบ ที่แผนกเเต่ง โดยการดึง วัถุดิบจากแผนกคัดพลอยาเเสดงด้วย เเต่เเก้ไขที่เเผนกเเต่งไม่ได้ โดยจะดึงเเค่ที่เป็นประเภท "สร้อยคอเท่านั้น"
-
-  เขียน plan ที่ D:\DuangKeaw\code\jeweley-ui\PLAN.md โดยยังไม่ต้อง implement ครับ
+เขียนแผนที่ D:\DuangKeaw\code\jeweley-ui\PLAN.md โดยยังไม่ implement 
