@@ -9,7 +9,7 @@ export const useAuthStore = defineStore('auth', {
     token: localStorage.getItem('token-dk') || null,
     user: JSON.parse(localStorage.getItem('user-dk')) || null,
     error: null,
-    permissions: [],
+    permissions: JSON.parse(localStorage.getItem('permissions-dk') || '[]'),
     userMenus: []
   }),
 
@@ -53,6 +53,7 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.removeItem('token-dk')
       localStorage.removeItem('user-dk')
+      localStorage.removeItem('permissions-dk')
       //delete api.jewelry.defaults.headers.common['Authorization']
     },
 
@@ -164,16 +165,13 @@ export const useAuthStore = defineStore('auth', {
           }
         }
 
-        // Get permissions and menus in parallel
-        // const [permissions, userMenus] = await Promise.all([
-        //   api.jewelry.get('auth/permissions'),
-        //   api.jewelry.get('auth/user-menus')
-        // ])
+        // Load permissions from API (fallback to empty if fails)
+        const permRes = await api.jewelry.get('Permission/MyPermissions').catch(() => null)
+        this.permissions = permRes || []
+        localStorage.setItem('permissions-dk', JSON.stringify(this.permissions))
 
         // Update state with fetched data
         this.user = { ...this.user, ...userProfile }
-        //this.permissions = permissions || []
-        //this.userMenus = userMenus || []
 
         // Update user in localStorage
         localStorage.setItem('user-dk', JSON.stringify(this.user))

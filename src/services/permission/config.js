@@ -70,7 +70,8 @@ export const PERMISSIONS = {
   MOBILE_SALE: 'mobile:sale'
 }
 
-// Role Permission Mapping
+// FALLBACK ONLY — primary source คือ API: Permission/MyPermissions
+// จะลบออกเมื่อมั่นใจว่า API ทำงานได้ถูกต้อง
 export const ROLE_PERMISSIONS = {
   Dev: [
     PERMISSIONS.DASHBOARD,

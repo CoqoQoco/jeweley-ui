@@ -36,7 +36,7 @@ export default {
       const user = this.authStore.user
       if (!user) return this.getDefaultItems()
 
-      const permissionService = new PermissionService(user)
+      const permissionService = new PermissionService(user, this.authStore.permissions)
 
       const allItems = [
         {

@@ -197,7 +197,7 @@ export default {
       }
 
       // กรณีมี role ทำงานปกติ
-      const permissionService = new PermissionService(user)
+      const permissionService = new PermissionService(user, this.authStore.permissions)
       allList.forEach((route) => {
         if (route.meta.majorShow) {
           const hasAccess = permissionService.hasAnyPermission(route.meta.permissions)

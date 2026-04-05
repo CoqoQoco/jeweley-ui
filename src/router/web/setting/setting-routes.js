@@ -75,6 +75,19 @@ const routes = [
            permissions: [PERMISSIONS.USER_EDIT]
         }
       },
+      {
+        path: '/role-permission',
+        name: 'role-permission',
+        component: () => import('@/views/setting/role-permission/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'Role Permission',
+            th: 'จัดการสิทธิ์'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.USER_DEV]
+        }
+      },
     ]
   }
 ]

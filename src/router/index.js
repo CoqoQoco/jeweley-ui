@@ -30,8 +30,9 @@ const checkRoutePermission = (user, route) => {
   // ถ้าไม่มี permissions metadata ให้อนุญาต (เช่น mobile-specific features)
   if (!route.meta?.permissions) return true
 
-  // เช็ค permissions ปกติ
-  const permissionService = new PermissionService(user)
+  // เช็ค permissions — ใช้ permissions จาก API (fallback hardcode ใน PermissionService)
+  const authStore = useAuthStore()
+  const permissionService = new PermissionService(user, authStore.permissions)
   return permissionService.hasAnyPermission(route.meta.permissions)
 }
 

@@ -19,6 +19,7 @@ const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue
 
 //E:\coqo_duangkeaw\Code\jeweley-ui\src\views\production\report\plan-completed-all-gold\index-view.vue
 const reportPlanCompletedWithAllGold = () => import('@/views/production/report/plan-completed-all-gold/index-view.vue')
+const GoldLossTangReport = () => import('@/views/production/report/gold-loss-tang-report/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
@@ -197,6 +198,19 @@ const routes = [
       routes for generating production reports. These routes are currently disabled because they are
       commented out using `//`. This means that the routes for generating production reports are not
       active in the application at the moment. */
+      },
+      {
+        path: '/gold-loss-tang-report',
+        name: 'gold-loss-tang-report',
+        component: GoldLossTangReport,
+        meta: {
+          Displayname: {
+            en: 'Gold Loss Report (Tang)',
+            th: 'รายงาน Gold Loss แต่ง'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
       },
       {
         path: '/plan-bom-report',

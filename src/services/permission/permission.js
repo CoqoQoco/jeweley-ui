@@ -2,12 +2,16 @@
 import { ROLE_PERMISSIONS } from './config.js'
 
 export class PermissionService {
-  constructor(user) {
+  constructor(user, permissionsFromApi = null) {
     this.user = user
-    this.userPermissions = this.getUserPermissions()
+    this.userPermissions =
+      permissionsFromApi && permissionsFromApi.length > 0
+        ? permissionsFromApi
+        : this.getFallbackPermissions()
   }
 
-  getUserPermissions() {
+  // Fallback: ใช้ hardcode เดิม (จะลบทีหลังเมื่อมั่นใจว่า API ทำงานได้)
+  getFallbackPermissions() {
     if (!this.user?.role) return []
 
     // รวม permissions จากทุก role ของ user
