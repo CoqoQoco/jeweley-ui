@@ -123,12 +123,14 @@ const configureInterceptors = (instance) => {
       const isPrinterError = error.config?.baseURL === ZebraPrinterUrl
 
       if (isPrinterError) {
-        // Handle printer specific errors
-        swAlert.error(
-          'การเชื่อมต่อกับเครื่องพิมพ์ล้มเหลว',
-          'กรุณาตรวจสอบว่าบริการเครื่องพิมพ์กำลังทำงานอยู่และเครื่องพิมพ์เชื่อมต่ออยู่',
-          () => {}
-        )
+        // ถ้า skipError = true ไม่ต้องแสดง modal (เช่น ตอน check status)
+        if (!error.config?.skipError) {
+          swAlert.error(
+            'การเชื่อมต่อกับเครื่องพิมพ์ล้มเหลว',
+            'กรุณาตรวจสอบว่าบริการเครื่องพิมพ์กำลังทำงานอยู่และเครื่องพิมพ์เชื่อมต่ออยู่',
+            () => {}
+          )
+        }
         return Promise.reject(error)
       }
 
@@ -278,7 +280,7 @@ const postData = async (url, data, optionsConfig = {}) => {
 
 // GET method for Printer API
 const fetchPrinterData = async (url, params, optionsConfig = {}) => {
-  const { skipLoading = false, apiKey = null, ...restOptions } = optionsConfig
+  const { skipLoading = false, skipError = false, apiKey = null, ...restOptions } = optionsConfig
 
   if (!skipLoading) {
     loadingManager.showLoading()
@@ -301,7 +303,8 @@ const fetchPrinterData = async (url, params, optionsConfig = {}) => {
       headers,
       params: params,
       cancelToken: source.token,
-      skipLoading
+      skipLoading,
+      skipError
     })
 
     return res.data

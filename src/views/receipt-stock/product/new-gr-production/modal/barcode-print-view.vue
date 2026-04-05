@@ -7,6 +7,24 @@
           <span>บันทึกสินค้าสำเร็จ | เลือกสินค้าเพื่อพิมพ์ Barcode</span>
         </div>
 
+        <!-- Tab เลือกแบบ -->
+        <div class="pl-3 pr-3 pt-2 pb-1">
+          <div class="label-type-tabs">
+            <button
+              :class="['tab-btn', selectedType === 'horizontal' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'horizontal'"
+            >
+              <i class="bi bi-file-earmark-text mr-1"></i> แบบที่ 1
+            </button>
+            <button
+              :class="['tab-btn', selectedType === 'vertical' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'vertical'"
+            >
+              <i class="bi bi-file-earmark mr-1"></i> แบบที่ 2
+            </button>
+          </div>
+        </div>
+
         <div>
           <BaseDataTable
             scrollHeight="600px"
@@ -93,6 +111,7 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
+import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
@@ -104,7 +123,8 @@ export default {
 
   setup() {
     const zebraPrinter = zebraPrinterApi()
-    return { zebraPrinter }
+    const productStore = usrStockProductApiStore()
+    return { zebraPrinter, productStore }
   },
 
   props: {
@@ -150,6 +170,7 @@ export default {
     return {
       isShowModal: false,
       checkPrinterService: 'unknown',
+      selectedType: 'horizontal',
 
       stock: this.modelStock,
       selectedItems: [],
@@ -201,7 +222,7 @@ export default {
       this.stock = []
       this.selectedItems = []
       this.itemsToPreSelect = []
-
+      this.selectedType = 'horizontal'
       this.checkPrinterService = 'unknown'
     },
 
@@ -257,8 +278,18 @@ export default {
     },
 
     async onPrintBarcode() {
-      console.log('onPrintBarcode', this.selectedItems)
-      //this.$emit('printBarcode', this.selectedItems)
+      // fetch price ทุก item แบบ parallel
+      const priceMap = {}
+      await Promise.all(
+        this.selectedItems.map(async (item) => {
+          const costRes = await this.productStore.fetchGetStockCostDetail(item.stockNumber)
+          if (costRes?.length > 0) {
+            priceMap[item.stockNumber] = costRes
+              .filter((x) => x.nameGroup !== 'Gold')
+              .reduce((sum, x) => sum + (x.totalPrice ?? 0), 0)
+          }
+        })
+      )
 
       const zplData = this.selectedItems.map((item) => {
         const barcodeData = {
@@ -267,15 +298,18 @@ export default {
           goldType: item.productionTypeSize,
           mold: item.mold,
           stockNumber: item.stockNumber,
+          productNumber: item.productNumber || '',
           size: item.size,
+          productNameEn: item.productNameEn || '',
           gold: '',
           gems: [],
-          isSilver: item.productionTypeSize === 'SILVER' ? true : false
+          price: priceMap[item.stockNumber] ?? null,
+          isSilver: item.productionTypeSize === 'SILVER' ? true : false,
+          barcodeType: this.selectedType
         }
 
         // Process materials if available
         if (item.materials?.length > 0) {
-          // Filter and process materials by type
           item.materials.forEach((material) => {
             switch (material.type) {
               case 'Gold':
@@ -315,6 +349,32 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form';
+
+.label-type-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tab-btn {
+  padding: 4px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  color: #555;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+.tab-btn-active {
+  background: var(--base-font-color);
+  color: #fff;
+  border-color: var(--base-font-color);
+}
 
 .printer-status-indicator {
   display: flex;

@@ -9,7 +9,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
   actions: {
     async fetchZebraPrinterStatus({ skipLoading }) {
       try {
-        return await api.zebraPrinter.getStatus({ skipLoading: skipLoading })
+        return await api.zebraPrinter.getStatus({ skipLoading: skipLoading, skipError: true })
       } catch (error) {
         console.error('Error fetching zebra printer status:', error)
       }
@@ -27,13 +27,12 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
 
     async fetchZebraPrint({ formValue, skipLoading }) {
       try {
-        // ตรวจสอบว่ามีการระบุจำนวนที่ต้องการพิมพ์หรือไม่
-        const printCount = formValue.print || 1 // กำหนดค่าเริ่มต้นเป็น 1 ถ้าไม่ได้ระบุ
+        const printCount = formValue.print || 1
 
-        console.log(`เริ่มพิมพ์จำนวน ${printCount} ชิ้น`)
-
-        // สร้าง ZPL code เพียงครั้งเดียว
-        const zpl = this.generateZPLs(formValue)
+        // เลือก ZPL template ตาม barcodeType
+        const zpl = formValue.barcodeType === 'vertical'
+          ? this.generateZPLVertical(formValue)
+          : this.generateZPLs(formValue)
 
         // สร้างฟังก์ชันสำหรับ delay
         const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -82,8 +81,10 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
     },
     async fetchZebraPrints({ formValue, skipLoading }) {
       try {
-        //create multi zebra code
-        const zpl = formValue.map((form) => this.generateZPLs(form))
+        // เลือก ZPL template ตาม barcodeType ของแต่ละ item
+        const zpl = formValue.map((form) =>
+          form.barcodeType === 'vertical' ? this.generateZPLVertical(form) : this.generateZPLs(form)
+        )
 
         console.log('ZPL:', zpl)
         return await api.zebraPrinter.printsZPL(zpl, { skipLoading: skipLoading })
@@ -134,6 +135,54 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       zpl += '^XZ'
 
       console.log('ZPL:', zpl)
+
+      return zpl
+    },
+
+    generateZPLVertical(formValue) {
+      // ใช้ label ขนาดเดิม เพิ่ม price row จึงสูงขึ้นเล็กน้อย
+      const hasPrice = formValue.price != null && formValue.price > 0
+      const labelHeight = hasPrice ? 220 : 200
+
+      let zpl = `^XA^LL${labelHeight}^MD25^LT40^XZ`
+      zpl += '^XA'
+
+      // made in (ซ้าย เหมือน horizontal)
+      zpl += `^FO025,050^A0N,15,15,B^FD${formValue.madeIn || ''}^FS`
+
+      // productNameEn แทน mold (ไม่มี goldType ข้างๆ)
+      zpl += `^FO252,10^A0N,20,18^FD${formValue.productNameEn || ''}^FS`
+
+      // gold + size เหนือ barcode
+      const sizeText = formValue.size ? ` #${formValue.size}` : ''
+      zpl += `^FO250,030^A0N,14,16,B^FD${formValue.gold || ''}${sizeText}^FS`
+
+      // barcode (ไม่มี stockNumber ใต้)
+      zpl += `^FO248,048^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
+
+      // productNumber - price ไม่รวม gold
+      const priceText = hasPrice
+        ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(formValue.price)
+        : ''
+      const priceLine = [formValue.productNumber, priceText].filter(Boolean).join(' - ')
+      if (priceLine) {
+        zpl += `^FO250,100^A0N,14,16,B^FD${priceLine}^FS`
+      }
+
+      // gems (ขวา เหมือน horizontal)
+      if (Array.isArray(formValue.gems)) {
+        let yPos = 15
+        formValue.gems.forEach((gem) => {
+          if (gem) {
+            zpl += `^FO450,${yPos}^A0N,14,16,B^FD${gem}^FS`
+            yPos += 15
+          }
+        })
+      }
+
+      zpl += '^XZ'
+
+      console.log('ZPL Vertical:', zpl)
 
       return zpl
     }
