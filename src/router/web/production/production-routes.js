@@ -79,6 +79,19 @@ const routes = [
         }
       },
       {
+        path: '/gold-loss-tang-report',
+        name: 'gold-loss-tang-report',
+        component: GoldLossTangReport,
+        meta: {
+          Displayname: {
+            en: 'Create Gold Loss Job',
+            th: 'สร้างใบงาน Gold Loss'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
         path: '/plan-order-tracking',
         name: 'plan-order-tracking',
         component: PlanOrderTracking,
@@ -198,19 +211,6 @@ const routes = [
       routes for generating production reports. These routes are currently disabled because they are
       commented out using `//`. This means that the routes for generating production reports are not
       active in the application at the moment. */
-      },
-      {
-        path: '/gold-loss-tang-report',
-        name: 'gold-loss-tang-report',
-        component: GoldLossTangReport,
-        meta: {
-          Displayname: {
-            en: 'Gold Loss Report (Tang)',
-            th: 'รายงาน Gold Loss แต่ง'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.PRODUCTION_VIEW]
-        }
       },
       {
         path: '/plan-bom-report',

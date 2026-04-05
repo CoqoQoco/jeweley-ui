@@ -66,6 +66,7 @@ src/
 | ❌ ห้าม modify `custom-style/standard-form.scss` | Legacy — ห้ามแตะ |
 | ✅ ใช้ kebab-case ชื่อไฟล์ component เสมอ | Project convention |
 | ✅ ตรวจ generic-components ก่อนใช้ PrimeVue ตรงๆ | Reusability |
+| ✅ ตาราง DataTable ต้องใช้ `DataTableWithPaging` เท่านั้น | ห้ามใช้ `<table>` HTML หรือ PrimeVue DataTable ตรงๆ |
 
 ---
 
@@ -84,3 +85,5 @@ src/
 | @.claude/skills/mobile-dev/SKILL.md | Mobile component, iOS safe area |
 | @.claude/skills/image-system/SKILL.md | แสดงรูป, PDF images |
 | @.claude/skills/generic-components/SKILL.md | CalendarGeneric, AutoComplete |
+| @.claude/skills/modal-system/SKILL.md | สร้าง Modal, popup, dialog |
+| @.claude/skills/pdf-system/SKILL.md | สร้าง PDF, export เอกสาร |

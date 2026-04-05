@@ -222,14 +222,11 @@
             >
               <span><i class="bi bi-zoom-in"></i></span>
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-outline-main mr-2" type="button" @click="onClear" title="ล้าง">
               <span><i class="bi bi-x-circle"></i></span>
             </button>
             <button
-              :class="[
-                'btn btn-sm btn-primary',
-                { 'btn-secondary': !planCompletedStore.dataPlanCompleted.total > 0 }
-              ]"
+              class="btn btn-sm btn-main"
               type="button"
               :disabled="!planCompletedStore.dataPlanCompleted.total > 0"
               @click="onExport"

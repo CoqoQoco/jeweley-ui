@@ -87,6 +87,120 @@ SCSS:
 
 ---
 
+## DataTableWithPaging (BaseDataTable)
+
+**กฎสำคัญ**: ทุกตารางข้อมูลต้องใช้ `DataTableWithPaging` เท่านั้น — ห้ามใช้ `<table>` HTML ธรรมดา หรือ PrimeVue `DataTable` ตรงๆ
+
+```vue
+<BaseDataTable
+  :items="dataList"
+  :totalRecords="total"
+  :columns="columns"
+  :perPage="10"
+  :paginator="true"
+  @page="handlePageChange"
+  @sort="handleSortChange"
+>
+  <!-- Custom column template -->
+  <template #actionTemplate="{ data }">
+    <button class="btn btn-sm btn-green" @click="onView(data)">
+      <i class="bi bi-eye"></i>
+    </button>
+  </template>
+
+  <!-- Footer slot -->
+  <template #footer>
+    <div>รวม {{ total }} รายการ</div>
+  </template>
+</BaseDataTable>
+```
+
+### Import
+
+```javascript
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+```
+
+### Props หลัก
+
+| Prop | Type | Default | คำอธิบาย |
+|---|---|---|---|
+| `items` | Array | `[]` | ข้อมูลแสดงในตาราง |
+| `totalRecords` | Number | `0` | จำนวน record ทั้งหมด (สำหรับ pagination) |
+| `columns` | Array | **required** | กำหนด columns (ดูด้านล่าง) |
+| `perPage` | Number | `10` | จำนวนแถวต่อหน้า |
+| `paginator` | Boolean | `true` | แสดง pagination |
+| `dataKey` | String | `'id'` | unique key ของแต่ละ row |
+| `showGridlines` | Boolean | `true` | แสดงเส้นตาราง |
+| `scrollHeight` | String | `'calc(100vh - 340px)'` | ความสูง scroll |
+| `selectionMode` | Boolean | `false` | เปิด checkbox/radio เลือก row |
+| `selectionType` | String | `'multiple'` | `'single'` หรือ `'multiple'` |
+| `expandable` | Boolean | `false` | เปิด row expand |
+| `emptyMessage` | String | `'ไม่พบข้อมูล'` | ข้อความเมื่อไม่มีข้อมูล |
+
+### Columns Definition
+
+```javascript
+columns: [
+  { field: 'documentNo', header: 'เลขที่', minWidth: '120px' },
+  { field: 'createDate', header: 'วันที่', minWidth: '100px', format: 'date' },
+  { field: 'amount', header: 'จำนวนเงิน', minWidth: '100px', format: 'decimal2', align: 'right' },
+  { field: 'status', header: 'สถานะ', minWidth: '80px', sortable: false },
+  { field: 'action', header: '', minWidth: '100px', sortable: false }
+]
+```
+
+| Column Option | คำอธิบาย |
+|---|---|
+| `field` | ชื่อ property ใน data object |
+| `header` | ชื่อหัวคอลัมน์ |
+| `minWidth` | ความกว้างขั้นต่ำ |
+| `width` | ความกว้างคงที่ |
+| `align` | `'left'`, `'center'`, `'right'` |
+| `format` | `'date'`, `'datetime'`, `'decimal2'`, `'decimal3'`, `'number'`, `'currency'` |
+| `sortable` | `true`/`false` (default: true) |
+
+### Custom Column Template
+
+ใช้ slot ชื่อ `{field}Template`:
+
+```vue
+<BaseDataTable :items="items" :columns="columns">
+  <!-- slot name = field + 'Template' -->
+  <template #actionTemplate="{ data }">
+    <div class="btn-action-container">
+      <button class="btn btn-sm btn-green" @click="onView(data)">
+        <i class="bi bi-eye"></i>
+      </button>
+      <button class="btn btn-sm btn-red" @click="onDelete(data)">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  </template>
+</BaseDataTable>
+```
+
+### Events
+
+| Event | Payload | คำอธิบาย |
+|---|---|---|
+| `@page` | `{ first, rows }` | เปลี่ยนหน้า |
+| `@sort` | `{ first, rows, multiSortMeta }` | เปลี่ยนการ sort |
+| `@update:itemsSelection` | Array | เปลี่ยน selection (เมื่อ selectionMode=true) |
+
+**✅ Good:**
+```vue
+<BaseDataTable :items="items" :columns="columns" :totalRecords="total" />
+```
+
+**❌ Bad:**
+```vue
+<table class="table table-bordered"><thead>...</thead></table>
+<DataTable :value="items">...</DataTable>
+```
+
+---
+
 ## เมื่อไหร่ควรสร้าง Generic Component ใหม่
 
 สร้างเมื่อ:
