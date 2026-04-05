@@ -19,7 +19,8 @@ export function generateBreakdownPdf({
   invoiceDate,
   filename = 'breakdown.pdf',
   openInNewTab = false,
-  targetWindow = null
+  targetWindow = null,
+  profitPercent = 15
 }) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -29,7 +30,8 @@ export function generateBreakdownPdf({
         invoiceDate,
         invoiceNo: customer.invoiceNumber,
         currencyUnit: customer.currencyUnit,
-        currencyMultiplier: customer.currencyMultiplier
+        currencyMultiplier: customer.currencyMultiplier,
+        profitPercent
       })
       await builder.preparePDF()
       const pdf = await builder.generatePDF()

@@ -30,6 +30,10 @@ export const useCustomerDetailApiStore = defineStore('customerDetailApiStore', {
       }
     },
 
+    async fetchUpdateCustomer({ formValue }) {
+      return await api.jewelry.post('Customer/UpdateCustomer', formValue)
+    },
+
     async fetchCreateCustomer({ formValue }) {
       try {
         const params = {

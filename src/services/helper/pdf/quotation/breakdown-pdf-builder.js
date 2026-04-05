@@ -3,13 +3,14 @@ import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 
 export class BreakdownPdfBuilder {
-  constructor({ items, customer, invoiceDate, invoiceNo, currencyUnit, currencyMultiplier }) {
+  constructor({ items, customer, invoiceDate, invoiceNo, currencyUnit, currencyMultiplier, profitPercent }) {
     this.data = items || []
     this.customer = customer || {}
     this.invoiceDate = invoiceDate || dayjs().format('YYYY-MM-DD')
     this.invoiceNo = invoiceNo
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyMultiplier = Number(currencyMultiplier) || 1
+    this.profitPercent = Number(profitPercent) || 15
     this.goldPerOz = customer.goldPerOz || 0
     this.logoBase64 = null
     this.companyInfo = {
@@ -21,6 +22,22 @@ export class BreakdownPdfBuilder {
     }
   }
 
+  async prepareImages() {
+    if (!this.data || !Array.isArray(this.data)) return
+    const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
+    await Promise.all(
+      this.data.map(async (item) => {
+        if (item.imageBase64) return
+        const blobPath = item.imageBlobPath || item.imagePath
+        if (!blobPath) return
+        const base64Image = await getAzureBlobAsBase64(blobPath, 'stock')
+        if (base64Image && base64Image.length > 0) {
+          item.imageBase64 = base64Image
+        }
+      })
+    )
+  }
+
   async preparePDF() {
     if (!this.logoBase64) {
       try {
@@ -30,6 +47,7 @@ export class BreakdownPdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+    await this.prepareImages()
     return this
   }
 
@@ -137,6 +155,26 @@ export class BreakdownPdfBuilder {
                         },
                         {
                           text: dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY'),
+                          fontSize: 12,
+                          bold: true,
+                          color: '#8B0000',
+                          alignment: 'left',
+                          width: '55%',
+                          margin: [5, 0, 0, 0]
+                        }
+                      ]
+                    },
+                    {
+                      columns: [
+                        {
+                          text: 'Gold Locked:',
+                          fontSize: 9,
+                          color: '#393939',
+                          alignment: 'right',
+                          width: '45%'
+                        },
+                        {
+                          text: this.goldPerOz ? `$${this.formatPrice(this.goldPerOz)} /Oz.` : '-',
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',
@@ -279,7 +317,9 @@ export class BreakdownPdfBuilder {
 
     const tableHeader = [
       { text: 'No.', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Image', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Style/Product', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Shape', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Type', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Description', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Qty', style: 'summaryLabelColored', alignment: 'center' },
@@ -291,8 +331,8 @@ export class BreakdownPdfBuilder {
         style: 'summaryLabelColored',
         alignment: 'center'
       },
-      { text: 'Qty (product)', style: 'summaryLabelColored', alignment: 'center' },
-      { text: `Total (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' }
+      { text: `Total (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Profit', style: 'summaryLabelColored', alignment: 'center' }
     ]
 
     const body = [tableHeader]
@@ -334,11 +374,17 @@ export class BreakdownPdfBuilder {
         body.push([
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
           currentRow === 0
+            ? { ...this.setImageCell(item.imageBase64), rowSpan: totalRows }
+            : {},
+          currentRow === 0
             ? {
                 text: item.productNumber || item.stockNumberOrigin || item.stockNumber || '',
                 alignment: 'center',
                 rowSpan: totalRows
               }
+            : {},
+          currentRow === 0
+            ? { text: this.getShape(item), alignment: 'center', rowSpan: totalRows }
             : {},
           { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
           { text: gold.nameDescription || '-', alignment: 'left' },
@@ -360,19 +406,21 @@ export class BreakdownPdfBuilder {
             text: this.formatPrice((gold.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
-          { text: item.qty || 1, alignment: 'center' },
           {
             text: this.formatPrice(
               ((gold.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
-          }
+          },
+          { text: '', alignment: 'center' }
         ])
         currentRow++
       })
 
       gemList.forEach((gem, idx) => {
         body.push([
+          {},
+          {},
           {},
           {},
           idx === 0
@@ -397,13 +445,13 @@ export class BreakdownPdfBuilder {
             text: this.formatPrice((gem.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
-          { text: item.qty || 1, alignment: 'center' },
           {
             text: this.formatPrice(
               ((gem.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
-          }
+          },
+          { text: '', alignment: 'center' }
         ])
         currentRow++
       })
@@ -414,6 +462,8 @@ export class BreakdownPdfBuilder {
         body.push([
           {},
           {},
+          {},
+          {},
           { text: 'Labor', alignment: 'center' },
           { text: '-', alignment: 'left' },
           { text: '1', alignment: 'center' },
@@ -421,11 +471,11 @@ export class BreakdownPdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: this.formatPrice(sumWork / (this.currencyMultiplier || 1)), alignment: 'right' },
-          { text: item.qty || 1, alignment: 'center' },
           {
             text: this.formatPrice((sumWork / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
-          }
+          },
+          { text: '', alignment: 'center' }
         ])
         currentRow++
       }
@@ -435,6 +485,8 @@ export class BreakdownPdfBuilder {
         body.push([
           {},
           {},
+          {},
+          {},
           { text: 'Setting', alignment: 'center' },
           { text: '-', alignment: 'left' },
           { text: '1', alignment: 'center' },
@@ -442,16 +494,18 @@ export class BreakdownPdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: this.formatPrice(sumEmbed / (this.currencyMultiplier || 1)), alignment: 'right' },
-          { text: item.qty || 1, alignment: 'center' },
           {
             text: this.formatPrice((sumEmbed / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
-          }
+          },
+          { text: '', alignment: 'center' }
         ])
         currentRow++
       }
       etcList.forEach((etc, idx) => {
         body.push([
+          {},
+          {},
           {},
           {},
           idx === 0 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : {},
@@ -467,13 +521,13 @@ export class BreakdownPdfBuilder {
             text: this.formatPrice((etc.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
-          { text: item.qty || 1, alignment: 'center' },
           {
             text: this.formatPrice(
               ((etc.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
-          }
+          },
+          { text: '', alignment: 'center' }
         ])
         currentRow++
       })
@@ -506,14 +560,17 @@ export class BreakdownPdfBuilder {
         : 0
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
+      const profitAmount = totalItemPrice * (this.profitPercent / 100)
+      const totalWithProfit = totalItemPrice + profitAmount
 
       body.push([
         {
           text: `Total of ${item.productNumber} `,
           style: 'totalSummaryLabelColored',
           alignment: 'right',
-          colSpan: 10
+          colSpan: 11
         },
+        {},
         {},
         {},
         {},
@@ -525,6 +582,12 @@ export class BreakdownPdfBuilder {
         {},
         {
           text: this.formatPrice(totalItemPrice),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          bold: true
+        },
+        {
+          text: this.formatPrice(totalWithProfit),
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           bold: true
@@ -542,7 +605,7 @@ export class BreakdownPdfBuilder {
           margin: [0, 10, 0, 0],
           table: {
             headerRows: 1,
-            widths: [20, 50, 50, '*', 40, 40, 40, 40, 60, 40, 60],
+            widths: [20, 60, 50, 45, 40, '*', 40, 40, 40, 40, 55, 55, 55],
             body
           },
           layout: {
@@ -553,6 +616,42 @@ export class BreakdownPdfBuilder {
               return 0.5
             }
           }
+        },
+        // Signature
+        {
+          margin: [0, 15, 0, 0],
+          columns: [
+            { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
+            {
+              text: '______________________________',
+              style: 'parcelText',
+              alignment: 'center',
+              width: '30%'
+            }
+          ]
+        },
+        {
+          columns: [
+            { text: '', style: 'parcelText', alignment: 'left', width: '70%' },
+            {
+              text: '(Authorized Signature and Company Stamp)',
+              style: 'parcelText',
+              alignment: 'center',
+              width: '30%'
+            }
+          ]
+        },
+        // Conditions
+        {
+          margin: [0, 10, 0, 0],
+          stack: [
+            { text: 'Price is F.O.B. Bangkok not inclued freight and insurance', style: 'conditionText' },
+            { text: 'Production time within 5-7 weeks', style: 'conditionText' },
+            { text: '40% payment of tt, 60% before the shipment.', style: 'conditionText' },
+            { text: 'Gold weight, Diamond weight and Stones weight are approximately, the actual weight will be known after production is completed', style: 'conditionText' },
+            { text: 'Minimun order 10 pcs per design / Minimun purchase US$ 5,000', style: 'conditionText' },
+            { text: 'The price quotation is current gold price market at www.kitco.com (please confirm within 2 days)', style: 'conditionText' }
+          ]
         }
       ],
       footer: function (currentPage, pageCount) {
@@ -578,9 +677,39 @@ export class BreakdownPdfBuilder {
           bold: true,
           color: '#8B0000',
           fillColor: '#e0e0e0'
+        },
+        parcelText: {
+          fontSize: 10,
+          color: '#393939'
+        },
+        conditionText: {
+          fontSize: 8,
+          color: '#666666'
         }
       }
     }
+  }
+
+  setImageCell(imageBase64) {
+    if (!imageBase64) {
+      return { text: '', alignment: 'center' }
+    }
+    const imageData = imageBase64.startsWith('data:image')
+      ? imageBase64
+      : `data:image/png;base64,${imageBase64}`
+    return {
+      image: imageData,
+      width: 50,
+      height: 50,
+      alignment: 'center',
+      margin: [2, 3, 2, 3]
+    }
+  }
+
+  getShape(item) {
+    if (!item.materials) return ''
+    const gems = item.materials.filter(m => m.type === 'Diamond' || m.type === 'Gem')
+    return gems.map(g => g.shape || g.typeCode || '').filter(Boolean).join(', ')
   }
 
   formatPrice(price) {

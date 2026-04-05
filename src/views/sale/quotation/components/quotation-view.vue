@@ -42,21 +42,21 @@
                   :class="['form-control bg-input', 'input-bg']"
                   type="text"
                   v-model.trim="customer.currencyUnit"
-                  style="width: 100px"
+                  style="width: 80px"
                 />
               </div>
               <div class="">
-                <span class="title-text">Currency Rate</span>
+                <span class="title-text">Rate</span>
                 <input
                   :class="['form-control bg-input', 'input-bg']"
                   type="number"
                   v-model.number="customer.currencyMultiplier"
                   min="0"
                   step="any"
-                  style="width: 100px"
+                  style="width: 80px"
                 />
               </div>
-              <div class="ml-2">
+              <div class="">
                 <span class="title-text">Markup</span>
                 <input
                   :class="['form-control bg-input', 'input-bg']"
@@ -67,12 +67,12 @@
                   style="width: 80px"
                 />
               </div>
-              <div class="ml-2">
+              <div class="">
                 <span class="title-text">Discount (%)</span>
                 <InputWithButton
                   v-model.number="customer.discountPercent"
                   type="number"
-                  width="80px"
+                  width="100px"
                   min="0"
                   max="100"
                   step="any"
@@ -84,16 +84,30 @@
                   </template>
                 </InputWithButton>
               </div>
-              <div class="ml-2">
+              <div class="">
+                <span class="title-text">Gold (US$/gms)</span>
+                <InputWithButton
+                  :modelValue="goldPerGramDisplay"
+                  type="text"
+                  width="120px"
+                  :readonly="true"
+                  btnClass="btn btn-main btn-sm"
+                  btnTitle="คำนวณราคาทอง"
+                  @btn-click="isShow.goldCalculator = true"
+                >
+                  <template #btn-content>
+                    <i class="bi bi-calculator"></i>
+                  </template>
+                </InputWithButton>
+              </div>
+              <div class="">
                 <span class="title-text">Gold (US$/Oz.)</span>
                 <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
-                  v-model.number="customer.goldPerOz"
-                  min="0"
-                  max="10000"
-                  step="any"
-                  style="width: 80px"
+                  class="form-control bg-input input-bg"
+                  type="text"
+                  :value="goldPerOzDisplay"
+                  readonly
+                  style="width: 100px; text-align: right;"
                 />
               </div>
             </div>
@@ -121,6 +135,16 @@
                 >
                   <i class="bi bi-person-plus mr-1"></i>
                   <span>เพิ่มลูกค้าใหม่</span>
+                </button>
+                <button
+                  v-if="customer.customerCode"
+                  class="btn btn-sm btn-outline-main ml-2"
+                  type="button"
+                  @click="onEditCustomer"
+                  title="แก้ไขลูกค้า"
+                >
+                  <i class="bi bi-pencil mr-1"></i>
+                  <span>แก้ไข</span>
                 </button>
               </div>
             </div>
@@ -739,37 +763,52 @@
 
       <div class="base-customer">
         <div class="filter-container mt-2">
-          <div class="d-flex justify-content-center" style="flex-wrap: wrap; gap: 6px;">
-            <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
-              <i class="bi bi-file-earmark-pdf mr-1"></i>
-              <span>Quotation File</span>
-            </button>
-            <button class="btn btn-sm btn-outline-main" type="button" @click="previewInvoice()">
-              <i class="bi bi-eye mr-1"></i>
-              <span>Preview Quotation</span>
-            </button>
-            <div class="d-flex align-items-center" style="gap: 4px; cursor: pointer; white-space: nowrap"
-                 @click="pdfShowCifLabel = !pdfShowCifLabel">
-              <input type="checkbox" v-model="pdfShowCifLabel"
-                     style="width: 14px; height: 14px; cursor: pointer" />
-              <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
+          <div class="d-flex justify-content-center align-items-center" style="flex-wrap: wrap; gap: 12px;">
+            <!-- PDF Group -->
+            <div class="action-btn-group">
+              <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
+                <i class="bi bi-file-earmark-pdf mr-1"></i>
+                <span>Quotation</span>
+              </button>
+              <button class="btn btn-sm btn-outline-main" type="button" @click="previewInvoice()">
+                <i class="bi bi-eye mr-1"></i>
+                <span>Preview</span>
+              </button>
+              <button class="btn btn-sm btn-green" type="button" @click="printBreakdown()">
+                <i class="bi bi-file-earmark-pdf mr-1"></i>
+                <span>Breakdown</span>
+              </button>
+              <button class="btn btn-sm btn-outline-main" type="button" @click="previewBreakdown()">
+                <i class="bi bi-eye mr-1"></i>
+                <span>Preview</span>
+              </button>
+              <div class="d-flex align-items-center gap-2" style="margin-left: 10px;">
+                <span class="title-text mr-2" style="white-space: nowrap;">Profit %</span>
+                <input class="form-control form-control-sm" type="number" v-model.number="customer.profitPercent" style="width: 70px;" min="0" max="100" />
+              </div>
             </div>
-            <button
-              class="btn btn-sm btn-green"
-              type="button"
-              @click="exportQuotationExcel"
-              :disabled="!customer.quotationItems || customer.quotationItems.length === 0"
-            >
-              <i class="bi bi-file-earmark-excel mr-1"></i>
-              <span>Export Excel</span>
-            </button>
-            <button class="btn btn-sm btn-green" type="button" @click="printBreakdown()">
-              <i class="bi bi-file-earmark-pdf mr-1"></i>
-              <span>Breakdown File</span>
-            </button>
-            <button class="btn btn-sm btn-main" type="submit">
-              <span>Save Quotation</span>
-            </button>
+
+            <!-- Export Group -->
+            <div class="action-btn-group">
+              <button class="btn btn-sm btn-green" type="button" @click="exportQuotationExcel"
+                :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
+                <i class="bi bi-file-earmark-excel mr-1"></i>
+                <span>Excel</span>
+              </button>
+            </div>
+
+            <!-- Action Group -->
+            <div class="action-btn-group">
+              <div class="d-flex align-items-center mr-2" style="gap: 4px; cursor: pointer; white-space: nowrap"
+                   @click="pdfShowCifLabel = !pdfShowCifLabel">
+                <input type="checkbox" v-model="pdfShowCifLabel"
+                       style="width: 14px; height: 14px; cursor: pointer" />
+                <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
+              </div>
+              <button class="btn btn-sm btn-main" type="submit">
+                <span>Save Quotation</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -813,6 +852,13 @@
       @customerCreated="onCustomerCreated"
     />
 
+    <CustomerEditModal
+      :isShow="isShow.editCustomer"
+      :customerData="editCustomerData"
+      @closeModal="isShow.editCustomer = false"
+      @customerUpdated="onCustomerUpdated"
+    />
+
     <CostVersionPickerModal
       :showModal="isShow.costVersionPicker"
       @closeModal="isShow.costVersionPicker = false"
@@ -828,6 +874,13 @@
       title="ยืนยันการ Export Excel (Quotation)"
       @close-modal="showExcelModal = false"
       @confirm-export="handleConfirmExcelExport"
+    />
+
+    <GoldCalculatorModal
+      :isShow="isShow.goldCalculator"
+      :defaultGoldPrice="customer.goldPerOz"
+      @closeModal="isShow.goldCalculator = false"
+      @select="onGoldCalculated"
     />
   </div>
 </template>
@@ -848,6 +901,7 @@ import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pd
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
 import CostVersionPickerModal from '@/views/sale/quotation/modal/cost-version-picker-modal.vue'
+import CustomerEditModal from '@/views/sale/quotation/modal/customer-edit-modal.vue'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -860,6 +914,7 @@ import { warning, success } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
 import ExcelExportConfirmModal from '@/components/modal/ExcelExportConfirmModal.vue'
+import GoldCalculatorModal from '@/components/modal/gold-calculator-modal.vue'
 
 const interfaceForm = {
   discount: 0,
@@ -875,13 +930,17 @@ const interfaceForm = {
   discountPercent: 0,
   specialDiscount: 0,
   specialAddition: 0,
-  vatPercent: 0
+  vatPercent: 0,
+  customerCode: null,
+  profitPercent: 15
 }
 const interfaceShow = {
   isEditStock: false,
   searchCustomer: false,
   createCustomer: false,
-  costVersionPicker: false
+  costVersionPicker: false,
+  editCustomer: false,
+  goldCalculator: false
 }
 
 export default {
@@ -899,8 +958,10 @@ export default {
     CustomerSearchModal,
     CustomerCreateModal,
     CostVersionPickerModal,
+    CustomerEditModal,
     ExcelExportConfirmModal,
-    InputWithButton
+    InputWithButton,
+    GoldCalculatorModal
   },
 
   setup() {
@@ -926,6 +987,15 @@ export default {
   computed: {
     form() {
       return this.modelForm || {}
+    },
+    goldPerGramDisplay() {
+      const gram = Number(this.customer.goldPerOz) || 0
+      return gram.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
+    goldPerOzDisplay() {
+      const gram = Number(this.customer.goldPerOz) || 0
+      const oz = gram * 31.104
+      return oz.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     },
     sumGoldWeight() {
       let sum = 0
@@ -1042,6 +1112,16 @@ export default {
     grandTotal() {
       return (this.totalBeforeVat + this.vatAmount).toFixed(2)
     },
+    editCustomerData() {
+      return {
+        code: this.customer.customerCode,
+        nameTh: this.customer.name,
+        nameEn: this.customer.nameEn || '',
+        address: this.customer.address,
+        telephone1: this.customer.tel,
+        email: this.customer.email
+      }
+    },
     masterGold() {
       return this.masterStore.gold
     },
@@ -1095,11 +1175,11 @@ export default {
   },
 
   methods: {
-    generateQuotationNumber() {
-      const now = dayjs()
-      const dateStr = now.format('YYYYMMDD')
-      const timeStr = now.format('HHmmss')
-      this.customer.invoiceNumber = `QT-${dateStr}-${timeStr}`
+    async generateQuotationNumber() {
+      const res = await this.quotationStore.fetchGenerateNumber()
+      if (res) {
+        this.customer.invoiceNumber = res
+      }
     },
     delItem(index) {
       this.customer.quotationItems.splice(index, 1)
@@ -1275,7 +1355,20 @@ export default {
         customer: this.customer,
         invoiceDate: this.customer.quotationDate,
         filename,
-        openInNewTab: false
+        openInNewTab: false,
+        profitPercent: this.customer.profitPercent || 15
+      })
+    },
+    previewBreakdown() {
+      const win1 = window.open('', '_blank')
+      generateBreakdownPdf({
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        invoiceDate: this.customer.quotationDate,
+        filename: `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
+        openInNewTab: true,
+        targetWindow: win1,
+        profitPercent: this.customer.profitPercent || 15
       })
     },
     onEditStock(item, index) {
@@ -1416,6 +1509,7 @@ export default {
       const formValue = {
         number: this.customer.invoiceNumber,
 
+        customerCode: this.customer.customerCode,
         customerName: this.customer.name ? this.customer.name.trim() : '',
         customerAddress: this.customer.address ? this.customer.address.trim() : '',
         customerPhone: this.customer.tel ? this.customer.tel.trim() : '',
@@ -1472,6 +1566,7 @@ export default {
           invoiceNumber: res.number || null,
           remark: res.remark || '',
 
+          customerCode: res.customerCode,
           name: res.customerName || '',
           address: res.customerAddress || '',
           tel: res.customerPhone || '',
@@ -1517,7 +1612,8 @@ export default {
         address: customerData.address || '',
         tel: customerData.telephone1 || '',
         email: customerData.email || '',
-        customerId: customerData.id
+        customerId: customerData.id,
+        customerCode: customerData.code
       }
       this.isShow.searchCustomer = false
     },
@@ -1529,14 +1625,36 @@ export default {
         address: customerData.address || '',
         tel: customerData.telephone1 || '',
         email: customerData.email || '',
-        customerId: customerData.id
+        customerId: customerData.id,
+        customerCode: customerData.code
       }
       this.isShow.createCustomer = false
+    },
+
+    onEditCustomer() {
+      this.isShow.editCustomer = true
+    },
+
+    onCustomerUpdated(data) {
+      this.customer = {
+        ...this.customer,
+        name: data.nameTh || data.nameEn || '',
+        address: data.address || '',
+        tel: data.telephone1 || '',
+        email: data.email || ''
+      }
+      this.isShow.editCustomer = false
     },
 
     onCloseCustomerModal() {
       this.isShow.searchCustomer = false
       this.isShow.createCustomer = false
+    },
+
+    onGoldCalculated(data) {
+      // data = { code, name, goldPercent, pricePerGram, pricePerOz }
+      this.customer.goldPerOz = data.pricePerGram
+      this.isShow.goldCalculator = false
     },
 
     // Excel Export
@@ -1588,7 +1706,7 @@ export default {
   },
 
   async created() {
-    this.generateQuotationNumber()
+    await this.generateQuotationNumber()
     this.$nextTick(async () => {
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()
@@ -1762,5 +1880,15 @@ export default {
   font-size: 1.1rem;
   font-weight: bold;
   color: var(--base-font-color);
+}
+
+.action-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #fafafa;
 }
 </style>

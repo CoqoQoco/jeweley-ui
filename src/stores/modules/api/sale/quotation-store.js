@@ -53,6 +53,9 @@ related to handling quotation data. It includes state properties `dataSearch` an
           console.error('Error getting quotation data:', error)
         }
       },
+      async fetchGenerateNumber() {
+        return await api.jewelry.post('Quotation/GenerateNumber')
+      },
       async fetchList({ take = 10, skip = 0, sort = [], formValue = {} }) {
         try {
           // Create search object with form values
