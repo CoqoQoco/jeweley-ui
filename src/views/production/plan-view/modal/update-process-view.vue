@@ -716,7 +716,7 @@ export default {
         const weightSend = item.goldWeightSend ?? 0
         const weightCheck = item.goldWeightCheck ?? 0
         const rawLoss = weightSend - weightCheck
-        const weightLossAllowed = weightSend * (lossPercent / 100)
+        const weightLossAllowed = weightCheck * (lossPercent / 100)
         const weightLossActual = Math.round((weightLossAllowed - rawLoss) * 10000) / 10000  // + = ได้ (เขียว), - = ขาด (แดง)
         const moneyDiff = Math.round(weightLossActual * 100) / 100 * (this.goldLossPrice ?? 0)
         return { ...item, weightDiff: weightSend - weightCheck, lossPercent, weightLossAllowed, weightLossActual, moneyDiff }

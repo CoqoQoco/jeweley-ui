@@ -494,7 +494,7 @@ export default {
         const weightSend = item.goldWeightSend ?? 0
         const weightCheck = item.goldWeightCheck ?? 0
         const rawLoss = weightSend - weightCheck
-        const weightLossAllowed = weightSend * (lossPercent / 100)
+        const weightLossAllowed = weightCheck * (lossPercent / 100)
         const weightLossActual = Math.round((weightLossAllowed - rawLoss) * 10000) / 10000
         const moneyDiff = Math.round(weightLossActual * 100) / 100 * goldPrice
         return { ...item, weightDiff: rawLoss, lossPercent, weightLossAllowed, weightLossActual, moneyDiff }
