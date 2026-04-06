@@ -121,7 +121,10 @@ export default {
 
       switch (this.type) {
         case 'MOLD':
-          // MOLD type: "Mold/{imageName}-Mold.png"
+          // MOLD type: "Mold/{imageName}-Mold.png" (ถ้ามี .png อยู่แล้วไม่เติม suffix)
+          if (cleanImageName.includes('.png')) {
+            return `Mold/${cleanImageName}`
+          }
           return `Mold/${cleanImageName}-Mold.png`
 
         case 'PLANMOLD':
