@@ -309,7 +309,7 @@
           <div class="d-flex justify-content-between title-text">
             <div>
               <span class="mr-2">จำนวน</span>
-              <span class="mr-2">{{ necklaceGemFromStatus70.reduce((acc, item) => acc + item.qty, 0) }}</span>
+              <span class="mr-2">{{ necklaceGemFromStatus70.length }}</span>
               <span>รายการ</span>
             </div>
           </div>
@@ -541,7 +541,10 @@ export default {
       if (!header) return []
       const status70 = header.find((x) => x.status === 70)
       if (!status70?.tbtProductionPlanStatusGem) return []
-      return status70.tbtProductionPlanStatusGem.filter((x) => x.name?.includes('สร้อยคอ'))
+      return status70.tbtProductionPlanStatusGem.filter((x) => {
+        const name = x.name?.toLowerCase() ?? ''
+        return name.includes('สร้อย') || name.includes('necklace')
+      })
     }
   },
 
