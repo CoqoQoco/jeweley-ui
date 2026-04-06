@@ -1546,19 +1546,22 @@
     <div class="mt-4 pb-2">
       <!-- Edit Mode Buttons (hidden in view mode) -->
 
-      <div v-if="!isViewMode" class="form-col-container">
-        <div class="d-flex justify-content-start align-items-center">
-          <button class="btn btn-red mr-2" type="button" style="width: 200px"
+      <div v-if="!isViewMode" class="d-flex justify-content-center align-items-center" style="flex-wrap: wrap; gap: 12px;">
+
+        <!-- Danger Group -->
+        <div class="action-btn-group">
+          <button class="btn btn-sm btn-red" type="button"
                   @click="inactiveSaleOrder()">
             <i class="bi bi-trash mr-1"></i>
             ลบใบสั่งขาย
           </button>
         </div>
-        <div class="d-flex justify-content-end align-items-center">
+
+        <!-- Confirm Group -->
+        <div class="action-btn-group">
           <button
-            class="btn btn-green mr-2"
+            class="btn btn-sm btn-green"
             type="button"
-            style="width: 200px"
             @click="openConfirmStockModal"
             :disabled="
               selectedItemsCount === 0 ||
@@ -1568,32 +1571,69 @@
             "
           >
             <i class="bi bi-check-square mr-1"></i>
-            ยืนยันการขาย
+            ยืนยันสินค้า
             <span v-if="pendingConfirmationStockItemsCount > 0" class="badge badge-warning ml-1">
               {{ pendingConfirmationStockItemsCount }}
             </span>
           </button>
 
           <button
-            class="btn btn-green mr-2"
+            class="btn btn-sm btn-green"
             type="button"
-            style="width: 200px"
             @click="openInvoiceModal"
             :disabled="
               selectedItemsCount === 0 || hasValidationErrors || confirmedStockItemsCount === 0
             "
           >
             <i class="bi bi-receipt mr-1"></i>
-            Invoice
+            ใบเเจ้งหนี้
             <span v-if="pendingInvoiceStockItemsCount > 0" class="badge badge-warning ml-1">
               {{ pendingInvoiceStockItemsCount }}
             </span>
           </button>
+        </div>
 
+        <!-- PDF Group -->
+        <div class="action-btn-group">
           <button
-            class="btn btn-outline-main mr-2"
+            class="btn btn-sm btn-main"
             type="button"
-            style="width: 200px"
+            @click="exportPDF"
+            :disabled="stockItems.length === 0 || isExportingPDF"
+          >
+            <span v-if="isExportingPDF" class="spinner-border spinner-border-sm mr-2"></span>
+            <i v-else class="bi bi-file-earmark-pdf mr-1"></i>
+            Export PDF
+          </button>
+          <button
+            class="btn btn-sm btn-outline-main"
+            type="button"
+            @click="previewPDF"
+            :disabled="stockItems.length === 0 || isPreviewingPDF"
+          >
+            <span v-if="isPreviewingPDF" class="spinner-border spinner-border-sm mr-2"></span>
+            <i v-else class="bi bi-eye mr-1"></i>
+            Preview
+          </button>
+          <div
+            class="d-flex align-items-center"
+            style="gap: 4px; cursor: pointer; white-space: nowrap"
+            @click="pdfShowCifLabel = !pdfShowCifLabel"
+          >
+            <input
+              type="checkbox"
+              v-model="pdfShowCifLabel"
+              style="width: 14px; height: 14px; cursor: pointer"
+            />
+            <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
+          </div>
+        </div>
+
+        <!-- Save Group -->
+        <div class="action-btn-group">
+          <button
+            class="btn btn-sm btn-main"
+            type="button"
             @click="saveDraft"
             :disabled="selectedItemsCount === 0"
           >
@@ -1601,43 +1641,8 @@
             <i class="bi bi-file-earmark mr-1"></i>
             บันทึกร่าง
           </button>
-
-          <div class="d-flex align-items-center" style="gap: 8px">
-            <button
-              class="btn btn-outline-main"
-              type="button"
-              style="width: 200px"
-              @click="exportPDF"
-              :disabled="stockItems.length === 0 || isExportingPDF"
-            >
-              <span v-if="isExportingPDF" class="spinner-border spinner-border-sm mr-2"></span>
-              <i v-else class="bi bi-file-earmark-pdf mr-1"></i>
-              Export PDF
-            </button>
-            <button
-              class="btn btn-outline-main"
-              type="button"
-              @click="previewPDF"
-              :disabled="stockItems.length === 0 || isPreviewingPDF"
-            >
-              <span v-if="isPreviewingPDF" class="spinner-border spinner-border-sm mr-2"></span>
-              <i v-else class="bi bi-eye mr-1"></i>
-              Preview PDF
-            </button>
-            <div
-              class="d-flex align-items-center"
-              style="gap: 4px; cursor: pointer; white-space: nowrap"
-              @click="pdfShowCifLabel = !pdfShowCifLabel"
-            >
-              <input
-                type="checkbox"
-                v-model="pdfShowCifLabel"
-                style="width: 14px; height: 14px; cursor: pointer"
-              />
-              <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
-            </div>
-          </div>
         </div>
+
       </div>
 
       <!-- Back to List Button (visible in view mode) -->
@@ -3100,6 +3105,16 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/custom-style/standard-data-table.scss';
+
+.action-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #fafafa;
+}
 
 /* Quotation table styles */
 .input-bg {
