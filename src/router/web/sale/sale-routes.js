@@ -4,6 +4,10 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 // Sales Dashboard
 const SalesDashboard = () => import('@/views/sale/dashboard/index-view.vue')
 
+// Stock Basket
+const StockBasketList = () => import('@/views/sale/stock-basket/index-view.vue')
+const StockBasketView = () => import('@/views/sale/stock-basket/components/basket-view.vue')
+
 // Sales Flow Components
 const Quotation = () => import('@/views/sale/quotation/index-view.vue')
 const QuotationList = () => import('@/views/sale/quotation-list/index-view.vue')
@@ -213,6 +217,34 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+
+      // Stock Basket Section
+      {
+        path: '/sale/stock-basket',
+        name: 'sale-stock-basket',
+        component: StockBasketList,
+        meta: {
+          Displayname: {
+            en: 'Stock Basket',
+            th: 'ตะกร้าสินค้า'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+      {
+        path: '/sale/stock-basket/:running',
+        name: 'sale-stock-basket-detail',
+        component: StockBasketView,
+        meta: {
+          Displayname: {
+            en: 'Stock Basket Detail',
+            th: 'รายละเอียดตะกร้าสินค้า'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_CREATE]
         }
       },
 

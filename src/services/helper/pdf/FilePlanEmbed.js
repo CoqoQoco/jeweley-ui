@@ -264,8 +264,8 @@ export class EmbedSlipPdfBuilder {
       const rawLoss = weightSend - weightCheck
       const lossPercent = Number(item.lossPercent ?? 0)
       const weightLossAllowed = weightSend * (lossPercent / 100)
-      const weightLossActual = weightLossAllowed - rawLoss
-      const moneyDiff = weightLossActual * goldLossPrice
+      const weightLossActual = Math.round((weightLossAllowed - rawLoss) * 10000) / 10000
+      const moneyDiff = Math.round(weightLossActual * 100) / 100 * goldLossPrice
       moneyTotal += moneyDiff
 
       body.push([
