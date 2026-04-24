@@ -1591,6 +1591,27 @@
               {{ pendingInvoiceStockItemsCount }}
             </span>
           </button>
+
+          <button
+            class="btn btn-sm btn-green"
+            type="button"
+            @click="openConfirmAndInvoiceModal"
+            :disabled="
+              selectedItemsCount === 0 ||
+              hasValidationErrors ||
+              !hasSaleOrderNumber ||
+              stockItemsForConfirmAndInvoice.length === 0
+            "
+          >
+            <i class="bi bi-lightning-charge mr-1"></i>
+            ยืนยัน + ออกใบแจ้งหนี้
+            <span
+              v-if="stockItemsForConfirmAndInvoice.length > 0"
+              class="badge badge-warning ml-1"
+            >
+              {{ stockItemsForConfirmAndInvoice.length }}
+            </span>
+          </button>
         </div>
 
         <!-- PDF Group -->
@@ -1691,6 +1712,15 @@
     @close-modal="onCloseInvoiceModal"
     @invoice-created="onInvoiceCreated"
   />
+
+  <!-- Confirm + Invoice (Combined) Modal -->
+  <ConfirmAndInvoiceModal
+    :isShowModal="isShow.confirmAndInvoiceModal"
+    :saleOrderData="formSaleOrder"
+    :stockItems="stockItemsForConfirmAndInvoice"
+    @close-modal="onCloseConfirmAndInvoiceModal"
+    @invoice-created="onInvoiceCreated"
+  />
 </template>
 
 <script>
@@ -1706,6 +1736,7 @@ import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-mo
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
 import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
 import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
+import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
@@ -1726,6 +1757,7 @@ export default {
     Dropdown,
     SaleOrderInvoiceModal,
     ConfirmStockModal,
+    ConfirmAndInvoiceModal,
     imagePreview,
     editStockView,
     CustomerSearchModal,
@@ -1786,7 +1818,8 @@ export default {
         searchCustomer: false,
         createCustomer: false,
         invoiceModal: false,
-        confirmStockModal: false
+        confirmStockModal: false,
+        confirmAndInvoiceModal: false
       },
       modelEditStock: {},
       editStockNumber: null,
@@ -1913,6 +1946,12 @@ export default {
       return this.pendingInvoiceStockItems.length
     },
 
+    stockItemsForConfirmAndInvoice() {
+      return this.stockItemsForInvoice.filter(
+        (item) => !item.invoice && item.isRemainProduct === true
+      )
+    },
+
     selectedItemsTotal() {
       const stockTotal = this.stockItems.reduce(
         (sum, item) => sum + this.getTotalConvertedPrice(item),
@@ -2002,6 +2041,10 @@ export default {
       //return this.formSaleOrder.number && this.formSaleOrder.number.trim() !== ''
       //เช็คว่าเคยมีเลขที่ใบสั่งขายหรือไม่
       return this.formSaleOrder.number != null && this.formSaleOrder.number !== ''
+    },
+
+    hasCustomerInfo() {
+      return !!(this.formSaleOrder.customerCode && this.formSaleOrder.customerName)
     },
 
     soTotalAfterSpecial() {
@@ -2397,6 +2440,12 @@ export default {
     // ============================================
 
     async openConfirmStockModal() {
+      if (!this.hasCustomerInfo) {
+        warning('กรุณาเลือกลูกค้าก่อนดำเนินการ', 'ข้อมูลลูกค้าไม่ครบ')
+        this.isShow.searchCustomer = true
+        return
+      }
+
       if (this.stockItems.length === 0) {
         warning('ไม่พบสินค้าสำหรับยืนยันการขาย')
         return
@@ -2439,6 +2488,27 @@ export default {
       this.isShow.invoiceModal = false
     },
 
+    async openConfirmAndInvoiceModal() {
+      if (!this.hasCustomerInfo) {
+        warning('กรุณาเลือกลูกค้าก่อนดำเนินการ', 'ข้อมูลลูกค้าไม่ครบ')
+        this.isShow.searchCustomer = true
+        return
+      }
+
+      if (this.stockItems.length === 0) {
+        warning('ไม่พบสินค้าสำหรับดำเนินการ')
+        return
+      }
+
+      await this.fetchSaveSaleOrder('Draft')
+
+      this.isShow.confirmAndInvoiceModal = true
+    },
+
+    onCloseConfirmAndInvoiceModal() {
+      this.isShow.confirmAndInvoiceModal = false
+    },
+
     async onInvoiceCreated(invoiceData) {
       this.isShow.invoiceModal = false
 
@@ -2465,6 +2535,12 @@ export default {
     // ============================================
 
     async saveDraft() {
+      if (!this.hasCustomerInfo) {
+        warning('กรุณาเลือกลูกค้าก่อนบันทึก', 'ข้อมูลลูกค้าไม่ครบ')
+        this.isShow.searchCustomer = true
+        return
+      }
+
       await this.fetchSaveSaleOrder('Draft')
       this.isSONumberLocked = true
     },
