@@ -273,16 +273,16 @@
         <div class="d-flex justify-content-between">
           <div>
             <span class="desc-text-white bi bi-gem mr-2"></span>
-            <span class="desc-text-white">วัตถุดิบสร้อยคอ (จากคัดพลอย)</span>
+            <span class="desc-text-white">วัตถุดิบ (จากคัดพลอย)</span>
           </div>
         </div>
       </div>
-      <div v-if="necklaceGemFromStatus70.length === 0" class="pl-2 pt-2 desc-text">
-        ไม่มีรายการสร้อยคอจากคัดพลอย
+      <div v-if="gemMaterialFromStatus70.length === 0" class="pl-2 pt-2 desc-text">
+        ไม่มีรายการวัตถุดิบจากคัดพลอย
       </div>
       <BaseDataTable
         v-else
-        :value="necklaceGemFromStatus70"
+        :value="gemMaterialFromStatus70"
         :columns="gemColumns"
         dataKey="id"
         scrollable
@@ -309,7 +309,7 @@
           <div class="d-flex justify-content-between title-text">
             <div>
               <span class="mr-2">จำนวน</span>
-              <span class="mr-2">{{ necklaceGemFromStatus70.length }}</span>
+              <span class="mr-2">{{ gemMaterialFromStatus70.length }}</span>
               <span>รายการ</span>
             </div>
           </div>
@@ -536,14 +536,19 @@ export default {
       return groupedData
     },
 
-    necklaceGemFromStatus70() {
+    gemMaterialFromStatus70() {
       const header = this.modelValue?.tbtProductionPlanStatusHeader
       if (!header) return []
       const status70 = header.find((x) => x.status === 70)
       if (!status70?.tbtProductionPlanStatusGem) return []
       return status70.tbtProductionPlanStatusGem.filter((x) => {
         const name = x.name?.toLowerCase() ?? ''
-        return name.includes('สร้อย') || name.includes('necklace')
+        return (
+          name.includes('สร้อย') ||
+          name.includes('necklace') ||
+          name.includes('สปริง') ||
+          name.includes('spring')
+        )
       })
     }
   },
