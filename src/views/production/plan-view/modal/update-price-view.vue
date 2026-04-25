@@ -523,10 +523,14 @@ export default {
     showDate(date) {
       return date ? moment(date).format('DD/MM/yyyy') : ''
     },
+    toNumber(val) {
+      const n = Number(val)
+      return isNaN(n) ? 0 : n
+    },
     caltotalPrice(data) {
       let total = 0
       data.forEach((item) => {
-        total += Number(item.totalPrice)
+        total += this.toNumber(item.totalPrice)
       })
       return total.toFixed(2)
     },
@@ -596,23 +600,22 @@ export default {
       return true
     },
     onBluePrice(item, index, fieldName) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBluePrice' + fieldName, item, index)
+      const qty = this.toNumber(item.qty)
+      const qtyPrice = this.toNumber(item.qtyPrice)
+      const qtyWeight = this.toNumber(item.qtyWeight)
+      const qtyWeightPrice = this.toNumber(item.qtyWeightPrice)
+
+      const formattedField = fieldName === 'qtyWeight'
+        ? this.toNumber(item[fieldName]).toFixed(3)
+        : this.toNumber(item[fieldName]).toFixed(2)
 
       let newCal = {
         ...item,
-        [fieldName]: item[fieldName] ? Number(item[fieldName]).toFixed(2) : '0.00',
-        totalPrice: Number(item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice).toFixed(
-          2
-        )
+        [fieldName]: formattedField,
+        totalPrice: (qty * qtyPrice + qtyWeight * qtyWeightPrice).toFixed(2)
       }
 
-      // ในVue 3, เราสามารถอัปเดตได้โดยตรง
       this.tranItems[index] = newCal
-
-      console.log('onBluePrice' + fieldName, this.tranItems[item])
-      console.log('onBluePrice' + fieldName, this.tranItems)
-      //this.onUpdateQty(item)
     },
     onBlueDiscount(item, index) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
@@ -637,10 +640,10 @@ export default {
         nameDescription: '',
         date: new Date(),
         qty: 0,
-        qtyPrice: Number(0).toFixed(2),
-        qtyWeight: 0,
-        qtyWeightPrice: Number(0).toFixed(2),
-        totalPrice: Number(0).toFixed(2),
+        qtyPrice: '0.00',
+        qtyWeight: '0.000',
+        qtyWeightPrice: '0.00',
+        totalPrice: '0.00',
         isAdd: true
       })
 
@@ -683,7 +686,7 @@ export default {
     calculateGroupTotal(groupName) {
       return this.tranItems
         .filter((item) => item.nameGroup === groupName)
-        .reduce((total, item) => total + Number(item.totalPrice), 0)
+        .reduce((total, item) => total + this.toNumber(item.totalPrice), 0)
     },
 
     // --- APIs --- //
@@ -848,15 +851,17 @@ export default {
           console.log(res)
 
           this.tranItems = res.items.map((item) => {
+            const qty = this.toNumber(item.qty)
+            const qtyPrice = this.toNumber(item.qtyPrice)
+            const qtyWeight = this.toNumber(item.qtyWeight)
+            const qtyWeightPrice = this.toNumber(item.qtyWeightPrice)
             return {
               ...item,
-              //isAdd: false,
-              qtyWeight: item.qtyWeight ? Number(item.qtyWeight).toFixed(3) : '0.000',
-              qtyPrice: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
-              qtyWeightPrice: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
-              totalPrice: Number(
-                item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice
-              ).toFixed(2)
+              qty: qty,
+              qtyWeight: qtyWeight.toFixed(3),
+              qtyPrice: qtyPrice.toFixed(2),
+              qtyWeightPrice: qtyWeightPrice.toFixed(2),
+              totalPrice: (qty * qtyPrice + qtyWeight * qtyWeightPrice).toFixed(2)
             }
           })
 
