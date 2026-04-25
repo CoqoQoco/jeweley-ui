@@ -1,228 +1,178 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"> </loading>
-    <div class="filter-container">
-      <pageTitle
-        title="รายงานช่าง"
-        description="รายงานช่าง เเละรายละเอียดต่างๆ"
-        :isShowBtnClose="false"
-        isShowRightSlot
-      >
-      </pageTitle>
+    <div class="filter-container-searchBar">
       <form @submit.prevent="onSubmit">
-        <div class="search-bar-container">
+        <div>
           <div>
-            <div>
-              <span class="text-title">วันที่จ่ายงาน</span>
-              <span class="text-required"> *</span>
-              <span></span>
-            </div>
-            <div class="flex-group">
-              <Calendar
-                class="w-100"
-                v-model="form.start"
-                :max-date="form.end"
-                showIcon
-                placeholder="เริ่มต้น"
-                :class="val.isValDateStart === true ? `p-invalid` : ``"
-              />
-              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
-                v-model="form.end"
-                :min-date="form.start"
-                showIcon
-                placeholder="สิ้นสุด"
-                :class="val.isValDateEnd === true ? `p-invalid` : ``"
-              />
-            </div>
+            <pageTitle
+              title="รายงานช่าง"
+              description="รายงานช่าง เเละรายละเอียดต่างๆ"
+              :isShowBtnClose="false"
+              isShowRightSlot
+            >
+            </pageTitle>
           </div>
-          <!-- <div>
-            <span class="text-title">หมายเลขใบผสมทอง</span>
-            <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.text"
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
+          <div class="form-col-container">
+            <div>
+              <span class="title-text">วันที่จ่ายงาน</span>
+              <span class="text-required"> *</span>
+              <div class="flex-group">
+                <CalendarGeneric
+                  class="w-100"
+                  v-model="form.start"
+                  :max-date="form.end"
+                  placeholder="เริ่มต้น"
+                  :customClass="val.isValDateStart === true ? `p-invalid` : ``"
+                />
+                <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
+                <CalendarGeneric
+                  class="w-100"
+                  v-model="form.end"
+                  :min-date="form.start"
+                  placeholder="สิ้นสุด"
+                  :customClass="val.isValDateEnd === true ? `p-invalid` : ``"
+                />
               </div>
             </div>
-          </div> -->
-          <div>
-            <span class="text-title">หมายเลขใบงาน</span>
-            <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.woText"
-                placeholder="หมายเลขใบงาน....."
-              />
-              <!-- <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div> -->
-            </div>
-          </div>
-          <div>
-            <span class="text-title">คำค้นหา</span>
-            <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.text"
-                placeholder="ชื่อช่าง, รหัสช่าง,รหัสสินค้า ....."
-              />
-              <!-- <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div> -->
+            <div class="form-col-container">
+              <div>
+                <span class="title-text">W.O.</span>
+                <input
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="form.woText"
+                  placeholder="หมายเลขใบงาน....."
+                />
+              </div>
+              <div>
+                <span class="title-text">รหัสสินค้า</span>
+                <input
+                  :class="['form-control bg-input']"
+                  type="text"
+                  v-model.trim="form.productNumber"
+                  placeholder="รหัสสินค้า"
+                />
+              </div>
             </div>
           </div>
 
-          <div class="btn-container">
-            <button class="btn btn-sm btn-main mr-2" type="submit">
-              <span><i class="bi bi-search"></i></span>
-              <span class="ml-2">ค้นหา</span>
-            </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear">
-              <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ล้างค้นหา</span>
-            </button>
-            <button
-              class="btn btn-sm btn-primary"
-              type="button"
-              :disabled="!isShowTable"
-              @click="onExport($event)"
-            >
-              <span><i class="bi bi-filetype-csv"></i></span>
-              <span class="ml-2">ออกเอกสาร</span>
-            </button>
+          <div class="form-col-container mt-2">
+            <div>
+              <span class="title-text">ประเภททอง</span>
+              <MultiSelect
+                v-model="form.gold"
+                :options="gold"
+                optionLabel="nameTh"
+                optionValue="code"
+                class="w-100"
+                placeholder="เลือกประเภททอง"
+              />
+            </div>
+            <div>
+              <span class="title-text">สีทอง</span>
+              <MultiSelect
+                v-model="form.goldSize"
+                :options="goldSize"
+                optionLabel="nameTh"
+                optionValue="nameTh"
+                class="w-100"
+                placeholder="เลือกสีทอง"
+              />
+            </div>
+            <div>
+              <span class="title-text">แผนก</span>
+              <MultiSelect
+                v-model="form.status"
+                :options="planStatus"
+                optionLabel="nameTh"
+                optionValue="id"
+                class="w-100"
+                placeholder="เลือกแผนก"
+              />
+            </div>
+            <div>
+              <span class="title-text">ช่าง</span>
+              <AutoComplete
+                v-model="form.worker"
+                :suggestions="workerItemSearch"
+                @complete="onSearchWorker"
+                optionLabel="nameTh"
+                forceSelection
+                class="w-100"
+                placeholder="ค้นรหัส/ชื่อช่าง"
+              />
+            </div>
+            <div>
+              <span class="title-text">แม่พิม</span>
+              <input
+                :class="['form-control bg-input']"
+                type="text"
+                v-model.trim="form.mold"
+                placeholder="แม่พิม"
+              />
+            </div>
+          </div>
+
+          <div class="btn-submit-container-between mt-2">
+            <div></div>
+            <div>
+              <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+                <span><i class="bi bi-search"></i></span>
+              </button>
+              <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+                <span><i class="bi bi-x-circle"></i></span>
+              </button>
+              <button
+                :class="['btn btn-sm btn-primary', { 'btn-secondary': !isShowTable }]"
+                type="button"
+                :disabled="!isShowTable"
+                @click="onExport($event)"
+                title="ออกเอกสาร"
+              >
+                <span><i class="bi bi-filetype-csv"></i></span>
+              </button>
+            </div>
           </div>
         </div>
       </form>
     </div>
     <div v-if="isShowTable" class="mt-2">
-      <DataTable
+      <BaseDataTable
+        :items="data.data"
         :totalRecords="data.total"
-        :value="data.data"
-        v-model:expandedRows="expnadData"
-        dataKey="id"
-        ref="dt"
-        class="p-datatable-sm"
-        scrollable
-        scrollHeight="calc(100vh - 310px)"
-        resizableColumns
-        showGridlines
+        :columns="columns"
+        :perPage="take"
         :paginator="true"
-        :lazy="true"
+        dataKey="id"
         @page="handlePageChange"
-        @sort="handlePageChangeSort"
-        :rows="take"
-        removableSort
-        sortMode="multiple"
-        :rowsPerPageOptions="[10, 20, 50, 100]"
-        paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-        :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
+        @sort="handleSortChange"
+        :scrollHeight="'calc(100vh - 460px)'"
       >
-        <Column field="wo" header="เลขที่ใบงาน" sortable style="min-width: 150px">
-          <template #body="slotProps">
-            {{ `${slotProps.data.wo}${slotProps.data.woNumber}` }}
-          </template>
-        </Column>
-        <Column header="วันที่ส่งงาน" sortable field="jobDate" style="min-width: 150px">
-          <template #body="prop">
-            {{ formatDate(prop.data.jobDate) }}
-          </template>
-        </Column>
-        <Column
-          header="รหัสสินค้า"
-          sortable
-          field="productNumber"
-          style="min-width: 150px"
-        ></Column>
-        <Column header="ช่าง" sortable field="workerCode" style="min-width: 150px">
-          <template #body="slotProps">
-            {{ `${slotProps.data.workerCode}-${slotProps.data.workerName}` }}
-          </template>
-        </Column>
-        <Column header="เเผนกงาน" sortable field="statusName" style="min-width: 150px"></Column>
-        <Column header="รายละเอียด" sortable field="desc" style="min-width: 150px">
-          <template #body="slotProps">
-            {{
-              `${slotProps.data.gold} ${
-                slotProps.data.description ? `[${slotProps.data.description}]` : ``
-              }`
-            }}
-          </template>
-        </Column>
-        <Column header="จำนวนจ่าย" sortable field="goldQtySend" style="min-width: 150px"></Column>
-        <Column
-          header="น้ำหนักจ่าย"
-          sortable
-          field="goldWeightSend"
-          style="min-width: 150px"
-        ></Column>
-        <Column header="จำนวนรับ" sortable field="goldQtyCheck" style="min-width: 150px"></Column>
-        <Column
-          header="น้ำหนักรับ"
-          sortable
-          field="goldWeightCheck"
-          style="min-width: 150px"
-        ></Column>
-        <Column header="ราคาต่อหน่วย" sortable field="wages" style="min-width: 150px">
-          <template #body="slotProps">
-            <div>
-              {{
-                `${
-                  slotProps.data.wages
-                    ? Number(slotProps.data.wages).toFixed(2).toLocaleString()
-                    : Number(0).toFixed(2).toLocaleString()
-                }`
-              }}
-            </div>
-          </template>
-        </Column>
-        <Column header="ราคา" sortable field="totalWages" style="min-width: 150px">
-          <template #body="slotProps">
-            <div>
-              {{
-                `${
-                  slotProps.data.totalWages
-                    ? Number(slotProps.data.totalWages).toFixed(2).toLocaleString()
-                    : Number(0).toFixed(2).toLocaleString()
-                }`
-              }}
-            </div>
-          </template>
-        </Column>
-        <ColumnGroup type="footer">
-          <Row>
-            <Column footer="รวมทั้งหมด" :colspan="6" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldQtySend}`" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldWeightSend}`" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldQtyCheck}`" footerStyle="text-align:left" />
-            <Column :footer="`${summery.totalGoldWeightCheck}`" footerStyle="text-align:left" />
-            <Column footer="" />
-            <Column
-              :footer="`${
-                summery.totalWages
-                  ? Number(summery.totalWages).toFixed(2).toLocaleString()
-                  : Number(0).toFixed(2).toLocaleString()
-              }`"
-              footerStyle="text-align:left"
-            />
-          </Row>
-        </ColumnGroup>
-      </DataTable>
+        <template #woTemplate="slotProps">
+          {{ `${slotProps.data.wo}${slotProps.data.woNumber}` }}
+        </template>
+        <template #workerCodeTemplate="slotProps">
+          {{ `${slotProps.data.workerCode}-${slotProps.data.workerName}` }}
+        </template>
+        <template #goldTemplate="slotProps">
+          {{
+            `${slotProps.data.gold} ${
+              slotProps.data.description ? `[${slotProps.data.description}]` : ``
+            }`
+          }}
+        </template>
+
+        <template #footer>
+          <div class="summary-footer">
+            <span><strong>รวมทั้งหมด</strong></span>
+            <span>จำนวนจ่าย: <strong>{{ summery.totalGoldQtySend || 0 }}</strong></span>
+            <span>น้ำหนักจ่าย: <strong>{{ summery.totalGoldWeightSend || 0 }}</strong></span>
+            <span>จำนวนรับ: <strong>{{ summery.totalGoldQtyCheck || 0 }}</strong></span>
+            <span>น้ำหนักรับ: <strong>{{ summery.totalGoldWeightCheck || 0 }}</strong></span>
+            <span>ราคา: <strong>{{ formatDecimal2(summery.totalWages) }}</strong></span>
+          </div>
+        </template>
+      </BaseDataTable>
     </div>
   </div>
 </template>
@@ -232,22 +182,27 @@ import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
-
-import Calendar from 'primevue/calendar'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Row from 'primevue/row'
-import ColumnGroup from 'primevue/columngroup' // optional
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import MultiSelect from 'primevue/multiselect'
+import AutoComplete from 'primevue/autocomplete'
 import Papa from 'papaparse'
 
+import { mapState } from 'pinia'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
-  text: null,
   woText: null,
   start: null,
-  end: null
+  end: null,
+  gold: [],
+  goldSize: [],
+  status: [],
+  worker: null,
+  productNumber: null,
+  mold: null
 }
 const interfaceIsValid = {
   isValDateStart: false,
@@ -256,12 +211,13 @@ const interfaceIsValid = {
 export default {
   components: {
     pageTitle,
-  
-    Calendar,
-    DataTable,
-    Column,
-    Row,
-    ColumnGroup
+    CalendarGeneric,
+    BaseDataTable,
+    MultiSelect,
+    AutoComplete
+  },
+  computed: {
+    ...mapState(useMasterApiStore, ['gold', 'goldSize', 'planStatus'])
   },
   watch: {
     'form.start'() {
@@ -275,24 +231,45 @@ export default {
       }
     }
   },
+  async created() {
+    const masterStore = useMasterApiStore()
+    await Promise.all([
+      masterStore.fetchGold(),
+      masterStore.fetchGoldSize(),
+      masterStore.fetchPlanStatus()
+    ])
+  },
   data() {
     return {
-      isLoading: false,
       isShowTable: false,
       isShowExcel: false,
 
-      //--------- table ---------//
       totalRecords: 0,
-      take: 10, //all
+      take: 10,
       skip: 0,
-      //sort: [{ field: 'id', dir: 'asc' }],
       sort: [],
       data: {},
       summery: {},
       dataExcel: {},
       expnadData: [],
+      workerItemSearch: [],
 
-      // ----- form -----//
+      columns: [
+        { field: 'wo', header: 'เลขที่ใบงาน', minWidth: '150px' },
+        { field: 'jobDate', header: 'วันที่ส่งงาน', minWidth: '150px', format: 'date' },
+        { field: 'productNumber', header: 'รหัสสินค้า', minWidth: '150px' },
+        { field: 'workerCode', header: 'ช่าง', minWidth: '150px' },
+        { field: 'statusName', header: 'แผนกงาน', minWidth: '150px' },
+        { field: 'gold', header: 'รายละเอียด', minWidth: '150px' },
+        { field: 'goldSize', header: 'สีทอง', minWidth: '120px' },
+        { field: 'goldQtySend', header: 'จำนวนจ่าย', minWidth: '120px', align: 'right' },
+        { field: 'goldWeightSend', header: 'น้ำหนักจ่าย', minWidth: '120px', align: 'right' },
+        { field: 'goldQtyCheck', header: 'จำนวนรับ', minWidth: '120px', align: 'right' },
+        { field: 'goldWeightCheck', header: 'น้ำหนักรับ', minWidth: '120px', align: 'right' },
+        { field: 'wages', header: 'ราคาต่อหน่วย', minWidth: '120px', format: 'decimal2', align: 'right' },
+        { field: 'totalWages', header: 'ราคา', minWidth: '120px', format: 'decimal2', align: 'right' }
+      ],
+
       form: {
         ...interfaceForm
       },
@@ -302,9 +279,6 @@ export default {
     }
   },
   methods: {
-    focusInputText() {
-      this.$refs.inputText.focus()
-    },
     onClear() {
       this.form = { ...interfaceForm }
       this.val = { ...interfaceIsValid }
@@ -314,35 +288,31 @@ export default {
       this.sort = []
     },
 
-    // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
       this.fetchData()
     },
-    handlePageChangeSort(e) {
+    handleSortChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e.multiSortMeta)
+      this.sort = (e.multiSortMeta || []).map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
 
-    // -------- helper function -------- //
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
     formatDate(date) {
       return formatDate(date)
     },
+    formatDecimal2(val) {
+      return Number(val || 0).toFixed(2).toLocaleString()
+    },
 
-    // ----- validate ----- //
     validateForm() {
       if (!this.form.start) {
         this.val = {
@@ -360,31 +330,28 @@ export default {
       return true
     },
 
-    // ----- submit ----- //
     onSubmit() {
       if (this.validateForm()) {
-        console.log('form', this.form)
         this.dataExcel = []
         this.fetchData()
       }
     },
     onExport() {
       if (this.validateForm()) {
-        console.log('form', this.form)
         this.fetchExportData()
       }
     },
     exportWithCustomColumnCSV(data, filename) {
-      const utf8BOM = '\uFEFF'
+      const utf8BOM = '﻿'
       const csv = Papa.unparse(data, {
-        quotes: false, //or array of booleans
+        quotes: false,
         quoteChar: '"',
         escapeChar: '"',
         delimiter: ',',
         header: true,
         newline: '\r\n',
-        skipEmptyLines: false, //other option is 'greedy', meaning skip delimiters, quotes, and whitespace.
-        columns: null //or array of strings
+        skipEmptyLines: false,
+        columns: null
       })
       const csvData = utf8BOM + csv
       const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
@@ -397,90 +364,77 @@ export default {
       link.click()
       document.body.removeChild(link)
     },
-    //create excel file with set width column 150px
 
-    // --------- APIs --------- //
+    async onSearchWorker(e) {
+      const params = {
+        take: 0, skip: 0,
+        search: { text: e.query ?? null, type: null, active: 1 }
+      }
+      const res = await api.jewelry.post('Worker/Search', params, { skipLoading: true })
+      if (res) this.workerItemSearch = [...res.data]
+    },
     async fetchData() {
-      try {
-        this.isLoading = true
-        this.data = {}
-        //console.log(this.formValue)
-        const param = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          search: {
-            createStart: this.form.start ? formatISOString(this.form.start) : null,
-            createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            text: this.form.text,
-            woText: this.form.woText
-          }
+      this.data = {}
+      const param = {
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: {
+          createStart: this.form.start ? formatISOString(this.form.start) : null,
+          createEnd: this.form.end ? formatISOString(this.form.end) : null,
+          woText: this.form.woText,
+          gold: this.form.gold,
+          goldSize: this.form.goldSize,
+          status: this.form.status,
+          workerCode: this.form.worker?.code || null,
+          productNumber: this.form.productNumber,
+          mold: this.form.mold
         }
-        const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
-        const summery = await api.jewelry.post('Worker/ReportWorkerSummeryReportWages', param)
-        if (res) {
-          this.data = { ...res }
-          this.isShowTable = true
-          //console.log('summery', summery)
-          this.summery = { ...summery }
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
+      const summery = await api.jewelry.post('Worker/ReportWorkerSummeryReportWages', param)
+      if (res) {
+        this.data = { ...res }
+        this.isShowTable = true
+        this.summery = { ...summery }
       }
     },
     async fetchExportData() {
-      try {
-        this.isLoading = true
-        //console.log(this.formValue)
-        const param = {
-          take: 0,
-          //skip: this.skip,
-          search: {
-            createStart: this.form.start ? formatISOString(this.form.start) : null,
-            createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            text: this.form.text,
-            woText: this.form.woText
-          }
+      const param = {
+        take: 0,
+        search: {
+          createStart: this.form.start ? formatISOString(this.form.start) : null,
+          createEnd: this.form.end ? formatISOString(this.form.end) : null,
+          woText: this.form.woText,
+          gold: this.form.gold,
+          goldSize: this.form.goldSize,
+          status: this.form.status,
+          workerCode: this.form.worker?.code || null,
+          productNumber: this.form.productNumber,
+          mold: this.form.mold
         }
-        const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
-        if (res) {
-          //this.dataExcel = { ...res }
-          //this.isShowTable = true
-          console.log('res', res)
-
-          const dataExcel = res.data.map((item) => {
-            return {
-              เลขที่ใบงาน: `${item.wo}-${item.woNumber}`,
-              วันที่ส่งงาน: formatDate(item.jobDate),
-              รหัสสินค้า: item.productNumber,
-              ช่าง: `${item.workerCode}-${item.workerName}`,
-              เเผนกงาน: item.statusName,
-              รายละเอียด: `${item.gold} ${item.description ? `[${item.description}]` : ``}`,
-              จำนวนจ่าย: item.goldQtySend,
-              น้ำหนักจ่าย: item.goldWeightSend,
-              จำนวนรับ: item.goldQtyCheck,
-              น้ำหนกรับ: item.goldWeightCheck,
-              ราคาต่อหน่วย: item.wages
-                ? Number(item.wages).toFixed(2).toLocaleString()
-                : Number(0).toFixed(2).toLocaleString(),
-              ราคา: item.totalWages
-                ? Number(item.totalWages).toFixed(2).toLocaleString()
-                : Number(0).toFixed(2).toLocaleString()
-            }
-          })
-          this.exportWithCustomColumnCSV(
-            dataExcel,
-            `รายงานผลิต[${this.formatDate(this.form.start)} - ${this.formatDate(
-              this.form.end
-            )}].csv`
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('Worker/ReportWorkerWages', param)
+      if (res) {
+        const dataExcel = res.data.map((item) => ({
+          เลขที่ใบงาน: `${item.wo}-${item.woNumber}`,
+          วันที่ส่งงาน: formatDate(item.jobDate),
+          รหัสสินค้า: item.productNumber,
+          ช่าง: `${item.workerCode}-${item.workerName}`,
+          แผนกงาน: item.statusName,
+          รายละเอียด: `${item.gold} ${item.description ? `[${item.description}]` : ``}`,
+          สีทอง: item.goldSize,
+          จำนวนจ่าย: item.goldQtySend,
+          น้ำหนักจ่าย: item.goldWeightSend,
+          จำนวนรับ: item.goldQtyCheck,
+          น้ำหนักรับ: item.goldWeightCheck,
+          ราคาต่อหน่วย: this.formatDecimal2(item.wages),
+          ราคา: this.formatDecimal2(item.totalWages)
+        }))
+        this.exportWithCustomColumnCSV(
+          dataExcel,
+          `รายงานผลิต[${formatDate(this.form.start)} - ${formatDate(this.form.end)}].csv`
+        )
       }
     }
   }
@@ -488,12 +442,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/search-bar.scss';
-@import '@/assets/scss/custom-style/table-data.scss';
-.search-bar-container {
-  display: grid;
-  grid-template-columns: 3fr 1fr 1fr 4fr;
-  gap: 10px;
-  margin-bottom: 10px;
+@import '@/assets/scss/custom-style/standard-search-bar';
+@import '@/assets/scss/custom-style/standard-form.scss';
+.summary-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background: #fdf2f2;
+  border-top: 1px solid #dee2e6;
 }
 </style>
