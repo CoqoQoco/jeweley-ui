@@ -14,13 +14,19 @@
               :class="['tab-btn', selectedType === 'horizontal' ? 'tab-btn-active' : '']"
               @click="selectedType = 'horizontal'"
             >
-              <i class="bi bi-file-earmark-text mr-1"></i> แบบที่ 1
+              <i class="bi bi-file-earmark-text mr-1"></i> ดั้งเดิม
             </button>
             <button
               :class="['tab-btn', selectedType === 'vertical' ? 'tab-btn-active' : '']"
               @click="selectedType = 'vertical'"
             >
-              <i class="bi bi-file-earmark mr-1"></i> แบบที่ 2
+              <i class="bi bi-file-earmark mr-1"></i> ไม่รวมทอง
+            </button>
+            <button
+              :class="['tab-btn', selectedType === 'vertical-markup' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'vertical-markup'"
+            >
+              <i class="bi bi-tag mr-1"></i> ราคาป้าย
             </button>
           </div>
         </div>
@@ -45,7 +51,7 @@
             />
             <!-- แบบที่ 2 (productNameEn, gold+size เหนือ barcode, price) -->
             <barcodeVerticalDemo
-              v-else
+              v-else-if="selectedType === 'vertical'"
               :productNameEn="barcode.productNameEn"
               :productNumber="barcode.productNumber"
               :gold="barcode.gold"
@@ -53,6 +59,19 @@
               :stockNumber="barcode.stockNumber"
               :goldType="barcode.goldType"
               :price="barcode.price"
+              :gems="barcode.gems"
+              :madeIn="barcode.madeIn"
+              :madeInText="barcode.madeInText"
+            />
+            <barcodeVerticalDemo
+              v-else
+              :productNameEn="barcode.productNameEn"
+              :productNumber="barcode.productNumber"
+              :gold="barcode.gold"
+              :size="barcode.size"
+              :stockNumber="barcode.stockNumber"
+              :goldType="barcode.goldType"
+              :price="markupPrice"
               :gems="barcode.gems"
               :madeIn="barcode.madeIn"
               :madeInText="barcode.madeInText"
@@ -106,7 +125,7 @@
                   type="number"
                   v-model="barcode.print"
                   min="1"
-                  max="999"
+                  max="30"
                   style="
                     width: 50px;
                     font-size: 16px;
@@ -156,6 +175,8 @@ const interfaceBarcode = {
   gold: '',
   gems: [],
   price: null,
+  originPrice: null,
+  tagPriceMultiplier: 1,
   print: 1,
   isSilver: false
 }
@@ -195,14 +216,14 @@ export default {
         this.isShowModal = val
 
         if (val && this.stock?.stockNumber) {
-          setTimeout(() => this.checkPrinterStatus(), 3000)
+          this.checkPrinterStatus()
         }
       },
       immediate: true
     },
     modelStock: {
       async handler(val) {
-        if (!val) return
+        if (!val || !val.stockNumber) return
 
         this.stock = { ...val }
 
@@ -218,17 +239,20 @@ export default {
           gold: '',
           gems: [],
           price: null,
+          originPrice: null,
+          tagPriceMultiplier: Number(val.tagPriceMultiplier) || 1,
           print: 1,
           isSilver: val.productionTypeSize === 'SILVER' ? true : false
         }
 
         // Process materials
         if (val.materials?.length > 0) {
+          const goldParts = []
           val.materials.forEach((material) => {
             switch (material.type) {
               case 'Gold':
               case 'Silver':
-                this.barcode.gold = material.typeBarcode
+                if (material.typeBarcode) goldParts.push(material.typeBarcode)
                 break
               case 'Gem':
               case 'Diamond':
@@ -236,19 +260,30 @@ export default {
                 break
             }
           })
+          this.barcode.gold = goldParts.join(' ')
         }
 
         // fetch price แยก API เพื่อไม่ให้ list ช้า
         if (val.stockNumber) {
-          const costRes = await this.productStore.fetchGetStockCostDetail(val.stockNumber)
+          const costRes = await this.productStore.fetchGetStockCostDetail(val.stockNumber, { skipLoading: true })
           if (costRes?.length > 0) {
             this.barcode.price = costRes
               .filter((x) => x.nameGroup !== 'Gold')
               .reduce((sum, x) => sum + (x.totalPrice ?? 0), 0)
+            this.barcode.originPrice = costRes.reduce((sum, x) => sum + (x.totalPrice ?? 0), 0)
           }
         }
       },
       immediate: true
+    }
+  },
+
+  computed: {
+    markupPrice() {
+      const origin = Number(this.barcode.originPrice) || 0
+      const multiplier = Number(this.barcode.tagPriceMultiplier) || 1
+      if (!origin) return null
+      return origin * multiplier
     }
   },
 
@@ -305,6 +340,7 @@ export default {
     async onPrintBarcode() {
       const zplData = {
         ...this.barcode,
+        price: this.selectedType === 'vertical-markup' ? this.markupPrice : this.barcode.price,
         barcodeType: this.selectedType
       }
 

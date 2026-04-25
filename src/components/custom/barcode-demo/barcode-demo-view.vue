@@ -113,13 +113,9 @@ export default {
     this.generateBarcode(this.stockNumber)
   },
 
-  updated() {
-    this.generateBarcode(this.stockNumber)
-  },
-
   methods: {
     generateBarcode(code) {
-      if (this.$refs.barcodeElement) {
+      if (this.$refs.barcodeElement && code) {
         JsBarcode(this.$refs.barcodeElement, code, this.barcodeOptions)
       }
     }

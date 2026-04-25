@@ -144,13 +144,14 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
       }
     },
 
-    async fetchGetStockCostDetail(stockNumber) {
+    async fetchGetStockCostDetail(stockNumber, { skipLoading = false } = {}) {
       try {
         return await api.jewelry.post(
           'StockProduct/GetStockCostDetail',
           null,
           {
-            params: { stockNumber }
+            params: { stockNumber },
+            skipLoading
           }
         )
       } catch (error) {

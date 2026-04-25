@@ -191,6 +191,22 @@
                   />
                 </div>
               </div>
+
+              <!-- cost detail status -->
+              <div>
+                <span class="title-text">สถานะต้นทุน</span>
+                <div>
+                  <Dropdown
+                    v-model="form.hasCostDetail"
+                    :options="costDetailOptions"
+                    optionLabel="description"
+                    optionValue="value"
+                    placeholder="ทั้งหมด"
+                    class="w-full md:w-14rem"
+                    :showClear="true"
+                  />
+                </div>
+              </div>
             </div>
           </template>
         </dialogView>
@@ -244,8 +260,8 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
+import Dropdown from 'primevue/dropdown'
 //import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
 
 //import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 //import api from '@/axios/axios-helper.js'
@@ -257,8 +273,8 @@ export default {
   components: {
     pageTitle,
     MultiSelect,
+    Dropdown,
     //Calendar,
-    //Dropdown,
     dialogView
   },
 
@@ -307,6 +323,10 @@ export default {
       receiptTypeMaster: [
         { value: 'production', description: 'Production' }
         // { value: 2, description: 'งานรับสินค้าและส่งสินค้า' }
+      ],
+      costDetailOptions: [
+        { value: true, description: 'มีต้นทุน' },
+        { value: false, description: 'ยังไม่มีต้นทุน' }
       ]
     }
   },
