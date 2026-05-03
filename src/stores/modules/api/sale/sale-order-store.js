@@ -43,6 +43,9 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
         // Create search object with form values
         const search = {
           soNumber: formValue.soNumber || null,
+          stockNumber: formValue.stockNumber || null,
+          productNumber: formValue.productNumber || null,
+          moldNumber: formValue.moldNumber || null,
           customerName: formValue.customerName || null,
           refQuotation: formValue.refQuotation || null,
           currencyUnit: formValue.currencyUnit || null,

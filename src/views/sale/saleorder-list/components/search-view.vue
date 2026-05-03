@@ -18,6 +18,39 @@
             placeholder="EX: SO-2025-001"
           />
         </div>
+
+        <!-- stock number -->
+        <div>
+          <span class="title-text">เลข Stock</span>
+          <input
+            :class="['form-control bg-input']"
+            type="text"
+            v-model.trim="form.stockNumber"
+            placeholder="เลข Stock"
+          />
+        </div>
+
+        <!-- product number -->
+        <div>
+          <span class="title-text">เลข Product</span>
+          <input
+            :class="['form-control bg-input']"
+            type="text"
+            v-model.trim="form.productNumber"
+            placeholder="เลข Product"
+          />
+        </div>
+
+        <!-- mold number -->
+        <div>
+          <span class="title-text">เลข Mold</span>
+          <input
+            :class="['form-control bg-input']"
+            type="text"
+            v-model.trim="form.moldNumber"
+            placeholder="เลข Mold"
+          />
+        </div>
       </div>
 
       <dialogView

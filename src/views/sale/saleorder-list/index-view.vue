@@ -26,6 +26,9 @@ import invoiceModal from './modal/invoice-modal.vue'
 
 const interfaceForm = {
   soNumber: null,
+  stockNumber: null,
+  productNumber: null,
+  moldNumber: null,
   customerName: null,
   createDateStart: null,
   createDateEnd: null,
