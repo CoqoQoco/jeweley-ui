@@ -48,10 +48,13 @@ export const useInvoiceApiStore = defineStore('invoice', {
           customerCode: formValue.customerCode || null,
           status: formValue.status || null,
           createBy: formValue.createBy || null,
-          createDateFrom: formValue.createDateFrom || null,
-          createDateTo: formValue.createDateTo || null,
+          createDateFrom: formValue.createDateStart || null,
+          createDateTo: formValue.createDateEnd || null,
           deliveryDateFrom: formValue.deliveryDateFrom || null,
-          deliveryDateTo: formValue.deliveryDateTo || null
+          deliveryDateTo: formValue.deliveryDateTo || null,
+          stockNumber: formValue.stockNumber || null,
+          productNumber: formValue.productNumber || null,
+          moldNumber: formValue.moldNumber || null
         }
 
         const request = {
