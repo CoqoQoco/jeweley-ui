@@ -1117,6 +1117,8 @@ import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { InvoiceContinuousPdfBuilder } from '@/services/helper/pdf/invoice/invoice-continuous-pdf-builder.js'
+import { InvoiceBillPdfBuilder } from '@/services/helper/pdf/invoice/invoice-bill-pdf-builder.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import dayjs from 'dayjs'
@@ -1979,7 +1981,41 @@ export default {
 
         //console.log('PDF Options:', options)
 
-        await invoicePdfService.generateInvoicePDF(pdfData, options)
+        if (printData.paperSize === 'continuous') {
+          const builder = new InvoiceContinuousPdfBuilder(
+            {
+              ...pdfData.saleOrder,
+              items: pdfData.items,
+              customer: pdfData.customer,
+              currencyRate: pdfData.currency.rate,
+              invoiceNo: options.invoiceNo,
+              invoiceDate: options.invoiceDate
+            },
+            {
+              offsetX: printData.continuousOffset?.x || 0,
+              offsetY: printData.continuousOffset?.y || 0
+            }
+          )
+          builder.generatePDF().open()
+        } else if (printData.paperSize === 'bill') {
+          const builder = new InvoiceBillPdfBuilder(
+            {
+              ...pdfData.saleOrder,
+              items: pdfData.items,
+              customer: pdfData.customer,
+              currencyRate: pdfData.currency.rate,
+              invoiceNo: options.invoiceNo,
+              invoiceDate: options.invoiceDate
+            },
+            {
+              offsetX: printData.billOffset?.x || 0,
+              offsetY: printData.billOffset?.y || 0
+            }
+          )
+          builder.generatePDF().open()
+        } else {
+          await invoicePdfService.generateInvoicePDF(pdfData, options)
+        }
         success('สร้าง PDF สำเร็จ', 'Invoice PDF')
       } catch (err) {
         console.error('Error generating PDF:', err)

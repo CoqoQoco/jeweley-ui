@@ -62,6 +62,98 @@
                       </label>
                     </div>
                   </div>
+
+                  <div class="form-group mb-3">
+                    <label class="form-label">
+                      <i class="bi bi-file-earmark mr-1"></i>ขนาดกระดาษ
+                    </label>
+                    <div class="paper-size-options">
+                      <label class="paper-size-option">
+                        <input
+                          type="radio"
+                          v-model="paperSize"
+                          value="a4"
+                        />
+                        <span>A4 (มาตรฐาน)</span>
+                      </label>
+                      <label class="paper-size-option">
+                        <input
+                          type="radio"
+                          v-model="paperSize"
+                          value="bill"
+                        />
+                        <span>bill — ต่อเนื่อง 9x11 (Epson LQ-310)</span>
+                      </label>
+                      <label class="paper-size-option">
+                        <input
+                          type="radio"
+                          v-model="paperSize"
+                          value="continuous"
+                        />
+                        <span>ใบเสร็จรับเงิน/ใบกำกับภาษี — ต่อเนื่อง 9x11 (Epson LQ-310)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div v-if="paperSize === 'bill'" class="form-group mb-3">
+                    <div class="row">
+                      <div class="col-6">
+                        <label class="form-label">
+                          <i class="bi bi-arrows-move mr-1"></i>Offset X (mm)
+                        </label>
+                        <input
+                          v-model.number="billOffset.x"
+                          type="number"
+                          step="0.5"
+                          class="form-control"
+                        />
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label">
+                          <i class="bi bi-arrows-move mr-1"></i>Offset Y (mm)
+                        </label>
+                        <input
+                          v-model.number="billOffset.y"
+                          type="number"
+                          step="0.5"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <small class="form-text text-muted">
+                      หากตำแหน่งเหลื่อมเล็กน้อย ปรับ offset ทีละ 0.5-1 mm
+                    </small>
+                  </div>
+
+                  <div v-if="paperSize === 'continuous'" class="form-group mb-3">
+                    <div class="row">
+                      <div class="col-6">
+                        <label class="form-label">
+                          <i class="bi bi-arrows-move mr-1"></i>Offset X (mm)
+                        </label>
+                        <input
+                          v-model.number="continuousOffset.x"
+                          type="number"
+                          step="0.5"
+                          class="form-control"
+                        />
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label">
+                          <i class="bi bi-arrows-move mr-1"></i>Offset Y (mm)
+                        </label>
+                        <input
+                          v-model.number="continuousOffset.y"
+                          type="number"
+                          step="0.5"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                    <small class="form-text text-muted">
+                      หากตำแหน่งเหลื่อมเล็กน้อย ปรับ offset ทีละ 0.5-1 mm
+                    </small>
+                  </div>
                 </div>
               </div>
 
@@ -143,7 +235,10 @@ export default {
         invoiceNumber: '',
         invoiceDate: '',
         showCifLabel: true
-      }
+      },
+      paperSize: 'a4',
+      continuousOffset: { x: 0, y: 0 },
+      billOffset: { x: 0, y: 0 }
     }
   },
 
@@ -155,6 +250,38 @@ export default {
         }
       },
       immediate: true
+    }
+  },
+
+  mounted() {
+    const savedContinuous = localStorage.getItem('invoice-continuous-offset')
+    if (savedContinuous) {
+      try {
+        const parsed = JSON.parse(savedContinuous)
+        if (parsed && typeof parsed === 'object') {
+          this.continuousOffset = {
+            x: Number(parsed.x) || 0,
+            y: Number(parsed.y) || 0
+          }
+        }
+      } catch (e) {
+        this.continuousOffset = { x: 0, y: 0 }
+      }
+    }
+
+    const savedBill = localStorage.getItem('invoice-bill-offset')
+    if (savedBill) {
+      try {
+        const parsed = JSON.parse(savedBill)
+        if (parsed && typeof parsed === 'object') {
+          this.billOffset = {
+            x: Number(parsed.x) || 0,
+            y: Number(parsed.y) || 0
+          }
+        }
+      } catch (e) {
+        this.billOffset = { x: 0, y: 0 }
+      }
     }
   },
 
@@ -201,6 +328,18 @@ export default {
       const normalizedDate = new Date(this.printData.invoiceDate)
       normalizedDate.setHours(0, 0, 0, 0)
 
+      if (this.paperSize === 'continuous') {
+        localStorage.setItem(
+          'invoice-continuous-offset',
+          JSON.stringify(this.continuousOffset)
+        )
+      } else if (this.paperSize === 'bill') {
+        localStorage.setItem(
+          'invoice-bill-offset',
+          JSON.stringify(this.billOffset)
+        )
+      }
+
       // Debug: Log data before emit
       console.log('Modal - Original invoiceDate:', this.printData.invoiceDate)
       console.log('Modal - Normalized invoiceDate:', normalizedDate)
@@ -212,7 +351,10 @@ export default {
         ...this.invoiceData,
         invoiceNumber: this.printData.invoiceNumber.trim(), // Override with modified value
         invoiceDate: normalizedDate, // Override with normalized date (time = 00:00:00)
-        showCifLabel: this.printData.showCifLabel
+        showCifLabel: this.printData.showCifLabel,
+        paperSize: this.paperSize,
+        continuousOffset: { ...this.continuousOffset },
+        billOffset: { ...this.billOffset }
       }
 
       console.log('Modal - Emitting printDataToEmit:', printDataToEmit)
@@ -229,6 +371,27 @@ export default {
 
 .invoice-confirm-print-container {
   // Component-specific styles only
+}
+
+.paper-size-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .paper-size-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 0;
+    font-weight: normal;
+
+    input[type='radio'] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+  }
 }
 
 .form-label {
