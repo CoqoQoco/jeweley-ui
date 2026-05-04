@@ -30,9 +30,9 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
         const printCount = formValue.print || 1
 
         // เลือก ZPL template ตาม barcodeType
-        const zpl = formValue.barcodeType === 'vertical'
-          ? this.generateZPLVertical(formValue)
-          : this.generateZPLs(formValue)
+        const zpl = formValue.barcodeType === 'original'
+          ? this.generateZPLs(formValue)
+          : this.generateZPLVertical(formValue)
 
         // สร้างฟังก์ชันสำหรับ delay
         const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -83,7 +83,9 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       try {
         // เลือก ZPL template ตาม barcodeType ของแต่ละ item
         const zpl = formValue.map((form) =>
-          form.barcodeType === 'vertical' ? this.generateZPLVertical(form) : this.generateZPLs(form)
+          form.barcodeType === 'original'
+            ? this.generateZPLs(form)
+            : this.generateZPLVertical(form)
         )
 
         console.log('ZPL:', zpl)

@@ -11,14 +11,14 @@
         <div class="pl-3 pr-3 pt-2 pb-1">
           <div class="label-type-tabs">
             <button
-              :class="['tab-btn', selectedType === 'horizontal' ? 'tab-btn-active' : '']"
-              @click="selectedType = 'horizontal'"
+              :class="['tab-btn', selectedType === 'original' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'original'"
             >
               <i class="bi bi-file-earmark-text mr-1"></i> แบบที่ 1
             </button>
             <button
-              :class="['tab-btn', selectedType === 'vertical' ? 'tab-btn-active' : '']"
-              @click="selectedType = 'vertical'"
+              :class="['tab-btn', selectedType === 'cost-no-gold' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'cost-no-gold'"
             >
               <i class="bi bi-file-earmark mr-1"></i> แบบที่ 2
             </button>
@@ -170,7 +170,7 @@ export default {
     return {
       isShowModal: false,
       checkPrinterService: 'unknown',
-      selectedType: 'horizontal',
+      selectedType: 'original',
 
       stock: this.modelStock,
       selectedItems: [],
@@ -222,7 +222,7 @@ export default {
       this.stock = []
       this.selectedItems = []
       this.itemsToPreSelect = []
-      this.selectedType = 'horizontal'
+      this.selectedType = 'original'
       this.checkPrinterService = 'unknown'
     },
 

@@ -11,22 +11,34 @@
         <div class="pl-4 pr-4 pt-2">
           <div class="label-type-tabs">
             <button
-              :class="['tab-btn', selectedType === 'horizontal' ? 'tab-btn-active' : '']"
-              @click="selectedType = 'horizontal'"
+              :class="['tab-btn', selectedType === 'original' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'original'"
             >
               <i class="bi bi-file-earmark-text mr-1"></i> ดั้งเดิม
             </button>
             <button
-              :class="['tab-btn', selectedType === 'vertical' ? 'tab-btn-active' : '']"
-              @click="selectedType = 'vertical'"
+              :class="['tab-btn', selectedType === 'cost-with-gold' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'cost-with-gold'"
             >
-              <i class="bi bi-file-earmark mr-1"></i> ไม่รวมทอง
+              <i class="bi bi-file-earmark mr-1"></i> ทุนรวมทอง
             </button>
             <button
-              :class="['tab-btn', selectedType === 'vertical-markup' ? 'tab-btn-active' : '']"
-              @click="selectedType = 'vertical-markup'"
+              :class="['tab-btn', selectedType === 'cost-no-gold' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'cost-no-gold'"
             >
-              <i class="bi bi-tag mr-1"></i> ราคาป้าย
+              <i class="bi bi-file-earmark-minus mr-1"></i> ทุนไม่รวมทอง
+            </button>
+            <button
+              :class="['tab-btn', selectedType === 'tag-with-gold' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'tag-with-gold'"
+            >
+              <i class="bi bi-tag mr-1"></i> ราคาป้ายรวมทอง
+            </button>
+            <button
+              :class="['tab-btn', selectedType === 'tag-no-gold' ? 'tab-btn-active' : '']"
+              @click="selectedType = 'tag-no-gold'"
+            >
+              <i class="bi bi-tag-fill mr-1"></i> ราคาป้ายไม่รวมทอง
             </button>
           </div>
         </div>
@@ -37,9 +49,8 @@
 
         <div class="form-col-container pl-4 pr-4">
           <div class="filter-container-bg-focus">
-            <!-- แบบที่ 1 (mold, gold+size ใต้ barcode) -->
             <barcodeDemo
-              v-if="selectedType === 'horizontal'"
+              v-if="selectedType === 'original'"
               :madeIn="barcode.madeIn"
               :madeInText="barcode.madeInText"
               :stockNumber="barcode.stockNumber"
@@ -49,20 +60,6 @@
               :size="barcode.size"
               :goldType="barcode.goldType"
             />
-            <!-- แบบที่ 2 (productNameEn, gold+size เหนือ barcode, price) -->
-            <barcodeVerticalDemo
-              v-else-if="selectedType === 'vertical'"
-              :productNameEn="barcode.productNameEn"
-              :productNumber="barcode.productNumber"
-              :gold="barcode.gold"
-              :size="barcode.size"
-              :stockNumber="barcode.stockNumber"
-              :goldType="barcode.goldType"
-              :price="barcode.price"
-              :gems="barcode.gems"
-              :madeIn="barcode.madeIn"
-              :madeInText="barcode.madeInText"
-            />
             <barcodeVerticalDemo
               v-else
               :productNameEn="barcode.productNameEn"
@@ -71,7 +68,7 @@
               :size="barcode.size"
               :stockNumber="barcode.stockNumber"
               :goldType="barcode.goldType"
-              :price="markupPrice"
+              :price="previewPrice"
               :gems="barcode.gems"
               :madeIn="barcode.madeIn"
               :madeInText="barcode.madeInText"
@@ -279,11 +276,17 @@ export default {
   },
 
   computed: {
-    markupPrice() {
+    previewPrice() {
       const origin = Number(this.barcode.originPrice) || 0
+      const noGold = Number(this.barcode.price) || 0
       const multiplier = Number(this.barcode.tagPriceMultiplier) || 1
-      if (!origin) return null
-      return origin * multiplier
+      switch (this.selectedType) {
+        case 'cost-with-gold':  return origin || null
+        case 'cost-no-gold':    return noGold || null
+        case 'tag-with-gold':   return origin ? origin * multiplier : null
+        case 'tag-no-gold':     return noGold ? noGold * multiplier : null
+        default:                return null
+      }
     }
   },
 
@@ -291,7 +294,7 @@ export default {
     return {
       isShowModal: false,
       checkPrinterService: 'unknown',
-      selectedType: 'horizontal',
+      selectedType: 'original',
 
       stock: {},
       barcode: { ...interfaceBarcode }
@@ -302,7 +305,7 @@ export default {
     onClear() {
       this.stock = {}
       this.barcode = { ...interfaceBarcode }
-      this.selectedType = 'horizontal'
+      this.selectedType = 'original'
       this.checkPrinterService = 'unknown'
     },
 
@@ -340,14 +343,10 @@ export default {
     async onPrintBarcode() {
       const zplData = {
         ...this.barcode,
-        price: this.selectedType === 'vertical-markup' ? this.markupPrice : this.barcode.price,
+        price: this.previewPrice,
         barcodeType: this.selectedType
       }
-
-      await this.zebraPrinter.fetchZebraPrint({
-        formValue: zplData,
-        skipLoading: true
-      })
+      await this.zebraPrinter.fetchZebraPrint({ formValue: zplData, skipLoading: true })
     }
   }
 }
