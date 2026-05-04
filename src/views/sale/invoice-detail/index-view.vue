@@ -1186,6 +1186,8 @@ export default {
           align: 'center'
         },
         { field: 'paymentMethod', header: 'วิธีชำระ', minWidth: '150px', sortable: true },
+        { field: 'bankName', header: 'ธนาคาร', minWidth: '120px', sortable: false },
+        { field: 'bankBranch', header: 'สาขา', minWidth: '120px', sortable: false },
         {
           field: 'referenceNumber',
           header: 'เลขที่อ้างอิง',
@@ -2080,6 +2082,14 @@ export default {
       formData.append('Amount', paymentData.amount)
       formData.append('Payment', paymentData.payment) // Payment method ID (int)
       formData.append('PaymentName', paymentData.paymentName) // Payment method name (string)
+
+      if (paymentData.bankCode) {
+        formData.append('BankCode', paymentData.bankCode)
+      }
+
+      if (paymentData.bankBranch) {
+        formData.append('BankBranch', paymentData.bankBranch)
+      }
 
       if (paymentData.referenceNumber) {
         formData.append('ReferenceNumber', paymentData.referenceNumber)

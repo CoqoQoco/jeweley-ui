@@ -68,6 +68,43 @@
                     />
                   </div>
 
+                  <!-- Bank Dropdown (Transfer & Cheque) -->
+                  <div
+                    v-if="paymentData.paymentId === 2 || paymentData.paymentId === 3"
+                    class="form-group mb-3"
+                  >
+                    <label class="form-label required">
+                      <i class="bi bi-bank mr-1"></i>ธนาคาร
+                    </label>
+                    <AutoCompleteGeneric
+                      :modelValue="selectedBank"
+                      :staticOptions="bankList"
+                      :useStaticList="true"
+                      optionLabel="nameTh"
+                      placeholder="-- เลือกธนาคาร --"
+                      :forceSelection="true"
+                      customClass="bank-ac w-100"
+                      @update:modelValue="onBankChange"
+                    >
+                      <template #option="{ option }">
+                        <span>{{ option.nameTh }}</span>
+                      </template>
+                    </AutoCompleteGeneric>
+                  </div>
+
+                  <!-- Branch Input (Cheque only) -->
+                  <div v-if="paymentData.paymentId === 3" class="form-group mb-3">
+                    <label class="form-label required">
+                      <i class="bi bi-geo-alt mr-1"></i>สาขา
+                    </label>
+                    <input
+                      v-model="paymentData.bankBranch"
+                      type="text"
+                      class="form-control"
+                      placeholder="กรอกชื่อสาขา"
+                    />
+                  </div>
+
                   <!-- Reference Number -->
                   <div class="form-group mb-3">
                     <label class="form-label">
@@ -162,7 +199,9 @@ import { defineAsyncComponent } from 'vue'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import UploadImage from '@/components/prime-vue/UploadImage.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import dayjs from 'dayjs'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
@@ -174,7 +213,8 @@ export default {
     modal,
     Calendar,
     Dropdown,
-    UploadImage
+    UploadImage,
+    AutoCompleteGeneric
   },
 
   props: {
@@ -196,11 +236,16 @@ export default {
 
   data() {
     return {
+      masterBankStore: useMasterBankStore(),
+      bankList: [],
+      selectedBank: null,
       paymentData: {
         paymentDate: new Date(),
         amount: 0,
         paymentMethod: null,
         paymentId: null,
+        bankCode: null,
+        bankBranch: '',
         referenceNumber: '',
         remark: '',
         receiptImage: null
@@ -238,21 +283,32 @@ export default {
       handler(newValue) {
         const selected = this.paymentMethods.find((m) => m.value === newValue)
         this.paymentData.paymentId = selected ? selected.id : null
+        this.paymentData.bankCode = null
+        this.paymentData.bankBranch = ''
+        this.selectedBank = null
       }
     }
   },
 
+  async mounted() {
+    const response = await this.masterBankStore.fetchBankList()
+    this.bankList = response || []
+  },
+
   methods: {
     initializePaymentData() {
-      // Reset payment data
       this.paymentData = {
         paymentDate: new Date(),
         amount: this.remainingAmount > 0 ? this.remainingAmount : 0,
         paymentMethod: null,
+        paymentId: null,
+        bankCode: null,
+        bankBranch: '',
         referenceNumber: '',
         remark: '',
         receiptImage: null
       }
+      this.selectedBank = null
       this.compressedImage = null
       this.resetUpload = false
     },
@@ -344,12 +400,21 @@ export default {
       })
     },
 
+    onBankChange(value) {
+      if (value && typeof value === 'object') {
+        this.selectedBank = value
+        this.paymentData.bankCode = value.code
+      } else {
+        this.selectedBank = null
+        this.paymentData.bankCode = null
+      }
+    },
+
     closeModal() {
       this.$emit('close-modal')
     },
 
     async onSavePayment() {
-      // Validate data
       if (!this.paymentData.paymentDate) {
         warning('กรุณาเลือกวันที่จ่ายเงิน', 'ข้อมูลไม่ครบถ้วน')
         return
@@ -360,41 +425,43 @@ export default {
         return
       }
 
-      // if (this.paymentData.amount > this.remainingAmount) {
-      //   warning(
-      //     `ยอดเงินที่กรอกเกินยอดคงเหลือ (${this.formatNumber(this.remainingAmount)})`,
-      //     'ยอดเงินไม่ถูกต้อง'
-      //   )
-      //   return
-      // }
-
       if (!this.paymentData.paymentMethod) {
         warning('กรุณาเลือกวิธีการชำระเงิน', 'ข้อมูลไม่ครบถ้วน')
         return
       }
 
-      // Normalize date to start of day
+      if (
+        (this.paymentData.paymentId === 2 || this.paymentData.paymentId === 3) &&
+        !this.paymentData.bankCode
+      ) {
+        warning('กรุณาเลือกธนาคาร', 'ข้อมูลไม่ครบถ้วน')
+        return
+      }
+
+      if (this.paymentData.paymentId === 3 && !this.paymentData.bankBranch) {
+        warning('กรุณากรอกสาขาธนาคาร', 'ข้อมูลไม่ครบถ้วน')
+        return
+      }
+
       const normalizedDate = new Date(this.paymentData.paymentDate)
       normalizedDate.setHours(0, 0, 0, 0)
 
-      // Get payment method name from selected option
       const selectedPayment = this.paymentMethods.find(
         (m) => m.value === this.paymentData.paymentMethod
       )
 
-      // Prepare payment data to emit (matches backend Request model)
       const paymentDataToEmit = {
         invoiceNumber: this.invoiceData.invoiceNumber,
         paymentDate: normalizedDate,
         amount: this.paymentData.amount,
-        payment: this.paymentData.paymentId, // Payment method ID (int)
-        paymentName: selectedPayment ? selectedPayment.name : '', // Payment method name (string)
+        payment: this.paymentData.paymentId,
+        paymentName: selectedPayment ? selectedPayment.name : '',
+        bankCode: this.paymentData.bankCode || null,
+        bankBranch: this.paymentData.bankBranch || null,
         referenceNumber: this.paymentData.referenceNumber || null,
         remark: this.paymentData.remark || null,
-        receiptImage: this.compressedImage // Send compressed image file
+        receiptImage: this.compressedImage
       }
-
-      console.log('Saving payment:', paymentDataToEmit)
 
       this.$emit('save-payment', paymentDataToEmit)
       success('บันทึกการเก็บเงินสำเร็จ', 'บันทึกสำเร็จ')
@@ -446,6 +513,25 @@ textarea.form-control {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.875rem;
+}
+
+// Bank AutoComplete full width
+:deep(.bank-ac) {
+  width: 100%;
+
+  .p-autocomplete-input {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: var(--base-font-size);
+
+    &:focus {
+      border-color: var(--base-green);
+      box-shadow: 0 0 0 0.2rem rgba(3, 131, 135, 0.25);
+      outline: none;
+    }
+  }
 }
 
 // PrimeVue Calendar full width
