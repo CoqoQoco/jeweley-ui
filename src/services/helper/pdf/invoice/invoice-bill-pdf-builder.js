@@ -29,7 +29,7 @@ import {
 } from './bill-form-layout.js'
 
 const mmToPt = (mm) => mm * 2.83465
-const RIGHT_ALIGN_WIDTH = 80
+const RIGHT_ALIGN_WIDTH = 50
 
 export class InvoiceBillPdfBuilder {
   constructor(saleOrderData, options = {}) {
