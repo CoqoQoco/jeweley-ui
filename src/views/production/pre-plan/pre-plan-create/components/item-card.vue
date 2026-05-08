@@ -2,132 +2,51 @@
   <div class="item-card">
     <div class="item-card-header d-flex justify-content-between align-items-center">
       <span class="fw-semibold">รายการที่ {{ index + 1 }}</span>
-      <button type="button" class="btn btn-sm btn-red" @click="$emit('remove')">
-        <i class="bi bi-trash"></i> ลบ
-      </button>
+      <div>
+        <button type="button" class="btn btn-sm btn-main" @click="$emit('edit')">
+          <i class="bi bi-pencil"></i> แก้ไข
+        </button>
+        <button type="button" class="btn btn-sm btn-red ms-2" @click="$emit('remove')">
+          <i class="bi bi-trash"></i> ลบ
+        </button>
+      </div>
     </div>
 
-    <div class="item-card-body">
-      <moldSection
-        :moldCode="item.moldCode || ''"
-        :productType="item.productType || ''"
-        :moldDetail="item.moldDetail || ''"
-        @update:moldCode="emitUpdate('moldCode', $event)"
-        @update:productType="emitUpdate('productType', $event)"
-        @update:moldDetail="emitUpdate('moldDetail', $event)"
-        @mold-loaded="onMoldLoaded"
-      />
-
-      <productImageUpload
-        :modelValue="item.productImageFile"
-        :previewUrl="item.productImagePreview"
-        class="mt-3"
-        @update:modelValue="emitUpdate('productImageFile', $event)"
-        @update:previewUrl="emitUpdate('productImagePreview', $event)"
-        @clear="onImageClear"
-      />
-
-      <div class="card p-3 mt-3">
-        <h6 class="mb-3">ข้อมูลลูกค้าและสินค้า</h6>
-
-        <div class="responsive-grid-2col mb-2">
-          <div>
-            <span class="title-text">รหัสลูกค้า</span>
-            <AutoCompleteGeneric
-              :modelValue="item.customerNumber"
-              :staticOptions="[]"
-              :useStaticList="true"
-              optionLabel="code"
-              placeholder="รหัสลูกค้า..."
-              :forceSelection="false"
-              customClass="customer-ac"
-              @update:modelValue="onCustomerChange"
-            />
-          </div>
-          <div>
-            <span class="title-text">ประเภทลูกค้า</span>
-            <DropdownGeneric
-              :modelValue="item.customerType"
-              :options="[]"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="เลือกประเภทลูกค้า"
-              :showClear="true"
-              @update:modelValue="emitUpdate('customerType', $event)"
-            />
-          </div>
-        </div>
-
-        <div class="responsive-grid-2col mb-2">
-          <div>
-            <span class="title-text">ชื่อสินค้า</span>
-            <input
-              class="form-control"
-              :value="item.productName"
-              placeholder="ชื่อสินค้า..."
-              @input="emitUpdate('productName', $event.target.value)"
-            />
-          </div>
-          <div>
-            <span class="title-text">ประเภทสินค้า</span>
-            <DropdownGeneric
-              :modelValue="item.productType"
-              :options="[]"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="เลือกประเภทสินค้า"
-              :showClear="true"
-              @update:modelValue="emitUpdate('productType', $event)"
-            />
-          </div>
-        </div>
-
-        <div class="responsive-grid-2col mb-2">
-          <div>
-            <span class="title-text">จำนวนสินค้า</span>
-            <input
-              class="form-control"
-              type="number"
-              min="1"
-              :value="item.productQty"
-              placeholder="จำนวน..."
-              @input="emitUpdate('productQty', $event.target.value ? Number($event.target.value) : null)"
-            />
-          </div>
-          <div>
-            <span class="title-text">หน่วย</span>
-            <input
-              class="form-control"
-              :value="item.productQtyUnit"
-              placeholder="เช่น ชิ้น, ด้าม"
-              @input="emitUpdate('productQtyUnit', $event.target.value)"
-            />
-          </div>
-        </div>
-
-        <div class="mb-2">
-          <span class="title-text">รายละเอียดสินค้า</span>
-          <textarea
-            class="form-control"
-            :value="item.productDetail"
-            rows="2"
-            placeholder="รายละเอียดสินค้า..."
-            @input="emitUpdate('productDetail', $event.target.value)"
-          ></textarea>
+    <div class="item-card-body d-flex align-items-start gap-3">
+      <div class="item-thumbnail flex-shrink-0">
+        <imagePreview
+          v-if="item.moldCode"
+          :imageName="item.moldCode"
+          type="MOLD"
+          :width="80"
+          :height="80"
+        />
+        <div v-else class="thumbnail-placeholder">
+          <i class="bi bi-image text-muted"></i>
         </div>
       </div>
 
-      <goldSection
-        :goldType="item.goldType || '18K'"
-        class="mt-3"
-        @update:goldType="emitUpdate('goldType', $event)"
-      />
-
-      <materialTable
-        :materials="item.materials || []"
-        class="mt-3"
-        @update:materials="emitUpdate('materials', $event)"
-      />
+      <div class="item-info flex-grow-1">
+        <div class="info-row">
+          <span class="info-label">รหัสแม่พิมพ์:</span>
+          <span class="info-value">{{ item.moldCode || '-' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">ประเภทสินค้า:</span>
+          <span class="info-value">{{ productTypeLabel }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">จำนวน:</span>
+          <span class="info-value">
+            {{ item.productQty != null ? item.productQty : '-' }}
+            {{ item.productQtyUnit || '' }}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">วัสดุ:</span>
+          <span class="info-value">{{ (item.materials || []).length }} รายการ</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -135,28 +54,14 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const moldSection = defineAsyncComponent(() => import('./mold-section.vue'))
-const goldSection = defineAsyncComponent(() => import('./gold-section.vue'))
-const materialTable = defineAsyncComponent(() => import('./material-table.vue'))
-const productImageUpload = defineAsyncComponent(() => import('./product-image-upload.vue'))
-const AutoCompleteGeneric = defineAsyncComponent(
-  () => import('@/components/prime-vue/AutoCompleteGeneric.vue')
-)
-const DropdownGeneric = defineAsyncComponent(
-  () => import('@/components/prime-vue/DropdownGeneric.vue')
+const imagePreview = defineAsyncComponent(
+  () => import('@/components/prime-vue/ImagePreview.vue')
 )
 
 export default {
   name: 'ItemCard',
 
-  components: {
-    moldSection,
-    goldSection,
-    materialTable,
-    productImageUpload,
-    AutoCompleteGeneric,
-    DropdownGeneric,
-  },
+  components: { imagePreview },
 
   props: {
     item: {
@@ -169,41 +74,14 @@ export default {
     },
   },
 
-  emits: ['update:item', 'remove'],
+  emits: ['edit', 'remove'],
 
-  methods: {
-    emitUpdate(field, value) {
-      this.$emit('update:item', { ...this.item, [field]: value })
-    },
-
-    onCustomerChange(value) {
-      const code = typeof value === 'object' && value !== null ? value.code : value
-      this.emitUpdate('customerNumber', code)
-    },
-
-    onMoldLoaded({ gems }) {
-      if (gems && gems.length && !(this.item.materials && this.item.materials.length)) {
-        const materials = gems.map((g, i) => ({
-          _id: Date.now() + i,
-          materialType: 'Gem',
-          masterId: g.gemId || null,
-          materialCode: g.gemCode || '',
-          shapeCode: g.gemShapeCode || '',
-          size: g.size || '',
-          qty: g.qty || 0,
-          color: '',
-          weight: null,
-          weightUnit: '',
-          isLocked: false,
-          remark: '',
-        }))
-        this.emitUpdate('materials', materials)
-      }
-    },
-
-    onImageClear() {
-      this.emitUpdate('productImageFile', null)
-      this.emitUpdate('productImagePreview', null)
+  computed: {
+    productTypeLabel() {
+      const pt = this.item.productType
+      if (!pt) return '-'
+      if (typeof pt === 'object' && pt !== null) return pt.description || '-'
+      return pt
     },
   },
 }
@@ -222,14 +100,44 @@ export default {
 .item-card-header {
   background: #fdf2f2;
   color: var(--base-font-color);
-  padding: 8px 12px;
+  padding: 10px 16px;
 }
 
 .item-card-body {
-  padding: 16px;
+  padding: 12px 16px;
 }
 
-:deep(.customer-ac) {
-  width: 100%;
+.item-thumbnail {
+  .thumbnail-placeholder {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
+    font-size: 1.5rem;
+  }
+}
+
+.item-info {
+  .info-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+  }
+
+  .info-label {
+    color: #666;
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+
+  .info-value {
+    color: #333;
+    font-weight: 500;
+  }
 }
 </style>

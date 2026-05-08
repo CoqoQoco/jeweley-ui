@@ -7,9 +7,22 @@
       <h2 class="page-title">{{ isEditMode ? 'แก้ไขใบสั่งผลิต' : 'สร้างใบสั่งผลิต' }}</h2>
     </div>
 
-    <headerSection v-model:form="form" />
+    <headerSection
+      v-model:form="form"
+      :jobTypes="masterStore.jobTypes"
+      :jobLocations="masterStore.jobLocations"
+      :goldTypes="masterStore.golds"
+    />
 
-    <itemsSection v-model:items="items" class="mt-3" />
+    <itemsSection
+      v-model:items="items"
+      :masterGold="masterStore.golds"
+      :masterGoldSize="masterStore.goldSizes"
+      :masterGem="masterStore.gems"
+      :masterGemShape="masterStore.gemShapes"
+      :masterProduct="masterStore.productTypes"
+      class="mt-3"
+    />
 
     <footerActions
       :isEditMode="isEditMode"
@@ -24,7 +37,8 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
-import { confirmSubmit, warning, info } from '@/services/alert/sweetAlerts.js'
+import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
+import { confirmSubmit, warning, success } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 
 const headerSection = defineAsyncComponent(() => import('./components/header-section.vue'))
@@ -42,15 +56,10 @@ function createEmptyItem() {
     moldImageFinish: null,
     productImageFile: null,
     productImagePreview: null,
-    customerNumber: null,
-    customerType: null,
-    productName: null,
     productType: null,
     productQty: null,
     productQtyUnit: null,
     productDetail: null,
-    goldType: '18K',
-    goldSize: null,
     materials: [],
   }
 }
@@ -72,7 +81,8 @@ export default {
 
   setup() {
     const store = usePrePlanStore()
-    return { store }
+    const masterStore = useMasterPrePlanStore()
+    return { store, masterStore }
   },
 
   data() {
@@ -92,6 +102,7 @@ export default {
   },
 
   async created() {
+    await this.masterStore.fetchAll()
     if (this.isEditMode) {
       await this.loadPrePlan()
     }
@@ -122,18 +133,13 @@ export default {
           moldImageFinish: null,
           productImageFile: null,
           productImagePreview: null,
-          customerNumber: it.customerNumber || null,
-          customerType: it.customerType || null,
-          productName: it.productName || null,
           productType: it.productType || null,
           productQty: it.productQty || null,
           productQtyUnit: it.productQtyUnit || null,
           productDetail: it.productDetail || null,
-          goldType: it.goldType || '18K',
-          goldSize: it.goldSize || null,
           materials: (it.materials || []).map((m) => ({
             ...m,
-            _id: m.id || Date.now() + Math.random(),
+            id: m.id || Date.now() + Math.random(),
           })),
         }))
       } else {
@@ -146,18 +152,13 @@ export default {
             moldImageFinish: null,
             productImageFile: null,
             productImagePreview: null,
-            customerNumber: null,
-            customerType: null,
-            productName: null,
             productType: data.productType || null,
             productQty: null,
             productQtyUnit: null,
             productDetail: null,
-            goldType: data.goldType || '18K',
-            goldSize: null,
             materials: (data.materials || []).map((m) => ({
               ...m,
-              _id: m.id || Date.now() + Math.random(),
+              id: m.id || Date.now() + Math.random(),
             })),
           },
         ]
@@ -188,10 +189,6 @@ export default {
           warning(`${label}: กรุณาเลือกแม่พิมพ์`, 'ข้อมูลไม่ครบ')
           return false
         }
-        if (!it.goldType) {
-          warning(`${label}: กรุณาเลือกประเภททอง`, 'ข้อมูลไม่ครบ')
-          return false
-        }
         if (!it.materials || it.materials.length < 1) {
           warning(`${label}: ต้องมีวัสดุอย่างน้อย 1 รายการ`, 'ข้อมูลไม่ครบ')
           return false
@@ -202,22 +199,39 @@ export default {
 
     buildPayload() {
       return {
-        ...this.form,
+        productionRound: this.form.productionRound,
+        jobType: this.form.jobType,
+        jobLocation: this.form.jobLocation,
+        goldType: this.form.goldType,
+        remark: this.form.remark,
         orderDate: formatISOString(this.form.orderDate),
         deliveryDate: formatISOString(this.form.deliveryDate),
         items: this.items.map((it) => ({
           moldCode: it.moldCode,
-          customerNumber: it.customerNumber,
-          customerType: it.customerType,
-          productName: it.productName,
+          moldDetail: it.moldDetail,
           productType: it.productType,
           productQty: it.productQty,
           productQtyUnit: it.productQtyUnit,
           productDetail: it.productDetail,
-          goldType: it.goldType,
-          goldSize: it.goldSize,
-          productImagePath: null,
-          materials: it.materials,
+          productImagePath: it.productImagePath || null,
+          materials: (it.materials || []).map((m) => ({
+            gold: m.gold,
+            goldSize: m.goldSize,
+            goldQty: m.goldQty,
+            gem: m.gem,
+            gemShape: m.gemShape,
+            gemQty: m.gemQty,
+            gemUnit: m.gemUnit,
+            gemSize: m.gemSize,
+            gemWeight: m.gemWeight,
+            gemWeightUnit: m.gemWeightUnit,
+            diamondQty: m.diamondQty,
+            diamondUnit: m.diamondUnit,
+            diamondSize: m.diamondSize,
+            diamondWeight: m.diamondWeight,
+            diamondWeightUnit: m.diamondWeightUnit,
+            diamondQuality: m.diamondQuality,
+          })),
         })),
       }
     },
@@ -225,16 +239,36 @@ export default {
     async onSaveDraft() {
       if (!this.validateForm()) return
       const payload = this.buildPayload()
-      console.warn('[UI-Only] Save Draft payload:', payload)
-      info('บันทึก UI-only — API ยังไม่ wire', 'Preview')
+      let result
+      if (this.isEditMode) {
+        result = await this.store.updatePrePlan(this.prePlanId, payload)
+      } else {
+        result = await this.store.createPrePlan(payload)
+      }
+      if (result) {
+        success('บันทึกร่างใบสั่งผลิตสำเร็จ')
+        this.$router.push({ name: 'pre-plan-list' })
+      }
     },
 
     onSubmit() {
       if (!this.validateForm()) return
-      confirmSubmit('ยืนยันส่งใบสั่งผลิตเพื่อรออนุมัติ?', 'ยืนยันการส่ง', () => {
+      confirmSubmit('ยืนยันส่งใบสั่งผลิตเพื่อรออนุมัติ?', 'ยืนยันการส่ง', async () => {
         const payload = this.buildPayload()
-        console.warn('[UI-Only] Submit payload:', payload)
-        info('ส่ง UI-only — API ยังไม่ wire', 'Preview')
+        let savedId = this.prePlanId
+        if (this.isEditMode) {
+          await this.store.updatePrePlan(savedId, payload)
+        } else {
+          const result = await this.store.createPrePlan(payload)
+          if (result) {
+            savedId = result.id || result
+          }
+        }
+        if (savedId) {
+          await this.store.submitPrePlan(savedId)
+        }
+        success('ส่งใบสั่งผลิตสำเร็จ')
+        this.$router.push({ name: 'pre-plan-list' })
       })
     },
   },

@@ -12,8 +12,8 @@
         <DropdownGeneric
           :modelValue="localForm.goldType"
           :options="goldTypes"
-          optionLabel="label"
-          optionValue="value"
+          optionLabel="description"
+          optionValue="code"
           placeholder="เลือกประเภททอง/เงิน"
           @update:modelValue="update('goldType', $event)"
         />
@@ -26,8 +26,8 @@
         <DropdownGeneric
           :modelValue="localForm.jobType"
           :options="jobTypes"
-          optionLabel="label"
-          optionValue="value"
+          optionLabel="description"
+          optionValue="code"
           placeholder="เลือกประเภทงาน"
           @update:modelValue="update('jobType', $event)"
         />
@@ -36,9 +36,9 @@
         <span class="title-text">สถานที่</span>
         <DropdownGeneric
           :modelValue="localForm.jobLocation"
-          :options="locations"
-          optionLabel="label"
-          optionValue="value"
+          :options="jobLocations"
+          optionLabel="description"
+          optionValue="code"
           placeholder="เลือกสถานที่"
           @update:modelValue="update('jobLocation', $event)"
         />
@@ -91,27 +91,11 @@ export default {
   components: { pageTitle, DropdownGeneric, CalendarGeneric },
   props: {
     form: { type: Object, required: true },
+    jobTypes: { type: Array, default: () => [] },
+    jobLocations: { type: Array, default: () => [] },
+    goldTypes: { type: Array, default: () => [] },
   },
   emits: ['update:form'],
-  data() {
-    return {
-      jobTypes: [
-        { value: 'NewDesign', label: 'งานแบบใหม่' },
-        { value: 'Sale', label: 'งานขาย' },
-        { value: 'CustomCustomer', label: 'งานสั่งมีชื่อลูกค้า' },
-      ],
-      locations: [
-        { value: 'Domestic', label: 'งานในประเทศ' },
-        { value: 'Overseas', label: 'งานต่างประเทศ' },
-      ],
-      goldTypes: [
-        { value: '18K', label: '18K' },
-        { value: '14K', label: '14K' },
-        { value: '9K', label: '9K' },
-        { value: 'Silver', label: 'เงิน' },
-      ],
-    }
-  },
   computed: {
     localForm: {
       get() {

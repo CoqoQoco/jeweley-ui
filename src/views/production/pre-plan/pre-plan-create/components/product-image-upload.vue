@@ -102,10 +102,25 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/web';
 
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff !important;
+}
+
+h6 {
+  color: var(--base-font-color);
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  background: transparent !important;
+}
+
 .product-image-preview {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 8px;
 }
 
 .preview-img {
@@ -114,5 +129,6 @@ export default {
   object-fit: contain;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
+  padding: 4px;
 }
 </style>

@@ -87,3 +87,4 @@ src/
 | @.claude/skills/generic-components/SKILL.md | CalendarGeneric, AutoComplete |
 | @.claude/skills/modal-system/SKILL.md | สร้าง Modal, popup, dialog |
 | @.claude/skills/pdf-system/SKILL.md | สร้าง PDF, export เอกสาร |
+| @.claude/skills/ui-layout/SKILL.md | Page header, card section, form row, button spacing |

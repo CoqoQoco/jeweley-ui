@@ -5,15 +5,28 @@
       :key="item._localId"
       :item="item"
       :index="idx"
-      @update:item="onUpdateItem(idx, $event)"
+      @edit="openEditModal(idx)"
       @remove="onRemoveItem(idx)"
     />
 
     <div class="d-flex justify-content-start mt-2">
-      <button type="button" class="btn btn-sm btn-main" @click="onAddItem">
+      <button type="button" class="btn btn-sm btn-main" @click="openCreateModal">
         <i class="bi bi-plus"></i> เพิ่มรายการ
       </button>
     </div>
+
+    <itemFormModal
+      :isShow="showItemModal"
+      :item="editingItem"
+      :index="editingIndex"
+      :masterGold="masterGold"
+      :masterGoldSize="masterGoldSize"
+      :masterGem="masterGem"
+      :masterGemShape="masterGemShape"
+      :masterProduct="masterProduct"
+      @closeModal="onCloseModal"
+      @submit="onModalSubmit"
+    />
   </div>
 </template>
 
@@ -22,49 +35,64 @@ import { defineAsyncComponent } from 'vue'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
 const itemCard = defineAsyncComponent(() => import('./item-card.vue'))
+const itemFormModal = defineAsyncComponent(() => import('../modal/item-form-modal.vue'))
 
 let localIdCounter = 1
-
-function createEmptyItem() {
-  return {
-    _localId: localIdCounter++,
-    moldCode: null,
-    moldDetail: null,
-    moldImageCad: null,
-    moldImageFinish: null,
-    productImageFile: null,
-    productImagePreview: null,
-    customerNumber: null,
-    customerType: null,
-    productName: null,
-    productType: null,
-    productQty: null,
-    productQtyUnit: null,
-    productDetail: null,
-    goldType: '18K',
-    goldSize: null,
-    materials: [],
-  }
-}
 
 export default {
   name: 'ItemsSection',
 
-  components: { itemCard },
+  components: { itemCard, itemFormModal },
 
   props: {
-    items: {
-      type: Array,
-      default: () => [],
-    },
+    items: { type: Array, default: () => [] },
+    masterGold: { type: Array, default: () => [] },
+    masterGoldSize: { type: Array, default: () => [] },
+    masterGem: { type: Array, default: () => [] },
+    masterGemShape: { type: Array, default: () => [] },
+    masterProduct: { type: Array, default: () => [] },
   },
 
   emits: ['update:items'],
 
+  data() {
+    return {
+      showItemModal: false,
+      editingIndex: null,
+      editingItem: null,
+    }
+  },
+
   methods: {
-    onUpdateItem(index, updatedItem) {
-      const newItems = this.items.map((item, i) => (i === index ? updatedItem : item))
-      this.$emit('update:items', newItems)
+    openCreateModal() {
+      this.editingIndex = null
+      this.editingItem = null
+      this.showItemModal = true
+    },
+
+    openEditModal(idx) {
+      this.editingIndex = idx
+      this.editingItem = JSON.parse(JSON.stringify(this.items[idx]))
+      this.showItemModal = true
+    },
+
+    onCloseModal() {
+      this.showItemModal = false
+      this.editingIndex = null
+      this.editingItem = null
+    },
+
+    onModalSubmit(formData) {
+      if (this.editingIndex === null) {
+        const newItem = { ...formData, _localId: localIdCounter++ }
+        this.$emit('update:items', [...this.items, newItem])
+      } else {
+        const newItems = this.items.map((item, i) =>
+          i === this.editingIndex ? { ...formData, _localId: item._localId } : item
+        )
+        this.$emit('update:items', newItems)
+      }
+      this.onCloseModal()
     },
 
     onRemoveItem(index) {
@@ -72,11 +100,6 @@ export default {
         const newItems = this.items.filter((_, i) => i !== index)
         this.$emit('update:items', newItems)
       })
-    },
-
-    onAddItem() {
-      const newItems = [...this.items, createEmptyItem()]
-      this.$emit('update:items', newItems)
     },
   },
 }

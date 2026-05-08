@@ -1,105 +1,126 @@
 <template>
   <div class="card p-3">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h6 class="mb-0">วัสดุที่ใช้ (ทอง / พลอย / เพชร)</h6>
-      <button class="btn btn-sm btn-main" @click="addRow">
-        <i class="bi bi-plus"></i> เพิ่มแถว
-      </button>
-    </div>
+    <h6 class="mb-2">วัสดุที่ใช้ (ทอง / พลอย / เพชร)</h6>
 
     <BaseDataTable
-      :items="localMaterials"
-      :totalRecords="localMaterials.length"
+      :items="materials"
       :columns="columns"
       :paginator="false"
-      scrollHeight="300px"
-      dataKey="_id"
+      :showGridlines="true"
+      :scrollHeight="'auto'"
+      dataKey="id"
     >
-      <template #materialTypeTemplate="{ data }">
-        <span v-if="!isEditing(data)">{{ getMaterialTypeLabel(data.materialType) }}</span>
-        <Dropdown
-          v-else
-          v-model="editBuffer[data._id].materialType"
-          :options="materialTypeOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-100"
-        />
-      </template>
-
-      <template #materialCodeTemplate="{ data }">
-        <span v-if="!isEditing(data)">{{ data.materialCode }}</span>
-        <input
-          v-else
-          class="form-control form-control-sm"
-          v-model="editBuffer[data._id].materialCode"
-        />
-      </template>
-
-      <template #sizeTemplate="{ data }">
-        <span v-if="!isEditing(data)">{{ data.size }}</span>
-        <input
-          v-else
-          class="form-control form-control-sm"
-          v-model="editBuffer[data._id].size"
-        />
-      </template>
-
-      <template #qtyTemplate="{ data }">
-        <span v-if="!isEditing(data)">{{ data.qty }}</span>
-        <input
-          v-else
-          class="form-control form-control-sm"
-          type="number"
-          v-model.number="editBuffer[data._id].qty"
-        />
-      </template>
-
-      <template #isLockedTemplate="{ data }">
-        <i
-          v-if="!isEditing(data)"
-          :class="data.isLocked ? 'bi bi-lock-fill text-danger' : 'bi bi-unlock'"
-        ></i>
-        <input v-else type="checkbox" v-model="editBuffer[data._id].isLocked" />
-      </template>
-
-      <template #remarkTemplate="{ data }">
-        <span v-if="!isEditing(data)">{{ data.remark }}</span>
-        <input
-          v-else
-          class="form-control form-control-sm"
-          v-model="editBuffer[data._id].remark"
-        />
-      </template>
-
       <template #actionTemplate="{ data }">
-        <div class="d-flex gap-1">
-          <button
-            v-if="!isEditing(data)"
-            class="btn btn-sm btn-green"
-            @click="startEdit(data)"
-            title="แก้ไข"
-          >
-            <i class="bi bi-pencil"></i>
-          </button>
-          <button
-            v-if="isEditing(data)"
-            class="btn btn-sm btn-main"
-            @click="saveEdit(data)"
-            title="บันทึก"
-          >
-            <i class="bi bi-check"></i>
-          </button>
-          <button
-            v-if="isEditing(data)"
-            class="btn btn-sm btn-outline-main"
-            @click="cancelEdit(data)"
-            title="ยกเลิก"
-          >
-            <i class="bi bi-x"></i>
-          </button>
-          <button class="btn btn-sm btn-red" @click="removeRow(data)" title="ลบ">
-            <i class="bi bi-trash"></i>
+        <button class="btn btn-sm btn-red" @click="onDelMaterial(data)" title="ลบ">
+          <i class="bi bi-trash-fill"></i>
+        </button>
+      </template>
+
+      <template #goldTemplate="{ data }">
+        <Dropdown
+          v-model="data.gold"
+          :options="masterGold"
+          optionLabel="description"
+          placeholder="เลือกทอง"
+          :showClear="!!data.gold"
+          @change="emitUpdate"
+          class="material-dropdown"
+        />
+      </template>
+
+      <template #goldSizeTemplate="{ data }">
+        <Dropdown
+          v-model="data.goldSize"
+          :options="masterGoldSize"
+          optionLabel="description"
+          placeholder="เลือก%"
+          :showClear="!!data.goldSize"
+          @change="emitUpdate"
+          class="material-dropdown"
+        />
+      </template>
+
+      <template #goldQtyTemplate="{ data }">
+        <input
+          v-model="data.goldQty"
+          type="number"
+          class="form-control form-control-sm"
+          @input="emitUpdate"
+        />
+      </template>
+
+      <template #gemTemplate="{ data }">
+        <Dropdown
+          v-model="data.gem"
+          :options="masterGem"
+          optionLabel="description"
+          placeholder="เลือกพลอย"
+          :showClear="!!data.gem"
+          @change="emitUpdate"
+          class="material-dropdown"
+        />
+      </template>
+
+      <template #gemShapeTemplate="{ data }">
+        <Dropdown
+          v-model="data.gemShape"
+          :options="masterGemShape"
+          optionLabel="description"
+          placeholder="รูปร่าง"
+          :showClear="!!data.gemShape"
+          @change="emitUpdate"
+          class="material-dropdown"
+        />
+      </template>
+
+      <template #gemQtyTemplate="{ data }">
+        <input v-model="data.gemQty" type="number" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #gemUnitTemplate="{ data }">
+        <input v-model="data.gemUnit" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #gemSizeTemplate="{ data }">
+        <input v-model="data.gemSize" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #gemWeightTemplate="{ data }">
+        <input v-model="data.gemWeight" type="number" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #gemWeightUnitTemplate="{ data }">
+        <input v-model="data.gemWeightUnit" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #diamondQtyTemplate="{ data }">
+        <input v-model="data.diamondQty" type="number" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #diamondUnitTemplate="{ data }">
+        <input v-model="data.diamondUnit" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #diamondSizeTemplate="{ data }">
+        <input v-model="data.diamondSize" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #diamondWeightTemplate="{ data }">
+        <input v-model="data.diamondWeight" type="number" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #diamondWeightUnitTemplate="{ data }">
+        <input v-model="data.diamondWeightUnit" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #diamondQualityTemplate="{ data }">
+        <input v-model="data.diamondQuality" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
+      <template #footer>
+        <div class="d-flex justify-content-end">
+          <button class="btn btn-sm btn-main" @click="onAddMaterial">
+            <i class="bi bi-plus"></i> เพิ่มแถว
           </button>
         </div>
       </template>
@@ -108,96 +129,90 @@
 </template>
 
 <script>
-import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import { defineAsyncComponent } from 'vue'
 import Dropdown from 'primevue/dropdown'
+
+const BaseDataTable = defineAsyncComponent(
+  () => import('@/components/prime-vue/DataTableWithPaging.vue')
+)
+
+let materialIdCounter = 1
+
+function createEmptyMaterial() {
+  return {
+    id: materialIdCounter++,
+    gold: null,
+    goldSize: null,
+    goldQty: null,
+    gem: null,
+    gemShape: null,
+    gemQty: null,
+    gemUnit: null,
+    gemSize: null,
+    gemWeight: null,
+    gemWeightUnit: null,
+    diamondQty: null,
+    diamondUnit: null,
+    diamondSize: null,
+    diamondWeight: null,
+    diamondWeightUnit: null,
+    diamondQuality: null,
+  }
+}
 
 export default {
   name: 'MaterialTable',
+
   components: { BaseDataTable, Dropdown },
+
   props: {
     materials: { type: Array, default: () => [] },
+    masterGold: { type: Array, default: () => [] },
+    masterGoldSize: { type: Array, default: () => [] },
+    masterGem: { type: Array, default: () => [] },
+    masterGemShape: { type: Array, default: () => [] },
   },
+
   emits: ['update:materials'],
+
   data() {
     return {
-      editingIds: new Set(),
-      editBuffer: {},
-      materialTypeOptions: [
-        { value: 'Gem', label: 'พลอย' },
-        { value: 'Diamond', label: 'เพชร' },
-        { value: 'Gold', label: 'ทอง' },
-      ],
       columns: [
-        { field: 'action', header: '', minWidth: '100px', sortable: false },
-        { field: 'materialType', header: 'ประเภท', minWidth: '100px', sortable: false },
-        { field: 'materialCode', header: 'รหัส', minWidth: '100px', sortable: false },
-        { field: 'size', header: 'ไซส์', minWidth: '80px', sortable: false },
-        { field: 'qty', header: 'จำนวน', minWidth: '80px', align: 'center', sortable: false },
-        { field: 'isLocked', header: 'ล็อค', minWidth: '60px', align: 'center', sortable: false },
-        { field: 'remark', header: 'หมายเหตุ', minWidth: '150px', sortable: false },
+        { field: 'action', header: '', minWidth: '60px', sortable: false, align: 'center' },
+        { field: 'gold', header: 'สีของทอง/เงิน', minWidth: '150px', sortable: false },
+        { field: 'goldSize', header: 'เปอร์เซ็น', minWidth: '120px', sortable: false },
+        { field: 'goldQty', header: 'จำนวนทอง/เงิน', minWidth: '120px', sortable: false },
+        { field: 'gem', header: 'ประเภทพลอย', minWidth: '150px', sortable: false },
+        { field: 'gemShape', header: 'รูปร่างพลอย', minWidth: '130px', sortable: false },
+        { field: 'gemQty', header: 'จำนวนพลอย', minWidth: '110px', sortable: false },
+        { field: 'gemUnit', header: 'หน่วยพลอย', minWidth: '100px', sortable: false },
+        { field: 'gemSize', header: 'ขนาดพลอย', minWidth: '110px', sortable: false },
+        { field: 'gemWeight', header: 'น้ำหนักพลอย', minWidth: '120px', sortable: false },
+        { field: 'gemWeightUnit', header: 'หน่วยน้ำหนัก', minWidth: '110px', sortable: false },
+        { field: 'diamondQty', header: 'จำนวนเพชร', minWidth: '110px', sortable: false },
+        { field: 'diamondUnit', header: 'หน่วยเพชร', minWidth: '100px', sortable: false },
+        { field: 'diamondSize', header: 'ขนาดเพชร', minWidth: '110px', sortable: false },
+        { field: 'diamondWeight', header: 'น้ำหนักเพชร', minWidth: '120px', sortable: false },
+        { field: 'diamondWeightUnit', header: 'หน่วยน้ำหนัก', minWidth: '110px', sortable: false },
+        { field: 'diamondQuality', header: 'คุณภาพเพชร', minWidth: '120px', sortable: false },
       ],
     }
   },
-  computed: {
-    localMaterials() {
-      return this.materials
-    },
-  },
+
   methods: {
-    addRow() {
-      const newRow = {
-        _id: Date.now() + Math.random(),
-        materialType: 'Gem',
-        masterId: null,
-        materialCode: '',
-        shapeCode: '',
-        size: '',
-        qty: 1,
-        color: '',
-        weight: null,
-        weightUnit: '',
-        isLocked: false,
-        remark: '',
-      }
-      const updated = [...this.materials, newRow]
-      this.$emit('update:materials', updated)
-      this.startEdit(newRow)
+    emitUpdate() {
+      this.$emit('update:materials', [...this.materials])
     },
-    removeRow(data) {
-      this.editingIds.delete(data._id)
-      delete this.editBuffer[data._id]
+
+    onAddMaterial() {
+      this.$emit('update:materials', [...this.materials, createEmptyMaterial()])
+    },
+
+    onDelMaterial(row) {
       this.$emit(
         'update:materials',
-        this.materials.filter((m) => m._id !== data._id)
+        this.materials.filter((m) => m.id !== row.id)
       )
-    },
-    isEditing(data) {
-      return this.editingIds.has(data._id)
-    },
-    startEdit(data) {
-      this.editingIds = new Set([...this.editingIds, data._id])
-      this.editBuffer = { ...this.editBuffer, [data._id]: { ...data } }
-    },
-    saveEdit(data) {
-      const updated = this.materials.map((m) =>
-        m._id === data._id ? { ...m, ...this.editBuffer[data._id] } : m
-      )
-      this.$emit('update:materials', updated)
-      this.editingIds.delete(data._id)
-      const buf = { ...this.editBuffer }
-      delete buf[data._id]
-      this.editBuffer = buf
-      this.editingIds = new Set([...this.editingIds])
-    },
-    cancelEdit(data) {
-      this.editingIds.delete(data._id)
-      const buf = { ...this.editBuffer }
-      delete buf[data._id]
-      this.editBuffer = buf
-      this.editingIds = new Set([...this.editingIds])
-    },
-    getMaterialTypeLabel(type) {
-      return { Gem: 'พลอย', Diamond: 'เพชร', Gold: 'ทอง' }[type] || type
     },
   },
 }
@@ -205,4 +220,32 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/web';
+
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff !important;
+}
+
+h6 {
+  color: var(--base-font-color);
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 12px !important;
+  background: transparent !important;
+}
+
+:deep(.material-dropdown) {
+  width: 100%;
+  .p-dropdown-label {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+}
+
+:deep(.form-control-sm) {
+  font-size: 0.85rem;
+  padding: 6px 8px;
+}
 </style>

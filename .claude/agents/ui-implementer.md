@@ -12,6 +12,7 @@ skills:
   - generic-components
   - image-system
   - mobile-dev
+  - ui-layout
 ---
 
 # UI Implementer Agent

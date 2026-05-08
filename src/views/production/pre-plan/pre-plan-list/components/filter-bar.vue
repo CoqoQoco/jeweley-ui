@@ -20,9 +20,9 @@
             <span class="title-text">สถานะ</span>
             <DropdownGeneric
               :modelValue="modelForm.status"
-              :options="PRE_PLAN_STATUS_OPTIONS"
-              optionLabel="label"
-              optionValue="value"
+              :options="masterStore.statuses"
+              optionLabel="description"
+              optionValue="code"
               placeholder="ทั้งหมด"
               :showClear="true"
               @update:modelValue="update('status', $event)"
@@ -84,7 +84,7 @@ import { defineAsyncComponent } from 'vue'
 
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
-import { PRE_PLAN_STATUS_OPTIONS } from '@/constants/pre-plan-status.js'
+import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
@@ -98,9 +98,13 @@ export default {
     },
   },
   emits: ['update:modelForm', 'search', 'clear'],
-  data() {
-    return {
-      PRE_PLAN_STATUS_OPTIONS,
+  setup() {
+    const masterStore = useMasterPrePlanStore()
+    return { masterStore }
+  },
+  async created() {
+    if (!this.masterStore.statuses.length) {
+      await this.masterStore.fetchStatuses()
     }
   },
   methods: {

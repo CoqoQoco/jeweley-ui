@@ -21,9 +21,17 @@
           <i class="bi bi-pencil"></i>
         </button>
         <button
+          v-if="data.status === 'Submitted'"
+          class="btn btn-sm btn-main ms-2"
+          @click="onApprove(data)"
+          title="อนุมัติ"
+        >
+          <i class="bi bi-check-lg"></i> อนุมัติ
+        </button>
+        <button
           v-if="data.status === 'Approved'"
-          class="btn btn-sm btn-main"
-          @click="onSendToProduction(data)"
+          class="btn btn-sm btn-main ms-2"
+          @click="onConsume(data)"
           title="ส่งเข้าผลิต"
         >
           <i class="bi bi-arrow-right-circle"></i> ส่งเข้าผลิต
@@ -34,6 +42,15 @@
     <template #statusTemplate="{ data }">
       <span :class="getStatusClass(data.status)">{{ getStatusLabel(data.status) }}</span>
     </template>
+
+    <template #itemCountTemplate="{ data }">
+      <span>{{ data.itemCount }} รายการ</span>
+    </template>
+
+    <template #primaryMoldCodeTemplate="{ data }">
+      <span v-if="data.itemCount > 1">{{ data.primaryMoldCode }} +{{ data.itemCount - 1 }}</span>
+      <span v-else>{{ data.primaryMoldCode }}</span>
+    </template>
   </BaseDataTable>
 </template>
 
@@ -41,6 +58,7 @@
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 import { formatDate } from '@/services/utils/dayjs.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
 export default {
   name: 'PrePlanTable',
@@ -62,10 +80,10 @@ export default {
         { field: 'orderNo', header: 'เลขที่ใบสั่ง', minWidth: '120px' },
         { field: 'jobType', header: 'ประเภทงาน', minWidth: '120px' },
         { field: 'productionRound', header: 'ครั้งที่', minWidth: '70px', align: 'center' },
-        { field: 'moldCode', header: 'รหัสแม่พิมพ์', minWidth: '120px' },
         { field: 'goldType', header: 'ประเภททอง', minWidth: '100px' },
         { field: 'status', header: 'สถานะ', minWidth: '110px' },
-        { field: 'productQty', header: 'จำนวน', minWidth: '80px', align: 'right' },
+        { field: 'itemCount', header: 'จำนวนรายการ', minWidth: '110px', align: 'center', sortable: false },
+        { field: 'primaryMoldCode', header: 'แม่พิมพ์หลัก', minWidth: '130px', sortable: false },
         { field: 'orderDate', header: 'วันที่ออก', minWidth: '110px', format: 'date' },
         { field: 'deliveryDate', header: 'วันที่ส่งงาน', minWidth: '110px', format: 'date' },
         { field: 'createBy', header: 'ผู้สร้าง', minWidth: '120px' },
@@ -90,7 +108,7 @@ export default {
         orderDateTo: this.modelForm.orderDateTo || null,
         take: this.take,
         skip: this.skip,
-        sort: this.sort,
+        sort: this.sort.length ? this.sort.map((s) => `${s.field} ${s.dir}`).join(',') : null,
       })
     },
     handlePageChange(e) {
@@ -114,8 +132,15 @@ export default {
     onEdit(data) {
       this.$router.push({ name: 'pre-plan-edit', params: { id: data.id } })
     },
-    onSendToProduction(data) {
-      this.$router.push({ name: 'plan-order', query: { prePlanId: data.id } })
+    onApprove(data) {
+      this.$router.push({ name: 'pre-plan-approve', params: { id: data.id } })
+    },
+    onConsume(data) {
+      confirmSubmit('ยืนยันส่งใบสั่งผลิตเข้าสายการผลิต?', 'ยืนยัน', async () => {
+        await this.store.consumePrePlan(data.id, { id: data.id })
+        success('ส่งเข้าผลิตสำเร็จ')
+        await this.fetchData()
+      })
     },
     getStatusClass(status) {
       const map = {
