@@ -92,6 +92,21 @@
                         />
                         <span>ใบเสร็จรับเงิน/ใบกำกับภาษี — ต่อเนื่อง 9x11 (Epson LQ-310)</span>
                       </label>
+                      <label class="paper-size-option">
+                        <input
+                          type="radio"
+                          v-model="paperSize"
+                          value="webusb-escp"
+                        />
+                        <span>ใบกำกับภาษี — ESC/P USB ตรง (Chrome เท่านั้น)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div v-if="paperSize === 'webusb-escp'" class="form-group mb-3">
+                    <div class="webusb-info-box">
+                      <i class="bi bi-usb-symbol mr-2"></i>
+                      <span>ส่ง ESC/P ตรงผ่าน USB — ไม่ต้องลงโปรแกรมที่เครื่อง</span>
                     </div>
                   </div>
 
@@ -153,6 +168,18 @@
                     <small class="form-text text-muted">
                       หากตำแหน่งเหลื่อมเล็กน้อย ปรับ offset ทีละ 0.5-1 mm
                     </small>
+
+                    <div class="d-flex align-items-center mt-2" style="gap: 8px; cursor: pointer" @click="calibrationMode = !calibrationMode">
+                      <input
+                        id="calibrationModeInput"
+                        type="checkbox"
+                        v-model="calibrationMode"
+                        style="width: 16px; height: 16px; cursor: pointer"
+                      />
+                      <label class="form-label mb-0" for="calibrationModeInput" style="cursor: pointer; color: #6c757d">
+                        <i class="bi bi-grid-3x3 mr-1"></i>พิมพ์ตาราง calibration (debug)
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -236,9 +263,10 @@ export default {
         invoiceDate: '',
         showCifLabel: true
       },
-      paperSize: 'a4',
+      paperSize: 'webusb-escp',
       continuousOffset: { x: 0, y: 0 },
-      billOffset: { x: 0, y: 0 }
+      billOffset: { x: 0, y: 0 },
+      calibrationMode: false
     }
   },
 
@@ -354,7 +382,8 @@ export default {
         showCifLabel: this.printData.showCifLabel,
         paperSize: this.paperSize,
         continuousOffset: { ...this.continuousOffset },
-        billOffset: { ...this.billOffset }
+        billOffset: { ...this.billOffset },
+        calibrationMode: this.paperSize === 'continuous' ? this.calibrationMode : false
       }
 
       console.log('Modal - Emitting printDataToEmit:', printDataToEmit)
@@ -422,6 +451,21 @@ export default {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.875rem;
+}
+
+.webusb-info-box {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #e8f4f8;
+  border: 1px solid var(--base-green);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--base-green);
+
+  i {
+    color: var(--base-green);
+  }
 }
 
 // PrimeVue Calendar full width

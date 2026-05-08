@@ -28,6 +28,10 @@
             <i class="bi bi-printer mr-1"></i>
             พิมพ์ใบเเจ้งหนี้
           </button>
+          <button class="btn btn-green btn-sm mr-2" @click="spikeTestHello" style="width: 160px">
+            <i class="bi bi-usb-symbol mr-1"></i>
+            Test Hello USB
+          </button>
           <button class="btn btn-green btn-sm mr-2" @click="exportInvoiceExcel" style="width: 140px">
             <i class="bi bi-file-earmark-excel mr-1"></i>
             Export Excel
@@ -1743,6 +1747,33 @@ export default {
     goBack() {
       this.$router.back()
     },
+    async spikeTestHello() {
+      const { WebUsbPrinter } = await import('@/services/helper/print/webusb-printer.js')
+      const { ESCP, concatBytes, encodeTIS620 } = await import('@/services/helper/print/escp-encoder.js')
+      const printer = new WebUsbPrinter()
+      try {
+        await printer.requestAndConnect()
+        const bytes = concatBytes(
+          ESCP.init(),
+          ESCP.selectThaiCharTable(),
+          ESCP.text('Hello '),
+          encodeTIS620('สวัสดี'),
+          ESCP.crlf(),
+          ESCP.formFeed()
+        )
+        await printer.send(bytes)
+        success('ส่งข้อมูลไปยังเครื่องพิมพ์สำเร็จ', 'Spike Test')
+      } catch (err) {
+        if (err.name === 'UserCancelled' || err.name === 'NotFoundError') {
+          console.info('User cancelled USB device selection')
+          return
+        }
+        console.error('Spike test error:', err)
+        error(err.message || 'ไม่สามารถส่งข้อมูลได้', 'Spike Test Error')
+      } finally {
+        await printer.disconnect()
+      }
+    },
     async reprintPDF() {
       // Open confirm print modal instead of direct print
       this.showConfirmPrintModal = true
@@ -1983,7 +2014,35 @@ export default {
 
         //console.log('PDF Options:', options)
 
-        if (printData.paperSize === 'continuous') {
+        if (printData.paperSize === 'webusb-escp') {
+          const { WebUsbPrinter } = await import('@/services/helper/print/webusb-printer.js')
+          const { buildVatEscP } = await import('@/services/helper/print/escp-encoder.js')
+          const printer = new WebUsbPrinter()
+          try {
+            await printer.requestAndConnect()
+            const saleOrderForPrint = {
+              ...pdfData.saleOrder,
+              items: pdfData.items,
+              customer: pdfData.customer,
+              currencyRate: pdfData.currency.rate,
+              invoiceNo: options.invoiceNo,
+              invoiceDate: options.invoiceDate
+            }
+            const bytes = buildVatEscP(saleOrderForPrint)
+            await printer.send(bytes)
+            success('พิมพ์เสร็จสิ้น', 'ESC/P USB')
+          } catch (err) {
+            if (err.name === 'UserCancelled' || err.name === 'NotFoundError') {
+              console.info('User cancelled USB device selection')
+              return
+            }
+            console.error('WebUSB print error:', err)
+            error(err.message || 'ไม่สามารถพิมพ์ผ่าน USB ได้', 'เกิดข้อผิดพลาด')
+          } finally {
+            await printer.disconnect()
+          }
+          return
+        } else if (printData.paperSize === 'continuous') {
           const builder = new InvoiceContinuousPdfBuilder(
             {
               ...pdfData.saleOrder,
@@ -1995,7 +2054,8 @@ export default {
             },
             {
               offsetX: printData.continuousOffset?.x || 0,
-              offsetY: printData.continuousOffset?.y || 0
+              offsetY: printData.continuousOffset?.y || 0,
+              calibrationMode: printData.calibrationMode === true
             }
           )
           builder.generatePDF().open()
