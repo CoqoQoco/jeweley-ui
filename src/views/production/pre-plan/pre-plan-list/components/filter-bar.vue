@@ -18,41 +18,38 @@
 
           <div>
             <span class="title-text">สถานะ</span>
-            <select
-              class="form-select"
-              :value="modelForm.status"
-              @change="update('status', $event.target.value || null)"
-            >
-              <option value="">ทั้งหมด</option>
-              <option value="Draft">ร่าง</option>
-              <option value="Submitted">รออนุมัติ</option>
-              <option value="Approved">อนุมัติแล้ว</option>
-              <option value="Rejected">ปฏิเสธ</option>
-              <option value="Consumed">ส่งผลิตแล้ว</option>
-            </select>
+            <DropdownGeneric
+              :modelValue="modelForm.status"
+              :options="PRE_PLAN_STATUS_OPTIONS"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="ทั้งหมด"
+              :showClear="true"
+              @update:modelValue="update('status', $event)"
+            />
           </div>
 
           <div>
             <span class="title-text">วันที่ออกใบสั่ง</span>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 :modelValue="modelForm.orderDateFrom"
-                @update:modelValue="update('orderDateFrom', $event)"
-                :manualInput="true"
-                showIcon
-                placeholder="เริ่มต้น"
                 dateFormat="dd/mm/yy"
+                :showIcon="true"
+                :manualInput="true"
+                placeholder="เริ่มต้น"
+                @update:modelValue="update('orderDateFrom', $event)"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 :modelValue="modelForm.orderDateTo"
-                @update:modelValue="update('orderDateTo', $event)"
-                :manualInput="true"
-                showIcon
-                placeholder="สิ้นสุด"
                 dateFormat="dd/mm/yy"
+                :showIcon="true"
+                :manualInput="true"
+                placeholder="สิ้นสุด"
+                @update:modelValue="update('orderDateTo', $event)"
               />
             </div>
           </div>
@@ -84,13 +81,16 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
+
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import { PRE_PLAN_STATUS_OPTIONS } from '@/constants/pre-plan-status.js'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 export default {
   name: 'FilterBar',
-  components: { pageTitle, Calendar },
+  components: { pageTitle, CalendarGeneric, DropdownGeneric },
   props: {
     modelForm: {
       type: Object,
@@ -98,6 +98,11 @@ export default {
     },
   },
   emits: ['update:modelForm', 'search', 'clear'],
+  data() {
+    return {
+      PRE_PLAN_STATUS_OPTIONS,
+    }
+  },
   methods: {
     update(field, value) {
       this.$emit('update:modelForm', { ...this.modelForm, [field]: value })

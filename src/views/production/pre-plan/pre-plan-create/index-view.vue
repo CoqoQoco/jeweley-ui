@@ -1,28 +1,15 @@
 <template>
   <div class="app-container">
-    <div class="d-flex align-items-center mb-3">
-      <button
-        class="btn btn-sm btn-outline-main me-2"
-        @click="$router.push({ name: 'pre-plan-list' })"
-      >
-        <i class="bi bi-arrow-left"></i> กลับ
+    <div class="page-header-bar">
+      <button class="btn-back" @click="$router.push({ name: 'pre-plan-list' })" title="กลับ" type="button">
+        <i class="bi bi-arrow-left"></i>
       </button>
-      <h5 class="mb-0">{{ isEditMode ? 'แก้ไขใบสั่งผลิต' : 'สร้างใบสั่งผลิต' }}</h5>
+      <h2 class="page-title">{{ isEditMode ? 'แก้ไขใบสั่งผลิต' : 'สร้างใบสั่งผลิต' }}</h2>
     </div>
 
     <headerSection v-model:form="form" />
 
-    <moldSection
-      v-model:moldCode="form.moldCode"
-      v-model:productType="form.productType"
-      v-model:moldDetail="form.moldDetail"
-      @mold-loaded="onMoldLoaded"
-      class="mt-3"
-    />
-
-    <goldSection v-model:goldType="form.goldType" class="mt-3" />
-
-    <materialTable v-model:materials="materials" class="mt-3" />
+    <itemsSection v-model:items="items" class="mt-3" />
 
     <footerActions
       :isEditMode="isEditMode"
@@ -37,24 +24,42 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
-import { confirmSubmit, success, warning } from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, warning, info } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 
 const headerSection = defineAsyncComponent(() => import('./components/header-section.vue'))
-const moldSection = defineAsyncComponent(() => import('./components/mold-section.vue'))
-const goldSection = defineAsyncComponent(() => import('./components/gold-section.vue'))
-const materialTable = defineAsyncComponent(() => import('./components/material-table.vue'))
+const itemsSection = defineAsyncComponent(() => import('./components/items-section.vue'))
 const footerActions = defineAsyncComponent(() => import('./components/footer-actions.vue'))
 
+let localIdCounter = 100
+
+function createEmptyItem() {
+  return {
+    _localId: localIdCounter++,
+    moldCode: null,
+    moldDetail: null,
+    moldImageCad: null,
+    moldImageFinish: null,
+    productImageFile: null,
+    productImagePreview: null,
+    customerNumber: null,
+    customerType: null,
+    productName: null,
+    productType: null,
+    productQty: null,
+    productQtyUnit: null,
+    productDetail: null,
+    goldType: '18K',
+    goldSize: null,
+    materials: [],
+  }
+}
+
 const defaultForm = () => ({
-  orderNo: '',
   jobLocation: 'Domestic',
   jobType: 'NewDesign',
   productionRound: 1,
-  moldCode: '',
-  productType: '',
   goldType: '18K',
-  moldDetail: '',
   remark: '',
   orderDate: new Date(),
   deliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)),
@@ -63,7 +68,7 @@ const defaultForm = () => ({
 
 export default {
   name: 'PrePlanCreate',
-  components: { headerSection, moldSection, goldSection, materialTable, footerActions },
+  components: { headerSection, itemsSection, footerActions },
 
   setup() {
     const store = usePrePlanStore()
@@ -73,7 +78,7 @@ export default {
   data() {
     return {
       form: defaultForm(),
-      materials: [],
+      items: [createEmptyItem()],
     }
   },
 
@@ -95,87 +100,73 @@ export default {
   methods: {
     async loadPrePlan() {
       const data = await this.store.getPrePlan(this.prePlanId)
-      if (data) {
-        this.form = {
-          orderNo: data.orderNo,
-          jobLocation: data.jobLocation,
-          jobType: data.jobType,
-          productionRound: data.productionRound,
-          moldCode: data.moldCode,
-          productType: data.productType || '',
-          goldType: data.goldType,
-          moldDetail: data.moldDetail || '',
-          remark: data.remark || '',
-          orderDate: data.orderDate ? new Date(data.orderDate) : new Date(),
-          deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : new Date(),
-          status: data.status,
-        }
-        this.materials = (data.materials || []).map((m) => ({
-          ...m,
-          _id: m.id || Date.now() + Math.random(),
-        }))
-      }
-    },
+      if (!data) return
 
-    onMoldLoaded({ gems }) {
-      if (gems && gems.length && !this.materials.length) {
-        this.materials = gems.map((g, i) => ({
-          _id: Date.now() + i,
-          materialType: 'Gem',
-          masterId: g.gemId || null,
-          materialCode: g.gemCode || '',
-          shapeCode: g.gemShapeCode || '',
-          size: g.size || '',
-          qty: g.qty || 0,
-          color: '',
-          weight: null,
-          weightUnit: '',
-          isLocked: false,
-          remark: '',
-        }))
+      this.form = {
+        jobLocation: data.jobLocation || 'Domestic',
+        jobType: data.jobType || 'NewDesign',
+        productionRound: data.productionRound || 1,
+        goldType: data.goldType || '18K',
+        remark: data.remark || '',
+        orderDate: data.orderDate ? new Date(data.orderDate) : new Date(),
+        deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : new Date(),
+        status: data.status || 'Draft',
       }
-    },
 
-    buildPayload() {
-      return {
-        orderNo: this.form.orderNo,
-        jobLocation: this.form.jobLocation,
-        jobType: this.form.jobType,
-        productionRound: this.form.productionRound,
-        moldCode: this.form.moldCode,
-        productType: this.form.productType,
-        goldType: this.form.goldType,
-        moldDetail: this.form.moldDetail,
-        remark: this.form.remark,
-        orderDate: formatISOString(this.form.orderDate),
-        deliveryDate: formatISOString(this.form.deliveryDate),
-        materials: this.materials.map((m) => ({
-          materialType: m.materialType,
-          masterId: m.masterId || null,
-          materialCode: m.materialCode || '',
-          shapeCode: m.shapeCode || '',
-          size: m.size || '',
-          qty: m.qty || 0,
-          color: m.color || '',
-          weight: m.weight || null,
-          weightUnit: m.weightUnit || '',
-          isLocked: m.isLocked || false,
-          remark: m.remark || '',
-        })),
+      if (data.items && data.items.length) {
+        this.items = data.items.map((it) => ({
+          _localId: localIdCounter++,
+          moldCode: it.moldCode || null,
+          moldDetail: it.moldDetail || null,
+          moldImageCad: null,
+          moldImageFinish: null,
+          productImageFile: null,
+          productImagePreview: null,
+          customerNumber: it.customerNumber || null,
+          customerType: it.customerType || null,
+          productName: it.productName || null,
+          productType: it.productType || null,
+          productQty: it.productQty || null,
+          productQtyUnit: it.productQtyUnit || null,
+          productDetail: it.productDetail || null,
+          goldType: it.goldType || '18K',
+          goldSize: it.goldSize || null,
+          materials: (it.materials || []).map((m) => ({
+            ...m,
+            _id: m.id || Date.now() + Math.random(),
+          })),
+        }))
+      } else {
+        this.items = [
+          {
+            _localId: localIdCounter++,
+            moldCode: data.moldCode || null,
+            moldDetail: data.moldDetail || null,
+            moldImageCad: null,
+            moldImageFinish: null,
+            productImageFile: null,
+            productImagePreview: null,
+            customerNumber: null,
+            customerType: null,
+            productName: null,
+            productType: data.productType || null,
+            productQty: null,
+            productQtyUnit: null,
+            productDetail: null,
+            goldType: data.goldType || '18K',
+            goldSize: null,
+            materials: (data.materials || []).map((m) => ({
+              ...m,
+              _id: m.id || Date.now() + Math.random(),
+            })),
+          },
+        ]
       }
     },
 
     validateForm() {
-      if (!this.form.orderNo) {
-        warning('กรุณากรอกเลขที่ใบสั่ง', 'ข้อมูลไม่ครบ')
-        return false
-      }
-      if (!this.form.moldCode) {
-        warning('กรุณาเลือกแม่พิมพ์', 'ข้อมูลไม่ครบ')
-        return false
-      }
-      if (!this.form.goldType) {
-        warning('กรุณาเลือกประเภททอง', 'ข้อมูลไม่ครบ')
+      if (!this.form.productionRound) {
+        warning('กรุณาระบุผลิตครั้งที่', 'ข้อมูลไม่ครบ')
         return false
       }
       if (!this.form.orderDate) {
@@ -186,35 +177,64 @@ export default {
         warning('กรุณาเลือกวันที่ส่งงาน', 'ข้อมูลไม่ครบ')
         return false
       }
+      if (!this.items.length) {
+        warning('ต้องมีอย่างน้อย 1 รายการ', 'ข้อมูลไม่ครบ')
+        return false
+      }
+      for (let i = 0; i < this.items.length; i++) {
+        const it = this.items[i]
+        const label = `รายการที่ ${i + 1}`
+        if (!it.moldCode) {
+          warning(`${label}: กรุณาเลือกแม่พิมพ์`, 'ข้อมูลไม่ครบ')
+          return false
+        }
+        if (!it.goldType) {
+          warning(`${label}: กรุณาเลือกประเภททอง`, 'ข้อมูลไม่ครบ')
+          return false
+        }
+        if (!it.materials || it.materials.length < 1) {
+          warning(`${label}: ต้องมีวัสดุอย่างน้อย 1 รายการ`, 'ข้อมูลไม่ครบ')
+          return false
+        }
+      }
       return true
+    },
+
+    buildPayload() {
+      return {
+        ...this.form,
+        orderDate: formatISOString(this.form.orderDate),
+        deliveryDate: formatISOString(this.form.deliveryDate),
+        items: this.items.map((it) => ({
+          moldCode: it.moldCode,
+          customerNumber: it.customerNumber,
+          customerType: it.customerType,
+          productName: it.productName,
+          productType: it.productType,
+          productQty: it.productQty,
+          productQtyUnit: it.productQtyUnit,
+          productDetail: it.productDetail,
+          goldType: it.goldType,
+          goldSize: it.goldSize,
+          productImagePath: null,
+          materials: it.materials,
+        })),
+      }
     },
 
     async onSaveDraft() {
       if (!this.validateForm()) return
       const payload = this.buildPayload()
-      if (this.isEditMode) {
-        await this.store.updatePrePlan(this.prePlanId, payload)
-      } else {
-        await this.store.createPrePlan(payload)
-      }
-      success('บันทึกร่างเรียบร้อยแล้ว')
-      this.$router.push({ name: 'pre-plan-list' })
+      console.warn('[UI-Only] Save Draft payload:', payload)
+      info('บันทึก UI-only — API ยังไม่ wire', 'Preview')
     },
 
     onSubmit() {
       if (!this.validateForm()) return
-      confirmSubmit('ยืนยันส่งใบสั่งผลิตเพื่อรออนุมัติ?', 'ยืนยันการส่ง', async () => {
+      confirmSubmit('ยืนยันส่งใบสั่งผลิตเพื่อรออนุมัติ?', 'ยืนยันการส่ง', () => {
         const payload = this.buildPayload()
-        let id = this.prePlanId
-        if (this.isEditMode) {
-          await this.store.updatePrePlan(id, payload)
-        } else {
-          const res = await this.store.createPrePlan(payload)
-          id = res?.id || res
-        }
-        await this.store.submitPrePlan(id)
-        success('ส่งใบสั่งผลิตเรียบร้อยแล้ว รอหัวหน้าอนุมัติ')
-        this.$router.push({ name: 'pre-plan-list' })
+        console.warn('[UI-Only] Submit payload:', payload)
+        info('ส่ง UI-only — API ยังไม่ wire', 'Preview')
       })
     },
   },
@@ -223,4 +243,43 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/web';
+
+.page-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  border-bottom: 2px solid var(--base-font-color);
+  box-shadow: rgba(0, 0, 0, 0.06) 0 2px 8px;
+  margin-bottom: 16px;
+}
+
+.btn-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--base-font-color);
+  color: var(--base-font-color);
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+
+  &:hover {
+    background: var(--base-font-color);
+    color: #ffffff;
+  }
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--base-font-color);
+}
 </style>

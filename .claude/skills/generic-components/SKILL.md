@@ -15,6 +15,7 @@ description: Generic PrimeVue wrapper components — ตรวจสอบก่
 |---|---|---|
 | `CalendarGeneric` | `CalendarGeneric.vue` | Date picker พร้อม mobile-friendly styling |
 | `AutoCompleteGeneric` | `AutoCompleteGeneric.vue` | Autocomplete รองรับ API mode + static list |
+| `DropdownGeneric` | `DropdownGeneric.vue` | Dropdown select รองรับ options list + showClear |
 | `ImagePreview` | `ImagePreview.vue` | แสดงรูปจาก Azure Blob (direct URL) |
 | `ImagePreviewEmit` | `ImagePreviewEmit.vue` | แสดงรูปพร้อม emit blobPath |
 | `DataTableWithPaging` | `DataTableWithPaging.vue` | DataTable พร้อม pagination |
@@ -83,6 +84,33 @@ SCSS:
     font-size: 0.9rem;
   }
 }
+```
+
+---
+
+## DropdownGeneric
+
+```vue
+<DropdownGeneric
+  :modelValue="modelForm.status"
+  :options="STATUS_OPTIONS"
+  optionLabel="label"
+  optionValue="value"
+  placeholder="ทั้งหมด"
+  :showClear="true"
+  @update:modelValue="update('status', $event)"
+/>
+```
+
+Props สำคัญ:
+- `options` — Array ของ objects (เช่น `[{ value: 'Draft', label: 'ร่าง' }]`)
+- `optionLabel` — field ที่แสดงใน dropdown (default: `'label'`)
+- `optionValue` — field ที่ใช้เป็น value (default: `null` = ส่ง full object)
+- `showClear` — แสดงปุ่มล้างค่า (default: `false`)
+
+Import:
+```javascript
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 ```
 
 ---

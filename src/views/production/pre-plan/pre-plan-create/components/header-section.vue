@@ -1,66 +1,49 @@
 <template>
-  <div class="card p-3">
-    <h6 class="mb-3">ข้อมูลใบสั่งผลิต</h6>
-    <div class="responsive-grid-2col mb-2">
-      <div>
-        <span class="title-text">เลขที่ใบสั่ง <span class="text-danger">*</span></span>
-        <input class="form-control" v-model="localForm.orderNo" placeholder="เช่น 6903009" />
-      </div>
-      <div>
+  <div class="header-section-card">
+    <pageTitle title="ข้อมูลใบสั่งผลิต" :isShowBtnClose="false" />
+
+    <div class="form-row two-col">
+      <div class="form-field">
         <span class="title-text">ผลิตครั้งที่</span>
-        <input
-          class="form-control"
-          type="number"
-          v-model.number="localForm.productionRound"
-          min="1"
+        <input class="form-control" type="number" v-model.number="localForm.productionRound" min="1" />
+      </div>
+      <div class="form-field">
+        <span class="title-text">ประเภททอง/เงิน <span class="text-danger">*</span></span>
+        <DropdownGeneric
+          :modelValue="localForm.goldType"
+          :options="goldTypes"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกประเภททอง/เงิน"
+          @update:modelValue="update('goldType', $event)"
         />
       </div>
     </div>
 
-    <div class="mb-2">
-      <span class="title-text">ประเภทงาน <span class="text-danger">*</span></span>
-      <div class="d-flex gap-3 mt-1 flex-wrap">
-        <div v-for="jt in jobTypes" :key="jt.value" class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            :value="jt.value"
-            v-model="localForm.jobType"
-            :id="'jt-' + jt.value"
-          />
-          <label class="form-check-label" :for="'jt-' + jt.value">{{ jt.label }}</label>
-        </div>
+    <div class="form-row four-col">
+      <div class="form-field">
+        <span class="title-text">ประเภทงาน <span class="text-danger">*</span></span>
+        <DropdownGeneric
+          :modelValue="localForm.jobType"
+          :options="jobTypes"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกประเภทงาน"
+          @update:modelValue="update('jobType', $event)"
+        />
       </div>
-    </div>
-
-    <div class="mb-2">
-      <span class="title-text">สถานที่</span>
-      <div class="d-flex gap-3 mt-1">
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            value="Domestic"
-            v-model="localForm.jobLocation"
-            id="loc-domestic"
-          />
-          <label class="form-check-label" for="loc-domestic">งานในประเทศ</label>
-        </div>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            value="Overseas"
-            v-model="localForm.jobLocation"
-            id="loc-overseas"
-          />
-          <label class="form-check-label" for="loc-overseas">งานต่างประเทศ</label>
-        </div>
+      <div class="form-field">
+        <span class="title-text">สถานที่</span>
+        <DropdownGeneric
+          :modelValue="localForm.jobLocation"
+          :options="locations"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกสถานที่"
+          @update:modelValue="update('jobLocation', $event)"
+        />
       </div>
-    </div>
-
-    <div class="responsive-grid-2col mb-2">
-      <div>
+      <div class="form-field">
         <span class="title-text">วันที่ออกใบสั่ง <span class="text-danger">*</span></span>
         <CalendarGeneric
           v-model="localForm.orderDate"
@@ -68,7 +51,7 @@
           :showIcon="true"
         />
       </div>
-      <div>
+      <div class="form-field">
         <span class="title-text">วันที่ส่งงาน <span class="text-danger">*</span></span>
         <CalendarGeneric
           v-model="localForm.deliveryDate"
@@ -78,14 +61,16 @@
       </div>
     </div>
 
-    <div class="mb-2">
-      <span class="title-text">หมายเหตุ</span>
-      <textarea
-        class="form-control"
-        v-model="localForm.remark"
-        rows="2"
-        placeholder="หมายเหตุ เช่น part-128 หูจี้, PART-795"
-      ></textarea>
+    <div class="form-row">
+      <div class="form-field">
+        <span class="title-text">หมายเหตุ</span>
+        <textarea
+          class="form-control"
+          v-model="localForm.remark"
+          rows="3"
+          placeholder="หมายเหตุ เช่น part-128 หูจี้, PART-795"
+        ></textarea>
+      </div>
     </div>
   </div>
 </template>
@@ -93,13 +78,17 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const DropdownGeneric = defineAsyncComponent(
+  () => import('@/components/prime-vue/DropdownGeneric.vue')
+)
 const CalendarGeneric = defineAsyncComponent(
   () => import('@/components/prime-vue/CalendarGeneric.vue')
 )
 
 export default {
   name: 'HeaderSection',
-  components: { CalendarGeneric },
+  components: { pageTitle, DropdownGeneric, CalendarGeneric },
   props: {
     form: { type: Object, required: true },
   },
@@ -110,6 +99,16 @@ export default {
         { value: 'NewDesign', label: 'งานแบบใหม่' },
         { value: 'Sale', label: 'งานขาย' },
         { value: 'CustomCustomer', label: 'งานสั่งมีชื่อลูกค้า' },
+      ],
+      locations: [
+        { value: 'Domestic', label: 'งานในประเทศ' },
+        { value: 'Overseas', label: 'งานต่างประเทศ' },
+      ],
+      goldTypes: [
+        { value: '18K', label: '18K' },
+        { value: '14K', label: '14K' },
+        { value: '9K', label: '9K' },
+        { value: 'Silver', label: 'เงิน' },
       ],
     }
   },
@@ -123,9 +122,87 @@ export default {
       },
     },
   },
+  methods: {
+    update(field, value) {
+      this.$emit('update:form', { ...this.form, [field]: value })
+    },
+  },
 }
 </script>
 
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/web';
+
+input{
+  margin-top: 5px !important;
+}
+
+.header-section-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.06) 0 2px 8px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.form-row {
+  margin-bottom: 16px;
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  &.four-col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  @media (max-width: 1024px) {
+    &.two-col {
+      grid-template-columns: 1fr;
+    }
+    &.four-col {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    &.four-col {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.form-field {
+  width: 100%;
+
+  .title-text {
+    display: block;
+    font-weight: 500;
+    //margin-bottom: 6px;
+  }
+
+  input.form-control,
+  textarea.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+
+    &:focus {
+      border-color: var(--base-font-color);
+      box-shadow: none;
+      outline: none;
+    }
+  }
+
+  textarea.form-control {
+    resize: vertical;
+  }
+}
 </style>
