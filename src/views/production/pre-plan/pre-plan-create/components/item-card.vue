@@ -102,9 +102,8 @@ export default {
     formatMaterial(m) {
       const parts = []
       const goldName = this.descOf(m.gold)
-      const goldPct = this.descOf(m.goldSize)
-      if (goldName || goldPct || m.goldQty) {
-        const seg = ['ทอง:', goldName, goldPct, m.goldQty != null ? `× ${m.goldQty}` : '']
+      if (goldName || m.goldQty) {
+        const seg = ['ทอง:', goldName, m.goldQty != null ? `× ${m.goldQty}` : '']
           .filter(Boolean).join(' ')
         parts.push(seg)
       }

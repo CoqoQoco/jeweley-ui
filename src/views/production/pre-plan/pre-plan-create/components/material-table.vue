@@ -28,18 +28,6 @@
         />
       </template>
 
-      <template #goldSizeTemplate="{ data }">
-        <Dropdown
-          v-model="data.goldSize"
-          :options="masterGoldSize"
-          optionLabel="description"
-          placeholder="เลือก%"
-          :showClear="!!data.goldSize"
-          @change="emitUpdate"
-          class="material-dropdown"
-        />
-      </template>
-
       <template #goldQtyTemplate="{ data }">
         <input
           v-model="data.goldQty"
@@ -142,7 +130,6 @@ function createEmptyMaterial() {
   return {
     id: materialIdCounter++,
     gold: null,
-    goldSize: null,
     goldQty: null,
     gem: null,
     gemShape: null,
@@ -168,7 +155,6 @@ export default {
   props: {
     materials: { type: Array, default: () => [] },
     masterGold: { type: Array, default: () => [] },
-    masterGoldSize: { type: Array, default: () => [] },
     masterGem: { type: Array, default: () => [] },
     masterGemShape: { type: Array, default: () => [] },
   },
@@ -180,7 +166,6 @@ export default {
       columns: [
         { field: 'action', header: '', minWidth: '60px', sortable: false, align: 'center' },
         { field: 'gold', header: 'สีของทอง/เงิน', minWidth: '150px', sortable: false },
-        { field: 'goldSize', header: 'เปอร์เซ็น', minWidth: '120px', sortable: false },
         { field: 'goldQty', header: 'จำนวนทอง/เงิน', minWidth: '120px', sortable: false },
         { field: 'gem', header: 'ประเภทพลอย', minWidth: '150px', sortable: false },
         { field: 'gemShape', header: 'รูปร่างพลอย', minWidth: '130px', sortable: false },

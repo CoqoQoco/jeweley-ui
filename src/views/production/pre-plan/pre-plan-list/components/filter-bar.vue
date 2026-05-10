@@ -58,14 +58,14 @@
         <div class="btn-submit-container-between">
           <div></div>
           <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
               <i class="bi bi-search"></i>
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="$emit('clear')" title="ล้าง">
+            <button class="btn btn-sm btn-dark ms-2" type="button" @click="$emit('clear')" title="ล้าง">
               <i class="bi bi-x-circle"></i>
             </button>
             <button
-              class="btn btn-sm btn-main"
+              class="btn btn-sm btn-main ms-2"
               type="button"
               title="สร้างใบสั่งผลิต"
               @click="$router.push({ name: 'pre-plan-create' })"

@@ -9,15 +9,15 @@
         </div>
         <div class="info-row">
           <span class="info-label">ประเภทงาน:</span>
-          <span>{{ form.jobType || '-' }}</span>
+          <span>{{ getDesc(masterStore.jobTypes, form.jobType) }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">สถานที่:</span>
-          <span>{{ form.jobLocation || '-' }}</span>
+          <span>{{ getDesc(masterStore.jobLocations, form.jobLocation) }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">ประเภททอง:</span>
-          <span>{{ form.goldType || '-' }}</span>
+          <span>{{ getDesc(masterStore.goldSizes, form.goldType) }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">วันที่ออก:</span>
@@ -51,22 +51,29 @@
               <i class="bi bi-image text-muted"></i>
             </div>
           </div>
-          <div class="item-info flex-grow-1">
+          <div class="item-info flex-grow-1 ml-2">
             <div class="info-row">
               <span class="info-label">รหัสแม่พิมพ์:</span>
               <span>{{ item.moldCode || '-' }}</span>
             </div>
             <div class="info-row">
               <span class="info-label">ประเภทสินค้า:</span>
-              <span>{{ item.productType || '-' }}</span>
+              <span>{{ getDesc(masterStore.productTypes, item.productType) }}</span>
             </div>
             <div class="info-row">
               <span class="info-label">จำนวน:</span>
               <span>{{ item.productQty || '-' }} {{ item.productQtyUnit || '' }}</span>
             </div>
-            <div class="info-row">
+            <div class="info-row align-items-start">
               <span class="info-label">วัสดุ:</span>
-              <span>{{ (item.materials || []).length }} รายการ</span>
+              <div class="flex-grow-1">
+                <div v-if="!(item.materials || []).length" class="text-muted">-</div>
+                <ul v-else class="material-list">
+                  <li v-for="(m, idx) in item.materials" :key="m.id || idx">
+                    {{ formatMaterial(m) }}
+                  </li>
+                </ul>
+              </div>
             </div>
             <div v-if="item.productDetail" class="info-row">
               <span class="info-label">รายละเอียด:</span>
@@ -82,6 +89,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { formatDate } from '@/services/utils/dayjs.js'
+import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
@@ -93,7 +101,49 @@ export default {
     form: { type: Object, default: () => ({}) },
     items: { type: Array, default: () => [] },
   },
-  methods: { formatDate },
+  setup() {
+    const masterStore = useMasterPrePlanStore()
+    return { masterStore }
+  },
+  methods: {
+    formatDate,
+    getDesc(list, value) {
+      if (value == null || value === '') return '-'
+      if (typeof value === 'object') return value.description || value.code || '-'
+      const found = (list || []).find((x) => x.code === value)
+      return found?.description || value
+    },
+    formatMaterial(m) {
+      const parts = []
+      const goldName = this.descOf(m.gold)
+      if (goldName || m.goldQty) {
+        const seg = ['ทอง:', goldName, m.goldQty != null ? `× ${m.goldQty}` : '']
+          .filter(Boolean).join(' ')
+        parts.push(seg)
+      }
+      const gemName = this.descOf(m.gem)
+      const gemShape = this.descOf(m.gemShape)
+      if (gemName || gemShape || m.gemQty || m.gemSize) {
+        const seg = ['พลอย:', gemName, gemShape,
+          m.gemQty != null ? `${m.gemQty}${m.gemUnit ? ' ' + m.gemUnit : ''}` : '',
+          m.gemSize ? `(${m.gemSize})` : ''].filter(Boolean).join(' ')
+        parts.push(seg)
+      }
+      if (m.diamondQty || m.diamondSize || m.diamondQuality) {
+        const seg = ['เพชร:',
+          m.diamondQty != null ? `${m.diamondQty}${m.diamondUnit ? ' ' + m.diamondUnit : ''}` : '',
+          m.diamondSize ? `(${m.diamondSize})` : '',
+          m.diamondQuality || ''].filter(Boolean).join(' ')
+        parts.push(seg)
+      }
+      return parts.length ? parts.join(' · ') : '(ไม่ระบุ)'
+    },
+    descOf(obj) {
+      if (!obj) return ''
+      if (typeof obj === 'object') return obj.description || ''
+      return String(obj)
+    },
+  },
 }
 </script>
 
@@ -170,5 +220,21 @@ export default {
     justify-content: center;
     font-size: 1.5rem;
   }
+}
+
+.material-list {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+  font-size: 0.85rem;
+
+  li {
+    margin-bottom: 2px;
+    color: #333;
+  }
+}
+
+.info-row.align-items-start {
+  align-items: flex-start;
 }
 </style>

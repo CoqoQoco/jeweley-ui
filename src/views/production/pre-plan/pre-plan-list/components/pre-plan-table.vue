@@ -39,8 +39,20 @@
       </div>
     </template>
 
+    <template #jobTypeTemplate="{ data }">
+      <span>{{ getDesc(masterStore.jobTypes, data.jobType) }}</span>
+    </template>
+
+    <template #jobLocationTemplate="{ data }">
+      <span>{{ getDesc(masterStore.jobLocations, data.jobLocation) }}</span>
+    </template>
+
+    <template #goldTypeTemplate="{ data }">
+      <span>{{ getDesc(masterStore.goldSizes, data.goldType) }}</span>
+    </template>
+
     <template #statusTemplate="{ data }">
-      <span :class="getStatusClass(data.status)">{{ getStatusLabel(data.status) }}</span>
+      <div :class="getStatusClass(data.status)">{{ getStatusLabel(data.status) }}</div>
     </template>
 
     <template #itemCountTemplate="{ data }">
@@ -57,6 +69,7 @@
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
+import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
@@ -68,7 +81,8 @@ export default {
   },
   setup() {
     const store = usePrePlanStore()
-    return { store }
+    const masterStore = useMasterPrePlanStore()
+    return { store, masterStore }
   },
   data() {
     return {
@@ -76,12 +90,13 @@ export default {
       skip: 0,
       sort: [],
       columns: [
-        { field: 'action', header: '', width: '30px', sortable: false , align: 'center' },
-        { field: 'orderNo', header: 'เลขที่ใบสั่ง', minWidth: '120px' },
-        { field: 'jobType', header: 'ประเภทงาน', minWidth: '120px' },
+        { field: 'action', header: '', width: '150px', sortable: false, align: 'center' },
+        { field: 'status', header: 'สถานะ', minWidth: '130px', align: 'center' },
+        { field: 'orderNo', header: 'เลขที่ใบสั่ง', minWidth: '140px' },
+        { field: 'jobType', header: 'ประเภทงาน', minWidth: '130px' },
+        { field: 'jobLocation', header: 'สถานที่', minWidth: '120px' },
         { field: 'productionRound', header: 'ครั้งที่', minWidth: '70px', align: 'center' },
-        { field: 'goldType', header: 'ประเภททอง', minWidth: '100px' },
-        { field: 'status', header: 'สถานะ', minWidth: '110px' },
+        { field: 'goldType', header: 'ประเภททอง', minWidth: '110px' },
         { field: 'itemCount', header: 'จำนวนรายการ', minWidth: '110px', align: 'center', sortable: false },
         { field: 'primaryMoldCode', header: 'แม่พิมพ์หลัก', minWidth: '130px', sortable: false },
         { field: 'orderDate', header: 'วันที่ออก', minWidth: '110px', format: 'date' },
@@ -97,7 +112,7 @@ export default {
     },
   },
   async created() {
-    await this.fetchData()
+    await Promise.all([this.masterStore.fetchAll(), this.fetchData()])
   },
   methods: {
     async fetchData() {
@@ -142,25 +157,32 @@ export default {
         await this.fetchData()
       })
     },
+    getDesc(list, code) {
+      if (!code) return '-'
+      const found = (list || []).find((x) => x.code === code)
+      return found?.description || code
+    },
     getStatusClass(status) {
       const map = {
-        Draft: 'badge bg-secondary',
-        Submitted: 'badge bg-warning text-dark',
-        Approved: 'badge bg-success',
-        Rejected: 'badge bg-danger',
-        Consumed: 'badge bg-primary',
+        Draft: 'box-status-process',
+        Submitted: 'box-status-show',
+        Approved: 'box-status-success',
+        Rejected: 'box-status-disable',
+        Consumed: 'box-status-next',
       }
-      return map[status] || 'badge bg-secondary'
+      return map[status] || 'box-status-process'
     },
     getStatusLabel(status) {
-      const map = {
+      const fromMaster = (this.masterStore.statuses || []).find((s) => s.code === status)
+      if (fromMaster?.description) return fromMaster.description
+      const fallback = {
         Draft: 'ร่าง',
         Submitted: 'รออนุมัติ',
         Approved: 'อนุมัติแล้ว',
         Rejected: 'ปฏิเสธ',
         Consumed: 'ส่งผลิตแล้ว',
       }
-      return map[status] || status
+      return fallback[status] || status
     },
     formatDate,
   },
@@ -168,6 +190,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-data-table.scss';
 @import '@/assets/scss/responsive-style/web';
 .btn-action-container {
   display: flex;

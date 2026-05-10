@@ -15,7 +15,7 @@
     <infoReadonly :form="form" :items="items" />
 
     <div class="action-bar mt-3">
-      <button class="btn btn-sm btn-main" @click="onApprove">
+      <button class="btn btn-sm btn-main mr-2" @click="onApprove">
         <i class="bi bi-check-lg"></i> อนุมัติ
       </button>
       <button class="btn btn-sm btn-red ms-2" @click="onOpenReject">

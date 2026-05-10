@@ -15,7 +15,6 @@
       <div class="p-3">
         <moldSection
           :moldCode="form.moldCode || ''"
-          :productType="form.productType?.description || form.productType || ''"
           :moldDetail="form.moldDetail || ''"
           :initialImageCad="form.moldImageCad"
           :initialImageFinish="form.moldImageFinish"
@@ -90,7 +89,6 @@
         <materialTable
           :materials="form.materials"
           :masterGold="masterGold"
-          :masterGoldSize="masterGoldSize"
           :masterGem="masterGem"
           :masterGemShape="masterGemShape"
           class="mt-3"
@@ -170,10 +168,6 @@ export default {
       type: Array,
       default: () => [],
     },
-    masterGoldSize: {
-      type: Array,
-      default: () => [],
-    },
     masterGem: {
       type: Array,
       default: () => [],
@@ -218,7 +212,6 @@ export default {
         this.form.materials = gems.map((g, i) => ({
           id: Date.now() + i,
           gold: null,
-          goldSize: null,
           goldQty: null,
           gem: g.gemCode ? { description: g.gemCode } : null,
           gemShape: g.gemShapeCode ? { description: g.gemShapeCode } : null,

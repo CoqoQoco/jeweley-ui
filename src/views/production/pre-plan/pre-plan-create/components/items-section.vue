@@ -20,7 +20,6 @@
       :item="editingItem"
       :index="editingIndex"
       :masterGold="masterGold"
-      :masterGoldSize="masterGoldSize"
       :masterGem="masterGem"
       :masterGemShape="masterGemShape"
       :masterProduct="masterProduct"
@@ -47,7 +46,6 @@ export default {
   props: {
     items: { type: Array, default: () => [] },
     masterGold: { type: Array, default: () => [] },
-    masterGoldSize: { type: Array, default: () => [] },
     masterGem: { type: Array, default: () => [] },
     masterGemShape: { type: Array, default: () => [] },
     masterProduct: { type: Array, default: () => [] },

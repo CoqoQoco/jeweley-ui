@@ -17,7 +17,6 @@
     <itemsSection
       v-model:items="items"
       :masterGold="masterStore.golds"
-      :masterGoldSize="masterStore.goldSizes"
       :masterGem="masterStore.gems"
       :masterGemShape="masterStore.gemShapes"
       :masterProduct="masterStore.productTypes"
@@ -124,44 +123,33 @@ export default {
         status: data.status || 'Draft',
       }
 
+      const findByCode = (list, code) => {
+        if (code == null || typeof code === 'object') return code
+        return (list || []).find((x) => x.code === code) || code
+      }
+      const ms = this.masterStore
+
       if (data.items && data.items.length) {
         this.items = data.items.map((it) => ({
           _localId: localIdCounter++,
           moldCode: it.moldCode || null,
           moldDetail: it.moldDetail || null,
           moldImageCad: null,
-          moldImageFinish: null,
+          moldImageFinish: it.moldCode || null,
           productImageFile: null,
           productImagePreview: null,
-          productType: it.productType || null,
+          productType: findByCode(ms.productTypes, it.productType),
           productQty: it.productQty || null,
           productQtyUnit: it.productQtyUnit || null,
           productDetail: it.productDetail || null,
           materials: (it.materials || []).map((m) => ({
             ...m,
             id: m.id || Date.now() + Math.random(),
+            gold: findByCode(ms.golds, m.gold),
+            gem: findByCode(ms.gems, m.gem),
+            gemShape: findByCode(ms.gemShapes, m.gemShape),
           })),
         }))
-      } else {
-        this.items = [
-          {
-            _localId: localIdCounter++,
-            moldCode: data.moldCode || null,
-            moldDetail: data.moldDetail || null,
-            moldImageCad: null,
-            moldImageFinish: null,
-            productImageFile: null,
-            productImagePreview: null,
-            productType: data.productType || null,
-            productQty: null,
-            productQtyUnit: null,
-            productDetail: null,
-            materials: (data.materials || []).map((m) => ({
-              ...m,
-              id: m.id || Date.now() + Math.random(),
-            })),
-          },
-        ]
       }
     },
 
@@ -198,6 +186,11 @@ export default {
     },
 
     buildPayload() {
+      const toCode = (v) => {
+        if (v == null) return null
+        if (typeof v === 'object') return v.code ?? v.description ?? null
+        return v
+      }
       return {
         productionRound: this.form.productionRound,
         jobType: this.form.jobType,
@@ -209,17 +202,16 @@ export default {
         items: this.items.map((it) => ({
           moldCode: it.moldCode,
           moldDetail: it.moldDetail,
-          productType: it.productType,
+          productType: toCode(it.productType),
           productQty: it.productQty,
           productQtyUnit: it.productQtyUnit,
           productDetail: it.productDetail,
           productImagePath: it.productImagePath || null,
           materials: (it.materials || []).map((m) => ({
-            gold: m.gold,
-            goldSize: m.goldSize,
+            gold: toCode(m.gold),
             goldQty: m.goldQty,
-            gem: m.gem,
-            gemShape: m.gemShape,
+            gem: toCode(m.gem),
+            gemShape: toCode(m.gemShape),
             gemQty: m.gemQty,
             gemUnit: m.gemUnit,
             gemSize: m.gemSize,

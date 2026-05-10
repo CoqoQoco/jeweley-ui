@@ -1,30 +1,19 @@
 <template>
   <div class="card p-3">
     <h6 class="mb-3">ข้อมูลแม่พิมพ์</h6>
-    <div class="responsive-grid-2col mb-2">
-      <div>
-        <span class="title-text">รหัสแม่พิมพ์ <span class="text-danger">*</span></span>
-        <AutoCompleteGeneric
-          :modelValue="moldCode"
-          optionLabel="code"
-          placeholder="พิมพ์รหัสแม่พิมพ์..."
-          :forceSelection="false"
-          apiEndpoint="Mold/SearchMold"
-          searchField="text"
-          @item-select="onMoldSelect"
-          @update:modelValue="onMoldInput"
-          customClass="mold-autocomplete"
-        />
-      </div>
-      <div>
-        <span class="title-text">ประเภทสินค้า</span>
-        <input
-          class="form-control"
-          :value="productType"
-          @input="$emit('update:productType', $event.target.value)"
-          placeholder="auto-fill จากแม่พิมพ์"
-        />
-      </div>
+    <div class="mb-2">
+      <span class="title-text">รหัสแม่พิมพ์ <span class="text-danger">*</span></span>
+      <AutoCompleteGeneric
+        :modelValue="moldCode"
+        optionLabel="code"
+        placeholder="พิมพ์รหัสแม่พิมพ์..."
+        :forceSelection="false"
+        apiEndpoint="Mold/SearchMold"
+        searchField="text"
+        @item-select="onMoldSelect"
+        @update:modelValue="onMoldInput"
+        customClass="mold-autocomplete"
+      />
     </div>
 
     <div class="mb-2">
@@ -43,7 +32,7 @@
         <imagePreview :imageName="imageCad" type="MOLD" :width="120" :height="120" />
       </div>
       <div v-if="imageFinish">
-        <span class="title-text d-block mb-1">รูปสำเร็จ</span>
+        <span class="title-text d-block mb-1">รูปเเม่พิมพ์</span>
         <imagePreview :imageName="imageFinish" type="MOLD" :width="120" :height="120" />
       </div>
     </div>
@@ -66,14 +55,12 @@ export default {
   components: { AutoCompleteGeneric, imagePreview },
   props: {
     moldCode: { type: String, default: '' },
-    productType: { type: String, default: '' },
     moldDetail: { type: String, default: '' },
     initialImageCad: { type: String, default: null },
     initialImageFinish: { type: String, default: null },
   },
   emits: [
     'update:moldCode',
-    'update:productType',
     'update:moldDetail',
     'update:imageCad',
     'update:imageFinish',
@@ -105,10 +92,9 @@ export default {
     async onMoldSelect(item) {
       const mold = item.value || item
       this.$emit('update:moldCode', mold.code)
-      this.$emit('update:productType', mold.category || mold.productType || '')
       this.$emit('update:moldDetail', mold.description || '')
-      this.imageCad = mold.imageDraft1 || null
-      this.imageFinish = mold.image || null
+      this.imageCad = mold.imageDraft1 ? `${mold.code}-Sub` : null
+      this.imageFinish = mold.code || null
       this.$emit('update:imageCad', this.imageCad)
       this.$emit('update:imageFinish', this.imageFinish)
       this.$emit('mold-loaded', { gems: mold.gems || mold.planGems || [] })
@@ -121,10 +107,9 @@ export default {
       })
       const mold = res?.data?.[0]
       if (mold) {
-        this.$emit('update:productType', mold.category || mold.productType || '')
         this.$emit('update:moldDetail', mold.description || '')
-        this.imageCad = mold.imageDraft1 || null
-        this.imageFinish = mold.image || null
+        this.imageCad = mold.imageDraft1 ? `${mold.code}-Sub` : null
+        this.imageFinish = mold.code || null
         this.$emit('update:imageCad', this.imageCad)
         this.$emit('update:imageFinish', this.imageFinish)
       }
@@ -134,6 +119,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
 
 .card {
