@@ -88,6 +88,19 @@ const routes = [
           permissions: [PERMISSIONS.USER_DEV]
         }
       },
+      {
+        path: '/setting/vat-print-layout',
+        name: 'vat-print-layout',
+        component: () => import('@/views/setting/vat-print-layout/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'VAT Print Layout',
+            th: 'ตั้งค่ารูปแบบพิมพ์ VAT'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.USER_DEV]
+        }
+      },
     ]
   }
 ]

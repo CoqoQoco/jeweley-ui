@@ -1121,7 +1121,6 @@ import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
-import { InvoiceContinuousPdfBuilder } from '@/services/helper/pdf/invoice/invoice-continuous-pdf-builder.js'
 import { InvoiceBillPdfBuilder } from '@/services/helper/pdf/invoice/invoice-bill-pdf-builder.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
@@ -1747,33 +1746,6 @@ export default {
     goBack() {
       this.$router.back()
     },
-    async spikeTestHello() {
-      const { WebUsbPrinter } = await import('@/services/helper/print/webusb-printer.js')
-      const { ESCP, concatBytes, encodeTIS620 } = await import('@/services/helper/print/escp-encoder.js')
-      const printer = new WebUsbPrinter()
-      try {
-        await printer.requestAndConnect()
-        const bytes = concatBytes(
-          ESCP.init(),
-          ESCP.selectThaiCharTable(),
-          ESCP.text('Hello '),
-          encodeTIS620('สวัสดี'),
-          ESCP.crlf(),
-          ESCP.formFeed()
-        )
-        await printer.send(bytes)
-        success('ส่งข้อมูลไปยังเครื่องพิมพ์สำเร็จ', 'Spike Test')
-      } catch (err) {
-        if (err.name === 'UserCancelled' || err.name === 'NotFoundError') {
-          console.info('User cancelled USB device selection')
-          return
-        }
-        console.error('Spike test error:', err)
-        error(err.message || 'ไม่สามารถส่งข้อมูลได้', 'Spike Test Error')
-      } finally {
-        await printer.disconnect()
-      }
-    },
     async reprintPDF() {
       // Open confirm print modal instead of direct print
       this.showConfirmPrintModal = true
@@ -2014,51 +1986,41 @@ export default {
 
         //console.log('PDF Options:', options)
 
-        if (printData.paperSize === 'webusb-escp') {
-          const { WebUsbPrinter } = await import('@/services/helper/print/webusb-printer.js')
-          const { buildVatEscP } = await import('@/services/helper/print/escp-encoder.js')
-          const printer = new WebUsbPrinter()
-          try {
-            await printer.requestAndConnect()
-            const saleOrderForPrint = {
-              ...pdfData.saleOrder,
-              items: pdfData.items,
-              customer: pdfData.customer,
-              currencyRate: pdfData.currency.rate,
+        if (printData.paperSize === 'vat-bridge') {
+          const { printVat } = await import('@/services/api/print-bridge-service.js')
+          const { getVatLayout } = await import('@/services/helper/print/vat-layout-store.js')
+          const layout = getVatLayout()
+          const offsetMm = printData.continuousOffset || { x: 0, y: 0 }
+          const layoutPayload = layout
+            ? { ...layout, offsetX: (layout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (layout.offsetY ?? 0) + (offsetMm.y || 0) }
+            : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
+          const payload = {
+            invoice: {
               invoiceNo: options.invoiceNo,
-              invoiceDate: options.invoiceDate
+              invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
+              customer: {
+                name: this.invoiceData.customerName || '',
+                address: this.invoiceData.customerAddress || '',
+                taxId: this.invoiceData.customerTaxId || ''
+              },
+              customerTaxId: this.invoiceData.customerTaxId || '',
+              items: (this.invoiceItems || []).map(i => ({
+                productNameEN: i.productNameEN || i.description || i.productNumber || '',
+                qty: Number(i.qty) || 0,
+                appraisalPrice: Number(i.appraisalPrice) || 0,
+                discountPercent: Number(i.discountPercent) || 0
+              })),
+              currencyRate: Number(this.invoiceData.currencyRate) || 1,
+              specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
+              specialAddition: Number(this.invoiceData.specialAddition) || 0,
+              freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
+              vatPercent: Number(this.invoiceData.vatPercent) || 0
             }
-            const bytes = buildVatEscP(saleOrderForPrint)
-            await printer.send(bytes)
-            success('พิมพ์เสร็จสิ้น', 'ESC/P USB')
-          } catch (err) {
-            if (err.name === 'UserCancelled' || err.name === 'NotFoundError') {
-              console.info('User cancelled USB device selection')
-              return
-            }
-            console.error('WebUSB print error:', err)
-            error(err.message || 'ไม่สามารถพิมพ์ผ่าน USB ได้', 'เกิดข้อผิดพลาด')
-          } finally {
-            await printer.disconnect()
           }
+          if (layoutPayload) payload.layout = layoutPayload
+          await printVat(payload)
+          success('พิมพ์ใบกำกับภาษีสำเร็จ', 'Bridge GDI')
           return
-        } else if (printData.paperSize === 'continuous') {
-          const builder = new InvoiceContinuousPdfBuilder(
-            {
-              ...pdfData.saleOrder,
-              items: pdfData.items,
-              customer: pdfData.customer,
-              currencyRate: pdfData.currency.rate,
-              invoiceNo: options.invoiceNo,
-              invoiceDate: options.invoiceDate
-            },
-            {
-              offsetX: printData.continuousOffset?.x || 0,
-              offsetY: printData.continuousOffset?.y || 0,
-              calibrationMode: printData.calibrationMode === true
-            }
-          )
-          builder.generatePDF().open()
         } else if (printData.paperSize === 'bill') {
           const builder = new InvoiceBillPdfBuilder(
             {

@@ -88,25 +88,10 @@
                         <input
                           type="radio"
                           v-model="paperSize"
-                          value="continuous"
+                          value="vat-bridge"
                         />
-                        <span>ใบเสร็จรับเงิน/ใบกำกับภาษี — ต่อเนื่อง 9x11 (Epson LQ-310)</span>
+                        <span>ใบกำกับภาษี — ต่อเนื่อง 9x11 (Bridge GDI)</span>
                       </label>
-                      <label class="paper-size-option">
-                        <input
-                          type="radio"
-                          v-model="paperSize"
-                          value="webusb-escp"
-                        />
-                        <span>ใบกำกับภาษี — ESC/P USB ตรง (Chrome เท่านั้น)</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div v-if="paperSize === 'webusb-escp'" class="form-group mb-3">
-                    <div class="webusb-info-box">
-                      <i class="bi bi-usb-symbol mr-2"></i>
-                      <span>ส่ง ESC/P ตรงผ่าน USB — ไม่ต้องลงโปรแกรมที่เครื่อง</span>
                     </div>
                   </div>
 
@@ -140,7 +125,7 @@
                     </small>
                   </div>
 
-                  <div v-if="paperSize === 'continuous'" class="form-group mb-3">
+                  <div v-if="paperSize === 'vat-bridge'" class="form-group mb-3">
                     <div class="row">
                       <div class="col-6">
                         <label class="form-label">
@@ -168,18 +153,6 @@
                     <small class="form-text text-muted">
                       หากตำแหน่งเหลื่อมเล็กน้อย ปรับ offset ทีละ 0.5-1 mm
                     </small>
-
-                    <div class="d-flex align-items-center mt-2" style="gap: 8px; cursor: pointer" @click="calibrationMode = !calibrationMode">
-                      <input
-                        id="calibrationModeInput"
-                        type="checkbox"
-                        v-model="calibrationMode"
-                        style="width: 16px; height: 16px; cursor: pointer"
-                      />
-                      <label class="form-label mb-0" for="calibrationModeInput" style="cursor: pointer; color: #6c757d">
-                        <i class="bi bi-grid-3x3 mr-1"></i>พิมพ์ตาราง calibration (debug)
-                      </label>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -263,10 +236,9 @@ export default {
         invoiceDate: '',
         showCifLabel: true
       },
-      paperSize: 'webusb-escp',
+      paperSize: 'vat-bridge',
       continuousOffset: { x: 0, y: 0 },
-      billOffset: { x: 0, y: 0 },
-      calibrationMode: false
+      billOffset: { x: 0, y: 0 }
     }
   },
 
@@ -356,7 +328,7 @@ export default {
       const normalizedDate = new Date(this.printData.invoiceDate)
       normalizedDate.setHours(0, 0, 0, 0)
 
-      if (this.paperSize === 'continuous') {
+      if (this.paperSize === 'vat-bridge') {
         localStorage.setItem(
           'invoice-continuous-offset',
           JSON.stringify(this.continuousOffset)
@@ -382,8 +354,7 @@ export default {
         showCifLabel: this.printData.showCifLabel,
         paperSize: this.paperSize,
         continuousOffset: { ...this.continuousOffset },
-        billOffset: { ...this.billOffset },
-        calibrationMode: this.paperSize === 'continuous' ? this.calibrationMode : false
+        billOffset: { ...this.billOffset }
       }
 
       console.log('Modal - Emitting printDataToEmit:', printDataToEmit)
