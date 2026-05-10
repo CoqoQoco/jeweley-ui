@@ -2004,12 +2004,24 @@ export default {
                 taxId: this.invoiceData.customerTaxId || ''
               },
               customerTaxId: this.invoiceData.customerTaxId || '',
-              items: (this.invoiceItems || []).map(i => ({
-                productNameEN: i.productNameEN || i.description || i.productNumber || '',
-                qty: Number(i.qty) || 0,
-                appraisalPrice: Number(i.appraisalPrice) || 0,
-                discountPercent: Number(i.discountPercent) || 0
-              })),
+              items: (this.invoiceItems || []).map(i => {
+                const mats = Array.isArray(i.materials) ? i.materials : []
+                const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+                const stoneWeight = mats.filter(m => m.type === 'Gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+                const diamondWeight = mats.filter(m => m.type === 'Diamond').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+                return {
+                  stockNumber: i.stockNumber || '',
+                  productNumber: i.productNumber || '',
+                  productNameEN: i.productNameEN || i.description || i.productNumber || '',
+                  description: i.description || '',
+                  qty: Number(i.qty) || 0,
+                  appraisalPrice: Number(i.appraisalPrice) || 0,
+                  discountPercent: Number(i.discountPercent) || 0,
+                  goldWeight: goldWeight || null,
+                  stoneWeight: stoneWeight || null,
+                  diamondWeight: diamondWeight || null
+                }
+              }),
               currencyRate: Number(this.invoiceData.currencyRate) || 1,
               specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
               specialAddition: Number(this.invoiceData.specialAddition) || 0,

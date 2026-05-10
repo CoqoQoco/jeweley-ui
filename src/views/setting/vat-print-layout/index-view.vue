@@ -141,6 +141,98 @@
           </div>
         </div>
 
+        <!-- Extra Columns -->
+        <div class="filter-container mb-3">
+          <div class="title-text-lg mb-3">ตำแหน่งคอลัมน์เพิ่มเติม</div>
+
+          <div class="form-row">
+            <label class="form-label-col">Stock Number X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.xStockNumber" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Stock บรรทัดที่ 2 — Δy</label>
+            <div class="form-input-col">
+              <input v-model.number="form.stockSecondLineDy" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ราคาก่อนลด X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.xPriceBeforeDiscount" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ราคารวม VAT X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.xPriceIncludingVat" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Gold (gms) X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.xGoldWeight" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Stone (cts) X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.xStoneWeight" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Diamond (cts) X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.xDiamondWeight" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Page Number</label>
+            <div class="form-input-col">
+              <div class="xy-pair">
+                <span class="xy-tag">X</span>
+                <input v-model.number="form.pageNumber.x" type="number" step="0.01" class="form-control" />
+                <span class="xy-tag">Y</span>
+                <input v-model.number="form.pageNumber.y" type="number" step="0.01" class="form-control" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Display Toggles -->
+        <div class="filter-container mb-3">
+          <div class="title-text-lg mb-3">ตัวเลือกการแสดงผล</div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงคอลัมน์ "ราคาก่อนลด"</label>
+            <div class="form-input-col">
+              <input v-model="form.showPriceBeforeDiscount" type="checkbox" class="form-check-input" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงคอลัมน์ "ราคารวม VAT"</label>
+            <div class="form-input-col">
+              <input v-model="form.showPriceIncludingVat" type="checkbox" class="form-check-input" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ใช้ปี พ.ศ. (Buddhist year)</label>
+            <div class="form-input-col">
+              <input v-model="form.useBuddhistYear" type="checkbox" class="form-check-input" />
+            </div>
+          </div>
+        </div>
+
         <!-- Summary Positions -->
         <div class="filter-container mb-3">
           <div class="title-text-lg mb-3">ตำแหน่งสรุปยอด</div>
@@ -281,7 +373,18 @@ const DEFAULT_LAYOUT = {
   itemFontSize: 10,
   printerName: 'EPSON LQ-310 ESC/P2',
   offsetX: 0,
-  offsetY: 0
+  offsetY: 0,
+  xStockNumber: 1.0,
+  stockSecondLineDy: 0.13,
+  xPriceBeforeDiscount: 2.55,
+  xPriceIncludingVat: 3.05,
+  xGoldWeight: 3.6,
+  xStoneWeight: 4.4,
+  xDiamondWeight: 4.95,
+  pageNumber: { x: 7.5, y: 2.4 },
+  useBuddhistYear: true,
+  showPriceBeforeDiscount: true,
+  showPriceIncludingVat: true
 }
 
 function deepClone(obj) {
@@ -301,7 +404,7 @@ export default {
     const saved = getVatLayout()
     if (saved) {
       this.form = { ...deepClone(DEFAULT_LAYOUT), ...saved }
-      const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText']
+      const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText', 'pageNumber']
       nested.forEach(key => {
         if (saved[key]) this.form[key] = { ...DEFAULT_LAYOUT[key], ...saved[key] }
       })
@@ -406,6 +509,12 @@ export default {
     box-shadow: 0 0 0 0.2rem rgba(3, 131, 135, 0.25);
     outline: none;
   }
+}
+
+.form-check-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 
 @media (max-width: 576px) {
