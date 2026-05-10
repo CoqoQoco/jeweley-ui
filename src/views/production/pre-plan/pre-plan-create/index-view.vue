@@ -11,7 +11,7 @@
       v-model:form="form"
       :jobTypes="masterStore.jobTypes"
       :jobLocations="masterStore.jobLocations"
-      :goldTypes="masterStore.golds"
+      :goldTypes="masterStore.goldSizes"
     />
 
     <itemsSection

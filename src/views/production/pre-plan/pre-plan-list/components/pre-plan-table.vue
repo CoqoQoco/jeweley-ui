@@ -76,7 +76,7 @@ export default {
       skip: 0,
       sort: [],
       columns: [
-        { field: 'action', header: '', minWidth: '160px', sortable: false },
+        { field: 'action', header: '', width: '30px', sortable: false , align: 'center' },
         { field: 'orderNo', header: 'เลขที่ใบสั่ง', minWidth: '120px' },
         { field: 'jobType', header: 'ประเภทงาน', minWidth: '120px' },
         { field: 'productionRound', header: 'ครั้งที่', minWidth: '70px', align: 'center' },
@@ -173,5 +173,6 @@ export default {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 </style>

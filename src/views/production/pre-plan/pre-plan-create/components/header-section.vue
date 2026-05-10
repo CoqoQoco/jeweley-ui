@@ -3,22 +3,30 @@
     <pageTitle title="ข้อมูลใบสั่งผลิต" :isShowBtnClose="false" />
 
     <div class="form-row two-col">
-      <div class="form-field">
-        <span class="title-text">ผลิตครั้งที่</span>
-        <input class="form-control" type="number" v-model.number="localForm.productionRound" min="1" />
-      </div>
-      <div class="form-field">
-        <span class="title-text">ประเภททอง/เงิน <span class="text-danger">*</span></span>
-        <DropdownGeneric
-          :modelValue="localForm.goldType"
-          :options="goldTypes"
-          optionLabel="description"
-          optionValue="code"
-          placeholder="เลือกประเภททอง/เงิน"
-          @update:modelValue="update('goldType', $event)"
-        />
+      <div class="form-row two-col">
+        <div class="form-field">
+          <span class="title-text">ผลิตครั้งที่</span>
+          <input
+            class="form-control"
+            type="number"
+            v-model.number="localForm.productionRound"
+            min="1"
+          />
+        </div>
+        <div class="form-field">
+          <span class="title-text">ประเภททอง/เงิน <span class="text-danger">*</span></span>
+          <DropdownGeneric
+            :modelValue="localForm.goldType"
+            :options="goldTypes"
+            optionLabel="description"
+            optionValue="code"
+            placeholder="เลือกประเภททอง/เงิน"
+            @update:modelValue="update('goldType', $event)"
+          />
+        </div>
       </div>
     </div>
+    <div></div>
 
     <div class="form-row four-col">
       <div class="form-field">
@@ -79,11 +87,11 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const DropdownGeneric = defineAsyncComponent(
-  () => import('@/components/prime-vue/DropdownGeneric.vue')
+const DropdownGeneric = defineAsyncComponent(() =>
+  import('@/components/prime-vue/DropdownGeneric.vue')
 )
-const CalendarGeneric = defineAsyncComponent(
-  () => import('@/components/prime-vue/CalendarGeneric.vue')
+const CalendarGeneric = defineAsyncComponent(() =>
+  import('@/components/prime-vue/CalendarGeneric.vue')
 )
 
 export default {
@@ -93,7 +101,7 @@ export default {
     form: { type: Object, required: true },
     jobTypes: { type: Array, default: () => [] },
     jobLocations: { type: Array, default: () => [] },
-    goldTypes: { type: Array, default: () => [] },
+    goldTypes: { type: Array, default: () => [] }
   },
   emits: ['update:form'],
   computed: {
@@ -103,21 +111,21 @@ export default {
       },
       set(val) {
         this.$emit('update:form', val)
-      },
-    },
+      }
+    }
   },
   methods: {
     update(field, value) {
       this.$emit('update:form', { ...this.form, [field]: value })
-    },
-  },
+    }
+  }
 }
 </script>
 
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/web';
 
-input{
+input {
   margin-top: 5px !important;
 }
 
@@ -130,7 +138,7 @@ input{
 }
 
 .form-row {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 
   &.two-col {
     display: grid;
