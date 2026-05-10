@@ -19,6 +19,7 @@ description: Generic PrimeVue wrapper components — ตรวจสอบก่
 | `ImagePreview` | `ImagePreview.vue` | แสดงรูปจาก Azure Blob (direct URL) |
 | `ImagePreviewEmit` | `ImagePreviewEmit.vue` | แสดงรูปพร้อม emit blobPath |
 | `DataTableWithPaging` | `DataTableWithPaging.vue` | DataTable พร้อม pagination |
+| `UploadImage` | `UploadImage.vue` | Upload รูปเดียว — มี `compact` mode สำหรับ form/modal |
 
 ---
 
@@ -111,6 +112,87 @@ Props สำคัญ:
 Import:
 ```javascript
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+```
+
+---
+
+## UploadImage
+
+**กฎ**: ทุกการ upload รูปเดียว (single file) ต้องใช้ `UploadImage` — ห้ามเขียน file input + preview เอง
+
+มี 2 mode:
+
+### Default mode (legacy — header แดง, ปุ่มเหลือง, preview 300×300)
+
+ใช้ใน form/modal ที่ต้องการ UX แบบเก่า:
+
+```vue
+<UploadImage
+  hight="400px"
+  :reset="resetUpload"
+  @onImportFile="onUploadImage"
+/>
+```
+
+### Compact mode (สำหรับ form/modal ใหม่)
+
+ใช้สำหรับ section card ที่ต้องการ button + thumbnail แนวนอน + validation alerts:
+
+```vue
+<UploadImage
+  :modelValue="form.imageFile"
+  :previewUrl="form.imagePreview"
+  title="รูปสินค้า"
+  accept="image/*"
+  :maxSizeMB="5"
+  :previewSize="150"
+  :compact="true"
+  :showClear="true"
+  @update:modelValue="form.imageFile = $event"
+  @update:previewUrl="form.imagePreview = $event"
+  @clear="onImageClear"
+/>
+```
+
+### Props
+
+| Prop | Type | Default | คำอธิบาย |
+|---|---|---|---|
+| `modelValue` | File | `null` | v-model — File object ที่เลือก |
+| `previewUrl` | String | `null` | v-model — preview URL (object URL หรือ data URL) |
+| `title` | String | `''` | หัวข้อ section (compact mode เท่านั้น) |
+| `accept` | String | `'.jpg, .png'` | accept attribute (เช่น `'image/*'`) |
+| `maxSizeMB` | Number | `0` | ขนาดสูงสุด (MB) — 0 = ไม่ check |
+| `previewSize` | Number | `300` | ขนาด preview (px, square) |
+| `compact` | Boolean | `false` | เปิด compact layout (button + thumbnail แนวนอน) |
+| `showClear` | Boolean | `false` | แสดงปุ่ม "ลบรูป" เมื่อมีรูป |
+| `hight` | String | `'auto'` | ความสูง container (default mode) — typo เดิม คงไว้เพื่อ backward compat |
+| `reset` | Boolean | `false` | toggle เพื่อล้าง file input (legacy) |
+
+### Events
+
+| Event | Payload | คำอธิบาย |
+|---|---|---|
+| `update:modelValue` | File \| null | v-model file |
+| `update:previewUrl` | String \| null | v-model preview URL |
+| `clear` | - | กดปุ่มลบรูป |
+| `onImportFile` | File | (legacy) compatible กับโค้ดเก่า |
+
+### Validation (compact mode + maxSizeMB หรือ accept = 'image/*')
+
+- ไฟล์ต้องเป็นรูปภาพ → ถ้าไม่ใช่ ยิง warning "ประเภทไฟล์ไม่ถูกต้อง"
+- ขนาดเกิน maxSizeMB → ยิง warning "รูปภาพขนาดใหญ่เกินไป"
+
+ใช้ `warning()` จาก `@/services/alert/sweetAlerts.js` อัตโนมัติ
+
+### Import
+
+```javascript
+import UploadImage from '@/components/prime-vue/UploadImage.vue'
+// หรือ async:
+const UploadImage = defineAsyncComponent(
+  () => import('@/components/prime-vue/UploadImage.vue')
+)
 ```
 
 ---

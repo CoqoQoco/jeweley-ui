@@ -248,7 +248,28 @@ Pattern สำหรับแสดง item เป็นการ์ดสรุ
 
 ---
 
-## 7. Modal Action Footer
+## 7. Modal Title & Action Footer
+
+### 7.1 Modal Title — ใช้ `title-text-lg` (reuse จาก legacy)
+
+```vue
+<template #title>
+  <span class="title-text-lg px-3 pt-3 d-block">หัวข้อ Modal</span>
+</template>
+```
+
+`.title-text-lg` ถูก define ใน `custom-style/standard-form.scss` (color: base-font-color, font-size: 17px, weight: 700) — **ห้ามเขียนใหม่** ต้อง reuse ด้วยการ import:
+
+```scss
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';  // ← ต้องมีถ้าใช้ title-text-lg / title-text
+@import '@/assets/scss/responsive-style/web';
+</style>
+```
+
+**กฎ**: ถ้าใช้ class `title-text`, `title-text-lg`, `title-text-white`, `title-text-highlight` ใน scoped style ต้อง `@import 'custom-style/standard-form.scss'` มิฉะนั้น class จะไม่มี style
+
+### 7.2 Modal Action Footer
 
 ```vue
 <template #action>
@@ -263,13 +284,41 @@ Pattern สำหรับแสดง item เป็นการ์ดสรุ
 
 ---
 
-## 8. Decision Table
+## 8. Reuse First — Typography Classes ที่มีอยู่แล้ว
+
+**หลัก**: ก่อนเขียน CSS ใหม่ → ตรวจ class ใน `custom-style/standard-form.scss` แล้ว reuse
+
+| Class | กำหนดที่ | ใช้เมื่อ |
+|---|---|---|
+| `title-text` | standard-form.scss | label form, หัวข้อ field (color base-font-color, weight 700) |
+| `title-text-lg` | standard-form.scss | หัวข้อ Modal (17px, weight 700, base-font-color) |
+| `title-text-white` | standard-form.scss | หัวข้อบนพื้นเข้ม |
+| `title-text-lg-bg` | standard-form.scss | หัวข้อพื้นแดง (white text, base-font-color bg, radius บน) |
+
+**❌ Bad — เขียนซ้ำ:**
+```scss
+.modal-title { color: #921313; font-size: 17px; font-weight: 700; }
+```
+
+**✅ Good — reuse:**
+```vue
+<span class="title-text-lg">หัวข้อ</span>
+```
+```scss
+@import '@/assets/scss/custom-style/standard-form.scss';
+```
+
+---
+
+## 9. Decision Table
 
 | Scenario | ใช้ |
 |---|---|
 | Page หัว create/edit | `page-header-bar` + `btn-back` + `page-title` |
 | Section card title สำคัญ | `<pageTitle>` component |
 | Section card title ย่อย | `<h6>` + main color + border-bottom |
+| Modal title | `title-text-lg` + import `standard-form.scss` |
+| Field label ใน form | `title-text` + import `standard-form.scss` |
 | Form 2 fields ต่อแถว | `.form-row.two-col` |
 | Form 4 fields ต่อแถว | `.form-row.four-col` |
 | Input/Textarea ในแถว row + DropdownGeneric | scoped style sync padding 10px 12px |
@@ -279,10 +328,12 @@ Pattern สำหรับแสดง item เป็นการ์ดสรุ
 
 ---
 
-## 9. กฎห้ามทำ
+## 10. กฎห้ามทำ
 
 - ❌ ห้าม hardcode สีนอก `var(--base-*)` (ยกเว้น border #e0e0e0, bg #fdf2f2 ที่กำหนดไว้แล้ว)
 - ❌ ห้ามใช้ `flex gap-2` สำหรับ button spacing — ใช้ `ms-2`
 - ❌ ห้ามใช้ inline `style="..."` กำหนด layout — ใช้ class
-- ❌ ห้าม import `custom-style/standard-form.scss` ใน component ใหม่ — ใช้ `responsive-style/web`
+- ❌ ห้าม **modify** `custom-style/standard-form.scss` (legacy — ห้ามแตะเนื้อหา) — แต่ **import เพื่อ reuse** typography classes ได้
+- ❌ ห้ามเขียน CSS ซ้ำกับ class ที่มีอยู่แล้วใน `standard-form.scss` — reuse เสมอ
+- ❌ ห้ามใช้ class `title-text-lg` / `title-text` โดยไม่ import `standard-form.scss` ใน scoped style
 - ❌ ห้ามลืม `background: #ffffff !important` ใน `.card` — กัน global override จาก legacy

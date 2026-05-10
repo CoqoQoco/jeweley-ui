@@ -3,7 +3,7 @@
     <div class="item-card-header d-flex justify-content-between align-items-center">
       <span class="fw-semibold">รายการที่ {{ index + 1 }}</span>
       <div>
-        <button type="button" class="btn btn-sm btn-main" @click="$emit('edit')">
+        <button type="button" class="btn btn-sm btn-main mr-2" @click="$emit('edit')">
           <i class="bi bi-pencil"></i> แก้ไข
         </button>
         <button type="button" class="btn btn-sm btn-red ms-2" @click="$emit('remove')">
@@ -14,8 +14,14 @@
 
     <div class="item-card-body d-flex align-items-start gap-3">
       <div class="item-thumbnail flex-shrink-0">
+        <img
+          v-if="item.productImagePreview"
+          :src="item.productImagePreview"
+          alt="product"
+          class="product-img"
+        />
         <imagePreview
-          v-if="item.moldCode"
+          v-else-if="item.moldCode"
           :imageName="item.moldCode"
           type="MOLD"
           :width="80"
@@ -26,7 +32,7 @@
         </div>
       </div>
 
-      <div class="item-info flex-grow-1">
+      <div class="item-info flex-grow-1 ml-2">
         <div class="info-row">
           <span class="info-label">รหัสแม่พิมพ์:</span>
           <span class="info-value">{{ item.moldCode || '-' }}</span>
@@ -42,9 +48,16 @@
             {{ item.productQtyUnit || '' }}
           </span>
         </div>
-        <div class="info-row">
+        <div class="info-row align-items-start">
           <span class="info-label">วัสดุ:</span>
-          <span class="info-value">{{ (item.materials || []).length }} รายการ</span>
+          <div class="info-value flex-grow-1">
+            <div v-if="!(item.materials || []).length" class="text-muted">-</div>
+            <ul v-else class="material-list">
+              <li v-for="(m, idx) in item.materials" :key="m.id || idx">
+                {{ formatMaterial(m) }}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -84,6 +97,40 @@ export default {
       return pt
     },
   },
+
+  methods: {
+    formatMaterial(m) {
+      const parts = []
+      const goldName = this.descOf(m.gold)
+      const goldPct = this.descOf(m.goldSize)
+      if (goldName || goldPct || m.goldQty) {
+        const seg = ['ทอง:', goldName, goldPct, m.goldQty != null ? `× ${m.goldQty}` : '']
+          .filter(Boolean).join(' ')
+        parts.push(seg)
+      }
+      const gemName = this.descOf(m.gem)
+      const gemShape = this.descOf(m.gemShape)
+      if (gemName || gemShape || m.gemQty || m.gemSize) {
+        const seg = ['พลอย:', gemName, gemShape,
+          m.gemQty != null ? `${m.gemQty}${m.gemUnit ? ' ' + m.gemUnit : ''}` : '',
+          m.gemSize ? `(${m.gemSize})` : ''].filter(Boolean).join(' ')
+        parts.push(seg)
+      }
+      if (m.diamondQty || m.diamondSize || m.diamondQuality) {
+        const seg = ['เพชร:',
+          m.diamondQty != null ? `${m.diamondQty}${m.diamondUnit ? ' ' + m.diamondUnit : ''}` : '',
+          m.diamondSize ? `(${m.diamondSize})` : '',
+          m.diamondQuality || ''].filter(Boolean).join(' ')
+        parts.push(seg)
+      }
+      return parts.length ? parts.join(' · ') : '(ไม่ระบุ)'
+    },
+    descOf(obj) {
+      if (!obj) return ''
+      if (typeof obj === 'object') return obj.description || ''
+      return String(obj)
+    },
+  },
 }
 </script>
 
@@ -119,6 +166,15 @@ export default {
     border-radius: 6px;
     font-size: 1.5rem;
   }
+
+  .product-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fff;
+  }
 }
 
 .item-info {
@@ -138,6 +194,22 @@ export default {
   .info-value {
     color: #333;
     font-weight: 500;
+  }
+
+  .info-row.align-items-start {
+    align-items: flex-start;
+  }
+}
+
+.material-list {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+  font-size: 0.85rem;
+
+  li {
+    margin-bottom: 2px;
+    color: #333;
   }
 }
 </style>

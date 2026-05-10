@@ -64,6 +64,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+
 textarea.form-control {
   width: 100%;
   padding: 10px 12px;

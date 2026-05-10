@@ -26,9 +26,15 @@
           @mold-loaded="onMoldLoaded"
         />
 
-        <productImageUpload
+        <UploadImage
           :modelValue="form.productImageFile"
           :previewUrl="form.productImagePreview"
+          title="รูปสินค้าที่คาดว่าจะสำเร็จ"
+          accept="image/*"
+          :maxSizeMB="5"
+          :previewSize="150"
+          :compact="true"
+          :showClear="true"
           class="mt-3"
           @update:modelValue="form.productImageFile = $event"
           @update:previewUrl="form.productImagePreview = $event"
@@ -109,8 +115,8 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 const moldSection = defineAsyncComponent(() => import('../components/mold-section.vue'))
-const productImageUpload = defineAsyncComponent(
-  () => import('../components/product-image-upload.vue')
+const UploadImage = defineAsyncComponent(
+  () => import('@/components/prime-vue/UploadImage.vue')
 )
 const materialTable = defineAsyncComponent(() => import('../components/material-table.vue'))
 const DropdownGeneric = defineAsyncComponent(
@@ -142,7 +148,7 @@ export default {
   components: {
     modal,
     moldSection,
-    productImageUpload,
+    UploadImage,
     materialTable,
     DropdownGeneric,
   },
@@ -244,6 +250,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
 
 .card {
