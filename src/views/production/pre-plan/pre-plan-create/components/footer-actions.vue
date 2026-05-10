@@ -9,13 +9,13 @@
     </button>
     <button
       v-if="status === 'Draft' || !status"
-      class="btn btn-sm btn-outline-main ms-2"
+      class="btn btn-sm btn-outline-main ml-2"
       @click="$emit('save-draft')"
     >
       <i class="bi bi-save"></i> บันทึกร่าง
     </button>
     <button
-      class="btn btn-sm btn-outline-main ms-2"
+      class="btn btn-sm btn-outline-main ml-2"
       @click="$router.push({ name: 'pre-plan-list' })"
     >
       <i class="bi bi-x"></i> ยกเลิก

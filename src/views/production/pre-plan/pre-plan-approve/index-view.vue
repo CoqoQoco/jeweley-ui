@@ -18,7 +18,7 @@
       <button class="btn btn-sm btn-main mr-2" @click="onApprove">
         <i class="bi bi-check-lg"></i> อนุมัติ
       </button>
-      <button class="btn btn-sm btn-red ms-2" @click="onOpenReject">
+      <button class="btn btn-sm btn-red ml-2" @click="onOpenReject">
         <i class="bi bi-x-lg"></i> ปฏิเสธ
       </button>
     </div>

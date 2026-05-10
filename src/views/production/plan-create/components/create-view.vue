@@ -18,6 +18,15 @@
               <span class="bi bi-collection mr-2"></span>
               <span>เลือกเเบบงาน</span>
             </button>
+            <button
+              class="btn btn-sm btn-dark mr-2"
+              type="button"
+              @click="onSelectFromPrePlan"
+              title="เลือกจากใบสั่งผลิต"
+            >
+              <span class="bi bi-clipboard-check mr-2"></span>
+              <span>เลือกจาก Pre-Plan</span>
+            </button>
           </template>
         </pageTitle>
 
@@ -466,6 +475,12 @@
       @modifyPlan="modifyPlan"
       @closeModal="onCloseModal"
     ></modifyPlanView>
+
+    <selectPrePlanItemModal
+      :isShowModal="isShow.selectPrePlan"
+      @closeModal="onCloseModal"
+      @select="onPrePlanItemSelected"
+    />
   </div>
 </template>
 
@@ -486,6 +501,7 @@ import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import modifyPlanView from '../modal/modify-plan-view.vue'
+import selectPrePlanItemModal from '../modal/select-pre-plan-item-modal.vue'
 
 const interfaceForm = {
   wo: '',
@@ -505,7 +521,8 @@ const interfaceForm = {
   gold: null,
   goldSize: null,
   material: [],
-  isModifyPlan: false
+  isModifyPlan: false,
+  prePlanItemId: null
 }
 const interfaceMaterial = {
   //   gold: {
@@ -549,7 +566,8 @@ const interfaceValid = {
 }
 
 const interfaceIsShow = {
-  modifyPlan: false
+  modifyPlan: false,
+  selectPrePlan: false,
 }
 export default {
   components: {
@@ -560,6 +578,7 @@ export default {
     DataTable,
     Column,
     modifyPlanView,
+    selectPrePlanItemModal,
     Checkbox
   },
 
@@ -707,6 +726,39 @@ export default {
     onModifyPlan() {
       this.isShow.modifyPlan = true
     },
+    onSelectFromPrePlan() {
+      this.isShow.selectPrePlan = true
+    },
+    onPrePlanItemSelected(item) {
+      this.form.mold = item.moldCode
+      this.form.productType = this.masterProduct.find((x) => x.code === item.productType) || null
+      this.form.productQty = item.productQty
+      this.form.productQtyUnit = item.productQtyUnit || 'ชิ้น'
+      this.form.productDetail = item.productDetail || ''
+      this.form.gold = this.masterGold.find((x) => x.code === item.goldType) || null
+      this.form.material = (item.materials || []).map((m, idx) => ({
+        id: idx + 1,
+        gold: this.masterGold.find((x) => x.code === m.gold) || null,
+        goldSize: this.masterGoldSize.find((x) => x.code === m.goldSize) || null,
+        goldQty: m.goldQty,
+        gem: this.masterGem.find((x) => x.code === m.gem) || null,
+        gemShape: this.masterGemShape.find((x) => x.code === m.gemShape) || null,
+        gemQty: m.gemQty,
+        gemUnit: m.gemUnit,
+        gemSize: m.gemSize,
+        gemWeight: m.gemWeight,
+        gemWeightUnit: m.gemWeightUnit,
+        diamondQty: m.diamondQty,
+        diamondUnit: m.diamondUnit,
+        diamondQuality: m.diamondQuality,
+        diamondWeight: m.diamondWeight,
+        diamondWeightUnit: m.diamondWeightUnit,
+        diamondSize: m.diamondSize,
+      }))
+      this.form.prePlanItemId = item.itemId
+      this.imageurl = getAzureBlobUrl(`Mold/${item.moldCode}-Mold.png`)
+      this.isShow.selectPrePlan = false
+    },
 
     // --- datatable --- //
     onRowEditSave(event) {
@@ -804,6 +856,7 @@ export default {
         params.append('remark', this.form.remark)
 
         params.append('isModifyPlan', this.form.isModifyPlan)
+        params.append('prePlanItemId', this.form.prePlanItemId || '')
 
         //console.log(this.form.material)
         params.append('material', JSON.stringify(this.form.material))

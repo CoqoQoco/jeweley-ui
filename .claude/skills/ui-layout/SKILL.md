@@ -186,9 +186,19 @@ textarea.form-control {
 
 ---
 
-## 5. Button Spacing — ใช้ Bootstrap `ms-2` / `me-2`
+## 5. Button Spacing — ใช้ Bootstrap 4 `ml-2` / `mr-2`
 
-**❌ Bad**:
+⚠️ **Project ใช้ Bootstrap 4.6** — ไม่ใช่ BS5+ ดังนั้น margin utility ใช้ตัวเก่า:
+- `ml-2` = margin-left (BS5 เรียก `ml-2`)
+- `mr-2` = margin-right (BS5 เรียก `me-2`)
+
+**❌ Bad** (BS5 syntax — class ไม่มีใน project, ปุ่มจะติดกัน):
+```vue
+<button class="btn btn-main">บันทึก</button>
+<button class="btn btn-outline-main ml-2">ยกเลิก</button>
+```
+
+**❌ Bad** (flex gap):
 ```vue
 <div class="d-flex gap-2">
   <button class="btn btn-main">บันทึก</button>
@@ -196,13 +206,13 @@ textarea.form-control {
 </div>
 ```
 
-**✅ Good**:
+**✅ Good** (BS4 syntax):
 ```vue
 <button class="btn btn-sm btn-main">บันทึก</button>
-<button class="btn btn-sm btn-outline-main ms-2">ยกเลิก</button>
+<button class="btn btn-sm btn-outline-main ml-2">ยกเลิก</button>
 ```
 
-ลำดับสากล: action หลัก (`btn-main`) → action รอง (`btn-outline-main` หรือ `btn-red`) — ตัวที่ตามมาใช้ `ms-2`
+ลำดับสากล: action หลัก (`btn-main`) → action รอง (`btn-outline-main` หรือ `btn-red`) — ตัวที่ตามมาใช้ `ml-2`
 
 ---
 
@@ -218,7 +228,7 @@ Pattern สำหรับแสดง item เป็นการ์ดสรุ
       <button class="btn btn-sm btn-main" @click="$emit('edit')">
         <i class="bi bi-pencil"></i> แก้ไข
       </button>
-      <button class="btn btn-sm btn-red ms-2" @click="$emit('remove')">
+      <button class="btn btn-sm btn-red ml-2" @click="$emit('remove')">
         <i class="bi bi-trash"></i> ลบ
       </button>
     </div>
@@ -276,7 +286,7 @@ Pattern สำหรับแสดง item เป็นการ์ดสรุ
   <button class="btn btn-sm btn-main" @click="onSubmit">
     <i class="bi bi-save"></i> บันทึก
   </button>
-  <button class="btn btn-sm btn-outline-main ms-2" @click="$emit('closeModal')">
+  <button class="btn btn-sm btn-outline-main ml-2" @click="$emit('closeModal')">
     ยกเลิก
   </button>
 </template>
@@ -322,16 +332,16 @@ Pattern สำหรับแสดง item เป็นการ์ดสรุ
 | Form 2 fields ต่อแถว | `.form-row.two-col` |
 | Form 4 fields ต่อแถว | `.form-row.four-col` |
 | Input/Textarea ในแถว row + DropdownGeneric | scoped style sync padding 10px 12px |
-| ปุ่มเรียงข้างกัน | `ms-2` (ห้าม flex gap) |
+| ปุ่มเรียงข้างกัน | `ml-2` (ห้าม flex gap) |
 | Item summary | `item-card` + `item-card-header` (#fdf2f2) |
-| Modal footer ปุ่ม | บันทึก + ยกเลิก ms-2 |
+| Modal footer ปุ่ม | บันทึก + ยกเลิก ml-2 |
 
 ---
 
 ## 10. กฎห้ามทำ
 
 - ❌ ห้าม hardcode สีนอก `var(--base-*)` (ยกเว้น border #e0e0e0, bg #fdf2f2 ที่กำหนดไว้แล้ว)
-- ❌ ห้ามใช้ `flex gap-2` สำหรับ button spacing — ใช้ `ms-2`
+- ❌ ห้ามใช้ `flex gap-2` สำหรับ button spacing — ใช้ `ml-2`
 - ❌ ห้ามใช้ inline `style="..."` กำหนด layout — ใช้ class
 - ❌ ห้าม **modify** `custom-style/standard-form.scss` (legacy — ห้ามแตะเนื้อหา) — แต่ **import เพื่อ reuse** typography classes ได้
 - ❌ ห้ามเขียน CSS ซ้ำกับ class ที่มีอยู่แล้วใน `standard-form.scss` — reuse เสมอ

@@ -21,6 +21,7 @@ const interfaceForm = {
   status: null,
   orderDateFrom: null,
   orderDateTo: null,
+  includeCompleted: false,
 }
 
 export default {

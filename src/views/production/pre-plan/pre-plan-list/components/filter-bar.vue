@@ -53,6 +53,17 @@
               />
             </div>
           </div>
+
+          <div class="d-flex align-items-center" style="padding-top: 22px">
+            <label class="d-flex align-items-center gap-2 mb-0" style="cursor: pointer">
+              <input
+                type="checkbox"
+                :checked="modelForm.includeCompleted"
+                @change="update('includeCompleted', $event.target.checked)"
+              />
+              <span class="title-text" style="margin-bottom: 0">แสดงรายการที่สร้างแผนครบแล้ว</span>
+            </label>
+          </div>
         </div>
 
         <div class="btn-submit-container-between">
@@ -61,11 +72,11 @@
             <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
               <i class="bi bi-search"></i>
             </button>
-            <button class="btn btn-sm btn-dark ms-2" type="button" @click="$emit('clear')" title="ล้าง">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="$emit('clear')" title="ล้าง">
               <i class="bi bi-x-circle"></i>
             </button>
             <button
-              class="btn btn-sm btn-main ms-2"
+              class="btn btn-sm btn-main ml-2"
               type="button"
               title="สร้างใบสั่งผลิต"
               @click="$router.push({ name: 'pre-plan-create' })"

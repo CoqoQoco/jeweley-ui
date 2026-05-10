@@ -6,7 +6,7 @@
         <button type="button" class="btn btn-sm btn-main mr-2" @click="$emit('edit')">
           <i class="bi bi-pencil"></i> แก้ไข
         </button>
-        <button type="button" class="btn btn-sm btn-red ms-2" @click="$emit('remove')">
+        <button type="button" class="btn btn-sm btn-red ml-2" @click="$emit('remove')">
           <i class="bi bi-trash"></i> ลบ
         </button>
       </div>

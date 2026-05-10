@@ -45,8 +45,8 @@ export const usePrePlanStore = defineStore('prePlan', {
       return await api.jewelry.post(`ProductionPrePlan/Reject/${id}`, payload)
     },
 
-    async consumePrePlan(id, payload) {
-      return await api.jewelry.post(`ProductionPrePlan/Consume/${id}`, payload)
+    async getAvailableForPlan(moldCode) {
+      return await api.jewelry.get('ProductionPrePlan/AvailableForPlan', { params: { moldCode } })
     },
   },
 })

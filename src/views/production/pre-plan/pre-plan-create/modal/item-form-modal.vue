@@ -101,7 +101,7 @@
       <button class="btn btn-sm btn-main" @click="onSubmit">
         <i class="bi bi-save"></i> บันทึก
       </button>
-      <button class="btn btn-sm btn-outline-main ms-2" @click="$emit('closeModal')">
+      <button class="btn btn-sm btn-outline-main ml-2" @click="$emit('closeModal')">
         ยกเลิก
       </button>
     </template>

@@ -23,7 +23,7 @@
       <button class="btn btn-sm btn-red" @click="onSubmit">
         <i class="bi bi-x-lg"></i> ปฏิเสธ
       </button>
-      <button class="btn btn-sm btn-outline-main ms-2" @click="$emit('closeModal')">
+      <button class="btn btn-sm btn-outline-main ml-2" @click="$emit('closeModal')">
         ยกเลิก
       </button>
     </template>
