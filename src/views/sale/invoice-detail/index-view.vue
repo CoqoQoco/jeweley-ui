@@ -1988,7 +1988,7 @@ export default {
         if (printData.paperSize === 'vat-bridge') {
           const { printVat } = await import('@/services/api/print-bridge-service.js')
           const { getVatLayout } = await import('@/services/helper/print/vat-layout-store.js')
-          const layout = getVatLayout()
+          const layout = await getVatLayout()
           const offsetMm = printData.continuousOffset || { x: 0, y: 0 }
           const layoutPayload = layout
             ? { ...layout, offsetX: (layout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (layout.offsetY ?? 0) + (offsetMm.y || 0) }
@@ -2023,7 +2023,7 @@ export default {
         } else if (printData.paperSize === 'bill') {
           const { printBill } = await import('@/services/api/print-bridge-service.js')
           const { getBillLayout } = await import('@/services/helper/print/bill-layout-store.js')
-          const billLayout = getBillLayout()
+          const billLayout = await getBillLayout()
           const offsetMm = printData.billOffset || { x: 0, y: 0 }
           const layoutPayload = billLayout
             ? { ...billLayout, offsetX: (billLayout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (billLayout.offsetY ?? 0) + (offsetMm.y || 0) }

@@ -1,19 +1,19 @@
-const KEY = 'vat-print-layout'
+import api from '@/axios/axios-helper.js'
 
-export function getVatLayout() {
+export async function getVatLayout() {
   try {
-    const v = localStorage.getItem(KEY)
-    if (!v) return null
-    return JSON.parse(v)
+    const data = await api.jewelry.get('PrintLayout/vat')
+    if (!data || !data.layoutJson) return null
+    return JSON.parse(data.layoutJson)
   } catch {
     return null
   }
 }
 
-export function saveVatLayout(layout) {
-  localStorage.setItem(KEY, JSON.stringify(layout))
+export async function saveVatLayout(layout) {
+  await api.jewelry.post('PrintLayout/vat', { layoutJson: JSON.stringify(layout) })
 }
 
-export function clearVatLayout() {
-  localStorage.removeItem(KEY)
+export async function clearVatLayout() {
+  // no-op — ไม่ลบจาก DB; Reset UI-only
 }

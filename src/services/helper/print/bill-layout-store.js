@@ -1,19 +1,19 @@
-const KEY = 'bill-print-layout'
+import api from '@/axios/axios-helper.js'
 
-export function getBillLayout() {
+export async function getBillLayout() {
   try {
-    const v = localStorage.getItem(KEY)
-    if (!v) return null
-    return JSON.parse(v)
+    const data = await api.jewelry.get('PrintLayout/bill')
+    if (!data || !data.layoutJson) return null
+    return JSON.parse(data.layoutJson)
   } catch {
     return null
   }
 }
 
-export function saveBillLayout(layout) {
-  localStorage.setItem(KEY, JSON.stringify(layout))
+export async function saveBillLayout(layout) {
+  await api.jewelry.post('PrintLayout/bill', { layoutJson: JSON.stringify(layout) })
 }
 
-export function clearBillLayout() {
-  localStorage.removeItem(KEY)
+export async function clearBillLayout() {
+  // no-op — ไม่ลบจาก DB; Reset UI-only
 }

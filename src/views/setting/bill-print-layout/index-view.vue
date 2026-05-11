@@ -99,53 +99,6 @@
           </div>
 
           <div class="form-row">
-            <label class="form-label-col">ตำแหน่ง X — ชื่อสินค้า</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemDescX" type="number" step="0.01" class="form-control single" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label-col">ตำแหน่ง X — จำนวน</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemQtyX" type="number" step="0.01" class="form-control single" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label-col">ตำแหน่ง X — ราคา</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemPriceX" type="number" step="0.01" class="form-control single" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label-col">ตำแหน่ง X — จำนวนเงิน</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemAmountX" type="number" step="0.01" class="form-control single" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label-col">Row Height</label>
-            <div class="form-input-col">
-              <input v-model.number="form.rowHeight" type="number" step="0.01" class="form-control single" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label-col">แถวสูงสุด/หน้า</label>
-            <div class="form-input-col">
-              <input v-model.number="form.maxRowsPerPage" type="number" step="1" class="form-control single" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Extra Columns -->
-        <div class="filter-container mb-3">
-          <div class="title-text-lg mb-3">ตำแหน่งคอลัมน์เพิ่มเติม</div>
-
-          <div class="form-row">
             <label class="form-label-col">Stock Number X</label>
             <div class="form-input-col">
               <input v-model.number="form.xStockNumber" type="number" step="0.01" class="form-control single" />
@@ -153,23 +106,37 @@
           </div>
 
           <div class="form-row">
-            <label class="form-label-col">Stock บรรทัดที่ 2 — Δy</label>
+            <label class="form-label-col">Product Number X</label>
             <div class="form-input-col">
-              <input v-model.number="form.stockSecondLineDy" type="number" step="0.01" class="form-control single" />
+              <input v-model.number="form.xProductNumber" type="number" step="0.01" class="form-control single" />
             </div>
           </div>
 
           <div class="form-row">
-            <label class="form-label-col">ราคาก่อนลด X</label>
+            <label class="form-label-col">ชื่อสินค้า X (Product Name)</label>
+            <div class="form-input-col">
+              <input v-model.number="form.itemDescX" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ราคาทุน X</label>
             <div class="form-input-col">
               <input v-model.number="form.xPriceBeforeDiscount" type="number" step="0.01" class="form-control single" />
             </div>
           </div>
 
           <div class="form-row">
-            <label class="form-label-col">ราคารวม VAT X</label>
+            <label class="form-label-col">ราคาขาย + VAT X</label>
             <div class="form-input-col">
               <input v-model.number="form.xPriceIncludingVat" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Qty X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.itemQtyX" type="number" step="0.01" class="form-control single" />
             </div>
           </div>
 
@@ -195,6 +162,39 @@
           </div>
 
           <div class="form-row">
+            <label class="form-label-col">Unit Price X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.itemPriceX" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Amount X</label>
+            <div class="form-input-col">
+              <input v-model.number="form.itemAmountX" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">Row Height</label>
+            <div class="form-input-col">
+              <input v-model.number="form.rowHeight" type="number" step="0.01" class="form-control single" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แถวสูงสุด/หน้า</label>
+            <div class="form-input-col">
+              <input v-model.number="form.maxRowsPerPage" type="number" step="1" class="form-control single" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Display Toggles -->
+        <div class="filter-container mb-3">
+          <div class="title-text-lg mb-3">ตัวเลือกการแสดงผล</div>
+
+          <div class="form-row">
             <label class="form-label-col">Page Number</label>
             <div class="form-input-col">
               <div class="xy-pair">
@@ -205,21 +205,16 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Display Toggles -->
-        <div class="filter-container mb-3">
-          <div class="title-text-lg mb-3">ตัวเลือกการแสดงผล</div>
 
           <div class="form-row">
-            <label class="form-label-col">แสดงคอลัมน์ "ราคาก่อนลด"</label>
+            <label class="form-label-col">แสดงคอลัมน์ "ราคาทุน"</label>
             <div class="form-input-col">
               <input v-model="form.showPriceBeforeDiscount" type="checkbox" class="form-check-input" />
             </div>
           </div>
 
           <div class="form-row">
-            <label class="form-label-col">แสดงคอลัมน์ "ราคารวม VAT"</label>
+            <label class="form-label-col">แสดงคอลัมน์ "ราคาขาย + VAT"</label>
             <div class="form-input-col">
               <input v-model="form.showPriceIncludingVat" type="checkbox" class="form-check-input" />
             </div>
@@ -347,7 +342,7 @@
 </template>
 
 <script>
-import { getBillLayout, saveBillLayout, clearBillLayout } from '@/services/helper/print/bill-layout-store.js'
+import { getBillLayout, saveBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { printBill } from '@/services/api/print-bridge-service.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 
@@ -358,11 +353,20 @@ const DEFAULT_LAYOUT = {
   customerTaxId: { x: 1.2, y: 1.95 },
   customerAddress: { x: 1.2, y: 2.15 },
   itemsStart: { x: 0, y: 3.1 },
-  itemNoX: 0.6,
-  itemDescX: 1.1,
-  itemQtyX: 4.15,
-  itemPriceX: 5.15,
-  itemAmountX: 6.48,
+  itemNoX: 0.18,
+  xStockNumber: 0.45,
+  xProductNumber: 1.10,
+  itemDescX: 1.75,
+  xPriceBeforeDiscount: 2.60,
+  xPriceIncludingVat: 3.30,
+  itemQtyX: 3.95,
+  xGoldWeight: 4.45,
+  xStoneWeight: 5.15,
+  xDiamondWeight: 5.85,
+  itemPriceX: 6.75,
+  itemAmountX: 8.0,
+  stockSecondLineDy: 0.13,
+  pageNumber: { x: 7.5, y: 2.4 },
   subtotal: { x: 6.5, y: 7.6 },
   vat: { x: 6.5, y: 7.98 },
   total: { x: 6.5, y: 8.3 },
@@ -373,15 +377,7 @@ const DEFAULT_LAYOUT = {
   itemFontSize: 10,
   printerName: 'EPSON LQ-310 ESC/P2',
   offsetX: 0,
-  offsetY: 0,
-  xStockNumber: 1.0,
-  stockSecondLineDy: 0.13,
-  xPriceBeforeDiscount: 2.55,
-  xPriceIncludingVat: 3.05,
-  xGoldWeight: 3.6,
-  xStoneWeight: 4.4,
-  xDiamondWeight: 4.95,
-  pageNumber: { x: 7.5, y: 2.4 },
+  offsetY: 8,
   useBuddhistYear: true,
   showPriceBeforeDiscount: true,
   showPriceIncludingVat: true
@@ -400,8 +396,8 @@ export default {
     }
   },
 
-  mounted() {
-    const saved = getBillLayout()
+  async mounted() {
+    const saved = await getBillLayout()
     if (saved) {
       this.form = { ...deepClone(DEFAULT_LAYOUT), ...saved }
       const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText', 'pageNumber']
@@ -412,13 +408,12 @@ export default {
   },
 
   methods: {
-    onSave() {
-      saveBillLayout(this.form)
+    async onSave() {
+      await saveBillLayout(this.form)
       success('บันทึกค่า Layout สำเร็จ', 'Bill Print Layout')
     },
 
     onReset() {
-      clearBillLayout()
       this.form = deepClone(DEFAULT_LAYOUT)
       success('Reset เป็นค่า default สำเร็จ', 'Bill Print Layout')
     },
@@ -435,9 +430,9 @@ export default {
               stockNumber: 'NEW00001',
               productNumber: 'R-TEST-001',
               productNameEN: 'Test Ring 1',
-              qty: 1,
+              qty: 2,
               appraisalPrice: 5000,
-              discountPercent: 0,
+              discountPercent: 10,
               goldWeight: 1.22,
               stoneWeight: 0.44,
               diamondWeight: 0.18
@@ -446,12 +441,12 @@ export default {
               stockNumber: 'NEW00002',
               productNumber: 'R-TEST-002',
               productNameEN: 'Test Ring 2',
-              qty: 2,
+              qty: 3,
               appraisalPrice: 3000,
               discountPercent: 5,
-              goldWeight: null,
-              stoneWeight: null,
-              diamondWeight: null
+              goldWeight: 0.85,
+              stoneWeight: 0.22,
+              diamondWeight: 0.05
             }
           ],
           currencyRate: 1,

@@ -255,7 +255,7 @@
 </template>
 
 <script>
-import { getVatLayout, saveVatLayout, clearVatLayout } from '@/services/helper/print/vat-layout-store.js'
+import { getVatLayout, saveVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { printVat } from '@/services/api/print-bridge-service.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 
@@ -297,8 +297,8 @@ export default {
     }
   },
 
-  mounted() {
-    const saved = getVatLayout()
+  async mounted() {
+    const saved = await getVatLayout()
     if (saved) {
       this.form = { ...deepClone(DEFAULT_LAYOUT), ...saved }
       const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText']
@@ -309,13 +309,12 @@ export default {
   },
 
   methods: {
-    onSave() {
-      saveVatLayout(this.form)
+    async onSave() {
+      await saveVatLayout(this.form)
       success('บันทึกค่า Layout สำเร็จ', 'VAT Print Layout')
     },
 
     onReset() {
-      clearVatLayout()
       this.form = deepClone(DEFAULT_LAYOUT)
       success('Reset เป็นค่า default สำเร็จ', 'VAT Print Layout')
     },
@@ -328,8 +327,28 @@ export default {
           customer: { name: 'ทดสอบ พิมพ์', address: '123 ถนนทดสอบ', taxId: '0000000000000' },
           customerTaxId: '0000000000000',
           items: [
-            { productNameEN: 'Test Ring 1', qty: 1, appraisalPrice: 5000, discountPercent: 0 },
-            { productNameEN: 'Test Ring 2', qty: 2, appraisalPrice: 3000, discountPercent: 5 }
+            {
+              stockNumber: 'NEW00001',
+              productNumber: 'R-TEST-001',
+              productNameEN: 'Test Ring 1',
+              qty: 2,
+              appraisalPrice: 5000,
+              discountPercent: 10,
+              goldWeight: 1.22,
+              stoneWeight: 0.44,
+              diamondWeight: 0.18
+            },
+            {
+              stockNumber: 'NEW00002',
+              productNumber: 'R-TEST-002',
+              productNameEN: 'Test Ring 2',
+              qty: 3,
+              appraisalPrice: 3000,
+              discountPercent: 5,
+              goldWeight: 0.85,
+              stoneWeight: 0.22,
+              diamondWeight: 0.05
+            }
           ],
           currencyRate: 1,
           specialDiscount: 0,
