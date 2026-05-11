@@ -1121,7 +1121,6 @@ import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
-import { InvoiceBillPdfBuilder } from '@/services/helper/pdf/invoice/invoice-bill-pdf-builder.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import dayjs from 'dayjs'
@@ -2004,6 +2003,41 @@ export default {
                 taxId: this.invoiceData.customerTaxId || ''
               },
               customerTaxId: this.invoiceData.customerTaxId || '',
+              items: (this.invoiceItems || []).map(i => ({
+                productNameEN: i.productNameEN || i.description || i.productNumber || '',
+                qty: Number(i.qty) || 0,
+                appraisalPrice: Number(i.appraisalPrice) || 0,
+                discountPercent: Number(i.discountPercent) || 0
+              })),
+              currencyRate: Number(this.invoiceData.currencyRate) || 1,
+              specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
+              specialAddition: Number(this.invoiceData.specialAddition) || 0,
+              freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
+              vatPercent: Number(this.invoiceData.vatPercent) || 0
+            }
+          }
+          if (layoutPayload) payload.layout = layoutPayload
+          await printVat(payload)
+          success('พิมพ์ใบกำกับภาษีสำเร็จ', 'Bridge GDI')
+          return
+        } else if (printData.paperSize === 'bill') {
+          const { printBill } = await import('@/services/api/print-bridge-service.js')
+          const { getBillLayout } = await import('@/services/helper/print/bill-layout-store.js')
+          const billLayout = getBillLayout()
+          const offsetMm = printData.billOffset || { x: 0, y: 0 }
+          const layoutPayload = billLayout
+            ? { ...billLayout, offsetX: (billLayout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (billLayout.offsetY ?? 0) + (offsetMm.y || 0) }
+            : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
+          const billPayload = {
+            invoice: {
+              invoiceNo: options.invoiceNo,
+              invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
+              customer: {
+                name: this.invoiceData.customerName || '',
+                address: this.invoiceData.customerAddress || '',
+                taxId: this.invoiceData.customerTaxId || ''
+              },
+              customerTaxId: this.invoiceData.customerTaxId || '',
               items: (this.invoiceItems || []).map(i => {
                 const mats = Array.isArray(i.materials) ? i.materials : []
                 const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
@@ -2029,26 +2063,10 @@ export default {
               vatPercent: Number(this.invoiceData.vatPercent) || 0
             }
           }
-          if (layoutPayload) payload.layout = layoutPayload
-          await printVat(payload)
-          success('พิมพ์ใบกำกับภาษีสำเร็จ', 'Bridge GDI')
+          if (layoutPayload) billPayload.layout = layoutPayload
+          await printBill(billPayload)
+          success('พิมพ์ Bill (K&P) สำเร็จ', 'Bridge GDI')
           return
-        } else if (printData.paperSize === 'bill') {
-          const builder = new InvoiceBillPdfBuilder(
-            {
-              ...pdfData.saleOrder,
-              items: pdfData.items,
-              customer: pdfData.customer,
-              currencyRate: pdfData.currency.rate,
-              invoiceNo: options.invoiceNo,
-              invoiceDate: options.invoiceDate
-            },
-            {
-              offsetX: printData.billOffset?.x || 0,
-              offsetY: printData.billOffset?.y || 0
-            }
-          )
-          builder.generatePDF().open()
         } else {
           await invoicePdfService.generateInvoicePDF(pdfData, options)
         }

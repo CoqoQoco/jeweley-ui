@@ -101,6 +101,19 @@ const routes = [
           permissions: [PERMISSIONS.USER_DEV]
         }
       },
+      {
+        path: '/setting/bill-print-layout',
+        name: 'bill-print-layout',
+        component: () => import('@/views/setting/bill-print-layout/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'Bill Print Layout',
+            th: 'ตั้งค่ารูปแบบพิมพ์ Bill'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.USER_DEV]
+        }
+      },
     ]
   }
 ]
