@@ -110,6 +110,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 const moldSection = defineAsyncComponent(() => import('../components/mold-section.vue'))
@@ -120,25 +121,6 @@ const materialTable = defineAsyncComponent(() => import('../components/material-
 const DropdownGeneric = defineAsyncComponent(
   () => import('@/components/prime-vue/DropdownGeneric.vue')
 )
-
-let localIdCounter = 1
-
-function createEmptyItem() {
-  return {
-    _localId: localIdCounter++,
-    moldCode: null,
-    moldDetail: null,
-    moldImageCad: null,
-    moldImageFinish: null,
-    productImageFile: null,
-    productImagePreview: null,
-    productType: null,
-    productQty: null,
-    productQtyUnit: null,
-    productDetail: null,
-    materials: [],
-  }
-}
 
 export default {
   name: 'ItemFormModal',

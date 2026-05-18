@@ -136,12 +136,6 @@ h6 {
   background: transparent !important;
 }
 
-.title-text {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
 .responsive-grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;

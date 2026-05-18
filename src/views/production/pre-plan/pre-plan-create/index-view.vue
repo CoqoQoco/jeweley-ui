@@ -39,29 +39,11 @@ import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 import { confirmSubmit, warning, success } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
+import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
 
 const headerSection = defineAsyncComponent(() => import('./components/header-section.vue'))
 const itemsSection = defineAsyncComponent(() => import('./components/items-section.vue'))
 const footerActions = defineAsyncComponent(() => import('./components/footer-actions.vue'))
-
-let localIdCounter = 100
-
-function createEmptyItem() {
-  return {
-    _localId: localIdCounter++,
-    moldCode: null,
-    moldDetail: null,
-    moldImageCad: null,
-    moldImageFinish: null,
-    productImageFile: null,
-    productImagePreview: null,
-    productType: null,
-    productQty: null,
-    productQtyUnit: null,
-    productDetail: null,
-    materials: [],
-  }
-}
 
 const defaultForm = () => ({
   jobLocation: 'Domestic',
@@ -130,8 +112,9 @@ export default {
       const ms = this.masterStore
 
       if (data.items && data.items.length) {
+        let loadIdSeq = Date.now()
         this.items = data.items.map((it) => ({
-          _localId: localIdCounter++,
+          _localId: loadIdSeq++,
           moldCode: it.moldCode || null,
           moldDetail: it.moldDetail || null,
           moldImageCad: null,

@@ -3,7 +3,7 @@
     <div class="item-card-header d-flex justify-content-between align-items-center">
       <span class="fw-semibold">รายการที่ {{ index + 1 }}</span>
       <div>
-        <button type="button" class="btn btn-sm btn-main mr-2" @click="$emit('edit')">
+        <button type="button" class="btn btn-sm btn-main" @click="$emit('edit')">
           <i class="bi bi-pencil"></i> แก้ไข
         </button>
         <button type="button" class="btn btn-sm btn-red ml-2" @click="$emit('remove')">

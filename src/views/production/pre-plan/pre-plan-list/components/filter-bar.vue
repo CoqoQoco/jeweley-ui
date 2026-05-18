@@ -54,14 +54,14 @@
             </div>
           </div>
 
-          <div class="d-flex align-items-center" style="padding-top: 22px">
-            <label class="d-flex align-items-center gap-2 mb-0" style="cursor: pointer">
+          <div class="checkbox-field d-flex align-items-center">
+            <label class="checkbox-label d-flex align-items-center mb-0">
               <input
                 type="checkbox"
                 :checked="modelForm.includeCompleted"
                 @change="update('includeCompleted', $event.target.checked)"
               />
-              <span class="title-text" style="margin-bottom: 0">แสดงรายการที่สร้างแผนครบแล้ว</span>
+              <span class="title-text checkbox-text">แสดงรายการที่สร้างแผนครบแล้ว</span>
             </label>
           </div>
         </div>
@@ -129,4 +129,17 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.checkbox-field {
+  padding-top: 22px;
+}
+
+.checkbox-label {
+  cursor: pointer;
+  gap: 8px;
+}
+
+.checkbox-text {
+  margin-bottom: 0;
+}
 </style>

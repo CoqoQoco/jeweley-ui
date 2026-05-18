@@ -46,7 +46,7 @@
     </template>
 
     <template #statusTemplate="{ data }">
-      <div :class="getStatusClass(data.status)">{{ getStatusLabel(data.status) }}</div>
+      <div :class="getPrePlanStatusClass(data.status)">{{ getPrePlanStatusLabel(data.status, masterStore.statuses) }}</div>
     </template>
 
     <template #itemCountTemplate="{ data }">
@@ -59,7 +59,7 @@
     </template>
 
     <template #linkedProgressTemplate="{ data }">
-      <div :class="getProgressClass(data.linkedItemCount, data.itemCount)">
+      <div :class="getLinkedProgressClass(data.linkedItemCount, data.itemCount)">
         {{ data.linkedItemCount || 0 }}/{{ data.itemCount }}
       </div>
     </template>
@@ -73,7 +73,7 @@
         </div>
 
         <div v-for="item in data.items" :key="item.id" class="item-expand-card mb-2">
-          <div class="d-flex align-items-start gap-3">
+          <div class="d-flex align-items-start expand-row">
             <imagePreview :imageName="item.moldCode" type="MOLD" :width="60" :height="60" />
             <div class="flex-grow-1 ml-2">
               <div>
@@ -110,6 +110,11 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 import { formatDate } from '@/services/utils/dayjs.js'
+import {
+  getPrePlanStatusClass,
+  getPrePlanStatusLabel,
+  getLinkedProgressClass,
+} from '@/services/helper/pre-plan-status.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
@@ -197,36 +202,9 @@ export default {
       const found = (list || []).find((x) => x.code === code)
       return found?.description || code
     },
-    getProgressClass(linked, total) {
-      if (!total) return 'box-status-process'
-      if (linked >= total) return 'box-status-success'
-      if (linked > 0) return 'box-status-show'
-      return 'box-status-process'
-    },
-    getStatusClass(status) {
-      const map = {
-        Draft: 'box-status-process',
-        Submitted: 'box-status-show',
-        Approved: 'box-status-success',
-        PartiallyConsumed: 'box-status-show',
-        Consumed: 'box-status-next',
-        Rejected: 'box-status-disable',
-      }
-      return map[status] || 'box-status-process'
-    },
-    getStatusLabel(status) {
-      const fromMaster = (this.masterStore.statuses || []).find((s) => s.code === status)
-      if (fromMaster?.description) return fromMaster.description
-      const fallback = {
-        Draft: 'ร่าง',
-        Submitted: 'รออนุมัติ',
-        Approved: 'อนุมัติแล้ว',
-        PartiallyConsumed: 'สร้างแผนบางส่วน',
-        Consumed: 'สร้างแผนครบ',
-        Rejected: 'ปฏิเสธ',
-      }
-      return fallback[status] || status
-    },
+    getPrePlanStatusClass,
+    getPrePlanStatusLabel,
+    getLinkedProgressClass,
     formatMaterialBrief(m) {
       const parts = []
       if (m.gold) parts.push(`ทอง: ${this.getDesc(this.masterStore.golds, m.gold)} × ${m.goldQty || ''}`)
@@ -253,7 +231,11 @@ export default {
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   padding: 12px;
-  background: #fafafa;
+  background: #fdf2f2;
+}
+
+.expand-row {
+  gap: 12px;
 }
 
 .material-list {

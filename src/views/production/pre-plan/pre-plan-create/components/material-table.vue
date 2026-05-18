@@ -17,7 +17,7 @@
       </template>
 
       <template #goldTemplate="{ data }">
-        <Dropdown
+        <DropdownGeneric
           v-model="data.gold"
           :options="masterGold"
           optionLabel="description"
@@ -38,7 +38,7 @@
       </template>
 
       <template #gemTemplate="{ data }">
-        <Dropdown
+        <DropdownGeneric
           v-model="data.gem"
           :options="masterGem"
           optionLabel="description"
@@ -50,7 +50,7 @@
       </template>
 
       <template #gemShapeTemplate="{ data }">
-        <Dropdown
+        <DropdownGeneric
           v-model="data.gemShape"
           :options="masterGemShape"
           optionLabel="description"
@@ -118,7 +118,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const BaseDataTable = defineAsyncComponent(
   () => import('@/components/prime-vue/DataTableWithPaging.vue')
@@ -150,7 +150,7 @@ function createEmptyMaterial() {
 export default {
   name: 'MaterialTable',
 
-  components: { BaseDataTable, Dropdown },
+  components: { BaseDataTable, DropdownGeneric },
 
   props: {
     materials: { type: Array, default: () => [] },
