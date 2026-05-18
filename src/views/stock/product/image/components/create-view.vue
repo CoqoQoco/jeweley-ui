@@ -31,14 +31,14 @@
                     <p class="upload-text">
                       วางรูปภาพที่นี่หรือ <span class="browse-text">เลือกรูปภาพ</span>
                     </p>
-                    <p class="upload-subtext">รองรับไฟล์ JPG, JPEG และ PNG</p>
+                    <p class="upload-subtext">รองรับไฟล์ JPG, JPEG</p>
                   </div>
 
                   <input
                     type="file"
                     ref="fileInput"
                     @change="handleFileUpload"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,image/jpeg"
                     class="file-input"
                     :disabled="loading"
                   />
@@ -256,8 +256,8 @@ export default {
     },
 
     async processFile(file) {
-      if (!file.type.match(/image.*/)) {
-        swAlert.warning('', 'กรุณาเลือกไฟล์รูปภาพเท่านั้น')
+      if (!file.type.match(/image\/(jpeg|jpg)/i)) {
+        swAlert.warning('', 'รองรับเฉพาะไฟล์ .jpg / .jpeg เท่านั้น')
         return
       }
 
@@ -308,8 +308,9 @@ export default {
         // แปลง Blob URL กลับเป็น File object
         const response = await fetch(this.imageUrl)
         const blob = await response.blob()
-        const compressedFile = new File([blob], this.$refs.fileInput.files[0].name, {
-          type: 'image/png' // เปลี่ยนเป็น PNG
+        const safeName = (this.form.name || 'image').trim().replace(/[\\/:*?"<>|]/g, '_')
+        const compressedFile = new File([blob], `${safeName}.jpg`, {
+          type: 'image/jpeg'
         })
 
         formData.append('name', this.form.name)
