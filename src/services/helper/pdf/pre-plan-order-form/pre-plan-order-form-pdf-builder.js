@@ -1,0 +1,371 @@
+import { formatDate } from '@/services/utils/dayjs.js'
+import { initPdfMake } from '@/services/utils/pdf-make.js'
+
+export class PrePlanOrderFormPdfBuilder {
+  constructor(prePlan, items) {
+    this.prePlan = prePlan
+    this.items = items
+    this.images = { mold: {}, product: {} }
+  }
+
+  async prepareImages() {
+    const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
+    this.images = { mold: {}, product: {} }
+    await Promise.all(
+      this.items.map(async (item) => {
+        if (item.moldCode) {
+          const moldBlob = `Mold/${item.moldCode}-Mold.png`
+          this.images.mold[item.moldCode] = await getAzureBlobAsBase64(moldBlob, 'mold').catch(
+            () => null,
+          )
+        }
+        if (item.productImageBlobPath) {
+          this.images.product[item.productImageBlobPath] = await getAzureBlobAsBase64(
+            item.productImageBlobPath,
+            'plan',
+          ).catch(() => null)
+        }
+      }),
+    )
+  }
+
+  getHeaderContent() {
+    return {
+      margin: [0, 0, 0, 8],
+      columns: [
+        { width: '*', text: '' },
+        {
+          width: 'auto',
+          text: 'ใบสั่งผลิต ( ORDER FORM )',
+          fontSize: 18,
+          bold: true,
+          alignment: 'center',
+        },
+        {
+          width: '*',
+          text: this.prePlan.goldTypeLabel || this.prePlan.goldType || '',
+          fontSize: 24,
+          bold: true,
+          color: '#921313',
+          alignment: 'right',
+        },
+      ],
+    }
+  }
+
+  buildCheckbox(checked) {
+    const ops = [{ type: 'rect', x: 0, y: 2, w: 10, h: 10, lineWidth: 0.7, lineColor: '#000000' }]
+    if (checked) {
+      ops.push({ type: 'rect', x: 2, y: 4, w: 6, h: 6, color: '#000000' })
+    }
+    return { canvas: ops }
+  }
+
+  getTopFieldsContent() {
+    const p = this.prePlan
+    const isDomestic = p.jobLocation === 'Domestic'
+    const isNewDesign = p.jobType === 'NewDesign'
+    const orderNo = p.documentNo || 'DRAFT'
+    const jobTypeLabel = isNewDesign ? 'งานแบบใหม่' : 'งานแก้แบบ'
+
+    return {
+      margin: [0, 0, 0, 8],
+      table: {
+        widths: ['*', '*'],
+        body: [
+          [
+            {
+              border: [false, false, false, false],
+              stack: [
+                { text: `ผู้ออกใบสั่ง: ${p.createBy || '-'}`, fontSize: 11 },
+                { text: `ผู้สั่งผลิตงานขาย: ${p.salesBy || '-'}`, fontSize: 11 },
+                { text: `ผู้อนุมัติ: ${p.approvedBy || '-'}`, fontSize: 11 },
+                { text: 'ลายเซ็น: ____________________', fontSize: 10, margin: [0, 4, 0, 0] },
+              ],
+            },
+            {
+              border: [false, false, false, false],
+              stack: [
+                {
+                  columns: [
+                    { width: 14, stack: [this.buildCheckbox(isDomestic)] },
+                    { width: 'auto', text: 'งานในประเทศ', fontSize: 11, margin: [2, 1, 10, 0] },
+                    { width: 14, stack: [this.buildCheckbox(!isDomestic)] },
+                    { width: 'auto', text: 'งานต่างประเทศ', fontSize: 11, margin: [2, 1, 0, 0] },
+                  ],
+                  columnGap: 0,
+                },
+                { text: `วันที่สั่ง: ${p.orderDate ? formatDate(p.orderDate) : '-'}`, fontSize: 11 },
+                { text: `วันที่ส่ง: ${p.deliveryDate ? formatDate(p.deliveryDate) : '-'}`, fontSize: 11 },
+              ],
+            },
+          ],
+          [
+            {
+              border: [false, false, false, false],
+              colSpan: 2,
+              columns: [
+                {
+                  width: 'auto',
+                  text: [
+                    { text: 'ประเภทงาน: ', fontSize: 11 },
+                    { text: jobTypeLabel, fontSize: 11, bold: true },
+                  ],
+                },
+                { width: '*', text: '' },
+                {
+                  width: 'auto',
+                  text: `ORDER NO: ${orderNo}`,
+                  fontSize: 11,
+                  bold: true,
+                },
+              ],
+            },
+            {},
+          ],
+        ],
+      },
+      layout: {
+        defaultBorder: false,
+        paddingLeft: () => 0,
+        paddingRight: () => 0,
+        paddingTop: () => 2,
+        paddingBottom: () => 2,
+      },
+    }
+  }
+
+  buildMaterialRows(materials) {
+    const rows = []
+    const headerRow = [
+      { text: 'วัตถุดิบ', style: 'tableHeader' },
+      { text: 'รูปร่าง', style: 'tableHeader' },
+      { text: 'ไซส์', style: 'tableHeader' },
+      { text: 'จำนวน', style: 'tableHeader' },
+      { text: 'น้ำหนัก', style: 'tableHeader' },
+      { text: 'หมายเหตุ', style: 'tableHeader' },
+    ]
+    rows.push(headerRow)
+
+    for (const m of materials) {
+      if (m.gem && m.gem.description) {
+        const gemName = typeof m.gem === 'object' ? m.gem.description : m.gem
+        const shapeName =
+          m.gemShape && typeof m.gemShape === 'object'
+            ? m.gemShape.description || '-'
+            : m.gemShape || '-'
+        rows.push([
+          gemName || '-',
+          shapeName,
+          m.gemSize || '-',
+          m.gemQty != null ? `${m.gemQty}${m.gemUnit ? ' ' + m.gemUnit : ''}` : '-',
+          m.gemWeight != null
+            ? `${m.gemWeight}${m.gemWeightUnit ? ' ' + m.gemWeightUnit : ''}`
+            : '-',
+          '',
+        ])
+      }
+      if (m.diamondQty != null && m.diamondQty !== '') {
+        rows.push([
+          'เพชร',
+          '-',
+          m.diamondSize || '-',
+          m.diamondQty != null ? `${m.diamondQty}${m.diamondUnit ? ' ' + m.diamondUnit : ''}` : '-',
+          m.diamondWeight != null
+            ? `${m.diamondWeight}${m.diamondWeightUnit ? ' ' + m.diamondWeightUnit : ''}`
+            : '-',
+          m.diamondQuality || '',
+        ])
+      }
+      if (m.gold && m.gold.description) {
+        const goldName = typeof m.gold === 'object' ? m.gold.description : m.gold
+        rows.push([
+          goldName || '-',
+          '-',
+          '-',
+          m.goldQty != null ? String(m.goldQty) : '-',
+          '-',
+          '-',
+        ])
+      }
+    }
+
+    return rows
+  }
+
+  getItemBlock(item) {
+    const moldImage = item.moldCode ? this.images.mold[item.moldCode] : null
+    const productImage = item.productImageBlobPath
+      ? this.images.product[item.productImageBlobPath]
+      : null
+    const materialRows = this.buildMaterialRows(item.materials || [])
+    const qtyText = `จำนวนที่สั่ง: ${item.productQty || '-'} ${item.productQtyUnit || ''}`
+    const detailText = item.productDetail ? `หมายเหตุพิเศษ: ${item.productDetail}` : 'หมายเหตุพิเศษ: -'
+
+    const moldImageNode = moldImage
+      ? { image: moldImage, width: 70, height: 70, alignment: 'center' }
+      : {
+          canvas: [{ type: 'rect', x: 0, y: 0, w: 70, h: 70, lineWidth: 0.5, lineColor: '#cccccc' }],
+        }
+
+    const productImageNode = productImage
+      ? { image: productImage, width: 70, height: 70, alignment: 'center' }
+      : {
+          canvas: [{ type: 'rect', x: 0, y: 0, w: 70, h: 70, lineWidth: 0.5, lineColor: '#cccccc' }],
+        }
+
+    const moldCell = {
+      border: [true, true, false, false],
+      margin: [4, 4, 4, 4],
+      stack: [
+        moldImageNode,
+        {
+          text: item.moldCode || '-',
+          alignment: 'center',
+          fontSize: 9,
+          bold: true,
+          margin: [0, 3, 0, 0],
+        },
+      ],
+    }
+
+    const productCell = {
+      border: [false, true, true, false],
+      margin: [4, 4, 4, 4],
+      stack: [
+        productImageNode,
+        {
+          text: 'รูปสินค้า',
+          alignment: 'center',
+          fontSize: 8,
+          color: '#666666',
+          margin: [0, 3, 0, 0],
+        },
+      ],
+    }
+
+    const materialTable = {
+      border: [false, true, true, false],
+      stack: [
+        {
+          table: {
+            headerRows: 1,
+            widths: ['*', 45, 35, 38, 45, 45],
+            body: materialRows,
+            dontBreakRows: true,
+          },
+          layout: {
+            hLineWidth: (i) => (i === 0 || i === 1 ? 0.5 : 0.3),
+            vLineWidth: () => 0.3,
+            hLineColor: () => '#aaaaaa',
+            vLineColor: () => '#aaaaaa',
+            fillColor: (rowIndex) => (rowIndex === 0 ? '#f2f2f2' : null),
+            paddingLeft: () => 3,
+            paddingRight: () => 3,
+            paddingTop: () => 2,
+            paddingBottom: () => 2,
+          },
+          fontSize: 10,
+        },
+      ],
+    }
+
+    const wgYgRow = [
+      {
+        colSpan: 2,
+        border: [true, false, false, false],
+        margin: [6, 4, 6, 4],
+        text: 'WG เบ้าที่: ____________     YG เบ้าที่: ____________',
+        fontSize: 10,
+      },
+      {},
+      {
+        border: [false, false, true, false],
+        text: '',
+      },
+    ]
+
+    const summaryRow = [
+      {
+        colSpan: 3,
+        border: [true, false, true, true],
+        margin: [6, 4, 6, 4],
+        columns: [
+          {
+            width: '*',
+            text: qtyText,
+            fontSize: 10,
+            bold: true,
+          },
+          {
+            width: '*',
+            text: detailText,
+            fontSize: 10,
+          },
+        ],
+      },
+      {},
+      {},
+    ]
+
+    return {
+      stack: [
+        {
+          margin: [0, 0, 0, 0],
+          table: {
+            widths: [80, 80, '*'],
+            body: [
+              [moldCell, productCell, materialTable],
+              wgYgRow,
+              summaryRow,
+            ],
+            dontBreakRows: false,
+          },
+          layout: {
+            hLineWidth: () => 0.5,
+            vLineWidth: () => 0.5,
+            hLineColor: () => '#888888',
+            vLineColor: () => '#888888',
+          },
+        },
+      ],
+      unbreakable: true,
+      margin: [0, 0, 0, 8],
+    }
+  }
+
+  getDocDefinition() {
+    const contentBlocks = []
+    contentBlocks.push(this.getHeaderContent())
+    contentBlocks.push(this.getTopFieldsContent())
+
+    this.items.forEach((item) => {
+      contentBlocks.push(this.getItemBlock(item))
+    })
+
+    return {
+      pageSize: 'A4',
+      pageMargins: [15, 15, 15, 15],
+      content: contentBlocks,
+      defaultStyle: {
+        font: 'THSarabunNew',
+        fontSize: 11,
+      },
+      styles: {
+        tableHeader: {
+          fillColor: '#f2f2f2',
+          bold: true,
+          alignment: 'center',
+          fontSize: 10,
+        },
+        title: { fontSize: 9, color: '#666666' },
+        desc: { fontSize: 11, bold: true },
+      },
+    }
+  }
+
+  generatePDF() {
+    const pdfMake = initPdfMake()
+    return pdfMake.createPdf(this.getDocDefinition())
+  }
+}

@@ -15,16 +15,23 @@
           <i class="bi bi-eye"></i>
         </button>
         <button
+          class="btn btn-sm btn-green ml-1"
+          @click="onPrintPdf(data)"
+          title="พิมพ์ใบสั่งผลิต"
+        >
+          <i class="bi bi-printer"></i>
+        </button>
+        <button
           v-if="data.status === 'Draft'"
-          class="btn btn-sm btn-main"
+          class="btn btn-sm btn-main ml-1"
           @click="onEdit(data)"
           title="แก้ไข"
         >
-          <i class="bi bi-pencil"></i>
-        </button>
+        <i class="bi bi-pencil"></i>
+      </button>
         <button
           v-if="data.status === 'Submitted'"
-          class="btn btn-sm btn-main ml-2"
+          class="btn btn-sm btn-main ml-1"
           @click="onApprove(data)"
           title="อนุมัติ"
         >
@@ -119,6 +126,7 @@ import {
   getLinkedProgressClass,
 } from '@/services/helper/pre-plan-status.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import { PrePlanOrderFormPdfBuilder } from '@/services/helper/pdf/pre-plan-order-form/pre-plan-order-form-pdf-builder.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
@@ -141,7 +149,7 @@ export default {
       skip: 0,
       sort: [],
       columns: [
-        { field: 'action', header: '', width: '150px', sortable: false, align: 'center' },
+        { field: 'action', header: '', minWidthwidth: '150px', sortable: false, align: 'center' },
         { field: 'status', header: 'สถานะ', minWidth: '130px', align: 'center' },
         { field: 'linkedProgress', header: 'สร้างแผน', minWidth: '110px', align: 'center', sortable: false },
         { field: 'orderNo', header: 'เลขที่ใบสั่ง', minWidth: '140px' },
@@ -272,6 +280,53 @@ export default {
     onApprove(data) {
       this.$router.push({ name: 'pre-plan-approve', params: { id: data.id } })
     },
+    async onPrintPdf(row) {
+      await this.masterStore.fetchAll()
+      const data = await this.store.getPrePlan(row.id)
+      if (!data) return
+
+      const ms = this.masterStore
+      const findByCode = (list, code) => {
+        if (code == null || typeof code === 'object') return code
+        return (list || []).find((x) => x.code === code) || code
+      }
+
+      const items = (data.items || []).map((it) => ({
+        moldCode: it.moldCode || null,
+        productImageBlobPath: it.productImagePath || null,
+        productQty: it.productQty || null,
+        productQtyUnit: it.productQtyUnit || null,
+        productDetail: it.productDetail || null,
+        materials: (it.materials || []).map((m) => ({
+          ...m,
+          gold: findByCode(ms.golds, m.gold),
+          gem: findByCode(ms.gems, m.gem),
+          gemShape: findByCode(ms.gemShapes, m.gemShape),
+        })),
+      }))
+
+      const goldLabel =
+        this.masterStore.goldSizes.find((g) => g.code === data.goldType)?.description ||
+        data.goldType ||
+        ''
+      const builder = new PrePlanOrderFormPdfBuilder(
+        {
+          documentNo: data.documentNo || data.orderNo || row.id,
+          jobLocation: data.jobLocation || 'Domestic',
+          jobType: data.jobType || 'NewDesign',
+          goldType: data.goldType || '',
+          goldTypeLabel: goldLabel,
+          orderDate: data.orderDate,
+          deliveryDate: data.deliveryDate,
+          createBy: data.createBy || '',
+          salesBy: data.salesBy || '',
+          approvedBy: data.approvedBy || '',
+        },
+        items,
+      )
+      await builder.prepareImages()
+      builder.generatePDF().open()
+    },
     getDesc(list, code) {
       if (!code) return '-'
       const found = (list || []).find((x) => x.code === code)
@@ -299,7 +354,7 @@ export default {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: start;
 }
 
 .item-expand-card {

@@ -69,6 +69,27 @@
       </div>
     </div>
 
+    <div class="form-row two-col">
+      <div class="form-field">
+        <span class="title-text">ผู้สั่งผลิตงานขาย</span>
+        <input
+          class="form-control"
+          type="text"
+          v-model="localForm.salesBy"
+          placeholder="ระบุชื่อผู้สั่งผลิตงานขาย"
+        />
+      </div>
+      <div class="form-field">
+        <span class="title-text">ผู้อนุมัติ</span>
+        <input
+          class="form-control"
+          type="text"
+          v-model="localForm.approvedBy"
+          placeholder="ระบุชื่อผู้อนุมัติ"
+        />
+      </div>
+    </div>
+
     <div class="form-row">
       <div class="form-field">
         <span class="title-text">หมายเหตุ</span>

@@ -15,6 +15,14 @@
       <i class="bi bi-save"></i> บันทึกร่าง
     </button>
     <button
+      class="btn btn-sm btn-green ml-2"
+      :disabled="!hasItems"
+      @click="$emit('print-pdf')"
+      title="พิมพ์ใบสั่งผลิต"
+    >
+      <i class="bi bi-printer"></i> พิมพ์ใบสั่งผลิต
+    </button>
+    <button
       class="btn btn-sm btn-outline-main ml-2"
       @click="$router.push({ name: 'pre-plan-list' })"
     >
@@ -29,8 +37,9 @@ export default {
   props: {
     isEditMode: { type: Boolean, default: false },
     status: { type: String, default: 'Draft' },
+    hasItems: { type: Boolean, default: false },
   },
-  emits: ['save-draft', 'submit'],
+  emits: ['save-draft', 'submit', 'print-pdf'],
 }
 </script>
 
