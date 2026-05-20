@@ -7,6 +7,9 @@ const MoldPlanData = () => import('@/views/mold/plan-data/IndexView.vue')
 const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
 const MoldList = () => import('@/views/mold/mold-list/IndexView.vue')
 const MoldpickingList = () => import('@/views/mold/picking-list/IndexView.vue')
+const PrePlanList = () => import('@/views/production/pre-plan/pre-plan-list/index-view.vue')
+const PrePlanCreate = () => import('@/views/production/pre-plan/pre-plan-create/index-view.vue')
+const PrePlanApprove = () => import('@/views/production/pre-plan/pre-plan-approve/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
@@ -123,6 +126,46 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.MOLD_EDIT]
+        }
+      },
+      {
+        path: '/pre-plan-list',
+        name: 'pre-plan-list',
+        component: PrePlanList,
+        meta: {
+          Displayname: { en: 'Pre Plan', th: 'ใบสั่งผลิต' },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRE_PLAN_VIEW]
+        }
+      },
+      {
+        path: '/pre-plan-create',
+        name: 'pre-plan-create',
+        component: PrePlanCreate,
+        meta: {
+          Displayname: { en: 'Create Pre Plan', th: 'สร้างใบสั่งผลิต' },
+          minorShow: false,
+          permissions: [PERMISSIONS.PRE_PLAN_CREATE]
+        }
+      },
+      {
+        path: '/pre-plan-edit/:id',
+        name: 'pre-plan-edit',
+        component: PrePlanCreate,
+        meta: {
+          Displayname: { en: 'Edit Pre Plan', th: 'แก้ไขใบสั่งผลิต' },
+          minorShow: false,
+          permissions: [PERMISSIONS.PRE_PLAN_CREATE]
+        }
+      },
+      {
+        path: '/pre-plan-approve/:id',
+        name: 'pre-plan-approve',
+        component: PrePlanApprove,
+        meta: {
+          Displayname: { en: 'Approve Pre Plan', th: 'อนุมัติใบสั่งผลิต' },
+          minorShow: false,
+          permissions: [PERMISSIONS.PRE_PLAN_APPROVE]
         }
       },
       // {

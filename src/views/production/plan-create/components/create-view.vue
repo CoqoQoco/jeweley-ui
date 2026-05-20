@@ -26,6 +26,7 @@
             >
               <span class="bi bi-clipboard-check mr-2"></span>
               <span>เลือกจาก Pre-Plan</span>
+              <span v-if="waitingCount > 0" class="badge badge-warning ml-2">{{ waitingCount }}</span>
             </button>
           </template>
         </pageTitle>
@@ -61,6 +62,9 @@
                     forceSelection
                     @item-select="onSelectMold"
                   />
+                  <small v-if="moldProductionCount > 0" class="text-muted d-block mt-1">
+                    <i class="bi bi-info-circle"></i> ผลิตซ้ำแล้ว {{ moldProductionCount }} ครั้ง
+                  </small>
                 </div>
               </div>
 
@@ -499,6 +503,8 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
+import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
+import { useMoldStore } from '@/stores/modules/api/master/mold-store.js'
 
 import modifyPlanView from '../modal/modify-plan-view.vue'
 import selectPrePlanItemModal from '../modal/select-pre-plan-item-modal.vue'
@@ -584,7 +590,9 @@ export default {
 
   setup() {
     const loadingStore = useLoadingStore()
-    return { loadingStore }
+    const prePlanStore = usePrePlanStore()
+    const moldStore = useMoldStore()
+    return { loadingStore, prePlanStore, moldStore }
   },
 
   watch: {
@@ -625,6 +633,8 @@ export default {
       // --- flag --- //
       isLoading: false,
       autoId: 0,
+      waitingCount: 0,
+      moldProductionCount: 0,
 
       // --- from --- //
       form: {
@@ -826,6 +836,7 @@ export default {
       } catch (error) {
         console.log(error)
       }
+      this.moldProductionCount = await this.moldStore.fetchProductionCount(e.value)
     },
     async submitPlan() {
       try {
@@ -1035,16 +1046,16 @@ export default {
     }
   },
 
-  created() {
-    this,
-      this.$nextTick(() => {
-        this.fetchMasterCustomerType()
-        this.fetchMasterProductType()
-        this.fetchMasterGold()
-        this.fetchMasterGoldSize()
-        this.fetchMasterGem()
-        this.fetchMasterGemShape()
-      })
+  async created() {
+    this.waitingCount = await this.prePlanStore.fetchWaitingCount()
+    this.$nextTick(() => {
+      this.fetchMasterCustomerType()
+      this.fetchMasterProductType()
+      this.fetchMasterGold()
+      this.fetchMasterGoldSize()
+      this.fetchMasterGem()
+      this.fetchMasterGemShape()
+    })
   }
 }
 </script>

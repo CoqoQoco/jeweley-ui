@@ -201,11 +201,13 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { PermissionService } from '@/services/permission/permission.js'
+import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 //import { PERMISSIONS } from '@/services/permission/config.js'
 export default {
   setup() {
     const authStore = useAuthStore()
-    return { authStore }
+    const prePlanStore = usePrePlanStore()
+    return { authStore, prePlanStore }
   },
 
   data() {
@@ -288,6 +290,17 @@ export default {
           }
         }
       })
+
+      const waitingCount = await this.prePlanStore.fetchWaitingCount()
+      if (waitingCount > 0) {
+        for (const mainMenu of this.menuForPermission) {
+          for (const sub of mainMenu.subMenu || []) {
+            if (sub.name === 'plan-order') {
+              sub.meta = { ...sub.meta, counter: waitingCount }
+            }
+          }
+        }
+      }
     },
     getAuthorizedSubMenus(route, permissionService) {
       if (route.name === 'dashboard') return []

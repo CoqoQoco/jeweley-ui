@@ -35,6 +35,10 @@
         </div>
       </template>
 
+      <template #productionCountTemplate="{ data }">
+        <span>{{ data.productionCount || 0 }} ครั้ง</span>
+      </template>
+
       <template #imageTemplate="{ data: rowData }">
         <div v-if="stringToArray(getImgUrl(rowData)).length" class="box-image-show">
           <div v-for="(img, index) in stringToArray(getImgUrl(rowData))" :key="index">
@@ -161,6 +165,7 @@ export default {
         { field: 'code', header: 'รหัสเเม่พิมพ์', sortable: true, minWidth: '150px' },
         { field: 'catagoryName', header: 'ประเภทเเม่พิมพ์', sortable: true, minWidth: '150px' },
         { field: 'image', header: 'รูปเเม่พิมพ์', sortable: false, minWidth: '150px' },
+        { field: 'productionCount', header: 'ผลิตซ้ำ', sortable: true, minWidth: '90px', align: 'right' },
         { field: 'createDate', header: 'วันตั้งเเม่พิมพ์', sortable: true, minWidth: '150px', format: 'date' },
         { field: 'updateDate', header: 'เเก้ไขตั้งเเม่พิมพ์ล่าสุด', sortable: true, minWidth: '150px', format: 'date' }
       ],
