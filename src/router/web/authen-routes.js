@@ -15,6 +15,7 @@ const Customer = () => import('@/views/customer/list-customer/index-view.vue')
 //worker
 const WorkerList = () => import('@/views/worker/worker-list/index-view.vue')
 const WorkerDailyWages = () => import('@/views/worker/worker-daily-wages/index-view.vue')
+const WorkerGoldLossSlipList = () => import('@/views/worker/gold-loss-slip-list/index-view.vue')
 
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/index-view.vue')
@@ -138,6 +139,19 @@ const routes = [
           Displayname: {
             en: 'Worker Wages',
             th: 'ตรวจสอบค่าเเรงช่าง'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        path: '/worker-gold-loss-slips/:workerCode?',
+        name: 'worker-gold-loss-slip-list',
+        component: WorkerGoldLossSlipList,
+        meta: {
+          Displayname: {
+            en: 'Gold Loss Slips',
+            th: 'ประวัติ Gold Loss Slip'
           },
           minorShow: false,
           permissions: [PERMISSIONS.WORKER_VIEW]

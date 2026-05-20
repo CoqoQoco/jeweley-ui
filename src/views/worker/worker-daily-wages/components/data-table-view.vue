@@ -8,7 +8,10 @@
       scrollHeight="calc(100vh - 340px)"
     >
       <template #statusNameTemplate="{ data }">
-        <span v-if="data.isGoldLoss" class="badge-gold-loss">Gold Loss (งานฝัง)</span>
+        <template v-if="data.isGoldLoss">
+          <span class="badge-gold-loss">Gold Loss (งานฝัง)</span>
+          <span v-if="data.workerGoldLossSlipId" class="badge-slipped ml-1">ลง slip {{ data.workerGoldLossSlipDocumentNo }}</span>
+        </template>
         <span v-else>{{ data.statusName }}</span>
       </template>
 
@@ -203,6 +206,15 @@ export default {
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: 600;
+}
+
+.badge-slipped {
+  background: #6c757d;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  display: inline-block;
 }
 
 .loss-positive {

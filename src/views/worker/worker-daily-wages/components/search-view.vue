@@ -52,10 +52,24 @@
               <i class="bi bi-printer"></i>
               <span class="ml-1">พิมพ์สลิปสถานะสำเร็จ</span>
             </button>
-            <button class="btn btn-sm btn-primary ml-2" type="button" @click="$emit('print-tracking')" title="พิมพ์สลิปติดตามงาน">
+            <button
+              v-if="form.wageTypeFilter !== 'goldLoss'"
+              class="btn btn-sm btn-primary ml-2"
+              type="button"
+              @click="$emit('print-tracking')"
+              title="พิมพ์สลิปติดตามงาน"
+            >
               <i class="bi bi-printer"></i>
               <span class="ml-1">พิมพ์สลิปติดตามงาน</span>
             </button>
+            <router-link
+              v-if="form.wageTypeFilter === 'goldLoss'"
+              :to="{ name: 'worker-gold-loss-slip-list', params: { workerCode: worker && worker.code ? worker.code : '' } }"
+              class="btn btn-sm btn-sub-main ml-2"
+              title="ประวัติ Slip"
+            >
+              <i class="bi bi-list-ul"></i> ประวัติ Slip
+            </router-link>
           </div>
           <div>
             <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">

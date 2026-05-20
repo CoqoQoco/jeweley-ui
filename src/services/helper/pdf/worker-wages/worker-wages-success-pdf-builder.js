@@ -2,11 +2,12 @@ import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
 
 export class WorkerWagesSuccessPdfBuilder {
-  constructor(worker, dateRange, items, mode) {
+  constructor(worker, dateRange, items, mode, slip = null) {
     this.worker = worker || {}
     this.dateRange = dateRange || {}
     this.items = items || []
     this.mode = mode || 'wages'
+    this.slip = slip
   }
 
   formatDate(val) {
@@ -27,6 +28,9 @@ export class WorkerWagesSuccessPdfBuilder {
 
   getHeaderContent() {
     const modeTitle = this.mode === 'goldLoss' ? 'ใบสรุปงาน Gold Loss' : 'ค่าแรงตามพนักงาน'
+    const docNoText = (this.mode === 'goldLoss' && this.slip)
+      ? `เลขที่: ${this.slip.documentNo || ''}`
+      : ''
     return [
       {
         columns: [
@@ -48,6 +52,14 @@ export class WorkerWagesSuccessPdfBuilder {
         fontSize: 14,
         margin: [0, 0, 0, 0]
       },
+      ...(docNoText ? [{
+        columns: [
+          '',
+          { text: docNoText, alignment: 'right', bold: true }
+        ],
+        fontSize: 13,
+        margin: [0, 0, 0, 0]
+      }] : []),
       {
         table: {
           widths: ['*'],
@@ -196,13 +208,52 @@ export class WorkerWagesSuccessPdfBuilder {
     }
   }
 
+  getSlipSummaryContent() {
+    if (this.mode !== 'goldLoss' || !this.slip) return []
+    return [
+      {
+        margin: [0, 10, 0, 0],
+        table: {
+          widths: ['*'],
+          body: [[{ columns: [], border: [false, true, false, false] }]]
+        },
+        layout: { defaultBorder: false }
+      },
+      {
+        columns: [
+          { text: 'รวมน้ำหนัก loss', alignment: 'right', width: '*' },
+          { text: `: ${this.fmtSign2(this.slip.totalWeightLoss)} กรัม`, width: 120, alignment: 'right' }
+        ],
+        fontSize: 12,
+        margin: [0, 2, 0, 0]
+      },
+      {
+        columns: [
+          { text: 'รับคืนทอง (Gold Return)', alignment: 'right', width: '*' },
+          { text: `: ${this.fmt2(this.slip.goldReturn)} กรัม`, width: 120, alignment: 'right' }
+        ],
+        fontSize: 12,
+        margin: [0, 2, 0, 0]
+      },
+      {
+        columns: [
+          { text: 'น้ำหนัก loss สุทธิ', alignment: 'right', bold: true, width: '*' },
+          { text: `: ${this.fmtSign2(this.slip.netWeightLoss)} กรัม`, bold: true, width: 120, alignment: 'right' }
+        ],
+        fontSize: 12,
+        margin: [0, 2, 0, 0]
+      }
+    ]
+  }
+
   getDocDefinition() {
     return {
       pageSize: 'A4',
       pageMargins: [20, 20, 20, 10],
       content: [
         ...this.getHeaderContent(),
-        this.getTableContent()
+        this.getTableContent(),
+        ...this.getSlipSummaryContent()
       ],
       defaultStyle: {
         font: 'THSarabunNew',

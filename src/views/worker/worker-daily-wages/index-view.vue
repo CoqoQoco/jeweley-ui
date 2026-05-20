@@ -12,19 +12,32 @@
       :items="dataWages.items || []"
       :wageTypeFilter="form.wageTypeFilter"
     />
+
+    <goldLossSlipModal
+      :isShow="isShowSlipModal"
+      :worker="data"
+      :dateRange="form"
+      :items="goldLossUnslippedItems"
+      @closeModal="isShowSlipModal = false"
+      @saved="onSlipSaved"
+    />
   </div>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 
 import { WorkerWagesSuccessPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-success-pdf-builder.js'
 import { WorkerWagesTrackingPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-tracking-pdf-builder.js'
 
 import searchView from './components/search-view.vue'
 import dataTableView from './components/data-table-view.vue'
+
+const goldLossSlipModal = defineAsyncComponent(() => import('./modal/gold-loss-slip-modal.vue'))
 
 const interfaceForm = {
   requestDateStart: new Date(new Date().setDate(new Date().getDate() - 30)),
@@ -37,7 +50,8 @@ export default {
 
   components: {
     searchView,
-    dataTableView
+    dataTableView,
+    goldLossSlipModal
   },
 
   setup() {
@@ -51,7 +65,21 @@ export default {
       dataWages: {
         items: []
       },
-      form: { ...interfaceForm }
+      form: { ...interfaceForm },
+      isShowSlipModal: false
+    }
+  },
+
+  computed: {
+    goldLossUnslippedItems() {
+      const items = this.dataWages.items || []
+      return items
+        .filter((r) => r.isGoldLoss && !r.workerGoldLossSlipId)
+        .map((row) => {
+          const weightLossAllowed = (row.goldWeightSend || 0) * (row.lossPercent || 0) / 100
+          const weightLossActual = weightLossAllowed - ((row.goldWeightSend || 0) - (row.goldWeightCheck || 0))
+          return { ...row, weightLossAllowed, weightLossActual }
+        })
     }
   },
 
@@ -78,19 +106,30 @@ export default {
     },
 
     onPrintSuccess() {
-      const items = (this.dataWages?.items || []).filter(r =>
-        this.form.wageTypeFilter === 'goldLoss' ? r.isGoldLoss : !r.isGoldLoss
-      )
+      if (this.form.wageTypeFilter === 'goldLoss') {
+        this.isShowSlipModal = true
+        return
+      }
+      const items = (this.dataWages?.items || []).filter((r) => !r.isGoldLoss)
       new WorkerWagesSuccessPdfBuilder(this.data, this.form, items, this.form.wageTypeFilter)
         .generatePDF().open()
     },
 
     onPrintTracking() {
-      const items = (this.dataWages?.items || []).filter(r =>
-        this.form.wageTypeFilter === 'goldLoss' ? r.isGoldLoss : !r.isGoldLoss
-      )
+      if (this.form.wageTypeFilter === 'goldLoss') {
+        warning('ในโหมด Gold Loss กรุณาใช้ปุ่ม \'พิมพ์สลิปสถานะสำเร็จ\'', 'แจ้งเตือน')
+        return
+      }
+      const items = (this.dataWages?.items || []).filter((r) => !r.isGoldLoss)
       new WorkerWagesTrackingPdfBuilder(this.data, this.form, items, this.form.wageTypeFilter)
         .generatePDF().open()
+    },
+
+    onSlipSaved(slip) {
+      new WorkerWagesSuccessPdfBuilder(this.data, this.form, slip.items || [], 'goldLoss', slip)
+        .generatePDF().open()
+      this.isShowSlipModal = false
+      this.onSearch()
     }
   },
 
