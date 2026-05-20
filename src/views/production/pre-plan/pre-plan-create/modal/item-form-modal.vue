@@ -25,46 +25,46 @@
           @mold-loaded="onMoldLoaded"
           @mold-design-image="onMoldDesignImage"
           @mold-product-type="onMoldProductType"
-        />
-
-        <div v-if="form.productImageFromMold && !form.productImageFile" class="mold-image-preview mt-3">
-          <span class="title-text">รูปสินค้าที่คาดว่าจะสำเร็จ</span>
-          <div class="mold-image-preview__body">
-            <ImagePreview
-              :imageName="form.productImageBlobPath"
-              type="PLANMOLD"
-              :width="150"
-              :height="150"
-            />
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-main ml-2"
-              @click="onOverrideImage"
-            >
-              <i class="bi bi-pencil"></i> เปลี่ยนรูปเอง
-            </button>
-          </div>
-        </div>
-        <UploadImage
-          v-else
-          :modelValue="form.productImageFile"
-          :previewUrl="form.productImagePreview"
-          title="รูปสินค้าที่คาดว่าจะสำเร็จ"
-          accept="image/*"
-          :maxSizeMB="5"
-          :previewSize="150"
-          :compact="true"
-          :showClear="true"
-          class="mt-3"
-          @update:modelValue="form.productImageFile = $event"
-          @update:previewUrl="form.productImagePreview = $event"
-          @clear="onImageClear"
-        />
+        >
+          <template #images-extra>
+            <div class="image-item">
+              <span class="title-text d-block mb-1">รูปสินค้าที่คาดว่าจะสำเร็จ</span>
+              <div v-if="form.productImageFromMold && !form.productImageFile" class="product-image-from-mold">
+                <ImagePreview
+                  :imageName="form.productImageBlobPath"
+                  type="PLANMOLD"
+                  :width="120"
+                  :height="120"
+                />
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-main mt-1"
+                  @click="onOverrideImage"
+                >
+                  <i class="bi bi-pencil"></i> เปลี่ยนรูปเอง
+                </button>
+              </div>
+              <UploadImage
+                v-else
+                :modelValue="form.productImageFile"
+                :previewUrl="form.productImagePreview"
+                accept="image/*"
+                :maxSizeMB="5"
+                :previewSize="120"
+                :compact="true"
+                :showClear="true"
+                @update:modelValue="form.productImageFile = $event"
+                @update:previewUrl="form.productImagePreview = $event"
+                @clear="onImageClear"
+              />
+            </div>
+          </template>
+        </moldSection>
 
         <div class="card p-3 mt-3">
           <h6 class="mb-3">ข้อมูลสินค้า</h6>
-          <div class="responsive-grid-2col mb-2">
-            <div>
+          <div class="form-row three-col mb-2">
+            <div class="form-field">
               <span class="title-text">ประเภทสินค้า</span>
               <DropdownGeneric
                 :modelValue="form.productType"
@@ -75,7 +75,7 @@
                 @update:modelValue="form.productType = $event"
               />
             </div>
-            <div>
+            <div class="form-field">
               <span class="title-text">จำนวน</span>
               <input
                 class="form-control"
@@ -85,15 +85,14 @@
                 placeholder="จำนวน..."
               />
             </div>
-          </div>
-
-          <div class="mb-2">
-            <span class="title-text">หน่วย</span>
-            <input
-              class="form-control"
-              v-model="form.productQtyUnit"
-              placeholder="เช่น ชิ้น, ด้าม"
-            />
+            <div class="form-field">
+              <span class="title-text">หน่วย</span>
+              <input
+                class="form-control"
+                v-model="form.productQtyUnit"
+                placeholder="เช่น ชิ้น, ด้าม"
+              />
+            </div>
           </div>
 
           <div class="mb-2">
@@ -107,14 +106,42 @@
           </div>
         </div>
 
-        <materialTable
-          :materials="form.materials"
-          :masterGold="masterGold"
-          :masterGem="masterGem"
-          :masterGemShape="masterGemShape"
-          class="mt-3"
-          @update:materials="form.materials = $event"
-        />
+        <div class="mt-3">
+          <div v-if="autoFilledFromMold" class="auto-fill-badge mb-1">
+            <i class="bi bi-check-circle-fill mr-1"></i> Auto-filled จากแม่พิมพ์ ✓
+          </div>
+          <materialTable
+            :materials="form.materials"
+            :masterGold="masterGold"
+            :masterGem="masterGem"
+            :masterGemShape="masterGemShape"
+            @update:materials="onMaterialsUpdate"
+          />
+        </div>
+
+        <div class="card p-3 mt-3 history-section">
+          <div class="history-header" @click="isHistoryOpen = !isHistoryOpen">
+            <h6 class="mb-0">
+              <i class="bi bi-clock-history mr-2"></i>ประวัติการผลิต (อ้างอิงวัตถุดิบ)
+            </h6>
+            <button type="button" class="btn-toggle">
+              <i :class="isHistoryOpen ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
+              {{ isHistoryOpen ? 'ซ่อน' : 'แสดง' }}
+            </button>
+          </div>
+          <div v-if="isHistoryOpen" class="history-content mt-2">
+            <moldHistoryContent
+              v-if="form.moldCode"
+              :moldCode="form.moldCode"
+              :currentMaterialsCount="form.materials ? form.materials.length : 0"
+              :isShow="isHistoryOpen && !!form.moldCode"
+              @apply-materials="onApplyMaterialsFromHistory"
+            />
+            <div v-else class="text-muted text-center py-3">
+              กรุณาเลือกแม่พิมพ์ก่อนดูประวัติการผลิต
+            </div>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -145,6 +172,9 @@ const materialTable = defineAsyncComponent(() => import('../components/material-
 const DropdownGeneric = defineAsyncComponent(
   () => import('@/components/prime-vue/DropdownGeneric.vue')
 )
+const moldHistoryContent = defineAsyncComponent(
+  () => import('./mold-history-content.vue')
+)
 
 export default {
   name: 'ItemFormModal',
@@ -156,6 +186,7 @@ export default {
     ImagePreview,
     materialTable,
     DropdownGeneric,
+    moldHistoryContent,
   },
 
   props: {
@@ -194,6 +225,8 @@ export default {
   data() {
     return {
       form: createEmptyItem(),
+      isHistoryOpen: false,
+      autoFilledFromMold: false,
     }
   },
 
@@ -212,6 +245,8 @@ export default {
       } else {
         this.form = createEmptyItem()
       }
+      this.isHistoryOpen = false
+      this.autoFilledFromMold = false
     },
 
     onMoldLoaded({ gems }) {
@@ -234,7 +269,13 @@ export default {
           diamondWeightUnit: null,
           diamondQuality: null,
         }))
+        this.autoFilledFromMold = true
       }
+    },
+
+    onMaterialsUpdate(materials) {
+      this.form.materials = materials
+      this.autoFilledFromMold = false
     },
 
     onImageClear() {
@@ -270,6 +311,11 @@ export default {
       }
     },
 
+    onApplyMaterialsFromHistory(materials) {
+      this.form.materials = materials
+      this.autoFilledFromMold = false
+    },
+
     onSubmit() {
       this.$emit('submit', JSON.parse(JSON.stringify(this.form)))
     },
@@ -295,17 +341,30 @@ h6 {
   background: transparent !important;
 }
 
-.title-text {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 6px;
+.form-row {
+  margin-bottom: 16px;
+
+  &.three-col {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 1024px) {
+    &.three-col {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    &.three-col {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 
-.responsive-grid-2col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+.form-field {
+  width: 100%;
 }
 
 .mb-2 {
@@ -332,18 +391,66 @@ textarea.form-control {
   resize: vertical;
 }
 
-.mold-image-preview {
-  &__body {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 6px;
-  }
+.image-item {
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 1024px) {
-  .responsive-grid-2col {
-    grid-template-columns: 1fr;
+.product-image-from-mold {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.auto-fill-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.history-section {
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+
+    h6 {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  .btn-toggle {
+    background: none;
+    border: 1px solid var(--base-font-color);
+    color: var(--base-font-color);
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover {
+      background: var(--base-font-color);
+      color: #ffffff;
+    }
+  }
+
+  .history-content {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 8px;
   }
 }
 </style>

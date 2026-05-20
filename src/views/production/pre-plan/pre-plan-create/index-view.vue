@@ -21,7 +21,6 @@
       :masterGemShape="masterStore.gemShapes"
       :masterProduct="masterStore.productTypes"
       class="mt-3"
-      @view-history="onViewHistory"
     />
 
     <footerActions
@@ -32,17 +31,6 @@
       class="mt-3"
     />
 
-    <moldHistoryModal
-      :isShow="isShowHistoryModal"
-      :moldCode="historyMoldCode"
-      :currentMaterialsCount="
-        historyTargetItemIndex != null
-          ? (items[historyTargetItemIndex]?.materials?.length || 0)
-          : 0
-      "
-      @closeModal="isShowHistoryModal = false"
-      @apply-materials="onApplyMaterialsFromHistory"
-    />
   </div>
 </template>
 
@@ -57,7 +45,6 @@ import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
 const headerSection = defineAsyncComponent(() => import('./components/header-section.vue'))
 const itemsSection = defineAsyncComponent(() => import('./components/items-section.vue'))
 const footerActions = defineAsyncComponent(() => import('./components/footer-actions.vue'))
-const moldHistoryModal = defineAsyncComponent(() => import('./modal/mold-history-modal.vue'))
 
 const defaultForm = () => ({
   jobLocation: 'Domestic',
@@ -72,7 +59,7 @@ const defaultForm = () => ({
 
 export default {
   name: 'PrePlanCreate',
-  components: { headerSection, itemsSection, footerActions, moldHistoryModal },
+  components: { headerSection, itemsSection, footerActions },
 
   setup() {
     const store = usePrePlanStore()
@@ -84,9 +71,6 @@ export default {
     return {
       form: defaultForm(),
       items: [createEmptyItem()],
-      isShowHistoryModal: false,
-      historyMoldCode: null,
-      historyTargetItemIndex: null,
     }
   },
 
@@ -230,22 +214,6 @@ export default {
           })),
         })),
       }
-    },
-
-    onViewHistory(item) {
-      const index = this.items.findIndex((it) => it._localId === item._localId)
-      if (index === -1 || !item.moldCode) return
-      this.historyMoldCode = item.moldCode
-      this.historyTargetItemIndex = index
-      this.isShowHistoryModal = true
-    },
-
-    onApplyMaterialsFromHistory(materials) {
-      if (this.historyTargetItemIndex == null) return
-      this.items[this.historyTargetItemIndex].materials = materials
-      this.isShowHistoryModal = false
-      this.historyTargetItemIndex = null
-      this.historyMoldCode = null
     },
 
     async onSaveDraft() {

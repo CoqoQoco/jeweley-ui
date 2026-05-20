@@ -1,40 +1,45 @@
 <template>
   <div class="card p-3">
     <h6 class="mb-3">ข้อมูลแม่พิมพ์</h6>
-    <div class="mb-2">
-      <span class="title-text">รหัสแม่พิมพ์ <span class="text-danger">*</span></span>
-      <AutoCompleteGeneric
-        :modelValue="moldCode"
-        optionLabel="code"
-        placeholder="พิมพ์รหัสแม่พิมพ์..."
-        :forceSelection="false"
-        apiEndpoint="Mold/SearchMold"
-        searchField="text"
-        @item-select="onMoldSelect"
-        @update:modelValue="onMoldInput"
-        customClass="mold-autocomplete"
-      />
+
+    <div class="form-row two-col">
+      <div class="form-field">
+        <span class="title-text">รหัสแม่พิมพ์ <span class="text-danger">*</span></span>
+        <AutoCompleteGeneric
+          :modelValue="moldCode"
+          optionLabel="code"
+          placeholder="พิมพ์รหัสแม่พิมพ์..."
+          :forceSelection="false"
+          apiEndpoint="Mold/SearchMold"
+          searchField="text"
+          @item-select="onMoldSelect"
+          @update:modelValue="onMoldInput"
+          customClass="mold-autocomplete"
+          class="mt-1"
+        />
+      </div>
+      <div class="form-field">
+        <span class="title-text">รายละเอียดแม่พิมพ์</span>
+        <input
+          class="form-control"
+          type="text"
+          :value="moldDetail"
+          @input="$emit('update:moldDetail', $event.target.value)"
+          placeholder="รายละเอียดแม่พิมพ์..."
+        />
+      </div>
     </div>
 
-    <div class="mb-2">
-      <span class="title-text">รายละเอียดแม่พิมพ์</span>
-      <textarea
-        class="form-control"
-        :value="moldDetail"
-        @input="$emit('update:moldDetail', $event.target.value)"
-        rows="2"
-      ></textarea>
-    </div>
-
-    <div v-if="imageCad || imageFinish" class="d-flex gap-3 mt-2 flex-wrap">
-      <div v-if="imageCad">
+    <div v-if="imageCad || imageFinish || $slots['images-extra']" class="images-row mt-2">
+      <div v-if="imageCad" class="image-item">
         <span class="title-text d-block mb-1">รูป CAD</span>
         <imagePreview :imageName="imageCad" type="MOLD" :width="120" :height="120" />
       </div>
-      <div v-if="imageFinish">
-        <span class="title-text d-block mb-1">รูปเเม่พิมพ์</span>
+      <div v-if="imageFinish" class="image-item">
+        <span class="title-text d-block mb-1">รูปแม่พิมพ์</span>
         <imagePreview :imageName="imageFinish" type="MOLD" :width="120" :height="120" />
       </div>
+      <slot name="images-extra" />
     </div>
   </div>
 </template>
@@ -99,12 +104,12 @@ export default {
       this.imageFinish = mold.code || null
       this.$emit('update:imageCad', this.imageCad)
       this.$emit('update:imageFinish', this.imageFinish)
-      this.$emit('mold-loaded', { gems: mold.gems || mold.planGems || [] })
       this.$emit('mold-design-image', mold.designImage || null)
       this.$emit('mold-product-type', {
         code: mold.productTypeCode || null,
         description: mold.productTypeDescription || null,
       })
+      await this.fetchMoldPlanGems(mold.id)
     },
     async fetchMoldDetail(code) {
       const res = await api.jewelry.post('Mold/SearchMold', {
@@ -120,6 +125,17 @@ export default {
         this.$emit('update:imageCad', this.imageCad)
         this.$emit('update:imageFinish', this.imageFinish)
       }
+    },
+    async fetchMoldPlanGems(moldId) {
+      if (!moldId) return
+      const res = await api.jewelry.get('Mold/PlanGet', { id: moldId })
+      const gems = (res?.gems || []).map((g) => ({
+        gemCode: g.gemCode || g.gem || null,
+        gemShapeCode: g.gemShapeCode || g.gemShape || null,
+        qty: g.qty || null,
+        size: g.size || null,
+      }))
+      this.$emit('mold-loaded', { gems })
     },
   },
 }
@@ -143,19 +159,39 @@ h6 {
   background: transparent !important;
 }
 
-.responsive-grid-2col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+.form-row {
   margin-bottom: 16px;
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 1024px) {
+    &.two-col {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 
-.mb-2 {
-  margin-bottom: 16px !important;
+.form-field {
+  width: 100%;
 }
 
-input.form-control,
-textarea.form-control {
+.images-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.image-item {
+  display: flex;
+  flex-direction: column;
+}
+
+input.form-control {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #e0e0e0;
@@ -170,17 +206,7 @@ textarea.form-control {
   }
 }
 
-textarea.form-control {
-  resize: vertical;
-}
-
 :deep(.mold-autocomplete) {
   width: 100%;
-}
-
-@media (max-width: 1024px) {
-  .responsive-grid-2col {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

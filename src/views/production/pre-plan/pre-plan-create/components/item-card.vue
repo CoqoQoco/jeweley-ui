@@ -6,15 +6,6 @@
         <button type="button" class="btn btn-sm btn-main" @click="$emit('edit')">
           <i class="bi bi-pencil"></i> แก้ไข
         </button>
-        <button
-          v-if="item.moldCode"
-          type="button"
-          class="btn btn-sm btn-green ml-2"
-          title="ดูประวัติการผลิต"
-          @click="$emit('view-history')"
-        >
-          <i class="bi bi-clock-history"></i>
-        </button>
         <button type="button" class="btn btn-sm btn-red ml-2" @click="$emit('remove')">
           <i class="bi bi-trash"></i> ลบ
         </button>
@@ -96,7 +87,7 @@ export default {
     },
   },
 
-  emits: ['edit', 'remove', 'view-history'],
+  emits: ['edit', 'remove'],
 
   computed: {
     productTypeLabel() {
