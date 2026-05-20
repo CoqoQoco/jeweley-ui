@@ -51,6 +51,19 @@
           </div>
 
           <div>
+            <span class="title-text">ประเภทค่าแรง</span>
+            <MultiSelect
+              :modelValue="wageTypeFilter"
+              :options="wageTypeOptions"
+              optionLabel="label"
+              optionValue="value"
+              class="w-100"
+              placeholder="เลือกประเภท"
+              @update:modelValue="onWageTypeFilterChange"
+            />
+          </div>
+
+          <div>
             <div class="d-flex justify-content-start">
               <button
                 class="btn btn-sm btn-green"
@@ -70,7 +83,7 @@
       <div class="data-table-container mt-2">
         <!-- scrollHeight="calc(100vh - 305px)" -->
         <DataTable
-          :value="dataWages.items"
+          :value="filteredItems"
           class="p-datatable-sm"
           scrollHeight="calc(100vh - 280px)"
           show-gridlines
@@ -111,7 +124,15 @@
               {{ slotProps.data.wagesStatus === 100 ? `สำเร็จ` : `ติดตามระหว่างผลิต` }}
             </template>
           </Column>
-          <Column field="statusName"></Column>
+          <Column field="statusName">
+            <template #body="slotProps">
+              <span
+                v-if="slotProps.data.isGoldLoss"
+                class="badge-gold-loss"
+              >Gold Loss (งานฝัง)</span>
+              <span v-else>{{ slotProps.data.statusName }}</span>
+            </template>
+          </Column>
           <Column field="desc">
             <template #body="slotProps">
               {{
@@ -124,7 +145,7 @@
           <Column field="goldQtySend">
             <template #body="slotProps">
               {{
-                slotProps.data.status === 70
+                !slotProps.data.isGoldLoss && slotProps.data.status === 70
                   ? slotProps.data.goldQtyCheck
                   : slotProps.data.goldQtySend
               }}
@@ -133,7 +154,7 @@
           <Column field="goldWeightSend">
             <template #body="slotProps">
               {{
-                slotProps.data.status === 70
+                !slotProps.data.isGoldLoss && slotProps.data.status === 70
                   ? slotProps.data.goldWeightCheck
                   : slotProps.data.goldWeightSend
               }}
@@ -141,12 +162,12 @@
           </Column>
           <Column field="goldQtyCheck">
             <template #body="slotProps">
-              {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldQtyCheck }}
+              {{ !slotProps.data.isGoldLoss && slotProps.data.status === 70 ? 0 : slotProps.data.goldQtyCheck }}
             </template>
           </Column>
           <Column field="goldWeightCheck">
             <template #body="slotProps">
-              {{ slotProps.data.status === 70 ? 0 : slotProps.data.goldWeightCheck }}
+              {{ !slotProps.data.isGoldLoss && slotProps.data.status === 70 ? 0 : slotProps.data.goldWeightCheck }}
             </template></Column
           >
           <Column field="wages">
@@ -177,14 +198,14 @@
           </Column>
           <ColumnGroup type="footer">
             <Row>
-              <Column :footer="`จำวนวน  ${dataWages.items.length}  รายการ`" :colspan="5" />
+              <Column :footer="`จำวนวน  ${filteredItems.length}  รายการ`" :colspan="5" />
               <Column footer="รวมจำนวนรับ" :colspan="3" footerStyle="text-align:right" />
-              <Column :footer="dataWages.totalGoldQtyCheck" />
+              <Column :footer="computedTotalGoldQtyCheck" />
               <Column footer="รวมราคา" :colspan="3" footerStyle="text-align:right" />
               <Column
                 :footer="
-                  dataWages.totalWages
-                    ? Number(dataWages.totalWages).toFixed(2).toLocaleString()
+                  computedTotalWages
+                    ? Number(computedTotalWages).toFixed(2).toLocaleString()
                     : Number(0).toFixed(2).toLocaleString()
                 "
               />
@@ -227,6 +248,7 @@
 import pageTitle from '@/components/custom/PageTitleMain.vue'
 
 import Calendar from 'primevue/calendar'
+import MultiSelect from 'primevue/multiselect'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Row from 'primevue/row'
@@ -252,6 +274,7 @@ export default {
   components: {
     pageTitle,
     Calendar,
+    MultiSelect,
     DataTable,
     Column,
     Row,
@@ -268,6 +291,22 @@ export default {
       //return this.$route.query
       const url = window.location.href
       return url.split('/').slice(-1)[0]
+    },
+    filteredItems() {
+      const items = this.dataWages.items || []
+      const filter = this.wageTypeFilter
+      return items.filter((row) => {
+        if (row.isGoldLoss) {
+          return filter.includes('goldLoss')
+        }
+        return filter.includes('wages')
+      })
+    },
+    computedTotalGoldQtyCheck() {
+      return this.filteredItems.reduce((sum, row) => sum + (row.goldQtyCheck || 0), 0)
+    },
+    computedTotalWages() {
+      return this.filteredItems.reduce((sum, row) => sum + (row.totalWages || 0), 0)
     }
   },
 
@@ -291,6 +330,13 @@ export default {
       isShowDataTable: false,
       isShowNoDataTable: false,
 
+      // --- filter --- //
+      wageTypeOptions: [
+        { label: 'แสดงค่าแรง', value: 'wages' },
+        { label: 'แสดงงานซิ (Gold Loss)', value: 'goldLoss' }
+      ],
+      wageTypeFilter: ['wages', 'goldLoss'],
+
       // --- form --- //
       data: {},
       dataWages: {
@@ -307,6 +353,13 @@ export default {
   },
 
   methods: {
+    onWageTypeFilterChange(newValue) {
+      if (!newValue || newValue.length === 0) {
+        return
+      }
+      this.wageTypeFilter = newValue
+    },
+
     // --- controller --- //
     async onSearch() {
       if (this.validateForm()) {
@@ -927,5 +980,16 @@ export default {
 .input-group-text {
   height: 35px;
   margin-top: 5px;
+}
+
+.badge-gold-loss {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: #fabc3f;
+  color: #5a3e00;
+  white-space: nowrap;
 }
 </style>
