@@ -11,7 +11,7 @@
   >
     <template #actionTemplate="{ data }">
       <div class="btn-action-container">
-        <button class="btn btn-sm btn-green" @click="onView(data)" title="ดูรายละเอียด">
+        <button class="btn btn-sm btn-green ml-1" @click="onView(data)" title="ดูรายละเอียด">
           <i class="bi bi-eye"></i>
         </button>
         <button
@@ -36,6 +36,14 @@
           title="อนุมัติ"
         >
           <i class="bi bi-check-lg"></i> อนุมัติ
+        </button>
+        <button
+          v-if="data.status === 'Approved' && data.approvedDocumentPath"
+          class="btn btn-sm btn-green ml-1"
+          @click="onViewApprovedDoc(data)"
+          title="ดูเอกสารอนุมัติ"
+        >
+          <i class="bi bi-file-earmark-text"></i>
         </button>
       </div>
     </template>
@@ -120,6 +128,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 import { formatDate } from '@/services/utils/dayjs.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 import {
   getPrePlanStatusClass,
   getPrePlanStatusLabel,
@@ -279,6 +288,10 @@ export default {
     },
     onApprove(data) {
       this.$router.push({ name: 'pre-plan-approve', params: { id: data.id } })
+    },
+    onViewApprovedDoc(row) {
+      if (!row.approvedDocumentPath) return
+      window.open(getAzureBlobUrl(row.approvedDocumentPath), '_blank')
     },
     async onPrintPdf(row) {
       await this.masterStore.fetchAll()

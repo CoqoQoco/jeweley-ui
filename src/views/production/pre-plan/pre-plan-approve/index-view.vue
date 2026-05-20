@@ -14,8 +14,52 @@
 
     <infoReadonly :form="form" :items="items" />
 
-    <div class="action-bar mt-3">
-      <button class="btn btn-sm btn-main mr-2" @click="onApprove">
+    <div class="section-card mt-3">
+      <h6>เอกสารอนุมัติ (เซ็นแล้ว) <span v-if="form.status !== 'Approved'" class="text-danger">*</span></h6>
+
+      <div v-if="form.status === 'Approved' && form.approvedDocumentPath">
+        <div class="approved-doc-preview">
+          <imagePreview
+            :imageName="form.approvedDocumentPath"
+            :width="200"
+            :height="200"
+            alt="เอกสารอนุมัติ"
+          />
+          <div class="mt-2">
+            <button
+              class="btn btn-sm btn-green"
+              type="button"
+              @click="onOpenApprovedDoc"
+            >
+              <i class="bi bi-arrows-fullscreen"></i> เปิดดูเต็มจอ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="form.status !== 'Approved'">
+        <p class="text-muted mb-2" style="font-size: 0.9rem;">
+          <i class="bi bi-exclamation-triangle text-warning"></i>
+          กรุณา upload รูปเอกสารใบสั่งผลิตที่เซ็นอนุมัติแล้ว ก่อนกดปุ่มอนุมัติ
+        </p>
+        <UploadImage
+          :modelValue="approvedDocumentFile"
+          :previewUrl="approvedDocumentPreview"
+          title="เอกสารอนุมัติ"
+          accept="image/jpeg,image/png"
+          :maxSizeMB="10"
+          :previewSize="150"
+          :compact="true"
+          :showClear="true"
+          @update:modelValue="approvedDocumentFile = $event"
+          @update:previewUrl="approvedDocumentPreview = $event"
+          @clear="approvedDocumentFile = null; approvedDocumentPreview = null"
+        />
+      </div>
+    </div>
+
+    <div v-if="form.status !== 'Approved'" class="action-bar mt-3">
+      <button class="btn btn-sm btn-main" @click="onApprove">
         <i class="bi bi-check-lg"></i> อนุมัติ
       </button>
       <button class="btn btn-sm btn-red ml-2" @click="onOpenReject">
@@ -32,16 +76,22 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
+
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 import { confirmSubmit, success, warning } from '@/services/alert/sweetAlerts.js'
+import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
+import UploadImage from '@/components/prime-vue/UploadImage.vue'
 import infoReadonly from './components/info-readonly.vue'
 import rejectReasonModal from './modal/reject-reason-modal.vue'
 
+const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
+
 export default {
   name: 'PrePlanApprove',
-  components: { infoReadonly, rejectReasonModal },
+  components: { infoReadonly, rejectReasonModal, UploadImage, imagePreview },
   setup() {
     const store = usePrePlanStore()
     const masterStore = useMasterPrePlanStore()
@@ -52,7 +102,14 @@ export default {
       form: {},
       items: [],
       showRejectModal: false,
+      approvedDocumentFile: null,
+      approvedDocumentPreview: null,
     }
+  },
+  computed: {
+    id() {
+      return this.$route.params.id
+    },
   },
   async created() {
     await this.masterStore.fetchAll()
@@ -60,21 +117,28 @@ export default {
   },
   methods: {
     async loadPrePlan() {
-      const id = this.$route.params.id
-      const data = await this.store.getPrePlan(id)
+      const data = await this.store.getPrePlan(this.id)
       if (!data) return
-      if (data.status !== 'Submitted') {
-        warning('ใบสั่งผลิตนี้ไม่อยู่ในสถานะรออนุมัติ')
+      if (data.status !== 'Submitted' && data.status !== 'Approved') {
+        warning('ใบสั่งผลิตนี้ไม่อยู่ในสถานะที่สามารถดูได้')
         this.$router.push({ name: 'pre-plan-list' })
         return
       }
       this.form = data
       this.items = data.items || []
     },
-    onApprove() {
-      const id = this.$route.params.id
+    async onApprove() {
+      if (!this.approvedDocumentFile && !this.form.approvedDocumentPath) {
+        warning('กรุณา upload เอกสารใบสั่งผลิตที่เซ็นแล้ว ก่อนกดปุ่มอนุมัติ', 'เอกสารไม่ครบ')
+        return
+      }
       confirmSubmit('ยืนยันอนุมัติใบสั่งผลิตนี้?', 'ยืนยันการอนุมัติ', async () => {
-        await this.store.approvePrePlan(id, { id: Number(id) })
+        let path = this.form.approvedDocumentPath
+        if (this.approvedDocumentFile) {
+          path = await this.store.uploadApproveDocument(this.approvedDocumentFile)
+          if (!path) return
+        }
+        await this.store.approvePrePlan(this.id, { id: Number(this.id), approvedDocumentPath: path })
         success('อนุมัติสำเร็จ')
         this.$router.push({ name: 'pre-plan-list' })
       })
@@ -87,11 +151,14 @@ export default {
         warning('กรุณาระบุเหตุผลการปฏิเสธ', 'ข้อมูลไม่ครบ')
         return
       }
-      const id = this.$route.params.id
-      await this.store.rejectPrePlan(id, { id: Number(id), rejectReason: reason.trim() })
+      await this.store.rejectPrePlan(this.id, { id: Number(this.id), rejectReason: reason.trim() })
       this.showRejectModal = false
       success('ปฏิเสธสำเร็จ')
       this.$router.push({ name: 'pre-plan-list' })
+    },
+    onOpenApprovedDoc() {
+      if (!this.form.approvedDocumentPath) return
+      window.open(getAzureBlobUrl(this.form.approvedDocumentPath), '_blank')
     },
   },
 }
@@ -137,6 +204,29 @@ export default {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--base-font-color);
+}
+
+.section-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.06) 0 2px 8px;
+  padding: 20px;
+  background: #ffffff !important;
+
+  h6 {
+    color: var(--base-font-color);
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 16px;
+    background: transparent !important;
+  }
+}
+
+.approved-doc-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .action-bar {

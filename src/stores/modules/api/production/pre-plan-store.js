@@ -45,6 +45,15 @@ export const usePrePlanStore = defineStore('prePlan', {
       return await api.jewelry.post(`ProductionPrePlan/Reject/${id}`, payload)
     },
 
+    async uploadApproveDocument(file) {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await api.jewelry.post('ProductionPrePlan/UploadApproveDocument', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      return res?.path || null
+    },
+
     async getAvailableForPlan(moldCode) {
       return await api.jewelry.get('ProductionPrePlan/AvailableForPlan', { params: { moldCode } })
     },
