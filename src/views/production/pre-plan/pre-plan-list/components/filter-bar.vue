@@ -76,6 +76,15 @@
               <i class="bi bi-x-circle"></i>
             </button>
             <button
+              :class="['btn btn-sm ml-2', canExport ? 'btn-primary' : 'btn-secondary']"
+              type="button"
+              title="Export Excel"
+              :disabled="!canExport"
+              @click="$emit('export')"
+            >
+              <i class="bi bi-filetype-csv"></i>
+            </button>
+            <button
               class="btn btn-sm btn-main ml-2"
               type="button"
               title="สร้างใบสั่งผลิต"
@@ -107,8 +116,12 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    canExport: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['update:modelForm', 'search', 'clear'],
+  emits: ['update:modelForm', 'search', 'clear', 'export'],
   setup() {
     const masterStore = useMasterPrePlanStore()
     return { masterStore }

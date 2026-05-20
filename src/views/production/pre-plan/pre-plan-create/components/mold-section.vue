@@ -65,6 +65,8 @@ export default {
     'update:imageCad',
     'update:imageFinish',
     'mold-loaded',
+    'mold-design-image',
+    'mold-product-type',
   ],
   data() {
     return {
@@ -98,6 +100,11 @@ export default {
       this.$emit('update:imageCad', this.imageCad)
       this.$emit('update:imageFinish', this.imageFinish)
       this.$emit('mold-loaded', { gems: mold.gems || mold.planGems || [] })
+      this.$emit('mold-design-image', mold.designImage || null)
+      this.$emit('mold-product-type', {
+        code: mold.productTypeCode || null,
+        description: mold.productTypeDescription || null,
+      })
     },
     async fetchMoldDetail(code) {
       const res = await api.jewelry.post('Mold/SearchMold', {

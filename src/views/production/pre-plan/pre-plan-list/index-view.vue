@@ -1,10 +1,18 @@
 <template>
   <div class="app-container">
-    <div class="page-header-bar">
-      <h2 class="page-title">รายการใบสั่งผลิต</h2>
-    </div>
-    <filterBar v-model:modelForm="form" @search="onSearch" @clear="onClear" />
-    <prePlanTable :modelForm="search" class="mt-2" />
+    <filterBar
+      v-model:modelForm="form"
+      :canExport="hasData"
+      @search="onSearch"
+      @clear="onClear"
+      @export="onExport"
+    />
+    <prePlanTable
+      :modelForm="search"
+      :exportTrigger="exportTrigger"
+      class="mt-2"
+      @total-loaded="onTotalLoaded"
+    />
   </div>
 </template>
 
@@ -27,6 +35,8 @@ export default {
     return {
       form: { ...interfaceForm },
       search: {},
+      exportTrigger: 0,
+      hasData: false,
     }
   },
   methods: {
@@ -37,27 +47,12 @@ export default {
       this.form = { ...interfaceForm }
       this.search = {}
     },
+    onExport() {
+      this.exportTrigger++
+    },
+    onTotalLoaded(total) {
+      this.hasData = total > 0
+    },
   },
 }
 </script>
-
-<style lang="scss" scoped>
-.page-header-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #ffffff;
-  border-radius: 8px;
-  border-bottom: 2px solid var(--base-font-color);
-  box-shadow: rgba(0, 0, 0, 0.06) 0 2px 8px;
-  margin-bottom: 16px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--base-font-color);
-}
-</style>

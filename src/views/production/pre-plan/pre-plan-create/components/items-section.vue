@@ -7,6 +7,7 @@
       :index="idx"
       @edit="openEditModal(idx)"
       @remove="onRemoveItem(idx)"
+      @view-history="$emit('view-history', item)"
     />
 
     <div class="d-flex justify-content-start mt-2">
@@ -51,7 +52,7 @@ export default {
     masterProduct: { type: Array, default: () => [] },
   },
 
-  emits: ['update:items'],
+  emits: ['update:items', 'view-history'],
 
   data() {
     return {

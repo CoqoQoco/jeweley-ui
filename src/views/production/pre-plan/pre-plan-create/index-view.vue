@@ -21,6 +21,7 @@
       :masterGemShape="masterStore.gemShapes"
       :masterProduct="masterStore.productTypes"
       class="mt-3"
+      @view-history="onViewHistory"
     />
 
     <footerActions
@@ -29,6 +30,18 @@
       @save-draft="onSaveDraft"
       @submit="onSubmit"
       class="mt-3"
+    />
+
+    <moldHistoryModal
+      :isShow="isShowHistoryModal"
+      :moldCode="historyMoldCode"
+      :currentMaterialsCount="
+        historyTargetItemIndex != null
+          ? (items[historyTargetItemIndex]?.materials?.length || 0)
+          : 0
+      "
+      @closeModal="isShowHistoryModal = false"
+      @apply-materials="onApplyMaterialsFromHistory"
     />
   </div>
 </template>
@@ -44,6 +57,7 @@ import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
 const headerSection = defineAsyncComponent(() => import('./components/header-section.vue'))
 const itemsSection = defineAsyncComponent(() => import('./components/items-section.vue'))
 const footerActions = defineAsyncComponent(() => import('./components/footer-actions.vue'))
+const moldHistoryModal = defineAsyncComponent(() => import('./modal/mold-history-modal.vue'))
 
 const defaultForm = () => ({
   jobLocation: 'Domestic',
@@ -58,7 +72,7 @@ const defaultForm = () => ({
 
 export default {
   name: 'PrePlanCreate',
-  components: { headerSection, itemsSection, footerActions },
+  components: { headerSection, itemsSection, footerActions, moldHistoryModal },
 
   setup() {
     const store = usePrePlanStore()
@@ -70,6 +84,9 @@ export default {
     return {
       form: defaultForm(),
       items: [createEmptyItem()],
+      isShowHistoryModal: false,
+      historyMoldCode: null,
+      historyTargetItemIndex: null,
     }
   },
 
@@ -121,6 +138,8 @@ export default {
           moldImageFinish: it.moldCode || null,
           productImageFile: null,
           productImagePreview: null,
+          productImageBlobPath: it.productImagePath || null,
+          productImageFromMold: false,
           productType: findByCode(ms.productTypes, it.productType),
           productQty: it.productQty || null,
           productQtyUnit: it.productQtyUnit || null,
@@ -189,7 +208,9 @@ export default {
           productQty: it.productQty,
           productQtyUnit: it.productQtyUnit,
           productDetail: it.productDetail,
-          productImagePath: it.productImagePath || null,
+          productImagePath: it.productImageFromMold && !it.productImageFile
+            ? (it.productImageBlobPath || null)
+            : null,
           materials: (it.materials || []).map((m) => ({
             gold: toCode(m.gold),
             goldQty: m.goldQty,
@@ -209,6 +230,22 @@ export default {
           })),
         })),
       }
+    },
+
+    onViewHistory(item) {
+      const index = this.items.findIndex((it) => it._localId === item._localId)
+      if (index === -1 || !item.moldCode) return
+      this.historyMoldCode = item.moldCode
+      this.historyTargetItemIndex = index
+      this.isShowHistoryModal = true
+    },
+
+    onApplyMaterialsFromHistory(materials) {
+      if (this.historyTargetItemIndex == null) return
+      this.items[this.historyTargetItemIndex].materials = materials
+      this.isShowHistoryModal = false
+      this.historyTargetItemIndex = null
+      this.historyMoldCode = null
     },
 
     async onSaveDraft() {

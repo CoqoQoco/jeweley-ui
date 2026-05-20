@@ -23,9 +23,30 @@
           @update:imageCad="form.moldImageCad = $event"
           @update:imageFinish="form.moldImageFinish = $event"
           @mold-loaded="onMoldLoaded"
+          @mold-design-image="onMoldDesignImage"
+          @mold-product-type="onMoldProductType"
         />
 
+        <div v-if="form.productImageFromMold && !form.productImageFile" class="mold-image-preview mt-3">
+          <span class="title-text">รูปสินค้าที่คาดว่าจะสำเร็จ</span>
+          <div class="mold-image-preview__body">
+            <ImagePreview
+              :imageName="form.productImageBlobPath"
+              type="PLANMOLD"
+              :width="150"
+              :height="150"
+            />
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-main ml-2"
+              @click="onOverrideImage"
+            >
+              <i class="bi bi-pencil"></i> เปลี่ยนรูปเอง
+            </button>
+          </div>
+        </div>
         <UploadImage
+          v-else
           :modelValue="form.productImageFile"
           :previewUrl="form.productImagePreview"
           title="รูปสินค้าที่คาดว่าจะสำเร็จ"
@@ -117,6 +138,9 @@ const moldSection = defineAsyncComponent(() => import('../components/mold-sectio
 const UploadImage = defineAsyncComponent(
   () => import('@/components/prime-vue/UploadImage.vue')
 )
+const ImagePreview = defineAsyncComponent(
+  () => import('@/components/image/PreviewImage.vue')
+)
 const materialTable = defineAsyncComponent(() => import('../components/material-table.vue'))
 const DropdownGeneric = defineAsyncComponent(
   () => import('@/components/prime-vue/DropdownGeneric.vue')
@@ -129,6 +153,7 @@ export default {
     modal,
     moldSection,
     UploadImage,
+    ImagePreview,
     materialTable,
     DropdownGeneric,
   },
@@ -215,6 +240,34 @@ export default {
     onImageClear() {
       this.form.productImageFile = null
       this.form.productImagePreview = null
+      this.form.productImageBlobPath = null
+      this.form.productImageFromMold = false
+    },
+
+    onMoldDesignImage(designImage) {
+      if (this.form.productImageFile) return
+      if (!designImage) {
+        if (this.form.productImageFromMold) {
+          this.form.productImageBlobPath = null
+          this.form.productImageFromMold = false
+        }
+        return
+      }
+      this.form.productImageBlobPath = designImage
+      this.form.productImageFromMold = true
+    },
+
+    onOverrideImage() {
+      this.form.productImageFromMold = false
+      this.form.productImageBlobPath = null
+    },
+
+    onMoldProductType({ code }) {
+      if (!code) return
+      const matched = (this.masterProduct || []).find((p) => p.code === code)
+      if (matched) {
+        this.form.productType = matched
+      }
     },
 
     onSubmit() {
@@ -277,6 +330,15 @@ textarea.form-control {
 
 textarea.form-control {
   resize: vertical;
+}
+
+.mold-image-preview {
+  &__body {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+  }
 }
 
 @media (max-width: 1024px) {

@@ -106,6 +106,9 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+import Papa from 'papaparse'
+import dayjs from 'dayjs'
+
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
@@ -115,6 +118,7 @@ import {
   getPrePlanStatusLabel,
   getLinkedProgressClass,
 } from '@/services/helper/pre-plan-status.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
@@ -123,7 +127,9 @@ export default {
   components: { BaseDataTable, imagePreview },
   props: {
     modelForm: { type: Object, default: () => ({}) },
+    exportTrigger: { type: Number, default: 0 },
   },
+  emits: ['total-loaded'],
   setup() {
     const store = usePrePlanStore()
     const masterStore = useMasterPrePlanStore()
@@ -156,6 +162,11 @@ export default {
       this.skip = 0
       await this.fetchData()
     },
+    exportTrigger(val) {
+      if (val > 0) {
+        this.fetchDataExport()
+      }
+    },
   },
   async created() {
     await Promise.all([this.masterStore.fetchAll(), this.fetchData()])
@@ -172,6 +183,70 @@ export default {
         skip: this.skip,
         sort: this.sort.length ? this.sort.map((s) => `${s.field} ${s.dir}`).join(',') : null,
       })
+      this.$emit('total-loaded', this.store.prePlanTotal)
+    },
+    async fetchDataExport() {
+      await this.store.searchPrePlan({
+        moldCode: this.modelForm.moldCode || null,
+        status: this.modelForm.status || null,
+        orderDateFrom: this.modelForm.orderDateFrom || null,
+        orderDateTo: this.modelForm.orderDateTo || null,
+        includeCompleted: this.modelForm.includeCompleted ?? false,
+        take: 0,
+        skip: 0,
+        sort: null,
+      })
+
+      const data = this.store.prePlanList
+      if (!data || data.length === 0) {
+        warning('ไม่มีข้อมูลให้ Export')
+        return
+      }
+
+      const formatDateStr = (val) => (val ? dayjs(val).format('DD/MM/YYYY') : '')
+
+      const dataExcel = data.map((item) => ({
+        สถานะ: item.status,
+        สร้างแผน: item.linkedProgress,
+        เลขที่ใบสั่ง: item.orderNo,
+        ประเภทงาน: item.jobType,
+        สถานที่: item.jobLocation,
+        ครั้งที่: item.productionRound,
+        ประเภททอง: item.goldType,
+        จำนวนรายการ: item.itemCount,
+        แม่พิมพ์หลัก: item.primaryMoldCode,
+        วันที่ออก: formatDateStr(item.orderDate),
+        วันที่ส่งงาน: formatDateStr(item.deliveryDate),
+        ผู้สร้าง: item.createBy,
+      }))
+
+      const timestamp = dayjs().format('YYYYMMDD_HHmm')
+      this.exportWithCustomColumnCSV(dataExcel, `รายการใบสั่งผลิต_${timestamp}.csv`)
+
+      await this.fetchData()
+    },
+    exportWithCustomColumnCSV(data, filename) {
+      const utf8BOM = '﻿'
+      const csv = Papa.unparse(data, {
+        quotes: false,
+        quoteChar: '"',
+        escapeChar: '"',
+        delimiter: ',',
+        header: true,
+        newline: '\r\n',
+        skipEmptyLines: false,
+        columns: null,
+      })
+      const csvData = utf8BOM + csv
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.setAttribute('href', url)
+      link.setAttribute('download', filename)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     },
     handlePageChange(e) {
       this.skip = e.first
