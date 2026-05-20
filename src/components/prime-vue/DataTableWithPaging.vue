@@ -167,6 +167,9 @@
         </div>
       </template>
 
+      <!-- Footer Group (for ColumnGroup type="footer") -->
+      <slot name="footerGroup" />
+
       <!-- Footer -->
       <template #footer v-if="$slots.footer">
         <slot name="footer" />
