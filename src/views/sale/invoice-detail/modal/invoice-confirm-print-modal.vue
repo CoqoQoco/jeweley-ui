@@ -95,6 +95,23 @@
                     </div>
                   </div>
 
+                  <div v-if="paperSize === 'bill' || paperSize === 'vat-bridge'" class="form-group mb-3">
+                    <label class="form-label">
+                      <i class="bi bi-printer mr-1"></i>เครื่องพิมพ์
+                    </label>
+                    <DropdownGeneric
+                      v-model="selectedPrinter"
+                      :options="printerOptions"
+                      optionLabel="label"
+                      optionValue="name"
+                      placeholder="เลือกเครื่องพิมพ์"
+                      :showClear="true"
+                    />
+                    <small v-if="printerOptions.length === 0" class="form-text text-muted">
+                      ไม่พบรายชื่อเครื่องพิมพ์ — ตรวจสอบว่า bridge รันอยู่และ config มี Printers
+                    </small>
+                  </div>
+
                   <div v-if="paperSize === 'bill'" class="form-group mb-3">
                     <div class="row">
                       <div class="col-6">
@@ -201,6 +218,10 @@ import { defineAsyncComponent } from 'vue'
 import Calendar from 'primevue/calendar'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import { getPrinterList } from '@/services/api/printer-config-service.js'
+import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
+import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 
@@ -209,7 +230,8 @@ export default {
 
   components: {
     modal,
-    Calendar
+    Calendar,
+    DropdownGeneric
   },
 
   props: {
@@ -238,7 +260,11 @@ export default {
       },
       paperSize: 'vat-bridge',
       continuousOffset: { x: 0, y: 0 },
-      billOffset: { x: 0, y: 0 }
+      billOffset: { x: 0, y: 0 },
+      printerOptions: [],
+      selectedPrinter: null,
+      defaultBillPrinter: null,
+      defaultVatPrinter: null
     }
   },
 
@@ -250,10 +276,19 @@ export default {
         }
       },
       immediate: true
+    },
+    paperSize(newVal) {
+      if (newVal === 'bill') {
+        this.selectedPrinter = this.defaultBillPrinter
+      } else if (newVal === 'vat-bridge') {
+        this.selectedPrinter = this.defaultVatPrinter
+      } else {
+        this.selectedPrinter = null
+      }
     }
   },
 
-  mounted() {
+  async mounted() {
     const savedContinuous = localStorage.getItem('invoice-continuous-offset')
     if (savedContinuous) {
       try {
@@ -282,6 +317,18 @@ export default {
       } catch (e) {
         this.billOffset = { x: 0, y: 0 }
       }
+    }
+
+    this.printerOptions = await getPrinterList()
+
+    const [billLayout, vatLayout] = await Promise.all([getBillLayout(), getVatLayout()])
+    this.defaultBillPrinter = billLayout?.printerName || null
+    this.defaultVatPrinter = vatLayout?.printerName || null
+
+    if (this.paperSize === 'bill') {
+      this.selectedPrinter = this.defaultBillPrinter
+    } else if (this.paperSize === 'vat-bridge') {
+      this.selectedPrinter = this.defaultVatPrinter
     }
   },
 
@@ -354,7 +401,8 @@ export default {
         showCifLabel: this.printData.showCifLabel,
         paperSize: this.paperSize,
         continuousOffset: { ...this.continuousOffset },
-        billOffset: { ...this.billOffset }
+        billOffset: { ...this.billOffset },
+        printerName: this.selectedPrinter
       }
 
       console.log('Modal - Emitting printDataToEmit:', printDataToEmit)

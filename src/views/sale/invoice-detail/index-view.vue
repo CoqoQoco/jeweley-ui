@@ -1993,6 +1993,11 @@ export default {
           const layoutPayload = layout
             ? { ...layout, offsetX: (layout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (layout.offsetY ?? 0) + (offsetMm.y || 0) }
             : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
+          if (layoutPayload && printData.printerName != null) {
+            layoutPayload.printerName = printData.printerName
+          } else if (!layoutPayload && printData.printerName != null) {
+            // no-op: printerName will be set in payload directly below if needed
+          }
           const payload = {
             invoice: {
               invoiceNo: options.invoiceNo,
@@ -2028,6 +2033,9 @@ export default {
           const layoutPayload = billLayout
             ? { ...billLayout, offsetX: (billLayout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (billLayout.offsetY ?? 0) + (offsetMm.y || 0) }
             : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
+          if (layoutPayload && printData.printerName != null) {
+            layoutPayload.printerName = printData.printerName
+          }
           const billPayload = {
             invoice: {
               invoiceNo: options.invoiceNo,

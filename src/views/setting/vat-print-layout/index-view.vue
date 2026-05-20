@@ -229,7 +229,17 @@
           <div class="form-row">
             <label class="form-label-col">Printer Name</label>
             <div class="form-input-col">
-              <input v-model="form.printerName" type="text" class="form-control" placeholder="ชื่อเครื่องพิมพ์ใน Windows" />
+              <DropdownGeneric
+                v-model="form.printerName"
+                :options="printerOptions"
+                optionLabel="label"
+                optionValue="name"
+                placeholder="เลือกเครื่องพิมพ์"
+                :showClear="true"
+              />
+              <small v-if="printerOptions.length === 0" class="text-muted">
+                ไม่พบรายชื่อเครื่องพิมพ์ — ตรวจสอบว่า bridge รันอยู่และ config มี Printers
+              </small>
             </div>
           </div>
         </div>
@@ -258,6 +268,8 @@
 import { getVatLayout, saveVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { printVat } from '@/services/api/print-bridge-service.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import { getPrinterList } from '@/services/api/printer-config-service.js'
 
 const DEFAULT_LAYOUT = {
   invoiceNo: { x: 6.0, y: 1.8 },
@@ -291,9 +303,12 @@ function deepClone(obj) {
 export default {
   name: 'VatPrintLayoutView',
 
+  components: { DropdownGeneric },
+
   data() {
     return {
-      form: deepClone(DEFAULT_LAYOUT)
+      form: deepClone(DEFAULT_LAYOUT),
+      printerOptions: []
     }
   },
 
@@ -306,6 +321,7 @@ export default {
         if (saved[key]) this.form[key] = { ...DEFAULT_LAYOUT[key], ...saved[key] }
       })
     }
+    this.printerOptions = await getPrinterList()
   },
 
   methods: {
