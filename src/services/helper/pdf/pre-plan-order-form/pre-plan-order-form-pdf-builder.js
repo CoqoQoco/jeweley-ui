@@ -138,39 +138,45 @@ export class PrePlanOrderFormPdfBuilder {
   buildMaterialRows(materials) {
     const headerRow = [
       { text: 'Gem', style: 'tableHeader' },
+      { text: 'Gem Shape', style: 'tableHeader' },
       { text: 'Gem Size', style: 'tableHeader' },
-      { text: 'Diamond', style: 'tableHeader' },
       { text: 'Diamond Size', style: 'tableHeader' },
       { text: 'Gold', style: 'tableHeader' },
       { text: 'Gold Qty', style: 'tableHeader' },
     ]
     const rows = [headerRow]
 
-    for (const m of materials) {
-      const gemName =
-        m.gem && typeof m.gem === 'object' ? m.gem.description || '-' : m.gem || '-'
-      const goldName =
-        m.gold && typeof m.gold === 'object' ? m.gold.description || '-' : m.gold || '-'
-      const diamondParts = []
-      if (m.diamondQty != null && m.diamondQty !== '') {
-        diamondParts.push(`${m.diamondQty}${m.diamondUnit ? ' ' + m.diamondUnit : ''}`)
-      }
-      if (m.diamondQuality) {
-        diamondParts.push(m.diamondQuality)
-      }
-      const diamondName = diamondParts.length ? diamondParts.join(' / ') : '-'
+    const codeOf = (v) => {
+      if (v == null || v === '') return '-'
+      if (typeof v === 'object') return v.code || v.description || '-'
+      return String(v)
+    }
 
+    for (const m of materials) {
       rows.push([
-        gemName,
+        codeOf(m.gem),
+        codeOf(m.gemShape),
         m.gemSize || '-',
-        diamondName,
         m.diamondSize || '-',
-        goldName,
+        codeOf(m.gold),
         m.goldQty != null ? String(m.goldQty) : '-',
       ])
     }
 
     return rows
+  }
+
+  extractBowlQty(materials, prefix) {
+    const set = new Set()
+    for (const m of (materials || [])) {
+      const codeOrDesc = m.gold && typeof m.gold === 'object'
+        ? (m.gold.code || m.gold.description || '')
+        : (m.gold || '')
+      if (String(codeOrDesc).toUpperCase().startsWith(prefix)) {
+        if (m.goldQty != null && m.goldQty !== '') set.add(String(m.goldQty))
+      }
+    }
+    return set.size > 0 ? [...set].join(' / ') : '___'
   }
 
   getItemBlock(item) {
@@ -194,8 +200,7 @@ export class PrePlanOrderFormPdfBuilder {
           canvas: [{ type: 'rect', x: 0, y: 0, w: 70, h: 70, lineWidth: 0.5, lineColor: '#cccccc' }],
         }
 
-    const moldCell = {
-      border: [true, true, false, false],
+    const moldImageCell = {
       margin: [4, 4, 4, 4],
       stack: [
         moldImageNode,
@@ -206,30 +211,60 @@ export class PrePlanOrderFormPdfBuilder {
           fontSize: 9,
           margin: [0, 3, 0, 0],
         },
-        {
-          text: `รายละเอียดแม่พิมพ์ : ${item.moldDetail || '-'}`,
-          alignment: 'center',
-          fontSize: 8,
-          color: '#666666',
-          bold: true,
-          margin: [0, 2, 0, 0],
-        },
       ],
     }
 
-    const productCell = {
-      border: [false, true, true, false],
+    const productImageCell = {
       margin: [4, 4, 4, 4],
       stack: [productImageNode],
     }
 
+    const moldDetailQtyCell = {
+      colSpan: 2,
+      margin: [6, 4, 6, 4],
+      columns: [
+        {
+          width: '*',
+          text: `รายละเอียดแม่พิมพ์: ${item.moldDetail || '-'}`,
+          fontSize: 10,
+          bold: true,
+          color: '#444444',
+        },
+        {
+          width: 'auto',
+          text: qtyText,
+          fontSize: 10,
+          bold: true,
+          margin: [10, 0, 0, 0],
+        },
+      ],
+    }
+
+    const wgQty = this.extractBowlQty(item.materials, 'WG')
+    const ygQty = this.extractBowlQty(item.materials, 'YG')
+
+    const bowlCell = {
+      colSpan: 2,
+      margin: [6, 4, 6, 4],
+      columns: [
+        { width: '*', text: `WG เบ้าที่: ${wgQty}`, fontSize: 10 },
+        { width: '*', text: `YG เบ้าที่: ${ygQty}`, fontSize: 10 },
+      ],
+    }
+
+    const productDetailCell = {
+      margin: [6, 4, 6, 4],
+      text: detailText,
+      fontSize: 10,
+    }
+
     const materialTable = {
-      border: [false, true, true, false],
+      rowSpan: 2,
       stack: [
         {
           table: {
             headerRows: 1,
-            widths: ['*', 38, '*', 45, '*', 35],
+            widths: [35, 45, '*', 55, 35, 35],
             body: materialRows,
             dontBreakRows: true,
           },
@@ -249,22 +284,6 @@ export class PrePlanOrderFormPdfBuilder {
       ],
     }
 
-    const summaryRow = [
-      {
-        colSpan: 3,
-        border: [true, false, true, true],
-        margin: [6, 4, 6, 4],
-        columns: [
-          { width: 'auto', text: 'WG เบ้าที่: ______', fontSize: 10 },
-          { width: 'auto', text: 'YG เบ้าที่: ______', fontSize: 10, margin: [10, 0, 0, 0] },
-          { width: 'auto', text: qtyText, fontSize: 10, bold: true, margin: [10, 0, 0, 0] },
-          { width: '*', text: detailText, fontSize: 10, margin: [10, 0, 0, 0] },
-        ],
-      },
-      {},
-      {},
-    ]
-
     return {
       stack: [
         {
@@ -272,8 +291,9 @@ export class PrePlanOrderFormPdfBuilder {
           table: {
             widths: [80, 80, '*'],
             body: [
-              [moldCell, productCell, materialTable],
-              summaryRow,
+              [moldImageCell, productImageCell, materialTable],
+              [moldDetailQtyCell, {}, {}],
+              [bowlCell, {}, productDetailCell],
             ],
             dontBreakRows: false,
           },
