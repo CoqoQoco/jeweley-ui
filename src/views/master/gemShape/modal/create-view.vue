@@ -1,29 +1,19 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal" width="500px">
-      <template v-slot:title>
-        <div>
-          <div class="title-text-lg-header">
-            <span class="bi bi-database-fill-add mr-2"></span>
-            <span>เพิ่มรูปร่างพลอย</span>
-          </div>
-        </div>
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">เพิ่มรูปร่างพลอย</span>
       </template>
 
-      <template v-slot:content>
-        <form @submit.prevent="onSubmit">
-          <div class="p-2">
-            <!-- code -->
-            <div class="form-col-sm-container">
-              <div>
-                <div class="title-text">
-                  <span>รหัส</span>
-                  <span> *</span>
-                </div>
+      <template #content>
+        <form @submit.prevent="onSubmit" id="form-gem-shape-create">
+          <div class="p-3">
+            <div class="form-row">
+              <div class="form-field">
+                <span class="title-text">รหัส <span class="text-danger">*</span></span>
                 <input
                   type="text"
                   class="form-control"
-                  :style="getBgColor(form.code)"
                   v-model="form.code"
                   placeholder="EX: OG"
                   required
@@ -31,17 +21,12 @@
               </div>
             </div>
 
-            <!-- name th -->
-            <div class="mt-2">
-              <div>
-                <div class="title-text">
-                  <span>ชื่อ TH</span>
-                  <span> *</span>
-                </div>
+            <div class="form-row">
+              <div class="form-field">
+                <span class="title-text">ชื่อ TH <span class="text-danger">*</span></span>
                 <input
                   type="text"
                   class="form-control"
-                  :style="getBgColor(form.nameTh)"
                   v-model="form.nameTh"
                   placeholder="EX: สี่เหลี่ยมตัดมุม"
                   required
@@ -49,32 +34,29 @@
               </div>
             </div>
 
-            <!-- name en -->
-            <div class="mt-2">
-              <div>
-                <div class="title-text">
-                  <span>ชื่อ EN</span>
-                  <span> *</span>
-                </div>
+            <div class="form-row">
+              <div class="form-field">
+                <span class="title-text">ชื่อ EN <span class="text-danger">*</span></span>
                 <input
                   type="text"
                   class="form-control"
-                  :style="getBgColor(form.nameEn)"
                   v-model="form.nameEn"
                   placeholder="EX: Octagon"
                   required
                 />
               </div>
             </div>
-
-            <div class="submit-container">
-              <button class="btn btn-sm btn-main" type="submit">
-                <span><i class="bi bi-calendar-check"></i></span>
-                <!-- <span>เพิ่มพลอย</span> -->
-              </button>
-            </div>
           </div>
         </form>
+      </template>
+
+      <template #action>
+        <button class="btn btn-sm btn-main" type="submit" form="form-gem-shape-create">
+          <i class="bi bi-save"></i> บันทึก
+        </button>
+        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
+          ยกเลิก
+        </button>
       </template>
     </modal>
   </div>
@@ -121,10 +103,6 @@ export default {
   },
 
   methods: {
-    getBgColor(data) {
-      return data ? 'background-color: #b5dad4' : 'background-color: #dad4b5'
-    },
-
     closeModal() {
       this.onClear()
       this.$emit('closeModal')
@@ -166,4 +144,33 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.form-row {
+  margin-bottom: 12px;
+}
+
+.form-field {
+  width: 100%;
+
+  .title-text {
+    display: block;
+    margin-bottom: 6px;
+  }
+}
+
+input.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+
+  &:focus {
+    border-color: var(--base-font-color);
+    box-shadow: none;
+    outline: none;
+  }
+}
 </style>

@@ -1,19 +1,14 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal">
-      <template v-slot:content>
-        <form @submit.prevent="onSubmit" class="form-content-container-custom">
-          <div class="title-text-lg-bg">
-            <span class="bi bi-brush mr-2"></span>
-            <span>เเก้ไขใบเบิกผสมทอง</span>
-          </div>
-
+    <modal :showModal="isShow" @closeModal="closeModal" :isShowActionPart="true">
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">แก้ไขใบเบิกผสมทอง</span>
+      </template>
+      <template #content>
+        <form @submit.prevent="onSubmit" id="gold-update-form">
           <div class="p-4">
             <!-- ข้อมูล -->
-            <div class="title-text-lg-bg">
-              <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-              <span>ข้อมูลเบิกผสมทอง</span>
-            </div>
+            <pageTitle title="ข้อมูลเบิกผสมทอง" :isShowBtnClose="false" class="mb-3" />
             <div class="border-container p-4">
               <div class="form-col-container">
                 <div>
@@ -127,10 +122,7 @@
             </div>
 
             <!-- ทองหลอม -->
-            <div class="title-text-lg-bg mt-4">
-              <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-              <span>ข้อมูลทองหลอม (โปรดระบุน้ำหนัก)</span>
-            </div>
+            <pageTitle title="ข้อมูลทองหลอม (โปรดระบุน้ำหนัก)" :isShowBtnClose="false" class="mt-4 mb-3" />
             <div class="border-container p-4">
               <div class="form-col-container">
                 <div>
@@ -265,10 +257,7 @@
             </div>
 
             <!-- ทองหล่อ -->
-            <div class="title-text-lg-bg mt-4">
-              <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-              <span>ข้อมูลทองหล่อ (โปรดระบุน้ำหนัก)</span>
-            </div>
+            <pageTitle title="ข้อมูลทองหล่อ (โปรดระบุน้ำหนัก)" :isShowBtnClose="false" class="mt-4 mb-3" />
             <div class="border-container p-4">
               <div class="form-col-container">
                 <div>
@@ -590,16 +579,16 @@
                 </DataTable>
               </div>
             </div>
-            <div class="d-flex justify-content-center mt-3">
-              <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
-                <span class="bi bi-x"></span>
-              </button>
-              <button class="btn btn-sm btn-green" type="submit">
-                <span class="bi bi-calendar-check"></span>
-              </button>
-            </div>
           </div>
         </form>
+      </template>
+      <template #action>
+        <button class="btn btn-sm btn-main" type="submit" form="gold-update-form">
+          <i class="bi bi-save"></i> บันทึก
+        </button>
+        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
+          ยกเลิก
+        </button>
       </template>
     </modal>
   </div>
@@ -609,6 +598,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
@@ -664,6 +654,7 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
+    pageTitle,
     Dropdown,
     Calendar,
     DataTable,
@@ -1048,4 +1039,25 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.card { background: #ffffff !important; }
+
+input.form-control,
+textarea.form-control {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+
+  &:focus {
+    border-color: var(--base-font-color);
+    box-shadow: none;
+    outline: none;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+}
 </style>

@@ -1,14 +1,11 @@
 <template>
   <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="1200px">
-      <template v-slot:content>
-        <!-- Header -->
-        <div class="title-text-lg-bg">
-          <span><i class="bi bi-brush-fill mr-2"></i></span>
-          <span>{{ `แก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
-        </div>
-
-        <form @submit.prevent="onSubmit" class="form-content">
+    <modal :showModal="isShowModal" @closeModal="closeModal" width="1200px" :isShowActionPart="true">
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ `แก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
+      </template>
+      <template #content>
+        <form @submit.prevent="onSubmit" id="stock-update-form" class="form-content">
           <!-- Image Section -->
           <div class="section-container">
             <div class="section-header">
@@ -404,14 +401,15 @@
             </div>
           </div>
 
-          <!-- Submit Button -->
-          <div class="submit-container">
-            <button class="btn btn-green btn-submit" type="submit">
-              <i class="bi bi-check-circle mr-2"></i>
-              <span>บันทึกการแก้ไข</span>
-            </button>
-          </div>
         </form>
+      </template>
+      <template #action>
+        <button class="btn btn-sm btn-main" type="submit" form="stock-update-form">
+          <i class="bi bi-save"></i> บันทึก
+        </button>
+        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
+          ยกเลิก
+        </button>
       </template>
     </modal>
   </div>
@@ -688,7 +686,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-form';
+@import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.card { background: #ffffff !important; }
 
 .form-content {
   padding: 1.5rem;
@@ -874,34 +875,6 @@ export default {
   }
 }
 
-// Submit Button
-.submit-container {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 1.5rem;
-  background: linear-gradient(to bottom, transparent, rgba(3, 131, 135, 0.05));
-  border-top: 1px solid #e9ecef;
-}
-
-.btn-submit {
-  padding: 0.75rem 2.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(3, 131, 135, 0.3);
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(3, 131, 135, 0.4);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-// Responsive
 @media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr;

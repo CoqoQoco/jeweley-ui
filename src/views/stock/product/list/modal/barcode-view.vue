@@ -1,12 +1,10 @@
 <template>
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="800px">
-      <template v-slot:content>
-        <div class="title-text-lg-bg">
-          <span><i class="bi bi-upc-scan mr-2"></i></span>
-          <span>{{ `พิมพ์ป้ายสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
-        </div>
-
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ `พิมพ์ป้ายสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
+      </template>
+      <template #content>
         <!-- Tab เลือกแบบ -->
         <div class="pl-4 pr-4 pt-2">
           <div class="label-type-tabs">
@@ -118,18 +116,11 @@
               </div>
               <div class="ml-2 mr-2">
                 <input
-                  class="form-control text-center"
+                  class="form-control text-center print-count-input"
                   type="number"
                   v-model="barcode.print"
                   min="1"
                   max="30"
-                  style="
-                    width: 50px;
-                    font-size: 16px;
-                    height: 30px;
-                    border-radius: 4px;
-                    border: 1px solid #ced4da;
-                  "
                   @input="validateInput"
                 />
               </div>
@@ -353,7 +344,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-form';
+@import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.card { background: #ffffff !important; }
+
+.print-count-input {
+  width: 50px;
+  font-size: 16px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
 
 input {
   margin-top: 0px !important;

@@ -1,19 +1,15 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal" width="500px">
-      <template v-slot:content>
-        <div class="title-text-lg-bg">
-          <span class="bi bi-database-fill-gear mr-2"></span>
-          <span>{{ `เเก้ไขข้อมูลช่าง: ${form.code} - ${form.nameTh}` }}</span>
-        </div>
-        <form @submit.prevent="onSubmit" class="form-content-container-custom">
-          <div class="p-2">
-            <div class="form-col-container mt-2">
-              <div>
-                <span class="title-text">
-                  <span>แผนกช่าง</span>
-                  <span class="text-required"> *</span>
-                </span>
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ `แก้ไขข้อมูลช่าง: ${form.code} - ${form.nameTh}` }}</span>
+      </template>
+      <template #content>
+        <form @submit.prevent="onSubmit" id="worker-update-form">
+          <div class="p-3">
+            <div class="form-row two-col">
+              <div class="form-field">
+                <span class="title-text">แผนกช่าง <span class="text-required">*</span></span>
                 <Dropdown
                   v-model="form.type"
                   :options="masterWorkerProductionType"
@@ -23,40 +19,31 @@
                   :showClear="form.type ? true : false"
                 />
               </div>
-              <div>
-                <span class="title-text">
-                  <span>รหัสช่าง</span>
-                  <span class="txt-required"> *</span>
-                </span>
+              <div class="form-field">
+                <span class="title-text">รหัสช่าง <span class="txt-required">*</span></span>
                 <input type="text" class="form-control" v-model="form.code" disabled required />
               </div>
             </div>
-            <div class="form-col-container mt-2">
-              <div>
-                <span class="title-text">
-                  <span>ชื่อ TH</span>
-                  <span class="txt-required"> *</span>
-                </span>
+            <div class="form-row two-col">
+              <div class="form-field">
+                <span class="title-text">ชื่อ TH <span class="txt-required">*</span></span>
                 <input type="text" class="form-control" v-model="form.nameTh" required />
               </div>
-              <div>
-                <span class="title-text">
-                  <span>ชื่อ EN</span>
-                  <!-- <span class="txt-required"> *</span> -->
-                </span>
+              <div class="form-field">
+                <span class="title-text">ชื่อ EN</span>
                 <input type="text" class="form-control" v-model="form.nameEn" />
               </div>
             </div>
-            <div class="d-flex justify-content-center mt-3">
-              <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
-                <span class="bi bi-x"></span>
-              </button>
-              <button class="btn btn-sm btn-green" type="submit">
-                <span class="bi bi-calendar-check"></span>
-              </button>
-            </div>
           </div>
         </form>
+      </template>
+      <template #action>
+        <button class="btn btn-sm btn-main" type="submit" form="worker-update-form">
+          <i class="bi bi-save"></i> บันทึก
+        </button>
+        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
+          ยกเลิก
+        </button>
       </template>
     </modal>
   </div>
@@ -216,4 +203,45 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.card { background: #ffffff !important; }
+
+.form-row {
+  margin-bottom: 16px;
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 1024px) {
+    &.two-col { grid-template-columns: 1fr; }
+  }
+}
+
+.form-field {
+  width: 100%;
+
+  .title-text {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+}
+
+input.form-control,
+textarea.form-control {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+
+  &:focus {
+    border-color: var(--base-font-color);
+    box-shadow: none;
+    outline: none;
+  }
+}
 </style>

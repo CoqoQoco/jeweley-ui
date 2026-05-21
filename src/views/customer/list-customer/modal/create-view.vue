@@ -1,26 +1,19 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal" width="1000px">
-      <template v-slot:content>
-        <form @submit.prevent="onSubmit">
-          <div class="title-text-lg-bg">
-            <span class="bi bi-person-fill-add mr-2"></span>
-            <span class="title-text-modal">เพิ่มข้อมูลลูกค้า</span>
-          </div>
+    <modal :showModal="isShow" @closeModal="closeModal" width="1000px" :isShowActionPart="true">
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">เพิ่มข้อมูลลูกค้า</span>
+      </template>
+      <template #content>
+        <form @submit.prevent="onSubmit" id="customer-create-form">
           <div class="p-4">
-            <div class="form-col-container">
-              <div>
-                <span class="title-text">
-                  <span>รหัสลูกค้า</span>
-                  <span class="txt-required"> *</span>
-                </span>
+            <div class="form-row two-col">
+              <div class="form-field">
+                <span class="title-text">รหัสลูกค้า <span class="txt-required">*</span></span>
                 <input type="text" class="form-control" v-model="form.code" required />
               </div>
-              <div>
-                <span class="title-text">
-                  <span>ประเภทลูกค้า</span>
-                  <span class="txt-required"> *</span>
-                </span>
+              <div class="form-field">
+                <span class="title-text">ประเภทลูกค้า <span class="txt-required">*</span></span>
                 <Dropdown
                   v-model="form.type"
                   :options="masterCustomer"
@@ -30,128 +23,84 @@
                 />
               </div>
             </div>
-            <div class="form-col-container mt-2">
-              <div>
-                <span class="title-text">
-                  <span>ชื่อภาษาไทย</span>
-                  <span class="txt-required"> *</span>
-                </span>
+            <div class="form-row two-col">
+              <div class="form-field">
+                <span class="title-text">ชื่อภาษาไทย <span class="txt-required">*</span></span>
                 <input type="text" class="form-control" v-model="form.nameTh" required />
               </div>
-              <div>
-                <span class="title-text">
-                  <span>ชื่อภาษาอังกฤษ</span>
-                  <!-- <span class="txt-required"> *</span> -->
-                </span>
+              <div class="form-field">
+                <span class="title-text">ชื่อภาษาอังกฤษ</span>
                 <input type="text" class="form-control" v-model="form.nameEn" />
               </div>
             </div>
-            <div class="form-col-container mt-2">
-              <div>
-                <span class="title-text">
-                  <span>ที่อยู่ติดต่อ</span>
-                  <!-- <span class="txt-required"> *</span> -->
-                </span>
+            <div class="form-row two-col">
+              <div class="form-field">
+                <span class="title-text">ที่อยู่ติดต่อ</span>
                 <textarea class="form-control" v-model="form.address" />
               </div>
+              <div class="form-field">
+                <span class="title-text">ข้อมูลเพิ่มเติม</span>
+                <textarea class="form-control" v-model="form.remark" />
+              </div>
             </div>
-            <div class="form-col-container mt-2">
-              <div class="mt-2">
-                <span class="title-text">
-                  <span>เบอร์โทรติดต่อ 1</span>
-                </span>
+            <div class="form-row two-col">
+              <div class="form-field">
+                <span class="title-text">เบอร์โทรติดต่อ 1</span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    id="tel1"
-                    :class="['form-control bg-input']"
-                    type="tel"
-                    v-model.trim="form.tel1"
-                  />
+                  <input id="tel1" class="form-control bg-input" type="tel" v-model.trim="form.tel1" />
                 </div>
               </div>
-
-              <div class="mt-2">
-                <span class="title-text">
-                  <span>เบอร์โทรติดต่อ 2</span>
-                </span>
+              <div class="form-field">
+                <span class="title-text">เบอร์โทรติดต่อ 2</span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    id="tel2"
-                    :class="['form-control bg-input']"
-                    type="tel"
-                    v-model.trim="form.tel2"
-                  />
+                  <input id="tel2" class="form-control bg-input" type="tel" v-model.trim="form.tel2" />
                 </div>
               </div>
             </div>
-            <div class="form-col-container mt-2">
-              <div class="mt-2">
-                <span class="title-text">
-                  <span>E-mail</span>
-                </span>
+            <div class="form-row two-col">
+              <div class="form-field">
+                <span class="title-text">E-mail</span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-envelope-check-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    id="email"
-                    :class="['form-control bg-input']"
-                    type="email"
-                    v-model.trim="form.email"
-                  />
+                  <input id="email" class="form-control bg-input" type="email" v-model.trim="form.email" />
                 </div>
               </div>
-
-              <div class="mt-2">
-                <span class="title-text">
-                  <span>บุคคลติดต่อ</span>
-                </span>
+              <div class="form-field">
+                <span class="title-text">บุคคลติดต่อ</span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-person-lines-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    id="contact"
-                    :class="['form-control bg-input']"
-                    type="text"
-                    v-model.trim="form.contact"
-                  />
+                  <input id="contact" class="form-control bg-input" type="text" v-model.trim="form.contact" />
                 </div>
               </div>
             </div>
-            <div class="form-col-container mt-2">
-              <div>
-                <span class="title-text">
-                  <span>ข้อมูลเพิ่มเติม</span>
-                  <!-- <span class="txt-required"> *</span> -->
-                </span>
-                <textarea class="form-control" v-model="form.remark" />
-              </div>
-            </div>
-            <div class="d-flex justify-content-center mt-2">
-              <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
-                <span class="bi bi-x"></span>
-              </button>
-              <button class="btn btn-sm btn-green" type="submit">
-                <span class="bi bi-calendar-check"></span>
-              </button>
-            </div>
           </div>
         </form>
+      </template>
+      <template #action>
+        <button class="btn btn-sm btn-main" type="submit" form="customer-create-form">
+          <i class="bi bi-save"></i> บันทึก
+        </button>
+        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
+          ยกเลิก
+        </button>
       </template>
     </modal>
   </div>
@@ -304,6 +253,51 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.card { background: #ffffff !important; }
+
+.form-row {
+  margin-bottom: 16px;
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 1024px) {
+    &.two-col { grid-template-columns: 1fr; }
+  }
+}
+
+.form-field {
+  width: 100%;
+
+  .title-text {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+}
+
+input.form-control,
+textarea.form-control {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+
+  &:focus {
+    border-color: var(--base-font-color);
+    box-shadow: none;
+    outline: none;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+}
 
 .input-group-text {
   height: 35px;

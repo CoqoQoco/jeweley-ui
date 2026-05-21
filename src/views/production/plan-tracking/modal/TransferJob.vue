@@ -1,7 +1,10 @@
 <template>
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal">
-      <template v-slot:content>
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">โอนสถานะงาน</span>
+      </template>
+      <template #content>
         <form @submit.prevent="onSubmit">
           <div class="filter-container-highlight">
             <div class="form-col-container">
@@ -113,7 +116,6 @@
                       'btn btn-sm ml-2',
                       selectedValue.length > 0 ? 'btn-main' : 'btn-secondary'
                     ]"
-                    style="height: 34px"
                     :disabled="!selectedValue.length > 0"
                     @click="onTransferStatus"
                     type="submit"
@@ -423,7 +425,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/custom-style/standard-data-table';
+@import '@/assets/scss/responsive-style/web';
+
+.card { background: #ffffff !important; }
 
 .notification {
   display: inline-flex;
