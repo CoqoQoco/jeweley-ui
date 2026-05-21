@@ -5,3 +5,6 @@ export const PRE_PLAN_STATUS_OPTIONS = [
   { value: 'Rejected', label: 'ปฏิเสธ' },
   { value: 'Consumed', label: 'ส่งผลิตแล้ว' },
 ]
+
+export const EDITABLE_STATUS = ['Draft', 'Submitted', 'Rejected']
+export const isEditableStatus = (status) => EDITABLE_STATUS.includes(status)

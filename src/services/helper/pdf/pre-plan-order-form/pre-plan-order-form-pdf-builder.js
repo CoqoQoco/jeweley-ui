@@ -22,7 +22,7 @@ export class PrePlanOrderFormPdfBuilder {
         if (item.productImageBlobPath) {
           this.images.product[item.productImageBlobPath] = await getAzureBlobAsBase64(
             item.productImageBlobPath,
-            'plan',
+            'preplan',
           ).catch(() => null)
         }
       }),
@@ -136,58 +136,38 @@ export class PrePlanOrderFormPdfBuilder {
   }
 
   buildMaterialRows(materials) {
-    const rows = []
     const headerRow = [
-      { text: 'วัตถุดิบ', style: 'tableHeader' },
-      { text: 'รูปร่าง', style: 'tableHeader' },
-      { text: 'ไซส์', style: 'tableHeader' },
-      { text: 'จำนวน', style: 'tableHeader' },
-      { text: 'น้ำหนัก', style: 'tableHeader' },
-      { text: 'หมายเหตุ', style: 'tableHeader' },
+      { text: 'Gem', style: 'tableHeader' },
+      { text: 'Gem Size', style: 'tableHeader' },
+      { text: 'Diamond', style: 'tableHeader' },
+      { text: 'Diamond Size', style: 'tableHeader' },
+      { text: 'Gold', style: 'tableHeader' },
+      { text: 'Gold Qty', style: 'tableHeader' },
     ]
-    rows.push(headerRow)
+    const rows = [headerRow]
 
     for (const m of materials) {
-      if (m.gem && m.gem.description) {
-        const gemName = typeof m.gem === 'object' ? m.gem.description : m.gem
-        const shapeName =
-          m.gemShape && typeof m.gemShape === 'object'
-            ? m.gemShape.description || '-'
-            : m.gemShape || '-'
-        rows.push([
-          gemName || '-',
-          shapeName,
-          m.gemSize || '-',
-          m.gemQty != null ? `${m.gemQty}${m.gemUnit ? ' ' + m.gemUnit : ''}` : '-',
-          m.gemWeight != null
-            ? `${m.gemWeight}${m.gemWeightUnit ? ' ' + m.gemWeightUnit : ''}`
-            : '-',
-          '',
-        ])
-      }
+      const gemName =
+        m.gem && typeof m.gem === 'object' ? m.gem.description || '-' : m.gem || '-'
+      const goldName =
+        m.gold && typeof m.gold === 'object' ? m.gold.description || '-' : m.gold || '-'
+      const diamondParts = []
       if (m.diamondQty != null && m.diamondQty !== '') {
-        rows.push([
-          'เพชร',
-          '-',
-          m.diamondSize || '-',
-          m.diamondQty != null ? `${m.diamondQty}${m.diamondUnit ? ' ' + m.diamondUnit : ''}` : '-',
-          m.diamondWeight != null
-            ? `${m.diamondWeight}${m.diamondWeightUnit ? ' ' + m.diamondWeightUnit : ''}`
-            : '-',
-          m.diamondQuality || '',
-        ])
+        diamondParts.push(`${m.diamondQty}${m.diamondUnit ? ' ' + m.diamondUnit : ''}`)
       }
-      if (m.gold && m.gold.description) {
-        const goldName = typeof m.gold === 'object' ? m.gold.description : m.gold
-        rows.push([
-          goldName || '-',
-          '-',
-          '-',
-          m.goldQty != null ? String(m.goldQty) : '-',
-          '-',
-          '-',
-        ])
+      if (m.diamondQuality) {
+        diamondParts.push(m.diamondQuality)
       }
+      const diamondName = diamondParts.length ? diamondParts.join(' / ') : '-'
+
+      rows.push([
+        gemName,
+        m.gemSize || '-',
+        diamondName,
+        m.diamondSize || '-',
+        goldName,
+        m.goldQty != null ? String(m.goldQty) : '-',
+      ])
     }
 
     return rows
@@ -200,7 +180,7 @@ export class PrePlanOrderFormPdfBuilder {
       : null
     const materialRows = this.buildMaterialRows(item.materials || [])
     const qtyText = `จำนวนที่สั่ง: ${item.productQty || '-'} ${item.productQtyUnit || ''}`
-    const detailText = item.productDetail ? `หมายเหตุพิเศษ: ${item.productDetail}` : 'หมายเหตุพิเศษ: -'
+    const detailText = item.productDetail ? `รายละเอียดสินค้า: ${item.productDetail}` : 'รายละเอียดสินค้า: -'
 
     const moldImageNode = moldImage
       ? { image: moldImage, width: 70, height: 70, alignment: 'center' }
@@ -222,9 +202,17 @@ export class PrePlanOrderFormPdfBuilder {
         {
           text: item.moldCode || '-',
           alignment: 'center',
-          fontSize: 9,
           bold: true,
+          fontSize: 9,
           margin: [0, 3, 0, 0],
+        },
+        {
+          text: `รายละเอียดแม่พิมพ์ : ${item.moldDetail || '-'}`,
+          alignment: 'center',
+          fontSize: 8,
+          color: '#666666',
+          bold: true,
+          margin: [0, 2, 0, 0],
         },
       ],
     }
@@ -232,16 +220,7 @@ export class PrePlanOrderFormPdfBuilder {
     const productCell = {
       border: [false, true, true, false],
       margin: [4, 4, 4, 4],
-      stack: [
-        productImageNode,
-        {
-          text: 'รูปสินค้า',
-          alignment: 'center',
-          fontSize: 8,
-          color: '#666666',
-          margin: [0, 3, 0, 0],
-        },
-      ],
+      stack: [productImageNode],
     }
 
     const materialTable = {
@@ -250,7 +229,7 @@ export class PrePlanOrderFormPdfBuilder {
         {
           table: {
             headerRows: 1,
-            widths: ['*', 45, 35, 38, 45, 45],
+            widths: ['*', 38, '*', 45, '*', 35],
             body: materialRows,
             dontBreakRows: true,
           },
@@ -270,38 +249,16 @@ export class PrePlanOrderFormPdfBuilder {
       ],
     }
 
-    const wgYgRow = [
-      {
-        colSpan: 2,
-        border: [true, false, false, false],
-        margin: [6, 4, 6, 4],
-        text: 'WG เบ้าที่: ____________     YG เบ้าที่: ____________',
-        fontSize: 10,
-      },
-      {},
-      {
-        border: [false, false, true, false],
-        text: '',
-      },
-    ]
-
     const summaryRow = [
       {
         colSpan: 3,
         border: [true, false, true, true],
         margin: [6, 4, 6, 4],
         columns: [
-          {
-            width: '*',
-            text: qtyText,
-            fontSize: 10,
-            bold: true,
-          },
-          {
-            width: '*',
-            text: detailText,
-            fontSize: 10,
-          },
+          { width: 'auto', text: 'WG เบ้าที่: ______', fontSize: 10 },
+          { width: 'auto', text: 'YG เบ้าที่: ______', fontSize: 10, margin: [10, 0, 0, 0] },
+          { width: 'auto', text: qtyText, fontSize: 10, bold: true, margin: [10, 0, 0, 0] },
+          { width: '*', text: detailText, fontSize: 10, margin: [10, 0, 0, 0] },
         ],
       },
       {},
@@ -316,7 +273,6 @@ export class PrePlanOrderFormPdfBuilder {
             widths: [80, 80, '*'],
             body: [
               [moldCell, productCell, materialTable],
-              wgYgRow,
               summaryRow,
             ],
             dontBreakRows: false,

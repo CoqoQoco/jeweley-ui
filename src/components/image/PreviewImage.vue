@@ -127,6 +127,10 @@ export default {
           }
           return `Mold/${cleanImageName}-Mold.png`
 
+        case 'PREPLAN-PRODUCT':
+          // PREPLAN-PRODUCT type: "PrePlan/Product/{imageName}"
+          return `PrePlan/Product/${cleanImageName}`
+
         case 'PLANMOLD':
         case 'PLANMOLDDESIGN':
           // PLANMOLD type: "MoldPlanDesign/{imageName}"

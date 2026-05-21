@@ -173,6 +173,10 @@ export default {
           // PATH type: ใช้ path ที่ระบุมา
           return this.path ? `${this.path}/${cleanImageName}` : cleanImageName
 
+        case 'PREPLAN-PRODUCT':
+          // PREPLAN-PRODUCT type: "PrePlan/Product/{imageName}"
+          return `PrePlan/Product/${cleanImageName}`
+
         default:
           // ถ้าไม่ตรงกับ type ไหน ให้ return imageName โดยตรง
           console.warn(`Unknown image type: ${this.type}. Using imageName directly.`)

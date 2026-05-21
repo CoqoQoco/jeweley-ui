@@ -29,10 +29,10 @@
           <template #images-extra>
             <div class="image-item">
               <span class="title-text d-block mb-1">รูปสินค้าที่คาดว่าจะสำเร็จ</span>
-              <div v-if="form.productImageFromMold && !form.productImageFile" class="product-image-from-mold">
+              <div v-if="form.productImageBlobPath && !form.productImageFile" class="product-image-from-mold">
                 <ImagePreview
                   :imageName="form.productImageBlobPath"
-                  type="PLANMOLD"
+                  type="PREPLAN-PRODUCT"
                   :width="120"
                   :height="120"
                 />
@@ -62,7 +62,7 @@
         </moldSection>
 
         <div class="card p-3 mt-3">
-          <h6 class="mb-3">ข้อมูลสินค้า</h6>
+          <pageTitle title="ข้อมูลสินค้า" :isShowBtnClose="false" class="mb-3" />
           <div class="form-row three-col mb-2">
             <div class="form-field">
               <span class="title-text">ประเภทสินค้า</span>
@@ -158,9 +158,11 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 const moldSection = defineAsyncComponent(() => import('../components/mold-section.vue'))
 const UploadImage = defineAsyncComponent(
   () => import('@/components/prime-vue/UploadImage.vue')
@@ -181,6 +183,7 @@ export default {
 
   components: {
     modal,
+    pageTitle,
     moldSection,
     UploadImage,
     ImagePreview,
@@ -221,6 +224,11 @@ export default {
   },
 
   emits: ['closeModal', 'submit'],
+
+  setup() {
+    const store = usePrePlanStore()
+    return { store }
+  },
 
   data() {
     return {
@@ -282,24 +290,17 @@ export default {
       this.form.productImageFile = null
       this.form.productImagePreview = null
       this.form.productImageBlobPath = null
-      this.form.productImageFromMold = false
     },
 
-    onMoldDesignImage(designImage) {
+    async onMoldDesignImage(designImage) {
       if (this.form.productImageFile) return
-      if (!designImage) {
-        if (this.form.productImageFromMold) {
-          this.form.productImageBlobPath = null
-          this.form.productImageFromMold = false
-        }
-        return
-      }
-      this.form.productImageBlobPath = designImage
-      this.form.productImageFromMold = true
+      if (this.form.productImageBlobPath) return
+      if (!designImage) return
+      const newPath = await this.store.copyMoldDesignAsProductImage(designImage)
+      if (newPath) this.form.productImageBlobPath = newPath
     },
 
     onOverrideImage() {
-      this.form.productImageFromMold = false
       this.form.productImageBlobPath = null
     },
 
@@ -317,7 +318,11 @@ export default {
     },
 
     onSubmit() {
-      this.$emit('submit', JSON.parse(JSON.stringify(this.form)))
+      const cloned = {
+        ...this.form,
+        materials: (this.form.materials || []).map((m) => ({ ...m })),
+      }
+      this.$emit('submit', cloned)
     },
   },
 }
@@ -333,16 +338,14 @@ export default {
   background: #ffffff !important;
 }
 
-h6 {
-  color: var(--base-font-color);
-  font-weight: 600;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-  background: transparent !important;
-}
-
 .form-row {
   margin-bottom: 16px;
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
 
   &.three-col {
     display: grid;
@@ -351,8 +354,11 @@ h6 {
   }
 
   @media (max-width: 1024px) {
+    &.two-col {
+      grid-template-columns: 1fr;
+    }
     &.three-col {
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
     }
   }
 

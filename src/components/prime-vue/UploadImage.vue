@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <div v-if="compact" class="upload-preview compact-row">
+    <div v-if="compact" class="upload-preview compact-container">
       <input
         class="hidden-input"
         type="file"
@@ -48,23 +48,22 @@
         @change="onImportIamge"
         style="display:none;"
       />
-      <div>
-        <button class="btn btn-sm btn-outline-main mb-2" type="button" @click="triggerFileInput">
-          <i class="bi bi-image"></i> เลือกรูป
-        </button>
-      </div>
       <div v-if="currentPreviewUrl" class="compact-preview">
         <img
           :src="currentPreviewUrl"
           alt="Preview"
           :style="`width:${previewSize}px;height:${previewSize}px;`"
         />
+      </div>
+      <div class="compact-actions">
+        <button class="btn btn-sm btn-outline-main" type="button" @click="triggerFileInput">
+          <i class="bi bi-image"></i> เลือกรูป
+        </button>
         <button
-          v-if="showClear"
+          v-if="showClear && currentPreviewUrl"
           type="button"
-          class="btn btn-sm btn-red mt-2 d-block text-center mx-auto"
+          class="btn btn-sm btn-red ml-2"
           @click="onClear"
-        
         >
           <i class="bi bi-trash"></i> ลบรูป
         </button>
@@ -271,11 +270,14 @@ export default {
   background: transparent !important;
   margin-bottom: 12px;
 }
-.compact-row {
+.compact-container {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  flex-wrap: wrap;
+}
+.compact-preview {
+  margin-bottom: 4px;
 }
 .compact-preview img {
   border: 1px solid #e0e0e0;
@@ -284,5 +286,9 @@ export default {
   background: #fff;
   object-fit: contain;
   display: block;
+}
+.compact-actions {
+  display: flex;
+  align-items: center;
 }
 </style>

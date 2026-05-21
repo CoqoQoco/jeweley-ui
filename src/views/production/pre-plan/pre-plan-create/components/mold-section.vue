@@ -1,6 +1,6 @@
 <template>
   <div class="card p-3">
-    <h6 class="mb-3">ข้อมูลแม่พิมพ์</h6>
+    <pageTitle title="ข้อมูลแม่พิมพ์" :isShowBtnClose="false" class="mb-3" />
 
     <div class="form-row two-col">
       <div class="form-field">
@@ -54,10 +54,11 @@ const AutoCompleteGeneric = defineAsyncComponent(
 const imagePreview = defineAsyncComponent(
   () => import('@/components/prime-vue/ImagePreview.vue')
 )
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 export default {
   name: 'MoldSection',
-  components: { AutoCompleteGeneric, imagePreview },
+  components: { AutoCompleteGeneric, imagePreview, pageTitle },
   props: {
     moldCode: { type: String, default: '' },
     moldDetail: { type: String, default: '' },
@@ -124,6 +125,11 @@ export default {
         this.imageFinish = mold.code || null
         this.$emit('update:imageCad', this.imageCad)
         this.$emit('update:imageFinish', this.imageFinish)
+        this.$emit('mold-design-image', mold.designImage || null)
+        this.$emit('mold-product-type', {
+          code: mold.productTypeCode || null,
+          description: mold.productTypeDescription || null,
+        })
       }
     },
     async fetchMoldPlanGems(moldId) {
@@ -149,14 +155,6 @@ export default {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background: #ffffff !important;
-}
-
-h6 {
-  color: var(--base-font-color);
-  font-weight: 600;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-  background: transparent !important;
 }
 
 .form-row {

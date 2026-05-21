@@ -1,6 +1,6 @@
 <template>
   <div class="card p-3">
-    <h6 class="mb-2">วัสดุที่ใช้ (ทอง / พลอย / เพชร)</h6>
+    <pageTitle title="วัสดุที่ใช้ (ทอง / พลอย / เพชร)" :isShowBtnClose="false" class="mb-3" />
 
     <BaseDataTable
       :items="materials"
@@ -123,6 +123,7 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 const BaseDataTable = defineAsyncComponent(
   () => import('@/components/prime-vue/DataTableWithPaging.vue')
 )
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 let materialIdCounter = 1
 
@@ -150,7 +151,7 @@ function createEmptyMaterial() {
 export default {
   name: 'MaterialTable',
 
-  components: { BaseDataTable, DropdownGeneric },
+  components: { BaseDataTable, DropdownGeneric, pageTitle },
 
   props: {
     materials: { type: Array, default: () => [] },
@@ -204,21 +205,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
 
 .card {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background: #ffffff !important;
-}
-
-h6 {
-  color: var(--base-font-color);
-  font-weight: 600;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 12px !important;
-  background: transparent !important;
 }
 
 :deep(.material-dropdown) {

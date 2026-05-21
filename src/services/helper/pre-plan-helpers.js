@@ -10,7 +10,6 @@ export function createEmptyItem() {
     productImageFile: null,
     productImagePreview: null,
     productImageBlobPath: null,
-    productImageFromMold: false,
     productType: null,
     productQty: null,
     productQtyUnit: null,

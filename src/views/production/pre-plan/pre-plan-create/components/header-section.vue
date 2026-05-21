@@ -156,7 +156,7 @@ input {
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.06) 0 2px 8px;
   padding: 20px;
-  background: #ffffff;
+  background: #ffffff !important;
 }
 
 .form-row {

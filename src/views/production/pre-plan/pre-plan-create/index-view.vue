@@ -43,6 +43,7 @@ import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-pl
 import { confirmSubmit, warning, success } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
+import { isEditableStatus } from '@/constants/pre-plan-status.js'
 import { PrePlanOrderFormPdfBuilder } from '@/services/helper/pdf/pre-plan-order-form/pre-plan-order-form-pdf-builder.js'
 
 const headerSection = defineAsyncComponent(() => import('./components/header-section.vue'))
@@ -100,6 +101,12 @@ export default {
       const data = await this.store.getPrePlan(this.prePlanId)
       if (!data) return
 
+      if (!isEditableStatus(data.status)) {
+        warning('รายการนี้ผ่านการอนุมัติแล้ว ไม่สามารถแก้ไขได้', 'ไม่อนุญาต')
+        this.$router.replace({ name: 'pre-plan-list' })
+        return
+      }
+
       this.form = {
         jobLocation: data.jobLocation || 'Domestic',
         jobType: data.jobType || 'NewDesign',
@@ -132,7 +139,6 @@ export default {
           productImageFile: null,
           productImagePreview: null,
           productImageBlobPath: it.productImagePath || null,
-          productImageFromMold: false,
           productType: findByCode(ms.productTypes, it.productType),
           productQty: it.productQty || null,
           productQtyUnit: it.productQtyUnit || null,
@@ -203,9 +209,7 @@ export default {
           productQty: it.productQty,
           productQtyUnit: it.productQtyUnit,
           productDetail: it.productDetail,
-          productImagePath: it.productImageFromMold && !it.productImageFile
-            ? (it.productImageBlobPath || null)
-            : null,
+          productImagePath: it.productImageBlobPath || null,
           materials: (it.materials || []).map((m) => ({
             gold: toCode(m.gold),
             goldQty: m.goldQty,
@@ -227,8 +231,21 @@ export default {
       }
     },
 
+    async uploadPendingImages() {
+      for (const it of this.items) {
+        if (it.productImageFile) {
+          const path = await this.store.uploadProductImage(it.productImageFile)
+          if (path) {
+            it.productImageBlobPath = path
+            it.productImageFile = null
+          }
+        }
+      }
+    },
+
     async onSaveDraft() {
       if (!this.validateForm()) return
+      await this.uploadPendingImages()
       const payload = this.buildPayload()
       let result
       if (this.isEditMode) {
@@ -237,7 +254,8 @@ export default {
         result = await this.store.createPrePlan(payload)
       }
       if (result) {
-        success('บันทึกร่างใบสั่งผลิตสำเร็จ')
+        const isDraft = this.form.status === 'Draft' || !this.form.status
+        success(isDraft ? 'บันทึกร่างใบสั่งผลิตสำเร็จ' : 'บันทึกการแก้ไขสำเร็จ')
         this.$router.push({ name: 'pre-plan-list' })
       }
     },
@@ -269,6 +287,7 @@ export default {
     onSubmit() {
       if (!this.validateForm()) return
       confirmSubmit('ยืนยันส่งใบสั่งผลิตเพื่อรออนุมัติ?', 'ยืนยันการส่ง', async () => {
+        await this.uploadPendingImages()
         const payload = this.buildPayload()
         let savedId = this.prePlanId
         if (this.isEditMode) {

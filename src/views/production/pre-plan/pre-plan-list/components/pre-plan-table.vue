@@ -22,7 +22,7 @@
           <i class="bi bi-printer"></i>
         </button>
         <button
-          v-if="data.status === 'Draft'"
+          v-if="isEditableStatus(data.status)"
           class="btn btn-sm btn-main ml-1"
           @click="onEdit(data)"
           title="แก้ไข"
@@ -134,6 +134,7 @@ import {
   getPrePlanStatusLabel,
   getLinkedProgressClass,
 } from '@/services/helper/pre-plan-status.js'
+import { isEditableStatus } from '@/constants/pre-plan-status.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { PrePlanOrderFormPdfBuilder } from '@/services/helper/pdf/pre-plan-order-form/pre-plan-order-form-pdf-builder.js'
 
@@ -345,6 +346,7 @@ export default {
       const found = (list || []).find((x) => x.code === code)
       return found?.description || code
     },
+    isEditableStatus,
     getPrePlanStatusClass,
     getPrePlanStatusLabel,
     getLinkedProgressClass,

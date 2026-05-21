@@ -62,5 +62,19 @@ export const usePrePlanStore = defineStore('prePlan', {
       const res = await api.jewelry.get('ProductionPrePlan/WaitingCount')
       return res?.count ?? 0
     },
+
+    async uploadProductImage(file) {
+      const fd = new FormData()
+      fd.append('File', file)
+      const res = await api.jewelry.post('ProductionPrePlan/UploadProductImage', fd)
+      return res?.data?.imagePath || res?.imagePath || null
+    },
+
+    async copyMoldDesignAsProductImage(moldDesignFilename) {
+      const res = await api.jewelry.post('ProductionPrePlan/CopyMoldDesignAsProductImage', {
+        moldDesignFilename,
+      })
+      return res?.data?.imagePath || res?.imagePath || null
+    },
   },
 })

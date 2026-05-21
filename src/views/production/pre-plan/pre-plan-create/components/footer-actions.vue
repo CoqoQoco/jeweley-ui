@@ -8,14 +8,15 @@
       <i class="bi bi-send"></i> ส่งอนุมัติ
     </button>
     <button
-      v-if="status === 'Draft' || !status"
-      class="btn btn-sm btn-outline-main ml-2"
+      v-if="isEditable"
+      class="btn btn-sm btn-outline-main"
       @click="$emit('save-draft')"
     >
-      <i class="bi bi-save"></i> บันทึกร่าง
+      <i class="bi bi-save"></i>
+      {{ status === 'Draft' || !status ? 'บันทึกร่าง' : 'บันทึก' }}
     </button>
     <button
-      class="btn btn-sm btn-green ml-2"
+      class="btn btn-sm btn-green"
       :disabled="!hasItems"
       @click="$emit('print-pdf')"
       title="พิมพ์ใบสั่งผลิต"
@@ -23,7 +24,7 @@
       <i class="bi bi-printer"></i> พิมพ์ใบสั่งผลิต
     </button>
     <button
-      class="btn btn-sm btn-outline-main ml-2"
+      class="btn btn-sm btn-outline-main"
       @click="$router.push({ name: 'pre-plan-list' })"
     >
       <i class="bi bi-x"></i> ยกเลิก
@@ -32,6 +33,8 @@
 </template>
 
 <script>
+import { isEditableStatus } from '@/constants/pre-plan-status.js'
+
 export default {
   name: 'FooterActions',
   props: {
@@ -40,6 +43,11 @@ export default {
     hasItems: { type: Boolean, default: false },
   },
   emits: ['save-draft', 'submit', 'print-pdf'],
+  computed: {
+    isEditable() {
+      return isEditableStatus(this.status)
+    },
+  },
 }
 </script>
 

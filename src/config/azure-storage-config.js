@@ -66,6 +66,7 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
     if (blobPath.startsWith('Stock/')) resolvedType = 'stock'
     else if (blobPath.startsWith('Mold/')) resolvedType = 'mold'
     else if (blobPath.startsWith('ProductionPlan/')) resolvedType = 'plan'
+    else if (blobPath.startsWith('PrePlan/')) resolvedType = 'preplan'
     else if (blobPath.startsWith('User/')) resolvedType = 'user'
 
     // เรียก API backend เพื่อดึงรูป (backend จะดึงจาก Azure Blob)
@@ -91,6 +92,15 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
       // ดึงรูป Stock Product
       const res = await api.jewelry.get('FileExtension/GetStockProductImage', {
         imageName: fileName
+      })
+      if (res) {
+        base64String = `data:image/png;base64,${res}`
+      }
+    } else if (resolvedType === 'preplan') {
+      // ดึงรูป PrePlan Product
+      const res = await api.jewelry.get('FileExtension/GetImage', {
+        imageName: fileName,
+        path: 'PrePlan/Product'
       })
       if (res) {
         base64String = `data:image/png;base64,${res}`

@@ -13,22 +13,39 @@
     </div>
 
     <div class="item-card-body d-flex align-items-start gap-3">
-      <div class="item-thumbnail flex-shrink-0">
-        <img
-          v-if="item.productImagePreview"
-          :src="item.productImagePreview"
-          alt="product"
-          class="product-img"
-        />
-        <imagePreview
-          v-else-if="item.moldCode"
-          :imageName="item.moldCode"
-          type="MOLD"
-          :width="80"
-          :height="80"
-        />
-        <div v-else class="thumbnail-placeholder">
-          <i class="bi bi-image text-muted"></i>
+      <div class="item-thumbnail-group d-flex gap-2 flex-shrink-0">
+        <div class="thumbnail-cell">
+          <span class="thumb-label">แม่พิมพ์</span>
+          <imagePreview
+            v-if="item.moldCode"
+            :imageName="item.moldCode"
+            type="MOLD"
+            :width="80"
+            :height="80"
+          />
+          <div v-else class="thumbnail-placeholder">
+            <i class="bi bi-image text-muted"></i>
+          </div>
+        </div>
+        <div class="thumbnail-cell">
+          <span class="thumb-label ml-2">สินค้า</span>
+          <img
+            v-if="item.productImagePreview"
+            :src="item.productImagePreview"
+            alt="product"
+            class="product-img"
+          />
+          <imagePreview
+            v-else-if="item.productImageBlobPath"
+            class="ml-2"
+            :imageName="item.productImageBlobPath"
+            type="PREPLAN-PRODUCT"
+            :width="80"
+            :height="80"
+          />
+          <div v-else class="thumbnail-placeholder ml-2">
+            <i class="bi bi-image text-muted"></i>
+          </div>
         </div>
       </div>
 
@@ -153,7 +170,20 @@ export default {
   padding: 12px 16px;
 }
 
-.item-thumbnail {
+.item-thumbnail-group {
+  .thumbnail-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .thumb-label {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
   .thumbnail-placeholder {
     width: 80px;
     height: 80px;
