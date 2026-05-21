@@ -166,17 +166,21 @@ export class PrePlanOrderFormPdfBuilder {
     return rows
   }
 
-  extractBowlQty(materials, prefix) {
-    const set = new Set()
+  buildGoldUsageSummary(materials) {
+    const totals = {}
     for (const m of (materials || [])) {
-      const codeOrDesc = m.gold && typeof m.gold === 'object'
+      const code = m.gold && typeof m.gold === 'object'
         ? (m.gold.code || m.gold.description || '')
         : (m.gold || '')
-      if (String(codeOrDesc).toUpperCase().startsWith(prefix)) {
-        if (m.goldQty != null && m.goldQty !== '') set.add(String(m.goldQty))
-      }
+      const key = String(code).trim()
+      if (!key) continue
+      const qty = Number(m.goldQty)
+      if (!Number.isFinite(qty)) continue
+      totals[key] = (totals[key] || 0) + qty
     }
-    return set.size > 0 ? [...set].join(' / ') : '___'
+    const keys = Object.keys(totals).sort()
+    if (keys.length === 0) return '-'
+    return keys.map((k) => `${k}: ${totals[k]}`).join(' / ')
   }
 
   getItemBlock(item) {
@@ -240,15 +244,12 @@ export class PrePlanOrderFormPdfBuilder {
       ],
     }
 
-    const wgQty = this.extractBowlQty(item.materials, 'WG')
-    const ygQty = this.extractBowlQty(item.materials, 'YG')
-
     const bowlCell = {
       colSpan: 2,
       margin: [6, 4, 6, 4],
       columns: [
-        { width: '*', text: `WG เบ้าที่: ${wgQty}`, fontSize: 10 },
-        { width: '*', text: `YG เบ้าที่: ${ygQty}`, fontSize: 10 },
+        { width: '*', text: 'WG เบ้าที่: ___', fontSize: 10 },
+        { width: '*', text: 'YG เบ้าที่: ___', fontSize: 10 },
       ],
     }
 
@@ -284,6 +285,15 @@ export class PrePlanOrderFormPdfBuilder {
       ],
     }
 
+    const goldUsageCell = {
+      colSpan: 3,
+      margin: [6, 4, 6, 4],
+      text: [
+        { text: 'สรุปการใช้ทอง: ', fontSize: 10, bold: true },
+        { text: this.buildGoldUsageSummary(item.materials || []), fontSize: 10 },
+      ],
+    }
+
     return {
       stack: [
         {
@@ -294,6 +304,7 @@ export class PrePlanOrderFormPdfBuilder {
               [moldImageCell, productImageCell, materialTable],
               [moldDetailQtyCell, {}, {}],
               [bowlCell, {}, productDetailCell],
+              [goldUsageCell, {}, {}],
             ],
             dontBreakRows: false,
           },
