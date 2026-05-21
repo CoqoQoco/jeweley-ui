@@ -25,6 +25,7 @@
           @mold-loaded="onMoldLoaded"
           @mold-design-image="onMoldDesignImage"
           @mold-product-type="onMoldProductType"
+          @user-mold-select="onUserMoldSelect"
         >
           <template #images-extra>
             <div class="image-item">
@@ -160,6 +161,7 @@
 import { defineAsyncComponent } from 'vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
 import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
+import { info } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
@@ -235,6 +237,7 @@ export default {
       form: createEmptyItem(),
       isHistoryOpen: false,
       autoFilledFromMold: false,
+      originalMoldCode: null,
     }
   },
 
@@ -242,6 +245,19 @@ export default {
     isShow(val) {
       if (val) {
         this.resetForm()
+      }
+    },
+    'form.moldCode'(newCode) {
+      if (
+        this.originalMoldCode &&
+        newCode &&
+        newCode !== this.originalMoldCode &&
+        (this.form.productImageBlobPath || this.form.productImagePreview)
+      ) {
+        this.form.productImageFile = null
+        this.form.productImagePreview = null
+        this.form.productImageBlobPath = null
+        info('กรุณาอัปโหลดรูปสินค้าใหม่ เนื่องจากแม่พิมพ์ถูกเปลี่ยน', 'แม่พิมพ์ถูกเปลี่ยน')
       }
     },
   },
@@ -255,6 +271,7 @@ export default {
       }
       this.isHistoryOpen = false
       this.autoFilledFromMold = false
+      this.originalMoldCode = this.form.moldCode || null
     },
 
     onMoldLoaded({ gems }) {
@@ -292,12 +309,17 @@ export default {
       this.form.productImageBlobPath = null
     },
 
-    async onMoldDesignImage(designImage) {
+    onMoldDesignImage(designImage) {
       if (this.form.productImageFile) return
       if (this.form.productImageBlobPath) return
       if (!designImage) return
-      const newPath = await this.store.copyMoldDesignAsProductImage(designImage)
-      if (newPath) this.form.productImageBlobPath = newPath
+      this.form.productImageBlobPath = designImage
+    },
+
+    onUserMoldSelect() {
+      if (this.form.productImageFile) return
+      this.form.productImageBlobPath = null
+      this.form.productImagePreview = null
     },
 
     onOverrideImage() {

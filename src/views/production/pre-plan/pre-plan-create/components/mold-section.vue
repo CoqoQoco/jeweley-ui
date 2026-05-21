@@ -73,6 +73,7 @@ export default {
     'mold-loaded',
     'mold-design-image',
     'mold-product-type',
+    'user-mold-select',
   ],
   data() {
     return {
@@ -97,15 +98,21 @@ export default {
     onMoldInput(val) {
       this.$emit('update:moldCode', typeof val === 'object' ? val?.code : val)
     },
+    firstDesignPath(designImage) {
+      if (!designImage) return null
+      const first = String(designImage).split(',')[0].trim()
+      return first || null
+    },
     async onMoldSelect(item) {
       const mold = item.value || item
+      this.$emit('user-mold-select')
       this.$emit('update:moldCode', mold.code)
       this.$emit('update:moldDetail', mold.description || '')
       this.imageCad = mold.imageDraft1 ? `${mold.code}-Sub` : null
       this.imageFinish = mold.code || null
       this.$emit('update:imageCad', this.imageCad)
       this.$emit('update:imageFinish', this.imageFinish)
-      this.$emit('mold-design-image', mold.designImage || null)
+      this.$emit('mold-design-image', this.firstDesignPath(mold.designImage))
       this.$emit('mold-product-type', {
         code: mold.productTypeCode || null,
         description: mold.productTypeDescription || null,
@@ -125,7 +132,7 @@ export default {
         this.imageFinish = mold.code || null
         this.$emit('update:imageCad', this.imageCad)
         this.$emit('update:imageFinish', this.imageFinish)
-        this.$emit('mold-design-image', mold.designImage || null)
+        this.$emit('mold-design-image', this.firstDesignPath(mold.designImage))
         this.$emit('mold-product-type', {
           code: mold.productTypeCode || null,
           description: mold.productTypeDescription || null,
