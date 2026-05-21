@@ -307,6 +307,7 @@ export default {
 
       const items = (data.items || []).map((it) => ({
         moldCode: it.moldCode || null,
+        moldDetail: it.moldDetail || null,
         productImageBlobPath: it.productImagePath || null,
         productQty: it.productQty || null,
         productQtyUnit: it.productQtyUnit || null,

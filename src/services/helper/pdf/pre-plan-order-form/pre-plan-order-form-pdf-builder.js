@@ -229,7 +229,7 @@ export class PrePlanOrderFormPdfBuilder {
       columns: [
         {
           width: '*',
-          text: `รายละเอียดแม่พิมพ์: ${item.moldDetail || '-'}`,
+          text: `${item.moldDetail || '-'}`,
           fontSize: 10,
           bold: true,
           color: '#444444',
@@ -303,8 +303,8 @@ export class PrePlanOrderFormPdfBuilder {
             body: [
               [moldImageCell, productImageCell, materialTable],
               [moldDetailQtyCell, {}, {}],
-              [bowlCell, {}, productDetailCell],
               [goldUsageCell, {}, {}],
+              [bowlCell, {}, productDetailCell],
             ],
             dontBreakRows: false,
           },
