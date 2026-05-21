@@ -13,22 +13,24 @@
             <div class="flex-group">
               <CalendarGeneric
                 class="w-100"
-                v-model="form.requestDateStart"
-                :max-date="form.requestDateEnd"
+                :modelValue="modelForm.requestDateStart"
+                :max-date="modelForm.requestDateEnd"
                 :manualInput="false"
                 :showIcon="true"
                 dateFormat="dd/mm/yy"
                 placeholder="เริ่มต้น"
+                @update:modelValue="update('requestDateStart', $event)"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <CalendarGeneric
                 class="w-100"
-                v-model="form.requestDateEnd"
-                :min-date="form.requestDateStart"
+                :modelValue="modelForm.requestDateEnd"
+                :min-date="modelForm.requestDateStart"
                 :manualInput="false"
                 :showIcon="true"
                 dateFormat="dd/mm/yy"
                 placeholder="สิ้นสุด"
+                @update:modelValue="update('requestDateEnd', $event)"
               />
             </div>
           </div>
@@ -36,12 +38,12 @@
           <div>
             <span class="title-text">ประเภทค่าแรง</span>
             <DropdownGeneric
-              :modelValue="form.wageTypeFilter"
+              :modelValue="modelForm.wageTypeFilter"
               :options="wageTypeOptions"
               optionLabel="label"
               optionValue="value"
               :showClear="false"
-              @update:modelValue="onWageTypeChange"
+              @update:modelValue="update('wageTypeFilter', $event)"
             />
           </div>
         </div>
@@ -53,7 +55,7 @@
               <span class="ml-1">พิมพ์สลิปสถานะสำเร็จ</span>
             </button>
             <button
-              v-if="form.wageTypeFilter !== 'goldLoss'"
+              v-if="modelForm.wageTypeFilter !== 'goldLoss'"
               class="btn btn-sm btn-primary ml-2"
               type="button"
               @click="$emit('print-tracking')"
@@ -63,7 +65,7 @@
               <span class="ml-1">พิมพ์สลิปติดตามงาน</span>
             </button>
             <router-link
-              v-if="form.wageTypeFilter === 'goldLoss'"
+              v-if="modelForm.wageTypeFilter === 'goldLoss'"
               :to="{ name: 'worker-gold-loss-slip-list', params: { workerCode: worker && worker.code ? worker.code : '' } }"
               class="btn btn-sm btn-sub-main ml-2"
               title="ประวัติ Slip"
@@ -116,7 +118,6 @@ export default {
 
   data() {
     return {
-      form: { ...this.modelForm },
       wageTypeOptions: [
         { label: 'แสดงค่าแรง', value: 'wages' },
         { label: 'แสดงงาน Gold Loss', value: 'goldLoss' }
@@ -124,28 +125,12 @@ export default {
     }
   },
 
-  watch: {
-    modelForm: {
-      handler(val) {
-        this.form = { ...val }
-      },
-      deep: true
-    },
-    form: {
-      handler(val) {
-        this.$emit('update:modelForm', { ...val })
-      },
-      deep: true
-    }
-  },
-
   methods: {
-    onSearch() {
-      this.$emit('update:modelForm', { ...this.form })
-      this.$emit('search')
+    update(field, value) {
+      this.$emit('update:modelForm', { ...this.modelForm, [field]: value })
     },
-    onWageTypeChange(value) {
-      this.form = { ...this.form, wageTypeFilter: value }
+    onSearch() {
+      this.$emit('search')
     }
   }
 }
