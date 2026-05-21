@@ -8,6 +8,7 @@
     <dataTableView
       :items="slipList"
       @print="onPrint"
+      @cancel="onCancel"
     />
   </div>
 </template>
@@ -16,6 +17,7 @@
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { WorkerWagesSuccessPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-success-pdf-builder.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
 import searchView from './components/search-view.vue'
 import dataTableView from './components/data-table-view.vue'
@@ -55,6 +57,18 @@ export default {
     onClear() {
       const workerCode = this.$route.params.workerCode || ''
       this.form = { ...interfaceForm, workerCode }
+    },
+
+    onCancel(slip) {
+      confirmSubmit(
+        `ยกเลิก slip "${slip.documentNo}" หรือไม่? (ทอง items จะกลับมาใช้ได้ใหม่)`,
+        'ยืนยันการยกเลิก',
+        async () => {
+          await api.jewelry.post('Worker/CancelGoldLossSlip', { id: slip.id })
+          success('ยกเลิก slip สำเร็จ')
+          await this.onSearch()
+        }
+      )
     },
 
     async onPrint(slip) {

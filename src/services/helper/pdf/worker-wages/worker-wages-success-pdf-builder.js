@@ -96,7 +96,7 @@ export class WorkerWagesSuccessPdfBuilder {
       totalWages += item.totalWages || 0
       return [
         { text: this.formatDate(item.jobDate), bold: true, border: [false, false, false, false] },
-        { text: `${item.wo}-${item.woNumber}`, bold: true, border: [false, false, false, false] },
+        { text: `${item.wo || ''}${item.woNumber ? ' - ' + item.woNumber : ''}`, bold: true, border: [false, false, false, false] },
         { text: `${item.productNumber || ''}`, bold: true, border: [false, false, false, false] },
         { text: `${item.statusName || ''}`, bold: true, border: [false, false, false, false] },
         {
@@ -135,6 +135,7 @@ export class WorkerWagesSuccessPdfBuilder {
       { text: '%loss', style: 'tableHeader', alignment: 'right' },
       { text: 'น้ำหนักที่ loss ได้', style: 'tableHeader', alignment: 'right' },
       { text: 'น้ำหนัก loss', style: 'tableHeader', alignment: 'right' },
+      { text: 'ราคา/กรัม', style: 'tableHeader', alignment: 'right' },
       { text: 'จำนวนเงิน', style: 'tableHeader', alignment: 'right' }
     ]
 
@@ -142,19 +143,17 @@ export class WorkerWagesSuccessPdfBuilder {
     let totalMoneyDiff = 0
 
     const dataRows = this.items.map((item) => {
-      const send = item.goldWeightSend ?? 0
-      const check = item.goldWeightCheck ?? 0
       const lossPercent = item.lossPercent ?? 0
-      const weightLossAllowed = send * lossPercent / 100
-      const weightLossActual = weightLossAllowed - (send - check)
-      const moneyDiff = item.totalWages ?? 0
+      const weightLossAllowed = item.weightLossAllowed ?? ((item.goldWeightSend ?? 0) * lossPercent / 100)
+      const weightLossActual = item.weightLossActual ?? 0
+      const moneyDiff = item.moneyDiff ?? 0
 
       totalWeightLoss += weightLossActual
       totalMoneyDiff += moneyDiff
 
       return [
         { text: this.formatDate(item.jobDate) },
-        { text: `${item.wo}-${item.woNumber}` },
+        { text: `${item.wo || ''}${item.woNumber ? ' - ' + item.woNumber : ''}` },
         { text: `${item.productNumber || ''}` },
         { text: `${item.statusName || ''}` },
         { text: `${item.gold || ''}${item.goldSize ? ` - ${item.goldSize}` : ''} ${item.description ? `[${item.description}]` : ''}` },
@@ -162,13 +161,14 @@ export class WorkerWagesSuccessPdfBuilder {
         { text: this.fmt2(lossPercent), alignment: 'right' },
         { text: this.fmt2(weightLossAllowed), alignment: 'right' },
         { text: this.fmtSign2(weightLossActual), alignment: 'right' },
+        { text: this.fmt2(item.goldLossPrice ?? item.pricePerGram ?? item.wages ?? 0), alignment: 'right' },
         { text: this.fmt2(moneyDiff), alignment: 'right' }
       ]
     })
 
     const footerRow = [
-      { text: 'รวมน้ำหนัก loss', bold: true, colSpan: 8, alignment: 'right' },
-      {}, {}, {}, {}, {}, {}, {},
+      { text: 'รวมน้ำหนัก loss', bold: true, colSpan: 9, alignment: 'right' },
+      {}, {}, {}, {}, {}, {}, {}, {},
       { text: this.fmtSign2(totalWeightLoss), bold: true, alignment: 'right' },
       { text: this.fmt2(totalMoneyDiff), bold: true, alignment: 'right' }
     ]
@@ -176,14 +176,70 @@ export class WorkerWagesSuccessPdfBuilder {
     return [headerRow, ...dataRows, footerRow]
   }
 
+  buildGoldReturnTableContent() {
+    const returnItems = (this.slip && this.slip.goldReturnItems) ? this.slip.goldReturnItems : []
+    if (returnItems.length === 0) return null
+
+    const headerRow = [
+      { text: 'Gold Size', style: 'tableHeader' },
+      { text: 'น้ำหนัก (g)', style: 'tableHeader', alignment: 'right' },
+      { text: 'ราคา/กรัม', style: 'tableHeader', alignment: 'right' },
+      { text: 'จำนวนเงิน', style: 'tableHeader', alignment: 'right' }
+    ]
+
+    let totalWeight = 0
+    let totalAmount = 0
+
+    const dataRows = returnItems.map((r) => {
+      const amount = r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))
+      totalWeight += r.weight || 0
+      totalAmount += amount
+      return [
+        { text: r.goldSize || '' },
+        { text: this.fmt2(r.weight), alignment: 'right' },
+        { text: this.fmt2(r.pricePerGram), alignment: 'right' },
+        { text: this.fmt2(amount), alignment: 'right' }
+      ]
+    })
+
+    const footerRow = [
+      { text: 'รวม', bold: true, alignment: 'right' },
+      { text: this.fmt2(totalWeight), bold: true, alignment: 'right' },
+      { text: '', bold: true },
+      { text: this.fmt2(totalAmount), bold: true, alignment: 'right' }
+    ]
+
+    return {
+      margin: [0, 8, 0, 0],
+      stack: [
+        { text: 'รับคืนทอง', bold: true, fontSize: 12, margin: [0, 0, 0, 4] },
+        {
+          fontSize: 11,
+          table: {
+            headerRows: 1,
+            widths: ['*', 70, 80, 80],
+            body: [headerRow, ...dataRows, footerRow]
+          },
+          layout: {
+            hLineWidth: () => 0.5,
+            vLineWidth: () => 0.5,
+            hLineColor: () => '#cccccc',
+            vLineColor: () => '#cccccc',
+            fillColor: (rowIndex) => rowIndex === 0 ? '#921313' : null
+          }
+        }
+      ]
+    }
+  }
+
   getTableContent() {
     if (this.mode === 'goldLoss') {
       return {
-        fontSize: 11,
+        fontSize: 10,
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: [50, 55, '*', 40, '*', 35, 30, 55, 45, 55],
+          widths: [46, 52, '*', 36, '*', 28, 26, 50, 40, 46, 48],
           body: this.buildGoldLossTableBody()
         },
         layout: {
@@ -210,7 +266,21 @@ export class WorkerWagesSuccessPdfBuilder {
 
   getSlipSummaryContent() {
     if (this.mode !== 'goldLoss' || !this.slip) return []
-    return [
+
+    const returnItems = this.slip.goldReturnItems || []
+    const totalGoldReturnAmount = returnItems.reduce((sum, r) => sum + (r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))), 0)
+    const totalReturnWeight = returnItems.reduce((sum, r) => sum + (r.weight || 0), 0)
+    const totalMoneyLoss = this.slip.totalLossAmount != null
+      ? this.slip.totalLossAmount
+      : (this.items || []).reduce((sum, i) => sum + (i.moneyDiff || 0), 0)
+    const netPayAmount = this.slip.netPayAmount != null
+      ? this.slip.netPayAmount
+      : totalMoneyLoss + totalGoldReturnAmount
+    const netWeightLoss = (this.slip.totalWeightLoss || 0) + totalReturnWeight
+
+    const returnTableContent = this.buildGoldReturnTableContent()
+
+    const result = [
       {
         margin: [0, 10, 0, 0],
         table: {
@@ -218,32 +288,57 @@ export class WorkerWagesSuccessPdfBuilder {
           body: [[{ columns: [], border: [false, true, false, false] }]]
         },
         layout: { defaultBorder: false }
-      },
+      }
+    ]
+
+    if (returnTableContent) {
+      result.push(returnTableContent)
+      result.push({
+        margin: [0, 6, 0, 0],
+        table: {
+          widths: ['*'],
+          body: [[{ columns: [], border: [false, true, false, false] }]]
+        },
+        layout: { defaultBorder: false }
+      })
+    }
+
+    result.push(
       {
         columns: [
-          { text: 'รวมน้ำหนัก loss', alignment: 'right', width: '*' },
-          { text: `: ${this.fmtSign2(this.slip.totalWeightLoss)} กรัม`, width: 120, alignment: 'right' }
+          { text: 'รวมเงิน loss', alignment: 'right', width: '*' },
+          { text: `: ${this.fmt2(totalMoneyLoss)} บาท`, width: 140, alignment: 'right' }
         ],
         fontSize: 12,
         margin: [0, 2, 0, 0]
       },
       {
         columns: [
-          { text: 'รับคืนทอง (Gold Return)', alignment: 'right', width: '*' },
-          { text: `: ${this.fmt2(this.slip.goldReturn)} กรัม`, width: 120, alignment: 'right' }
+          { text: '(+) รับคืนทอง (เงิน)', alignment: 'right', width: '*' },
+          { text: `: + ${this.fmt2(totalGoldReturnAmount)} บาท`, width: 140, alignment: 'right' }
         ],
         fontSize: 12,
         margin: [0, 2, 0, 0]
+      },
+      {
+        columns: [
+          { text: 'ยอดสุทธิจ่ายช่าง', alignment: 'right', bold: true, width: '*' },
+          { text: `: ${this.fmtSign2(netPayAmount)} บาท`, bold: true, color: netPayAmount < 0 ? '#ff4d4d' : '#038387', width: 140, alignment: 'right' }
+        ],
+        fontSize: 13,
+        margin: [0, 2, 0, 4]
       },
       {
         columns: [
           { text: 'น้ำหนัก loss สุทธิ', alignment: 'right', bold: true, width: '*' },
-          { text: `: ${this.fmtSign2(this.slip.netWeightLoss)} กรัม`, bold: true, width: 120, alignment: 'right' }
+          { text: `: ${this.fmtSign2(netWeightLoss)} กรัม`, bold: true, width: 140, alignment: 'right' }
         ],
         fontSize: 12,
         margin: [0, 2, 0, 0]
       }
-    ]
+    )
+
+    return result
   }
 
   getDocDefinition() {

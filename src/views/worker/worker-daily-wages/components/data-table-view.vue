@@ -7,6 +7,10 @@
       :paginator="false"
       scrollHeight="calc(100vh - 340px)"
     >
+      <template #woTextTemplate="{ data }">
+        <span>{{ data.wo }}{{ data.woNumber ? ' - ' + data.woNumber : '' }}</span>
+      </template>
+
       <template #statusNameTemplate="{ data }">
         <template v-if="data.isGoldLoss">
           <span class="badge-gold-loss">Gold Loss (งานฝัง)</span>
@@ -73,6 +77,9 @@
                 <span v-else>{{ formatLoss(totalWeightLoss) }}</span>
               </template>
             </Column>
+            <Column>
+              <template #footer></template>
+            </Column>
             <Column footerStyle="text-align: right">
               <template #footer>{{ formatDecimal(totalWages) }}</template>
             </Column>
@@ -90,7 +97,7 @@ import Row from 'primevue/row'
 import Column from 'primevue/column'
 
 const BASE_COLUMNS = [
-  { field: 'woText', header: 'เลขที่ใบงาน', minWidth: '120px' },
+  { field: 'woText', header: 'เลขที่ใบงาน', minWidth: '130px' },
   { field: 'statusActiveName', header: 'สถานะใบงาน', minWidth: '120px', align: 'center' },
   { field: 'jobDate', header: 'วันที่ส่งงาน', minWidth: '110px', format: 'date' },
   { field: 'productNumber', header: 'รหัสสินค้า', minWidth: '120px' },
@@ -108,7 +115,8 @@ const BASE_COLUMNS = [
 const GOLD_LOSS_EXTRA_COLUMNS = [
   { field: 'lossPercent', header: '%loss', minWidth: '90px', align: 'right', format: 'number' },
   { field: 'weightLossAllowed', header: 'น้ำหนักที่ loss ได้', minWidth: '130px', align: 'right', format: 'decimal2' },
-  { field: 'weightLossActual', header: 'น้ำหนัก loss', minWidth: '110px', align: 'right' }
+  { field: 'weightLossActual', header: 'น้ำหนัก loss', minWidth: '110px', align: 'right' },
+  { field: 'goldLossPrice', header: 'ราคา/กรัม', minWidth: '110px', align: 'right', format: 'decimal2' }
 ]
 
 export default {

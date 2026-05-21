@@ -11,6 +11,9 @@
         <button class="btn btn-sm btn-green" @click="$emit('print', data)" title="พิมพ์">
           <i class="bi bi-printer"></i>
         </button>
+        <button class="btn btn-sm btn-red ml-2" @click="$emit('cancel', data)" title="ยกเลิก">
+          <i class="bi bi-x-circle"></i>
+        </button>
       </template>
     </BaseDataTable>
   </div>
@@ -31,7 +34,7 @@ export default {
     }
   },
 
-  emits: ['print'],
+  emits: ['print', 'cancel'],
 
   data() {
     return {

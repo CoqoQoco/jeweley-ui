@@ -1,51 +1,15 @@
 <template>
-  <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="900px" :isShowActionPart="true">
-    <!-- <template #title>
-      <span class="title-text-lg ml-4 mt-2">บันทึก Gold Loss Slip</span>
-    </template> -->
-
+  <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="980px" :isShowActionPart="true">
+    <template #title>
+      <span class="title-text-lg px-3 pt-3 d-block">บันทึก Gold Loss Slip</span>
+    </template>
     <template #content>
       <div class="p-3">
         <div class="d-flex justify-content-between mb-3">
           <span class="title-text">พนักงาน: {{ worker.code }} - {{ worker.nameTh }}</span>
-          <span class="title-text mr-4 ">
+          <span class="title-text mr-4">
             ช่วงวันที่: {{ formatDate(dateRange.requestDateStart) }} - {{ formatDate(dateRange.requestDateEnd) }}
           </span>
-        </div>
-
-        <div class="section-card mb-3">
-          <h6>สรุปยอด</h6>
-          <div class="summary-row">
-            <span class="summary-label">รวมน้ำหนัก loss (gold loss)</span>
-            <span
-              class="summary-value"
-              :class="totalWeightLoss > 0 ? 'loss-positive' : totalWeightLoss < 0 ? 'loss-negative' : ''"
-            >{{ fmtSign(totalWeightLoss) }} กรัม</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">รับคืนทอง (Gold Return) (กรัม)</span>
-            <div class="d-flex align-items-center">
-              <input
-                type="number"
-                step="0.001"
-                class="form-control input-sm"
-                v-model.number="goldReturn"
-              />
-              <span class="ml-2">กรัม</span>
-            </div>
-          </div>
-          <hr class="my-2" />
-          <div class="summary-row">
-            <span class="summary-label">น้ำหนัก loss สุทธิ</span>
-            <span
-              class="summary-value"
-              :class="netWeightLoss > 0 ? 'loss-positive' : netWeightLoss < 0 ? 'loss-negative' : ''"
-            >{{ fmtSign(netWeightLoss) }} กรัม</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">รวมเงิน (Money Diff)</span>
-            <span class="summary-value">{{ totalMoneyDiff.toFixed(2) }}</span>
-          </div>
         </div>
 
         <div class="section-card mb-3">
@@ -55,8 +19,11 @@
             :totalRecords="availableItems.length"
             :columns="tableColumns"
             :paginator="false"
-            scrollHeight="300px"
+            scrollHeight="240px"
           >
+            <template #woTextTemplate="{ data }">
+              <span>{{ data.wo }}{{ data.woNumber ? ' - ' + data.woNumber : '' }}</span>
+            </template>
             <template #goldTemplate="{ data }">
               <span>{{ [data.gold, data.goldSize].filter((v) => v).join(' - ') }}</span>
             </template>
@@ -66,6 +33,100 @@
               >{{ fmtSign(data.weightLossActual) }}</span>
             </template>
           </BaseDataTable>
+        </div>
+
+        <div class="section-card mb-3">
+          <pageTitle title="รับคืนทอง" :isShowBtnClose="false" />
+
+          <div v-if="goldReturnItems.length === 0" class="text-muted text-center py-2" style="font-size:0.9rem">
+            ไม่มีรายการรับคืนทอง
+          </div>
+
+          <div v-else>
+            <table class="return-table w-100">
+              <thead>
+                <tr>
+                  <th>Gold Size</th>
+                  <th>น้ำหนัก (g)</th>
+                  <th>ราคา/กรัม</th>
+                  <th class="text-right">จำนวนเงิน</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, idx) in goldReturnItems" :key="idx">
+                  <td>
+                    <span class="title-text">{{ row.goldSize }}</span>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      class="form-control"
+                      v-model.number="row.weight"
+                    />
+                  </td>
+                  <td>
+                    <AutoCompleteGeneric
+                      :modelValue="getPriceDisplayValue(row)"
+                      :useStaticList="true"
+                      :staticOptions="getPriceOptions(row.goldSize)"
+                      optionLabel="label"
+                      :forceSelection="false"
+                      placeholder="ราคา/กรัม"
+                      customClass="price-ac"
+                      @update:modelValue="onPriceChange(idx, $event)"
+                    />
+                  </td>
+                  <td class="text-right">
+                    <span>{{ fmt2(getRowAmount(row)) }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="d-flex justify-content-end mt-2">
+              <span class="summary-label mr-3">รวมรับคืนทอง (เงิน):</span>
+              <span class="summary-value">{{ fmt2(totalGoldReturnAmount) }} บาท</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card mb-3">
+          <h6>สรุปยอด</h6>
+          <div class="summary-row">
+            <span class="summary-label">รวมเงิน loss</span>
+            <span class="summary-value">{{ fmt2(totalMoneyLoss) }} บาท</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">(+) รับคืนทอง (เงิน)</span>
+            <span class="summary-value text-success">+ {{ fmt2(totalGoldReturnAmount) }} บาท</span>
+          </div>
+          <hr class="my-2" />
+          <div class="summary-row">
+            <span class="summary-label fw-bold">ยอดสุทธิจ่ายช่าง</span>
+            <span class="summary-value" :class="netPayAmount < 0 ? 'loss-negative' : netPayAmount > 0 ? 'loss-positive' : ''">
+              {{ fmtSign(netPayAmount) }} บาท
+            </span>
+          </div>
+          <hr class="my-2" />
+          <div class="summary-row">
+            <span class="summary-label">รวมน้ำหนัก loss</span>
+            <span class="summary-value" :class="totalWeightLoss > 0 ? 'loss-positive' : totalWeightLoss < 0 ? 'loss-negative' : ''">
+              {{ fmtSign(totalWeightLoss) }} กรัม
+            </span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">รวมน้ำหนักคืน</span>
+            <span class="summary-value">{{ fmt2(totalReturnWeight) }} กรัม</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">น้ำหนัก loss สุทธิ</span>
+            <span
+              class="summary-value"
+              :class="netWeightLoss > 0 ? 'loss-positive' : netWeightLoss < 0 ? 'loss-negative' : ''"
+            >{{ fmtSign(netWeightLoss) }} กรัม</span>
+          </div>
         </div>
 
         <div>
@@ -95,13 +156,15 @@ import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
 
 export default {
   name: 'GoldLossSlipModal',
 
-  components: { modal, BaseDataTable },
+  components: { modal, BaseDataTable, AutoCompleteGeneric, pageTitle },
 
   props: {
     isShow: {
@@ -126,7 +189,7 @@ export default {
 
   data() {
     return {
-      goldReturn: 0,
+      goldReturnItems: [],
       remark: '',
       tableColumns: [
         { field: 'woText', header: 'เลขที่ใบงาน', minWidth: '120px' },
@@ -134,6 +197,7 @@ export default {
         { field: 'gold', header: 'รายละเอียด', minWidth: '140px', sortable: false },
         { field: 'lossPercent', header: '%loss', minWidth: '80px', align: 'right', format: 'number' },
         { field: 'weightLossActual', header: 'น้ำหนัก loss', minWidth: '110px', align: 'right' },
+        { field: 'goldLossPrice', header: 'ราคา/กรัม', minWidth: '110px', align: 'right', format: 'decimal2' },
         { field: 'totalWages', header: 'จำนวนเงิน', minWidth: '110px', align: 'right', format: 'decimal2' }
       ]
     }
@@ -148,20 +212,34 @@ export default {
       return this.availableItems.reduce((sum, i) => sum + (i.weightLossActual || 0), 0)
     },
 
-    netWeightLoss() {
-      return this.totalWeightLoss + Number(this.goldReturn || 0)
+    totalReturnWeight() {
+      return this.goldReturnItems.reduce((sum, r) => sum + (r.weight || 0), 0)
     },
 
-    totalMoneyDiff() {
+    netWeightLoss() {
+      return this.totalWeightLoss + this.totalReturnWeight
+    },
+
+    totalMoneyLoss() {
       return this.availableItems.reduce((sum, i) => sum + (i.totalWages || 0), 0)
+    },
+
+    totalGoldReturnAmount() {
+      return this.goldReturnItems.reduce((sum, r) => sum + this.getRowAmount(r), 0)
+    },
+
+    netPayAmount() {
+      return this.totalMoneyLoss + this.totalGoldReturnAmount
     }
   },
 
   watch: {
     isShow(val) {
       if (val) {
-        this.goldReturn = 0
         this.remark = ''
+        if (this.goldReturnItems.length === 0) {
+          this.initReturnRowsFromItems()
+        }
       }
     }
   },
@@ -181,6 +259,56 @@ export default {
       return abs
     },
 
+    fmt2(val) {
+      if (val == null) return '0.00'
+      return Number(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    },
+
+    getPriceOptions(goldSize) {
+      const prices = this.availableItems
+        .filter((i) => i.goldSize === goldSize)
+        .map((i) => i.goldLossPrice ?? i.wages)
+        .filter((p) => p != null)
+      const distinct = [...new Set(prices)]
+      return distinct.map((p) => ({ label: this.fmt2(p), value: p }))
+    },
+
+    getPriceDisplayValue(row) {
+      if (row.pricePerGram == null || row.pricePerGram === 0) return null
+      return { label: this.fmt2(row.pricePerGram), value: row.pricePerGram }
+    },
+
+    onPriceChange(idx, val) {
+      const row = this.goldReturnItems[idx]
+      if (val == null) {
+        row.pricePerGram = 0
+      } else if (typeof val === 'object' && val !== null) {
+        row.pricePerGram = Number(val.value) || 0
+      } else {
+        const parsed = parseFloat(String(val).replace(/,/g, ''))
+        row.pricePerGram = isNaN(parsed) ? 0 : parsed
+      }
+    },
+
+    getRowAmount(row) {
+      return (row.weight || 0) * (row.pricePerGram || 0)
+    },
+
+    initReturnRowsFromItems() {
+      const groups = new Map()
+      for (const it of this.availableItems) {
+        if (it.goldSize && !groups.has(it.goldSize)) {
+          groups.set(it.goldSize, it.goldLossPrice ?? it.wages ?? 0)
+        }
+      }
+      this.goldReturnItems = Array.from(groups.entries()).map(([goldSize, price]) => ({
+        goldSize,
+        weight: 0,
+        pricePerGram: price,
+        amount: 0
+      }))
+    },
+
     async onSave() {
       if (this.availableItems.length === 0) {
         warning('ไม่มีรายการให้บันทึก', 'ข้อมูลไม่ครบ')
@@ -192,8 +320,13 @@ export default {
         workerName: this.worker.nameTh,
         requestDateStart: formatISOString(this.dateRange.requestDateStart),
         requestDateEnd: formatISOString(this.dateRange.requestDateEnd),
-        goldReturn: this.goldReturn,
         remark: this.remark,
+        goldReturnItems: this.goldReturnItems.map((r) => ({
+          goldSize: r.goldSize,
+          weight: r.weight || 0,
+          pricePerGram: r.pricePerGram || 0,
+          amount: this.getRowAmount(r)
+        })),
         items: this.availableItems.map((i) => ({
           productionPlanStatusDetailId: i.id,
           productionPlanId: i.productionPlanId,
@@ -212,7 +345,7 @@ export default {
           lossPercent: i.lossPercent,
           weightLossAllowed: i.weightLossAllowed,
           weightLossActual: i.weightLossActual,
-          goldLossPrice: i.wages,
+          goldLossPrice: i.goldLossPrice ?? 0,
           moneyDiff: i.totalWages
         }))
       }
@@ -262,10 +395,8 @@ export default {
   font-weight: 600;
 }
 
-.input-sm {
-  width: 120px;
-  padding: 4px 8px;
-  font-size: 0.9rem;
+.text-success {
+  color: #038387;
 }
 
 .loss-positive {
@@ -278,7 +409,61 @@ export default {
   font-weight: 600;
 }
 
+input.form-control,
+textarea.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+
+  &:focus {
+    border-color: var(--base-font-color);
+    box-shadow: none;
+    outline: none;
+  }
+}
+
 textarea.form-control {
   resize: vertical;
+}
+
+.return-table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th, td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--base-font-color);
+    border-bottom: 2px solid #e0e0e0;
+    white-space: nowrap;
+  }
+
+  .text-right {
+    text-align: right;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+}
+
+:deep(.price-ac) {
+  width: 100%;
+
+  .p-autocomplete-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
 }
 </style>
