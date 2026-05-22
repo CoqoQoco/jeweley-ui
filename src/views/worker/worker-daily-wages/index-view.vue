@@ -1,26 +1,31 @@
 <template>
   <div class="app-container">
-    <searchView
-      v-model:modelForm="form"
-      :worker="data"
-      @search="onSearch"
-      @clear="onClear"
-      @print-success="onPrintSuccess"
-      @print-tracking="onPrintTracking"
-    />
-    <dataTableView
-      :items="dataWages.items || []"
-      :wageTypeFilter="form.wageTypeFilter"
-    />
-
-    <goldLossSlipModal
-      :isShow="isShowSlipModal"
-      :worker="data"
-      :dateRange="form"
-      :items="goldLossUnslippedItems"
-      @closeModal="isShowSlipModal = false"
-      @saved="onSlipSaved"
-    />
+    <div v-if="notFound" class="not-found-container">
+      <i class="bi bi-exclamation-circle"></i>
+      <p>{{ notFoundMessage }}</p>
+    </div>
+    <template v-else>
+      <searchView
+        v-model:modelForm="form"
+        :worker="data"
+        @search="onSearch"
+        @clear="onClear"
+        @print-success="onPrintSuccess"
+        @print-tracking="onPrintTracking"
+      />
+      <dataTableView
+        :items="dataWages.items || []"
+        :wageTypeFilter="form.wageTypeFilter"
+      />
+      <goldLossSlipModal
+        :isShow="isShowSlipModal"
+        :worker="data"
+        :dateRange="form"
+        :items="goldLossUnslippedItems"
+        @closeModal="isShowSlipModal = false"
+        @saved="onSlipSaved"
+      />
+    </template>
   </div>
 </template>
 
@@ -66,7 +71,9 @@ export default {
         items: []
       },
       form: { ...interfaceForm },
-      isShowSlipModal: false
+      isShowSlipModal: false,
+      notFound: false,
+      notFoundMessage: ''
     }
   },
 
@@ -136,9 +143,8 @@ export default {
   async created() {
     const code = this.$route.params.id
     if (!code) {
-      warning('ไม่พบรหัสช่าง', 'ข้อมูลไม่ถูกต้อง', () => {
-        this.$router.back()
-      })
+      this.notFound = true
+      this.notFoundMessage = 'ไม่พบรหัสช่างในลิงก์'
       return
     }
 
@@ -146,19 +152,13 @@ export default {
       skip: 0,
       take: 0,
       sort: [],
-      formValue: {
-        code: code,
-        text: null,
-        type: null,
-        active: 1
-      }
+      formValue: { code, text: null, type: null, active: 1 }
     })
 
     const worker = res?.data?.[0]
     if (!worker) {
-      warning(`ไม่พบข้อมูลช่างรหัส ${code}`, 'ไม่พบข้อมูล', () => {
-        this.$router.back()
-      })
+      this.notFound = true
+      this.notFoundMessage = `ไม่พบข้อมูลช่างรหัส ${code}`
       return
     }
 
@@ -170,4 +170,24 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.not-found-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  i {
+    font-size: 3rem;
+    color: var(--base-font-color);
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #6c757d;
+  }
+}
 </style>
