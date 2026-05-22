@@ -134,27 +134,36 @@ export default {
   },
 
   async created() {
-    this.$nextTick(async () => {
-      const url = window.location.href
-      const code = url.split('/').slice(-1)[0]
-
-      const res = await this.workerStore.fetchReturnSearch({
-        skip: 0,
-        take: 0,
-        sort: [],
-        formValue: {
-          code: code,
-          text: null,
-          type: null,
-          active: 1
-        }
+    const code = this.$route.params.id
+    if (!code) {
+      warning('ไม่พบรหัสช่าง', 'ข้อมูลไม่ถูกต้อง', () => {
+        this.$router.back()
       })
+      return
+    }
 
-      if (res) {
-        this.data = { ...res.data[0] }
-        this.form = { ...interfaceForm }
+    const res = await this.workerStore.fetchReturnSearch({
+      skip: 0,
+      take: 0,
+      sort: [],
+      formValue: {
+        code: code,
+        text: null,
+        type: null,
+        active: 1
       }
     })
+
+    const worker = res?.data?.[0]
+    if (!worker) {
+      warning(`ไม่พบข้อมูลช่างรหัส ${code}`, 'ไม่พบข้อมูล', () => {
+        this.$router.back()
+      })
+      return
+    }
+
+    this.data = { ...worker }
+    this.form = { ...interfaceForm }
   }
 }
 </script>
