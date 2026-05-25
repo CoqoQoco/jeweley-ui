@@ -12,33 +12,6 @@
         </div>
 
         <div class="form-col-container">
-          <!-- receipt date -->
-          <!-- <div>
-            <span class="title-text">วันที่รับสินค้า</span>
-            <div class="flex-group">
-              <Calendar
-                class="w-100"
-                v-model="form.receiptDateStart"
-                :max-date="form.receiptDateEnd"
-                showIcon
-                :manualInput="false"
-                placeholder="เริ่มต้น"
-                dateFormat="dd/mm/yy"
-              />
-              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
-                v-model="form.receiptDateEnd"
-                :min-date="form.receiptDateStart"
-                showIcon
-                :manualInput="false"
-                placeholder="สิ้นสุด"
-                dateFormat="dd/mm/yy"
-              />
-            </div>
-          </div> -->
-
-          <div class="form-col-container">
             <!-- stock number -->
             <div>
               <span class="title-text">เลขที่ผลิต (ใหม่)</span>
@@ -70,7 +43,6 @@
                 placeholder="EX: R08X50XXXL"
               />
             </div>
-          </div>
         </div>
 
         <dialogView
@@ -195,17 +167,15 @@
               <!-- cost detail status -->
               <div>
                 <span class="title-text">สถานะต้นทุน</span>
-                <div>
-                  <Dropdown
-                    v-model="form.hasCostDetail"
-                    :options="costDetailOptions"
-                    optionLabel="description"
-                    optionValue="value"
-                    placeholder="ทั้งหมด"
-                    class="w-full md:w-14rem"
-                    :showClear="true"
-                  />
-                </div>
+                <DropdownGeneric
+                  :modelValue="form.hasCostDetail"
+                  :options="costDetailOptions"
+                  optionLabel="description"
+                  optionValue="value"
+                  placeholder="ทั้งหมด"
+                  :showClear="true"
+                  @update:modelValue="form.hasCostDetail = $event"
+                />
               </div>
             </div>
           </template>
@@ -214,27 +184,24 @@
         <div class="btn-submit-container-between">
           <div></div>
           <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
               <span><i class="bi bi-search"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
             <button
-              class="btn btn-sm btn-sub-main mr-2"
+              class="btn btn-sm btn-sub-main ml-2"
               type="button"
               title="เพิ่มเติม"
               @click="onShowDialog"
             >
               <span><i class="bi bi-zoom-in"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" title="ล้าง">
               <span><i class="bi bi-x-circle"></i></span>
-              <!-- <span>ล้าง</span> -->
             </button>
 
             <button
               :class="[
-                'btn btn-sm btn-primary',
+                'btn btn-sm btn-primary ml-2',
                 { 'btn-secondary': !productStore.dataSearch.total > 0 }
               ]"
               type="button"
@@ -258,13 +225,8 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-//import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'
-import Dropdown from 'primevue/dropdown'
-//import Calendar from 'primevue/calendar'
-
-//import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
-//import api from '@/axios/axios-helper.js'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const interfaceIsShow = {
   dialog: false
@@ -273,8 +235,7 @@ export default {
   components: {
     pageTitle,
     MultiSelect,
-    Dropdown,
-    //Calendar,
+    DropdownGeneric,
     dialogView
   },
 

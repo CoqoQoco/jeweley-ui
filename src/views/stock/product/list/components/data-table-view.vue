@@ -19,11 +19,11 @@
           <button class="btn btn-sm btn btn-main ml-2" title="แก้ไข" @click="onUpdate(data)">
             <i class="bi bi-brush"></i>
           </button>
-          <button class="btn btn-sm btn-info ml-2" title="ดูต้นทุนสินค้า" @click="onViewCost(data)">
+          <button class="btn btn-sm btn-green ml-2" title="ดูต้นทุนสินค้า" @click="onViewCost(data)">
             <i class="bi bi-calculator"></i>
           </button>
           <button
-            class="btn btn-sm btn-secondary ml-2"
+            class="btn btn-sm btn-outline-main ml-2"
             title="ดูประวัติตีราคา"
             @click="onViewHistory(data)"
           >
@@ -73,6 +73,7 @@ import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
 
 import dataExpand from './data-expand-view.vue'
 import barcode from '../modal/barcode-view.vue'
@@ -94,7 +95,8 @@ export default {
 
   setup() {
     const productStore = usrStockProductApiStore()
-    return { productStore }
+    const balanceStore = useStockBalanceApiStore()
+    return { productStore, balanceStore }
   },
 
   props: {
@@ -241,6 +243,30 @@ export default {
           format: 'decimal2'
         },
         {
+          field: 'qtyOnHand',
+          header: 'คงเหลือ',
+          sortable: true,
+          minWidth: '100px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'qtyReserved',
+          header: 'จอง',
+          sortable: true,
+          minWidth: '100px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'qtyAvailable',
+          header: 'พร้อมขาย',
+          sortable: true,
+          minWidth: '100px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
           field: 'createBy',
           header: 'ผู้รับสินค้า',
           sortable: true,
@@ -306,6 +332,20 @@ export default {
         formValue: this.form,
         skipLoading: false
       })
+      await this.mergeBalanceIntoItems()
+    },
+
+    async mergeBalanceIntoItems() {
+      const items = this.productStore.dataSearch?.data || []
+      const stockNumbers = items.map((i) => i.stockNumber).filter(Boolean)
+      if (!stockNumbers.length) return
+      const map = await this.balanceStore.fetchByStockNumbers(stockNumbers)
+      for (const item of items) {
+        const b = map[item.stockNumber]
+        item.qtyOnHand = b?.qtyOnHand ?? null
+        item.qtyReserved = b?.qtyReserved ?? null
+        item.qtyAvailable = b?.qtyAvailable ?? null
+      }
     },
 
     async fetchDataExport() {

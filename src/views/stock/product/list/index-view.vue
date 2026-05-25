@@ -102,17 +102,14 @@ export default {
 
   methods: {
     onSearchFilter(data) {
-      //console.log('onSearchFilter', data)
       this.search = { ...data }
     },
 
     onClearFilter() {
-      //console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
 
     onExport(data) {
-      //console.log('onExport', data)
       this.formExport = { ...data }
     },
 
@@ -138,8 +135,6 @@ export default {
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGoldSize()
       await this.masterStore.fetchProductType()
-      //await this.masterStore.fetchGem()
-      //await this.masterStore.fetchDiamondGrade()
     })
   }
 }
