@@ -56,7 +56,8 @@ const interfaceForm = {
   productType: [],
   gold: null,
   goldSize: null,
-  hasCostDetail: null
+  hasCostDetail: null,
+  pieceStatus: null
 }
 
 export default {

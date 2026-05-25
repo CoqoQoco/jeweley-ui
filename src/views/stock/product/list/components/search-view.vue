@@ -177,6 +177,22 @@
                   @update:modelValue="form.hasCostDetail = $event"
                 />
               </div>
+
+              <!-- piece status -->
+              <div>
+                <span class="title-text">สถานะคงคลัง</span>
+                <div>
+                  <DropdownGeneric
+                    :modelValue="form.pieceStatus"
+                    :options="pieceStatusOptions"
+                    optionLabel="description"
+                    optionValue="value"
+                    placeholder="ทั้งหมด"
+                    :showClear="true"
+                    @update:modelValue="form.pieceStatus = $event"
+                  />
+                </div>
+              </div>
             </div>
           </template>
         </dialogView>
@@ -288,6 +304,11 @@ export default {
       costDetailOptions: [
         { value: true, description: 'มีต้นทุน' },
         { value: false, description: 'ยังไม่มีต้นทุน' }
+      ],
+      pieceStatusOptions: [
+        { value: 'IN_STOCK', description: 'พร้อมขาย' },
+        { value: 'RESERVED', description: 'จองแล้ว' },
+        { value: 'SOLD', description: 'ขายไปแล้ว' }
       ]
     }
   },
