@@ -44,7 +44,7 @@ export class PrePlanOrderFormPdfBuilder {
         {
           width: '*',
           text: this.prePlan.goldTypeLabel || this.prePlan.goldType || '',
-          fontSize: 24,
+          fontSize: 36,
           bold: true,
           color: '#921313',
           alignment: 'right',
@@ -212,7 +212,7 @@ export class PrePlanOrderFormPdfBuilder {
           text: item.moldCode || '-',
           alignment: 'center',
           bold: true,
-          fontSize: 9,
+          fontSize: 13,
           margin: [0, 3, 0, 0],
         },
       ],
@@ -230,14 +230,14 @@ export class PrePlanOrderFormPdfBuilder {
         {
           width: '*',
           text: `${item.moldDetail || '-'}`,
-          fontSize: 10,
+          fontSize: 13,
           bold: true,
           color: '#444444',
         },
         {
           width: 'auto',
           text: qtyText,
-          fontSize: 10,
+          fontSize: 13,
           bold: true,
           margin: [10, 0, 0, 0],
         },
@@ -256,7 +256,8 @@ export class PrePlanOrderFormPdfBuilder {
     const productDetailCell = {
       margin: [6, 4, 6, 4],
       text: detailText,
-      fontSize: 10,
+      fontSize: 13,
+      bold: true,
     }
 
     const materialTable = {
@@ -289,8 +290,8 @@ export class PrePlanOrderFormPdfBuilder {
       colSpan: 3,
       margin: [6, 4, 6, 4],
       text: [
-        { text: 'สรุปการใช้ทอง: ', fontSize: 10, bold: true },
-        { text: this.buildGoldUsageSummary(item.materials || []), fontSize: 10 },
+        { text: 'สรุปการใช้ทอง: ', fontSize: 13, bold: true },
+        { text: this.buildGoldUsageSummary(item.materials || []), fontSize: 13, bold: true },
       ],
     }
 
