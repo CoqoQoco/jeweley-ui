@@ -144,7 +144,7 @@ export class WorkerWagesSuccessPdfBuilder {
 
     const dataRows = this.items.map((item) => {
       const lossPercent = item.lossPercent ?? 0
-      const weightLossAllowed = item.weightLossAllowed ?? ((item.goldWeightSend ?? 0) * lossPercent / 100)
+      const weightLossAllowed = item.weightLossAllowed ?? ((item.goldWeightCheck ?? 0) * lossPercent / 100)
       const weightLossActual = item.weightLossActual ?? 0
       const moneyDiff = item.moneyDiff ?? 0
 

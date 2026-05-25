@@ -161,8 +161,10 @@ export default {
 
       return filtered.map((row) => {
         if (!row.isGoldLoss) return row
-        const weightLossAllowed = (row.goldWeightSend || 0) * (row.lossPercent || 0) / 100
-        const weightLossActual = weightLossAllowed - ((row.goldWeightSend || 0) - (row.goldWeightCheck || 0))
+        const weightCheck = row.goldWeightCheck || 0
+        const rawLoss = (row.goldWeightSend || 0) - weightCheck
+        const weightLossAllowed = weightCheck * ((row.lossPercent || 0) / 100)
+        const weightLossActual = Math.round((weightLossAllowed - rawLoss) * 10000) / 10000
         return { ...row, weightLossAllowed, weightLossActual }
       })
     },
