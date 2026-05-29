@@ -324,11 +324,16 @@ export default {
         this.masterStore.goldSizes.find((g) => g.code === data.goldType)?.description ||
         data.goldType ||
         ''
+      const jobTypeLabel =
+        this.masterStore.jobTypes.find((j) => j.code === data.jobType)?.description ||
+        data.jobType ||
+        ''
       const builder = new PrePlanOrderFormPdfBuilder(
         {
           documentNo: data.documentNo || data.orderNo || row.id,
           jobLocation: data.jobLocation || 'Domestic',
           jobType: data.jobType || 'NewDesign',
+          jobTypeLabel,
           goldType: data.goldType || '',
           goldTypeLabel: goldLabel,
           orderDate: data.orderDate,

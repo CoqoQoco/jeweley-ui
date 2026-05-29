@@ -265,11 +265,16 @@ export default {
       const goldLabel =
         this.masterStore.goldSizes.find((g) => g.code === this.form.goldType)?.description ||
         this.form.goldType
+      const jobTypeLabel =
+        this.masterStore.jobTypes.find((j) => j.code === this.form.jobType)?.description ||
+        this.form.jobType ||
+        ''
       const builder = new PrePlanOrderFormPdfBuilder(
         {
           documentNo: this.form.documentNo || this.prePlanId || 'DRAFT',
           jobLocation: this.form.jobLocation,
           jobType: this.form.jobType,
+          jobTypeLabel,
           goldType: this.form.goldType,
           goldTypeLabel: goldLabel,
           orderDate: this.form.orderDate,

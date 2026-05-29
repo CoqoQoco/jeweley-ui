@@ -64,9 +64,8 @@ export class PrePlanOrderFormPdfBuilder {
   getTopFieldsContent() {
     const p = this.prePlan
     const isDomestic = p.jobLocation === 'Domestic'
-    const isNewDesign = p.jobType === 'NewDesign'
     const orderNo = p.documentNo || 'DRAFT'
-    const jobTypeLabel = isNewDesign ? 'งานแบบใหม่' : 'งานแก้แบบ'
+    const jobTypeLabel = p.jobTypeLabel || p.jobType || '-'
 
     return {
       margin: [0, 0, 0, 8],
