@@ -112,6 +112,14 @@ export default {
           header: 'ชื่อ TH',
           sortable: true,
           minWidth: '150px'
+        },
+        {
+          field: 'goldPercent',
+          header: 'Gold %',
+          sortable: true,
+          minWidth: '120px',
+          format: 'decimal2',
+          align: 'right'
         }
       ],
 

@@ -47,6 +47,22 @@
                 />
               </div>
             </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <span class="title-text">Gold % <span class="text-danger">*</span></span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  class="form-control"
+                  v-model.number="form.goldPercent"
+                  placeholder="EX: 75"
+                  required
+                />
+              </div>
+            </div>
           </div>
         </form>
       </template>
@@ -75,7 +91,8 @@ const interfaceFrom = {
   code: null,
   nameTh: null,
   nameEn: null,
-  prefix: null
+  prefix: null,
+  goldPercent: null
 }
 
 export default {

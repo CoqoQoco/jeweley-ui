@@ -1504,6 +1504,10 @@ export default {
     async fetchSaveQuotation() {
       //console.log('fetchSaveQuotation', this.customer)
 
+      if (!this.customer.invoiceNumber) {
+        await this.generateQuotationNumber()
+      }
+
       const dataSave = this.customer.quotationItems
 
       const formValue = {
@@ -1706,7 +1710,6 @@ export default {
   },
 
   async created() {
-    await this.generateQuotationNumber()
     this.$nextTick(async () => {
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()

@@ -412,7 +412,12 @@ export class BreakdownPdfBuilder {
             ),
             alignment: 'right'
           },
-          { text: '', alignment: 'center' }
+          {
+            text: this.formatPrice(
+              ((gold.totalPrice || 0) / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
+            ),
+            alignment: 'right'
+          }
         ])
         currentRow++
       })
@@ -451,7 +456,12 @@ export class BreakdownPdfBuilder {
             ),
             alignment: 'right'
           },
-          { text: '', alignment: 'center' }
+          {
+            text: this.formatPrice(
+              ((gem.totalPrice || 0) / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
+            ),
+            alignment: 'right'
+          }
         ])
         currentRow++
       })
@@ -475,7 +485,12 @@ export class BreakdownPdfBuilder {
             text: this.formatPrice((sumWork / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
           },
-          { text: '', alignment: 'center' }
+          {
+            text: this.formatPrice(
+              (sumWork / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
+            ),
+            alignment: 'right'
+          }
         ])
         currentRow++
       }
@@ -498,7 +513,12 @@ export class BreakdownPdfBuilder {
             text: this.formatPrice((sumEmbed / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
           },
-          { text: '', alignment: 'center' }
+          {
+            text: this.formatPrice(
+              (sumEmbed / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
+            ),
+            alignment: 'right'
+          }
         ])
         currentRow++
       }
@@ -527,7 +547,12 @@ export class BreakdownPdfBuilder {
             ),
             alignment: 'right'
           },
-          { text: '', alignment: 'center' }
+          {
+            text: this.formatPrice(
+              ((etc.totalPrice || 0) / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
+            ),
+            alignment: 'right'
+          }
         ])
         currentRow++
       })
@@ -614,6 +639,12 @@ export class BreakdownPdfBuilder {
             },
             vLineWidth: function () {
               return 0.5
+            },
+            hLineColor: function () {
+              return '#cccccc'
+            },
+            vLineColor: function () {
+              return '#cccccc'
             }
           }
         },

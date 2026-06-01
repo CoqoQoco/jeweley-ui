@@ -46,7 +46,7 @@
           </thead>
           <tbody>
             <tr v-for="item in calculatedPrices" :key="item.code">
-              <td class="text-center">{{ item.code }}</td>
+              <td class="text-center">{{ item.name }}</td>
               <td class="text-center">{{ item.goldPercent.toFixed(2) }}%</td>
               <td class="text-right">{{ formatPrice(item.pricePerGram) }}</td>
               <td class="text-right">{{ formatPrice(item.pricePerOz) }}</td>
