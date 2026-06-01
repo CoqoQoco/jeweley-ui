@@ -230,7 +230,7 @@ const routes = [
             en: 'Stock Basket',
             th: 'ตะกร้าสินค้า'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.SALE_VIEW]
         }
       },
