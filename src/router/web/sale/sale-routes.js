@@ -82,8 +82,8 @@ const routes = [
         component: QuotationList,
         meta: {
           Displayname: {
-            en: 'Quotation List',
-            th: 'รายการใบเสนอราคา'
+            en: 'Quotation',
+            th: 'ใบเสนอราคา'
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]
@@ -98,7 +98,7 @@ const routes = [
             en: 'Quotation',
             th: 'เสนอราคา'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.SALE_CREATE]
         }
       },
@@ -111,8 +111,8 @@ const routes = [
         component: SaleOrderList,
         meta: {
           Displayname: {
-            en: 'Sale Order List',
-            th: 'รายการใบสั่งขาย'
+            en: 'Sale Order',
+            th: 'ใบสั่งขาย'
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]
@@ -127,7 +127,7 @@ const routes = [
             en: 'Sale Order',
             th: 'ใบสั่งขาย'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.SALE_CREATE]
         }
       },

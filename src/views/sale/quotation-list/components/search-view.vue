@@ -4,7 +4,19 @@
       title="รายการใบเสนอราคา"
       description="แสดงรายการใบเสนอราคาทั้งหมด พร้อมฟีเจอร์ค้นหาและกรองข้อมูล"
       :isShowBtnClose="false"
-    />
+      :isShowRightSlot="true"
+    >
+      <template #rightSlot>
+        <button
+          class="btn btn-sm btn-main"
+          type="button"
+          title="สร้างใบเสนอราคา"
+          @click="$router.push({ name: 'sale-quotation' })"
+        >
+          <span class="bi bi-database-fill-add"></span>
+        </button>
+      </template>
+    </pageTitle>
     
     <form @submit.prevent="onSearch">
       <div class="form-col-container">
