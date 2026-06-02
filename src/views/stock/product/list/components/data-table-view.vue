@@ -74,6 +74,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
+import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 
 import dataExpand from './data-expand-view.vue'
 import barcode from '../modal/barcode-view.vue'
@@ -96,7 +97,8 @@ export default {
   setup() {
     const productStore = usrStockProductApiStore()
     const balanceStore = useStockBalanceApiStore()
-    return { productStore, balanceStore }
+    const locationStore = useStockLocationApiStore()
+    return { productStore, balanceStore, locationStore }
   },
 
   props: {
@@ -243,30 +245,6 @@ export default {
           format: 'decimal2'
         },
         {
-          field: 'qtyOnHand',
-          header: 'คงเหลือ',
-          sortable: true,
-          minWidth: '100px',
-          align: 'right',
-          format: 'decimal2'
-        },
-        {
-          field: 'qtyReserved',
-          header: 'จอง',
-          sortable: true,
-          minWidth: '100px',
-          align: 'right',
-          format: 'decimal2'
-        },
-        {
-          field: 'qtyAvailable',
-          header: 'พร้อมขาย',
-          sortable: true,
-          minWidth: '100px',
-          align: 'right',
-          format: 'decimal2'
-        },
-        {
           field: 'createBy',
           header: 'ผู้รับสินค้า',
           sortable: true,
@@ -339,12 +317,31 @@ export default {
       const items = this.productStore.dataSearch?.data || []
       const stockNumbers = items.map((i) => i.stockNumber).filter(Boolean)
       if (!stockNumbers.length) return
+
+      let nameMap = {}
+      try {
+        const allLocs = await this.locationStore.fetchAllForMap()
+        for (const loc of allLocs) {
+          nameMap[loc.code] = `${loc.code} — ${loc.nameTh}`
+        }
+      } catch {
+        // fallback: use code as name
+      }
+
       const map = await this.balanceStore.fetchByStockNumbers(stockNumbers)
       for (const item of items) {
         const b = map[item.stockNumber]
         item.qtyOnHand = b?.qtyOnHand ?? null
         item.qtyReserved = b?.qtyReserved ?? null
         item.qtyAvailable = b?.qtyAvailable ?? null
+        if (b?.rows) {
+          item.slocBalances = b.rows.map((row) => ({
+            ...row,
+            location: nameMap[row.locationCode] || row.locationCode
+          }))
+        } else {
+          item.slocBalances = []
+        }
       }
     },
 

@@ -1,5 +1,14 @@
 <template>
   <div class="expnad-container">
+    <h6>ยอดคงเหลือตาม Storage Location</h6>
+    <BaseDataTable
+      :items="slocBalanceRows"
+      :columns="slocColumns"
+      :paginator="false"
+      dataKey="location"
+      class="sloc-table mb-3"
+    />
+
     <BaseDataTable :items="modelFormValue.materials" :columns="columns" :paginator="false">
       <template #typeTemplate="{ data }">
         <div class="text-focus-main">
@@ -64,11 +73,60 @@ export default {
     },
     masterGem() {
       return this.masterStore.gem
+    },
+
+    slocBalanceRows() {
+      const rows = this.modelFormValue?.slocBalances || []
+      const totalOnHand = rows.reduce((s, r) => s + (r.qtyOnHand ?? 0), 0)
+      const totalReserved = rows.reduce((s, r) => s + (r.qtyReserved ?? 0), 0)
+      const totalAvailable = rows.reduce((s, r) => s + (r.qtyAvailable ?? 0), 0)
+      return [
+        ...rows,
+        {
+          location: 'รวม',
+          qtyOnHand: totalOnHand,
+          qtyReserved: totalReserved,
+          qtyAvailable: totalAvailable
+        }
+      ]
     }
   },
 
   data() {
     return {
+      slocColumns: [
+        {
+          field: 'location',
+          header: 'Storage Location',
+          sortable: false,
+          minWidth: '200px'
+        },
+        {
+          field: 'qtyOnHand',
+          header: 'คงเหลือ',
+          sortable: false,
+          minWidth: '100px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'qtyReserved',
+          header: 'จอง',
+          sortable: false,
+          minWidth: '100px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'qtyAvailable',
+          header: 'พร้อมขาย',
+          sortable: false,
+          minWidth: '100px',
+          align: 'right',
+          format: 'decimal2'
+        }
+      ],
+
       columns: [
         {
           field: 'type',
@@ -140,8 +198,17 @@ export default {
 <style lang="scss" scoped>
 .expnad-container {
   padding: 10px 20px;
-  width: 650px;
+  width: 750px;
   z-index: 0 !important;
+
+  h6 {
+    color: var(--base-font-color);
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    background: transparent !important;
+    margin-bottom: 8px;
+  }
 
   .text-focus-main {
     font-weight: 700;

@@ -4,6 +4,9 @@ const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
 const List = () => import('@/views/stock/product/list/index-view.vue')
 
+const StockLocationList = () => import('@/views/stock/location/index-view.vue')
+const StockMoveLocation = () => import('@/views/stock/move-location/index-view.vue')
+
 const GRProductionList = () =>
   import('@/views/receipt-stock/product/production-receipt-list/index-view.vue')
 const GRProduction = () => import('@/views/receipt-stock/product/new-gr-production/index-view.vue')
@@ -151,6 +154,34 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
+        }
+      },
+
+      {
+        path: '/stock-location-list',
+        name: 'stock-location-list',
+        component: StockLocationList,
+        meta: {
+          Displayname: {
+            en: 'Storage Location',
+            th: 'จัดการ Storage Location'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
+      {
+        path: '/stock-product-move-location',
+        name: 'stock-product-move-location',
+        component: StockMoveLocation,
+        meta: {
+          Displayname: {
+            en: 'Move Storage Location',
+            th: 'ย้าย Storage Location'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       }
     ]
