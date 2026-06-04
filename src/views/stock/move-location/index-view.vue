@@ -6,6 +6,7 @@
       @search="onSearchFilter"
       @clear="onClearFilter"
       @move="onMove"
+      @manual="isShowManual = true"
     />
     <dataTableView
       v-model:modelForm="search"
@@ -17,6 +18,10 @@
       @closeModal="onCloseModal"
       @fetch="onFetch"
     />
+    <manualView
+      :isShow="isShowManual"
+      @closeModal="isShowManual = false"
+    />
   </div>
 </template>
 
@@ -24,6 +29,7 @@
 import searchView from './components/search-view.vue'
 import dataTableView from './components/data-table-view.vue'
 import moveLocationView from './modal/move-location-view.vue'
+import manualView from './modal/manual-view.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 
 const interfaceForm = {
@@ -38,7 +44,8 @@ export default {
   components: {
     searchView,
     dataTableView,
-    moveLocationView
+    moveLocationView,
+    manualView
   },
 
   data() {
@@ -46,7 +53,8 @@ export default {
       form: { ...interfaceForm },
       search: { ...interfaceForm },
       selectedItems: [],
-      isShowMove: false
+      isShowMove: false,
+      isShowManual: false
     }
   },
 

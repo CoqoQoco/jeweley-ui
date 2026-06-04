@@ -55,6 +55,9 @@
             </span>
           </div>
           <div>
+            <button class="btn btn-sm btn-outline-main mr-2" type="button" @click="$emit('manual')" title="คู่มือการใช้งาน">
+              <i class="bi bi-journal-text"></i> คู่มือ
+            </button>
             <button class="btn btn-sm btn-green" type="submit" title="ค้นหา">
               <i class="bi bi-search"></i>
             </button>
@@ -105,7 +108,7 @@ export default {
     }
   },
 
-  emits: ['search', 'clear', 'move'],
+  emits: ['search', 'clear', 'move', 'manual'],
 
   watch: {
     modelForm: {
