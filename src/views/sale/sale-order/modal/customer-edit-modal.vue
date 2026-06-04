@@ -258,7 +258,7 @@ export default {
         if (isMaster) {
           await this.submitUpdateCustomerMaster()
         } else {
-          this.submitUpdateDocumentOnly()
+          await this.submitUpdateDocumentOnly()
         }
       })
     },
@@ -295,18 +295,19 @@ export default {
       }
     },
 
-    submitUpdateDocumentOnly() {
-      const updatedData = {
-        code: this.form.code,
-        nameTh: this.form.nameTh,
-        nameEn: this.form.nameEn,
-        address: this.form.address,
-        telephone1: this.form.telephone1,
-        telephone2: this.form.telephone2,
-        email: this.form.email,
-        contactName: this.form.contactName
-      }
+    async submitUpdateDocumentOnly() {
+      await this.$nextTick()
       swAlert.success('แก้ไขข้อมูลลูกค้าในใบขายสำเร็จ', null, () => {
+        const updatedData = {
+          code: this.form.code,
+          nameTh: this.form.nameTh,
+          nameEn: this.form.nameEn,
+          address: this.form.address,
+          telephone1: this.form.telephone1,
+          telephone2: this.form.telephone2,
+          email: this.form.email,
+          contactName: this.form.contactName
+        }
         this.$emit('customerUpdated', updatedData)
         this.onCancel()
       })

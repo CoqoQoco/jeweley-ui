@@ -1842,6 +1842,7 @@ export default {
       copyItems: [],
       type: 'STOCK-PRODUCT',
       isLoadingData: false,
+      customerLocallyEdited: false,
 
       // Modal states
       isShow: {
@@ -2157,10 +2158,10 @@ export default {
       this.formSaleOrder = {
         ...this.formSaleOrder,
         quotationNumber: saleOrderData.quotationNumber,
-        customerName: saleOrderData.customer?.name || '',
-        customerAddress: saleOrderData.customer?.address || '',
-        customerPhone: saleOrderData.customer?.phone || '',
-        customerEmail: saleOrderData.customer?.email || '',
+        customerName: this.customerLocallyEdited ? this.formSaleOrder.customerName : (saleOrderData.customer?.name || ''),
+        customerAddress: this.customerLocallyEdited ? this.formSaleOrder.customerAddress : (saleOrderData.customer?.address || ''),
+        customerPhone: this.customerLocallyEdited ? this.formSaleOrder.customerPhone : (saleOrderData.customer?.phone || ''),
+        customerEmail: this.customerLocallyEdited ? this.formSaleOrder.customerEmail : (saleOrderData.customer?.email || ''),
         freight: saleOrderData.freight || 0,
         currencyUnit: saleOrderData.currencyUnit || 'US$',
         currencyRate: saleOrderData.currencyRate || 33.0,
@@ -2208,11 +2209,11 @@ export default {
         remark: saleOrderData.remark || '',
         customerRemark: saleOrderData.customer?.remark || '',
 
-        customerCode: saleOrderData.customer?.code || '',
-        customerName: saleOrderData.customer?.name || '',
-        customerAddress: saleOrderData.customer?.address || '',
-        customerPhone: saleOrderData.customer?.phone || '',
-        customerEmail: saleOrderData.customer?.email || '',
+        customerCode: this.customerLocallyEdited ? this.formSaleOrder.customerCode : (saleOrderData.customer?.code || ''),
+        customerName: this.customerLocallyEdited ? this.formSaleOrder.customerName : (saleOrderData.customer?.name || ''),
+        customerAddress: this.customerLocallyEdited ? this.formSaleOrder.customerAddress : (saleOrderData.customer?.address || ''),
+        customerPhone: this.customerLocallyEdited ? this.formSaleOrder.customerPhone : (saleOrderData.customer?.phone || ''),
+        customerEmail: this.customerLocallyEdited ? this.formSaleOrder.customerEmail : (saleOrderData.customer?.email || ''),
 
         currencyUnit: saleOrderData.currencyUnit || 'US$',
         currencyRate: saleOrderData.currencyRate || 33.0,
@@ -2281,6 +2282,8 @@ export default {
     },
 
     async getSaleOrderData(soNumber) {
+      this.customerLocallyEdited = false
+
       const response = await this.saleOrderStore.fetchGet({
         formValue: { soNumber: soNumber }
       })
@@ -2393,6 +2396,7 @@ export default {
         customerPhone: data.telephone1 || '',
         customerEmail: data.email || ''
       }
+      this.customerLocallyEdited = true
       this.isShow.editCustomer = false
     },
 
