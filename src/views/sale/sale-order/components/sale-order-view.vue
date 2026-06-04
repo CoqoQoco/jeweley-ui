@@ -104,6 +104,16 @@
                 <i class="bi bi-search mr-1"></i>
                 <span>ค้นหาลูกค้า</span>
               </button>
+              <button
+                v-if="formSaleOrder.customerCode"
+                class="btn btn-sm btn-outline-main ml-2"
+                type="button"
+                @click="onEditCustomer"
+                title="แก้ไขลูกค้า"
+                :disabled="isViewMode"
+              >
+                <i class="bi bi-pencil mr-1"></i><span>แก้ไข</span>
+              </button>
             </div>
           </div>
 
@@ -1694,6 +1704,13 @@
     @customerCreated="onCustomerCreated"
   />
 
+  <CustomerEditModal
+    :isShow="isShow.editCustomer"
+    :customerData="editCustomerData"
+    @closeModal="isShow.editCustomer = false"
+    @customerUpdated="onCustomerUpdated"
+  />
+
   <!-- Confirm Stock Modal -->
   <ConfirmStockModal
     :isShowModal="isShow.confirmStockModal"
@@ -1734,6 +1751,7 @@ import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
+import CustomerEditModal from '../modal/customer-edit-modal.vue'
 import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
 import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
 import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
@@ -1761,7 +1779,8 @@ export default {
     imagePreview,
     editStockView,
     CustomerSearchModal,
-    CustomerCreateModal
+    CustomerCreateModal,
+    CustomerEditModal
   },
 
   setup() {
@@ -1817,6 +1836,7 @@ export default {
         isEditStock: false,
         searchCustomer: false,
         createCustomer: false,
+        editCustomer: false,
         invoiceModal: false,
         confirmStockModal: false,
         confirmAndInvoiceModal: false
@@ -2059,6 +2079,17 @@ export default {
     },
     soGrandTotal() {
       return this.soTotalBeforeVat + this.soVatAmount
+    },
+
+    editCustomerData() {
+      return {
+        code: this.formSaleOrder.customerCode,
+        nameTh: this.formSaleOrder.customerName,
+        nameEn: '',
+        address: this.formSaleOrder.customerAddress,
+        telephone1: this.formSaleOrder.customerPhone,
+        email: this.formSaleOrder.customerEmail
+      }
     }
   },
 
@@ -2336,6 +2367,21 @@ export default {
     onCloseCustomerModal() {
       this.isShow.searchCustomer = false
       this.isShow.createCustomer = false
+    },
+
+    onEditCustomer() {
+      this.isShow.editCustomer = true
+    },
+
+    onCustomerUpdated(data) {
+      this.formSaleOrder = {
+        ...this.formSaleOrder,
+        customerName: data.nameTh || data.nameEn || '',
+        customerAddress: data.address || '',
+        customerPhone: data.telephone1 || '',
+        customerEmail: data.email || ''
+      }
+      this.isShow.editCustomer = false
     },
 
     // ============================================
