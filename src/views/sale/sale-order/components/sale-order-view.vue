@@ -1646,6 +1646,16 @@
             <i v-else class="bi bi-eye mr-1"></i>
             Preview
           </button>
+          <button
+            class="btn btn-sm btn-outline-main"
+            type="button"
+            @click="exportExcel"
+            :disabled="stockItems.length === 0 || isExportingExcel"
+          >
+            <span v-if="isExportingExcel" class="spinner-border spinner-border-sm mr-2"></span>
+            <i v-else class="bi bi-file-earmark-excel mr-1"></i>
+            Export Excel
+          </button>
           <div
             class="d-flex align-items-center"
             style="gap: 4px; cursor: pointer; white-space: nowrap"
@@ -1760,6 +1770,7 @@ import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAl
 import { formatISOString } from '@/services/utils/dayjs.js'
 
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
+import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
@@ -1820,6 +1831,7 @@ export default {
       isOnDraft: false,
       isExportingPDF: false,
       isPreviewingPDF: false,
+      isExportingExcel: false,
       pdfShowCifLabel: true,
       productSearch: {
         stockNumber: '',
@@ -2719,6 +2731,37 @@ export default {
       const pdf = await pdfBuilder.generatePDF()
       pdf.open()
       this.isPreviewingPDF = false
+    },
+
+    async exportExcel() {
+      if (this.stockItems.length === 0) {
+        warning('ไม่มีสินค้าสำหรับสร้าง Excel')
+        return
+      }
+
+      this.isExportingExcel = true
+      const data = {
+        soNumber: this.formSaleOrder.number,
+        createDate: this.formSaleOrder.date,
+        customerName: this.formSaleOrder.customerName,
+        customerAddress: this.formSaleOrder.customerAddress,
+        customerTel: this.formSaleOrder.customerPhone,
+        customerEmail: this.formSaleOrder.customerEmail,
+        remark: this.formSaleOrder.remark,
+        specialDiscount: this.formSaleOrder.specialDiscount || 0,
+        specialAddition: this.formSaleOrder.specialAddition || 0,
+        freight: this.formSaleOrder.freight || 0,
+        vatPercent: this.formSaleOrder.vatPercent || 0,
+        items: this.stockItems
+      }
+      const builder = new SaleOrderExcelBuilder(data, {
+        currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
+        currencyRate: Number(this.formSaleOrder.currencyRate) || 1,
+        showCifLabel: this.pdfShowCifLabel
+      })
+      await builder.prepare()
+      await builder.downloadExcel('SO_' + (this.formSaleOrder.number || 'DRAFT') + '.xlsx')
+      this.isExportingExcel = false
     },
 
     async confirmOrder() {

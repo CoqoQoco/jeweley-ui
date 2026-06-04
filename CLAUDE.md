@@ -87,4 +87,6 @@ src/
 | @.claude/skills/generic-components/SKILL.md | CalendarGeneric, AutoComplete |
 | @.claude/skills/modal-system/SKILL.md | สร้าง Modal, popup, dialog |
 | @.claude/skills/pdf-system/SKILL.md | สร้าง PDF, export เอกสาร |
+| @.claude/skills/excel-system/SKILL.md | export Excel, .xlsx, ExcelHelper, document builder |
 | @.claude/skills/ui-layout/SKILL.md | Page header, card section, form row, button spacing |
+| @.claude/skills/user-manual/SKILL.md | สร้างปุ่มคู่มือ + manual modal พร้อม screenshot |
