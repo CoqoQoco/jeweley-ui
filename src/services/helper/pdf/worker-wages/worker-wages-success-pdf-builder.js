@@ -1,5 +1,6 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
+import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
 
 export class WorkerWagesSuccessPdfBuilder {
   constructor(worker, dateRange, items, mode, slip = null) {
@@ -144,9 +145,10 @@ export class WorkerWagesSuccessPdfBuilder {
 
     const dataRows = this.items.map((item) => {
       const lossPercent = item.lossPercent ?? 0
-      const weightLossAllowed = item.weightLossAllowed ?? ((item.goldWeightCheck ?? 0) * lossPercent / 100)
-      const weightLossActual = item.weightLossActual ?? 0
-      const moneyDiff = item.moneyDiff ?? 0
+      const calc = calculateGoldLossMetrics(item.goldWeightSend, item.goldWeightCheck, item.lossPercent, item.goldLossPrice)
+      const weightLossAllowed = item.weightLossAllowed ?? calc.weightLossAllowed
+      const weightLossActual = item.weightLossActual ?? calc.weightLossActual
+      const moneyDiff = item.moneyDiff ?? calc.moneyDiff
 
       totalWeightLoss += weightLossActual
       totalMoneyDiff += moneyDiff

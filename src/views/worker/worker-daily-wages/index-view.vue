@@ -36,6 +36,7 @@ import { formatISOString } from '@/services/utils/dayjs'
 import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 
+import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
 import { WorkerWagesSuccessPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-success-pdf-builder.js'
 import { WorkerWagesTrackingPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-tracking-pdf-builder.js'
 
@@ -83,11 +84,8 @@ export default {
       return items
         .filter((r) => r.isGoldLoss && !r.workerGoldLossSlipId)
         .map((row) => {
-          const weightCheck = row.goldWeightCheck || 0
-          const rawLoss = (row.goldWeightSend || 0) - weightCheck
-          const weightLossAllowed = weightCheck * ((row.lossPercent || 0) / 100)
-          const weightLossActual = Math.round((weightLossAllowed - rawLoss) * 10000) / 10000
-          return { ...row, weightLossAllowed, weightLossActual }
+          const m = calculateGoldLossMetrics(row.goldWeightSend, row.goldWeightCheck, row.lossPercent, row.goldLossPrice)
+          return { ...row, weightLossAllowed: m.weightLossAllowed, weightLossActual: m.weightLossActual, totalWages: m.moneyDiff }
         })
     }
   },

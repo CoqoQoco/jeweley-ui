@@ -95,6 +95,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import Column from 'primevue/column'
+import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
 
 const BASE_COLUMNS = [
   { field: 'woText', header: 'เลขที่ใบงาน', minWidth: '130px' },
@@ -161,11 +162,8 @@ export default {
 
       return filtered.map((row) => {
         if (!row.isGoldLoss) return row
-        const weightCheck = row.goldWeightCheck || 0
-        const rawLoss = (row.goldWeightSend || 0) - weightCheck
-        const weightLossAllowed = weightCheck * ((row.lossPercent || 0) / 100)
-        const weightLossActual = Math.round((weightLossAllowed - rawLoss) * 10000) / 10000
-        return { ...row, weightLossAllowed, weightLossActual }
+        const m = calculateGoldLossMetrics(row.goldWeightSend, row.goldWeightCheck, row.lossPercent, row.goldLossPrice)
+        return { ...row, weightLossAllowed: m.weightLossAllowed, weightLossActual: m.weightLossActual, totalWages: m.moneyDiff }
       })
     },
 

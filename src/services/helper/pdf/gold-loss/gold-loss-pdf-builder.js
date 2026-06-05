@@ -1,5 +1,6 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
+import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
 
 export class GoldLossPdfBuilder {
   constructor(header, items) {
@@ -112,9 +113,7 @@ export class GoldLossPdfBuilder {
       const weightDiff = send - check
       const lossPercent = item.lossPercent ?? 0
       const goldLossPrice = item.goldLossPrice ?? 0
-      const weightLossAllowed = send * (lossPercent / 100)
-      const weightLossActual = weightLossAllowed - weightDiff
-      const moneyDiff = weightLossActual * goldLossPrice
+      const { weightLossAllowed, weightLossActual, moneyDiff } = calculateGoldLossMetrics(item.goldWeightSend, item.goldWeightCheck, item.lossPercent, item.goldLossPrice)
 
       return [
         { text: idx + 1, alignment: 'center' },
@@ -159,15 +158,9 @@ export class GoldLossPdfBuilder {
 
   getSummaryContent() {
     let totalMoneyDiff = 0
-    this.items.forEach(item => {
-      const send = item.goldWeightSend ?? 0
-      const check = item.goldWeightCheck ?? 0
-      const weightDiff = send - check
-      const lossPercent = item.lossPercent ?? 0
-      const goldLossPrice = item.goldLossPrice ?? 0
-      const weightLossAllowed = send * (lossPercent / 100)
-      const weightLossActual = weightLossAllowed - weightDiff
-      totalMoneyDiff += weightLossActual * goldLossPrice
+    this.items.forEach((item) => {
+      const { moneyDiff } = calculateGoldLossMetrics(item.goldWeightSend, item.goldWeightCheck, item.lossPercent, item.goldLossPrice)
+      totalMoneyDiff += moneyDiff
     })
 
     return {
