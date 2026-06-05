@@ -5,6 +5,7 @@ import stockGem from '../web/stock/gem/stock-gem-routes.js'
 import stockProduct from '../web/stock/product/stock-product-routes.js'
 import sale from '../web/sale/sale-routes.js'
 import settingRoutes from '../web/setting/setting-routes.js'
+import catalog from '../web/catalog/catalog-routes.js'
 
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
@@ -68,6 +69,8 @@ const routes = [
   ...stockProduct,
   ...stockGem,
   ...sale,
+  // --------- catalog
+  ...catalog,
 
   // ------------------ customer -------------------
   {

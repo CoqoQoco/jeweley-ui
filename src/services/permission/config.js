@@ -51,6 +51,9 @@ export const PERMISSIONS = {
   //master
   MASTER_VIEW: 'master:view',
 
+  //catalog
+  CATALOG_VIEW: 'catalog:view',
+
   //sale
   SALE_VIEW: 'sale:view',
   SALE_CREATE: 'sale:create',
@@ -123,6 +126,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.SALE_VIEW,
     PERMISSIONS.SALE_CREATE,
 
+    PERMISSIONS.CATALOG_VIEW,
+
     // Mobile Features (Dev มีสิทธิ์ทั้งหมด)
     PERMISSIONS.MOBILE_DASHBOARD,
     PERMISSIONS.MOBILE_SCAN,
@@ -166,6 +171,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.REPORT_VIEW,
 
     PERMISSIONS.MASTER_VIEW,
+
+    PERMISSIONS.CATALOG_VIEW,
 
     // Mobile Features (Admin มีสิทธิ์ทั้งหมด)
     PERMISSIONS.MOBILE_DASHBOARD,
