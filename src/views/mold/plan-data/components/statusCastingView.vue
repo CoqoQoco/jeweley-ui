@@ -24,7 +24,7 @@
               <imagePreview
                 :imageName="img"
                 type="PATH"
-                path="Images/MoldPlanCasting"
+                path="MoldPlanCasting"
                 :width="100"
                 :height="100"
               />

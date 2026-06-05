@@ -24,7 +24,7 @@
               <imagePreview
                 :imageName="img"
                 type="PATH"
-                path="Images/Mold"
+                path="Mold"
                 :width="100"
                 :height="100"
               />

@@ -247,17 +247,17 @@ export default {
     getImgPath(data) {
       switch (data.status) {
         case 10:
-          return 'Images/MoldPlanDesign'
+          return 'MoldPlanDesign'
         case 20:
-          return 'Images/MoldPlanResin'
+          return 'MoldPlanResin'
         case 30:
-          return 'Images/MoldPlanCastingSilver'
+          return 'MoldPlanCastingSilver'
         case 40:
-          return 'Images/MoldPlanCasting'
+          return 'MoldPlanCasting'
         case 50:
-          return 'Images/MoldPlanCutting'
+          return 'MoldPlanCutting'
         case 60:
-          return 'Images/Mold'
+          return 'Mold'
         default:
           return null
       }
