@@ -79,6 +79,72 @@
 
           <div></div>
         </div>
+
+        <div class="form-col-container mt-2">
+          <div class="currency-group">
+            <div class="cg-field cg-currency">
+              <span class="title-text">Currency</span>
+              <AutoCompleteGeneric
+                :modelValue="formSaleOrder.currencyUnit"
+                :staticOptions="CURRENCY_UNITS"
+                :useStaticList="true"
+                optionLabel="code"
+                placeholder="เช่น US$, EUR"
+                :forceSelection="false"
+                :disabled="isViewMode"
+                customClass="currency-ac"
+                @update:modelValue="onCurrencyChange"
+              >
+                <template #option="{ option }">
+                  <span>{{ option.label }}</span>
+                </template>
+              </AutoCompleteGeneric>
+            </div>
+            <div class="cg-field">
+              <span class="title-text">Rate</span>
+              <input
+                class="form-control bg-input input-bg cg-input"
+                type="number"
+                v-model.number="formSaleOrder.currencyRate"
+                min="0"
+                step="any"
+                :readonly="isViewMode"
+                @input="recalculateAll"
+              />
+            </div>
+            <div class="cg-field">
+              <span class="title-text">Markup</span>
+              <input
+                class="form-control bg-input input-bg cg-input"
+                type="number"
+                v-model.number="formSaleOrder.markup"
+                min="0"
+                step="any"
+                :readonly="isViewMode"
+              />
+            </div>
+            <div class="cg-field">
+              <span class="title-text">Discount (%)</span>
+              <InputWithButton
+                v-model.number="overallDiscountPercent"
+                type="number"
+                width="100px"
+                min="0"
+                max="100"
+                step="any"
+                btnTitle="กำหนดส่วนลดให้ทุกรายการ"
+                :disabled="isViewMode"
+                @btn-click="applyOverallDiscount"
+              >
+                <template #btn-content>
+                  <i class="bi bi-check-all"></i>
+                </template>
+              </InputWithButton>
+            </div>
+          </div>
+          <div></div>
+          <div></div>
+        </div>
       </div>
     </div>
 
@@ -103,6 +169,15 @@
               >
                 <i class="bi bi-search mr-1"></i>
                 <span>ค้นหาลูกค้า</span>
+              </button>
+              <button
+                class="btn btn-sm btn-green mr-2"
+                type="button"
+                @click="onCreateCustomer"
+                title="เพิ่มลูกค้าใหม่"
+                :disabled="hasSaleOrderNumber || isViewMode"
+              >
+                <i class="bi bi-plus-circle mr-1"></i><span>เพิ่มลูกค้าใหม่</span>
               </button>
               <button
                 v-if="formSaleOrder.customerCode"
@@ -210,73 +285,6 @@
           </div>
         </form>
 
-        <div class="line"></div>
-        <div class="d-flex justify-content-start mt-2">
-          <div class="mr-2">
-            <span class="title-text">Currency</span>
-            <input
-              :class="['form-control bg-input', 'input-bg']"
-              type="text"
-              v-model.trim="formSaleOrder.currencyUnit"
-              style="width: 150px"
-              :readonly="isViewMode"
-            />
-          </div>
-          <div class="mr-2">
-            <span class="title-text">Currency Rate</span>
-            <input
-              :class="['form-control bg-input', 'input-bg']"
-              type="number"
-              v-model.number="formSaleOrder.currencyRate"
-              min="0"
-              step="any"
-              style="width: 150px"
-              :readonly="isViewMode"
-              @input="recalculateAll"
-            />
-          </div>
-          <div>
-            <span class="title-text">Adjust Discount All (%)</span>
-            <input
-              :class="['form-control bg-input', 'input-bg']"
-              type="number"
-              v-model.number="overallDiscountPercent"
-              min="0"
-              max="100"
-              step="any"
-              style="width: 150px"
-              :readonly="isViewMode"
-              @input="applyOverallDiscount"
-            />
-          </div>
-          <!-- <div class="mr-2">
-            <span class="title-text">Markup</span>
-            <input
-              :class="['form-control bg-input', 'input-bg']"
-              type="number"
-              v-model.number="formSaleOrder.markup"
-              min="0"
-              step="any"
-              style="width: 150px"
-              :readonly="isViewMode"
-              @input="recalculateAll"
-            />
-          </div>
-          <div>
-            <span class="title-text">Gold (US$/Oz.)</span>
-            <input
-              :class="['form-control bg-input', 'input-bg']"
-              type="number"
-              v-model.number="formSaleOrder.goldPerOz"
-              min="0"
-              max="10000"
-              step="any"
-              style="width: 150px"
-              :readonly="isViewMode"
-              @input="recalculateAll"
-            />
-          </div> -->
-        </div>
       </div>
     </div>
 
@@ -1698,6 +1706,7 @@
   <edit-stock-view
     :isShow="isShow.isEditStock"
     :modelStock="modelEditStock"
+    :uploadMode="true"
     @closeModal="onCloseEditStockModal"
   />
 
@@ -1758,6 +1767,8 @@ import Row from 'primevue/row'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import InputWithButton from '@/components/input/InputWithButton.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
@@ -1768,6 +1779,7 @@ import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
+import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
@@ -1784,6 +1796,8 @@ export default {
     Row,
     Calendar,
     Dropdown,
+    AutoCompleteGeneric,
+    InputWithButton,
     SaleOrderInvoiceModal,
     ConfirmStockModal,
     ConfirmAndInvoiceModal,
@@ -1827,6 +1841,7 @@ export default {
 
   data() {
     return {
+      CURRENCY_UNITS,
       isSONumberLocked: false,
       isOnDraft: false,
       isExportingPDF: false,
@@ -2351,6 +2366,14 @@ export default {
 
     onSearchCustomer() {
       this.isShow.searchCustomer = true
+    },
+
+    onCreateCustomer() {
+      this.isShow.createCustomer = true
+    },
+
+    onCurrencyChange(value) {
+      this.formSaleOrder.currencyUnit = typeof value === 'object' ? value.code : value
     },
 
     onCustomerSelected(customerData) {
@@ -3833,5 +3856,33 @@ input:disabled {
     background-color: #ffc107;
     color: #212529;
   }
+}
+
+:deep(.currency-ac) {
+  width: 90px !important;
+  max-width: 100%;
+  .p-autocomplete-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+.currency-group {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.cg-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.cg-input {
+  width: 80px;
 }
 </style>

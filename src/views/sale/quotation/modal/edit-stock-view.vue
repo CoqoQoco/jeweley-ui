@@ -622,6 +622,10 @@ export default {
       type: Object,
       required: true,
       default: () => {}
+    },
+    uploadMode: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -1111,17 +1115,30 @@ export default {
         swAlert.warning('', 'กรุณาเลือกไฟล์รูปภาพเท่านั้น')
         return
       }
-      try {
-        const compressedFile = await compressOptimalImage(file)
-        // เก็บเป็น base64 ใน quotation JSON โดยตรง (ไม่อัปโหลด Azure)
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-          this.stock.imageBase64 = ev.target.result
+      const compressedFile = await compressOptimalImage(file)
+
+      if (this.uploadMode && this.stock.stockNumber) {
+        const form = new FormData()
+        form.append('StockNumber', this.stock.stockNumber)
+        form.append('Image', compressedFile)
+        const res = await this.stockProductImageStore.fetchReplaceStockImage({ form })
+        if (res && res.imageName) {
+          this.stock.imagePath = res.imageName
+          const reader = new FileReader()
+          reader.onload = (ev) => {
+            this.stock.imageBase64 = ev.target.result
+          }
+          reader.readAsDataURL(compressedFile)
+          swAlert.success('อัปโหลดรูปสินค้าสำเร็จ')
         }
-        reader.readAsDataURL(compressedFile)
-      } catch (error) {
-        swAlert.error('เกิดข้อผิดพลาดในการโหลดรูปภาพ')
+        return
       }
+
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        this.stock.imageBase64 = ev.target.result
+      }
+      reader.readAsDataURL(compressedFile)
     },
     removeImage() {
       this.stock.imagePath = ''

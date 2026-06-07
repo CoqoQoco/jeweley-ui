@@ -27,6 +27,23 @@ export const stockProductImageApiStor = defineStore('stockProductImage', {
         console.error('Error fetching save stock product image:', error)
       }
     },
+    async fetchReplaceStockImage({ form }) {
+      try {
+        let options = {
+          headers: {
+            'Content-Type': `multipart/form-data`
+          }
+        }
+        const res = await api.jewelry.post('StockProductImage/Replace', form, options)
+        if (res) {
+          return res
+        } else {
+          return null
+        }
+      } catch (error) {
+        console.error('Error fetching replace stock product image:', error)
+      }
+    },
     async fetchListImage({ take, skip, sort, search, skipLoading = false }) {
       try {
         const param = {
