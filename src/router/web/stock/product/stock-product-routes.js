@@ -12,6 +12,10 @@ const GRProductionList = () =>
 const GRProduction = () => import('@/views/receipt-stock/product/new-gr-production/index-view.vue')
 const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-view.vue')
 
+const GROutsourceList = () =>
+  import('@/views/receipt-stock/product/outsource-receipt-list/index-view.vue')
+const GROutsource = () => import('@/views/receipt-stock/product/new-gr-outsource/index-view.vue')
+
 const StockImage = () => import('@/views/stock/product/image/IndexView.vue')
 
 const Barcode = () => import('@/views/receipt-stock/product/test-barcode/index-view.vue')
@@ -103,13 +107,26 @@ const routes = [
       {
         path: '/goods-receipt-outsource',
         name: 'goods-receipt-outsource',
-        component: Dashboard,
+        component: GROutsourceList,
         meta: {
           Displayname: {
             en: 'Goods Receipt Outsource',
             th: 'รับสินค้างานนอก'
           },
           minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
+        }
+      },
+      {
+        path: '/goods-receipt-outsource/create',
+        name: 'goods-receipt-outsource-create',
+        component: GROutsource,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Outsource Create',
+            th: 'รับสินค้างานนอก'
+          },
+          minorShow: false,
           permissions: [PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE]
         }
       },
