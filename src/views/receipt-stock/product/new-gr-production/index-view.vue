@@ -691,6 +691,7 @@ export default {
         productNameTH: item.productNameTH?.trim() || this.data.productName || '',
         productNameEN: item.productNameEN?.trim() || this.data.productName || '',
         moldDesign: item.moldDesign?.trim() || this.data.mold || '',
+        location: item.location?.trim() || 'MAIN',
         price: 0,
         barcodeGold: '',
         barcodeGems: []
