@@ -90,3 +90,4 @@ src/
 | @.claude/skills/excel-system/SKILL.md | export Excel, .xlsx, ExcelHelper, document builder |
 | @.claude/skills/ui-layout/SKILL.md | Page header, card section, form row, button spacing |
 | @.claude/skills/user-manual/SKILL.md | สร้างปุ่มคู่มือ + manual modal พร้อม screenshot |
+| @.claude/skills/chrome-mcp-testing/SKILL.md | ทดสอบ UI ด้วย chrome MCP, สร้าง/รัน test case, verify feature, reproduce bug |
