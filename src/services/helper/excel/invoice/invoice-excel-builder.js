@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
+import { ceilToInteger } from '@/services/utils/decimal.js'
 
 export class InvoiceExcelBuilder {
   constructor(
@@ -40,6 +41,9 @@ export class InvoiceExcelBuilder {
     this.totalBeforeVat = this.totalAfterDiscountAndAddition + this.freightAndInsurance
     this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
     this.totalAmount = this.totalBeforeVat + this.vatAmount
+    this.grandTotalRaw = this.totalAmount
+    this.grandTotalRounded = ceilToInteger(this.totalAmount)
+    this.roundingAdjustment = this.grandTotalRounded - this.grandTotalRaw
 
     // Options (configurable per document type)
     this.documentTitle = options.documentTitle || 'QUOTATION'
@@ -623,8 +627,19 @@ export class InvoiceExcelBuilder {
       row++
     }
 
+    // ROUNDING row (only when adjustment > 0)
+    if (this.roundingAdjustment > 0) {
+      this.addSummaryRow(
+        worksheet,
+        row,
+        'ROUNDING',
+        '+' + this.formatCurrency(this.roundingAdjustment)
+      )
+      row++
+    }
+
     // Grand Total / C.I.F row (number in words left | C.I.F + amount right)
-    const grandTotalInWords = this.convertNumberToWords(this.totalAmount)
+    const grandTotalInWords = this.convertNumberToWords(this.grandTotalRounded)
 
     worksheet.mergeCells(`A${row}:G${row}`)
     const wordsCell = worksheet.getCell(`A${row}`)
@@ -653,7 +668,7 @@ export class InvoiceExcelBuilder {
     }
 
     const cifAmountCell = worksheet.getCell(`J${row}`)
-    cifAmountCell.value = this.formatCurrency(this.totalAmount)
+    cifAmountCell.value = this.formatCurrency(this.grandTotalRounded)
     cifAmountCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF8B0000' } }
     cifAmountCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } }
     cifAmountCell.alignment = { vertical: 'middle', horizontal: 'right' }

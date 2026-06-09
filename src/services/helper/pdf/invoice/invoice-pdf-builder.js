@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { ceilToInteger } from '@/services/utils/decimal.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -47,6 +48,9 @@ export class InvoicePdfBuilder {
     this.totalBeforeVat = this.totalAfterDiscountAndAddition + this.freightAndInsurance
     this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
     this.totalAmount = this.totalBeforeVat + this.vatAmount
+    this.grandTotalRaw = this.totalAmount
+    this.grandTotalRounded = ceilToInteger(this.totalAmount)
+    this.roundingAdjustment = this.grandTotalRounded - this.grandTotalRaw
   }
 
   calculateSubtotal() {
@@ -718,8 +722,29 @@ export class InvoicePdfBuilder {
       ])
     }
 
+    // ROUNDING row (only when adjustment > 0)
+    if (this.roundingAdjustment > 0) {
+      body.push([
+        {
+          text: '',
+          style: 'summaryLabel',
+          alignment: 'right',
+          colSpan: 7,
+          border: [true, false, false, false]
+        },
+        {}, {}, {}, {}, {}, {},
+        { text: 'ROUNDING', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: '+' + this.roundNoDecimal(this.roundingAdjustment),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
     // GRAND TOTAL (C.I.F)
-    const grandTotal = this.totalAmount
+    const grandTotal = this.grandTotalRounded
 
     body.push([
       {

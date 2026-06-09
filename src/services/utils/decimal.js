@@ -176,6 +176,12 @@ const parseDecimal = (value, decimals = 2) => {
   return roundDecimal(parsedValue, decimals)
 }
 
+const ceilToInteger = (value) => {
+  const parsed = parseFloat(value)
+  if (isNaN(parsed)) return 0
+  return Math.ceil(Math.round(parsed * 100) / 100)
+}
+
 export {
   formatDecimal,
   formatNumber,
@@ -185,5 +191,6 @@ export {
   subtractDecimal,
   multiplyDecimal,
   divideDecimal,
-  parseDecimal
+  parseDecimal,
+  ceilToInteger
 }

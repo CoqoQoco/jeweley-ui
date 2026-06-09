@@ -973,19 +973,53 @@
                 </template>
               </Column>
             </Row>
-            <!-- ราคารวม (Grand Total) -->
+            <!-- ราคารวม (ก่อนปัด) -->
             <Row>
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ราคารวม</span>
+                    <span>ราคารวม (ก่อนปัด)</span>
                   </div>
                 </template>
               </Column>
               <Column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ formatPrice(soGrandTotal) }}</span>
+                    <span>{{ formatPrice(grandTotalRaw) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- ปัดเศษ -->
+            <Row v-if="roundingAdjustment > 0">
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ปัดเศษ</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>+{{ formatPrice(roundingAdjustment) }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
+            <!-- ยอดที่ต้องชำระ -->
+            <Row>
+              <Column :colspan="18">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">ยอดที่ต้องชำระ</span>
+                  </div>
+                </template>
+              </Column>
+              <Column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">{{ formatPrice(grandTotalRounded) }}</span>
                   </div>
                 </template>
               </Column>
@@ -1776,7 +1810,7 @@ import CustomerEditModal from '../modal/customer-edit-modal.vue'
 import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
 import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
 import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
-import { formatDecimal } from '@/services/utils/decimal.js'
+import { formatDecimal, ceilToInteger } from '@/services/utils/decimal.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
@@ -2107,6 +2141,15 @@ export default {
     },
     soGrandTotal() {
       return this.soTotalBeforeVat + this.soVatAmount
+    },
+    grandTotalRaw() {
+      return Number(this.soGrandTotal)
+    },
+    grandTotalRounded() {
+      return ceilToInteger(this.grandTotalRaw)
+    },
+    roundingAdjustment() {
+      return this.grandTotalRounded - this.grandTotalRaw
     },
 
     editCustomerData() {
@@ -2671,6 +2714,8 @@ export default {
         specialAddition: this.formSaleOrder.specialAddition || 0,
         vat: this.formSaleOrder.vatPercent || 0,
         remark: this.formSaleOrder.remark || '',
+        subTotal: Number(this.getSumTotalConvertedPrice(this.stockItems)) || 0,
+        grandTotalRaw: this.grandTotalRaw,
         data: JSON.stringify({
           stockItems: stockItemsData,
           copyItems: copyItemsData,

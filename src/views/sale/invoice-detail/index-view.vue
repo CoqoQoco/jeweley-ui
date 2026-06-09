@@ -691,12 +691,46 @@
                 </Column>
               </Row>
 
-              <!-- ยอดรวมสุดท้าย -->
+              <!-- ราคารวม (ก่อนปัด) -->
               <Row>
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <h6 class="mb-0 text-primary">ยอดรวม Invoice:</h6>
+                      <h6 class="mb-0">ราคารวม (ก่อนปัด):</h6>
+                    </div>
+                  </template>
+                </Column>
+                <Column>
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <h6 class="mb-0">{{ formatNumber(grandTotalRaw) }}</h6>
+                    </div>
+                  </template>
+                </Column>
+              </Row>
+              <!-- ปัดเศษ -->
+              <Row v-if="roundingAdjustment > 0">
+                <Column :colspan="16">
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <h6 class="mb-0">ปัดเศษ:</h6>
+                    </div>
+                  </template>
+                </Column>
+                <Column>
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <h6 class="mb-0">+{{ formatNumber(roundingAdjustment) }}</h6>
+                    </div>
+                  </template>
+                </Column>
+              </Row>
+              <!-- ยอดที่ต้องชำระ -->
+              <Row>
+                <Column :colspan="16">
+                  <template #footer>
+                    <div class="text-right type-container">
+                      <h6 class="mb-0 text-primary">ยอดที่ต้องชำระ:</h6>
                     </div>
                   </template>
                 </Column>
@@ -704,7 +738,7 @@
                   <template #footer>
                     <div class="text-right type-container">
                       <h6 class="mb-0 font-weight-bold text-primary">
-                        {{ formatNumber(grandTotal) }}
+                        {{ formatNumber(grandTotalRounded) }}
                       </h6>
                     </div>
                   </template>
@@ -820,7 +854,7 @@
                     <div class="info-item">
                       <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
                       <p class="info-value font-weight-bold text-danger">
-                        {{ formatPriceWithCurrency(grandTotal - (invoiceData.deposit || 0)) }}
+                        {{ formatPriceWithCurrency(grandTotalRounded - (invoiceData.deposit || 0)) }}
                       </p>
                     </div>
                   </div>
@@ -907,9 +941,9 @@
                   </div>
                   <div class="col-md-4">
                     <div class="info-item highlight-total">
-                      <label class="info-label">ยอดรวม Invoice</label>
+                      <label class="info-label">ยอดที่ต้องชำระ</label>
                       <p class="info-value font-weight-bold text-primary">
-                        <i class="bi bi-receipt mr-2"></i>{{ formatPriceWithCurrency(grandTotal) }}
+                        <i class="bi bi-receipt mr-2"></i>{{ formatPriceWithCurrency(grandTotalRounded) }}
                       </p>
                     </div>
                   </div>
@@ -1005,9 +1039,9 @@
                     </div>
                     <div class="col-md-3">
                       <div class="info-item">
-                        <label class="info-label">ยอดรวม Invoice</label>
+                        <label class="info-label">ยอดที่ต้องชำระ</label>
                         <p class="info-value font-weight-bold">
-                          {{ formatNumber(grandTotal) }} {{ invoiceData.currencyUnit }}
+                          {{ formatNumber(grandTotalRounded) }} {{ invoiceData.currencyUnit }}
                         </p>
                       </div>
                     </div>
@@ -1037,7 +1071,7 @@
                           class="info-value font-weight-bold text-danger"
                           style="font-size: 1.1rem"
                         >
-                          {{ formatNumber(grandTotal - (invoiceData.deposit || 0) - paidAmount) }}
+                          {{ formatNumber(grandTotalRounded - (invoiceData.deposit || 0) - paidAmount) }}
                           {{ invoiceData.currencyUnit }}
                         </p>
                       </div>
@@ -1124,6 +1158,7 @@ import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-int
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import dayjs from 'dayjs'
+import { ceilToInteger } from '@/services/utils/decimal.js'
 
 export default {
   name: 'InvoiceDetailView',
@@ -1237,6 +1272,15 @@ export default {
     // ยอดรวมสุดท้ายรวม VAT
     grandTotal() {
       return this.totalBeforeVat + this.vatAmount
+    },
+    grandTotalRaw() {
+      return Number(this.totalBeforeVat) + Number(this.vatAmount)
+    },
+    grandTotalRounded() {
+      return ceilToInteger(this.grandTotalRaw)
+    },
+    roundingAdjustment() {
+      return this.grandTotalRounded - this.grandTotalRaw
     }
   },
 

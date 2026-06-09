@@ -740,19 +740,53 @@
                 </template>
               </column>
             </Row>
-            <!-- ราคารวม (Grand Total) -->
+            <!-- ราคารวม (ก่อนปัด) -->
             <Row>
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ราคารวม</span>
+                    <span>ราคารวม (ก่อนปัด)</span>
                   </div>
                 </template>
               </column>
               <column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ formatPrice(grandTotal) }}</span>
+                    <span>{{ formatPrice(grandTotalRaw) }}</span>
+                  </div>
+                </template>
+              </column>
+            </Row>
+            <!-- ปัดเศษ -->
+            <Row v-if="roundingAdjustment > 0">
+              <column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>ปัดเศษ</span>
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span>+{{ formatPrice(roundingAdjustment) }}</span>
+                  </div>
+                </template>
+              </column>
+            </Row>
+            <!-- ยอดที่ต้องชำระ -->
+            <Row>
+              <column :colspan="16">
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">ยอดที่ต้องชำระ</span>
+                  </div>
+                </template>
+              </column>
+              <column>
+                <template #footer>
+                  <div class="text-right type-container">
+                    <span class="font-weight-bold">{{ formatPrice(grandTotalRounded) }}</span>
                   </div>
                 </template>
               </column>
@@ -910,6 +944,7 @@ import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.
 import { InvoiceExcelBuilder } from '@/services/helper/excel/invoice/invoice-excel-builder.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+import { ceilToInteger } from '@/services/utils/decimal.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
@@ -1111,6 +1146,15 @@ export default {
     },
     grandTotal() {
       return (this.totalBeforeVat + this.vatAmount).toFixed(2)
+    },
+    grandTotalRaw() {
+      return Number(this.totalBeforeVat) + Number(this.vatAmount)
+    },
+    grandTotalRounded() {
+      return ceilToInteger(this.grandTotalRaw)
+    },
+    roundingAdjustment() {
+      return this.grandTotalRounded - this.grandTotalRaw
     },
     editCustomerData() {
       return {
@@ -1533,6 +1577,8 @@ export default {
         specialAddition: this.customer.specialAddition || 0,
         vat: this.customer.vatPercent || 0,
         goldPerOz: this.customer.goldPerOz || 0,
+        subTotal: Number(this.sumTotalConvertedPrice) || 0,
+        grandTotalRaw: this.grandTotalRaw,
 
         //data is quoatationItems in parse in json string
         data: JSON.stringify(dataSave || [])

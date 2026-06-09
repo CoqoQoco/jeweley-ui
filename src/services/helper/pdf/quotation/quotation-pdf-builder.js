@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { ceilToInteger } from '@/services/utils/decimal.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -41,6 +42,16 @@ export class InvoicePdfBuilder {
 
     // เพิ่มการคำนวณ totalAmount ใน constructor
     this.totalAmount = this.calculateTotalAmount()
+
+    // rounding fields (computed after totalAmount is set — using subTotal + freight + vat)
+    // grandTotalRaw computed inline here after full summary calculation
+    const _totalAfterSpecial = this.totalAmount - this.specialDiscount + this.specialAddition
+    const _subTotal = _totalAfterSpecial + this.freight
+    const _vatAmount = _subTotal * (this.vatPercent / 100)
+    const _grandTotalRaw = _subTotal + _vatAmount
+    this.grandTotalRaw = _grandTotalRaw
+    this.grandTotalRounded = ceilToInteger(_grandTotalRaw)
+    this.roundingAdjustment = this.grandTotalRounded - this.grandTotalRaw
   }
 
   // เพิ่มเมธอดคำนวณ totalAmount
@@ -772,10 +783,26 @@ export class InvoicePdfBuilder {
       ])
     }
 
+    // ROUNDING row (only when adjustment > 0)
+    if (this.roundingAdjustment > 0) {
+      body.push([
+        ...emptyLeftCells,
+        { text: 'ROUNDING', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: '+' + this.roundNoDecimal(this.roundingAdjustment),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    }
+
     // GRAND TOTAL / C.I.F row
+    const grandTotalFinal = this.grandTotalRounded
+
     body.push([
       {
-        text: this.convertNumberToWords(grandTotal),
+        text: this.convertNumberToWords(grandTotalFinal),
         style: 'summaryLabelColored',
         alignment: 'left',
         colSpan: 7
@@ -789,7 +816,7 @@ export class InvoicePdfBuilder {
       { text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
       {},
       {
-        text: this.roundNoDecimal(grandTotal),
+        text: this.roundNoDecimal(grandTotalFinal),
         style: 'totalSummaryLabelColored',
         alignment: 'right'
       }
