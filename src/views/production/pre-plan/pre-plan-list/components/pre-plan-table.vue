@@ -199,7 +199,7 @@ export default {
         includeCompleted: this.modelForm.includeCompleted ?? false,
         take: this.take,
         skip: this.skip,
-        sort: this.sort.length ? this.sort.map((s) => `${s.field} ${s.dir}`).join(',') : null,
+        sort: this.sort.length ? this.sort : null,
       })
       this.$emit('total-loaded', this.store.prePlanTotal)
     },
