@@ -40,6 +40,10 @@ export default defineConfig(() => {
     define: {
       __DEV__: !removeConsole,
       __REMOVE_CONSOLE__: removeConsole
+    },
+    server: {
+      port: 2002,
+      strictPort: true
     }
   }
 })
