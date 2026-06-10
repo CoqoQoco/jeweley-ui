@@ -22,6 +22,13 @@
           <i class="bi bi-printer"></i>
         </button>
         <button
+          class="btn btn-sm btn-green ml-1"
+          @click="onDuplicate(data)"
+          title="คัดลอกเป็นใบใหม่"
+        >
+          <i class="bi bi-files"></i>
+        </button>
+        <button
           v-if="isEditableStatus(data.status)"
           class="btn btn-sm btn-main ml-1"
           @click="onEdit(data)"
@@ -44,6 +51,14 @@
           title="ดูเอกสารอนุมัติ"
         >
           <i class="bi bi-file-earmark-text"></i>
+        </button>
+        <button
+          v-if="isDocCancellable(data.status)"
+          class="btn btn-sm btn-red ml-1"
+          @click="onOpenCancel(data)"
+          title="ยกเลิกใบสั่งผลิต"
+        >
+          <i class="bi bi-x-circle"></i>
         </button>
       </div>
     </template>
@@ -107,8 +122,14 @@
                   · <span class="title-text">สถานะแผน:</span> {{ item.planStatus }}
                 </span>
               </div>
-              <div v-else class="text-muted">
-                <i class="bi bi-clock"></i> ยังไม่ได้สร้างแผน
+              <div v-else-if="item.isCancelled" class="plan-info">
+                <span class="badge bg-secondary">ยกเลิกแล้ว</span>
+              </div>
+              <div v-else class="text-muted d-flex align-items-center">
+                <i class="bi bi-clock"></i>&nbsp;ยังไม่ได้สร้างแผน
+                <button class="btn btn-sm btn-red ml-2" @click="onCancelItem(data, item)" title="ยกเลิกรายการนี้">
+                  <i class="bi bi-x-circle"></i> ยกเลิกรายการ
+                </button>
               </div>
             </div>
           </div>
@@ -116,6 +137,12 @@
       </div>
     </template>
   </BaseDataTable>
+
+  <cancelReasonModal
+    :isShow="showCancelModal"
+    @submit="onConfirmCancel"
+    @closeModal="showCancelModal = false"
+  />
 </template>
 
 <script>
@@ -134,15 +161,17 @@ import {
   getPrePlanStatusLabel,
   getLinkedProgressClass,
 } from '@/services/helper/pre-plan-status.js'
-import { isEditableStatus } from '@/constants/pre-plan-status.js'
-import { warning } from '@/services/alert/sweetAlerts.js'
+import { isEditableStatus, isDocCancellable } from '@/constants/pre-plan-status.js'
+import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+
+import cancelReasonModal from '../modal/cancel-reason-modal.vue'
 import { PrePlanOrderFormPdfBuilder } from '@/services/helper/pdf/pre-plan-order-form/pre-plan-order-form-pdf-builder.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
 export default {
   name: 'PrePlanTable',
-  components: { BaseDataTable, imagePreview },
+  components: { BaseDataTable, imagePreview, cancelReasonModal },
   props: {
     modelForm: { type: Object, default: () => ({}) },
     exportTrigger: { type: Number, default: 0 },
@@ -158,6 +187,8 @@ export default {
       take: 10,
       skip: 0,
       sort: [],
+      showCancelModal: false,
+      cancelTarget: null,
       columns: [
         { field: 'action', header: '', minWidthwidth: '150px', sortable: false, align: 'center' },
         { field: 'status', header: 'สถานะ', minWidth: '130px', align: 'center' },
@@ -284,6 +315,9 @@ export default {
     onView(data) {
       this.$router.push({ name: 'pre-plan-edit', params: { id: data.id } })
     },
+    onDuplicate(data) {
+      this.$router.push({ name: 'pre-plan-create', query: { duplicateFrom: data.id } })
+    },
     onEdit(data) {
       this.$router.push({ name: 'pre-plan-edit', params: { id: data.id } })
     },
@@ -353,6 +387,30 @@ export default {
       return found?.description || code
     },
     isEditableStatus,
+    isDocCancellable,
+    onOpenCancel(data) {
+      this.cancelTarget = data
+      this.showCancelModal = true
+    },
+    async onConfirmCancel(reason) {
+      await this.store.cancelPrePlan(this.cancelTarget.id, {
+        id: Number(this.cancelTarget.id),
+        cancelReason: reason,
+      })
+      this.showCancelModal = false
+      success('ยกเลิกใบสั่งผลิตสำเร็จ')
+      await this.fetchData()
+    },
+    onCancelItem(data, item) {
+      confirmSubmit('ยืนยันยกเลิกรายการนี้?', 'ยืนยันการยกเลิก', async () => {
+        await this.store.cancelPrePlanItem(item.id, {
+          itemId: Number(item.id),
+          cancelReason: null,
+        })
+        success('ยกเลิกรายการสำเร็จ')
+        await this.fetchData()
+      })
+    },
     getPrePlanStatusClass,
     getPrePlanStatusLabel,
     getLinkedProgressClass,

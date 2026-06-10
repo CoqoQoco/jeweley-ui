@@ -45,6 +45,14 @@ export const usePrePlanStore = defineStore('prePlan', {
       return await api.jewelry.post(`ProductionPrePlan/Reject/${id}`, payload)
     },
 
+    async cancelPrePlan(id, payload) {
+      return await api.jewelry.post(`ProductionPrePlan/Cancel/${id}`, payload)
+    },
+
+    async cancelPrePlanItem(itemId, payload) {
+      return await api.jewelry.post(`ProductionPrePlan/CancelItem/${itemId}`, payload)
+    },
+
     async uploadApproveDocument(file) {
       const formData = new FormData()
       formData.append('file', file)

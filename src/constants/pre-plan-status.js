@@ -4,7 +4,13 @@ export const PRE_PLAN_STATUS_OPTIONS = [
   { value: 'Approved', label: 'อนุมัติแล้ว' },
   { value: 'Rejected', label: 'ปฏิเสธ' },
   { value: 'Consumed', label: 'ส่งผลิตแล้ว' },
+  { value: 'Cancelled', label: 'ยกเลิก' },
 ]
 
 export const EDITABLE_STATUS = ['Draft', 'Submitted', 'Rejected']
 export const isEditableStatus = (status) => EDITABLE_STATUS.includes(status)
+
+export const DOC_CANCELLABLE_STATUS = ['Draft', 'Submitted', 'Rejected', 'Approved']
+export function isDocCancellable(status) {
+  return DOC_CANCELLABLE_STATUS.includes(status)
+}

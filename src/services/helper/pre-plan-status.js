@@ -5,6 +5,7 @@ const STATUS_CLASS_MAP = {
   PartiallyConsumed: 'box-status-show',
   Consumed: 'box-status-next',
   Rejected: 'box-status-disable',
+  Cancelled: 'box-status-disable',
 }
 
 const STATUS_LABEL_FALLBACK = {
@@ -14,6 +15,7 @@ const STATUS_LABEL_FALLBACK = {
   PartiallyConsumed: 'สร้างแผนบางส่วน',
   Consumed: 'สร้างแผนครบ',
   Rejected: 'ปฏิเสธ',
+  Cancelled: 'ยกเลิก',
 }
 
 export function getPrePlanStatusClass(status) {

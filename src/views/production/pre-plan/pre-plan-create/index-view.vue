@@ -87,12 +87,17 @@ export default {
     prePlanId() {
       return this.$route.params.id ? parseInt(this.$route.params.id) : null
     },
+    duplicateFromId() {
+      return this.$route.query.duplicateFrom ? parseInt(this.$route.query.duplicateFrom) : null
+    },
   },
 
   async created() {
     await this.masterStore.fetchAll()
     if (this.isEditMode) {
       await this.loadPrePlan()
+    } else if (this.duplicateFromId) {
+      await this.loadDuplicate()
     }
   },
 
@@ -107,6 +112,16 @@ export default {
         return
       }
 
+      this.applyData(data)
+    },
+
+    async loadDuplicate() {
+      const data = await this.store.getPrePlan(this.duplicateFromId)
+      if (!data) return
+      this.applyData(data, { isDuplicate: true })
+    },
+
+    applyData(data, { isDuplicate = false } = {}) {
       this.form = {
         jobLocation: data.jobLocation || 'Domestic',
         jobType: data.jobType || 'NewDesign',
@@ -115,11 +130,11 @@ export default {
         remark: data.remark || '',
         orderDate: data.orderDate ? new Date(data.orderDate) : new Date(),
         deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : new Date(),
-        status: data.status || 'Draft',
+        status: isDuplicate ? 'Draft' : (data.status || 'Draft'),
         salesBy: data.salesBy || '',
         approvedBy: data.approvedBy || '',
-        createBy: data.createBy || '',
-        documentNo: data.documentNo || data.orderNo || '',
+        createBy: isDuplicate ? '' : (data.createBy || ''),
+        documentNo: isDuplicate ? '' : (data.documentNo || data.orderNo || ''),
       }
 
       const findByCode = (list, code) => {
