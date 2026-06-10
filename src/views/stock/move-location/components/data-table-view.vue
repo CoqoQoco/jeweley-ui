@@ -5,6 +5,7 @@
       :totalRecords="moveStore.dataSearch.total"
       :columns="columns"
       :perPage="take"
+      :itemsSelection="selectedItems"
       dataKey="stockNumber"
       :selectionMode="true"
       selectionType="multiple"
@@ -12,6 +13,25 @@
       @sort="handleSortChange"
       @update:itemsSelection="onSelectionChange"
     >
+      <template #imageTemplate="{ data }">
+        <div class="image-container">
+          <div v-if="data.imagePath">
+            <imagePreview
+              :imageName="data.imagePath"
+              :type="type"
+              :width="25"
+              :height="25"
+            />
+          </div>
+        </div>
+      </template>
+
+      <template #woTextTemplate="{ data }">
+        <div>
+          {{ `${data.wo}-${data.woNumber}` }}
+        </div>
+      </template>
+
       <template #qtyAvailableTemplate="{ data }">
         <span :class="data.qtyAvailable > 0 ? 'badge-ready' : 'badge-not-ready'">
           {{ data.qtyAvailable > 0 ? 'พร้อมขาย' : 'ไม่พร้อม' }}
@@ -22,6 +42,7 @@
 </template>
 
 <script>
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
 
@@ -29,7 +50,8 @@ export default {
   name: 'MoveLocationDataTableView',
 
   components: {
-    BaseDataTable
+    BaseDataTable,
+    imagePreview
   },
 
   setup() {
@@ -41,6 +63,10 @@ export default {
     modelForm: {
       type: Object,
       default: () => ({})
+    },
+    modelFormExport: {
+      type: Object,
+      default: () => ({})
     }
   },
 
@@ -50,7 +76,14 @@ export default {
     async modelForm() {
       this.take = 10
       this.skip = 0
+      this.selectedItems = []
       await this.fetchData()
+    },
+    async modelFormExport() {
+      await this.moveStore.fetchDataSearchReceiptExport({
+        sort: this.sort,
+        formValue: this.modelFormExport
+      })
     }
   },
 
@@ -59,12 +92,114 @@ export default {
       take: 10,
       skip: 0,
       sort: [],
+      selectedItems: [],
+      type: 'STOCK-PRODUCT',
       columns: [
-        { field: 'stockNumber', header: 'เลขที่ผลิต', sortable: true, minWidth: '140px' },
-        { field: 'productNumber', header: 'รหัสสินค้า', sortable: true, minWidth: '120px' },
-        { field: 'productNameTh', header: 'ชื่อสินค้า', sortable: true, minWidth: '160px' },
-        { field: 'location', header: 'จัดเก็บ', sortable: true, minWidth: '100px' },
-        { field: 'qtyAvailable', header: 'พร้อมขาย', sortable: false, minWidth: '100px', align: 'center' }
+        {
+          field: 'image',
+          header: '',
+          minWidth: '50px',
+          sortable: false,
+          align: 'center'
+        },
+        {
+          field: 'location',
+          header: 'จัดเก็บ',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'stockNumber',
+          header: 'เลขที่ผลิต (ใหม่)',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'stockNumberOrigin',
+          header: 'เลขที่ผลิต (เก่า)',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNumber',
+          header: 'รหัสสินค้า',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'mold',
+          header: 'เเม่พิมพ์',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNameEn',
+          header: 'ชื่อสินค้า EN',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNameTh',
+          header: 'ชื่อสินค้า TH',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productTypeName',
+          header: 'ประเภทสินค้า',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'size',
+          header: 'ขนาด',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productionType',
+          header: 'สีของทอง/เงิน',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productionTypeSize',
+          header: 'ประเภททอง/เงิน',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'woText',
+          header: 'W.O.',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productPrice',
+          header: 'ราคา',
+          sortable: true,
+          minWidth: '150px',
+          format: 'decimal2'
+        },
+        {
+          field: 'createBy',
+          header: 'ผู้รับสินค้า',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'remark',
+          header: 'หมายเหตุ',
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'qtyAvailable',
+          header: 'พร้อมขาย',
+          sortable: false,
+          minWidth: '100px',
+          align: 'center'
+        }
       ]
     }
   },
@@ -87,6 +222,7 @@ export default {
     },
 
     onSelectionChange(selected) {
+      this.selectedItems = selected
       this.$emit('update:selection', selected)
     },
 

@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
+import { formatDate } from '@/services/utils/dayjs.js'
+import { formatDecimal } from '@/services/utils/decimal.js'
+import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', {
   state: () => ({
@@ -27,6 +30,57 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
         targetLocationCode,
         remark: remark || undefined
       })
+    },
+
+    async fetchDataSearchReceiptExport({ sort, formValue, title }) {
+      try {
+        const param = {
+          take: 0,
+          skip: 0,
+          sort: sort,
+          search: {
+            ...formValue
+          }
+        }
+
+        const res = await api.jewelry.post('StockProduct/List', param)
+        if (res) {
+          const dataExcel = res.data.map((item) => ({
+            วันรับสินค้า: formatDate(item.receiptDate),
+            เลขที่ผลิต: item.stockNumber,
+            รหัสสินค้า: item.productNumber,
+            'ชื่อสินค้า EN': item.productNameEn,
+            'ชื่อสินค้า TH': item.productNameTh,
+            ประเภทสินค้า: item.productTypeName,
+            ขนาด: item.size,
+            เเม่พิมพ์: item.mold,
+            'สีของทอง/เงิน': item.productionType,
+            'ประเภททอง/เงิน': item.productionTypeSize,
+            'W.O.': `${item.wo}-${item.woNumber}`,
+            จัดเก็บ: item.location,
+            ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
+            ผู้รับสินค้า: item.createBy,
+            หมายเหตุ: item.remark
+          }))
+
+          const options = {
+            filename: title ? `${title}.xlsx` : `ย้าย Storage Location.xlsx`,
+            sheetName: title ? `${title}.xlsx` : `ย้าย Storage Location.xlsx`,
+            styles: {
+              ...ExcelHelper.defaultStyles,
+              headerFill: {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: '921313' }
+              }
+            }
+          }
+
+          ExcelHelper.exportToExcel(dataExcel, options)
+        }
+      } catch (error) {
+        throw error
+      }
     }
   }
 })
