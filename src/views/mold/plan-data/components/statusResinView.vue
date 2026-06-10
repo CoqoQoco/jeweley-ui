@@ -17,6 +17,7 @@
           :planId="value.id"
           stage="resin"
           :imageString="resin?.image"
+          :version="resin?.updateDate"
           previewType="PLANMOLDRESIN"
           previewPath=""
           label="รูปปริ้นเรซิ่น"

@@ -14,7 +14,7 @@
             :path="previewPath"
             :width="100"
             :height="100"
-            :cacheKey="cacheKey"
+            :cacheKey="effectiveCacheKey"
           />
         </div>
       </div>
@@ -119,6 +119,10 @@ export default {
     editable: {
       type: Boolean,
       default: false
+    },
+    version: {
+      type: [String, Number],
+      default: ''
     }
   },
 
@@ -134,13 +138,16 @@ export default {
     return {
       isEditing: false,
       selectedFiles: [],
-      cacheKey: ''
+      localCacheKey: ''
     }
   },
 
   computed: {
     imageList() {
       return stringToArray(this.imageString)
+    },
+    effectiveCacheKey() {
+      return this.localCacheKey || this.version
     }
   },
 
@@ -182,7 +189,7 @@ export default {
 
       const res = await this.store.updateStageImage(formData)
       if (res !== undefined) {
-        this.cacheKey = Date.now().toString()
+        this.localCacheKey = Date.now().toString()
         this.isEditing = false
         this.selectedFiles = []
         success('แก้ไขรูปสำเร็จ')

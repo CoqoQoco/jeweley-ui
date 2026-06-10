@@ -17,6 +17,7 @@
           :planId="value.id"
           stage="cutting"
           :imageString="item?.image"
+          :version="item?.updateDate"
           previewType="PATH"
           previewPath="MoldPlanCutting"
           label="รูปผ่าพิมพ์ยาง"

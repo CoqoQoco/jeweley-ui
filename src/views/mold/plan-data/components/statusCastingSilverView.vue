@@ -17,6 +17,7 @@
           :planId="value.id"
           stage="castingSilver"
           :imageString="casting?.image"
+          :version="casting?.updateDate"
           previewType="PATH"
           previewPath="MoldPlanCastingSilver"
           label="รูปหล่อพิมพ์เงิน"

@@ -17,6 +17,7 @@
           :planId="value.id"
           stage="casting"
           :imageString="item?.image"
+          :version="item?.updateDate"
           previewType="PATH"
           previewPath="MoldPlanCasting"
           label="รูปแต่งพิมพ์"

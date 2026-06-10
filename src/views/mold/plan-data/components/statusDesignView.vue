@@ -17,6 +17,7 @@
           :planId="value.id"
           stage="design"
           :imageString="valueDesign?.image"
+          :version="valueDesign?.updateDate"
           previewType="PLANMOLD"
           previewPath=""
           label="รูปต้นแบบแม่พิมพ์"

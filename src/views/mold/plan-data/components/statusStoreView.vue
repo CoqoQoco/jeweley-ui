@@ -17,6 +17,7 @@
           :planId="value.id"
           stage="store"
           :imageString="item?.image"
+          :version="item?.updateDate"
           previewType="PATH"
           previewPath="Mold"
           label="รูปแม่พิมพ์สำเร็จ"
