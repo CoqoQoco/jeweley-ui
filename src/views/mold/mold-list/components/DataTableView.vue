@@ -18,6 +18,7 @@
               type="MOLD"
               :width="25"
               :height="25"
+              :cacheKey="imageCacheBust"
             ></imagePreview>
           </div>
           <div class="ml-2" v-if="slotProps.data.imageDraft1">
@@ -26,6 +27,7 @@
               type="MOLD"
               :width="25"
               :height="25"
+              :cacheKey="imageCacheBust"
             ></imagePreview>
           </div>
         </div>
@@ -189,6 +191,8 @@ export default {
         }
       ],
 
+      imageCacheBust: '',
+
       //--------- dataUpdate ---------//
       update: {},
       picking: {}
@@ -350,11 +354,8 @@ export default {
     },
     fetchDataByUpdate() {
       this.isShowUpdate = false
-
-      // เเก้ปัญหา image ไม่เปลี่ยน
-      setTimeout(() => {
-        window.location.reload()
-      }, 100) // ปรับเวลาตามความเหมาะสม
+      this.imageCacheBust = Date.now()
+      this.fetchData()
     },
     viewplan(data) {
       console.log('viewplan', data)

@@ -71,6 +71,11 @@ export default {
     alt: {
       type: String,
       default: 'Preview Image'
+    },
+    // opt-in cache-busting key (e.g. Date.now() after upload)
+    cacheKey: {
+      type: [String, Number],
+      default: ''
     }
   },
   computed: {
@@ -97,7 +102,8 @@ export default {
      */
     imageUrl() {
       if (!this.imagePath) return ''
-      return getAzureBlobUrl(this.imagePath)
+      const url = getAzureBlobUrl(this.imagePath)
+      return this.cacheKey ? `${url}?v=${encodeURIComponent(this.cacheKey)}` : url
     },
     /**
      * สร้าง style object สำหรับ image

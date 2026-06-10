@@ -14,7 +14,7 @@
                   <input
                     class="hidden-input"
                     type="file"
-                    ref="fileInput"
+                    ref="fileInputMain"
                     accept=".jpg, .png"
                     @change="onSelectImageMain"
                   />
@@ -41,7 +41,7 @@
                   <input
                     class="hidden-input"
                     type="file"
-                    ref="fileInput"
+                    ref="fileInputSub"
                     accept=".jpg, .png"
                     @change="onSelectImageSub"
                   />
@@ -220,19 +220,12 @@ export default {
       this.$emit('closeModal')
     },
     onclear() {
-      //this.$refs.fileInput.value = null
+      if (this.$refs.fileInputMain) this.$refs.fileInputMain.value = null
+      if (this.$refs.fileInputSub) this.$refs.fileInputSub.value = null
       this.urlImage = ''
       this.urlImageSub = ''
-      this.ima
-      this.form = {
-        ...interfaceForm
-      }
-
-      this.val = {
-        isValCategory: false
-      }
-
-      //this.$emit('fetch')
+      this.form = { ...interfaceForm }
+      this.val = { isValCategory: false }
     },
     async onSelectImageMain(e) {
       if (e.target.files[0]) {
@@ -346,7 +339,7 @@ export default {
           case 'ORDERPLAN': {
             // Build Azure Blob URL for mold image
             const blobPath = sub ? `Mold/${path}-Sub-Mold.png` : `Mold/${path}-Mold.png`
-            const imageUrl = getAzureBlobUrl(blobPath)
+            const imageUrl = `${getAzureBlobUrl(blobPath)}?v=${Date.now()}`
 
             if (sub) {
               this.urlImageSub = imageUrl
@@ -387,8 +380,8 @@ export default {
         params.append('description', this.form.description)
         params.append('moldBy', this.form.moldBy)
 
-        params.append('imagesMain', this.form.imageMain ? this.form.imageMain : null)
-        params.append('imagesSub', this.form.imageSub ? this.form.imageSub : null)
+        if (this.form.imageMain) params.append('imagesMain', this.form.imageMain)
+        if (this.form.imageSub) params.append('imagesSub', this.form.imageSub)
 
         let options = {
           headers: {
