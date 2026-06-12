@@ -25,6 +25,7 @@ const CostStockEdit = () => import('@/views/sale/cost-stock/web/cost-edit/index-
 
 // Sale Document
 const SaleDocument = () => import('@/views/sale/document/index-view.vue')
+const SaleDocumentCatalogBuilder = () => import('@/views/sale/document/catalog-builder/index-view.vue')
 
 // Fallback for incomplete components
 const AccountView = () => import('@/views/setting/user-account/index-view.vue')
@@ -216,6 +217,32 @@ const routes = [
             th: 'เอกสารสินค้า'
           },
           minorShow: true,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+      {
+        path: '/sale/document/catalog/create',
+        name: 'sale-document-catalog-create',
+        component: SaleDocumentCatalogBuilder,
+        meta: {
+          Displayname: {
+            en: 'Create Catalog',
+            th: 'สร้างเอกสาร Lookbook'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+      {
+        path: '/sale/document/catalog/edit/:id',
+        name: 'sale-document-catalog-edit',
+        component: SaleDocumentCatalogBuilder,
+        meta: {
+          Displayname: {
+            en: 'Edit Catalog',
+            th: 'แก้ไขเอกสาร Lookbook'
+          },
+          minorShow: false,
           permissions: [PERMISSIONS.SALE_VIEW]
         }
       },

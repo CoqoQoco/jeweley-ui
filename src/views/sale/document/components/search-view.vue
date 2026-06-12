@@ -38,13 +38,23 @@
         </div>
       </div>
 
-      <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
-          <span><i class="bi bi-search"></i></span>
-        </button>
-        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
-          <span><i class="bi bi-x-circle"></i></span>
-        </button>
+      <div class="btn-submit-container-between">
+        <div>
+          <button class="btn btn-sm btn-main" type="button" title="สร้างเอกสาร" @click="$emit('create-catalog')">
+            <i class="bi bi-plus-circle mr-1"></i> สร้างเอกสาร
+          </button>
+          <button class="btn btn-sm btn-outline-main ml-2" type="button" title="Upload เอกสาร" @click="$emit('upload')">
+            <i class="bi bi-upload mr-1"></i> Upload เอกสาร
+          </button>
+        </div>
+        <div>
+          <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
+            <i class="bi bi-search"></i>
+          </button>
+          <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" title="ล้าง">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
       </div>
     </form>
   </div>
@@ -79,7 +89,7 @@ export default {
 
   components: { pageTitle },
 
-  emits: ['search', 'clear', 'update:modelForm'],
+  emits: ['search', 'clear', 'update:modelForm', 'create-catalog', 'upload'],
 
   props: {
     modelForm: {

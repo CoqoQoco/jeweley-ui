@@ -1,42 +1,66 @@
 <template>
   <div class="mt-2">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <button class="btn btn-sm btn-main" @click="$emit('upload')">
-        <i class="bi bi-upload mr-1"></i> Upload เอกสาร
-      </button>
-      <span class="title-text">{{ filteredList.length }} รายการ</span>
+    <div class="mb-2 text-right">
+      <span class="title-text">{{ mergedList.length }} รายการ</span>
     </div>
 
     <BaseDataTable
-      :value="filteredList"
-      dataKey="id"
+      :items="mergedList"
+      dataKey="uid"
       :columns="columns"
       :paginator="true"
-      :rows="10"
+      :perPage="10"
       :showGridlines="true"
-      scrollable
-      stripedRows
-      :scrollHeight="'calc(100vh - 340px)'"
+      :scrollHeight="'calc(100vh - 360px)'"
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn-green mr-1" title="Preview" @click="onPreview(data)">
-            <i class="bi bi-eye"></i>
-          </button>
-          <button class="btn btn-sm btn-main mr-1" title="Download" @click="onDownload(data)">
-            <i class="bi bi-download"></i>
-          </button>
-          <button class="btn btn-sm btn-sub-main mr-1" title="แก้ไข Tag" @click="$emit('tag', data)">
-            <i class="bi bi-tag"></i>
-          </button>
-          <button class="btn btn-sm btn-red" title="ลบ" @click="onDelete(data)">
-            <i class="bi bi-trash"></i>
-          </button>
+          <template v-if="data.sourceType === 'catalog'">
+            <button class="btn btn-sm btn-main mr-1" title="แก้ไข" @click="onEditCatalog(data)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-green mr-1" title="Preview PDF" @click="onPreviewCatalog(data)">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-sub-main mr-1" title="ดาวน์โหลด PDF" @click="onDownloadCatalog(data)">
+              <i class="bi bi-download"></i>
+            </button>
+            <button class="btn btn-sm btn-red" title="ลบ" @click="onDeleteCatalog(data)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </template>
+          <template v-else>
+            <button class="btn btn-sm btn-green mr-1" title="Preview" @click="onPreview(data)">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-main mr-1" title="Download" @click="onDownload(data)">
+              <i class="bi bi-download"></i>
+            </button>
+            <button class="btn btn-sm btn-sub-main mr-1" title="แก้ไข Tag" @click="$emit('tag', data)">
+              <i class="bi bi-tag"></i>
+            </button>
+            <button class="btn btn-sm btn-red" title="ลบ" @click="onDelete(data)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </template>
         </div>
+      </template>
+
+      <template #sourceTypeTemplate="{ data }">
+        <span :class="['type-badge', data.sourceType === 'catalog' ? 'type-catalog' : 'type-upload']">
+          {{ data.sourceType === 'catalog' ? 'สร้างในระบบ' : 'อัปโหลด' }}
+        </span>
       </template>
 
       <template #monthYearTemplate="{ data }">
         <span>{{ getMonthName(data.documentMonth) }} {{ data.documentYear }}</span>
+      </template>
+
+      <template #statusTemplate="{ data }">
+        <span v-if="data.sourceType === 'catalog'" :class="['status-badge', data.status === 1 ? 'status-final' : 'status-draft']">
+          {{ data.status === 1 ? 'Final' : 'ร่าง' }}
+        </span>
+        <span v-else class="text-muted">-</span>
       </template>
 
       <template #tagsTemplate="{ data }">
@@ -60,8 +84,10 @@
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { useSaleDocumentStore } from '@/stores/modules/api/sale/sale-document-store.js'
+import { useSaleDocumentCatalogStore } from '@/stores/modules/api/sale/sale-document-catalog-store.js'
 import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDateTime } from '@/services/utils/dayjs.js'
+import { ProductCatalogPdfBuilder } from '@/services/helper/pdf/product-catalog/product-catalog-pdf-builder.js'
 
 const MONTHS = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
@@ -71,7 +97,7 @@ export default {
 
   components: { BaseDataTable },
 
-  emits: ['upload', 'tag', 'refresh'],
+  emits: ['tag'],
 
   props: {
     modelForm: {
@@ -82,19 +108,22 @@ export default {
 
   setup() {
     const store = useSaleDocumentStore()
-    return { store }
+    const catalogStore = useSaleDocumentCatalogStore()
+    return { store, catalogStore }
   },
 
   data() {
     return {
       columns: [
-        { field: 'action', header: '', width: '160px', sortable: false },
-        { field: 'fileName', header: 'ชื่อไฟล์', minWidth: '250px', sortable: true },
-        { field: 'monthYear', header: 'เดือน/ปี', minWidth: '140px', sortable: false, template: 'monthYearTemplate' },
-        { field: 'tags', header: 'Tags', minWidth: '180px', sortable: false, template: 'tagsTemplate' },
-        { field: 'remark', header: 'หมายเหตุ', minWidth: '180px', sortable: false },
-        { field: 'createBy', header: 'ผู้ upload', minWidth: '120px', sortable: true },
-        { field: 'createDate', header: 'วันที่ upload', minWidth: '160px', sortable: true, template: 'createDateTemplate' }
+        { field: 'action', header: '', width: '180px', sortable: false },
+        { field: 'sourceType', header: 'ประเภท', minWidth: '120px', sortable: false, template: 'sourceTypeTemplate' },
+        { field: 'fileName', header: 'ชื่อ / หัวเรื่อง', minWidth: '200px', sortable: true },
+        { field: 'status', header: 'สถานะ', minWidth: '90px', sortable: false, template: 'statusTemplate' },
+        { field: 'monthYear', header: 'เดือน/ปี', minWidth: '130px', sortable: false, template: 'monthYearTemplate' },
+        { field: 'tags', header: 'Tags', minWidth: '160px', sortable: false, template: 'tagsTemplate' },
+        { field: 'remark', header: 'หมายเหตุ', minWidth: '160px', sortable: false },
+        { field: 'createBy', header: 'ผู้สร้าง', minWidth: '120px', sortable: true },
+        { field: 'createDate', header: 'วันที่', minWidth: '160px', sortable: true, template: 'createDateTemplate' }
       ]
     }
   },
@@ -104,8 +133,24 @@ export default {
       return this.modelForm || {}
     },
 
-    filteredList() {
-      let list = this.store.dataList || []
+    mergedList() {
+      const uploaded = (this.store.dataList || []).map((item) => ({
+        ...item,
+        uid: `upload-${item.id}`,
+        sourceType: 'upload',
+        fileName: item.fileName,
+        status: null
+      }))
+
+      const catalogs = (this.catalogStore.dataList || []).map((item) => ({
+        ...item,
+        uid: `catalog-${item.id}`,
+        sourceType: 'catalog',
+        fileName: item.headerLabel || `Catalog #${item.id}`
+      }))
+
+      let list = [...catalogs, ...uploaded]
+
       const keyword = this.form.keyword?.toLowerCase()
       if (keyword) {
         list = list.filter(
@@ -114,6 +159,7 @@ export default {
             item.tags?.toLowerCase().includes(keyword)
         )
       }
+
       return list
     }
   },
@@ -126,10 +172,17 @@ export default {
 
   methods: {
     async fetchData() {
-      await this.store.fetchList({
-        month: this.form.month || null,
-        year: this.form.year || null
-      })
+      const payload = {
+        documentMonth: this.form.month || null,
+        documentYear: this.form.year || null
+      }
+      await Promise.all([
+        this.store.fetchList({
+          month: this.form.month || null,
+          year: this.form.year || null
+        }),
+        this.catalogStore.list(payload)
+      ])
     },
 
     getMonthName(month) {
@@ -143,6 +196,39 @@ export default {
 
     formatDateTime(date) {
       return date ? formatDateTime(date) : '-'
+    },
+
+    onEditCatalog(data) {
+      this.$router.push({ name: 'sale-document-catalog-edit', params: { id: data.id } })
+    },
+
+    async onPreviewCatalog(data) {
+      const res = await this.catalogStore.get(data.id)
+      if (!res) return
+      const catalog = res
+      const items = res.items || []
+      const builder = new ProductCatalogPdfBuilder(catalog, items)
+      await builder.preparePDF()
+      builder.openPDF()
+    },
+
+    async onDownloadCatalog(data) {
+      const res = await this.catalogStore.get(data.id)
+      if (!res) return
+      const catalog = res
+      const items = res.items || []
+      const builder = new ProductCatalogPdfBuilder(catalog, items)
+      await builder.preparePDF()
+      const filename = `${catalog.headerLabel || 'catalog'}_${catalog.documentMonth}_${catalog.documentYear}.pdf`
+      builder.downloadPDF(filename)
+    },
+
+    onDeleteCatalog(data) {
+      confirmSubmit(`คุณต้องการลบเอกสาร "${data.fileName}" หรือไม่?`, 'ยืนยันการลบ', async () => {
+        await this.catalogStore.delete(data.id)
+        success('ลบเอกสารสำเร็จ')
+        await this.fetchData()
+      })
     },
 
     async onPreview(data) {
@@ -189,6 +275,8 @@ export default {
 .btn-action-container {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .tags-container {
@@ -204,5 +292,40 @@ export default {
   border-radius: 12px;
   background-color: var(--base-font-color);
   color: #fff;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.type-catalog {
+  background-color: #e8f4fd;
+  color: #0369a1;
+}
+
+.type-upload {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  border-radius: 12px;
+}
+
+.status-draft {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.status-final {
+  background-color: #dcfce7;
+  color: #15803d;
 }
 </style>

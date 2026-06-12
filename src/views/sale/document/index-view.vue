@@ -4,11 +4,12 @@
       v-model:modelForm="form"
       @search="onSearchFilter"
       @clear="onClearFilter"
+      @create-catalog="onCreateCatalog"
+      @upload="onShowUpload"
     />
 
     <dataTable
       v-model:modelForm="search"
-      @upload="onShowUpload"
       @tag="onShowTag"
       ref="dataTable"
     />
@@ -86,6 +87,10 @@ export default {
     closeModal() {
       this.isShow = { ...interfaceIsShow }
       this.selectedDoc = {}
+    },
+
+    onCreateCatalog() {
+      this.$router.push({ name: 'sale-document-catalog-create' })
     },
 
     async onSaved() {
