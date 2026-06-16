@@ -9,6 +9,7 @@ import pickinglist from './view/pickinglist/th.js'
 import catalog from './view/catalog/th.js'
 import customer from './view/customer/th.js'
 import master from './view/master/th.js'
+import stock from './view/stock/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -72,7 +73,11 @@ export default {
       }
     },
     stock: {
+      product: { ...stock.product },
+      location: { ...stock.location },
+      moveLocation: { ...stock.moveLocation },
       gem: {
+        ...stock.gem,
         dashboard: {
           title: 'แดชบอร์ดคลังอัญมณี',
           lastUpdate: 'อัปเดตล่าสุด',

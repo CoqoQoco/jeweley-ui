@@ -1,266 +1,259 @@
 <template>
-  <Dialog
-    v-model:visible="localVisible"
-    :modal="true"
-    :style="{ width: '95vw', maxWidth: '1400px', height: '90vh' }"
-    :closable="true"
-    @update:visible="handleVisibleChange"
+  <modal
+    :showModal="visible"
+    @closeModal="handleClose"
+    width="1400px"
+    :isShowActionPart="true"
   >
-    <template #header>
-      <div class="vertical-center-container">
-        <span class="title-text-lg bi bi-clock-history mr-2"></span>
-        <span class="title-text-lg">ดูประวัติตีราคา - {{ stockNumber }}</span>
+    <template #title>
+      <span class="title-text-lg bi bi-clock-history mr-2"></span>
+      <span class="title-text-lg">{{ $t('view.stock.product.viewHistory') }} - {{ stockNumber }}</span>
+    </template>
+
+    <template #content>
+      <!-- Content -->
+      <div v-if="versions && versions.length > 0" class="history-layout p-3">
+        <!-- Left Panel: Version List -->
+        <div class="version-sidebar">
+          <div class="filter-container">
+            <div class="vertical-center-container mb-2">
+              <span class="title-text-lg bi bi-list-ul mr-2"></span>
+              <span class="title-text-lg">{{ $t('view.stock.product.versionList') }}</span>
+            </div>
+
+            <div class="version-list">
+              <div
+                v-for="version in versions"
+                :key="version.versionId"
+                class="version-card"
+                :class="{ 'version-active': selectedVersion?.versionId === version.versionId }"
+                @click="selectVersion(version)"
+              >
+                <div class="version-header-row">
+                  <span class="version-badge">{{ version.running }}</span>
+                  <span class="version-date-text">{{ formatDate(version.createDate) }}</span>
+                </div>
+                <div class="version-info-row">
+                  <div class="version-user">
+                    <i class="bi bi-person-fill"></i>
+                    <span>{{ version.createBy || '-' }}</span>
+                  </div>
+                  <div class="version-total">
+                    <span>รวม: <strong>{{ formatCurrency(version.totalPrice) }}</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Version Detail -->
+        <div class="version-content">
+          <div v-if="selectedVersion">
+            <!-- Version Info Banner -->
+            <div class="filter-container-highlight mb-3">
+              <div class="flex-group">
+                <span class="title-text-white"
+                  ><i class="bi bi-bookmark-check-fill mr-2"></i>{{ selectedVersion.running }} -
+                  {{ formatDate(selectedVersion.createDate) }}</span
+                >
+                <span class="title-text-white"
+                  ><i class="bi bi-person-fill mr-2"></i>{{ selectedVersion.createBy || '-' }}</span
+                >
+              </div>
+            </div>
+
+            <!-- Stock Information Section -->
+            <div class="filter-container mt-2">
+              <div class="vertical-center-container mb-2">
+                <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
+                <span class="title-text-lg">{{ $t('view.stock.product.stockInfo') }}</span>
+              </div>
+
+              <div class="form-col-sm-container">
+                <div>
+                  <span class="title-text">{{ $t('view.stock.product.stockNumberNew') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    :value="stockData.stockNumber"
+                    readonly
+                    disabled
+                  />
+                </div>
+                <div>
+                  <span class="title-text">{{ $t('view.stock.product.productNumber') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    :value="stockData.productNumber"
+                    readonly
+                    disabled
+                  />
+                </div>
+                <div>
+                  <span class="title-text">{{ $t('view.stock.product.productNameTh') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    :value="stockData.productNameTh"
+                    readonly
+                    disabled
+                  />
+                </div>
+                <div>
+                  <span class="title-text">{{ $t('view.stock.product.productNameEn') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    :value="stockData.productNameEn"
+                    readonly
+                    disabled
+                  />
+                </div>
+                <div>
+                  <span class="title-text">{{ $t('view.stock.product.productType') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    :value="stockData.productTypeName"
+                    readonly
+                    disabled
+                  />
+                </div>
+                <div>
+                  <span class="title-text">{{ $t('view.stock.product.wo') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    :value="stockData.wo && stockData.woNumber ? `${stockData.wo}-${stockData.woNumber}` : '-'"
+                    readonly
+                    disabled
+                  />
+                </div>
+              </div>
+              <div v-if="stockData.remark" class="form-col-sm-container mt-2">
+                <div>
+                  <span class="title-text">{{ $t('common.field.remark') }}</span>
+                  <textarea
+                    class="form-control form-control-sm"
+                    :value="stockData.remark"
+                    rows="2"
+                    readonly
+                    disabled
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Version Remark Section (from version data) -->
+            <div v-if="selectedVersion.remark" class="filter-container mt-3">
+              <div class="vertical-center-container mb-2">
+                <span class="title-text-lg bi bi-chat-left-text mr-2"></span>
+                <span class="title-text-lg">{{ $t('view.stock.product.appraisalRemark') }}</span>
+              </div>
+              <div class="form-col-sm-container">
+                <div>
+                  <textarea
+                    class="form-control form-control-sm"
+                    :value="selectedVersion.remark"
+                    rows="2"
+                    readonly
+                    disabled
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Customer Information Section (Conditional) -->
+            <div v-if="hasCustomerInfo(selectedVersion)" class="filter-container mt-3">
+              <div class="line mb-3"></div>
+              <div class="vertical-center-container mb-2">
+                <span class="title-text-lg bi bi-person-fill mr-2"></span>
+                <span class="title-text-lg">{{ $t('view.stock.product.customerInfo') }}</span>
+              </div>
+
+              <div class="customer-info-display">
+                <div class="form-col-sm-container">
+                  <div>
+                    <span class="title-text">{{ $t('view.stock.product.customerName') }}</span>
+                    <div class="customer-display-field">
+                      {{ selectedVersion.customerName || '-' }}
+                    </div>
+                  </div>
+                  <div>
+                    <span class="title-text">{{ $t('view.stock.product.customerCode') }}</span>
+                    <div class="customer-display-field">
+                      {{ selectedVersion.customerCode || selectedVersion.customerNumber || '-' }}
+                    </div>
+                  </div>
+                  <div>
+                    <span class="title-text">{{ $t('view.stock.product.customerTel') }}</span>
+                    <div class="customer-display-field">
+                      {{ selectedVersion.customerTel || '-' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cost Detail Table (Shared Component) -->
+            <cost-detail-table-view
+              :transactions="selectedVersion.priceTransactions"
+              :tag-price-multiplier="selectedVersion.tagPriceMultiplier"
+              :currency-unit="selectedVersion.currencyUnit"
+              :currency-rate="selectedVersion.currencyRate"
+            />
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="text-center p-5">
+            <p>กรุณาเลือกเวอร์ชันเพื่อดูรายละเอียด</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Data State -->
+      <div v-else class="text-center p-5">
+        <p>{{ $t('common.label.noData') }}</p>
       </div>
     </template>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center p-5">
-      <ProgressSpinner />
-      <p>กำลังโหลดข้อมูล...</p>
-    </div>
-
-    <!-- Content -->
-    <div v-else-if="versions && versions.length > 0" class="history-layout">
-      <!-- Left Panel: Version List -->
-      <div class="version-sidebar">
-        <div class="filter-container">
-          <div class="vertical-center-container mb-2">
-            <span class="title-text-lg bi bi-list-ul mr-2"></span>
-            <span class="title-text-lg">รายการเวอร์ชัน</span>
-          </div>
-
-          <div class="version-list">
-            <div
-              v-for="version in versions"
-              :key="version.versionId"
-              class="version-card"
-              :class="{ 'version-active': selectedVersion?.versionId === version.versionId }"
-              @click="selectVersion(version)"
-            >
-              <div class="version-header-row">
-                <span class="version-badge">{{ version.running }}</span>
-                <span class="version-date-text">{{ formatDate(version.createDate) }}</span>
-              </div>
-              <div class="version-info-row">
-                <div class="version-user">
-                  <i class="bi bi-person-fill"></i>
-                  <span>{{ version.createBy || '-' }}</span>
-                </div>
-                <div class="version-total">
-                  <span>รวม: <strong>{{ formatCurrency(version.totalPrice) }}</strong></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Panel: Version Detail -->
-      <div class="version-content">
-        <div v-if="selectedVersion">
-          <!-- Version Info Banner -->
-          <div class="filter-container-highlight mb-3">
-            <div class="flex-group">
-              <span class="title-text-white"
-                ><i class="bi bi-bookmark-check-fill mr-2"></i>{{ selectedVersion.running }} -
-                {{ formatDate(selectedVersion.createDate) }}</span
-              >
-              <span class="title-text-white"
-                ><i class="bi bi-person-fill mr-2"></i>{{ selectedVersion.createBy || '-' }}</span
-              >
-            </div>
-          </div>
-
-          <!-- Stock Information Section -->
-          <div class="filter-container mt-2">
-            <div class="vertical-center-container mb-2">
-              <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
-              <span class="title-text-lg">ข้อมูลสินค้า</span>
-            </div>
-
-            <div class="form-col-sm-container">
-              <div>
-                <span class="title-text">เลขที่ผลิต</span>
-                <input
-                  class="form-control form-control-sm"
-                  type="text"
-                  :value="stockData.stockNumber"
-                  readonly
-                  disabled
-                />
-              </div>
-              <div>
-                <span class="title-text">รหัสสินค้า</span>
-                <input
-                  class="form-control form-control-sm"
-                  type="text"
-                  :value="stockData.productNumber"
-                  readonly
-                  disabled
-                />
-              </div>
-              <div>
-                <span class="title-text">ชื่อสินค้า (TH)</span>
-                <input
-                  class="form-control form-control-sm"
-                  type="text"
-                  :value="stockData.productNameTh"
-                  readonly
-                  disabled
-                />
-              </div>
-              <div>
-                <span class="title-text">ชื่อสินค้า (EN)</span>
-                <input
-                  class="form-control form-control-sm"
-                  type="text"
-                  :value="stockData.productNameEn"
-                  readonly
-                  disabled
-                />
-              </div>
-              <div>
-                <span class="title-text">ประเภทสินค้า</span>
-                <input
-                  class="form-control form-control-sm"
-                  type="text"
-                  :value="stockData.productTypeName"
-                  readonly
-                  disabled
-                />
-              </div>
-              <div>
-                <span class="title-text">W.O.</span>
-                <input
-                  class="form-control form-control-sm"
-                  type="text"
-                  :value="stockData.wo && stockData.woNumber ? `${stockData.wo}-${stockData.woNumber}` : '-'"
-                  readonly
-                  disabled
-                />
-              </div>
-            </div>
-            <div v-if="stockData.remark" class="form-col-sm-container mt-2">
-              <div>
-                <span class="title-text">หมายเหตุ</span>
-                <textarea
-                  class="form-control form-control-sm"
-                  :value="stockData.remark"
-                  rows="2"
-                  readonly
-                  disabled
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Version Remark Section (from version data) -->
-          <div v-if="selectedVersion.remark" class="filter-container mt-3">
-            <div class="vertical-center-container mb-2">
-              <span class="title-text-lg bi bi-chat-left-text mr-2"></span>
-              <span class="title-text-lg">หมายเหตุการตีราคา</span>
-            </div>
-            <div class="form-col-sm-container">
-              <div>
-                <textarea
-                  class="form-control form-control-sm"
-                  :value="selectedVersion.remark"
-                  rows="2"
-                  readonly
-                  disabled
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Customer Information Section (Conditional) -->
-          <div v-if="hasCustomerInfo(selectedVersion)" class="filter-container mt-3">
-            <div class="line mb-3"></div>
-            <div class="vertical-center-container mb-2">
-              <span class="title-text-lg bi bi-person-fill mr-2"></span>
-              <span class="title-text-lg">ข้อมูลลูกค้า</span>
-            </div>
-
-            <div class="customer-info-display">
-              <div class="form-col-sm-container">
-                <div>
-                  <span class="title-text">ชื่อลูกค้า</span>
-                  <div class="customer-display-field">
-                    {{ selectedVersion.customerName || '-' }}
-                  </div>
-                </div>
-                <div>
-                  <span class="title-text">รหัสลูกค้า</span>
-                  <div class="customer-display-field">
-                    {{ selectedVersion.customerCode || selectedVersion.customerNumber || '-' }}
-                  </div>
-                </div>
-                <div>
-                  <span class="title-text">เบอร์โทร</span>
-                  <div class="customer-display-field">
-                    {{ selectedVersion.customerTel || '-' }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cost Detail Table (Shared Component) -->
-          <cost-detail-table-view
-            :transactions="selectedVersion.priceTransactions"
-            :tag-price-multiplier="selectedVersion.tagPriceMultiplier"
-            :currency-unit="selectedVersion.currencyUnit"
-            :currency-rate="selectedVersion.currencyRate"
-          />
-        </div>
-
-        <!-- Empty State -->
-        <div v-else class="text-center p-5">
-          <p>กรุณาเลือกเวอร์ชันเพื่อดูรายละเอียด</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- No Data State -->
-    <div v-else-if="!loading" class="text-center p-5">
-      <p>ไม่พบข้อมูลประวัติตีราคา</p>
-    </div>
-
-    <template #footer>
+    <template #action>
       <div class="responsive-btn-group">
         <button
-          class="btn btn-sm btn-success"
+          class="btn btn-sm btn-main"
           type="button"
           @click="handleExportPDF"
           :disabled="!selectedVersion || exportingPDF"
         >
           <span class="bi bi-file-pdf mr-2"></span>
-          <span>Export PDF</span>
+          <span>{{ $t('view.stock.product.exportPdf') }}</span>
         </button>
-        <button class="btn btn-sm btn-secondary" type="button" @click="handleClose">
+        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="handleClose">
           <span class="bi bi-x mr-2"></span>
-          <span>ปิด</span>
+          <span>{{ $t('common.btn.close') }}</span>
         </button>
       </div>
     </template>
-  </Dialog>
+  </modal>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
-import ProgressSpinner from 'primevue/progressspinner'
+import { defineAsyncComponent } from 'vue'
 import CostDetailTableView from '@/components/cost/cost-detail-table-view.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import dayjs from 'dayjs'
-import { warning, success, error } from '@/services/alert/sweetAlerts.js'
+import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'CostHistoryModal',
   components: {
-    Dialog,
-    ProgressSpinner,
+    modal,
     CostDetailTableView
   },
   props: {
@@ -280,19 +273,15 @@ export default {
   emits: ['update:visible'],
   data() {
     return {
-      localVisible: false,
       versions: [],
       selectedVersion: null,
-      loading: false,
       exportingPDF: false
     }
   },
   watch: {
     visible: {
       handler(val) {
-        this.localVisible = val
         if (val && this.stockNumber) {
-          console.log('Loading version history for stock:', this.stockNumber)
           this.loadVersionHistory()
         }
       },
@@ -301,64 +290,42 @@ export default {
   },
   methods: {
     async loadVersionHistory() {
-      if (!this.stockNumber) {
-        console.warn('No stock number provided')
-        return
+      if (!this.stockNumber) return
+
+      const store = usrStockProductApiStore()
+      const response = await store.fetchGetProductCostDetailVersion(this.stockNumber)
+
+      let rawVersions = []
+      if (Array.isArray(response)) {
+        rawVersions = response
+      } else if (response && Array.isArray(response.data)) {
+        rawVersions = response.data
+      } else if (response && response.data) {
+        rawVersions = [response.data]
       }
 
-      this.loading = true
-      try {
-        const store = usrStockProductApiStore()
-        console.log('Fetching versions for:', this.stockNumber)
-        const response = await store.fetchGetProductCostDetailVersion(this.stockNumber)
-        console.log('API Response:', response)
+      this.versions = rawVersions.map((version, index) => {
+        const totalPrice = version.prictransection
+          ? version.prictransection.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
+          : 0
 
-        // API returns array directly
-        let rawVersions = []
-        if (Array.isArray(response)) {
-          rawVersions = response
-        } else if (response && Array.isArray(response.data)) {
-          rawVersions = response.data
-        } else if (response && response.data) {
-          rawVersions = [response.data]
+        return {
+          ...version,
+          versionId: version.running || `v-${index}`,
+          versionNumber: rawVersions.length - index,
+          priceTransactions: version.prictransection || [],
+          totalPrice: totalPrice,
+          customerNumber: version.customerCode || null
         }
+      })
 
-        // Transform and enrich version data
-        this.versions = rawVersions.map((version, index) => {
-          // Calculate total price from prictransection
-          const totalPrice = version.prictransection
-            ? version.prictransection.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
-            : 0
-
-          return {
-            ...version,
-            versionId: version.running || `v-${index}`,
-            versionNumber: rawVersions.length - index, // Latest = highest number
-            priceTransactions: version.prictransection || [], // Map to expected field name
-            totalPrice: totalPrice,
-            customerNumber: version.customerCode || null
-          }
-        })
-
-        console.log('Loaded and transformed versions:', this.versions)
-
-        // Auto-select latest version (first in array = latest)
-        if (this.versions.length > 0) {
-          this.selectedVersion = this.versions[0]
-          console.log('Auto-selected version:', this.selectedVersion)
-        }
-      } catch (error) {
-        console.error('Error loading version history:', error)
-        this.versions = []
-        this.selectedVersion = null
-      } finally {
-        this.loading = false
+      if (this.versions.length > 0) {
+        this.selectedVersion = this.versions[0]
       }
     },
 
     selectVersion(version) {
       this.selectedVersion = version
-      console.log('Selected version:', version)
     },
 
     hasCustomerInfo(version) {
@@ -382,38 +349,23 @@ export default {
       }
 
       this.exportingPDF = true
-      try {
-        // Create PDF builder with currency options from saved data
-        const pdfOptions = {
-          ...(this.selectedVersion.currencyUnit ? { currencyUnit: this.selectedVersion.currencyUnit, currencyRate: this.selectedVersion.currencyRate } : {}),
-          ...(this.selectedVersion.customStockInfo?.length ? { customStockInfo: this.selectedVersion.customStockInfo } : {})
-        }
-        const pdfBuilder = new AppraisalHistoryPdfBuilder(this.stockData, this.selectedVersion, pdfOptions)
-
-        // Generate PDF
-        const pdf = await pdfBuilder.generatePDF()
-
-        // Create filename
-        const filename = `Appraisal_${this.stockData.stockNumber}_${this.selectedVersion.running}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
-
-        // Download PDF
-        pdf.download(filename)
-
-        success('Export PDF สำเร็จ', 'สำเร็จ')
-      } catch (err) {
-        console.error('Error exporting PDF:', err)
-        error(err.message || 'เกิดข้อผิดพลาดในการ Export PDF', 'ข้อผิดพลาด')
-      } finally {
-        this.exportingPDF = false
+      const pdfOptions = {
+        ...(this.selectedVersion.currencyUnit ? { currencyUnit: this.selectedVersion.currencyUnit, currencyRate: this.selectedVersion.currencyRate } : {}),
+        ...(this.selectedVersion.customStockInfo?.length ? { customStockInfo: this.selectedVersion.customStockInfo } : {})
       }
-    },
+      const pdfBuilder = new AppraisalHistoryPdfBuilder(this.stockData, this.selectedVersion, pdfOptions)
 
-    handleVisibleChange(val) {
-      this.$emit('update:visible', val)
+      const pdf = await pdfBuilder.generatePDF()
+
+      const filename = `Appraisal_${this.stockData.stockNumber}_${this.selectedVersion.running}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
+
+      pdf.download(filename)
+
+      success('Export PDF สำเร็จ', 'สำเร็จ')
+      this.exportingPDF = false
     },
 
     handleClose() {
-      this.localVisible = false
       this.$emit('update:visible', false)
     }
   }
@@ -448,24 +400,24 @@ export default {
 }
 
 .version-card {
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-md);
+  margin-bottom: var(--sp-md);
   cursor: pointer;
   transition: all 0.2s;
-  background-color: white;
+  background-color: var(--color-card-bg);
 
   &:hover {
     background-color: #f8f9fa;
     border-color: #adb5bd;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
   }
 
   &.version-active {
     border-color: var(--base-green);
     background-color: #e8f5e9;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-md);
   }
 }
 
@@ -473,7 +425,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: var(--sp-sm);
 }
 
 .version-badge {
@@ -481,8 +433,8 @@ export default {
   font-weight: bold;
   color: var(--base-font-color);
   padding: 4px 10px;
-  background-color: #e0e0e0;
-  border-radius: 8px;
+  background-color: var(--color-border);
+  border-radius: var(--radius-md);
   white-space: nowrap;
   display: inline-block;
 }
@@ -530,30 +482,27 @@ textarea {
   resize: vertical;
 }
 
-// Customer Display Field Styles
 .customer-info-display {
   margin-top: 10px;
 }
 
 .customer-display-field {
   background-color: #f8f9fa;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-sm) var(--sp-md);
   margin-top: 5px;
   min-height: 36px;
   color: #495057;
-  font-size: 14px;
+  font-size: var(--fs-base);
 
   @media (max-width: 1024px) {
-    font-size: 13px;
+    font-size: var(--fs-sm);
     padding: 6px 10px;
     min-height: 34px;
   }
 }
 
-
-// Scrollbar styling
 .version-sidebar::-webkit-scrollbar,
 .version-content::-webkit-scrollbar {
   width: 8px;
@@ -567,7 +516,7 @@ textarea {
 .version-sidebar::-webkit-scrollbar-thumb,
 .version-content::-webkit-scrollbar-thumb {
   background: #888;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .version-sidebar::-webkit-scrollbar-thumb:hover,

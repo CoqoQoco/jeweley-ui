@@ -55,9 +55,11 @@
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import upsertView from '../modal/upsert-view.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
-import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
 const TYPE_OPTIONS = [
   { value: 'WAREHOUSE', label: 'คลัง' },
@@ -68,6 +70,8 @@ const TYPE_OPTIONS = [
 
 export default {
   name: 'LocationDataTableView',
+
+  mixins: [dataTablePaging],
 
   components: {
     BaseDataTable,
@@ -94,9 +98,7 @@ export default {
 
   watch: {
     async modelForm() {
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
+      this.resetPaging()
     },
     triggerCreate(val) {
       if (val) {
@@ -109,9 +111,6 @@ export default {
 
   data() {
     return {
-      take: 10,
-      skip: 0,
-      sort: [],
       columns: [
         { field: 'action', header: '', sortable: false, width: '100px' },
         { field: 'code', header: 'รหัส', sortable: true, minWidth: '100px' },
@@ -127,22 +126,6 @@ export default {
   },
 
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     getTypeLabel(type) {
       const found = TYPE_OPTIONS.find((o) => o.value === type)
       return found ? found.label : type
@@ -154,7 +137,7 @@ export default {
     },
 
     onDelete(data) {
-      confirmSubmit(
+      confirmThenSubmit(
         `ต้องการลบ "${data.nameTh}" (${data.code}) หรือไม่?`,
         'ยืนยันการลบ',
         async () => {
@@ -195,43 +178,39 @@ export default {
   align-items: center;
 }
 
+%badge-base {
+  padding: 2px var(--sp-sm);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+}
+
 .badge-yes {
+  @extend %badge-base;
   background: #d4edda;
   color: #155724;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 
 .badge-no {
+  @extend %badge-base;
   background: #f8f9fa;
   color: #6c757d;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 
 .badge-temp {
+  @extend %badge-base;
   background: #fff3cd;
   color: #856404;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 
 .badge-active {
+  @extend %badge-base;
   background: #d4edda;
   color: #155724;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 
 .badge-inactive {
+  @extend %badge-base;
   background: #f8d7da;
   color: #721c24;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 </style>

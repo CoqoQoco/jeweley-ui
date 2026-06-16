@@ -14,180 +14,56 @@
         </div>
 
         <div class="form-col-container p-2">
-          <DataTable
+          <BaseDataTable
+            :items="history.data"
             :totalRecords="history.total"
-            :value="history.data"
-            dataKey="id"
-            ref="dt"
-            class="p-datatable-sm"
-            scrollHeight="calc(100vh - 200px)"
-            scrollable
-            resizableColumns
-            showGridlines
+            :columns="columns"
+            :perPage="take"
+            :paginator="false"
           >
-            <Column field="requestDate" header="วันทำรายการ (ล่าสุด)" style="min-width: 200px">
-              <template #body="slotProps">
-                {{ formatDateTime(slotProps.data.requestDate) }}
-              </template>
-            </Column>
-            <Column field="running" header="เลขที่รายการ" style="min-width: 200px"> </Column>
-            <Column field="refRunning1" header="เลขที่อ้างอิง 1" style="min-width: 200px"> </Column>
-            <Column field="refRunning2" header="เลขที่อ้างอิง 2" style="min-width: 200px"> </Column>
-            <!-- <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column> -->
-            <Column field="type" header="ประเภท" style="min-width: 200px">
-              <template #body="slotProps">
-                <div>
-                  <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-                  <span>
-                    {{ getTypeName(slotProps.data.type) }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-            <Column field="qty" header="จำนวน" style="min-width: 200px">
-              <template #body="slotProps">
-                <div>
-                  <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-                  <span>
-                    {{
-                      slotProps.data.qty
-                        ? Number(slotProps.data.qty).toFixed(3).toLocaleString()
-                        : '0.000'
-                    }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-            <Column field="qtyWeight" header="น้ำหนัก" style="min-width: 200px">
-              <template #body="slotProps">
-                <div>
-                  <span><i class="mr-1" :class="getIconQty(slotProps.data.type)"></i></span>
-                  <span>
-                    {{
-                      slotProps.data.qtyWeight
-                        ? Number(slotProps.data.qtyWeight).toFixed(3).toLocaleString()
-                        : '0.000'
-                    }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-            <Column
-              field="previousRemianQty"
-              header="จำนวนก่อนใช้"
-              sortable
-              style="min-width: 200px"
-            >
-              <template #body="slotProps">
-                <div>
-                  <span>
-                    {{
-                      slotProps.data.previousRemianQty
-                        ? Number(slotProps.data.previousRemianQty).toFixed(3).toLocaleString()
-                        : '0.000'
-                    }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-            <Column
-              field="previousRemianQtyWeight"
-              header="น้ำหนักก่อนใช้"
-              sortable
-              style="min-width: 200px"
-            >
-              <template #body="slotProps">
-                <div>
-                  <span>
-                    {{
-                      slotProps.data.previousRemianQtyWeight
-                        ? Number(slotProps.data.previousRemianQtyWeight).toFixed(3).toLocaleString()
-                        : '0.000'
-                    }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-            <Column field="pointRemianQty" header="จำนวนคงเหลือ" style="min-width: 200px">
-              <template #body="slotProps">
-                <div>
-                  <span>
-                    {{
-                      slotProps.data.pointRemianQty
-                        ? Number(slotProps.data.pointRemianQty).toFixed(3).toLocaleString()
-                        : '0.000'
-                    }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-            <Column
-              field="pointRemianQtyWeight"
-              header="น้ำหนักคงเหลือ"
-              sortable
-              style="min-width: 200px"
-            >
-              <template #body="slotProps">
-                <div>
-                  <span>
-                    {{
-                      slotProps.data.pointRemianQtyWeight
-                        ? Number(slotProps.data.pointRemianQtyWeight).toFixed(3).toLocaleString()
-                        : '0.000'
-                    }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-
-            <Column field="woText" header="W.O." style="min-width: 200px"> </Column>
-            <Column field="mold" header="เเม่พิมพ์" style="min-width: 200px"> </Column>
-            <Column field="remark1" header="หมายเหตุ-1" style="min-width: 200px"> </Column>
-            <Column field="remark2" header="หมายเหตุ-2" style="min-width: 200px"> </Column>
-
-            <Column field="jobOrPo" header="Invoice/Ref No." style="min-width: 200px"> </Column>
-            <Column field="subpplierName" header="ร้านผลิต/ชื่อร้าน" style="min-width: 200px">
-            </Column>
-            <Column field="supplierCost" header="ราคาทุน" style="min-width: 200px">
-              <template #body="slotProps">
-                <div>
-                  <span>
-                    {{
-                      slotProps.data.supplierCost
-                        ? Number(slotProps.data.supplierCost).toFixed(2).toLocaleString()
-                        : '0.000'
-                    }}
-                  </span>
-                </div>
-              </template>
-            </Column>
-
-            <Column field="code" header="รหัส" style="min-width: 200px"> </Column>
-            <Column field="groupName" header="หมวดหมู่" style="min-width: 200px"> </Column>
-            <Column field="size" header="ขนาด" style="min-width: 200px"> </Column>
-            <Column field="shape" header="รูปร่าง" style="min-width: 200px"> </Column>
-            <Column field="grade" header="เกรด" style="min-width: 200px"> </Column>
-            <Column field="price" header="ราคา" style="min-width: 150px">
-              <template #body="slotProps">
-                {{
-                  slotProps.data.price
-                    ? Number(slotProps.data.price).toFixed(3).toLocaleString()
-                    : '0.00'
-                }}
-              </template>
-            </Column>
-            <Column field="priceQty" header="ราคาต่อหน่วย" style="min-width: 150px">
-              <template #body="slotProps">
-                {{
-                  slotProps.data.priceQty
-                    ? Number(slotProps.data.priceQty).toFixed(3).toLocaleString()
-                    : '0.00'
-                }}
-              </template>
-            </Column>
-            <Column field="unitCode" header="หน่วย" style="min-width: 150px"> </Column>
-            <Column field="unit" header="รหัสหน่วย" style="min-width: 150px"> </Column>
-          </DataTable>
+            <template #requestDateTemplate="{ data: row }">
+              {{ formatDateTime(row.requestDate) }}
+            </template>
+            <template #typeTemplate="{ data: row }">
+              <div>
+                <span><i class="mr-1" :class="getIconQty(row.type)"></i></span>
+                <span>{{ getTypeName(row.type) }}</span>
+              </div>
+            </template>
+            <template #qtyTemplate="{ data: row }">
+              <div>
+                <span><i class="mr-1" :class="getIconQty(row.type)"></i></span>
+                <span>{{ row.qty ? Number(row.qty).toFixed(3).toLocaleString() : '0.000' }}</span>
+              </div>
+            </template>
+            <template #qtyWeightTemplate="{ data: row }">
+              <div>
+                <span><i class="mr-1" :class="getIconQty(row.type)"></i></span>
+                <span>{{ row.qtyWeight ? Number(row.qtyWeight).toFixed(3).toLocaleString() : '0.000' }}</span>
+              </div>
+            </template>
+            <template #previousRemianQtyTemplate="{ data: row }">
+              {{ row.previousRemianQty ? Number(row.previousRemianQty).toFixed(3).toLocaleString() : '0.000' }}
+            </template>
+            <template #previousRemianQtyWeightTemplate="{ data: row }">
+              {{ row.previousRemianQtyWeight ? Number(row.previousRemianQtyWeight).toFixed(3).toLocaleString() : '0.000' }}
+            </template>
+            <template #pointRemianQtyTemplate="{ data: row }">
+              {{ row.pointRemianQty ? Number(row.pointRemianQty).toFixed(3).toLocaleString() : '0.000' }}
+            </template>
+            <template #pointRemianQtyWeightTemplate="{ data: row }">
+              {{ row.pointRemianQtyWeight ? Number(row.pointRemianQtyWeight).toFixed(3).toLocaleString() : '0.000' }}
+            </template>
+            <template #supplierCostTemplate="{ data: row }">
+              {{ row.supplierCost ? Number(row.supplierCost).toFixed(2).toLocaleString() : '0.000' }}
+            </template>
+            <template #priceTemplate="{ data: row }">
+              {{ row.price ? Number(row.price).toFixed(3).toLocaleString() : '0.00' }}
+            </template>
+            <template #priceQtyTemplate="{ data: row }">
+              {{ row.priceQty ? Number(row.priceQty).toFixed(3).toLocaleString() : '0.00' }}
+            </template>
+          </BaseDataTable>
         </div>
       </template>
     </modal>
@@ -199,21 +75,15 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-//import Dropdown from 'primevue/dropdown'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-//import Papa from 'papaparse'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-//import swAlert from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 export default {
   components: {
     modal,
-    DataTable,
-    Column
-    //Papa
+    BaseDataTable
   },
   props: {
     isShow: {
@@ -233,20 +103,49 @@ export default {
     },
     gem() {
       return this.modelGem
+    },
+    columns() {
+      return [
+        { field: 'requestDate', header: 'วันทำรายการ (ล่าสุด)', minWidth: '200px' },
+        { field: 'running', header: 'เลขที่รายการ', minWidth: '200px' },
+        { field: 'refRunning1', header: 'เลขที่อ้างอิง 1', minWidth: '200px' },
+        { field: 'refRunning2', header: 'เลขที่อ้างอิง 2', minWidth: '200px' },
+        { field: 'type', header: 'ประเภท', minWidth: '200px', sortable: false },
+        { field: 'qty', header: 'จำนวน', minWidth: '200px', sortable: false },
+        { field: 'qtyWeight', header: 'น้ำหนัก', minWidth: '200px', sortable: false },
+        { field: 'previousRemianQty', header: 'จำนวนก่อนใช้', minWidth: '200px' },
+        { field: 'previousRemianQtyWeight', header: 'น้ำหนักก่อนใช้', minWidth: '200px' },
+        { field: 'pointRemianQty', header: 'จำนวนคงเหลือ', minWidth: '200px', sortable: false },
+        { field: 'pointRemianQtyWeight', header: 'น้ำหนักคงเหลือ', minWidth: '200px' },
+        { field: 'woText', header: 'W.O.', minWidth: '200px' },
+        { field: 'mold', header: 'เเม่พิมพ์', minWidth: '200px' },
+        { field: 'remark1', header: 'หมายเหตุ-1', minWidth: '200px' },
+        { field: 'remark2', header: 'หมายเหตุ-2', minWidth: '200px' },
+        { field: 'jobOrPo', header: 'Invoice/Ref No.', minWidth: '200px' },
+        { field: 'subpplierName', header: 'ร้านผลิต/ชื่อร้าน', minWidth: '200px' },
+        { field: 'supplierCost', header: 'ราคาทุน', minWidth: '200px', sortable: false },
+        { field: 'code', header: 'รหัส', minWidth: '200px' },
+        { field: 'groupName', header: 'หมวดหมู่', minWidth: '200px' },
+        { field: 'size', header: 'ขนาด', minWidth: '200px' },
+        { field: 'shape', header: 'รูปร่าง', minWidth: '200px' },
+        { field: 'grade', header: 'เกรด', minWidth: '200px' },
+        { field: 'price', header: 'ราคา', minWidth: '150px', sortable: false },
+        { field: 'priceQty', header: 'ราคาต่อหน่วย', minWidth: '150px', sortable: false },
+        { field: 'unitCode', header: 'หน่วย', minWidth: '150px' },
+        { field: 'unit', header: 'รหัสหน่วย', minWidth: '150px' }
+      ]
     }
   },
   watch: {
     modelGem: {
       handler() {
         this.fetchHistory(this.modelGem.code)
-        //this.initForm()
       },
       deep: true
     }
   },
   data() {
     return {
-      isLoading: false,
       history: {},
       masterType: [
         { id: 1, description: 'รับเข้าคลัง [พลอยใหม่]' },
@@ -274,34 +173,27 @@ export default {
 
     // ------ APIs
     async fetchHistory() {
-      this.isLoading = true
-      try {
-        const params = {
-          take: this.take,
-          skip: 0,
-          sort: this.sort,
-          search: {
-            requestDateStart: null,
-            requestDateEnd: null,
-            type: null,
+      const params = {
+        take: this.take,
+        skip: 0,
+        sort: this.sort,
+        search: {
+          requestDateStart: null,
+          requestDateEnd: null,
+          type: null,
 
-            code: this.gem.code ?? null,
-            groupName: null,
-            grade: null,
-            shape: null,
-            size: null,
-            status: ['completed']
-          }
+          code: this.gem.code ?? null,
+          groupName: null,
+          grade: null,
+          shape: null,
+          size: null,
+          status: ['completed']
         }
-        console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
-        if (res) {
-          this.history = { ...res }
-        }
-      } catch (error) {
-        console.log(error)
       }
-      this.isLoading = false
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
+      if (res) {
+        this.history = { ...res }
+      }
     },
 
     // ----- helper

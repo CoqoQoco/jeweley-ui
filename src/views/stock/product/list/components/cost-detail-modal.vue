@@ -1,290 +1,283 @@
 <template>
-  <Dialog
-    v-model:visible="localVisible"
-    :modal="true"
-    :style="{ width: '90vw', maxWidth: '1200px' }"
-    :closable="true"
-    @update:visible="handleVisibleChange"
+  <modal
+    :showModal="visible"
+    @closeModal="handleClose"
+    width="1200px"
+    :isShowActionPart="true"
   >
-    <template #header>
-      <div class="vertical-center-container">
-        <span class="title-text-lg bi bi-calculator mr-2"></span>
-        <span class="title-text-lg">ดูต้นทุนสินค้า</span>
+    <template #title>
+      <span class="title-text-lg bi bi-calculator mr-2"></span>
+      <span class="title-text-lg">{{ $t('view.stock.product.viewCost') }}</span>
+    </template>
+
+    <template #content>
+      <!-- Content -->
+      <div v-if="stockData && stockData.stockNumber" class="p-3">
+        <!-- Stock Information Section -->
+        <div class="filter-container mt-2">
+          <div class="vertical-center-container mb-2">
+            <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
+            <span class="title-text-lg">{{ $t('view.stock.product.stockInfo') }}</span>
+          </div>
+
+          <div class="form-col-sm-container">
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.stockNumberNew') }}</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="stockData.stockNumber"
+                readonly
+                disabled
+              />
+            </div>
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.productNumber') }}</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="stockData.productNumber"
+                readonly
+                disabled
+              />
+            </div>
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.productNameTh') }}</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="stockData.productNameTh"
+                readonly
+                disabled
+              />
+            </div>
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.productNameEn') }}</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="stockData.productNameEn"
+                readonly
+                disabled
+              />
+            </div>
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.productType') }}</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="stockData.productTypeName"
+                readonly
+                disabled
+              />
+            </div>
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.wo') }}</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="stockData.wo && stockData.woNumber ? `${stockData.wo}-${stockData.woNumber}` : '-'"
+                readonly
+                disabled
+              />
+            </div>
+          </div>
+          <div v-if="stockData.remark" class="form-col-sm-container mt-2">
+            <div>
+              <span class="title-text">{{ $t('common.field.remark') }}</span>
+              <textarea
+                class="form-control form-control-sm"
+                :value="stockData.remark"
+                rows="2"
+                readonly
+                disabled
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost Items Table -->
+        <div class="filter-container mt-3">
+          <div class="vertical-center-container mb-2">
+            <span class="title-text-lg bi bi-list-check mr-2"></span>
+            <span class="title-text-lg">{{ $t('view.stock.product.costDetail') }}</span>
+          </div>
+
+          <div class="responsive-table-wrapper">
+            <DataTable
+              :value="groupedTransactions"
+              rowGroupMode="subheader"
+              groupRowsBy="nameGroup"
+              :sortOrder="1"
+              :sortField="'groupOrder'"
+              stripedRows
+              showGridlines
+            >
+              <ColumnGroup type="header">
+                <Row>
+                  <Column header="รายการ" />
+                  <Column header="จำนวน" />
+                  <Column header="ราคา/หน่วย" />
+                  <Column header="น้ำหนัก" />
+                  <Column header="ราคา/น้ำหนัก" />
+                  <Column header="รวม" />
+                </Row>
+              </ColumnGroup>
+
+              <Column field="nameDescription">
+                <template #body="slotProps">
+                  <input
+                    type="text"
+                    class="form-control"
+                    :value="slotProps.data.nameDescription"
+                    readonly
+                    disabled
+                  />
+                </template>
+              </Column>
+
+              <Column field="qty" style="width: 130px">
+                <template #body="slotProps">
+                  <input
+                    type="text"
+                    class="form-control text-right"
+                    :value="formatNumber(slotProps.data.qty)"
+                    readonly
+                    disabled
+                  />
+                </template>
+              </Column>
+
+              <Column field="qtyPrice" style="width: 110px">
+                <template #body="slotProps">
+                  <input
+                    type="text"
+                    class="form-control text-right"
+                    :value="formatCurrency(slotProps.data.qtyPrice)"
+                    readonly
+                    disabled
+                  />
+                </template>
+              </Column>
+
+              <Column field="qtyWeight" style="width: 110px">
+                <template #body="slotProps">
+                  <input
+                    type="text"
+                    class="form-control text-right"
+                    :value="formatNumber(slotProps.data.qtyWeight)"
+                    readonly
+                    disabled
+                  />
+                </template>
+              </Column>
+
+              <Column field="qtyWeightPrice" style="width: 110px">
+                <template #body="slotProps">
+                  <input
+                    type="text"
+                    class="form-control text-right"
+                    :value="formatCurrency(slotProps.data.qtyWeightPrice)"
+                    readonly
+                    disabled
+                  />
+                </template>
+              </Column>
+
+              <Column field="totalPrice" style="width: 150px">
+                <template #body="slotProps">
+                  <input
+                    type="text"
+                    class="form-control text-right"
+                    :value="formatCurrency(slotProps.data.totalPrice)"
+                    readonly
+                    disabled
+                  />
+                </template>
+              </Column>
+
+              <template #groupheader="slotProps">
+                <div class="flex align-items-center gap-2 type-container">
+                  <span><i class="bi bi-clipboard2-check mr-2"></i></span>
+                  <span>{{ getGroupLabel(slotProps.data.nameGroup) }}</span>
+                </div>
+              </template>
+
+              <ColumnGroup type="footer">
+                <Row>
+                  <Column :colspan="5">
+                    <template #footer>
+                      <div class="text-right type-container">
+                        <span>{{ $t('view.stock.product.totalCost') }}</span>
+                      </div>
+                    </template>
+                  </Column>
+                  <Column :colspan="1">
+                    <template #footer>
+                      <div class="text-right type-container">
+                        <span>{{ formatCurrency(totalPrice) }}</span>
+                      </div>
+                    </template>
+                  </Column>
+                </Row>
+                <Row v-if="tagPriceMultiplier > 0">
+                  <Column :colspan="5">
+                    <template #footer>
+                      <div class="text-right type-container tag-price-row">
+                        <span>{{ $t('view.stock.product.tagPrice', { multiplier: tagPriceMultiplier }) }}</span>
+                      </div>
+                    </template>
+                  </Column>
+                  <Column :colspan="1">
+                    <template #footer>
+                      <div class="text-right type-container tag-price-row">
+                        <span>{{ formatCurrency(tagPrice) }}</span>
+                      </div>
+                    </template>
+                  </Column>
+                </Row>
+              </ColumnGroup>
+            </DataTable>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="text-center p-5">
+        <p>{{ $t('common.label.noData') }}</p>
       </div>
     </template>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center p-5">
-      <ProgressSpinner />
-      <p>กำลังโหลดข้อมูล...</p>
-    </div>
-
-    <!-- Content -->
-    <div v-else-if="stockData && stockData.stockNumber">
-      <!-- Stock Information Section -->
-      <div class="filter-container mt-2">
-        <div class="vertical-center-container mb-2">
-          <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
-          <span class="title-text-lg">ข้อมูลสินค้า</span>
-        </div>
-
-        <div class="form-col-sm-container">
-          <div>
-            <span class="title-text">เลขที่ผลิต</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="stockData.stockNumber"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">รหัสสินค้า</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="stockData.productNumber"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">ชื่อสินค้า (TH)</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="stockData.productNameTh"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">ชื่อสินค้า (EN)</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="stockData.productNameEn"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">ประเภทสินค้า</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="stockData.productTypeName"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">W.O.</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="stockData.wo && stockData.woNumber ? `${stockData.wo}-${stockData.woNumber}` : '-'"
-              readonly
-              disabled
-            />
-          </div>
-        </div>
-        <div v-if="stockData.remark" class="form-col-sm-container mt-2">
-          <div>
-            <span class="title-text">หมายเหตุ</span>
-            <textarea
-              class="form-control form-control-sm"
-              :value="stockData.remark"
-              rows="2"
-              readonly
-              disabled
-            ></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cost Items Table -->
-      <div class="filter-container mt-3">
-        <div class="vertical-center-container mb-2">
-          <span class="title-text-lg bi bi-list-check mr-2"></span>
-          <span class="title-text-lg">รายการต้นทุน</span>
-        </div>
-
-        <div class="responsive-table-wrapper">
-          <DataTable
-            :value="groupedTransactions"
-            rowGroupMode="subheader"
-            groupRowsBy="nameGroup"
-            :sortOrder="1"
-            :sortField="'groupOrder'"
-            stripedRows
-            showGridlines
-          >
-            <ColumnGroup type="header">
-              <Row>
-                <Column header="รายการ" />
-                <Column header="จำนวน" />
-                <Column header="ราคา/หน่วย" />
-                <Column header="น้ำหนัก" />
-                <Column header="ราคา/น้ำหนัก" />
-                <Column header="รวม" />
-              </Row>
-            </ColumnGroup>
-
-            <Column field="nameDescription">
-              <template #body="slotProps">
-                <input
-                  type="text"
-                  class="form-control"
-                  :value="slotProps.data.nameDescription"
-                  readonly
-                  disabled
-                />
-              </template>
-            </Column>
-
-            <Column field="qty" style="width: 130px">
-              <template #body="slotProps">
-                <input
-                  type="text"
-                  class="form-control text-right"
-                  :value="formatNumber(slotProps.data.qty)"
-                  readonly
-                  disabled
-                />
-              </template>
-            </Column>
-
-            <Column field="qtyPrice" style="width: 110px">
-              <template #body="slotProps">
-                <input
-                  type="text"
-                  class="form-control text-right"
-                  :value="formatCurrency(slotProps.data.qtyPrice)"
-                  readonly
-                  disabled
-                />
-              </template>
-            </Column>
-
-            <Column field="qtyWeight" style="width: 110px">
-              <template #body="slotProps">
-                <input
-                  type="text"
-                  class="form-control text-right"
-                  :value="formatNumber(slotProps.data.qtyWeight)"
-                  readonly
-                  disabled
-                />
-              </template>
-            </Column>
-
-            <Column field="qtyWeightPrice" style="width: 110px">
-              <template #body="slotProps">
-                <input
-                  type="text"
-                  class="form-control text-right"
-                  :value="formatCurrency(slotProps.data.qtyWeightPrice)"
-                  readonly
-                  disabled
-                />
-              </template>
-            </Column>
-
-            <Column field="totalPrice" style="width: 150px">
-              <template #body="slotProps">
-                <input
-                  type="text"
-                  class="form-control text-right"
-                  :value="formatCurrency(slotProps.data.totalPrice)"
-                  readonly
-                  disabled
-                />
-              </template>
-            </Column>
-
-            <template #groupheader="slotProps">
-              <div class="flex align-items-center gap-2 type-container">
-                <span><i class="bi bi-clipboard2-check mr-2"></i></span>
-                <span>{{ getGroupLabel(slotProps.data.nameGroup) }}</span>
-              </div>
-            </template>
-
-            <ColumnGroup type="footer">
-              <Row>
-                <Column :colspan="5">
-                  <template #footer>
-                    <div class="text-right type-container">
-                      <span>รวมราคาทุกรายการ</span>
-                    </div>
-                  </template>
-                </Column>
-                <Column :colspan="1">
-                  <template #footer>
-                    <div class="text-right type-container">
-                      <span>{{ formatCurrency(totalPrice) }}</span>
-                    </div>
-                  </template>
-                </Column>
-              </Row>
-              <Row v-if="tagPriceMultiplier > 0">
-                <Column :colspan="5">
-                  <template #footer>
-                    <div class="text-right type-container tag-price-row">
-                      <span>ราคาป้าย (ตัวคูณ × {{ tagPriceMultiplier }})</span>
-                    </div>
-                  </template>
-                </Column>
-                <Column :colspan="1">
-                  <template #footer>
-                    <div class="text-right type-container tag-price-row">
-                      <span>{{ formatCurrency(tagPrice) }}</span>
-                    </div>
-                  </template>
-                </Column>
-              </Row>
-            </ColumnGroup>
-          </DataTable>
-        </div>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="!loading" class="text-center p-5">
-      <p>ไม่พบข้อมูลต้นทุนสินค้า</p>
-    </div>
-
-    <template #footer>
+    <template #action>
       <div class="responsive-btn-group">
-        <button class="btn btn-sm btn-secondary" type="button" @click="handleClose">
+        <button class="btn btn-sm btn-outline-main" type="button" @click="handleClose">
           <span class="bi bi-x mr-2"></span>
-          <span>ปิด</span>
+          <span>{{ $t('common.btn.close') }}</span>
         </button>
       </div>
     </template>
-  </Dialog>
+  </modal>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
+import { defineAsyncComponent } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
-import ProgressSpinner from 'primevue/progressspinner'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'CostDetailModal',
   components: {
-    Dialog,
+    modal,
     DataTable,
     Column,
     ColumnGroup,
-    Row,
-    ProgressSpinner
+    Row
   },
   props: {
     visible: {
@@ -303,9 +296,7 @@ export default {
   emits: ['update:visible'],
   data() {
     return {
-      localVisible: false,
       priceTransactions: [],
-      loading: false,
       groupOrder: {
         Gold: 1,
         Gem: 2,
@@ -320,8 +311,6 @@ export default {
       if (!this.priceTransactions || !Array.isArray(this.priceTransactions)) {
         return []
       }
-
-      // Add group order for sorting
       return this.priceTransactions.map((item) => ({
         ...item,
         groupOrder: this.groupOrder[item.nameGroup] || 999
@@ -343,7 +332,6 @@ export default {
   watch: {
     visible: {
       handler(val) {
-        this.localVisible = val
         if (val && this.stockNumber) {
           this.loadCostDetail()
         }
@@ -355,21 +343,13 @@ export default {
     async loadCostDetail() {
       if (!this.stockNumber) return
 
-      this.loading = true
-      try {
-        const store = usrStockProductApiStore()
-        const response = await store.fetchGetStockCostDetail(this.stockNumber)
+      const store = usrStockProductApiStore()
+      const response = await store.fetchGetStockCostDetail(this.stockNumber)
 
-        if (response && Array.isArray(response)) {
-          this.priceTransactions = response
-        } else {
-          this.priceTransactions = []
-        }
-      } catch (error) {
-        console.error('Error loading cost detail:', error)
+      if (response && Array.isArray(response)) {
+        this.priceTransactions = response
+      } else {
         this.priceTransactions = []
-      } finally {
-        this.loading = false
       }
     },
 
@@ -394,12 +374,7 @@ export default {
       return formatDecimal(Number(value), 2)
     },
 
-    handleVisibleChange(val) {
-      this.$emit('update:visible', val)
-    },
-
     handleClose() {
-      this.localVisible = false
       this.$emit('update:visible', false)
     }
   }
@@ -430,7 +405,6 @@ textarea {
   resize: vertical;
 }
 
-// Responsive DataTable styles for Tablet
 :deep(.p-datatable) {
   font-size: 14px;
 
@@ -452,10 +426,9 @@ textarea {
 }
 
 .tag-price-row {
-  color: #e65100;
+  color: var(--base-warning);
 }
 
-// Responsive Column widths for Tablet
 :deep(.p-datatable) {
   @media (max-width: 1024px) {
     th[style*='width: 130px'],

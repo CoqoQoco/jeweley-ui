@@ -61,7 +61,7 @@
               <div>
                 <span class="title-text">ประเภทงานรับ</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.receiptType"
                     :options="receiptTypeMaster"
                     optionLabel="description"
@@ -130,7 +130,7 @@
               <div>
                 <span class="title-text">ประเภทสินค้า</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.productType"
                     :options="masterProductType"
                     optionLabel="description"
@@ -144,7 +144,7 @@
               <div>
                 <span class="title-text">สีของทอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.gold"
                     :options="masterGold"
                     optionLabel="nameTh"
@@ -158,7 +158,7 @@
               <div>
                 <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.goldSize"
                     :options="masterGoldSize"
                     optionLabel="nameTh"
@@ -235,10 +235,7 @@
               <i class="bi bi-x-circle"></i>
             </button>
             <button
-              :class="[
-                'btn btn-sm btn-primary ml-2',
-                { 'btn-secondary': !moveStore.dataSearch.total > 0 }
-              ]"
+              class="btn btn-sm btn-green ml-2"
               type="button"
               :disabled="!moveStore.dataSearch.total > 0"
               @click="onExport"
@@ -254,7 +251,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import MultiSelect from 'primevue/multiselect'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -285,7 +282,7 @@ export default {
 
   components: {
     pageTitle,
-    MultiSelect,
+    MultiSelectGeneric,
     DropdownGeneric,
     dialogView
   },

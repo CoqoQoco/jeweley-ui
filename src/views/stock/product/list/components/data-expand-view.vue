@@ -64,7 +64,6 @@ export default {
 
   computed: {
     modelFormValue() {
-      //console.log('modelForm', this.modelForm)
       return this.modelForm.data
     },
 
@@ -135,12 +134,6 @@ export default {
           width: '150px',
           className: 'text-focus-main'
         },
-        // {
-        //   field: 'typeName',
-        //   header: 'รหัส',
-        //   sortable: false,
-        //   width: '100px'
-        // },
         {
           field: 'size',
           header: 'ขนาด',
@@ -178,7 +171,6 @@ export default {
       return this.masterGold.find((item) => item.code === type)?.nameEn ?? 'Gold'
     },
     getGemType(type) {
-      //return this.masterGem.find((item) => item.code === type)?.description ?? 'Gem'
       return type
     },
     getDiamondType(type) {
@@ -230,9 +222,8 @@ export default {
 
     // ส่วนของ header ยังคงเหมือนเดิม
     .p-datatable-thead > tr > th {
-      background-color: #460505 !important;
+      background-color: var(--base-font-color) !important;
       color: #ffffff !important;
-      //padding: 0.15rem 0.5rem !important;
 
       .p-column-title {
         color: #ffffff !important;

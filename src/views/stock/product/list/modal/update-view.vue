@@ -98,14 +98,14 @@
 
                 <template #paginator-buttons>
                   <button
-                    class="btn btn-sm btn-secondary mr-2"
+                    class="btn btn-sm btn-outline-main mr-2"
                     type="button"
                     @click="onSelectImage('SHOW')"
                   >
                     <i class="bi bi-x-lg"></i>
                   </button>
                   <button
-                    :class="['btn btn-sm', !selectedItems.length ? 'btn-secondary' : 'btn-main']"
+                    class="btn btn-sm btn-main"
                     type="button"
                     :disabled="!selectedItems.length"
                     @click="onSelect"
@@ -272,7 +272,7 @@
                 :paginator="false"
               >
                 <template #typeTemplate="{ data }">
-                  <Dropdown
+                  <DropdownGeneric
                     v-model="data.type"
                     :options="masterMaterialType"
                     optionLabel="description"
@@ -284,7 +284,7 @@
 
                 <template #typeCodeTemplate="{ data }">
                   <div v-if="data.type === 'Gold' || data.type === 'Silver'">
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="data.typeCode"
                       :options="masterGold"
                       optionLabel="description"
@@ -295,7 +295,7 @@
                     />
                   </div>
                   <div v-else-if="data.type === 'Diamond'">
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="data.typeCode"
                       :options="masterDiamondGrade"
                       optionLabel="description"
@@ -306,7 +306,7 @@
                     />
                   </div>
                   <div v-else-if="data.type === 'Gem'">
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="data.typeCode"
                       :options="masterGem"
                       optionLabel="description"
@@ -423,19 +423,19 @@ const BaseDataTable = defineAsyncComponent(() =>
   import('@/components/prime-vue/DataTableWithPaging.vue')
 )
 
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 
 export default {
   components: {
     modal,
     imagePreview,
     BaseDataTable,
-    Dropdown
+    DropdownGeneric
   },
 
   setup() {
@@ -636,7 +636,7 @@ export default {
     },
 
     onSubmit() {
-      swAlert.confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      confirmThenSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
         this.fetchConfirm()
       })
     },

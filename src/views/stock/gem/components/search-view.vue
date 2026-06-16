@@ -27,13 +27,12 @@
         <div>
           <span class="title-text">ประเภท</span>
           <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
+          <MultiSelectGeneric
             v-model="form.typeCheck"
             :options="masterTypeCheck"
-            filter
+            :filter="true"
             optionLabel="name"
             optionValue="value"
-            class="w-full md:w-14rem"
           />
         </div>
       </div>
@@ -50,7 +49,7 @@
             <div>
               <span class="title-text">หมวดหมู่</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <MultiSelectGeneric
                 v-model="form.groupName"
                 :options="groupOptions"
                 filter
@@ -64,7 +63,7 @@
             <div>
               <span class="title-text">เกรด</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <MultiSelectGeneric
                 v-model="form.grade"
                 :options="sizeOptions"
                 filter
@@ -78,7 +77,7 @@
             <div>
               <span class="title-text">ขนาด</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <MultiSelectGeneric
                 v-model="form.size"
                 :options="shapeOptions"
                 filter
@@ -92,7 +91,7 @@
             <div>
               <span class="title-text">รูปร่าง</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <MultiSelectGeneric
                 v-model="form.shape"
                 :options="gradeOptions"
                 filter
@@ -124,14 +123,13 @@
           <!-- <span>ล้าง</span> -->
         </button>
         <button
-          :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
+          class="btn btn-sm btn-green mr-2"
           type="button"
           :disabled="!isExportData"
           @click="onSubmitExport"
           title="ออกเอกสาร"
         >
           <span><i class="bi bi-filetype-csv"></i></span>
-          <!-- <span class="ml-2">ออกเอกสาร</span> -->
         </button>
       </div>
     </form>
@@ -152,10 +150,7 @@ import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
-
-import api from '@/axios/axios-helper.js'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 
 import createView from './create-view.vue'
 
@@ -166,11 +161,9 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-
+    MultiSelectGeneric,
     createView,
     dialogView
-    //Calendar
   },
 
   props: {
@@ -257,7 +250,6 @@ export default {
 
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow }
     }
@@ -291,122 +283,6 @@ export default {
       this.isShow.dialog = false
     },
 
-    // ---------------- APIs
-    async fetchGroupOptions() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'GROUPGEM',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.groupOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-    async fetchShapeOptions() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SHAPE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.shapeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-
-    async fetchSizeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SIZE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.sizeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-
-    async fetchGradeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'GRADE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.gradeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
-      }
-    },
-    async fetchMasterGemShape() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGemShape')
-        if (res) {
-          this.masterGemShape = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    },
-    async fetchMasterGoldGrade() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGrade = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
-      }
-    }
-  },
-
-  created() {
-    this.$nextTick(() => {
-      // this.fetchGroupOptions()
-      // this.fetchSizeOption()
-      // this.fetchGradeOption()
-      // this.fetchShapeOptions()
-      // this.fetchMasterGemShape()
-      // this.fetchMasterGoldGrade()
-    })
   }
 }
 </script>

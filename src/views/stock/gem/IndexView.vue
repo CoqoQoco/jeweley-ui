@@ -30,8 +30,6 @@
 </template>
 
 <script>
-//const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-
 import headerBar from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'
 
@@ -49,14 +47,12 @@ const interfaceForm = {
 }
 export default {
   components: {
-    //pageTitle,
     headerBar,
     dataTable
   },
 
   data() {
     return {
-      isLoading: false,
       form: { ...interfaceForm },
       search: {},
       exportData: {},
@@ -72,133 +68,65 @@ export default {
         { id: 1, name: 'มีจำนวนคงคลัง', value: 'qty-remain' },
         { id: 2, name: 'มีจำนวนยืมคลัง', value: 'qty-process-remain' },
         { id: 3, name: 'มีน้ำหนักคงคลัง', value: 'qty-weight-remain' },
-        { id: 3, name: 'มีน้ำหนักยืมคลัง', value: 'qty-weight-process-remain' }
+        { id: 4, name: 'มีน้ำหนักยืมคลัง', value: 'qty-weight-process-remain' }
       ]
     }
   },
 
   methods: {
-    //  ---------------- event --------
     onSearchFilter(data) {
-      //////console.log('onSearchFilter', data)
       this.search = { ...data }
     },
     onClearFilter() {
-      //////console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
     exportExcel(data) {
-      //////console.log('exportExcel', data)
       this.exportData = { ...data }
     },
     exportExcelFlag(value) {
-      //////console.log('exportExcelFlag', value)
       this.isExport = value
     },
 
-    // ---------------- APIs
     async fetchGroupOptions() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'GROUPGEM',
-          Value: null
-        }
-        //////console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.groupOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        //////console.log(error)
+      const params = { type: 'GROUPGEM', Value: null }
+      const res = await api.jewelry.post('StockGem/GroupGemData', params)
+      if (res) {
+        this.groupOptions = [...res]
       }
     },
     async fetchShapeOptions() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SHAPE',
-          Value: null
-        }
-        //////console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.shapeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        //////console.log(error)
+      const params = { type: 'SHAPE', Value: null }
+      const res = await api.jewelry.post('StockGem/GroupGemData', params)
+      if (res) {
+        this.shapeOptions = [...res]
       }
     },
 
     async fetchSizeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SIZE',
-          Value: null
-        }
-        //////console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.sizeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        //////console.log(error)
+      const params = { type: 'SIZE', Value: null }
+      const res = await api.jewelry.post('StockGem/GroupGemData', params)
+      if (res) {
+        this.sizeOptions = [...res]
       }
     },
 
     async fetchGradeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'GRADE',
-          Value: null
-        }
-        //////console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.gradeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        //////console.log(error)
+      const params = { type: 'GRADE', Value: null }
+      const res = await api.jewelry.post('StockGem/GroupGemData', params)
+      if (res) {
+        this.gradeOptions = [...res]
       }
     },
     async fetchMasterGemShape() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGemShape')
-        if (res) {
-          this.masterGemShape = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        //////console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGemShape')
+      if (res) {
+        this.masterGemShape = [...res]
       }
     },
     async fetchMasterGoldGrade() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGrade = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        //////console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGoldSize')
+      if (res) {
+        this.masterGrade = [...res]
       }
     }
   },

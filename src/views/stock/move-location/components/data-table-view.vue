@@ -44,10 +44,14 @@
 <script>
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
+
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
 
 export default {
   name: 'MoveLocationDataTableView',
+
+  mixins: [dataTablePaging],
 
   components: {
     BaseDataTable,
@@ -74,10 +78,8 @@ export default {
 
   watch: {
     async modelForm() {
-      this.take = 10
-      this.skip = 0
       this.selectedItems = []
-      await this.fetchData()
+      this.resetPaging()
     },
     async modelFormExport() {
       await this.moveStore.fetchDataSearchReceiptExport({
@@ -89,9 +91,6 @@ export default {
 
   data() {
     return {
-      take: 10,
-      skip: 0,
-      sort: [],
       selectedItems: [],
       type: 'STOCK-PRODUCT',
       columns: [
@@ -205,22 +204,6 @@ export default {
   },
 
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     onSelectionChange(selected) {
       this.selectedItems = selected
       this.$emit('update:selection', selected)
@@ -241,19 +224,21 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 
+%badge-base {
+  padding: 2px var(--sp-sm);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+}
+
 .badge-ready {
+  @extend %badge-base;
   background: #d4edda;
   color: #155724;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 
 .badge-not-ready {
+  @extend %badge-base;
   background: #f8d7da;
   color: #721c24;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
 }
 </style>

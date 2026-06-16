@@ -32,7 +32,7 @@
                   <span class="title-text">หมวดหมู่</span>
                   <span class="txt-required"> *</span>
                 </div>
-                <AutoComplete
+                <AutoCompleteGeneric
                   v-model="form.groupName"
                   :suggestions="suggestionsGroupName"
                   optionLabel="value"
@@ -65,15 +65,14 @@
                   <span class="title-text">รูปร่าง</span>
                   <span class="txt-required"> *</span>
                 </div>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.shape"
                   :options="gemShape"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   :showClear="form.shape ? true : false"
                   :class="val.isShape === true ? `p-invalid` : ``"
-                >
-                </Dropdown>
+                />
               </div>
 
               <!-- grade -->
@@ -82,15 +81,14 @@
                   <span class="title-text">เกรด</span>
                   <span class="txt-required"> *</span>
                 </div>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.grade"
                   :options="grade"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   :showClear="form.grade ? true : false"
                   :class="val.isGrade === true ? `p-invalid` : ``"
-                >
-                </Dropdown>
+                />
               </div>
             </div>
             <div class="form-col-container p-2">
@@ -122,10 +120,11 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import AutoComplete from 'primevue/autocomplete'
-import Dropdown from 'primevue/dropdown'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
@@ -144,9 +143,8 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
-
-    AutoComplete,
-    Dropdown
+    AutoCompleteGeneric,
+    DropdownGeneric
   },
   props: {
     isShow: {
@@ -200,7 +198,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       form: { ...interfaceForm },
       val: { ...interfaceIsVal },
 
@@ -233,64 +230,40 @@ export default {
       return isValid
     },
     onSubmit() {
-      console.log('onSubmit')
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmThenSubmit(
           `${this.form.code}`,
           `ยืนยันสร้างข้อมูลวัถุดิบ`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
     searchGroupName(event) {
       const query = event.query
-      this.isInit = false
       this.suggestionsGroupName = this.groupName.filter((el) =>
         el.value.toLowerCase().includes(query.toLowerCase())
       )
-      console.log('searchGroupName', query, this.suggestionsGroupN)
     },
 
     // ---------------- APIs
     async submit() {
-      try {
-        this.isLoading = true
-
-        console.log('this.form', this.form)
-        const params = {
-          code: this.form.code,
-          groupName: this.form.groupName.value ? this.form.groupName.value : this.form.groupName,
-          size: this.form.size,
-          shape: this.form.shape.code,
-          grade: this.form.grade.description,
-          gradeCode: this.form.grade.code,
-          remark: this.form.remark,
-          region: this.form.region
-
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/CreateGem', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.closeModal()
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      const params = {
+        code: this.form.code,
+        groupName: this.form.groupName.value ? this.form.groupName.value : this.form.groupName,
+        size: this.form.size,
+        shape: this.form.shape.code,
+        grade: this.form.grade.description,
+        gradeCode: this.form.grade.code,
+        remark: this.form.remark,
+        region: this.form.region
+      }
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/CreateGem', params)
+      if (res) {
+        success('', '', () => {
+          this.closeModal()
+        })
       }
     }
   }

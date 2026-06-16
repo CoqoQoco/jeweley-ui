@@ -59,8 +59,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
-
       // -------obj
       isShow: { ...interfaceIsShow },
       form: { ...interfaceForm },
@@ -78,7 +76,6 @@ export default {
       this.isShow = { ...interfaceIsShow }
     },
     onSubmit() {
-      console.log('onSubmit')
       this.$emit('onSearch', this.form)
       this.closeModal()
     }

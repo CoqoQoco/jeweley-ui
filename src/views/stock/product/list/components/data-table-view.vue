@@ -71,6 +71,7 @@
 <script>
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
@@ -86,6 +87,8 @@ const interfaceShow = {
 }
 
 export default {
+  mixins: [dataTablePaging],
+
   components: {
     BaseDataTable,
     imagePreview,
@@ -122,13 +125,9 @@ export default {
 
   watch: {
     async modelForm() {
-      //console.log(this.modelForm)
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
+      this.resetPaging()
     },
     async modelFormExport() {
-      //console.log(this.modelForm)
       await this.fetchDataExport()
     }
   },
@@ -138,9 +137,6 @@ export default {
       isShow: { ...interfaceShow },
       modelStock: {},
 
-      take: 10,
-      skip: 0,
-      sort: [],
       columns: [
         {
           field: 'action',
@@ -263,22 +259,6 @@ export default {
   },
 
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     onCloseModal(action) {
       this.isShow = { ...interfaceShow }
       this.modelStock = {}

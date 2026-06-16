@@ -48,10 +48,10 @@
 | **catalog** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | **Pilot แรก** — reference implementation; native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
 | **customer** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
 | **dashboard** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 0 | |
-| **stock/gem** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
-| **stock/location** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
-| **stock/move-location** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | มี user-manual แล้ว |
-| **stock/product** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 23 | นับรวม stock ทั้งหมด |
+| **stock/gem** | ✅ | ✅ | ✅ | ⬜ | ✅ | 0 | AutoComplete/Dropdown/MultiSelect/DataTable→generic; dataTablePaging mixin; confirmThenSubmit; cleancode; 1 known lint warning (cost-detail-modal ColumnGroup exception) |
+| **stock/location** | ✅ | ✅ | ✅ | ⬜ | ✅ | 0 | CheckboxGeneric, dataTablePaging mixin, confirmThenSubmit, design token badges |
+| **stock/move-location** | ✅ | ✅ | ✅ | ⬜ | ✅ | 0 | MultiSelect→MultiSelectGeneric (4 instances), dataTablePaging mixin, btn-primary→btn-green, badge token |
+| **stock/product** | ✅ | ✅ | ✅ | ⬜ | ✅ | 0 | Dropdown→DropdownGeneric (update-view), dataTablePaging mixin, confirmThenSubmit, Dialog→ModalView (cost-detail/cost-history modals), MultiSelect→MultiSelectGeneric (search-view), cleancode |
 | **receipt-stock** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 65 | priority สูง |
 | **mold** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 23 | |
 | **production-cost** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 24 | |
@@ -106,3 +106,4 @@
 | 2026-06-16 | customer | ✅ Pass | 1→0 (Dropdown import ตรงๆ) | ลด hardcode px/สี ใน SCSS |
 | 2026-06-16 | master/* (diamond-grade, gem, gem-shape, gold-size, productType) | ✅ Pass | 0 warnings ใน master/* | ลบ hardcode ไทย/px/inline-style ทั้งหมด |
 | 2026-06-16 | master/zill + InputTextGeneric props + gold-size goldPercent fix | ✅ Pass | 0 warnings ใน master/zill | native→generic, Dropdown→DropdownGeneric, dataTablePaging mixin, i18n, cleancode |
+| 2026-06-16 | stock/* (gem, location, move-location, product, product/cost) | ✅ Pass | ลด ~23 restricted-import warnings | AutoComplete/Dropdown/MultiSelect/DataTable→generic wrappers; Dialog→ModalView; CheckboxGeneric; dataTablePaging mixin; confirmThenSubmit; cleancode (remove console.log/isLoading/try-catch); design token badge colors; btn-primary/btn-secondary→valid classes; 1 known exception: cost-detail-modal ColumnGroup |

@@ -57,7 +57,7 @@
               <div>
                 <span class="title-text">ประเภทงานรับ</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.receiptType"
                     :options="receiptTypeMaster"
                     optionLabel="description"
@@ -126,7 +126,7 @@
               <div>
                 <span class="title-text">ประเภทสินค้า</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.productType"
                     :options="masterProductType"
                     optionLabel="description"
@@ -140,7 +140,7 @@
               <div>
                 <span class="title-text">สีของทอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.gold"
                     :options="masterGold"
                     optionLabel="nameTh"
@@ -154,7 +154,7 @@
               <div>
                 <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.goldSize"
                     :options="masterGoldSize"
                     optionLabel="nameTh"
@@ -216,10 +216,7 @@
             </button>
 
             <button
-              :class="[
-                'btn btn-sm btn-primary ml-2',
-                { 'btn-secondary': !productStore.dataSearch.total > 0 }
-              ]"
+              class="btn btn-sm btn-green ml-2"
               type="button"
               :disabled="!productStore.dataSearch.total > 0"
               @click="onExport"
@@ -241,7 +238,7 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-import MultiSelect from 'primevue/multiselect'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const interfaceIsShow = {
@@ -250,7 +247,7 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
+    MultiSelectGeneric,
     DropdownGeneric,
     dialogView
   },
@@ -294,7 +291,6 @@ export default {
 
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow },
       receiptTypeMaster: [
@@ -345,9 +341,7 @@ export default {
   },
 
   created() {
-    this.$nextTick(async () => {
-      //await this.masterStore.fetchProductType()
-    })
+    this.$nextTick(async () => {})
   }
 }
 </script>

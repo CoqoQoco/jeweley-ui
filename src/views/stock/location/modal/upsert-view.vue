@@ -74,34 +74,10 @@
           </div>
 
           <div class="form-row">
-            <div class="d-flex" style="gap: 24px; flex-wrap: wrap;">
-              <div class="d-flex align-items-center">
-                <input
-                  type="checkbox"
-                  id="chk-sales-point"
-                  v-model="form.isSalesPoint"
-                  class="mr-2"
-                />
-                <label for="chk-sales-point" class="title-text mb-0">จุดขาย</label>
-              </div>
-              <div class="d-flex align-items-center">
-                <input
-                  type="checkbox"
-                  id="chk-temporary"
-                  v-model="form.isTemporary"
-                  class="mr-2"
-                />
-                <label for="chk-temporary" class="title-text mb-0">ชั่วคราว</label>
-              </div>
-              <div class="d-flex align-items-center">
-                <input
-                  type="checkbox"
-                  id="chk-active"
-                  v-model="form.isActive"
-                  class="mr-2"
-                />
-                <label for="chk-active" class="title-text mb-0">ใช้งาน</label>
-              </div>
+            <div class="checkbox-group">
+              <CheckboxGeneric v-model="form.isSalesPoint" label="จุดขาย" />
+              <CheckboxGeneric v-model="form.isTemporary" label="ชั่วคราว" />
+              <CheckboxGeneric v-model="form.isActive" label="ใช้งาน" />
             </div>
           </div>
         </div>
@@ -122,6 +98,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 
@@ -150,7 +127,8 @@ export default {
 
   components: {
     modal,
-    DropdownGeneric
+    DropdownGeneric,
+    CheckboxGeneric
   },
 
   setup() {
@@ -254,10 +232,10 @@ export default {
 input.form-control {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  line-height: 1.4;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
+  line-height: var(--lh-sm);
 
   &:focus {
     border-color: var(--base-font-color);
@@ -269,5 +247,12 @@ input.form-control {
     background: #f8f9fa;
     cursor: not-allowed;
   }
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2xl);
+  align-items: center;
 }
 </style>

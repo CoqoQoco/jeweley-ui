@@ -125,10 +125,7 @@
                 />
               </div>
               <button
-                :class="[
-                  'btn btn-sm',
-                  checkPrinterService !== 'success' ? 'btn-secondary' : 'btn-main'
-                ]"
+                class="btn btn-sm btn-main"
                 :disabled="checkPrinterService !== 'success'"
                 @click="onPrintBarcode"
               >

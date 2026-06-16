@@ -68,23 +68,16 @@
               </div>
               <div class="ml-2 mr-2">
                 <input
-                  class="form-control text-center"
+                  class="form-control text-center copies-input"
                   type="number"
                   v-model.number="copies"
                   min="1"
                   max="30"
-                  style="
-                    width: 50px;
-                    font-size: 16px;
-                    height: 30px;
-                    border-radius: 4px;
-                    border: 1px solid #ced4da;
-                  "
                   @input="validateCopies"
                 />
               </div>
               <button
-                :class="['btn btn-sm', printerStatus !== 'success' ? 'btn-secondary' : 'btn-main']"
+                class="btn btn-sm btn-main"
                 :disabled="printerStatus !== 'success'"
                 @click="onConfirmPrint"
               >
@@ -107,7 +100,6 @@ const gemBarcodeDemo = defineAsyncComponent(() =>
 )
 
 import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
-import { success } from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
@@ -196,8 +188,13 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-input {
-  margin-top: 0px !important;
+.copies-input {
+  width: 50px;
+  font-size: var(--fs-lg);
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  margin-top: 0 !important;
 }
 
 .printer-status-indicator {
@@ -258,7 +255,7 @@ input {
 .filter-container-bg-focus {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border: 2px dashed var(--base-green);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: var(--radius-md);
+  padding: var(--sp-sm);
 }
 </style>

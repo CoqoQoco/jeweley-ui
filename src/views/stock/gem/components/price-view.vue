@@ -5,7 +5,6 @@
         <div class="filter-container-highlight">
           <div class="form-col-container">
             <span class="desc-text-white">{{ `ราคาเพชร/พลอย: ${gem.name ?? 'loading...'}` }}</span>
-            <!-- <span class="desc-text-white"> ณ วันที่</span> -->
           </div>
           <div class="form-col-container mt-1">
             <div class="form-col-container">
@@ -42,8 +41,7 @@
                   <span class="txt-required"> *</span>
                 </div>
                 <input
-                  :style="form.priceQty > 0 ? 'background-color: #b5dad4' : ''"
-                  class="form-control"
+                  :class="['form-control', form.priceQty > 0 ? 'input-filled' : '']"
                   type="number"
                   step="any"
                   min="0"
@@ -60,8 +58,7 @@
                   <span class="txt-required"> *</span>
                 </div>
                 <input
-                  :style="form.price > 0 ? 'background-color: #b5dad4' : ''"
-                  class="form-control"
+                  :class="['form-control', form.price > 0 ? 'input-filled' : '']"
                   type="number"
                   step="any"
                   min="0"
@@ -78,8 +75,7 @@
                   <span class="txt-required"> *</span>
                 </div>
                 <input
-                  :style="form.unitCode > 0 ? 'background-color: #b5dad4' : ''"
-                  class="form-control"
+                  :class="['form-control', form.unitCode > 0 ? 'input-filled' : '']"
                   type="text"
                   required
                   v-model="form.unitCode"
@@ -92,19 +88,17 @@
                   <span class="title-text">รหัสหน่วย</span>
                   <span class="txt-required"> *</span>
                 </div>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.unit"
                   :options="unitCode"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   :showClear="form.unit ? true : false"
                   :class="val.isUnit === true ? `p-invalid` : ``"
-                >
-                </Dropdown>
+                />
               </div>
             </div>
             <div class="d-flex justify-content-end mt-2">
-              <!-- <button class="btn btn-sm btn-main mr-2" type="button" @click="onTest">TEST</button> -->
               <button class="btn btn-sm btn-main" type="submit">
                 <span class="mr-2 mt-1">
                   <i class="bi bi-cash-coin"></i>
@@ -120,49 +114,29 @@
           </div>
         </div>
         <div class="form-col-container">
-          <DataTable
+          <BaseDataTable
+            :items="history.data"
             :totalRecords="history.total"
-            :value="history.data"
-            dataKey="id"
-            ref="dt"
-            class="p-datatable-sm"
-            scrollable
-            scrollHeight="calc(100vh - 280px)"
-            resizableColumns
-            showGridlines
+            :columns="priceHistoryColumns"
+            :perPage="20"
+            :paginator="false"
           >
-            <Column field="createDate" header="วันที่" style="min-width: 150px">
-              <template #body="slotProps">
-                <span>{{ formatDateTime(slotProps.data.createDate) }}</span>
-              </template>
-            </Column>
-            <Column field="previousPrice" header="ราคาต่อจำนวนก่อนปรับ" style="min-width: 100px">
-              <template #body="slotProps">
-                <span>{{ slotProps.data.previousPriceUnit.toFixed(3) }}</span>
-              </template>
-            </Column>
-            <Column field="newPrice" header="ราคาต่อจำนวนหลังปรับ" style="min-width: 100px">
-              <template #body="slotProps">
-                <span>{{ slotProps.data.newPriceUnit.toFixed(3) }}</span>
-              </template>
-            </Column>
-            <Column
-              field="previousPriceUnit"
-              header="ราคาต่อน้ำหนักก่อนปรับ"
-              style="min-width: 100px"
-            >
-              <template #body="slotProps">
-                <span>{{ slotProps.data.previousPrice.toFixed(3) }}</span>
-              </template>
-            </Column>
-            <Column field="newPriceUnit" header="ราคาต่อน้ำหนักหลังปรับ" style="min-width: 100px">
-              <template #body="slotProps">
-                <span>{{ slotProps.data.newPrice.toFixed(3) }}</span>
-              </template>
-            </Column>
-            <Column field="unitCode" header="หน่วย" style="min-width: 100px"></Column>
-            <Column field="unit" header="รหัสหน่วย" style="min-width: 100px"></Column>
-          </DataTable>
+            <template #createDateTemplate="{ data: row }">
+              <span>{{ formatDateTime(row.createDate) }}</span>
+            </template>
+            <template #previousPriceTemplate="{ data: row }">
+              <span>{{ row.previousPriceUnit.toFixed(3) }}</span>
+            </template>
+            <template #newPriceTemplate="{ data: row }">
+              <span>{{ row.newPriceUnit.toFixed(3) }}</span>
+            </template>
+            <template #previousPriceUnitTemplate="{ data: row }">
+              <span>{{ row.previousPrice.toFixed(3) }}</span>
+            </template>
+            <template #newPriceUnitTemplate="{ data: row }">
+              <span>{{ row.newPrice.toFixed(3) }}</span>
+            </template>
+          </BaseDataTable>
         </div>
       </template>
     </modal>
@@ -174,12 +148,10 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import Dropdown from 'primevue/dropdown'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-//import Papa from 'papaparse'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
@@ -194,10 +166,8 @@ const interfaceVal = {
 export default {
   components: {
     modal,
-    Dropdown,
-    DataTable,
-    Column
-    //Papa
+    DropdownGeneric,
+    BaseDataTable
   },
   props: {
     isShow: {
@@ -217,6 +187,17 @@ export default {
     },
     gem() {
       return this.modelGem
+    },
+    priceHistoryColumns() {
+      return [
+        { field: 'createDate', header: 'วันที่', minWidth: '150px', sortable: false },
+        { field: 'previousPrice', header: 'ราคาต่อจำนวนก่อนปรับ', minWidth: '100px', sortable: false },
+        { field: 'newPrice', header: 'ราคาต่อจำนวนหลังปรับ', minWidth: '100px', sortable: false },
+        { field: 'previousPriceUnit', header: 'ราคาต่อน้ำหนักก่อนปรับ', minWidth: '100px', sortable: false },
+        { field: 'newPriceUnit', header: 'ราคาต่อน้ำหนักหลังปรับ', minWidth: '100px', sortable: false },
+        { field: 'unitCode', header: 'หน่วย', minWidth: '100px' },
+        { field: 'unit', header: 'รหัสหน่วย', minWidth: '100px' }
+      ]
     }
   },
   watch: {
@@ -236,7 +217,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       history: {},
       form: { ...interfaceForm },
       val: { ...interfaceVal },
@@ -253,11 +233,9 @@ export default {
     },
     onbluePrice(event, item) {
       item.price = Number(event.target.value).toFixed(3)
-      console.log('onbluePrice', item)
     },
     onbluePriceQty(event, item) {
       item.priceQty = Number(event.target.value).toFixed(3)
-      console.log('PriceQty', item)
     },
     submit() {
       if (this.validateForm()) {
@@ -276,59 +254,36 @@ export default {
 
     // ------ APIs
     async fetchHistory(code) {
-      this.isLoading = true
-      try {
-        const params = {
-          take: 20,
-          skip: 0,
-          sort: null,
-          search: {
-            code: code
-          }
+      const params = {
+        take: 20,
+        skip: 0,
+        sort: null,
+        search: {
+          code: code
         }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/PriceHistory', params)
-        if (res) {
-          this.history = { ...res }
-        }
-        console.log('this.history', this.history)
-      } catch (error) {
-        console.log(error)
       }
-      this.isLoading = false
+      const res = await api.jewelry.post('StockGem/PriceHistory', params)
+      if (res) {
+        this.history = { ...res }
+      }
     },
     async onSubmit() {
-      try {
-        this.isLoading = true
+      const params = {
+        id: this.gem.id,
+        code: this.gem.code,
 
-        console.log('this.form', this.form)
-        const params = {
-          id: this.gem.id,
-          code: this.gem.code,
-
-          newPrice: this.form.price,
-          newPriceUnit: this.form.priceQty,
-          unit: this.form.unit.value,
-          unitCode: this.form.unitCode
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/Price', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.form = { ...interfaceForm }
-              this.$emit('closeModal', 'fetch')
-            },
-            null,
-            null
-          )
-        }
-      } catch (error) {
-        console.log(error)
+        newPrice: this.form.price,
+        newPriceUnit: this.form.priceQty,
+        unit: this.form.unit.value,
+        unitCode: this.form.unitCode
       }
-      this.isLoading = false
+      const res = await api.jewelry.post('StockGem/Price', params)
+      if (res) {
+        success('', '', () => {
+          this.form = { ...interfaceForm }
+          this.$emit('closeModal', 'fetch')
+        })
+      }
     },
 
     // ----- validate
@@ -352,4 +307,8 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.input-filled {
+  background-color: #b5dad4;
+}
 </style>

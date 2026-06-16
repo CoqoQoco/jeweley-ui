@@ -66,10 +66,8 @@
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
-
-//
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import priceView from './price-view.vue'
 import historyView from './history-view.vue'
@@ -80,7 +78,7 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'
 import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
 import { gemBarcodePdfService } from '@/services/helper/pdf/gem-barcode/gem-barcode-pdf-integration.js'
-import { success, error, warning } from '@/services/alert/sweetAlerts.js'
+import { success, warning } from '@/services/alert/sweetAlerts.js'
 
 const isShowModal = {
   isPrice: false,
@@ -90,8 +88,9 @@ const isShowModal = {
 }
 
 export default {
+  mixins: [dataTablePaging],
+
   components: {
-    //loading,
     BaseDataTable,
     priceView,
     historyView,
@@ -151,24 +150,21 @@ export default {
 
   watch: {
     modelForm: {
-      handler(val) {
-        this.form = { ...val }
-        this.fetchData()
+      handler(newVal) {
+        this.form = { ...newVal }
+        this.resetPaging()
       },
       deep: true
     },
     modelFormExport: {
-      handler(val) {
-       // console.log('watch modelFormExport', val)
-        //this.export = { ...val }
+      handler() {
         this.fetchDataExport()
       },
       deep: true
     },
     data: {
-      handler(val) {
-       // console.log('watch data', val)
-        val.data && val.data.length > 0 ? this.$emit('export', true) : this.$emit('export', false)
+      handler(newVal) {
+        newVal.data && newVal.data.length > 0 ? this.$emit('export', true) : this.$emit('export', false)
       },
       deep: true
     }
@@ -198,7 +194,7 @@ export default {
 
   data() {
     return {
-      isLoading: false,
+      take: 100,
       isShow: { ...isShowModal },
       price: {},
       history: {},
@@ -206,14 +202,6 @@ export default {
       barcodePreviewData: {},
       currentRowData: null,
 
-      //--------- table ---------//
-      totalRecords: 0,
-      take: 100, //all
-      skip: 0,
-      //sortField: 'updateDate',
-      //sortOrder: -1, // หรือ -1 สำหรับ descending
-      sort: [],
-      //sort: [],
       data: {},
       dataExcel: {},
       expnadData: [],
@@ -314,23 +302,6 @@ export default {
   },
 
   methods: {
-    // ----------- table ----------- //
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     // ----------- APIs ----------- //
     async fetchData() {
       const res = await this.stockGemSearchStore.fetchDataSearch({
@@ -357,11 +328,8 @@ export default {
       return formatDate(date)
     },
     stringToArray(str) {
-     // console.log('stringToArray', str)
       if (str && typeof str === 'string') {
-        // ตัดช่องว่างหน้าและหลังสตริง
         str = str.trim()
-        //console.log('stringToArray', str)
 
         // ถ้าไม่มีเครื่องหมายจุลภาค ให้คืนค่าเป็น array ที่มีสมาชิกเดียว
         if (!str.includes(',')) {
@@ -382,31 +350,26 @@ export default {
     // -------- event -------- //
     closeModal(event) {
       this.isShow = { ...isShowModal }
-      //this.price = null
       if (event === 'fetch') {
         this.fetchData()
       }
     },
     onShowPrice(data) {
-     // console.log('onShowPrice', data)
       this.price = {}
       this.price = { ...data }
       this.isShow.isPrice = true
     },
     onShowHistory(data) {
-     // console.log('onShowHistory', data)
       this.history = {}
       this.history = { ...data }
       this.isShow.isHistory = true
     },
     onShowUpdate(data) {
-     // console.log('onShowUpdate', data)
       this.updateGem = {}
       this.updateGem = { ...data }
       this.isShow.update = true
     },
     onPrintBarcode(rowData) {
-     // console.log('onPrintBarcode', rowData)
 
       // ตรวจสอบข้อมูลที่จำเป็น
       if (!rowData.code) {
@@ -438,9 +401,6 @@ export default {
     },
 
     async onConfirmPrint(copies) {
-     // console.log('onConfirmPrint', copies)
-
-      // พิมพ์บาร์โค้ดตามจำนวนที่ระบุ
       if (copies === 1) {
         // พิมพ์ 1 ใบ
         const result = await gemBarcodeService.printBarcode(this.barcodePreviewData)
@@ -459,17 +419,13 @@ export default {
     },
 
     async onPrintBarcodePDF(rowData) {
-     console.log('onPrintBarcodePDF', rowData)
-
-      // ตรวจสอบข้อมูลที่จำเป็น
       if (!rowData.code) {
         warning('ไม่พบรหัสพัสดุ', 'ข้อมูลไม่ครบถ้วน')
         return
       }
 
-      let price = rowData.unit === "Q" ? rowData.priceQty : rowData.price
+      let price = rowData.unit === 'Q' ? rowData.priceQty : rowData.price
       const displayPrice = `[${rowData.unit}] ${price ? Number(price).toFixed(2) : '0.00'}`
-     console.log('displayPrice', displayPrice)
 
       // เตรียมข้อมูลสำหรับ PDF
       const barcodeData = {
@@ -495,11 +451,7 @@ export default {
   },
 
   created() {
-   // console.log('created', this.modelForm)
     this.form = { ...this.modelForm }
-    this.$nextTick(() => {
-      //this.fetchData()
-    })
   }
 }
 </script>

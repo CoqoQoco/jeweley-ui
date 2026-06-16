@@ -9,6 +9,7 @@ import pickinglist from './view/pickinglist/en.js'
 import catalog from './view/catalog/en.js'
 import customer from './view/customer/en.js'
 import master from './view/master/en.js'
+import stock from './view/stock/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -72,7 +73,11 @@ export default {
       }
     },
     stock: {
+      product: { ...stock.product },
+      location: { ...stock.location },
+      moveLocation: { ...stock.moveLocation },
       gem: {
+        ...stock.gem,
         dashboard: {
           title: 'Gem Stock Dashboard',
           lastUpdate: 'Last Update',
