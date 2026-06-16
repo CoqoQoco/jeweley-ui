@@ -169,7 +169,8 @@ export default {
       searchProductNamePlaceholder: 'พิมพ์เพื่อค้นหา...',
       editAll: 'อัปเดตทุกรายการ',
       updateProductName: 'อัปเดตชื่อสินค้า',
-      productName: 'ชื่อสินค้า'
+      productName: 'ชื่อสินค้า',
+      currencyTHB: 'บาท'
     },
     productionReceiptList: {
       title: 'รับสินค้างานผลิต',

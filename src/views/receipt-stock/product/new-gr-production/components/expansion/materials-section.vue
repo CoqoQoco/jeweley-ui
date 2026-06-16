@@ -13,30 +13,11 @@
         </div>
         <!-- Control buttons -->
         <div class="d-flex justify-content-start mt-2 gap-2">
-          <!-- <button
-            type="button"
-            class="btn btn-outline-primary btn-sm"
-            @click="$emit('loadFromBreakdown')"
-            :disabled="!hasBreakdownData"
-            title="โหลดวัสดุจาก Breakdown"
-          >
-            <span class="bi bi-download"></span>
-            <span class="ml-1">โหลด Breakdown</span>
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm"
-            @click="$emit('editAllMaterials')"
-            title="แก้ไขวัสดุทั้งหมด"
-          >
-            <span class="bi bi-pencil-square"></span>
-            <span class="ml-1">แก้ไขทั้งหมด</span>
-          </button> -->
           <div
             type="button"
             class="p-2 text-dark cursor-pointer"
             @click="$emit('addMaterial', data.materials)"
-            title="เพิ่มวัสดุใหม่"
+            :title="$t('receipt-stock.product.grProduction.addMaterial')"
           >
             <span class="bi bi-plus-lg"></span>
           </div>
@@ -52,14 +33,14 @@
       >
         <template #typeTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
-            <Dropdown
-              v-model="materialData.type"
+            <DropdownGeneric
+              :modelValue="materialData.type"
               :options="masterMaterialType"
               optionLabel="description"
               optionValue="value"
-              class="w-full md:w-14rem"
+              class="w-full"
               :class="materialData.type === true ? `p-invalid` : ``"
-              @change="emitUpdateTypeBarcode(materialData)"
+              @update:modelValue="materialData.type = $event; emitUpdateTypeBarcode(materialData)"
             />
           </div>
         </template>
@@ -67,13 +48,11 @@
         <!-- Type Name -->
         <template #typeNameTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
-            <input
-              type="text"
+            <InputTextGeneric
               v-model="materialData.typeName"
-              class="form-control"
-              :style="getBgColor(false, materialData.typeName)"
-              placeholder="ชื่อวัสดุ"
-              @input="emitUpdateTypeBarcode(materialData)"
+              :bgInput="getBgColor(false, materialData.typeName)"
+              :placeholder="$t('receipt-stock.product.grProduction.colMaterialName')"
+              @blur="emitUpdateTypeBarcode(materialData)"
             />
           </div>
         </template>
@@ -81,67 +60,63 @@
         <template #typeCodeTemplate="{ data: materialData }">
           <div class="">
             <div v-if="materialData.type === 'Gold' || materialData.type === 'Silver'">
-              <Dropdown
-                v-model="materialData.typeCode"
+              <DropdownGeneric
+                :modelValue="materialData.typeCode"
                 :options="masterGold"
                 optionLabel="description"
                 optionValue="code"
-                class="w-full md:w-14rem"
-                placeholder="เลือกทอง"
+                class="w-full"
+                :placeholder="$t('receipt-stock.product.grProduction.matTypeCode')"
                 :showClear="materialData.typeCode ? true : false"
-                @change="emitUpdateTypeBarcode(materialData)"
+                @update:modelValue="materialData.typeCode = $event; emitUpdateTypeBarcode(materialData)"
               />
             </div>
             <div v-else-if="materialData.type === 'Diamond'">
-              <Dropdown
-                v-model="materialData.typeCode"
+              <DropdownGeneric
+                :modelValue="materialData.typeCode"
                 :options="masterDiamondGrade"
                 optionLabel="description"
                 optionValue="nameEn"
-                class="w-full md:w-14rem"
-                placeholder="เลือกเกรดเพชร"
+                class="w-full"
+                :placeholder="$t('receipt-stock.product.grProduction.matTypeCode')"
                 :showClear="materialData.typeCode ? true : false"
-                @change="emitUpdateTypeBarcode(materialData)"
+                @update:modelValue="materialData.typeCode = $event; emitUpdateTypeBarcode(materialData)"
               />
             </div>
             <div v-else-if="materialData.type === 'Gem'">
-              <Dropdown
-                v-model="materialData.typeCode"
+              <DropdownGeneric
+                :modelValue="materialData.typeCode"
                 :options="masterGem"
                 optionLabel="description"
                 optionValue="nameEn"
-                class="w-full md:w-14rem"
-                placeholder="เลือกพลอย"
+                class="w-full"
+                :placeholder="$t('receipt-stock.product.grProduction.matTypeCode')"
                 :showClear="materialData.typeCode ? true : false"
-                @change="emitUpdateTypeBarcode(materialData)"
+                @update:modelValue="materialData.typeCode = $event; emitUpdateTypeBarcode(materialData)"
               />
             </div>
             <div v-else class="vertical-center-container text-center">
-              <span> --- โปรดระบุประเภท ---</span>
+              <span> --- {{ $t('receipt-stock.product.grProduction.matType') }} ---</span>
             </div>
           </div>
         </template>
 
         <template #sizeTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
-            <input
-              type="text"
+            <InputTextGeneric
               v-model="materialData.size"
-              class="form-control"
-              :style="getBgColor(false, materialData.size)"
-              @input="emitUpdateTypeBarcode(materialData)"
+              :bgInput="getBgColor(false, materialData.size)"
+              @blur="emitUpdateTypeBarcode(materialData)"
             />
           </div>
         </template>
 
         <template #regionTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
-            <input
-              type="text"
+            <InputTextGeneric
               v-model="materialData.region"
-              class="form-control"
-              :style="getBgColor(false, materialData.region)"
-              @input="emitUpdateTypeBarcode(materialData)"
+              :bgInput="getBgColor(false, materialData.region)"
+              @blur="emitUpdateTypeBarcode(materialData)"
             />
           </div>
         </template>
@@ -149,23 +124,20 @@
         <template #qtyTemplate="{ data: materialData }">
           <div class="material-qty-container">
             <div class="qty-input-group">
-              <input
-                type="number"
+              <InputTextGeneric
                 v-model="materialData.qty"
-                class="form-control"
-                :style="getBgColor(false, materialData.qty)"
-                placeholder="จำนวน"
+                type="number"
+                :placeholder="$t('receipt-stock.product.grProduction.matQty')"
                 min="0"
                 step="0.01"
-                @input="emitUpdateTypeBarcode(materialData)"
+                :bgInput="getBgColor(false, materialData.qty)"
+                @blur="emitUpdateTypeBarcode(materialData)"
               />
-              <input
-                type="text"
+              <InputTextGeneric
                 v-model="materialData.qtyUnit"
-                class="form-control unit-input"
-                :style="getBgColor(false, materialData.qtyUnit)"
-                placeholder="หน่วย"
-                @input="emitUpdateTypeBarcode(materialData)"
+                class="unit-input"
+                :bgInput="getBgColor(false, materialData.qtyUnit)"
+                @blur="emitUpdateTypeBarcode(materialData)"
               />
             </div>
           </div>
@@ -174,15 +146,14 @@
         <!-- Price Qty -->
         <template #priceQtyTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
-            <input
-              type="number"
+            <InputTextGeneric
               v-model="materialData.qtyPrice"
-              class="form-control"
-              :style="getBgColor(false, materialData.qtyPrice)"
-              placeholder="ราคา/หน่วย"
+              type="number"
+              :placeholder="$t('receipt-stock.product.grProduction.matPrice')"
               min="0"
               step="0.01"
-              @input="emitUpdateTypeBarcode(materialData)"
+              :bgInput="getBgColor(false, materialData.qtyPrice)"
+              @blur="emitUpdateTypeBarcode(materialData)"
             />
           </div>
         </template>
@@ -190,23 +161,20 @@
         <template #qtyWeightTemplate="{ data: materialData }">
           <div class="material-weight-container">
             <div class="weight-input-group">
-              <input
-                type="number"
+              <InputTextGeneric
                 v-model="materialData.qtyWeight"
-                class="form-control"
-                :style="getBgColor(false, materialData.qtyWeight)"
-                placeholder="น้ำหนัก"
+                type="number"
+                :placeholder="$t('receipt-stock.product.grProduction.matWeight')"
                 min="0"
                 step="0.01"
-                @input="emitUpdateTypeBarcode(materialData)"
+                :bgInput="getBgColor(false, materialData.qtyWeight)"
+                @blur="emitUpdateTypeBarcode(materialData)"
               />
-              <input
-                type="text"
+              <InputTextGeneric
                 v-model="materialData.qtyWeightUnit"
-                class="form-control unit-input"
-                :style="getBgColor(false, materialData.qtyWeightUnit)"
-                placeholder="หน่วย"
-                @input="emitUpdateTypeBarcode(materialData)"
+                class="unit-input"
+                :bgInput="getBgColor(false, materialData.qtyWeightUnit)"
+                @blur="emitUpdateTypeBarcode(materialData)"
               />
             </div>
           </div>
@@ -215,15 +183,14 @@
         <!-- Price Weight -->
         <template #priceWeightTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
-            <input
-              type="number"
+            <InputTextGeneric
               v-model="materialData.qtyWeightPrice"
-              class="form-control"
-              :style="getBgColor(false, materialData.qtyWeightPrice)"
-              placeholder="ราคา/น้ำหนัก"
+              type="number"
+              :placeholder="$t('receipt-stock.product.grProduction.matPrice')"
               min="0"
               step="0.01"
-              @input="emitUpdateTypeBarcode(materialData)"
+              :bgInput="getBgColor(false, materialData.qtyWeightPrice)"
+              @blur="emitUpdateTypeBarcode(materialData)"
             />
           </div>
         </template>
@@ -239,18 +206,16 @@
                 })
               }}
             </span>
-            <small class="currency-unit">บาท</small>
+            <small class="currency-unit">{{ $t('receipt-stock.product.grProduction.currencyTHB') }}</small>
           </div>
         </template>
 
         <template #typeBarcodeTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
-            <input
-              type="text"
+            <InputTextGeneric
               v-model="materialData.typeBarcode"
-              class="form-control"
-              placeholder="ข้อความที่จะเเสดงบน Barcode"
-              disabled
+              :placeholder="$t('receipt-stock.product.grProduction.colBarcode')"
+              :disabled="true"
             />
           </div>
         </template>
@@ -273,14 +238,16 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'MaterialsSection',
 
   components: {
     BaseDataTable,
-    Dropdown
+    DropdownGeneric,
+    InputTextGeneric
   },
 
   props: {
@@ -337,15 +304,6 @@ export default {
   },
 
   methods: {
-    formatCurrency(value) {
-      if (!value) return '0.00'
-      return new Intl.NumberFormat('th-TH', {
-        style: 'currency',
-        currency: 'THB',
-        minimumFractionDigits: 2
-      }).format(value)
-    },
-
     calculateTotalPrice(material) {
       if (!material) return 0
 
@@ -363,22 +321,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+
 .filter-container {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
   background-color: #f8f9fa;
 }
 
 .group-title {
   display: flex;
   flex-direction: column;
-}
-
-.title-text-lg {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--base-font-color);
 }
 
 .vertical-center-container {
@@ -389,7 +343,7 @@ export default {
 }
 
 .gap-2 {
-  gap: 0.5rem;
+  gap: var(--sp-sm);
 }
 
 .cursor-pointer {
@@ -397,7 +351,7 @@ export default {
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
   }
 }
 
@@ -407,7 +361,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-xs);
 }
 
 .qty-input-group,
@@ -416,25 +370,18 @@ export default {
   gap: 2px;
   width: 100%;
 
-  .form-control {
+  :deep(.form-control) {
     flex: 1;
     min-width: 60px;
   }
 
   .unit-input {
     flex: 0 0 50px;
-    text-align: center;
-    font-size: 0.8rem;
-  }
-}
 
-.price-display {
-  min-height: 16px;
-
-  small {
-    font-size: 0.7rem;
-    color: #6c757d;
-    white-space: nowrap;
+    :deep(.form-control) {
+      text-align: center;
+      font-size: var(--fs-sm);
+    }
   }
 }
 
@@ -447,43 +394,16 @@ export default {
 
   .total-amount {
     color: var(--base-font-color);
-    font-size: 0.9rem;
+    font-size: var(--fs-base);
   }
 
   .currency-unit {
     color: #6c757d;
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
     font-weight: normal;
   }
 }
 
-// Button enhancements
-.btn-outline-primary {
-  border-color: #007bff;
-  color: #007bff;
-
-  &:hover:not(:disabled) {
-    background-color: #007bff;
-    color: white;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.btn-outline-secondary {
-  border-color: #6c757d;
-  color: #6c757d;
-
-  &:hover {
-    background-color: #6c757d;
-    color: white;
-  }
-}
-
-// Responsive adjustments
 @media (max-width: 768px) {
   .qty-input-group,
   .weight-input-group {
@@ -492,10 +412,6 @@ export default {
     .unit-input {
       flex: 1 1 auto;
     }
-  }
-
-  .gap-2 {
-    gap: 0.25rem;
   }
 }
 </style>

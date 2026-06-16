@@ -169,7 +169,8 @@ export default {
       searchProductNamePlaceholder: 'Type to search...',
       editAll: 'Update all items',
       updateProductName: 'Update Product Name',
-      productName: 'Product Name'
+      productName: 'Product Name',
+      currencyTHB: 'THB'
     },
     productionReceiptList: {
       title: 'Receive Production Goods',

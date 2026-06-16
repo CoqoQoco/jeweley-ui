@@ -5,33 +5,33 @@
         <div>
           <div class="title-text-lg-bg">
             <span><i class="bi bi-hammer mr-2"></i></span>
-            <span>ปรับปรุงส่วนประกอบวัสดุ (Adjust Breakdown)</span>
+            <span>{{ $t('receipt-stock.product.grProduction.adjustBreakdownTitle') }}</span>
             <span class="ml-2">| W.O. : {{ planData.wo }}-{{ planData.woNumber }}</span>
           </div>
 
           <!-- Breakdown Table -->
           <div class="mt-2">
-            <div class="d-flex justify-content-between align-items-center  ml-3">
+            <div class="d-flex justify-content-between align-items-center ml-3">
               <div>
-                <span class="title-text">ส่วนประกอบวัสดุหลัก (Master Breakdown)</span>
-                <small class="text-muted ml-2">แก้ไขข้อมูลวัสดุพื้นฐานที่ใช้ในการผลิต</small>
+                <span class="title-text">{{ $t('receipt-stock.product.grProduction.masterBreakdownLabel') }}</span>
+                <small class="text-muted ml-2">{{ $t('receipt-stock.product.grProduction.masterBreakdownDesc') }}</small>
               </div>
               <div class="d-flex gap-2">
                 <button
                   type="button"
-                  class="btn btn-outline-success btn-sm"
+                  class="btn btn-main btn-sm"
                   @click="addBreakdownItem"
                 >
                   <span class="bi bi-plus-lg mr-1"></span>
-                  เพิ่มวัสดุ
+                  {{ $t('receipt-stock.product.grProduction.addMaterial') }}
                 </button>
                 <button
                   type="button"
-                  class="btn btn-outline-secondary btn-sm"
+                  class="btn btn-outline-main btn-sm ml-2"
                   @click="resetBreakdown"
                 >
                   <span class="bi bi-arrow-clockwise mr-1"></span>
-                  รีเซ็ต
+                  {{ $t('receipt-stock.product.grProduction.resetBreakdown') }}
                 </button>
               </div>
             </div>
@@ -45,71 +45,67 @@
             >
               <!-- Material Type -->
               <template #typeTemplate="{ data: materialData }">
-                <Dropdown
-                  v-model="materialData.type"
+                <DropdownGeneric
+                  :modelValue="materialData.type"
                   :options="masterMaterialType"
                   optionLabel="description"
                   optionValue="value"
                   class="w-full"
-                  placeholder="เลือกประเภท"
-                  @change="updateMaterialBarcode(materialData)"
+                  :placeholder="$t('receipt-stock.product.grProduction.colMaterialType')"
+                  @update:modelValue="materialData.type = $event; updateMaterialBarcode(materialData)"
                 />
               </template>
 
               <!-- Type Name -->
               <template #typeNameTemplate="{ data: materialData }">
-                <input
-                  type="text"
+                <InputTextGeneric
                   v-model="materialData.typeName"
-                  class="form-control form-control-sm"
-                  :style="getBgColor(false, materialData.typeName)"
-                  placeholder="ชื่อวัสดุ"
+                  :bgInput="getBgColor(false, materialData.typeName)"
+                  :placeholder="$t('receipt-stock.product.grProduction.colMaterialName')"
                 />
               </template>
 
               <!-- Type Code -->
               <template #typeCodeTemplate="{ data: materialData }">
                 <div v-if="materialData.type === 'Gold' || materialData.type === 'Silver'">
-                  <Dropdown
-                    v-model="materialData.typeCode"
+                  <DropdownGeneric
+                    :modelValue="materialData.typeCode"
                     :options="masterGold"
                     optionLabel="description"
                     optionValue="code"
                     class="w-full"
-                    placeholder="เลือกทอง/เงิน"
+                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
                     :showClear="true"
-                    @change="updateMaterialBarcode(materialData)"
+                    @update:modelValue="materialData.typeCode = $event; updateMaterialBarcode(materialData)"
                   />
                 </div>
                 <div v-else-if="materialData.type === 'Diamond'">
-                  <Dropdown
-                    v-model="materialData.typeCode"
+                  <DropdownGeneric
+                    :modelValue="materialData.typeCode"
                     :options="masterDiamondGrade"
                     optionLabel="description"
                     optionValue="nameEn"
                     class="w-full"
-                    placeholder="เลือกเกรดเพชร"
+                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
                     :showClear="true"
                   />
                 </div>
                 <div v-else-if="materialData.type === 'Gem'">
-                  <Dropdown
-                    v-model="materialData.typeCode"
+                  <DropdownGeneric
+                    :modelValue="materialData.typeCode"
                     :options="masterGem"
                     optionLabel="description"
                     optionValue="code"
                     class="w-full"
-                    placeholder="เลือกพลอย"
+                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
                     :showClear="true"
                   />
                 </div>
                 <div v-else>
-                  <input
-                    type="text"
+                  <InputTextGeneric
                     v-model="materialData.typeCode"
-                    class="form-control form-control-sm"
-                    :style="getBgColor(false, materialData.typeCode)"
-                    placeholder="รหัสวัสดุ"
+                    :bgInput="getBgColor(false, materialData.typeCode)"
+                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
                   />
                 </div>
               </template>
@@ -117,33 +113,29 @@
               <!-- Quantity -->
               <template #qtyTemplate="{ data: materialData }">
                 <div class="qty-input-container">
-                  <input
-                    type="number"
+                  <InputTextGeneric
                     v-model="materialData.qty"
-                    class="form-control form-control-sm"
-                    :style="getBgColor(false, materialData.qty)"
-                    placeholder="จำนวน"
+                    type="number"
+                    :bgInput="getBgColor(false, materialData.qty)"
+                    :placeholder="$t('receipt-stock.product.grProduction.colQty')"
                     min="0"
                     step="0.01"
                   />
-                  <input
-                    type="text"
+                  <InputTextGeneric
                     v-model="materialData.qtyUnit"
-                    class="form-control form-control-sm unit-input"
-                    :style="getBgColor(false, materialData.qtyUnit)"
-                    placeholder="หน่วย"
+                    :bgInput="getBgColor(false, materialData.qtyUnit)"
+                    class="unit-input"
                   />
                 </div>
               </template>
 
               <template #priceQtyTemplate="{ data: materialData }">
                 <div class="price-input-container">
-                  <input
-                    type="number"
+                  <InputTextGeneric
                     v-model="materialData.qtyPrice"
-                    class="form-control form-control-sm"
-                    :style="getBgColor(false, materialData.qtyPrice)"
-                    placeholder="ราคา/หน่วย"
+                    type="number"
+                    :bgInput="getBgColor(false, materialData.qtyPrice)"
+                    :placeholder="$t('receipt-stock.product.grProduction.colPriceQty')"
                     min="0"
                     step="0.01"
                   />
@@ -153,21 +145,18 @@
               <!-- Weight -->
               <template #qtyWeightTemplate="{ data: materialData }">
                 <div class="weight-input-container">
-                  <input
-                    type="number"
+                  <InputTextGeneric
                     v-model="materialData.qtyWeight"
-                    class="form-control form-control-sm"
-                    :style="getBgColor(false, materialData.qtyWeight)"
-                    placeholder="น้ำหนัก"
+                    type="number"
+                    :bgInput="getBgColor(false, materialData.qtyWeight)"
+                    :placeholder="$t('receipt-stock.product.grProduction.colQtyWeight')"
                     min="0"
                     step="0.01"
                   />
-                  <input
-                    type="text"
+                  <InputTextGeneric
                     v-model="materialData.qtyWeightUnit"
-                    class="form-control form-control-sm unit-input"
-                    :style="getBgColor(false, materialData.qtyWeightUnit)"
-                    placeholder="หน่วย"
+                    :bgInput="getBgColor(false, materialData.qtyWeightUnit)"
+                    class="unit-input"
                   />
                 </div>
               </template>
@@ -175,12 +164,11 @@
               <!-- Price -->
               <template #priceWeightTemplate="{ data: materialData }">
                 <div class="price-input-container">
-                  <input
-                    type="number"
+                  <InputTextGeneric
                     v-model="materialData.qtyWeightPrice"
-                    class="form-control form-control-sm"
-                    :style="getBgColor(false, materialData.qtyWeightPrice)"
-                    placeholder="ราคา/น้ำหนัก"
+                    type="number"
+                    :bgInput="getBgColor(false, materialData.qtyWeightPrice)"
+                    :placeholder="$t('receipt-stock.product.grProduction.colPriceWeight')"
                     min="0"
                     step="0.01"
                   />
@@ -189,12 +177,10 @@
 
               <!-- Region -->
               <template #regionTemplate="{ data: materialData }">
-                <input
-                  type="text"
+                <InputTextGeneric
                   v-model="materialData.region"
-                  class="form-control form-control-sm"
-                  :style="getBgColor(false, materialData.region)"
-                  placeholder="แหล่งที่มา"
+                  :bgInput="getBgColor(false, materialData.region)"
+                  :placeholder="$t('receipt-stock.product.grProduction.colRegion')"
                 />
               </template>
 
@@ -209,18 +195,16 @@
                       })
                     }}
                   </span>
-                  <small class="currency-unit">บาท</small>
+                  <small class="currency-unit">{{ $t('receipt-stock.product.grProduction.currencyTHB') }}</small>
                 </div>
               </template>
 
               <!-- Barcode -->
               <template #typeBarcodeTemplate="{ data: materialData }">
-                <input
-                  type="text"
+                <InputTextGeneric
                   v-model="materialData.typeBarcode"
-                  class="form-control form-control-sm"
-                  placeholder="ข้อความ Barcode"
-                  readonly
+                  :placeholder="$t('receipt-stock.product.grProduction.colBarcode')"
+                  :readonly="true"
                 />
               </template>
 
@@ -228,7 +212,7 @@
               <template #actionTemplate="{ index }">
                 <button
                   type="button"
-                  class="btn btn-danger btn-sm"
+                  class="btn btn-red btn-sm"
                   @click="removeBreakdownItem(index)"
                   :disabled="editableBreakdown.length <= 1"
                 >
@@ -246,12 +230,12 @@
                   <div class="card-header">
                     <h6 class="mb-0">
                       <span class="bi bi-arrow-down-circle mr-1"></span>
-                      นำไปใช้กับสินค้า (Apply to Stock)
+                      {{ $t('receipt-stock.product.grProduction.applyToStockLabel') }}
                     </h6>
                   </div>
                   <div class="card-body">
                     <div class="mb-2">
-                      <label class="form-label">เลือกสินค้าที่ต้องการนำไปใช้:</label>
+                      <label class="form-label">{{ $t('receipt-stock.product.grProduction.selectStockLabel') }}</label>
                     </div>
                     <div class="stock-selection">
                       <div class="form-check mb-2">
@@ -264,7 +248,7 @@
                           v-model="applyType"
                         />
                         <label class="form-check-label" for="applyAll">
-                          ทุกรายการ ({{ filteredStockList.length }} รายการ)
+                          {{ $t('receipt-stock.product.grProduction.selectAllLabel') }} ({{ filteredStockList.length }} {{ $t('common.table.entries') }})
                         </label>
                       </div>
                       <div class="form-check mb-2">
@@ -276,7 +260,7 @@
                           value="selected"
                           v-model="applyType"
                         />
-                        <label class="form-check-label" for="applySelected"> เฉพาะที่เลือก </label>
+                        <label class="form-check-label" for="applySelected">{{ $t('receipt-stock.product.grProduction.selectedOnlyLabel') }}</label>
                       </div>
                     </div>
 
@@ -297,11 +281,11 @@
                         <!-- Status Template -->
                         <template #isReceiptTemplate="{ data: stockData }">
                           <div class="d-flex justify-content-center">
-                            <span 
-                              class="badge" 
+                            <span
+                              class="badge"
                               :class="stockData.isReceipt ? 'badge-secondary' : 'badge-success'"
                             >
-                              {{ stockData.isReceipt ? 'รับแล้ว' : 'ยังไม่รับ' }}
+                              {{ stockData.isReceipt ? $t('receipt-stock.product.grProduction.stockReceiptStatus_received') : $t('receipt-stock.product.grProduction.stockReceiptStatus_pending') }}
                             </span>
                           </div>
                         </template>
@@ -312,21 +296,21 @@
                     <div class="mt-3">
                       <button
                         type="button"
-                        class="btn btn-primary btn-sm me-2"
+                        class="btn btn-main btn-sm"
                         @click="applyBreakdownToStock"
                         :disabled="!canApply"
                       >
                         <span class="bi bi-check-lg mr-1"></span>
-                        นำไปใช้กับสินค้า
+                        {{ $t('receipt-stock.product.grProduction.applyToStock') }}
                       </button>
                       <button
                         type="button"
-                        class="btn btn-success btn-sm"
+                        class="btn btn-outline-main btn-sm ml-2"
                         @click="saveDraft"
                         :disabled="!hasValidBreakdown"
                       >
                         <span class="bi bi-floppy mr-1"></span>
-                        บันทึกฉบับร่าง
+                        {{ $t('receipt-stock.product.grProduction.saveDraftBreakdown') }}
                       </button>
                     </div>
                   </div>
@@ -338,28 +322,28 @@
                   <div class="card-header">
                     <h6 class="mb-0">
                       <span class="bi bi-info-circle mr-1"></span>
-                      ข้อมูลสรุป (Summary)
+                      {{ $t('receipt-stock.product.grProduction.summaryLabel') }}
                     </h6>
                   </div>
                   <div class="card-body">
                     <div class="summary-info">
                       <div class="summary-item">
-                        <span class="label">จำนวนวัสดุ:</span>
-                        <span class="value">{{ editableBreakdown.length }} รายการ</span>
+                        <span class="label">{{ $t('receipt-stock.product.grProduction.materialCountLabel') }}</span>
+                        <span class="value">{{ editableBreakdown.length }} {{ $t('common.table.entries') }}</span>
                       </div>
                       <div class="summary-item">
-                        <span class="label">จำนวนสินค้า (ยังไม่รับ):</span>
-                        <span class="value">{{ filteredStockList.length }} รายการ</span>
+                        <span class="label">{{ $t('receipt-stock.product.grProduction.stockCountLabel') }}</span>
+                        <span class="value">{{ filteredStockList.length }} {{ $t('common.table.entries') }}</span>
                       </div>
                       <div class="summary-item">
-                        <span class="label">รายการที่เลือก:</span>
-                        <span class="value">{{ selectedCount }} รายการ</span>
+                        <span class="label">{{ $t('receipt-stock.product.grProduction.selectedCountLabel') }}</span>
+                        <span class="value">{{ selectedCount }} {{ $t('common.table.entries') }}</span>
                       </div>
                     </div>
 
                     <!-- Material Summary -->
                     <div class="material-summary mt-3">
-                      <h6 class="text-muted">วัสดุที่จะนำไปใช้:</h6>
+                      <h6 class="text-muted">{{ $t('receipt-stock.product.grProduction.materialsToApplyLabel') }}</h6>
                       <div class="material-list">
                         <div
                           v-for="(material, index) in validBreakdownMaterials"
@@ -383,9 +367,9 @@
           <!-- Action Buttons -->
           <div class="action-buttons mt-3">
             <div class="d-flex justify-content-end gap-2">
-              <button type="button" class="btn btn-secondary btn-sm" @click="closeModal">
+              <button type="button" class="btn btn-outline-main btn-sm" @click="closeModal">
                 <span class="bi bi-x-lg mr-1"></span>
-                ปิด
+                {{ $t('common.btn.close') }}
               </button>
             </div>
           </div>
@@ -396,10 +380,12 @@
 </template>
 
 <script>
+import { warning, success } from '@/services/alert/sweetAlerts.js'
+
 import modal from '@/components/modal/modal-view.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import Dropdown from 'primevue/dropdown'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'AdjustBreakdownModal',
@@ -407,7 +393,8 @@ export default {
   components: {
     modal,
     BaseDataTable,
-    Dropdown
+    DropdownGeneric,
+    InputTextGeneric
   },
 
   props: {
@@ -453,85 +440,96 @@ export default {
       originalBreakdown: [],
       applyType: 'all',
       selectedStockNumbers: [],
-      selectedStockItems: [],
-      stockColumns: [
+      selectedStockItems: []
+    }
+  },
+
+  computed: {
+    isShowModal() {
+      return this.isShow
+    },
+
+    stockColumns() {
+      return [
         {
           field: 'stockReceiptNumber',
-          header: 'หมายเลขสต็อก',
+          header: this.$t('receipt-stock.product.grProduction.colStockReceiptNum'),
           minWidth: '150px',
           sortable: false
         },
         {
           field: 'productNumber',
-          header: 'รหัสสินค้า',
+          header: this.$t('receipt-stock.product.grProduction.colProductCode'),
           width: '120px',
           sortable: false
         },
         {
           field: 'productNameTH',
-          header: 'ชื่อสินค้า',
+          header: this.$t('receipt-stock.product.grProduction.colProductName'),
           minWidth: '200px',
           sortable: false
         },
         {
           field: 'isReceipt',
-          header: 'สถานะ',
+          header: this.$t('receipt-stock.product.grProduction.colStatus'),
           width: '80px',
           sortable: false,
           align: 'center'
         }
-      ],
+      ]
+    },
 
-      breakdownColumns: [
+    breakdownColumns() {
+      return [
         {
           field: 'type',
-          header: 'ประเภท',
+          header: this.$t('receipt-stock.product.grProduction.colMaterialType'),
           minWidth: '120px',
           sortable: false
         },
         {
           field: 'typeName',
-          header: 'ชื่อวัสดุ',
+          header: this.$t('receipt-stock.product.grProduction.colMaterialName'),
           minWidth: '180px',
           sortable: false
         },
         {
           field: 'typeCode',
-          header: 'รหัส/เกรด',
+          header: this.$t('receipt-stock.product.grProduction.colMaterialCode'),
           minWidth: '130px',
           sortable: false
         },
         {
           field: 'qty',
-          header: 'จำนวน',
+          header: this.$t('receipt-stock.product.grProduction.colQty'),
           minWidth: '150px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'priceQty',
-          header: 'ราคา/หน่วย',
+          header: this.$t('receipt-stock.product.grProduction.colPriceQty'),
           minWidth: '120px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'qtyWeight',
-          header: 'น้ำหนัก',
+          header: this.$t('receipt-stock.product.grProduction.colQtyWeight'),
           minWidth: '150px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'priceWeight',
-          header: 'ราคา/น้ำหนัก',
+          header: this.$t('receipt-stock.product.grProduction.colPriceWeight'),
           minWidth: '120px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'totalPrice',
-          header: 'รวมราคา',
+          header: this.$t('receipt-stock.product.grProduction.colTotalPrice'),
           minWidth: '150px',
           sortable: false,
           align: 'right',
@@ -539,30 +537,24 @@ export default {
         },
         {
           field: 'region',
-          header: 'แหล่งที่มา',
+          header: this.$t('receipt-stock.product.grProduction.colRegion'),
           minWidth: '100px',
           sortable: false
         },
         {
           field: 'typeBarcode',
-          header: 'Barcode',
+          header: this.$t('receipt-stock.product.grProduction.colBarcode'),
           minWidth: '150px',
           sortable: false
         },
         {
           field: 'action',
-          header: 'จัดการ',
+          header: this.$t('receipt-stock.product.grProduction.colManage'),
           minWidth: '80px',
           sortable: false,
           align: 'center'
         }
       ]
-    }
-  },
-
-  computed: {
-    isShowModal() {
-      return this.isShow
     },
 
     canApply() {
@@ -590,8 +582,7 @@ export default {
     },
 
     filteredStockList() {
-      // Only show items where isReceipt = false
-      return this.stockList.filter(stock => !stock.isReceipt)
+      return this.stockList.filter((stock) => !stock.isReceipt)
     }
   },
 
@@ -608,7 +599,6 @@ export default {
 
   methods: {
     initializeBreakdown() {
-      // Check if breakdownData has BreakDown property from API response
       let sourceData = this.breakdownData
       if (
         this.breakdownData &&
@@ -624,10 +614,9 @@ export default {
       } else {
         this.editableBreakdown = []
         this.originalBreakdown = []
-        this.addBreakdownItem() // Add one default item
+        this.addBreakdownItem()
       }
 
-      // Reset selection
       this.applyType = 'all'
       this.selectedStockNumbers = []
       this.selectedStockItems = []
@@ -665,7 +654,6 @@ export default {
       }
     },
 
-
     calculateTotalPrice(material) {
       if (!material) return 0
 
@@ -677,14 +665,18 @@ export default {
 
     getBgColor(isReceipt, data) {
       if (isReceipt) {
-        return 'background-color: #e0e0e0' // Gray for receipted items
+        return 'background-color: #e0e0e0'
       } else if (data) {
-        return 'background-color: #b5dad4' // Light green for items with data
+        return 'background-color: #b5dad4'
       } else {
-        return 'background-color: #dad4b5' // Light yellow for empty/required fields
+        return 'background-color: #dad4b5'
       }
     },
 
+    updateMaterialBarcode(materialData) {
+      // Trigger barcode update logic via parent if needed
+      void materialData
+    },
 
     updateStockSelection(newSelection) {
       this.selectedStockItems = newSelection
@@ -695,27 +687,27 @@ export default {
       let targetStocks = []
 
       if (this.applyType === 'all') {
-        // Only apply to items where isReceipt = false
         targetStocks = this.filteredStockList.map((s) => s.stockReceiptNumber)
       } else {
-        // Only selected items that are not receipted
         targetStocks = this.selectedStockItems
-          .filter(item => !item.isReceipt)
+          .filter((item) => !item.isReceipt)
           .map((s) => s.stockReceiptNumber)
       }
 
       if (targetStocks.length === 0) {
-        swAlert.warning('ไม่มีสินค้าที่สามารถนำไปใช้', 'สินค้าที่เลือกต้องยังไม่รับเข้าคลังเท่านั้น', () => {})
+        warning(
+          this.$t('receipt-stock.product.grProduction.noStockToApplyDesc'),
+          this.$t('receipt-stock.product.grProduction.noStockToApply')
+        )
         return
       }
 
       const breakdownToApply = this.validBreakdownMaterials.map((material) => ({
         ...material,
-        // Convert breakdown to material format for stock
         weight: material.qtyWeight,
         weightUnit: material.qtyWeightUnit,
-        size: '', // Not applicable for breakdown materials
-        price: 0 // Individual stock price, different from breakdown price
+        size: '',
+        price: 0
       }))
 
       this.$emit('applyBreakdown', {
@@ -723,18 +715,18 @@ export default {
         stockNumbers: targetStocks
       })
 
-      swAlert.success(
-        'นำไปใช้สำเร็จ',
-        `นำวัสดุไปใช้กับสินค้า ${targetStocks.length} รายการเรียบร้อยแล้ว`,
-        () => {
-          console.log('Breakdown applied successfully')
-        }
+      success(
+        this.$t('receipt-stock.product.grProduction.applySuccessDesc', { count: targetStocks.length }),
+        this.$t('receipt-stock.product.grProduction.applyToStock')
       )
     },
 
     saveDraft() {
       if (!this.hasValidBreakdown) {
-        swAlert.warning('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลวัสดุให้ครบถ้วน', () => {})
+        warning(
+          this.$t('receipt-stock.product.grProduction.invalidBreakdown'),
+          this.$t('receipt-stock.product.grProduction.summaryLabel')
+        )
         return
       }
 
@@ -742,9 +734,7 @@ export default {
         breakdown: this.validBreakdownMaterials
       })
 
-      swAlert.success('บันทึกสำเร็จ', 'บันทึกข้อมูล Breakdown ฉบับร่างเรียบร้อยแล้ว', () => {
-        console.log('Breakdown draft saved successfully')
-      })
+      success(this.$t('receipt-stock.product.grProduction.saveDraftSuccess'))
     },
 
     closeModal() {
@@ -755,20 +745,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+
 .title-text-lg-bg {
   background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
   color: white;
-  padding: 1rem;
-  border-radius: 8px 8px 0 0;
-  font-size: 1.1rem;
+  padding: var(--sp-lg);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-size: var(--fs-lg);
   font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .custom-breakdown-table {
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
 
   :deep(.p-datatable-thead) th {
     background-color: var(--base-font-color);
@@ -786,8 +778,11 @@ export default {
 
   .unit-input {
     flex: 0 0 45px;
-    text-align: center;
-    font-size: 0.8rem;
+
+    :deep(.form-control) {
+      text-align: center;
+      font-size: var(--fs-sm);
+    }
   }
 }
 
@@ -800,24 +795,25 @@ export default {
 
   .total-amount {
     color: var(--base-font-color);
-    font-size: 0.9rem;
+    font-size: var(--fs-base);
   }
 
   .currency-unit {
     color: #6c757d;
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
     font-weight: normal;
   }
 }
 
 .apply-section {
   border-top: 2px solid var(--base-font-color);
-  padding-top: 1rem;
+  padding-top: var(--sp-lg);
 
   .card {
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    background: var(--color-card-bg) !important;
 
     .card-header {
       background: linear-gradient(
@@ -827,16 +823,17 @@ export default {
       );
       color: white;
       border-bottom: 1px solid var(--base-font-sub-color);
-      padding: 0.75rem 1rem;
+      padding: var(--sp-md) var(--sp-lg);
 
       h6 {
         color: white;
         margin: 0;
+        background: transparent !important;
       }
     }
 
     .card-body {
-      padding: 1rem;
+      padding: var(--sp-lg);
     }
   }
 }
@@ -852,35 +849,35 @@ export default {
 }
 
 .stock-selection-table {
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
 
   :deep(.p-datatable) {
     .p-datatable-thead > tr > th {
       background-color: var(--base-font-color);
       color: white;
-      font-size: 0.85rem;
-      padding: 0.5rem;
+      font-size: var(--fs-sm);
+      padding: var(--sp-sm);
     }
 
     .p-datatable-tbody > tr > td {
-      font-size: 0.85rem;
-      padding: 0.5rem;
+      font-size: var(--fs-sm);
+      padding: var(--sp-sm);
     }
   }
 }
 
 .badge {
   padding: 0.25em 0.6em;
-  font-size: 0.75em;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  border-radius: 0.25rem;
-  
+  border-radius: var(--radius-sm);
+
   &.badge-success {
     color: white;
     background-color: var(--base-green);
   }
-  
+
   &.badge-secondary {
     color: white;
     background-color: #6c757d;
@@ -891,11 +888,11 @@ export default {
   .summary-item {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--sp-sm);
 
     .label {
       color: #6c757d;
-      font-size: 0.9rem;
+      font-size: var(--fs-base);
     }
 
     .value {
@@ -913,12 +910,12 @@ export default {
 
   .material-summary-item {
     background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--color-border);
     border-left: 3px solid var(--base-font-color);
-    border-radius: 4px;
-    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    padding: var(--sp-sm);
     margin-bottom: 0.25rem;
-    font-size: 0.8rem;
+    font-size: var(--fs-sm);
     transition: all 0.2s ease;
 
     &:hover {
@@ -940,11 +937,11 @@ export default {
 
 .action-buttons {
   border-top: 2px solid var(--base-font-color);
-  padding-top: 1rem;
+  padding-top: var(--sp-lg);
 }
 
 .gap-2 {
-  gap: 0.5rem;
+  gap: var(--sp-sm);
 }
 
 @media (max-width: 768px) {
