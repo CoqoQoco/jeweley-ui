@@ -12,6 +12,7 @@ import master from './view/master/th.js'
 import stock from './view/stock/th.js'
 import receiptStock from './view/receipt-stock/th.js'
 import productionLang from './view/production/th.js'
+import saleLang from './view/sale/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -76,6 +77,7 @@ export default {
         monthlyComingSoon: 'รายงานรายเดือน เร็วๆ นี้'
       }
     },
+    sale: { ...saleLang },
     stock: {
       product: { ...stock.product },
       location: { ...stock.location },

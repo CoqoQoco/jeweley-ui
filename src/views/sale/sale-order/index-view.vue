@@ -9,7 +9,6 @@
       v-model:modelQuotation="quotation"
       v-model:modelSaleOrder="saleOrderData"
       :isViewMode="isViewMode"
-      :isLoading="isLoading"
     ></saleOrder>
   </div>
 </template>
@@ -57,8 +56,7 @@ export default {
       formQuotation: { ...interfaceSearchQuotation },
       quotation: {},
       saleOrderData: { ...interfaceSaleOrder },
-      isViewMode: false,
-      isLoading: false
+      isViewMode: false
     }
   },
   methods: {
@@ -115,11 +113,7 @@ export default {
 
       let parsedItems = []
       if (saleOrderData.data) {
-        try {
-          parsedItems = JSON.parse(saleOrderData.data)
-        } catch {
-          parsedItems = []
-        }
+        parsedItems = JSON.parse(saleOrderData.data)
       }
 
       this.saleOrderData = {

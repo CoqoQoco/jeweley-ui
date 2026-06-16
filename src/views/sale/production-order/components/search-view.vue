@@ -8,7 +8,7 @@
         <!-- Search Type -->
         <div>
           <span class="title-text">ประเภทการค้นหา</span>
-          <Dropdown
+          <DropdownGeneric
             v-model="formSearch.searchType"
             :options="searchTypeOptions"
             optionLabel="name"
@@ -32,7 +32,7 @@
             />
             <div class="input-group-append">
               <button
-                class="btn btn-success"
+                class="btn btn-green"
                 type="button"
                 @click="onSearch"
                 title="ค้นหาใบสั่งขาย"
@@ -57,7 +57,7 @@
             />
             <div class="input-group-append">
               <button
-                class="btn btn-primary"
+                class="btn btn-main"
                 type="button"
                 @click="onSearch"
                 title="ค้นหาสินค้า"
@@ -74,7 +74,7 @@
           <span class="title-text">การดำเนินการ</span>
           <div class="btn-group" role="group">
             <button
-              class="btn btn-outline-info"
+              class="btn btn-green"
               type="button"
               @click="openSaleOrderModal"
               title="เลือกจากรายการใบสั่งขาย"
@@ -83,7 +83,7 @@
               เลือกใบสั่งขาย
             </button>
             <button
-              class="btn btn-outline-secondary"
+              class="btn btn-dark"
               type="button"
               @click="clearSearch"
               title="ล้างข้อมูลการค้นหา"
@@ -105,13 +105,13 @@
 </template>
 
 <script>
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 export default {
   name: 'SearchView',
 
   components: {
-    Dropdown
+    DropdownGeneric
   },
 
   emits: ['update:modelForm', 'search'],
@@ -208,26 +208,26 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .card-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--sp-lg);
 }
 
 .card-header {
   background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-  padding: 0.75rem 1rem;
-  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--sp-sm) var(--sp-lg);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .card-body {
-  padding: 1rem;
+  padding: var(--sp-lg);
 }
 
 .input-group {
   display: flex;
-  
+
   .form-control {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
@@ -244,38 +244,22 @@ export default {
 
 .btn-group {
   display: flex;
-  
+
   .btn:not(:last-child) {
-    margin-right: 0.5rem;
+    margin-right: var(--sp-sm);
   }
 }
 
 .alert {
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
+  padding: var(--sp-sm) var(--sp-lg);
+  margin-bottom: var(--sp-lg);
   border: 1px solid transparent;
-  border-radius: 0.25rem;
-  
+  border-radius: var(--radius-sm);
+
   &.alert-info {
     color: #0c5460;
     background-color: #d1ecf1;
     border-color: #bee5eb;
   }
-}
-
-.mr-1 {
-  margin-right: 0.25rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-.mb-0 {
-  margin-bottom: 0;
 }
 </style>

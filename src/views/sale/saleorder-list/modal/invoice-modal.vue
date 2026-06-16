@@ -60,14 +60,7 @@
             <h6 class="mb-0">เลือกสินค้าสำหรับออก Invoice</h6>
           </div>
           <div class="card-body">
-            <div v-if="loading" class="text-center py-3">
-              <div class="spinner-border" role="status">
-                <span class="sr-only">Loading...</span>
-              </div>
-              <p class="mt-2">กำลังโหลดข้อมูลสินค้า...</p>
-            </div>
-            
-            <div v-else>
+            <div>
               <!-- Select All Checkbox -->
               <div class="mb-3">
                 <label class="d-flex align-items-center">
@@ -150,15 +143,15 @@
         <!-- Action Buttons -->
         <div class="btn-submit-container mt-3">
           <button
-            class="btn btn-success mr-2"
+            class="btn btn-sm btn-main"
             type="button"
             @click="generateInvoice"
-            :disabled="loading || selectedItemsCount === 0"
+            :disabled="selectedItemsCount === 0"
           >
             <i class="bi bi-file-earmark-pdf mr-1"></i>
             สร้าง Invoice PDF
           </button>
-          <button class="btn btn-secondary" type="button" @click="closeModal">
+          <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
             <i class="bi bi-x-circle mr-1"></i>
             ยกเลิก
           </button>
@@ -170,10 +163,13 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { warning, success } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -201,7 +197,6 @@ export default {
 
   data() {
     return {
-      loading: false,
       stockItems: [],
       selectedItems: [],
       invoiceForm: {
@@ -255,32 +250,18 @@ export default {
 
   methods: {
     async loadSaleOrderData() {
-      try {
-        this.loading = true
-        const saleOrderStore = usrSaleOrderApiStore()
-        const response = await saleOrderStore.fetchGet({
-          formValue: { soNumber: this.saleOrderData.soNumber }
-        })
+      const saleOrderStore = usrSaleOrderApiStore()
+      const response = await saleOrderStore.fetchGet({
+        formValue: { soNumber: this.saleOrderData.soNumber }
+      })
 
-        if (response && response.data) {
-          const parsedData = JSON.parse(response.data)
-          
-          // Filter only stock items (items with stockNumber)
-          this.stockItems = parsedData.stockItems || parsedData.filter(item => item.stockNumber) || []
-          
-          // Add unique ID for each item if not present
-          this.stockItems = this.stockItems.map((item, index) => ({
-            ...item,
-            id: item.id || `stock_${index}_${Date.now()}`
-          }))
-
-          console.log('Loaded stock items for invoice:', this.stockItems)
-        }
-      } catch (error) {
-        console.error('Error loading sale order data:', error)
-        alert('ไม่สามารถโหลดข้อมูลใบสั่งขายได้: ' + error.message)
-      } finally {
-        this.loading = false
+      if (response && response.data) {
+        const parsedData = JSON.parse(response.data)
+        this.stockItems = parsedData.stockItems || parsedData.filter(item => item.stockNumber) || []
+        this.stockItems = this.stockItems.map((item, index) => ({
+          ...item,
+          id: item.id || `stock_${index}_${Date.now()}`
+        }))
       }
     },
 
@@ -309,64 +290,47 @@ export default {
     },
 
     async generateInvoice() {
-      try {
-        if (this.selectedItemsCount === 0) {
-          alert('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
-          return
-        }
-
-        this.loading = true
-
-        // Get selected items
-        const selectedStockItems = this.stockItems.filter(item => 
-          this.selectedItems.includes(item.id)
-        )
-
-        // Prepare invoice data
-        const invoiceData = {
-          saleOrder: this.saleOrderData,
-          items: selectedStockItems,
-          customer: {
-            name: this.saleOrderData.customerName,
-            address: this.saleOrderData.customerAddress,
-            phone: this.saleOrderData.customerTel,
-            email: this.saleOrderData.customerEmail
-          },
-          currency: {
-            unit: this.invoiceForm.currencyUnit,
-            rate: this.invoiceForm.currencyRate
-          },
-          totals: {
-            subtotal: this.totalAmount,
-            total: this.totalAmount
-          }
-        }
-
-        // Validate data before generating PDF
-        const validation = invoicePdfService.previewInvoiceData(invoiceData)
-        
-        if (!validation.valid) {
-          alert('ข้อมูลไม่ถูกต้อง:\n' + validation.errors.join('\n'))
-          return
-        }
-
-        // Generate PDF using the service
-        console.log('Generating invoice PDF with data:', invoiceData)
-        
-        await invoicePdfService.generateInvoicePDF(invoiceData, {
-          download: true,
-          open: false
-        })
-        
-        alert('สร้าง Invoice PDF สำเร็จ')
-        
-        this.closeModal()
-      } catch (error) {
-        console.error('Error generating invoice:', error)
-        alert('เกิดข้อผิดพลาดในการสร้าง Invoice: ' + error.message)
-      } finally {
-        this.loading = false
+      if (this.selectedItemsCount === 0) {
+        warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+        return
       }
+
+      const selectedStockItems = this.stockItems.filter(item =>
+        this.selectedItems.includes(item.id)
+      )
+
+      const invoiceData = {
+        saleOrder: this.saleOrderData,
+        items: selectedStockItems,
+        customer: {
+          name: this.saleOrderData.customerName,
+          address: this.saleOrderData.customerAddress,
+          phone: this.saleOrderData.customerTel,
+          email: this.saleOrderData.customerEmail
+        },
+        currency: {
+          unit: this.invoiceForm.currencyUnit,
+          rate: this.invoiceForm.currencyRate
+        },
+        totals: {
+          subtotal: this.totalAmount,
+          total: this.totalAmount
+        }
+      }
+
+      const validation = invoicePdfService.previewInvoiceData(invoiceData)
+      if (!validation.valid) {
+        warning(validation.errors.join('\n'), 'ข้อมูลไม่ถูกต้อง')
+        return
+      }
+
+      await invoicePdfService.generateInvoicePDF(invoiceData, {
+        download: true,
+        open: false
+      })
+
+      success('สร้าง Invoice PDF สำเร็จ')
+      this.closeModal()
     },
 
     closeModal() {

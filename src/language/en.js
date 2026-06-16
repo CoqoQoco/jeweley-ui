@@ -12,6 +12,7 @@ import master from './view/master/en.js'
 import stock from './view/stock/en.js'
 import receiptStock from './view/receipt-stock/en.js'
 import productionLang from './view/production/en.js'
+import saleLang from './view/sale/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -76,6 +77,7 @@ export default {
         monthlyComingSoon: 'Monthly Report Coming Soon'
       }
     },
+    sale: { ...saleLang },
     stock: {
       product: { ...stock.product },
       location: { ...stock.location },

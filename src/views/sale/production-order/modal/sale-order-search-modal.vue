@@ -1,189 +1,139 @@
 <template>
-  <Dialog
-    v-model:visible="visible"
-    modal
-    :header="dialogHeader"
-    :style="{ width: '90vw', maxWidth: '1200px' }"
-    :closable="true"
-    :draggable="false"
-    @hide="onClose"
-  >
-    <!-- Search Section -->
-    <div class="modal-search-section mb-3">
-      <div class="row">
-        <div class="col-md-4">
-          <label class="form-label">เลขที่ใบสั่งขาย</label>
-          <input
-            type="text"
-            v-model="searchForm.saleOrderNumber"
-            class="form-control"
-            placeholder="SO-2025-001"
-            @keyup.enter="onSearch"
-          />
+  <div>
+    <modal :showModal="isShow" @closeModal="onClose" width="1200px" :fitHeight="true">
+      <template #title>
+        <span class="title-text-lg px-3 pt-3 d-block">เลือกใบสั่งขายสำหรับสร้างใบสั่งผลิต</span>
+      </template>
+      <template #content>
+        <!-- Search Section -->
+        <div class="modal-search-section mb-3">
+          <div class="form-col-container">
+            <div>
+              <span class="title-text">เลขที่ใบสั่งขาย</span>
+              <input
+                type="text"
+                v-model="searchForm.saleOrderNumber"
+                class="form-control bg-input"
+                placeholder="SO-2025-001"
+                @keyup.enter="onSearch"
+              />
+            </div>
+            <div>
+              <span class="title-text">ชื่อลูกค้า</span>
+              <input
+                type="text"
+                v-model="searchForm.customerName"
+                class="form-control bg-input"
+                placeholder="ชื่อลูกค้า"
+                @keyup.enter="onSearch"
+              />
+            </div>
+            <div>
+              <span class="title-text">สถานะ</span>
+              <DropdownGeneric
+                v-model="searchForm.status"
+                :options="statusOptions"
+                optionLabel="name"
+                optionValue="value"
+                placeholder="เลือกสถานะ"
+                :showClear="true"
+                class="w-100"
+              />
+            </div>
+          </div>
+          <div class="btn-submit-container mt-2">
+            <button class="btn btn-sm btn-main mr-2" type="button" @click="onSearch">
+              <i class="bi bi-search"></i>
+            </button>
+            <button class="btn btn-sm btn-dark" type="button" @click="clearSearch">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
         </div>
-        <div class="col-md-4">
-          <label class="form-label">ชื่อลูกค้า</label>
-          <input
-            type="text"
-            v-model="searchForm.customerName"
-            class="form-control"
-            placeholder="ชื่อลูกค้า"
-            @keyup.enter="onSearch"
-          />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">สถานะ</label>
-          <Dropdown
-            v-model="searchForm.status"
-            :options="statusOptions"
-            optionLabel="name"
-            optionValue="value"
-            placeholder="เลือกสถานะ"
-            class="w-100"
-            showClear
-          />
-        </div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-md-12">
-          <button
-            class="btn btn-primary me-2"
-            @click="onSearch"
-            :disabled="loading"
-          >
-            <i class="bi bi-search me-1"></i>
-            ค้นหา
-          </button>
-          <button
-            class="btn btn-outline-secondary"
-            @click="clearSearch"
-          >
-            <i class="bi bi-arrow-clockwise me-1"></i>
-            ล้างข้อมูล
-          </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Results Table -->
-    <div class="modal-table-section">
-      <DataTable
-        :value="saleOrders"
-        dataKey="saleOrderId"
-        :paginator="true"
-        :rows="10"
-        :rowsPerPageOptions="[5, 10, 20]"
-        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        currentPageReportTemplate="แสดง {first} ถึง {last} จาก {totalRecords} รายการ"
-        :loading="loading"
-        responsiveLayout="scroll"
-        class="modal-data-table"
-      >
-        <!-- Sale Order Number -->
-        <Column field="number" header="เลขที่ใบสั่งขาย" :sortable="true" style="min-width: 140px">
-          <template #body="{ data }">
-            <span class="font-weight-bold text-primary">{{ data.number }}</span>
+        <!-- Results Table -->
+        <BaseDataTable
+          :items="saleOrders"
+          :totalRecords="totalRecords"
+          dataKey="saleOrderId"
+          :columns="columns"
+          :perPage="take"
+          :scrollHeight="'400px'"
+          @page="handlePageChange"
+          @sort="handleSortChange"
+        >
+          <template #numberTemplate="{ data }">
+            <span class="fw-bold">{{ data.number }}</span>
           </template>
-        </Column>
 
-        <!-- Order Date -->
-        <Column field="orderDate" header="วันที่ใบสั่งขาย" :sortable="true" style="min-width: 120px">
-          <template #body="{ data }">
+          <template #orderDateTemplate="{ data }">
             {{ formatDate(data.orderDate) }}
           </template>
-        </Column>
 
-        <!-- Customer Info -->
-        <Column field="customerName" header="ลูกค้า" :sortable="true" style="min-width: 200px">
-          <template #body="{ data }">
-            <div class="customer-info">
-              <div class="customer-name">{{ data.customerName }}</div>
-              <div class="customer-phone text-muted">{{ data.customerPhone }}</div>
+          <template #customerNameTemplate="{ data }">
+            <div>
+              <div class="fw-semibold">{{ data.customerName }}</div>
+              <small class="text-muted">{{ data.customerPhone }}</small>
             </div>
           </template>
-        </Column>
 
-        <!-- Production Items -->
-        <Column header="รายการผลิต" style="min-width: 120px">
-          <template #body="{ data }">
+          <template #productionItemsTemplate="{ data }">
             <div class="text-center">
-              <span class="badge badge-warning">
-                <i class="bi bi-tools me-1"></i>
-                {{ getProductionItemsCount(data.items) }} รายการ
-              </span>
+              <span class="badge badge-info">{{ getProductionItemsCount(data.items) }} รายการ</span>
             </div>
           </template>
-        </Column>
 
-        <!-- Expected Delivery -->
-        <Column field="expectedDeliveryDate" header="กำหนดส่งมอบ" :sortable="true" style="min-width: 120px">
-          <template #body="{ data }">
+          <template #expectedDeliveryDateTemplate="{ data }">
             <div :class="getDeliveryDateClass(data.expectedDeliveryDate)">
               {{ formatDate(data.expectedDeliveryDate) }}
             </div>
           </template>
-        </Column>
 
-        <!-- Total Amount -->
-        <Column field="totalAmount" header="ยอดรวม" :sortable="true" style="min-width: 120px">
-          <template #body="{ data }">
-            <div class="text-right font-weight-bold">
-              {{ formatCurrency(data.totalAmount) }}
+          <template #totalAmountTemplate="{ data }">
+            <div class="text-right">{{ formatCurrency(data.totalAmount) }}</div>
+          </template>
+
+          <template #statusTemplate="{ data }">
+            <span :class="getStatusClass(data.status)">{{ getStatusText(data.status) }}</span>
+          </template>
+
+          <template #actionTemplate="{ data }">
+            <div class="btn-action-container">
+              <button
+                class="btn btn-sm btn-green"
+                @click="selectSaleOrder(data)"
+                :disabled="!hasProductionItems(data.items)"
+                title="เลือกใบสั่งขาย"
+              >
+                <i class="bi bi-check-circle"></i>
+              </button>
             </div>
           </template>
-        </Column>
-
-        <!-- Status -->
-        <Column field="status" header="สถานะ" :sortable="true" style="min-width: 120px">
-          <template #body="{ data }">
-            <span :class="getStatusClass(data.status)">
-              {{ getStatusText(data.status) }}
-            </span>
-          </template>
-        </Column>
-
-        <!-- Actions -->
-        <Column header="การดำเนินการ" style="width: 120px">
-          <template #body="{ data }">
-            <button
-              class="btn btn-sm btn-success"
-              @click="selectSaleOrder(data)"
-              :disabled="!hasProductionItems(data.items)"
-              :title="hasProductionItems(data.items) ? 'เลือกใบสั่งขายนี้' : 'ไม่มีรายการที่ต้องผลิต'"
-            >
-              <i class="bi bi-check-circle me-1"></i>
-              เลือก
-            </button>
-          </template>
-        </Column>
-      </DataTable>
-    </div>
-
-    <!-- No Results Message -->
-    <div v-if="!loading && saleOrders.length === 0" class="text-center text-muted py-4">
-      <i class="bi bi-inbox display-1"></i>
-      <div class="mt-2">ไม่พบข้อมูลใบสั่งขาย</div>
-      <div class="text-sm">ลองปรับเปลี่ยนเงื่อนไขการค้นหา</div>
-    </div>
-  </Dialog>
+        </BaseDataTable>
+      </template>
+    </modal>
+  </div>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Dropdown from 'primevue/dropdown'
+import { defineAsyncComponent } from 'vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'SaleOrderSearchModal',
 
   components: {
-    Dialog,
-    DataTable,
-    Column,
-    Dropdown
+    modal,
+    BaseDataTable,
+    DropdownGeneric
   },
+
+  mixins: [dataTablePaging],
 
   emits: ['update:isShow', 'select', 'close'],
 
@@ -196,9 +146,6 @@ export default {
 
   data() {
     return {
-      visible: false,
-      loading: false,
-      
       searchForm: {
         saleOrderNumber: '',
         customerName: '',
@@ -206,6 +153,7 @@ export default {
       },
 
       saleOrders: [],
+      totalRecords: 0,
 
       statusOptions: [
         { name: 'ยืนยันแล้ว', value: 'Confirmed' },
@@ -216,100 +164,40 @@ export default {
   },
 
   computed: {
-    dialogHeader() {
-      return 'เลือกใบสั่งขายสำหรับสร้างใบสั่งผลิต'
+    columns() {
+      return [
+        { field: 'action', header: '', width: '60px', sortable: false },
+        { field: 'number', header: 'เลขที่ใบสั่งขาย', sortable: true, minWidth: '140px', template: 'numberTemplate' },
+        { field: 'orderDate', header: 'วันที่ใบสั่งขาย', sortable: true, minWidth: '120px', template: 'orderDateTemplate' },
+        { field: 'customerName', header: 'ลูกค้า', sortable: true, minWidth: '200px', template: 'customerNameTemplate' },
+        { field: 'productionItems', header: 'รายการผลิต', sortable: false, minWidth: '120px', template: 'productionItemsTemplate' },
+        { field: 'expectedDeliveryDate', header: 'กำหนดส่งมอบ', sortable: true, minWidth: '120px', template: 'expectedDeliveryDateTemplate' },
+        { field: 'totalAmount', header: 'ยอดรวม', sortable: true, minWidth: '120px', template: 'totalAmountTemplate' },
+        { field: 'status', header: 'สถานะ', sortable: true, minWidth: '120px', template: 'statusTemplate' }
+      ]
     }
   },
 
   watch: {
-    isShow: {
-      handler(newVal) {
-        this.visible = newVal
-        if (newVal) {
-          this.loadSaleOrders()
-        }
-      },
-      immediate: true
-    },
-
-    visible(newVal) {
-      this.$emit('update:isShow', newVal)
+    isShow(newVal) {
+      if (newVal) {
+        this.fetchData()
+      }
     }
   },
 
   methods: {
-    async loadSaleOrders() {
-      try {
-        this.loading = true
-        
-        // TODO: Replace with actual API call
-        // const response = await this.saleOrderStore.fetchSaleOrdersWithProductionItems(this.searchForm)
-        
-        // Mock data for demonstration
-        this.saleOrders = [
-          {
-            saleOrderId: 1,
-            number: 'SO-2025-001',
-            orderDate: '2025-01-15',
-            expectedDeliveryDate: '2025-02-15',
-            customerName: 'บริษัท ABC จำกัด',
-            customerPhone: '02-123-4567',
-            totalAmount: 85000,
-            status: 'Confirmed',
-            items: [
-              {
-                itemId: 1,
-                productId: 1,
-                productName: 'Diamond Ring Set',
-                itemType: 'Stock',
-                quantity: 2
-              },
-              {
-                itemId: 2,
-                productId: 2,
-                productName: 'Custom Gold Necklace',
-                itemType: 'Production',
-                quantity: 1
-              }
-            ]
-          },
-          {
-            saleOrderId: 2,
-            number: 'SO-2025-002',
-            orderDate: '2025-01-16',
-            expectedDeliveryDate: '2025-03-01',
-            customerName: 'คุณสมชาย ใจดี',
-            customerPhone: '08-987-6543',
-            totalAmount: 150000,
-            status: 'Confirmed',
-            items: [
-              {
-                itemId: 3,
-                productId: 3,
-                productName: 'Custom Wedding Ring Set',
-                itemType: 'Production',
-                quantity: 2
-              },
-              {
-                itemId: 4,
-                productId: 4,
-                productName: 'Custom Earrings',
-                itemType: 'Production',
-                quantity: 1
-              }
-            ]
-          }
-        ]
-        
-      } catch (error) {
-        console.error('Error loading sale orders:', error)
-      } finally {
-        this.loading = false
-      }
+    async fetchData() {
+      // TODO: Replace with actual API call
+      // const response = await this.saleOrderStore.fetchSaleOrdersWithProductionItems({
+      //   take: this.take, skip: this.skip, sort: this.sort, formValue: this.searchForm
+      // })
+      // this.saleOrders = response.data || []
+      // this.totalRecords = response.total || 0
     },
 
     async onSearch() {
-      await this.loadSaleOrders()
+      this.resetPaging()
     },
 
     clearSearch() {
@@ -318,54 +206,53 @@ export default {
         customerName: '',
         status: null
       }
-      this.loadSaleOrders()
+      this.resetPaging()
     },
 
     selectSaleOrder(saleOrder) {
       this.$emit('select', saleOrder)
+      this.onClose()
     },
 
     onClose() {
+      this.$emit('update:isShow', false)
       this.$emit('close')
     },
 
-    // Helper methods
     hasProductionItems(items) {
-      return items && items.some(item => item.itemType === 'Production')
+      return items && items.some((item) => item.itemType === 'Production')
     },
 
     getProductionItemsCount(items) {
       if (!items) return 0
-      return items.filter(item => item.itemType === 'Production').length
+      return items.filter((item) => item.itemType === 'Production').length
     },
 
     getStatusClass(status) {
       const classes = {
-        'Confirmed': 'badge badge-success',
-        'PartiallyFulfilled': 'badge badge-warning',
-        'Fulfilled': 'badge badge-info'
+        Confirmed: 'badge badge-success',
+        PartiallyFulfilled: 'badge badge-warning',
+        Fulfilled: 'badge badge-info'
       }
       return classes[status] || 'badge badge-secondary'
     },
 
     getStatusText(status) {
       const texts = {
-        'Confirmed': 'ยืนยันแล้ว',
-        'PartiallyFulfilled': 'ส่งมอบบางส่วน',
-        'Fulfilled': 'ส่งมอบครบถ้วน'
+        Confirmed: 'ยืนยันแล้ว',
+        PartiallyFulfilled: 'ส่งมอบบางส่วน',
+        Fulfilled: 'ส่งมอบครบถ้วน'
       }
       return texts[status] || status
     },
 
     getDeliveryDateClass(date) {
       if (!date) return ''
-      
       const today = new Date()
       const deliveryDate = new Date(date)
       const diffDays = Math.ceil((deliveryDate - today) / (1000 * 60 * 60 * 24))
-      
-      if (diffDays < 0) return 'text-danger font-weight-bold' // Overdue
-      if (diffDays <= 7) return 'text-warning font-weight-bold' // Within a week
+      if (diffDays < 0) return 'text-danger fw-bold'
+      if (diffDays <= 7) return 'fw-bold'
       return ''
     },
 
@@ -382,118 +269,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/custom-style/standard-data-table';
+
 .modal-search-section {
   background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
+  padding: var(--sp-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
 }
 
-.modal-table-section {
-  min-height: 400px;
-}
-
-.modal-data-table {
-  .customer-info {
-    .customer-name {
-      font-weight: 600;
-      color: #2c3e50;
-    }
-    
-    .customer-phone {
-      font-size: 0.85rem;
-    }
-  }
+.btn-action-container {
+  display: flex;
+  justify-content: center;
 }
 
 .badge {
-  padding: 0.25em 0.5em;
-  font-size: 0.75em;
-  border-radius: 0.25rem;
-  font-weight: 600;
-  
+  padding: var(--sp-xs) var(--sp-sm);
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm);
+  color: white;
+
   &.badge-success {
-    background-color: #28a745;
-    color: white;
+    background-color: var(--base-green);
   }
-  
+
   &.badge-warning {
-    background-color: #ffc107;
+    background-color: var(--base-warning);
     color: #212529;
   }
-  
+
   &.badge-info {
-    background-color: #17a2b8;
-    color: white;
+    background-color: var(--base-green);
   }
-  
+
   &.badge-secondary {
     background-color: #6c757d;
-    color: white;
   }
-}
-
-.form-label {
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 0.5rem;
-}
-
-.text-muted {
-  color: #6c757d !important;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.text-warning {
-  color: #ffc107 !important;
-}
-
-.text-primary {
-  color: #007bff !important;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.font-weight-bold {
-  font-weight: 600;
-}
-
-.me-1 {
-  margin-right: 0.25rem;
-}
-
-.me-2 {
-  margin-right: 0.5rem;
-}
-
-.mb-3 {
-  margin-bottom: 1rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
-.py-4 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-}
-
-.display-1 {
-  font-size: 6rem;
-  opacity: 0.3;
-}
-
-.text-sm {
-  font-size: 0.875rem;
 }
 </style>

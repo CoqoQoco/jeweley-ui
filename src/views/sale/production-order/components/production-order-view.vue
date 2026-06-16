@@ -21,10 +21,10 @@
           <!-- Order Date -->
           <div>
             <span class="title-text">วันที่ใบสั่งผลิต</span>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="formProductionOrder.orderDate"
-              showIcon
+              :showIcon="true"
               :manualInput="false"
               placeholder="เลือกวันที่"
               dateFormat="dd/mm/yy"
@@ -34,10 +34,10 @@
           <!-- Required Date -->
           <div>
             <span class="title-text">วันที่ต้องการใช้</span>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="formProductionOrder.requiredDate"
-              showIcon
+              :showIcon="true"
               :manualInput="false"
               placeholder="เลือกวันที่"
               dateFormat="dd/mm/yy"
@@ -47,7 +47,7 @@
           <!-- Priority -->
           <div>
             <span class="title-text">ลำดับความสำคัญ</span>
-            <Dropdown
+            <DropdownGeneric
               v-model="formProductionOrder.priority"
               :options="priorityOptions"
               optionLabel="name"
@@ -74,7 +74,7 @@
           <!-- Status -->
           <div>
             <span class="title-text">สถานะ</span>
-            <Dropdown
+            <DropdownGeneric
               v-model="formProductionOrder.status"
               :options="statusOptions"
               optionLabel="name"
@@ -87,7 +87,7 @@
           <!-- Production Type -->
           <div>
             <span class="title-text">ประเภทการผลิต</span>
-            <Dropdown
+            <DropdownGeneric
               v-model="formProductionOrder.productionType"
               :options="productionTypeOptions"
               optionLabel="name"
@@ -100,7 +100,7 @@
           <!-- Workshop -->
           <div>
             <span class="title-text">หน่วยผลิต</span>
-            <Dropdown
+            <DropdownGeneric
               v-model="formProductionOrder.workshop"
               :options="workshopOptions"
               optionLabel="name"
@@ -157,123 +157,90 @@
         </div>
       </div>
       <div class="card-body p-0">
-        <DataTable
-          :value="productionItems"
+        <BaseDataTable
+          :items="productionItems"
+          :totalRecords="productionItems.length"
           dataKey="itemId"
-          class="base-data-table"
-          :scrollable="true"
+          :columns="tableColumns"
+          :paginator="false"
           scrollHeight="400px"
-          :loading="loading"
         >
-          <!-- Selection Column -->
-          <Column header="เลือก" style="width: 80px">
-            <template #body="{ data }">
-              <input
-                type="checkbox"
-                v-model="data.isSelected"
-                @change="updateItemSelection(data)"
-                class="form-check-input"
+          <template #selectionTemplate="{ data }">
+            <input
+              type="checkbox"
+              v-model="data.isSelected"
+              @change="updateItemSelection(data)"
+              class="form-check-input"
+            />
+          </template>
+
+          <template #imageTemplate="{ data }">
+            <div class="product-image">
+              <img
+                :src="data.imageUrl || '/src/assets/images/no-image.png'"
+                :alt="data.productName"
+                class="product-thumbnail"
               />
-            </template>
-          </Column>
+            </div>
+          </template>
 
-          <!-- Product Image -->
-          <Column header="รูปภาพ" style="width: 80px">
-            <template #body="{ data }">
-              <div class="product-image">
-                <img 
-                  :src="data.imageUrl || '/src/assets/images/no-image.png'" 
-                  :alt="data.productName"
-                  class="product-thumbnail"
-                />
+          <template #productNumberTemplate="{ data }">
+            <span class="font-weight-bold">{{ data.productNumber }}</span>
+          </template>
+
+          <template #productNameTemplate="{ data }">
+            <div class="product-description">{{ data.productName }}</div>
+          </template>
+
+          <template #materialsTemplate="{ data }">
+            <div class="materials-info">
+              <div v-if="data.materials?.gold" class="material-item">
+                <i class="bi bi-circle-fill text-warning mr-1"></i>
+                ทอง: {{ data.materials.gold.weight }}g
               </div>
-            </template>
-          </Column>
-
-          <!-- Product Number -->
-          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 120px">
-            <template #body="{ data }">
-              <span class="font-weight-bold">{{ data.productNumber }}</span>
-            </template>
-          </Column>
-
-          <!-- Product Name -->
-          <Column field="productName" header="ชื่อสินค้า" style="min-width: 200px">
-            <template #body="{ data }">
-              <div class="product-description">
-                {{ data.productName }}
+              <div v-if="data.materials?.diamond" class="material-item">
+                <i class="bi bi-gem mr-1"></i>
+                เพชร: {{ data.materials.diamond.weight }}ct
               </div>
-            </template>
-          </Column>
-
-          <!-- Materials -->
-          <Column header="วัตถุดิบ" style="min-width: 180px">
-            <template #body="{ data }">
-              <div class="materials-info">
-                <div v-if="data.materials?.gold" class="material-item">
-                  <i class="bi bi-circle-fill text-warning mr-1"></i>
-                  ทอง: {{ data.materials.gold.weight }}g
-                </div>
-                <div v-if="data.materials?.diamond" class="material-item">
-                  <i class="bi bi-gem mr-1"></i>
-                  เพชร: {{ data.materials.diamond.weight }}ct
-                </div>
-                <div v-if="data.materials?.gems" class="material-item">
-                  <i class="bi bi-hexagon mr-1"></i>
-                  พลอย: {{ data.materials.gems.weight }}ct
-                </div>
+              <div v-if="data.materials?.gems" class="material-item">
+                <i class="bi bi-hexagon mr-1"></i>
+                พลอย: {{ data.materials.gems.weight }}ct
               </div>
-            </template>
-          </Column>
+            </div>
+          </template>
 
-          <!-- Quantity -->
-          <Column field="quantity" header="จำนวน" style="min-width: 100px">
-            <template #body="{ data }">
-              <input
-                type="number"
-                min="1"
-                step="1"
-                v-model.number="data.quantity"
-                @input="updateItemQuantity(data)"
-                :disabled="!data.isSelected"
-                class="form-control form-control-sm text-center"
-              />
-            </template>
-          </Column>
+          <template #quantityTemplate="{ data }">
+            <input
+              type="number"
+              min="1"
+              step="1"
+              v-model.number="data.quantity"
+              @input="updateItemQuantity(data)"
+              :disabled="!data.isSelected"
+              class="form-control form-control-sm text-center"
+            />
+          </template>
 
-          <!-- Production Days -->
-          <Column field="estimatedProductionDays" header="ระยะเวลาผลิต" style="min-width: 120px">
-            <template #body="{ data }">
-              <div class="text-center">
-                <span class="badge badge-info">
-                  <i class="bi bi-clock mr-1"></i>
-                  {{ data.estimatedProductionDays || 0 }} วัน
-                </span>
-              </div>
-            </template>
-          </Column>
+          <template #estimatedProductionDaysTemplate="{ data }">
+            <div class="text-center">
+              <span class="badge badge-info">
+                <i class="bi bi-clock mr-1"></i>
+                {{ data.estimatedProductionDays || 0 }} วัน
+              </span>
+            </div>
+          </template>
 
-          <!-- Unit Price -->
-          <Column field="unitPrice" header="ราคาต่อหน่วย" style="min-width: 120px">
-            <template #body="{ data }">
-              <div class="text-right">
-                {{ formatCurrency(data.unitPrice) }}
-              </div>
-            </template>
-          </Column>
+          <template #unitPriceTemplate="{ data }">
+            <div class="text-right">{{ formatCurrency(data.unitPrice) }}</div>
+          </template>
 
-          <!-- Total Value -->
-          <Column header="มูลค่ารวม" style="min-width: 120px">
-            <template #body="{ data }">
-              <div class="text-right font-weight-bold">
-                <span v-if="data.isSelected">
-                  {{ formatCurrency(data.quantity * data.unitPrice) }}
-                </span>
-                <span v-else class="text-muted">-</span>
-              </div>
-            </template>
-          </Column>
-        </DataTable>
+          <template #totalValueTemplate="{ data }">
+            <div class="text-right font-weight-bold">
+              <span v-if="data.isSelected">{{ formatCurrency(data.quantity * data.unitPrice) }}</span>
+              <span v-else class="text-muted">-</span>
+            </div>
+          </template>
+        </BaseDataTable>
       </div>
     </div>
 
@@ -334,7 +301,7 @@
               </div>
               <div class="summary-item border-top pt-2 mt-2">
                 <span class="h6">มูลค่ารวม:</span>
-                <span class="h6 font-weight-bold text-primary">{{ formatCurrency(totalProductionValue) }}</span>
+                <span class="h6 font-weight-bold" style="color: var(--base-font-color)">{{ formatCurrency(totalProductionValue) }}</span>
               </div>
             </div>
           </div>
@@ -361,7 +328,7 @@
             <div class="alert alert-warning">
               <h6><i class="bi bi-exclamation-triangle mr-2"></i>ข้อควรระวัง:</h6>
               <ul class="mb-0">
-                <li v-for="error in validationErrors" :key="error">{{ error }}</li>
+                <li v-for="err in validationErrors" :key="err">{{ err }}</li>
               </ul>
             </div>
           </div>
@@ -372,37 +339,37 @@
     <!-- Action Buttons -->
     <div class="btn-submit-container mt-3">
       <button
-        class="btn btn-outline-secondary mr-2"
+        class="btn btn-outline-main mr-2"
         type="button"
         @click="saveDraft"
-        :disabled="loading || selectedItemsCount === 0"
+        :disabled="selectedItemsCount === 0"
       >
         <i class="bi bi-file-earmark mr-1"></i>
         บันทึกร่าง
       </button>
-      
+
       <button
-        class="btn btn-success mr-2"
+        class="btn btn-main mr-2"
         type="button"
         @click="confirmProduction"
-        :disabled="loading || selectedItemsCount === 0 || hasValidationErrors"
+        :disabled="selectedItemsCount === 0 || hasValidationErrors"
       >
         <i class="bi bi-check-circle mr-1"></i>
         ยืนยันใบสั่งผลิต
       </button>
 
       <button
-        class="btn btn-info mr-2"
+        class="btn btn-green mr-2"
         type="button"
         @click="generatePDF"
-        :disabled="loading || selectedItemsCount === 0"
+        :disabled="selectedItemsCount === 0"
       >
         <i class="bi bi-file-pdf mr-1"></i>
         สร้าง PDF
       </button>
 
       <button
-        class="btn btn-secondary mr-2"
+        class="btn btn-dark mr-2"
         type="button"
         @click="clearForm"
       >
@@ -411,7 +378,7 @@
       </button>
 
       <button
-        class="btn btn-outline-danger mr-2"
+        class="btn btn-red mr-2"
         type="button"
         @click="cancelOrder"
       >
@@ -423,19 +390,19 @@
 </template>
 
 <script>
-import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
-import { success, error } from '@/services/alert/sweetAlerts.js'
+import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
 export default {
   name: 'ProductionOrderView',
 
   components: {
-    DataTableWithPaging,
-    Calendar,
-    Dropdown
+    BaseDataTable,
+    CalendarGeneric,
+    DropdownGeneric
   },
 
   emits: ['update:modelForm', 'update:modelSaleOrder', 'save', 'confirm', 'cancel'],
@@ -453,9 +420,8 @@ export default {
 
   data() {
     return {
-      loading: false,
-      productionItems: [], // Items that need production
-      
+      productionItems: [],
+
       formProductionOrder: {
         productionOrderId: null,
         saleOrderId: null,
@@ -506,13 +472,26 @@ export default {
   },
 
   computed: {
-    // Selection state
+    tableColumns() {
+      return [
+        { field: 'selection', header: 'เลือก', width: '80px', sortable: false, template: 'selectionTemplate' },
+        { field: 'image', header: 'รูปภาพ', width: '80px', sortable: false, template: 'imageTemplate' },
+        { field: 'productNumber', header: 'รหัสสินค้า', minWidth: '120px', sortable: false, template: 'productNumberTemplate' },
+        { field: 'productName', header: 'ชื่อสินค้า', minWidth: '200px', sortable: false, template: 'productNameTemplate' },
+        { field: 'materials', header: 'วัตถุดิบ', minWidth: '180px', sortable: false, template: 'materialsTemplate' },
+        { field: 'quantity', header: 'จำนวน', minWidth: '100px', sortable: false, template: 'quantityTemplate' },
+        { field: 'estimatedProductionDays', header: 'ระยะเวลาผลิต', minWidth: '120px', sortable: false, template: 'estimatedProductionDaysTemplate' },
+        { field: 'unitPrice', header: 'ราคาต่อหน่วย', minWidth: '120px', sortable: false, template: 'unitPriceTemplate' },
+        { field: 'totalValue', header: 'มูลค่ารวม', minWidth: '120px', sortable: false, template: 'totalValueTemplate' }
+      ]
+    },
+
     allItemsSelected() {
-      return this.productionItems.length > 0 && this.productionItems.every(item => item.isSelected)
+      return this.productionItems.length > 0 && this.productionItems.every((item) => item.isSelected)
     },
 
     selectedItems() {
-      return this.productionItems.filter(item => item.isSelected)
+      return this.productionItems.filter((item) => item.isSelected)
     },
 
     selectedItemsCount() {
@@ -529,35 +508,36 @@ export default {
       return Math.round(totalDays / this.selectedItemsCount)
     },
 
-    // Materials calculations
     totalMaterials() {
-      return this.selectedItems.reduce((totals, item) => {
-        if (item.materials) {
-          totals.gold += item.materials.gold?.weight * item.quantity || 0
-          totals.diamond += item.materials.diamond?.weight * item.quantity || 0
-          totals.gems += item.materials.gems?.weight * item.quantity || 0
-        }
-        return totals
-      }, { gold: 0, diamond: 0, gems: 0 })
+      return this.selectedItems.reduce(
+        (totals, item) => {
+          if (item.materials) {
+            totals.gold += (item.materials.gold?.weight * item.quantity) || 0
+            totals.diamond += (item.materials.diamond?.weight * item.quantity) || 0
+            totals.gems += (item.materials.gems?.weight * item.quantity) || 0
+          }
+          return totals
+        },
+        { gold: 0, diamond: 0, gems: 0 }
+      )
     },
 
     materialsValue() {
-      // Mock calculation - should be based on current material prices
-      const goldPrice = 2800 // per gram
-      const diamondPrice = 150000 // per carat
-      const gemPrice = 10000 // per carat
-
-      return (this.totalMaterials.gold * goldPrice) +
-             (this.totalMaterials.diamond * diamondPrice) +
-             (this.totalMaterials.gems * gemPrice)
+      const goldPrice = 2800
+      const diamondPrice = 150000
+      const gemPrice = 10000
+      return (
+        this.totalMaterials.gold * goldPrice +
+        this.totalMaterials.diamond * diamondPrice +
+        this.totalMaterials.gems * gemPrice
+      )
     },
 
     estimatedLaborCost() {
-      // Mock calculation - should be based on complexity and time
       return this.selectedItems.reduce((sum, item) => {
-        const baseLaborCost = 5000 // base cost per item
-        const complexityMultiplier = item.estimatedProductionDays / 7 // complexity based on days
-        return sum + (baseLaborCost * complexityMultiplier * item.quantity)
+        const baseLaborCost = 5000
+        const complexityMultiplier = item.estimatedProductionDays / 7
+        return sum + baseLaborCost * complexityMultiplier * item.quantity
       }, 0)
     },
 
@@ -565,10 +545,9 @@ export default {
       return this.materialsValue + this.estimatedLaborCost
     },
 
-    // Validation
     validationErrors() {
       const errors = []
-      
+
       if (this.selectedItemsCount === 0) {
         errors.push('กรุณาเลือกรายการสินค้าที่ต้องผลิตอย่างน้อย 1 รายการ')
       }
@@ -610,150 +589,99 @@ export default {
   },
 
   mounted() {
-    // Load data from URL query parameters (from Sale Order navigation)
     this.loadFromQueryParams()
   },
 
   methods: {
     loadFromQueryParams() {
       const query = this.$route.query
-      
+
       if (query.saleOrderNumber && query.items) {
+        let items = []
         try {
-          const items = JSON.parse(query.items)
-          const saleOrderData = {
-            saleOrderId: query.saleOrderId,
-            number: query.saleOrderNumber,
-            customerName: query.customerName,
-            items: items
-          }
-          
-          this.loadSaleOrderData(saleOrderData)
-          
-          // Show info message
-          success(`โหลดข้อมูลจากใบสั่งขาย ${query.saleOrderNumber} เรียบร้อย`, 'โหลดข้อมูลสำเร็จ')
-        } catch (error) {
-          console.error('Error parsing query params:', error)
+          items = JSON.parse(query.items)
+        } catch {
           error('ข้อมูลจากใบสั่งขายไม่ถูกต้อง', 'โหลดข้อมูลไม่สำเร็จ')
+          return
         }
+
+        const saleOrderData = {
+          saleOrderId: query.saleOrderId,
+          number: query.saleOrderNumber,
+          customerName: query.customerName,
+          items
+        }
+
+        this.loadSaleOrderData(saleOrderData)
+        success(`โหลดข้อมูลจากใบสั่งขาย ${query.saleOrderNumber} เรียบร้อย`, 'โหลดข้อมูลสำเร็จ')
       }
     },
 
-    async loadSaleOrderData(saleOrderData) {
-      try {
-        this.loading = true
-        
-        // Set sale order info
-        this.saleOrderInfo = saleOrderData
-        this.formProductionOrder.saleOrderId = saleOrderData.saleOrderId
-        this.formProductionOrder.saleOrderNumber = saleOrderData.number
+    loadSaleOrderData(saleOrderData) {
+      this.saleOrderInfo = saleOrderData
+      this.formProductionOrder.saleOrderId = saleOrderData.saleOrderId
+      this.formProductionOrder.saleOrderNumber = saleOrderData.number
 
-        // Filter production items only
-        this.productionItems = (saleOrderData.items || [])
-          .filter(item => item.itemType === 'Production')
-          .map(item => ({
-            ...item,
-            isSelected: false,
-            materials: {
-              gold: { weight: 15.5 },
-              diamond: { weight: 0.5 },
-              gems: { weight: 1.2 }
-            },
-            imageUrl: null
-          }))
-
-      } catch (error) {
-        console.error('Error loading sale order:', error)
-      } finally {
-        this.loading = false
-      }
+      this.productionItems = (saleOrderData.items || [])
+        .filter((item) => item.itemType === 'Production')
+        .map((item) => ({
+          ...item,
+          isSelected: false,
+          materials: {
+            gold: { weight: 15.5 },
+            diamond: { weight: 0.5 },
+            gems: { weight: 1.2 }
+          },
+          imageUrl: null
+        }))
     },
 
-    // Selection methods
     toggleAllItems() {
       const newState = !this.allItemsSelected
-      this.productionItems.forEach(item => {
+      this.productionItems.forEach((item) => {
         item.isSelected = newState
       })
     },
 
-    updateItemSelection(item) {
-      // Selection change handled by v-model
-    },
+    updateItemSelection() {},
 
-    updateItemQuantity(item) {
-      // Quantity change handled by v-model
-    },
+    updateItemQuantity() {},
 
-    // Action methods
-    async saveDraft() {
-      try {
-        this.loading = true
-        
-        const productionOrderData = {
-          ...this.formProductionOrder,
-          status: 'Draft',
-          items: this.selectedItems
-        }
-
-        console.log('Save production order draft:', productionOrderData)
-        this.$emit('save', productionOrderData)
-        
-        success('บันทึกร่างเรียบร้อยแล้ว', 'บันทึกสำเร็จ')
-      } catch (error) {
-        console.error('Error saving draft:', error)
-        error('เกิดข้อผิดพลาดในการบันทึก', 'บันทึกไม่สำเร็จ')
-      } finally {
-        this.loading = false
+    saveDraft() {
+      const productionOrderData = {
+        ...this.formProductionOrder,
+        status: 'Draft',
+        items: this.selectedItems
       }
+      this.$emit('save', productionOrderData)
+      success('บันทึกร่างเรียบร้อยแล้ว', 'บันทึกสำเร็จ')
     },
 
-    async confirmProduction() {
+    confirmProduction() {
       if (this.hasValidationErrors) {
         error('กรุณาแก้ไขข้อผิดพลาดก่อนยืนยันใบสั่งผลิต', 'ไม่สามารถยืนยันได้')
         return
       }
 
-      try {
-        this.loading = true
-        
-        const productionOrderData = {
-          ...this.formProductionOrder,
-          status: 'Confirmed',
-          items: this.selectedItems
-        }
-
-        console.log('Confirm production order:', productionOrderData)
-        this.$emit('confirm', productionOrderData)
-        
-        success('ยืนยันใบสั่งผลิตเรียบร้อยแล้ว', 'ยืนยันสำเร็จ')
-      } catch (error) {
-        console.error('Error confirming production order:', error)
-        error('เกิดข้อผิดพลาดในการยืนยัน', 'ยืนยันไม่สำเร็จ')
-      } finally {
-        this.loading = false
+      const productionOrderData = {
+        ...this.formProductionOrder,
+        status: 'Confirmed',
+        items: this.selectedItems
       }
+      this.$emit('confirm', productionOrderData)
+      success('ยืนยันใบสั่งผลิตเรียบร้อยแล้ว', 'ยืนยันสำเร็จ')
     },
 
-    async generatePDF() {
-      try {
-        this.loading = true
-        console.log('Generate PDF for production order')
-        // TODO: Implement PDF generation
-        success('สร้าง PDF เรียบร้อยแล้ว', 'สร้างเอกสารสำเร็จ')
-      } catch (error) {
-        console.error('Error generating PDF:', error)
-        error('เกิดข้อผิดพลาดในการสร้าง PDF', 'สร้างเอกสารไม่สำเร็จ')
-      } finally {
-        this.loading = false
-      }
+    generatePDF() {
+      // TODO: Implement PDF generation
+      success('สร้าง PDF เรียบร้อยแล้ว', 'สร้างเอกสารสำเร็จ')
     },
 
     cancelOrder() {
-      if (confirm('คุณต้องการยกเลิกการสร้างใบสั่งผลิตนี้หรือไม่?')) {
+      confirmSubmit('คุณต้องการยกเลิกการสร้างใบสั่งผลิตนี้หรือไม่?', 'ยืนยันการยกเลิก', () => {
         this.clearForm()
         this.$emit('cancel')
-      }
+      })
     },
 
     clearForm() {
@@ -774,7 +702,6 @@ export default {
       }
     },
 
-    // Helper methods
     formatDate(date) {
       if (!date) return '-'
       return new Date(date).toLocaleDateString('th-TH')
@@ -792,17 +719,17 @@ export default {
 @import '@/assets/scss/custom-style/standard-data-table.scss';
 
 .card-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--sp-lg);
 }
 
 .card-header {
   background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-  padding: 0.75rem 1rem;
-  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--sp-sm) var(--sp-lg);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -814,14 +741,14 @@ export default {
 }
 
 .card-body {
-  padding: 1rem;
+  padding: var(--sp-lg);
 }
 
 .info-display {
   background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-sm) var(--sp-md);
   min-height: 38px;
   display: flex;
   align-items: center;
@@ -837,20 +764,20 @@ export default {
   width: 50px;
   height: 50px;
   object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
 }
 
 .product-description {
-  font-size: 0.9rem;
-  line-height: 1.4;
+  font-size: var(--fs-base);
+  line-height: var(--lh-sm);
 }
 
 .materials-info {
   .material-item {
-    font-size: 0.85rem;
-    margin-bottom: 0.25rem;
-    
+    font-size: var(--fs-sm);
+    margin-bottom: var(--sp-xs);
+
     &:last-child {
       margin-bottom: 0;
     }
@@ -858,28 +785,28 @@ export default {
 }
 
 .badge {
-  padding: 0.25em 0.5em;
-  font-size: 0.75em;
-  border-radius: 0.25rem;
+  padding: var(--sp-xs) var(--sp-sm);
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm);
   font-weight: 600;
-  
+
   &.badge-info {
-    background-color: #17a2b8;
+    background-color: var(--base-green);
     color: white;
   }
 }
 
 .summary-section {
   background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
+  padding: var(--sp-lg);
+  border-radius: var(--radius-sm);
   height: 100%;
-  
+
   h6 {
     color: #495057;
-    margin-bottom: 0.75rem;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 0.5rem;
+    margin-bottom: var(--sp-sm);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--sp-sm);
   }
 }
 
@@ -887,16 +814,16 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-  
+  margin-bottom: var(--sp-sm);
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   &.border-top {
-    border-top: 1px solid #dee2e6;
-    padding-top: 0.5rem;
-    margin-top: 0.5rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--sp-sm);
+    margin-top: var(--sp-sm);
   }
 }
 
@@ -905,11 +832,11 @@ export default {
 }
 
 .alert {
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: var(--sp-lg);
+  margin-bottom: var(--sp-lg);
   border: 1px solid transparent;
-  border-radius: 0.25rem;
-  
+  border-radius: var(--radius-sm);
+
   &.alert-warning {
     color: #856404;
     background-color: #fff3cd;
@@ -930,15 +857,11 @@ export default {
 }
 
 .text-warning {
-  color: #ffc107 !important;
+  color: var(--base-warning) !important;
 }
 
 .text-info {
-  color: #17a2b8 !important;
-}
-
-.text-primary {
-  color: #007bff !important;
+  color: var(--base-green) !important;
 }
 
 .font-weight-bold {
@@ -951,29 +874,5 @@ export default {
 
 .align-items-center {
   align-items: center;
-}
-
-.mr-1 {
-  margin-right: 0.25rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-.mb-0 {
-  margin-bottom: 0;
-}
-
-.p-0 {
-  padding: 0;
 }
 </style>

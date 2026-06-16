@@ -33,7 +33,7 @@
 <script>
 import SearchView from './components/search-view.vue'
 import ProductionOrderView from './components/production-order-view.vue'
-//import SaleOrderSearchModal from './modal/sale-order-search-modal.vue'
+import SaleOrderSearchModal from './modal/sale-order-search-modal.vue'
 
 export default {
   name: 'ProductionOrderIndexView',
@@ -41,7 +41,7 @@ export default {
   components: {
     SearchView,
     ProductionOrderView,
-    //SaleOrderSearchModal
+    SaleOrderSearchModal
   },
 
   data() {
@@ -75,50 +75,21 @@ export default {
 
   methods: {
     onSearch(searchData) {
-      console.log('Search triggered:', searchData)
-      
       if (searchData.searchType === 'saleOrder' && searchData.saleOrderNumber) {
         this.searchSaleOrder(searchData.saleOrderNumber)
       } else if (searchData.searchType === 'product' && searchData.productNumber) {
         this.searchProduct(searchData.productNumber)
       } else {
-        // Open modal for selection
         this.isShowSaleOrderModal = true
       }
     },
 
-    async searchSaleOrder(saleOrderNumber) {
-      try {
-        // TODO: API call to load sale order
-        console.log('Loading sale order:', saleOrderNumber)
-        
-        // Mock data
-        this.modelSaleOrderData = {
-          saleOrderId: 1,
-          number: saleOrderNumber,
-          customerName: 'บริษัท ABC จำกัด',
-          orderDate: '2025-01-15',
-          items: [
-            {
-              itemId: 1,
-              productId: 2,
-              productNumber: 'N002',
-              productName: 'Custom Gold Necklace',
-              itemType: 'Production',
-              quantity: 1,
-              unitPrice: 25000,
-              estimatedProductionDays: 14
-            }
-          ]
-        }
-      } catch (error) {
-        console.error('Error loading sale order:', error)
-      }
+    async searchSaleOrder() {
+      // TODO: API call to load sale order by saleOrderNumber
     },
 
-    async searchProduct(productNumber) {
-      console.log('Search product:', productNumber)
-      // TODO: Implement product search
+    async searchProduct() {
+      // TODO: Implement product search by productNumber
     },
 
     onSelectSaleOrder(saleOrder) {
@@ -130,18 +101,15 @@ export default {
       this.isShowSaleOrderModal = false
     },
 
-    onSave(productionOrderData) {
-      console.log('Save production order:', productionOrderData)
+    onSave() {
       // TODO: API call to save
     },
 
-    onConfirm(productionOrderData) {
-      console.log('Confirm production order:', productionOrderData)
+    onConfirm() {
       // TODO: API call to confirm
     },
 
     onCancel() {
-      console.log('Cancel production order')
       // Clear forms or navigate back
     }
   }

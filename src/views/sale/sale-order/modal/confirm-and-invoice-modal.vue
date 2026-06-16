@@ -50,14 +50,7 @@
         <!-- Stock Items Selection -->
         <div class="">
           <div>
-            <div v-if="loading" class="text-center py-4">
-              <div class="spinner-border text-main" role="status">
-                <span class="sr-only">Loading...</span>
-              </div>
-              <p class="mt-2 text-muted">กำลังประมวลผล...</p>
-            </div>
-
-            <div v-else class="pl-2 pr-2">
+            <div class="pl-2 pr-2">
               <!-- Instructions -->
               <div class="filter-container mb-3">
                 <div class="d-flex align-items-start ml-3">
@@ -80,7 +73,7 @@
               >
                 <div>
                   <label class="d-flex align-items-center mb-0">
-                    <Checkbox
+                    <CheckboxGeneric
                       :modelValue="isAllSelected"
                       @update:modelValue="toggleSelectAll"
                       :disabled="availableItems.length === 0"
@@ -138,7 +131,7 @@
                 <Column field="selected" style="width: 10px">
                   <template #body="slotProps">
                     <div class="text-center">
-                      <Checkbox
+                      <CheckboxGeneric
                         :modelValue="selectedItems.includes(slotProps.data.id)"
                         @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
                         :binary="true"
@@ -583,7 +576,7 @@
                     <div class="col-md-3">
                       <div class="form-group">
                         <label class="title-text">วิธีการชำระเงิน</label>
-                        <Dropdown
+                        <DropdownGeneric
                           v-model="paymentMethod"
                           :options="paymentMethodOptions"
                           optionLabel="name"
@@ -639,7 +632,7 @@
                 class="form-control bg-input"
                 type="text"
                 v-model.number="dkInvoiceNumber"
-                :disabled="loading || selectedItemsCount === 0"
+                :disabled="selectedItemsCount === 0"
               />
             </div>
 
@@ -648,19 +641,14 @@
                 class="btn btn-green mr-2"
                 type="button"
                 @click="confirmAndCreateInvoice"
-                :disabled="loading || selectedItemsCount === 0"
+                :disabled="selectedItemsCount === 0"
               >
                 <i class="bi bi-lightning-charge mr-1"></i>
                 ยืนยัน + สร้าง Invoice
                 <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
-                <span
-                  v-if="loading"
-                  class="spinner-border spinner-border-sm ml-2"
-                  role="status"
-                ></span>
               </button>
 
-              <button class="btn btn-secondary mr-2" type="button" @click="closeModal">
+              <button class="btn btn-outline-main mr-2" type="button" @click="closeModal">
                 <i class="bi bi-x-circle mr-1"></i>
                 ยกเลิก
               </button>
@@ -674,12 +662,16 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import Dropdown from 'primevue/dropdown'
-import Checkbox from 'primevue/checkbox'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
@@ -696,8 +688,8 @@ export default {
     Column,
     ColumnGroup,
     Row,
-    Dropdown,
-    Checkbox,
+    DropdownGeneric,
+    CheckboxGeneric,
     imagePreview
   },
 
@@ -720,7 +712,6 @@ export default {
 
   data() {
     return {
-      loading: false,
       selectedItems: [],
       invoiceStore: useInvoiceApiStore(),
       saleOrderStore: usrSaleOrderApiStore(),
@@ -988,8 +979,6 @@ export default {
         return
       }
 
-      this.loading = true
-
       const selectedStockItems = this.stockItems.filter((item) =>
         this.selectedItems.includes(item.id)
       )
@@ -1015,7 +1004,6 @@ export default {
 
         if (!confirmRes || !confirmRes.success) {
           error('ไม่สามารถยืนยันสินค้าได้ กรุณาลองใหม่', 'เกิดข้อผิดพลาด')
-          this.loading = false
           return
         }
       }
@@ -1091,8 +1079,6 @@ export default {
 
         this.closeModal()
       }
-
-      this.loading = false
     },
 
     closeModal() {

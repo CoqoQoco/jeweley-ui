@@ -123,21 +123,21 @@
             <div>
               <span class="title-text">วันที่สร้าง</span>
               <div class="flex-group">
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.createDateStart"
-                  :max-date="form.createDateEnd"
-                  showIcon
+                  :maxDate="form.createDateEnd"
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="เริ่มต้น"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.createDateEnd"
-                  :min-date="form.createDateStart"
-                  showIcon
+                  :minDate="form.createDateStart"
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="สิ้นสุด"
                   dateFormat="dd/mm/yy"
@@ -149,21 +149,21 @@
             <div>
               <span class="title-text">วันที่จัดส่ง</span>
               <div class="flex-group">
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.deliveryDateStart"
-                  :max-date="form.deliveryDateEnd"
-                  showIcon
+                  :maxDate="form.deliveryDateEnd"
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="เริ่มต้น"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.deliveryDateEnd"
-                  :min-date="form.deliveryDateStart"
-                  showIcon
+                  :minDate="form.deliveryDateStart"
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="สิ้นสุด"
                   dateFormat="dd/mm/yy"
@@ -196,8 +196,8 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
 import pageTitle from '@/components/custom/page-title.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
@@ -209,7 +209,7 @@ export default {
   name: 'SaleOrderListSearchView',
 
   components: {
-    Calendar,
+    CalendarGeneric,
     pageTitle,
     dialogView
   },

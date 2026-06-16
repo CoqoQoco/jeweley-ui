@@ -50,14 +50,7 @@
         <!-- Stock Items Selection for Invoice -->
         <div class="">
           <div>
-            <div v-if="loading" class="text-center py-4">
-              <div class="spinner-border text-main" role="status">
-                <span class="sr-only">Loading...</span>
-              </div>
-              <p class="mt-2 text-muted">กำลังโหลดข้อมูลสินค้า...</p>
-            </div>
-
-            <div v-else class="pl-2 pr-2">
+            <div class="pl-2 pr-2">
               <!-- Instructions -->
               <div class="filter-container mb-3">
                 <div class="d-flex align-items-start ml-3">
@@ -80,7 +73,7 @@
               >
                 <div>
                   <label class="d-flex align-items-center mb-0">
-                    <Checkbox
+                    <CheckboxGeneric
                       :modelValue="isAllSelected"
                       @update:modelValue="toggleSelectAll"
                       :disabled="availableItems.length === 0"
@@ -138,7 +131,7 @@
                 <Column field="selected" style="width: 10px">
                   <template #body="slotProps">
                     <div class="text-center">
-                      <Checkbox
+                      <CheckboxGeneric
                         :modelValue="selectedItems.includes(slotProps.data.id)"
                         @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
                         :disabled="!slotProps.data.isConfirm"
@@ -659,7 +652,7 @@
                     <div class="col-md-3">
                       <div class="form-group">
                         <label class="title-text">วิธีการชำระเงิน</label>
-                        <Dropdown
+                        <DropdownGeneric
                           v-model="paymentMethod"
                           :options="paymentMethodOptions"
                           optionLabel="name"
@@ -715,7 +708,7 @@
                 class="form-control bg-input"
                 type="text"
                 v-model.number="dkInvoiceNumber"
-                :disabled="loading || selectedItemsCount === 0"
+                :disabled="selectedItemsCount === 0"
               />
             </div>
 
@@ -724,19 +717,14 @@
                 class="btn btn-green mr-2"
                 type="button"
                 @click="generateInvoice"
-                :disabled="loading || selectedItemsCount === 0"
+                :disabled="selectedItemsCount === 0"
               >
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
                 สร้าง Invoice
                 <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
-                <span
-                  v-if="loading"
-                  class="spinner-border spinner-border-sm ml-2"
-                  role="status"
-                ></span>
               </button>
 
-              <button class="btn btn-secondary mr-2" type="button" @click="closeModal">
+              <button class="btn btn-outline-main mr-2" type="button" @click="closeModal">
                 <i class="bi bi-x-circle mr-1"></i>
                 ยกเลิก
               </button>
@@ -750,15 +738,19 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import Dropdown from 'primevue/dropdown'
-import Checkbox from 'primevue/checkbox'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
-import { warning, error, success } from '@/services/alert/sweetAlerts.js'
+import { warning, success } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -771,8 +763,8 @@ export default {
     Column,
     ColumnGroup,
     Row,
-    Dropdown,
-    Checkbox,
+    DropdownGeneric,
+    CheckboxGeneric,
     imagePreview
   },
 
@@ -795,7 +787,6 @@ export default {
 
   data() {
     return {
-      loading: false,
       selectedItems: [],
       invoiceStore: useInvoiceApiStore(),
       // Additional invoice fields
@@ -821,10 +812,6 @@ export default {
   computed: {
     // Only show confirmed items that don't have invoice yet
     availableItems() {
-      console.log(
-        'Available items for invoice:',
-        this.stockItems.filter((item) => item.isConfirm && !item.invoice)
-      )
       return this.stockItems.filter((item) => item.isConfirm && !item.invoice)
     },
 
@@ -891,8 +878,6 @@ export default {
       this.specialAddition = Number(this.saleOrderData.specialAddition) || 0
       this.freightAndInsurance = Number(this.saleOrderData.freight) || 0
       this.vatPercent = Number(this.saleOrderData.vatPercent) || 0
-      console.log('Invoice modal loaded with stock items:', this.stockItems)
-      console.log('Invoice modal loaded with stock items:', this.saleOrderData)
     },
 
     toggleSelectAll(value) {
@@ -1138,34 +1123,27 @@ export default {
     // Helper method to get payment ID from payment terms value
 
     async generateInvoice() {
-      try {
-        if (this.selectedItemsCount === 0) {
-          warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
-          return
-        }
+      if (this.selectedItemsCount === 0) {
+        warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+        return
+      }
 
-        // ตรวจสอบข้อมูล Sale Order ก่อน
-        if (!this.saleOrderData || (!this.saleOrderData.soNumber && !this.saleOrderData.number)) {
-          warning('ไม่พบข้อมูลเลขที่ใบสั่งขาย กรุณาตรวจสอบข้อมูล')
-          return
-        }
+      if (!this.saleOrderData || (!this.saleOrderData.soNumber && !this.saleOrderData.number)) {
+        warning('ไม่พบข้อมูลเลขที่ใบสั่งขาย กรุณาตรวจสอบข้อมูล')
+        return
+      }
 
-        if (!this.saleOrderData.customerName) {
-          warning('ไม่พบชื่อลูกค้า กรุณาตรวจสอบข้อมูลใบสั่งขาย')
-          return
-        }
+      if (!this.saleOrderData.customerName) {
+        warning('ไม่พบชื่อลูกค้า กรุณาตรวจสอบข้อมูลใบสั่งขาย')
+        return
+      }
 
-        //this.loading = true
+      const selectedStockItems = this.stockItems.filter((item) =>
+        this.selectedItems.includes(item.id)
+      )
 
-        // Get selected items
-        const selectedStockItems = this.stockItems.filter((item) =>
-          this.selectedItems.includes(item.id)
-        )
-
-        console.log('Selected stock items for invoice:', this.saleOrderData)
-
-        // Prepare invoice data for API
-        const invoiceRequest = {
+      // Prepare invoice data for API
+      const invoiceRequest = {
           soNumber: this.saleOrderData.number || this.saleOrderData.soNumber,
           dkInvoiceNumber: this.dkInvoiceNumber || null,
 
@@ -1214,52 +1192,22 @@ export default {
             priceAfterCurrencyRate: this.getConvertedPrice(item),
             qty: item.qty || 1
           }))
-        }
+      }
 
-        console.log('Creating invoice with data:', invoiceRequest)
+      const response = await this.invoiceStore.fetchCreate({
+        formValue: invoiceRequest
+      })
 
-        // Call API to create invoice
-        const response = await this.invoiceStore.fetchCreate({
-          formValue: invoiceRequest
+      if (response) {
+        const invoiceNumber = response.invoiceNumber || 'สร้างสำเร็จ'
+        success(`เลขที่ Invoice: ${invoiceNumber}`, 'สร้าง Invoice สำเร็จ')
+
+        this.$emit('invoice-created', {
+          invoiceNumber: response.invoiceNumber,
+          selectedItems: this.selectedItems
         })
 
-        if (response) {
-          console.log('Invoice created successfully:', response)
-
-          const invoiceNumber = response.invoiceNumber || 'สร้างสำเร็จ'
-          success(`เลขที่ Invoice: ${invoiceNumber}`, 'สร้าง Invoice สำเร็จ')
-
-          // Emit event to parent to refresh sale order data
-          this.$emit('invoice-created', {
-            invoiceNumber: response.invoiceNumber,
-            selectedItems: this.selectedItems
-          })
-
-          this.closeModal()
-        } else {
-          throw new Error('ไม่ได้รับข้อมูลการตอบกลับจาก API')
-        }
-      } catch (err) {
-        console.error('Error generating invoice:', err)
-
-        // Extract error message from API response
-        let errorMessage = 'ไม่สามารถสร้าง Invoice ได้'
-
-        if (err.response && err.response.data) {
-          if (err.response.data.message) {
-            errorMessage = err.response.data.message
-          } else if (err.response.data.error) {
-            errorMessage = err.response.data.error
-          } else if (typeof err.response.data === 'string') {
-            errorMessage = err.response.data
-          }
-        } else if (err.message) {
-          errorMessage = err.message
-        }
-
-        error(errorMessage, 'เกิดข้อผิดพลาดในการสร้าง Invoice')
-      } finally {
-        this.loading = false
+        this.closeModal()
       }
     },
 

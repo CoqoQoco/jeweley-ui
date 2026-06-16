@@ -64,21 +64,21 @@
                   <div>
                     <span class="title-text">วันที่สร้าง</span>
                     <div class="flex-group">
-                      <Calendar
+                      <CalendarGeneric
                         class="w-100"
                         v-model="searchForm.createDateStart"
-                        :max-date="searchForm.createDateEnd"
-                        showIcon
+                        :maxDate="searchForm.createDateEnd"
+                        :showIcon="true"
                         :manualInput="false"
                         placeholder="เริ่มต้น"
                         dateFormat="dd/mm/yy"
                       />
                       <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                      <Calendar
+                      <CalendarGeneric
                         class="w-100"
                         v-model="searchForm.createDateEnd"
-                        :min-date="searchForm.createDateStart"
-                        showIcon
+                        :minDate="searchForm.createDateStart"
+                        :showIcon="true"
                         :manualInput="false"
                         placeholder="สิ้นสุด"
                         dateFormat="dd/mm/yy"
@@ -89,21 +89,21 @@
                   <div>
                     <span class="title-text">วันที่ใบเสนอราคา</span>
                     <div class="flex-group">
-                      <Calendar
+                      <CalendarGeneric
                         class="w-100"
                         v-model="searchForm.quotationDateStart"
-                        :max-date="searchForm.quotationDateEnd"
-                        showIcon
+                        :maxDate="searchForm.quotationDateEnd"
+                        :showIcon="true"
                         :manualInput="false"
                         placeholder="เริ่มต้น"
                         dateFormat="dd/mm/yy"
                       />
                       <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                      <Calendar
+                      <CalendarGeneric
                         class="w-100"
                         v-model="searchForm.quotationDateEnd"
-                        :min-date="searchForm.quotationDateStart"
-                        showIcon
+                        :minDate="searchForm.quotationDateStart"
+                        :showIcon="true"
                         :manualInput="false"
                         placeholder="สิ้นสุด"
                         dateFormat="dd/mm/yy"
@@ -115,7 +115,7 @@
             </dialogView>
 
             <div class="btn-submit-container">
-              <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา" :disabled="loading">
+              <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
                 <span><i class="bi bi-search"></i></span>
               </button>
               <button
@@ -149,7 +149,7 @@
             <template #actionTemplate="{ data }">
               <div class="btn-action-container">
                 <button
-                  class="btn btn-sm btn-success"
+                  class="btn btn-sm btn-green"
                   @click="selectQuotation(data)"
                   title="เลือกใบเสนอราคานี้"
                 >
@@ -219,11 +219,12 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
@@ -233,10 +234,12 @@ export default {
 
   components: {
     modal,
-    Calendar,
+    CalendarGeneric,
     dialogView,
     BaseDataTable
   },
+
+  mixins: [dataTablePaging],
 
   props: {
     isShow: {
@@ -252,28 +255,18 @@ export default {
     return { quotationStore }
   },
 
-  computed: {
-    isShowModal() {
-      return this.isShow
-    }
-  },
-
   watch: {
     isShow(newVal) {
       if (newVal) {
-        this.loadQuotations()
+        this.fetchData()
       }
     }
   },
 
   data() {
     return {
-      loading: false,
       quotations: [],
       totalRecords: 0,
-      take: 10,
-      skip: 0,
-      sort: [],
       searchForm: {
         number: '',
         customerName: '',
@@ -286,120 +279,46 @@ export default {
       },
       showDialogs: {
         dialog: false
-      },
-      columns: [
-        {
-          field: 'action',
-          header: 'การดำเนินการ',
-          width: '120px',
-          sortable: false
-        },
-        {
-          field: 'number',
-          header: 'เลขที่ใบเสนอราคา',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'running',
-          header: 'เลขที่รัน',
-          sortable: true,
-          minWidth: '120px'
-        },
-        {
-          field: 'customerName',
-          header: 'ชื่อลูกค้า',
-          sortable: true,
-          minWidth: '200px',
-          template: 'customerTemplate'
-        },
-        {
-          field: 'currency',
-          header: 'สกุลเงิน',
-          sortable: true,
-          minWidth: '80px'
-        },
-        {
-          field: 'currencyRate',
-          header: 'อัตราแลกเปลี่ยน',
-          sortable: true,
-          minWidth: '120px',
-          template: 'currencyRateTemplate'
-        },
-        {
-          field: 'markUp',
-          header: 'Markup (%)',
-          sortable: true,
-          minWidth: '100px',
-          template: 'markupTemplate'
-        },
-        {
-          field: 'discount',
-          header: 'ส่วนลด (%)',
-          sortable: true,
-          minWidth: '100px',
-          template: 'discountTemplate'
-        },
-        {
-          field: 'freight',
-          header: 'ค่าขนส่ง',
-          sortable: true,
-          minWidth: '100px',
-          template: 'freightTemplate'
-        },
-        {
-          field: 'date',
-          header: 'วันที่ใบเสนอราคา',
-          sortable: true,
-          minWidth: '140px',
-          template: 'dateTemplate'
-        },
-        {
-          field: 'createDate',
-          header: 'วันที่สร้าง',
-          sortable: true,
-          minWidth: '140px',
-          template: 'createDateTemplate'
-        },
-        {
-          field: 'createBy',
-          header: 'ผู้สร้าง',
-          sortable: true,
-          minWidth: '120px'
-        }
+      }
+    }
+  },
+
+  computed: {
+    isShowModal() {
+      return this.isShow
+    },
+    columns() {
+      return [
+        { field: 'action', header: this.$t('common.field.action'), width: '120px', sortable: false },
+        { field: 'number', header: this.$t('view.sale.saleOrder.quotationRef'), sortable: true, minWidth: '150px' },
+        { field: 'running', header: 'เลขที่รัน', sortable: true, minWidth: '120px' },
+        { field: 'customerName', header: this.$t('view.sale.saleOrderList.customerName'), sortable: true, minWidth: '200px', template: 'customerTemplate' },
+        { field: 'currency', header: this.$t('view.sale.saleOrderList.currency'), sortable: true, minWidth: '80px' },
+        { field: 'currencyRate', header: this.$t('view.sale.saleOrderList.currencyRate'), sortable: true, minWidth: '120px', template: 'currencyRateTemplate' },
+        { field: 'markUp', header: 'Markup (%)', sortable: true, minWidth: '100px', template: 'markupTemplate' },
+        { field: 'discount', header: 'ส่วนลด (%)', sortable: true, minWidth: '100px', template: 'discountTemplate' },
+        { field: 'freight', header: 'ค่าขนส่ง', sortable: true, minWidth: '100px', template: 'freightTemplate' },
+        { field: 'date', header: this.$t('view.sale.saleOrder.soDate'), sortable: true, minWidth: '140px', template: 'dateTemplate' },
+        { field: 'createDate', header: this.$t('view.sale.saleOrderList.createDate'), sortable: true, minWidth: '140px', template: 'createDateTemplate' },
+        { field: 'createBy', header: this.$t('view.sale.saleOrderList.createBy'), sortable: true, minWidth: '120px' }
       ]
     }
   },
 
   methods: {
-    async loadQuotations() {
-      try {
-        this.loading = true
-        
-        await this.quotationStore.fetchList({
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          formValue: this.searchForm
-        })
-
-        console.log(this.quotationStore.dataList)
-        
-        this.quotations = this.quotationStore.dataList.data
-        this.totalRecords = this.quotationStore.dataList.total
-      } catch (error) {
-        console.error('Error loading quotations:', error)
-        this.quotations = []
-        this.totalRecords = 0
-      } finally {
-        this.loading = false
-      }
+    async fetchData() {
+      await this.quotationStore.fetchList({
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        formValue: this.searchForm
+      })
+      this.quotations = this.quotationStore.dataList.data
+      this.totalRecords = this.quotationStore.dataList.total
     },
 
     async searchQuotations() {
-      this.take = 10
-      this.skip = 0
-      await this.loadQuotations()
+      this.resetPaging()
     },
 
     dialogSearch() {
@@ -418,7 +337,7 @@ export default {
         quotationDateStart: null,
         quotationDateEnd: null
       }
-      this.loadQuotations()
+      this.resetPaging()
     },
 
     onShowDialog() {
@@ -427,22 +346,6 @@ export default {
 
     closeDialog() {
       this.showDialogs.dialog = false
-    },
-
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.loadQuotations()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.loadQuotations()
     },
 
     selectQuotation(quotation) {
@@ -468,22 +371,22 @@ export default {
 
     getStatusClass(status) {
       const statusClasses = {
-        'draft': 'badge badge-secondary',
-        'pending': 'badge badge-warning',
-        'confirmed': 'badge badge-success',
-        'rejected': 'badge badge-danger',
-        'expired': 'badge badge-dark'
+        draft: 'badge badge-secondary',
+        pending: 'badge badge-warning',
+        confirmed: 'badge badge-success',
+        rejected: 'badge badge-danger',
+        expired: 'badge badge-dark'
       }
       return statusClasses[status] || 'badge badge-secondary'
     },
 
     getStatusText(status) {
       const statusText = {
-        'draft': 'ร่าง',
-        'pending': 'รอการยืนยัน',
-        'confirmed': 'ยืนยันแล้ว',
-        'rejected': 'ปฏิเสธ',
-        'expired': 'หมดอายุ'
+        draft: 'ร่าง',
+        pending: 'รอการยืนยัน',
+        confirmed: 'ยืนยันแล้ว',
+        rejected: 'ปฏิเสธ',
+        expired: 'หมดอายุ'
       }
       return statusText[status] || 'ไม่ทราบสถานะ'
     }
@@ -491,7 +394,7 @@ export default {
 
   async mounted() {
     if (this.isShow) {
-      await this.loadQuotations()
+      await this.fetchData()
     }
   }
 }
@@ -513,46 +416,38 @@ export default {
 }
 
 .badge {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  border-radius: 0.25rem;
-  
+  padding: var(--sp-xs) var(--sp-sm);
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm);
+
   &.badge-secondary {
     background-color: #6c757d;
     color: white;
   }
-  
+
   &.badge-warning {
-    background-color: #ffc107;
+    background-color: var(--base-warning);
     color: #212529;
   }
-  
+
   &.badge-success {
-    background-color: #28a745;
+    background-color: var(--base-green);
     color: white;
   }
-  
+
   &.badge-danger {
-    background-color: #dc3545;
+    background-color: var(--base-red);
     color: white;
   }
-  
+
   &.badge-dark {
     background-color: #343a40;
     color: white;
   }
 }
 
-.font-weight-bold {
-  font-weight: 600;
-}
-
 .text-right {
   text-align: right;
-}
-
-.text-muted {
-  color: #6c757d !important;
 }
 
 .text-center {

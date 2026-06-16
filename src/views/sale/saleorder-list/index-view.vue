@@ -51,7 +51,6 @@ export default {
 
   data() {
     return {
-      isLoading: false,
       form: { ...interfaceForm },
       search: {},
       showInvoiceModal: false,
@@ -69,7 +68,6 @@ export default {
     },
 
     onCreateInvoice(saleOrderData) {
-      console.log('Creating invoice for sale order:', saleOrderData)
       this.selectedSaleOrder = saleOrderData
       this.showInvoiceModal = true
     },

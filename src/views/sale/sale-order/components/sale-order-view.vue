@@ -24,10 +24,10 @@
           <!-- Sale Order Date -->
           <div>
             <span class="title-text">วันที่ใบสั่งขาย</span>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="formSaleOrder.date"
-              showIcon
+              :showIcon="true"
               :manualInput="false"
               placeholder="เลือกวันที่"
               dateFormat="dd/mm/yy"
@@ -38,10 +38,10 @@
           <!-- Expected Delivery Date -->
           <div>
             <span class="title-text">วันที่คาดหวังส่งมอบ</span>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="formSaleOrder.expectedDeliveryDate"
-              showIcon
+              :showIcon="true"
               :manualInput="false"
               placeholder="เลือกวันที่"
               dateFormat="dd/mm/yy"
@@ -66,7 +66,7 @@
           <!-- Priority -->
           <div>
             <span class="title-text">ลำดับความสำคัญ</span>
-            <Dropdown
+            <DropdownGeneric
               v-model="formSaleOrder.priority"
               :options="priorityOptions"
               optionLabel="name"
@@ -160,7 +160,7 @@
               <button
                 :class="[
                   'btn btn-sm mr-2',
-                  `${hasSaleOrderNumber ? 'btn-secondary ' : 'btn-green'}`
+                  `${hasSaleOrderNumber ? 'btn-dark ' : 'btn-green'}`
                 ]"
                 type="button"
                 @click="onSearchCustomer"
@@ -347,7 +347,7 @@
                   :class="[
                     'btn',
                     'btn-sm',
-                    slotProps.data.isConfirm || slotProps.data.invoice ? 'btn-secondary' : 'btn-red'
+                    slotProps.data.isConfirm || slotProps.data.invoice ? 'btn-dark' : 'btn-red'
                   ]"
                   type="button"
                   title="ลบ"
@@ -362,7 +362,7 @@
                     'btn-sm',
                     'ml-2',
                     slotProps.data.isConfirm || slotProps.data.invoice
-                      ? 'btn-secondary'
+                      ? 'btn-dark'
                       : 'btn-main'
                   ]"
                   type="button"
@@ -1095,7 +1095,7 @@
                   <span class="bi bi-brush"></span>
                 </button>
                 <button
-                  class="btn btn-sm btn-warning ml-2"
+                  class="btn btn-sm btn-main ml-2"
                   type="button"
                   title="สร้างใบสั่งผลิต"
                   @click="createProductionOrder(slotProps.data)"
@@ -1729,7 +1729,7 @@
       </div>
 
       <!-- Back to List Button (visible in view mode) -->
-      <button v-if="isViewMode" class="btn btn-secondary mr-2" type="button" @click="backToList">
+      <button v-if="isViewMode" class="btn btn-outline-main mr-2" type="button" @click="backToList">
         <i class="bi bi-arrow-left mr-1"></i>
         กลับรายการ
       </button>
@@ -1794,12 +1794,16 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import InputWithButton from '@/components/input/input-with-button.vue'
@@ -1828,8 +1832,8 @@ export default {
     Column,
     ColumnGroup,
     Row,
-    Calendar,
-    Dropdown,
+    CalendarGeneric,
+    DropdownGeneric,
     AutoCompleteGeneric,
     InputWithButton,
     SaleOrderInvoiceModal,
@@ -1998,9 +2002,8 @@ export default {
     },
 
     stockItemsForInvoice() {
-      return this.stockItems.map((item, index) => ({
+      return this.stockItems.map((item) => ({
         ...item,
-        //id: item.id || `stock_${index}_${Date.now()}`,
         isConfirm: item.isConfirm || false
       }))
     },
@@ -2255,8 +2258,6 @@ export default {
 
       this.isLoadingData = true
 
-      //////console.log('Loading sale order data:', saleOrderData)
-
       Object.assign(this.formSaleOrder, {
         number: saleOrderData.number || '',
         date: saleOrderData.date || new Date(),
@@ -2297,9 +2298,6 @@ export default {
         }
       }
 
-      //////console.log('saleOrderData.confirmedItems', saleOrderData)
-      //////console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
-
       this.stockItems.forEach((item) => {
         item.isConfirm = false
         item.isInvoice = false
@@ -2336,7 +2334,6 @@ export default {
       this.$nextTick(() => {
         this.isLoadingData = false
       })
-      ////console.log('get sale order stock items', this.stockItems)
     },
 
     async getSaleOrderData(soNumber) {
@@ -2368,8 +2365,7 @@ export default {
                 try {
                   const parsedData = JSON.parse(response.data)
                   return parsedData
-                } catch (e) {
-                  //console.error('Error parsing data:', e)
+                } catch {
                   return []
                 }
               })()
@@ -2390,7 +2386,6 @@ export default {
         }
       }
 
-      //console.log('get new saleOrderData', saleOrderData)
       return saleOrderData
     },
 
@@ -2420,7 +2415,6 @@ export default {
     },
 
     onCustomerSelected(customerData) {
-      //console.log('Selected customer data:', customerData)
       this.formSaleOrder = {
         ...this.formSaleOrder,
         customerCode: customerData.code,
@@ -2471,7 +2465,6 @@ export default {
     // ============================================
 
     async onSearchProduct() {
-      ////console.log('Searching product with', this.productSearch)
       var data = await this.productStore.fetchDataGet({
         formValue: this.productSearch
       })
@@ -2512,8 +2505,6 @@ export default {
     },
 
     deleteStockItem(stockNumber) {
-      //this.stockItems.splice(index, 1)
-      //////console.log('Deleting stock item', stockNumber)
       this.stockItems = this.stockItems.filter(
         (item) => item.stockNumber !== stockNumber.stockNumber
       )
@@ -2733,10 +2724,8 @@ export default {
         if (res) {
           this.formSaleOrder.number = res
         }
-
-        ////console.log('saveDraft completed', this.formSaleOrder)
-      } catch (error) {
-        ////console.error('Error saving draft:', error)
+      } catch {
+        // fetchSave error handled by axios-helper
       } finally {
         this.isOnDraft = false
       }
@@ -2895,13 +2884,11 @@ export default {
       const stockNumber = item.stockNumberOrigin || item.stockNumber
       const productInfo = item.productNumber ? `(${item.productNumber})` : ''
 
-      //////console.log('reverseStockConfirm called for item:', item)
 
       confirmSubmit(
         `คุณต้องการยกเลิกการยืนยันสินค้า ${stockNumber} ${productInfo} หรือไม่?`,
         'ยืนยันการยกเลิก',
         async (result) => {
-          //////console.log('Confirmation result:', result)
           if (result.isConfirmed) {
             await this.onReverseStockConfirm(item)
           }
@@ -2915,7 +2902,6 @@ export default {
     },
 
     async onReverseStockConfirm(item) {
-      //////console.log('onReverseStockConfirm called for item:', item)
       const stockItemsToUnconfirm = [
         {
           id: item.id,

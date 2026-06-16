@@ -66,14 +66,7 @@
             </div>
           </div> -->
           <div>
-            <div v-if="loading" class="text-center py-4">
-              <div class="spinner-border text-main" role="status">
-                <span class="sr-only">Loading...</span>
-              </div>
-              <p class="mt-2 text-muted">กำลังโหลดข้อมูลสินค้า...</p>
-            </div>
-
-            <div v-else class="pl-2 pr-2">
+            <div class="pl-2 pr-2">
               <!-- Instructions -->
               <div class="filter-container mb-3">
                 <div class="d-flex align-items-start ml-3">
@@ -96,7 +89,7 @@
               >
                 <div>
                   <label class="d-flex align-items-center mb-0">
-                    <Checkbox
+                    <CheckboxGeneric
                       :modelValue="isAllSelected"
                       @update:modelValue="toggleSelectAll"
                       :disabled="selectableItems.length === 0"
@@ -135,13 +128,12 @@
                 :rows="10"
                 class="p-datatable-sm"
                 :scrollable="true"
-                :loading="loading"
                 responsiveLayout="scroll"
               >
                 <Column :exportable="false" style="width: 50px" header="เลือก">
                   <template #body="slotProps">
                     <div class="text-center">
-                      <Checkbox
+                      <CheckboxGeneric
                         :modelValue="selectedItems.includes(slotProps.data.stockNumber)"
                         @update:modelValue="toggleItemSelection(slotProps.data)"
                         :disabled="slotProps.data.isConfirm"
@@ -338,19 +330,14 @@
               class="btn btn-green mr-2"
               type="button"
               @click="confirmSelectedItems"
-              :disabled="loading || selectedItemsCount === 0"
+              :disabled="selectedItemsCount === 0"
             >
               <i class="bi bi-check-square mr-1"></i>
               ยืนยันการขาย
               <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
-              <span
-                v-if="loading"
-                class="spinner-border spinner-border-sm ml-2"
-                role="status"
-              ></span>
             </button>
 
-            <button class="btn btn-secondary mr-2" type="button" @click="closeModal">
+            <button class="btn btn-outline-main mr-2" type="button" @click="closeModal">
               <i class="bi bi-x-circle mr-1"></i>
               ยกเลิก
             </button>
@@ -363,12 +350,14 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
-import Checkbox from 'primevue/checkbox'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
-import { success, error, warning } from '@/services/alert/sweetAlerts.js'
+import { success, warning } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -379,7 +368,7 @@ export default {
     modal,
     DataTable,
     Column,
-    Checkbox,
+    CheckboxGeneric,
     imagePreview
   },
 
@@ -402,7 +391,6 @@ export default {
 
   data() {
     return {
-      loading: false,
       selectedItems: [],
       type: 'STOCK-PRODUCT'
     }
@@ -464,9 +452,7 @@ export default {
 
   methods: {
     loadInitialData() {
-      // Reset selections when modal opens
       this.selectedItems = []
-      console.log('Confirm modal loaded with stock items:', this.stockItems)
     },
 
     toggleSelectAll(value) {
@@ -551,14 +537,11 @@ export default {
     },
 
     selectConfirmedOnly() {
-      // This would show only confirmed items (for display purposes)
       // Since confirmed items can't be selected, this is just for filtering view
-      console.log('Show confirmed items only')
     },
 
     selectPendingOnly() {
       // This would show only pending items
-      console.log('Show pending items only')
     },
 
     async confirmSelectedItems() {
@@ -567,12 +550,6 @@ export default {
         return
       }
 
-      //this.loading = true
-
-      // Emit save-draft event to parent to save data before confirming
-      //this.$emit('save-draft')
-
-      // Wait a moment for save to complete
       await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Get selected items data
@@ -595,13 +572,10 @@ export default {
         }))
       }
 
-      console.log('Confirming stock items:', confirmData)
-
       // Call API to confirm items
       const saleOrderStore = usrSaleOrderApiStore()
       const response = await saleOrderStore.confirmStockItems(confirmData)
 
-      console.log('Confirming stock items:', response)
       if (response && response.success) {
         // Emit event to parent to refresh data FIRST
         this.$emit('items-confirmed', {
