@@ -1,53 +1,54 @@
 <template>
   <div class="filter-container-searchBar">
-    <pageTitle :title="title" description="" :isShowBtnClose="false" :isShowRightSlot="false">
+    <pageTitle :title="$t('view.mold.moldList.searchTitle')" description="" :isShowBtnClose="false" :isShowRightSlot="false">
       <template #rightSlot>
-        <button class="btn btn-sm btn-main" @click="onCreate">สร้างเเบบเเม่พิมพ์ใหม่</button>
+        <button class="btn btn-sm btn-main" @click="onCreate">{{ $t('view.mold.moldList.btnCreate') }}</button>
       </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
         <div>
-          <span class="title-text">ค้นหา</span>
+          <span class="title-text">{{ $t('common.btn.search') }}</span>
           <input
             type="text"
             class="form-control"
             v-model="form.text"
-            placeholder="รหัส/ประเภท/ช่าง..."
+            :placeholder="$t('view.mold.moldList.searchPlaceholder')"
           />
         </div>
         <div>
-          <span class="title-text">วันเเก้ไขเเม่พิมพ์ล่าสุด</span>
+          <span class="title-text">{{ $t('view.mold.moldList.fieldLastUpdate') }}</span>
           <div class="flex-group">
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.updateStart"
               :max-date="form.updateEnd"
-              showIcon
-              placeholder="เริ่มต้น"
+              :showIcon="true"
+              :placeholder="$t('common.label.start')"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.updateEnd"
               :min-date="form.updateStart"
-              showIcon
-              placeholder="สิ้นสุด"
+              :showIcon="true"
+              :placeholder="$t('common.label.end')"
             />
           </div>
         </div>
         <div></div>
         <div></div>
       </div>
-      <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit">
-          <span><i class="bi bi-search"></i></span>
-          <!-- <span>ค้นหา</span> -->
-        </button>
-        <button class="btn btn-sm btn-secondary" @click="onClear" type="button">
-          <span><i class="bi bi-x"></i></span>
-          <!-- <span>ล้าง</span> -->
-        </button>
+      <div class="btn-submit-container-between">
+        <div></div>
+        <div>
+          <button class="btn btn-sm btn-main mr-2" type="submit">
+            <span><i class="bi bi-search"></i></span>
+          </button>
+          <button class="btn btn-sm btn-dark" @click="onClear" type="button">
+            <span><i class="bi bi-x-circle"></i></span>
+          </button>
+        </div>
       </div>
     </form>
   </div>
@@ -55,14 +56,15 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
-import Calendar from 'primevue/calendar'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   components: {
     pageTitle,
-    Calendar
+    CalendarGeneric
   },
   props: {
     modelForm: {
@@ -73,11 +75,6 @@ export default {
   computed: {
     form() {
       return this.modelForm
-    }
-  },
-  data() {
-    return {
-      title: 'เเบบเเม่พิมพ์สำเร็จ'
     }
   },
   methods: {
@@ -97,11 +94,4 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
-
-.header-bar-container {
-  display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
 </style>

@@ -13,6 +13,7 @@ import stock from './view/stock/th.js'
 import receiptStock from './view/receipt-stock/th.js'
 import productionLang from './view/production/th.js'
 import saleLang from './view/sale/th.js'
+import moldLang from './view/mold/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -78,6 +79,7 @@ export default {
       }
     },
     sale: { ...saleLang },
+    mold: { ...moldLang },
     stock: {
       product: { ...stock.product },
       location: { ...stock.location },

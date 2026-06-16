@@ -1,0 +1,112 @@
+export default {
+  moldList: {
+    searchTitle: 'Mold Templates',
+    searchPlaceholder: 'Code/Type/Worker...',
+    fieldLastUpdate: 'Last Mold Update Date',
+    btnCreate: 'Create New Mold Template'
+  },
+  planList: {
+    searchTitle: 'Mold Template Process',
+    fieldMoldCode: 'Mold Setup Code',
+    fieldCreateDate: 'Mold Setup Date',
+    fieldLastUpdate: 'Last Mold Update Date',
+    btnCreate: 'Create New Mold Template'
+  },
+  pickingList: {
+    searchTitle: 'Mold Checkout Tracking',
+    fieldSearch: 'Search',
+    fieldCheckOutDate: 'Checkout Date',
+    fieldReturnDate: 'Due Return Date',
+    colDueDate: 'Due Date',
+    colRunning: 'Running No.',
+    colMold: 'Mold',
+    colCheckOutDate: 'Checkout Date',
+    colCheckOutName: 'Checked Out By',
+    colCheckOutDesc: 'Checkout Description',
+    tagOverdue: 'Overdue',
+    tagDueToday: 'Due Today',
+    btnReturn: 'Return Mold'
+  },
+  picking: {
+    titleCheckOut: 'Checkout Mold',
+    fieldCheckOutDate: 'Checkout Date',
+    fieldCheckOutBy: 'Checked Out By',
+    fieldReturnDate: 'Return Date',
+    fieldCheckOutDesc: 'Reason for Checkout'
+  },
+  returnMold: {
+    titleReturn: 'Return Mold',
+    fieldCheckOutDate: 'Checkout Date',
+    fieldCheckOutBy: 'Checked Out By',
+    fieldDueDate: 'Due Date',
+    fieldCheckOutDesc: 'Checkout Reason',
+    fieldReturnDate: 'Return Date',
+    fieldReturnBy: 'Returned By',
+    fieldReturnDesc: 'Return Reason'
+  },
+  updateMold: {
+    title: 'Edit Mold',
+    fieldCode: 'Code',
+    fieldCategory: 'Category',
+    fieldMoldBy: 'Mold Worker',
+    fieldDescription: 'Description'
+  },
+  createDesign: {
+    titleNew: 'Create Mold Template (New)',
+    fieldMoldCode: 'Mold Setup Code',
+    fieldCategory: 'Category',
+    fieldDesignBy: 'CAD Designer',
+    fieldResinBy: 'Resin Printer',
+    fieldWeightReceive: 'Receive Weight',
+    fieldWeightSend: 'Send Weight',
+    fieldRemark: 'Remark',
+    imgTitle: 'Mold Reference Image (max 2)',
+    gemsTitle: 'Diamond/Gem Components',
+    btnSubmit: 'Design and Create 3D',
+    confirmTitle: 'Confirm Create Mold Template',
+    colGemType: 'Diamond/Gem Type',
+    colGemShape: 'Gem Shape',
+    colSize: 'Size',
+    colQty: 'Quantity'
+  },
+  planRemodel: {
+    fieldCode: 'Mold Code',
+    fieldCategory: 'Category',
+    fieldRemodel: 'Convert From',
+    fieldMoldBy: 'Mold Worker',
+    fieldLocation: 'Storage Location',
+    fieldRemark: 'Remark',
+    imgTitle: 'Finished Mold Image (1 image)',
+    btnSubmit: 'Confirm Convert and Store Mold',
+    confirmTitle: 'Confirm Create Store Template'
+  },
+  store: {
+    fieldMoldCode: 'Mold Setup Code',
+    fieldCode: 'Mold Code',
+    fieldResinWeight: 'Resin Weight',
+    fieldSilverCastWeight: 'Silver Cast Weight',
+    fieldPrintBy: 'Mold Dresser',
+    fieldCuttingBy: 'Mold Cutter',
+    fieldMoldBy: 'Mold Worker',
+    fieldLocation: 'Storage Location',
+    fieldRemark: 'Remark',
+    imgTitle: 'Finished Mold Image (1 image)',
+    btnSubmit: 'Store Mold',
+    confirmTitle: 'Confirm Create Store Template'
+  },
+  gems: {
+    sectionTitle: 'Diamond/Gem Components',
+    btnEdit: 'Edit Diamonds/Gems',
+    colGem: 'Diamond/Gem Type',
+    colGemType: 'Diamond/Gem Type',
+    colGemShape: 'Gem Shape',
+    colSize: 'Size',
+    colQty: 'Quantity',
+    totalItems: 'Total {count} items',
+    confirmTitle: 'Do you want to edit this data?',
+    confirmMsg: 'Edit Diamond/Gem Data',
+    warningMsg: 'Please fill in all required fields',
+    selectGem: 'Select Gem',
+    selectShape: 'Select Shape'
+  }
+}

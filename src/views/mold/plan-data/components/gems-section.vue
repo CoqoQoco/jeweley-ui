@@ -3,20 +3,21 @@
     <form @submit.prevent="onUpdateGems">
       <div class="title-text-lg-header">
         <div class="d-flex justify-content-between">
-          <span>ส่วนประกอบเพชร/พลอย</span>
+          <span>{{ $t('view.mold.gems.sectionTitle') }}</span>
           <button
             v-if="!isMelted"
             class="btn btn-sm"
-            :class="[gems.length ? 'btn-outline-warning' : 'btn-secondary']"
+            :class="[gems.length ? 'btn-main' : 'btn-dark']"
             :disabled="!gems.length"
             type="submit"
           >
             <span><i class="bi bi-gem mr-2"></i></span>
-            <span>แก้ไขเพชร/พลอย</span>
+            <span>{{ $t('view.mold.gems.btnEdit') }}</span>
           </button>
         </div>
       </div>
       <div>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <DataTable
           class="p-datatable-sm"
           showGridlines
@@ -34,51 +35,58 @@
             }
           }"
         >
+          <!-- eslint-disable-next-line no-restricted-imports -->
           <Column
             v-if="!isMelted"
             :rowEditor="true"
             style="width: 100px"
             bodyStyle="text-align:center"
           />
+          <!-- eslint-disable-next-line no-restricted-imports -->
           <Column v-if="!isMelted" style="width: 60px">
             <template #body="prop">
-              <div class="btn btn-danger text-center w-100" @click="onDelGems(prop.data)">
+              <div class="btn btn-red text-center w-100" @click="onDelGems(prop.data)">
                 <i class="bi bi-trash-fill"></i>
               </div>
             </template>
           </Column>
 
-          <Column field="gem" header="ประเภทเพชร/พลอย" style="min-width: 150px">
+          <!-- eslint-disable-next-line no-restricted-imports -->
+          <Column :field="'gem'" :header="$t('view.mold.gems.colGem')" style="min-width: 150px">
             <template #body="slotProps">
               <span>{{ slotProps.data.gem?.description }}</span>
             </template>
             <template #editor="{ data, field }">
+              <!-- eslint-disable-next-line no-restricted-imports -->
               <Dropdown
                 v-model="data[field]"
                 :options="masterGem"
                 optionLabel="description"
                 class="w-full md:w-14rem"
-                placeholder="เลือกพลอย"
+                :placeholder="$t('view.mold.gems.selectGem')"
                 :showClear="data[field] ? true : false"
               />
             </template>
           </Column>
-          <Column field="gemShape" header="รูปร่างพลอย" style="min-width: 150px">
+          <!-- eslint-disable-next-line no-restricted-imports -->
+          <Column :field="'gemShape'" :header="$t('view.mold.gems.colGemShape')" style="min-width: 150px">
             <template #body="slotProps">
               <span>{{ slotProps.data.gemShape?.description }}</span>
             </template>
             <template #editor="{ data, field }">
+              <!-- eslint-disable-next-line no-restricted-imports -->
               <Dropdown
                 v-model="data[field]"
                 :options="masterGemShape"
                 optionLabel="description"
                 class="w-full md:w-14rem"
-                placeholder="เลือกรูปร่าง"
+                :placeholder="$t('view.mold.gems.selectShape')"
                 :showClear="data[field] ? true : false"
               />
             </template>
           </Column>
-          <Column field="size" header="ขนาด" style="width: 200px">
+          <!-- eslint-disable-next-line no-restricted-imports -->
+          <Column :field="'size'" :header="$t('view.mold.gems.colSize')" style="width: 200px">
             <template #editor="{ data, field }">
               <input
                 type="text"
@@ -89,7 +97,8 @@
               />
             </template>
           </Column>
-          <Column field="qty" header="จำนวน" style="width: 200px">
+          <!-- eslint-disable-next-line no-restricted-imports -->
+          <Column :field="'qty'" :header="$t('common.field.quantity')" style="width: 200px">
             <template #editor="{ data, field }">
               <input
                 type="number"
@@ -102,10 +111,10 @@
           </Column>
           <template #footer>
             <div class="d-flex justify-content-between">
-              <div>ทั้งหมด {{ gems.length }} รายการ</div>
+              <div>{{ $t('view.mold.gems.totalItems', { count: gems.length }) }}</div>
               <div
                 v-if="!isMelted"
-                class="btn btn-sm btn-warning"
+                class="btn btn-sm btn-main"
                 @click="onAddGems"
               >
                 <span class="text-center">
@@ -123,8 +132,11 @@
 <script>
 import { useMoldPlanStore } from '@/stores/modules/api/mold/mold-plan-store.js'
 import { confirmSubmit, warning } from '@/services/alert/sweetAlerts.js'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import Dropdown from 'primevue/dropdown'
 
 const interfaceGem = {
@@ -225,14 +237,18 @@ export default {
       }
 
       if (updateGems.gems?.length) {
-        confirmSubmit('แก้ไขข้อมูลเพชร/พลอย', 'คุณต้องการแก้ไขข้อมูลใช่หรือไม่', async () => {
-          const res = await this.store.updateGems(updateGems)
-          if (res !== undefined) {
-            this.$emit('updated')
+        confirmSubmit(
+          this.$t('view.mold.gems.confirmMsg'),
+          this.$t('view.mold.gems.confirmTitle'),
+          async () => {
+            const res = await this.store.updateGems(updateGems)
+            if (res !== undefined) {
+              this.$emit('updated')
+            }
           }
-        })
+        )
       } else {
-        warning('กรุณากรอกข้อมูลให้ครบถ้วน')
+        warning(this.$t('view.mold.gems.warningMsg'))
       }
     }
   }

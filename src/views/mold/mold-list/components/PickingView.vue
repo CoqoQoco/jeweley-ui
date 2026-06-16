@@ -3,26 +3,14 @@
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header">
-          <span>{{ `เบิกเเม่พิมพ์ - ${model.code}` }}</span>
+          <span>{{ `${$t('view.mold.picking.titleCheckOut')} - ${model.code}` }}</span>
         </div>
         <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
             <!-- main image -->
             <div class="mt-2">
               <div class="image-container">
-                <div class="upload-btn">
-                  <!-- <input
-                    class="hidden-input"
-                    type="file"
-                    ref="fileInput"
-                    accept=".jpg, .png"
-                    @change="onSelectImageMain"
-                  />
-                  <button class="btn btn-sm btn-upload-custom" type="button">
-                    <span><i class="bi bi-image"></i></span>
-                    <span>เเก้ไข</span>
-                  </button> -->
-                </div>
+                <div class="upload-btn"></div>
                 <div class="upload-preview">
                   <div v-if="urlImage">
                     <img :src="urlImage" alt="Preview" class="preview-image" />
@@ -37,19 +25,7 @@
             <!-- sub image -->
             <div class="mt-2">
               <div class="image-container">
-                <div class="upload-btn">
-                  <!-- <input
-                    class="hidden-input"
-                    type="file"
-                    ref="fileInput"
-                    accept=".jpg, .png"
-                    @change="onSelectImageSub"
-                  />
-                  <button class="btn btn-sm btn-upload-custom" type="button">
-                    <span><i class="bi bi-image"></i></span>
-                    <span>เเก้ไข</span>
-                  </button> -->
-                </div>
+                <div class="upload-btn"></div>
                 <div class="upload-preview">
                   <div v-if="urlImageSub">
                     <img :src="urlImageSub" alt="Preview" class="preview-image" />
@@ -71,11 +47,11 @@
             <div class="filter-container mt-2">
               <div class="form-col-sm-container filter-container-highlight custom-container-data">
                 <div class="d-flex flex-column">
-                  <span class="title-text-white">รหัส</span>
+                  <span class="title-text-white">{{ $t('common.field.code') }}</span>
                   <span class="desc-text-white">{{ form.code }}</span>
                 </div>
                 <div class="d-flex flex-column">
-                  <span class="title-text-white">ประเภท</span>
+                  <span class="title-text-white">{{ $t('common.field.type') }}</span>
                   <span class="desc-text-white">{{
                     `${form.categoryCode ?? `Empty`}:${form.category} `
                   }}</span>
@@ -84,21 +60,21 @@
               <div class="form-col-container mt-2">
                 <div>
                   <div>
-                    <span class="title-text">วันที่เบิก</span>
+                    <span class="title-text">{{ $t('view.mold.picking.fieldCheckOutDate') }}</span>
                     <span class="txt-required"> *</span>
                   </div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValCheckOutDate === true ? `p-invalid` : ``"
                     v-model="form.checkOutDate"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
                 <div>
                   <div>
-                    <span class="title-text">ผู้เบิก</span>
+                    <span class="title-text">{{ $t('view.mold.picking.fieldCheckOutBy') }}</span>
                     <span class="txt-required"> *</span>
                   </div>
                   <input type="text" required class="form-control" v-model="form.checkOutName" />
@@ -107,16 +83,16 @@
               <div class="form-col-container mt-2">
                 <div>
                   <div>
-                    <span class="title-text">วันที่คืน</span>
+                    <span class="title-text">{{ $t('view.mold.picking.fieldReturnDate') }}</span>
                     <span class="txt-required"> *</span>
                   </div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValReturnDateSet === true ? `p-invalid` : ``"
                     v-model="form.returnDateSet"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
                 <div></div>
@@ -124,7 +100,7 @@
               <div class="form-col-container mt-2">
                 <div>
                   <div>
-                    <span class="title-text">เหตุผลการเบิก</span>
+                    <span class="title-text">{{ $t('view.mold.picking.fieldCheckOutDesc') }}</span>
                     <span class="txt-required"> *</span>
                   </div>
                   <textarea
@@ -136,11 +112,11 @@
                 </div>
               </div>
               <div class="d-flex justify-content-end mt-2">
-                <button class="btn btn-sm btn-green" type="submit">
+                <button class="btn btn-sm btn-main" type="submit">
                   <span class="mr-2">
                     <i class="bi bi-calendar-check"></i>
                   </span>
-                  <span>บันทึก</span>
+                  <span>{{ $t('common.btn.save') }}</span>
                 </button>
               </div>
             </div>
@@ -154,13 +130,12 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-//import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
-
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
@@ -184,8 +159,7 @@ const interfaceVal = {
 export default {
   components: {
     modal,
-    //Dropdown,
-    Calendar
+    CalendarGeneric
   },
 
   setup() {
@@ -214,8 +188,6 @@ export default {
   },
   watch: {
     async modelValue(value) {
-      console.log(value)
-      console.log(this.masterProduct)
       this.form = {
         ...this.form,
         code: value.code,
@@ -223,7 +195,6 @@ export default {
         description: value.description,
         category: value.category,
         categoryCode: value.categoryCode,
-
         checkOutName: this.user?.firstName
       }
 
@@ -248,89 +219,40 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       type: 'ORDERPLAN',
       form: { ...interfaceForm },
       val: { ...interfaceVal },
-      masterProduct: [],
 
-      // image
       urlImage: '',
       urlImageSub: ''
     }
   },
   methods: {
-    // ---------------- event ----------------
     closeModal() {
-      //this.onclear()
       this.$emit('closeModal')
     },
     onclear() {
-      //this.$refs.fileInput.value = null
       this.imgUrl = ''
-      this.form = {
-        ...interfaceForm
-      }
-
+      this.form = { ...interfaceForm }
       this.$emit('fetch')
-    },
-    onSelectImg(e) {
-      this.isLoading = true
-      if (e.target.files[0]) {
-        //const maxSizeInBytes = 1024 * 1024 // 1 MB (ตั้งค่าตามที่ต้องการ)
-        // if (e.target.files[0].size > maxSizeInBytes) {
-        //   alert('ไฟล์ที่คุณเลือกมีขนาดเกินกำหนด (1 MB)')
-        //   return
-        // }
-        this.name = e.target.files[0].name
-
-        //preview
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          this.urlImage = event.target.result
-        }
-        reader.readAsDataURL(e.target.files[0])
-
-        //assign
-        this.form.image = e.target.files[0]
-      }
-      this.isLoading = false
     },
     VaidateForm() {
       if (!this.form.checkOutDate) {
-        this.val = {
-          isValCheckOutDate: true
-        }
+        this.val = { isValCheckOutDate: true }
         return false
       }
       if (!this.form.returnDateSet) {
-        this.val = {
-          isValReturnDateSet: true
-        }
+        this.val = { isValReturnDateSet: true }
         return false
       }
-
-      return true // pass
-    },
-    onResetValDate(index) {
-      if (index === 'isValCheckOutDate') {
-        if (this.form.checkOutDate) {
-          this.val.isValCheckOutDate = false
-        }
-      }
-      if (index === 'isValReturnDateSet') {
-        if (this.form.returnDateSet) {
-          this.val.isValReturnDateSet = false
-        }
-      }
+      return true
     },
     onSubmit() {
       if (this.VaidateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.form.code}`,
           `ยืนยันเบิกเเม่พิมพ์`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -339,81 +261,35 @@ export default {
       }
     },
 
-    // -------- APIs --------------- //
     async fetchImageData(path, sub) {
-      try {
-        //console.log
-        switch (this.type) {
-          case 'ORDERPLAN': {
-            // Build Azure Blob URL for mold image
-            const blobPath = sub ? `Mold/${path}-Sub-Mold.png` : `Mold/${path}-Mold.png`
-            const imageUrl = getAzureBlobUrl(blobPath)
-
-            if (sub) {
-              this.urlImageSub = imageUrl
-            } else {
-              this.urlImage = imageUrl
-            }
+      switch (this.type) {
+        case 'ORDERPLAN': {
+          const blobPath = sub ? `Mold/${path}-Sub-Mold.png` : `Mold/${path}-Mold.png`
+          const imageUrl = getAzureBlobUrl(blobPath)
+          if (sub) {
+            this.urlImageSub = imageUrl
+          } else {
+            this.urlImage = imageUrl
           }
         }
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async fetchMasterProductType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
       }
     },
     async submit() {
-      try {
-        this.isLoading = true
+      let params = {
+        ...this.form,
+        mold: this.form.code,
+        checkOutDate: formatISOString(this.form.checkOutDate),
+        returnOutDate: formatISOString(this.form.returnDateSet)
+      }
 
-        console.log('submit', this.form)
-
-        let params = {
-          ...this.form,
-          mold: this.form.code,
-          checkOutDate: formatISOString(this.form.checkOutDate),
-          returnOutDate: formatISOString(this.form.returnDateSet)
-        }
-
-        const res = await api.jewelry.post('StockMold/CheckOutMold', params)
-        if (res) {
-          //console.log(res)
-          swAlert.success(
-            ``,
-            ``,
-            async () => {
-              this.onclear()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.post('StockMold/CheckOutMold', params)
+      if (res) {
+        success(``, ``, async () => {
+          this.onclear()
+          this.$emit('fetch')
+        }, null, null)
       }
     }
-  },
-  created() {
-    this.$nextTick(() => {
-      //this.fetchMasterProductType()
-      //console.log('this.user', this.user)
-      //this.form.checkOutName = this.user?.firstName
-    })
-    //this.fetchMasterProductType()
   }
 }
 </script>
@@ -446,26 +322,6 @@ export default {
   z-index: 10;
 }
 
-.hidden-input {
-  opacity: 0;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  cursor: pointer;
-}
-
-.btn-upload-custom {
-  padding: 5px 10px;
-  background-color: var(--base-green);
-  border-color: var(--base-warning);
-  color: #ffff;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
 .title-upload-custom {
   padding: 5px 10px;
   background-color: var(--base-sub-color);

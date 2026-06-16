@@ -9,15 +9,15 @@
           <div class="filter-container-highlight mt-2">
             <div class="form-col-sm-container">
               <div class="d-flex flex-column">
-                <span class="title-text-white">รหัสตั้งเเม่พิมพ์</span>
+                <span class="title-text-white">{{ $t('view.mold.store.fieldMoldCode') }}</span>
                 <span class="desc-text-white">{{ value?.moldCode }}</span>
               </div>
               <div class="d-flex flex-column">
-                <span class="title-text-white">รหัสเเม่พิมพ์</span>
+                <span class="title-text-white">{{ $t('view.mold.store.fieldCode') }}</span>
                 <span class="desc-text-white">{{ value?.code }}</span>
               </div>
               <div class="d-flex flex-column">
-                <span class="title-text-white">เเก้ไขล่าสุด</span>
+                <span class="title-text-white">{{ $t('common.field.status') }}</span>
                 <span class="desc-text-white">{{ formatDate(value?.updateDate) }}</span>
               </div>
               <div></div>
@@ -26,40 +26,38 @@
           <div class="form-col-container mt-2">
             <div>
               <span>
-                <span class="title-text">ช่างขึ้นพิมพ์</span>
+                <span class="title-text">{{ $t('view.mold.store.fieldMoldBy') }}</span>
                 <span class="txt-required"> *</span>
               </span>
               <input class="form-control" v-model="form.workBy" type="text" required />
             </div>
             <div>
               <div>
-                <span class="title-text">จัดเก็บ</span>
+                <span class="title-text">{{ $t('view.mold.store.fieldLocation') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <Dropdown
-                v-model="form.LocationName"
+              <DropdownGeneric
+                :modelValue="form.LocationName"
                 :options="masterLocationt"
                 optionLabel="value"
-                class="w-full md:w-14rem"
-                :showClear="form.LocationName ? true : false"
-                :class="val.isValCategory === true ? `p-invalid` : ``"
-                @change="onResetValDate('isValLocation')"
+                :showClear="!!form.LocationName"
+                :class="val.isValLocation === true ? `p-invalid` : ``"
+                @update:modelValue="onLocationChange"
               />
-              <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
             </div>
             <div></div>
             <div></div>
           </div>
           <div class="form-col-container">
             <uploadImages
-              title="รูปเเม่พิมพ์สำเร็จ (1 รูป)"
+              :title="$t('view.mold.store.imgTitle')"
               @onUpdateFile="updateFile"
               @btnClearRef="setBtnClearRef"
             ></uploadImages>
           </div>
           <div class="form-col-container">
             <div>
-              <span class="title-text">รายละเอียด</span>
+              <span class="title-text">{{ $t('view.mold.store.fieldRemark') }}</span>
               <textarea class="form-control" v-model="form.remark" style="height: 50px" />
             </div>
           </div>
@@ -68,7 +66,7 @@
               <span class="mr-2">
                 <i class="bi bi-gem"></i>
               </span>
-              <span>จัดเก็บพิมพ์</span>
+              <span>{{ $t('view.mold.store.btnSubmit') }}</span>
             </button>
           </div>
         </form>
@@ -84,11 +82,11 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 const stepperStatus = defineAsyncComponent(() => import('@/components/prime-vue/StepperStatus.vue'))
 const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/UploadImages.vue'))
 
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { formatDate } from '@/services/utils/dayjs.js'
 
 import { eventStatus } from '@/views/mold/create-design/interface/data.js'
 
@@ -111,7 +109,7 @@ export default {
     modal,
     stepperStatus,
     uploadImages,
-    Dropdown
+    DropdownGeneric
   },
   props: {
     isShow: {
@@ -132,7 +130,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       events: [...eventStatus],
       form: { ...interfaceForm },
       val: { ...interfaceVal },
@@ -146,17 +143,15 @@ export default {
     }
   },
   watch: {
-    'form.locationName'() {
+    'form.LocationName'() {
       if (this.form.LocationName) {
         this.val.isValLocation = false
       }
     }
   },
   methods: {
-    // -------- event -------- //
     setBtnClearRef(ref) {
       this.btnClearImg = ref
-      console.log('setBtnClearRef', this.btnClearImg)
     },
     closeModal() {
       this.countClearFiles++
@@ -164,20 +159,21 @@ export default {
       this.$emit('closeModal')
     },
     onclear() {
-      console.log('closeModal', this.btnClearImg)
       if (this.btnClearImg) {
         this.btnClearImg.click()
       }
-
       this.form = { ...interfaceForm }
+    },
+    onLocationChange(value) {
+      this.form.LocationName = value
+      if (value) this.val.isValLocation = false
     },
     onSubmit() {
       if (this.VaidateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.value.moldCode}`,
-          `ยืนยันสร้างเเบบจัดเก็บพิมพ์`,
+          this.$t('view.mold.store.confirmTitle'),
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -190,76 +186,40 @@ export default {
     },
     VaidateForm() {
       if (!this.form.LocationName) {
-        this.val = {
-          isValLocation: true
-        }
+        this.val = { isValLocation: true }
         return false
       }
-
-      return true // pass
-    },
-    onResetValDate(index) {
-      if (index === 'isValLocation') {
-        if (this.form.LocationName) {
-          this.val.isValLocation = false
-        }
-      }
+      return true
     },
 
-    // -------- helper function -------- //
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
     formatDate(date) {
       return formatDate(date)
     },
 
-    // -------- APIs -------- //
     async submit() {
-      try {
-        this.isLoading = true
+      let params = new FormData()
+      params.append('planId', this.value.id)
+      params.append('moldCode', this.value.moldCode)
+      params.append('code', this.value.code)
+      params.append('workerBy', this.form.workBy)
+      params.append('remark', this.form.remark)
+      params.append('location', this.form.LocationName.code)
+      this.form.images.forEach((file) => {
+        params.append(`images`, file)
+      })
 
-        console.log('this.value', this.value)
-
-        let params = new FormData()
-        params.append('planId', this.value.id)
-        params.append('moldCode', this.value.moldCode)
-        params.append('code', this.value.code)
-        params.append('workerBy', this.form.workBy)
-        params.append('remark', this.form.remark)
-        params.append('location', this.form.LocationName.code)
-        this.form.images.forEach((file) => {
-          params.append(`images`, file) // ใช้ชื่อ "Images" ตรงกับ property ใน model
-        })
-
-        console.log('params', params)
-
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
-          }
+      let options = {
+        headers: {
+          'Content-Type': `multipart/form-data`
         }
-        const res = await api.jewelry.post('Mold/PlanStore', params, options)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              //this.onclear()
-              //this.closeModal()
-              this.countClearFiles++
-              this.onclear()
-              this.$emit('refresh')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      }
+      const res = await api.jewelry.post('Mold/PlanStore', params, options)
+      if (res) {
+        success(``, '', () => {
+          this.countClearFiles++
+          this.onclear()
+          this.$emit('refresh')
+        }, null, null)
       }
     }
   }

@@ -3,7 +3,7 @@
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header">
-          <span>{{ `เเก้ไขเเม่พิมพ์ - ${model.code}` }}</span>
+          <span>{{ `${$t('view.mold.updateMold.title')} - ${model.code}` }}</span>
         </div>
         <form @submit.prevent="onSubmit" class="p-2">
           <div class="form-col-container">
@@ -71,7 +71,7 @@
             <div class="filter-container-highlight mt-2">
               <div class="form-col-container">
                 <div>
-                  <span class="title-text-white">รหัส</span>
+                  <span class="title-text-white">{{ $t('view.mold.updateMold.fieldCode') }}</span>
                   <input
                     type="text"
                     class="form-control dis-input-container"
@@ -83,27 +83,26 @@
               </div>
               <div class="form-col-container">
                 <div>
-                  <span class="title-text-white">ประเภท</span>
-                  <Dropdown
-                    v-model="form.category"
+                  <span class="title-text-white">{{ $t('view.mold.updateMold.fieldCategory') }}</span>
+                  <DropdownGeneric
+                    :modelValue="form.category"
                     :options="masterProduct"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
-                    :showClear="form.category ? true : false"
+                    :showClear="!!form.category"
                     :class="val.isValCategory === true ? `p-invalid` : ``"
-                    @change="onResetValDate('isValCategory')"
+                    @update:modelValue="onCategoryChange"
                   />
                 </div>
               </div>
               <div class="form-col-container">
                 <div>
-                  <span class="title-text-white">ช่างขึ้นพิมพ์</span>
+                  <span class="title-text-white">{{ $t('view.mold.updateMold.fieldMoldBy') }}</span>
                   <input type="text" class="form-control" v-model="form.moldBy" />
                 </div>
               </div>
               <div class="form-col-container">
                 <div>
-                  <span class="title-text-white">คำอธิบาย</span>
+                  <span class="title-text-white">{{ $t('view.mold.updateMold.fieldDescription') }}</span>
                   <textarea
                     class="form-control"
                     v-model="form.description"
@@ -113,11 +112,11 @@
                 </div>
               </div>
               <div class="d-flex justify-content-end mt-2">
-                <button class="btn btn-sm btn-green" type="submit">
+                <button class="btn btn-sm btn-main" type="submit">
                   <span class="mr-2">
                     <i class="bi bi-calendar-check"></i>
                   </span>
-                  <span>บันทึก</span>
+                  <span>{{ $t('common.btn.save') }}</span>
                 </button>
               </div>
             </div>
@@ -131,12 +130,12 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import Dropdown from 'primevue/dropdown'
-
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
@@ -144,7 +143,6 @@ const interfaceForm = {
   code: null,
   category: null,
   description: null,
-
   imageMain: null,
   imageSub: null
 }
@@ -155,7 +153,7 @@ const interfaceVal = {
 export default {
   components: {
     modal,
-    Dropdown
+    DropdownGeneric
   },
   props: {
     isShow: {
@@ -175,16 +173,12 @@ export default {
   },
   watch: {
     async modelValue(value) {
-      console.log(value)
-      console.log(this.masterProduct)
       this.form = {
         code: value.code,
         moldBy: value.moldBy,
         description: value.description,
-        //category: value.category
         category: this.masterProduct.find((x) => x.code === value.categoryCode)
       }
-      //console.log(value)
 
       if (value.code) {
         await this.fetchImageData(value.code, false)
@@ -202,19 +196,16 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       type: 'ORDERPLAN',
       form: { ...interfaceForm },
       val: { ...interfaceVal },
       masterProduct: [],
 
-      // image
       urlImage: '',
       urlImageSub: ''
     }
   },
   methods: {
-    // ---------------- event ----------------
     closeModal() {
       this.onclear()
       this.$emit('closeModal')
@@ -227,102 +218,59 @@ export default {
       this.form = { ...interfaceForm }
       this.val = { isValCategory: false }
     },
+    onCategoryChange(value) {
+      this.form.category = value
+      if (value) this.val.isValCategory = false
+    },
     async onSelectImageMain(e) {
       if (e.target.files[0]) {
-        // เก็บชื่อไฟล์ต้นฉบับ
         this.name = e.target.files[0].name
-
-        try {
-          // แสดง preview ชั่วคราวจากไฟล์ต้นฉบับก่อน
-          const reader = new FileReader()
-          reader.onload = (event) => {
-            this.urlImage = event.target.result
-          }
-          reader.readAsDataURL(e.target.files[0])
-
-          // บีบอัดไฟล์
-          const compressedFile = await compressOptimalImage(e.target.files[0])
-
-          // อัพเดท preview ถ้าต้องการ (อาจไม่จำเป็นถ้าต้องการแสดง preview จากไฟล์ต้นฉบับ)
-          const compressedReader = new FileReader()
-          compressedReader.onload = (event) => {
-            this.urlImage = event.target.result
-          }
-          compressedReader.readAsDataURL(compressedFile)
-
-          // แสดงข้อมูลการบีบอัด (optional)
-          console.log(`ขนาดไฟล์เดิม: ${(e.target.files[0].size / 1024).toFixed(2)} KB`)
-          console.log(`ขนาดไฟล์หลังบีบอัด: ${(compressedFile.size / 1024).toFixed(2)} KB`)
-
-          // assign ไฟล์ที่บีบอัดแล้วไปยัง form
-          this.form.imageMain = compressedFile
-        } catch (error) {
-          console.error('เกิดข้อผิดพลาดในการบีบอัดรูปภาพ:', error)
-          // หากเกิดข้อผิดพลาด ใช้ไฟล์ต้นฉบับ
-          this.form.imageMain = e.target.files[0]
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          this.urlImage = event.target.result
         }
+        reader.readAsDataURL(e.target.files[0])
+
+        const compressedFile = await compressOptimalImage(e.target.files[0])
+        const compressedReader = new FileReader()
+        compressedReader.onload = (event) => {
+          this.urlImage = event.target.result
+        }
+        compressedReader.readAsDataURL(compressedFile)
+        this.form.imageMain = compressedFile
       }
     },
     async onSelectImageSub(e) {
       if (e.target.files[0]) {
-        // เก็บชื่อไฟล์ต้นฉบับ
         this.name = e.target.files[0].name
-
-        try {
-          // แสดง preview ชั่วคราวจากไฟล์ต้นฉบับก่อน
-          const reader = new FileReader()
-          reader.onload = (event) => {
-            this.urlImageSub = event.target.result
-          }
-          reader.readAsDataURL(e.target.files[0])
-
-          // บีบอัดไฟล์
-          const compressedFile = await compressOptimalImage(e.target.files[0])
-
-          // อัพเดท preview ถ้าต้องการ (อาจไม่จำเป็นถ้าต้องการแสดง preview จากไฟล์ต้นฉบับ)
-          const compressedReader = new FileReader()
-          compressedReader.onload = (event) => {
-            this.urlImageSub = event.target.result
-          }
-          compressedReader.readAsDataURL(compressedFile)
-
-          // แสดงข้อมูลการบีบอัด (optional)
-          console.log(`ขนาดไฟล์เดิม: ${(e.target.files[0].size / 1024).toFixed(2)} KB`)
-          console.log(`ขนาดไฟล์หลังบีบอัด: ${(compressedFile.size / 1024).toFixed(2)} KB`)
-
-          // assign ไฟล์ที่บีบอัดแล้วไปยัง form
-          this.form.imageSub = compressedFile
-        } catch (error) {
-          console.error('เกิดข้อผิดพลาดในการบีบอัดรูปภาพ:', error)
-          // หากเกิดข้อผิดพลาด ใช้ไฟล์ต้นฉบับ
-          this.form.imageSub = e.target.files[0]
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          this.urlImageSub = event.target.result
         }
+        reader.readAsDataURL(e.target.files[0])
+
+        const compressedFile = await compressOptimalImage(e.target.files[0])
+        const compressedReader = new FileReader()
+        compressedReader.onload = (event) => {
+          this.urlImageSub = event.target.result
+        }
+        compressedReader.readAsDataURL(compressedFile)
+        this.form.imageSub = compressedFile
       }
     },
     VaidateForm() {
       if (!this.form.category) {
-        this.val = {
-          isValCategory: true
-        }
+        this.val = { isValCategory: true }
         return false
       }
-
-      return true // pass
-    },
-    onResetValDate(index) {
-      if (index === 'isValCategory') {
-        if (this.form.category) {
-          this.val.isValCategory = false
-        }
-      }
+      return true
     },
     onSubmit() {
       if (this.VaidateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.form.code}`,
           `ยืนยันเเก้ไขเเม่พิมพ์`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -331,80 +279,48 @@ export default {
       }
     },
 
-    // -------- APIs --------------- //
     async fetchImageData(path, sub) {
-      try {
-        //console.log
-        switch (this.type) {
-          case 'ORDERPLAN': {
-            // Build Azure Blob URL for mold image
-            const blobPath = sub ? `Mold/${path}-Sub-Mold.png` : `Mold/${path}-Mold.png`
-            const imageUrl = `${getAzureBlobUrl(blobPath)}?v=${Date.now()}`
-
-            if (sub) {
-              this.urlImageSub = imageUrl
-            } else {
-              this.urlImage = imageUrl
-            }
+      switch (this.type) {
+        case 'ORDERPLAN': {
+          const blobPath = sub ? `Mold/${path}-Sub-Mold.png` : `Mold/${path}-Mold.png`
+          const imageUrl = `${getAzureBlobUrl(blobPath)}?v=${Date.now()}`
+          if (sub) {
+            this.urlImageSub = imageUrl
+          } else {
+            this.urlImage = imageUrl
           }
         }
-      } catch (error) {
-        console.log(error)
       }
     },
     async fetchMasterProductType() {
-      try {
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-      } catch (error) {
-        console.log(error)
+      const res = await api.jewelry.get('Master/MasterProductType')
+      if (res) {
+        this.masterProduct = [...res]
       }
     },
     async submit() {
-      try {
-        // let params = {
-        //   code: this.form.code,
-        //   category: this.form.category.nameTh,
-        //   categoryCode: this.form.category.code,
-        //   description: this.form.description,
-        //   Images: this.form.imageMain ? this.form.imageMain : null
+      let params = new FormData()
+      params.append('code', this.form.code)
+      params.append('category', this.form.category.nameTh)
+      params.append('categoryCode', this.form.category.code)
+      params.append('description', this.form.description)
+      params.append('moldBy', this.form.moldBy)
 
-        // }
+      if (this.form.imageMain) params.append('imagesMain', this.form.imageMain)
+      if (this.form.imageSub) params.append('imagesSub', this.form.imageSub)
 
-        let params = new FormData()
-        params.append('code', this.form.code)
-        params.append('category', this.form.category.nameTh)
-        params.append('categoryCode', this.form.category.code)
-        params.append('description', this.form.description)
-        params.append('moldBy', this.form.moldBy)
-
-        if (this.form.imageMain) params.append('imagesMain', this.form.imageMain)
-        if (this.form.imageSub) params.append('imagesSub', this.form.imageSub)
-
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
-          }
+      let options = {
+        headers: {
+          'Content-Type': `multipart/form-data`
         }
+      }
 
-        const res = await api.jewelry.post('Mold/UpdateMold', params, options)
-        if (res) {
-          //console.log(res)
-          swAlert.success(
-            ``,
-            ``,
-            async () => {
-              this.onclear()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-      } catch (error) {
-        console.log(error)
+      const res = await api.jewelry.post('Mold/UpdateMold', params, options)
+      if (res) {
+        success(``, ``, async () => {
+          this.onclear()
+          this.$emit('fetch')
+        }, null, null)
       }
     }
   },
@@ -412,7 +328,6 @@ export default {
     this.$nextTick(() => {
       this.fetchMasterProductType()
     })
-    //this.fetchMasterProductType()
   }
 }
 </script>
@@ -454,7 +369,6 @@ export default {
 .btn-upload-custom {
   padding: 5px 10px;
   background-color: var(--base-green);
-  border-color: var(--base-warning);
   color: #ffff;
   border-radius: 5px;
   display: flex;

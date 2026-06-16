@@ -9,7 +9,7 @@
           <!-- code -->
           <div>
             <div>
-              <span class="title-text">รหัสเเม่พิมพ์</span>
+              <span class="title-text">{{ $t('view.mold.planRemodel.fieldCode') }}</span>
               <span class="txt-required"> *</span>
             </div>
             <input
@@ -24,34 +24,32 @@
           <!-- type -->
           <div>
             <div>
-              <span class="title-text">ประเภท</span>
+              <span class="title-text">{{ $t('view.mold.planRemodel.fieldCategory') }}</span>
               <span class="txt-required"> *</span>
             </div>
-            <Dropdown
-              v-model="form.category"
+            <DropdownGeneric
+              :modelValue="form.category"
               :options="masterProduct"
               optionLabel="description"
-              class="w-full md:w-14rem"
-              :showClear="form.category ? true : false"
+              :showClear="!!form.category"
               :class="val.isValCategory === true ? `p-invalid` : ``"
-              @change="onResetValDate('isValCategory')"
+              @update:modelValue="onCategoryChange"
             />
-            <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
           </div>
 
           <!-- re-code -->
           <div>
             <div>
-              <span class="title-text">แปลงเเบบ</span>
-              <AutoComplete
-                v-model="form.remodel"
-                :suggestions="moldSearch"
-                @complete="onSearchMold"
-                optionLabel="code"
-                forceSelection
-              >
-              </AutoComplete>
+              <span class="title-text">{{ $t('view.mold.planRemodel.fieldRemodel') }}</span>
             </div>
+            <AutoCompleteGeneric
+              :modelValue="form.remodel"
+              :suggestions="moldSearch"
+              @complete="onSearchMold"
+              optionLabel="code"
+              :forceSelection="true"
+              @update:modelValue="form.remodel = $event"
+            />
           </div>
         </div>
 
@@ -59,7 +57,7 @@
           <!-- work by -->
           <div>
             <span>
-              <span class="title-text">ช่างขึ้นพิมพ์</span>
+              <span class="title-text">{{ $t('view.mold.planRemodel.fieldMoldBy') }}</span>
               <span class="txt-required"> *</span>
             </span>
             <input class="form-control" v-model="form.workBy" type="text" required />
@@ -68,19 +66,17 @@
           <!-- location -->
           <div>
             <div>
-              <span class="title-text">จัดเก็บ</span>
+              <span class="title-text">{{ $t('view.mold.planRemodel.fieldLocation') }}</span>
               <span class="txt-required"> *</span>
             </div>
-            <Dropdown
-              v-model="form.LocationName"
+            <DropdownGeneric
+              :modelValue="form.LocationName"
               :options="masterLocationt"
               optionLabel="value"
-              class="w-full md:w-14rem"
-              :showClear="form.LocationName ? true : false"
-              :class="val.isValCategory === true ? `p-invalid` : ``"
-              @change="onResetValDate('isValLocation')"
+              :showClear="!!form.LocationName"
+              :class="val.isValLocation === true ? `p-invalid` : ``"
+              @update:modelValue="onLocationChange"
             />
-            <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
           </div>
           <div></div>
         </div>
@@ -88,16 +84,15 @@
         <div class="form-col-container">
           <!-- remark -->
           <div>
-            <span class="title-text">รายละเอียด</span>
+            <span class="title-text">{{ $t('view.mold.planRemodel.fieldRemark') }}</span>
             <textarea class="form-control" v-model="form.remark" style="height: 50px" />
           </div>
         </div>
 
         <div class="form-col-container mt-2">
           <uploadImages
-            title="รูปเเม่พิมพ์สำเร็จ (1 รูป)"
+            :title="$t('view.mold.planRemodel.imgTitle')"
             @onUpdateFile="updateFile"
-            @btnClearRef="setBtnClearRef"
           ></uploadImages>
         </div>
 
@@ -106,7 +101,7 @@
             <span class="mr-2">
               <i class="bi bi-gem"></i>
             </span>
-            <span>ยืนยันแปลงเเบบเเละจัดเก็บพิมพ์</span>
+            <span>{{ $t('view.mold.planRemodel.btnSubmit') }}</span>
           </button>
         </div>
       </form>
@@ -122,10 +117,10 @@ import { eventReModelStatus, mateiralType } from '../create-design/interface/dat
 const stepperStatus = defineAsyncComponent(() => import('@/components/prime-vue/StepperStatus.vue'))
 const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/UploadImages.vue'))
 
-import Dropdown from 'primevue/dropdown'
-import AutoComplete from 'primevue/autocomplete'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
@@ -133,7 +128,6 @@ const interfaceForm = {
   code: null,
   category: null,
   remodel: null,
-
   remark: null,
   workBy: null,
   LocationName: null
@@ -146,12 +140,12 @@ const interfaceVal = {
 export default {
   components: {
     stepperStatus,
-    Dropdown,
-    AutoComplete,
-    uploadImages,
+    DropdownGeneric,
+    AutoCompleteGeneric,
+    uploadImages
   },
   watch: {
-    'form.locationName'() {
+    'form.LocationName'() {
       if (this.form.LocationName) {
         this.val.isValLocation = false
       }
@@ -164,7 +158,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       events: [...eventReModelStatus],
       mateiralType: [...mateiralType],
 
@@ -177,20 +170,24 @@ export default {
         { id: 1, code: 'A', value: 'คลัง 1' },
         { id: 2, code: 'B', value: 'คลัง 2' },
         { id: 3, code: 'C', value: 'คลัง 3' }
-      ],
-
-      btnClearImg: null
+      ]
     }
   },
   methods: {
-    // ----- event
+    onCategoryChange(value) {
+      this.form.category = value
+      if (value) this.val.isValCategory = false
+    },
+    onLocationChange(value) {
+      this.form.LocationName = value
+      if (value) this.val.isValLocation = false
+    },
     onSubmit() {
       if (this.VaidateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.form.code}`,
-          `ยืนยันสร้างเเบบจัดเก็บพิมพ์`,
+          this.$t('view.mold.planRemodel.confirmTitle'),
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -198,135 +195,79 @@ export default {
         )
       }
     },
-    // ----- helper
-    onResetValDate(key) {
-      if (key === 'isValLocation') {
-        if (this.form.LocationName) {
-          this.val.isValLocation = false
-        }
-      }
-      if (key === 'isValCategory') {
-        if (this.form.category) {
-          this.val.isValCategory = false
-        }
-      }
-    },
     VaidateForm() {
       if (!this.form.LocationName) {
-        this.val = {
-          isValLocation: true
-        }
+        this.val = { isValLocation: true }
         return false
       }
       if (!this.form.category) {
-        this.val = {
-          isValCategory: true
-        }
+        this.val = { isValCategory: true }
         return false
       }
-
-      return true // pass
+      return true
     },
     updateFile(files) {
       this.form.images = files
     },
-    setBtnClearRef(ref) {
-      this.btnClearImg = ref
-      console.log('setBtnClearRef', this.btnClearImg)
-    },
-    // -----APIs
     async getMaster(type) {
-      this.isLoading = true
-      try {
-        let res = null
+      let res = null
 
+      switch (type) {
+        case 'PRODUCTTYPE':
+          res = await api.jewelry.get('Master/MasterProductType')
+          break
+        default:
+          break
+      }
+
+      if (res) {
         switch (type) {
           case 'PRODUCTTYPE':
-            res = await api.jewelry.get('Master/MasterProductType')
+            this.masterProduct = [...res]
             break
           default:
             break
         }
-
-        if (res) {
-          switch (type) {
-            case 'PRODUCTTYPE':
-              this.masterProduct = [...res]
-              break
-            default:
-              break
-          }
-        }
-      } catch (error) {
-        console.log('error', error)
       }
-      this.isLoading = false
     },
     async onSearchMold(e) {
-      this.isLoading = true
-      try {
-        const params = {
-          take: 0,
-          skip: 0,
-          sort: [],
-          search: {
-            text: e.query ?? null
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        sort: [],
+        search: {
+          text: e.query ?? null
         }
-        console.log('params', params)
-        const res = await api.jewelry.post('Mold/SearchMold', params)
-        if (res) {
-          this.moldSearch = [...res.data]
-        }
-      } catch (error) {
-        console.log(error)
       }
-      this.isLoading = false
+      const res = await api.jewelry.post('Mold/SearchMold', params)
+      if (res) {
+        this.moldSearch = [...res.data]
+      }
     },
     async submit() {
-      try {
-        this.isLoading = true
+      let params = new FormData()
+      params.append('code', this.form.code)
+      params.append('workBy', this.form.workBy)
+      params.append('remark', this.form.remark)
+      params.append('location', this.form.LocationName.code)
+      params.append('catagory', this.form.category.nameTh)
+      params.append('catagoryCode', this.form.category.code)
+      params.append('remodel', this.form.remodel ? this.form.remodel.code : '')
 
-        console.log('this.value', this.form)
+      this.form.images.forEach((file) => {
+        params.append(`images`, file)
+      })
 
-        let params = new FormData()
-        params.append('code', this.form.code)
-        params.append('workBy', this.form.workBy)
-        params.append('remark', this.form.remark)
-        params.append('location', this.form.LocationName.code)
-        params.append('catagory', this.form.category.nameTh)
-        params.append('catagoryCode', this.form.category.code)
-        params.append('remodel', this.form.remodel ? this.form.remodel.code : '')
-
-        this.form.images.forEach((file) => {
-          params.append(`images`, file) // ใช้ชื่อ "Images" ตรงกับ property ใน model
-        })
-
-        console.log('params', params)
-
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
-          }
+      let options = {
+        headers: {
+          'Content-Type': `multipart/form-data`
         }
-        const res = await api.jewelry.post('Mold/PlanRemodel', params, options)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              //refrsh
-              window.location.reload()
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      }
+      const res = await api.jewelry.post('Mold/PlanRemodel', params, options)
+      if (res) {
+        success(``, '', () => {
+          window.location.reload()
+        }, null, null)
       }
     }
   },

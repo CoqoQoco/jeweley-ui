@@ -1,72 +1,77 @@
 <template>
   <div class="filter-container-search">
     <pageTitle
-      title="กระบวนการสร้างเเบบเเม่พิมพ์"
+      :title="$t('view.mold.planList.searchTitle')"
       description=""
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >
       <template #rightSlot>
-        <button class="btn btn-sm btn-main" @click="onCreate">สร้างเเบบเเม่พิมพ์ใหม่</button>
+        <button class="btn btn-sm btn-main" @click="onCreate">
+          {{ $t('view.mold.planList.btnCreate') }}
+        </button>
       </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
         <div>
-          <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
+          <span class="title-text">{{ $t('view.mold.planList.fieldMoldCode') }}</span>
           <input type="text" class="form-control" v-model="form.moldCode" />
         </div>
         <div>
-          <span class="title-text">วันตั้งเเม่พิมพ์</span>
+          <span class="title-text">{{ $t('view.mold.planList.fieldCreateDate') }}</span>
           <div class="flex-group">
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.startCreate"
               :max-date="form.endCreate"
-              showIcon
-              placeholder="เริ่มต้น"
+              :showIcon="true"
+              :placeholder="$t('common.label.start')"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.endCreate"
               :min-date="form.startCreate"
-              showIcon
-              placeholder="สิ้นสุด"
+              :showIcon="true"
+              :placeholder="$t('common.label.end')"
             />
           </div>
         </div>
         <div>
-          <span class="title-text">วันเเก้ไขเเม่พิมพ์ล่าสุด</span>
+          <span class="title-text">{{ $t('view.mold.planList.fieldLastUpdate') }}</span>
           <div class="flex-group">
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.startUpdate"
               :max-date="form.endUpdate"
-              showIcon
-              placeholder="เริ่มต้น"
+              :showIcon="true"
+              :placeholder="$t('common.label.start')"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.endUpdate"
               :min-date="form.startUpdate"
-              showIcon
-              placeholder="สิ้นสุด"
+              :showIcon="true"
+              :placeholder="$t('common.label.end')"
             />
           </div>
         </div>
         <div></div>
       </div>
-      <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit">
-          <span><i class="bi bi-search mr-2"></i></span>
-          <span>ค้นหา</span>
-        </button>
-        <button class="btn btn-sm btn-secondary" type="button" @click="onClear">
-          <span><i class="bi bi-x mr-2"></i></span>
-          <span>ล้าง</span>
-        </button>
+      <div class="btn-submit-container-between">
+        <div></div>
+        <div>
+          <button class="btn btn-sm btn-main mr-2" type="submit">
+            <span><i class="bi bi-search mr-2"></i></span>
+            <span>{{ $t('common.btn.search') }}</span>
+          </button>
+          <button class="btn btn-sm btn-dark" type="button" @click="onClear">
+            <span><i class="bi bi-x-circle mr-2"></i></span>
+            <span>{{ $t('common.btn.clear') }}</span>
+          </button>
+        </div>
       </div>
     </form>
   </div>
@@ -74,14 +79,15 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
-import Calendar from 'primevue/calendar'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   components: {
     pageTitle,
-    Calendar
+    CalendarGeneric
   },
   props: {
     modelForm: {
@@ -107,7 +113,6 @@ export default {
       this.$emit('search', this.form)
     },
     onClear() {
-      //this.form = { ...this.modelForm }
       this.$emit('clear')
     },
     onCreate() {
@@ -120,11 +125,4 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
-
-.header-bar-container {
-  display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
 </style>

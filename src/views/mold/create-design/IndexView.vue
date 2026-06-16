@@ -9,7 +9,7 @@
         <div class="form-col-container">
           <div>
             <div>
-              <span class="title-text">รหัสตั้งเเม่พิมพ์</span>
+              <span class="title-text">{{ $t('view.mold.createDesign.fieldMoldCode') }}</span>
               <span class="txt-required"> *</span>
             </div>
             <input
@@ -22,26 +22,24 @@
           </div>
           <div>
             <div>
-              <span class="title-text">ประเภท</span>
+              <span class="title-text">{{ $t('view.mold.createDesign.fieldCategory') }}</span>
               <span class="txt-required"> *</span>
             </div>
-            <Dropdown
-              v-model="form.category"
+            <DropdownGeneric
+              :modelValue="form.category"
               :options="masterProduct"
               optionLabel="description"
-              class="w-full md:w-14rem"
-              :showClear="form.category ? true : false"
+              :showClear="!!form.category"
               :class="val.isValCategory === true ? `p-invalid` : ``"
-              @change="onResetValDate('isValCategory')"
+              @update:modelValue="onCategoryChange"
             />
-            <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
           </div>
           <div>
             <span>
-              <span class="title-text">ขึ้น CAD โดย</span>
+              <span class="title-text">{{ $t('view.mold.createDesign.fieldDesignBy') }}</span>
               <span class="txt-required"> *</span>
             </span>
-            <input type="ะำปะ" required class="form-control" v-model="form.designBy" />
+            <input type="text" required class="form-control" v-model="form.designBy" />
           </div>
         </div>
 
@@ -49,7 +47,7 @@
         <div class="form-col-container">
           <div>
             <div>
-              <span class="title-text">น้ำหนักรับ</span>
+              <span class="title-text">{{ $t('view.mold.createDesign.fieldWeightReceive') }}</span>
               <span class="txt-required"> *</span>
             </div>
             <input
@@ -62,7 +60,7 @@
           </div>
           <div>
             <div>
-              <span class="title-text">น้ำหนักส่ง</span>
+              <span class="title-text">{{ $t('view.mold.createDesign.fieldWeightSend') }}</span>
               <span class="txt-required"> *</span>
             </div>
             <input
@@ -79,7 +77,7 @@
         <!-- remark -->
         <div class="form-col-container">
           <div>
-            <span class="title-text">รายละเอียด</span>
+            <span class="title-text">{{ $t('view.mold.createDesign.fieldRemark') }}</span>
             <textarea class="form-control" v-model="form.remark" style="height: 50px" />
           </div>
         </div>
@@ -87,7 +85,7 @@
         <!-- image -->
         <div class="mt-2">
           <uploadImages
-            title="รูปต้นเเบบเเม่พิมพ์ (ไม่เกิน 2 รูป)"
+            :title="$t('view.mold.createDesign.imgTitle')"
             @onUpdateFile="updateFile"
           ></uploadImages>
         </div>
@@ -95,9 +93,10 @@
         <!-- gems -->
         <div class="mt-4">
           <div class="title-text-lg-header">
-            <span>ส่วนประกอบเพชร/พลอย</span>
+            <span>{{ $t('view.mold.createDesign.gemsTitle') }}</span>
           </div>
           <div>
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <DataTable
               class="p-datatable-sm"
               showGridlines
@@ -115,49 +114,54 @@
                 }
               }"
             >
+              <!-- eslint-disable-next-line no-restricted-imports -->
               <Column :rowEditor="true" style="width: 100px" bodyStyle="text-align:center">
               </Column>
+              <!-- eslint-disable-next-line no-restricted-imports -->
               <Column style="width: 60px">
                 <template #body="prop">
-                  <div class="btn btn-danger text-center w-100" @click="onDelGems(prop.data)">
+                  <div class="btn btn-red text-center w-100" @click="onDelGems(prop.data)">
                     <i class="bi bi-trash-fill"></i>
                   </div>
                 </template>
               </Column>
 
-              <Column field="gem" header="ประเภทเพชร/พลอย" style="min-width: 150px">
+              <!-- eslint-disable-next-line no-restricted-imports -->
+              <Column :field="'gem'" :header="$t('view.mold.createDesign.colGemType')" style="min-width: 150px">
                 <template #body="slotProps">
                   <span>{{ slotProps.data.gem?.description }}</span>
                 </template>
                 <template #editor="{ data, field }">
+                  <!-- eslint-disable-next-line no-restricted-imports -->
                   <Dropdown
                     v-model="data[field]"
                     :options="masterGem"
                     optionLabel="description"
                     class="w-full md:w-14rem"
-                    placeholder="เลือกพลอย"
+                    :placeholder="$t('view.mold.gems.selectGem')"
                     :showClear="data[field] ? true : false"
-                  >
-                  </Dropdown>
+                  />
                 </template>
               </Column>
-              <Column field="gemShape" header="รูปร่างพลอย" style="min-width: 150px">
+              <!-- eslint-disable-next-line no-restricted-imports -->
+              <Column :field="'gemShape'" :header="$t('view.mold.createDesign.colGemShape')" style="min-width: 150px">
                 <template #body="slotProps">
                   <span>{{ slotProps.data.gemShape?.description }}</span>
                 </template>
                 <template #editor="{ data, field }">
+                  <!-- eslint-disable-next-line no-restricted-imports -->
                   <Dropdown
                     v-model="data[field]"
                     :options="masterGemShape"
                     optionLabel="description"
                     class="w-full md:w-14rem"
-                    placeholder="เลือกรูปร่าง"
+                    :placeholder="$t('view.mold.gems.selectShape')"
                     :showClear="data[field] ? true : false"
-                  >
-                  </Dropdown>
+                  />
                 </template>
               </Column>
-              <Column field="size" header="ขนาด" style="width: 200px">
+              <!-- eslint-disable-next-line no-restricted-imports -->
+              <Column :field="'size'" :header="$t('view.mold.createDesign.colSize')" style="width: 200px">
                 <template #editor="{ data, field }">
                   <input
                     type="text"
@@ -168,7 +172,8 @@
                   />
                 </template>
               </Column>
-              <Column field="qty" header="จำนวน" style="width: 200px">
+              <!-- eslint-disable-next-line no-restricted-imports -->
+              <Column :field="'qty'" :header="$t('view.mold.createDesign.colQty')" style="width: 200px">
                 <template #editor="{ data, field }">
                   <input
                     type="number"
@@ -181,8 +186,8 @@
               </Column>
               <template #footer>
                 <div class="d-flex justify-content-between">
-                  <div>ทั้งหมด {{ this.form.gems.length }} รายการ</div>
-                  <div class="btn btn-sm btn-warning" @click="onAddGems">
+                  <div>{{ $t('view.mold.gems.totalItems', { count: form.gems.length }) }}</div>
+                  <div class="btn btn-sm btn-main" @click="onAddGems">
                     <span class="text-center">
                       <i class="bi bi-plus"></i>
                     </span>
@@ -195,12 +200,11 @@
 
         <!-- btn -->
         <div class="d-flex justify-content-end mt-3">
-          <!-- <button class="btn btn-sm btn-main mr-2" type="button" @click="onTest">TEST</button> -->
           <button class="btn btn-sm btn-main" type="submit">
             <span class="mr-2">
               <i class="bi bi-gem"></i>
             </span>
-            <span>ออกเเบบเเละขึ้น 3D</span>
+            <span>{{ $t('view.mold.createDesign.btnSubmit') }}</span>
           </button>
         </div>
       </form>
@@ -216,11 +220,16 @@ import { eventStatus, mateiralType } from './interface/data.js'
 const stepperStatus = defineAsyncComponent(() => import('@/components/prime-vue/StepperStatus.vue'))
 const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/UploadImages.vue'))
 
-import Dropdown from 'primevue/dropdown'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
+import Dropdown from 'primevue/dropdown'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
@@ -246,9 +255,10 @@ export default {
   components: {
     stepperStatus,
     uploadImages,
-    Dropdown,
+    DropdownGeneric,
     DataTable,
-    Column
+    Column,
+    Dropdown
   },
   watch: {
     'form.category'() {
@@ -259,7 +269,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       events: [...eventStatus],
       mateiralType: [...mateiralType],
       form: { ...interfaceForm },
@@ -269,20 +278,21 @@ export default {
       masterGem: [],
       masterGemShape: [],
 
-      // ---- datatable ---- //
       editingRows: [],
       autoId: 0
     }
   },
   methods: {
+    onCategoryChange(value) {
+      this.form.category = value
+      if (value) this.val.isValCategory = false
+    },
     onSubmit() {
-      console.log('submit', this.form)
       if (this.VaidateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.form.moldCode}`,
-          `ยืนยันสร้างเเบบเเม่พิมพ์`,
+          this.$t('view.mold.createDesign.confirmTitle'),
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -296,28 +306,14 @@ export default {
     updateFile(files) {
       this.form.images = files
     },
-    onResetValDate(index) {
-      if (index === 'isValCategory') {
-        if (this.form.category) {
-          this.val.isValCategory = false
-        }
-      }
-    },
     VaidateForm() {
       if (!this.form.category) {
-        this.val = {
-          isValCategory: true
-        }
+        this.val = { isValCategory: true }
         return false
       }
-
-      return true // pass
-    },
-    onTest() {
-      this.$router.push({ name: 'plan-list' })
+      return true
     },
 
-    // --- datatable --- //
     onRowEditSave(event) {
       let { newData, index } = event
       this.form.gems[index] = newData
@@ -334,120 +330,67 @@ export default {
       this.form.gems.push(addGem)
     },
 
-    // ------ Apis ------ //
     async fetchMasterProductType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterProductType')
+      if (res) {
+        this.masterProduct = [...res]
       }
     },
     async submit() {
-      try {
-        this.isLoading = true
+      let params = new FormData()
+      params.append('moldCode', this.form.moldCode)
+      params.append('qtySend', this.form.qtyBeforeCasting)
+      params.append('qtyReceive', this.form.qtyBeforeSend)
+      params.append('remark', this.form.remark)
+      params.append('Catagory', this.form.category?.code)
+      params.append('designBy', this.form.designBy)
 
-        console.log('this.form', this.form)
-        // const param = {
-        //   moldCode: this.form.moldCode,
-        //   sizeGem: this.form.sizeGem,
-        //   qtyGem: this.form.qtyGem,
-        //   sizeDiamond: this.form.sizeDiamond,
-        //   qtyDiamond: this.form.qtyDiamond,
-        //   qtyBeforeCasting: this.form.qtyBeforeCasting,
-        //   qtyBeforeSend: this.form.qtyBeforeSend,
-        //   images: this.form.images
-        // }
-        let params = new FormData()
-        params.append('moldCode', this.form.moldCode)
-        params.append('qtySend', this.form.qtyBeforeCasting)
-        params.append('qtyReceive', this.form.qtyBeforeSend)
-        params.append('remark', this.form.remark)
-        params.append('Catagory', this.form.category?.code)
-        params.append('designBy', this.form.designBy)
+      this.form.images.forEach((file) => {
+        params.append(`images`, file)
+      })
 
-        //params.append('images', this.form.images)
-
-        this.form.images.forEach((file) => {
-          params.append(`images`, file) // ใช้ชื่อ "Images" ตรงกับ property ใน model
-        })
-
-        //add gems
-        if (this.form.gems && this.form.gems.length > 0) {
-          this.form.gems.forEach((item, index) => {
-            if (item.gem && item.gemShape) {
-              params.append(`gems[${index}][gemCode]`, item.gem.code)
-              params.append(`gems[${index}][gemShapeCode]`, item.gemShape.code)
-              params.append(`gems[${index}][size]`, item.size)
-              params.append(`gems[${index}][qty]`, item.qty)
-            }
-          })
-        }
-
-        console.log('params', params)
-
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
+      if (this.form.gems && this.form.gems.length > 0) {
+        this.form.gems.forEach((item, index) => {
+          if (item.gem && item.gemShape) {
+            params.append(`gems[${index}][gemCode]`, item.gem.code)
+            params.append(`gems[${index}][gemShapeCode]`, item.gemShape.code)
+            params.append(`gems[${index}][size]`, item.size)
+            params.append(`gems[${index}][qty]`, item.qty)
           }
-        }
-        const res = await api.jewelry.post('Mold/PlanDesign', params, options)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.onclear()
-              //this.$router.go(-1)
-              this.$router.push({ name: 'plan-list' })
-              //this.$router.push({ name: 'design-create' })
-            },
-            null,
-            null
-          )
-        }
+        })
+      }
 
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      let options = {
+        headers: {
+          'Content-Type': `multipart/form-data`
+        }
+      }
+      const res = await api.jewelry.post('Mold/PlanDesign', params, options)
+      if (res) {
+        success(``, '', () => {
+          this.onclear()
+          this.$router.push({ name: 'plan-list' })
+        }, null, null)
       }
     },
     async fetchMasterGem() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGem')
-        if (res) {
-          this.masterGem = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGem')
+      if (res) {
+        this.masterGem = [...res]
       }
     },
     async fetchMasterGemShape() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGemShape')
-        if (res) {
-          this.masterGemShape = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGemShape')
+      if (res) {
+        this.masterGemShape = [...res]
       }
     }
   },
   created() {
     this.$nextTick(() => {
-      this.fetchMasterProductType(), this.fetchMasterGem(), this.fetchMasterGemShape()
+      this.fetchMasterProductType()
+      this.fetchMasterGem()
+      this.fetchMasterGemShape()
     })
   }
 }
@@ -455,13 +398,4 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
-
-.zone-container {
-  //border: 1px solid #dddddd;
-  //border-radius: 5px;
-  //box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  //background-color: #f7f7f7;
-  padding: 20px 20px;
-  //margin-bottom: 20px;
-}
 </style>

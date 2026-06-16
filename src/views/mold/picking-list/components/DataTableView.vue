@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- eslint-disable-next-line no-restricted-imports -->
     <DataTable
       :totalRecords="data.total"
       :value="data.data"
@@ -21,12 +22,13 @@
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
+      <!-- eslint-disable-next-line no-restricted-imports -->
       <Column>
         <template #body="slotProps">
           <div>
             <button
-              class="btn btn-sm btn-green"
-              title="คืนเเม่พิมพ์"
+              class="btn btn-sm btn-main"
+              :title="$t('view.mold.pickingList.btnReturn')"
               @click="showModalReturn(slotProps.data)"
             >
               <i class="bi bi-arrow-bar-down"></i>
@@ -34,38 +36,35 @@
           </div>
         </template>
       </Column>
-      <Column header="กำหนดคืน" field="returnDateSet" sortable style="min-width: 150px">
+      <!-- eslint-disable-next-line no-restricted-imports -->
+      <Column :header="$t('view.mold.pickingList.colDueDate')" field="returnDateSet" sortable style="min-width: 150px">
         <template #body="prop">
           <div class="notification">
             <span>{{ formatDate(prop.data.returnDateSet) }}</span>
-            <span v-if="prop.data.isOverReturn && !prop.data.isSetReturn" class="overdue-tag"
-              >เกินกำหนด</span
-            >
-            <span v-if="prop.data.isSetReturn" class="duedate-tag">กำหนดคืนวันนี้</span>
+            <span v-if="prop.data.isOverReturn && !prop.data.isSetReturn" class="overdue-tag">
+              {{ $t('view.mold.pickingList.tagOverdue') }}
+            </span>
+            <span v-if="prop.data.isSetReturn" class="duedate-tag">
+              {{ $t('view.mold.pickingList.tagDueToday') }}
+            </span>
           </div>
         </template>
       </Column>
-      <Column header="หมายเลขลำดับ" field="running" sortable style="min-width: 150px"></Column>
-      <Column header="เเม่พิมพ์" field="mold" sortable style="min-width: 150px"></Column>
-      <!-- <Column header="กำหนดคืน" field="returnDateSet" sortable style="min-width: 150px">
-        <template #body="prop">
-          <div class="notification">
-            <span>{{ formatDate(prop.data.returnDateSet) }}</span>
-            <span v-if="prop.data.isOverReturn && !prop.data.isSetReturn" class="overdue-tag"
-              >เกินกำหนด</span
-            >
-            <span v-if="prop.data.isSetReturn" class="duedate-tag">กำหนดคืนวันนี้</span>
-          </div>
-        </template>
-      </Column> -->
-      <Column header="วันที่เบิก" field="checkOutDate" sortable style="min-width: 150px">
+      <!-- eslint-disable-next-line no-restricted-imports -->
+      <Column :header="$t('view.mold.pickingList.colRunning')" field="running" sortable style="min-width: 150px"></Column>
+      <!-- eslint-disable-next-line no-restricted-imports -->
+      <Column :header="$t('view.mold.pickingList.colMold')" field="mold" sortable style="min-width: 150px"></Column>
+      <!-- eslint-disable-next-line no-restricted-imports -->
+      <Column :header="$t('view.mold.pickingList.colCheckOutDate')" field="checkOutDate" sortable style="min-width: 150px">
         <template #body="prop">
           {{ formatDate(prop.data.checkOutDate) }}
         </template>
       </Column>
-      <Column header="ผู้เบิก" field="checkOutName" sortable style="min-width: 150px"></Column>
+      <!-- eslint-disable-next-line no-restricted-imports -->
+      <Column :header="$t('view.mold.pickingList.colCheckOutName')" field="checkOutName" sortable style="min-width: 150px"></Column>
+      <!-- eslint-disable-next-line no-restricted-imports -->
       <Column
-        header="คำอธิบายเบิก"
+        :header="$t('view.mold.pickingList.colCheckOutDesc')"
         field="checkOutDescription"
         sortable
         style="min-width: 150px"
@@ -82,13 +81,12 @@
 </template>
 
 <script>
-
-//const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
-
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 
-import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
+import { formatDate, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
 import modalReturn from './ReturnView.vue'
@@ -98,7 +96,6 @@ export default {
     DataTable,
     Column,
     modalReturn
-    //imagePreview
   },
   props: {
     modelForm: {
@@ -110,9 +107,6 @@ export default {
     modelForm: {
       handler(val) {
         this.form = { ...val }
-
-        console.log('watch modelForm', val)
-
         this.fetchData()
       },
       deep: true
@@ -120,36 +114,25 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
-      isLoadingImage: false,
       isShowReturn: false,
 
-      //--------- table ---------//
-      totalRecords: 0,
-      take: 10, //all
+      take: 10,
       skip: 0,
-      //sortField: 'updateDate',
-      //sortOrder: -1, // หรือ -1 สำหรับ descending
       sort: [{ field: 'updateDate', dir: 'desc' }],
-      //sort: [],
       data: {},
-      dataExcel: {},
       expnadData: [],
       form: null,
 
-      //--------- dataUpdate ---------//
       returnModel: {}
     }
   },
   methods: {
-    // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
       this.sort = e.multiSortMeta.map((item) => {
         return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
       })
-      //console.log(e)
       this.fetchData()
     },
     handlePageChangeSort(e) {
@@ -161,109 +144,35 @@ export default {
       this.fetchData()
     },
 
-    // ----------- APIs ----------- //
     async fetchData() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          search: {
-            text: this.form.text ?? null,
-            checkOutDateStart: this.form.checkOutDateStart
-              ? formatISOString(this.form.checkOutDateStart)
-              : null,
-            checkOutDateEnd: this.form.checkOutDateEnd
-              ? formatISOString(this.form.checkOutDateEnd)
-              : null,
-            returnDateStart: this.form.returnDateStart
-              ? formatISOString(this.form.returnDateStart)
-              : null,
-            returnDateEnd: this.form.returnDateEnd ? formatISOString(this.form.returnDateEnd) : null
-          }
+      const params = {
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: {
+          text: this.form.text ?? null,
+          checkOutDateStart: this.form.checkOutDateStart
+            ? formatISOString(this.form.checkOutDateStart)
+            : null,
+          checkOutDateEnd: this.form.checkOutDateEnd
+            ? formatISOString(this.form.checkOutDateEnd)
+            : null,
+          returnDateStart: this.form.returnDateStart
+            ? formatISOString(this.form.returnDateStart)
+            : null,
+          returnDateEnd: this.form.returnDateEnd ? formatISOString(this.form.returnDateEnd) : null
         }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockMold/SearchCheckOutList', params)
-        if (res) {
-          this.data = null
-          this.data = { ...res }
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      }
+      const res = await api.jewelry.post('StockMold/SearchCheckOutList', params)
+      if (res) {
+        this.data = { ...res }
       }
     },
 
-    // -------- helper function -------- //
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
     formatDate(date) {
       return formatDate(date)
     },
-    stringToArray(str) {
-      console.log('stringToArray', str)
-      if (str && typeof str === 'string') {
-        // ตัดช่องว่างหน้าและหลังสตริง
-        str = str.trim()
-        //console.log('stringToArray', str)
 
-        // ถ้าไม่มีเครื่องหมายจุลภาค ให้คืนค่าเป็น array ที่มีสมาชิกเดียว
-        if (!str.includes(',')) {
-          return str ? [str] : []
-        }
-
-        // แยกด้วยเครื่องหมายจุลภาค, ตัดช่องว่าง, และกรองค่าว่างออก
-        const res = str
-          .split(',')
-          .map((item) => item.trim())
-          .filter((item) => item !== '')
-        return res
-      } else {
-        return []
-      }
-    },
-    getImgUrl(data) {
-      switch (data.status) {
-        case 10:
-          return data.imgDesign ?? []
-        case 20:
-          return data.imgResin ?? []
-        case 30:
-          return data.imgCastingSilver ?? []
-        case 40:
-          return data.imgCasting ?? []
-        case 50:
-          return data.imgCutting ?? []
-        case 60:
-          return data.imgStore ?? []
-        default:
-          return []
-      }
-    },
-    getImgPath(data) {
-      switch (data.status) {
-        case 10:
-          return 'MoldPlanDesign'
-        case 20:
-          return 'MoldPlanResin'
-        case 30:
-          return 'MoldPlanCastingSilver'
-        case 40:
-          return 'MoldPlanCasting'
-        case 50:
-          return 'MoldPlanCutting'
-        case 60:
-          return 'Mold'
-        default:
-          return null
-      }
-    },
-
-    // -------- event -------- //
     showModalReturn(data) {
       this.returnModel = { ...data }
       this.isShowReturn = true
@@ -275,15 +184,9 @@ export default {
     fetchDataByReturn() {
       this.isShowReturn = false
       this.fetchData()
-
-      // เเก้ปัญหา image ไม่เปลี่ยน
-      // setTimeout(() => {
-      //   window.location.reload()
-      // }, 100) // ปรับเวลาตามความเหมาะสม
     }
   },
   created() {
-    //console.log('created', this.modelForm)
     this.form = { ...this.modelForm }
     this.$nextTick(() => {
       this.fetchData()
@@ -295,21 +198,13 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 
-.box-image-show {
-  display: flex;
-  gap: 5px;
-}
-
 .notification {
   display: inline-flex;
   align-items: center;
-  //background-color: #ffe6e6; /* ส้มอ่อน */
-  //padding: 4px 8px;
-  //border-radius: 4px;
 }
 
 .overdue-tag {
-  background-color: #ff4d4d; /* สีแดง */
+  background-color: var(--base-red);
   color: white;
   padding: 2px 4px;
   border-radius: 2px;
@@ -317,7 +212,7 @@ export default {
   font-size: 12px;
 }
 .duedate-tag {
-  background-color: #038387; /* สีแดง */
+  background-color: var(--base-green);
   color: white;
   padding: 2px 4px;
   border-radius: 2px;
