@@ -37,6 +37,11 @@ export default {
     loading: 'Loading...',
     all: 'All'
   },
+  table: {
+    showing: 'Showing',
+    of: 'of',
+    entries: 'entries'
+  },
   lang: {
     th: 'ไทย',
     en: 'English'

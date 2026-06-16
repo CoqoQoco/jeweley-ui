@@ -37,6 +37,11 @@ export default {
     loading: 'กำลังโหลด...',
     all: 'ทั้งหมด'
   },
+  table: {
+    showing: 'แสดงข้อมูล',
+    of: 'จากทั้งหมด',
+    entries: 'รายการ'
+  },
   lang: {
     th: 'ไทย',
     en: 'English'

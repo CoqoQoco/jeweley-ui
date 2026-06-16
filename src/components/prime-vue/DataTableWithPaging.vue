@@ -23,7 +23,7 @@
       :rowsPerPageOptions="rowsPerPageOptions"
       :totalRecords="totalRecords"
       :paginatorTemplate="paginatorTemplate"
-      :currentPageReportTemplate="currentPageReportTemplate"
+      :currentPageReportTemplate="computedPageReport"
       v-bind="$attrs"
     >
       <!-- Expander Column -->
@@ -151,7 +151,7 @@
         <slot name="empty">
           <div class="empty-message">
             <i class="bi bi-inbox text-muted"></i>
-            <p>{{ emptyMessage }}</p>
+            <p>{{ computedEmptyMessage }}</p>
           </div>
         </slot>
       </template>
@@ -261,11 +261,11 @@ export default {
     },
     currentPageReportTemplate: {
       type: String,
-      default: 'แสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ'
+      default: null
     },
     emptyMessage: {
       type: String,
-      default: 'ไม่พบข้อมูล'
+      default: null
     },
     // ถ้าต้องการให้ parent component ควบคุม expanded rows
     modelValue: {
@@ -297,6 +297,15 @@ export default {
   ],
 
   computed: {
+    computedEmptyMessage() {
+      return this.emptyMessage !== null ? this.emptyMessage : this.$t('common.label.noData')
+    },
+
+    computedPageReport() {
+      if (this.currentPageReportTemplate !== null) return this.currentPageReportTemplate
+      return `${this.$t('common.table.showing')} {first} - {last} ${this.$t('common.table.of')} {totalRecords} ${this.$t('common.table.entries')}`
+    },
+
     isAllSelected() {
       if (this.items.length === 0) return false
 
