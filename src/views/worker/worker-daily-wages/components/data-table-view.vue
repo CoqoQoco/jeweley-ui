@@ -36,6 +36,7 @@
       </template>
 
       <template #footerGroup>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <ColumnGroup type="footer">
           <Row v-if="wageTypeFilter === 'wages'">
             <Column :colspan="9" footerStyle="text-align: left">
@@ -92,33 +93,13 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
-
-const BASE_COLUMNS = [
-  { field: 'woText', header: 'เลขที่ใบงาน', minWidth: '130px' },
-  { field: 'statusActiveName', header: 'สถานะใบงาน', minWidth: '120px', align: 'center' },
-  { field: 'jobDate', header: 'วันที่ส่งงาน', minWidth: '110px', format: 'date' },
-  { field: 'productNumber', header: 'รหัสสินค้า', minWidth: '120px' },
-  { field: 'statusName', header: 'สถานะ', minWidth: '140px', align: 'center' },
-  { field: 'statusDescription', header: 'แผนกงาน', minWidth: '120px' },
-  { field: 'description', header: 'รายละเอียด', minWidth: '160px' },
-  { field: 'goldQtySend', header: 'จำนวนจ่าย', minWidth: '90px', align: 'right', format: 'number' },
-  { field: 'goldWeightSend', header: 'น้ำหนักจ่าย', minWidth: '100px', align: 'right', format: 'decimal3' },
-  { field: 'goldQtyCheck', header: 'จำนวนรับ', minWidth: '90px', align: 'right', format: 'number' },
-  { field: 'goldWeightCheck', header: 'น้ำหนักรับ', minWidth: '100px', align: 'right', format: 'decimal3' },
-  { field: 'wages', header: 'ราคาต่อหน่วย', minWidth: '110px', align: 'right', format: 'decimal2' },
-  { field: 'totalWages', header: 'ราคา', minWidth: '110px', align: 'right', format: 'decimal2' }
-]
-
-const GOLD_LOSS_EXTRA_COLUMNS = [
-  { field: 'lossPercent', header: '%loss', minWidth: '90px', align: 'right', format: 'number' },
-  { field: 'weightLossAllowed', header: 'น้ำหนักที่ loss ได้', minWidth: '130px', align: 'right', format: 'decimal2' },
-  { field: 'weightLossActual', header: 'น้ำหนัก loss', minWidth: '110px', align: 'right' },
-  { field: 'goldLossPrice', header: 'ราคา/กรัม', minWidth: '110px', align: 'right', format: 'decimal2' }
-]
 
 export default {
   name: 'WorkerDailyWagesDataTableView',
@@ -142,13 +123,38 @@ export default {
   },
 
   computed: {
+    baseColumns() {
+      return [
+        { field: 'woText', header: this.$t('view.worker.workerDailyWages.colWoText'), minWidth: '130px' },
+        { field: 'statusActiveName', header: this.$t('view.worker.workerDailyWages.colStatusActive'), minWidth: '120px', align: 'center' },
+        { field: 'jobDate', header: this.$t('view.worker.workerDailyWages.colJobDate'), minWidth: '110px', format: 'date' },
+        { field: 'productNumber', header: this.$t('view.worker.workerDailyWages.colProductNumber'), minWidth: '120px' },
+        { field: 'statusName', header: this.$t('view.worker.workerDailyWages.colStatusName'), minWidth: '140px', align: 'center' },
+        { field: 'statusDescription', header: this.$t('view.worker.workerDailyWages.colStatusDescription'), minWidth: '120px' },
+        { field: 'description', header: this.$t('view.worker.workerDailyWages.colDescription'), minWidth: '160px' },
+        { field: 'goldQtySend', header: this.$t('view.worker.workerDailyWages.colGoldQtySend'), minWidth: '90px', align: 'right', format: 'number' },
+        { field: 'goldWeightSend', header: this.$t('view.worker.workerDailyWages.colGoldWeightSend'), minWidth: '100px', align: 'right', format: 'decimal3' },
+        { field: 'goldQtyCheck', header: this.$t('view.worker.workerDailyWages.colGoldQtyCheck'), minWidth: '90px', align: 'right', format: 'number' },
+        { field: 'goldWeightCheck', header: this.$t('view.worker.workerDailyWages.colGoldWeightCheck'), minWidth: '100px', align: 'right', format: 'decimal3' },
+        { field: 'wages', header: this.$t('view.worker.workerDailyWages.colWages'), minWidth: '110px', align: 'right', format: 'decimal2' },
+        { field: 'totalWages', header: this.$t('view.worker.workerDailyWages.colTotalWages'), minWidth: '110px', align: 'right', format: 'decimal2' }
+      ]
+    },
+    goldLossExtraColumns() {
+      return [
+        { field: 'lossPercent', header: this.$t('view.worker.workerDailyWages.colLossPercent'), minWidth: '90px', align: 'right', format: 'number' },
+        { field: 'weightLossAllowed', header: this.$t('view.worker.workerDailyWages.colWeightLossAllowed'), minWidth: '130px', align: 'right', format: 'decimal2' },
+        { field: 'weightLossActual', header: this.$t('view.worker.workerDailyWages.colWeightLossActual'), minWidth: '110px', align: 'right' },
+        { field: 'goldLossPrice', header: this.$t('view.worker.workerDailyWages.colGoldLossPrice'), minWidth: '110px', align: 'right', format: 'decimal2' }
+      ]
+    },
     columns() {
       if (this.wageTypeFilter === 'goldLoss') {
-        const cols = [...BASE_COLUMNS]
-        cols.splice(cols.length - 1, 0, ...GOLD_LOSS_EXTRA_COLUMNS)
+        const cols = [...this.baseColumns]
+        cols.splice(cols.length - 1, 0, ...this.goldLossExtraColumns)
         return cols
       }
-      return BASE_COLUMNS
+      return this.baseColumns
     },
 
     filteredItems() {
@@ -208,11 +214,11 @@ export default {
 
 .badge-gold-loss {
   display: inline-block;
-  background: #fabc3f;
+  background: var(--base-warning);
   color: #5a3e00;
   padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 
@@ -220,13 +226,13 @@ export default {
   background: #6c757d;
   color: #fff;
   padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
   display: inline-block;
 }
 
 .loss-positive {
-  color: #038387;
+  color: var(--base-green);
   font-weight: 600;
 }
 

@@ -1,70 +1,47 @@
 <template>
   <div class="mt-2">
-    <DataTable
-      :totalRecords="data.total"
-      :value="data.data"
-      dataKey="code"
-      class="p-datatable-sm"
-      scrollable
-      scrollHeight="calc(100vh - 240px)"
-      resizableColumns
+    <BaseDataTable
+      :items="data.data || []"
+      :totalRecords="data.total || 0"
+      :columns="columns"
+      :perPage="take"
       :paginator="true"
-      :lazy="true"
       @page="handlePageChange"
-      :rows="take"
-      :rowsPerPageOptions="[10, 20, 50, 100]"
-      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
-      <Column field="" header="" style="width: 80px">
-        <template #body="slotProps">
-          <div class="btn-action-container">
-            <button
-              class="btn btn-sm btn btn-main"
-              title="ตรวจสอบค่าเเรง"
-              @click="viewWorkerWages(slotProps.data)"
-            >
-              <i class="bi bi-wallet2"></i>
-            </button>
-            <button
-              class="btn btn-sm btn btn-main ml-2"
-              title="เเก้ไขข้อมูลพนักงาน"
-              @click="UpdateWorker(slotProps.data)"
-            >
-              <i class="bi bi-pencil"></i>
-            </button>
-          </div>
-        </template>
-      </Column>
-      <Column field="code" header="รหัสพนักงาน"> </Column>
-      <Column field="typeName" header="แผนก"> </Column>
-      <Column field="nameTh" header="ชื่อพนักงาน (TH)"> </Column>
-      <Column field="nameEn" header="ชื่อพนักงาน (EN)"> </Column>
-      <Column field="isActive" header="สถานะ">
-        <template #body="slotProps">
-          {{ `${slotProps.data.isActive === true ? `เปิดใช้งาน` : `ปิดใช้งาน`}` }}
-        </template>
-      </Column>
-      <Column header="วันสร้างข้อมูล" field="createDate">
-        <template #body="prop">
-          {{ formatDate(prop.data.createDate) }}
-        </template>
-      </Column>
-    </DataTable>
+      <template #actionsTemplate="{ data: row }">
+        <div class="btn-action-container">
+          <button
+            class="btn btn-sm btn-main"
+            title="ตรวจสอบค่าแรง"
+            @click="viewWorkerWages(row)"
+          >
+            <i class="bi bi-wallet2"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-main ml-2"
+            title="แก้ไขข้อมูลพนักงาน"
+            @click="UpdateWorker(row)"
+          >
+            <i class="bi bi-pencil"></i>
+          </button>
+        </div>
+      </template>
+      <template #isActiveTemplate="{ data: row }">
+        {{ row.isActive === true ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
+      </template>
+    </BaseDataTable>
   </div>
 </template>
 
 <script>
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import api from '@/axios/axios-helper.js'
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { formatDate } from '@/services/utils/dayjs.js'
 
 export default {
   components: {
-    DataTable,
-    Column,
+    BaseDataTable
   },
   props: {
     formValue: {
@@ -74,7 +51,6 @@ export default {
   },
   watch: {
     async formValue() {
-      //console.log(this.formValue)
       this.take = 10
       this.skip = 0
       await this.fetchData()
@@ -82,21 +58,22 @@ export default {
   },
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
-
-      // table
       totalRecords: 0,
-      take: 10, //all
+      take: 10,
       skip: 0,
-      data: {}
+      data: {},
+      columns: [
+        { field: 'actions', header: '', sortable: false, width: '80px' },
+        { field: 'code', header: 'รหัสพนักงาน', minWidth: '120px' },
+        { field: 'typeName', header: 'แผนก', minWidth: '100px' },
+        { field: 'nameTh', header: 'ชื่อพนักงาน (TH)', minWidth: '140px' },
+        { field: 'nameEn', header: 'ชื่อพนักงาน (EN)', minWidth: '140px' },
+        { field: 'isActive', header: 'สถานะ', sortable: false, minWidth: '100px' },
+        { field: 'createDate', header: 'วันสร้างข้อมูล', minWidth: '120px', format: 'date' }
+      ]
     }
   },
   methods: {
-    // ------ helper ------//
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
     formatDate(date) {
       return formatDate(date)
     },
@@ -108,33 +85,22 @@ export default {
       this.$emit('updateWorker', item)
     },
 
-    // --- APIs --- //
     async fetchData() {
-      try {
-        this.isLoading = true
-        this.data = {}
-        //console.log(this.formValue)
-        const params = {
-          take: this.take,
-          skip: this.skip,
-          search: {
-            text: this.formValue.text,
-            type: this.formValue.type,
-            active: this.formValue.active
-          }
+      const params = {
+        take: this.take,
+        skip: this.skip,
+        search: {
+          text: this.formValue.text,
+          type: this.formValue.type,
+          active: this.formValue.active
         }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          this.data = { ...res }
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('Worker/Search', params)
+      if (res) {
+        this.data = { ...res }
       }
     },
 
-    // --- table --- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows

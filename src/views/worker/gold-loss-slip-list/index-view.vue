@@ -17,7 +17,8 @@
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { WorkerWagesSuccessPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-success-pdf-builder.js'
-import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
+import { success } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 
 import searchView from './components/search-view.vue'
 import dataTableView from './components/data-table-view.vue'
@@ -60,7 +61,7 @@ export default {
     },
 
     onCancel(slip) {
-      confirmSubmit(
+      confirmThenSubmit(
         `ยกเลิก slip "${slip.documentNo}" หรือไม่? (ทอง items จะกลับมาใช้ได้ใหม่)`,
         'ยืนยันการยกเลิก',
         async () => {

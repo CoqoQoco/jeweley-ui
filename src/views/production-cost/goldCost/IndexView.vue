@@ -1,100 +1,74 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"> </loading>
-    <div class="filter-container">
+    <div class="filter-container-searchBar">
       <pageTitle
-        title="ข้อมูลเบิกผสมทอง"
-        description="ข้อมูลเบิกผสมทอง เพิ่ม/เเก้ไข เเละรายละเอียดต่างๆ"
+        :title="$t('view.productionCost.goldCost.searchTitle')"
+        :description="$t('view.productionCost.goldCost.searchDescription')"
         :isShowBtnClose="false"
         isShowRightSlot
-      >
-      </pageTitle>
+      />
       <form @submit.prevent="onSearch">
-        <div class="search-bar-container">
+        <div class="form-col-container">
           <div>
-            <span class="text-title">วันที่ออกใบเบิกผสมทอง</span>
+            <span class="title-text">{{ $t('view.productionCost.goldCost.fieldDate') }}</span>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.createStart"
                 :max-date="form.createEnd"
-                showIcon
-                placeholder="เริ่มต้น"
+                :showIcon="true"
+                :placeholder="$t('common.label.start')"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.createEnd"
                 :min-date="form.createStart"
-                showIcon
-                placeholder="สิ้นสุด"
+                :showIcon="true"
+                :placeholder="$t('common.label.end')"
               />
             </div>
           </div>
           <div>
-            <span class="text-title">ค้นหาใบผสมทอง</span>
-            <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.text"
-                placeholder="พิมพ์บางอย่างเพื่อค้นหา"
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div>
-            </div>
+            <span class="title-text">{{ $t('view.productionCost.goldCost.fieldSearch') }}</span>
+            <InputTextGeneric
+              v-model.trim="form.text"
+              :placeholder="$t('view.productionCost.goldCost.fieldSearchPlaceholder')"
+            />
           </div>
           <div>
-            <span class="text-title">ค้นหาด้วยหมายเลขลำดับ</span>
-            <div class="input-group input-group-inner">
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.runningNumber"
-              />
-              <!-- <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div> -->
-            </div>
+            <span class="title-text">{{ $t('view.productionCost.goldCost.fieldRunningNumber') }}</span>
+            <InputTextGeneric v-model.trim="form.runningNumber" />
           </div>
+        </div>
 
-          <div class="btn-container">
+        <div class="btn-submit-container-between">
+          <div></div>
+          <div>
             <button type="submit" class="btn btn-sm btn-main mr-2">
-              <span class="mr-2">
-                <i class="bi bi-search"></i>
-              </span>
-              <span>ค้นหา</span>
+              <i class="bi bi-search"></i>
+              <span class="ml-1">{{ $t('common.btn.search') }}</span>
             </button>
             <button type="button" @click="onClear" class="btn btn-sm btn-dark mr-2">
-              <span class="mr-2">
-                <i class="bi bi-x-circle"></i>
-              </span>
-              <span>ล้างคำค้นหา</span>
+              <i class="bi bi-x-circle"></i>
+              <span class="ml-1">{{ $t('common.btn.clear') }}</span>
             </button>
-            <button type="button" @click="onShowFormAddGoldCost" class="btn btn-sm btn-warning">
-              <span class="mr-2">
-                <i class="bi bi-plus"></i>
-              </span>
-              <span>เพิ่มข้อมูลผสมทอง</span>
+            <button type="button" @click="onShowFormAddGoldCost" class="btn btn-sm btn-main mr-2">
+              <i class="bi bi-plus"></i>
+              <span class="ml-1">{{ $t('view.productionCost.goldCost.btnCreate') }}</span>
             </button>
           </div>
         </div>
       </form>
     </div>
+
     <FormCreate
       :isShow="isShowFormAddGoldCost"
       :masterGold="masterGold"
       :masterGoldSize="masterGoldSize"
       @fetch="fetchFormAddGoldCost"
       @closeModal="onCloseFormAddGoldCost"
-    >
-    </FormCreate>
+    />
     <FormUpdate
       :isShow="isShowFormUpdateGoldCost"
       :masterGold="masterGold"
@@ -102,81 +76,59 @@
       :modelValue="modelUpdate"
       @fetch="fetchFormUpdateGoldCost"
       @closeModal="onCloseFormUpdateGoldCost"
-    >
-    </FormUpdate>
+    />
     <FormView
       :isShow="isShowFormViewGoldCost"
       :masterGold="masterGold"
       :masterGoldSize="masterGoldSize"
       :modelValue="modelUpdate"
       @closeModal="onCloseFormViewGoldCost"
-    >
-    </FormView>
-    <DataTable
-      :totalRecords="data.total"
-      :value="data.data"
-      v-model:expandedRows="expnadData"
-      dataKey="id"
-      class="p-datatable-sm mt-2"
-      scrollable
-      scrollHeight="calc(100vh - 310px)"
-      columnResizeMode="expand"
-      resizableColumns
+    />
+
+    <BaseDataTable
+      class="mt-2"
+      :items="data.data || []"
+      :totalRecords="data.total || 0"
+      :columns="columns"
+      :perPage="take"
       :paginator="true"
-      :lazy="true"
+      scrollHeight="calc(100vh - 310px)"
       @page="handlePageChange"
-      :rows="take"
-      :rowsPerPageOptions="[10, 20, 50, 100]"
-      paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
     >
-      <Column style="width: 100px">
-        <template #body="slotProps">
-          <div class="btn-action-container">
-            <button
-              class="btn btn-sm btn btn-main"
-              title="โหมดเเก้ไข"
-              @click="UpdateCost(slotProps.data)"
-            >
-              <i class="bi bi-brush"></i>
-            </button>
-            <button
-              class="ml-1 btn btn-sm btn btn-dark"
-              title="โหมดดูรายละเอียด"
-              @click="ViewCost(slotProps.data)"
-            >
-              <i class="bi bi-clipboard2-data-fill"></i>
-            </button>
-          </div>
-        </template>
-      </Column>
-      <Column field="bookNo" header="เล่มที่" style="width: 80px"> </Column>
-      <Column field="no" header="เลขที่" style="width: 80px"> </Column>
-      <Column field="runningNumber" header="หมายเลขลำดับ" style="width: 100px"> </Column>
-      <Column header="วันที่ออกใบเบิก" field="requestDate" style="width: 100px">
-        <template #body="prop">
-          {{ formatDate(prop.data.assignDate) }}
-        </template>
-      </Column>
-      <Column field="goldName" header="ประเภททอง" style="width: 100px"> </Column>
-      <Column field="goldSizeName" header="เปอร์เซ็นทอง" style="width: 100px"> </Column>
-      <Column field="goldReceipt" header="สูตรผสมทอง" style="width: 150px"> </Column>
-      <Column field="assignBy" header="ผู้เบิกทอง" style="width: 150px"> </Column>
-      <Column field="receiveBy" header="ผู้รับทอง" style="width: 150px"> </Column>
-      <Column field="remark" header="รายละเอียด" style="min-width: 100px"> </Column>
-    </DataTable>
+      <template #actionsTemplate="{ data: row }">
+        <div class="btn-action-container">
+          <button
+            class="btn btn-sm btn-main"
+            :title="$t('common.btn.edit')"
+            @click="UpdateCost(row)"
+          >
+            <i class="bi bi-brush"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-dark ml-1"
+            title="โหมดดูรายละเอียด"
+            @click="ViewCost(row)"
+          >
+            <i class="bi bi-clipboard2-data-fill"></i>
+          </button>
+        </div>
+      </template>
+      <template #requestDateTemplate="{ data: row }">
+        {{ formatDate(row.assignDate) }}
+      </template>
+    </BaseDataTable>
   </div>
 </template>
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Calendar from 'primevue/calendar'
+import { formatDate, formatISOString } from '@/services/utils/dayjs.js'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import api from '@/axios/axios-helper.js'
 
@@ -190,46 +142,58 @@ const interfaceForm = {
   createStart: null,
   createEnd: null
 }
+
 export default {
   components: {
-  
     pageTitle,
+    CalendarGeneric,
+    InputTextGeneric,
+    BaseDataTable,
     FormCreate,
-    DataTable,
-    Column,
     FormUpdate,
-    FormView,
-    Calendar
+    FormView
   },
+
+  mixins: [dataTablePaging],
+
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
       isShowFormAddGoldCost: false,
       isShowFormUpdateGoldCost: false,
       isShowFormViewGoldCost: false,
-      // --- form --- //
-      form: {
-        ...interfaceForm
-      },
+      form: { ...interfaceForm },
       masterGold: [],
       masterGoldSize: [],
       modelUpdate: {},
-
-      // table
-      totalRecords: 0,
-      take: 10, //all
-      skip: 0,
-      data: {},
-      expnadData: []
+      data: {}
     }
   },
+
+  computed: {
+    columns() {
+      return [
+        { field: 'actions', header: '', sortable: false, width: '100px' },
+        { field: 'bookNo', header: this.$t('view.productionCost.goldCost.colBookNo'), minWidth: '80px' },
+        { field: 'no', header: this.$t('view.productionCost.goldCost.colNo'), minWidth: '80px' },
+        { field: 'runningNumber', header: this.$t('view.productionCost.goldCost.colRunningNumber'), minWidth: '100px' },
+        { field: 'requestDate', header: this.$t('view.productionCost.goldCost.colRequestDate'), minWidth: '100px', sortable: false },
+        { field: 'goldName', header: this.$t('view.productionCost.goldCost.colGoldName'), minWidth: '100px' },
+        { field: 'goldSizeName', header: this.$t('view.productionCost.goldCost.colGoldSizeName'), minWidth: '100px' },
+        { field: 'goldReceipt', header: this.$t('view.productionCost.goldCost.colGoldReceipt'), minWidth: '150px' },
+        { field: 'assignBy', header: this.$t('view.productionCost.goldCost.colAssignBy'), minWidth: '150px' },
+        { field: 'receiveBy', header: this.$t('view.productionCost.goldCost.colReceiveBy'), minWidth: '150px' },
+        { field: 'remark', header: this.$t('view.productionCost.goldCost.colRemark'), minWidth: '100px' }
+      ]
+    }
+  },
+
   methods: {
-    // ---- controller ----- //
     onSearch() {
-      this.fetchData()
+      this.resetPaging()
     },
-    onClear() {},
+    onClear() {
+      this.form = { ...interfaceForm }
+    },
     onShowFormAddGoldCost() {
       this.isShowFormAddGoldCost = true
     },
@@ -262,74 +226,41 @@ export default {
       this.isShowFormViewGoldCost = false
     },
 
-    // ----- table -------- //
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    //  -------- APIs --------- //
     async fetchMasterGold() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGold')
-        if (res) {
-          this.masterGold = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGold')
+      if (res) {
+        this.masterGold = [...res]
       }
     },
     async fetchMasterGoldSize() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGoldSize = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGoldSize')
+      if (res) {
+        this.masterGoldSize = [...res]
       }
     },
     async fetchData() {
-      try {
-        this.isLoading = true
-        this.data = {}
-        //console.log(this.formValue)
-        const param = {
-          take: this.take,
-          skip: this.skip,
-          search: {
-            text: this.form.text,
-            runningNumber: this.form.runningNumber,
-            createStart: this.form.createStart ? formatISOString(this.form.createStart) : null,
-            createEnd: this.form.createEnd ? formatISOString(this.form.createEnd) : null
-          }
+      this.data = {}
+      const param = {
+        take: this.take,
+        skip: this.skip,
+        search: {
+          text: this.form.text,
+          runningNumber: this.form.runningNumber,
+          createStart: this.form.createStart ? formatISOString(this.form.createStart) : null,
+          createEnd: this.form.createEnd ? formatISOString(this.form.createEnd) : null
         }
-        const res = await api.jewelry.post('ProductionPlanCost/ListGoldCost', param)
-        if (res) {
-          this.data = { ...res }
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('ProductionPlanCost/ListGoldCost', param)
+      if (res) {
+        this.data = { ...res }
       }
     },
 
-    // ------ helper ------//
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
     formatDate(date) {
       return formatDate(date)
     }
   },
+
   created() {
     this.fetchMasterGold()
     this.fetchMasterGoldSize()
@@ -339,12 +270,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/search-bar.scss';
-
-.search-bar-container {
-  display: grid;
-  grid-template-columns: 5fr 3fr 3fr 5fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
+@import '@/assets/scss/custom-style/standard-search-bar';
+@import '@/assets/scss/custom-style/standard-form.scss';
 </style>

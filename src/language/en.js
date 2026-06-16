@@ -14,6 +14,8 @@ import receiptStock from './view/receipt-stock/en.js'
 import productionLang from './view/production/en.js'
 import saleLang from './view/sale/en.js'
 import moldLang from './view/mold/en.js'
+import workerLang from './view/worker/en.js'
+import productionCostLang from './view/production-cost/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -80,6 +82,8 @@ export default {
     },
     sale: { ...saleLang },
     mold: { ...moldLang },
+    worker: { ...workerLang },
+    productionCost: { ...productionCostLang },
     stock: {
       product: { ...stock.product },
       location: { ...stock.location },

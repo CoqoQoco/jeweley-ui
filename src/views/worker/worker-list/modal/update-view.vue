@@ -2,35 +2,35 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ `แก้ไขข้อมูลช่าง: ${form.code} - ${form.nameTh}` }}</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ `${$t('view.worker.workerList.titleUpdate')}: ${form.code} - ${form.nameTh}` }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="worker-update-form">
           <div class="p-3">
             <div class="form-row two-col">
               <div class="form-field">
-                <span class="title-text">แผนกช่าง <span class="text-required">*</span></span>
-                <Dropdown
+                <span class="title-text">{{ $t('view.worker.workerList.fieldDept') }} <span class="text-required">*</span></span>
+                <DropdownGeneric
                   v-model="form.type"
                   :options="masterWorkerProductionType"
                   optionLabel="description"
                   optionValue="id"
-                  :class="val.isValWorkerProductionType === true ? `p-invalid` : ``"
-                  :showClear="form.type ? true : false"
+                  :class="val.isValWorkerProductionType === true ? 'p-invalid' : ''"
+                  :showClear="!!form.type"
                 />
               </div>
               <div class="form-field">
-                <span class="title-text">รหัสช่าง <span class="txt-required">*</span></span>
+                <span class="title-text">{{ $t('view.worker.workerList.fieldCode') }} <span class="txt-required">*</span></span>
                 <input type="text" class="form-control" v-model="form.code" disabled required />
               </div>
             </div>
             <div class="form-row two-col">
               <div class="form-field">
-                <span class="title-text">ชื่อ TH <span class="txt-required">*</span></span>
+                <span class="title-text">{{ $t('view.worker.workerList.fieldNameTh') }} <span class="txt-required">*</span></span>
                 <input type="text" class="form-control" v-model="form.nameTh" required />
               </div>
               <div class="form-field">
-                <span class="title-text">ชื่อ EN</span>
+                <span class="title-text">{{ $t('view.worker.workerList.fieldNameEn') }}</span>
                 <input type="text" class="form-control" v-model="form.nameEn" />
               </div>
             </div>
@@ -39,10 +39,10 @@
       </template>
       <template #action>
         <button class="btn btn-sm btn-main" type="submit" form="worker-update-form">
-          <i class="bi bi-save"></i> บันทึก
+          <i class="bi bi-save"></i> {{ $t('common.btn.save') }}
         </button>
         <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
+          {{ $t('common.btn.cancel') }}
         </button>
       </template>
     </modal>
@@ -51,15 +51,14 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
 
 const interfaceForm = {
   code: null,
@@ -70,10 +69,11 @@ const interfaceForm = {
 const interfaceIsValid = {
   isValWorkerProductionType: false
 }
+
 export default {
   components: {
     modal,
-    Dropdown
+    DropdownGeneric
   },
 
   setup() {
@@ -87,7 +87,6 @@ export default {
       type: Boolean,
       default: false
     },
-
     modelUpdate: {
       type: Object,
       required: true,
@@ -105,16 +104,13 @@ export default {
     modelUpdate: {
       handler(newVal) {
         if (newVal) {
-          this.form = {
-            ...newVal,
-            check: true
-          }
+          this.form = { ...newVal, check: true }
         } else {
           this.form = {}
         }
       },
-      deep: true, // ถ้าต้องการ watch การเปลี่ยนแปลงของ nested properties
-      immediate: true // ถ้าต้องการให้ทำงานทันทีตอน component ถูกสร้าง
+      deep: true,
+      immediate: true
     },
     'form.type'() {
       if (this.form.type) {
@@ -122,78 +118,55 @@ export default {
       }
     }
   },
+
   data() {
     return {
-      form: {
-        ...interfaceForm
-      },
-      //   form: {
-      //     ...interfaceForm
-      //   },
-      val: {
-        ...interfaceIsValid
-      }
+      form: { ...interfaceForm },
+      val: { ...interfaceIsValid }
     }
   },
+
   methods: {
-    // --- controller --- //
-    // --- controller --- //
     closeModal() {
-      this.form = {
-        ...interfaceForm
-      }
-      this.val = {
-        ...interfaceIsValid
-      }
+      this.form = { ...interfaceForm }
+      this.val = { ...interfaceIsValid }
       this.$emit('closeModal')
     },
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
-          `${this.form.code}-${this.form.nameTh} `,
-          'ยืนยันเเก้ไขข้อมูลช่าง',
+        confirmThenSubmit(
+          `${this.form.code}-${this.form.nameTh}`,
+          this.$t('view.worker.workerList.confirmUpdate'),
           async () => {
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
 
     validateForm() {
       if (!this.form.type) {
-        this.val = {
-          isValWorkerProductionType: true
-        }
+        this.val = { isValWorkerProductionType: true }
         return false
       }
-
       return true
     },
 
-    // --- APIs --- //
     async submit() {
       const res = await this.workerStore.fetchUpdate({
         formValue: this.form
       })
 
       if (res) {
-        swAlert.success(
+        success(
           null,
           null,
           () => {
-            this.form = {
-              ...interfaceForm
-            }
-            this.val = {
-              ...interfaceIsValid
-            }
+            this.form = { ...interfaceForm }
+            this.val = { ...interfaceIsValid }
             this.$emit('fetch')
-          },
-          null,
-          null
+          }
         )
       }
     }
@@ -208,12 +181,12 @@ export default {
 .card { background: #ffffff !important; }
 
 .form-row {
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-lg);
 
   &.two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: var(--sp-lg);
   }
 
   @media (max-width: 1024px) {
@@ -227,16 +200,16 @@ export default {
   .title-text {
     display: block;
     font-weight: 500;
-    margin-bottom: 6px;
+    margin-bottom: var(--sp-xs);
   }
 }
 
 input.form-control,
 textarea.form-control {
   padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
 
   &:focus {
     border-color: var(--base-font-color);

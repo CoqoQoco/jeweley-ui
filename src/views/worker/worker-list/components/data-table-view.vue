@@ -8,13 +8,12 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-      <!-- Action buttons template -->
       <template #actionsTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-main mr-2" title="เเก้ไข" @click="onUpdate(data)">
+          <button class="btn btn-sm btn-main mr-2" :title="$t('view.worker.workerList.btnEdit')" @click="onUpdate(data)">
             <i class="bi bi-database-fill-gear"></i>
           </button>
-          <button class="btn btn-sm btn btn-main" title="ค่าเเรง" @click="onGoWages(data)">
+          <button class="btn btn-sm btn-main" :title="$t('view.worker.workerList.btnWages')" @click="onGoWages(data)">
             <i class="bi bi-wallet-fill"></i>
           </button>
         </div>
@@ -38,6 +37,7 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
 
@@ -48,6 +48,8 @@ export default {
     BaseDataTable,
     updateView
   },
+
+  mixins: [dataTablePaging],
 
   setup() {
     const workerStore = usePlanWorkerApiStore()
@@ -70,28 +72,9 @@ export default {
   computed: {
     form() {
       return this.modelForm || {}
-    }
-  },
-
-  watch: {
-    async modelForm() {
-      //console.log(this.modelForm)
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
     },
-    async modelFormExport() {
-      //console.log(this.modelForm)
-      await this.fetchDataExport()
-    }
-  },
-
-  data() {
-    return {
-      take: 10,
-      skip: 0,
-      sort: [],
-      columns: [
+    columns() {
+      return [
         {
           field: 'actions',
           header: '',
@@ -100,74 +83,65 @@ export default {
         },
         {
           field: 'code',
-          header: 'รหัส',
+          header: this.$t('view.worker.workerList.colCode'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameTh',
-          header: 'ชื่อ TH',
+          header: this.$t('view.worker.workerList.colNameTh'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameEn',
-          header: 'ชื่อ EN',
+          header: this.$t('view.worker.workerList.colNameEn'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'typeName',
-          header: 'แผนกช่าง',
+          header: this.$t('view.worker.workerList.colDept'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'createDate',
-          header: 'สร้างข้อมูล',
+          header: this.$t('view.worker.workerList.colCreateDate'),
           sortable: true,
           format: 'datetime',
           minWidth: '150px'
         },
         {
           field: 'isActive',
-          header: 'สถานะ',
+          header: this.$t('view.worker.workerList.colStatus'),
           sortable: false,
           width: '130px'
         }
-      ],
+      ]
+    }
+  },
 
-      data: [],
+  watch: {
+    async modelForm() {
+      this.resetPaging()
+    }
+  },
 
+  data() {
+    return {
       isShowUpdate: false,
       dataUpdate: {}
     }
   },
 
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     onCloseModal() {
       this.isShowUpdate = false
       this.dataUpdate = {}
     },
     onUpdate(e) {
       this.dataUpdate = { ...e }
-      //console.log('onUpdated', this.dataUpdate)
       this.isShowUpdate = true
     },
 
@@ -190,19 +164,13 @@ export default {
       })
     },
 
-    // async fetchDataExport() {
-    //   //console.log('fetchDataExport')
-    //   await this.receiptProductionStore.fetchConfirmHistoryExport({
-    //     sort: this.sort,
-    //     formValue: this.form
-    //   })
-    // }
-
     getStatusSeverity(status) {
       return status ? 'box-status-success' : 'box-status-disable'
     },
     getStatusName(status) {
-      return status ? 'เปิดใช้งาน' : 'ปิดใช้งาน'
+      return status
+        ? this.$t('view.worker.workerList.statusActive')
+        : this.$t('view.worker.workerList.statusInactive')
     }
   }
 }

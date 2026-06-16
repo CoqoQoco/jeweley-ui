@@ -58,11 +58,10 @@
                     <span class="title-text">{{ row.goldSize }}</span>
                   </td>
                   <td>
-                    <input
+                    <InputTextGeneric
                       type="number"
                       step="0.001"
-                      min="0"
-                      class="form-control"
+                      :min="0"
                       v-model.number="row.weight"
                     />
                   </td>
@@ -100,7 +99,7 @@
           </div>
           <div class="summary-row">
             <span class="summary-label">(+) รับคืนทอง (เงิน)</span>
-            <span class="summary-value text-success">+ {{ fmt2(totalGoldReturnAmount) }} บาท</span>
+            <span class="summary-value text-teal">+ {{ fmt2(totalGoldReturnAmount) }} บาท</span>
           </div>
           <hr class="my-2" />
           <div class="summary-row">
@@ -130,21 +129,20 @@
         </div>
 
         <div>
-          <textarea
-            class="form-control"
+          <TextareaGeneric
             v-model="remark"
             placeholder="หมายเหตุ"
-            rows="2"
-          ></textarea>
+            :rows="2"
+          />
         </div>
       </div>
     </template>
 
     <template #action>
       <button class="btn btn-sm btn-main" @click="onSave">
-        <i class="bi bi-save mr-1"></i> บันทึก &amp; พิมพ์
+        <i class="bi bi-save mr-1"></i> {{ $t('common.btn.save') }} &amp; พิมพ์
       </button>
-      <button class="btn btn-sm btn-outline-main ml-2" @click="$emit('closeModal')">ยกเลิก</button>
+      <button class="btn btn-sm btn-outline-main ml-2" @click="$emit('closeModal')">{{ $t('common.btn.cancel') }}</button>
     </template>
   </modal>
 </template>
@@ -157,6 +155,8 @@ import { formatISOString } from '@/services/utils/dayjs'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
@@ -164,7 +164,7 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 export default {
   name: 'GoldLossSlipModal',
 
-  components: { modal, BaseDataTable, AutoCompleteGeneric, pageTitle },
+  components: { modal, BaseDataTable, AutoCompleteGeneric, pageTitle, InputTextGeneric, TextareaGeneric },
 
   props: {
     isShow: {
@@ -364,17 +364,17 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .section-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
-  background: #ffffff !important;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  background: var(--color-card-bg) !important;
 
   h6 {
     color: var(--base-font-color);
     font-weight: 600;
-    padding-bottom: 8px;
+    padding-bottom: var(--sp-sm);
     border-bottom: 1px solid #f0f0f0;
-    margin-bottom: 12px;
+    margin-bottom: var(--sp-md);
     background: transparent !important;
   }
 }
@@ -395,12 +395,12 @@ export default {
   font-weight: 600;
 }
 
-.text-success {
-  color: #038387;
+.text-teal {
+  color: var(--base-green);
 }
 
 .loss-positive {
-  color: #038387;
+  color: var(--base-green);
   font-weight: 600;
 }
 
@@ -409,29 +409,9 @@ export default {
   font-weight: 600;
 }
 
-input.form-control,
-textarea.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
-  }
-}
-
-textarea.form-control {
-  resize: vertical;
-}
-
 .return-table {
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
 
   th, td {
     padding: 6px 8px;
@@ -442,16 +422,12 @@ textarea.form-control {
   th {
     font-weight: 600;
     color: var(--base-font-color);
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--color-border);
     white-space: nowrap;
   }
 
   .text-right {
     text-align: right;
-  }
-
-  .text-center {
-    text-align: center;
   }
 }
 
@@ -461,9 +437,9 @@ textarea.form-control {
   .p-autocomplete-input {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-base);
   }
 }
 </style>

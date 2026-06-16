@@ -2,11 +2,11 @@
   <div class="filter-container-searchBar">
     <form @submit.prevent="onSearch">
       <div>
-        <pageTitle title="ประวัติ Gold Loss Slip" :isShowBtnClose="false" />
+        <pageTitle :title="$t('view.worker.goldLossSlipList.searchTitle')" :isShowBtnClose="false" />
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">ช่วงวันที่</span>
+            <span class="title-text">{{ $t('view.worker.goldLossSlipList.fieldDateRange') }}</span>
             <div class="flex-group">
               <CalendarGeneric
                 class="w-100"
@@ -15,7 +15,7 @@
                 :manualInput="false"
                 :showIcon="true"
                 dateFormat="dd/mm/yy"
-                placeholder="เริ่มต้น"
+                :placeholder="$t('common.label.start')"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
               <CalendarGeneric
@@ -25,24 +25,27 @@
                 :manualInput="false"
                 :showIcon="true"
                 dateFormat="dd/mm/yy"
-                placeholder="สิ้นสุด"
+                :placeholder="$t('common.label.end')"
               />
             </div>
           </div>
 
           <div>
-            <span class="title-text">รหัสพนักงาน</span>
-            <input class="form-control bg-input" v-model="form.workerCode" placeholder="รหัสพนักงาน" />
+            <span class="title-text">{{ $t('view.worker.goldLossSlipList.fieldWorkerCode') }}</span>
+            <InputTextGeneric
+              v-model="form.workerCode"
+              :placeholder="$t('view.worker.goldLossSlipList.fieldWorkerCodePlaceholder')"
+            />
           </div>
         </div>
 
         <div class="btn-submit-container-between">
           <div></div>
           <div>
-            <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
             </button>
-            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <i class="bi bi-x-circle"></i>
             </button>
           </div>
@@ -57,13 +60,15 @@ import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const CalendarGeneric = defineAsyncComponent(() => import('@/components/prime-vue/CalendarGeneric.vue'))
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'GoldLossSlipListSearchView',
 
   components: {
     pageTitle,
-    CalendarGeneric
+    CalendarGeneric,
+    InputTextGeneric
   },
 
   props: {
