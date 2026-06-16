@@ -21,18 +21,8 @@ export default {
     dataTable
   },
 
-  setup() {},
-
-  computed: {
-    masterCustomerType() {
-      return this.masterStore.customerType
-    }
-  },
-
   data() {
     return {
-      isLoading: false,
-      isExport: false,
       form: { ...interfaceForm },
       formExport: { ...interfaceForm },
       search: {}

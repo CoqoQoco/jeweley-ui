@@ -8,18 +8,14 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-      <!-- Action buttons template -->
-      <template #actionsTemplate="{ data }">
+      <template #actionsTemplate="{ data: rowData }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-main" title="เเก้ไข" @click="onUpdate(data)">
-            <i class="bi bi-database-fill-gear"></i>
-          </button>
-        </div>
-      </template>
-
-      <template #woTextTemplate="{ data }">
-        <div>
-          {{ `${data.wo}-${data.woNumber}` }}
+          <ButtonGeneric
+            variant="main"
+            icon="bi-database-fill-gear"
+            :title="$t('common.btn.edit')"
+            @click="onUpdate(rowData)"
+          />
         </div>
       </template>
     </BaseDataTable>
@@ -29,12 +25,14 @@
       :modelUpdate="dataUpdate"
       @closeModal="onCloseModal"
       @fetch="fetchDataByUpdate"
-    ></updateView>
+    />
   </div>
 </template>
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -43,8 +41,11 @@ import updateView from '../modal/update-view.vue'
 export default {
   components: {
     BaseDataTable,
+    ButtonGeneric,
     updateView
   },
+
+  mixins: [dataTablePaging],
 
   setup() {
     const masterStore = useMasterApiStore()
@@ -56,39 +57,15 @@ export default {
       type: Object,
       default: () => ({}),
       required: true
-    },
-    modelFormExport: {
-      type: Object,
-      default: () => ({}),
-      required: true
     }
   },
 
   computed: {
     form() {
       return this.modelForm || {}
-    }
-  },
-
-  watch: {
-    async modelForm() {
-      //console.log(this.modelForm)
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
     },
-    async modelFormExport() {
-      //console.log(this.modelForm)
-      await this.fetchDataExport()
-    }
-  },
-
-  data() {
-    return {
-      take: 10,
-      skip: 0,
-      sort: [],
-      columns: [
+    columns() {
+      return [
         {
           field: 'actions',
           header: '',
@@ -97,88 +74,71 @@ export default {
         },
         {
           field: 'code',
-          header: 'รหัส',
+          header: this.$t('common.field.code'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameEn',
-          header: 'ชื่อ EN',
+          header: this.$t('view.master.productType.field.nameEn'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameTh',
-          header: 'ชื่อ TH',
+          header: this.$t('view.master.productType.field.nameTh'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'prefix',
-          header: 'อักษรหน้าสินค้า',
+          header: this.$t('view.master.productType.field.prefix'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'prefix2',
-          header: 'อักษรหน้าสินค้า (Silver)',
+          header: this.$t('view.master.productType.field.prefix2'),
           sortable: true,
           minWidth: '150px'
         }
-      ],
+      ]
+    }
+  },
 
-      data: [],
+  watch: {
+    async modelForm() {
+      this.resetPaging()
+    }
+  },
 
+  data() {
+    return {
+      data: {},
       isShowUpdate: false,
       dataUpdate: {}
     }
   },
 
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     onCloseModal() {
       this.isShowUpdate = false
       this.dataUpdate = {}
     },
-    onUpdate(e) {
-      this.dataUpdate = { ...e }
-      //console.log('onUpdated', this.dataUpdate)
+    onUpdate(row) {
+      this.dataUpdate = { ...row }
       this.isShowUpdate = true
     },
     async fetchDataByUpdate() {
       await this.fetchData()
       this.onCloseModal()
     },
-
     async fetchData() {
       this.data = await this.masterStore.fetchListMaster({
         skip: this.skip,
         take: this.take,
         sort: this.sort,
         form: this.form
-      })
-    },
-
-    async fetchDataExport() {
-      //console.log('fetchDataExport')
-      await this.receiptProductionStore.fetchConfirmHistoryExport({
-        sort: this.sort,
-        formValue: this.form
       })
     }
   }

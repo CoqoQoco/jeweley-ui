@@ -1,48 +1,30 @@
 <template>
-  <div class="filter-container-searchBar">
-    <pageTitle
-      title="ข้อมูลพลอย"
-      description="เเก้ไขปรับปรุง/เพิ่ม พลอยเเละรายละเอียดต่างๆ"
-      :isShowBtnClose="false"
-      :isShowRightSlot="true"
-    >
-      <template #rightSlot>
-        <button class="btn btn-sm btn-main" @click="onCreate">
-          <span class="bi bi-database-fill-add"></span>
-        </button>
-      </template>
-    </pageTitle>
-
-    <form @submit.prevent="onSubmit">
-      <div class="form-col-container">
-        <div>
-          <span class="title-text">ค้นหา</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.text"
-            placeholder="EX: RU, Ruby, ทับทิมเเดง......"
-          />
-        </div>
+  <SearchBarGeneric :title="$t('view.master.gem.searchTitle')" @search="onSubmit" @clear="onClear">
+    <template #fields>
+      <div>
+        <span class="title-text">{{ $t('common.btn.search') }}</span>
+        <InputTextGeneric
+          v-model.trim="form.text"
+          :placeholder="$t('view.master.gem.placeholder.search')"
+          :bgInput="true"
+        />
       </div>
+    </template>
 
-      <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main" type="submit">
-          <span><i class="bi bi-search"></i></span>
-        </button>
-        <button class="btn btn-sm btn-dark ml-2" type="button">
-          <span><i class="bi bi-x-circle"></i></span>
-        </button>
-      </div>
-    </form>
+    <template #actions-right>
+      <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+      <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" @click="onClear" :title="$t('common.btn.clear')" />
+      <ButtonGeneric variant="main" icon="bi-database-fill-add" class="ml-2" @click="onCreate" :title="$t('view.master.gem.createBtn')" />
+    </template>
+  </SearchBarGeneric>
 
-    <addView :isShow="isShow.add" @closeModal="closeModal"></addView>
-  </div>
+  <addView :isShow="isShow.add" @closeModal="closeModal" />
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
+import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 import addView from '../modal/create-view.vue'
 
@@ -52,15 +34,19 @@ const interfaceIsShowModal = {
 
 export default {
   components: {
-    pageTitle,
+    SearchBarGeneric,
+    InputTextGeneric,
+    ButtonGeneric,
     addView
   },
+
   props: {
     modelForm: {
       type: Object,
       default: () => ({})
     }
   },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -69,12 +55,14 @@ export default {
       deep: true
     }
   },
+
   data() {
     return {
       isShow: { ...interfaceIsShowModal },
       form: { ...this.modelForm }
     }
   },
+
   methods: {
     onSubmit() {
       this.$emit('search', this.form)
@@ -83,8 +71,6 @@ export default {
       this.$emit('clear')
     },
     onCreate() {
-      //this.$router.push({ name: 'plan-gold-order' })
-
       this.isShow.add = true
     },
     closeModal(event) {
@@ -99,6 +85,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
 </style>

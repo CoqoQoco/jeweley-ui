@@ -3,18 +3,17 @@
     <searchView
       v-model:modelForm="form"
       @search="onSearchFilter"
-      @export="onExport"
       @create="onCreate"
       @clear="onClearFilter"
-    ></searchView>
-    <dataTable v-model:modelForm="search" v-model:modelFormExport="formExport"></dataTable>
+    />
+    <dataTable v-model:modelForm="search" class="mt-2" />
     <create
       :isShow="isShowCreate"
       :modelMasterGold="masterGold"
       :modelMasterGoldSize="masterGoldSize"
       @fetch="onSearchFilterByCreate"
       @closeModal="onCloseModal"
-    ></create>
+    />
   </div>
 </template>
 
@@ -29,6 +28,7 @@ const interfaceForm = {
   type: 'ZILL',
   text: null
 }
+
 export default {
   components: {
     searchView,
@@ -54,10 +54,6 @@ export default {
     return {
       form: { ...interfaceForm },
       search: {},
-
-      isExport: false,
-      formExport: { ...interfaceForm },
-
       isShowCreate: false
     }
   },
@@ -73,12 +69,6 @@ export default {
     onClearFilter() {
       this.form = { ...interfaceForm }
     },
-
-    onExport(data) {
-      //console.log('onExport', data)
-      this.formExport = { ...data }
-    },
-
     onCloseModal() {
       this.isShowCreate = false
     },
@@ -87,11 +77,10 @@ export default {
     }
   },
 
-  async created() {
+  created() {
     this.$nextTick(() => {
       this.masterStore.fetchGold()
       this.masterStore.fetchGoldSize()
-
       this.search = { ...this.form }
     })
   }

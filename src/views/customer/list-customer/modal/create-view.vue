@@ -2,105 +2,92 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" width="1000px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">เพิ่มข้อมูลลูกค้า</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.customer.createTitle') }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="customer-create-form">
           <div class="p-4">
             <div class="form-row two-col">
-              <div class="form-field">
-                <span class="title-text">รหัสลูกค้า <span class="txt-required">*</span></span>
-                <input type="text" class="form-control" v-model="form.code" required />
-              </div>
-              <div class="form-field">
-                <span class="title-text">ประเภทลูกค้า <span class="txt-required">*</span></span>
-                <Dropdown
-                  v-model="form.type"
+              <FormFieldGeneric :label="$t('view.customer.field.customerCode')" :required="true">
+                <InputTextGeneric v-model="form.code" :required="true" />
+              </FormFieldGeneric>
+              <FormFieldGeneric :label="$t('view.customer.field.customerType')" :required="true">
+                <DropdownGeneric
+                  :modelValue="form.type"
                   :options="masterCustomer"
                   optionLabel="description"
-                  :class="val.isValCustomerType === true ? `p-invalid` : ``"
-                  :showClear="form.customerType ? true : false"
+                  :class="val.isValCustomerType ? 'p-invalid' : ''"
+                  :showClear="!!form.type"
+                  @update:modelValue="form.type = $event"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
             <div class="form-row two-col">
-              <div class="form-field">
-                <span class="title-text">ชื่อภาษาไทย <span class="txt-required">*</span></span>
-                <input type="text" class="form-control" v-model="form.nameTh" required />
-              </div>
-              <div class="form-field">
-                <span class="title-text">ชื่อภาษาอังกฤษ</span>
-                <input type="text" class="form-control" v-model="form.nameEn" />
-              </div>
+              <FormFieldGeneric :label="$t('view.customer.field.nameTh')" :required="true">
+                <InputTextGeneric v-model="form.nameTh" :required="true" />
+              </FormFieldGeneric>
+              <FormFieldGeneric :label="$t('view.customer.field.nameEn')">
+                <InputTextGeneric v-model="form.nameEn" />
+              </FormFieldGeneric>
             </div>
             <div class="form-row two-col">
-              <div class="form-field">
-                <span class="title-text">ที่อยู่ติดต่อ</span>
-                <textarea class="form-control" v-model="form.address" />
-              </div>
-              <div class="form-field">
-                <span class="title-text">ข้อมูลเพิ่มเติม</span>
-                <textarea class="form-control" v-model="form.remark" />
-              </div>
+              <FormFieldGeneric :label="$t('view.customer.field.address')">
+                <TextareaGeneric v-model="form.address" />
+              </FormFieldGeneric>
+              <FormFieldGeneric :label="$t('common.field.remark')">
+                <TextareaGeneric v-model="form.remark" />
+              </FormFieldGeneric>
             </div>
             <div class="form-row two-col">
-              <div class="form-field">
-                <span class="title-text">เบอร์โทรติดต่อ 1</span>
+              <FormFieldGeneric :label="$t('view.customer.field.tel1')">
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input id="tel1" class="form-control bg-input" type="tel" v-model.trim="form.tel1" />
+                  <InputTextGeneric id="tel1" type="tel" v-model.trim="form.tel1" />
                 </div>
-              </div>
-              <div class="form-field">
-                <span class="title-text">เบอร์โทรติดต่อ 2</span>
+              </FormFieldGeneric>
+              <FormFieldGeneric :label="$t('view.customer.field.tel2')">
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input id="tel2" class="form-control bg-input" type="tel" v-model.trim="form.tel2" />
+                  <InputTextGeneric id="tel2" type="tel" v-model.trim="form.tel2" />
                 </div>
-              </div>
+              </FormFieldGeneric>
             </div>
             <div class="form-row two-col">
-              <div class="form-field">
-                <span class="title-text">E-mail</span>
+              <FormFieldGeneric :label="$t('view.customer.field.email')">
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-envelope-check-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input id="email" class="form-control bg-input" type="email" v-model.trim="form.email" />
+                  <InputTextGeneric id="email" type="email" v-model.trim="form.email" />
                 </div>
-              </div>
-              <div class="form-field">
-                <span class="title-text">บุคคลติดต่อ</span>
+              </FormFieldGeneric>
+              <FormFieldGeneric :label="$t('view.customer.field.contact')">
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
                     <span class="input-group-text">
                       <i class="bi bi-person-lines-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input id="contact" class="form-control bg-input" type="text" v-model.trim="form.contact" />
+                  <InputTextGeneric id="contact" type="text" v-model.trim="form.contact" />
                 </div>
-              </div>
+              </FormFieldGeneric>
             </div>
           </div>
         </form>
       </template>
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="customer-create-form">
-          <i class="bi bi-save"></i> บันทึก
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="customer-create-form" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -108,14 +95,17 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success, warning } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import Dropdown from 'primevue/dropdown'
-
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
 
 const interfaceForm = {
   code: null,
@@ -129,13 +119,19 @@ const interfaceForm = {
   email: null,
   remark: null
 }
+
 const interfaceIsValid = {
   isValCustomerType: false
 }
+
 export default {
   components: {
     modal,
-    Dropdown
+    InputTextGeneric,
+    TextareaGeneric,
+    FormFieldGeneric,
+    ButtonGeneric,
+    DropdownGeneric
   },
 
   setup() {
@@ -155,6 +151,8 @@ export default {
     }
   },
 
+  emits: ['closeModal'],
+
   watch: {
     'form.type'() {
       if (this.form.type) {
@@ -165,86 +163,61 @@ export default {
 
   data() {
     return {
-      // --- flag --- //
-      form: {
-        ...interfaceForm
-      },
-      val: {
-        ...interfaceIsValid
-      }
+      form: { ...interfaceForm },
+      val: { ...interfaceIsValid }
     }
   },
+
   methods: {
-    // --- controller --- //
     closeModal() {
-      this.form = {
-        ...interfaceForm
-      }
-      this.val = {
-        ...interfaceIsValid
-      }
+      this.form = { ...interfaceForm }
+      this.val = { ...interfaceIsValid }
       this.$emit('closeModal')
     },
+
     onSubmit() {
-      if (this.validateForm()) {
-        swAlert.confirmSubmit(
-          `${this.form.code}-${this.form.nameTh} `,
-          'ยืนยันเพิ่มข้อมูลลูกค้า',
-          async () => {
-            await this.submit()
-          },
-          null,
-          null
-        )
-      }
+      if (!this.validateForm()) return
+
+      confirmThenSubmit(
+        `${this.form.code} - ${this.form.nameTh}`,
+        this.$t('view.customer.confirm.create'),
+        async () => {
+          await this.submit()
+        }
+      )
     },
+
     validateForm() {
       if (!this.form.type) {
-        this.val = {
-          isValCustomerType: true
-        }
+        this.val = { isValCustomerType: true }
+        warning(this.$t('view.customer.validation.customerTypeRequired'))
         return false
       }
-
       return true
     },
 
-    // --- APIs ---- //
     async submit() {
-      try {
-        const params = {
-          code: this.form.code,
-          type: this.form.type,
-          nameTh: this.form.nameTh,
-          nameEn: this.form.nameEn,
+      const params = {
+        code: this.form.code,
+        type: this.form.type,
+        nameTh: this.form.nameTh,
+        nameEn: this.form.nameEn,
+        address: this.form.address,
+        tel1: this.form.tel1,
+        tel2: this.form.tel2,
+        email: this.form.email,
+        contactName: this.form.contact,
+        remark: this.form.remark
+      }
 
-          address: this.form.address,
-          tel1: this.form.tel1,
-          tel2: this.form.tel2,
-          email: this.form.email,
-          contactName: this.form.contact,
-          remark: this.form.remark
-        }
-        //console.log(params)
+      const res = await this.customerStore.fetchCreateCustomer({
+        formValue: params
+      })
 
-        const res = await this.customerStore.fetchCreateCustomer({
-          formValue: params
+      if (res) {
+        success(null, null, () => {
+          this.closeModal()
         })
-        if (res) {
-          //this.isResetImage = !this.isResetImage
-          swAlert.success(
-            null,
-            null,
-            () => {
-              this.closeModal()
-            },
-            null,
-            null
-          )
-          //this.onClearVal()
-        }
-      } catch (error) {
-        console.log(error)
       }
     }
   }
@@ -255,48 +228,24 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
 
-.card { background: #ffffff !important; }
+.card {
+  background: var(--color-card-bg) !important;
+}
 
 .form-row {
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-lg);
 
   &.two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: var(--sp-lg);
   }
 
   @media (max-width: 1024px) {
-    &.two-col { grid-template-columns: 1fr; }
+    &.two-col {
+      grid-template-columns: 1fr;
+    }
   }
-}
-
-.form-field {
-  width: 100%;
-
-  .title-text {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 6px;
-  }
-}
-
-input.form-control,
-textarea.form-control {
-  padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
-  }
-}
-
-textarea.form-control {
-  resize: vertical;
 }
 
 .input-group-text {

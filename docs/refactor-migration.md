@@ -39,14 +39,14 @@
 
 | Module | สถานะ | design-token | generic | i18n | cleancode | native เหลือ | หมายเหตุ |
 |---|---|---|---|---|---|---|---|
-| **master/diamond-grade** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | pilot group (เล็ก) |
-| **master/gem** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
-| **master/gem-shape** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
-| **master/gold-size** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
-| **master/productType** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
-| **master/zill** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
+| **master/diamond-grade** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
+| **master/gem** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
+| **master/gem-shape** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
+| **master/gold-size** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
+| **master/productType** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
+| **master/zill** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
 | **catalog** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | **Pilot แรก** — reference implementation; native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
-| **customer** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 5 | |
+| **customer** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | native→generic ✅, i18n ✅, composables ✅, design-token ✅, cleancode ✅ |
 | **dashboard** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 0 | |
 | **stock/gem** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
 | **stock/location** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | |
@@ -103,3 +103,6 @@
 | วันที่ | Module | ผลลัพธ์ | ESLint ลด | Stylelint ลด |
 |---|---|---|---|---|
 | 2026-06-16 | catalog | ✅ Pass | 0 (ไม่มี native PrimeVue import ตั้งต้น) | ลด hardcode px/สี ใน SCSS |
+| 2026-06-16 | customer | ✅ Pass | 1→0 (Dropdown import ตรงๆ) | ลด hardcode px/สี ใน SCSS |
+| 2026-06-16 | master/* (diamond-grade, gem, gem-shape, gold-size, productType) | ✅ Pass | 0 warnings ใน master/* | ลบ hardcode ไทย/px/inline-style ทั้งหมด |
+| 2026-06-16 | master/zill + InputTextGeneric props + gold-size goldPercent fix | ✅ Pass | 0 warnings ใน master/zill | native→generic, Dropdown→DropdownGeneric, dataTablePaging mixin, i18n, cleancode |

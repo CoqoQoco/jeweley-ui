@@ -7,6 +7,8 @@ import common from './common/th.js'
 //view
 import pickinglist from './view/pickinglist/th.js'
 import catalog from './view/catalog/th.js'
+import customer from './view/customer/th.js'
+import master from './view/master/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -15,6 +17,8 @@ export default {
   view: {
     pickinglist: { ...pickinglist },
     catalog: { ...catalog },
+    customer: { ...customer },
+    master: { ...master },
     production: {
       dashboard: {
         title: 'แดชบอร์ดงานผลิต',

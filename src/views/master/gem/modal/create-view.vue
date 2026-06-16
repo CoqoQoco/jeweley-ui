@@ -2,73 +2,57 @@
   <div class="app-container-modal">
     <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">เพิ่มพลอย</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.master.gem.createTitle') }}</span>
       </template>
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-gem-create">
           <div class="p-3">
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">รหัส <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('common.field.code')" :required="true">
+                <InputTextGeneric
                   v-model="form.code"
-                  placeholder="EX: CZ"
-                  required
+                  :placeholder="$t('view.master.gem.placeholder.code')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ชื่อ TH <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.master.gem.field.nameTh')" :required="true">
+                <InputTextGeneric
                   v-model="form.nameTh"
-                  placeholder="EX: ทับทิมแดง"
-                  required
+                  :placeholder="$t('view.master.gem.placeholder.nameTh')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ชื่อ EN <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.master.gem.field.nameEn')" :required="true">
+                <InputTextGeneric
                   v-model="form.nameEn"
-                  placeholder="EX: Ruby"
-                  required
+                  :placeholder="$t('view.master.gem.placeholder.nameEn')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">สีพลอย</span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.master.gem.field.color')">
+                <InputTextGeneric
                   v-model="form.color"
-                  placeholder="EX: พลอยสีแดง"
+                  :placeholder="$t('view.master.gem.placeholder.color')"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
           </div>
         </form>
       </template>
 
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="form-gem-create">
-          <i class="bi bi-save"></i> บันทึก
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="form-gem-create" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -76,8 +60,11 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -92,7 +79,8 @@ const interfaceForm = {
 }
 
 export default {
-  components: { modal },
+  components: { modal, InputTextGeneric, FormFieldGeneric, ButtonGeneric },
+
   props: {
     isShow: {
       type: Boolean,
@@ -107,12 +95,7 @@ export default {
 
   data() {
     return {
-      form: {
-        ...interfaceForm
-      },
-
-      //wording
-      txtConfirmSubmit: 'ยืนยันเพิ่มพลอย'
+      form: { ...interfaceForm }
     }
   },
 
@@ -122,14 +105,12 @@ export default {
       this.$emit('closeModal')
     },
     onSubmit() {
-      swAlert.confirmSubmit(
+      confirmThenSubmit(
         `${this.form.code} : ${this.form.nameTh}`,
-        this.txtConfirmSubmit,
+        this.$t('view.master.gem.confirm.create'),
         async () => {
           await this.submit()
-        },
-        null,
-        null
+        }
       )
     },
     async submit() {
@@ -146,24 +127,14 @@ export default {
       })
 
       if (res) {
-        swAlert.success(
-          ``,
-          ``,
-          async () => {
-            this.onClear()
-            this.$emit('closeModal', 'fetch')
-          },
-          null,
-          null
-        )
+        success(``, ``, async () => {
+          this.onClear()
+          this.$emit('closeModal', 'fetch')
+        })
       }
     },
     onClear() {
-      this.form = {
-        code: null,
-        nameTh: null,
-        nameEn: null
-      }
+      this.form = { ...interfaceForm }
     }
   }
 }
@@ -175,29 +146,5 @@ export default {
 
 .form-row {
   margin-bottom: 12px;
-}
-
-.form-field {
-  width: 100%;
-
-  .title-text {
-    display: block;
-    margin-bottom: 6px;
-  }
-}
-
-input.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
-  }
 }
 </style>

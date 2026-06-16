@@ -7,6 +7,8 @@ import common from './common/en.js'
 //view
 import pickinglist from './view/pickinglist/en.js'
 import catalog from './view/catalog/en.js'
+import customer from './view/customer/en.js'
+import master from './view/master/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -15,6 +17,8 @@ export default {
   view: {
     pickinglist: { ...pickinglist },
     catalog: { ...catalog },
+    customer: { ...customer },
+    master: { ...master },
     production: {
       dashboard: {
         title: 'Production Dashboard',

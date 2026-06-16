@@ -9,11 +9,15 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
-      <template #actionTemplate="{ data }">
+      <template #actionTemplate="{ data: rowData }">
         <div class="vertical-center-container">
-          <button class="btn btn-sm btn-secondary" @click="onUpdate(data)" title="เเก้ไข" disabled>
-            <span><i class="bi bi-brush"></i></span>
-          </button>
+          <ButtonGeneric
+            variant="main"
+            icon="bi-brush"
+            :title="$t('common.btn.edit')"
+            @click="onUpdate(rowData)"
+            :disabled="true"
+          />
         </div>
       </template>
     </BaseDataTable>
@@ -22,21 +26,25 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 export default {
   name: 'customer-list-data-table',
 
   components: {
-    BaseDataTable
+    BaseDataTable,
+    ButtonGeneric
   },
+
+  mixins: [dataTablePaging],
 
   props: {
     modelForm: {
       type: Object,
-      default: () => ({}), // ให้ default เป็น empty object แทน
+      default: () => ({}),
       required: true
     },
     modelFormExport: {
@@ -45,96 +53,100 @@ export default {
     }
   },
 
+  setup() {
+    const customerStore = useCustomerDetailApiStore()
+    return { customerStore }
+  },
+
   data() {
     return {
-      take: 10,
-      skip: 0,
-      sort: [],
-      expandedRows: [],
-      data: {},
+      data: {}
+    }
+  },
 
-      // Columns Configuration
-      columns: [
+  computed: {
+    form() {
+      return this.modelForm || {}
+    },
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
           width: '50px',
           sortable: false
-          //align: 'center',
         },
         {
           field: 'code',
-          header: 'รหัส',
+          header: this.$t('common.field.code'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameTh',
-          header: 'ชื่อ TH',
+          header: this.$t('common.field.nameTh'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameEn',
-          header: 'ชื่อ EN',
+          header: this.$t('common.field.nameEn'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productionPlanCount',
-          header: 'ยอดสั่งผลิต',
+          header: this.$t('view.customer.field.productionPlanCount'),
           sortable: true,
           minWidth: '50px',
           format: 'number'
         },
         {
           field: '',
-          header: 'ยอดขาย',
+          header: this.$t('view.customer.field.saleCount'),
           sortable: true,
           minWidth: '50px',
           format: 'number'
         },
-      
-      
         {
           field: 'address',
-          header: 'ที่อยู่',
+          header: this.$t('view.customer.field.address'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'typeName',
-          header: 'ประเภท',
+          header: this.$t('common.field.type'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'telephone1',
-          header: 'โทรศัพท์ 1',
+          header: this.$t('view.customer.field.tel1'),
           sortable: true,
           minWidth: '100px'
         },
         {
           field: 'telephone2',
-          header: 'โทรศัพท์ 2',
+          header: this.$t('view.customer.field.tel2'),
           sortable: true,
           minWidth: '100px'
         },
         {
           field: 'email',
-          header: 'E-mail',
+          header: this.$t('view.customer.field.email'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'contactName',
-          header: 'ชื่อผู้ติดต่อ',
+          header: this.$t('view.customer.field.contact'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'remark',
-          header: 'หมายเหตุ',
+          header: this.$t('common.field.remark'),
           sortable: true,
           minWidth: '150px'
         }
@@ -142,49 +154,18 @@ export default {
     }
   },
 
-  setup() {
-    const customerStore = useCustomerDetailApiStore()
-    return { customerStore }
-  },
-
-  computed: {
-    form() {
-      return this.modelForm || {}
-    }
-  },
-
   watch: {
     async modelForm() {
-      //console.log(this.modelForm)
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
-    },
-    async modelFormExport() {
-      //console.log(this.modelForm)
-      await this.fetchDataExport()
+      this.resetPaging()
     }
   },
 
   methods: {
-    // ----- data table hnadle
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
+    onUpdate(data) {
+      // reserved for future edit functionality
+      void data
     },
 
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
-    // ---- APIs
     async fetchData() {
       this.data = await this.customerStore.fetchCustomerSearch({
         take: this.take,
@@ -192,37 +173,6 @@ export default {
         sort: this.sort,
         formValue: this.form
       })
-    },
-    // async fetchDataExport() {
-    //   console.log('fetchDataExport')
-    //   await this.stockProductStore.fetchDataSearchExport({
-    //     sort: this.sort,
-    //     form: this.form
-    //   })
-    // },
-
-    // handle page
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
-    formatDate(date) {
-      return formatDate(date)
-    },
-    getStatusSeverity(isRunning) {
-      switch (isRunning) {
-        case true:
-          return 'box-status-show'
-        case false:
-          return 'box-status-process'
-      }
-    },
-    getStatusName(isRunning) {
-      switch (isRunning) {
-        case true:
-          return 'อยู่ระหว่างรับสินค้า'
-        case false:
-          return 'รอรับสินค้า'
-      }
     }
   }
 }
@@ -230,22 +180,4 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
-@import '@/assets/scss/custom-style/standard-form';
-
-.notification {
-  display: inline-flex;
-  align-items: center;
-  //background-color: #ffe6e6; /* ส้มอ่อน */
-  //padding: 4px 8px;
-  //border-radius: 4px;
-}
-
-.overdue-tag {
-  background-color: #ff4d4d; /* สีแดง */
-  color: white;
-  padding: 2px 4px;
-  border-radius: 2px;
-  margin-left: 4px;
-  font-size: 12px;
-}
 </style>

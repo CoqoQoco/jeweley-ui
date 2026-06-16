@@ -2,75 +2,58 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">เพิ่มซิล</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.master.zill.createTitle') }}</span>
       </template>
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-zill-create">
           <div class="p-3">
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">รหัส <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('common.field.code')" :required="true">
+                <InputTextGeneric
                   v-model="form.code"
-                  placeholder="EX: AAC-C1-XX"
-                  required
+                  :placeholder="$t('view.master.zill.placeholder.code')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ประเภททอง <span class="text-danger">*</span></span>
-                <Dropdown
-                  v-model="form.gold"
+              <FormFieldGeneric :label="$t('view.master.zill.field.gold')" :required="true">
+                <DropdownGeneric
+                  :modelValue="form.gold"
                   :options="masterGold"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
-                  :class="val.isValGold === true ? `p-invalid` : ``"
-                  :showClear="form.gold?.code ? true : false"
+                  :showClear="true"
+                  @update:modelValue="form.gold = $event"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ขนาดทอง <span class="text-danger">*</span></span>
-                <Dropdown
-                  v-model="form.goldSize"
+              <FormFieldGeneric :label="$t('view.master.zill.field.goldSize')" :required="true">
+                <DropdownGeneric
+                  :modelValue="form.goldSize"
                   :options="masterGoldSize"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
-                  :class="val.isValGoldSize === true ? `p-invalid` : ``"
-                  :showClear="form.goldSize?.code ? true : false"
+                  :showClear="true"
+                  @update:modelValue="form.goldSize = $event"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">คำอธิบาย</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="form.remark"
-                  placeholder=""
-                />
-              </div>
+              <FormFieldGeneric :label="$t('view.master.zill.field.description')">
+                <InputTextGeneric v-model="form.remark" />
+              </FormFieldGeneric>
             </div>
           </div>
         </form>
       </template>
 
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="form-zill-create">
-          <i class="bi bi-save"></i> บันทึก
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="form-zill-create" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -78,28 +61,33 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import { warning } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import Dropdown from 'primevue/dropdown'
-import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-const interfaceFrom = {
+const interfaceForm = {
   code: null,
   gold: null,
   goldSize: null,
   remark: null
 }
-const interfaceValFormCreate = {
-  isValGold: false,
-  isValGoldSize: false
-}
 
 export default {
   components: {
     modal,
-    Dropdown
+    InputTextGeneric,
+    FormFieldGeneric,
+    ButtonGeneric,
+    DropdownGeneric
   },
+
   props: {
     isShow: {
       type: Boolean,
@@ -131,36 +119,20 @@ export default {
 
   data() {
     return {
-      form: {
-        ...interfaceFrom
-      },
-      val: {
-        ...interfaceValFormCreate
-      },
-
-      //wording
-      txtConfirmSubmit: 'ยืนยันซิล'
+      form: { ...interfaceForm }
     }
   },
 
   methods: {
-    getBgColor(data) {
-      return data ? 'background-color: #b5dad4' : 'background-color: #dad4b5'
-    },
     validateForm() {
       if (!this.form.gold) {
-        this.val = {
-          isValGold: true
-        }
+        warning(this.$t('view.master.zill.field.gold'), this.$t('common.label.noData'))
         return false
       }
       if (!this.form.goldSize) {
-        this.val = {
-          isValGoldSize: true
-        }
+        warning(this.$t('view.master.zill.field.goldSize'), this.$t('common.label.noData'))
         return false
       }
-
       return true
     },
 
@@ -168,24 +140,22 @@ export default {
       this.onClear()
       this.$emit('closeModal')
     },
+
     onSubmit() {
-      if (this.validateForm()) {
-        swAlert.confirmSubmit(
-          `${this.form.code}`,
-          this.txtConfirmSubmit,
-          async () => {
-            await this.submit()
-          },
-          null,
-          null
-        )
-      }
+      if (!this.validateForm()) return
+      confirmThenSubmit(
+        `${this.form.code}`,
+        this.$t('view.master.zill.confirm.create'),
+        async () => {
+          await this.submit()
+        }
+      )
     },
+
     onClear() {
-      this.form = {
-        ...interfaceFrom
-      }
+      this.form = { ...interfaceForm }
     },
+
     async submit() {
       const param = {
         type: 'ZILL',
@@ -193,7 +163,6 @@ export default {
         nameTh: this.form.code,
         nameEn: this.form.code,
         description: this.form.remark,
-
         goldCode: this.form.gold.code,
         goldSizeCode: this.form.goldSize.code
       }
@@ -217,29 +186,5 @@ export default {
 
 .form-row {
   margin-bottom: 12px;
-}
-
-.form-field {
-  width: 100%;
-
-  .title-text {
-    display: block;
-    margin-bottom: 6px;
-  }
-}
-
-input.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
-  }
 }
 </style>

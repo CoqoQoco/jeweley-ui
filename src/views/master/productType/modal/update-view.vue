@@ -2,88 +2,68 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ `แก้ไขประเภทสินค้า: ${model.code}-${model.nameTh}` }}</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ `${$t('view.master.productType.updateTitle')}: ${model.code}-${model.nameTh}` }}</span>
       </template>
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-product-type-update">
           <div class="p-3">
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">รหัส</span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('common.field.code')">
+                <InputTextGeneric
                   v-model="form.code"
-                  placeholder="EX: B"
-                  disabled
-                  required
+                  :placeholder="$t('view.master.productType.placeholder.code')"
+                  :disabled="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ชื่อ TH <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.master.productType.field.nameTh')" :required="true">
+                <InputTextGeneric
                   v-model="form.nameTh"
-                  placeholder="EX: สร้อยข้อมือ"
-                  required
+                  :placeholder="$t('view.master.productType.placeholder.nameTh')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ชื่อ EN <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.master.productType.field.nameEn')" :required="true">
+                <InputTextGeneric
                   v-model="form.nameEn"
-                  placeholder="EX: Bracelet"
-                  required
+                  :placeholder="$t('view.master.productType.placeholder.nameEn')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">อักษรหน้าสินค้า <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.master.productType.field.prefix')" :required="true">
+                <InputTextGeneric
                   v-model="form.prefix"
-                  placeholder="EX: DK"
-                  required
+                  :placeholder="$t('view.master.productType.placeholder.prefix')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">อักษรหน้าสินค้า (Silver) <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.master.productType.field.prefix2')" :required="true">
+                <InputTextGeneric
                   v-model="form.prefix2"
-                  placeholder="EX: DK"
-                  required
+                  :placeholder="$t('view.master.productType.placeholder.prefix2')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
           </div>
         </form>
       </template>
 
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="form-product-type-update">
-          <i class="bi bi-save"></i> บันทึก
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="form-product-type-update" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -91,21 +71,25 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-const interfaceFrom = {
+const interfaceForm = {
   code: null,
   nameTh: null,
   nameEn: null,
-  prefix: null
+  prefix: null,
+  prefix2: null
 }
 
 export default {
-  components: { modal },
+  components: { modal, InputTextGeneric, FormFieldGeneric, ButtonGeneric },
 
   setup() {
     const masterStore = useMasterApiStore()
@@ -146,12 +130,7 @@ export default {
 
   data() {
     return {
-      form: {
-        ...interfaceFrom
-      },
-
-      //wording
-      txtConfirmSubmit: 'ยืนยันแก้ไขประเภทสินค้า'
+      form: { ...interfaceForm }
     }
   },
 
@@ -161,20 +140,16 @@ export default {
       this.$emit('closeModal')
     },
     onSubmit() {
-      swAlert.confirmSubmit(
+      confirmThenSubmit(
         `${this.form.code} : ${this.form.nameTh}`,
-        this.txtConfirmSubmit,
+        this.$t('view.master.productType.confirm.update'),
         async () => {
           await this.submit()
-        },
-        null,
-        null
+        }
       )
     },
     onClear() {
-      this.form = {
-        ...interfaceFrom
-      }
+      this.form = { ...interfaceForm }
     },
     async submit() {
       const param = {
@@ -201,29 +176,5 @@ export default {
 
 .form-row {
   margin-bottom: 12px;
-}
-
-.form-field {
-  width: 100%;
-
-  .title-text {
-    display: block;
-    margin-bottom: 6px;
-  }
-}
-
-input.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
-  }
 }
 </style>

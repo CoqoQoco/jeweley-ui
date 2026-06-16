@@ -16,6 +16,9 @@
     type="number"
     placeholder="0.00"
     :bgInput="true"
+    :step="0.01"
+    :min="0"
+    :max="100"
   />
 
   Props:
@@ -27,6 +30,10 @@
     required    — mark as required (HTML attr)
     trim        — auto-trim value on update:modelValue
     bgInput     — adds class bg-input (bg #f5f5f5)
+    step        — HTML step attribute (Number/String, default null — only bound when provided)
+    min         — HTML min attribute (Number/String, default null — only bound when provided)
+    max         — HTML max attribute (Number/String, default null — only bound when provided)
+    maxlength   — HTML maxlength attribute (Number/String, default null — only bound when provided)
 
   Emits: update:modelValue, blur, focus
 -->
@@ -40,6 +47,10 @@
     :disabled="disabled"
     :readonly="readonly"
     :required="required"
+    :step="step !== null ? step : undefined"
+    :min="min !== null ? min : undefined"
+    :max="max !== null ? max : undefined"
+    :maxlength="maxlength !== null ? maxlength : undefined"
     @input="onInput"
     @blur="$emit('blur', $event)"
     @focus="$emit('focus', $event)"
@@ -81,6 +92,22 @@ export default {
     bgInput: {
       type: Boolean,
       default: false
+    },
+    step: {
+      type: [Number, String],
+      default: null
+    },
+    min: {
+      type: [Number, String],
+      default: null
+    },
+    max: {
+      type: [Number, String],
+      default: null
+    },
+    maxlength: {
+      type: [Number, String],
+      default: null
     }
   },
 
