@@ -35,7 +35,9 @@ export default {
   label: {
     noData: 'ไม่พบข้อมูล',
     loading: 'กำลังโหลด...',
-    all: 'ทั้งหมด'
+    all: 'ทั้งหมด',
+    start: 'เริ่มต้น',
+    end: 'สิ้นสุด'
   },
   table: {
     showing: 'แสดงข้อมูล',

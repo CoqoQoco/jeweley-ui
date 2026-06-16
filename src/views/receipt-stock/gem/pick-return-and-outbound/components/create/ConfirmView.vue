@@ -1,44 +1,43 @@
 <template>
   <div>
-  
     <modal :showModal="isShowModal" @closeModal="closeModal" width="600px">
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span class="mr-2"><i class="bi bi-house-exclamation"></i></span>
-          <span>ยืนยันคืนเข้าคลังเเละเบิกออกคลัง วัถุดิบ</span>
+          <span>{{ $t('view.receiptStock.gem.pickReturnAndOutbound.confirmTitle') }}</span>
         </div>
         <form @submit.prevent="onSubmit" class="p-2">
           <!-- type && request date -->
           <div class="form-col-container">
             <div>
               <div>
-                <span class="title-text">เลือกประเภท</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.selectType') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <Dropdown
-                v-model="form.type"
+              <DropdownGeneric
+                :modelValue="form.type"
                 :options="masterType"
                 optionLabel="description"
                 optionValue="id"
-                class="w-full md:w-14rem"
                 :class="val.isType === true ? `p-invalid` : ``"
                 :showClear="form.type ? true : false"
+                @update:modelValue="form.type = $event"
               />
             </div>
             <div>
               <div>
-                <span class="title-text">วันที่</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.requestDate') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 :class="val.isRequestDate === true ? `p-invalid` : ``"
                 v-model="form.requestDate"
                 dateFormat="dd/mm/yy"
-                showTime
+                :showTime="true"
                 hourFormat="24"
-                showIcon
-                showButtonBar
+                :showIcon="true"
+                :showButtonBar="true"
               />
             </div>
           </div>
@@ -47,18 +46,13 @@
           <div class="form-col-container mt-1">
             <div>
               <div>
-                <span class="title-text">ผู้คืน/ผู้เบิก</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.operator') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <input
-                type="text"
-                class="form-control"
+              <InputTextGeneric
                 v-model="form.operator"
                 autocomplete="off"
-                autocorrect="off"
-                autocapitalize="off"
-                spellcheck="false"
-                required
+                :required="true"
               />
             </div>
           </div>
@@ -67,17 +61,11 @@
           <div class="form-col-container mt-1">
             <div>
               <div>
-                <span class="title-text">รายละเอียดเพิ่มเติม</span>
-                <!-- <span class="txt-required"> *</span> -->
+                <span class="title-text">{{ $t('common.field.remark') }}</span>
               </div>
-              <input
-                type="text"
-                class="form-control"
+              <InputTextGeneric
                 v-model="form.remark"
                 autocomplete="off"
-                autocorrect="off"
-                autocapitalize="off"
-                spellcheck="false"
               />
             </div>
           </div>
@@ -86,18 +74,15 @@
           <div class="form-col-container mt-3">
             <div>
               <div>
-                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการคืนเข้าคลังเเละเบิกออกคลัง</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.confirmPass') }}</span>
                 <span class="txt-required"> *</span>
               </div>
               <input
                 type="password"
                 class="form-control"
-                :style="[form.pass ? 'background-color: #b5dad4' : ' background-color:#dad4b5']"
+                :style="[form.pass ? 'background-color: #b5dad4' : 'background-color:#dad4b5']"
                 v-model="form.pass"
                 autocomplete="off"
-                autocorrect="off"
-                autocapitalize="off"
-                spellcheck="false"
               />
             </div>
           </div>
@@ -106,15 +91,15 @@
           <div class="form-col-container mt-2">
             <div class="d-flex justify-content-between">
               <div class="check-return-container">
-                <Checkbox v-model="form.isClosePickReturn" :binary="true" />
-                <span for="ingredient1" class="ml-2">รายการคืนเข้าคลัง [ปิดใบยืม]</span>
+                <CheckboxGeneric v-model="form.isClosePickReturn" :binary="true" />
+                <span class="ml-2">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.closePickReturn') }}</span>
               </div>
               <div>
-                <button class="btn btn-secondary" type="button" @click="closeModal">
-                  <span>ยกเลิก</span>
+                <button class="btn btn-outline-main" type="button" @click="closeModal">
+                  <span>{{ $t('common.btn.cancel') }}</span>
                 </button>
                 <button class="btn btn-main ml-2" type="submit">
-                  <span>ยืนยัน</span>
+                  <span>{{ $t('common.btn.confirm') }}</span>
                 </button>
               </div>
             </div>
@@ -127,17 +112,16 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { success } from '@/services/alert/sweetAlerts.js'
+import { formatISOString } from '@/services/utils/dayjs'
+import api from '@/axios/axios-helper.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-
-import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
-import Checkbox from 'primevue/checkbox'
-
-import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
-import { formatISOString } from '@/services/utils/dayjs'
 
 const interfaceIsVal = {
   isType: false,
@@ -147,10 +131,10 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
-  
-    Dropdown,
-    Calendar,
-    Checkbox
+    DropdownGeneric,
+    CalendarGeneric,
+    InputTextGeneric,
+    CheckboxGeneric
   },
   props: {
     isShow: {
@@ -170,7 +154,6 @@ export default {
   data() {
     return {
       isShowModal: this.isShow,
-      isLoading: false,
       form: {},
       val: { ...interfaceIsVal },
       masterType: [{ id: 6, description: 'คืนเข้าคลังเเละเบิกออกคลัง' }]
@@ -190,7 +173,6 @@ export default {
     },
     modelForm: {
       handler(val) {
-        //console.log('confirm modelForm', val)
         this.form = {
           requestDate: new Date(),
           gemsReturn: [...val]
@@ -211,15 +193,11 @@ export default {
     }
   },
   methods: {
-    // ----- event
     closeModal() {
-      //this.onClear()
       this.$emit('closeModal')
     },
 
     onSubmit() {
-      console.log('onSubmit', this.form)
-
       if (!this.form.type) {
         this.val.isType = true
         return
@@ -230,73 +208,57 @@ export default {
       }
 
       this.submit()
-      //this.$emit('submit', this.form)
     },
 
-    // ----- APIs
     async submit() {
-      this.isLoading = true
-      try {
-        console.log('this.form', this.form)
-        const params = {
-          pickOffRunning: this.referenceRunning,
-          type: this.form.type,
-          operatorBy: this.form.operator,
-          remark: this.form.remark,
-          pass: this.form.pass,
-          requestDate: formatISOString(this.form.requestDate),
-          isFullReturn: this.form.isClosePickReturn,
-          gemsReturn: this.form.gemsReturn.map((gem) => {
-            return {
-              code: gem.code,
-
-              pickOffQty: gem.pickOffQty,
-              pickOffQtyWeight: gem.pickOffQtyWeight,
-
-              returnQty: gem.returnQty,
-              returnQtyWeight: gem.returnQtyWeight,
-
-              gemsOutbound: gem.gemsOutbound
-                ? gem.gemsOutbound
-                    .filter((x) => !x.isAlreadyOutbound)
-                    .map((outbound) => {
-                      //remove outbumd when isAlreadyOutbound === true
-                      return {
-                        wo: outbound.productionPlan.wo,
-                        woNumber: outbound.productionPlan.woNumber,
-                        mold: outbound.productionPlan.mold,
-
-                        issueQty: outbound.issueQty,
-                        issueQtyWeight: outbound.issueQtyWeight,
-                        remark: outbound.remark
-                      }
-                    })
-                : null
-            }
-          })
-        }
-        console.log('confirm params', params)
-
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/PickReturnGem', params)
-        if (res) {
-          swAlert.success(
-            `เลขที่ใบคืนวัถุดิบ: ${res.runningPickReturn ?? '---'}
-            </br>
-            เลขที่ใบเบิกวัถุดิบ: ${res.runningPickOutbound ?? '---'}`,
-            '',
-            () => {
-              this.onClear()
-              this.$emit('closeModal', 'confirm')
-            }
-          )
-        }
-      } catch (error) {
-        console.log('error', error)
+      const params = {
+        pickOffRunning: this.referenceRunning,
+        type: this.form.type,
+        operatorBy: this.form.operator,
+        remark: this.form.remark,
+        pass: this.form.pass,
+        requestDate: formatISOString(this.form.requestDate),
+        isFullReturn: this.form.isClosePickReturn,
+        gemsReturn: this.form.gemsReturn.map((gem) => {
+          return {
+            code: gem.code,
+            pickOffQty: gem.pickOffQty,
+            pickOffQtyWeight: gem.pickOffQtyWeight,
+            returnQty: gem.returnQty,
+            returnQtyWeight: gem.returnQtyWeight,
+            gemsOutbound: gem.gemsOutbound
+              ? gem.gemsOutbound
+                  .filter((x) => !x.isAlreadyOutbound)
+                  .map((outbound) => {
+                    return {
+                      wo: outbound.productionPlan.wo,
+                      woNumber: outbound.productionPlan.woNumber,
+                      mold: outbound.productionPlan.mold,
+                      issueQty: outbound.issueQty,
+                      issueQtyWeight: outbound.issueQtyWeight,
+                      remark: outbound.remark
+                    }
+                  })
+              : null
+          }
+        })
       }
-      this.isLoading = false
+
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/PickReturnGem', params)
+      if (res) {
+        success(
+          `${this.$t('view.receiptStock.gem.pickReturnAndOutbound.successPickReturn')}: ${res.runningPickReturn ?? '---'}
+          </br>
+          ${this.$t('view.receiptStock.gem.pickReturnAndOutbound.successPickOutbound')}: ${res.runningPickOutbound ?? '---'}`,
+          '',
+          () => {
+            this.onClear()
+            this.$emit('closeModal', 'confirm')
+          }
+        )
+      }
     },
 
-    // ----- helper
     onClear() {
       this.form = {}
       this.val = { ...interfaceIsVal }

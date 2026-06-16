@@ -10,6 +10,7 @@ import catalog from './view/catalog/en.js'
 import customer from './view/customer/en.js'
 import master from './view/master/en.js'
 import stock from './view/stock/en.js'
+import receiptStock from './view/receipt-stock/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -20,6 +21,7 @@ export default {
     catalog: { ...catalog },
     customer: { ...customer },
     master: { ...master },
+    receiptStock: { ...receiptStock },
     production: {
       dashboard: {
         title: 'Production Dashboard',

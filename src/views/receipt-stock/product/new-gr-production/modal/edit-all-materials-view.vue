@@ -1,288 +1,273 @@
 <template>
-  <Dialog
-    v-model:visible="isVisible"
-    :modal="true"
-    :closable="true"
-    :draggable="false"
-    class="edit-all-materials-modal"
-    header="แก้ไขวัสดุทั้งหมด (Edit All Materials)"
-    :style="{ width: '90vw', maxWidth: '1200px' }"
+  <modal
+    :showModal="isShow"
+    @closeModal="closeModal"
+    width="90vw"
+    :isShowActionPart="true"
   >
-    <div class="modal-content">
-      <!-- Header Info -->
-      <div class="info-section">
-        <div class="alert alert-info">
-          <div class="d-flex align-items-center">
-            <span class="bi bi-info-circle mr-2"></span>
-            <div>
-              <strong>การแก้ไขวัสดุทั้งหมด:</strong> 
-              การเปลี่ยนแปลงในหน้านี้จะส่งผลต่อสินค้าทั้งหมดที่เลือก ({{ selectedStocks.length }} รายการ)
-            </div>
-          </div>
-        </div>
-      </div>
+    <template #title>
+      <span class="title-text-lg px-3 pt-3 d-block">แก้ไขวัสดุทั้งหมด (Edit All Materials)</span>
+    </template>
 
-      <!-- Control Buttons -->
-      <div class="control-section mb-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="d-flex gap-2">
-            <button
-              type="button"
-              class="btn btn-outline-primary btn-sm"
-              @click="loadFromBreakdown"
-              :disabled="!hasBreakdownData"
-            >
-              <span class="bi bi-download mr-1"></span>
-              โหลดจาก Breakdown
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              @click="resetToOriginal"
-            >
-              <span class="bi bi-arrow-clockwise mr-1"></span>
-              รีเซ็ตเป็นค่าเดิม
-            </button>
-          </div>
-          <div class="d-flex gap-2">
-            <button
-              type="button"
-              class="btn btn-success btn-sm"
-              @click="addMaterial"
-            >
-              <span class="bi bi-plus-lg mr-1"></span>
-              เพิ่มวัสดุ
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Materials Table -->
-      <div class="materials-table-section">
-        <BaseDataTable
-          :items="editableMaterials"
-          :columns="materialColumns"
-          :paginator="false"
-          :scrollHeight="'400px'"
-          class="edit-materials-table"
-        >
-          <!-- Material Type -->
-          <template #typeTemplate="{ data: materialData }">
-            <Dropdown
-              v-model="materialData.type"
-              :options="masterMaterialType"
-              optionLabel="description"
-              optionValue="value"
-              class="w-full"
-              placeholder="เลือกประเภท"
-              @change="updateMaterialBarcode(materialData)"
-            />
-          </template>
-
-          <!-- Type Code -->
-          <template #typeCodeTemplate="{ data: materialData }">
-            <div v-if="materialData.type === 'Gold' || materialData.type === 'Silver'">
-              <Dropdown
-                v-model="materialData.typeCode"
-                :options="masterGold"
-                optionLabel="description"
-                optionValue="code"
-                class="w-full"
-                placeholder="เลือกทอง/เงิน"
-                :showClear="true"
-                @change="updateMaterialBarcode(materialData)"
-              />
-            </div>
-            <div v-else-if="materialData.type === 'Diamond'">
-              <Dropdown
-                v-model="materialData.typeCode"
-                :options="masterDiamondGrade"
-                optionLabel="description"
-                optionValue="nameEn"
-                class="w-full"
-                placeholder="เลือกเกรดเพชร"
-                :showClear="true"
-                @change="updateMaterialBarcode(materialData)"
-              />
-            </div>
-            <div v-else-if="materialData.type === 'Gem'">
-              <Dropdown
-                v-model="materialData.typeCode"
-                :options="masterGem"
-                optionLabel="description"
-                optionValue="nameEn"
-                class="w-full"
-                placeholder="เลือกพลอย"
-                :showClear="true"
-                @change="updateMaterialBarcode(materialData)"
-              />
-            </div>
-            <div v-else-if="materialData.type === 'Worker'">
-              <input
-                type="text"
-                v-model="materialData.typeCode"
-                class="form-control"
-                placeholder="รหัสงาน"
-                readonly
-              />
-            </div>
-            <div v-else-if="materialData.type === 'Setting' || materialData.type === 'ETC'">
-              <input
-                type="text"
-                v-model="materialData.typeCode"
-                class="form-control"
-                placeholder="รหัส"
-              />
-            </div>
-            <div v-else>
-              <span class="text-muted">--- เลือกประเภทก่อน ---</span>
-            </div>
-          </template>
-
-          <!-- Quantity -->
-          <template #qtyTemplate="{ data: materialData }">
-            <div class="qty-input-container">
-              <input
-                type="number"
-                v-model="materialData.qty"
-                class="form-control"
-                placeholder="จำนวน"
-                min="0"
-                step="0.01"
-                @input="updateMaterialBarcode(materialData)"
-              />
-              <input
-                type="text"
-                v-model="materialData.qtyUnit"
-                class="form-control unit-input mt-1"
-                placeholder="หน่วย"
-              />
-            </div>
-          </template>
-
-          <!-- Weight -->
-          <template #weightTemplate="{ data: materialData }">
-            <div class="weight-input-container">
-              <input
-                type="number"
-                v-model="materialData.qtyWeight"
-                class="form-control"
-                placeholder="น้ำหนัก"
-                min="0"
-                step="0.01"
-                @input="updateMaterialBarcode(materialData)"
-              />
-              <input
-                type="text"
-                v-model="materialData.qtyWeightUnit"
-                class="form-control unit-input mt-1"
-                placeholder="หน่วย"
-              />
-            </div>
-          </template>
-
-          <!-- Price -->
-          <template #priceTemplate="{ data: materialData }">
-            <div class="price-input-container">
-              <input
-                type="number"
-                v-model="materialData.qtyPrice"
-                class="form-control"
-                placeholder="ราคา/หน่วย"
-                min="0"
-                step="0.01"
-              />
-              <input
-                type="number"
-                v-model="materialData.qtyWeightPrice"
-                class="form-control mt-1"
-                placeholder="ราคา/น้ำหนัก"
-                min="0"
-                step="0.01"
-              />
-            </div>
-          </template>
-
-          <!-- Region -->
-          <template #regionTemplate="{ data: materialData }">
-            <input
-              type="text"
-              v-model="materialData.region"
-              class="form-control"
-              placeholder="แหล่งที่มา"
-            />
-          </template>
-
-          <!-- Barcode -->
-          <template #typeBarcodeTemplate="{ data: materialData }">
-            <input
-              type="text"
-              v-model="materialData.typeBarcode"
-              class="form-control"
-              placeholder="ข้อความ Barcode"
-              readonly
-            />
-          </template>
-
-          <!-- Actions -->
-          <template #actionTemplate="{ index }">
-            <button
-              type="button"
-              class="btn btn-danger btn-sm"
-              @click="removeMaterial(index)"
-              :disabled="editableMaterials.length <= 1"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
-          </template>
-        </BaseDataTable>
-      </div>
-
-      <!-- Origin Materials Display -->
-      <div class="origin-section mt-3" v-if="hasBreakdownData">
-        <h6 class="text-muted">
-          <span class="bi bi-info-circle mr-1"></span>
-          วัสดุจาก Breakdown (อ้างอิง)
-        </h6>
-        <div class="origin-materials">
-          <div 
-            v-for="(material, index) in breakdownData" 
-            :key="index"
-            class="origin-material-card"
-          >
-            <div class="material-info">
-              <strong>{{ material.type }}</strong>
-              <div class="text-small">
-                <span v-if="material.typeName">{{ material.typeName }}</span>
-                <span v-if="material.typeCode"> ({{ material.typeCode }})</span>
+    <template #content>
+      <div class="modal-body-content p-3">
+        <!-- Header Info -->
+        <div class="info-section mb-3">
+          <div class="alert alert-info">
+            <div class="d-flex align-items-center">
+              <span class="bi bi-info-circle mr-2"></span>
+              <div>
+                <strong>การแก้ไขวัสดุทั้งหมด:</strong>
+                การเปลี่ยนแปลงในหน้านี้จะส่งผลต่อสินค้าทั้งหมดที่เลือก ({{ selectedStocks.length }} รายการ)
               </div>
             </div>
-            <div class="material-values">
-              <div v-if="material.qty">{{ material.qty }} {{ material.qtyUnit || 'หน่วย' }}</div>
-              <div v-if="material.qtyWeight">{{ material.qtyWeight }} {{ material.qtyWeightUnit || 'กรัม' }}</div>
+          </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="control-section mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <button
+                type="button"
+                class="btn btn-outline-main btn-sm"
+                @click="loadFromBreakdown"
+                :disabled="!hasBreakdownData"
+              >
+                <span class="bi bi-download mr-1"></span>
+                โหลดจาก Breakdown
+              </button>
+              <button
+                type="button"
+                class="btn btn-dark btn-sm ml-2"
+                @click="resetToOriginal"
+              >
+                <span class="bi bi-arrow-clockwise mr-1"></span>
+                รีเซ็ตเป็นค่าเดิม
+              </button>
+            </div>
+            <div>
+              <button
+                type="button"
+                class="btn btn-main btn-sm"
+                @click="addMaterial"
+              >
+                <span class="bi bi-plus-lg mr-1"></span>
+                เพิ่มวัสดุ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Materials Table -->
+        <div class="materials-table-section">
+          <BaseDataTable
+            :items="editableMaterials"
+            :columns="materialColumns"
+            :paginator="false"
+            :scrollHeight="'400px'"
+            class="edit-materials-table"
+          >
+            <!-- Material Type -->
+            <template #typeTemplate="{ data: materialData }">
+              <DropdownGeneric
+                :modelValue="materialData.type"
+                :options="masterMaterialType"
+                optionLabel="description"
+                optionValue="value"
+                placeholder="เลือกประเภท"
+                @update:modelValue="val => { materialData.type = val; updateMaterialBarcode(materialData) }"
+              />
+            </template>
+
+            <!-- Type Code -->
+            <template #typeCodeTemplate="{ data: materialData }">
+              <div v-if="materialData.type === 'Gold' || materialData.type === 'Silver'">
+                <DropdownGeneric
+                  :modelValue="materialData.typeCode"
+                  :options="masterGold"
+                  optionLabel="description"
+                  optionValue="code"
+                  placeholder="เลือกทอง/เงิน"
+                  :showClear="true"
+                  @update:modelValue="val => { materialData.typeCode = val; updateMaterialBarcode(materialData) }"
+                />
+              </div>
+              <div v-else-if="materialData.type === 'Diamond'">
+                <DropdownGeneric
+                  :modelValue="materialData.typeCode"
+                  :options="masterDiamondGrade"
+                  optionLabel="description"
+                  optionValue="nameEn"
+                  placeholder="เลือกเกรดเพชร"
+                  :showClear="true"
+                  @update:modelValue="val => { materialData.typeCode = val; updateMaterialBarcode(materialData) }"
+                />
+              </div>
+              <div v-else-if="materialData.type === 'Gem'">
+                <DropdownGeneric
+                  :modelValue="materialData.typeCode"
+                  :options="masterGem"
+                  optionLabel="description"
+                  optionValue="nameEn"
+                  placeholder="เลือกพลอย"
+                  :showClear="true"
+                  @update:modelValue="val => { materialData.typeCode = val; updateMaterialBarcode(materialData) }"
+                />
+              </div>
+              <div v-else-if="materialData.type === 'Worker'">
+                <InputTextGeneric
+                  v-model="materialData.typeCode"
+                  placeholder="รหัสงาน"
+                  :readonly="true"
+                />
+              </div>
+              <div v-else-if="materialData.type === 'Setting' || materialData.type === 'ETC'">
+                <InputTextGeneric
+                  v-model="materialData.typeCode"
+                  placeholder="รหัส"
+                />
+              </div>
+              <div v-else>
+                <span class="text-muted">--- เลือกประเภทก่อน ---</span>
+              </div>
+            </template>
+
+            <!-- Quantity -->
+            <template #qtyTemplate="{ data: materialData }">
+              <div class="qty-input-container">
+                <InputTextGeneric
+                  v-model="materialData.qty"
+                  type="number"
+                  placeholder="จำนวน"
+                  :min="0"
+                  :step="0.01"
+                  @blur="updateMaterialBarcode(materialData)"
+                />
+                <InputTextGeneric
+                  v-model="materialData.qtyUnit"
+                  placeholder="หน่วย"
+                  class="mt-1 unit-input"
+                />
+              </div>
+            </template>
+
+            <!-- Weight -->
+            <template #weightTemplate="{ data: materialData }">
+              <div class="weight-input-container">
+                <InputTextGeneric
+                  v-model="materialData.qtyWeight"
+                  type="number"
+                  placeholder="น้ำหนัก"
+                  :min="0"
+                  :step="0.01"
+                  @blur="updateMaterialBarcode(materialData)"
+                />
+                <InputTextGeneric
+                  v-model="materialData.qtyWeightUnit"
+                  placeholder="หน่วย"
+                  class="mt-1 unit-input"
+                />
+              </div>
+            </template>
+
+            <!-- Price -->
+            <template #priceTemplate="{ data: materialData }">
+              <div class="price-input-container">
+                <InputTextGeneric
+                  v-model="materialData.qtyPrice"
+                  type="number"
+                  placeholder="ราคา/หน่วย"
+                  :min="0"
+                  :step="0.01"
+                />
+                <InputTextGeneric
+                  v-model="materialData.qtyWeightPrice"
+                  type="number"
+                  placeholder="ราคา/น้ำหนัก"
+                  :min="0"
+                  :step="0.01"
+                  class="mt-1"
+                />
+              </div>
+            </template>
+
+            <!-- Region -->
+            <template #regionTemplate="{ data: materialData }">
+              <InputTextGeneric
+                v-model="materialData.region"
+                placeholder="แหล่งที่มา"
+              />
+            </template>
+
+            <!-- Barcode -->
+            <template #typeBarcodeTemplate="{ data: materialData }">
+              <InputTextGeneric
+                v-model="materialData.typeBarcode"
+                placeholder="ข้อความ Barcode"
+                :readonly="true"
+              />
+            </template>
+
+            <!-- Actions -->
+            <template #actionTemplate="{ index }">
+              <button
+                type="button"
+                class="btn btn-red btn-sm"
+                @click="removeMaterial(index)"
+                :disabled="editableMaterials.length <= 1"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </template>
+          </BaseDataTable>
+        </div>
+
+        <!-- Origin Materials Display -->
+        <div class="origin-section mt-3" v-if="hasBreakdownData">
+          <h6 class="text-muted">
+            <span class="bi bi-info-circle mr-1"></span>
+            วัสดุจาก Breakdown (อ้างอิง)
+          </h6>
+          <div class="origin-materials">
+            <div
+              v-for="(material, index) in breakdownData"
+              :key="index"
+              class="origin-material-card"
+            >
+              <div class="material-info">
+                <strong>{{ material.type }}</strong>
+                <div class="text-small">
+                  <span v-if="material.typeName">{{ material.typeName }}</span>
+                  <span v-if="material.typeCode"> ({{ material.typeCode }})</span>
+                </div>
+              </div>
+              <div class="material-values">
+                <div v-if="material.qty">{{ material.qty }} {{ material.qtyUnit || 'หน่วย' }}</div>
+                <div v-if="material.qtyWeight">{{ material.qtyWeight }} {{ material.qtyWeightUnit || 'กรัม' }}</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
 
-    <!-- Modal Footer -->
-    <template #footer>
-      <div class="d-flex justify-content-between">
+    <template #action>
+      <div class="d-flex justify-content-between w-100">
         <div class="text-muted">
           <small>จำนวนวัสดุ: {{ editableMaterials.length }} รายการ</small>
         </div>
-        <div class="d-flex gap-2">
+        <div>
           <button
             type="button"
-            class="btn btn-secondary"
+            class="btn btn-outline-main btn-sm"
             @click="closeModal"
           >
             ยกเลิก
           </button>
           <button
             type="button"
-            class="btn btn-primary"
+            class="btn btn-main btn-sm ml-2"
             @click="saveChanges"
             :disabled="!hasValidMaterials"
           >
@@ -292,21 +277,26 @@
         </div>
       </div>
     </template>
-  </Dialog>
+  </modal>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
-import Dropdown from 'primevue/dropdown'
+import { defineAsyncComponent } from 'vue'
+
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'EditAllMaterialsModal',
 
   components: {
-    Dialog,
-    Dropdown,
-    BaseDataTable
+    modal,
+    BaseDataTable,
+    DropdownGeneric,
+    InputTextGeneric
   },
 
   props: {
@@ -392,17 +382,6 @@ export default {
   },
 
   computed: {
-    isVisible: {
-      get() {
-        return this.isShow
-      },
-      set(value) {
-        if (!value) {
-          this.closeModal()
-        }
-      }
-    },
-
     hasBreakdownData() {
       return this.breakdownData && this.breakdownData.length > 0
     },
@@ -425,7 +404,6 @@ export default {
 
   methods: {
     initializeMaterials() {
-      // Get common materials from selected stocks
       if (this.selectedStocks.length > 0) {
         const firstStock = this.selectedStocks[0]
         if (firstStock.materials && firstStock.materials.length > 0) {
@@ -437,7 +415,6 @@ export default {
         }
       }
 
-      // If no materials, start with empty array
       if (this.editableMaterials.length === 0) {
         this.addMaterial()
       }
@@ -536,7 +513,6 @@ export default {
     },
 
     saveChanges() {
-      // Emit materials to parent for applying to all selected stocks
       this.$emit('saveMaterials', {
         materials: JSON.parse(JSON.stringify(this.editableMaterials)),
         selectedStocks: this.selectedStocks
@@ -552,25 +528,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.edit-all-materials-modal {
-  :deep(.p-dialog) {
-    border-radius: 8px;
-  }
+@import '@/assets/scss/custom-style/standard-form.scss';
 
-  :deep(.p-dialog-header) {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-  }
-}
-
-.modal-content {
+.modal-body-content {
   max-height: 70vh;
   overflow-y: auto;
 }
 
 .info-section {
   .alert {
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     border: 1px solid #b8daff;
     background-color: #d1ecf1;
     color: #0c5460;
@@ -578,17 +545,8 @@ export default {
 }
 
 .control-section {
-  border-bottom: 1px solid #dee2e6;
-  padding-bottom: 1rem;
-}
-
-.materials-table-section {
-  .edit-materials-table {
-    :deep(.p-datatable-thead) th {
-      background-color: #e9ecef;
-      font-weight: 600;
-    }
-  }
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--sp-lg);
 }
 
 .qty-input-container,
@@ -596,32 +554,32 @@ export default {
 .price-input-container {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-xs);
 
   .unit-input {
-    font-size: 0.8rem;
+    font-size: var(--fs-sm);
     text-align: center;
   }
 }
 
 .origin-section {
-  border-top: 1px solid #dee2e6;
-  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--sp-lg);
 
   .origin-materials {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--sp-sm);
 
     .origin-material-card {
-      background-color: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      padding: 0.5rem;
-      font-size: 0.8rem;
+      background-color: var(--color-highlight-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: var(--sp-sm);
+      font-size: var(--fs-sm);
 
       .material-info {
-        margin-bottom: 0.25rem;
+        margin-bottom: var(--sp-xs);
 
         .text-small {
           color: #6c757d;
@@ -633,30 +591,6 @@ export default {
         color: #495057;
         font-size: 0.7rem;
       }
-    }
-  }
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-@media (max-width: 768px) {
-  .edit-all-materials-modal {
-    :deep(.p-dialog) {
-      width: 95vw !important;
-      height: 90vh;
-    }
-  }
-
-  .modal-content {
-    max-height: 60vh;
-  }
-
-  .control-section {
-    .d-flex {
-      flex-direction: column;
-      gap: 0.5rem;
     }
   }
 }

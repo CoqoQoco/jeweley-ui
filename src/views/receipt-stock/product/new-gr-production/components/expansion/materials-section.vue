@@ -5,10 +5,10 @@
         <div class="group-title pl-2">
           <div>
             <span class="title-text-lg bi bi-hammer"></span>
-            <span class="title-text-lg ml-2">ส่วนประกอบสินค้า</span>
+            <span class="title-text-lg ml-2">{{ $t('receipt-stock.product.grProduction.materialComponents') }}</span>
           </div>
           <small class="pl-4"
-            >รายละเอียดการผลิตสินค้า ส่วนประกอบ เเละวัสดุต่างๆ (Breakdown Materials)</small
+            >{{ $t('receipt-stock.product.grProduction.materialDescriptionBreakdown') }}</small
           >
         </div>
         <!-- Control buttons -->
@@ -356,11 +356,6 @@ export default {
     },
 
     emitUpdateTypeBarcode(materialData) {
-      console.log('materials-section emitUpdateTypeBarcode:', {
-        materialData,
-        stockReceiptNumber: this.data.stockReceiptNumber,
-        dataObject: this.data
-      })
       this.$emit('updateTypeBarcode', materialData, this.data.stockReceiptNumber)
     }
   }

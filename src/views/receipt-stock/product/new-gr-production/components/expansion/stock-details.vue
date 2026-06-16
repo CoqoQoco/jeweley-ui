@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div class="p-2 filter-container-bg-focus">
     <!-- Quantity and Price -->
@@ -58,16 +59,15 @@
           <div>
             <span class="title-text">แป้นต่างหู</span>
           </div>
-          <Dropdown
-            v-model="slotProps.data.studEarring"
+          <DropdownGeneric
+            :modelValue="slotProps.data.studEarring"
             :options="masterStud"
             optionLabel="description"
             optionValue="value"
-            class="w-full md:w-14rem"
             placeholder="เลือกแป้นต่างหู"
-            :showClear="slotProps.data.studEarring ? true : false"
-            style="height: 31px !important"
+            :showClear="!!slotProps.data.studEarring"
             :disabled="!requiredStud"
+            @update:modelValue="val => { slotProps.data.studEarring = val }"
           />
         </div>
       </div>
@@ -111,13 +111,13 @@
 </template>
 
 <script>
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 export default {
   name: 'StockDetails',
 
   components: {
-    Dropdown
+    DropdownGeneric
   },
 
   props: {
@@ -152,7 +152,7 @@ export default {
 
 .form-col-sm-container {
   display: grid;
-  gap: 10px;
+  gap: var(--sp-sm);
   grid-template-columns: 1fr 1fr;
 }
 

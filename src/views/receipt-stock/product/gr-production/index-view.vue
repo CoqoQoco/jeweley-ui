@@ -29,7 +29,7 @@
         <BaseDataTable
           :items="form"
           dataKey="stockReceiptNumber"
-          :columns="columns"
+          :columns="tableColumns"
           :paginator="false"
           :selectionMode="true"
           :itemsSelection="selectedItems"
@@ -107,7 +107,7 @@
                     <button
                       type="button"
                       class="btn btn-green btn-sm btn-input-group"
-                      style="height: 35px !important; margin-top: 5px"
+                      class="btn-input-group"
                       @click="onSearchProductName(data, 'EN')"
                     >
                       <span class="bi bi-search"></span>
@@ -148,7 +148,7 @@
                     <button
                       type="button"
                       class="btn btn-green btn-sm btn-input-group"
-                      style="height: 35px !important; margin-top: 5px"
+                      class="btn-input-group"
                       @click="onSearchProductName(data, 'TH')"
                     >
                       <span class="bi bi-search"></span>
@@ -221,8 +221,7 @@
                     <div class="form-col-container">
                       <div>
                         <div>
-                          <span class="title-text">จำนวน</span>
-                          <span class="title-text"> *</span>
+                          <span class="title-text">{{ $t('common.field.quantity') }} *</span>
                         </div>
                         <input
                           class="form-control form-control-sm"
@@ -237,8 +236,7 @@
 
                       <div>
                         <div>
-                          <span class="title-text">ราคาขาย</span>
-                          <span class="title-text"> *</span>
+                          <span class="title-text">{{ $t('receipt-stock.product.grProduction.salePrice') }} *</span>
                         </div>
                         <input
                           class="form-control form-control-sm"
@@ -258,8 +256,7 @@
                       <div class="form-col-sm-container">
                         <div>
                           <div>
-                            <span class="title-text">ขนาด</span>
-                            <!-- <span class="title-text"> *</span> -->
+                            <span class="title-text">{{ $t('common.field.size') }}</span>
                           </div>
                           <input
                             type="text"
@@ -275,8 +272,7 @@
 
                         <div>
                           <div>
-                            <span class="title-text">แป้นต่างหู</span>
-                            <!-- <span class="title-text"> *</span> -->
+                            <span class="title-text">{{ $t('receipt-stock.product.grProduction.studEarring') }}</span>
                           </div>
                           <Dropdown
                             v-model="slotProps.data.studEarring"
@@ -284,7 +280,7 @@
                             optionLabel="description"
                             optionValue="value"
                             class="w-full md:w-14rem"
-                            placeholder="เลือกแป้นต่างหู"
+                            :placeholder="$t('receipt-stock.product.grProduction.studEarring')"
                             :showClear="slotProps.data.studEarring ? true : false"
                             style="height: 31px !important"
                             :disabled="!requiredStud"
@@ -296,8 +292,7 @@
                       <!-- location -->
                       <div>
                         <div>
-                          <span class="title-text">คลังจัดเก็บ</span>
-                          <!-- <span class="txt-required"> *</span> -->
+                          <span class="title-text">{{ $t('receipt-stock.product.grProduction.location') }}</span>
                         </div>
                         <input
                           type="text"
@@ -316,8 +311,7 @@
                     <div class="form-col-container mt-2">
                       <div>
                         <div>
-                          <span class="title-text">หมายเหตุ</span>
-                          <!-- <span class="txt-required"> *</span> -->
+                          <span class="title-text">{{ $t('common.field.remark') }}</span>
                         </div>
                         <textarea
                           type="text"
@@ -380,9 +374,9 @@
                       <div class="group-title pl-2">
                         <div>
                           <span class="title-text-lg bi bi-hammer"></span>
-                          <span class="title-text-lg ml-2">ส่วนประกอบสินค้า</span>
+                          <span class="title-text-lg ml-2">{{ $t('receipt-stock.product.grProduction.materialComponents') }}</span>
                         </div>
-                        <small class="pl-4">รายละเอียดการผลิตสินค้า ส่วนประกอบ เเละวัสดุต่างๆ</small>
+                        <small class="pl-4">{{ $t('receipt-stock.product.grProduction.materialDescription') }}</small>
                       </div>
                       <!-- Add button -->
                       <div class="d-flex justify-content-start mt-2">
@@ -399,7 +393,7 @@
 
                     <BaseDataTable
                       :items="slotProps.data.materials"
-                      :columns="materialColumns"
+                      :columns="materialTableColumns"
                       :paginator="false"
                       :scrollHeight="scrollHeight"
                       class="custom-form-table-material"
@@ -612,7 +606,7 @@
 
             <div class="d-flex justify-content-between items-center">
               <div class="vertical-center-container">
-                <span class="title-text">จำนวนรายการที่เลือก: {{ checkItemSelectedLength() }}</span>
+                <span class="title-text">{{ $t('receipt-stock.product.grProduction.selectedCount', { count: checkItemSelectedLength() }) }}</span>
                 <!-- <span class="ml-2 mr-2 title-text">|</span> -->
                 <!-- <button class="btn btn-sm btn-outline-main" type="button">
                   <span class="bi bi-gear mr-2"></span>
@@ -631,7 +625,7 @@
                 <button class="btn btn-sm btn-green" type="button" @click="fetchDraft">
                   <span v-if="isOnDraft" class="spinner-border spinner-border-sm"></span>
                   <span v-else class="bi bi-clipboard2-pulse-fill"></span>
-                  <span class="ml-2">บันทึกฉบับร่าง</span>
+                  <span class="ml-2">{{ $t('receipt-stock.product.grProduction.saveDraft') }}</span>
                 </button>
                 <button
                   :class="[
@@ -642,7 +636,7 @@
                   :disabled="checkItemSelectedLength() === 0"
                 >
                   <span class="bi bi-upload"></span>
-                  <span class="ml-2">บันทึกสินค้า</span>
+                  <span class="ml-2">{{ $t('receipt-stock.product.grProduction.saveStock') }}</span>
                 </button>
               </div>
             </div>
@@ -676,19 +670,13 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-//const imgPreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
-//const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/UploadImages.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
-
-import Dropdown from 'primevue/dropdown'
-//import Image from 'primevue/image'
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-//import uploadImages from '@/components/prime-vue/UploadImages.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
-import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -748,9 +736,31 @@ export default {
       return this.masterStore.diamondGrade
     },
     requiredStud() {
-      const res = this.data.productType === 'ES'
-      console.log('requiredStud', res)
-      return res
+      return this.data.productType === 'ES'
+    },
+    tableColumns() {
+      return [
+        { field: 'no', header: this.$t('receipt-stock.product.grProduction.colNo'), sortable: false, width: '50px' },
+        { field: 'stockReceiptNumber', header: this.$t('receipt-stock.product.grProduction.colStockReceiptNumber'), sortable: false, minWidth: '140px' },
+        { field: 'stockNumber', header: this.$t('receipt-stock.product.grProduction.colStockNumber'), sortable: false, minWidth: '140px' },
+        { field: 'productNumber', header: this.$t('receipt-stock.product.grProduction.colProductNumber'), sortable: false, minWidth: '140px' },
+        { field: 'moldDesign', header: this.$t('receipt-stock.product.grProduction.colMoldDesign'), sortable: false, minWidth: '120px' },
+        { field: 'productNameEn', header: this.$t('receipt-stock.product.grProduction.colProductNameEn'), sortable: false, minWidth: '150px' },
+        { field: 'productNameTh', header: this.$t('receipt-stock.product.grProduction.colProductNameTh'), sortable: false, minWidth: '150px' }
+      ]
+    },
+    materialTableColumns() {
+      return [
+        { field: 'type', header: this.$t('receipt-stock.product.grProduction.matType'), sortable: false, width: '100px' },
+        { field: 'typeCode', header: this.$t('receipt-stock.product.grProduction.matTypeCode'), sortable: false, minWidth: '100px' },
+        { field: 'size', header: this.$t('receipt-stock.product.grProduction.matSize'), sortable: false, width: '150px' },
+        { field: 'region', header: this.$t('receipt-stock.product.grProduction.matRegion'), sortable: false, width: '80px' },
+        { field: 'qty', header: this.$t('receipt-stock.product.grProduction.matQty'), sortable: false, width: '200px' },
+        { field: 'weight', header: this.$t('receipt-stock.product.grProduction.matWeight'), sortable: false, width: '200px' },
+        { field: 'price', header: this.$t('receipt-stock.product.grProduction.matPrice'), sortable: false, width: '150px' },
+        { field: 'typeBarcode', header: 'Barcode', sortable: false, minWidth: '100px' },
+        { field: 'action', header: '', sortable: false, width: '50px' }
+      ]
     }
   },
 
@@ -839,109 +849,6 @@ export default {
         { value: 'sm', description: 'แป้นเล็ก' }
       ],
 
-      columns: [
-        {
-          field: 'no',
-          header: 'ลำดับ',
-          sortable: false,
-          width: '50px'
-        },
-
-        //เลขที่ผลิต
-        {
-          field: 'stockReceiptNumber',
-          header: 'เลขที่ตั้งรับ',
-          sortable: false,
-          minWidth: '140px'
-        },
-        {
-          field: 'stockNumber',
-          header: 'เลขที่ผลิต',
-          sortable: false,
-          minWidth: '140px'
-        },
-        {
-          field: 'productNumber',
-          header: 'รหัสสินค้า',
-          sortable: false,
-          minWidth: '140px'
-        },
-        {
-          field: 'moldDesign',
-          header: 'เเม่พิมพ์',
-          sortable: false,
-          minWidth: '120px'
-        },
-        {
-          field: 'productNameEn',
-          header: 'ชื่อสินค้า EN',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'productNameTh',
-          header: 'ชื่อสินค้า TH',
-          sortable: false,
-          minWidth: '150px'
-        }
-      ],
-      materialColumns: [
-        {
-          field: 'type',
-          header: 'ประเภท',
-          sortable: false,
-          width: '100px'
-        },
-        {
-          field: 'typeCode',
-          header: 'รหัส',
-          sortable: false,
-          minWidth: '100px'
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: false,
-          width: '150px'
-        },
-        {
-          field: 'region',
-          header: 'เเหล่งผลิต',
-          sortable: false,
-          width: '80px'
-        },
-        {
-          field: 'qty',
-          header: 'จำนวน',
-          sortable: false,
-          width: '200px'
-        },
-        {
-          field: 'weight',
-          header: 'น้ำหนัก',
-          sortable: false,
-          width: '200px'
-        },
-        {
-          field: 'price',
-          header: 'ราคา',
-          sortable: false,
-          width: '150px'
-        },
-        {
-          field: 'typeBarcode',
-          header: 'Barcode',
-          sortable: false,
-          minWidth: '100px'
-        },
-        {
-          field: 'action',
-          header: '',
-          sortable: false,
-          width: '50px'
-        }
-      ],
-
       btnClearImg: null,
       images: [],
 
@@ -952,7 +859,6 @@ export default {
   methods: {
     setBtnClearRef(ref) {
       this.btnClearImg = ref
-      //console.log('setBtnClearRef', this.btnClearImg)
     },
 
     getBgColor(isReceipt, data) {
@@ -1045,18 +951,13 @@ export default {
       if (!isValid) {
         if (duplicateProductNumbers.length > 0) {
           // แสดงข้อความเตือนเฉพาะกรณีมีรหัสสินค้าซ้ำกัน
-          swAlert.warning(
-            'พบรหัสสินค้าซ้ำกัน',
+          warning(
             `กรุณาตรวจสอบรหัสสินค้าต่อไปนี้: ${duplicateProductNumbers.join(', ')}`,
-            () => {
-              console.log('swAlert.warning - duplicate productNumber')
-            }
+            'พบรหัสสินค้าซ้ำกัน'
           )
         } else {
           // แสดงข้อความเตือนทั่วไปเมื่อข้อมูลไม่ครบถ้วน
-          swAlert.warning('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', '', () => {
-            console.log('swAlert.warning')
-          })
+          warning('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน')
         }
       }
 
@@ -1129,7 +1030,6 @@ export default {
     },
     updateStock(data, image, stock, all = false) {
       if (all) {
-        console.log('updateProductName all')
         this.form.forEach((item) => {
           //update all
           if (item.isReceipt) return
@@ -1167,7 +1067,6 @@ export default {
             }
 
             if (data) {
-              console.log('updateStock data', data)
               if (data.text) {
                 if (data.mode === 'EN') {
                   this.form[indexForm].productNameEN = data.text
@@ -1178,7 +1077,6 @@ export default {
               }
             }
 
-            console.log('updateStock form index update', this.form[indexForm])
           }
 
           //update this.selectedItems if any()
@@ -1206,7 +1104,6 @@ export default {
                 }
               }
 
-              console.log('updateStock selectedItems index update', this.selectedItems[indexSelect])
             }
           }
         })
@@ -1327,7 +1224,7 @@ export default {
       }
 
       //console.log('onSubmit', formValue)
-      swAlert.confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
         this.fetchConfirm(formValue)
       })
     },
@@ -1374,51 +1271,33 @@ export default {
       this.formBarcode.goldType = this.data.goldSize
       this.formBarcode.mold = this.data.mold
 
-      console.log(this.data.type)
       this.formBarcode.type = this.data.type === 'Silver' ? 'silver' : 'gem'
-      console.log(this.formBarcode.type)
       //this.formBarcode.goldType = this.data.gems
 
       //create barcode
       this.updateFormBarcodeAll()
 
-      //console.log('this.form', this.form)
     },
     async fetchDraft() {
-      try {
-        this.isOnDraft = true
+      this.isOnDraft = true
 
-        const formValue = {
-          receiptNumber: this.data.receiptNumber,
-          stocks: [...this.form]
-        }
-        console.log('fetchDraft', formValue)
+      const formValue = {
+        receiptNumber: this.data.receiptNumber,
+        stocks: [...this.form]
+      }
 
-        const res = await this.receiptProductionStore.fetchCreateDraft({
-          formValue: formValue
-        })
+      const res = await this.receiptProductionStore.fetchCreateDraft({
+        formValue: formValue
+      })
 
-        if (res) {
-          this.isOnDraft = false
-        }
-      } catch (error) {
-        console.log(error)
+      if (res) {
         this.isOnDraft = false
       }
     },
     async fetchImageData() {
-      try {
-        switch (this.imgTest.type) {
-          case 'MOLD':
-            {
-              // Build Azure Blob URL for mold image
-              const blobPath = `Mold/${this.imgTest.imageName}-Mold.png`
-              this.urlImage = getAzureBlobUrl(blobPath)
-            }
-            break
-        }
-      } catch (error) {
-        console.log(error)
+      if (this.imgTest.type === 'MOLD') {
+        const blobPath = `Mold/${this.imgTest.imageName}-Mold.png`
+        this.urlImage = getAzureBlobUrl(blobPath)
       }
     },
     async fetchConfirm(formValue) {
@@ -1431,8 +1310,6 @@ export default {
       if (response) {
         this.res = [...response.stocks]
         await this.fetchData(true)
-
-        console.log('fetchConfirm', response)
         this.isShow.barcodePrint = true
       }
     },
@@ -1448,20 +1325,12 @@ export default {
       this.param = {
         running: this.$route.params.id
       }
-      //console.log('this.param', this.param)
       this.fetchData()
-
-      //test
       this.fetchImageData()
 
-      //console.log('this.masterStore.planStatus')
-
-      // เข้าถึง state โดยตรง
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()
       await this.masterStore.fetchDiamondGrade()
-      //console.log(this.masterStore.gold)
-      //console.log(this.masterStore.gem)
     })
   }
 }
@@ -1470,8 +1339,10 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form';
 
-.form-control {
-  font-size: 50px;
+.btn-input-group {
+  height: 35px;
+  padding: 6px 12px;
+  margin-top: 5px !important;
 }
 .form-col-fix-col-container {
   display: grid;

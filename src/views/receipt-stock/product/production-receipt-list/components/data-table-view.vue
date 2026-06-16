@@ -20,7 +20,7 @@
           <button class="btn btn-sm btn-main" @click="receipt(data)" title="รับสินค้า">
             <span><i class="bi bi-receipt"></i></span>
           </button>
-          <div class="ml-2" style="width: 120px" :class="getStatusSeverity(data.isRunning)">
+          <div class="ml-2 status-box" :class="getStatusSeverity(data.isRunning)">
             {{ getStatusName(data.isRunning) }}
           </div>
         </div>
@@ -51,6 +51,7 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
@@ -64,6 +65,8 @@ export default {
     BaseDataTable,
     dataExpand
   },
+
+  mixins: [dataTablePaging],
 
   props: {
     modelForm: {
@@ -79,73 +82,74 @@ export default {
 
   data() {
     return {
-      take: 10,
-      skip: 0,
-      sort: [],
-      expandedRows: [],
+      expandedRows: []
+    }
+  },
 
-      // Columns Configuration
-      columns: [
+  computed: {
+    form() {
+      return this.modelForm || {}
+    },
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
           minWidth: '50px',
           sortable: false
-          //align: 'center',
         },
         {
           field: 'woText',
-          header: 'W.O.',
+          header: this.$t('view.receiptStock.product.productionReceiptList.wo'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productQty',
-          header: 'จำนวน',
+          header: this.$t('view.receiptStock.product.productionReceiptList.productQty'),
           sortable: true,
-          minWidth: '100px',
-          backgroundColor: '#dad4b5'
+          minWidth: '100px'
         },
         {
           field: 'receiptNumber',
-          header: 'เลขที่ตั้งรับสินค้า',
+          header: this.$t('view.receiptStock.product.productionReceiptList.receiptNumber'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'receiptDate',
-          header: 'วันที่ผลิตสำเร็จ',
+          header: this.$t('view.receiptStock.product.productionReceiptList.receiptDateCol'),
           sortable: true,
           minWidth: '150px',
           format: 'datetime'
         },
         {
           field: 'mold',
-          header: 'เเม่พิมพ์',
+          header: this.$t('view.receiptStock.product.productionReceiptList.mold'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productNumber',
-          header: 'รหัสสินค้า',
+          header: this.$t('view.receiptStock.product.productionReceiptList.productNumber'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productTypeName',
-          header: 'ประเภทสินค้า',
+          header: this.$t('view.receiptStock.product.productionReceiptList.productTypeName'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'gold',
-          header: 'สีของทอง/เงิน',
+          header: this.$t('view.receiptStock.product.productionReceiptList.gold'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'goldSize',
-          header: 'ประเภททอง/เงิน',
+          header: this.$t('view.receiptStock.product.productionReceiptList.goldSizeCol'),
           sortable: true,
           minWidth: '150px'
         }
@@ -156,12 +160,6 @@ export default {
   setup() {
     const receiptProductionStore = useReceiptProductionApiStore()
     return { receiptProductionStore }
-  },
-
-  computed: {
-    form() {
-      return this.modelForm || {}
-    }
   },
 
   watch: {
@@ -178,24 +176,6 @@ export default {
   },
 
   methods: {
-    // ----- data table hnadle
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
-    // ---- APIs
     async fetchData() {
       await this.receiptProductionStore.fetchDataListPlan({
         take: this.take,
@@ -213,7 +193,6 @@ export default {
     // },
 
     receipt(data) {
-      console.log('receipt', data)
       this.$router.push({ name: 'goods-receipt-production', params: { id: data.receiptNumber } })
     },
 
@@ -235,9 +214,9 @@ export default {
     getStatusName(isRunning) {
       switch (isRunning) {
         case true:
-          return 'อยู่ระหว่างรับสินค้า'
+          return this.$t('view.receiptStock.product.productionReceiptList.receiving')
         case false:
-          return 'รอรับสินค้า'
+          return this.$t('view.receiptStock.product.productionReceiptList.waitingReceipt')
       }
     }
   }
@@ -247,6 +226,10 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form';
+
+.status-box {
+  min-width: 120px;
+}
 
 .notification {
   display: inline-flex;

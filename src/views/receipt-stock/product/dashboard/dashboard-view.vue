@@ -417,14 +417,12 @@ import { useStockProductDashboardStore } from '@/stores/modules/api/stock/stock-
 import dayjs from 'dayjs'
 
 // Dashboard Components
-import StockSummaryCards from './components/stock-summary-cards.vue'
 import CategoryChart from './components/category-chart.vue'
 import LastActivitiesTable from './components/last-activities-table.vue'
 
 export default {
   name: 'StockProductDashboardView',
   components: {
-    StockSummaryCards,
     CategoryChart,
     LastActivitiesTable
   },
@@ -499,44 +497,30 @@ export default {
 
     // Chart data
     categoryChartData() {
-      const data = this.dashboardStore.getCategories
-      console.log('categoryChartData getter:', data)
-      return data
+      return this.dashboardStore.getCategories
     }
   },
   async mounted() {
-    console.log('Dashboard mounted, loading data...')
     await this.loadDashboardData()
-    console.log('Dashboard data loaded:', {
-      stockSummary: this.stockSummary,
-      categories: this.categories,
-      lastActivities: this.lastActivities
-    })
   },
   methods: {
     async loadDashboardData() {
-      console.log('Fetching dashboard with filters:', this.filters)
       await this.dashboardStore.fetchDashboard(this.filters)
-      console.log('Store state after fetch:', this.dashboardStore.$state)
     },
 
     async setActiveTab(tab) {
       this.activeTab = tab
 
-      try {
-        switch (tab) {
-          case 'today':
-            await this.dashboardStore.fetchTodayReport(this.filters)
-            break
-          case 'weekly':
-            await this.dashboardStore.fetchWeeklyReport(this.filters)
-            break
-          case 'monthly':
-            await this.dashboardStore.fetchMonthlyReport(this.filters)
-            break
-        }
-      } catch (error) {
-        console.error(`Error loading ${tab} data:`, error)
+      switch (tab) {
+        case 'today':
+          await this.dashboardStore.fetchTodayReport(this.filters)
+          break
+        case 'weekly':
+          await this.dashboardStore.fetchWeeklyReport(this.filters)
+          break
+        case 'monthly':
+          await this.dashboardStore.fetchMonthlyReport(this.filters)
+          break
       }
     },
 

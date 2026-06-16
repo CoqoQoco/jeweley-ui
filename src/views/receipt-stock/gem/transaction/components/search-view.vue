@@ -19,26 +19,26 @@
       <div class="form-col-container">
         <!-- requestDate -->
         <div>
-          <span class="title-text">วันทำรายการ</span>
+          <span class="title-text">{{ $t('view.receiptStock.gem.transaction.transactionDate') }}</span>
           <div class="flex-group">
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.requestDateStart"
               :max-date="form.requestDateEnd"
               :manualInput="false"
               dateFormat="dd/mm/yy"
-              showIcon
-              placeholder="เริ่มต้น"
+              :showIcon="true"
+              :placeholder="$t('common.label.start')"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.requestDateEnd"
               :min-date="form.requestDateStart"
               :manualInput="false"
               dateFormat="dd/mm/yy"
-              showIcon
-              placeholder="สิ้นสุด"
+              :showIcon="true"
+              :placeholder="$t('common.label.end')"
             />
           </div>
         </div>
@@ -47,24 +47,21 @@
           <!-- type -->
           <div>
             <div>
-              <span class="title-text">เลือกประเภทการรับ</span>
+              <span class="title-text">{{ $t('view.receiptStock.gem.transaction.transactionType') }}</span>
               <span class="txt-required"> *</span>
             </div>
-            <MultiSelect
+            <MultiSelectGeneric
               v-model="form.type"
               :options="masterType"
-              filter
               optionLabel="description"
               optionValue="id"
-              class="w-full md:w-14rem"
             />
-            <!-- :class="val.isType === true ? `p-invalid` : ``" -->
           </div>
 
           <!-- code -->
           <div>
-            <span class="title-text">รหัส</span>
-            <input type="text" class="form-control" v-model="form.code" />
+            <span class="title-text">{{ $t('common.field.code') }}</span>
+            <InputTextGeneric v-model="form.code" />
           </div>
         </div>
       </div>
@@ -79,70 +76,58 @@
           <div class="form-col-container">
             <!-- groupName -->
             <div>
-              <span class="title-text">หมวดหมู่</span>
-              <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <span class="title-text">{{ $t('view.receiptStock.gem.transaction.groupName') }}</span>
+              <MultiSelectGeneric
                 v-model="form.groupName"
                 :options="groupOptions"
-                filter
                 optionLabel="value"
                 optionValue="value"
-                class="w-full md:w-14rem"
               />
             </div>
 
             <!-- shape -->
             <div>
-              <span class="title-text">รูปร่าง</span>
-              <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <span class="title-text">{{ $t('view.receiptStock.gem.transaction.shape') }}</span>
+              <MultiSelectGeneric
                 v-model="form.shape"
                 :options="shapeOptions"
-                filter
                 optionLabel="value"
                 optionValue="value"
-                class="w-full md:w-14rem"
               />
             </div>
 
             <!-- size -->
             <div>
-              <span class="title-text">ขนาด</span>
-              <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <span class="title-text">{{ $t('view.receiptStock.gem.transaction.size') }}</span>
+              <MultiSelectGeneric
                 v-model="form.size"
                 :options="sizeOptions"
-                filter
                 optionLabel="value"
                 optionValue="value"
-                class="w-full md:w-14rem"
               />
             </div>
 
             <!-- grade -->
             <div>
-              <span class="title-text">เกรด</span>
-              <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelect
+              <span class="title-text">{{ $t('view.receiptStock.gem.transaction.grade') }}</span>
+              <MultiSelectGeneric
                 v-model="form.grade"
                 :options="gradeOptions"
-                filter
                 optionLabel="value"
                 optionValue="value"
-                class="w-full md:w-14rem"
               />
             </div>
 
             <!-- job/po -->
             <div>
-              <span class="title-text">Invoice/Ref No.</span>
-              <input type="text" class="form-control" v-model="form.jobOrPo" />
+              <span class="title-text">{{ $t('view.receiptStock.gem.transaction.invoiceRef') }}</span>
+              <InputTextGeneric v-model="form.jobOrPo" />
             </div>
 
             <!-- running -->
             <div>
-              <span class="title-text">เลขที่อ้างอิง</span>
-              <input type="text" class="form-control" v-model="form.running" />
+              <span class="title-text">{{ $t('view.receiptStock.gem.transaction.refNo') }}</span>
+              <InputTextGeneric v-model="form.running" />
             </div>
           </div>
         </template>
@@ -167,14 +152,13 @@
           <!-- <span>ล้าง</span> -->
         </button>
         <button
-          :class="['btn btn-sm btn-primary', { 'btn-secondary': !isExportData }]"
+          class="btn btn-sm btn-green"
           type="button"
           :disabled="!isExportData"
           @click="onSubmitExport"
           title="ออกเอกสาร"
         >
           <span><i class="bi bi-filetype-csv"></i></span>
-          <!-- <span class="ml-2">ออกเอกสาร</span> -->
         </button>
       </div>
     </form>
@@ -183,15 +167,14 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-
-const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
-
-import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
-import MultiSelect from 'primevue/multiselect'
 
 import api from '@/axios/axios-helper.js'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 const interfaceIsShow = {
   isCreate: false,
@@ -200,11 +183,10 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-
-    Calendar,
+    CalendarGeneric,
+    MultiSelectGeneric,
+    InputTextGeneric,
     dialogView
-    //Dropdown
   },
   props: {
     modelForm: {
@@ -238,7 +220,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow },
       groupOptions: [],
@@ -277,78 +258,58 @@ export default {
       this.isShow.dialog = false
     },
 
-    // ---------------- APIs
     async fetchMasterData(type) {
-      this.isLoading = true
-      try {
-        let params = null
-        let url = null
-        let res = null
+      let params = null
+      let url = null
+      let res = null
 
+      switch (type) {
+        case 'GROUPGEM':
+          params = { type: 'GROUPGEM', Value: null }
+          url = 'StockGem/GroupGemData'
+          break
+        case 'SIZE':
+          params = { type: 'SIZE', Value: null }
+          url = 'StockGem/GroupGemData'
+          break
+        case 'GRADE':
+          params = { type: 'GRADE', Value: null }
+          url = 'StockGem/GroupGemData'
+          break
+        case 'SHAPE':
+          params = { type: 'SHAPE', Value: null }
+          url = 'StockGem/GroupGemData'
+          break
+        case 'MASTERGEMSHAPE':
+          url = 'Master/MasterGemShape'
+          break
+      }
+
+      if (type === 'MASTERGEMSHAPE') {
+        res = await api.jewelry.get(url)
+      } else {
+        res = await api.jewelry.post(url, params)
+      }
+
+      if (res) {
         switch (type) {
           case 'GROUPGEM':
-            params = {
-              type: 'GROUPGEM',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
+            this.groupOptions = [...res]
             break
           case 'SIZE':
-            params = {
-              type: 'SIZE',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
+            this.sizeOptions = [...res]
             break
           case 'GRADE':
-            params = {
-              type: 'GRADE',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
+            this.gradeOptions = [...res]
             break
           case 'SHAPE':
-            params = {
-              type: 'SHAPE',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
+            this.shapeOptions = [...res]
             break
           case 'MASTERGEMSHAPE':
-            url = 'Master/MasterGemShape'
+            this.masterGemShape = [...res]
             break
         }
-
-        if (type === 'MASTERGEMSHAPE') {
-          res = await api.jewelry.get(url)
-        } else {
-          res = await api.jewelry.post(url, params)
-        }
-
-        if (res) {
-          //console.log('res', res)
-          switch (type) {
-            case 'GROUPGEM':
-              this.groupOptions = [...res]
-              break
-            case 'SIZE':
-              this.sizeOptions = [...res]
-              break
-            case 'GRADE':
-              this.gradeOptions = [...res]
-              break
-            case 'SHAPE':
-              this.shapeOptions = [...res]
-              break
-            case 'MASTERGEMSHAPE':
-              this.masterGemShape = [...res]
-              break
-          }
-        }
-      } catch (error) {
-        console.log(error)
       }
-      this.isLoading = false
     }
   },
   created() {

@@ -5,38 +5,35 @@
       <div>
         <div class="title-text">{{ $t('view.stock.gem.dashboard.monthSelection') }}</div>
         <div class="form-col-container">
-          <Calendar
+          <CalendarGeneric
             v-model="selectedMonth"
             view="month"
             dateFormat="MM - yy"
-            showIcon
-            showButtonBar
+            :showIcon="true"
+            :showButtonBar="true"
             :manualInput="false"
             @date-select="onMonthChange"
             :class="{ 'p-invalid': !selectedMonth }"
-            class="me-2"
           />
 
-          <Dropdown
-            v-model="selectedTransactionType"
+          <DropdownGeneric
+            :modelValue="selectedTransactionType"
             :options="transactionTypeOptions"
             optionLabel="label"
             optionValue="value"
             :placeholder="$t('view.stock.gem.dashboard.selectTransactionType')"
-            showClear
-            class="me-2"
-            style="min-width: 200px"
+            :showClear="true"
+            @update:modelValue="selectedTransactionType = $event"
           />
 
           <div></div>
           <div class="d-flex align-items-end justify-content-end">
             <button
               @click="loadTransactionData"
-              class="btn btn-sm btn-green ms-2"
-              :disabled="isLoading || !selectedMonth"
+              class="btn btn-sm btn-green ml-2"
+              :disabled="!selectedMonth"
             >
-              <i class="bi bi-search" v-if="!isLoading"></i>
-              <i class="bi bi-arrow-clockwise spinning" v-else></i>
+              <i class="bi bi-search"></i>
               {{ $t('button.search') }}
             </button>
           </div>
@@ -49,7 +46,6 @@
           {{ $t('view.stock.gem.dashboard.selectedPeriod') }}: {{ formatMonthYear(selectedMonth) }}
           <span v-if="selectedTransactionType" class="mr-3">
             <span>|</span>
-            <!-- <i class="bi bi-tag"></i> -->
             {{ $t('view.stock.gem.dashboard.selectedType') }}:
             {{ getTransactionTypeName(selectedTransactionType) }}
           </span>
@@ -97,8 +93,8 @@
         <div class="table-controls">
           <button
             @click="exportToExcel"
-            class="btn btn-sm btn-primary"
-            :disabled="!tableData.length || isLoading"
+            class="btn btn-sm btn-green"
+            :disabled="!tableData.length"
           >
             <span><i class="bi bi-filetype-csv"></i></span>
           </button>
@@ -114,10 +110,9 @@
           :paginator="false"
           :showGridlines="true"
           dataKey="id"
-          emptyMessage="ไม่พบข้อมูล"
+          :emptyMessage="$t('common.label.noData')"
           scrollHeight="500px"
         >
-          <!-- Custom templates for specific columns -->
           <template #transactionCountTemplate="{ data }">
             <div class="text-end">
               {{ formatNumber(data.transactionCount) }}
@@ -163,19 +158,12 @@
           </template>
         </DataTableWithPaging>
 
-        <div v-else-if="!isLoading" class="empty-state">
+        <div v-else class="empty-state">
           <i class="bi bi-calendar-x"></i>
           <p>{{ $t('view.stock.gem.dashboard.noTransactionData') }}</p>
           <small v-if="!selectedMonth">{{
             $t('view.stock.gem.dashboard.selectMonthToView')
           }}</small>
-        </div>
-
-        <div v-if="isLoading" class="loading-state">
-          <div class="loading-spinner">
-            <i class="bi bi-arrow-clockwise spinning"></i>
-          </div>
-          <p>{{ $t('view.stock.gem.dashboard.loadingData') }}</p>
         </div>
       </div>
     </div>
@@ -186,16 +174,18 @@
 import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
 import dayjs from 'dayjs'
 import { formatISOString } from '@/services/utils/dayjs.js'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+import { success, error } from '@/services/alert/sweetAlerts.js'
+
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
 import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
 
 export default {
   name: 'MonthlyTransactionSummary',
   components: {
-    Calendar,
-    Dropdown,
+    CalendarGeneric,
+    DropdownGeneric,
     DataTableWithPaging,
     HorizontalBarChart
   },
@@ -210,7 +200,6 @@ export default {
       selectedMonth: new Date(),
       selectedTransactionType: null,
       transactionTypeSummaries: [],
-      isLoading: false,
       transactionTypeOptions: [
         { label: 'รับเข้าคลัง [พลอยใหม่]', value: 1 },
         { label: 'รับเข้าคลัง [พลอยนอกสต๊อก]', value: 2 },
@@ -236,7 +225,6 @@ export default {
         return []
       }
 
-      // Add unique ID for DataTable
       return selectedTypeData.gemDetails.map((item, index) => ({
         ...item,
         id: `${selectedTypeData.type}-${index}`,
@@ -277,14 +265,6 @@ export default {
           align: 'right',
           bodyTemplate: 'weightTemplate'
         },
-        // {
-        //   field: 'currentQuantity',
-        //   header: this.$t('view.stock.gem.dashboard.currentStock'),
-        //   sortable: false,
-        //   minWidth: '150px',
-        //   align: 'right',
-        //   bodyTemplate: 'currentStockTemplate'
-        // },
         {
           field: 'lastTransactionDate',
           header: this.$t('view.stock.gem.dashboard.lastTransaction'),
@@ -295,7 +275,6 @@ export default {
         }
       ]
 
-      // Add production type column for type 7
       if (this.selectedTransactionType === 7) {
         baseColumns.splice(1, 0, {
           field: 'productionTypeName',
@@ -340,22 +319,13 @@ export default {
       }
     },
 
-    chartTitle() {
-      if (!this.selectedTransactionType) {
-        return ''
-      }
-      return `${this.getTransactionTypeName(this.selectedTransactionType)} - ${this.formatMonthYear(
-        this.selectedMonth
-      )}`
-    },
-
     quantityChartData() {
       if (!this.chartData) return null
 
       return {
         report: this.chartData.report.map((item) => ({
           ...item,
-          count: item.count // Use quantity data
+          count: item.count
         }))
       }
     },
@@ -366,7 +336,7 @@ export default {
       return {
         report: this.chartData.report.map((item) => ({
           ...item,
-          count: item.weight // Use weight data
+          count: item.weight
         }))
       }
     },
@@ -390,7 +360,6 @@ export default {
     }
   },
   async mounted() {
-    // Load data for current month initially
     await this.loadTransactionData()
   },
   methods: {
@@ -404,66 +373,38 @@ export default {
         return
       }
 
-      this.isLoading = true
-      try {
-        const year = this.selectedMonth.getFullYear()
-        const month = this.selectedMonth.getMonth() // 0-based
+      const year = this.selectedMonth.getFullYear()
+      const month = this.selectedMonth.getMonth()
 
-        const startDate = new Date(year, month, 1)
-        const endDate = new Date(year, month + 1, 0) // Last day of month
+      const startDate = new Date(year, month, 1)
+      const endDate = new Date(year, month + 1, 0)
 
-        await this.dashboardStore.fetchTransactionSummariesByType({
-          startDate: formatISOString(startDate),
-          endDate: formatISOString(endDate)
-        })
+      await this.dashboardStore.fetchTransactionSummariesByType({
+        startDate: formatISOString(startDate),
+        endDate: formatISOString(endDate)
+      })
 
-        this.transactionTypeSummaries = this.dashboardStore.getTransactionTypeSummaries
-      } catch (error) {
-        console.error('Error loading monthly transaction summaries:', error)
-        this.transactionTypeSummaries = []
-        this.$swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to load transaction summaries for selected month'
-        })
-      } finally {
-        this.isLoading = false
-      }
+      this.transactionTypeSummaries = this.dashboardStore.getTransactionTypeSummaries
     },
 
     async exportToExcel() {
       if (!this.tableData.length || !this.selectedTransactionType || !this.selectedMonth) return
 
-      try {
-        const year = this.selectedMonth.getFullYear()
-        const month = this.selectedMonth.getMonth()
-        const startDate = new Date(year, month, 1)
-        const endDate = new Date(year, month + 1, 0)
+      const year = this.selectedMonth.getFullYear()
+      const month = this.selectedMonth.getMonth()
+      const startDate = new Date(year, month, 1)
+      const endDate = new Date(year, month + 1, 0)
 
-        await this.dashboardStore.exportTransactionSummariesByType({
-          dateRange: { 
-            startDate: formatISOString(startDate), 
-            endDate: formatISOString(endDate) 
-          },
-          selectedTransactionType: this.selectedTransactionType,
-          transactionTypeName: this.getTransactionTypeName(this.selectedTransactionType)
-        })
+      await this.dashboardStore.exportTransactionSummariesByType({
+        dateRange: {
+          startDate: formatISOString(startDate),
+          endDate: formatISOString(endDate)
+        },
+        selectedTransactionType: this.selectedTransactionType,
+        transactionTypeName: this.getTransactionTypeName(this.selectedTransactionType)
+      })
 
-        this.$swal.fire({
-          icon: 'success',
-          title: this.$t('alert.success'),
-          text: this.$t('alert.exportSuccess'),
-          timer: 2000,
-          showConfirmButton: false
-        })
-      } catch (error) {
-        console.error('Error exporting to Excel:', error)
-        this.$swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to export data to Excel'
-        })
-      }
+      success(this.$t('alert.exportSuccess'), this.$t('alert.success'))
     },
 
     getTransactionTypeName(type) {
@@ -498,52 +439,10 @@ export default {
   background-color: #f8f9fa;
   min-height: 100vh;
 
-  .selection-controls-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
-
-    .selection-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-      gap: 15px;
-
-      h5 {
-        color: $base-font-color;
-        font-weight: bold;
-        margin: 0;
-      }
-
-      .selection-controls {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-    }
-
-    .selected-period-info {
-      padding-top: 10px;
-      border-top: 1px solid #e9ecef;
-
-      small i {
-        margin-right: 5px;
-      }
-    }
-  }
-
   .chart-card,
   .data-table-card {
     background: white;
-    //border-radius: 8px;
-    //box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    //margin-bottom: 20px;
 
     .chart-header,
     .table-header {
@@ -554,7 +453,7 @@ export default {
       align-items: center;
 
       h5 {
-        color: $base-font-color;
+        color: var(--base-font-color);
         font-weight: bold;
         margin: 0;
       }
@@ -572,8 +471,7 @@ export default {
     }
   }
 
-  .empty-state,
-  .loading-state {
+  .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -585,10 +483,6 @@ export default {
       font-size: 48px;
       margin-bottom: 15px;
     }
-
-    .loading-spinner i {
-      animation: spin 1s linear infinite;
-    }
   }
 
   .production-type-badge {
@@ -599,44 +493,11 @@ export default {
 
   .current-qty {
     font-weight: 600;
-    color: $base-font-color;
+    color: var(--base-font-color);
   }
 
   .current-weight {
     margin-top: 2px;
-  }
-
-  .spinning {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  // Responsive adjustments
-  @media (max-width: 768px) {
-    .selection-header {
-      flex-direction: column;
-      align-items: flex-start;
-
-      .selection-controls {
-        width: 100%;
-        display: flex;
-        justify-content: flex-start;
-      }
-    }
-
-    .table-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-    }
   }
 }
 </style>

@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container">
     <pageTitle
-      title="สร้างรหัสวัถุดิบ"
-      description="สร้างรหัสวัถุดิบ ระบุข้อมูลรหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ"
+      :title="$t('view.receiptStock.gem.create.title')"
+      :description="$t('view.receiptStock.gem.create.description')"
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >
@@ -10,7 +10,7 @@
         <div>
           <button class="btn btn-sm btn-main" @click="onShowCreate">
             <i class="bi bi-pencil"></i>
-            <span class="ml-2">สร้างรหัส</span>
+            <span class="ml-2">{{ $t('view.receiptStock.gem.create.createCode') }}</span>
           </button>
         </div>
       </template>
@@ -18,54 +18,45 @@
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
         <div>
-          <span class="title-text">รหัส</span>
-          <input type="text" class="form-control" v-model="form.code" />
+          <span class="title-text">{{ $t('common.field.code') }}</span>
+          <InputTextGeneric v-model="form.code" />
         </div>
         <div>
-          <span class="title-text">หมวดหมู่</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
+          <span class="title-text">{{ $t('view.receiptStock.gem.create.groupName') }}</span>
+          <MultiSelectGeneric
             v-model="form.groupName"
             :options="groupOptions"
-            filter
             optionLabel="value"
             optionValue="value"
-            class="w-full md:w-14rem"
           />
         </div>
         <div>
-          <span class="title-text">ขนาด</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
+          <span class="title-text">{{ $t('view.receiptStock.gem.create.size') }}</span>
+          <MultiSelectGeneric
             v-model="form.size"
             :options="sizeOptions"
-            filter
             optionLabel="value"
             optionValue="value"
-            class="w-full md:w-14rem"
           />
         </div>
         <div>
-          <span class="title-text">รูปร่าง</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-          <MultiSelect
+          <span class="title-text">{{ $t('view.receiptStock.gem.create.shape') }}</span>
+          <MultiSelectGeneric
             v-model="form.shape"
             :options="shapeOptions"
-            filter
             optionLabel="value"
             optionValue="value"
-            class="w-full md:w-14rem"
           />
         </div>
       </div>
       <div class="btn-submit-container">
         <button class="btn btn-sm btn-main mr-2" type="submit">
           <span><i class="bi bi-search mr-2"></i></span>
-          <span>ค้นหา</span>
+          <span>{{ $t('common.btn.search') }}</span>
         </button>
-        <button class="btn btn-sm btn-secondary" type="button" @click="onClear">
+        <button class="btn btn-sm btn-dark" type="button" @click="onClear">
           <span><i class="bi bi-x mr-2"></i></span>
-          <span>ล้าง</span>
+          <span>{{ $t('common.btn.clear') }}</span>
         </button>
       </div>
     </form>
@@ -76,13 +67,13 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
 
 import api from '@/axios/axios-helper.js'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import createView from './CreateView.vue'
+
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 const interfaceIsShow = {
   isCreate: false
@@ -91,9 +82,9 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
+    MultiSelectGeneric,
+    InputTextGeneric,
     createView
-    //Calendar
   },
   props: {
     modelForm: {
@@ -111,7 +102,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       isShow: { ...interfaceIsShow },
 
       form: { ...this.modelForm },
@@ -136,81 +126,28 @@ export default {
       this.isShow.isCreate = true
     },
 
-    // ---------------- APIs
     async fetchGroupOptions() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'GROUPGEM',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.groupOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      const res = await api.jewelry.post('StockGem/GroupGemData', { type: 'GROUPGEM', Value: null })
+      if (res) {
+        this.groupOptions = [...res]
       }
     },
     async fetchShapeOptions() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SHAPE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.shapeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      const res = await api.jewelry.post('StockGem/GroupGemData', { type: 'SHAPE', Value: null })
+      if (res) {
+        this.shapeOptions = [...res]
       }
     },
     async fetchSizeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'SIZE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.sizeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      const res = await api.jewelry.post('StockGem/GroupGemData', { type: 'SIZE', Value: null })
+      if (res) {
+        this.sizeOptions = [...res]
       }
     },
     async fetchGradeOption() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          type: 'GRADE',
-          Value: null
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('StockGem/GroupGemData', params)
-        if (res) {
-          this.gradeOptions = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      const res = await api.jewelry.post('StockGem/GroupGemData', { type: 'GRADE', Value: null })
+      if (res) {
+        this.gradeOptions = [...res]
       }
     }
   },
@@ -232,7 +169,7 @@ export default {
 .header-bar-container {
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 2fr;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
 }
 </style>

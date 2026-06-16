@@ -5,7 +5,7 @@
         <div>
           <div class="title-text-lg-bg">
             <span><i class="bi bi-brush mr-2"></i></span>
-            <span>{{ `ค้นหาชื่อสินค้า ${typeMode === 'EN' ? '(EN)' : '(TH)'}` }}</span>
+            <span>{{ $t('receipt-stock.product.grProduction.searchProductNameTitle', { mode: typeMode }) }}</span>
           </div>
 
           <div>
@@ -21,7 +21,7 @@
                     autocapitalize="off"
                     spellcheck="false"
                     v-model="search.name"
-                    placeholder="พิมพ์ชื่อสินค้าที่ต้องการค้นหา"
+                    :placeholder="$t('receipt-stock.product.grProduction.searchProductNamePlaceholder')"
                     required
                   />
                   <div class="input-group-append mr-1">
@@ -39,7 +39,7 @@
               scrollHeight="400px"
               :items="nameList"
               :paginator="false"
-              :columns="columns"
+              :columns="tableColumns"
               :selectionMode="true"
               :itemsSelection="selectedItems"
               :selectionType="selectionType"
@@ -48,19 +48,18 @@
             </BaseDataTable>
             <div class="d-flex justify-content-between mt-2 pb-2">
               <div class="check-return-container">
-                <Checkbox v-model="editAll" :binary="true" />
-                <span for="ingredient1" class="ml-2">เเก้ไขทุกรายการสินค้า</span>
+                <CheckboxGeneric v-model="editAll" :label="$t('receipt-stock.product.grProduction.editAll')" />
               </div>
               <div>
                 <button
-                  :class="['btn btn-sm', !selectedItems.length > 0 ? 'btn-secondary' : 'btn-main']"
+                  class="btn btn-sm btn-main"
                   type="button"
-                  :disabled="!selectedItems.length > 0"
-                  title="ปรับปรุง"
+                  :disabled="!selectedItems.length"
+                  :title="$t('receipt-stock.product.grProduction.updateProductName')"
                   @click="onSelect"
                 >
                   <span><i class="bi bi-pencil-square"></i></span>
-                  <span class="ml-2">ปรับปรุง</span>
+                  <span class="ml-2">{{ $t('receipt-stock.product.grProduction.updateProductName') }}</span>
                 </button>
               </div>
             </div>
@@ -75,7 +74,7 @@
 import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import Checkbox from 'primevue/checkbox'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
@@ -88,7 +87,7 @@ export default {
   components: {
     modal,
     BaseDataTable,
-    Checkbox
+    CheckboxGeneric
   },
 
   setup() {
@@ -114,7 +113,17 @@ export default {
     }
   },
 
-  computed: {},
+  computed: {
+    tableColumns() {
+      return [
+        {
+          field: 'text',
+          header: this.$t('receipt-stock.product.grProduction.productName'),
+          sortable: false
+        }
+      ]
+    }
+  },
 
   watch: {
     isShow: {
@@ -157,17 +166,7 @@ export default {
       selectedItems: [],
       selectionType: 'single',
 
-      columns: [
-        {
-          field: 'text',
-          header: 'ชื่อสินค้า',
-          sortable: false
-        }
-      ],
-      tableHeight: '800px',
-      take: 10,
-      skip: 0,
-      sort: []
+      columns: []
     }
   },
 

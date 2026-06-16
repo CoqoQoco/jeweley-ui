@@ -35,7 +35,9 @@ export default {
   label: {
     noData: 'No data found',
     loading: 'Loading...',
-    all: 'All'
+    all: 'All',
+    start: 'Start',
+    end: 'End'
   },
   table: {
     showing: 'Showing',

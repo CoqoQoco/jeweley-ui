@@ -10,6 +10,7 @@ import catalog from './view/catalog/th.js'
 import customer from './view/customer/th.js'
 import master from './view/master/th.js'
 import stock from './view/stock/th.js'
+import receiptStock from './view/receipt-stock/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -20,6 +21,7 @@ export default {
     catalog: { ...catalog },
     customer: { ...customer },
     master: { ...master },
+    receiptStock: { ...receiptStock },
     production: {
       dashboard: {
         title: 'แดชบอร์ดงานผลิต',

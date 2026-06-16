@@ -9,25 +9,25 @@
         <div class="form-col-container">
           <!-- receipt date -->
           <div>
-            <span class="title-text">วันที่รับสินค้า</span>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptDate') }}</span>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.receiptDateStart"
                 :max-date="form.receiptDateEnd"
-                showIcon
+                :showIcon="true"
                 :manualInput="true"
-                placeholder="เริ่มต้น"
+                :placeholder="$t('common.label.start')"
                 dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.receiptDateEnd"
                 :min-date="form.receiptDateStart"
-                showIcon
+                :showIcon="true"
                 :manualInput="false"
-                placeholder="สิ้นสุด"
+                :placeholder="$t('common.label.end')"
                 dateFormat="dd/mm/yy"
               />
             </div>
@@ -36,24 +36,14 @@
           <div class="form-col-container">
             <!-- stock number -->
             <div>
-              <span class="title-text">เลขที่ผลิต</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.stockNumber"
-                placeholder="EX: DK-2502-00X"
-              />
+              <span class="title-text">{{ $t('view.receiptStock.product.reportGr.stockNumber') }}</span>
+              <InputTextGeneric v-model.trim="form.stockNumber" placeholder="EX: DK-2502-00X" />
             </div>
 
             <!-- product number -->
             <div>
-              <span class="title-text">รหัสสินค้า</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.productNumber"
-                placeholder="EX: R08X50XXXL"
-              />
+              <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNumber') }}</span>
+              <InputTextGeneric v-model.trim="form.productNumber" placeholder="EX: R08X50XXXL" />
             </div>
           </div>
         </div>
@@ -68,85 +58,54 @@
             <div class="form-col-container">
               <!-- receipt type -->
               <div>
-                <span class="title-text">ประเภทงานรับ</span>
-                <div>
-                  <MultiSelect
-                    v-model="form.receiptType"
-                    :options="receiptTypeMaster"
-                    optionLabel="description"
-                    optionValue="value"
-                    class="w-full md:w-14rem"
-                  />
-                </div>
+                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptType') }}</span>
+                <MultiSelectGeneric
+                  v-model="form.receiptType"
+                  :options="receiptTypeMaster"
+                  optionLabel="description"
+                  optionValue="value"
+                />
               </div>
 
               <!-- mold -->
               <div>
-                <span class="title-text">เเม่พิมพ์</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.mold"
-                  placeholder="EX: CN-2400XX"
-                />
+                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.mold') }}</span>
+                <InputTextGeneric v-model.trim="form.mold" placeholder="EX: CN-2400XX" />
               </div>
 
               <!-- productNameEn -->
               <div>
-                <span class="title-text">ชื่อสินค้า EN</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.productNameEn"
-                  placeholder="EX: Gold Ring #66"
-                />
+                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNameEn') }}</span>
+                <InputTextGeneric v-model.trim="form.productNameEn" placeholder="EX: Gold Ring #66" />
               </div>
 
               <!-- productNameTh -->
               <div>
-                <span class="title-text">ชื่อสินค้า TH</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.productNameTh"
-                  placeholder="EX: แหวนทอง ขนาด #66"
-                />
+                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNameTh') }}</span>
+                <InputTextGeneric v-model.trim="form.productNameTh" />
               </div>
 
               <!-- woText -->
               <div>
-                <span class="title-text">W.O.</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.woText"
-                  placeholder="EX: 6802017XX"
-                />
+                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.wo') }}</span>
+                <InputTextGeneric v-model.trim="form.woText" placeholder="EX: 6802017XX" />
               </div>
 
               <!-- size -->
               <div>
-                <span class="title-text">ขนาด</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.size"
-                  placeholder="EX: #66"
-                />
+                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.size') }}</span>
+                <InputTextGeneric v-model.trim="form.size" placeholder="EX: #66" />
               </div>
 
               <!-- product type -->
               <div>
-                <span class="title-text">ประเภทสินค้า</span>
-                <div>
-                  <MultiSelect
-                    v-model="form.productType"
-                    :options="masterProductType"
-                    optionLabel="description"
-                    optionValue="code"
-                    class="w-full md:w-14rem"
-                  />
-                </div>
+                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productType') }}</span>
+                <MultiSelectGeneric
+                  v-model="form.productType"
+                  :options="masterProductType"
+                  optionLabel="description"
+                  optionValue="code"
+                />
               </div>
             </div>
           </template>
@@ -174,10 +133,7 @@
             </button>
 
             <button
-              :class="[
-                'btn btn-sm btn-primary',
-                { 'btn-secondary': !receiptProductionStore.dataReceiptHistory.total > 0 }
-              ]"
+              class="btn btn-sm btn-green"
               type="button"
               :disabled="!receiptProductionStore.dataReceiptHistory.total > 0"
               @click="onExport"
@@ -193,19 +149,15 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
-import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
-
-//import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
-//import api from '@/axios/axios-helper.js'
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 const interfaceIsShow = {
   dialog: false
@@ -213,9 +165,9 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-    Calendar,
-    //Dropdown,
+    CalendarGeneric,
+    MultiSelectGeneric,
+    InputTextGeneric,
     dialogView
   },
 
@@ -252,7 +204,6 @@ export default {
 
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow },
       receiptTypeMaster: [

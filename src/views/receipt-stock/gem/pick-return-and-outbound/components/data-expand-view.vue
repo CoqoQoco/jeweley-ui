@@ -9,7 +9,6 @@
       columnResizeMode="fit"
       showGridlines
     >
-      <!-- <Column field="no" header="ลำดับ" style="width: 20px"> </Column> -->
       <Column field="no" header="ลำดับ" style="width: 10px">
         <template #body="slotProps">
           <div class="text-center">
@@ -64,7 +63,6 @@ import Column from 'primevue/column'
 
 export default {
   components: {
-    //modal,
     DataTable,
     Column
   },
@@ -86,24 +84,6 @@ export default {
     },
     index() {
       return this.slotIndex
-    },
-    formattedOptionLabel() {
-      return (option) => `${option.woText}-${option.woNumber}`
-    }
-  },
-  data() {
-    return {
-      isLoading: false,
-      modelMasterType: [
-        { id: 1, description: 'รับเข้าคลัง [พลอยใหม่]' },
-        { id: 2, description: 'รับเข้าคลัง [พลอยนอกสต๊อก]' },
-        { id: 3, description: 'รับเข้าคลัง [พลอยคืน]' },
-        { id: 4, description: 'จ่ายออกคลัง' },
-        { id: 5, description: 'ยืมออกคลัง' }
-      ],
-      gemsReturn: [],
-      expandedRows: [],
-      planSearch: []
     }
   },
   methods: {

@@ -1,6 +1,6 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div class="app-container">
-  
     <div>
       <!-- ใบเบิก -->
       <div class="filter-container-highlight">
@@ -9,7 +9,7 @@
             <span class="desc-text-white">
               {{ `ใบคืน/ใบเบิก จาก ใบยืมเลขที่: ${model.running ?? 'loading...'}` }}
             </span>
-            <pdf class="btn btn-sm btn-primary" :modelValue="model"></pdf>
+            <pdf class="btn btn-sm btn-main" :modelValue="model"></pdf>
           </div>
         </div>
         <div class="form-col-container mt-1">
@@ -41,7 +41,6 @@
           columnResizeMode="fit"
           showGridlines
         >
-          <!-- <Column field="no" header="ลำดับ" style="width: 20px"> </Column> -->
           <Column field="no" header="ลำดับ" style="width: 10px"> </Column>
           <Column field="name" header="พลอย/เพชร" style="min-width: 200px"> </Column>
           <Column field="qty" header="จำนวน" sortable style="min-width: 200px">
@@ -193,21 +192,17 @@
             </template>
             <template #footer>
               <div class="submit-container pb-2 pr-2">
-                <button class="btn btn-sm btn-dark mr-2" type="button">
-                  <!-- <span><i class="bi bi-search mr-2"></i></span> -->
-                  <span>ยกเลิกรายการ</span>
+                <button class="btn btn-sm btn-dark mr-2" type="button" @click="onCancelList">
+                  <span>{{ $t('view.receiptStock.gem.cancelList') }}</span>
                 </button>
                 <button class="btn btn-sm btn-main" type="submit">
-                  <!-- <span><i class="bi bi-search mr-2"></i></span> -->
-                  <span>ตรวจสอบรายการ</span>
+                  <span>{{ $t('view.receiptStock.gem.checkList') }}</span>
                 </button>
               </div>
             </template>
           </DataTable>
         </div>
       </form>
-      <!-- 
-      <div class="line mt-4 mb-4"></div> -->
     </div>
 
     <confirm
@@ -216,70 +211,34 @@
       :modelReferenceRunning="refRunning"
       @closeModal="closeModal"
     ></confirm>
-
-    <!-- <button class="btn btn-secondary" @click="testPush">Test Push</button> -->
   </div>
 </template>
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
-//const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+import { warning } from '@/services/alert/sweetAlerts.js'
 
 const pdf = defineAsyncComponent(() => import('@/components/pdf-make/FilePDFPickOffGem.vue'))
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-//import AutoComplete from 'primevue/autocomplete'
 
-import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
+import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 
 import dataExpand from './PickReturnAndOutboundExpand.vue'
 import confirm from './ConfirmView.vue'
 
 export default {
   components: {
-    //modal,
-  
     DataTable,
     Column,
-    //AutoComplete,
     dataExpand,
     confirm,
     pdf
   },
-  props: {
-    // isShowModal: {
-    //   type: Boolean,
-    //   required: true,
-    //   default: false
-    // },
-    // modelValue: {
-    //   type: Object,
-    //   required: true,
-    //   default: () => ({})
-    // }
-    // modelMasterType: {
-    //   type: Array,
-    //   default: () => []
-    // }
-  },
-  computed: {
-    // isShow() {
-    //   return this.isShowModal
-    // },
-    // model() {
-    //   return this.modelValue
-    // },
-    masterType() {
-      return this.modelMasterType
-    }
-  },
   data() {
     return {
-      isLoading: false,
       isShowConfirm: false,
       modelMasterType: [
         { id: 1, description: 'รับเข้าคลัง [พลอยใหม่]' },
@@ -295,12 +254,8 @@ export default {
     }
   },
   methods: {
-    // ----- event
     onSubmit() {
-      //this.$emit('submit')
-      console.log('gemsReturn:', this.gemsReturn)
       if (this.validateData()) {
-        console.log('submit')
         this.isShowConfirm = true
       }
     },
@@ -329,9 +284,7 @@ export default {
       })
 
       if (errorMessages.length > 0) {
-        // ใช้ \n เพื่อเว้นบรรทัดในข้อความ alert
-        const errorMessage = errorMessages.join('</br>')
-        swAlert.warning(errorMessage, '')
+        warning(errorMessages.join('</br>'), '')
       }
 
       return isValid
@@ -339,22 +292,15 @@ export default {
     closeModal(confirm) {
       this.isShowConfirm = false
       if (confirm) {
-        console.log('confirm', confirm)
         this.$router.push('/stock-gem-transection')
       }
     },
-    testPush() {
+    onCancelList() {
       this.$router.push('/stock-gem-transection')
     },
 
-    // ----- grid event
-    onRowExpand(e) {
-      console.log('onRowExpand', e)
-      console.log('onRowExpand', this.expandedRows)
-    },
-    onRowCollapse() {
-      console.log('onRowCollapse')
-    },
+    onRowExpand() {},
+    onRowCollapse() {},
     addOutbound(gemReturnItem, index) {
       if (!gemReturnItem.gemsOutbound) {
         gemReturnItem.gemsOutbound = []
@@ -370,16 +316,11 @@ export default {
 
       gemReturnItem.gemsOutbound.push(newOutbound)
 
-      // ขยายแถวหลังจากเพิ่มรายการใหม่
       if (!this.expandedRows.includes(gemReturnItem)) {
         this.expandedRows.push(gemReturnItem)
       }
 
-      // อัปเดตค่า return quantities
       this.updateReturnQuantities(index)
-
-      console.log('New outbound added:', newOutbound)
-      console.log('Updated gemsReturn:', this.gemsReturn)
     },
     delOutbound(itemToDelete, parentIndex) {
       const gemReturnItem = this.gemsReturn[parentIndex]
@@ -388,47 +329,29 @@ export default {
         const index = gemReturnItem.gemsOutbound.findIndex((outbound) => outbound === itemToDelete)
         if (index !== -1) {
           gemReturnItem.gemsOutbound.splice(index, 1)
-
-          //   if (gemReturnItem.gemsOutbound.length === 0) {
-          //     gemReturnItem.gemsOutbound.push({
-          //       productionPlan: null,
-          //       issueQty: 0,
-          //       issueQtyWeight: 0
-          //     })
-          //   }
-
           this.updateReturnQuantities(parentIndex)
         }
       }
-
-      console.log('Item deleted:', itemToDelete)
-      console.log('Updated gemsReturn:', this.gemsReturn)
     },
 
     onUpdateIssueQty(event, item, parentIndex) {
       item.issueQty = Number(event.target.value)
       this.updateReturnQuantities(parentIndex)
-      //this.onblueIssueQty(event, item)
     },
 
     onUpdateIssueQtyWeight(event, item, parentIndex) {
       item.issueQtyWeight = Number(event.target.value)
       this.updateReturnQuantities(parentIndex)
-      //this.onblueIssueQtyWeight(event, item)
     },
     onblueIssueQty(event, item) {
       item.issueQty = Number(event.target.value).toFixed(3)
-      console.log('onblueIssueQty', item)
     },
     onblueIssueQtyWeight(event, item) {
       item.issueQtyWeight = Number(event.target.value).toFixed(3)
-      console.log('onblueIssueQty', item)
     },
 
     updateReturnQuantities(parentIndex) {
-      console.log('parentIndex', parentIndex)
       const gemReturnItem = this.gemsReturn[parentIndex]
-      console.log('updateReturnQuantities', gemReturnItem)
 
       if (gemReturnItem && gemReturnItem.gemsOutbound) {
         gemReturnItem.returnQty =
@@ -442,19 +365,11 @@ export default {
             0
           )
 
-        // ปัดเศษทศนิยม 3 ตำแหน่ง
         gemReturnItem.returnQty = Number(gemReturnItem.returnQty.toFixed(3))
         gemReturnItem.returnQtyWeight = Number(gemReturnItem.returnQtyWeight.toFixed(3))
-
-        // if (!this.expandedRows.includes(gemReturnItem)) {
-        //   this.expandedRows.push(gemReturnItem)
-        // }
-        // this.gemsReturn[parentIndex] = { ...gemReturnItem }
-        console.log('Updated return quantities:', this.gemsReturn[parentIndex])
       }
     },
 
-    // ----- helper
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
@@ -475,125 +390,98 @@ export default {
           return ''
       }
     },
-    getTypeName(type) {
-      return this.masterType.find((item) => item.id === type)?.description
-    },
     getTextColor(qty) {
       if (qty === 0) return ''
       if (qty < 0) return 'text-red'
       if (qty > 0) return 'text-green'
     },
-    formatNumber(value) {
-      return value ? Number(value).toFixed(3) : '0.000'
-    },
 
-    // ----------- APIs ----------- //
     async fetchData(running) {
-      try {
-        this.isLoading = true
+      const params = {
+        take: 0,
+        skip: 0,
+        sort: [],
+        search: {
+          getRunning: running
+        }
+      }
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/Picklist', params)
+      if (res) {
+        let noPick = 1
+        this.model = {
+          ...res.data[0],
+          items: res.data[0].items
+            .sort((x) => x.code)
+            .map((item) => {
+              return {
+                ...item,
+                no: noPick++
+              }
+            })
+        }
 
-        console.log('fetchData', running)
+        let noReturn = 1
 
-        const params = {
+        const paramsOutbound = {
           take: 0,
           skip: 0,
           sort: [],
           search: {
-            getRunning: running
+            requestDateStart: null,
+            requestDateEnd: null,
+            refRunning2: running
           }
         }
-        console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/Picklist', params)
-        if (res) {
-          let noPick = 1
-          this.model = {
-            ...res.data[0],
-            items: res.data[0].items
-              .sort((x) => x.code)
-              .map((item) => {
-                return {
-                  ...item,
-                  no: noPick++
-                }
-              })
-          }
+        const resOutBound = await api.jewelry.post(
+          'ReceiptAndIssueStockGem/ListTransection',
+          paramsOutbound
+        )
 
-          let noReturn = 1
-
-          const paramsOutbound = {
-            take: 0,
-            skip: 0,
-            sort: [],
-            search: {
-              requestDateStart: null,
-              requestDateEnd: null,
-              refRunning2: running
-            }
-          }
-          const resOutBound = await api.jewelry.post(
-            'ReceiptAndIssueStockGem/ListTransection',
-            paramsOutbound
-          )
-          console.log('resOutBound', resOutBound)
-
-          this.gemsReturn = this.model.items
-            .sort((x) => x.code)
-            .map((item) => {
-              return {
-                no: noReturn++,
-                code: item.code,
-                name: item.name,
-                pickOffQty: item.qty,
-                pickOffQtyWeight: item.qtyWeight,
-                returnQty: parseFloat(
-                  item.qty -
-                    resOutBound.data
-                      .filter((x) => x.code === item.code)
-                      .reduce((sum, item) => sum + item.qty, 0)
-                ).toFixed(3),
-                returnQtyWeight: parseFloat(
-                  item.qtyWeight -
-                    resOutBound.data
-                      .filter((x) => x.code === item.code)
-                      .reduce((sum, item) => sum + item.qtyWeight, 0)
-                ).toFixed(3),
-                gemsOutbound: [
-                  //return res.outbound
-                  ...resOutBound.data
+        this.gemsReturn = this.model.items
+          .sort((x) => x.code)
+          .map((item) => {
+            return {
+              no: noReturn++,
+              code: item.code,
+              name: item.name,
+              pickOffQty: item.qty,
+              pickOffQtyWeight: item.qtyWeight,
+              returnQty: parseFloat(
+                item.qty -
+                  resOutBound.data
                     .filter((x) => x.code === item.code)
-                    .map((outbound) => {
-                      return {
-                        productionPlan: {
-                          wo: outbound.wo,
-                          woNumber: outbound.woNumber,
-                          woText: outbound.woText,
-                          mold: outbound.mold
-                        },
-                        issueQty: outbound.qty,
-                        issueQtyWeight: outbound.qtyWeight,
-                        remark: outbound.remark2,
-                        running: outbound.running,
-                        requestDate: outbound.requestDate,
-                        isAlreadyOutbound: true
-                      }
-                    })
-                ]
-              }
-            })
+                    .reduce((sum, item) => sum + item.qty, 0)
+              ).toFixed(3),
+              returnQtyWeight: parseFloat(
+                item.qtyWeight -
+                  resOutBound.data
+                    .filter((x) => x.code === item.code)
+                    .reduce((sum, item) => sum + item.qtyWeight, 0)
+              ).toFixed(3),
+              gemsOutbound: [
+                ...resOutBound.data
+                  .filter((x) => x.code === item.code)
+                  .map((outbound) => {
+                    return {
+                      productionPlan: {
+                        wo: outbound.wo,
+                        woNumber: outbound.woNumber,
+                        woText: outbound.woText,
+                        mold: outbound.mold
+                      },
+                      issueQty: outbound.qty,
+                      issueQtyWeight: outbound.qtyWeight,
+                      remark: outbound.remark2,
+                      running: outbound.running,
+                      requestDate: outbound.requestDate,
+                      isAlreadyOutbound: true
+                    }
+                  })
+              ]
+            }
+          })
 
-          this.refRunning = res.data[0].running
-
-          //expand all
-          //this.expandedRows = [...this.gemsReturn]
-
-          //this.$emit('export', true)
-        } else {
-          //this.$emit('export', true)
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+        this.refRunning = res.data[0].running
       }
     }
   },
@@ -601,10 +489,7 @@ export default {
     this.$nextTick(() => {
       let id = this.$route.params.id
       this.fetchData(id)
-      console.log('model', this.model)
     })
-
-    //this.model = this.modelValue
   }
 }
 </script>
@@ -617,9 +502,9 @@ export default {
   padding: 0.1rem 0.3rem !important;
 }
 .text-red {
-  color: #ff4d4d;
+  color: var(--base-red);
 }
 .text-green {
-  color: #038387;
+  color: var(--base-green);
 }
 </style>

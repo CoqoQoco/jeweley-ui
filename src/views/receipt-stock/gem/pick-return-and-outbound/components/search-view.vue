@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="คืนเข้าคลัง/เบิกออกคลัง"
-      description="ทำรายการคืนเข้าคลัง/เบิกออกคลัง จากใบยืมออกคลัง"
+      :title="$t('view.receiptStock.gem.pickReturnAndOutbound.title')"
+      :description="$t('view.receiptStock.gem.pickReturnAndOutbound.description')"
       :isShowBtnClose="false"
       :isShowRightSlot="false"
     >
@@ -19,36 +19,36 @@
       <div class="form-col-container">
         <!-- requestDate -->
         <div>
-          <span class="title-text">วันที่ยืมออกคลัง</span>
+          <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.borrowDate') }}</span>
           <div class="flex-group">
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.requestDateStart"
               :max-date="form.requestDateEnd"
               dateFormat="dd/mm/yy"
-              showIcon
-              placeholder="เริ่มต้น"
+              :showIcon="true"
+              :placeholder="$t('common.label.start')"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.requestDateEnd"
               :min-date="form.requestDateStart"
               dateFormat="dd/mm/yy"
-              showIcon
-              placeholder="สิ้นสุด"
+              :showIcon="true"
+              :placeholder="$t('common.label.end')"
             />
           </div>
         </div>
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">ผู้ยืม</span>
-            <input type="text" class="form-control" v-model="form.operator" />
+            <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.operator') }}</span>
+            <InputTextGeneric v-model="form.operator" />
           </div>
           <div>
-            <span class="title-text">ผู้ทำรายการ</span>
-            <input type="text" class="form-control" v-model="form.createBy" />
+            <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.createBy') }}</span>
+            <InputTextGeneric v-model="form.createBy" />
           </div>
         </div>
       </div>
@@ -64,35 +64,35 @@
             <!-- running -->
             <div class="form-col-container">
               <div>
-                <span class="title-text">เลขที่ใบยืม</span>
-                <input type="text" class="form-control" v-model="form.running" />
+                <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.borrowNo') }}</span>
+                <InputTextGeneric v-model="form.running" />
               </div>
               <div>
-                <span class="title-text">รหัส</span>
-                <input type="text" class="form-control" v-model="form.code" />
+                <span class="title-text">{{ $t('common.field.code') }}</span>
+                <InputTextGeneric v-model="form.code" />
               </div>
             </div>
 
             <!-- returnDate -->
             <div>
-              <span class="title-text">กำหนดคืนเข้าคลัง</span>
+              <span class="title-text">{{ $t('view.receiptStock.gem.pickReturnAndOutbound.returnDate') }}</span>
               <div class="flex-group">
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.returnDateStart"
                   :max-date="form.returnDateEnd"
                   dateFormat="dd/mm/yy"
-                  showIcon
-                  placeholder="เริ่มต้น"
+                  :showIcon="true"
+                  :placeholder="$t('common.label.start')"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.returnDateEnd"
                   :min-date="form.returnDateStart"
                   dateFormat="dd/mm/yy"
-                  showIcon
-                  placeholder="สิ้นสุด"
+                  :showIcon="true"
+                  :placeholder="$t('common.label.end')"
                 />
               </div>
             </div>
@@ -133,13 +133,12 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
-
-import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
-
-import api from '@/axios/axios-helper.js'
 
 const interfaceIsShow = {
   isCreate: false,
@@ -149,10 +148,9 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    //MultiSelect,
-    Calendar,
+    CalendarGeneric,
+    InputTextGeneric,
     dialogView
-    //Dropdown
   },
   props: {
     modelForm: {
@@ -186,15 +184,8 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
-      isShow: { ...interfaceIsShow },
-      groupOptions: [],
-      gradeOptions: [],
-      shapeOptions: [],
-      sizeOptions: [],
-      masterGemShape: [],
-      masterGrade: []
+      isShow: { ...interfaceIsShow }
     }
   },
   methods: {
@@ -215,8 +206,6 @@ export default {
       this.isShow.isCreate = true
     },
     dialogSearch() {
-      console.log(this.search)
-      //this.formSearch = { ...this.search }
       this.$emit('search', this.form)
       this.isShow.dialog = false
     },
@@ -227,89 +216,8 @@ export default {
       this.isShow.dialog = false
     },
 
-    // ---------------- APIs
-    async fetchMasterData(type) {
-      this.isLoading = true
-      try {
-        let params = null
-        let url = null
-        let res = null
-
-        switch (type) {
-          case 'GROUPGEM':
-            params = {
-              type: 'GROUPGEM',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
-            break
-          case 'SIZE':
-            params = {
-              type: 'SIZE',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
-            break
-          case 'GRADE':
-            params = {
-              type: 'GRADE',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
-            break
-          case 'SHAPE':
-            params = {
-              type: 'SHAPE',
-              Value: null
-            }
-            url = 'StockGem/GroupGemData'
-            break
-          case 'MASTERGEMSHAPE':
-            url = 'Master/MasterGemShape'
-            break
-        }
-
-        if (type === 'MASTERGEMSHAPE') {
-          res = await api.jewelry.get(url)
-        } else {
-          res = await api.jewelry.post(url, params)
-        }
-
-        if (res) {
-          console.log('res', res)
-          switch (type) {
-            case 'GROUPGEM':
-              this.groupOptions = [...res]
-              break
-            case 'SIZE':
-              this.sizeOptions = [...res]
-              break
-            case 'GRADE':
-              this.gradeOptions = [...res]
-              break
-            case 'SHAPE':
-              this.shapeOptions = [...res]
-              break
-            case 'MASTERGEMSHAPE':
-              this.masterGemShape = [...res]
-              break
-          }
-        }
-      } catch (error) {
-        console.log(error)
-      }
-      this.isLoading = false
-    }
   },
-  created() {
-    this.$nextTick(() => {
-      //this.fetchMasterData('GROUPGEM')
-      //this.fetchMasterData('SIZE')
-      //this.fetchMasterData('GRADE')
-      //this.fetchMasterData('SHAPE')
-      //this.fetchMasterData('MASTERGEMSHAPE')
-    })
-  }
+  created() {}
 }
 </script>
 

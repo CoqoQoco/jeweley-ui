@@ -1,5 +1,6 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <div class="">
+  <div>
     <div class="filter-container-highlight-expnad">
       <div class="form-col-container">
         <div class="title-text-white">
@@ -22,7 +23,7 @@
             <button
               :class="[
                 'btn btn-sm',
-                slotProps.data.isAlreadyOutbound ? 'btn-secondary' : 'btn-red'
+                slotProps.data.isAlreadyOutbound ? 'btn-outline-main' : 'btn-red'
               ]"
               title="ลบรายการ"
               @click="delOutbound(slotProps.data, index)"
@@ -34,7 +35,7 @@
           </div>
         </template>
       </Column>
-      <column field="productionPlan" header="แผนผลิต" style="width: 200px">
+      <Column field="productionPlan" header="แผนผลิต" style="width: 200px">
         <template #body="slotProps">
           <div v-if="slotProps.data.isAlreadyOutbound">
             <span>
@@ -43,28 +44,27 @@
               }}
             </span>
           </div>
-          <AutoComplete
+          <AutoCompleteGeneric
             v-else
-            v-model="slotProps.data.productionPlan"
+            :modelValue="slotProps.data.productionPlan"
             :suggestions="planSearch"
             @complete="onSearchProductionPlanId"
             :optionLabel="(option) => `${option.wo} - ${option.woNumber}`"
-            forceSelection
+            :forceSelection="true"
             :class="slotProps.data.productionPlan ? '' : 'p-invalid'"
             :disabled="slotProps.data.isAlreadyOutbound"
+            @update:modelValue="slotProps.data.productionPlan = $event"
           >
-            <template #option="slotProps">
-              <div class="flex align-options-center">
-                <div>
-                  {{
-                    `${slotProps.option.wo}-${slotProps.option.woNumber}, เเม่พิมพ์: ${slotProps.option.mold}`
-                  }}
-                </div>
+            <template #option="{ option }">
+              <div>
+                {{
+                  `${option.wo}-${option.woNumber}, เเม่พิมพ์: ${option.mold}`
+                }}
               </div>
             </template>
-          </AutoComplete>
+          </AutoCompleteGeneric>
         </template>
-      </column>
+      </Column>
       <Column field="mold" header="เเม่พิมพ์" style="width: 200px">
         <template #body="slotProps">
           <div>
@@ -74,7 +74,7 @@
           </div>
         </template>
       </Column>
-      <column field="remark" header="หมายเหตุ" style="min-width: 150px">
+      <Column field="remark" header="หมายเหตุ" style="min-width: 150px">
         <template #body="slotProps">
           <div v-if="slotProps.data.isAlreadyOutbound">
             <span>{{ slotProps.data.remark }}</span>
@@ -88,10 +88,9 @@
             v-model="slotProps.data.remark"
             :disabled="checkAvaliable(slotProps.data, 'remark')"
           />
-          <!-- @change="onChangeQty(slotProps.data)" -->
         </template>
-      </column>
-      <column field="issueQty" header="จำนวนเบิก" style="width: 100px">
+      </Column>
+      <Column field="issueQty" header="จำนวนเบิก" style="width: 100px">
         <template #body="slotProps">
           <div v-if="slotProps.data.isAlreadyOutbound">
             <span>{{ slotProps.data.issueQty.toFixed(3) }}</span>
@@ -110,10 +109,9 @@
             @blur="onblueIssueQty($event, slotProps.data)"
             :disabled="checkAvaliable(slotProps.data, 'issueQty')"
           />
-          <!-- @change="onChangeQty(slotProps.data)" -->
         </template>
-      </column>
-      <column field="issueQtyWeight" header="น้ำหนักเบิก" style="width: 100px">
+      </Column>
+      <Column field="issueQtyWeight" header="น้ำหนักเบิก" style="width: 100px">
         <template #body="slotProps">
           <div v-if="slotProps.data.isAlreadyOutbound">
             <span>{{ slotProps.data.issueQtyWeight.toFixed(3) }}</span>
@@ -133,7 +131,7 @@
             :disabled="checkAvaliable(slotProps.data, 'issueQtyWeight')"
           />
         </template>
-      </column>
+      </Column>
 
       <template #footer>
         <div class="submit-container">
@@ -149,16 +147,15 @@
 <script>
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import AutoComplete from 'primevue/autocomplete'
 
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import api from '@/axios/axios-helper.js'
 
 export default {
   components: {
-    //modal,
     DataTable,
     Column,
-    AutoComplete
+    AutoCompleteGeneric
   },
   props: {
     modelExpand: {
@@ -178,61 +175,33 @@ export default {
     },
     index() {
       return this.slotIndex
-    },
-    formattedOptionLabel() {
-      return (option) => `${option.woText}-${option.woNumber}`
     }
   },
   data() {
     return {
-      isLoading: false,
-      modelMasterType: [
-        { id: 1, description: 'รับเข้าคลัง [พลอยใหม่]' },
-        { id: 2, description: 'รับเข้าคลัง [พลอยนอกสต๊อก]' },
-        { id: 3, description: 'รับเข้าคลัง [พลอยคืน]' },
-        { id: 4, description: 'จ่ายออกคลัง' },
-        { id: 5, description: 'ยืมออกคลัง' }
-      ],
-      gemsReturn: [],
-      expandedRows: [],
       planSearch: []
     }
   },
   methods: {
-    // ----- APIs
     async onSearchProductionPlanId(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null,
-            status: [10, 50, 55, 60, 70, 80, 90, 95]
-            //type: this.form.status,
-            //active: 1
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null,
+          status: [10, 50, 55, 60, 70, 80, 90, 95]
         }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
-          params
-        )
-        if (res) {
-          //console.log(res)
-          this.planSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanSearchByProductionPlanId',
+        params
+      )
+      if (res) {
+        this.planSearch = [...res.data]
       }
     },
 
-    // ------ event
     delOutbound(data, index) {
-      //this.dataExpand.gemsOutbound.splice(index, 1)
       this.$emit('delOutbound', data, index)
     },
     onUpdateIssueQty(e, data, index) {
@@ -248,7 +217,6 @@ export default {
       this.$emit('onblueIssueQtyWeight', e, data)
     },
 
-    // ------ helper
     checkAvaliable(data, index) {
       let check = false
 
@@ -278,11 +246,13 @@ export default {
 .filter-container-highlight-expnad {
   border: 1px solid #dddddd;
   border-radius: 5px;
-
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: #460505;
-  //background-color: var(--base-color);
   padding: 10px;
-  //margin-top: 10px;
+}
+.table-btn-action-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

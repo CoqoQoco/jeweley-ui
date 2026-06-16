@@ -4,40 +4,40 @@
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span class="mr-2"><i class="bi bi-house-dash-fill"></i></span>
-          <span>ยืนยันจ่ายตัดวัถุดิบ</span>
+          <span>{{ $t('view.receiptStock.gem.outbound.confirmTitle') }}</span>
         </div>
         <form @submit.prevent="onSubmit" class="p-2">
           <!-- type && request date -->
           <div class="form-col-container">
             <div>
               <div>
-                <span class="title-text">เลือกประเภทการจ่ายตัด</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.outbound.selectType') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <Dropdown
-                v-model="form.type"
+              <DropdownGeneric
+                :modelValue="form.type"
                 :options="masterType"
                 optionLabel="description"
                 optionValue="id"
-                class="w-full md:w-14rem"
                 :class="val.isType === true ? `p-invalid` : ``"
                 :showClear="form.type ? true : false"
+                @update:modelValue="form.type = $event"
               />
             </div>
             <div>
               <div>
-                <span class="title-text">วันที่จ่ายตัด</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.outbound.issueDate') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 :class="val.isRequestDate === true ? `p-invalid` : ``"
                 v-model="form.requestDate"
                 dateFormat="dd/mm/yy"
-                showTime
+                :showTime="true"
                 hourFormat="24"
-                showIcon
-                showButtonBar
+                :showIcon="true"
+                :showButtonBar="true"
               />
             </div>
           </div>
@@ -46,18 +46,13 @@
           <div class="form-col-container mt-1">
             <div>
               <div>
-                <span class="title-text">ผู้จ่ายออกคลัง</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.outbound.operator') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <input
-                type="text"
-                class="form-control"
+              <InputTextGeneric
                 v-model="form.operator"
                 autocomplete="off"
-                autocorrect="off"
-                autocapitalize="off"
-                spellcheck="false"
-                required
+                :required="true"
               />
             </div>
           </div>
@@ -66,17 +61,11 @@
           <div class="form-col-container mt-1">
             <div>
               <div>
-                <span class="title-text">รายละเอียดเพิ่มเติม</span>
-                <!-- <span class="txt-required"> *</span> -->
+                <span class="title-text">{{ $t('common.field.remark') }}</span>
               </div>
-              <input
-                type="text"
-                class="form-control"
+              <InputTextGeneric
                 v-model="form.remark"
                 autocomplete="off"
-                autocorrect="off"
-                autocapitalize="off"
-                spellcheck="false"
               />
             </div>
           </div>
@@ -85,18 +74,15 @@
           <div class="form-col-container mt-3">
             <div>
               <div>
-                <span class="title-text">โปรดใส่รหัส* เพื่อทำรายการจ่ายตัดวัถุดิบ</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.confirmPass') }}</span>
                 <span class="txt-required"> *</span>
               </div>
               <input
                 type="password"
                 class="form-control"
-                :style="[form.pass ? 'background-color: #b5dad4' : ' background-color:#dad4b5']"
+                :style="[form.pass ? 'background-color: #b5dad4' : 'background-color:#dad4b5']"
                 v-model="form.pass"
                 autocomplete="off"
-                autocorrect="off"
-                autocapitalize="off"
-                spellcheck="false"
               />
             </div>
           </div>
@@ -104,11 +90,11 @@
           <!-- btn -->
           <div class="form-col-container mt-2">
             <div class="d-flex justify-content-end">
-              <button class="btn btn-secondary" type="button" @click="closeModal">
-                <span>ยกเลิก</span>
+              <button class="btn btn-outline-main" type="button" @click="closeModal">
+                <span>{{ $t('common.btn.cancel') }}</span>
               </button>
               <button class="btn btn-main ml-2" type="submit">
-                <span>ยืนยัน</span>
+                <span>{{ $t('common.btn.confirm') }}</span>
               </button>
             </div>
           </div>
@@ -120,15 +106,15 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { success } from '@/services/alert/sweetAlerts.js'
+import { formatISOString } from '@/services/utils/dayjs'
+import api from '@/axios/axios-helper.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
-
-import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
-import { formatISOString } from '@/services/utils/dayjs'
 
 const interfaceIsVal = {
   isType: false,
@@ -138,8 +124,9 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
-    Dropdown,
-    Calendar
+    DropdownGeneric,
+    CalendarGeneric,
+    InputTextGeneric
   },
   props: {
     isShow: {
@@ -155,7 +142,6 @@ export default {
   data() {
     return {
       isShowModal: this.isShow,
-      isLoading: false,
       form: null,
       val: { ...interfaceIsVal },
       masterType: [{ id: 4, description: 'จ่ายออกคลัง' }]
@@ -171,7 +157,6 @@ export default {
     modelForm: {
       handler(val) {
         this.form = { ...val }
-        console.log('confirm modelForm', this.form)
       },
       immediate: true,
       deep: true
@@ -188,15 +173,12 @@ export default {
     }
   },
   methods: {
-    // ----- event
     closeModal() {
       this.onClear()
       this.$emit('closeModal')
     },
 
     onSubmit() {
-      console.log('onSubmit', this.form)
-
       if (!this.form.type) {
         this.val.isType = true
         return
@@ -207,51 +189,39 @@ export default {
       }
 
       this.submit()
-      //this.$emit('submit', this.form)
     },
 
-    // ----- APIs
     async submit() {
-      this.isLoading = true
-      try {
-        console.log('requestDate', this.form.requestDate)
-        const params = {
-          type: this.form.type,
-          operatorBy: this.form.operator,
-          remark: this.form.remark,
-          pass: this.form.pass,
-          requestDate: formatISOString(this.form.requestDate),
-          gems: this.form.gems.map((gem) => {
-            return {
-              code: gem.code,
-              issueQty: gem.issueQty,
-              issueQtyWeight: gem.issueQtyWeight,
-              remark: gem.remark,
-              wo: gem.productionPlan?.wo,
-              woNumber: gem.productionPlan?.woNumber,
-              woText: gem.productionPlan?.woText,
-              mold: gem.productionPlan?.mold,
-            }
-          })
-        }
-        console.log('confirm params', params)
-
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/OutboundGem', params)
-        if (res) {
-          swAlert.success('', `เลขที่ใบจ่ายตัดวัถุดิบ: ${res}`, () => {
-            this.onClear()
-            this.$emit('closeModal', 'confirm')
-          })
-        }
-      } catch (error) {
-        console.log('error', error)
+      const params = {
+        type: this.form.type,
+        operatorBy: this.form.operator,
+        remark: this.form.remark,
+        pass: this.form.pass,
+        requestDate: formatISOString(this.form.requestDate),
+        gems: this.form.gems.map((gem) => {
+          return {
+            code: gem.code,
+            issueQty: gem.issueQty,
+            issueQtyWeight: gem.issueQtyWeight,
+            remark: gem.remark,
+            wo: gem.productionPlan?.wo,
+            woNumber: gem.productionPlan?.woNumber,
+            woText: gem.productionPlan?.woText,
+            mold: gem.productionPlan?.mold
+          }
+        })
       }
-      this.isLoading = false
+
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/OutboundGem', params)
+      if (res) {
+        success(`${this.$t('view.receiptStock.gem.outbound.successMsg')}: ${res}`, '', () => {
+          this.onClear()
+          this.$emit('closeModal', 'confirm')
+        })
+      }
     },
 
-    // ----- helper
     onClear() {
-      //this.form = {}
       this.val = { ...interfaceIsVal }
     }
   }

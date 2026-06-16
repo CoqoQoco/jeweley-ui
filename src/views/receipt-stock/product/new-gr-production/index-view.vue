@@ -83,7 +83,6 @@
 
 <script>
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
-import api from '@/axios/axios-helper.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div>
     <form @submit.prevent="onSubmit">
@@ -16,7 +17,7 @@
           <template #body="slotProps">
             <div class="table-btn-action-container">
               <button
-                class="btn btn-sm btn btn-main"
+                class="btn btn-sm btn-red"
                 title="ลบรายการ"
                 @click="onDelGem(slotProps.data)"
                 type="button"
@@ -28,12 +29,6 @@
         </Column>
 
         <Column field="name" header="รหัส" style="min-width: 100px"> </Column>
-
-        <!-- <Column field="code" header="รหัส" style="min-width: 100px"> </Column> -->
-        <!-- <Column field="groupName" header="หมวดหมู่" style="min-width: 100px"> </Column> -->
-        <!-- <Column field="size" header="ขนาด" style="min-width: 100px"> </Column>
-        <Column field="shape" header="รูปร่าง" style="min-width: 100px"> </Column>
-        <Column field="grade" header="เกรด" style="min-width: 100px"> </Column> -->
 
         <Column field="quantity" header="จำนวนคงคลัง" style="min-width: 100px">
           <template #body="slotProps">
@@ -71,7 +66,7 @@
             }}
           </template>
         </Column>
-        <column field="issueQty" header="จำนวนยืมออก" style="width: 100px">
+        <Column field="issueQty" header="จำนวนยืมออก" style="width: 100px">
           <template #body="slotProps">
             <input
               style="width: 100px; background-color: #dad4b5"
@@ -84,10 +79,9 @@
               v-model="slotProps.data.issueQty"
               @blur="onBlurReceiveQty(slotProps.data)"
             />
-            <!-- @change="onChangeQty(slotProps.data)" -->
           </template>
-        </column>
-        <column field="issueQtyWeight" header="น้ำหนักยืมออก" style="width: 100px">
+        </Column>
+        <Column field="issueQtyWeight" header="น้ำหนักยืมออก" style="width: 100px">
           <template #body="slotProps">
             <input
               style="width: 100px; background-color: #dad4b5"
@@ -101,8 +95,8 @@
               @blur="onBlurReceiveQtyWeight(slotProps.data)"
             />
           </template>
-        </column>
-        <column field="remark" header="หมายเหตุ" style="width: 100px">
+        </Column>
+        <Column field="remark" header="หมายเหตุ" style="width: 100px">
           <template #body="slotProps">
             <input
               style="width: 100px; background-color: #dad4b5"
@@ -111,41 +105,37 @@
               type="text"
               v-model="slotProps.data.remark"
             />
-            <!-- @change="onChangeQty(slotProps.data)" -->
           </template>
-        </column>
+        </Column>
 
         <ColumnGroup type="footer">
           <Row>
-            <column footerStyle="background-color: #921313" :colspan="10">
+            <Column footerStyle="background-color: #921313" :colspan="10">
               <template #footer>
                 <div class="d-flex justify-content-between">
-                  <!-- text -->
                   <div class="footer-text-container">
                     <span>
-                      {{ `รวมทั้งหมด&nbsp;&nbsp;${formSubmit.gems.length}&nbsp;&nbsp;รายการ` }}
+                      {{ `รวมทั้งหมด  ${formSubmit.gems.length}  รายการ` }}
                     </span>
                   </div>
-
-                  <!-- btn submit -->
                   <div>
-                    <button class="btn btn-sm btn-secondary mr-2" type="button" @click="onClear">
-                      <span>ยกเลิกรายการ</span>
+                    <button class="btn btn-sm btn-outline-main mr-2" type="button" @click="onClear">
+                      <span>{{ $t('view.receiptStock.gem.cancelList') }}</span>
                     </button>
                     <button
                       :class="[
                         'btn btn-sm',
-                        formSubmit.gems.length ? 'btn-primary' : 'btn-secondary'
+                        formSubmit.gems.length ? 'btn-main' : 'btn-outline-main'
                       ]"
                       type="submit"
                       :disabled="!formSubmit.gems.length"
                     >
-                      <span>ตรวจสอบรายการ</span>
+                      <span>{{ $t('view.receiptStock.gem.checkList') }}</span>
                     </button>
                   </div>
                 </div>
               </template>
-            </column>
+            </Column>
           </Row>
         </ColumnGroup>
       </DataTable>
@@ -160,16 +150,13 @@
 </template>
 
 <script>
-
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Row from 'primevue/row'
-import ColumnGroup from 'primevue/columngroup' // optional
-//import Papa from 'papaparse'
+import ColumnGroup from 'primevue/columngroup'
 
-//import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 
 import ConfirmView from './ConfirmView.vue'
 
@@ -178,8 +165,6 @@ const interfaceFormSubmit = {
   requestDate: new Date(),
   returnDate: new Date(new Date().setDate(new Date().getDate() + 7)),
   type: null,
-  //supplierName: null,
-  //poOrJob: null,
   remark: null,
   pass: null
 }
@@ -209,7 +194,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       isShowConfirm: false,
       data: [],
       formScan: { ...this.modelFormScan },
@@ -218,55 +202,25 @@ export default {
     }
   },
   methods: {
-    // ------------ APIs
     async fetchScan() {
-      try {
-        this.isLoading = true
+      const params = this.createScanRequest(this.formScan)
 
-        console.log('fetchScan req', this.form)
-        // new array
-        const params = this.createScanRequest(this.formScan)
-        console.log('params', params)
-
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/Scan', params)
-        if (res) {
-          if (this.validateScan(res)) {
-            const newQty = 0
-            const newGems = {
-              ...res,
-              //issueQty: newQty.toFixed(3),
-              //issueQtyWeight: newQty.toFixed(3),
-
-               issueQty: res.quantity.toFixed(3),
-              issueQtyWeight: res.quantityWeight.toFixed(3),
-
-              supplierCost: newQty
-            }
-            this.formSubmit.gems.push(newGems)
-            console.log('fetchScan res', this.formSubmit.gems)
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/Scan', params)
+      if (res) {
+        if (this.validateScan(res)) {
+          const newQty = 0
+          const newGems = {
+            ...res,
+            issueQty: res.quantity.toFixed(3),
+            issueQtyWeight: res.quantityWeight.toFixed(3),
+            supplierCost: newQty
           }
+          this.formSubmit.gems.push(newGems)
         }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
       }
     },
 
-    // ------------ Events
-    onUpdateQty(item) {
-      console.log('onUpdateQty', item)
-      this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
-        if (gem.code === item.code) {
-          gem.issueQty = item.issueQty
-        }
-        return gem
-      })
-      console.log('onUpdateQty', this.formSubmit.gems)
-    },
     onBlurReceiveQty(item) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBlurReceiveQty', item)
       this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
         if (gem.code === item.code) {
           if (item.issueQty && Number(item.issueQty) >= 0) {
@@ -275,12 +229,8 @@ export default {
         }
         return gem
       })
-      console.log('onBlurReceiveQty', this.formSubmit.gems)
-      //this.onUpdateQty(item)
     },
     onBlurReceiveQtyWeight(item) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBlurReceiveQtyWeight', item)
       this.formSubmit.gems = this.formSubmit.gems.map((gem) => {
         if (gem.code === item.code) {
           if (item.issueQtyWeight && Number(item.issueQtyWeight) >= 0) {
@@ -289,31 +239,19 @@ export default {
         }
         return gem
       })
-      console.log('onBlurReceiveQtyWeight', this.formSubmit.gems)
-      //this.onUpdateQty(item)
     },
     onDelGem(item) {
-      console.log('onDelGem', item)
       this.formSubmit.gems = this.formSubmit.gems.filter((gem) => gem.code !== item.code)
-      console.log('onDelGem', this.formSubmit.gems)
     },
     onSubmit() {
-      //console.log('onSubmit', this.formSubmit)
       if (this.validateSubmit()) {
         this.isShowConfirm = true
       }
     },
     onCloseConfirm(msg) {
-      console.log('onCloseConfirm', msg)
       if (msg === 'confirm') {
-        console.log('onCloseConfirm -->', msg)
-        //this.formSubmit = { ...interfaceFormSubmit }
-        //this.formSubmit.gems = []
-
         this.onClear()
-        //window.location.reload()
       }
-
       this.isShowConfirm = false
     },
     onClear() {
@@ -321,7 +259,6 @@ export default {
       this.formSubmit = { ...interfaceFormSubmit }
       this.formSubmit.gems = []
     },
-    // ------------ Helpers
     createScanRequest(data) {
       const scanRequest = {
         scanType: 'S',
@@ -329,10 +266,8 @@ export default {
       }
 
       if (data && data.code) {
-        // ถ้า code เป็น string เดียว
         scanRequest.scans.push({ code: String(data.code) })
       } else if (Array.isArray(data)) {
-        // ถ้า formScan เป็น array ของ objects ที่มี 'code'
         scanRequest.scans = data
           .filter((scan) => scan && scan.code)
           .map((scan) => ({ code: String(scan.code) }))
@@ -344,22 +279,14 @@ export default {
       let res = true
       let errorMsg = ''
 
-      //check duplicate data in this.formSubmit.gems
       const isDuplicate = this.formSubmit.gems.some((gem) => gem.code === data.code)
       if (isDuplicate) {
         res = false
         errorMsg = `${data.code} -- > รหัสซ้ำ กรุณาตรวจสอบ`
       }
 
-      //check mininum qty > 0
-      // const isQty = data.quantity <= 0
-      // if (isQty) {
-      //   res = false
-      //   errorMsg = `${data.code} --> จำนวนคงคลังเท่ากับ 0 `
-      // }
-
       if (errorMsg) {
-        swAlert.warning(errorMsg, '')
+        warning(errorMsg, '')
       }
       return res
     },
@@ -367,13 +294,11 @@ export default {
       let res = true
       let errorMsg = []
 
-      //check this.formSubmit.gems.length
       if (!this.formSubmit.gems.length) {
         res = false
         errorMsg[0] = 'ไม่พบรายการเพชรที่ต้องการรับเข้าคลัง'
       }
 
-      //check all item.receiveQty > 0 in this.formSubmit.gems
       const invalidGems = this.formSubmit.gems.filter(
         (gem) => gem.issueQty <= 0 && gem.issueQtyWeight <= 0
       )
@@ -385,9 +310,7 @@ export default {
       }
 
       const invalidGreaterQty = this.formSubmit.gems.filter(
-        (gem) =>
-          gem.issueQty > gem.quantity ||
-          gem.issueQtyWeight > gem.quantityWeight
+        (gem) => gem.issueQty > gem.quantity || gem.issueQtyWeight > gem.quantityWeight
       )
       if (invalidGreaterQty.length > 0) {
         res = false
@@ -397,20 +320,18 @@ export default {
       }
 
       if (errorMsg.length) {
-        swAlert.warning(errorMsg.join('<br/>'), '')
+        warning(errorMsg.join('<br/>'), '')
       }
 
       return res
     }
   },
   unmounted() {
-    console.log('unmounted')
     this.formScan = { ...this.modelFormScan }
     this.formSubmit = { ...interfaceFormSubmit }
     this.formSubmit.gems = []
   },
   created() {
-    console.log('created')
     this.formScan = { ...this.modelFormScan }
     this.formSubmit = { ...interfaceFormSubmit }
     this.formSubmit.gems = []

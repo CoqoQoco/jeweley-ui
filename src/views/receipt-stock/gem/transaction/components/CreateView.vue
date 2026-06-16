@@ -1,44 +1,40 @@
 <template>
   <div>
-  
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
           <div class="title-text-lg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>
-              สร้างข้อมูลวัถุดิบ ระบุข้อมูล รหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ
-            </span>
+            <span>{{ $t('view.receiptStock.gem.create.title') }}</span>
           </div>
           <div class="form-col-container p-2">
             <!-- code -->
             <div>
               <div>
-                <span class="title-text">รหัส</span>
+                <span class="title-text">{{ $t('common.field.code') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <input
-                type="text"
-                class="form-control"
-                :class="form.code ? `` : `bg-warning`"
+              <InputTextGeneric
                 v-model="form.code"
-                required
+                :required="true"
+                :bgInput="!!form.code"
               />
             </div>
 
             <!-- group name -->
             <div>
               <div>
-                <span class="title-text">หมวดหมู่</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.create.groupName') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <AutoComplete
-                v-model="form.groupName"
+              <AutoCompleteGeneric
+                :modelValue="form.groupName"
                 :suggestions="suggestionsGroupName"
                 optionLabel="value"
-                optionValue="value"
                 @complete="searchGroupName"
-                :invalid="val.isGroupName"
+                :forceSelection="false"
+                :class="val.isGroupName ? 'p-invalid' : ''"
+                @update:modelValue="form.groupName = $event"
               />
             </div>
 
@@ -48,64 +44,58 @@
             <!-- size -->
             <div>
               <div>
-                <span class="title-text">ขนาด</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.create.size') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <input type="text" class="form-control" v-model="form.size" required />
+              <InputTextGeneric v-model="form.size" :required="true" />
             </div>
 
             <!-- shape -->
             <div>
               <div>
-                <span class="title-text">รูปร่าง</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.create.shape') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <Dropdown
-                v-model="form.shape"
+              <DropdownGeneric
+                :modelValue="form.shape"
                 :options="gemShape"
                 optionLabel="description"
-                class="w-full md:w-14rem"
                 :showClear="form.shape ? true : false"
                 :class="val.isShape === true ? `p-invalid` : ``"
-              >
-              </Dropdown>
+                @update:modelValue="form.shape = $event"
+              />
             </div>
 
             <!-- grade -->
             <div>
               <div>
-                <span class="title-text">เกรด</span>
+                <span class="title-text">{{ $t('view.receiptStock.gem.create.grade') }}</span>
                 <span class="txt-required"> *</span>
               </div>
-              <Dropdown
-                v-model="form.grade"
+              <DropdownGeneric
+                :modelValue="form.grade"
                 :options="grade"
                 optionLabel="description"
-                class="w-full md:w-14rem"
                 :showClear="form.grade ? true : false"
                 :class="val.isGrade === true ? `p-invalid` : ``"
-              >
-              </Dropdown>
+                @update:modelValue="form.grade = $event"
+              />
             </div>
           </div>
           <div class="form-col-container p-2">
-            <!-- reamrk -->
+            <!-- remark -->
             <div>
               <div>
-                <span class="title-text">คำอธิบาย</span>
-                <!-- <span class="txt-required"> *</span> -->
+                <span class="title-text">{{ $t('view.receiptStock.gem.create.description') }}</span>
               </div>
-              <textarea class="form-control" v-model="form.remark" rows="3" required></textarea>
+              <TextareaGeneric v-model="form.remark" :rows="3" />
             </div>
           </div>
           <!-- btn -->
           <div class="d-flex justify-content-end mt-2">
-            <!-- <button class="btn btn-sm btn-main mr-2" type="button" @click="onTest">TEST</button> -->
             <button class="btn btn-sm btn-main" type="submit">
-              <span class="mr-2">
-                <i class="bi bi-gem"></i>
-              </span>
-              <span>สร้างข้อมูลวัถุดิบ</span>
+              <span class="mr-2"><i class="bi bi-gem"></i></span>
+              <span>{{ $t('view.receiptStock.gem.create.btnCreate') }}</span>
             </button>
           </div>
         </form>
@@ -116,21 +106,23 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import api from '@/axios/axios-helper.js'
+
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-
-import AutoComplete from 'primevue/autocomplete'
-import Dropdown from 'primevue/dropdown'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
   code: null,
   groupName: null,
   size: null,
-  shape: null
+  shape: null,
+  grade: null,
+  remark: null
 }
 const interfaceIsVal = {
   isGroupName: false,
@@ -141,9 +133,10 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
-  
-    AutoComplete,
-    Dropdown
+    AutoCompleteGeneric,
+    DropdownGeneric,
+    InputTextGeneric,
+    TextareaGeneric
   },
   props: {
     isShow: {
@@ -197,15 +190,12 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       form: { ...interfaceForm },
       val: { ...interfaceIsVal },
-
       suggestionsGroupName: []
     }
   },
   methods: {
-    // ---------------- event
     closeModal() {
       this.onClear()
       this.$emit('closeModal', 'create')
@@ -230,13 +220,11 @@ export default {
       return isValid
     },
     onSubmit() {
-      console.log('onSubmit')
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.form.code}`,
-          `ยืนยันสร้างข้อมูลวัถุดิบ`,
+          this.$t('view.receiptStock.gem.create.confirmTitle'),
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
           },
           null,
@@ -246,46 +234,26 @@ export default {
     },
     searchGroupName(event) {
       const query = event.query
-      this.isInit = false
       this.suggestionsGroupName = this.groupName.filter((el) =>
         el.value.toLowerCase().includes(query.toLowerCase())
       )
-      console.log('searchGroupName', query, this.suggestionsGroupN)
     },
 
-    // ---------------- APIs
     async submit() {
-      try {
-        this.isLoading = true
-
-        console.log('this.form', this.form)
-        const params = {
-          code: this.form.code,
-          groupName: this.form.groupName.value,
-          size: this.form.size,
-          shape: this.form.shape.code,
-          grade: this.form.grade.description,
-          gradeCode: this.form.grade.code,
-          remark: this.form.remark
-        }
-        console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/CreateGem', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.closeModal()
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      const params = {
+        code: this.form.code,
+        groupName: this.form.groupName?.value ?? this.form.groupName,
+        size: this.form.size,
+        shape: this.form.shape.code,
+        grade: this.form.grade.description,
+        gradeCode: this.form.grade.code,
+        remark: this.form.remark
+      }
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/CreateGem', params)
+      if (res) {
+        success('', '', () => {
+          this.closeModal()
+        })
       }
     }
   }

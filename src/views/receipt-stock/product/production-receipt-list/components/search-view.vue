@@ -14,25 +14,25 @@
         <div class="form-col-container">
           <!-- receipt date -->
           <div>
-            <span class="title-text">วันที่ผลิต [โอนสำเร็จ]</span>
+            <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.receiptDate') }}</span>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.receiptDateStart"
                 :max-date="form.receiptDateEnd"
-                showIcon
+                :showIcon="true"
                 :manualInput="true"
-                placeholder="เริ่มต้น"
+                :placeholder="$t('common.label.start')"
                 dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.receiptDateEnd"
                 :min-date="form.receiptDateStart"
-                showIcon
+                :showIcon="true"
                 :manualInput="false"
-                placeholder="สิ้นสุด"
+                :placeholder="$t('common.label.end')"
                 dateFormat="dd/mm/yy"
               />
             </div>
@@ -41,24 +41,14 @@
           <div class="form-col-container">
             <!-- wo -->
             <div>
-              <span class="title-text">W.O.</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.woText"
-                placeholder="EX: 6802017XX"
-              />
+              <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.wo') }}</span>
+              <InputTextGeneric v-model.trim="form.woText" placeholder="EX: 6802017XX" />
             </div>
 
             <!-- receipt number -->
             <div>
-              <span class="title-text">เลขที่ตั้งรับสินค้า</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.receiptNumber"
-                placeholder="EX: REP2411090XX"
-              />
+              <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.receiptNumber') }}</span>
+              <InputTextGeneric v-model.trim="form.receiptNumber" placeholder="EX: REP2411090XX" />
             </div>
           </div>
         </div>
@@ -73,69 +63,50 @@
             <div class="form-col-container">
               <!-- mold -->
               <div>
-                <span class="title-text">เเม่พิมพ์</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.mold"
-                  placeholder="EX: CN-2400XX"
-                />
+                <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.mold') }}</span>
+                <InputTextGeneric v-model.trim="form.mold" placeholder="EX: CN-2400XX" />
               </div>
 
-              <!-- receiptNumber -->
+              <!-- productNumber -->
               <div>
-                <span class="title-text">รหัสสินค้า</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.productNumber"
-                  placeholder="EX: DAY250303A"
-                />
+                <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.productNumber') }}</span>
+                <InputTextGeneric v-model.trim="form.productNumber" placeholder="EX: DAY250303A" />
               </div>
 
               <!-- product type -->
               <div>
-                <span class="title-text">ประเภทสินค้า</span>
-                <div>
-                  <MultiSelect
-                    v-model="form.productType"
-                    :options="masterProductType"
-                    optionLabel="description"
-                    optionValue="code"
-                    class="w-full md:w-14rem"
-                    placeholder="เลือกประเภทสินค้า"
-                  />
-                </div>
+                <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.productType') }}</span>
+                <MultiSelectGeneric
+                  v-model="form.productType"
+                  :options="masterProductType"
+                  optionLabel="description"
+                  optionValue="code"
+                  :placeholder="$t('common.label.all')"
+                />
               </div>
 
               <!-- gold type -->
               <div>
-                <span class="title-text">สีของทอง/เงิน</span>
-                <div>
-                  <MultiSelect
-                    v-model="form.goldType"
-                    :options="masterGold"
-                    optionLabel="description"
-                    optionValue="nameEn"
-                    class="w-full md:w-14rem"
-                    placeholder="เลือกสีของทอง/เงิน"
-                  />
-                </div>
+                <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.goldType') }}</span>
+                <MultiSelectGeneric
+                  v-model="form.goldType"
+                  :options="masterGold"
+                  optionLabel="description"
+                  optionValue="nameEn"
+                  :placeholder="$t('common.label.all')"
+                />
               </div>
 
               <!-- gold size -->
               <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
-                <div>
-                  <MultiSelect
-                    v-model="form.goldSize"
-                    :options="masterGoldSize"
-                    optionLabel="description"
-                    optionValue="nameEn"
-                    class="w-full md:w-14rem"
-                    placeholder="เลือกประเภททอง/เงิน"
-                  />
-                </div>
+                <span class="title-text">{{ $t('view.receiptStock.product.productionReceiptList.goldSize') }}</span>
+                <MultiSelectGeneric
+                  v-model="form.goldSize"
+                  :options="masterGoldSize"
+                  optionLabel="description"
+                  optionValue="nameEn"
+                  :placeholder="$t('common.label.all')"
+                />
               </div>
             </div>
           </template>
@@ -182,19 +153,15 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
-import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
-
-//import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
-//import api from '@/axios/axios-helper.js'
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 const interfaceIsShow = {
   dialog: false
@@ -202,9 +169,9 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-    Calendar,
-    //Dropdown,
+    CalendarGeneric,
+    MultiSelectGeneric,
+    InputTextGeneric,
     dialogView
   },
 
@@ -247,7 +214,6 @@ export default {
 
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow }
     }

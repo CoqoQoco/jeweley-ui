@@ -44,6 +44,7 @@
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import Papa from 'papaparse'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
@@ -52,6 +53,8 @@ export default {
   components: {
     BaseDataTable
   },
+
+  mixins: [dataTablePaging],
 
   props: {
     modelForm: {
@@ -97,172 +100,164 @@ export default {
     }
   },
 
-  computed: {
-    masterType() {
-      return this.modelMasterType
-    }
-  },
-
   data() {
     return {
-      isLoading: false,
-
-      //--------- table ---------//
-      totalRecords: 0,
-      take: 100, //all
-      skip: 0,
-      //sortField: 'updateDate',
-      //sortOrder: -1, // หรือ -1 สำหรับ descending
-      sort: [],
-      //sort: [],
+      take: 100,
       data: {},
       dataExcel: {},
       expnadData: [],
       form: { ...this.modelForm },
-      export: null,
+      export: null
+    }
+  },
 
-      columns: [
+  computed: {
+    masterType() {
+      return this.modelMasterType
+    },
+    columns() {
+      return [
         {
           field: 'requestDate',
-          header: 'วันทำรายการ',
+          header: this.$t('view.receiptStock.gem.transaction.transactionDate'),
           sortable: true,
           minWidth: '200px',
           format: 'datetime'
         },
         {
           field: 'name',
-          header: 'พลอย/เพชร',
+          header: this.$t('view.receiptStock.gem.transaction.gem'),
           minWidth: '200px'
         },
         {
           field: 'woText',
-          header: 'W.O.',
+          header: this.$t('view.receiptStock.gem.transaction.wo'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'mold',
-          header: 'เเม่พิมพ์',
+          header: this.$t('view.receiptStock.gem.transaction.mold'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'type',
-          header: 'ประเภท',
+          header: this.$t('view.receiptStock.gem.transaction.type'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'qty',
-          header: 'จำนวน',
+          header: this.$t('view.receiptStock.gem.transaction.qty'),
           sortable: true,
           minWidth: '200px',
           format: 'decimal3'
         },
         {
           field: 'qtyWeight',
-          header: 'น้ำหนัก',
+          header: this.$t('view.receiptStock.gem.transaction.weight'),
           sortable: true,
           minWidth: '200px',
           format: 'decimal3'
         },
         {
           field: 'running',
-          header: 'เลขที่รายการ',
+          header: this.$t('view.receiptStock.gem.transaction.running'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'refRunning1',
-          header: 'เลขที่อ้างอิง 1',
+          header: this.$t('view.receiptStock.gem.transaction.refRunning1'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'refRunning2',
-          header: 'เลขที่อ้างอิง 2',
+          header: this.$t('view.receiptStock.gem.transaction.refRunning2'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'previousRemianQty',
-          header: 'จำนวนก่อนใช้',
+          header: this.$t('view.receiptStock.gem.transaction.prevQty'),
           sortable: true,
           minWidth: '200px',
           format: 'decimal3'
         },
         {
           field: 'previousRemianQtyWeight',
-          header: 'น้ำหนักก่อนใช้',
+          header: this.$t('view.receiptStock.gem.transaction.prevWeight'),
           sortable: true,
           minWidth: '200px',
           format: 'decimal3'
         },
         {
           field: 'pointRemianQty',
-          header: 'จำนวนคงเหลือ',
+          header: this.$t('view.receiptStock.gem.transaction.remainQty'),
           sortable: true,
           minWidth: '200px',
           format: 'decimal3'
         },
         {
           field: 'pointRemianQtyWeight',
-          header: 'น้ำหนักคงเหลือ',
+          header: this.$t('view.receiptStock.gem.transaction.remainWeight'),
           sortable: true,
           minWidth: '200px',
           format: 'decimal3'
         },
         {
           field: 'remark1',
-          header: 'หมายเหตุ-1',
+          header: this.$t('view.receiptStock.gem.transaction.remark1'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'remark2',
-          header: 'หมายเหตุ-2',
+          header: this.$t('view.receiptStock.gem.transaction.remark2'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'jobOrPo',
-          header: 'Invoice/Ref No.',
+          header: this.$t('view.receiptStock.gem.transaction.jobOrPo'),
           minWidth: '200px'
         },
         {
           field: 'subpplierName',
-          header: 'ร้านผลิต/ชื่อร้าน',
+          header: this.$t('view.receiptStock.gem.transaction.supplierName'),
           minWidth: '200px'
         },
         {
           field: 'supplierCost',
-          header: 'ราคาทุน',
+          header: this.$t('view.receiptStock.gem.transaction.supplierCost'),
           minWidth: '200px',
           format: 'decimal2'
         },
         {
           field: 'price',
-          header: 'ราคาต่อน้ำหนัก',
+          header: this.$t('view.receiptStock.gem.transaction.pricePerWeight'),
           sortable: true,
           minWidth: '150px',
           format: 'decimal3'
         },
         {
           field: 'priceQty',
-          header: 'ราคาต่อจำนวน',
+          header: this.$t('view.receiptStock.gem.transaction.pricePerQty'),
           sortable: true,
           minWidth: '150px',
           format: 'decimal3'
         },
         {
           field: 'unitCode',
-          header: 'หน่วย',
+          header: this.$t('view.receiptStock.gem.transaction.unitCode'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'unit',
-          header: 'รหัสหน่วย',
+          header: this.$t('view.receiptStock.gem.transaction.unit'),
           sortable: true,
           minWidth: '150px'
         }
@@ -271,136 +266,90 @@ export default {
   },
 
   methods: {
-    // ----------- table ----------- //
-    // ----------- table ----------- //
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-    // ----------- APIs ----------- //
     async fetchData() {
-      try {
-        this.isLoading = true
-
-        //('fetchData', this.form)
-
-        const params = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          search: {
-            requestDateStart: this.form.requestDateStart
-              ? formatISOString(this.form.requestDateStart)
-              : null,
-            requestDateEnd: this.form.requestDateEnd
-              ? formatISOString(this.form.requestDateEnd)
-              : null,
-            type: this.form.type.length > 0 ? this.form.type : null,
-
-            code: this.form.code ?? null,
-            groupName: this.form.groupName ?? null,
-            grade: this.form.grade ?? null,
-            shape: this.form.shape ?? null,
-            size: this.form.size ?? null,
-            status: ['completed'],
-            running: this.form.running ?? null
-          }
+      const params = {
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: {
+          requestDateStart: this.form.requestDateStart
+            ? formatISOString(this.form.requestDateStart)
+            : null,
+          requestDateEnd: this.form.requestDateEnd
+            ? formatISOString(this.form.requestDateEnd)
+            : null,
+          type: this.form.type.length > 0 ? this.form.type : null,
+          code: this.form.code ?? null,
+          groupName: this.form.groupName ?? null,
+          grade: this.form.grade ?? null,
+          shape: this.form.shape ?? null,
+          size: this.form.size ?? null,
+          status: ['completed'],
+          running: this.form.running ?? null
         }
-        //console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
-        if (res) {
-          this.data = { ...res }
-          //this.$emit('export', true)
-        } else {
-          //this.$emit('export', true)
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      }
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
+      if (res) {
+        this.data = { ...res }
       }
     },
     async fetchDataExport() {
-      try {
-        this.isLoading = true
-
-        //console.log('fetchDataExport', this.form)
-        const params = {
-          take: 0,
-          skip: 0,
-          sort: [],
-          search: {
-            requestDateStart: this.form.requestDateStart
-              ? formatISOString(this.form.requestDateStart)
-              : null,
-            requestDateEnd: this.form.requestDateEnd
-              ? formatISOString(this.form.requestDateEnd)
-              : null,
-            type: this.form.type.length > 0 ? this.form.type : null,
-
-            code: this.form.code ?? null,
-            groupName: this.form.groupName ?? null,
-            grade: this.form.grade ?? null,
-            shape: this.form.shape ?? null,
-            size: this.form.size ?? null,
-            status: ['completed'],
-            running: this.form.running ?? null
+      const params = {
+        take: 0,
+        skip: 0,
+        sort: [],
+        search: {
+          requestDateStart: this.form.requestDateStart
+            ? formatISOString(this.form.requestDateStart)
+            : null,
+          requestDateEnd: this.form.requestDateEnd
+            ? formatISOString(this.form.requestDateEnd)
+            : null,
+          type: this.form.type.length > 0 ? this.form.type : null,
+          code: this.form.code ?? null,
+          groupName: this.form.groupName ?? null,
+          grade: this.form.grade ?? null,
+          shape: this.form.shape ?? null,
+          size: this.form.size ?? null,
+          status: ['completed'],
+          running: this.form.running ?? null
+        }
+      }
+      const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
+      if (res) {
+        const dataExcel = res.data.map((item) => {
+          return {
+            วันทำรายการ: formatDate(item.requestDate),
+            เลขที่รายการ: item.running,
+            เลขที่อ้างอิง: item.refRunning,
+            ประเภท: this.getTypeName(item.type),
+            'พลอย/เพชร': item.name,
+            จำนวน: item.qty,
+            น้ำหนัก: item.qtyWeight,
+            'JOB/PO No.': item.jobOrPo,
+            'ร้านผลิต/ชื่อร้าน': item.subpplierName,
+            ราคาทุน: item.supplierCost,
+            รหัส: item.code,
+            หมวดหมู่: item.groupName,
+            ขนาด: item.size,
+            รูปร่าง: item.shape,
+            เกรด: item.grade,
+            ราคา: item.price,
+            ราคาต่อหน่วย: item.priceQty,
+            หน่วย: item.unitCode,
+            รหัสหน่วย: item.unit,
+            'W.O.': item.woText,
+            เแม่พิมพ์: item.mold,
+            'หมายเหตุ-1': item.remark1,
+            'หมายเหตุ-2': item.remark2
           }
-        }
-        //console.log('params', params)
-        const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
-        if (res) {
-          const dataExcel = res.data.map((item) => {
-            return {
-              วันทำรายการ: formatDate(item.requestDate),
-              เลขที่รายการ: item.running,
-              เลขที่อ้างอิง: item.refRunning,
-              ประเภท: this.getTypeName(item.type),
-              'พลอย/เพชร': item.name,
-              จำนวน: item.qty,
-              น้ำหนัก: item.qtyWeight,
-              'JOB/PO No.': item.jobOrPo,
-              'ร้านผลิต/ชื่อร้าน': item.subpplierName,
-              ราคาทุน: item.supplierCost,
-              รหัส: item.code,
-              หมวดหมู่: item.groupName,
-              ขนาด: item.size,
-              รูปร่าง: item.shape,
-              เกรด: item.grade,
-
-              ราคา: item.price,
-              ราคาต่อหน่วย: item.priceQty,
-              หน่วย: item.unitCode,
-              รหัสหน่วย: item.unit,
-
-              'W.O.': item.woText,
-              เเม่พิมพ์: item.mold,
-              'หมายเหตุ-1': item.remark1,
-              'หมายเหตุ-2': item.remark2
-            }
-          })
-          this.exportWithCustomColumnCSV(
-            dataExcel,
-            `รายการเคลื่อนไหววัถุดิบ[${this.formatDate(
-              this.form.requestDateStart
-            )} - ${this.formatDate(this.form.requestDateEnd)}].csv`
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+        })
+        this.exportWithCustomColumnCSV(
+          dataExcel,
+          `รายการเคลื่อนไหววัตถุดิบ[${this.formatDate(
+            this.form.requestDateStart
+          )} - ${this.formatDate(this.form.requestDateEnd)}].csv`
+        )
       }
     },
 

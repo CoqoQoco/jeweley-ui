@@ -25,14 +25,16 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
-import { get } from 'lodash'
 
 export default {
   components: {
     BaseDataTable
   },
+
+  mixins: [dataTablePaging],
 
   setup() {
     const receiptProductionStore = useReceiptProductionApiStore()
@@ -55,18 +57,118 @@ export default {
   computed: {
     form() {
       return this.modelForm || {}
+    },
+    columns() {
+      return [
+        {
+          field: 'receiptDate',
+          header: this.$t('view.receiptStock.product.reportGr.colReceiptDate'),
+          sortable: true,
+          minWidth: '150px',
+          format: 'datetime'
+        },
+        {
+          field: 'stockNumber',
+          header: this.$t('view.receiptStock.product.reportGr.stockNumber'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNumber',
+          header: this.$t('view.receiptStock.product.reportGr.productNumber'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNameEn',
+          header: this.$t('view.receiptStock.product.reportGr.productNameEn'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNameTh',
+          header: this.$t('view.receiptStock.product.reportGr.productNameTh'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productTypeName',
+          header: this.$t('view.receiptStock.product.reportGr.colProductTypeName'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'studEarring',
+          header: this.$t('view.receiptStock.product.reportGr.colStudEarring'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'size',
+          header: this.$t('view.receiptStock.product.reportGr.size'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'mold',
+          header: this.$t('view.receiptStock.product.reportGr.mold'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productionType',
+          header: this.$t('view.receiptStock.product.reportGr.colProductionType'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productionTypeSize',
+          header: this.$t('view.receiptStock.product.reportGr.colProductionTypeSize'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'woText',
+          header: this.$t('view.receiptStock.product.reportGr.wo'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'location',
+          header: this.$t('view.receiptStock.product.reportGr.colLocation'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'productPrice',
+          header: this.$t('view.receiptStock.product.reportGr.colProductPrice'),
+          sortable: true,
+          minWidth: '150px',
+          format: 'decimal2'
+        },
+        {
+          field: 'createBy',
+          header: this.$t('view.receiptStock.product.reportGr.colCreateBy'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'remark',
+          header: this.$t('view.receiptStock.product.reportGr.colRemark'),
+          sortable: true,
+          minWidth: '150px'
+        }
+      ]
     }
   },
 
   watch: {
     async modelForm() {
-      //console.log(this.modelForm)
       this.take = 10
       this.skip = 0
       await this.fetchData()
     },
     async modelFormExport() {
-      //console.log(this.modelForm)
       await this.fetchDataExport()
     }
   },
@@ -77,130 +179,11 @@ export default {
         { value: 'lg', description: 'แป้นใหญ่' },
         { value: 'md', description: 'แป้นกลาง' },
         { value: 'sm', description: 'แป้นเล็ก' }
-      ],
-
-      take: 10,
-      skip: 0,
-      sort: [],
-      columns: [
-        {
-          field: 'receiptDate',
-          header: 'วันรับสินค้า',
-          sortable: true,
-          minWidth: '150px',
-          format: 'datetime'
-        },
-        {
-          field: 'stockNumber',
-          header: 'เลขที่ผลิต',
-          sortable: true,
-          minWidth: '150px'
-        },
-
-        {
-          field: 'productNumber',
-          header: 'รหัสสินค้า',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'productNameEn',
-          header: 'ชื่อสินค้า EN',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'productNameTh',
-          header: 'ชื่อสินค้า TH',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'productTypeName',
-          header: 'ประเภทสินค้า',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'studEarring',
-          header: 'แป้นต่างหู',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'mold',
-          header: 'เเม่พิมพ์',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'productionType',
-          header: 'สีของทอง/เงิน',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'productionTypeSize',
-          header: 'ประเภททอง/เงิน',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'woText',
-          header: 'W.O.',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'location',
-          header: 'จัดเก็บ',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'productPrice',
-          header: 'ราคา',
-          sortable: true,
-          minWidth: '150px',
-          format: 'decimal2'
-        },
-        {
-          field: 'createBy',
-          header: 'ผู้รับสินค้า',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'remark',
-          header: 'หมายเหตุ',
-          sortable: true,
-          minWidth: '150px'
-        }
       ]
     }
   },
 
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
     async fetchData() {
       await this.receiptProductionStore.fetchConfirmHistory({
         skip: this.skip,
