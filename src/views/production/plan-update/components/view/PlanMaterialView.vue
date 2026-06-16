@@ -164,11 +164,13 @@
 </template>
 
 <script>
+/* eslint-disable no-restricted-imports */
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+/* eslint-enable no-restricted-imports */
 
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 import planOverview from './PlanOverview.vue'
@@ -198,7 +200,6 @@ export default {
   },
   computed: {
     model() {
-      console.log(this.modelMatValue)
       return this.modelMatValue
     },
     modelGold() {
@@ -218,7 +219,7 @@ export default {
   methods: {
     // --- controller --- //
     onDeletItem(item) {
-      swAlert.confirmSubmit(
+      confirmSubmit(
         `${item.goldNavigation.code}-${item.goldNavigation.nameTh}, จำนวน ${item.goldQty ?? 0}`,
         'ยืนยันลบ',
         async () => {
@@ -234,33 +235,24 @@ export default {
     },
     // --- APIs --- //
     async DeletMatItem(item) {
-      try {
-        this.isLoading = true
+      const params = {
+        planId: this.modelValue.id,
+        wo: this.modelValue.wo,
+        woNumber: this.modelValue.woNumber,
+        materialId: item.id
+      }
 
-        const params = {
-          planId: this.modelValue.id,
-          wo: this.modelValue.wo,
-          woNumber: this.modelValue.woNumber,
-          materialId: item.id
-        }
-
-        //console.log(params)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanDeleteMaterial', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanDeleteMaterial', params)
+      if (res) {
+        success(
+          ``,
+          '',
+          async () => {
+            this.$emit('fetch')
+          },
+          null,
+          null
+        )
       }
     },
 

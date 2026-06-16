@@ -19,7 +19,7 @@
       <!-- action -->
       <div class="d-flex justify-content-center">
         <pdf
-          class="btn btn-sm btn-primary btn-custom mr-2"
+          class="btn btn-sm btn-main btn-custom mr-2"
           :modelValue="model"
           :matValue="modelMat"
         >
@@ -30,17 +30,15 @@
           </span>
           <span>NEW</span>
         </button>
-        <button class="btn btn-sm btn-warning mr-2" @click="onShowFormHeaderUpdate">
+        <button class="btn btn-sm btn-main mr-2" @click="onShowFormHeaderUpdate">
           <span>
             <i class="bi bi-brush"></i>
           </span>
-          <!-- <span>เเก้ไข</span> -->
         </button>
-        <button class="btn btn-sm btn-secondary" disabled>
+        <button class="btn btn-sm btn-outline-main" disabled>
           <span>
             <i class="bi bi-trash"></i>
           </span>
-          <!-- <span>หลอม</span> -->
         </button>
       </div>
     </div>
@@ -156,18 +154,14 @@ const pdf = defineAsyncComponent(() =>
 
 import Gallery from '@/components/prime-vue/GalleryView.vue'
 
-import moment from 'dayjs'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
-
-//import planOverview from './PlanOverview.vue'
 
 export default {
   components: {
     pdf,
     Gallery
-    //planOverview
   },
   props: {
     modelValue: {
@@ -251,79 +245,35 @@ export default {
     formatDate(date) {
       return date ? formatDate(date) : ''
     },
-    showDate(date) {
-      return date ? moment(date).format('DD/MM/yyyy') : ''
-    },
 
     // --- APIs --- //
     async fetchImageData(mold) {
-      try {
-        //console.log('fetchImageData:', mold)
-        if (mold && mold.length > 0) {
-          // Build Azure Blob URLs for mold images
-          this.imageUrl = []
-          for (const param in mold) {
-            const blobPath = `Mold/${mold[param]}-Mold.png`
-            const imageUrl = getAzureBlobUrl(blobPath)
-            this.imageUrl.push(imageUrl)
-          }
-
-          if (this.form) {
-            this.form.requestDate = this.showDate(this.form.requestDate)
-          }
-
-          //console.log('fetchImageData Images:', this.imageUrl)
+      if (mold && mold.length > 0) {
+        this.imageUrl = []
+        for (const param in mold) {
+          const blobPath = `Mold/${mold[param]}-Mold.png`
+          const imageUrl = getAzureBlobUrl(blobPath)
+          this.imageUrl.push(imageUrl)
         }
-      } catch (error) {
-        //this.isLoadingImage = false
-        //this.imageUrl = []
-        console.log(error)
       }
     },
     async generatePDF() {
-      try {
-        // Build Azure Blob URL for mold image
-        const blobPath = `Mold/${this.model.mold}-Mold.png`
-        const urlImage = getAzureBlobUrl(blobPath)
-
-        // สร้าง PDF builder (supports both Base64 and URL)
-        const pdfBuilder = new FilePlanProduction(this.model, this.modelMat, urlImage)
-        //const pdfBuilder = new FilePlanProduction(this.modelValue, this.urlImage)
-
-        // สร้างและเปิด PDF
-        pdfBuilder.generatePDF().open()
-      } catch (error) {
-        console.error('Failed to generate PDF:', error)
-      }
+      const blobPath = `Mold/${this.model.mold}-Mold.png`
+      const urlImage = getAzureBlobUrl(blobPath)
+      const pdfBuilder = new FilePlanProduction(this.model, this.modelMat, urlImage)
+      pdfBuilder.generatePDF().open()
     }
   },
-  async created() {
-    //console.log('created this.modelValue:', this.modelValue)
-
-    this.$nextTick(async () => {})
-  },
-  unmounted() {
-    //console.log('unmounted:', this.imageUrl)
-  },
-  // เพิ่ม activated hook ใน component
   activated() {
-    //console.log('activated - component reactivated')
-    // เรียกโหลดข้อมูลใหม่เมื่อกลับมาที่ component
     if (this.model) {
-      let param = []
-
+      const param = []
       if (this.model.mold) {
         param.push(this.model.mold)
       }
-
       if (this.model.moldSub) {
         param.push(this.model.moldSub)
       }
-
-      //console.log('activated param:', param)
-
       if (param.length > 0) {
-        // รีเซ็ตอาร์เรย์รูปภาพก่อนโหลดใหม่เมื่อ activated
         this.fetchImageData(param)
       }
     }

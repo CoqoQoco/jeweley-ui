@@ -12,7 +12,7 @@
         <!-- action -->
         <div>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('transfer') ? 'btn-secondary' : 'btn-green']"
+            :class="['btn btn-sm ml-2', checkBtn('transfer') ? 'btn-outline-main' : 'btn-green']"
             title="โอนงาน"
             :disabled="checkBtn('transfer')"
             @click="transfer()"
@@ -20,14 +20,14 @@
             <span class="bi bi-arrow-down-up"></span>
           </button>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('close') ? 'btn-secondary' : 'btn-primary']"
+            :class="['btn btn-sm ml-2', checkBtn('close') ? 'btn-outline-main' : 'btn-main']"
             title="พิมพ์แบบ"
             :disabled="checkBtn('close')"
           >
             <span class="bi bi-printer"></span>
           </button>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
+            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-outline-main' : 'btn-green']"
             title="เพิ่มจ่ายแต่ง"
             :disabled="checkBtn('add')"
             @click="addStatus()"
@@ -35,7 +35,7 @@
             <span class="bi bi-database-fill-add"></span>
           </button>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
+            :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-outline-main' : 'btn-main']"
             title="เเก้ไขจ่ายแต่ง"
             :disabled="checkBtn('edit')"
             @click="updateStatus()"
@@ -43,7 +43,7 @@
             <span class="bi bi-brush"></span>
           </button>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
+            :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-outline-main' : 'btn-red']"
             title="ลบจ่ายแต่ง"
             :disabled="checkBtn('delete')"
             @click="onDelStatus(modelPlanStatus.id)"
@@ -292,14 +292,15 @@
 </template>
 
 <script>
-import _ from 'lodash'
-
+/* eslint-disable no-restricted-imports */
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+/* eslint-enable no-restricted-imports */
 
+import _ from 'lodash'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { calculateWeightDifference } from '@/services/helper/match.js'
 
 export default {
@@ -405,19 +406,16 @@ export default {
 
     // ----- event
     addStatus() {
-      console.log('addStatus')
       this.$emit('onShowAddStatus', 'scrubb')
     },
     updateStatus() {
-      console.log('updateStatus')
       this.$emit('onShowUpdateStatus', 'scrubb')
     },
     onDelStatus(id) {
-      swAlert.confirmSubmit(
+      confirmSubmit(
         `ยืนยันลบงาน [ขัดดิบ]`,
         `${this.model.wo}-${this.model.woNumber}`,
         async () => {
-          //console.log('call submitPlan')
           await this.DelStatus(id)
         },
         null,
@@ -427,36 +425,26 @@ export default {
 
     // ----- APIs
     async DelStatus(id) {
-      //console.log(id)
-      try {
-        this.isLoading = true
-
-        const params = {
-          productionPlanId: this.model.id,
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          id: id
-        }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanDeleteStatusDetail',
-          params
+      const params = {
+        productionPlanId: this.model.id,
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        id: id
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanDeleteStatusDetail',
+        params
+      )
+      if (res) {
+        success(
+          ``,
+          '',
+          async () => {
+            this.$emit('fetch')
+          },
+          null,
+          null
         )
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              //this.closeModal()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
       }
     }
   }

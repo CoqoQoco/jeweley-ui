@@ -118,8 +118,11 @@
 </template>
 
 <script>
+/* eslint-disable no-restricted-imports */
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+/* eslint-enable no-restricted-imports */
+
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
 import { calculateWeightDifference } from '@/services/helper/match.js'
@@ -139,14 +142,12 @@ export default {
   },
   computed: {
     model() {
-      console.log('overview model', this.modelValue)
       return this.modelValue
     }
   },
   watch: {
     modelValue: {
       handler() {
-        console.log('overview model', this.modelValue)
         this.modelProcess = this.modelValue?.tbtProductionPlanStatusHeader
           ?.reduce((acc, status) => {
             if (

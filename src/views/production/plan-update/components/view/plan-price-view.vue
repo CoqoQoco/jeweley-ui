@@ -16,7 +16,7 @@
 
         <div class="d-flex">
           <button
-            :class="['btn btn-sm ml-2', checkBtn('success') ? 'btn-secondary' : 'btn-green']"
+            :class="['btn btn-sm ml-2', checkBtn('success') ? 'btn-outline-main' : 'btn-green']"
             title="โอนสินค้า"
             :disabled="checkBtn('success')"
             @click="receiptProduct()"
@@ -30,7 +30,7 @@
             :modelPrice="modelPrice"
           ></pricePDF>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
+            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-outline-main' : 'btn-green']"
             title="ประเมินบัตรต้นทุน"
             :disabled="checkBtn('add')"
             @click="addStatus()"
@@ -38,7 +38,7 @@
             <span class="bi bi-database-fill-add"></span>
           </button>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
+            :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-outline-main' : 'btn-main']"
             title="เเก้ไข"
             :disabled="checkBtn('edit')"
             @click="updateStatus()"
@@ -46,7 +46,7 @@
             <span class="bi bi-brush"></span>
           </button>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
+            :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-outline-main' : 'btn-red']"
             title="ลบ"
             :disabled="checkBtn('delete')"
             @click="onDelStatus(modelPlanStatus.id)"
@@ -231,20 +231,18 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
+/* eslint-disable no-restricted-imports */
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
-//import _ from 'lodash'
 import Row from 'primevue/row'
+/* eslint-enable no-restricted-imports */
 
-//import DataTable from 'primevue/datatable'
-//import Column from 'primevue/column'
+import { defineAsyncComponent } from 'vue'
 import Papa from 'papaparse'
-
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
 const pricePDF = defineAsyncComponent(() =>
   import('@/components/pdf-make/FilePDFProductionPlanPrice.vue')
@@ -407,36 +405,24 @@ export default {
 
     calPricePerQty(data) {
       const total = this.caltotalPrice(data)
-      console.log('total', total, this.model.productQty)
-      let price = (total / this.model.productQty ?? 1).toFixed(2)
-      console.log('price', price)
-
-      return price
+      return (total / (this.model.productQty ?? 1)).toFixed(2)
     },
     calEachPricePerQty(total) {
-      //const total = this.caltotalPrice(data)
-      //console.log('total', total, this.model.productQty)
-      let price = (total / this.model.productQty ?? 1).toFixed(2)
-      console.log('price', price)
-
-      return price
+      return (total / (this.model.productQty ?? 1)).toFixed(2)
     },
 
     // ----- event
     addStatus() {
-      console.log('addStatus')
       this.$emit('onShowAddStatus', 'price')
     },
     updateStatus() {
-      console.log('updateStatus')
       this.$emit('onShowUpdateStatus', 'gems')
     },
     onDelStatus(id) {
-      swAlert.confirmSubmit(
+      confirmSubmit(
         `ยืนยันลบงาน [คัดพลอย]`,
         `${this.model.wo}-${this.model.woNumber}`,
         async () => {
-          //console.log('call submitPlan')
           await this.DelStatus(id)
         },
         null,
@@ -477,45 +463,28 @@ export default {
 
     // ----- APIs
     async DelStatus(id) {
-      //console.log(id)
-      try {
-        this.isLoading = true
-
-        const params = {
-          productionPlanId: this.model.id,
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          id: id
-        }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanDeleteStatusDetail',
-          params
+      const params = {
+        productionPlanId: this.model.id,
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        id: id
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanDeleteStatusDetail',
+        params
+      )
+      if (res) {
+        success(
+          ``,
+          '',
+          async () => {
+            this.$emit('fetch')
+          },
+          null,
+          null
         )
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              //this.closeModal()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
       }
     }
-  },
-  created() {
-    this.$nextTick(() => {
-      //console.log('modelPlanStatus', this.modelPlanStatus)
-      console.log('model price', this.modelPrice)
-      console.log('model make price', this.isMakePrice)
-    })
   }
 }
 </script>

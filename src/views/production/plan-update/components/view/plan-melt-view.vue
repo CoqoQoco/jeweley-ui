@@ -12,44 +12,21 @@
         <!-- action -->
         <div>
           <button
-            :class="['btn btn-sm ml-2', checkBtn('return') ? 'btn-secondary' : 'btn-green']"
+            :class="['btn btn-sm ml-2', checkBtn('return') ? 'btn-outline-main' : 'btn-green']"
             title="คืนค่า"
             :disabled="checkBtn('return')"
             @click="resetStatus()"
           >
             <span class="bi bi-bootstrap-reboot"></span>
           </button>
-          <!-- <button
-            :class="['btn btn-sm ml-2', checkBtn('close') ? 'btn-secondary' : 'btn-primary']"
-            title="พิมพ์แบบ"
-            :disabled="checkBtn('close')"
-          >
-            <span class="bi bi-printer"></span>
-          </button> -->
           <button
-            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
+            :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-outline-main' : 'btn-green']"
             title="หลอม"
             :disabled="checkBtn('add')"
             @click="addStatus()"
           >
             <span class="bi bi-database-fill-add"></span>
           </button>
-          <!-- <button
-            :class="['btn btn-sm ml-2', checkBtn('edit') ? 'btn-secondary' : 'btn-warning']"
-            title="เเก้ไข"
-            :disabled="checkBtn('edit')"
-            @click="updateStatus()"
-          >
-            <span class="bi bi-brush"></span>
-          </button>
-          <button
-            :class="['btn btn-sm ml-2', checkBtn('delete') ? 'btn-secondary' : 'btn-red']"
-            title="ลบ"
-            :disabled="checkBtn('delete')"
-            @click="onDelStatus(modelPlanStatus.id)"
-          >
-            <span class="bi bi-trash-fill"></span>
-          </button> -->
         </div>
       </div>
     </div>
@@ -110,21 +87,6 @@
               </div>
             </template>
           </Column>
-          <!-- <template #footer>
-            <div class="d-flex justify-content-between">
-              <div>ทั้งหมด {{ modelPlanStatus.tbtProductionPlanStatusDetail.length }} รายการ</div>
-              <div>
-                รวมค่าแรงทั้งหมด
-                {{
-                  `${
-                    modelPlanStatus.wagesTotal
-                      ? Number(modelPlanStatus.wagesTotal).toFixed(2).toLocaleString()
-                      : Number(wages).toFixed(2).toLocaleString()
-                  }`
-                }}
-              </div>
-            </div>
-          </template> -->
         </DataTable>
       </div>
 
@@ -150,14 +112,15 @@
 </template>
 
 <script>
-import _ from 'lodash'
-
+/* eslint-disable no-restricted-imports */
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+/* eslint-enable no-restricted-imports */
 
+import _ from 'lodash'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
@@ -230,7 +193,6 @@ export default {
       return date ? formatDate(date) : ''
     },
     checkBtn(action) {
-      //console.log('checkBtn', this.modelPlanStatus)
       const disStatus = [100]
       if (!disStatus.includes(this.model.status)) {
         switch (action) {
@@ -259,19 +221,16 @@ export default {
 
     // ----- event
     addStatus() {
-      console.log('addStatus')
       this.$emit('onShowAddStatus', 'melted')
     },
     updateStatus() {
-      console.log('updateStatus')
       this.$emit('onShowUpdateStatus', 'casting')
     },
     onDelStatus(id) {
-      swAlert.confirmSubmit(
+      confirmSubmit(
         `ยืนยันลบงาน [จ่ายเเต่ง]`,
         `${this.model.wo}-${this.model.woNumber}`,
         async () => {
-          //console.log('call submitPlan')
           await this.DelStatus(id)
         },
         null,
@@ -280,16 +239,13 @@ export default {
     },
 
     resetStatus() {
-      swAlert.confirmSubmit(
+      confirmSubmit(
         `แผนผลิตจะกลับไปเป็นสถานะล่าสุดก่อนหลอม`,
         `ปรับปรุง <br/> W.O. : ${this.model.wo}-${this.model.woNumber}`,
-        async () => {
-          //console.log('call submitPlan')
-        },
+        async () => {},
         null,
         null
       )
-      //console.log('resetStatus')
     },
 
     transfer() {
@@ -299,36 +255,26 @@ export default {
 
     // ----- APIs
     async DelStatus(id) {
-      //console.log(id)
-      try {
-        this.isLoading = true
-
-        const params = {
-          productionPlanId: this.model.id,
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          id: id
-        }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanDeleteStatusDetail',
-          params
+      const params = {
+        productionPlanId: this.model.id,
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        id: id
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanDeleteStatusDetail',
+        params
+      )
+      if (res) {
+        success(
+          ``,
+          '',
+          async () => {
+            this.$emit('fetch')
+          },
+          null,
+          null
         )
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              //this.closeModal()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
       }
     }
   }
