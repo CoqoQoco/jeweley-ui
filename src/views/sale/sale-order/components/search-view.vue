@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 import QuotationSearchModal from '../modal/quotation-search-modal.vue'
 
 export default {

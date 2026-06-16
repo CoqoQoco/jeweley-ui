@@ -115,7 +115,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import Calendar from 'primevue/calendar'
 

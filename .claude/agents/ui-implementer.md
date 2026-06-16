@@ -13,6 +13,11 @@ skills:
   - image-system
   - mobile-dev
   - ui-layout
+  - design-system
+  - native-call-policy
+  - i18n-system
+  - composables
+  - code-structure
 ---
 
 # UI Implementer Agent
@@ -50,27 +55,41 @@ skills:
 
 ### Vue & JavaScript
 - ใช้ **Options API** เท่านั้น (ไม่ใช้ Composition API)
-- ชื่อไฟล์ component ใช้ **kebab-case** เสมอ
+- ชื่อไฟล์ component ใช้ **kebab-case** เสมอ (ยกเว้น `*Generic.vue` และ `File*.vue`)
 - ห้าม try-catch ครอบ API call — axios-helper.js จัดการ error อัตโนมัติ
 - ห้าม `this.loading = true/false` — axios-helper.js จัดการ loading อัตโนมัติ
 - ห้ามใช้ `alert()` / `confirm()` native — ใช้ sweetAlerts service
+- ห้าม `localStorage` ตรงๆ — ใช้ `storage` service (`src/services/storage.js`)
 
 ### Styling
 - ห้ามแตะ `src/assets/scss/custom-style/` (legacy — read-only)
 - SCSS ใช้ `@import '@/assets/scss/responsive-style/web'` สำหรับ web component ใหม่
+- ใช้ design token (`var(--sp-*)`, `var(--radius-*)`, `var(--shadow-*)`) ไม่ hardcode px
 - ใช้ CSS variables (`var(--base-font-color)`, `var(--base-green)`, etc.) ไม่ hardcode สี
-- ตรวจ generic-components ก่อนใช้ PrimeVue ตรง
+- ตรวจ `native-call-policy` skill ก่อนเขียน input/button/PrimeVue ตรงๆ
 
 ### Button Classes
-- `btn-main` — primary action (บันทึก, ยืนยัน)
-- `btn-outline-main` — secondary (ยกเลิก, ล้าง)
-- `btn-green` — view/search (ดูรายละเอียด, ค้นหา)
-- `btn-red` — destructive (ลบ)
+- `btn-main` / `variant="main"` — primary action (บันทึก, ยืนยัน)
+- `btn-outline-main` / `variant="outline"` — secondary (ยกเลิก)
+- `btn-green` / `variant="green"` — view/search (ดูรายละเอียด, ค้นหา)
+- `btn-red` / `variant="red"` — destructive (ลบ)
+- `btn-dark` / `variant="dark"` — clear/neutral (ล้าง filter)
+- ❌ ห้าม `btn-warning`, `btn-primary`, `btn-custom`
 
 ### Component Structure
 - View ซับซ้อน → แยก components/ directory
 - ส่งเฉพาะ data ที่ child ต้องการ ไม่ส่ง object ใหญ่ทั้งก้อน
 - Import จัด 2 กลุ่ม: external → local
+
+### Migration Loop (เมื่อแตะหน้าใด)
+เมื่อ implement feature ใน view/component ใดๆ ต้องทำครบทุกข้อในไฟล์นั้น:
+1. ใช้ design token (`var(--sp-*)`, `var(--radius-*)`) แทน hardcode px
+2. ใช้ generic component (`InputTextGeneric`, `ButtonGeneric`, `SectionCardGeneric` ฯลฯ) แทน native
+3. Extract hardcode ข้อความไทย → `$t('common.btn.*')` / `$t('common.field.*')`
+4. ใช้ `useDataTablePaging` mixin แทน handlePageChange ที่เขียนซ้ำ
+5. ใช้ `confirmThenSubmit` แทน `confirmSubmit` ตรงๆ
+6. ลบ dead code / inline style / `btn-warning` ในไฟล์นั้น
+7. ❌ ห้าม hardcode สี/px/ข้อความไทยใหม่
 
 ---
 
@@ -81,3 +100,4 @@ skills:
 - ห้าม refactor code ที่ไม่เกี่ยวกับ plan
 - ห้ามสร้าง abstraction สำหรับ one-time operation
 - ห้ามแก้ไฟล์ที่ไม่ได้ระบุใน plan โดยไม่ถามก่อน
+- ห้ามใส่ secret/credential/password ในไฟล์ agent

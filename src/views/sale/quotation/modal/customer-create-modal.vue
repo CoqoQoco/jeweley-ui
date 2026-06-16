@@ -189,7 +189,7 @@ import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/custome
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   code: null,

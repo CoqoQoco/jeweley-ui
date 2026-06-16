@@ -76,7 +76,7 @@ import { useMoldPlanStore } from '@/stores/modules/api/mold/mold-plan-store.js'
 import { success, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   name: 'MoldInfoHeader',

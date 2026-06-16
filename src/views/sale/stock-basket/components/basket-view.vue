@@ -187,7 +187,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import ScanInput from '@/components/custom/ScanInput.vue'
+import ScanInput from '@/components/custom/scan-input.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import { useStockBasketApiStore } from '@/stores/modules/api/sale/stock-basket-store.js'
 import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'

@@ -97,8 +97,8 @@ import api from '@/axios/axios-helper.js'
 
 import Dropdown from 'primevue/dropdown'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-//import modal from '@/components/modal/ModalView.vue'
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+//import modal from '@/components/modal/modal-view.vue'
 //const UploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
 
 export default {

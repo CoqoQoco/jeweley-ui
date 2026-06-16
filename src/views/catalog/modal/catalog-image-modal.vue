@@ -8,7 +8,7 @@
     >
       <template #title>
         <span class="title-text-lg px-3 pt-3 d-block">
-          จัดการรูปภาพสินค้า: {{ productCode }}
+          {{ $t('view.catalog.imageModalTitle') }}: {{ productCode }}
         </span>
       </template>
 
@@ -16,7 +16,7 @@
         <div class="p-3">
           <div v-for="n in 3" :key="n" class="image-slot-container">
             <div class="image-slot-header">
-              <span class="title-text">รูปที่ {{ n }}</span>
+              <span class="title-text">{{ $t('view.catalog.field.image') }} {{ n }}</span>
             </div>
             <div class="image-slot-body">
               <div class="image-preview-area">
@@ -31,7 +31,7 @@
               <div class="image-upload-area">
                 <uploadImage
                   :compact="true"
-                  :title="`รูปที่ ${n}`"
+                  :title="`${$t('view.catalog.field.image')} ${n}`"
                   :showClear="false"
                   @onImportFile="(file) => onFileSelected(file, n)"
                 />
@@ -42,9 +42,7 @@
       </template>
 
       <template #action>
-        <button class="btn btn-sm btn-outline-main" type="button" @click="closeModal">
-          ปิด
-        </button>
+        <ButtonGeneric variant="outline" :label="$t('common.btn.close')" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -52,19 +50,21 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import { success } from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 const uploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
 
 import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
     modal,
     imagePreview,
-    uploadImage
+    uploadImage,
+    ButtonGeneric
   },
 
   props: {
@@ -98,7 +98,7 @@ export default {
       const res = await this.imageStore.fetchSaveImage({ form: formData })
 
       if (res) {
-        swAlert.success(`บันทึกรูปที่ ${slotNumber} สำเร็จ`, ``, null, null, null)
+        success(`${this.$t('view.catalog.field.image')} ${slotNumber}`, ``)
       }
     }
   }
@@ -106,18 +106,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
 
 .image-slot-container {
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  margin-bottom: var(--sp-xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .image-slot-header {
   background-color: var(--base-font-color);
-  padding: 8px 16px;
+  padding: var(--sp-sm) var(--sp-lg);
 
   .title-text {
     color: white;
@@ -128,8 +129,8 @@ export default {
 .image-slot-body {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
-  padding: 16px;
+  gap: var(--sp-xl);
+  padding: var(--sp-lg);
 }
 
 .image-preview-area {

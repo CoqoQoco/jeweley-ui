@@ -41,8 +41,8 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceIsShow = {
   searchBtn: false,

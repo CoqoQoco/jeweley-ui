@@ -17,7 +17,7 @@
             @click="navigateTo('home', 'dashboard')"
           >
             <i class="bi bi-house-door"></i>
-            <span>หน้าแรก</span>
+            <span>{{ $t('breadcrumb.dashboard') }}</span>
           </div>
           <div
             class="nav-item"
@@ -30,6 +30,19 @@
         </div>
       </div>
       <div class="main-right-container">
+        <div class="lang-switcher">
+          <button
+            class="lang-btn"
+            :class="{ 'lang-btn--active': currentLang === 'th' }"
+            @click="switchLang('th')"
+          >TH</button>
+          <span class="lang-divider">|</span>
+          <button
+            class="lang-btn"
+            :class="{ 'lang-btn--active': currentLang === 'en' }"
+            @click="switchLang('en')"
+          >EN</button>
+        </div>
         <div class="user-profile">
           <div class="avatar">
             <div v-if="userImage" class="avatar-image">
@@ -59,7 +72,7 @@
           <i class="bi bi-grid-fill menu-icon"></i>
           <span>เลือกงาน</span>
         </div>
-        <button class="close-sidebar-btn" @click="closeSidebar">
+        <button class="close-sidebar-btn" @click="closeSidebar" :title="$t('common.btn.close')">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -74,8 +87,9 @@
 <script>
 import SidebarView from '@/components/layout/side-bar.vue'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
-
 import swAlert from '@/services/alert/sweetAlerts.js'
+import { setLocale } from '@/plugins/i18n/config.js'
+import { storage } from '@/services/storage.js'
 
 export default {
   components: {
@@ -144,11 +158,17 @@ export default {
   data() {
     return {
       isSideBarVisible: false,
-      activePage: 'home'
+      activePage: 'home',
+      currentLang: storage.getItem('lang', 'th')
     }
   },
 
   methods: {
+    switchLang(lang) {
+      setLocale(lang)
+      this.currentLang = lang
+    },
+
     navigateTo(activeTab, routeName) {
       this.setActive(activeTab)
       this.$router.push({ name: routeName })
@@ -173,7 +193,6 @@ export default {
     },
 
     async handleLogout() {
-      console.log('Logout')
       //this.$store.dispatch('auth/logout')
       swAlert.confirmSubmit(
         '',
@@ -291,6 +310,42 @@ export default {
   align-items: center;
   gap: 15px;
   padding-right: 20px;
+}
+
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
+
+  &:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &--active {
+    color: #ffffff;
+    font-weight: 700;
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.lang-divider {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  line-height: 1;
 }
 
 .user-profile {

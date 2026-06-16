@@ -108,7 +108,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'

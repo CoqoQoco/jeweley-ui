@@ -396,7 +396,7 @@
 </template>
 
 <script>
-import modal from '@/components/modal/ModalView.vue'
+import modal from '@/components/modal/modal-view.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import Dropdown from 'primevue/dropdown'
 import swAlert from '@/services/alert/sweetAlerts.js'

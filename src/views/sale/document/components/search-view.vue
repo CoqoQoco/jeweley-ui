@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 
 const MONTHS = [
   { value: 1, label: 'มกราคม' },

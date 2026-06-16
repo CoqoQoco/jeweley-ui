@@ -158,8 +158,8 @@ import { warning, success } from '@/services/alert/sweetAlerts.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   name: 'GoldLossSlipModal',

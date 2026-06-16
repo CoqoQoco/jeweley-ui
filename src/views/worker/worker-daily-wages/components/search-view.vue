@@ -90,7 +90,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const CalendarGeneric = defineAsyncComponent(() => import('@/components/prime-vue/CalendarGeneric.vue'))
 const DropdownGeneric = defineAsyncComponent(() => import('@/components/prime-vue/DropdownGeneric.vue'))
 

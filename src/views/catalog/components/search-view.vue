@@ -1,57 +1,38 @@
 <template>
-  <div class="filter-container-searchBar">
-    <pageTitle
-      title="จัดการแคตตาล็อก"
-      description="สร้างและจัดการแคตตาล็อกสินค้าเครื่องประดับ"
-      :isShowBtnClose="false"
-      :isShowRightSlot="true"
-    >
-      <template #rightSlot>
-        <button class="btn btn-sm btn-main" @click="onCreate">
-          <span class="bi bi-journal-plus"></span> สร้าง catalog
-        </button>
-      </template>
-    </pageTitle>
-
-    <form @submit.prevent="onSubmit">
-      <div class="form-col-container">
-        <div>
-          <span class="title-text">รหัส</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.code"
-            placeholder="EX: CAT001"
-          />
-        </div>
-        <div>
-          <span class="title-text">ชื่อ</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.name"
-            placeholder="EX: New Collection..."
-          />
-        </div>
+  <SearchBarGeneric :title="$t('view.catalog.searchTitle')" @search="onSubmit" @clear="onClear">
+    <template #fields>
+      <div>
+        <span class="title-text">{{ $t('view.catalog.field.code') }}</span>
+        <InputTextGeneric
+          v-model.trim="form.code"
+          :placeholder="$t('view.catalog.placeholder.code')"
+          :bgInput="true"
+        />
       </div>
-
-      <div class="btn-submit-container">
-        <button class="btn btn-sm btn-green" type="submit">
-          <span><i class="bi bi-search"></i></span> ค้นหา
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="onClear">
-          <span><i class="bi bi-x-circle"></i></span> ล้าง
-        </button>
+      <div>
+        <span class="title-text">{{ $t('common.field.name') }}</span>
+        <InputTextGeneric
+          v-model.trim="form.name"
+          placeholder="EX: New Collection..."
+          :bgInput="true"
+        />
       </div>
-    </form>
+    </template>
 
-    <addView :isShow="isShow.add" @closeModal="closeModal"></addView>
-  </div>
+    <template #actions-right>
+      <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+      <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" @click="onClear" :title="$t('common.btn.clear')" />
+      <ButtonGeneric variant="main" icon="bi-journal-plus" class="ml-2" @click="onCreate" :label="$t('view.catalog.createBtn')" />
+    </template>
+  </SearchBarGeneric>
+
+  <addView :isShow="isShow.add" @closeModal="closeModal"></addView>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 import addView from '../modal/create-view.vue'
 
@@ -61,7 +42,9 @@ const interfaceIsShowModal = {
 
 export default {
   components: {
-    pageTitle,
+    SearchBarGeneric,
+    InputTextGeneric,
+    ButtonGeneric,
     addView
   },
   props: {
@@ -106,6 +89,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
 </style>

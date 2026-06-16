@@ -2,83 +2,61 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" width="550px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ `แก้ไข Catalog: ${model.code}` }}</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ `${$t('view.catalog.updateTitle')}: ${model.code}` }}</span>
       </template>
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-catalog-update">
           <div class="p-3">
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">รหัส</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="form.code"
-                  disabled
-                />
-              </div>
+              <FormFieldGeneric :label="$t('view.catalog.field.code')">
+                <InputTextGeneric v-model="form.code" :disabled="true" />
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ชื่อ TH <span class="text-danger">*</span></span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.catalog.field.nameTh')" :required="true">
+                <InputTextGeneric
                   v-model="form.nameTh"
-                  placeholder="EX: คอลเลคชันแหวนทอง"
-                  required
+                  :placeholder="$t('view.catalog.placeholder.nameTh')"
+                  :required="true"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">ชื่อ EN</span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.catalog.field.nameEn')">
+                <InputTextGeneric
                   v-model="form.nameEn"
-                  placeholder="EX: Gold Ring Collection"
+                  :placeholder="$t('view.catalog.placeholder.nameEn')"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">Header Label</span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.catalog.field.headerLabel')">
+                <InputTextGeneric
                   v-model="form.headerLabel"
-                  placeholder="EX: 18K RING"
+                  :placeholder="$t('view.catalog.placeholder.headerLabel')"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <span class="title-text">Collection Title</span>
-                <input
-                  type="text"
-                  class="form-control"
+              <FormFieldGeneric :label="$t('view.catalog.field.collectionTitle')">
+                <InputTextGeneric
                   v-model="form.collectionTitle"
-                  placeholder="EX: NEW COLLECTION 2025"
+                  :placeholder="$t('view.catalog.placeholder.collectionTitle')"
                 />
-              </div>
+              </FormFieldGeneric>
             </div>
           </div>
         </form>
       </template>
 
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="form-catalog-update">
-          <i class="bi bi-save"></i> บันทึก
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="form-catalog-update" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -86,9 +64,13 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import { useCatalogStore } from '@/stores/modules/api/catalog-store.js'
 
@@ -102,7 +84,7 @@ const interfaceForm = {
 }
 
 export default {
-  components: { modal },
+  components: { modal, InputTextGeneric, FormFieldGeneric, ButtonGeneric },
   props: {
     isShow: {
       type: Boolean,
@@ -153,14 +135,12 @@ export default {
       this.$emit('closeModal')
     },
     onSubmit() {
-      swAlert.confirmSubmit(
+      confirmThenSubmit(
         `${this.model.code} : ${this.form.nameTh}`,
-        'ยืนยันแก้ไข Catalog',
+        this.$t('view.catalog.confirm.update'),
         async () => {
           await this.submit()
-        },
-        null,
-        null
+        }
       )
     },
     async submit() {
@@ -181,16 +161,10 @@ export default {
       })
 
       if (res) {
-        swAlert.success(
-          ``,
-          ``,
-          async () => {
-            this.onClear()
-            this.$emit('closeModal', 'fetch')
-          },
-          null,
-          null
-        )
+        success(``, ``, async () => {
+          this.onClear()
+          this.$emit('closeModal', 'fetch')
+        })
       }
     },
     onClear() {
@@ -206,29 +180,5 @@ export default {
 
 .form-row {
   margin-bottom: 12px;
-}
-
-.form-field {
-  width: 100%;
-
-  .title-text {
-    display: block;
-    margin-bottom: 6px;
-  }
-}
-
-input.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
-  }
 }
 </style>

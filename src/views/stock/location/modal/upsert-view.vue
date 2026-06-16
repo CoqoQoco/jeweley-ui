@@ -125,7 +125,7 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const TYPE_OPTIONS = [
   { value: 'WAREHOUSE', label: 'คลัง' },

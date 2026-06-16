@@ -7,7 +7,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   components: {

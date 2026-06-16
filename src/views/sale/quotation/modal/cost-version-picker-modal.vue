@@ -112,7 +112,7 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { formatDecimal } from '@/services/utils/decimal.js'
 import dayjs from 'dayjs'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'CostVersionPickerModal',

@@ -106,7 +106,7 @@ import imgTempForm from '@/assets/manuals/move-location/04-temp-form.png'
 import imgConfirm from '@/assets/manuals/move-location/05-confirm.png'
 import imgSuccess from '@/assets/manuals/move-location/06-success.png'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'ManualView',

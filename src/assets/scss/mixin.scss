@@ -12,3 +12,58 @@
         left: 50%;
     }
 }
+
+@mixin card-base {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  background: var(--color-card-bg);
+  padding: var(--sp-xl);
+}
+
+@mixin input-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  line-height: var(--lh-sm);
+
+  &:focus {
+    border-color: var(--base-font-color);
+    box-shadow: none;
+    outline: none;
+  }
+}
+
+@mixin form-row-grid($cols: 2) {
+  display: grid;
+  gap: var(--sp-lg);
+
+  @if $cols == 2 {
+    grid-template-columns: 1fr 1fr;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  } @else if $cols == 4 {
+    grid-template-columns: repeat(4, 1fr);
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@mixin button-variant($bg, $fg: #fff) {
+  background-color: $bg;
+  color: $fg;
+
+  &:hover {
+    background-color: darken($bg, 5%);
+    color: $fg;
+  }
+}

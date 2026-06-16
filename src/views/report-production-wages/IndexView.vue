@@ -180,7 +180,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'

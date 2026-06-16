@@ -106,7 +106,7 @@ import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   name: 'FilterBar',

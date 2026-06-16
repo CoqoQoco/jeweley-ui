@@ -1,11 +1,15 @@
 ---
 name: responsive-web
-description: Responsive design สำหรับ Web (Tablet & Desktop) — ใช้เมื่อสร้าง web component ใหม่, จัด layout, หรือเลือก responsive class
+description: Responsive design สำหรับ Web (Tablet & Desktop) — breakpoint 1024px, utility classes จาก responsive-style/web — ใช้เมื่อสร้าง web component ใหม่, จัด layout, หรือเลือก responsive class — ห้ามเขียน media query เองสำหรับ layout ทั่วไป ใช้ utility/generic แทน; ดู design-system skill สำหรับ token spacing
 ---
 
 # Responsive Web Design
 
 **สำคัญ**: ออกแบบสำหรับ **Tablet และ Desktop เท่านั้น** — Mobile มี routes และ layout แยกต่างหาก
+
+**กฎ**: ห้ามเขียน media query เองสำหรับ layout ทั่วไป — ใช้ utility class จาก `responsive-style/web` หรือ generic components (`SectionCardGeneric`, `SearchBarGeneric`) ที่ handle responsive ภายในตัวแทน
+
+ดู `design-system` skill สำหรับ token spacing และ breakpoint 1024px ที่ใช้ใน mixins
 
 ## Breakpoints
 

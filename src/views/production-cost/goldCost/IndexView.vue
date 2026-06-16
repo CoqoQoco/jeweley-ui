@@ -172,7 +172,7 @@
 import { defineAsyncComponent } from 'vue'
 
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'

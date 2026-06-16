@@ -65,7 +65,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import Calendar from 'primevue/calendar'

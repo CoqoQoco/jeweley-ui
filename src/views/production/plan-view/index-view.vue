@@ -148,7 +148,7 @@
 <script>
 import TabMenu from 'primevue/tabmenu'
 
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'

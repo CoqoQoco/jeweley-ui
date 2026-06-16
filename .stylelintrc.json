@@ -1,0 +1,22 @@
+{
+  "customSyntax": "postcss-html",
+  "plugins": ["stylelint-declaration-strict-value"],
+  "ignoreFiles": [
+    "src/assets/scss/custom-style/**",
+    "node_modules/**",
+    "dist/**"
+  ],
+  "rules": {
+    "scale-unlimited/declaration-strict-value": [
+      ["/color/", "box-shadow"],
+      {
+        "ignoreValues": {
+          "/color/": ["transparent", "inherit", "currentColor", "initial", "unset", "none"],
+          "box-shadow": ["none", "inherit"]
+        },
+        "disableFix": true,
+        "severity": "warning"
+      }
+    ]
+  }
+}

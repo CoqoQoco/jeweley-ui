@@ -167,9 +167,9 @@
 import { defineAsyncComponent } from 'vue'
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
-// const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitleMain.vue'))
+// const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title-main.vue'))
 
-import pageTitle from '@/components/custom/PageTitleMain.vue'
+import pageTitle from '@/components/custom/page-title-main.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'

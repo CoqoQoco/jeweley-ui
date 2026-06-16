@@ -64,9 +64,12 @@ src/
 | ❌ ห้าม `this.loading = true/false` | axios-helper.js จัดการ loading อัตโนมัติ |
 | ❌ ห้ามใช้ `alert()` / `confirm()` native | ใช้ sweetAlerts service เสมอ |
 | ❌ ห้าม modify `custom-style/standard-form.scss` | Legacy — ห้ามแตะ |
-| ✅ ใช้ kebab-case ชื่อไฟล์ component เสมอ | Project convention |
-| ✅ ตรวจ generic-components ก่อนใช้ PrimeVue ตรงๆ | Reusability |
+| ✅ ใช้ kebab-case ชื่อไฟล์ component เสมอ | ยกเว้น `*Generic.vue` และ `File*.vue` |
+| ✅ ตรวจ native-call-policy ก่อนเขียน input/button/table | ใช้ generic component แทนเสมอ |
 | ✅ ตาราง DataTable ต้องใช้ `DataTableWithPaging` เท่านั้น | ห้ามใช้ `<table>` HTML หรือ PrimeVue DataTable ตรงๆ |
+| ❌ ห้าม hardcode ข้อความไทยในโค้ดใหม่ | ใช้ `$t('common.btn.*')` / `$t('common.field.*')` |
+| ❌ ห้าม hardcode สี/px ใน SCSS ใหม่ | ใช้ token `var(--sp-*)`, `var(--radius-*)`, `var(--base-*)` |
+| ✅ Migration loop: แตะหน้าไหน → ใช้ token+generic+$t+composable ในไฟล์นั้น | ดู ui-implementer agent |
 
 ---
 
@@ -84,10 +87,15 @@ src/
 | @.claude/skills/responsive-web/SKILL.md | Web layout, responsive classes |
 | @.claude/skills/mobile-dev/SKILL.md | Mobile component, iOS safe area |
 | @.claude/skills/image-system/SKILL.md | แสดงรูป, PDF images |
-| @.claude/skills/generic-components/SKILL.md | CalendarGeneric, AutoComplete |
+| @.claude/skills/generic-components/SKILL.md | CalendarGeneric, AutoComplete, MultiSelectGeneric, CheckboxGeneric + Generic UI ชุดใหม่ |
 | @.claude/skills/modal-system/SKILL.md | สร้าง Modal, popup, dialog |
 | @.claude/skills/pdf-system/SKILL.md | สร้าง PDF, export เอกสาร |
 | @.claude/skills/excel-system/SKILL.md | export Excel, .xlsx, ExcelHelper, document builder |
 | @.claude/skills/ui-layout/SKILL.md | Page header, card section, form row, button spacing |
 | @.claude/skills/user-manual/SKILL.md | สร้างปุ่มคู่มือ + manual modal พร้อม screenshot |
 | @.claude/skills/chrome-mcp-testing/SKILL.md | ทดสอบ UI ด้วย chrome MCP, สร้าง/รัน test case, verify feature, reproduce bug |
+| @.claude/skills/design-system/SKILL.md | Token spacing/radius/shadow/typography/color, mixins, button standard |
+| @.claude/skills/native-call-policy/SKILL.md | ตาราง ❌→✅ ทุก native element/PrimeVue/alert/localStorage |
+| @.claude/skills/i18n-system/SKILL.md | namespace common.btn/field/label, $t(), setLocale, เพิ่ม key ใหม่ |
+| @.claude/skills/composables/SKILL.md | useDataTablePaging mixin, confirmThenSubmit helper |
+| @.claude/skills/code-structure/SKILL.md | naming kebab-case, folder layout, ที่อยู่ generic/composable/services |

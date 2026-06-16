@@ -1,7 +1,7 @@
 $base-color: #e0e0e0;
 $base-sub-color: #393939;
 $base-font-color: #921313;
-$base-font-sub-color: #921313;
+$base-font-sub-color: #360505;
 $base-green: #038387;
 $base-warning: #fabc3f;
 $base-red: #ff4d4d;
@@ -12,17 +12,21 @@ $base-red: #ff4d4d;
 //font-size
 $base-font-size: 14px;
 
-// $size-s: 0.5em;
-// $size-sm: 0.75em;
-// $size-m: 1em;
-// $size-ml: 1.25em;
-// $size-l: 1.5em;
-// $size-lx: 1.75em;
-// $size-x: 2em;
+// Spacing tokens
+$sp-xs: 4px;
+$sp-sm: 8px;
+$sp-md: 12px;
+$sp-lg: 16px;
+$sp-xl: 20px;
+$sp-2xl: 24px;
+
+// Radius tokens
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
 
 :root {
   --base-color: #e0e0e0;
-  --base-sub-color: #393939;
   --base-sub-color: #393939;
   --base-font-color: #921313;
   --base-font-sub-color: #360505;
@@ -30,4 +34,36 @@ $base-font-size: 14px;
   --base-warning: #fabc3f;
   --base-red: #ff4d4d;
   --base-font-size: 14px;
+
+  // Spacing
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 12px;
+  --sp-lg: 16px;
+  --sp-xl: 20px;
+  --sp-2xl: 24px;
+
+  // Radius
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  // Shadow
+  --shadow-sm: rgba(0, 0, 0, 0.06) 0 2px 8px;
+  --shadow-md: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  --shadow-lg: rgba(0, 0, 0, 0.15) 0 8px 24px;
+
+  // Typography
+  --fs-sm: 12px;
+  --fs-base: 14px;
+  --fs-lg: 17px;
+  --fs-xl: 20px;
+  --lh-sm: 1.4;
+  --lh-md: 1.6;
+  --lh-lg: 1.8;
+
+  // Semantic color
+  --color-border: #e0e0e0;
+  --color-card-bg: #ffffff;
+  --color-highlight-bg: #fdf2f2;
 }

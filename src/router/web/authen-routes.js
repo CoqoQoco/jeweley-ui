@@ -20,8 +20,8 @@ const WorkerGoldLossSlipList = () => import('@/views/worker/gold-loss-slip-list/
 
 // ----- master ------ //
 const GemView = () => import('@/views/master/gem/index-view.vue')
-const GemShapeView = () => import('@/views/master/gemShape/index-view.vue')
-const GoldSizeView = () => import('@/views/master/goldSize/index-view.vue')
+const GemShapeView = () => import('@/views/master/gem-shape/index-view.vue')
+const GoldSizeView = () => import('@/views/master/gold-size/index-view.vue')
 const ProductTypeView = () => import('@/views/master/productType/index-view.vue')
 const ZillView = () => import('@/views/master/zill/index-view.vue')
 const DiamondGrade = () => import('@/views/master/diamond-grade/index-view.vue')

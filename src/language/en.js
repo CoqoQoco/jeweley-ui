@@ -2,11 +2,19 @@
 import breadcrumb from './breadcrumb/en.js'
 import alerts from './alerts/en.js'
 import button from './button/en.js'
+import common from './common/en.js'
+
+//view
+import pickinglist from './view/pickinglist/en.js'
+import catalog from './view/catalog/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
   button: { ...button },
+  common: { ...common },
   view: {
+    pickinglist: { ...pickinglist },
+    catalog: { ...catalog },
     production: {
       dashboard: {
         title: 'Production Dashboard',
@@ -71,13 +79,13 @@ export default {
           allGroups: 'All Groups',
           allShapes: 'All Shapes',
           allGrades: 'All Grades',
-          
+
           // Tabs
           overview: 'Overview',
           today: 'Today',
           weekly: 'Weekly',
           monthly: 'Monthly',
-          
+
           // Main stats
           totalGemTypes: 'Total Gem Types',
           uniqueGemVarieties: 'Unique gem varieties',
@@ -89,12 +97,12 @@ export default {
           inventoryValue: 'Inventory value',
           lowStockItems: 'Low Stock Items',
           outOfStock: 'Out of stock',
-          
+
           // Availability
           availability: 'Availability Status',
           available: 'Available',
           onProcess: 'On Process',
-          
+
           // Charts and tables
           categoryBreakdown: 'Category Breakdown',
           topMovements: 'Top Movements',
@@ -103,7 +111,7 @@ export default {
           category: 'Category',
           transactions: 'Transactions',
           totalMoved: 'Total Moved',
-          
+
           // Today report
           todayTransactions: "Today's Transactions",
           priceChanges: 'Price Changes',
@@ -118,16 +126,16 @@ export default {
           createDate: 'Create Date',
           type: 'Type',
           running: 'Running No.',
-          
+
           // Last activities
           lastActivities: 'Last Activities',
           noActivities: 'No activities',
-          
+
           // Weekly report
           weeklyTransactions: 'Weekly Transactions',
           weeklyAnalysis: 'Weekly Analysis',
           noWeeklyData: 'No weekly data',
-          
+
           // Monthly report
           monthlyTransactions: 'Monthly Transactions',
           monthlyTransactionSummaries: 'Monthly Transaction Summaries',
@@ -150,7 +158,7 @@ export default {
           borrow: 'Borrow',
           return: 'Return',
           grams: 'g',
-          
+
           // Monthly specific
           monthSelection: 'Month Selection',
           selectedPeriod: 'Selected Period',
@@ -168,14 +176,14 @@ export default {
           weightChart: 'Weight Chart',
           transactionDetails: 'Transaction Details',
           items: 'items',
-          
+
           // No data messages
           loadingChart: 'Loading data...',
           noData: 'No data to display',
           noMovements: 'No movements',
           noPriceChanges: 'No price changes',
           noTodayTransactions: 'No transactions today',
-          
+
           // Coming soon
           weeklyReportComingSoon: 'Weekly Report Coming Soon',
           monthlyReportComingSoon: 'Monthly Report Coming Soon'

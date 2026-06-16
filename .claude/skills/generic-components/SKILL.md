@@ -1,21 +1,37 @@
 ---
 name: generic-components
-description: Generic PrimeVue wrapper components — ตรวจสอบก่อนใช้ PrimeVue ตรงๆ และสร้าง generic wrapper ถ้ายังไม่มี
+description: Generic wrapper components ทั้งหมด — ตรวจก่อนใช้ native HTML หรือ PrimeVue ตรงๆ และสร้าง generic wrapper ถ้ายังไม่มี — ดู native-call-policy skill สำหรับตารางครบ
 ---
 
-# Generic PrimeVue Components
+# Generic Components
 
-**กฎ**: ก่อนใช้ PrimeVue component ตรงๆ → ตรวจสอบว่ามี generic wrapper ใน `src/components/prime-vue/` แล้วหรือยัง
+**กฎ**: ก่อนเขียน native element หรือ PrimeVue ตรงๆ → ตรวจตารางนี้ก่อน (ดู `native-call-policy` skill สำหรับตารางครบ)
 
 ---
 
-## Components ที่มีอยู่แล้ว
+## Generic UI Components (`src/components/generic/`)
+
+โค้ดใหม่ใช้ component เหล่านี้แทน native element — ใช้ `ButtonGeneric` แทน `<button>`, `InputTextGeneric` แทน `<input>` เสมอ
+
+| Component | ไฟล์ | หน้าที่ |
+|---|---|---|
+| `InputTextGeneric` | `InputTextGeneric.vue` | wrap `<input class="form-control">` — padding sync กับ DropdownGeneric; props: `modelValue`, `type`, `placeholder`, `disabled`, `readonly`, `required`, `trim`, `bgInput`; emits: `update:modelValue`, `blur`, `focus` |
+| `TextareaGeneric` | `TextareaGeneric.vue` | wrap `<textarea class="form-control">` — resize: vertical; props: `modelValue`, `rows`(3), `placeholder`, `disabled`, `required`, `maxlength`; emits: `update:modelValue` |
+| `ButtonGeneric` | `ButtonGeneric.vue` | wrap `<button class="btn btn-sm btn-*">` — variant map: main/outline/green/red/dark/sub-main; props: `variant`, `icon`, `label`, `type`, `disabled`, `loading`, `block`; emits: `click` |
+| `FormFieldGeneric` | `FormFieldGeneric.vue` | label + required marker + error msg + slot; props: `label`, `required`, `error` |
+| `PageHeaderGeneric` | `PageHeaderGeneric.vue` | back btn วงกลม + title + border-bottom; props: `title`, `backRoute`; slot: `#actions` (ปุ่มฝั่งขวา เช่นหน้า detail/edit — ถ้าไม่ส่ง layout เหมือนเดิม); emits: `back` |
+| `SearchBarGeneric` | `SearchBarGeneric.vue` | search bar 4-section (pageTitle + fields + actions); props: `title`; slots: `#fields`, `#actions-left`, `#actions-right`; emits: `search`, `clear` |
+| `SectionCardGeneric` | `SectionCardGeneric.vue` | card: card-base mixin + optional pageTitle; props: `title`; slot: default |
+
+## PrimeVue Generic Components (`src/components/prime-vue/`)
 
 | Component | ไฟล์ | หน้าที่ |
 |---|---|---|
 | `CalendarGeneric` | `CalendarGeneric.vue` | Date picker พร้อม mobile-friendly styling |
 | `AutoCompleteGeneric` | `AutoCompleteGeneric.vue` | Autocomplete รองรับ API mode + static list |
 | `DropdownGeneric` | `DropdownGeneric.vue` | Dropdown select รองรับ options list + showClear |
+| `MultiSelectGeneric` | `MultiSelectGeneric.vue` | Multi-select พร้อม chip display + filter; props: `modelValue`, `options`, `optionLabel`('label'), `optionValue`(null), `placeholder`, `showClear`, `filter`(true), `disabled`; emits: `update:modelValue` |
+| `CheckboxGeneric` | `CheckboxGeneric.vue` | Checkbox รองรับ binary (default) และ array mode; props: `modelValue`, `value`, `binary`(true), `label`, `disabled`; emits: `update:modelValue` |
 | `ImagePreview` | `ImagePreview.vue` | แสดงรูปจาก Azure Blob (direct URL) |
 | `ImagePreviewEmit` | `ImagePreviewEmit.vue` | แสดงรูปพร้อม emit blobPath |
 | `DataTableWithPaging` | `DataTableWithPaging.vue` | DataTable พร้อม pagination |
@@ -112,6 +128,108 @@ Props สำคัญ:
 Import:
 ```javascript
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+```
+
+---
+
+## MultiSelectGeneric
+
+```vue
+<MultiSelectGeneric
+  v-model="form.tags"
+  :options="tagOptions"
+  optionLabel="label"
+  optionValue="value"
+  placeholder="เลือกแท็ก"
+  :filter="true"
+/>
+```
+
+Props สำคัญ:
+- `modelValue` — Array ของ value ที่เลือก
+- `options` — Array ของ objects
+- `optionLabel` — field ที่แสดง (default: `'label'`)
+- `optionValue` — field ที่ใช้เป็น value (default: `null` = full object)
+- `filter` — แสดง search filter (default: `true`)
+- `showClear` — ปุ่มล้างค่า (default: `false`)
+- แสดงผลแบบ `display="chip"` อัตโนมัติ
+
+Import:
+```javascript
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+```
+
+---
+
+## CheckboxGeneric
+
+### Binary mode (default — true/false)
+
+```vue
+<CheckboxGeneric v-model="form.isActive" label="เปิดใช้งาน" />
+```
+
+### Array mode (checklist)
+
+```vue
+<CheckboxGeneric
+  v-model="form.selectedIds"
+  :value="item.id"
+  :binary="false"
+  :label="item.name"
+/>
+```
+
+Props สำคัญ:
+- `modelValue` — Boolean เมื่อ `binary=true`, Array เมื่อ `binary=false`
+- `value` — ค่าที่ push เข้า array เมื่อ `binary=false`
+- `binary` — default: `true`
+- `label` — label ข้างๆ checkbox
+- สีใช้ `var(--base-font-color)` อัตโนมัติ
+
+Import:
+```javascript
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+```
+
+---
+
+## ตัวอย่าง Form ที่ใช้ Generic ครบ
+
+**✅ Good — ใช้ generic ครบ:**
+```vue
+<template>
+  <SectionCardGeneric title="ข้อมูลสินค้า">
+    <div class="form-row two-col">
+      <FormFieldGeneric :label="$t('common.field.name')" :required="true">
+        <InputTextGeneric v-model="form.name" />
+      </FormFieldGeneric>
+      <FormFieldGeneric :label="$t('common.field.type')">
+        <DropdownGeneric v-model="form.type" :options="typeOptions" :showClear="true" />
+      </FormFieldGeneric>
+    </div>
+    <FormFieldGeneric label="แท็ก">
+      <MultiSelectGeneric v-model="form.tags" :options="tagOptions" optionLabel="name" />
+    </FormFieldGeneric>
+    <CheckboxGeneric v-model="form.isActive" label="เปิดใช้งาน" />
+    <div class="mt-3">
+      <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" @click="onSave" />
+      <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="onCancel" />
+    </div>
+  </SectionCardGeneric>
+</template>
+```
+
+**❌ Bad — native + hardcode ไทย:**
+```vue
+<template>
+  <div class="section-card">
+    <span class="title-text">ชื่อ <span class="text-danger">*</span></span>
+    <input class="form-control" v-model="form.name" />
+    <MultiSelect v-model="form.tags" :options="tagOptions" />
+    <button class="btn btn-sm btn-main" @click="onSave">บันทึก</button>
+  </div>
+</template>
 ```
 
 ---

@@ -90,7 +90,7 @@
 </template>
 
 <script>
-import pageTitle from '@/components/custom/PageTitleMain.vue'
+import pageTitle from '@/components/custom/page-title-main.vue'
 
 export default {
   name: 'SearchBar',

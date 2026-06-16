@@ -76,7 +76,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 //import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 //import api from '@/axios/axios-helper.js'
 
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 import createView from '../modal/create-view.vue'
 
 const interfaceIsShow = {

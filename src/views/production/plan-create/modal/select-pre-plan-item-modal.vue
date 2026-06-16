@@ -63,7 +63,7 @@ import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
 export default {

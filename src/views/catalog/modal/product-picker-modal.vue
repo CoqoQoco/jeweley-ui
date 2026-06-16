@@ -7,23 +7,19 @@
       :isShowActionPart="true"
     >
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">เพิ่มสินค้าเข้า Catalog</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.catalog.productPickerTitle') }}</span>
       </template>
 
       <template #content>
         <div class="p-3">
           <div class="search-row mb-3">
             <div class="input-group">
-              <input
-                class="form-control"
-                type="text"
+              <InputTextGeneric
                 v-model="searchText"
-                placeholder="ค้นหาด้วยรหัสสินค้า, ชื่อสินค้า..."
+                :placeholder="$t('view.catalog.placeholder.searchProduct')"
                 @keyup.enter="fetchProducts"
               />
-              <button type="button" class="btn btn-green" @click="fetchProducts">
-                <i class="bi bi-search"></i> ค้นหา
-              </button>
+              <ButtonGeneric variant="green" icon="bi-search" class="ml-2" @click="fetchProducts" />
             </div>
           </div>
 
@@ -47,18 +43,14 @@
       </template>
 
       <template #action>
-        <button
-          :class="['btn btn-sm', !selectedItems.length ? 'btn-secondary' : 'btn-main']"
-          type="button"
+        <ButtonGeneric
+          :variant="!selectedItems.length ? 'dark' : 'main'"
+          icon="bi-check-lg"
+          :label="`${$t('view.catalog.btn.addSelected')} (${selectedItems.length})`"
           :disabled="!selectedItems.length"
           @click="onConfirm"
-        >
-          <i class="bi bi-check-lg mr-1"></i>
-          เพิ่มสินค้าที่เลือก ({{ selectedItems.length }})
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
-        </button>
+        />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -66,21 +58,29 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const BaseDataTable = defineAsyncComponent(() =>
   import('@/components/prime-vue/DataTableWithPaging.vue')
 )
 
 import { useCatalogStore } from '@/stores/modules/api/catalog-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
     modal,
-    BaseDataTable
+    BaseDataTable,
+    InputTextGeneric,
+    ButtonGeneric
   },
+
+  mixins: [dataTablePaging],
 
   props: {
     isShow: {
@@ -107,41 +107,42 @@ export default {
     }
   },
 
-  data() {
-    return {
-      searchText: null,
-      take: 10,
-      skip: 0,
-      sort: [],
-      productData: { data: [], total: 0 },
-      selectedItems: [],
-
-      columns: [
+  computed: {
+    columns() {
+      return [
         {
           field: 'productNumber',
-          header: 'รหัสสินค้า',
+          header: this.$t('view.catalog.field.productNumber'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productNameEn',
-          header: 'ชื่อ EN',
+          header: this.$t('view.catalog.field.nameEn'),
           sortable: true,
           minWidth: '180px'
         },
         {
           field: 'productNameTh',
-          header: 'ชื่อ TH',
+          header: this.$t('view.catalog.field.nameTh'),
           sortable: true,
           minWidth: '180px'
         },
         {
           field: 'productTypeName',
-          header: 'ประเภท',
+          header: this.$t('view.catalog.field.productType'),
           sortable: true,
           minWidth: '130px'
         }
       ]
+    }
+  },
+
+  data() {
+    return {
+      searchText: null,
+      productData: { data: [], total: 0 },
+      selectedItems: []
     }
   },
 
@@ -169,22 +170,6 @@ export default {
       this.selectedItems = newSelection
     },
 
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchProducts()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchProducts()
-    },
-
     async fetchProducts() {
       await this.productStore.fetchDataSearch({
         take: this.take,
@@ -202,17 +187,19 @@ export default {
       }
     },
 
+    fetchData() {
+      this.fetchProducts()
+    },
+
     onConfirm() {
       if (!this.selectedItems.length) return
 
-      swAlert.confirmSubmit(
-        `เพิ่มสินค้า ${this.selectedItems.length} รายการ`,
-        'ยืนยันเพิ่มสินค้าเข้า catalog',
+      confirmThenSubmit(
+        this.$t('view.catalog.btn.addSelected') + ` ${this.selectedItems.length} ` + this.$t('common.label.all').toLowerCase(),
+        this.$t('view.catalog.confirm.addProducts'),
         async () => {
           await this.submitAddProducts()
-        },
-        null,
-        null
+        }
       )
     },
 
@@ -227,7 +214,7 @@ export default {
       })
 
       if (res) {
-        swAlert.success(``, ``, async () => {
+        success(``, ``, async () => {
           this.onClear()
           this.$emit('closeModal', 'fetch')
         })
@@ -243,11 +230,7 @@ export default {
 .search-row {
   .input-group {
     display: flex;
-    gap: 8px;
-
-    input {
-      flex: 1;
-    }
+    align-items: center;
   }
 }
 </style>

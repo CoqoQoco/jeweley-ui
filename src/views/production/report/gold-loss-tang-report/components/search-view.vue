@@ -82,7 +82,7 @@
 <script>
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'

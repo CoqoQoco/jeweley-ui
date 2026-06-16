@@ -928,7 +928,7 @@ import Calendar from 'primevue/calendar'
 
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
-import InputWithButton from '@/components/input/InputWithButton.vue'
+import InputWithButton from '@/components/input/input-with-button.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 
 import ConfirmCreatePdfView from '@/views/sale/quotation/modal/confirm-create-pdf-view.vue'
@@ -948,7 +948,7 @@ import { ceilToInteger } from '@/services/utils/decimal.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
-import ExcelExportConfirmModal from '@/components/modal/ExcelExportConfirmModal.vue'
+import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import GoldCalculatorModal from '@/components/modal/gold-calculator-modal.vue'
 
 const interfaceForm = {

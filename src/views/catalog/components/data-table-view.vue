@@ -10,33 +10,32 @@
     >
       <template #actionsTemplate="{ data: rowData }">
         <div class="btn-action-container">
-          <button
-            class="btn btn-sm btn-green"
-            title="จัดการสินค้า"
+          <ButtonGeneric
+            variant="green"
+            icon="bi-list-ul"
+            :title="$t('view.catalog.btn.manageProduct')"
             @click="onManageProducts(rowData)"
-          >
-            <i class="bi bi-list-ul"></i>
-          </button>
-          <button
-            class="btn btn-sm btn-main ml-2"
-            title="แก้ไข"
+          />
+          <ButtonGeneric
+            variant="main"
+            icon="bi-pencil-square"
+            class="ml-2"
+            :title="$t('common.btn.edit')"
             @click="onUpdate(rowData)"
-          >
-            <i class="bi bi-pencil-square"></i>
-          </button>
-          <button
-            class="btn btn-sm btn-red ml-2"
-            title="ลบ"
+          />
+          <ButtonGeneric
+            variant="red"
+            icon="bi-trash"
+            class="ml-2"
+            :title="$t('common.btn.delete')"
             @click="onDelete(rowData)"
-          >
-            <i class="bi bi-trash"></i>
-          </button>
+          />
         </div>
       </template>
 
       <template #isActiveTemplate="{ data: rowData }">
         <span :class="rowData.isActive ? 'badge-active' : 'badge-inactive'">
-          {{ rowData.isActive ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
+          {{ rowData.isActive ? $t('view.catalog.status.active') : $t('view.catalog.status.inactive') }}
         </span>
       </template>
     </BaseDataTable>
@@ -51,10 +50,12 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
 import { useCatalogStore } from '@/stores/modules/api/catalog-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 
 import modalUpd from '../modal/update-view.vue'
 
@@ -65,8 +66,12 @@ const interfaceIsShowModal = {
 export default {
   components: {
     BaseDataTable,
+    ButtonGeneric,
     modalUpd
   },
+
+  mixins: [dataTablePaging],
+
   props: {
     modelForm: {
       type: Object,
@@ -84,6 +89,58 @@ export default {
   computed: {
     form() {
       return this.modelForm || {}
+    },
+    columns() {
+      return [
+        {
+          field: 'actions',
+          header: '',
+          sortable: false,
+          width: '130px'
+        },
+        {
+          field: 'code',
+          header: this.$t('view.catalog.field.code'),
+          sortable: true,
+          minWidth: '120px'
+        },
+        {
+          field: 'nameTh',
+          header: this.$t('view.catalog.field.nameTh'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'nameEn',
+          header: this.$t('view.catalog.field.nameEn'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'headerLabel',
+          header: this.$t('view.catalog.field.headerLabel'),
+          sortable: true,
+          minWidth: '150px'
+        },
+        {
+          field: 'collectionTitle',
+          header: this.$t('view.catalog.field.collectionTitle'),
+          sortable: true,
+          minWidth: '180px'
+        },
+        {
+          field: 'productCount',
+          header: this.$t('view.catalog.field.productCount'),
+          sortable: true,
+          minWidth: '120px'
+        },
+        {
+          field: 'createBy',
+          header: this.$t('common.field.createBy'),
+          sortable: true,
+          minWidth: '120px'
+        }
+      ]
     }
   },
 
@@ -95,89 +152,12 @@ export default {
   data() {
     return {
       isShow: { ...interfaceIsShowModal },
-
-      take: 10,
-      skip: 0,
-      sort: [],
       data: {},
-      dataUpdate: {},
-
-      columns: [
-        {
-          field: 'actions',
-          header: '',
-          sortable: false,
-          width: '130px'
-        },
-        {
-          field: 'code',
-          header: 'รหัส',
-          sortable: true,
-          minWidth: '120px'
-        },
-        {
-          field: 'nameTh',
-          header: 'ชื่อ TH',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'nameEn',
-          header: 'ชื่อ EN',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'headerLabel',
-          header: 'Header Label',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'collectionTitle',
-          header: 'Collection Title',
-          sortable: true,
-          minWidth: '180px'
-        },
-        {
-          field: 'productCount',
-          header: 'จำนวนสินค้า',
-          sortable: true,
-          minWidth: '120px'
-        },
-        {
-          field: 'createBy',
-          header: 'สร้างโดย',
-          sortable: true,
-          minWidth: '120px'
-        }
-      ]
+      dataUpdate: {}
     }
   },
+
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
-    formatDate(date) {
-      return formatDate(date)
-    },
-
     closeModal(event) {
       this.isShow = { ...interfaceIsShowModal }
 
@@ -197,14 +177,12 @@ export default {
     },
 
     onDelete(data) {
-      swAlert.confirmSubmit(
+      confirmThenSubmit(
         `${data.code} : ${data.nameTh}`,
-        'ยืนยันลบ catalog',
+        this.$t('view.catalog.confirm.delete'),
         async () => {
           await this.submitDelete(data.id)
-        },
-        null,
-        null
+        }
       )
     },
 
@@ -212,7 +190,7 @@ export default {
       const res = await this.catalogStore.fetchDelete({ id: id })
 
       if (res) {
-        swAlert.success(``, ``, async () => {
+        success(``, ``, async () => {
           await this.fetchData()
         })
       }
@@ -244,15 +222,15 @@ export default {
   background-color: var(--base-green);
   color: white;
   padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
 }
 
 .badge-inactive {
   background-color: #6c757d;
   color: white;
   padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
 }
 </style>

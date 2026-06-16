@@ -101,7 +101,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const gemBarcodeDemo = defineAsyncComponent(() =>
   import('@/components/custom/barcode-demo/gem-barcode-demo.vue')
 )

@@ -170,7 +170,7 @@
 <script>
 import dayjs from 'dayjs'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {

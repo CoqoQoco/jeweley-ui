@@ -30,7 +30,7 @@ vi.mock('@/stores/modules/api/customer/customer-detail-store.js', () => ({
   }))
 }))
 
-vi.mock('@/components/modal/ModalView.vue', () => ({
+vi.mock('@/components/modal/modal-view.vue', () => ({
   default: {
     name: 'ModalView',
     template: '<div><slot name="content" /></div>',

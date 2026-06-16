@@ -70,7 +70,7 @@
 import { defineAsyncComponent } from 'vue'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'GoldCalculatorModal',

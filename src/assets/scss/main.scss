@@ -1,4 +1,5 @@
 @import './variable.scss';
+@import './mixin.scss';
 html {
   scroll-behavior: smooth;
 }
@@ -48,13 +49,9 @@ button {
 }
 
 button.btn-main {
-  background-color: $base-font-color;
-  color: white;
-
-  &:hover {
-    background-color: darken(#921313, 5%);
-  }
+  @include button-variant($base-font-color);
 }
+
 button.btn-outline-main {
   background-color: #ffff;
   color: var(--base-font-color);
@@ -79,49 +76,28 @@ button.btn-outline-main {
 
   &:disabled {
     opacity: 0.6;
-    //cursor: not-allowed;
-    //border-color: lighten($base-font-color, 20%);
-    //color: lighten($base-font-color, 20%);
 
     &:hover {
-      background-color: transparent; // ไม่เปลี่ยนสีพื้นหลังเมื่อ hover บนปุ่มที่ disabled
-      color: lighten($base-font-color, 20%); // ไม่เปลี่ยนสีข้อความ
+      background-color: transparent;
+      color: lighten($base-font-color, 20%);
     }
   }
 }
 
 button.btn-sub-main {
-  background-color: $base-font-sub-color;
-  color: white;
+  @include button-variant($base-font-color);
 }
+
 button.btn-green {
-  background-color: $base-green;
-  color: white;
-
-  &:hover {
-    background-color: darken(#038387, 5%);
-  }
+  @include button-variant($base-green);
 }
+
 button.btn-red {
-  background-color: $base-red;
-  color: white;
-
-  &:hover {
-    background-color: darken(#ff4d4d, 5%);
-  }
+  @include button-variant($base-red);
 }
 
-button.btn-main:hover {
-  color: white;
-}
-button.btn-sub-main:hover {
-  color: white;
-}
-button.btn-green:hover {
-  color: white;
-}
-button.btn-red:hover {
-  color: white;
+button.btn-dark {
+  @include button-variant($base-sub-color);
 }
 
 input {

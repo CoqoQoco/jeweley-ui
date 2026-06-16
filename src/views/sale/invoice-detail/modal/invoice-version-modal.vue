@@ -302,7 +302,7 @@ import Column from 'primevue/column'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'InvoiceVersionModal',

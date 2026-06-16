@@ -55,7 +55,7 @@ import { defineAsyncComponent } from 'vue'
 import { useSaleDocumentStore } from '@/stores/modules/api/sale/sale-document-store.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'SaleDocumentTagModal',

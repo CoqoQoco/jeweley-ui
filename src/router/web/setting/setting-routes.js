@@ -4,7 +4,7 @@ import Layout from '@/layout/web/LayoutDashboard.vue'
 import account from '@/views/setting/user-account/index-view.vue'
 import EditAccount from '@/views/setting/edit-account/index-view.vue'
 import EditAccountView from '@/views/setting/edit-account/view/account-view.vue'
-import testApi from '@/views/Admin/dev/call-api/index-view.vue'
+import testApi from '@/views/admin/dev/call-api/index-view.vue'
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [

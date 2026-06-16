@@ -153,7 +153,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import Calendar from 'primevue/calendar'
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 

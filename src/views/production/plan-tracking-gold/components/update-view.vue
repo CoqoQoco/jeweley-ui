@@ -597,8 +597,8 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'

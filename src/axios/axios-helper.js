@@ -115,7 +115,6 @@ const configureInterceptors = (instance) => {
 
       // Handle canceled requests
       if (axios.isCancel(error)) {
-        console.log('Request canceled:', error.message)
         return Promise.reject(error)
       }
 
@@ -154,14 +153,11 @@ const configureInterceptors = (instance) => {
               error = 'User is inactive or not found'
             }
 
-            console.log('401error', error)
-
             swAlert.error(
               msg,
               `${error ?? `Unauthorise`}`,
               async () => {
                 await authStore.logout()
-                console.log('router', router)
                 router.push('/login')
               },
               stacktrace

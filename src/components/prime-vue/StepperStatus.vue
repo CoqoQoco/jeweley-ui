@@ -32,7 +32,7 @@ import Stepper from 'primevue/stepper'
 
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import StepperPanel from 'primevue/stepperpanel'
 

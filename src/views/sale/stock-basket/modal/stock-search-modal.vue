@@ -100,7 +100,7 @@ import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceSearchForm = {
   stockNumber: null,

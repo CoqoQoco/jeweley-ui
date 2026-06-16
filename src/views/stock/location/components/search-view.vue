@@ -80,7 +80,7 @@
 import { defineAsyncComponent } from 'vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 const TYPE_OPTIONS = [
   { value: 'WAREHOUSE', label: 'คลัง' },

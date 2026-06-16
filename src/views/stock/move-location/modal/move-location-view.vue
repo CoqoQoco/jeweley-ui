@@ -113,7 +113,7 @@ import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const TYPE_OPTIONS = [
   { value: 'WAREHOUSE', label: 'คลัง' },

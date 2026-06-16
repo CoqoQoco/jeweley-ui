@@ -195,9 +195,17 @@ export class ProductCatalogPdfBuilder {
 
   // ---------- helpers ----------
 
-  getSocialIcon(letter) {
-    const svg = `<svg width="14" height="14" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="${CATALOG_MAROON}"/><text x="7" y="10.5" font-size="8" fill="#fff" text-anchor="middle" font-family="Helvetica">${letter}</text></svg>`
-    return { svg, width: 14, height: 14 }
+  getSocialIcon(type) {
+    let innerSvg
+    if (type === 'facebook') {
+      innerSvg = `<text x="8" y="12" font-size="10" fill="#fff" text-anchor="middle" font-family="Helvetica" font-weight="bold">f</text>`
+    } else if (type === 'instagram') {
+      innerSvg = `<rect x="4" y="4" width="8" height="8" rx="2" fill="none" stroke="#fff" stroke-width="1.2"/><circle cx="8" cy="8" r="2" fill="none" stroke="#fff" stroke-width="1.2"/><circle cx="11" cy="5" r="0.7" fill="#fff"/>`
+    } else {
+      innerSvg = `<rect x="3.5" y="5" width="9" height="6" rx="1" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M3.5 5.5 L8 9 L12.5 5.5" fill="none" stroke="#fff" stroke-width="1.2"/>`
+    }
+    const svg = `<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="16" height="16" rx="4" fill="${CATALOG_MAROON}"/>${innerSvg}</svg>`
+    return { svg, width: 16, height: 16 }
   }
 
   // ---------- product page ----------
@@ -219,7 +227,7 @@ export class ProductCatalogPdfBuilder {
         {
           stack: [
             this.logoBase64
-              ? { image: this.logoBase64, width: 52, height: 52 }
+              ? { image: this.logoBase64, width: 64, height: 64 }
               : { text: 'DK', fontSize: 18, bold: true, color: CATALOG_MAROON }
           ],
           width: 140,
@@ -228,10 +236,10 @@ export class ProductCatalogPdfBuilder {
         // Centre: website
         {
           text: 'www.dkbangkok.com',
-          fontSize: 10,
-          color: '#333333',
+          fontSize: 13,
+          color: CATALOG_MAROON,
           alignment: 'center',
-          margin: [0, 26, 0, 0],
+          margin: [0, 32, 0, 0],
           width: '*'
         },
         // Right: brand name (large) + headerLabel (smaller) tight together
@@ -270,7 +278,7 @@ export class ProductCatalogPdfBuilder {
       width: '30%',
       stack: [
         { text: 'PRODUCT', fontSize: 11, bold: true, italics: true, color: '#1a1a1a', margin: [0, 0, 0, 0] },
-        { text: '#' + code, fontSize: 13, bold: true, italics: true, color: '#1a1a1a', margin: [0, 0, 0, 10] },
+        { text: '#' + code, fontSize: 13, bold: true, italics: true, color: '#1a1a1a', margin: [0, 0, 0, 8] },
         {
           table: {
             widths: ['*'],
@@ -316,80 +324,71 @@ export class ProductCatalogPdfBuilder {
     }
 
     // img2 + img3 right cluster with dimension lines
-    // Top row: dim2 text centered over img2 + horizontal measure line
-    // Image row: [left col width=42: dim1 text + vertical measure line] + [img2 130×130]
-    // Then img3 below (margin-left 42)
+    // Uses fixed-width columns (no negative margin) for precise alignment.
+    // IMG=135, DIMTXT_W=36, VLINE_W=10 → spacer = 46 = DIMTXT_W + VLINE_W
+    // Row A: horizontal measure line (width IMG) starts exactly at left edge of img2 column
+    // Row B: vertical measure line canvas (height IMG) starts at same top as img2 → exact symmetry
+
+    const IMG = 135
+    const DIMTXT_W = 36
+    const VLINE_W = 10
 
     const img2ClusterRows = []
 
     if (img2) {
-      // dim2 row: spacer 42px + dim2 text above img2 with horizontal measure line
-      if (dim2) {
-        img2ClusterRows.push({
-          columns: [
-            { width: 42, text: '' },
-            {
-              width: 135,
-              stack: [
-                {
-                  text: dim2.toUpperCase(),
-                  fontSize: 9,
-                  color: CATALOG_MAROON,
-                  alignment: 'center',
-                  margin: [0, 0, 0, 1]
-                },
-                {
-                  canvas: [
-                    { type: 'line', x1: 0, y1: 4, x2: 135, y2: 4, lineWidth: 0.7, lineColor: '#c0392b' },
-                    { type: 'line', x1: 0, y1: 0, x2: 0, y2: 8, lineWidth: 0.7, lineColor: '#c0392b' },
-                    { type: 'line', x1: 135, y1: 0, x2: 135, y2: 8, lineWidth: 0.7, lineColor: '#c0392b' }
-                  ],
-                  margin: [0, 0, 0, 2]
-                }
-              ]
-            }
-          ]
-        })
-      } else {
-        img2ClusterRows.push({ text: '', margin: [0, 0, 0, 0] })
-      }
-
-      // image row: [left 42: dim1 + vertical line] + [img2 135×135]
-      const leftMeasureCol = { width: 42, stack: [] }
-      if (dim1) {
-        leftMeasureCol.stack.push({
-          text: dim1.toUpperCase(),
-          fontSize: 9,
-          color: CATALOG_MAROON,
-          alignment: 'center',
-          margin: [0, 55, 0, 0]
-        })
-        leftMeasureCol.stack.push({
-          canvas: [
-            { type: 'line', x1: 18, y1: 0, x2: 18, y2: 135, lineWidth: 0.7, lineColor: '#c0392b' },
-            { type: 'line', x1: 12, y1: 0, x2: 24, y2: 0, lineWidth: 0.7, lineColor: '#c0392b' },
-            { type: 'line', x1: 12, y1: 135, x2: 24, y2: 135, lineWidth: 0.7, lineColor: '#c0392b' }
-          ],
-          margin: [0, -88, 0, 0]
-        })
-      }
-
+      // Row A — horizontal measure line above img2 (1.6 CM label)
       img2ClusterRows.push({
         columns: [
-          leftMeasureCol,
-          { width: 135, image: img2, height: 135 }
-        ],
-        margin: [0, 0, 0, 0]
+          { width: DIMTXT_W + VLINE_W, text: '' },
+          {
+            width: IMG,
+            stack: [
+              dim2
+                ? { text: dim2.toUpperCase(), fontSize: 9, color: '#cf6a5c', alignment: 'center', margin: [0, 0, 0, 1] }
+                : { text: '' },
+              dim2
+                ? {
+                    canvas: [
+                      { type: 'line', x1: 0, y1: 3, x2: IMG, y2: 3, lineWidth: 0.6, lineColor: '#cf6a5c' },
+                      { type: 'line', x1: 0, y1: 0, x2: 0, y2: 6, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } },
+                      { type: 'line', x1: IMG, y1: 0, x2: IMG, y2: 6, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
+                    ],
+                    margin: [0, 0, 0, 2]
+                  }
+                : { text: '' }
+            ]
+          }
+        ]
+      })
+
+      // Row B — img2 + vertical measure line on the left (1.8 CM label)
+      img2ClusterRows.push({
+        columns: [
+          dim1
+            ? { width: DIMTXT_W, text: dim1.toUpperCase(), fontSize: 9, color: '#cf6a5c', alignment: 'right', margin: [0, 62, 4, 0] }
+            : { width: DIMTXT_W, text: '' },
+          dim1
+            ? {
+                width: VLINE_W,
+                canvas: [
+                  { type: 'line', x1: 5, y1: 0, x2: 5, y2: IMG, lineWidth: 0.6, lineColor: '#cf6a5c' },
+                  { type: 'line', x1: 2, y1: 0, x2: 8, y2: 0, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } },
+                  { type: 'line', x1: 2, y1: IMG, x2: 8, y2: IMG, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
+                ]
+              }
+            : { width: VLINE_W, text: '' },
+          { width: IMG, image: img2, height: IMG }
+        ]
       })
     } else {
       // placeholder for img2
       img2ClusterRows.push({
         columns: [
-          { width: 42, text: '' },
+          { width: DIMTXT_W + VLINE_W, text: '' },
           {
-            width: 135,
+            width: IMG,
             stack: [
-              { canvas: [{ type: 'rect', x: 0, y: 0, w: 135, h: 135, lineColor: '#dddddd', lineWidth: 0.5 }] },
+              { canvas: [{ type: 'rect', x: 0, y: 0, w: IMG, h: IMG, lineColor: '#dddddd', lineWidth: 0.5 }] },
               { text: '[รูป 2]', fontSize: 9, color: '#cccccc', alignment: 'center', margin: [0, -73, 0, 0] }
             ]
           }
@@ -397,17 +396,17 @@ export class ProductCatalogPdfBuilder {
       })
     }
 
-    // img3 below img2 — offset left 42 to align with img2 column
+    // img3 below img2 — offset left DIMTXT_W+VLINE_W to align with img2 column
     if (img3) {
       img2ClusterRows.push({
         columns: [
-          { width: 42, text: '' },
+          { width: DIMTXT_W + VLINE_W, text: '' },
           {
-            width: 135,
+            width: IMG,
             stack: [
-              { image: img3, width: 135, height: 135, margin: [0, 6, 0, 0] },
+              { image: img3, width: IMG, height: IMG, margin: [0, 8, 0, 0] },
               dim3
-                ? { text: dim3.toUpperCase(), fontSize: 8, color: CATALOG_MAROON, alignment: 'center', margin: [0, 2, 0, 0] }
+                ? { text: dim3.toUpperCase(), fontSize: 8, color: '#cf6a5c', alignment: 'center', margin: [0, 2, 0, 0] }
                 : { text: '' }
             ]
           }
@@ -416,11 +415,11 @@ export class ProductCatalogPdfBuilder {
     } else {
       img2ClusterRows.push({
         columns: [
-          { width: 42, text: '' },
+          { width: DIMTXT_W + VLINE_W, text: '' },
           {
-            width: 135,
+            width: IMG,
             stack: [
-              { canvas: [{ type: 'rect', x: 0, y: 0, w: 135, h: 135, lineColor: '#dddddd', lineWidth: 0.5 }], margin: [0, 6, 0, 0] },
+              { canvas: [{ type: 'rect', x: 0, y: 0, w: IMG, h: IMG, lineColor: '#dddddd', lineWidth: 0.5 }], margin: [0, 8, 0, 0] },
               { text: '[รูป 3]', fontSize: 9, color: '#cccccc', alignment: 'center', margin: [0, -73, 0, 0] }
             ]
           }
@@ -431,7 +430,7 @@ export class ProductCatalogPdfBuilder {
     const rightCol = {
       width: '70%',
       columns: [
-        { stack: [img1Stack[0], ...(img1Stack.slice(1))], width: 'auto', margin: [0, 0, 8, 0] },
+        { stack: [img1Stack[0], ...(img1Stack.slice(1))], width: 'auto', margin: [0, 0, 16, 0] },
         { stack: img2ClusterRows, width: '*' }
       ]
     }
@@ -442,7 +441,7 @@ export class ProductCatalogPdfBuilder {
     }
 
     // --- Footer social bar ---
-    const socialIcon = (letter) => ({ ...this.getSocialIcon(letter), margin: [0, 1, 0, 0] })
+    const socialIcon = (type) => ({ ...this.getSocialIcon(type), margin: [0, 2, 0, 0] })
     let socialColumns
     try {
       socialColumns = {
@@ -451,8 +450,8 @@ export class ProductCatalogPdfBuilder {
           {
             width: '*',
             columns: [
-              socialIcon('f'),
-              { text: 'duangkaewjewelry', fontSize: 9, color: '#333333', margin: [4, 3, 0, 0], width: 'auto' }
+              socialIcon('facebook'),
+              { text: 'duangkaewjewelry', fontSize: 9, color: '#333333', margin: [5, 3, 0, 0], width: 'auto' }
             ]
           },
           // กลาง: spacer 2 ข้าง ดันให้อยู่กลาง
@@ -460,8 +459,8 @@ export class ProductCatalogPdfBuilder {
             width: '*',
             columns: [
               { text: '', width: '*' },
-              socialIcon('ig'),
-              { text: '@duangkaewjewelry.official', fontSize: 9, color: '#333333', margin: [4, 3, 0, 0], width: 'auto' },
+              socialIcon('instagram'),
+              { text: '@duangkaewjewelry.official', fontSize: 9, color: '#333333', margin: [5, 3, 0, 0], width: 'auto' },
               { text: '', width: '*' }
             ]
           },
@@ -470,8 +469,8 @@ export class ProductCatalogPdfBuilder {
             width: '*',
             columns: [
               { text: '', width: '*' },
-              socialIcon('@'),
-              { text: 'info@dkbkk.com', fontSize: 9, color: '#333333', margin: [4, 3, 0, 0], width: 'auto' }
+              socialIcon('email'),
+              { text: 'info@dkbkk.com', fontSize: 9, color: '#333333', margin: [5, 3, 0, 0], width: 'auto' }
             ]
           }
         ]
@@ -480,8 +479,8 @@ export class ProductCatalogPdfBuilder {
       socialColumns = {
         columns: [
           { text: 'f  duangkaewjewelry', fontSize: 9, color: '#333333', bold: true, width: '*' },
-          { text: 'ig  @duangkaewjewelry.official', fontSize: 9, color: '#333333', bold: true, alignment: 'center', width: '*' },
-          { text: '@  info@dkbkk.com', fontSize: 9, color: '#333333', bold: true, alignment: 'right', width: '*' }
+          { text: 'IG  @duangkaewjewelry.official', fontSize: 9, color: '#333333', bold: true, alignment: 'center', width: '*' },
+          { text: '✉  info@dkbkk.com', fontSize: 9, color: '#333333', bold: true, alignment: 'right', width: '*' }
         ]
       }
     }

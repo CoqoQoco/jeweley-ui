@@ -260,7 +260,7 @@ import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-locat
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 const interfaceForm = {

@@ -145,7 +145,7 @@ import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   formerStatus: null,

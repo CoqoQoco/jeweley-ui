@@ -7,6 +7,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "lint:style": "stylelint \"src/**/*.{vue,scss}\" --ignore-path .gitignore",
     "format": "prettier --write src/",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -51,8 +52,12 @@
     "eslint": "^8.45.0",
     "eslint-plugin-vue": "^9.15.1",
     "happy-dom": "^20.10.1",
+    "postcss-html": "^1.8.1",
     "prettier": "^3.0.0",
     "sass": "^1.65.1",
+    "stylelint": "^17.13.0",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "stylelint-declaration-strict-value": "^1.11.1",
     "vite": "^4.4.6",
     "vitest": "^4.1.8"
   }

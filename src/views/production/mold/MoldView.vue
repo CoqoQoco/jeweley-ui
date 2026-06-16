@@ -144,7 +144,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 //import Image from 'primevue/image'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 const imagePreview = defineAsyncComponent(() => import('@/components/image/PreviewImage.vue'))
 

@@ -34,7 +34,7 @@
 import { defineAsyncComponent } from 'vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'RejectReasonModal',

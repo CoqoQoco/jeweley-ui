@@ -337,7 +337,6 @@ export default {
         !this.menuForPermission[mainIndex].subMenu[subIndex].isOpen
     },
     async handleLogout() {
-      console.log('Logout')
       //this.$store.dispatch('auth/logout')
       swAlert.confirmSubmit('', 'ออกจากระบบ', async () => {
         await this.authStore.logout()

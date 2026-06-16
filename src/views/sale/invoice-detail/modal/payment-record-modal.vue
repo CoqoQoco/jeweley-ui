@@ -204,7 +204,7 @@ import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import dayjs from 'dayjs'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'PaymentRecordModal',

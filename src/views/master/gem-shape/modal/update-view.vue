@@ -2,20 +2,21 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">เพิ่มรูปร่างพลอย</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ `แก้ไขรูปร่างพลอย: ${model.code}-${model.nameTh}` }}</span>
       </template>
 
       <template #content>
-        <form @submit.prevent="onSubmit" id="form-gem-shape-create">
+        <form @submit.prevent="onSubmit" id="form-gem-shape-update">
           <div class="p-3">
             <div class="form-row">
               <div class="form-field">
-                <span class="title-text">รหัส <span class="text-danger">*</span></span>
+                <span class="title-text">รหัส</span>
                 <input
                   type="text"
                   class="form-control"
                   v-model="form.code"
                   placeholder="EX: OG"
+                  disabled
                   required
                 />
               </div>
@@ -51,7 +52,7 @@
       </template>
 
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="form-gem-shape-create">
+        <button class="btn btn-sm btn-main" type="submit" form="form-gem-shape-update">
           <i class="bi bi-save"></i> บันทึก
         </button>
         <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
@@ -64,7 +65,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import swAlert from '@/services/alert/sweetAlerts.js'
 
@@ -79,16 +80,42 @@ const interfaceFrom = {
 
 export default {
   components: { modal },
-  props: {
-    isShow: {
-      type: Boolean,
-      default: false
-    }
-  },
 
   setup() {
     const masterStore = useMasterApiStore()
     return { masterStore }
+  },
+
+  props: {
+    isShow: {
+      type: Boolean,
+      default: false
+    },
+    modelUpdate: {
+      type: Object,
+      default: () => ({}),
+      required: true
+    }
+  },
+
+  computed: {
+    model() {
+      return this.modelUpdate
+    }
+  },
+
+  watch: {
+    modelUpdate: {
+      handler(newVal) {
+        if (newVal) {
+          this.form = { ...newVal }
+        } else {
+          this.form = {}
+        }
+      },
+      deep: true,
+      immediate: true
+    }
   },
 
   data() {
@@ -98,7 +125,7 @@ export default {
       },
 
       //wording
-      txtConfirmSubmit: 'ยืนยันเพิ่มรูปร่างพลอย'
+      txtConfirmSubmit: 'ยืนยันแก้ไขรูปร่างพลอย'
     }
   },
 
@@ -128,14 +155,14 @@ export default {
         type: 'GEM-SHAPE',
         ...this.form
       }
-      const res = await this.masterStore.createMaster({
+      const res = await this.masterStore.updateMaster({
         formValue: param,
         skipLoading: false
       })
 
       if (res) {
         this.onClear()
-        this.$emit('fetch', this.form)
+        this.$emit('fetch')
       }
     }
   }

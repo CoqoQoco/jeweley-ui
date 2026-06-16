@@ -39,7 +39,7 @@ import { defineAsyncComponent } from 'vue'
 import { useGoldLossTangReportStore } from '@/stores/modules/api/plan/gold-loss-tang-report-store.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'ViewJobsModal',

@@ -78,7 +78,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import Dropdown from 'primevue/dropdown'
 import swAlert from '@/services/alert/sweetAlerts.js'

@@ -1,6 +1,6 @@
 <script>
 import '@/assets/scss/core.scss'
-import BaseLoading from '@/components/layout/LoadingOverlay.vue'
+import BaseLoading from '@/components/layout/loading-overlay.vue'
 //import { RouterView } from 'vue-router'
 //import HelloWorld from './components/HelloWorld.vue'
 

@@ -123,7 +123,7 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 const BaseDataTable = defineAsyncComponent(
   () => import('@/components/prime-vue/DataTableWithPaging.vue')
 )
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 let materialIdCounter = 1
 

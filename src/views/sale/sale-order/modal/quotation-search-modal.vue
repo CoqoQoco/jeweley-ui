@@ -225,7 +225,7 @@ import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 export default {

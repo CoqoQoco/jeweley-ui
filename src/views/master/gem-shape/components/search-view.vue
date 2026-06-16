@@ -3,8 +3,8 @@
     <form @submit.prevent="onSearch">
       <div>
         <pageTitle
-          title="ข้อมูลขนาดทอง"
-          description="เเก้ไขปรับปรุง/เพิ่ม ขนาดทองเเละรายละเอียดต่างๆ"
+          title="ข้อมูลรูปร่างพลอย"
+          description="เเก้ไขปรับปรุง/เพิ่ม รูปร่างพลอยเเละรายละเอียดต่างๆ"
           :isShowBtnClose="true"
           :isShowRightSlot="true"
         >
@@ -23,7 +23,7 @@
               :class="['form-control bg-input']"
               type="text"
               v-model.trim="form.text"
-              placeholder="EX: 18K / 22K / Silver ......"
+              placeholder="EX: OG, Octagon, สี่เหลี่ยมตัดมุม......"
             />
           </div>
         </div>
@@ -68,7 +68,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 //const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 //import MultiSelect from 'primevue/multiselect'

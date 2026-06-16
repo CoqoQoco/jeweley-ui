@@ -2,15 +2,19 @@
 import breadcrumb from './breadcrumb/th.js'
 import alerts from './alerts/th.js'
 import button from './button/th.js'
+import common from './common/th.js'
 
 //view
 import pickinglist from './view/pickinglist/th.js'
+import catalog from './view/catalog/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
   button: { ...button },
+  common: { ...common },
   view: {
     pickinglist: { ...pickinglist },
+    catalog: { ...catalog },
     production: {
       dashboard: {
         title: 'แดชบอร์ดงานผลิต',
@@ -75,13 +79,13 @@ export default {
           allGroups: 'ทุกกลุ่ม',
           allShapes: 'ทุกรูปทรง',
           allGrades: 'ทุกเกรด',
-          
+
           // Tabs
           overview: 'ภาพรวม',
           today: 'วันนี้',
           weekly: 'รายสัปดาห์',
           monthly: 'รายเดือน',
-          
+
           // Main stats
           totalGemTypes: 'ประเภทอัญมณีทั้งหมด',
           uniqueGemVarieties: 'ความหลากหลายของอัญมณี',
@@ -93,12 +97,12 @@ export default {
           inventoryValue: 'มูลค่าสินค้าคงคลัง',
           lowStockItems: 'สินค้าใกล้หมด',
           outOfStock: 'หมดสต็อก',
-          
+
           // Availability
           availability: 'สถานะพร้อมใช้',
           available: 'พร้อมใช้',
           onProcess: 'อยู่ในกระบวนการ',
-          
+
           // Charts and tables
           categoryBreakdown: 'แบ่งตามหมวดหมู่',
           topMovements: 'การเคลื่อนไหวสูงสุด',
@@ -107,7 +111,7 @@ export default {
           category: 'หมวดหมู่',
           transactions: 'ธุรกรรม',
           totalMoved: 'ย้ายรวม',
-          
+
           // Today report
           todayTransactions: 'ธุรกรรมวันนี้',
           priceChanges: 'การเปลี่ยนแปลงราคา',
@@ -122,16 +126,16 @@ export default {
           createDate: 'วันที่สร้าง',
           type: 'ประเภท',
           running: 'เลขที่รายการ',
-          
+
           // Last activities
           lastActivities: 'กิจกรรมล่าสุด',
           noActivities: 'ไม่มีกิจกรรม',
-          
+
           // Weekly report
           weeklyTransactions: 'ธุรกรรมรายสัปดาห์',
           weeklyAnalysis: 'การวิเคราะห์รายสัปดาห์',
           noWeeklyData: 'ไม่มีข้อมูลรายสัปดาห์',
-          
+
           // Monthly report
           monthlyTransactions: 'ธุรกรรมรายเดือน',
           monthlyTransactionSummaries: 'สรุปธุรกรรมรายเดือน',
@@ -154,7 +158,7 @@ export default {
           borrow: 'ยืม',
           return: 'คืน',
           grams: 'กรัม',
-          
+
           // Monthly specific
           monthSelection: 'เลือกเดือน',
           selectedPeriod: 'ช่วงเวลาที่เลือก',
@@ -172,14 +176,14 @@ export default {
           weightChart: 'กราฟน้ำหนัก',
           transactionDetails: 'รายละเอียดธุรกรรม',
           items: 'รายการ',
-          
+
           // No data messages
           loadingChart: 'กำลังโหลดข้อมูล...',
           noData: 'ไม่มีข้อมูลแสดง',
           noMovements: 'ไม่มีการเคลื่อนไหว',
           noPriceChanges: 'ไม่มีการเปลี่ยนแปลงราคา',
           noTodayTransactions: 'ไม่มีธุรกรรมวันนี้',
-          
+
           // Coming soon
           weeklyReportComingSoon: 'รายงานรายสัปดาห์ เร็วๆ นี้',
           monthlyReportComingSoon: 'รายงานรายเดือน เร็วๆ นี้'

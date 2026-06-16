@@ -76,7 +76,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 //import Calendar from 'primevue/calendar'
 import MultiSelect from 'primevue/multiselect'

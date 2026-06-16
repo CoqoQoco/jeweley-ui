@@ -23,7 +23,7 @@
 <script>
 //import { defineAsyncComponent } from 'vue'
 
-//const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+//const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import headerBar from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'

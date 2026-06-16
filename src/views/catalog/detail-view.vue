@@ -2,9 +2,7 @@
   <div class="app-container">
     <div class="detail-header">
       <div class="detail-header-left">
-        <button class="btn btn-sm btn-outline-main" @click="$router.back()">
-          <i class="bi bi-arrow-left"></i> กลับ
-        </button>
+        <ButtonGeneric variant="outline" icon="bi-arrow-left" :label="$t('common.btn.back')" @click="$router.back()" />
         <div class="catalog-info ml-3">
           <h5 class="mb-0">
             <span class="text-muted mr-2">{{ catalog.code }}</span>
@@ -18,15 +16,9 @@
         </div>
       </div>
       <div class="detail-header-actions">
-        <button class="btn btn-sm btn-green mr-2" @click="onAddProducts">
-          <i class="bi bi-plus-lg"></i> เพิ่มสินค้า
-        </button>
-        <button class="btn btn-sm btn-main mr-2" @click="onSaveItemsOrder">
-          <i class="bi bi-save"></i> บันทึกลำดับ/Dimensions
-        </button>
-        <button class="btn btn-sm btn-outline-main" @click="onGeneratePdf">
-          <i class="bi bi-file-pdf"></i> สร้าง PDF
-        </button>
+        <ButtonGeneric variant="green" icon="bi-plus-lg" :label="$t('view.catalog.btn.addProduct')" @click="onAddProducts" />
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('view.catalog.btn.saveOrder')" class="ml-2" @click="onSaveItemsOrder" />
+        <ButtonGeneric variant="outline" icon="bi-file-pdf" :label="$t('view.catalog.btn.generatePdf')" class="ml-2" @click="onGeneratePdf" />
       </div>
     </div>
 
@@ -40,47 +32,44 @@
       >
         <template #actionsTemplate="{ data: rowData }">
           <div class="btn-action-container">
-            <button
-              class="btn btn-sm btn-green"
-              title="จัดการรูป"
+            <ButtonGeneric
+              variant="green"
+              icon="bi-images"
+              :title="$t('view.catalog.btn.manageImage')"
               @click="onManageImage(rowData)"
-            >
-              <i class="bi bi-images"></i>
-            </button>
-            <button
-              class="btn btn-sm btn-red ml-2"
-              title="ลบออกจาก catalog"
+            />
+            <ButtonGeneric
+              variant="red"
+              icon="bi-trash"
+              class="ml-2"
+              :title="$t('common.btn.delete')"
               @click="onRemoveItem(rowData)"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
+            />
           </div>
         </template>
 
         <template #sortOrderTemplate="{ data: rowData, index }">
           <div class="sort-order-cell">
-            <button
-              class="btn btn-sm btn-outline-main"
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-chevron-up"
               :disabled="index === 0"
+              :title="'เลื่อนขึ้น'"
               @click="moveItemUp(index)"
-              title="เลื่อนขึ้น"
-            >
-              <i class="bi bi-chevron-up"></i>
-            </button>
-            <input
-              type="number"
-              class="form-control form-control-sm sort-input"
-              v-model.number="rowData.sortOrder"
-              min="1"
             />
-            <button
-              class="btn btn-sm btn-outline-main"
+            <InputTextGeneric
+              type="number"
+              class="sort-input"
+              :modelValue="rowData.sortOrder"
+              @update:modelValue="rowData.sortOrder = Number($event)"
+            />
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-chevron-down"
               :disabled="index === items.length - 1"
+              :title="'เลื่อนลง'"
               @click="moveItemDown(index)"
-              title="เลื่อนลง"
-            >
-              <i class="bi bi-chevron-down"></i>
-            </button>
+            />
           </div>
         </template>
 
@@ -89,27 +78,21 @@
         </template>
 
         <template #dimension1Template="{ data: rowData }">
-          <input
-            type="text"
-            class="form-control form-control-sm"
+          <InputTextGeneric
             v-model="rowData.dimension1"
             placeholder="—"
           />
         </template>
 
         <template #dimension2Template="{ data: rowData }">
-          <input
-            type="text"
-            class="form-control form-control-sm"
+          <InputTextGeneric
             v-model="rowData.dimension2"
             placeholder="—"
           />
         </template>
 
         <template #dimension3Template="{ data: rowData }">
-          <input
-            type="text"
-            class="form-control form-control-sm"
+          <InputTextGeneric
             v-model="rowData.dimension3"
             placeholder="—"
           />
@@ -133,11 +116,14 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { warning, success } from '@/services/alert/sweetAlerts.js'
 
 import { useCatalogStore } from '@/stores/modules/api/catalog-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
 import { ProductCatalogPdfBuilder } from '@/services/helper/pdf/product-catalog/product-catalog-pdf-builder.js'
 
 import productPickerModal from './modal/product-picker-modal.vue'
@@ -151,6 +137,8 @@ const interfaceIsShow = {
 export default {
   components: {
     BaseDataTable,
+    ButtonGeneric,
+    InputTextGeneric,
     productPickerModal,
     catalogImageModal
   },
@@ -162,17 +150,9 @@ export default {
     return { catalogStore, productStore, masterStore }
   },
 
-  data() {
-    return {
-      catalogId: null,
-      catalog: {},
-      items: [],
-      productNameMap: {},
-
-      isShow: { ...interfaceIsShow },
-      selectedProductCode: '',
-
-      columns: [
+  computed: {
+    columns() {
+      return [
         {
           field: 'actions',
           header: '',
@@ -181,41 +161,53 @@ export default {
         },
         {
           field: 'sortOrder',
-          header: 'ลำดับ',
+          header: this.$t('view.catalog.field.sortOrder'),
           sortable: false,
           width: '120px'
         },
         {
           field: 'productNumber',
-          header: 'รหัสสินค้า',
+          header: this.$t('view.catalog.field.productNumber'),
           sortable: false,
           minWidth: '130px'
         },
         {
           field: 'productName',
-          header: 'ชื่อสินค้า',
+          header: this.$t('view.catalog.field.productName'),
           sortable: false,
           minWidth: '180px'
         },
         {
           field: 'dimension1',
-          header: 'Dimension 1',
+          header: this.$t('view.catalog.field.dimension1'),
           sortable: false,
           width: '130px'
         },
         {
           field: 'dimension2',
-          header: 'Dimension 2',
+          header: this.$t('view.catalog.field.dimension2'),
           sortable: false,
           width: '130px'
         },
         {
           field: 'dimension3',
-          header: 'Dimension 3',
+          header: this.$t('view.catalog.field.dimension3'),
           sortable: false,
           width: '130px'
         }
       ]
+    }
+  },
+
+  data() {
+    return {
+      catalogId: null,
+      catalog: {},
+      items: [],
+      productNameMap: {},
+
+      isShow: { ...interfaceIsShow },
+      selectedProductCode: ''
     }
   },
 
@@ -272,14 +264,12 @@ export default {
     },
 
     onRemoveItem(rowData) {
-      swAlert.confirmSubmit(
+      confirmThenSubmit(
         `${rowData.productNumber}`,
-        'ยืนยันลบสินค้าออกจาก catalog',
+        this.$t('view.catalog.confirm.removeProduct'),
         async () => {
           await this.submitRemove(rowData)
-        },
-        null,
-        null
+        }
       )
     },
 
@@ -291,21 +281,19 @@ export default {
       })
 
       if (res) {
-        swAlert.success(``, ``, async () => {
+        success(``, ``, async () => {
           await this.fetchCatalog()
         })
       }
     },
 
     onSaveItemsOrder() {
-      swAlert.confirmSubmit(
+      confirmThenSubmit(
         '',
-        'ยืนยันบันทึกลำดับและ Dimensions',
+        this.$t('view.catalog.confirm.saveOrder'),
         async () => {
           await this.submitSaveItems()
-        },
-        null,
-        null
+        }
       )
     },
 
@@ -330,7 +318,7 @@ export default {
       })
 
       if (res) {
-        swAlert.success(``, ``, async () => {
+        success(``, ``, async () => {
           await this.fetchCatalog()
         })
       }
@@ -338,16 +326,14 @@ export default {
 
     async onGeneratePdf() {
       if (!this.items || !this.items.length) {
-        swAlert.warning('', 'ไม่มีสินค้าใน catalog นี้')
+        warning(this.$t('view.catalog.warning.noItems'))
         return
       }
 
-      // Ensure gold master is loaded (cached after first load)
       if (!this.masterStore.gold || !this.masterStore.gold.length) {
         await this.masterStore.fetchGold()
       }
 
-      // Build Thai→EN gold color map from master data
       const goldColorMap = {}
       if (this.masterStore.gold && this.masterStore.gold.length) {
         this.masterStore.gold.forEach((g) => {
@@ -357,7 +343,6 @@ export default {
         })
       }
 
-      // Fetch product material data for all item productNumbers
       const productNumbers = [...new Set(this.items.map((i) => i.productNumber).filter(Boolean))]
       const productMaterialMap = {}
 
@@ -462,11 +447,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  gap: var(--sp-md);
+  padding: var(--sp-lg);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .detail-header-left {
@@ -478,23 +463,22 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--sp-sm);
 }
 
 .catalog-info h5 {
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
   color: var(--base-font-color);
 }
 
 .sort-order-cell {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-xs);
 }
 
 .sort-input {
   width: 55px;
   text-align: center;
-  padding: 2px 4px;
 }
 </style>

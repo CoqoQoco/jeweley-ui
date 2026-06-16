@@ -54,7 +54,7 @@ const AutoCompleteGeneric = defineAsyncComponent(
 const imagePreview = defineAsyncComponent(
   () => import('@/components/prime-vue/ImagePreview.vue')
 )
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   name: 'MoldSection',

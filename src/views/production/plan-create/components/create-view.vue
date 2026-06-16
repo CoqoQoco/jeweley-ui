@@ -489,7 +489,7 @@
 </template>
 
 <script>
-import pageTitle from '@/components/custom/PageTitle.vue'
+import pageTitle from '@/components/custom/page-title.vue'
 
 import AutoComplete from 'primevue/autocomplete'
 import Dropdown from 'primevue/dropdown'

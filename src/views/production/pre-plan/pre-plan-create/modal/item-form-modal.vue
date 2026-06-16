@@ -163,8 +163,8 @@ import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.
 import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
 import { info } from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const moldSection = defineAsyncComponent(() => import('../components/mold-section.vue'))
 const UploadImage = defineAsyncComponent(
   () => import('@/components/prime-vue/UploadImage.vue')

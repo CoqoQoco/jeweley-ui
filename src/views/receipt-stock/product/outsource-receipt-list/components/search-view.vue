@@ -155,7 +155,7 @@ import Calendar from 'primevue/calendar'
 import { useReceiptOutsourceApiStore } from '@/stores/modules/api/receipt/receipt-outsource-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/PageTitle.vue'))
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   name: 'search-view',

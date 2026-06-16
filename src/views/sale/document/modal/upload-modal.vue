@@ -80,7 +80,7 @@ import { defineAsyncComponent } from 'vue'
 import { useSaleDocumentStore } from '@/stores/modules/api/sale/sale-document-store.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const MONTHS = [
   { value: 1, label: 'มกราคม' }, { value: 2, label: 'กุมภาพันธ์' },
