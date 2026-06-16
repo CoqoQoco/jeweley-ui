@@ -36,11 +36,11 @@
                     <label class="form-label">
                       <i class="bi bi-calendar-event mr-1"></i>Delivery Date
                     </label>
-                    <Calendar
+                    <CalendarGeneric
                       v-model="printData.deliveryDate"
                       dateFormat="dd/mm/yy"
                       placeholder="เลือกวันที่"
-                      showIcon
+                      :showIcon="true"
                       :showButtonBar="true"
                       class="w-100"
                     />
@@ -55,12 +55,12 @@
               <div class="filter-container-search mb-2">
                 <div class="p-2">
                   <div class="d-flex align-items-start">
-                    <i class="bi bi-info-circle text-info mr-2" style="font-size: 1.2rem"></i>
+                    <i class="bi bi-info-circle text-info mr-2 info-icon"></i>
                     <div>
-                      <p class="mb-1" style="font-size: 0.9rem; color: #6c757d">
+                      <p class="mb-1 info-text">
                         การเปลี่ยนแปลงข้อมูลนี้จะมีผลเฉพาะกับเอกสารที่พิมพ์เท่านั้น
                       </p>
-                      <p class="mb-0" style="font-size: 0.9rem; color: #6c757d">
+                      <p class="mb-0 info-text">
                         ข้อมูลต้นฉบับในระบบจะไม่มีการเปลี่ยนแปลง
                       </p>
                     </div>
@@ -76,7 +76,7 @@
                     พิมพ์ใบส่งสินค้า
                   </button>
 
-                  <button class="btn btn-secondary" type="button" @click="closeModal">
+                  <button class="btn btn-outline-main" type="button" @click="closeModal">
                     <i class="bi bi-x-circle mr-1"></i>
                     ยกเลิก
                   </button>
@@ -92,8 +92,8 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import dayjs from 'dayjs'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -103,7 +103,7 @@ export default {
 
   components: {
     modal,
-    Calendar
+    CalendarGeneric
   },
 
   props: {
@@ -209,6 +209,15 @@ export default {
 
 .delivery-confirm-print-container {
   // Component-specific styles only
+}
+
+.info-icon {
+  font-size: var(--fs-lg);
+}
+
+.info-text {
+  font-size: var(--fs-sm);
+  color: #6c757d;
 }
 
 .form-label {

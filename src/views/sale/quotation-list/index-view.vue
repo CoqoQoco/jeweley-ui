@@ -36,7 +36,6 @@ export default {
 
   data() {
     return {
-      isLoading: false,
       form: { ...interfaceForm },
       search: {}
     }

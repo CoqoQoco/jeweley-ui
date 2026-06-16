@@ -1,7 +1,7 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="รายการใบแจ้งหนี้"
+      :title="$t('view.sale.invoice.title')"
       description="แสดงรายการใบแจ้งหนี้ทั้งหมด พร้อมฟีเจอร์ค้นหาและกรองข้อมูล"
       :isShowBtnClose="false"
     />
@@ -10,45 +10,41 @@
       <div class="form-col-container">
         <!-- invoice number -->
         <div>
-          <span class="title-text">เลขที่ Invoice</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.invoiceNumber"
+          <span class="title-text">{{ $t('view.sale.invoice.invoiceNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.invoiceNumber"
             placeholder="EX: INV-2025-001"
+            :trim="true"
           />
         </div>
 
         <!-- stock number -->
         <div>
-          <span class="title-text">เลข Stock</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.stockNumber"
-            placeholder="เลข Stock"
+          <span class="title-text">{{ $t('view.sale.invoice.stockNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.stockNumber"
+            :placeholder="$t('view.sale.invoice.stockNumber')"
+            :trim="true"
           />
         </div>
 
         <!-- product number -->
         <div>
-          <span class="title-text">เลข Product</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.productNumber"
-            placeholder="เลข Product"
+          <span class="title-text">{{ $t('view.sale.invoice.productNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.productNumber"
+            :placeholder="$t('view.sale.invoice.productNumber')"
+            :trim="true"
           />
         </div>
 
         <!-- mold number -->
         <div>
-          <span class="title-text">เลข Mold</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.moldNumber"
-            placeholder="เลข Mold"
+          <span class="title-text">{{ $t('view.sale.invoice.moldNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.moldNumber"
+            :placeholder="$t('view.sale.invoice.moldNumber')"
+            :trim="true"
           />
         </div>
       </div>
@@ -63,12 +59,11 @@
           <div class="form-col-container">
             <!-- customer name -->
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.customerName"
-                placeholder="ชื่อลูกค้า"
+              <span class="title-text">{{ $t('view.sale.invoice.customerName') }}</span>
+              <InputTextGeneric
+                v-model="form.customerName"
+                :placeholder="$t('view.sale.invoice.customerName')"
+                :trim="true"
               />
             </div>
           </div>
@@ -76,23 +71,23 @@
           <div class="form-col-container mt-2">
             <!-- create date -->
             <div>
-              <span class="title-text">วันที่สร้าง</span>
+              <span class="title-text">{{ $t('view.sale.invoice.createDate') }}</span>
               <div class="flex-group">
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.createDateStart"
                   :max-date="form.createDateEnd"
-                  showIcon
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="เริ่มต้น"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.createDateEnd"
                   :min-date="form.createDateStart"
-                  showIcon
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="สิ้นสุด"
                   dateFormat="dd/mm/yy"
@@ -104,7 +99,7 @@
       </dialogView>
 
       <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+        <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
           <span><i class="bi bi-search"></i></span>
         </button>
         <button
@@ -115,7 +110,7 @@
         >
           <span><i class="bi bi-zoom-in"></i></span>
         </button>
-        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
           <span><i class="bi bi-x-circle"></i></span>
         </button>
       </div>
@@ -125,8 +120,11 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
+
+// Local components
 import pageTitle from '@/components/custom/page-title.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
@@ -138,8 +136,9 @@ export default {
   name: 'InvoiceListSearchView',
 
   components: {
-    Calendar,
     pageTitle,
+    InputTextGeneric,
+    CalendarGeneric,
     dialogView
   },
 

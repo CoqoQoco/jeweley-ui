@@ -36,11 +36,11 @@
                     <label class="form-label">
                       <i class="bi bi-calendar-event mr-1"></i>Invoice Date
                     </label>
-                    <Calendar
+                    <CalendarGeneric
                       v-model="printData.invoiceDate"
                       dateFormat="dd/mm/yy"
                       placeholder="เลือกวันที่"
-                      showIcon
+                      :showIcon="true"
                       :showButtonBar="true"
                       class="w-100"
                     />
@@ -50,14 +50,14 @@
                   </div>
 
                   <div class="form-group mb-3">
-                    <div class="d-flex align-items-center" style="gap: 8px; cursor: pointer" @click="printData.showCifLabel = !printData.showCifLabel">
+                    <div class="d-flex align-items-center checkbox-row" @click="printData.showCifLabel = !printData.showCifLabel">
                       <input
                         id="invoiceCifLabelInput"
                         type="checkbox"
                         v-model="printData.showCifLabel"
-                        style="width: 16px; height: 16px; cursor: pointer"
+                        class="checkbox-input"
                       />
-                      <label class="form-label mb-0" for="invoiceCifLabelInput" style="cursor: pointer">
+                      <label class="form-label mb-0 label-clickable" for="invoiceCifLabelInput">
                         <i class="bi bi-tag mr-1"></i>แสดงป้าย C.I.F
                       </label>
                     </div>
@@ -178,12 +178,12 @@
               <div class="filter-container-search mb-2">
                 <div class="p-2">
                   <div class="d-flex align-items-start">
-                    <i class="bi bi-info-circle text-info mr-2" style="font-size: 1.2rem"></i>
+                    <i class="bi bi-info-circle text-info mr-2 info-icon"></i>
                     <div>
-                      <p class="mb-1" style="font-size: 0.9rem; color: #6c757d">
+                      <p class="mb-1 info-text">
                         การเปลี่ยนแปลงข้อมูลนี้จะมีผลเฉพาะกับเอกสารที่พิมพ์เท่านั้น
                       </p>
-                      <p class="mb-0" style="font-size: 0.9rem; color: #6c757d">
+                      <p class="mb-0 info-text">
                         ข้อมูลต้นฉบับในระบบจะไม่มีการเปลี่ยนแปลง
                       </p>
                     </div>
@@ -199,7 +199,7 @@
                     พิมพ์เอกสาร
                   </button>
 
-                  <button class="btn btn-secondary" type="button" @click="closeModal">
+                  <button class="btn btn-outline-main" type="button" @click="closeModal">
                     <i class="bi bi-x-circle mr-1"></i>
                     ยกเลิก
                   </button>
@@ -215,9 +215,10 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import { storage } from '@/services/storage.js'
 import dayjs from 'dayjs'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { getPrinterList } from '@/services/api/printer-config-service.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
@@ -230,7 +231,7 @@ export default {
 
   components: {
     modal,
-    Calendar,
+    CalendarGeneric,
     DropdownGeneric
   },
 
@@ -289,7 +290,7 @@ export default {
   },
 
   async mounted() {
-    const savedContinuous = localStorage.getItem('invoice-continuous-offset')
+    const savedContinuous = storage.getItem('invoice-continuous-offset')
     if (savedContinuous) {
       try {
         const parsed = JSON.parse(savedContinuous)
@@ -304,7 +305,7 @@ export default {
       }
     }
 
-    const savedBill = localStorage.getItem('invoice-bill-offset')
+    const savedBill = storage.getItem('invoice-bill-offset')
     if (savedBill) {
       try {
         const parsed = JSON.parse(savedBill)
@@ -376,24 +377,11 @@ export default {
       normalizedDate.setHours(0, 0, 0, 0)
 
       if (this.paperSize === 'vat-bridge') {
-        localStorage.setItem(
-          'invoice-continuous-offset',
-          JSON.stringify(this.continuousOffset)
-        )
+        storage.setItem('invoice-continuous-offset', JSON.stringify(this.continuousOffset))
       } else if (this.paperSize === 'bill') {
-        localStorage.setItem(
-          'invoice-bill-offset',
-          JSON.stringify(this.billOffset)
-        )
+        storage.setItem('invoice-bill-offset', JSON.stringify(this.billOffset))
       }
 
-      // Debug: Log data before emit
-      console.log('Modal - Original invoiceDate:', this.printData.invoiceDate)
-      console.log('Modal - Normalized invoiceDate:', normalizedDate)
-      console.log('Modal - invoiceNumber:', this.printData.invoiceNumber)
-
-      // Emit confirm event with print data
-      // IMPORTANT: Put modified values AFTER spreading invoiceData to override them
       const printDataToEmit = {
         ...this.invoiceData,
         invoiceNumber: this.printData.invoiceNumber.trim(), // Override with modified value
@@ -404,8 +392,6 @@ export default {
         billOffset: { ...this.billOffset },
         printerName: this.selectedPrinter
       }
-
-      console.log('Modal - Emitting printDataToEmit:', printDataToEmit)
 
       this.$emit('confirm-print', printDataToEmit)
       this.closeModal()
@@ -419,6 +405,30 @@ export default {
 
 .invoice-confirm-print-container {
   // Component-specific styles only
+}
+
+.info-icon {
+  font-size: var(--fs-lg);
+}
+
+.info-text {
+  font-size: var(--fs-sm);
+  color: #6c757d;
+}
+
+.checkbox-row {
+  gap: var(--sp-sm);
+  cursor: pointer;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.label-clickable {
+  cursor: pointer;
 }
 
 .paper-size-options {

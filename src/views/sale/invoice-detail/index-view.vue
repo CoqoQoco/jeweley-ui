@@ -14,43 +14,42 @@
         <div>
           <button
             v-if="currentViewingVersion"
-            class="btn btn-info btn-sm mr-2"
+            class="btn btn-outline-main btn-sm mr-2"
             @click="restoreOriginalView"
           >
             <i class="bi bi-arrow-left mr-1"></i>
-            กลับไปดูต้นฉบับ
+            {{ $t('view.sale.invoiceDetail.restoreOriginal') }}
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="openVersionModal" style="width: 140px">
+          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="openVersionModal">
             <i class="bi bi-plus-circle mr-1"></i>
-            เพิ่ม Version
+            {{ $t('view.sale.invoiceDetail.addVersion') }}
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="reprintPDF" style="width: 140px">
+          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="reprintPDF">
             <i class="bi bi-printer mr-1"></i>
-            พิมพ์ใบเเจ้งหนี้
+            {{ $t('view.sale.invoiceDetail.printInvoice') }}
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="spikeTestHello" style="width: 160px">
+          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="spikeTestHello">
             <i class="bi bi-usb-symbol mr-1"></i>
-            Test Hello USB
+            {{ $t('view.sale.invoiceDetail.testHelloUsb') }}
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="exportInvoiceExcel" style="width: 140px">
+          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="exportInvoiceExcel">
             <i class="bi bi-file-earmark-excel mr-1"></i>
-            Export Excel
+            {{ $t('view.sale.invoiceDetail.exportExcel') }}
           </button>
-          <button class="btn btn-green btn-sm mr-2" @click="printDeliveryNote" style="width: 140px">
+          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="printDeliveryNote">
             <i class="bi bi-truck mr-1"></i>
-            พิมพ์ใบส่งสินค้า
+            {{ $t('view.sale.invoiceDetail.printDelivery') }}
           </button>
           <button
-            class="btn btn-red btn-sm mr-2"
+            class="btn btn-red btn-sm btn-header-action mr-2"
             @click="confirmReverseInvoice"
-            style="width: 140px"
           >
             <i class="bi bi-arrow-counterclockwise mr-1"></i>
-            ยกเลิกเอกสาร
+            {{ $t('view.sale.invoiceDetail.cancelDocument') }}
           </button>
-          <button class="btn btn-secondary btn-sm" @click="goBack" style="width: 140px">
+          <button class="btn btn-outline-main btn-sm btn-header-action" @click="goBack">
             <i class="bi bi-arrow-left mr-1"></i>
-            ย้อนกลับ
+            {{ $t('view.sale.invoiceDetail.goBack') }}
           </button>
         </div>
       </div>
@@ -790,7 +789,7 @@
                     </div>
                     <div class="version-actions">
                       <button
-                        class="btn btn-sm btn-outline-primary"
+                        class="btn btn-sm btn-outline-main"
                         @click.stop="printVersion(version)"
                         title="พิมพ์ PDF"
                       >
@@ -1018,7 +1017,7 @@
                   <template #actionTemplate="slotProps">
                     <div class="text-center">
                       <button
-                        class="btn btn-sm btn-danger"
+                        class="btn btn-sm btn-red"
                         @click="confirmDeletePayment(slotProps.data)"
                         title="ลบประวัติการชำระเงิน"
                       >
@@ -1068,8 +1067,7 @@
                       <div class="info-item highlight-total">
                         <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
                         <p
-                          class="info-value font-weight-bold text-danger"
-                          style="font-size: 1.1rem"
+                          class="info-value font-weight-bold text-danger remaining-amount"
                         >
                           {{ formatNumber(grandTotalRounded - (invoiceData.deposit || 0) - paidAmount) }}
                           {{ invoiceData.currencyUnit }}
@@ -1083,12 +1081,6 @@
           </div>
         </div>
       </div>
-
-      <!-- No Data State -->
-      <!-- <div v-else class="alert alert-warning">
-        <i class="bi bi-info-circle mr-2"></i>
-        ไม่พบข้อมูล Invoice
-      </div> -->
 
       <!-- Invoice Version Modal -->
       <InvoiceVersionModal
@@ -1140,9 +1132,13 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -1153,7 +1149,8 @@ import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-mod
 import PaymentRecordModal from './modal/payment-record-modal.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
-import { error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { error, success } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
@@ -1313,8 +1310,6 @@ export default {
           vatPercent: invoiceResponse.vat || 0
         }
         
-        ////console.log('saleOrderData', saleOrderData)
-        //this.loadSaleOrderData(response, invoiceResponse)
 
         this.formSaleOrder = {
           number: saleOrderData.number || '',
@@ -1355,10 +1350,6 @@ export default {
             )
           }
 
-          //console.log('invoice so items', this.invoiceItems)
-          //console.log('invoice data items', invoiceResponse)
-
-          //filter this.invoiceItems in invoiceResponse.items
           this.invoiceItems = this.invoiceItems.filter((item) => {
             return invoiceResponse.confirmedItems.some(
               (invItem) => invItem.stockNumber === item.stockNumber
@@ -1371,7 +1362,6 @@ export default {
             )
 
             if (confirmedItem) {
-              console.log('confirmedItem', confirmedItem)
               item.id = confirmedItem.id
               item.stockNumber = confirmedItem.stockNumber
               item.appraisalPrice = confirmedItem.priceOrigin
@@ -1386,10 +1376,6 @@ export default {
           })
         }
 
-        ////console.log('this.saleOrderData', this.formSaleOrder)
-        // this.invoiceItems = saleOrderData.items.allItems.filter(
-        //   (item) => item.stockNumber != null
-        // )
       }
 
       // Store original data
@@ -1466,84 +1452,6 @@ export default {
       }
     },
 
-    // loadSaleOrderData(saleOrderData) {
-    //   if (!saleOrderData) return
-
-    //   //////console.log('Loading sale order data:', saleOrderData)
-
-    //   Object.assign(this.formSaleOrder, {
-    //     number: saleOrderData.number || '',
-    //     date: saleOrderData.date || new Date(),
-    //     expectedDeliveryDate: saleOrderData.expectedDeliveryDate || null,
-    //     quotationNumber: saleOrderData.quotationNumber || '',
-    //     depositRequired: saleOrderData.depositRequired || false,
-    //     priority: saleOrderData.priority || 'normal',
-    //     remark: saleOrderData.remark || '',
-    //     customerRemark: saleOrderData.customer?.remark || '',
-
-    //     customerCode: saleOrderData.customer?.code || '',
-    //     customerName: saleOrderData.customer?.name || '',
-    //     customerAddress: saleOrderData.customer?.address || '',
-    //     customerPhone: saleOrderData.customer?.phone || '',
-    //     customerEmail: saleOrderData.customer?.email || '',
-
-    //     currencyUnit: saleOrderData.currencyUnit || 'US$',
-    //     currencyRate: saleOrderData.currencyRate || 33.0,
-    //     markup: saleOrderData.markup || 3.5,
-    //     goldPerOz: saleOrderData.goldPerOz || 2000,
-    //     freight: saleOrderData.freight || 0,
-    //     copyFreight: saleOrderData.copyFreight || 0
-    //   })
-
-    //   if (saleOrderData.items) {
-    //     if (saleOrderData.items.stockItems || saleOrderData.items.copyItems) {
-    //       this.invoiceItems = saleOrderData.items.stockItems || []
-    //     } else if (Array.isArray(saleOrderData.items)) {
-    //       this.invoiceItems = saleOrderData.items.filter((item) => item.stockNumber != null)
-    //     } else if (Array.isArray(saleOrderData.items.allItems)) {
-    //       this.invoiceItems = saleOrderData.items.allItems.filter(
-    //         (item) => item.stockNumber != null
-    //       )
-    //     }
-    //   }
-
-    //   //console.log('saleOrderData.stockItems', this.stockItems)
-    //   //console.log('saleOrderData.confirmedItems', saleOrderData.confirmedItems)
-
-    //   this.stockItems.forEach((item) => {
-    //     item.isConfirm = false
-    //     item.isInvoice = false
-    //     item.invoice = null
-    //     item.invoiceItem = null
-
-    //     item.discountPercent = item.discountPercent || 0
-
-    //     const confirmedItem = saleOrderData.confirmedItems.find(
-    //       (ci) => ci.stockNumber === item.stockNumber
-    //     )
-
-    //     if (confirmedItem) {
-    //       item.id = confirmedItem.id
-    //       item.stockNumber = confirmedItem.stockNumber
-
-    //       item.isConfirm = confirmedItem.isConfirm
-    //       item.isInvoice = confirmedItem.isInvoice
-    //       item.invoiceItem = confirmedItem.invoiceItem
-    //       item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
-    //       item.invoice = confirmedItem.invoice
-
-    //       if (confirmedItem.isConfirm) {
-    //         item.appraisalPrice = confirmedItem.priceOrigin
-    //         item.discountPercent = confirmedItem.discount
-    //         item.qty = confirmedItem.qty
-    //       }
-
-    //       item.isRemainProduct = confirmedItem.isRemainProduct
-    //       item.message = confirmedItem.message
-    //     }
-    //   })
-    // },
-
     async getSaleOrderData(soNumber) {
       const response = await this.saleOrderStore.fetchGet({
         formValue: { soNumber: soNumber }
@@ -1589,7 +1497,6 @@ export default {
         }
       }
 
-      //////console.log('get new saleOrderData', saleOrderData)
       return saleOrderData
     },
 
@@ -1839,12 +1746,12 @@ export default {
       success('Export Excel สำเร็จ', 'Invoice Excel')
     },
     async handleConfirmDeliveryPrint(printData) {
-      try {
-        if (!printData || !printData.deliveryNumber) {
-          error('ไม่พบข้อมูล Delivery Note', 'ไม่สามารถสร้าง PDF ได้')
-          return
-        }
+      if (!printData || !printData.deliveryNumber) {
+        error('ไม่พบข้อมูล Delivery Note', 'ไม่สามารถสร้าง PDF ได้')
+        return
+      }
 
+      {
         // Prepare data for Delivery Note PDF generation
         const deliveryData = {
           saleOrder: {
@@ -1886,9 +1793,6 @@ export default {
 
         await deliveryPdfService.generateDeliveryPDF(deliveryData, options)
         success('สร้าง Delivery Note PDF สำเร็จ', 'Delivery Note')
-      } catch (err) {
-        console.error('Error generating Delivery Note PDF:', err)
-        error(err.message || 'ไม่สามารถสร้าง Delivery Note PDF ได้', 'เกิดข้อผิดพลาด')
       }
     },
     getImageUrl(imagePath) {
@@ -1902,95 +1806,56 @@ export default {
       // Hide broken image or show placeholder
       event.target.style.display = 'none'
     },
-    async confirmReverseInvoice() {
-      try {
-        // Show confirmation dialog
-        confirmSubmit(
-          'การยกเลิก Invoice จะลบข้อมูลการออก Invoice และคืนสถานะสินค้ากลับไปยัง Sale Order',
-          'คุณต้องการยกเลิก Invoice นี้หรือไม่?',
-          async (result) => {
-            if (result.isConfirmed) {
-              await this.reverseInvoice()
-            }
-          },
-          {
-            confirmText: 'ยืนยัน',
-            cancelText: 'ยกเลิก'
-          },
-          'warning'
-        )
-      } catch (err) {
-        console.error('Error in confirmation:', err)
-      }
+    confirmReverseInvoice() {
+      confirmThenSubmit(
+        'การยกเลิก Invoice จะลบข้อมูลการออก Invoice และคืนสถานะสินค้ากลับไปยัง Sale Order',
+        'คุณต้องการยกเลิก Invoice นี้หรือไม่?',
+        async () => {
+          await this.reverseInvoice()
+        },
+        { confirmText: 'ยืนยัน', cancelText: 'ยกเลิก' },
+        'warning'
+      )
     },
     async reverseInvoice() {
-      try {
-        if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
-          error('ไม่พบข้อมูล Invoice', 'ไม่สามารถยกเลิก Invoice ได้')
-          return
-        }
+      if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
+        error('ไม่พบข้อมูล Invoice', 'ไม่สามารถยกเลิก Invoice ได้')
+        return
+      }
 
-        // Call delete API
-        await this.invoiceStore.fetchDelete({
-          formValue: { invoiceNumber: this.invoiceData.invoiceNumber }
+      await this.invoiceStore.fetchDelete({
+        formValue: { invoiceNumber: this.invoiceData.invoiceNumber }
+      })
+
+      success('ยกเลิก Invoice สำเร็จ', 'Invoice ได้ถูกยกเลิกแล้ว')
+
+      if (this.fromRoute === 'sale-order' && this.invoiceData.soNumber) {
+        this.$router.push({
+          path: '/sale/sale-order',
+          query: { soNumber: this.invoiceData.soNumber, mode: 'view' }
         })
-
-        // Show success message
-        success('ยกเลิก Invoice สำเร็จ', 'Invoice ได้ถูกยกเลิกแล้ว')
-
-        // Navigate based on where we came from
-        if (this.fromRoute === 'sale-order' && this.invoiceData.soNumber) {
-          // If we came from sale-order, go back to sale-order with the SO number
-          // This will trigger the sale-order page to reload the data
-          this.$router.push({
-            path: '/sale/sale-order',
-            query: { soNumber: this.invoiceData.soNumber, mode: 'view' }
-          })
-        } else {
-          // Otherwise just go back to previous page
-          this.$router.back()
-        }
-      } catch (err) {
-        console.error('Error reversing invoice:', err)
-        error(err.message || 'ไม่สามารถยกเลิก Invoice ได้', 'เกิดข้อผิดพลาด')
+      } else {
+        this.$router.back()
       }
     },
     openVersionModal() {
       this.showVersionModal = true
     },
-    async handleSaveVersion(versionData) {
-      //console.log('Saving version:', versionData)
-      // Reload version list after saving
+    async handleSaveVersion() {
       await this.loadVersions()
       this.showVersionModal = false
     },
     handlePreviewVersion(versionData) {
-      //console.log('Previewing version:', versionData)
-      // Generate PDF preview with version data
       this.generateVersionPDF(versionData, { open: true, download: false })
     },
     async handleConfirmPrint(printData) {
-      try {
-        if (!printData || !printData.invoiceNumber) {
-          error('ไม่พบข้อมูล Invoice', 'ไม่สามารถสร้าง PDF ได้')
-          return
-        }
+      if (!printData || !printData.invoiceNumber) {
+        error('ไม่พบข้อมูล Invoice', 'ไม่สามารถสร้าง PDF ได้')
+        return
+      }
 
-        // Debug: Log received printData
-        //console.log('Received printData:', printData)
-        //console.log('Invoice Number:', printData.invoiceNumber)
-        //console.log('Invoice Date (raw):', printData.invoiceDate)
-        //console.log('Invoice Date type:', typeof printData.invoiceDate)
-
-        // Format date properly - handle both Date object and string
-        let formattedDate
-        if (printData.invoiceDate instanceof Date) {
-          formattedDate = dayjs(printData.invoiceDate)
-        } else {
-          formattedDate = dayjs(printData.invoiceDate)
-        }
-
-        //console.log('Formatted Invoice Date:', formattedDate)
+      {
+        const formattedDate = dayjs(printData.invoiceDate)
 
         // Prepare data for PDF generation with modified invoice number and date
         const pdfData = {
@@ -2020,14 +1885,12 @@ export default {
         }
 
         const options = {
-          invoiceNo: printData.invoiceNumber, // Use modified invoice number
-          invoiceDate: formattedDate, // Use modified and formatted invoice date
+          invoiceNo: printData.invoiceNumber,
+          invoiceDate: formattedDate,
           download: true,
           open: false,
           showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true
         }
-
-        //console.log('PDF Options:', options)
 
         if (printData.paperSize === 'vat-bridge') {
           const { printVat } = await import('@/services/api/print-bridge-service.js')
@@ -2123,14 +1986,10 @@ export default {
           await invoicePdfService.generateInvoicePDF(pdfData, options)
         }
         success('สร้าง PDF สำเร็จ', 'Invoice PDF')
-      } catch (err) {
-        console.error('Error generating PDF:', err)
-        error(err.message || 'ไม่สามารถสร้าง PDF ได้', 'เกิดข้อผิดพลาด')
       }
     },
     async generateVersionPDF(versionData, options = { open: false, download: true }) {
-      try {
-        // Prepare data for PDF generation with version data
+      {
         const pdfData = {
           saleOrder: {
             soNumber: this.invoiceData.soNumber,
@@ -2171,14 +2030,9 @@ export default {
         if (options.download) {
           success('สร้าง PDF สำเร็จ', 'Invoice Version PDF')
         }
-      } catch (err) {
-        console.error('Error generating version PDF:', err)
-        error(err.message || 'ไม่สามารถสร้าง PDF ได้', 'เกิดข้อผิดพลาด')
       }
     },
     async handleSavePayment(paymentData) {
-      //console.log('Saving payment record:', paymentData)
-
       // Create FormData for file upload
       const formData = new FormData()
       formData.append('InvoiceNumber', paymentData.invoiceNumber)
@@ -2211,8 +2065,6 @@ export default {
       const response = await this.invoiceStore.createPayment(formData)
 
       if (response) {
-        // Reload payment history
-        //await this.loadPaymentHistory()
         await this.loadInvoiceData(paymentData.invoiceNumber)
       }
 
@@ -2236,50 +2088,31 @@ export default {
       }
     },
 
-    async confirmDeletePayment(paymentData) {
-      try {
-        confirmSubmit(
-          `ลบประวัติการชำระเงิน ${this.formatNumber(paymentData.amount)} ${
-            paymentData.currencyUnit
-          }`,
-          'คุณต้องการลบประวัติการชำระเงินนี้หรือไม่?',
-          async (result) => {
-            if (result.isConfirmed) {
-              await this.deletePayment(paymentData)
-            }
-          },
-          {
-            confirmText: 'ยืนยัน',
-            cancelText: 'ยกเลิก'
-          },
-          'warning'
-        )
-      } catch (err) {
-        console.error('Error in confirmation:', err)
-      }
+    confirmDeletePayment(paymentData) {
+      confirmThenSubmit(
+        `ลบประวัติการชำระเงิน ${this.formatNumber(paymentData.amount)} ${paymentData.currencyUnit}`,
+        'คุณต้องการลบประวัติการชำระเงินนี้หรือไม่?',
+        async () => {
+          await this.deletePayment(paymentData)
+        },
+        { confirmText: 'ยืนยัน', cancelText: 'ยกเลิก' },
+        'warning'
+      )
     },
 
     async deletePayment(paymentData) {
-      try {
-        if (!paymentData || !paymentData.running) {
-          error('ไม่พบข้อมูลการชำระเงิน', 'ไม่สามารถลบได้')
-          return
-        }
-
-        // Call delete API
-        await this.invoiceStore.deletePayment({
-          formValue: { paymentRunning: paymentData.running }
-        })
-
-        // Show success message
-        success('ลบประวัติการชำระเงินสำเร็จ', 'ข้อมูลได้ถูกลบแล้ว')
-
-        // Reload invoice data to refresh payment history
-        await this.loadInvoiceData(this.invoiceData.invoiceNumber)
-      } catch (err) {
-        console.error('Error deleting payment:', err)
-        error(err.message || 'ไม่สามารถลบประวัติการชำระเงินได้', 'เกิดข้อผิดพลาด')
+      if (!paymentData || !paymentData.running) {
+        error('ไม่พบข้อมูลการชำระเงิน', 'ไม่สามารถลบได้')
+        return
       }
+
+      await this.invoiceStore.deletePayment({
+        formValue: { paymentRunning: paymentData.running }
+      })
+
+      success('ลบประวัติการชำระเงินสำเร็จ', 'ข้อมูลได้ถูกลบแล้ว')
+
+      await this.loadInvoiceData(this.invoiceData.invoiceNumber)
     }
   }
 }
@@ -2293,16 +2126,20 @@ export default {
 }
 
 .card-container {
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-header-action {
+  min-width: 140px;
 }
 
 .card-header {
   background: var(--base-font-color);
-  border-bottom: 1px solid #e9ecef;
-  border-radius: 5px 5px 0px 0px;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2411,7 +2248,7 @@ export default {
   padding: 0.5rem 0;
 
   &:not(:last-child) {
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .section-title {
@@ -2443,12 +2280,12 @@ export default {
   }
 
   .info-value {
-    font-size: 0.85rem;
-    color: #2c3e50;
+    font-size: var(--fs-sm);
+    color: var(--base-font-color);
     margin-bottom: 0;
     padding: 0.35rem 0.5rem;
-    background-color: #f8f9fa;
-    border-radius: 3px;
+    background-color: var(--color-highlight-bg);
+    border-radius: var(--radius-sm);
     min-height: 30px;
     display: flex;
     align-items: center;
@@ -2467,18 +2304,18 @@ export default {
 }
 
 .version-item {
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
+  padding: var(--sp-md);
+  margin-bottom: var(--sp-sm);
+  background: var(--color-highlight-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: #e9ecef;
+    background: var(--color-border);
     border-color: var(--base-font-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
   }
 
   .version-number {
@@ -2506,7 +2343,10 @@ export default {
 .form-content-payment-container {
   display: grid;
   grid-template-columns: 1fr 4fr;
-  gap: 10px;
-  padding: 0px 0px;
+  gap: var(--sp-sm);
+}
+
+.remaining-amount {
+  font-size: var(--fs-lg);
 }
 </style>

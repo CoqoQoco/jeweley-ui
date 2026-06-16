@@ -53,32 +53,21 @@ export default {
 
   methods: {
     onSearchFilter(data) {
-      //console.log('onSearchFilter', data)
       this.search = { ...data }
     },
     onSearchQuotation(data) {
-      //console.log('onSearchQuotation', data)
       this.quotation = { ...data }
     },
 
     onClearFilter() {
-      //console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
 
     handleRouteParams() {
-      // Handle route query parameters for viewing/editing specific quotation
-      const { number, mode } = this.$route.query
+      const { number } = this.$route.query
       if (number) {
-        
         this.formQuotation.number = number
         this.quotation = { number: number }
-        
-        // If mode is 'view', set to read-only mode
-        if (mode === 'view') {
-          // TODO: Implement read-only mode logic if needed
-          console.log('View mode for quotation:',  this.quotation)
-        }
       }
     }
   },

@@ -67,7 +67,7 @@
                   </button> -->
                   <button
                     type="button"
-                    class="btn btn-sm btn-info ml-2"
+                    class="btn btn-sm btn-green ml-2"
                     @click="onSelectImage('SELECT')"
                   >
                     <span class="bi bi-images"></span>
@@ -142,10 +142,7 @@
                       <span><i class="bi bi-x"></i></span>
                     </button>
                     <button
-                      :class="[
-                        'btn btn-sm',
-                        !selectedItems.length > 0 ? 'btn-secondary' : 'btn-main'
-                      ]"
+                      class="btn btn-sm btn-main"
                       type="button"
                       :disabled="!selectedItems.length > 0"
                       title="ปรับปรุง"
@@ -214,48 +211,48 @@
             <BaseDataTable :items="stock.materials" :columns="materialColumns" :paginator="false">
               <template #typeTemplate="{ data }">
                 <div class="d-flex justify-content-center">
-                  <Dropdown
-                    v-model="data.type"
+                  <DropdownGeneric
+                    :modelValue="data.type"
                     :options="masterMaterialType"
                     optionLabel="description"
                     optionValue="value"
-                    class="w-full md:w-14rem"
+                    @update:modelValue="data.type = $event"
                   />
                 </div>
               </template>
               <template #typeCodeTemplate="{ data }">
                 <div class="">
                   <div v-if="data.type === 'Gold' || data.type === 'Silver'">
-                    <Dropdown
-                      v-model="data.typeCode"
+                    <DropdownGeneric
+                      :modelValue="data.typeCode"
                       :options="masterGold"
                       optionLabel="description"
                       optionValue="code"
-                      class="w-full md:w-14rem"
                       placeholder="เลือกทอง"
                       :showClear="data.typeCode ? true : false"
+                      @update:modelValue="data.typeCode = $event"
                     />
                   </div>
                   <div v-else-if="data.type === 'Diamond'">
-                    <Dropdown
-                      v-model="data.typeCode"
+                    <DropdownGeneric
+                      :modelValue="data.typeCode"
                       :options="masterDiamondGrade"
                       optionLabel="description"
                       optionValue="nameEn"
-                      class="w-full md:w-14rem"
                       placeholder="เลือกเพชร"
                       :showClear="data.typeCode ? true : false"
+                      @update:modelValue="data.typeCode = $event"
                     />
                   </div>
                   <div v-else-if="data.type === 'Gem'">
-                    <Dropdown
-                      v-model="data.typeCode"
+                    <DropdownGeneric
+                      :modelValue="data.typeCode"
                       :options="masterGem"
                       optionLabel="description"
                       optionValue="nameEn"
-                      class="w-full md:w-14rem"
                       placeholder="เลือกพลอย"
                       :showClear="data.typeCode ? true : false"
+                      @update:modelValue="data.typeCode = $event"
                     />
                   </div>
                   <div v-else class="vertical-center-container text-center">
@@ -533,13 +530,14 @@
             </div>
             <div class="action-group-container mt-2">
               <div class="d-flex align-items-center gap-2">
-                <Dropdown
-                  v-model="masterValue"
+                <DropdownGeneric
+                  :modelValue="masterValue"
                   :options="masterType"
                   optionLabel="name"
                   optionValue="code"
-                  class="w-full md:w-14rem mr-2"
                   placeholder="เลือกรายการ"
+                  class="mr-2"
+                  @update:modelValue="masterValue = $event"
                 />
                 <button
                   type="button"
@@ -560,7 +558,7 @@
                 <span class="bi bi-calendar-check mr-2"></span>
                 <span>บันทึก</span>
               </button>
-              <button class="btn btn-sm btn-secondary ml-2" type="button" @click="closeModal">
+              <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
                 <span class="bi bi-x mr-2"></span>
                 <span>ยกเลิก</span>
               </button>
@@ -580,16 +578,20 @@ const BaseDataTable = defineAsyncComponent(() =>
   import('@/components/prime-vue/DataTableWithPaging.vue')
 )
 
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 
 import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
@@ -598,7 +600,7 @@ export default {
     modal,
     imagePreview,
     BaseDataTable,
-    Dropdown,
+    DropdownGeneric,
     DataTable,
     Column,
     ColumnGroup,
@@ -657,7 +659,6 @@ export default {
         if (!val) return
         this.stock = { ...val }
 
-        console.log('modelStock changed:', this.stock)
         // ใช้ข้อมูล priceTransactions เสมอถ้ามี ต้องหารด้วย planQty เพื่อทำเป็นข้อมูลต่อชิ้น
         if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
           const planQty = 1
@@ -971,8 +972,7 @@ export default {
     },
 
     onSubmit() {
-      console.log('submit', this.stock)
-      swAlert.confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
         this.fetchConfirm()
       })
     },
@@ -1112,7 +1112,7 @@ export default {
       const file = e.target.files[0]
       if (!file) return
       if (!file.type.match(/image.*/)) {
-        swAlert.warning('', 'กรุณาเลือกไฟล์รูปภาพเท่านั้น')
+        warning('กรุณาเลือกไฟล์รูปภาพเท่านั้น')
         return
       }
       const compressedFile = await compressOptimalImage(file)
@@ -1129,7 +1129,7 @@ export default {
             this.stock.imageBase64 = ev.target.result
           }
           reader.readAsDataURL(compressedFile)
-          swAlert.success('อัปโหลดรูปสินค้าสำเร็จ')
+          success('อัปโหลดรูปสินค้าสำเร็จ')
         }
         return
       }
@@ -1150,35 +1150,21 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-// ** ------ overide primevue style ------
 .custom-input {
   margin-top: 5px !important;
 }
 input {
   margin-top: 5px !important;
 }
-// button {
-//   margin-top: 5px !important;
-// }
 :deep(.p-autocomplete .p-component) {
   margin-top: 0px !important;
-  //background-color: #dad4b5;
 }
-// :deep(.p-datatable .p-datatable-tfoot > tr > td) {
-//   text-align: left;
-//   padding: 1rem 1rem;
-//   border: 1px solid white;
-//   border-width: 0 0 1px 0;
-//   color: white;
-//   background: var(--base-font-color);
-// }
 
 .type-container {
-  font-size: 15px;
+  font-size: var(--fs-sm);
   font-weight: bold;
   color: var(--base-font-color);
-  padding: 5px;
-  //margin: 0px 0px 10px 0px;
+  padding: var(--sp-xs);
 }
 .action-group-container {
   display: flex;
@@ -1214,11 +1200,10 @@ input {
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  //gap: 1rem;
   padding: 1.5rem;
-  border: 2px dashed #dddddd;
-  border-radius: 8px;
-  background-color: #f8f9fa;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-highlight-bg);
   transition: all 0.3s ease;
   height: 299px;
 
@@ -1227,14 +1212,10 @@ input {
   }
 
   .image-preview {
-    //width: 200px;
-    //height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: f8f9fa;
-    border-radius: 4px;
-    //box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-sm);
   }
 
   .image-controls {

@@ -33,53 +33,47 @@
       <div class="filter-container mt-2">
         <div class="form-col-container">
           <div class="form-col-sm-container">
-            <!-- stock number -->
             <div>
-              <span class="title-text">เลขที่ผลิต (ใหม่)</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.stockNumber"
+              <span class="title-text">{{ $t('view.sale.quotation.newProductionNumber') }}</span>
+              <InputTextGeneric
+                v-model="form.stockNumber"
+                :trim="true"
                 placeholder="EX: DK-2502-00X"
               />
             </div>
 
-             <div>
-              <span class="title-text">เลขที่ผลิต (เก่า)</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.stockNumberOrigin"
+            <div>
+              <span class="title-text">{{ $t('view.sale.quotation.oldProductionNumber') }}</span>
+              <InputTextGeneric
+                v-model="form.stockNumberOrigin"
+                :trim="true"
                 placeholder="EX: AD054XX"
               />
             </div>
 
-            <!-- product number -->
             <div>
-              <span class="title-text">รหัสสินค้า</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.productNumber"
+              <span class="title-text">{{ $t('view.sale.quotation.productCode') }}</span>
+              <InputTextGeneric
+                v-model="form.productNumber"
+                :trim="true"
                 placeholder="EX: R08X50XXXL"
               />
             </div>
           </div>
 
           <div class="btn-submit-container-custom">
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
               <span><i class="bi bi-search"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
             <button
-              class="btn btn-sm btn-secondary mr-2"
+              class="btn btn-sm btn-dark mr-2"
               type="button"
               title="ค้นหาเพิ่มเติม"
               disabled
             >
               <span><i class="bi bi-zoom-in"></i></span>
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <span><i class="bi bi-x-circle"></i></span>
             </button>
           </div>
@@ -91,12 +85,14 @@
 
 <script>
 import pageTitle from '@/components/custom/page-title-main.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'SearchBar',
 
   components: {
-    pageTitle
+    pageTitle,
+    InputTextGeneric
   },
 
   props: {

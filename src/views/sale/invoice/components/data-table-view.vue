@@ -13,7 +13,7 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn-green" title="ดูรายละเอียด" @click="onView(data)">
+          <button class="btn btn-sm btn-green" :title="$t('common.field.action')" @click="onView(data)">
             <i class="bi bi-eye"></i>
           </button>
         </div>
@@ -41,9 +41,13 @@
 </template>
 
 <script>
-import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+// External dependencies
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
+
+// Local components
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {
   name: 'InvoiceListDataTableView',
@@ -51,6 +55,8 @@ export default {
   components: {
     BaseDataTable
   },
+
+  mixins: [dataTablePaging],
 
   props: {
     modelForm: {
@@ -65,13 +71,13 @@ export default {
     return { invoiceStore }
   },
 
-  data() {
-    return {
-      take: 10,
-      skip: 0,
-      sort: [],
+  computed: {
+    form() {
+      return this.modelForm || {}
+    },
 
-      columns: [
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
@@ -80,52 +86,52 @@ export default {
         },
         {
           field: 'invoiceNumber',
-          header: 'เลขที่ Invoice',
+          header: this.$t('view.sale.invoice.invoiceNumber'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'customerCode',
-          header: 'รหัสลูกค้า',
+          header: this.$t('view.sale.invoice.customerCode'),
           sortable: true,
           minWidth: '120px'
         },
         {
           field: 'customerName',
-          header: 'ชื่อลูกค้า',
+          header: this.$t('view.sale.invoice.customerName'),
           sortable: true,
           minWidth: '180px'
         },
         {
           field: 'status',
-          header: 'สถานะ',
+          header: this.$t('view.sale.invoice.status'),
           sortable: true,
           minWidth: '100px',
           template: 'statusTemplate'
         },
         {
           field: 'createDate',
-          header: 'วันที่สร้าง',
+          header: this.$t('view.sale.invoice.createDate'),
           sortable: true,
           minWidth: '140px',
           template: 'createDateTemplate'
         },
         {
           field: 'createBy',
-          header: 'ผู้สร้าง',
+          header: this.$t('view.sale.invoice.createBy'),
           sortable: true,
           minWidth: '120px'
         },
         {
           field: 'deliveryDate',
-          header: 'วันที่จัดส่ง',
+          header: this.$t('view.sale.invoice.deliveryDate'),
           sortable: true,
           minWidth: '140px',
           template: 'deliveryDateTemplate'
         },
         {
           field: 'remark',
-          header: 'หมายเหตุ',
+          header: this.$t('view.sale.invoice.remark'),
           sortable: true,
           minWidth: '150px'
         }
@@ -133,37 +139,13 @@ export default {
     }
   },
 
-  computed: {
-    form() {
-      return this.modelForm || {}
-    }
-  },
-
   watch: {
     async modelForm() {
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
+      this.resetPaging()
     }
   },
 
   methods: {
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     onView(data) {
       this.$router.push({
         path: '/invoice-detail',
@@ -173,12 +155,12 @@ export default {
 
     getStatusBadgeClass(status) {
       const statusClasses = {
-        1: 'badge badge-warning',
-        2: 'badge badge-info',
-        3: 'badge badge-success',
-        4: 'badge badge-danger'
+        1: 'badge badge-status-pending',
+        2: 'badge badge-status-info',
+        3: 'badge badge-status-success',
+        4: 'badge badge-status-danger'
       }
-      return statusClasses[status] || 'badge badge-secondary'
+      return statusClasses[status] || 'badge badge-status-default'
     },
 
     async fetchData() {
@@ -220,32 +202,32 @@ export default {
 }
 
 .badge {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  border-radius: 0.25rem;
+  padding: var(--sp-xs) var(--sp-sm);
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm);
 }
 
-.badge-success {
-  background-color: #28a745;
+.badge-status-success {
+  background-color: var(--base-green);
   color: white;
 }
 
-.badge-warning {
-  background-color: #ffc107;
+.badge-status-pending {
+  background-color: var(--base-warning);
   color: #212529;
 }
 
-.badge-info {
+.badge-status-info {
   background-color: #17a2b8;
   color: white;
 }
 
-.badge-danger {
-  background-color: #dc3545;
+.badge-status-danger {
+  background-color: var(--base-red);
   color: white;
 }
 
-.badge-secondary {
+.badge-status-default {
   background-color: #6c757d;
   color: white;
 }

@@ -98,6 +98,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
@@ -110,6 +111,8 @@ export default {
     BaseDataTable,
     mergeModal
   },
+
+  mixins: [dataTablePaging],
 
   props: {
     modelForm: {
@@ -126,149 +129,44 @@ export default {
 
   data() {
     return {
-      take: 10,
-      skip: 0,
-      sort: [],
-
-      // Merge feature
       selectedQuotations: [],
       showMergeModal: false,
-      mergeQuotationsData: [],
-
-      // Columns Configuration
-      columns: [
-        {
-          field: 'action',
-          header: '',
-          width: '50px',
-          sortable: false
-        },
-        {
-          field: 'number',
-          header: 'เลขที่ใบเสนอราคา',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'running',
-          header: 'เลขที่รัน',
-          sortable: true,
-          minWidth: '120px'
-        },
-        {
-          field: 'customerName',
-          header: 'ชื่อลูกค้า',
-          sortable: true,
-          minWidth: '180px'
-        },
-        {
-          field: 'customerPhone',
-          header: 'เบอร์โทร',
-          sortable: true,
-          minWidth: '120px'
-        },
-        {
-          field: 'customerEmail',
-          header: 'อีเมล',
-          sortable: true,
-          minWidth: '150px'
-        },
-        {
-          field: 'currency',
-          header: 'สกุลเงิน',
-          sortable: true,
-          minWidth: '80px'
-        },
-        {
-          field: 'currencyRate',
-          header: 'อัตราแลกเปลี่ยน',
-          sortable: true,
-          minWidth: '120px',
-          template: 'currencyRateTemplate'
-        },
-        {
-          field: 'markUp',
-          header: 'Markup (%)',
-          sortable: true,
-          minWidth: '100px',
-          template: 'markupTemplate'
-        },
-        {
-          field: 'discount',
-          header: 'ส่วนลด (%)',
-          sortable: true,
-          minWidth: '100px',
-          template: 'discountTemplate'
-        },
-        {
-          field: 'freight',
-          header: 'ค่าขนส่ง',
-          sortable: true,
-          minWidth: '100px',
-          template: 'freightTemplate'
-        },
-        {
-          field: 'date',
-          header: 'วันที่ใบเสนอราคา',
-          sortable: true,
-          minWidth: '140px',
-          template: 'dateTemplate'
-        },
-        {
-          field: 'createDate',
-          header: 'วันที่สร้าง',
-          sortable: true,
-          minWidth: '140px',
-          template: 'createDateTemplate'
-        },
-        {
-          field: 'createBy',
-          header: 'ผู้สร้าง',
-          sortable: true,
-          minWidth: '120px'
-        },
-        {
-          field: 'remark',
-          header: 'หมายเหตุ',
-          sortable: true,
-          minWidth: '150px'
-        }
-      ]
+      mergeQuotationsData: []
     }
   },
 
   computed: {
     form() {
       return this.modelForm || {}
+    },
+    columns() {
+      return [
+        { field: 'action', header: '', width: '50px', sortable: false },
+        { field: 'number', header: this.$t('view.sale.quotationList.number'), sortable: true, minWidth: '150px' },
+        { field: 'running', header: 'เลขที่รัน', sortable: true, minWidth: '120px' },
+        { field: 'customerName', header: this.$t('view.sale.quotationList.customerName'), sortable: true, minWidth: '180px' },
+        { field: 'customerPhone', header: 'เบอร์โทร', sortable: true, minWidth: '120px' },
+        { field: 'customerEmail', header: 'อีเมล', sortable: true, minWidth: '150px' },
+        { field: 'currency', header: this.$t('view.sale.quotationList.currency'), sortable: true, minWidth: '80px' },
+        { field: 'currencyRate', header: 'อัตราแลกเปลี่ยน', sortable: true, minWidth: '120px', template: 'currencyRateTemplate' },
+        { field: 'markUp', header: 'Markup (%)', sortable: true, minWidth: '100px', template: 'markupTemplate' },
+        { field: 'discount', header: 'ส่วนลด (%)', sortable: true, minWidth: '100px', template: 'discountTemplate' },
+        { field: 'freight', header: 'ค่าขนส่ง', sortable: true, minWidth: '100px', template: 'freightTemplate' },
+        { field: 'date', header: this.$t('view.sale.quotationList.quotationDate'), sortable: true, minWidth: '140px', template: 'dateTemplate' },
+        { field: 'createDate', header: this.$t('view.sale.quotationList.createDate'), sortable: true, minWidth: '140px', template: 'createDateTemplate' },
+        { field: 'createBy', header: this.$t('view.sale.quotationList.createBy'), sortable: true, minWidth: '120px' },
+        { field: 'remark', header: this.$t('common.field.remark'), sortable: true, minWidth: '150px' }
+      ]
     }
   },
 
   watch: {
     async modelForm() {
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
+      this.resetPaging()
     }
   },
 
   methods: {
-    // Data table handlers
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     // Action handlers
     onEdit(data) {
       // Navigate to edit quotation
@@ -342,14 +240,14 @@ export default {
 .merge-toolbar {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  background: #fdf2f2;
+  padding: var(--sp-sm) var(--sp-md);
+  margin-bottom: var(--sp-sm);
+  background: var(--color-highlight-bg);
   border: 1px solid var(--base-font-color);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 
   .merge-info {
-    font-size: 14px;
+    font-size: var(--fs-sm);
     font-weight: 500;
     color: var(--base-font-color);
   }
@@ -367,12 +265,12 @@ export default {
 
 .badge {
   padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  border-radius: 0.25rem;
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm);
 }
 
 .badge-success {
-  background-color: #28a745;
+  background-color: var(--base-green);
   color: white;
 }
 </style>

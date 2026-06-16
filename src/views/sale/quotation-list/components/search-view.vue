@@ -20,13 +20,11 @@
     
     <form @submit.prevent="onSearch">
       <div class="form-col-container">
-        <!-- quotation number -->
         <div>
-          <span class="title-text">เลขที่ใบเสนอราคา</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.number"
+          <span class="title-text">{{ $t('view.sale.quotationList.number') }}</span>
+          <InputTextGeneric
+            v-model="form.number"
+            :trim="true"
             placeholder="EX: QUO-2025-001"
           />
         </div>
@@ -40,60 +38,53 @@
       >
         <template #content>
           <div class="form-col-container">
-            <!-- customer name -->
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.customerName"
+              <span class="title-text">{{ $t('view.sale.quotationList.customerName') }}</span>
+              <InputTextGeneric
+                v-model="form.customerName"
+                :trim="true"
                 placeholder="ชื่อลูกค้า"
               />
             </div>
 
-            <!-- currency -->
             <div>
-              <span class="title-text">สกุลเงิน</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.currency"
+              <span class="title-text">{{ $t('view.sale.quotationList.currency') }}</span>
+              <InputTextGeneric
+                v-model="form.currency"
+                :trim="true"
                 placeholder="EX: USD, THB"
               />
             </div>
 
-            <!-- create by -->
             <div>
-              <span class="title-text">ผู้สร้าง</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.createBy"
+              <span class="title-text">{{ $t('view.sale.quotationList.createBy') }}</span>
+              <InputTextGeneric
+                v-model="form.createBy"
+                :trim="true"
                 placeholder="ชื่อผู้สร้าง"
               />
             </div>
           </div>
 
           <div class="form-col-container mt-2">
-            <!-- create date -->
             <div>
-              <span class="title-text">วันที่สร้าง</span>
+              <span class="title-text">{{ $t('view.sale.quotationList.createDate') }}</span>
               <div class="flex-group">
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.createDateStart"
                   :max-date="form.createDateEnd"
-                  showIcon
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="เริ่มต้น"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.createDateEnd"
                   :min-date="form.createDateStart"
-                  showIcon
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="สิ้นสุด"
                   dateFormat="dd/mm/yy"
@@ -101,25 +92,24 @@
               </div>
             </div>
 
-            <!-- quotation date -->
             <div>
-              <span class="title-text">วันที่ใบเสนอราคา</span>
+              <span class="title-text">{{ $t('view.sale.quotationList.quotationDate') }}</span>
               <div class="flex-group">
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.quotationDateStart"
                   :max-date="form.quotationDateEnd"
-                  showIcon
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="เริ่มต้น"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   v-model="form.quotationDateEnd"
                   :min-date="form.quotationDateStart"
-                  showIcon
+                  :showIcon="true"
                   :manualInput="false"
                   placeholder="สิ้นสุด"
                   dateFormat="dd/mm/yy"
@@ -152,7 +142,8 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import pageTitle from '@/components/custom/page-title.vue'
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
@@ -165,7 +156,8 @@ export default {
   name: 'QuotationListSearchView',
 
   components: {
-    Calendar,
+    CalendarGeneric,
+    InputTextGeneric,
     pageTitle,
     dialogView
   },

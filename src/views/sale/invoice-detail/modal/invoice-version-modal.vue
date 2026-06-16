@@ -78,12 +78,10 @@
 
                   <Column field="description" header="รายละเอียด" style="min-width: 200px">
                     <template #body="slotProps">
-                      <!-- <span>{{ slotProps.data.description || '-' }}</span> -->
-                      <input
+                          <input
                         v-model.number="slotProps.data.description"
                         type="text"
-                        class="form-control text-right bg-input input-bg"
-                        style="background-color: #b5dad4; width: 100%"
+                        class="form-control text-right bg-input table-editable-cell"
                       />
                     </template>
                   </Column>
@@ -97,10 +95,9 @@
                       <input
                         v-model.number="slotProps.data.appraisalPrice"
                         type="number"
-                        class="form-control text-right bg-input input-bg"
+                        class="form-control text-right bg-input table-editable-cell"
                         step="0.01"
                         @input="recalculateAll"
-                        style="background-color: #b5dad4; width: 100%"
                       />
                     </template>
                   </Column>
@@ -110,12 +107,11 @@
                       <input
                         v-model.number="slotProps.data.discountPercent"
                         type="number"
-                        class="form-control text-right bg-input input-bg"
+                        class="form-control text-right bg-input table-editable-cell"
                         min="0"
                         max="100"
                         step="0.01"
                         @input="recalculateAll"
-                        style="background-color: #b5dad4; width: 100%"
                         placeholder="0"
                       />
                     </template>
@@ -271,7 +267,7 @@
             <!-- Action Buttons -->
             <div class="btn-submit-container mt-4 mb-2">
               <div class="d-flex justify-content-end">
-                <button class="btn btn-info mr-2" type="button" @click="onPreview">
+                <button class="btn btn-green mr-2" type="button" @click="onPreview">
                   <i class="bi bi-eye mr-1"></i>
                   พิมพ์ตัวอย่าง
                 </button>
@@ -282,7 +278,7 @@
                   บันทึก
                 </button>
 
-                <button class="btn btn-secondary" type="button" @click="closeModal">
+                <button class="btn btn-outline-main" type="button" @click="closeModal">
                   <i class="bi bi-x-circle mr-1"></i>
                   ยกเลิก
                 </button>
@@ -297,7 +293,9 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
@@ -436,20 +434,13 @@ export default {
         totalItems: this.totalItems,
         totalAfterAdjustments: this.totalAfterAdjustments,
         grandTotal: this.grandTotal,
-        createdDate: new Date().toISOString(),
-        createdBy: 'Current User' // TODO: Get from auth store
+        createdDate: new Date().toISOString()
       }
 
       this.$emit('preview', versionDataToSave)
-      //success('กำลังเปิดหน้าต่างพิมพ์ตัวอย่าง', 'Preview PDF')
     },
 
     async onSaveAndPrint() {
-      //console.log('onSaveAndPrint called')
-      //console.log('invoiceData:', this.invoiceData)
-      //console.log('versionData:', this.versionData)
-
-      // Validate data
       if (!this.versionData.currencyUnit) {
         warning('กรุณากรอกสกุลเงิน', 'ข้อมูลไม่ครบถ้วน')
         return
@@ -465,17 +456,9 @@ export default {
         totalItems: this.totalItems,
         totalAfterAdjustments: this.totalAfterAdjustments,
         grandTotal: this.grandTotal,
-        createdDate: new Date().toISOString(),
-        createdBy: 'Current User' // TODO: Get from auth store
+        createdDate: new Date().toISOString()
       }
 
-      //console.log('versionDataToSave:', versionDataToSave)
-      //console.log('Calling API with:', {
-      //   invoiceNumber: this.invoiceData.invoiceNumber,
-      //   soNumber: this.invoiceData.soNumber
-      // })
-
-      // Call API to save version
       const response = await this.invoiceStore.fetchUpsertVersion({
         formValue: {
           invoiceNumber: this.invoiceData.invoiceNumber,
@@ -484,28 +467,14 @@ export default {
         }
       })
 
-      //console.log('API Response:', response)
-
       if (response && response) {
         const savedVersionData = {
           ...versionDataToSave,
           versionNumber: response.versionNumber
         }
 
-        //console.log('savedVersionData:', savedVersionData)
-
-        //success('บันทึก Invoice Version สำเร็จ', 'กำลังพิมพ์เอกสาร...')
-
-        // Emit save event
         this.$emit('save', savedVersionData)
-
-        // Print preview
-        //this.$emit('preview', savedVersionData)
-
-        // Close modal
         this.closeModal()
-      } else {
-        console.error('No response or response.data')
       }
     }
   }
@@ -542,17 +511,17 @@ input[type='number'] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
+  padding: var(--sp-md) var(--sp-lg);
+  background-color: var(--color-highlight-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
 
   &.summary-total {
-    background-color: #fff;
+    background-color: var(--color-card-bg);
     border: 2px solid var(--base-font-color);
-    padding: 1rem;
-    margin-top: 0.5rem;
-    font-size: 1.1rem;
+    padding: var(--sp-lg);
+    margin-top: var(--sp-sm);
+    font-size: var(--fs-lg);
   }
 }
 
@@ -565,7 +534,12 @@ input[type='number'] {
 .summary-value {
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--base-font-color);
+}
+
+.table-editable-cell {
+  background-color: #b5dad4;
+  width: 100%;
 }
 
 // DataTable styles ตามมาตรฐานของ project
@@ -580,12 +554,12 @@ input[type='number'] {
 
   .p-datatable-tbody > tr {
     &:hover {
-      background-color: #f8f9fa;
+      background-color: var(--color-highlight-bg);
     }
 
     > td {
       padding: 0.75rem 0.5rem;
-      border-bottom: 1px solid #e9ecef;
+      border-bottom: 1px solid var(--color-border);
       vertical-align: middle;
     }
   }

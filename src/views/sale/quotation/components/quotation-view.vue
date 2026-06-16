@@ -8,11 +8,11 @@
             <!-- date and invoice number -->
             <div class="form-col-container">
               <div>
-                <span class="title-text">วันที่ใบเสนอราคา</span>
-                <Calendar
+                <span class="title-text">{{ $t('view.sale.quotation.quotationDate') }}</span>
+                <CalendarGeneric
                   class="w-100"
                   v-model="customer.quotationDate"
-                  showIcon
+                  :showIcon="true"
                   :manualInput="true"
                   dateFormat="dd/mm/yy"
                 />
@@ -38,33 +38,30 @@
             <div class="form-col-container d-flex justify-content-end align-items-end">
               <div class="">
                 <span class="title-text">Currency</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="text"
-                  v-model.trim="customer.currencyUnit"
-                  style="width: 80px"
+                <InputTextGeneric
+                  v-model="customer.currencyUnit"
+                  :trim="true"
+                  class="input-bg input-narrow"
                 />
               </div>
               <div class="">
                 <span class="title-text">Rate</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
+                <InputTextGeneric
                   v-model.number="customer.currencyMultiplier"
-                  min="0"
-                  step="any"
-                  style="width: 80px"
+                  type="number"
+                  :min="0"
+                  :step="'any'"
+                  class="input-bg input-narrow"
                 />
               </div>
               <div class="">
                 <span class="title-text">Markup</span>
-                <input
-                  :class="['form-control bg-input', 'input-bg']"
-                  type="number"
+                <InputTextGeneric
                   v-model.number="customer.markup"
-                  min="0"
-                  step="any"
-                  style="width: 80px"
+                  type="number"
+                  :min="0"
+                  :step="'any'"
+                  class="input-bg input-narrow"
                 />
               </div>
               <div class="">
@@ -102,12 +99,10 @@
               </div>
               <div class="">
                 <span class="title-text">Gold (US$/Oz.)</span>
-                <input
-                  class="form-control bg-input input-bg"
-                  type="text"
-                  :value="goldPerOzDisplay"
-                  readonly
-                  style="width: 100px; text-align: right;"
+                <InputTextGeneric
+                  :modelValue="goldPerOzDisplay"
+                  :readonly="true"
+                  class="input-bg input-narrow text-right"
                 />
               </div>
             </div>
@@ -178,11 +173,11 @@
               </div>
               <div class="form-col-container mt-2">
                 <div>
-                  <span class="title-text">หมายเหตุ</span>
-                  <input
-                    :class="['form-control bg-input', 'input-bg']"
-                    type="text"
-                    v-model.trim="customer.remark"
+                  <span class="title-text">{{ $t('common.field.remark') }}</span>
+                  <InputTextGeneric
+                    v-model="customer.remark"
+                    :trim="true"
+                    class="input-bg"
                   />
                 </div>
               </div>
@@ -797,7 +792,7 @@
 
       <div class="base-customer">
         <div class="filter-container mt-2">
-          <div class="d-flex justify-content-center align-items-center" style="flex-wrap: wrap; gap: 12px;">
+          <div class="action-group-wrap">
             <!-- PDF Group -->
             <div class="action-btn-group">
               <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
@@ -816,9 +811,15 @@
                 <i class="bi bi-eye mr-1"></i>
                 <span>Preview</span>
               </button>
-              <div class="d-flex align-items-center gap-2" style="margin-left: 10px;">
-                <span class="title-text mr-2" style="white-space: nowrap;">Profit %</span>
-                <input class="form-control form-control-sm" type="number" v-model.number="customer.profitPercent" style="width: 70px;" min="0" max="100" />
+              <div class="profit-group ml-2">
+                <span class="title-text mr-2 profit-label">Profit %</span>
+                <InputTextGeneric
+                  v-model.number="customer.profitPercent"
+                  type="number"
+                  :min="0"
+                  :max="100"
+                  class="input-narrow"
+                />
               </div>
             </div>
 
@@ -833,11 +834,9 @@
 
             <!-- Action Group -->
             <div class="action-btn-group">
-              <div class="d-flex align-items-center mr-2" style="gap: 4px; cursor: pointer; white-space: nowrap"
-                   @click="pdfShowCifLabel = !pdfShowCifLabel">
-                <input type="checkbox" v-model="pdfShowCifLabel"
-                       style="width: 14px; height: 14px; cursor: pointer" />
-                <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
+              <div class="cif-toggle mr-2" @click="pdfShowCifLabel = !pdfShowCifLabel">
+                <input type="checkbox" v-model="pdfShowCifLabel" class="cif-checkbox" />
+                <span class="cif-label">C.I.F</span>
               </div>
               <button class="btn btn-sm btn-main" type="submit">
                 <span>Save Quotation</span>
@@ -920,12 +919,17 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import Calendar from 'primevue/calendar'
 
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 import InputWithButton from '@/components/input/input-with-button.vue'
@@ -987,7 +991,8 @@ export default {
     ColumnGroup,
     Row,
     imagePreview,
-    Calendar,
+    CalendarGeneric,
+    InputTextGeneric,
     editStockView,
     ConfirmCreatePdfView,
     CustomerSearchModal,
@@ -1188,19 +1193,9 @@ export default {
 
   data() {
     return {
-      // quotationItems: [],
-      // groupOrderRunning: {
-      //   product: 1,
-      //   etc: 5
-      // },
       type: 'STOCK-PRODUCT',
       customer: {
         ...interfaceForm
-        // quotationItems: [],
-        // currencyMultiplier: 1,
-        // currencyUnit: 'THB',
-        // markup: 0,
-        // discountPercent: 0
       },
       groupOrderRunning: {
         product: 1,
@@ -1290,9 +1285,6 @@ export default {
       // ในVue 3, เราสามารถอัปเดตได้โดยตรง
       this.customer.quotationItems[index] = newCal
 
-      //console.log('onBluePrice' + fieldName, this.quotationItems[item])
-      //console.log('onBluePrice' + fieldName, this.quotationItems)
-      //this.onUpdateQty(item)
     },
     onBlueFreight(freight) {
       // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
@@ -1546,8 +1538,6 @@ export default {
       this.fetchSaveQuotation()
     },
     async fetchSaveQuotation() {
-      //console.log('fetchSaveQuotation', this.customer)
-
       if (!this.customer.invoiceNumber) {
         await this.generateQuotationNumber()
       }
@@ -1592,8 +1582,6 @@ export default {
       }
     },
     async fetchGetQuotation() {
-
-      console.log('Fetching quotation with number:', this.modelQuotation)
       const formValue = {
         number: this.modelQuotation.number || null
       }
@@ -1627,7 +1615,6 @@ export default {
           vatPercent: res.vat || 0,
           goldPerOz: res.goldPerOz || 0
         }
-        console.log('fetchGetQuotation', res)
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
       }
     },
@@ -1829,11 +1816,10 @@ export default {
 }
 
 .type-container {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: bold;
   color: var(--base-font-color);
-  padding: 5px;
-  //margin: 0px 0px 10px 0px;
+  padding: var(--sp-xs);
 }
 
 .material-cell {
@@ -1901,21 +1887,21 @@ export default {
 
 /* Customer Section Styles */
 .customer-details-section {
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1rem;
-  background-color: #f8f9fa;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  background-color: var(--color-highlight-bg);
 }
 
 .customer-display-field {
-  background-color: white;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   padding: 0.375rem 0.75rem;
   min-height: 38px;
   display: flex;
   align-items: center;
-  color: #495057;
+  color: var(--base-font-color);
   font-weight: 500;
 }
 
@@ -1926,7 +1912,7 @@ export default {
 }
 
 .title-text-lg {
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
   font-weight: bold;
   color: var(--base-font-color);
 }
@@ -1936,8 +1922,49 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   background: #fafafa;
+}
+
+.action-group-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+
+.input-narrow {
+  width: 80px;
+}
+
+.profit-group {
+  display: flex;
+  align-items: center;
+}
+
+.profit-label {
+  white-space: nowrap;
+}
+
+.cif-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cif-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.cif-label {
+  font-size: var(--fs-sm);
+  color: #555;
+  cursor: pointer;
 }
 </style>

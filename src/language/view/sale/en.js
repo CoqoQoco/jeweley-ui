@@ -1,3 +1,70 @@
+export const invoice = {
+  title: 'Invoice List',
+  searchTitle: 'Search Invoices',
+  invoiceNumber: 'Invoice No.',
+  stockNumber: 'Stock No.',
+  productNumber: 'Product No.',
+  moldNumber: 'Mold No.',
+  customerName: 'Customer Name',
+  createDate: 'Create Date',
+  createBy: 'Created By',
+  deliveryDate: 'Delivery Date',
+  remark: 'Remark',
+  status: 'Status',
+  customerCode: 'Customer Code'
+}
+
+export const invoiceDetail = {
+  title: 'Invoice Detail',
+  addVersion: 'Add Version',
+  printInvoice: 'Print Invoice',
+  testHelloUsb: 'Test Hello USB',
+  exportExcel: 'Export Excel',
+  printDelivery: 'Print Delivery Note',
+  cancelDocument: 'Cancel Document',
+  goBack: 'Back',
+  viewingVersion: 'Viewing',
+  restoreOriginal: 'View Original',
+  invoiceAndCustomer: 'Invoice & Customer Info',
+  invoiceInfo: 'Invoice Info',
+  customerInfo: 'Customer Info',
+  productList: 'Product List',
+  invoiceVersions: 'Invoice Versions',
+  paymentAndSummary: 'Payment & Financial Summary',
+  recordPayment: 'Record Payment',
+  paymentInfo: 'Payment Info',
+  financialSummary: 'Financial Summary',
+  paymentHistory: 'Payment History'
+}
+
+export const quotation = {
+  title: 'Quotation',
+  searchTitle: 'Search Quotations',
+  newProductionNumber: 'Production No. (New)',
+  oldProductionNumber: 'Production No. (Old)',
+  productCode: 'Product Code',
+  quotationNumber: 'Quotation',
+  customerInfo: 'Customer Info',
+  quotationDate: 'Quotation Date',
+  currency: 'Currency',
+  productList: 'Product List',
+  addProduct: 'Add Product',
+  printQuotation: 'Print Quotation',
+  exportExcel: 'Export Excel'
+}
+
+export const quotationList = {
+  title: 'Quotation List',
+  searchTitle: 'Search Quotations',
+  number: 'Quotation No.',
+  customerName: 'Customer Name',
+  currency: 'Currency',
+  createBy: 'Created By',
+  createDate: 'Create Date',
+  quotationDate: 'Quotation Date',
+  status: 'Status'
+}
+
 export const saleOrder = {
   title: 'Sale Order',
   searchTitle: 'Search Quotation',
@@ -64,6 +131,10 @@ export const productionOrder = {
 }
 
 export default {
+  invoice,
+  invoiceDetail,
+  quotation,
+  quotationList,
   saleOrder,
   saleOrderList,
   productionOrder

@@ -1,13 +1,9 @@
 <template>
-  <Dialog
-    :visible="isShow"
-    header="รวม Quotation"
-    :modal="true"
-    :style="{ width: '860px', maxWidth: '95vw' }"
-    :closable="true"
-    :draggable="false"
-    @update:visible="$emit('close')"
-  >
+  <modal :showModal="isShow" @closeModal="$emit('close')" width="860px" :clickToClose="true">
+    <template #title>
+      <span class="title-text-lg px-3 pt-3 d-block">รวม Quotation</span>
+    </template>
+    <template #content>
     <div class="merge-modal-body">
       <!-- Conflict Resolution Section -->
       <div v-if="conflicts.length > 0" class="conflict-section">
@@ -37,7 +33,7 @@
                 class="conflict-radio"
               />
               <label :for="`${conflict.key}-${opt.quotationNumber}`" class="conflict-option-label">
-                <span class="badge badge-secondary mr-1">{{ opt.quotationNumber }}</span>
+                <span class="badge badge-qn mr-1">{{ opt.quotationNumber }}</span>
                 <span :class="{ 'text-muted': opt.value === null || opt.value === undefined || opt.value === '' }">
                   {{ formatFieldValue(opt.value, conflict.type) }}
                 </span>
@@ -57,7 +53,7 @@
       <div class="items-section">
         <div class="items-header">
           <strong>รายการสินค้าที่จะรวม</strong>
-          <span class="badge badge-info ml-2">{{ mergedItems.length }} รายการ</span>
+          <span class="badge badge-count ml-2">{{ mergedItems.length }} รายการ</span>
         </div>
 
         <div class="items-table-wrapper">
@@ -74,7 +70,7 @@
             <tbody>
               <tr v-for="(item, idx) in mergedItems" :key="idx">
                 <td>
-                  <span class="badge badge-secondary">{{ item._fromQuotation }}</span>
+                  <span class="badge badge-qn">{{ item._fromQuotation }}</span>
                 </td>
                 <td>{{ item.stockNumber || item.stockNumberOrigin || '-' }}</td>
                 <td>{{ item.productName || item.description || item.name || '-' }}</td>
@@ -90,27 +86,28 @@
       </div>
     </div>
 
-    <template #footer>
-      <div class="modal-footer-actions">
-        <button class="btn btn-sm btn-outline-main mr-2" @click="$emit('close')">
-          ยกเลิก
-        </button>
-        <button
-          class="btn btn-sm btn-main"
-          @click="onConfirm"
-          :disabled="!isResolved || mergedItems.length === 0"
-        >
-          <i class="bi bi-diagram-2 mr-1"></i>
-          ยืนยันการรวม ({{ mergedItems.length }} รายการ)
-        </button>
-      </div>
+    <div class="modal-footer-actions p-3">
+      <button class="btn btn-sm btn-outline-main mr-2" @click="$emit('close')">
+        ยกเลิก
+      </button>
+      <button
+        class="btn btn-sm btn-main"
+        @click="onConfirm"
+        :disabled="!isResolved || mergedItems.length === 0"
+      >
+        <i class="bi bi-diagram-2 mr-1"></i>
+        ยืนยันการรวม ({{ mergedItems.length }} รายการ)
+      </button>
+    </div>
     </template>
-  </Dialog>
+  </modal>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
+import { defineAsyncComponent } from 'vue'
 import dayjs from 'dayjs'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
@@ -137,7 +134,7 @@ export default {
   name: 'MergeQuotationModal',
 
   components: {
-    Dialog
+    modal
   },
 
   props: {
@@ -221,6 +218,7 @@ export default {
       const newNumber = `QT-${now.format('YYYYMMDD')}-${now.format('HHmmss')}`
 
       // Clean items — remove _fromQuotation helper field, keep id: null
+      // eslint-disable-next-line no-unused-vars
       const items = this.mergedItems.map(({ _fromQuotation, ...rest }) => rest)
 
       const formValue = {
@@ -297,21 +295,21 @@ export default {
 
   .conflict-field {
     border: 1px solid #e8d0d0;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     padding: 10px 14px;
-    margin-bottom: 10px;
+    margin-bottom: var(--sp-sm);
 
     .conflict-label {
-      font-size: 13px;
+      font-size: var(--fs-sm);
       font-weight: 600;
       color: var(--base-font-color);
-      margin-bottom: 8px;
+      margin-bottom: var(--sp-sm);
     }
 
     .conflict-options {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: var(--sp-sm);
     }
 
     .conflict-option {
@@ -319,8 +317,8 @@ export default {
       align-items: center;
       gap: 6px;
       padding: 6px 10px;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
       cursor: pointer;
       transition: border-color 0.15s;
 
@@ -352,9 +350,9 @@ export default {
   padding: 10px 14px;
   background: #d4edda;
   border: 1px solid #c3e6cb;
-  border-radius: 4px;
-  font-size: 14px;
-  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-lg);
   color: #155724;
 }
 
@@ -370,13 +368,13 @@ export default {
   .items-table-wrapper {
     max-height: 260px;
     overflow-y: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
   }
 
   .items-table {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--fs-sm);
 
     thead th {
       position: sticky;
@@ -405,16 +403,16 @@ export default {
 
 // Badge
 .badge {
-  font-size: 11px;
+  font-size: var(--fs-sm);
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 
-  &-secondary {
+  &-qn {
     background-color: #6c757d;
     color: white;
   }
 
-  &-info {
+  &-count {
     background-color: var(--base-green);
     color: white;
   }

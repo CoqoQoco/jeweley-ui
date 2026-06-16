@@ -22,11 +22,11 @@
                     <label class="form-label required">
                       <i class="bi bi-calendar-event mr-1"></i>วันที่จ่ายเงิน
                     </label>
-                    <Calendar
+                    <CalendarGeneric
                       v-model="paymentData.paymentDate"
                       dateFormat="dd/mm/yy"
                       placeholder="เลือกวันที่"
-                      showIcon
+                      :showIcon="true"
                       :showButtonBar="true"
                       class="w-100"
                     />
@@ -58,7 +58,7 @@
                     <label class="form-label required">
                       <i class="bi bi-credit-card mr-1"></i>วิธีการชำระเงิน
                     </label>
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="paymentData.paymentMethod"
                       :options="paymentMethods"
                       optionLabel="name"
@@ -154,13 +154,13 @@
               <div class="filter-container-search mb-2">
                 <div class="p-2">
                   <div class="d-flex align-items-start">
-                    <i class="bi bi-info-circle text-info mr-2" style="font-size: 1.2rem"></i>
+                    <i class="bi bi-info-circle text-info mr-2 info-icon"></i>
                     <div>
-                      <p class="mb-0" style="font-size: 0.9rem; color: #6c757d">
+                      <p class="mb-0 info-text">
                         <i class="bi bi-receipt mr-1"></i>Invoice:
                         <strong>{{ invoiceData.invoiceNumber }}</strong>
                       </p>
-                      <p class="mb-0 mt-1" style="font-size: 0.9rem; color: #6c757d">
+                      <p class="mb-0 mt-1 info-text">
                         <i class="bi bi-cash-stack mr-1"></i>ยอด Invoice:
                         <strong
                           >{{ formatNumber(invoiceData.grandTotal) }}
@@ -180,7 +180,7 @@
                     บันทึก
                   </button>
 
-                  <button class="btn btn-secondary" type="button" @click="closeModal">
+                  <button class="btn btn-outline-main" type="button" @click="closeModal">
                     <i class="bi bi-x-circle mr-1"></i>
                     ยกเลิก
                   </button>
@@ -196,8 +196,8 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import UploadImage from '@/components/prime-vue/UploadImage.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
@@ -211,8 +211,8 @@ export default {
 
   components: {
     modal,
-    Calendar,
-    Dropdown,
+    CalendarGeneric,
+    DropdownGeneric,
     UploadImage,
     AutoCompleteGeneric
   },
@@ -330,15 +330,10 @@ export default {
       if (!file) return
 
       try {
-        // Compress image
         const compressedFile = await this.compressImage(file)
         this.compressedImage = compressedFile
         this.paymentData.receiptImage = file.name
-
-        console.log('Original size:', (file.size / 1024).toFixed(2), 'KB')
-        console.log('Compressed size:', (compressedFile.size / 1024).toFixed(2), 'KB')
       } catch (err) {
-        console.error('Error compressing image:', err)
         warning('ไม่สามารถบีบอัดรูปภาพได้', 'เกิดข้อผิดพลาด')
       }
     },
@@ -478,6 +473,15 @@ export default {
   // Component-specific styles only
 }
 
+.info-icon {
+  font-size: var(--fs-lg);
+}
+
+.info-text {
+  font-size: var(--fs-sm);
+  color: #6c757d;
+}
+
 .form-label {
   font-weight: 600;
   color: var(--base-sub-color);
@@ -553,22 +557,4 @@ textarea.form-control {
   }
 }
 
-// PrimeVue Dropdown full width
-// :deep(.p-dropdown) {
-//   width: 100%;
-
-//   .p-dropdown-label {
-//     //border: 1px solid #ced4da;
-//     //border-radius: 4px;
-//     padding: 0.5rem 0.75rem;
-//     font-size: var(--base-font-size);
-//   }
-
-//   &.p-focus {
-//     .p-dropdown-label {
-//       border-color: var(--base-green);
-//       box-shadow: 0 0 0 0.2rem rgba(3, 131, 135, 0.25);
-//     }
-//   }
-// }
 </style>

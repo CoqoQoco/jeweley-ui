@@ -27,13 +27,14 @@
                   <span>ประเภทลูกค้า</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <Dropdown
-                  v-model="form.type"
+                <DropdownGeneric
+                  :modelValue="form.type"
                   :options="masterCustomerType"
                   optionLabel="description"
                   :class="validation.isValCustomerType === true ? `p-invalid` : ``"
                   :showClear="form.type ? true : false"
                   placeholder="เลือกประเภทลูกค้า"
+                  @update:modelValue="form.type = $event"
                 />
               </div>
             </div>
@@ -184,10 +185,10 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success, error } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -213,7 +214,7 @@ export default {
 
   components: {
     modal,
-    Dropdown
+    DropdownGeneric
   },
 
   props: {
@@ -263,7 +264,7 @@ export default {
   methods: {
     async onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.form.code} - ${this.form.nameTh}`,
           'ยืนยันเพิ่มข้อมูลลูกค้า',
           async () => {
@@ -289,48 +290,42 @@ export default {
     },
 
     async submitCustomer() {
-      try {
-        const formValue = {
-          code: this.form.code,
-          type: this.form.type,
-          nameTh: this.form.nameTh,
-          nameEn: this.form.nameEn,
-          address: this.form.address,
-          tel1: this.form.telephone1,
-          tel2: this.form.telephone2,
-          email: this.form.email,
-          contactName: this.form.contactName,
-          remark: this.form.remark
-        }
+      const formValue = {
+        code: this.form.code,
+        type: this.form.type,
+        nameTh: this.form.nameTh,
+        nameEn: this.form.nameEn,
+        address: this.form.address,
+        tel1: this.form.telephone1,
+        tel2: this.form.telephone2,
+        email: this.form.email,
+        contactName: this.form.contactName,
+        remark: this.form.remark
+      }
 
-        const result = await this.customerStore.fetchCreateCustomer({ formValue })
-        
-        if (result) {
-          swAlert.success(
-            'เพิ่มลูกค้าสำเร็จ',
-            null,
-            () => {
-              // Emit the created customer data back to parent
-              const customerData = {
-                id: result.id,
-                code: this.form.code,
-                nameTh: this.form.nameTh,
-                nameEn: this.form.nameEn,
-                address: this.form.address,
-                telephone1: this.form.telephone1,
-                telephone2: this.form.telephone2,
-                email: this.form.email,
-                contactName: this.form.contactName,
-                remark: this.form.remark
-              }
-              this.$emit('customerCreated', customerData)
-              this.onCancel()
+      const result = await this.customerStore.fetchCreateCustomer({ formValue })
+
+      if (result) {
+        success(
+          'เพิ่มลูกค้าสำเร็จ',
+          null,
+          () => {
+            const customerData = {
+              id: result.id,
+              code: this.form.code,
+              nameTh: this.form.nameTh,
+              nameEn: this.form.nameEn,
+              address: this.form.address,
+              telephone1: this.form.telephone1,
+              telephone2: this.form.telephone2,
+              email: this.form.email,
+              contactName: this.form.contactName,
+              remark: this.form.remark
             }
-          )
-        }
-      } catch (error) {
-        console.error('Error creating customer:', error)
-        swAlert.error('เกิดข้อผิดพลาดในการเพิ่มลูกค้า')
+            this.$emit('customerCreated', customerData)
+            this.onCancel()
+          }
+        )
       }
     },
 
@@ -345,11 +340,7 @@ export default {
     },
 
     async loadMasterData() {
-      try {
-        await this.masterStore.fetchCustomerType()
-      } catch (error) {
-        console.error('Error loading master data:', error)
-      }
+      await this.masterStore.fetchCustomerType()
     }
   }
 }
@@ -359,7 +350,7 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .title-text-lg {
-  font-size: 1.2rem;
+  font-size: var(--fs-lg);
   font-weight: bold;
   color: var(--base-font-color);
   display: flex;

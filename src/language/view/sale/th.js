@@ -1,3 +1,70 @@
+export const invoice = {
+  title: 'รายการใบแจ้งหนี้',
+  searchTitle: 'ค้นหาใบแจ้งหนี้',
+  invoiceNumber: 'เลขที่ Invoice',
+  stockNumber: 'เลข Stock',
+  productNumber: 'เลข Product',
+  moldNumber: 'เลข Mold',
+  customerName: 'ชื่อลูกค้า',
+  createDate: 'วันที่สร้าง',
+  createBy: 'ผู้สร้าง',
+  deliveryDate: 'วันที่จัดส่ง',
+  remark: 'หมายเหตุ',
+  status: 'สถานะ',
+  customerCode: 'รหัสลูกค้า'
+}
+
+export const invoiceDetail = {
+  title: 'รายละเอียด Invoice',
+  addVersion: 'เพิ่ม Version',
+  printInvoice: 'พิมพ์ใบแจ้งหนี้',
+  testHelloUsb: 'Test Hello USB',
+  exportExcel: 'Export Excel',
+  printDelivery: 'พิมพ์ใบส่งสินค้า',
+  cancelDocument: 'ยกเลิกเอกสาร',
+  goBack: 'ย้อนกลับ',
+  viewingVersion: 'กำลังดู',
+  restoreOriginal: 'กลับไปดูต้นฉบับ',
+  invoiceAndCustomer: 'ข้อมูล Invoice และลูกค้า',
+  invoiceInfo: 'ข้อมูล Invoice',
+  customerInfo: 'ข้อมูลลูกค้า',
+  productList: 'รายการสินค้า',
+  invoiceVersions: 'Invoice Versions',
+  paymentAndSummary: 'ข้อมูลการชำระเงินและสรุปยอด',
+  recordPayment: 'บันทึกการเก็บเงิน',
+  paymentInfo: 'ข้อมูลการชำระเงิน',
+  financialSummary: 'สรุปยอดเงิน',
+  paymentHistory: 'ประวัติการชำระเงิน'
+}
+
+export const quotation = {
+  title: 'ใบเสนอราคา',
+  searchTitle: 'ค้นหาใบเสนอราคา',
+  newProductionNumber: 'เลขที่ผลิต (ใหม่)',
+  oldProductionNumber: 'เลขที่ผลิต (เก่า)',
+  productCode: 'รหัสสินค้า',
+  quotationNumber: 'เสนอราคา',
+  customerInfo: 'ข้อมูลลูกค้า',
+  quotationDate: 'วันที่ใบเสนอราคา',
+  currency: 'สกุลเงิน',
+  productList: 'รายการสินค้า',
+  addProduct: 'เพิ่มสินค้า',
+  printQuotation: 'พิมพ์ใบเสนอราคา',
+  exportExcel: 'Export Excel'
+}
+
+export const quotationList = {
+  title: 'รายการใบเสนอราคา',
+  searchTitle: 'ค้นหาใบเสนอราคา',
+  number: 'เลขที่ใบเสนอราคา',
+  customerName: 'ชื่อลูกค้า',
+  currency: 'สกุลเงิน',
+  createBy: 'ผู้สร้าง',
+  createDate: 'วันที่สร้าง',
+  quotationDate: 'วันที่ใบเสนอราคา',
+  status: 'สถานะ'
+}
+
 export const saleOrder = {
   title: 'ใบสั่งขาย',
   searchTitle: 'ค้นหาใบเสนอราคา',
@@ -64,6 +131,10 @@ export const productionOrder = {
 }
 
 export default {
+  invoice,
+  invoiceDetail,
+  quotation,
+  quotationList,
   saleOrder,
   saleOrderList,
   productionOrder
