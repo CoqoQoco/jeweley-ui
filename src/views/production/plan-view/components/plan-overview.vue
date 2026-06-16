@@ -139,14 +139,12 @@ export default {
   },
   computed: {
     model() {
-      console.log('overview model', this.modelValue)
       return this.modelValue
     }
   },
   watch: {
     modelValue: {
       handler() {
-        console.log('overview model', this.modelValue)
         this.modelProcess = this.modelValue?.tbtProductionPlanStatusHeader
           ?.reduce((acc, status) => {
             if (

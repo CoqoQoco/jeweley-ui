@@ -19,7 +19,7 @@
       <!-- action -->
       <div class="d-flex justify-content-center">
         <pdf
-          class="btn btn-sm btn-primary btn-custom mr-2"
+          class="btn btn-sm btn-green btn-custom mr-2"
           :modelValue="model"
           :matValue="modelMat"
         >
@@ -30,20 +30,18 @@
           </span>
           <span>NEW</span>
         </button>
-        <button class="btn btn-sm btn-warning mr-2" @click="onShowFormHeaderUpdate">
+        <button class="btn btn-sm btn-main mr-2" @click="onShowFormHeaderUpdate">
           <span>
             <i class="bi bi-brush"></i>
           </span>
-          <!-- <span>เเก้ไข</span> -->
         </button>
         <button class="btn btn-sm btn-red mr-2" @click="onMeltJob">
           <span>
             <i class="bi bi-trash"></i>
           </span>
-          <!-- <span>หลอม</span> -->
         </button>
         <button
-          :class="['btn btn-sm', isAllowCVD ? 'btn-secondary' : 'btn-green']"
+          :class="['btn btn-sm', isAllowCVD ? 'btn-dark' : 'btn-green']"
           @click="onCVDJob"
           :disabled="isAllowCVD"
         >
@@ -167,7 +165,7 @@ import moment from 'dayjs'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, warning, success } from '@/services/alert/sweetAlerts.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 //import planOverview from './PlanOverview.vue'
@@ -225,14 +223,12 @@ export default {
   watch: {
     async model(value) {
       let param = []
-      //console.log(value)
       if (value.mold) {
         param.push(value.mold)
       }
       if (value.moldSub) {
         param.push(value.moldSub)
       }
-      //console.log('watch param:', param)
       if (param.length > 0) {
         await this.fetchImageData(param)
       }
@@ -275,63 +271,32 @@ export default {
 
     // --- APIs --- //
     async fetchImageData(mold) {
-      try {
-        //console.log('fetchImageData:', mold)
-        if (mold && mold.length > 0) {
-          // Build Azure Blob URLs for mold images
-          this.imageUrl = []
-          for (const param in mold) {
-            const blobPath = `Mold/${mold[param]}-Mold.png`
-            const imageUrl = getAzureBlobUrl(blobPath)
-            this.imageUrl.push(imageUrl)
-          }
-
-          if (this.form) {
-            this.form.requestDate = this.showDate(this.form.requestDate)
-          }
-
-          //console.log('fetchImageData Images:', this.imageUrl)
+      if (mold && mold.length > 0) {
+        this.imageUrl = []
+        for (const param in mold) {
+          const blobPath = `Mold/${mold[param]}-Mold.png`
+          const imageUrl = getAzureBlobUrl(blobPath)
+          this.imageUrl.push(imageUrl)
         }
-      } catch (error) {
-        //this.isLoadingImage = false
-        //this.imageUrl = []
-        console.log(error)
+
+        if (this.form) {
+          this.form.requestDate = this.showDate(this.form.requestDate)
+        }
       }
     },
     async generatePDF() {
-      try {
-        // Build Azure Blob URL for mold image
-        const blobPath = `Mold/${this.model.mold}-Mold.png`
-        const urlImage = getAzureBlobUrl(blobPath)
-
-        // สร้าง PDF builder (supports both Base64 and URL)
-        const pdfBuilder = new FilePlanProduction(this.model, this.modelMat, urlImage)
-        //const pdfBuilder = new FilePlanProduction(this.modelValue, this.urlImage)
-
-        // สร้างและเปิด PDF
-        pdfBuilder.generatePDF().open()
-      } catch (error) {
-        console.error('Failed to generate PDF:', error)
-      }
+      const blobPath = `Mold/${this.model.mold}-Mold.png`
+      const urlImage = getAzureBlobUrl(blobPath)
+      const pdfBuilder = new FilePlanProduction(this.model, this.modelMat, urlImage)
+      pdfBuilder.generatePDF().open()
     },
     onMeltJob() {
       this.$emit('onMeltJob')
     },
     async onCVDJob() {
-      try {
-        const result = await swAlert.confirmSubmit('', 'ยืนยันการดำเนินการ CVD?', async () => {
-          return await this.processCVDJob()
-        })
-
-        console.log('CVD Job Result:', result)
-
-        // if (result) {
-        //   this.$emit('onCVDJob')
-        // }
-      } catch (error) {
-        console.error('CVD Job Error:', error)
-        swAlert.error('เกิดข้อผิดพลาด', 'ไม่สามารถดำเนินการ CVD ได้')
-      }
+      confirmSubmit('', 'ยืนยันการดำเนินการ CVD?', async () => {
+        await this.processCVDJob()
+      })
     },
 
     async processCVDJob() {
@@ -341,7 +306,6 @@ export default {
         id: this.model.id
       }
 
-      // Step 1: Transfer to status 95
       const step1Result = await this.planUpdateStore.submitTransfer({
         formerStatus: this.model.status,
         targetStatus: 95,
@@ -350,41 +314,25 @@ export default {
         targetStatusCvd: true
       })
 
-      console.log('Step 1 Result:', step1Result)
-
-      // Step 2: Transfer to status 100
       if (step1Result.errors && step1Result.errors.length === 0) {
-        const step2Result = await this.planUpdateStore.submitTransfer({
+        await this.planUpdateStore.submitTransfer({
           formerStatus: 95,
           targetStatus: 100,
           transferBy: null,
           selectedItems: [selectedItem],
           targetStatusCvd: true
         })
-        console.log('Step 2 Result:', step2Result)
 
         this.$emit('onCVDJob')
       } else {
-        swAlert.warning('', 'ไม่สามารถดำเนินการ CVD ได้ (โอนสินค้าไม่สำเร็จ)')
+        warning('', 'ไม่สามารถดำเนินการ CVD ได้ (โอนสินค้าไม่สำเร็จ)')
         return false
       }
 
-      //swAlert.success('สำเร็จ', 'ดำเนินการ CVD เสร็จสิ้น')
       return true
     }
   },
-  async created() {
-    //console.log('created this.modelValue:', this.modelValue)
-
-    this.$nextTick(async () => {})
-  },
-  unmounted() {
-    //console.log('unmounted:', this.imageUrl)
-  },
-  // เพิ่ม activated hook ใน component
   activated() {
-    //console.log('activated - component reactivated')
-    // เรียกโหลดข้อมูลใหม่เมื่อกลับมาที่ component
     if (this.model) {
       let param = []
 
@@ -396,10 +344,7 @@ export default {
         param.push(this.model.moldSub)
       }
 
-      //console.log('activated param:', param)
-
       if (param.length > 0) {
-        // รีเซ็ตอาร์เรย์รูปภาพก่อนโหลดใหม่เมื่อ activated
         this.fetchImageData(param)
       }
     }

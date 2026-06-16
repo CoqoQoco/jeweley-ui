@@ -217,21 +217,19 @@
 </template>
 
 <script>
+/* eslint-disable no-restricted-imports */
 import { defineAsyncComponent } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
-//import _ from 'lodash'
 import Row from 'primevue/row'
+/* eslint-enable no-restricted-imports */
 
-//import DataTable from 'primevue/datatable'
-//import Column from 'primevue/column'
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
-import { findLastKey } from 'lodash'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
 const pricePDF = defineAsyncComponent(() =>
   import('@/components/pdf-make/FilePDFProductionPlanPrice.vue')
@@ -408,17 +406,12 @@ export default {
 
     calPricePerQty(data) {
       const total = this.caltotalPrice(data)
-      console.log('total', total, this.model.productQty)
       let price = (total / this.model.productQty ?? 1).toFixed(2)
-      console.log('price', price)
 
       return price
     },
     calEachPricePerQty(total) {
-      //const total = this.caltotalPrice(data)
-      //console.log('total', total, this.model.productQty)
       let price = (total / this.model.productQty ?? 1).toFixed(2)
-      console.log('price', price)
 
       return price
     },
@@ -433,15 +426,12 @@ export default {
       this.$emit('onShowUpdateStatus', 'gems')
     },
     onDelStatus(id) {
-      swAlert.confirmSubmit(
+      confirmSubmit(
         `ยืนยันลบงาน [คัดพลอย]`,
         `${this.model.wo}-${this.model.woNumber}`,
         async () => {
-          //console.log('call submitPlan')
           await this.DelStatus(id)
-        },
-        null,
-        null
+        }
       )
     },
 
@@ -477,45 +467,22 @@ export default {
 
     // ----- APIs
     async DelStatus(id) {
-      //console.log(id)
-      try {
-        this.isLoading = true
-
-        const params = {
-          productionPlanId: this.model.id,
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          id: id
-        }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanDeleteStatusDetail',
-          params
-        )
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              //this.closeModal()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
+      const params = {
+        productionPlanId: this.model.id,
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        id: id
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanDeleteStatusDetail',
+        params
+      )
+      if (res) {
+        success(``, '', async () => {
+          this.$emit('fetch')
+        })
       }
     }
-  },
-  created() {
-    this.$nextTick(() => {
-      //console.log('modelPlanStatus', this.modelPlanStatus)
-      console.log('model price', this.modelPrice)
-      console.log('model make price', this.isMakePrice)
-    })
   }
 }
 </script>

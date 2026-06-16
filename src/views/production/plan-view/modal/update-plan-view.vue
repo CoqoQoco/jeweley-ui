@@ -8,16 +8,15 @@
         <form @submit.prevent="onSubmit">
           <div class="p-2">
             <div class="form-col-container">
-              <!-- mold -->
               <div>
-                <span class="title-text">เเม่พิมพ์</span>
-                <AutoComplete
+                <span class="title-text">{{ $t('production.planTracking.mold') }}</span>
+                <AutoCompleteGeneric
                   v-model="form.mold"
                   :suggestions="modelMold"
                   @complete="onSearchMold"
                   placeholder="กรอกรหัสเเม่พิมพ์ ...."
                   :class="val.isValMold === true ? `p-invalid` : ``"
-                  forceSelection
+                  :forceSelection="true"
                 />
               </div>
 
@@ -25,41 +24,36 @@
               <div></div>
             </div>
             <div class="form-col-container mt-3">
-              <!-- send date -->
               <div>
-                <span class="title-text">วันส่งงานลูกค้า</span>
-                <Calendar
-                  class="w-100"
-                  dateFormat="dd/mm/yy"
+                <span class="title-text">{{ $t('production.planTracking.colRequestDate') }}</span>
+                <CalendarGeneric
                   v-model="form.requestDate"
+                  dateFormat="dd/mm/yy"
+                  :showIcon="true"
                   :class="val.isValRequestDate === true ? `p-invalid` : ``"
-                  showIcon
                 />
               </div>
-              <!-- customer number -->
               <div>
-                <span class="title-text">รหัสลุกค้า</span>
-                <!-- <input type="text" class="form-control" v-model="form.customerNumber" required /> -->
-                <AutoComplete
+                <span class="title-text">{{ $t('production.planTracking.customerCode') }}</span>
+                <AutoCompleteGeneric
                   v-model="form.customerNumber"
                   :suggestions="modelCustomer"
                   @complete="onSearchCustomer"
                   placeholder="กรอกรหัสลูกค้า...."
                   :class="val.isValCustomerNumber === true ? `p-invalid` : ``"
-                  forceSelection
+                  :forceSelection="true"
                 />
               </div>
 
-              <!-- customer type -->
               <div>
-                <span class="title-text">ประเภทลูกค้า</span>
-                <Dropdown
-                  v-model="form.customerType"
+                <span class="title-text">{{ $t('production.planTracking.customerType') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.customerType"
                   :options="modelMasterCustomerType"
                   optionLabel="description"
-                  class="md:w-14rem"
                   :class="val.isValCustomerType === true ? `p-invalid` : ``"
                   :showClear="form.customerType ? true : false"
+                  @update:modelValue="form.customerType = $event"
                 />
               </div>
             </div>
@@ -67,55 +61,48 @@
             <div class="line-main mt-4"></div>
 
             <div class="form-col-container mt-3">
-              <!-- product name -->
               <div>
-                <span class="title-text">ชื่อสินค้า</span>
+                <span class="title-text">{{ $t('production.planView.productName') }}</span>
                 <input type="text" class="form-control" v-model="form.productName" required />
               </div>
 
-              <!-- product number -->
               <div>
-                <span class="title-text">รหัสสินค้า</span>
+                <span class="title-text">{{ $t('production.planTracking.colProductCode') }}</span>
                 <input type="text" class="form-control" v-model="form.productNumber" required />
               </div>
 
-              <!-- product type -->
               <div>
-                <span class="title-text">ประเภทสินค้า</span>
-                <Dropdown
-                  v-model="form.productType"
+                <span class="title-text">{{ $t('production.planTracking.productType') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.productType"
                   :options="modelMasterProductType"
                   optionLabel="description"
-                  class="md:w-14rem"
                   :class="val.isValProductType === true ? `p-invalid` : ``"
                   :showClear="form.productType ? true : false"
+                  @update:modelValue="form.productType = $event"
                 />
               </div>
             </div>
             <div class="form-col-container filter-container-highlight mt-2 p-2">
               <div class="form-col-sm-container pl-2">
-                <!-- qty -->
                 <div>
-                  <span class="title-text-white">จำนวนสินค้า</span>
+                  <span class="title-text-white">{{ $t('production.planTracking.colProductQty') }}</span>
                   <input
                     type="number"
                     min="1"
                     class="form-control"
-                    style="background-color: #dad4b5"
-                    :style="form.productQty ? 'background-color: #b5dad4' : ''"
+                    :class="form.productQty ? 'input-filled' : 'input-empty'"
                     v-model="form.productQty"
                     required
                   />
                 </div>
 
-                <!-- unit -->
                 <div>
-                  <span class="title-text-white">หน่วย</span>
+                  <span class="title-text-white">{{ $t('production.planView.unitLabel') }}</span>
                   <input
                     type="text"
                     class="form-control"
-                    style="background-color: #dad4b5"
-                    :style="form.productQtyUnit ? 'background-color: #b5dad4' : ''"
+                    :class="form.productQtyUnit ? 'input-filled' : 'input-empty'"
                     v-model="form.productQtyUnit"
                     required
                   />
@@ -126,13 +113,11 @@
               <div></div>
             </div>
             <div class="form-col-container mt-2">
-              <!-- product detail -->
               <div>
-                <span class="title-text">รายละเอียดสินค้า</span>
+                <span class="title-text">{{ $t('production.planView.productDetail') }}</span>
                 <textarea
-                  class="form-control"
+                  class="form-control textarea-sm"
                   v-model="form.productDetail"
-                  style="height: 50px"
                   required
                 >
                 </textarea>
@@ -141,26 +126,24 @@
 
             <div class="form-col-container mt-2">
               <div>
-                <span class="title-text">สีของทองทอง/เงิน</span>
-                <Dropdown
-                  v-model="form.gold"
+                <span class="title-text">{{ $t('production.planTracking.goldColor') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.gold"
                   :options="modelMastergold"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
-                  placeholder="เลือกทอง"
-                >
-                </Dropdown>
+                  :placeholder="$t('production.planView.selectGold')"
+                  @update:modelValue="form.gold = $event"
+                />
               </div>
               <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
-                <Dropdown
-                  v-model="form.goldSize"
+                <span class="title-text">{{ $t('production.planTracking.goldType') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.goldSize"
                   :options="modelMasterGoldSize"
                   optionLabel="description"
-                  placeholder="เลือกเปอร์เซ็น"
-                  class="w-full md:w-14rem"
-                >
-                </Dropdown>
+                  :placeholder="$t('production.planView.selectGoldPercent')"
+                  @update:modelValue="form.goldSize = $event"
+                />
               </div>
               <div></div>
             </div>
@@ -169,8 +152,8 @@
 
             <div class="form-col-container mt-3">
               <div>
-                <span class="title-text">หมายเหตุ</span>
-                <textarea class="form-control" v-model="form.remark" style="height: 50px">
+                <span class="title-text">{{ $t('common.field.remark') }}</span>
+                <textarea class="form-control textarea-sm" v-model="form.remark">
                 </textarea>
               </div>
             </div>
@@ -192,16 +175,16 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-import AutoComplete from 'primevue/autocomplete'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
-
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   wo: null,
@@ -228,10 +211,9 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-
-    AutoComplete,
-    Calendar,
-    Dropdown
+    AutoCompleteGeneric,
+    CalendarGeneric,
+    DropdownGeneric
   },
 
   props: {
@@ -321,10 +303,6 @@ export default {
 
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
-
-      // --- from --- //
       form: {
         ...interfaceForm
       },
@@ -386,15 +364,12 @@ export default {
     },
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `${this.form.wo}-${this.form.woNumber}`,
           `ยืนยันเเก้ไขแผนงานผลิต`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -435,101 +410,69 @@ export default {
 
     // --- APIs --- //
     async onSearchMold(e) {
-      try {
-        const param = {
-          take: this.take,
-          skip: this.skip,
-          search: {
-            text: e.query ?? null
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
+      }
 
-        const res = await api.jewelry.post('Mold/SearchMold', param)
-        if (res) {
-          this.modelMold = res.data.map((x) => `${x.code}`)
-        }
-      } catch (error) {
-        console.log(error)
+      const res = await api.jewelry.post('Mold/SearchMold', param)
+      if (res) {
+        this.modelMold = res.data.map((x) => `${x.code}`)
       }
     },
     async onSearchCustomer(e) {
-      try {
-        //this.isLoading = true
-        const param = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
+      }
 
-        const res = await api.jewelry.post('Customer/SearchCustomer', param)
-        if (res) {
-          this.modelCustomer = res.data.map((x) => `${x.code}`)
-          console.log(this.customerItemSearch)
-        }
-      } catch (error) {
-        console.log(error)
+      const res = await api.jewelry.post('Customer/SearchCustomer', param)
+      if (res) {
+        this.modelCustomer = res.data.map((x) => `${x.code}`)
       }
     },
     async submit() {
-      try {
-        this.isLoading = true
+      const params = {
+        id: this.form.id,
+        wo: this.form.wo,
+        woNumber: this.form.woNumber,
 
-        const params = {
-          id: this.form.id,
-          wo: this.form.wo,
-          woNumber: this.form.woNumber,
+        mold: this.form.mold,
+        requestDate: this.form.requestDate ? formatISOString(this.form.requestDate) : null,
 
-          mold: this.form.mold,
-          requestDate: this.form.requestDate ? formatISOString(this.form.requestDate) : null,
+        customerNumber: this.form.customerNumber,
+        customerType: this.form.customerType ? this.form.customerType.code : null,
 
-          customerNumber: this.form.customerNumber,
-          customerType: this.form.customerType ? this.form.customerType.code : null,
+        productQty: this.form.productQty,
+        productQtyUnit: this.form.productQtyUnit,
 
-          productQty: this.form.productQty,
-          productQtyUnit: this.form.productQtyUnit,
+        productName: this.form.productName,
+        productNumber: this.form.productNumber,
+        productType: this.form.productType ? this.form.productType.code : null,
+        productDetail: this.form.productDetail,
+        remark: this.form.remark ?? null,
 
-          productName: this.form.productName,
-          productNumber: this.form.productNumber,
-          productType: this.form.productType ? this.form.productType.code : null,
-          productDetail: this.form.productDetail,
-          remark: this.form.remark ?? null,
+        gold: this.form.gold ? this.form.gold.nameEn : null,
+        goldSize: this.form.goldSize ? this.form.goldSize.nameEn : null
+      }
 
-          gold: this.form.gold ? this.form.gold.nameEn : null,
-          goldSize: this.form.goldSize ? this.form.goldSize.nameEn : null
-        }
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateHeader', params)
+      if (res) {
+        success(``, ``, async () => {
+          this.form.requestDate = null
+          this.form.customerType = null
+          this.form.productType = null
 
-        //console.log(params)
-        //this.closeModal()
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateHeader', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            ``,
-            async () => {
-              //this.onclear()
-              this.form.requestDate = null
-              this.form.customerType = null
-              this.form.productType = null
-
-              //this.onClearVal()
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.form = {
-                ...interfaceForm
-              }
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+          this.val = { ...interfaceIsValid }
+          this.form = { ...interfaceForm }
+          this.$emit('fetch')
+        })
       }
     }
   },
@@ -542,4 +485,16 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.input-filled {
+  background-color: #b5dad4;
+}
+
+.input-empty {
+  background-color: #dad4b5;
+}
+
+.textarea-sm {
+  height: 50px;
+}
 </style>

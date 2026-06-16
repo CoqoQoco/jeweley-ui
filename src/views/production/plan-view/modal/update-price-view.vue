@@ -328,15 +328,14 @@
 
           <div class="action-group-container mt-2">
             <div class="d-flex align-items-center gap-2">
-              <Dropdown
-                v-model="masterValue"
+              <DropdownGeneric
+                :modelValue="masterValue"
                 :options="masterType"
                 optionLabel="name"
                 optionValue="code"
-                class="w-full md:w-14rem mr-2"
-                placeholder="เลือกรายการ"
-              >
-              </Dropdown>
+                :placeholder="$t('production.planView.selectItem')"
+                @update:modelValue="masterValue = $event"
+              />
 
               <button
                 type="button"
@@ -369,23 +368,23 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-// import AutoComplete from 'primevue/autocomplete'
-// import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+/* eslint-disable no-restricted-imports */
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
-import _ from 'lodash'
 import Row from 'primevue/row'
+/* eslint-enable no-restricted-imports */
 
+import { defineAsyncComponent } from 'vue'
+import _ from 'lodash'
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 // const interfaceMat = {
 //   //id: null,
@@ -409,10 +408,7 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-
-    //AutoComplete,
-    //Calendar,
-    Dropdown,
+    DropdownGeneric,
     DataTable,
     Column,
     ColumnGroup,
@@ -472,8 +468,6 @@ export default {
   },
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
       autoId: 0,
       status: 70,
 
@@ -553,9 +547,6 @@ export default {
     },
     async initForm(value) {
       if (value === true) {
-        console.log('initForm', value)
-        console.log(this.model)
-
         this.fetchAllTransection()
       }
     },
@@ -570,22 +561,18 @@ export default {
       }
     },
     closeModal() {
-      console.log('closeModal')
       this.onclear()
       this.$emit('closeModal', 'add')
     },
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `บัตรต้นทุน ${this.model.wo}-${this.model.woNumber}`,
           `ยืนยันบันทึกบัตรต้นทุน`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -634,7 +621,6 @@ export default {
       //this.onUpdateQty(item)
     },
     addItem() {
-      console.log('addItem', this.masterValue)
       this.tranItems.push({
         nameGroup: this.masterValue ?? 'ETC',
         nameDescription: '',
@@ -689,212 +675,79 @@ export default {
         .reduce((total, item) => total + this.toNumber(item.totalPrice), 0)
     },
 
-    // --- APIs --- //
-
     async submit() {
-      this.isLoading = true
-      try {
-        let no = 1
-        const param = {
-          productionPlanId: this.model.id,
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          woText: `${this.model.wo}${this.model.woNumber}`,
-          item: this.tranItems.map((item) => {
-            return {
-              no: no++,
-              name: item.isAdd ? item.nameDescription : item.name,
-              nameGroup: item.nameGroup,
-              nameDescription: item.nameDescription,
-              date: item.date ? formatISOString(item.date) : null,
-              qty: item.qty ?? 0,
-              qtyPrice: item.qtyPrice ?? 0,
-              qtyWeight: item.qtyWeight ?? 0,
-              qtyWeightPrice: item.qtyWeightPrice ?? 0,
-              totalPrice: item.totalPrice ?? 0,
-              isAdd: item.isAdd
-            }
-          })
-        }
-        const res = await api.jewelry.post('ProductionPlan/CreatePrice', param)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-      } catch (error) {
-        console.log(error)
+      let no = 1
+      const param = {
+        productionPlanId: this.model.id,
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        woText: `${this.model.wo}${this.model.woNumber}`,
+        item: this.tranItems.map((item) => {
+          return {
+            no: no++,
+            name: item.isAdd ? item.nameDescription : item.name,
+            nameGroup: item.nameGroup,
+            nameDescription: item.nameDescription,
+            date: item.date ? formatISOString(item.date) : null,
+            qty: item.qty ?? 0,
+            qtyPrice: item.qtyPrice ?? 0,
+            qtyWeight: item.qtyWeight ?? 0,
+            qtyWeightPrice: item.qtyWeightPrice ?? 0,
+            totalPrice: item.totalPrice ?? 0,
+            isAdd: item.isAdd
+          }
+        })
       }
-      this.isLoading = false
-    },
-    async onSearchWorker(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null,
-            type: this.status,
-            active: 1
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res)
-          this.workerItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
-      }
-    },
-    async onSearchWorkerByCode(e) {
-      try {
-        if (e === null) {
-          return null
-        }
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            code: e,
-            text: null,
-            type: null,
-            active: 0
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res.data[0])
-          return res.data[0]
-        } else {
-          return null
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
-      }
-    },
-    async onSearchGem(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
-        }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          this.gemItemSearch = [...res]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
-      }
-    },
-    async onSearchGemById(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            id: e ?? null,
-            text: null
-          }
-        }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          if (res) {
-            //console.log(res.data[0])
-            return res[0]
-          } else {
-            return null
-          }
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      const res = await api.jewelry.post('ProductionPlan/CreatePrice', param)
+      if (res) {
+        success(``, '', () => {
+          this.$emit('fetch')
+        })
       }
     },
     async fetchAllTransection() {
-      this.isLoading = true
-      try {
-        const res = await api.jewelry.get('ProductionPlan/GetAllTransectionPrice', {
-          wo: this.model.wo,
-          woNumber: this.model.woNumber
-        })
-        if (res) {
-          console.log(res)
-
-          this.tranItems = res.items.map((item) => {
-            const qty = this.toNumber(item.qty)
-            const qtyPrice = this.toNumber(item.qtyPrice)
-            const qtyWeight = this.toNumber(item.qtyWeight)
-            const qtyWeightPrice = this.toNumber(item.qtyWeightPrice)
-            return {
-              ...item,
-              qty: qty,
-              qtyWeight: qtyWeight.toFixed(3),
-              qtyPrice: qtyPrice.toFixed(2),
-              qtyWeightPrice: qtyWeightPrice.toFixed(2),
-              totalPrice: (qty * qtyPrice + qtyWeight * qtyWeightPrice).toFixed(2)
-            }
-          })
-
-          console.log('model priceItems', this.model?.priceItems)
-          if (this.model.priceItems) {
-            const sourceItem = this.model.priceItems.find(
-              (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
-            )
-
-            // หาข้อมูลปลายทางใน array ที่สอง
-            const targetItem = this.tranItems.find(
-              (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
-            )
-
-            // อัปเดตค่าถ้าเจอทั้งสองรายการ
-            if (sourceItem && targetItem) {
-              targetItem.qtyWeightPrice = sourceItem.qtyWeightPrice
-              targetItem.priceReference = sourceItem.totalPrice
-            }
+      const res = await api.jewelry.get('ProductionPlan/GetAllTransectionPrice', {
+        wo: this.model.wo,
+        woNumber: this.model.woNumber
+      })
+      if (res) {
+        this.tranItems = res.items.map((item) => {
+          const qty = this.toNumber(item.qty)
+          const qtyPrice = this.toNumber(item.qtyPrice)
+          const qtyWeight = this.toNumber(item.qtyWeight)
+          const qtyWeightPrice = this.toNumber(item.qtyWeightPrice)
+          return {
+            ...item,
+            qty: qty,
+            qtyWeight: qtyWeight.toFixed(3),
+            qtyPrice: qtyPrice.toFixed(2),
+            qtyWeightPrice: qtyWeightPrice.toFixed(2),
+            totalPrice: (qty * qtyPrice + qtyWeight * qtyWeightPrice).toFixed(2)
           }
+        })
 
-          // เรียงตามลำดับที่กำหนด
-          this.tranItems = _.sortBy(
-            this.tranItems,
-            (item) => this.groupOrderRunning[item.nameGroup]
+        if (this.model.priceItems) {
+          const sourceItem = this.model.priceItems.find(
+            (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
           )
 
-          this.addItemDiscount()
+          const targetItem = this.tranItems.find(
+            (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
+          )
+
+          if (sourceItem && targetItem) {
+            targetItem.qtyWeightPrice = sourceItem.qtyWeightPrice
+            targetItem.priceReference = sourceItem.totalPrice
+          }
         }
-      } catch (error) {
-        console.log(error)
+
+        this.tranItems = _.sortBy(
+          this.tranItems,
+          (item) => this.groupOrderRunning[item.nameGroup]
+        )
+
+        this.addItemDiscount()
       }
-      this.isLoading = false
     }
   }
 }

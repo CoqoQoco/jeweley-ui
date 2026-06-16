@@ -72,7 +72,7 @@
               >
             </div>
             <div>
-              <button class="btn btn-sm btn-warning mr-2" @click="getBOM">
+              <button class="btn btn-sm btn-outline-main mr-2" @click="getBOM">
                 <span>
                   <i class="bi bi-arrow-clockwise"></i>
                 </span>
@@ -176,15 +176,15 @@
 </template>
 
 <script>
-import { formatDate, formatDateTime } from '@/services/utils/dayjs'
-
-import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
-//import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
-
+/* eslint-disable no-restricted-imports */
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dropdown from 'primevue/dropdown'
+/* eslint-enable no-restricted-imports */
+
+import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
 
 export default {
   name: 'plan-bom-view',
@@ -255,7 +255,6 @@ export default {
     },
     modelTransactionBomValue: {
       handler(newVal) {
-        console.log('modelTransactionBomValue changed:', newVal)
         this.transactionBom = newVal.boMs.map((item, index) => ({
           ...item,
           quantity: item.quantity ? item.quantity.toFixed(2) : Number(0).toFixed(2),
@@ -321,9 +320,6 @@ export default {
     },
 
     onBluePrice(item, index, fieldName) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBluePrice' + fieldName, item, index)
-
       let newCal = {
         ...item,
         [fieldName]: item[fieldName] ? Number(item[fieldName]).toFixed(2) : '0.00',
@@ -332,15 +328,9 @@ export default {
         )
       }
 
-      // ในVue 3, เราสามารถอัปเดตได้โดยตรง
       this.transactionBom[index] = newCal
-
-      console.log('onBluePrice' + fieldName, this.tranItems[item])
-      console.log('onBluePrice' + fieldName, this.tranItems)
-      //this.onUpdateQty(item)
     },
     onMatchCodeChange(newValue, rowData, rowIndex) {
-      //console.log('onMatchCodeChange', newValue, rowData, rowIndex)
       const selectedGem = this.masterGem.find((gem) => gem.code === newValue)
 
       if (selectedGem) {
@@ -348,8 +338,6 @@ export default {
         this.transactionBom[rowIndex].matchName = selectedGem.nameEn
         this.transactionBom[rowIndex].displayName = selectedGem.nameTh
       }
-
-      console.log('MatchCode changed:', rowData)
     },
 
     async getBOM() {
@@ -367,39 +355,33 @@ export default {
       }
     },
 
-    // --- BOM Save Method --- //
     async saveBOM() {
-      try {
-        const formValue = {
-          id: this.model.id,
-          bOMs: this.transactionBom.map((item) => ({
-            type: item.type,
+      const formValue = {
+        id: this.model.id,
+        bOMs: this.transactionBom.map((item) => ({
+          type: item.type,
 
-            matchCode: item.matchCode,
-            matchName: item.matchName,
+          matchCode: item.matchCode,
+          matchName: item.matchName,
 
-            displayName: item.displayName,
+          displayName: item.displayName,
 
-            originCode: item.originCode,
-            originName: item.originName,
+          originCode: item.originCode,
+          originName: item.originName,
 
-            quantity: parseFloat(item.quantity) || 0,
-            unit: item.unit,
-            price: parseFloat(item.price) || 0
-          }))
-        }
+          quantity: parseFloat(item.quantity) || 0,
+          unit: item.unit,
+          price: parseFloat(item.price) || 0
+        }))
+      }
 
-        const response = await this.planBOMStore.fetchSave({
-          formValue: formValue,
-          skipLoading: true
-        })
+      const response = await this.planBOMStore.fetchSave({
+        formValue: formValue,
+        skipLoading: true
+      })
 
-        if (response) {
-          this.$emit('bomSaved', response)
-          //console.log('BOM saved successfully:', response)
-        }
-      } catch (error) {
-        console.error('Error saving BOM:', error)
+      if (response) {
+        this.$emit('bomSaved', response)
       }
     },
 

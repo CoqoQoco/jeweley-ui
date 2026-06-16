@@ -11,8 +11,7 @@
       >
         <template v-slot:rightSlot>
           <div
-            class="text-center"
-            style="font-size: medium; width: 200px; "
+            class="text-center plan-status-badge"
             :class="getStatusSeverity(data.status)"
           >
             {{ data.statusName }}
@@ -152,7 +151,7 @@ import pageTitle from '@/components/custom/page-title.vue'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
 import planView from './components/plan-view.vue'
 import planViewUpdate from './modal/update-plan-view.vue'
@@ -241,19 +240,16 @@ export default {
     return {
       tabActive: 0,
       tabItems: [
-        { id: 0, label: 'รายละเอียด', icon: 'bi bi-clipboard-data' },
-        { id: 1, label: 'ทอง', icon: 'bi bi-box-fill' },
-        { id: 2, label: 'แต่ง', icon: 'bi bi-hammer' },
-        { id: 3, label: 'ขัดดิบ', icon: 'bi bi-hammer' },
-        { id: 4, label: 'คัดพลอย', icon: 'bi bi-hammer' },
-        { id: 5, label: 'ฝัง', icon: 'bi bi-hammer' },
-        // { id: 6, label: 'ตรวจ CVD', icon: 'bi bi-hammer' },
-        { id: 6, label: 'ขัดชุบ', icon: 'bi bi-hammer' },
-        { id: 7, label: 'บัตรต้นทุน', icon: 'bi bi-cash-coin' },
-        { id: 8, label: 'สำเร็จ', icon: 'bi bi-clipboard-check-fill' },
-        { id: 9, label: 'หลอม', icon: 'bi bi-clipboard-x-fill' },
-        //{ id: 10, label: 'วัสดุ', icon: 'bi bi-list-check' }
-        //{ id: 11, label: 'สถานะการผลิต', icon: 'bi bi-hammer' }
+        { id: 0, label: this.$t('production.planView.tabDetail'), icon: 'bi bi-clipboard-data' },
+        { id: 1, label: this.$t('production.planView.tabGold'), icon: 'bi bi-box-fill' },
+        { id: 2, label: this.$t('production.planView.tabShape'), icon: 'bi bi-hammer' },
+        { id: 3, label: this.$t('production.planView.tabGrindRaw'), icon: 'bi bi-hammer' },
+        { id: 4, label: this.$t('production.planView.tabPickGem'), icon: 'bi bi-hammer' },
+        { id: 5, label: this.$t('production.planView.tabEmbed'), icon: 'bi bi-hammer' },
+        { id: 6, label: this.$t('production.planView.tabPolish'), icon: 'bi bi-hammer' },
+        { id: 7, label: this.$t('production.planView.tabCostCard'), icon: 'bi bi-cash-coin' },
+        { id: 8, label: this.$t('production.planView.tabDone'), icon: 'bi bi-clipboard-check-fill' },
+        { id: 9, label: this.$t('production.planView.tabMelt'), icon: 'bi bi-clipboard-x-fill' }
       ],
 
       isUpdate: {
@@ -357,12 +353,10 @@ export default {
       this.$router.push({ name: 'goods-receipt-production', params: { id: value } })
     },
     onMeltJob() {
-      swAlert.confirmSubmit(
+      confirmSubmit(
         `แผนผลิต: ${this.data.wo}-${this.data.woNumber}`,
         'ยืนยันการหลอม',
-        async () => {
-          console.log('onMeltJob', this.jobTransfer)
-        }
+        async () => {}
       )
     },
 
@@ -445,4 +439,9 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.plan-status-badge {
+  font-size: var(--fs-base);
+  width: 200px;
+}
 </style>

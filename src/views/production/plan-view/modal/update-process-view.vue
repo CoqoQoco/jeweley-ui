@@ -563,25 +563,27 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
+/* eslint-disable no-restricted-imports */
 import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+/* eslint-enable no-restricted-imports */
+
+import { defineAsyncComponent } from 'vue'
 import _ from 'lodash'
 
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success, warning } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
-import planOverview from '../components/plan-overview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import planOverview from '../components/plan-overview.vue'
 import { calculateWeightDifference } from '@/services/helper/match.js'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   status: null,
@@ -961,15 +963,12 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `ยืนยันเเก้ไขงาน [${this.getStatusName}]`,
           `${this.model.wo}-${this.model.woNumber}`,
           async () => {
-            console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -988,85 +987,67 @@ export default {
 
     // --- APIs --- //
     async submit() {
-      try {
-        // แปลงข้อมูลช่าง
-        this.matAssign = this.matAssign.map((item) => {
-          return {
-            ...item,
-            worker: item.workers?.code,
-            workerSub: item.workersSub?.code
-          }
+      this.matAssign = this.matAssign.map((item) => {
+        return {
+          ...item,
+          worker: item.workers?.code,
+          workerSub: item.workersSub?.code
+        }
+      })
+
+      this.gemAssign = this.gemAssign.map((item) => {
+        return {
+          id: item.gem?.id,
+          outboundRunning: item.outboundRunning ?? null,
+          outboundName: item.outboundName ?? null,
+          outboundDate: item.outboundDate ?? null,
+          itemNo: item.itemNo,
+          code: item.gem?.code,
+          name: item.gem?.name,
+          qty: item.qty,
+          weight: item.weight,
+          price: item.price,
+          length: item.length,
+          lengthUnit: item.lengthUnit
+        }
+      })
+
+      const param = {
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        productionPlanId: this.model.id,
+        HeaderId: this.form.headerId,
+
+        status: this.status,
+        workerName: this.form.worker?.nameTh,
+        workerCode: this.form.worker?.code,
+        remark1: this.form.remark1,
+        remark2: this.form.remark2,
+        totalWages: this.form.totalWages,
+        goldLossPrice: this.status === 80 ? (this.goldLossPrice ?? null) : undefined,
+        golds: this.matAssign.map((item) => ({
+          ...item,
+          lossPercent: this.status === 80 ? (this.goldLossPercents[item.itemNo] ?? null) : undefined,
+          lossRemark: this.status === 80 ? (this.goldLossRemarks[item.itemNo] ?? null) : undefined
+        })),
+        gems: [...this.gemAssign]
+      }
+
+      let url = 'ProductionPlan/ProductionPlanUpdateStatusDetail'
+
+      if ([500].includes(this.status)) {
+        url = 'ProductionPlan/ProductionPlanAddStatusDetail'
+      }
+
+      const res = await api.jewelry.post(url, param)
+      if (res) {
+        success(``, '', () => {
+          this.form = { ...interfaceForm }
+          this.val = { ...interfaceIsValid }
+          this.matAssign = [...this.tempMatAssign]
+          this.gemAssign = []
+          this.$emit('fetch')
         })
-
-        // แปลงข้อมูลพลอย (ถ้ามี)
-        this.gemAssign = this.gemAssign.map((item) => {
-          return {
-            id: item.gem?.id,
-            outboundRunning: item.outboundRunning ?? null,
-            outboundName: item.outboundName ?? null,
-            outboundDate: item.outboundDate ?? null,
-            itemNo: item.itemNo,
-            code: item.gem?.code,
-            name: item.gem?.name,
-            qty: item.qty,
-            weight: item.weight,
-            price: item.price,
-
-            length : item.length,
-            lengthUnit : item.lengthUnit,
-          }
-        })
-
-        // สร้างพารามิเตอร์
-        const param = {
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          productionPlanId: this.model.id,
-          HeaderId: this.form.headerId,
-
-          status: this.status,
-          workerName: this.form.worker?.nameTh,
-          workerCode: this.form.worker?.code,
-          remark1: this.form.remark1,
-          remark2: this.form.remark2,
-          totalWages: this.form.totalWages,
-          goldLossPrice: this.status === 80 ? (this.goldLossPrice ?? null) : undefined,
-          golds: this.matAssign.map((item) => ({
-            ...item,
-            lossPercent: this.status === 80 ? (this.goldLossPercents[item.itemNo] ?? null) : undefined,
-            lossRemark: this.status === 80 ? (this.goldLossRemarks[item.itemNo] ?? null) : undefined
-          })),
-          gems: [...this.gemAssign]
-        }
-
-        let url = 'ProductionPlan/ProductionPlanUpdateStatusDetail'
-
-        if ([500].includes(this.status)) {
-          url = 'ProductionPlan/ProductionPlanAddStatusDetail'
-        }
-
-        const res = await api.jewelry.post(url, param)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.matAssign = [...this.tempMatAssign]
-              this.gemAssign = []
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-      } catch (error) {
-        console.error('Error in submit:', error)
       }
     },
     async saveGoldLoss() {
@@ -1078,7 +1059,7 @@ export default {
         headerId = header?.id
       }
       if (!headerId) {
-        swAlert.warning('ไม่พบข้อมูล กรุณาบันทึกข้อมูลก่อน')
+        warning('ไม่พบข้อมูล กรุณาบันทึกข้อมูลก่อน')
         return
       }
       const payload = {
@@ -1092,7 +1073,7 @@ export default {
       }
       const res = await api.jewelry.post('ProductionPlan/GoldLossUpdate', payload)
       if (res !== undefined) {
-        swAlert.success('บันทึก Gold Loss สำเร็จ')
+        success('บันทึก Gold Loss สำเร็จ')
       }
     },
     async onSearchWorker(e) {

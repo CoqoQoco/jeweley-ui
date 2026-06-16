@@ -24,44 +24,41 @@
             <!-- target status -->
             <div class="form-col-container">
               <div>
-                <span class="title-text">แผนกรับโอน</span>
-                <Dropdown
-                  v-model="form.targetStatus"
+                <span class="title-text">{{ $t('production.planTracking.targetDept') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.targetStatus"
                   :options="allowSelectStatus"
                   optionLabel="nameTh"
                   optionValue="id"
-                  class="w-full md:w-14rem"
                   :class="val.isTargetStatus === true ? `p-invalid` : ``"
+                  @update:modelValue="form.targetStatus = $event"
                 />
               </div>
             </div>
 
             <div class="form-col-container mt-2">
-              <!-- name -->
               <div>
-                <span class="title-text">กำหนดช่างรับงาน</span>
-                <AutoComplete
+                <span class="title-text">{{ $t('production.planView.workerAssign') }}</span>
+                <AutoCompleteGeneric
                   v-model="form.worker"
                   :suggestions="workerItemSearch"
                   @complete="onSearchWorker"
                   :class="form.worker ? `` : `-`"
                   optionLabel="nameTh"
-                  forceSelection
+                  :forceSelection="true"
                   :disabled="this.form.targetStatus === 95"
-                >
-                </AutoComplete>
+                />
               </div>
             </div>
 
             <div class="submit-container">
               <button
-                :class="['btn btn-sm ml-2 btn-green']"
-                style="height: 34px"
+                class="btn btn-sm ml-2 btn-green"
                 @click="onTransferStatus"
                 type="submit"
               >
                 <span><i class="bi bi-calendar-check"></i></span>
-                <span class="ml-2">โอนงาน</span>
+                <span class="ml-2">{{ $t('production.planTracking.transferJob') }}</span>
               </button>
             </div>
           </div>
@@ -74,12 +71,12 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-import Dropdown from 'primevue/dropdown'
-import AutoComplete from 'primevue/autocomplete'
-
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, warning } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -101,8 +98,8 @@ const interfaceVal = {
 export default {
   components: {
     modal,
-    Dropdown,
-    AutoComplete
+    DropdownGeneric,
+    AutoCompleteGeneric
   },
 
   setup() {
@@ -153,7 +150,6 @@ export default {
     },
     statusTransfer() {
       const res = this.masterStatusValue.find((item) => item.id === this.statusTransferValue)
-      console.log('statusTransfer:', res)
       return res || {}
     },
     allowSelectStatus() {
@@ -198,7 +194,7 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit('', 'ยืนยันการโอนสถานะงาน?', async () => {
+        confirmSubmit('', this.$t('production.planTracking.confirmTransfer'), async () => {
           await this.submit()
         })
       }
@@ -214,7 +210,7 @@ export default {
 
       let statusNotAllow = [49, 54, 55, 59, 69, 79, 84, 85, 94, 500]
       if (statusNotAllow.includes(this.form.targetStatus)) {
-        swAlert.warning('ไม่สามารถโอนสถานงานนี้ได้', '', () => {
+        warning(this.$t('production.planTracking.cannotTransfer'), '', () => {
           isValid = false
         })
       }
@@ -234,25 +230,18 @@ export default {
     },
 
     async onSearchWorker(e) {
-      try {
-        ////console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null,
-            type: this.status,
-            active: 1
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null,
+          type: this.status,
+          active: 1
         }
-        const res = await api.jewelry.post('Worker/Search', params, { skipLoading: true })
-        if (res) {
-          ////console.log(res)
-          this.workerItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-      } catch (error) {
-        console.log(error)
+      }
+      const res = await api.jewelry.post('Worker/Search', params, { skipLoading: true })
+      if (res) {
+        this.workerItemSearch = [...res.data]
       }
     },
 

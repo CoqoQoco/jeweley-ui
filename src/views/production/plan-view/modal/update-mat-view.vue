@@ -13,30 +13,30 @@
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">สีของทอง/เงิน</span>
-                <Dropdown
-                  v-model="form.gold"
+                <span class="title-text">{{ $t('production.planView.goldColor') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.gold"
                   :options="masterGold"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
                   :class="val.isValGold === true ? `p-invalid` : ``"
                   :showClear="form.gold?.code ? true : false"
+                  @update:modelValue="form.gold = $event"
                 />
               </div>
               <div class="form-content-row-sub-container">
                 <div>
-                  <span class="title-text">เปอร์เซ็นทอง</span>
-                  <Dropdown
-                    v-model="form.goldSize"
+                  <span class="title-text">{{ $t('production.planView.goldPercent') }}</span>
+                  <DropdownGeneric
+                    :modelValue="form.goldSize"
                     :options="masterGoldSize"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                     :class="val.isValGoldSize === true ? `p-invalid` : ``"
                     :showClear="form.goldSize?.code ? true : false"
+                    @update:modelValue="form.goldSize = $event"
                   />
                 </div>
                 <div>
-                  <span class="title-text">จำนวนทอง/เงิน</span>
+                  <span class="title-text">{{ $t('production.planView.goldQtyLabel') }}</span>
                   <input type="number" min="1" class="form-control" v-model="form.goldQty" />
                 </div>
               </div>
@@ -47,25 +47,25 @@
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">ประเภทพลอย</span>
-                <Dropdown
-                  v-model="form.gem"
+                <span class="title-text">{{ $t('production.planView.gemType') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.gem"
                   :options="masterGem"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
                   :class="val.isValGem === true ? `p-invalid` : ``"
                   :showClear="form.gem?.code ? true : false"
+                  @update:modelValue="form.gem = $event"
                 />
               </div>
               <div>
-                <span class="title-text">รูปร่างพลอย</span>
-                <Dropdown
-                  v-model="form.gemShape"
+                <span class="title-text">{{ $t('production.planView.gemShape') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.gemShape"
                   :options="masterGemShape"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
                   :class="val.isValGemShape === true ? `p-invalid` : ``"
                   :showClear="form.gemShape?.code ? true : false"
+                  @update:modelValue="form.gemShape = $event"
                 />
               </div>
             </div>
@@ -136,12 +136,12 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-import Dropdown from 'primevue/dropdown'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   gold: {
@@ -182,8 +182,7 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-
-    Dropdown
+    DropdownGeneric
   },
   props: {
     isShow: {
@@ -218,10 +217,6 @@ export default {
   },
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
-
-      // --- form --- //
       form: {
         ...interfaceForm
       },
@@ -243,15 +238,12 @@ export default {
     },
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           ``,
           'ยืนยันเพิ่มส่วนประกอบการผลิต',
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -273,37 +265,19 @@ export default {
 
     // ------ api --------//
     async submit() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          id: this.modelValue.id,
-          wo: this.modelValue.wo,
-          woNumber: this.modelValue.woNumber,
-          material: { ...this.form }
-        }
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateMaterial', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
+      const params = {
+        id: this.modelValue.id,
+        wo: this.modelValue.wo,
+        woNumber: this.modelValue.woNumber,
+        material: { ...this.form }
+      }
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateMaterial', params)
+      if (res) {
+        success(``, '', async () => {
+          this.form = { ...interfaceForm }
+          this.val = { ...interfaceIsValid }
+          this.$emit('fetch')
+        })
       }
     }
   }
