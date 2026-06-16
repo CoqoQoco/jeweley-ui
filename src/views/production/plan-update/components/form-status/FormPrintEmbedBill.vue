@@ -115,11 +115,7 @@ export default {
     onCloseModal() {
       this.$emit('closeModal')
     },
-    onConsoleLog() {
-      console.log(this.groupGold)
-    },
     formatDate(date) {
-      //console.log(date)
       return date ? formatDate(date) : null
     },
     // --- APIs --- //
@@ -261,11 +257,6 @@ export default {
 
     // --- PDF --- //
     async generatePDF(data) {
-      //const dataValue = data.values[0]
-      console.log(data)
-      //console.log(this.modelValue)
-      //console.log(this.modelValueStatus)
-
       await this.fetchIamge()
 
       pdfMake.vfs = vfs
@@ -532,8 +523,8 @@ export default {
         }
 
         pdfMake.createPdf(docDefinition).open()
-      } catch (error) {
-        console.log(error)
+      } catch {
+        // pdfMake errors are non-critical
       }
     }
   }

@@ -12,26 +12,25 @@
             <!-- date -->
             <div>
               <span class="title-text">วันที่รับงาน</span>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 :class="val.isValReceiveDate === true ? `p-invalid` : ``"
                 v-model="form.receiveDate"
                 dateFormat="dd/mm/yy"
-                showIcon
+                :showIcon="true"
                 showTime
                 hourFormat="24"
-                showButtonBar
+                :showButtonBar="true"
               />
             </div>
 
             <!-- name -->
             <div>
               <span class="title-text">ชื่อผู้รับงาน</span>
-              <input
+              <InputTextGeneric
                 type="text"
-                class="form-control custom-input"
                 v-model="form.receiveBy"
-                required
+                :required="true"
               />
             </div>
 
@@ -76,26 +75,24 @@
 
               <Column field="gold" header="ทอง" style="min-width: 100px">
                 <template #editor="{ data, field }">
-                  <Dropdown
+                  <DropdownGeneric
                     v-model="data[field]"
                     :options="masterGold"
                     optionLabel="code"
                     optionValue="code"
-                    class="w-full md:w-14rem"
                     placeholder="เลือกทอง"
-                  >
-                  </Dropdown>
+                  />
                 </template>
               </Column>
               <Column field="requestDate" header="วันที่" style="min-width: 100px">
                 <template #editor="{ data, field }">
                   <div>
-                    <Calendar
+                    <CalendarGeneric
                       class="w-100"
                       v-model="data[field]"
                       dateFormat="dd/mm/yy"
-                      showIcon
-                      showButtonBar
+                      :showIcon="true"
+                      :showButtonBar="true"
                     />
                   </div>
                 </template>
@@ -107,7 +104,7 @@
               </Column>
               <Column field="goldQTYCheck" header="จำนวน" style="min-width: 100px">
                 <template #editor="{ data, field }">
-                  <input type="number" class="form-control" v-model="data[field]" />
+                  <InputTextGeneric type="number" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
                   {{
@@ -119,7 +116,7 @@
               </Column>
               <Column field="goldWeightCheck" header="น้ำหนัก" style="min-width: 100px">
                 <template #editor="{ data, field }">
-                  <input type="number" step="any" class="form-control" v-model="data[field]" />
+                  <InputTextGeneric type="number" step="any" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
                   {{
@@ -131,27 +128,21 @@
               </Column>
               <Column field="workers" header="ช่างคัดพลอย" style="min-width: 200px">
                 <template #editor="{ data, field }">
-                  <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
-                  <AutoComplete
+                  <AutoCompleteGeneric
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
                     @complete="onSearchWorker"
                     placeholder="กรอกรหัส/ชื่อช่าง...."
                     :class="data[field] ? `` : `bg-warning`"
                     optionLabel="code"
-                    forceSelection
+                    :forceSelection="true"
                   >
                     <template #option="slotProps">
                       <div class="flex align-options-center">
                         <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
                       </div>
                     </template>
-                  </AutoComplete>
+                  </AutoCompleteGeneric>
                 </template>
                 <template #body="slotProps">
                   <div v-if="slotProps.data.workers">
@@ -161,27 +152,21 @@
               </Column>
               <Column field="workersSub" header="ช่างคัดเพชร" style="min-width: 200px">
                 <template #editor="{ data, field }">
-                  <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
-                  <AutoComplete
+                  <AutoCompleteGeneric
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
                     @complete="onSearchWorker"
                     placeholder="กรอกรหัส/ชื่อช่าง...."
                     :class="data[field] ? `` : `bg-warning`"
                     optionLabel="code"
-                    forceSelection
+                    :forceSelection="true"
                   >
                     <template #option="slotProps">
                       <div class="flex align-options-center">
                         <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
                       </div>
                     </template>
-                  </AutoComplete>
+                  </AutoCompleteGeneric>
                 </template>
                 <template #body="slotProps">
                   <div v-if="slotProps.data.workersSub">
@@ -232,7 +217,7 @@
                   >
                     <i class="bi bi-trash-fill"></i>
                   </div> -->
-                  <div class="btn btn-sm btn-danger text-center w-100" @click="onDelGem(prop.data)">
+                  <div class="btn btn-sm btn-red text-center w-100" @click="onDelGem(prop.data)">
                     <i class="bi bi-trash-fill"></i>
                   </div>
                 </template>
@@ -241,14 +226,14 @@
               </Column>
               <Column field="gem" header="พลอย" style="min-width: 200px">
                 <template #editor="{ data, field }">
-                  <AutoComplete
+                  <AutoCompleteGeneric
                     v-model="data[field]"
                     :suggestions="gemItemSearch"
                     @complete="onSearchGem"
                     placeholder="กรอกรหัสพลอย...."
                     :class="data[field] ? `` : `bg-warning`"
                     optionLabel="name"
-                    forceSelection
+                    :forceSelection="true"
                     :minLength="4"
                     :disabled="checkOutbound(data)"
                     @item-select="onGemSelect($event, data)"
@@ -258,7 +243,7 @@
                         <div>{{ `${slotProps.option.name}` }}</div>
                       </div>
                     </template>
-                  </AutoComplete>
+                  </AutoCompleteGeneric>
                 </template>
                 <template #body="slotProps">
                   <div v-if="slotProps.data.gem">
@@ -268,10 +253,9 @@
               </Column>
               <Column field="qty" header="จำนวน" style="width: 100px">
                 <template #editor="{ data, field }">
-                  <input
+                  <InputTextGeneric
                     type="number"
                     step="any"
-                    class="form-control"
                     v-model="data[field]"
                     :disabled="checkOutbound(data)"
                   />
@@ -286,10 +270,9 @@
               </Column>
               <Column field="weight" header="น้ำหนัก" style="width: 100px">
                 <template #editor="{ data, field }">
-                  <input
+                  <InputTextGeneric
                     type="number"
                     step="any"
-                    class="form-control"
                     v-model="data[field]"
                     :disabled="checkOutbound(data)"
                   />
@@ -304,7 +287,7 @@
               </Column>
               <Column field="price" header="ราคา" style="width: 100px">
                 <template #editor="{ data, field }">
-                  <input type="number" step="any" class="form-control" v-model="data[field]" />
+                  <InputTextGeneric type="number" step="any" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
                   {{
@@ -335,16 +318,14 @@
           <div class="form-col-container mt-2">
             <div>
               <span class="title-text">หมายเหตุ - 1</span>
-              <textarea class="form-control" v-model="form.remark1" style="height: 50px">
-              </textarea>
+              <TextareaGeneric v-model="form.remark1" :rows="2" />
             </div>
           </div>
 
           <div class="form-col-container">
             <div>
               <span class="title-text">หมายเหตุ - 2</span>
-              <textarea class="form-control" v-model="form.remark2" style="height: 50px">
-              </textarea>
+              <TextareaGeneric v-model="form.remark2" :rows="2" />
             </div>
           </div>
 
@@ -369,17 +350,23 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import AutoComplete from 'primevue/autocomplete'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+// eslint-disable-next-line vue/no-mutating-props
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import _ from 'lodash'
 
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+import { storage } from '@/services/storage.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 import planOverview from '../view/PlanOverview.vue'
 
@@ -418,11 +405,13 @@ export default {
   components: {
     modal,
 
-    AutoComplete,
-    Calendar,
-    Dropdown,
     DataTable,
     Column,
+    DropdownGeneric,
+    CalendarGeneric,
+    AutoCompleteGeneric,
+    InputTextGeneric,
+    TextareaGeneric,
     planOverview
   },
   props: {
@@ -497,7 +486,6 @@ export default {
   data() {
     return {
       // --- flag --- //
-      isLoading: false,
       autoId: 0,
       autoIdGem: 0,
       status: 70,
@@ -666,15 +654,12 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
-          `ยืนยันเเก้ไขงาน [คัดพลอย]`,
+        confirmThenSubmit(
           `${this.model.wo}-${this.model.woNumber}`,
+          `ยืนยันเเก้ไขงาน [คัดพลอย]`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -705,186 +690,128 @@ export default {
     // --- APIs --- //
 
     async submit() {
-      try {
-        this.isLoading = true
-        this.matAssign = this.matAssign.map((item) => {
-          return {
-            ...item,
-            worker: item.workers?.code,
-            workerSub: item.workersSub?.code
-          }
-        })
-        this.gemAssign = this.gemAssign.map((item) => {
-          return {
-            id: item.gem?.id,
-
-            outboundRunning: item.outboundRunning ?? null,
-            outboundName: item.outboundName ?? null,
-            outboundDate: item.outboundDate ?? null,
-
-            itemNo: item.itemNo,
-            code: item.gem?.code,
-            name: item.gem?.name,
-            qty: item.qty,
-            weight: item.weight,
-            price: item.price
-          }
-        })
-        const param = {
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          productionPlanId: this.model.id,
-          HeaderId: this.form.headerId,
-
-          status: this.status,
-          sendName: this.form.receiveBy,
-          sendDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          checkName: this.form.receiveBy,
-          checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          remark1: this.form.remark1,
-          remark2: this.form.remark2,
-          totalWages: this.form.totalWages,
-          golds: [...this.matAssign],
-          gems: [...this.gemAssign]
+      this.matAssign = this.matAssign.map((item) => {
+        return {
+          ...item,
+          worker: item.workers?.code,
+          workerSub: item.workersSub?.code
         }
-        //console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.matAssign = [...this.tempMatAssign]
-              this.gemAssign = []
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
+      })
+      this.gemAssign = this.gemAssign.map((item) => {
+        return {
+          id: item.gem?.id,
+
+          outboundRunning: item.outboundRunning ?? null,
+          outboundName: item.outboundName ?? null,
+          outboundDate: item.outboundDate ?? null,
+
+          itemNo: item.itemNo,
+          code: item.gem?.code,
+          name: item.gem?.name,
+          qty: item.qty,
+          weight: item.weight,
+          price: item.price
         }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      })
+      const param = {
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        productionPlanId: this.model.id,
+        HeaderId: this.form.headerId,
+
+        status: this.status,
+        sendName: this.form.receiveBy,
+        sendDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
+        checkName: this.form.receiveBy,
+        checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
+        remark1: this.form.remark1,
+        remark2: this.form.remark2,
+        totalWages: this.form.totalWages,
+        golds: [...this.matAssign],
+        gems: [...this.gemAssign]
+      }
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
+      if (res) {
+        success(``, '', () => {
+          this.form = {
+            ...interfaceForm
+          }
+          this.val = {
+            ...interfaceIsValid
+          }
+          this.matAssign = [...this.tempMatAssign]
+          this.gemAssign = []
+          this.$emit('fetch')
+        })
       }
     },
     async onSearchWorker(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null,
-            type: this.status,
-            active: 1
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null,
+          type: this.status,
+          active: 1
         }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res)
-          this.workerItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post('Worker/Search', params)
+      if (res) {
+        this.workerItemSearch = [...res.data]
       }
     },
     async onSearchWorkerByCode(e) {
-      try {
-        if (e === null) {
-          return null
+      if (e === null) {
+        return null
+      }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          code: e,
+          text: null,
+          type: null,
+          active: 0
         }
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            code: e,
-            text: null,
-            type: null,
-            active: 0
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res.data[0])
-          return res.data[0]
-        } else {
-          return null
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post('Worker/Search', params)
+      if (res) {
+        return res.data[0]
+      } else {
+        return null
       }
     },
     async onSearchGem(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          this.gemItemSearch = [...res]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post('StockGem/Search', params)
+      if (res) {
+        this.gemItemSearch = [...res]
       }
     },
     async onSearchGemById(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            id: e ?? null,
-            text: null
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          id: e ?? null,
+          text: null
         }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          if (res) {
-            //console.log(res.data[0])
-            return res[0]
-          } else {
-            return null
-          }
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
       }
+      const res = await api.jewelry.post('StockGem/Search', params)
+      if (res) {
+        return res[0] ?? null
+      }
+      return null
     }
   },
   mounted() {
-    this.user = JSON.parse(localStorage.getItem('user-dk'))
-    //console.log('user', this.user)
+    this.user = storage.getJSON('user-dk')
   }
 }
 </script>

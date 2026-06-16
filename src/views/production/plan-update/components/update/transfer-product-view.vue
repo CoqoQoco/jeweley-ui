@@ -31,8 +31,7 @@
           <div class="pr-2">
             <div class="submit-container">
               <button
-                :class="['btn btn-sm ml-2 btn-green']"
-                style="height: 34px"
+                class="btn btn-sm ml-2 btn-green"
                 @click="onTransferStatus"
                 type="submit"
               >
@@ -50,7 +49,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit, success, warning } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -132,7 +131,7 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit('', 'ยืนยันการโอนสินค้า?', async () => {
+        confirmThenSubmit('', 'ยืนยันการโอนสินค้า?', async () => {
           await this.submit()
         })
       }
@@ -142,9 +141,8 @@ export default {
       let isValid = true
 
       if (this.statusTransfer !== 95) {
-        swAlert.warning('สถาะแผนผลิตไม่ถูกต้อง ไม่สามารถโอนสินค้างานนี้ได้', '', () => {
-          isValid = false
-        })
+        warning('สถาะแผนผลิตไม่ถูกต้อง ไม่สามารถโอนสินค้างานนี้ได้', '')
+        isValid = false
       }
 
       return isValid
@@ -173,7 +171,7 @@ export default {
 
       if (res.success) {
         this.form = { ...interfaceForm }
-        swAlert.success(`เลขที่แผนรับสินค้า: ${res.receiptNumber}`, 'โอนสินค้าสำเร็จ', () => {
+        success(`เลขที่แผนรับสินค้า: ${res.receiptNumber}`, 'โอนสินค้าสำเร็จ', () => {
           this.$emit('closeModal', 'go-receipt', res.receiptNumber)
         })
       }

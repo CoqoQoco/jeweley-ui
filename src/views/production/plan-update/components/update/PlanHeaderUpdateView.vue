@@ -11,13 +11,13 @@
               <!-- mold -->
               <div>
                 <span class="title-text">เเม่พิมพ์</span>
-                <AutoComplete
+                <AutoCompleteGeneric
                   v-model="form.mold"
                   :suggestions="modelMold"
                   @complete="onSearchMold"
                   placeholder="กรอกรหัสเเม่พิมพ์ ...."
                   :class="val.isValMold === true ? `p-invalid` : ``"
-                  forceSelection
+                  :forceSelection="true"
                 />
               </div>
 
@@ -28,32 +28,31 @@
               <!-- send date -->
               <div>
                 <span class="title-text">วันส่งงานลูกค้า</span>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   dateFormat="dd/mm/yy"
                   v-model="form.requestDate"
                   :class="val.isValRequestDate === true ? `p-invalid` : ``"
-                  showIcon
+                  :showIcon="true"
                 />
               </div>
               <!-- customer number -->
               <div>
                 <span class="title-text">รหัสลุกค้า</span>
-                <!-- <input type="text" class="form-control" v-model="form.customerNumber" required /> -->
-                <AutoComplete
+                <AutoCompleteGeneric
                   v-model="form.customerNumber"
                   :suggestions="modelCustomer"
                   @complete="onSearchCustomer"
                   placeholder="กรอกรหัสลูกค้า...."
                   :class="val.isValCustomerNumber === true ? `p-invalid` : ``"
-                  forceSelection
+                  :forceSelection="true"
                 />
               </div>
 
               <!-- customer type -->
               <div>
                 <span class="title-text">ประเภทลูกค้า</span>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.customerType"
                   :options="modelMasterCustomerType"
                   optionLabel="description"
@@ -70,19 +69,19 @@
               <!-- product name -->
               <div>
                 <span class="title-text">ชื่อสินค้า</span>
-                <input type="text" class="form-control" v-model="form.productName" required />
+                <InputTextGeneric v-model="form.productName" :required="true" />
               </div>
 
               <!-- product number -->
               <div>
                 <span class="title-text">รหัสสินค้า</span>
-                <input type="text" class="form-control" v-model="form.productNumber" required />
+                <InputTextGeneric v-model="form.productNumber" :required="true" />
               </div>
 
               <!-- product type -->
               <div>
                 <span class="title-text">ประเภทสินค้า</span>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.productType"
                   :options="modelMasterProductType"
                   optionLabel="description"
@@ -97,27 +96,22 @@
                 <!-- qty -->
                 <div>
                   <span class="title-text-white">จำนวนสินค้า</span>
-                  <input
+                  <InputTextGeneric
                     type="number"
                     min="1"
-                    class="form-control"
-                    style="background-color: #dad4b5"
-                    :style="form.productQty ? 'background-color: #b5dad4' : ''"
                     v-model="form.productQty"
-                    required
+                    :required="true"
+                    :bgInput="form.productQty ? '#b5dad4' : '#dad4b5'"
                   />
                 </div>
 
                 <!-- unit -->
                 <div>
                   <span class="title-text-white">หน่วย</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    style="background-color: #dad4b5"
-                    :style="form.productQtyUnit ? 'background-color: #b5dad4' : ''"
+                  <InputTextGeneric
                     v-model="form.productQtyUnit"
-                    required
+                    :required="true"
+                    :bgInput="form.productQtyUnit ? '#b5dad4' : '#dad4b5'"
                   />
                 </div>
               </div>
@@ -129,38 +123,34 @@
               <!-- product detail -->
               <div>
                 <span class="title-text">รายละเอียดสินค้า</span>
-                <textarea
-                  class="form-control"
+                <TextareaGeneric
                   v-model="form.productDetail"
-                  style="height: 50px"
-                  required
-                >
-                </textarea>
+                  :rows="2"
+                  :required="true"
+                />
               </div>
             </div>
 
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">สีของทองทอง/เงิน</span>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.gold"
                   :options="modelMastergold"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   placeholder="เลือกทอง"
-                >
-                </Dropdown>
+                />
               </div>
               <div>
                 <span class="title-text">ประเภททอง/เงิน</span>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.goldSize"
                   :options="modelMasterGoldSize"
                   optionLabel="description"
                   placeholder="เลือกเปอร์เซ็น"
                   class="w-full md:w-14rem"
-                >
-                </Dropdown>
+                />
               </div>
               <div></div>
             </div>
@@ -170,8 +160,7 @@
             <div class="form-col-container mt-3">
               <div>
                 <span class="title-text">หมายเหตุ</span>
-                <textarea class="form-control" v-model="form.remark" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark" :rows="2" />
               </div>
             </div>
 
@@ -194,14 +183,17 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import AutoComplete from 'primevue/autocomplete'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
-
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 const interfaceForm = {
   wo: null,
@@ -229,9 +221,11 @@ export default {
   components: {
     modal,
 
-    AutoComplete,
-    Calendar,
-    Dropdown
+    AutoCompleteGeneric,
+    CalendarGeneric,
+    DropdownGeneric,
+    InputTextGeneric,
+    TextareaGeneric
   },
 
   props: {
@@ -321,9 +315,6 @@ export default {
 
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
-
       // --- from --- //
       form: {
         ...interfaceForm
@@ -350,7 +341,6 @@ export default {
 
     // --- controller --- //
     getValue(val) {
-      //console.log('get')
       this.form = {
         id: val.id,
         wo: val.wo,
@@ -386,15 +376,12 @@ export default {
     },
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmThenSubmit(
           `${this.form.wo}-${this.form.woNumber}`,
           `ยืนยันเเก้ไขแผนงานผลิต`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -435,101 +422,69 @@ export default {
 
     // --- APIs --- //
     async onSearchMold(e) {
-      try {
-        const param = {
-          take: this.take,
-          skip: this.skip,
-          search: {
-            text: e.query ?? null
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
+      }
 
-        const res = await api.jewelry.post('Mold/SearchMold', param)
-        if (res) {
-          this.modelMold = res.data.map((x) => `${x.code}`)
-        }
-      } catch (error) {
-        console.log(error)
+      const res = await api.jewelry.post('Mold/SearchMold', param)
+      if (res) {
+        this.modelMold = res.data.map((x) => `${x.code}`)
       }
     },
     async onSearchCustomer(e) {
-      try {
-        //this.isLoading = true
-        const param = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
+      }
 
-        const res = await api.jewelry.post('Customer/SearchCustomer', param)
-        if (res) {
-          this.modelCustomer = res.data.map((x) => `${x.code}`)
-          console.log(this.customerItemSearch)
-        }
-      } catch (error) {
-        console.log(error)
+      const res = await api.jewelry.post('Customer/SearchCustomer', param)
+      if (res) {
+        this.modelCustomer = res.data.map((x) => `${x.code}`)
       }
     },
     async submit() {
-      try {
-        this.isLoading = true
+      const params = {
+        id: this.form.id,
+        wo: this.form.wo,
+        woNumber: this.form.woNumber,
 
-        const params = {
-          id: this.form.id,
-          wo: this.form.wo,
-          woNumber: this.form.woNumber,
+        mold: this.form.mold,
+        requestDate: this.form.requestDate ? formatISOString(this.form.requestDate) : null,
 
-          mold: this.form.mold,
-          requestDate: this.form.requestDate ? formatISOString(this.form.requestDate) : null,
+        customerNumber: this.form.customerNumber,
+        customerType: this.form.customerType ? this.form.customerType.code : null,
 
-          customerNumber: this.form.customerNumber,
-          customerType: this.form.customerType ? this.form.customerType.code : null,
+        productQty: this.form.productQty,
+        productQtyUnit: this.form.productQtyUnit,
 
-          productQty: this.form.productQty,
-          productQtyUnit: this.form.productQtyUnit,
+        productName: this.form.productName,
+        productNumber: this.form.productNumber,
+        productType: this.form.productType ? this.form.productType.code : null,
+        productDetail: this.form.productDetail,
+        remark: this.form.remark ?? null,
 
-          productName: this.form.productName,
-          productNumber: this.form.productNumber,
-          productType: this.form.productType ? this.form.productType.code : null,
-          productDetail: this.form.productDetail,
-          remark: this.form.remark ?? null,
+        gold: this.form.gold ? this.form.gold.nameEn : null,
+        goldSize: this.form.goldSize ? this.form.goldSize.nameEn : null
+      }
 
-          gold: this.form.gold ? this.form.gold.nameEn : null,
-          goldSize: this.form.goldSize ? this.form.goldSize.nameEn : null
-        }
-
-        //console.log(params)
-        //this.closeModal()
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateHeader', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            ``,
-            async () => {
-              //this.onclear()
-              this.form.requestDate = null
-              this.form.customerType = null
-              this.form.productType = null
-
-              //this.onClearVal()
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.form = {
-                ...interfaceForm
-              }
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateHeader', params)
+      if (res) {
+        success(``, ``, async () => {
+          this.val = {
+            ...interfaceIsValid
+          }
+          this.form = {
+            ...interfaceForm
+          }
+          this.$emit('fetch')
+        })
       }
     }
   },

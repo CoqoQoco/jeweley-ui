@@ -709,7 +709,8 @@ import _ from 'lodash'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
 import PrintEnbedBill from './FormPrintEmbedBill.vue'
 
@@ -809,18 +810,11 @@ export default {
       return date ? moment(date).format('DD/MM/yyyy') : ''
     },
     onDelStatus(id) {
-      swAlert.confirmSubmit(
-        ``,
-        'ยืนยันลบสถานะ',
-        async () => {
-          await this.DelStatus(id)
-        },
-        null,
-        null
-      )
+      confirmThenSubmit(``, 'ยืนยันลบสถานะ', async () => {
+        await this.DelStatus(id)
+      })
     },
     onUpdateStatus(item) {
-      //console.log(item)
       this.matStatusItemUpdate = { ...item }
       this.isShowFormStatusUpdate = true
     },
@@ -832,7 +826,6 @@ export default {
       this.$emit('fetch')
     },
     onShowPrintEmbedBill(data) {
-      //console.log(data)
       this.embedDataPrint = { ...data }
       this.isShowPrintEmbedBill = true
     },
@@ -842,52 +835,26 @@ export default {
 
     // --- APIs --- //
     async fetchMaterStatus() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
-        if (res) {
-          //this.data = [...res.data]
-          this.masterStatusFetch = [...res]
-        }
-        //console.log(this.data)
-        this.isLoading = false
-        //return res
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('ProductionPlan/GetProductionPlanStatus')
+      if (res) {
+        this.masterStatusFetch = [...res]
       }
     },
     async DelStatus(id) {
-      //console.log(id)
-      try {
-        this.isLoading = true
-
-        const params = {
-          productionPlanId: this.model.id,
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          id: id
-        }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanDeleteStatusDetail',
-          params
-        )
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              //this.closeModal()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
+      const params = {
+        productionPlanId: this.model.id,
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        id: id
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanDeleteStatusDetail',
+        params
+      )
+      if (res) {
+        success(``, '', async () => {
+          this.$emit('fetch')
+        })
       }
     }
   },

@@ -20,19 +20,19 @@
                 <div class="flex-group">
                   <div class="w-25 txt-desc">{{ formatDate(modelMat.sendDate) }}</div>
                   <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValAssignDate === true ? `p-invalid` : ``"
                     v-model="form.assignDate"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
               </div>
               <div>
                 <span class="txt-title">ผู้จ่ายงาน</span>
-                <input type="text" class="form-control" v-model="form.assignBy" required />
+                <InputTextGeneric v-model="form.assignBy" :required="true" />
               </div>
             </div>
             <!-- <div class="mb-2 mt-2 txt-title-part">
@@ -45,13 +45,13 @@
                 <div class="flex-group">
                   <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
                   <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValReceiveDate === true ? `p-invalid` : ``"
                     v-model="form.receiveDate"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
               </div>
@@ -86,7 +86,7 @@
                 <Column style="width: 20px">
                   <template #body="prop">
                     <div
-                      class="btn btn-sm btn-danger text-center w-100"
+                      class="btn btn-sm btn-red text-center w-100"
                       @click="onDelGold(prop.data)"
                     >
                       <i class="bi bi-trash-fill"></i>
@@ -101,33 +101,25 @@
                 <Column field="gold" header="ทอง" style="width: 100px">
                   <template #editor="{ data, field }">
                     <!-- <input type="text" class="form-control" v-model="data[field]" /> -->
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="data[field]"
                       :options="masterGold"
                       optionLabel="code"
                       optionValue="code"
                       class="w-full md:w-14rem"
                       placeholder="เลือกทอง"
-                    >
-                      <!-- :showClear="data[field] ? true : false" -->
-                      <!-- <template #option="slotProps">
-                          <Tag
-                            :value="slotProps.option.value"
-                            :severity="getStatusLabel(slotProps.option.value)"
-                          />
-                        </template> -->
-                    </Dropdown>
+                    />
                   </template>
                 </Column>
                 <Column field="requestDate" header="วันที่" style="min-width: 120px">
                   <template #editor="{ data, field }">
                     <div>
-                      <Calendar
+                      <CalendarGeneric
                         class="w-100"
                         v-model="data[field]"
                         dateFormat="dd/mm/yy"
-                        showIcon
-                        showButtonBar
+                        :showIcon="true"
+                        :showButtonBar="true"
                       />
                     </div>
                   </template>
@@ -139,31 +131,28 @@
                 </Column>
                 <Column field="goldQTYSend" header="จำนวนจ่าย" style="width: 100px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
                 </Column>
                 <Column field="goldWeightSend" header="น้ำหนักจ่าย" style="width: 100px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       step="any"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
                 </Column>
                 <Column field="goldQTYCheck" header="จำนวนรับ" style="width: 100px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                       @change="calTotalWages(data)"
                     />
@@ -171,11 +160,10 @@
                 </Column>
                 <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 100px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       min="1"
                       step="any"
-                      class="form-control"
                       v-model="data[field]"
                       :disabled="!data.goldQTYCheck"
                       @change="calTotalWages(data)"
@@ -184,21 +172,19 @@
                 </Column>
                 <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       step="any"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
                 </Column>
                 <Column field="description" header="รายละเอียด" style="width: 150px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="text"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
@@ -209,27 +195,21 @@
                   style="min-width: 150px"
                 >
                   <template #editor="{ data, field }">
-                    <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
-                    <AutoComplete
+                    <AutoCompleteGeneric
                       v-model="data[field]"
                       :suggestions="workerItemSearch"
                       @complete="onSearchWorker"
                       placeholder="กรอกรหัส/ชื่อช่าง...."
                       :class="data[field] ? `` : `bg-warning`"
                       optionLabel="code"
-                      forceSelection
+                      :forceSelection="true"
                     >
                       <template #option="slotProps">
                         <div class="flex align-options-center">
                           <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
                         </div>
                       </template>
-                    </AutoComplete>
+                    </AutoCompleteGeneric>
                   </template>
                   <template #body="slotProps">
                     <div v-if="slotProps.data.workers">
@@ -244,27 +224,21 @@
                   style="min-width: 150px"
                 >
                   <template #editor="{ data, field }">
-                    <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
-                    <AutoComplete
+                    <AutoCompleteGeneric
                       v-model="data[field]"
                       :suggestions="workerItemSearch"
                       @complete="onSearchWorker"
                       placeholder="กรอกรหัส/ชื่อช่าง...."
                       :class="data[field] ? `` : `bg-warning`"
                       optionLabel="code"
-                      forceSelection
+                      :forceSelection="true"
                     >
                       <template #option="slotProps">
                         <div class="flex align-options-center">
                           <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
                         </div>
                       </template>
-                    </AutoComplete>
+                    </AutoCompleteGeneric>
                   </template>
                   <template #body="slotProps">
                     <div v-if="slotProps.data.workersSub">
@@ -276,13 +250,12 @@
                 </Column>
                 <Column field="totalWages" header="รวมค่าแรงช่าง" style="width: 120px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       min="1"
                       step="any"
-                      class="form-control"
                       v-model="data[field]"
-                      disabled
+                      :disabled="true"
                     />
                   </template>
                 </Column>
@@ -309,24 +282,22 @@
             <div class="form-content-row-container">
               <div>
                 <span class="txt-title">หมายเหตุ - 1</span>
-                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark1" :rows="2" />
               </div>
               <div>
                 <span class="txt-title">หมายเหตุ - 2</span>
-                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark2" :rows="2" />
               </div>
             </div>
             <div class="d-flex justify-content-center mt-3">
               <button
-                class="btn btn-sm btn-dark btn-custom mr-2"
+                class="btn btn-sm btn-dark mr-2"
                 type="button"
                 @click="onCloseModal"
               >
                 ยกเลิกเเก้ไขสถานะการผลิต
               </button>
-              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+              <button class="btn btn-sm btn-main" type="submit">
                 ยืนยันเเก้ไขสถานะการผลิต
               </button>
             </div>
@@ -342,19 +313,19 @@
                 <div class="flex-group">
                   <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
                   <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValReceiveDate === true ? `p-invalid` : ``"
                     v-model="form.receiveDate"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
               </div>
               <div>
                 <span class="txt-title">ผู้คัดพลอย</span>
-                <input type="text" class="form-control" v-model="form.receiveBy" required />
+                <InputTextGeneric v-model="form.receiveBy" :required="true" />
               </div>
             </div>
             <div class="mb-2 txt-title-part">
@@ -382,7 +353,7 @@
                 <Column style="width: 20px">
                   <template #body="prop">
                     <div
-                      class="btn btn-sm btn-danger text-center w-100"
+                      class="btn btn-sm btn-red text-center w-100"
                       @click="onDelGold(prop.data)"
                     >
                       <i class="bi bi-trash-fill"></i>
@@ -391,26 +362,25 @@
                 </Column>
                 <Column field="gold" header="ทอง">
                   <template #editor="{ data, field }">
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="data[field]"
                       :options="masterGold"
                       optionLabel="code"
                       optionValue="code"
                       class="w-full md:w-14rem"
                       placeholder="เลือกทอง"
-                    >
-                    </Dropdown>
+                    />
                   </template>
                 </Column>
                 <Column field="requestDate" header="วันที่">
                   <template #editor="{ data, field }">
                     <div>
-                      <Calendar
+                      <CalendarGeneric
                         class="w-100"
                         v-model="data[field]"
                         dateFormat="dd/mm/yy"
-                        showIcon
-                        showButtonBar
+                        :showIcon="true"
+                        :showButtonBar="true"
                       />
                     </div>
                   </template>
@@ -422,48 +392,40 @@
                 </Column>
                 <Column field="goldQTYCheck" header="จำนวน">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
                 </Column>
                 <Column field="goldWeightCheck" header="น้ำหนัก">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       step="any"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
                 </Column>
                 <Column field="workers" header="ช่างคัดพลอ">
                   <template #editor="{ data, field }">
-                    <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
-                    <AutoComplete
+                    <AutoCompleteGeneric
                       v-model="data[field]"
                       :suggestions="workerItemSearch"
                       @complete="onSearchWorker"
                       placeholder="กรอกรหัส/ชื่อช่าง...."
                       :class="data[field] ? `` : `bg-warning`"
                       optionLabel="code"
-                      forceSelection
+                      :forceSelection="true"
                     >
                       <template #option="slotProps">
                         <div class="flex align-options-center">
                           <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
                         </div>
                       </template>
-                    </AutoComplete>
+                    </AutoCompleteGeneric>
                   </template>
                   <template #body="slotProps">
                     <div v-if="slotProps.data.workers">
@@ -473,27 +435,21 @@
                 </Column>
                 <Column field="workersSub" header="ช่างคัดเพชร">
                   <template #editor="{ data, field }">
-                    <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
-                    <AutoComplete
+                    <AutoCompleteGeneric
                       v-model="data[field]"
                       :suggestions="workerItemSearch"
                       @complete="onSearchWorker"
                       placeholder="กรอกรหัส/ชื่อช่าง...."
                       :class="data[field] ? `` : `bg-warning`"
                       optionLabel="code"
-                      forceSelection
+                      :forceSelection="true"
                     >
                       <template #option="slotProps">
                         <div class="flex align-options-center">
                           <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
                         </div>
                       </template>
-                    </AutoComplete>
+                    </AutoCompleteGeneric>
                   </template>
                   <template #body="slotProps">
                     <div v-if="slotProps.data.workersSub">
@@ -544,7 +500,7 @@
                 <Column style="width: 20px">
                   <template #body="prop">
                     <div
-                      class="btn btn-sm btn-danger text-center w-100"
+                      class="btn btn-sm btn-red text-center w-100"
                       @click="onDelGem(prop.data)"
                     >
                       <i class="bi bi-trash-fill"></i>
@@ -553,14 +509,14 @@
                 </Column>
                 <Column field="gem" header="พลอย">
                   <template #editor="{ data, field }">
-                    <AutoComplete
+                    <AutoCompleteGeneric
                       v-model="data[field]"
                       :suggestions="gemItemSearch"
                       @complete="onSearchGem"
                       placeholder="กรอกรหัสพลอย...."
                       :class="data[field] ? `` : `bg-warning`"
                       optionLabel="name"
-                      forceSelection
+                      :forceSelection="true"
                       :minLength="4"
                     >
                       <template #option="slotProps">
@@ -568,7 +524,7 @@
                           <div>{{ `${slotProps.option.name}` }}</div>
                         </div>
                       </template>
-                    </AutoComplete>
+                    </AutoCompleteGeneric>
                   </template>
                   <template #body="slotProps">
                     <div v-if="slotProps.data.gem">
@@ -592,22 +548,20 @@
                 </Column>
                 <Column field="qty" header="จำนวน" style="width: 200px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       step="any"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
                 </Column>
                 <Column field="weight" header="น้ำหนัก" style="width: 200px">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       step="any"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
@@ -644,24 +598,22 @@
             <div class="form-content-row-container">
               <div>
                 <span class="txt-title">หมายเหตุ - 1</span>
-                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark1" :rows="2" />
               </div>
               <div>
                 <span class="txt-title">หมายเหตุ - 2</span>
-                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark2" :rows="2" />
               </div>
             </div>
             <div class="d-flex justify-content-center mt-3">
               <button
-                class="btn btn-sm btn-dark btn-custom mr-2"
+                class="btn btn-sm btn-dark mr-2"
                 type="button"
                 @click="onCloseModal"
               >
                 ยกเลิกเเก้ไขสถานะการผลิต
               </button>
-              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+              <button class="btn btn-sm btn-main" type="submit">
                 ยืนยันเเก้ไขสถานะการผลิต
               </button>
             </div>
@@ -677,19 +629,19 @@
                 <div class="flex-group">
                   <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
                   <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValReceiveDate === true ? `p-invalid` : ``"
                     v-model="form.receiveDate"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
               </div>
               <div>
                 <span class="txt-title">ผู้ตรวจ CVD</span>
-                <input type="text" class="form-control" v-model="form.receiveBy" required />
+                <InputTextGeneric v-model="form.receiveBy" :required="true" />
               </div>
             </div>
 
@@ -700,24 +652,22 @@
             <div class="form-content-row-container">
               <div>
                 <span class="txt-title">หมายเหตุ - 1</span>
-                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark1" :rows="2" />
               </div>
               <div>
                 <span class="txt-title">หมายเหตุ - 2</span>
-                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark2" :rows="2" />
               </div>
             </div>
             <div class="d-flex justify-content-center mt-3">
               <button
-                class="btn btn-sm btn-dark btn-custom mr-2"
+                class="btn btn-sm btn-dark mr-2"
                 type="button"
                 @click="onCloseModal"
               >
                 ยกเลิกเเก้ไขสถานะการผลิต
               </button>
-              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+              <button class="btn btn-sm btn-main" type="submit">
                 ยืนยันเเก้ไขสถานะการผลิต
               </button>
             </div>
@@ -733,19 +683,19 @@
                 <div class="flex-group">
                   <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
                   <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValReceiveDate === true ? `p-invalid` : ``"
                     v-model="form.receiveDate"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
               </div>
               <div>
                 <span class="txt-title">ผู้หล่องาน</span>
-                <input type="text" class="form-control" v-model="form.receiveBy" required />
+                <InputTextGeneric v-model="form.receiveBy" :required="true" />
               </div>
             </div>
             <div class="mb-2 txt-title-part">
@@ -773,7 +723,7 @@
                 <Column style="width: 20px">
                   <template #body="prop">
                     <div
-                      class="btn btn-sm btn-danger text-center w-100"
+                      class="btn btn-sm btn-red text-center w-100"
                       @click="onDelGold(prop.data)"
                     >
                       <i class="bi bi-trash-fill"></i>
@@ -782,26 +732,25 @@
                 </Column>
                 <Column field="gold" header="ทอง">
                   <template #editor="{ data, field }">
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="data[field]"
                       :options="masterGold"
                       optionLabel="code"
                       optionValue="code"
                       class="w-full md:w-14rem"
                       placeholder="เลือกทอง"
-                    >
-                    </Dropdown>
+                    />
                   </template>
                 </Column>
                 <Column field="requestDate" header="วันที่">
                   <template #editor="{ data, field }">
                     <div>
-                      <Calendar
+                      <CalendarGeneric
                         class="w-100"
                         v-model="data[field]"
                         dateFormat="dd/mm/yy"
-                        showIcon
-                        showButtonBar
+                        :showIcon="true"
+                        :showButtonBar="true"
                       />
                     </div>
                   </template>
@@ -813,21 +762,19 @@
                 </Column>
                 <Column field="goldQTYCheck" header="จำนวน">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
                 </Column>
                 <Column field="goldWeightCheck" header="น้ำหนัก">
                   <template #editor="{ data, field }">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       step="any"
                       :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
                       v-model="data[field]"
                     />
                   </template>
@@ -864,24 +811,22 @@
             <div class="form-content-row-container">
               <div>
                 <span class="txt-title">หมายเหตุ - 1</span>
-                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark1" :rows="2" />
               </div>
               <div>
                 <span class="txt-title">หมายเหตุ - 2</span>
-                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark2" :rows="2" />
               </div>
             </div>
             <div class="d-flex justify-content-center mt-3">
               <button
-                class="btn btn-sm btn-dark btn-custom mr-2"
+                class="btn btn-sm btn-dark mr-2"
                 type="button"
                 @click="onCloseModal"
               >
                 ยกเลิกเเก้ไขสถานะการผลิต
               </button>
-              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+              <button class="btn btn-sm btn-main" type="submit">
                 ยืนยันเเก้ไขสถานะการผลิต
               </button>
             </div>
@@ -897,19 +842,19 @@
                 <div class="flex-group">
                   <div class="w-25 txt-desc">{{ formatDate(modelMat.checkDate) }}</div>
                   <div class="mr-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     :class="val.isValReceiveDate === true ? `p-invalid` : ``"
                     v-model="form.receiveDate"
                     dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showIcon="true"
+                    :showButtonBar="true"
                   />
                 </div>
               </div>
               <div>
                 <span class="txt-title">ผู้ประเมินราคา</span>
-                <input type="text" class="form-control" v-model="form.receiveBy" required />
+                <InputTextGeneric v-model="form.receiveBy" :required="true" />
               </div>
             </div>
 
@@ -920,24 +865,22 @@
             <div class="form-content-row-container">
               <div>
                 <span class="txt-title">หมายเหตุ - 1</span>
-                <textarea class="form-control" v-model="form.remark1" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark1" :rows="2" />
               </div>
               <div>
                 <span class="txt-title">หมายเหตุ - 2</span>
-                <textarea class="form-control" v-model="form.remark2" style="height: 50px">
-                </textarea>
+                <TextareaGeneric v-model="form.remark2" :rows="2" />
               </div>
             </div>
             <div class="d-flex justify-content-center mt-3">
               <button
-                class="btn btn-sm btn-dark btn-custom mr-2"
+                class="btn btn-sm btn-dark mr-2"
                 type="button"
                 @click="onCloseModal"
               >
                 ยกเลิกเเก้ไขสถานะการผลิต
               </button>
-              <button class="btn btn-sm btn-warning btn-custom" type="submit">
+              <button class="btn btn-sm btn-main" type="submit">
                 ยืนยันเเก้ไขสถานะการผลิต
               </button>
             </div>
@@ -954,16 +897,21 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 
-import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
+// eslint-disable-next-line vue/no-mutating-props
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import AutoComplete from 'primevue/autocomplete'
 import moment from 'dayjs'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 // const interfaceMat = {
 //   gold: null,
@@ -996,12 +944,15 @@ const interfaceVal = {
 export default {
   components: {
     modal,
-  
-    Calendar,
-    Dropdown,
+
     DataTable,
     Column,
-    AutoComplete
+
+    DropdownGeneric,
+    CalendarGeneric,
+    AutoCompleteGeneric,
+    InputTextGeneric,
+    TextareaGeneric
   },
   props: {
     isShow: {
@@ -1034,7 +985,6 @@ export default {
       return this.modelValue
     },
     modelMat() {
-      console.log('modelMatValue', this.modelMatValue)
       return this.modelMatValue
     },
     modelMasterStatus() {
@@ -1043,7 +993,6 @@ export default {
   },
   watch: {
     async modelMatValue(value) {
-      //onsole.log(value)
       this.autoId = 0
       this.autoIdGem = 0
 
@@ -1102,7 +1051,6 @@ export default {
   data() {
     return {
       // --- flag --- //
-      isLoading: false,
       showType: 0,
       autoId: 0,
       autoIdGem: 0,
@@ -1163,15 +1111,9 @@ export default {
       }
     },
     onSubmit() {
-      swAlert.confirmSubmit(
-        ``,
-        '',
-        async () => {
-          this.submit()
-        },
-        null,
-        null
-      )
+      confirmThenSubmit(``, '', async () => {
+        this.submit()
+      })
     },
     calTotalWages(data) {
       data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
@@ -1221,178 +1163,120 @@ export default {
 
     // --- APIs --- //
     async submit() {
-      try {
-        this.isLoading = true
-        //console.log(this.form.assignDate)
-        this.mat = this.mat.map((item) => {
-          return {
-            ...item,
-            worker: item.workers?.code,
-            workerSub: item.workersSub?.code
-          }
-        })
-        this.gem = this.gem.map((item) => {
-          return {
-            id: item.gem?.id,
-            code: item.gem?.code,
-            name: item.gem?.name,
-            QTY: item.qty,
-            weight: item.weight
-          }
-        })
-
-        const param = {
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          productionPlanId: this.model.id,
-          HeaderId: this.modelMat.id,
-
-          status: this.modelMat.status,
-          sendName: this.form.assignBy,
-          sendDate: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
-          checkName: this.form.receiveBy,
-          checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          remark1: this.form.remark1,
-          remark2: this.form.remark2,
-          totalWages: this.form.totalWages,
-          golds: [...this.mat],
-          gems: [...this.gem]
+      this.mat = this.mat.map((item) => {
+        return {
+          ...item,
+          worker: item.workers?.code,
+          workerSub: item.workersSub?.code
         }
-
-        //console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceVal
-              }
-              this.mat = []
-              this.gem = []
-              this.showType = 0
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
+      })
+      this.gem = this.gem.map((item) => {
+        return {
+          id: item.gem?.id,
+          code: item.gem?.code,
+          name: item.gem?.name,
+          QTY: item.qty,
+          weight: item.weight
         }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+      })
+
+      const param = {
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        productionPlanId: this.model.id,
+        HeaderId: this.modelMat.id,
+
+        status: this.modelMat.status,
+        sendName: this.form.assignBy,
+        sendDate: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
+        checkName: this.form.receiveBy,
+        checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
+        remark1: this.form.remark1,
+        remark2: this.form.remark2,
+        totalWages: this.form.totalWages,
+        golds: [...this.mat],
+        gems: [...this.gem]
+      }
+
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateStatusDetail', param)
+      if (res) {
+        success(``, '', () => {
+          this.form = {
+            ...interfaceForm
+          }
+          this.val = {
+            ...interfaceVal
+          }
+          this.mat = []
+          this.gem = []
+          this.showType = 0
+          this.$emit('fetch')
+        })
       }
     },
     async onSearchWorker(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null,
-            type: this.form.status,
-            active: 1
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null,
+          type: this.form.status,
+          active: 1
         }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res)
-          this.workerItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post('Worker/Search', params)
+      if (res) {
+        this.workerItemSearch = [...res.data]
       }
     },
     async onSearchWorkerByCode(e) {
-      try {
-        if (e === null) {
-          return null
+      if (e === null) {
+        return null
+      }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          code: e,
+          text: null,
+          type: null,
+          active: 0
         }
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            code: e,
-            text: null,
-            type: null,
-            active: 0
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res.data[0])
-          return res.data[0]
-        } else {
-          return null
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post('Worker/Search', params)
+      if (res) {
+        return res.data[0]
+      } else {
+        return null
       }
     },
     async onSearchGem(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          this.gemItemSearch = [...res]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post('StockGem/Search', params)
+      if (res) {
+        this.gemItemSearch = [...res]
       }
     },
     async onSearchGemById(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            id: e ?? null,
-            text: null
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          id: e ?? null,
+          text: null
         }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          if (res) {
-            //console.log(res.data[0])
-            return res[0]
-          } else {
-            return null
-          }
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
       }
+      const res = await api.jewelry.post('StockGem/Search', params)
+      if (res) {
+        return res[0] ?? null
+      }
+      return null
     }
   }
 }

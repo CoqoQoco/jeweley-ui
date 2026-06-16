@@ -233,5 +233,28 @@ export default {
     statusActive: 'In Progress',
     statusDone: 'Done',
     statusCancel: 'Cancelled'
+  },
+
+  planUpdate: {
+    receiveDate: 'Receive Date',
+    receiveBy: 'Received By',
+    receiveByName: 'Receiver Name',
+    assignDate: 'Assign Date',
+    assignBy: 'Assigned By',
+    requestDate: 'Date',
+    goldType: 'Gold Type',
+    goldQTYSend: 'Send Qty',
+    goldWeightSend: 'Send Weight',
+    goldQTYCheck: 'Receive Qty',
+    goldWeightCheck: 'Receive Weight',
+    description: 'Description',
+    workers: 'Worker',
+    workersSub: 'Sub Worker',
+    wages: 'Wages/Piece',
+    totalWages: 'Total Wages',
+    remark1: 'Remark 1',
+    remark2: 'Remark 2',
+    total: 'Total',
+    items: 'Items'
   }
 }

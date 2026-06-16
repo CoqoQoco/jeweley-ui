@@ -233,5 +233,28 @@ export default {
     statusActive: 'กำลังทำ',
     statusDone: 'เสร็จแล้ว',
     statusCancel: 'ยกเลิก'
+  },
+
+  planUpdate: {
+    receiveDate: 'วันที่รับงาน',
+    receiveBy: 'ลงชื่อรับงาน',
+    receiveByName: 'ชื่อผู้รับงาน',
+    assignDate: 'วันที่จ่าย',
+    assignBy: 'ผู้จ่าย',
+    requestDate: 'วันที่',
+    goldType: 'ประเภทของทอง',
+    goldQTYSend: 'จำนวนจ่าย',
+    goldWeightSend: 'น้ำหนักจ่าย',
+    goldQTYCheck: 'จำนวนรับ',
+    goldWeightCheck: 'น้ำหนักรับ',
+    description: 'รายละเอียด',
+    workers: 'ช่างรับงาน',
+    workersSub: 'ช่างชุบ',
+    wages: 'ค่าเเรงต่อชิ้น',
+    totalWages: 'รวมค่าแรง',
+    remark1: 'หมายเหตุ - 1',
+    remark2: 'หมายเหตุ - 2',
+    total: 'ทั้งหมด',
+    items: 'รายการ'
   }
 }

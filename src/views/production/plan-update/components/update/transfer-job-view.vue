@@ -25,7 +25,7 @@
             <div class="form-col-container">
               <div>
                 <span class="title-text">แผนกรับโอน</span>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.targetStatus"
                   :options="allowSelectStatus"
                   optionLabel="nameTh"
@@ -38,8 +38,7 @@
 
             <div class="submit-container">
               <button
-                :class="['btn btn-sm ml-2 btn-green']"
-                style="height: 34px"
+                class="btn btn-sm ml-2 btn-green"
                 @click="onTransferStatus"
                 type="submit"
               >
@@ -56,15 +55,14 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
-import Dropdown from 'primevue/dropdown'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
 
 const interfaceForm = {
   formerStatus: null,
@@ -81,7 +79,7 @@ const interfaceVal = {
 export default {
   components: {
     modal,
-    Dropdown
+    DropdownGeneric
   },
 
   setup() {
@@ -131,7 +129,6 @@ export default {
     },
     statusTransfer() {
       const res = this.masterStatusValue.find((item) => item.id === this.statusTransferValue)
-      console.log('statusTransfer:', res)
       return res || {}
     },
     allowSelectStatus() {
@@ -176,7 +173,7 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit('', 'ยืนยันการโอนสถานะงาน?', async () => {
+        confirmThenSubmit('', 'ยืนยันการโอนสถานะงาน?', async () => {
           await this.submit()
         })
       }
@@ -192,9 +189,8 @@ export default {
 
       let statusNotAllow = [49, 54, 55, 59, 69, 79, 84, 85, 94, 500]
       if (statusNotAllow.includes(this.form.targetStatus)) {
-        swAlert.warning('ไม่สามารถโอนสถานงานนี้ได้', '', () => {
-          isValid = false
-        })
+        warning('ไม่สามารถโอนสถานงานนี้ได้', '')
+        isValid = false
       }
       return isValid
     },
