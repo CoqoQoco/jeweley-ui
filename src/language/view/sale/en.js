@@ -130,6 +130,72 @@ export const productionOrder = {
   selectSaleOrderModal: 'Select Sale Order for Production'
 }
 
+export const costStock = {
+  title: 'Cost Appraisal',
+  searchStock: 'Search Stock',
+  stockNumber: 'Production No. (New)',
+  stockNumberOrigin: 'Production No. (Old)',
+  productNumber: 'Product Code',
+  planList: 'Appraisal Plan List',
+  stockInfo: 'Stock Information',
+  customInfo: 'Custom Stock Info',
+  customInfoNote: '* If filled, replaces standard stock info in PDF',
+  customerInfo: 'Customer Info',
+  appraisal: 'Price Appraisal',
+  appraisalNote: '* Prices shown are per piece (divided by production plan qty)',
+  currency: 'Currency',
+  currencyUnit: 'Currency Unit',
+  currencyRate: 'Exchange Rate (1 unit = ? THB)',
+  save: 'Save',
+  saveAsOrigin: 'Save as Main Cost',
+  previewPdf: 'Preview PDF',
+  versionList: 'Recent Appraisals',
+  exportPdf: 'Export PDF',
+  planCost: 'Production Plan Cost (Reference)',
+  viewPlanCost: 'View Plan Cost',
+  checkGoldPrice: 'Check Today Gold Price'
+}
+
+export const stockReservation = {
+  title: 'Stock Reservation',
+  searchTitle: 'Search Reservation',
+  searchType: 'Search Type',
+  searchBySaleOrder: 'Sale Order',
+  searchByProduct: 'Product Code',
+  searchByCustomer: 'Customer',
+  soNumber: 'Sale Order No.',
+  productNumber: 'Product Code',
+  customerName: 'Customer Name',
+  reservationDate: 'Reservation Date',
+  expiryDate: 'Expiry Date',
+  status: 'Status',
+  autoExpiryDays: 'Auto Expiry Days',
+  saleOrderRef: 'Sale Order Reference',
+  reservationType: 'Reservation Type',
+  priority: 'Priority',
+  remark: 'Reservation Remark',
+  stockItems: 'Stock Items to Reserve',
+  selectAll: 'Select All',
+  reserveSelected: 'Reserve Selected',
+  reserveAll: 'Reserve All',
+  unreserveAll: 'Cancel All Reservations',
+  report: 'Reservation Report'
+}
+
+export const deliveryNote = {
+  title: 'Delivery Note',
+  searchTitle: 'Search Delivery Notes',
+  searchType: 'Search Type',
+  searchBySaleOrder: 'Sale Order',
+  searchByDeliveryNote: 'Delivery Note',
+  searchByCustomer: 'Customer',
+  soNumber: 'Sale Order No.',
+  dnNumber: 'Delivery Note No.',
+  customerName: 'Customer Name',
+  selectSaleOrder: 'Select Sale Order',
+  viewDeliveries: 'Delivery List'
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -137,5 +203,8 @@ export default {
   quotationList,
   saleOrder,
   saleOrderList,
-  productionOrder
+  productionOrder,
+  costStock,
+  stockReservation,
+  deliveryNote
 }

@@ -130,6 +130,72 @@ export const productionOrder = {
   selectSaleOrderModal: 'เลือกใบสั่งขายสำหรับสร้างใบสั่งผลิต'
 }
 
+export const costStock = {
+  title: 'ตีราคาสินค้า',
+  searchStock: 'ค้นหาสินค้า',
+  stockNumber: 'เลขที่ผลิต (ใหม่)',
+  stockNumberOrigin: 'เลขที่ผลิต (เก่า)',
+  productNumber: 'รหัสสินค้า',
+  planList: 'รายการแผนตีราคา',
+  stockInfo: 'ข้อมูลสินค้า',
+  customInfo: 'ข้อมูลสินค้าแบบกำหนดเอง (Custom)',
+  customInfoNote: '* ถ้ากรอก จะแสดงแทนข้อมูลสินค้าปกติใน PDF',
+  customerInfo: 'ข้อมูลลูกค้า',
+  appraisal: 'ประเมินราคาสินค้า',
+  appraisalNote: '* รายการที่แสดงในตารางนี้เป็นราคาต่อ 1 ชิ้น (หารต้นทุนตามจำนวนแผนผลิตแล้ว)',
+  currency: 'สกุลเงิน (Currency)',
+  currencyUnit: 'สกุลเงิน',
+  currencyRate: 'อัตราแลกเปลี่ยน (1 หน่วย = ? บาท)',
+  save: 'บันทึก',
+  saveAsOrigin: 'บันทึกและใช้เป็นต้นทุนหลัก',
+  previewPdf: 'พิมพ์ตัวอย่าง PDF',
+  versionList: 'รายการตีราคาล่าสุด',
+  exportPdf: 'Export PDF',
+  planCost: 'ต้นทุนจากแผนผลิต (อ้างอิง)',
+  viewPlanCost: 'ดูต้นทุนจากแผนผลิต',
+  checkGoldPrice: 'ตรวจสอบราคาทองวันนี้'
+}
+
+export const stockReservation = {
+  title: 'การจองสต็อกสินค้า',
+  searchTitle: 'ค้นหาการจองสต็อก',
+  searchType: 'ประเภทการค้นหา',
+  searchBySaleOrder: 'ใบสั่งขาย',
+  searchByProduct: 'รหัสสินค้า',
+  searchByCustomer: 'ลูกค้า',
+  soNumber: 'เลขที่ใบสั่งขาย',
+  productNumber: 'รหัสสินค้า',
+  customerName: 'ชื่อลูกค้า',
+  reservationDate: 'วันที่จอง',
+  expiryDate: 'วันที่หมดอายุ',
+  status: 'สถานะ',
+  autoExpiryDays: 'จำนวนวันหมดอายุอัตโนมัติ',
+  saleOrderRef: 'อ้างอิงใบสั่งขาย',
+  reservationType: 'ประเภทการจอง',
+  priority: 'ลำดับความสำคัญ',
+  remark: 'หมายเหตุการจอง',
+  stockItems: 'รายการสินค้าสต็อกที่ต้องจอง',
+  selectAll: 'เลือกทั้งหมด',
+  reserveSelected: 'จองรายการที่เลือก',
+  reserveAll: 'จองทั้งหมด',
+  unreserveAll: 'ยกเลิกการจองทั้งหมด',
+  report: 'รายงานการจอง'
+}
+
+export const deliveryNote = {
+  title: 'ใบส่งของ',
+  searchTitle: 'ค้นหาใบส่งของ',
+  searchType: 'ประเภทการค้นหา',
+  searchBySaleOrder: 'ใบสั่งขาย',
+  searchByDeliveryNote: 'ใบส่งของ',
+  searchByCustomer: 'ลูกค้า',
+  soNumber: 'เลขที่ใบสั่งขาย',
+  dnNumber: 'เลขที่ใบส่งของ',
+  customerName: 'ชื่อลูกค้า',
+  selectSaleOrder: 'เลือกใบสั่งขาย',
+  viewDeliveries: 'รายการส่งของ'
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -137,5 +203,8 @@ export default {
   quotationList,
   saleOrder,
   saleOrderList,
-  productionOrder
+  productionOrder,
+  costStock,
+  stockReservation,
+  deliveryNote
 }

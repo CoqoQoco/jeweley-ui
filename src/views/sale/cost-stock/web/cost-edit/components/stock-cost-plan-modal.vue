@@ -1,87 +1,85 @@
 <template>
-  <Dialog
-    v-model:visible="isVisible"
-    modal
-    :style="{ width: '90vw' }"
-    :breakpoints="{ '1280px': '90vw', '1024px': '95vw' }"
-    @hide="onClose"
+  <modal
+    :showModal="visible"
+    width="90%"
+    :isShowActionPart="true"
+    @closeModal="onClose"
   >
-    <template #header>
-      <div class="vertical-center-container">
-        <span class="title-text-lg bi bi-list-ul mr-2"></span>
-        <span class="title-text-lg">รายการแผนตีราคา</span>
+    <template #title>
+      <span class="title-text-lg px-3 pt-3 d-block">
+        <i class="bi bi-list-ul mr-2"></i>รายการแผนตีราคา
+      </span>
+    </template>
+
+    <template #content>
+      <div class="px-3 pb-3">
+        <DataTableWithPaging
+          :items="planList"
+          :totalRecords="totalRecords"
+          :perPage="perPage"
+          :columns="columns"
+          dataKey="running"
+          :scrollHeight="'calc(100vh - 350px)'"
+          @page="onPageChange"
+          @sort="onSortChange"
+          :selectionMode="true"
+          selectionType="single"
+          v-model:itemsSelection="selectedPlan"
+        >
+          <template #statusNameTemplate="{ data }">
+            <span
+              class="badge"
+              :class="{
+                'badge-warning': data.statusId === 1,
+                'badge-success': data.statusId === 2,
+                'badge-danger': data.statusId === 3
+              }"
+            >
+              {{ data.statusName }}
+            </span>
+          </template>
+
+          <template #createDateTemplate="{ data }">
+            {{ formatDate(data.createDate) }}
+          </template>
+
+          <template #updateDateTemplate="{ data }">
+            {{ data.updateDate ? formatDate(data.updateDate) : '-' }}
+          </template>
+        </DataTableWithPaging>
       </div>
     </template>
 
-    <!-- DataTable -->
-    <DataTableWithPaging
-      :items="planList"
-      :totalRecords="totalRecords"
-      :perPage="perPage"
-      :columns="columns"
-      dataKey="running"
-      :scrollHeight="'calc(100vh - 350px)'"
-      @page="onPageChange"
-      @sort="onSortChange"
-      :selectionMode="true"
-      selectionType="single"
-      v-model:itemsSelection="selectedPlan"
-    >
-      <!-- Status Template -->
-      <template #statusNameTemplate="{ data }">
-        <span
-          class="badge"
-          :class="{
-            'badge-warning': data.statusId === 1,
-            'badge-success': data.statusId === 2,
-            'badge-danger': data.statusId === 3
-          }"
-        >
-          {{ data.statusName }}
-        </span>
-      </template>
-
-      <!-- Date Template -->
-      <template #createDateTemplate="{ data }">
-        {{ formatDate(data.createDate) }}
-      </template>
-
-      <!-- Update Date Template -->
-      <template #updateDateTemplate="{ data }">
-        {{ data.updateDate ? formatDate(data.updateDate) : '-' }}
-      </template>
-    </DataTableWithPaging>
-
-    <template #footer>
-      <div class="submit-container">
-        <button class="btn btn-secondary btn-sm mr-2" @click="onClose">
-          <i class="bi bi-x-circle mr-1"></i>
-          ปิด
-        </button>
-        <button
-          class="btn btn-main btn-sm"
-          @click="onSelectPlan"
-          :disabled="selectedPlan.length === 0"
-        >
-          <i class="bi bi-check-circle mr-1"></i>
-          เลือกแผนนี้
-        </button>
-      </div>
+    <template #action>
+      <button class="btn btn-sm btn-outline-main mr-2" @click="onClose">
+        <i class="bi bi-x-circle mr-1"></i>
+        ปิด
+      </button>
+      <button
+        class="btn btn-main btn-sm"
+        @click="onSelectPlan"
+        :disabled="selectedPlan.length === 0"
+      >
+        <i class="bi bi-check-circle mr-1"></i>
+        เลือกแผนนี้
+      </button>
     </template>
-  </Dialog>
+  </modal>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
+import { defineAsyncComponent } from 'vue'
 import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { formatDate } from '@/services/utils/dayjs.js'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'StockCostPlanModal',
 
   components: {
-    Dialog,
+    modal,
     DataTableWithPaging
   },
 
@@ -165,17 +163,6 @@ export default {
     }
   },
 
-  computed: {
-    isVisible: {
-      get() {
-        return this.visible
-      },
-      set(value) {
-        this.$emit('update:visible', value)
-      }
-    }
-  },
-
   watch: {
     visible(newVal) {
       if (newVal) {
@@ -186,24 +173,20 @@ export default {
 
   methods: {
     async fetchPlans() {
-      try {
-        const response = await this.productStore.fetchListStockCostPlan({
-          take: this.perPage,
-          skip: this.skip,
-          sort: this.sort,
-          formValue: {
-            stockNumber: this.stockNumber || undefined,
-            isActive: true,
-            statusId: 10 // Pending status (JobStatus.Pending = 10)
-          }
-        })
-
-        if (response && response.data) {
-          this.planList = response.data
-          this.totalRecords = response.total
+      const response = await this.productStore.fetchListStockCostPlan({
+        take: this.perPage,
+        skip: this.skip,
+        sort: this.sort,
+        formValue: {
+          stockNumber: this.stockNumber || undefined,
+          isActive: true,
+          statusId: 10
         }
-      } catch (error) {
-        console.error('Error fetching stock cost plans:', error)
+      })
+
+      if (response && response.data) {
+        this.planList = response.data
+        this.totalRecords = response.total
       }
     },
 
@@ -245,17 +228,17 @@ export default {
   font-weight: 500;
 
   &.badge-warning {
-    background-color: #ffc107;
+    background-color: var(--base-warning);
     color: #000;
   }
 
   &.badge-success {
-    background-color: #28a745;
+    background-color: var(--base-green);
     color: #fff;
   }
 
   &.badge-danger {
-    background-color: #dc3545;
+    background-color: var(--base-red);
     color: #fff;
   }
 }

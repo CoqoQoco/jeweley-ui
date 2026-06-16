@@ -9,7 +9,7 @@
         </div>
         <div>
           <button
-            class="btn btn-sm btn-secondary"
+            class="btn btn-sm btn-outline-main"
             type="button"
             @click="onReset"
             title="รีเซ็ต"
@@ -99,37 +99,30 @@ export default {
     },
 
     async onPlanSelected(plan) {
-      // Use the running number from plan to fetch stock data
-      try {
-        const data = await this.productStore.fetchDataGet({
-          formValue: {
-            stockNumber: plan.stockNumber
-          }
-        })
-
-        if (data) {
-          // แปลงข้อมูลให้ตรงกับรูปแบบที่ใช้ในหน้าตีราคา พร้อมเก็บ running เพื่อใช้ reference
-          const stockData = {
-            ...data,
-            price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
-            appraisalPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
-            description: data.productNameEn,
-            group: 'product',
-            planQty: data.planQty || 1,
-            stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
-            materials: data.materials || [],
-            priceTransactions: data.priceTransactions || [],
-            // เก็บข้อมูลจากแผนไว้ใช้ reference และแสดงผล
-            planRunning: plan.running,
-            planRemark: plan.remark,
-            planCreateDate: plan.createDate,
-            planCreateBy: plan.createBy
-          }
-
-          this.selectedStock = stockData
+      const data = await this.productStore.fetchDataGet({
+        formValue: {
+          stockNumber: plan.stockNumber
         }
-      } catch (error) {
-        console.error('Error fetching stock from plan:', error)
+      })
+
+      if (data) {
+        const stockData = {
+          ...data,
+          price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          appraisalPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
+          description: data.productNameEn,
+          group: 'product',
+          planQty: data.planQty || 1,
+          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
+          materials: data.materials || [],
+          priceTransactions: data.priceTransactions || [],
+          planRunning: plan.running,
+          planRemark: plan.remark,
+          planCreateDate: plan.createDate,
+          planCreateBy: plan.createBy
+        }
+
+        this.selectedStock = stockData
       }
     },
 

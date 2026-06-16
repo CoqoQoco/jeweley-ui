@@ -100,7 +100,7 @@
         </template>
 
         <!-- Plan Cost Button — แสดงตลอด -->
-        <div class="mt-3 d-flex gap-2 ">
+        <div class="mt-3 responsive-btn-group">
           <button
             class="btn btn-sm btn-main"
             type="button"
@@ -110,7 +110,7 @@
             <span>ดูต้นทุนจากแผนผลิต</span>
           </button>
           <button
-            class="btn btn-sm btn-main ml-2"
+            class="btn btn-sm btn-main"
             type="button"
             @click="openKitco"
           >
@@ -492,12 +492,11 @@
 
         <!-- Add Transaction Item -->
         <div class="responsive-action-group mt-2">
-          <Dropdown
+          <DropdownGeneric
             v-model="masterValue"
             :options="masterType"
             optionLabel="name"
             optionValue="code"
-            class="w-full md:w-14rem"
             placeholder="เลือกรายการ"
           />
           <button
@@ -588,7 +587,7 @@
             <span class="bi bi-file-pdf mr-2"></span>
             <span>{{ exportingPreviewPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์ตัวอย่าง PDF' }}</span>
           </button>
-          <button class="btn btn-sm btn-secondary" type="button" @click="onCancel">
+          <button class="btn btn-sm btn-outline-main" type="button" @click="onCancel">
             <span class="bi bi-x mr-2"></span>
             <span>ยกเลิก</span>
           </button>
@@ -622,13 +621,17 @@
 </template>
 
 <script>
-import Dropdown from 'primevue/dropdown'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import CustomerSearchModal from '@/views/sale/quotation/modal/customer-search-modal.vue'
 import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-modal.vue'
@@ -636,7 +639,7 @@ import PlanCostModal from './plan-cost-modal.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
-import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
 import dayjs from 'dayjs'
@@ -645,7 +648,7 @@ export default {
   name: 'AppraisalFormView',
 
   components: {
-    Dropdown,
+    DropdownGeneric,
     DataTable,
     Column,
     ColumnGroup,
@@ -933,13 +936,13 @@ export default {
     },
 
     onSubmit() {
-      confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      confirmThenSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
         await this.fetchSave(false)
       })
     },
 
     onSaveAsOriginCost() {
-      confirmSubmit('', 'ยืนยันการบันทึกและใช้เป็นต้นทุนหลัก?', async () => {
+      confirmThenSubmit('', 'ยืนยันการบันทึกและใช้เป็นต้นทุนหลัก?', async () => {
         await this.fetchSave(true)
       })
     },

@@ -10,7 +10,7 @@
         <!-- Plan List Button with Badge -->
         <button
           type="button"
-          class="btn btn-warning btn-sm position-relative"
+          class="btn btn-main btn-sm position-relative"
           @click="openPlanModal"
           title="ดูรายการแผนตีราคา"
         >

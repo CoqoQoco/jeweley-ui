@@ -1,163 +1,163 @@
 <template>
-  <Dialog
-    v-model:visible="localVisible"
-    :modal="true"
-    :style="{ width: '95vw', maxWidth: '1200px', height: '90vh' }"
-    :closable="true"
-    @update:visible="handleVisibleChange"
+  <modal
+    :showModal="isShow"
+    width="95%"
+    :isShowActionPart="true"
+    @closeModal="handleClose"
   >
-    <template #header>
-      <div class="vertical-center-container">
-        <span class="title-text-lg bi bi-calculator mr-2"></span>
-        <span class="title-text-lg">รายละเอียดใบตีราคา - {{ version?.running }}</span>
-      </div>
+    <template #title>
+      <span class="title-text-lg px-3 pt-3 d-block">
+        <i class="bi bi-calculator mr-2"></i>รายละเอียดใบตีราคา - {{ version?.running }}
+      </span>
     </template>
 
-    <div v-if="version" class="detail-content">
-      <!-- Stock Information -->
-      <div class="filter-container">
-        <div class="vertical-center-container mb-2">
-          <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
-          <span class="title-text-lg">ข้อมูลสินค้า</span>
-        </div>
+    <template #content>
+      <div v-if="version" class="detail-content px-3 pb-3">
+        <!-- Stock Information -->
+        <div class="filter-container">
+          <div class="vertical-center-container mb-2">
+            <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
+            <span class="title-text-lg">ข้อมูลสินค้า</span>
+          </div>
 
-        <div class="form-col-sm-container">
-          <div>
-            <span class="title-text">เลขที่ผลิต</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="version.stockNumber"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">ใบตีราคา</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="version.running"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">วันที่สร้าง</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="formatDate(version.createDate)"
-              readonly
-              disabled
-            />
-          </div>
-          <div>
-            <span class="title-text">ผู้สร้าง</span>
-            <input
-              class="form-control form-control-sm"
-              type="text"
-              :value="version.createBy || '-'"
-              readonly
-              disabled
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Customer Information (Conditional) -->
-      <div v-if="hasCustomerInfo" class="filter-container mt-3">
-        <div class="line mb-3"></div>
-        <div class="vertical-center-container mb-2">
-          <span class="title-text-lg bi bi-person-fill mr-2"></span>
-          <span class="title-text-lg">ข้อมูลลูกค้า</span>
-        </div>
-
-        <div class="customer-info-display">
           <div class="form-col-sm-container">
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
-              <div class="customer-display-field">
-                {{ version.customerName || '-' }}
-              </div>
+              <span class="title-text">เลขที่ผลิต</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="version.stockNumber"
+                readonly
+                disabled
+              />
             </div>
             <div>
-              <span class="title-text">รหัสลูกค้า</span>
-              <div class="customer-display-field">
-                {{ version.customerCode || '-' }}
-              </div>
+              <span class="title-text">ใบตีราคา</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="version.running"
+                readonly
+                disabled
+              />
             </div>
             <div>
-              <span class="title-text">เบอร์โทร</span>
-              <div class="customer-display-field">
-                {{ version.customerTel || '-' }}
+              <span class="title-text">วันที่สร้าง</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="formatDate(version.createDate)"
+                readonly
+                disabled
+              />
+            </div>
+            <div>
+              <span class="title-text">ผู้สร้าง</span>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                :value="version.createBy || '-'"
+                readonly
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Information (Conditional) -->
+        <div v-if="hasCustomerInfo" class="filter-container mt-3">
+          <div class="line mb-3"></div>
+          <div class="vertical-center-container mb-2">
+            <span class="title-text-lg bi bi-person-fill mr-2"></span>
+            <span class="title-text-lg">ข้อมูลลูกค้า</span>
+          </div>
+
+          <div class="customer-info-display">
+            <div class="form-col-sm-container">
+              <div>
+                <span class="title-text">ชื่อลูกค้า</span>
+                <div class="customer-display-field">
+                  {{ version.customerName || '-' }}
+                </div>
+              </div>
+              <div>
+                <span class="title-text">รหัสลูกค้า</span>
+                <div class="customer-display-field">
+                  {{ version.customerCode || '-' }}
+                </div>
+              </div>
+              <div>
+                <span class="title-text">เบอร์โทร</span>
+                <div class="customer-display-field">
+                  {{ version.customerTel || '-' }}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Remark -->
-      <div v-if="version.remark" class="filter-container mt-3">
-        <div class="vertical-center-container mb-2">
-          <span class="title-text-lg bi bi-chat-left-text mr-2"></span>
-          <span class="title-text-lg">หมายเหตุ</span>
-        </div>
-        <div class="form-col-sm-container">
-          <div>
-            <textarea
-              class="form-control form-control-sm"
-              :value="version.remark"
-              rows="2"
-              readonly
-              disabled
-            ></textarea>
+        <!-- Remark -->
+        <div v-if="version.remark" class="filter-container mt-3">
+          <div class="vertical-center-container mb-2">
+            <span class="title-text-lg bi bi-chat-left-text mr-2"></span>
+            <span class="title-text-lg">หมายเหตุ</span>
+          </div>
+          <div class="form-col-sm-container">
+            <div>
+              <textarea
+                class="form-control form-control-sm"
+                :value="version.remark"
+                rows="2"
+                readonly
+                disabled
+              ></textarea>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Cost Detail Table (Shared Component) -->
-      <cost-detail-table-view
-        :transactions="version.prictransection"
-        :tag-price-multiplier="version.tagPriceMultiplier"
-        :currency-unit="version.currencyUnit"
-        :currency-rate="version.currencyRate"
-      />
-    </div>
-
-    <template #footer>
-      <div class="responsive-btn-group">
-        <button
-          class="btn btn-sm btn-success"
-          type="button"
-          @click="handleExportPDF"
-          :disabled="exportingPDF"
-        >
-          <span class="bi bi-file-pdf mr-2"></span>
-          <span>Export PDF</span>
-        </button>
-        <button class="btn btn-sm btn-secondary" type="button" @click="handleClose">
-          <span class="bi bi-x mr-2"></span>
-          <span>ปิด</span>
-        </button>
+        <!-- Cost Detail Table (Shared Component) -->
+        <cost-detail-table-view
+          :transactions="version.prictransection"
+          :tag-price-multiplier="version.tagPriceMultiplier"
+          :currency-unit="version.currencyUnit"
+          :currency-rate="version.currencyRate"
+        />
       </div>
     </template>
-  </Dialog>
+
+    <template #action>
+      <button
+        class="btn btn-sm btn-main"
+        type="button"
+        @click="handleExportPDF"
+        :disabled="exportingPDF"
+      >
+        <span class="bi bi-file-pdf mr-2"></span>
+        <span>Export PDF</span>
+      </button>
+      <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="handleClose">
+        <span class="bi bi-x mr-2"></span>
+        <span>ปิด</span>
+      </button>
+    </template>
+  </modal>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
+import { defineAsyncComponent } from 'vue'
 import CostDetailTableView from '@/components/cost/cost-detail-table-view.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
-import { success, error, warning } from '@/services/alert/sweetAlerts.js'
+import { success, warning } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'CostVersionDetailModal',
 
   components: {
-    Dialog,
+    modal,
     CostDetailTableView
   },
 
@@ -181,23 +181,17 @@ export default {
 
   data() {
     return {
-      localVisible: false,
       exportingPDF: false
     }
   },
 
   computed: {
+    isShow() {
+      return this.visible
+    },
+
     hasCustomerInfo() {
       return this.version && (this.version.customerCode || this.version.customerName)
-    }
-  },
-
-  watch: {
-    visible: {
-      handler(val) {
-        this.localVisible = val
-      },
-      immediate: true
     }
   },
 
@@ -214,39 +208,29 @@ export default {
       }
 
       this.exportingPDF = true
-      try {
-        const stockData = await this.productStore.fetchDataGet({
-          formValue: { stockNumber: this.version.stockNumber }
-        })
+      const stockData = await this.productStore.fetchDataGet({
+        formValue: { stockNumber: this.version.stockNumber }
+      })
 
-        if (!stockData) {
-          warning('ไม่พบข้อมูลสินค้า')
-          return
-        }
-
-        const pdfOptions = {
-          ...(this.version.currencyUnit ? { currencyUnit: this.version.currencyUnit, currencyRate: this.version.currencyRate } : {}),
-          ...(this.version.customStockInfo?.length ? { customStockInfo: this.version.customStockInfo } : {})
-        }
-        const pdfBuilder = new AppraisalHistoryPdfBuilder(stockData, this.version, pdfOptions)
-        const pdf = await pdfBuilder.generatePDF()
-        const filename = `Appraisal_${this.version.stockNumber}_${this.version.running}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
-        pdf.download(filename)
-        success('Export PDF สำเร็จ', 'สำเร็จ')
-      } catch (err) {
-        console.error('Error exporting PDF:', err)
-        error(err.message || 'เกิดข้อผิดพลาดในการ Export PDF', 'ข้อผิดพลาด')
-      } finally {
+      if (!stockData) {
+        warning('ไม่พบข้อมูลสินค้า')
         this.exportingPDF = false
+        return
       }
-    },
 
-    handleVisibleChange(val) {
-      this.$emit('update:visible', val)
+      const pdfOptions = {
+        ...(this.version.currencyUnit ? { currencyUnit: this.version.currencyUnit, currencyRate: this.version.currencyRate } : {}),
+        ...(this.version.customStockInfo?.length ? { customStockInfo: this.version.customStockInfo } : {})
+      }
+      const pdfBuilder = new AppraisalHistoryPdfBuilder(stockData, this.version, pdfOptions)
+      const pdf = await pdfBuilder.generatePDF()
+      const filename = `Appraisal_${this.version.stockNumber}_${this.version.running}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
+      pdf.download(filename)
+      success('Export PDF สำเร็จ', 'สำเร็จ')
+      this.exportingPDF = false
     },
 
     handleClose() {
-      this.localVisible = false
       this.$emit('update:visible', false)
     }
   }
@@ -258,8 +242,8 @@ export default {
 @import '@/assets/scss/responsive-style/web';
 
 .detail-content {
-  overflow-y: auto;
   max-height: calc(90vh - 200px);
+  overflow-y: auto;
   padding-right: 5px;
 }
 

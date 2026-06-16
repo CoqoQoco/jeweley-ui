@@ -6,7 +6,7 @@
           <span class="title-text-lg bi bi-clock-history mr-2"></span>
           <span class="title-text-lg">รายการตีราคาล่าสุด</span>
         </div>
-        <button class="btn btn-sm btn-secondary" @click="onRefresh" title="รีเฟรช">
+        <button class="btn btn-sm btn-outline-main" @click="onRefresh" title="รีเฟรช">
           <i class="bi bi-arrow-clockwise mr-1"></i>
           <span>รีเฟรช</span>
         </button>
@@ -33,7 +33,7 @@
             <button class="btn btn-sm btn-green" type="submit">
               <i class="bi bi-search mr-1"></i>ค้นหา
             </button>
-            <button class="btn btn-sm btn-secondary" type="button" @click="onClearSearch">
+            <button class="btn btn-sm btn-outline-main" type="button" @click="onClearSearch">
               <i class="bi bi-x-circle mr-1"></i>ล้าง
             </button>
           </div>
@@ -52,7 +52,7 @@
         <template #actionTemplate="{ data }">
           <div class="vertical-center-container gap-1">
             <button
-              class="btn btn-sm btn-secondary"
+              class="btn btn-sm btn-green"
               @click="onViewDetail(data)"
               title="ดูรายละเอียด"
             >
