@@ -4,127 +4,125 @@
       <template v-slot:content>
         <form @submit.prevent="onSubmit">
           <div class="title-text-lg-bg">
-            <span class="title-text-white">เพิ่มส่วนประกอบการผลิต</span>
+            <span class="title-text-white">{{ $t('planUpdate.addMaterial') }}</span>
           </div>
           <div class="p-2">
             <div class="mb-2 title-text-lg">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
-              <span>ระบุข้อมูลทอง - เงิน</span>
+              <span>{{ $t('planUpdate.goldSection') }}</span>
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">สีของทอง/เงิน</span>
-                <Dropdown
-                  v-model="form.gold"
+                <span class="title-text">{{ $t('planUpdate.goldColor') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.gold"
                   :options="masterGold"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
+                  :showClear="form.gold && form.gold.code ? true : false"
                   :class="val.isValGold === true ? `p-invalid` : ``"
-                  :showClear="form.gold?.code ? true : false"
+                  @update:modelValue="form.gold = $event"
                 />
               </div>
               <div class="form-content-row-sub-container">
                 <div>
-                  <span class="title-text">เปอร์เซ็นทอง</span>
-                  <Dropdown
-                    v-model="form.goldSize"
+                  <span class="title-text">{{ $t('planUpdate.goldPercent') }}</span>
+                  <DropdownGeneric
+                    :modelValue="form.goldSize"
                     :options="masterGoldSize"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
+                    :showClear="form.goldSize && form.goldSize.code ? true : false"
                     :class="val.isValGoldSize === true ? `p-invalid` : ``"
-                    :showClear="form.goldSize?.code ? true : false"
+                    @update:modelValue="form.goldSize = $event"
                   />
                 </div>
                 <div>
-                  <span class="title-text">จำนวนทอง/เงิน</span>
-                  <input type="number" min="1" class="form-control" v-model="form.goldQty" />
+                  <span class="title-text">{{ $t('planUpdate.goldQty') }}</span>
+                  <InputTextGeneric v-model.number="form.goldQty" type="number" :min="1" />
                 </div>
               </div>
             </div>
             <div class="mb-2 mt-3 title-text-lg">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
-              <span>ระบุข้อมูลพลอย</span>
+              <span>{{ $t('planUpdate.gemSection') }}</span>
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">ประเภทพลอย</span>
-                <Dropdown
-                  v-model="form.gem"
+                <span class="title-text">{{ $t('planUpdate.gemType') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.gem"
                   :options="masterGem"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
+                  :showClear="form.gem && form.gem.code ? true : false"
                   :class="val.isValGem === true ? `p-invalid` : ``"
-                  :showClear="form.gem?.code ? true : false"
+                  @update:modelValue="form.gem = $event"
                 />
               </div>
               <div>
-                <span class="title-text">รูปร่างพลอย</span>
-                <Dropdown
-                  v-model="form.gemShape"
+                <span class="title-text">{{ $t('planUpdate.gemShape') }}</span>
+                <DropdownGeneric
+                  :modelValue="form.gemShape"
                   :options="masterGemShape"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
+                  :showClear="form.gemShape && form.gemShape.code ? true : false"
                   :class="val.isValGemShape === true ? `p-invalid` : ``"
-                  :showClear="form.gemShape?.code ? true : false"
+                  @update:modelValue="form.gemShape = $event"
                 />
               </div>
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">ขนาด</span>
-                <input type="text" class="form-control" v-model="form.gemSize" />
+                <span class="title-text">{{ $t('planUpdate.gemSize') }}</span>
+                <InputTextGeneric v-model="form.gemSize" />
               </div>
               <div class="form-content-row-sub-container">
                 <div>
-                  <span class="title-text">จำนวน</span>
-                  <input type="number" min="1" class="form-control" v-model="form.gemQty" />
+                  <span class="title-text">{{ $t('planUpdate.gemQty') }}</span>
+                  <InputTextGeneric v-model.number="form.gemQty" type="number" :min="1" />
                 </div>
                 <div>
-                  <span class="title-text">หน่วย</span>
-                  <input type="text" class="form-control" v-model="form.gemUnit" />
+                  <span class="title-text">{{ $t('planUpdate.gemUnit') }}</span>
+                  <InputTextGeneric v-model="form.gemUnit" />
                 </div>
               </div>
             </div>
             <div class="mb-2 mt-3 title-text-lg">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
-              <span>ระบุข้อมูลเพชร</span>
+              <span>{{ $t('planUpdate.diamondSection') }}</span>
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">ขนาด</span>
-                <input type="text" class="form-control" v-model="form.diamondSize" />
+                <span class="title-text">{{ $t('planUpdate.diamondSize') }}</span>
+                <InputTextGeneric v-model="form.diamondSize" />
               </div>
               <div class="form-content-row-sub-container">
                 <div>
-                  <span class="title-text">น้ำหนัก</span>
-                  <input type="text" class="form-control" v-model="form.diamondWeight" />
+                  <span class="title-text">{{ $t('planUpdate.diamondWeight') }}</span>
+                  <InputTextGeneric v-model="form.diamondWeight" />
                 </div>
                 <div>
-                  <span class="title-text">หน่วย</span>
-                  <input type="text" class="form-control" v-model="form.diamondWeightUnit" />
+                  <span class="title-text">{{ $t('planUpdate.diamondWeightUnit') }}</span>
+                  <InputTextGeneric v-model="form.diamondWeightUnit" />
                 </div>
               </div>
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">คุณภาพ</span>
-                <input type="text" class="form-control" v-model="form.diamondQuality" />
+                <span class="title-text">{{ $t('planUpdate.diamondQuality') }}</span>
+                <InputTextGeneric v-model="form.diamondQuality" />
               </div>
               <div class="form-content-row-sub-container">
                 <div>
-                  <span class="title-text">จำนวน</span>
-                  <input type="number" min="1" class="form-control" v-model="form.diamondQty" />
+                  <span class="title-text">{{ $t('planUpdate.diamondQty') }}</span>
+                  <InputTextGeneric v-model.number="form.diamondQty" type="number" :min="1" />
                 </div>
                 <div>
-                  <span class="title-text">หน่วย</span>
-                  <input type="text" class="form-control" v-model="form.diamondUnit" />
+                  <span class="title-text">{{ $t('planUpdate.diamondUnit') }}</span>
+                  <InputTextGeneric v-model="form.diamondUnit" />
                 </div>
               </div>
             </div>
             <div class="submit-container">
-              <button class="btn btn-sm btn-green" type="submit">
-                <span class="bi bi-calendar-check"></span>
-              </button>
+              <ButtonGeneric variant="green" icon="bi-calendar-check" type="submit" />
             </div>
           </div>
         </form>
@@ -135,13 +133,16 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
+
+import api from '@/axios/axios-helper.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-import Dropdown from 'primevue/dropdown'
-
-import swAlert from '@/services/alert/sweetAlerts.js'
-import api from '@/axios/axios-helper.js'
 
 const interfaceForm = {
   gold: {
@@ -179,11 +180,13 @@ const interfaceIsValid = {
   isValGem: false,
   isValGemShape: false
 }
+
 export default {
   components: {
     modal,
-
-    Dropdown
+    DropdownGeneric,
+    InputTextGeneric,
+    ButtonGeneric
   },
   props: {
     isShow: {
@@ -218,92 +221,57 @@ export default {
   },
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
-
-      // --- form --- //
-      form: {
-        ...interfaceForm
-      },
-      val: {
-        ...interfaceIsValid
-      }
+      form: { ...interfaceForm },
+      val: { ...interfaceIsValid }
     }
   },
   methods: {
-    // --- controller --- //
     closeModal() {
-      this.form = {
-        ...interfaceForm
-      }
-      this.val = {
-        ...interfaceIsValid
-      }
+      this.form = { ...interfaceForm }
+      this.val = { ...interfaceIsValid }
       this.$emit('closeModal')
     },
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmThenSubmit(
           ``,
-          'ยืนยันเพิ่มส่วนประกอบการผลิต',
+          this.$t('planUpdate.confirmAddMaterial'),
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
     validateForm() {
       if (!this.form.gold.id) {
-        this.val = {
-          isValGold: true
-        }
+        this.val = { isValGold: true }
         return false
       }
       if (!this.form.goldSize.id) {
-        this.val = {
-          isValGoldSize: true
-        }
+        this.val = { isValGoldSize: true }
         return false
       }
       return true
     },
 
-    // ------ api --------//
     async submit() {
-      try {
-        this.isLoading = true
-
-        const params = {
-          id: this.modelValue.id,
-          wo: this.modelValue.wo,
-          woNumber: this.modelValue.woNumber,
-          material: { ...this.form }
-        }
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateMaterial', params)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            async () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
+      const params = {
+        id: this.modelValue.id,
+        wo: this.modelValue.wo,
+        woNumber: this.modelValue.woNumber,
+        material: { ...this.form }
+      }
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanUpdateMaterial', params)
+      if (res) {
+        success(
+          ``,
+          '',
+          async () => {
+            this.form = { ...interfaceForm }
+            this.val = { ...interfaceIsValid }
+            this.$emit('fetch')
+          }
+        )
       }
     }
   }
@@ -313,38 +281,9 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-:deep(input) {
-  margin-top: 0px !important;
-}
-:deep(.p-dropdown) {
-  height: 35px !important;
-  padding-left: 5px;
-  width: 100% !important;
-  margin-top: 0px !important;
-}
-.form-content-container {
-  //   border: 1px solid #dddddd;
-  //   border-radius: 5px;
-  //   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  //   background-color: #f7f7f7;
-  padding: 20px 20px;
-  overflow: auto;
-  height: 570px;
-}
-
 .form-content-row-sub-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 0px 0px;
-}
-.title-text-modal {
-  padding: 30px;
-  font-size: 20px;
-  color: var(--base-font-color);
-}
-
-.title-text {
-  font-size: 12px;
+  gap: var(--sp-md);
 }
 </style>

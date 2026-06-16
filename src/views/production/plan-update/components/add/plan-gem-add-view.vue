@@ -1,50 +1,39 @@
+<!-- eslint-disable vue/no-restricted-imports -->
 <template>
   <div>
-  
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
-          <span>เเก้ไขงาน</span>
-          <span class="bi bi-arrow-right ml-1"> [คัดพลอย]</span>
+          <span>{{ $t('planUpdate.gemJobTitle') }}</span>
+          <span class="bi bi-arrow-right ml-1"></span>
           <span class="ml-1">{{ `: ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
         <form @submit.prevent="onSubmit">
           <div class="form-col-container">
-            <!-- date -->
             <div>
-              <span class="title-text">วันที่คัดพลอย</span>
-              <Calendar
-                class="w-100"
-                :class="val.isValReceiveDate === true ? `p-invalid` : ``"
+              <span class="title-text">{{ $t('planUpdate.gemReceiveDate') }}</span>
+              <CalendarGeneric
                 v-model="form.receiveDate"
                 dateFormat="dd/mm/yy"
-                showIcon
-                showTime
+                :showIcon="true"
+                :showTime="true"
                 hourFormat="24"
-                showButtonBar
+                :showButtonBar="true"
+                class="w-100"
+                :class="val.isValReceiveDate === true ? `p-invalid` : ``"
               />
             </div>
-
-            <!-- name -->
             <div>
-              <span class="title-text">ผู้คัดพลอย</span>
-              <input
-                type="text"
-                class="form-control custom-input"
-                v-model="form.receiveBy"
-                required
-              />
+              <span class="title-text">{{ $t('planUpdate.gemReceiveBy') }}</span>
+              <InputTextGeneric v-model="form.receiveBy" :required="true" />
             </div>
-
             <div></div>
             <div></div>
           </div>
 
           <div class="line mt-3"></div>
 
-          <!-- gold -->
           <div class="form-col-container mt-3">
-            <!-- gold -->
             <DataTable
               class="p-datatable-sm"
               showGridlines
@@ -69,13 +58,10 @@
             >
               <Column style="width: 30px">
                 <template #body="prop">
-                  <button class="btn btn-sm btn-red text-center" @click="onDelGold(prop.data)">
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
+                  <ButtonGeneric variant="red" icon="bi-trash-fill" @click="onDelGold(prop.data)" />
                 </template>
               </Column>
-
-              <Column field="gold" header="ทอง" style="min-width: 200px">
+              <Column field="gold" :header="$t('planUpdate.goldType')" style="min-width: 200px">
                 <template #editor="{ data, field }">
                   <Dropdown
                     v-model="data[field]"
@@ -84,11 +70,10 @@
                     optionValue="code"
                     class="w-full md:w-14rem"
                     placeholder="เลือกทอง"
-                  >
-                  </Dropdown>
+                  />
                 </template>
               </Column>
-              <Column field="requestDate" header="วันที่" style="min-width: 200px">
+              <Column field="requestDate" :header="$t('planUpdate.requestDate')" style="min-width: 200px">
                 <template #editor="{ data, field }">
                   <div>
                     <Calendar
@@ -108,12 +93,6 @@
               </Column>
               <Column field="workers" header="ช่างคัดพลอย" style="min-width: 200px">
                 <template #editor="{ data, field }">
-                  <!-- <input
-                        type="text"
-                        :class="data[field] ? `` : `bg-warning`"
-                        class="form-control"
-                        v-model="data[field]"
-                      /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
@@ -138,12 +117,6 @@
               </Column>
               <Column field="workersSub" header="ช่างคัดเพชร" style="min-width: 200px">
                 <template #editor="{ data, field }">
-                  <!-- <input
-                        type="text"
-                        :class="data[field] ? `` : `bg-warning`"
-                        class="form-control"
-                        v-model="data[field]"
-                      /> -->
                   <AutoComplete
                     v-model="data[field]"
                     :suggestions="workerItemSearch"
@@ -166,38 +139,26 @@
                   </div>
                 </template>
               </Column>
-              <Column field="goldQTYCheck" header="จำนวน" style="width: 100px">
+              <Column field="goldQTYCheck" :header="$t('common.field.quantity')" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" class="form-control" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.goldQTYCheck
-                      ? Number(slotProps.data.goldQTYCheck).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+                  {{ slotProps.data && slotProps.data.goldQTYCheck ? Number(slotProps.data.goldQTYCheck).toFixed(3).toLocaleString() : '0.000' }}
                 </template>
               </Column>
-              <Column field="goldWeightCheck" header="น้ำหนัก" style="width: 100px">
+              <Column field="goldWeightCheck" :header="$t('common.field.weight')" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" step="any" class="form-control" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.goldWeightCheck
-                      ? Number(slotProps.data.goldWeightCheck).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+                  {{ slotProps.data && slotProps.data.goldWeightCheck ? Number(slotProps.data.goldWeightCheck).toFixed(3).toLocaleString() : '0.000' }}
                 </template>
               </Column>
-              <Column
-                :rowEditor="true"
-                style="width: 10%; min-width: 8rem"
-                bodyStyle="text-align:center"
-              ></Column>
+              <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center" />
               <template #footer>
                 <div class="d-flex justify-content-between">
-                  <div>ทั้งหมด {{ this.matAssign.length }} รายการ</div>
+                  <div>{{ $t('planUpdate.total') }} {{ matAssign.length }} {{ $t('planUpdate.items') }}</div>
                   <div @click="addMat">
                     <i class="bi bi-plus-square-fill"></i>
                   </div>
@@ -206,7 +167,6 @@
             </DataTable>
           </div>
 
-          <!-- gems -->
           <div class="form-col-container mt-3">
             <DataTable
               class="p-datatable-sm"
@@ -227,7 +187,7 @@
             >
               <Column style="width: 30px">
                 <template #body="prop">
-                  <div class="btn btn-sm btn-danger text-center w-100" @click="onDelGem(prop.data)">
+                  <div class="btn btn-sm btn-red text-center w-100" @click="onDelGem(prop.data)">
                     <i class="bi bi-trash-fill"></i>
                   </div>
                 </template>
@@ -258,50 +218,34 @@
                   </div>
                 </template>
               </Column>
-              <Column field="qty" header="จำนวน" style="width: 100px">
+              <Column field="qty" :header="$t('common.field.quantity')" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" step="any" class="form-control" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.qty
-                      ? Number(slotProps.data.qty).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+                  {{ slotProps.data && slotProps.data.qty ? Number(slotProps.data.qty).toFixed(3).toLocaleString() : '0.000' }}
                 </template>
               </Column>
-              <Column field="weight" header="น้ำหนัก" style="width: 100px">
+              <Column field="weight" :header="$t('common.field.weight')" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" step="any" class="form-control" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.weight
-                      ? Number(slotProps.data.weight).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+                  {{ slotProps.data && slotProps.data.weight ? Number(slotProps.data.weight).toFixed(3).toLocaleString() : '0.000' }}
                 </template>
               </Column>
-              <Column field="price" header="ราคา" style="width: 100px">
+              <Column field="price" :header="$t('common.field.price')" style="width: 100px">
                 <template #editor="{ data, field }">
                   <input type="number" step="any" class="form-control" v-model="data[field]" />
                 </template>
                 <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.price
-                      ? Number(slotProps.data.price).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+                  {{ slotProps.data && slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.000' }}
                 </template>
               </Column>
-              <Column
-                :rowEditor="true"
-                style="width: 10%; min-width: 8rem"
-                bodyStyle="text-align:center"
-              ></Column>
+              <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center" />
               <template #footer>
                 <div class="d-flex justify-content-between">
-                  <div>ทั้งหมด {{ this.gemAssign.length }} รายการ</div>
+                  <div>{{ $t('planUpdate.total') }} {{ gemAssign.length }} {{ $t('planUpdate.items') }}</div>
                   <div @click="addGem">
                     <i class="bi bi-plus-square-fill"></i>
                   </div>
@@ -311,33 +255,27 @@
           </div>
           <div>
             <span class="title-text">*</span>
-            <span class="title-text" style="font-size: 11px"
-              >เมื่อทำการเลือกวัถุดิบ จะกำหนดราคาปัจจุบันของสต๊อกนั้นๆ</span
-            >
+            <span class="title-text" style="font-size: 11px">{{ $t('planUpdate.costCardNote') }}</span>
           </div>
           <div class="line mt-3"></div>
 
           <div class="form-col-container mt-2">
             <div>
-              <span class="title-text">หมายเหตุ - 1</span>
-              <textarea class="form-control" v-model="form.remark1" style="height: 50px">
-              </textarea>
+              <span class="title-text">{{ $t('planUpdate.remark1') }}</span>
+              <TextareaGeneric v-model="form.remark1" :rows="2" />
             </div>
           </div>
 
           <div class="form-col-container">
             <div>
-              <span class="title-text">หมายเหตุ - 2</span>
-              <textarea class="form-control" v-model="form.remark2" style="height: 50px">
-              </textarea>
+              <span class="title-text">{{ $t('planUpdate.remark2') }}</span>
+              <TextareaGeneric v-model="form.remark2" :rows="2" />
             </div>
           </div>
 
           <div class="d-flex justify-content-end mt-3">
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
-              ยกเลิก
-            </button>
-            <button class="btn btn-sm btn-main" type="submit">ยืนยัน</button>
+            <ButtonGeneric variant="dark" :label="$t('common.btn.cancel')" class="mr-2" type="button" @click="closeModal" />
+            <ButtonGeneric variant="main" :label="$t('common.btn.confirm')" type="submit" />
           </div>
         </form>
       </template>
@@ -347,46 +285,36 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
+import { formatDate, formatISOString } from '@/services/utils/dayjs'
+import _ from 'lodash'
 
 import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import _ from 'lodash'
 
-import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   status: null,
   headerId: 0,
-
   receiveDate: new Date(),
   receiveBy: null,
-
   assignTo: null,
   remark1: null,
   remark2: null,
   totalWages: null
 }
-// const interfaceMat = {
-//   //id: null,
-//   //gold: null,
-//   goldQTYSend: null,
-//   goldWeightSend: null,
-//   goldQTYCheck: null,
-//   goldWeightCheck: null,
-//   workers: null,
-//   workersSub: null,
-//   description: null,
-//   wages: null
-// }
 const interfaceIsValid = {
   isValStatus: false,
   isValReceiveDate: false,
@@ -397,12 +325,15 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-  
     AutoComplete,
     Calendar,
     Dropdown,
     DataTable,
-    Column
+    Column,
+    CalendarGeneric,
+    InputTextGeneric,
+    TextareaGeneric,
+    ButtonGeneric
   },
   props: {
     isShow: {
@@ -431,27 +362,9 @@ export default {
     }
   },
   watch: {
-    isShow(newVal) {
-      if (newVal) {
-        console.log('Modal opened, initializing form')
-        //this.initForm()
-      }
-    },
-    modelValue: {
-      handler(newVal) {
-        if (newVal && Object.keys(newVal).length > 0) {
-          //console.log('modelValue changed, initializing form')
-          //this.initForm()
-        }
-      },
-      deep: true
-    },
     'form.receiveDate'(val) {
       if (val) {
-        this.val = {
-          //...interfaceIsValid,
-          isValReceiveDate: false
-        }
+        this.val = { isValReceiveDate: false }
       }
     }
   },
@@ -460,35 +373,20 @@ export default {
       return this.isShow
     },
     model() {
-      console.log('model', this.modelValue)
       return this.modelValue
     },
     modelMat() {
       return this.modelMatValue
-    },
-    modelStatus() {
-      return this.masterStatus
-    },
-    modelGold() {
-      return this.masterGold
     }
   },
   data() {
     return {
-      // --- flag --- //
       isLoading: false,
       autoId: 0,
       autoIdGem: 0,
       status: 70,
-
-      // --- from --- //
-      form: {
-        ...interfaceForm
-      },
-      val: {
-        ...interfaceIsValid
-      },
-
+      form: { ...interfaceForm },
+      val: { ...interfaceIsValid },
       tempMatAssign: [],
       matAssign: [],
       editingRows: [],
@@ -499,85 +397,9 @@ export default {
     }
   },
   methods: {
-    // ------ helper ------//
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
     formatDate(date) {
       return date ? formatDate(date) : ''
     },
-    showDate(date) {
-      return date ? moment(date).format('DD/MM/yyyy') : ''
-    },
-    calTotalWages(data) {
-      data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
-      //console.log(data.totalWages)
-    },
-    truncateName(name, maxLength) {
-      if (name.length <= maxLength) {
-        return name
-      }
-      return name.slice(0, maxLength) + '...'
-    },
-    async initForm() {
-      var value = this.model.tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
-      if (value && Object.keys(value).length > 0) {
-        console.log('initForm ed 1', value)
-
-        //set form
-        this.form = {
-          receiveDate: _.get(value, 'checkDate') ? new Date(value.checkDate) : new Date(),
-          receiveBy: _.get(value, 'checkName', ''),
-          status: this.status || null,
-          remark1: _.get(value, 'remark1', ''),
-          remark2: _.get(value, 'remark2', ''),
-          headerId: _.get(value, 'id', 0)
-        }
-
-        //set mat >> tbtProductionPlanStatusDetail
-        if (value.tbtProductionPlanStatusDetail) {
-          this.matAssign = await Promise.all(
-            value.tbtProductionPlanStatusDetail.map(async (thing) => {
-              return {
-                id: ++this.autoId,
-                gold: thing.gold,
-                goldQTYSend: thing.goldQtySend,
-                goldWeightSend: thing.goldWeightSend,
-                goldQTYCheck: thing.goldQtyCheck,
-                goldWeightCheck: thing.goldWeightCheck,
-                description: thing.description,
-                workers: await this.onSearchWorkerByCode(thing.worker),
-                workersSub: await this.onSearchWorkerByCode(thing.workerSub),
-                worker: thing.worker,
-                workerSub: thing.workerSub,
-                wages: thing.wages,
-                totalWages: thing.totalWages,
-                requestDate: new Date(thing.requestDate)
-              }
-            })
-          )
-        }
-
-        //set gem >> tbtProductionPlanStatusGem
-        console.log('initForm ed 1.1', value.tbtProductionPlanStatusGem)
-        if (value.tbtProductionPlanStatusGem) {
-          this.gemAssign = await Promise.all(
-            value.tbtProductionPlanStatusGem.map(async (thing) => {
-              return {
-                id: ++this.autoIdGem,
-                gem: await this.onSearchGemById(thing.id),
-                qty: thing.qty,
-                weight: thing.weight,
-                price: thing.price
-              }
-            })
-          )
-        }
-      }
-      console.log('initForm ed 2', this.form)
-    },
-
-    // ----- event
     onRowEditSave(event) {
       let { newData, index } = event
       this.matAssign[index] = newData
@@ -620,12 +442,8 @@ export default {
       this.gemAssign.push(add)
     },
     onclear() {
-      this.form = {
-        ...interfaceForm
-      }
-      this.val = {
-        ...interfaceIsValid
-      }
+      this.form = { ...interfaceForm }
+      this.val = { ...interfaceIsValid }
       this.matAssign = [...this.tempMatAssign]
       this.gemAssign = []
     },
@@ -634,218 +452,162 @@ export default {
       this.$emit('closeModal', 'add')
     },
     onGemSelect(event) {
-      console.log('เลือกพลอย:', event)
-      // เพิ่มโลจิกเพิ่มเติมตามต้องการ เช่น:
-      // อัพเดทข้อมูลอื่นๆ ในแถวเดียวกัน
       const selectedGem = event.gem
       const rowData = event
-
-      // ตัวอย่างการอัพเดทข้อมูล
       if (selectedGem && rowData) {
-        rowData.price = selectedGem.price // อัพเดทราคา
-        //rowData.weight = selectedGem.weight // อัพเดทน้ำหนัก
-        // อัพเดทข้อมูลอื่นๆ ตามต้องการ
+        rowData.price = selectedGem.price
       }
-
-      console.log('เลือกพลอย 2:', event.data)
     },
-
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
-          `ยืนยัน สร้างงาน/โอนงาน [คัดพลอย]`,
+        confirmThenSubmit(
           `${this.model.wo}-${this.model.woNumber}`,
+          this.$t('planUpdate.confirmGem'),
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
     validateForm() {
-      //   if (!this.form.mold) {
-      //     this.val = {
-      //       isValMold: true
-      //     }
-      //     return false
-      //   }
-
       return true
     },
-
-    // --- APIs --- //
-
     async submit() {
-      try {
-        this.isLoading = true
-        this.matAssign = this.matAssign.map((item) => {
-          return {
-            ...item,
-            worker: item.workers?.code,
-            workerSub: item.workersSub?.code
+      this.matAssign = this.matAssign.map((item) => ({
+        ...item,
+        worker: item.workers?.code,
+        workerSub: item.workersSub?.code
+      }))
+      this.gemAssign = this.gemAssign.map((item) => ({
+        id: item.gem?.id,
+        code: item.gem?.code,
+        name: item.gem?.name,
+        qty: item.qty,
+        weight: item.weight,
+        price: item.price
+      }))
+      const param = {
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        productionPlanId: this.model.id,
+        HeaderId: this.form.headerId,
+        status: this.status,
+        sendName: this.form.receiveBy,
+        sendDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
+        checkName: this.form.receiveBy,
+        checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
+        remark1: this.form.remark1,
+        remark2: this.form.remark2,
+        totalWages: this.form.totalWages,
+        golds: [...this.matAssign],
+        gems: [...this.gemAssign]
+      }
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanAddStatusDetail', param)
+      if (res) {
+        success(
+          ``,
+          '',
+          () => {
+            this.form = { ...interfaceForm }
+            this.val = { ...interfaceIsValid }
+            this.matAssign = [...this.tempMatAssign]
+            this.gemAssign = []
+            this.$emit('fetch')
           }
-        })
-        this.gemAssign = this.gemAssign.map((item) => {
-          return {
-            id: item.gem?.id,
-            code: item.gem?.code,
-            name: item.gem?.name,
-            qty: item.qty,
-            weight: item.weight,
-            price: item.price
-          }
-        })
-        const param = {
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          productionPlanId: this.model.id,
-          HeaderId: this.form.headerId,
-
-          status: this.status,
-          sendName: this.form.receiveBy,
-          sendDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          checkName: this.form.receiveBy,
-          checkDate: this.form.receiveDate ? formatISOString(this.form.receiveDate) : null,
-          remark1: this.form.remark1,
-          remark2: this.form.remark2,
-          totalWages: this.form.totalWages,
-          golds: [...this.matAssign],
-          gems: [...this.gemAssign]
-        }
-        //console.log(param)
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanAddStatusDetail', param)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.matAssign = [...this.tempMatAssign]
-              this.gemAssign = []
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        this.isLoading = false
-        console.log(error)
+        )
       }
     },
     async onSearchWorker(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null,
-            type: this.status,
-            active: 1
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res)
-          this.workerItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      const params = {
+        take: 0,
+        skip: 0,
+        search: { text: e.query ?? null, type: this.status, active: 1 }
+      }
+      const res = await api.jewelry.post('Worker/Search', params)
+      if (res) {
+        this.workerItemSearch = [...res.data]
       }
     },
     async onSearchWorkerByCode(e) {
-      try {
-        if (e === null) {
-          return null
-        }
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            code: e,
-            text: null,
-            type: null,
-            active: 0
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res.data[0])
-          return res.data[0]
-        } else {
-          return null
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      if (e === null) {
+        return null
       }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: { code: e, text: null, type: null, active: 0 }
+      }
+      const res = await api.jewelry.post('Worker/Search', params)
+      if (res) {
+        return res.data[0]
+      }
+      return null
     },
     async onSearchGem(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
-        }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          this.gemItemSearch = [...res]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      const params = {
+        take: 0,
+        skip: 0,
+        search: { text: e.query ?? null }
+      }
+      const res = await api.jewelry.post('StockGem/Search', params)
+      if (res) {
+        this.gemItemSearch = [...res]
       }
     },
     async onSearchGemById(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            id: e ?? null,
-            text: null
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: { id: e ?? null, text: null }
+      }
+      const res = await api.jewelry.post('StockGem/Search', params)
+      if (res && res.length > 0) {
+        return res[0]
+      }
+      return null
+    },
+    async initForm() {
+      var value = this.model.tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
+      if (value && Object.keys(value).length > 0) {
+        this.form = {
+          receiveDate: _.get(value, 'checkDate') ? new Date(value.checkDate) : new Date(),
+          receiveBy: _.get(value, 'checkName', ''),
+          status: this.status || null,
+          remark1: _.get(value, 'remark1', ''),
+          remark2: _.get(value, 'remark2', ''),
+          headerId: _.get(value, 'id', 0)
         }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          if (res) {
-            //console.log(res.data[0])
-            return res[0]
-          } else {
-            return null
-          }
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
+        if (value.tbtProductionPlanStatusDetail) {
+          this.matAssign = await Promise.all(
+            value.tbtProductionPlanStatusDetail.map(async (thing) => ({
+              id: ++this.autoId,
+              gold: thing.gold,
+              goldQTYSend: thing.goldQtySend,
+              goldWeightSend: thing.goldWeightSend,
+              goldQTYCheck: thing.goldQtyCheck,
+              goldWeightCheck: thing.goldWeightCheck,
+              description: thing.description,
+              workers: await this.onSearchWorkerByCode(thing.worker),
+              workersSub: await this.onSearchWorkerByCode(thing.workerSub),
+              worker: thing.worker,
+              workerSub: thing.workerSub,
+              wages: thing.wages,
+              totalWages: thing.totalWages,
+              requestDate: new Date(thing.requestDate)
+            }))
+          )
         }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+        if (value.tbtProductionPlanStatusGem) {
+          this.gemAssign = await Promise.all(
+            value.tbtProductionPlanStatusGem.map(async (thing) => ({
+              id: ++this.autoIdGem,
+              gem: await this.onSearchGemById(thing.id),
+              qty: thing.qty,
+              weight: thing.weight,
+              price: thing.price
+            }))
+          )
+        }
       }
     }
   },
@@ -858,15 +620,10 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-// ** ------ overide primevue style ------
 .custom-input {
   margin-top: 5px !important;
 }
 input {
   margin-top: 0px !important;
-}
-:deep(.p-autocomplete .p-component) {
-  margin-top: 0px !important;
-  //background-color: #dad4b5;
 }
 </style>

@@ -1,9 +1,10 @@
+<!-- eslint-disable vue/no-restricted-imports -->
 <template>
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template v-slot:content>
         <div class="title-text-lg-header">
-          <span>ประเมินบัตรต้นทุน</span>
+          <span>{{ $t('planUpdate.costCardTitle') }}</span>
           <span class="bi bi-arrow-right ml-1"></span>
           <span class="ml-1">{{ `ใบจ่าย-รับคืนงาน เลขที่: ${model.wo}-${model.woNumber}` }}</span>
         </div>
@@ -19,13 +20,12 @@
             >
               <ColumnGroup type="header">
                 <Row>
-                  <Column header="รายละเอียดงาน" :colspan="3" />
-                  <!-- <Column header="วันที่" /> -->
-                  <Column header="จำนวน" />
-                  <Column header="ราคา/จำนวน" />
-                  <Column header="น้ำหนัก" />
-                  <Column header="ราคา/น้ำหนัก" />
-                  <Column header="ราคารวม" />
+                  <Column :header="$t('planUpdate.costCardDescription')" :colspan="3" />
+                  <Column :header="$t('common.field.quantity')" />
+                  <Column :header="$t('planUpdate.pricePerQty')" />
+                  <Column :header="$t('common.field.weight')" />
+                  <Column :header="$t('planUpdate.pricePerWeight')" />
+                  <Column :header="$t('planUpdate.totalPrice')" />
                 </Row>
               </ColumnGroup>
 
@@ -37,14 +37,13 @@
               </Column>
               <Column field="action" style="width: 10px">
                 <template #body="slotProps">
-                  <button
-                    class="btn btn-sm btn-red"
+                  <ButtonGeneric
+                    variant="red"
+                    icon="bi-trash"
                     type="button"
-                    title="ลบ"
+                    :title="$t('common.btn.delete')"
                     @click="delItem(slotProps.index)"
-                  >
-                    <span class="bi bi-trash"></span>
-                  </button>
+                  />
                 </template>
               </Column>
               <Column field="nameDescription">
@@ -72,11 +71,6 @@
                   </div>
                 </template>
               </Column>
-              <!-- <Column field="date" style="width: 100px">
-                <template #body="slotProps">
-                  <span>{{ formatDate(slotProps.data.date) }}</span>
-                </template>
-              </Column> -->
 
               <Column field="qty" style="width: 130px">
                 <template #body="slotProps">
@@ -90,22 +84,6 @@
                     required
                     @blur="onBluePrice(slotProps.data, slotProps.index, 'qty')"
                   />
-
-                  <!-- <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
-                    <input
-                      style="background-color: #b5dad4"
-                      v-model="slotProps.data.qty"
-                      type="number"
-                      class="form-control no-spinners text-right"
-                      step="any"
-                      min="0"
-                      required
-                      @blur="onBluePrice(slotProps.data, slotProps.index, 'qty')"
-                    />
-                  </div>
-                  <div v-else class="text-right">
-                    <span>{{ slotProps.data.qty }}</span>
-                  </div> -->
                 </template>
               </Column>
               <Column field="qtyPrice" style="width: 110px">
@@ -137,22 +115,6 @@
                     required
                     @blur="onBluePrice(slotProps.data, slotProps.index, 'qtyWeight')"
                   />
-
-                  <!-- <div v-if="slotProps.data.nameGroup === 'ETC' || slotProps.data.isAdd">
-                    <input
-                      style="background-color: #b5dad4"
-                      v-model="slotProps.data.qtyWeight"
-                      type="number"
-                      class="form-control text-right"
-                      step="any"
-                      min="0"
-                      required
-                      @blur="onBluePrice(slotProps.data, slotProps.index, 'qtyWeight')"
-                    />
-                  </div>
-                  <div v-else class="text-right">
-                    <span>{{ slotProps.data.qtyWeight }}</span>
-                  </div> -->
                 </template>
               </Column>
               <Column field="qtyWeightPrice" style="width: 110px">
@@ -195,7 +157,7 @@
                 <div class="d-flex align-items-center justify-content-between gap-2 type-container">
                   <div>
                     <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
-                    <span>ต้นทุน</span>
+                    <span>{{ $t('planUpdate.costGroup') }}</span>
                     <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
                   </div>
                   <div class="text-right mr-2">
@@ -204,19 +166,12 @@
                 </div>
               </template>
 
-              <!-- <template #groupheader="slotProps">
-                <div class="flex align-items-center gap-2 type-container">
-                  <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
-                  <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
-                </div>
-              </template> -->
-
               <ColumnGroup type="footer">
                 <Row>
                   <column :colspan="7">
                     <template #footer>
                       <div class="text-right type-container">
-                        <span>ต้นทุนรวมทั้งหมด</span>
+                        <span>{{ $t('planUpdate.costTotal') }}</span>
                       </div>
                     </template>
                   </column>
@@ -232,133 +187,33 @@
             </DataTable>
           </div>
 
-          <!-- discounr -->
-          <!-- <DataTable :value="tranDiscount" stripedRows showGridlines>
-            <ColumnGroup type="header">
-              <Row>
-                <Column header="รายละเอียดส่วนลด" :colspan="3" />
-                <Column header="วันที่" />
-                <Column header="จำนวน" />
-                <Column header="ราคา" />
-              </Row>
-            </ColumnGroup>
-            <Column field="index" style="width: 10px">
-              <template #body="slotProps">
-                <span>{{ slotProps.index + 1 }}</span>
-              </template>
-            </Column>
-            <Column field="del" style="width: 10px">
-              <template #body="slotProps">
-                <button
-                  class="btn btn-sm btn-red"
-                  type="button"
-                  title="ลบ"
-                  @click="delItemDiscount(slotProps.index)"
-                >
-                  <span class="bi bi-trash"></span>
-                </button>
-              </template>
-            </Column>
-            <Column field="nameDescription">
-              <template #body="slotProps">
-                <input
-                  type="text"
-                  style="background-color: #b5dad4"
-                  class="form-control"
-                  v-model="slotProps.data.nameDescription"
-                  required
-                />
-              </template>
-            </Column>
-            <Column field="date" style="width: 100px">
-              <template #body="slotProps">
-                <span>{{ formatDate(slotProps.data.date) }}</span>
-              </template>
-            </Column>
-            <Column field="qty" style="width: 130px">
-              <template #body="slotProps">
-                <div class="text-right">
-                  <span>{{ slotProps.data.qty }}</span>
-                </div>
-              </template>
-            </Column>
-            <Column field="price" style="width: 130px">
-              <template #body="slotProps">
-                <div>
-                  <input
-                    style="background-color: #b5dad4"
-                    v-model="slotProps.data.price"
-                    type="number"
-                    class="form-control text-right"
-                    step="any"
-                    min="0"
-                    required
-                    @blur="onBlueDiscount(slotProps.data, slotProps.index)"
-                  />
-                </div>
-              </template>
-            </Column>
-
-            <template #groupheader="slotProps">
-              <div class="flex align-items-center gap-2 type-container">
-                <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
-                <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
-              </div>
-            </template>
-            <ColumnGroup type="footer">
-              <Row>
-                <column :colspan="5">
-                  <template #footer>
-                    <div class="text-right">
-                      <span>ราคาหลังส่วนลด</span>
-                    </div>
-                  </template>
-                </column>
-                <column :colspan="1">
-                  <template #footer>
-                    <div class="text-right">
-                      <span>{{ caltotalPriceAfterDiscount(tranItems, tranDiscount) }}</span>
-                    </div>
-                  </template>
-                </column>
-              </Row>
-            </ColumnGroup>
-          </DataTable> -->
-
           <div class="action-group-container mt-2">
             <div class="d-flex align-items-center gap-2">
-              <Dropdown
+              <DropdownGeneric
                 v-model="masterValue"
                 :options="masterType"
                 optionLabel="name"
                 optionValue="code"
-                class="w-full md:w-14rem mr-2"
-                placeholder="เลือกรายการ"
-              >
-              </Dropdown>
-
-              <button
+                class="mr-2"
+                :placeholder="$t('planUpdate.selectItem')"
+              />
+              <ButtonGeneric
+                variant="green"
+                icon="bi-plus"
                 type="button"
-                class="btn btn-sm btn-green mt-1 mr-2"
-                title="เพิ่มรายการ"
+                :title="$t('common.btn.add')"
+                class="mt-1 mr-2"
                 @click="addItem"
-              >
-                <span><i class="bi bi-plus"></i></span>
-              </button>
+              />
             </div>
-
             <div>
-              <!-- <button
-              type="button"
-              class="btn btn-green mr-2"
-              title="เพิ่มส่วนลด"
-              @click="addItemDiscount"
-            >
-              <span><i class="bi bi-cash-coin"></i></span>
-            </button> -->
-              <button type="submit" class="btn btn-sm btn-main mt-1" title="บันทึก">
-                <span><i class="bi bi-calendar-check"></i></span>
-              </button>
+              <ButtonGeneric
+                variant="main"
+                icon="bi-calendar-check"
+                type="submit"
+                class="mt-1"
+                :title="$t('common.btn.save')"
+              />
             </div>
           </div>
         </form>
@@ -369,35 +224,23 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+import _ from 'lodash'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-// import AutoComplete from 'primevue/autocomplete'
-// import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
-import _ from 'lodash'
 import Row from 'primevue/row'
 
-import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
-// const interfaceMat = {
-//   //id: null,
-//   //gold: null,
-//   goldQTYSend: null,
-//   goldWeightSend: null,
-//   goldQTYCheck: null,
-//   goldWeightCheck: null,
-//   workers: null,
-//   workersSub: null,
-//   description: null,
-//   wages: null
-// }
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+
 const interfaceIsValid = {
   isValStatus: false,
   isValReceiveDate: false,
@@ -408,14 +251,13 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-
-    //AutoComplete,
-    //Calendar,
     Dropdown,
     DataTable,
     Column,
     ColumnGroup,
-    Row
+    Row,
+    DropdownGeneric,
+    ButtonGeneric
   },
   props: {
     isShow: {
@@ -446,7 +288,6 @@ export default {
   watch: {
     isShow(newVal) {
       if (newVal) {
-        console.log('Modal opened, initializing form')
         this.initForm(newVal)
       }
     }
@@ -456,7 +297,6 @@ export default {
       return this.isShow
     },
     model() {
-      console.log('model', this.modelValue)
       return this.modelValue
     },
     modelMat() {
@@ -471,25 +311,17 @@ export default {
   },
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
       autoId: 0,
       status: 70,
-
-      // --- from --- //
-      form: {
-        // ...interfaceForm
-      },
-      val: {
-        ...interfaceIsValid
-      },
+      form: {},
+      val: { ...interfaceIsValid },
       masterValue: 'ETC',
       masterType: [
-        { code: 'Gold', name: 'รายการทอง' },
-        { code: 'Gem', name: 'รายการวัถุดิบ' },
-        { code: 'Worker', name: 'รายการงานช่าง' },
-        { code: 'Embed', name: 'รายการงานฝัง' },
-        { code: 'ETC', name: 'รายการเพิ่มเติม' }
+        { code: 'Gold', name: this.$t('planUpdate.goldList') },
+        { code: 'Gem', name: this.$t('planUpdate.materialList') },
+        { code: 'Worker', name: this.$t('planUpdate.workerList') },
+        { code: 'Embed', name: this.$t('planUpdate.embedList') },
+        { code: 'ETC', name: this.$t('planUpdate.etcList') }
       ],
       groupOrderRunning: {
         Gold: 1,
@@ -498,7 +330,6 @@ export default {
         Gem: 4,
         ETC: 5
       },
-
       tempMatAssign: [],
       matAssign: [],
       editingRows: [],
@@ -506,21 +337,16 @@ export default {
       editingGemRows: [],
       workerItemSearch: [],
       gemItemSearch: [],
-
       tranItems: [],
       tranDiscount: []
     }
   },
   methods: {
-    // ------ helper ------//
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
     formatDate(date) {
       return date ? formatDate(date) : ''
-    },
-    showDate(date) {
-      return date ? moment(date).format('DD/MM/yyyy') : ''
     },
     caltotalPrice(data) {
       let total = 0
@@ -548,89 +374,49 @@ export default {
     },
     async initForm(value) {
       if (value === true) {
-        console.log('initForm', value)
-        console.log(this.model)
-
         this.fetchAllTransection()
       }
     },
     checkOutbound(data) {
       return !_.isEmpty(data.outboundRunning) ? true : false
     },
-
-    // ----- event
     onclear() {
-      this.val = {
-        ...interfaceIsValid
-      }
+      this.val = { ...interfaceIsValid }
     },
     closeModal() {
-      console.log('closeModal')
       this.onclear()
       this.$emit('closeModal', 'add')
     },
-
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
-          `บัตรต้นทุน ${this.model.wo}-${this.model.woNumber}`,
-          `ยืนยันบันทึกบัตรต้นทุน`,
+        confirmThenSubmit(
+          `${this.$t('planUpdate.costCardTitle')} ${this.model.wo}-${this.model.woNumber}`,
+          this.$t('planUpdate.confirmCostCard'),
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
     validateForm() {
-      //   if (!this.form.mold) {
-      //     this.val = {
-      //       isValMold: true
-      //     }
-      //     return false
-      //   }
-
       return true
     },
     onBluePrice(item, index, fieldName) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBluePrice' + fieldName, item, index)
-
       let newCal = {
         ...item,
         [fieldName]: item[fieldName] ? Number(item[fieldName]).toFixed(2) : '0.00',
-        totalPrice: Number(item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice).toFixed(
-          2
-        )
+        totalPrice: Number(item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice).toFixed(2)
       }
-
-      // ในVue 3, เราสามารถอัปเดตได้โดยตรง
       this.tranItems[index] = newCal
-
-      console.log('onBluePrice' + fieldName, this.tranItems[item])
-      console.log('onBluePrice' + fieldName, this.tranItems)
-      //this.onUpdateQty(item)
     },
     onBlueDiscount(item, index) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBlurDiscount', item, index)
-
       let newCal = {
         ...item,
         price: item.price ? Number(item.price).toFixed(2) : '0.00'
       }
-
-      // ในVue 3, เราสามารถอัปเดตได้โดยตรง
       this.tranDiscount[index] = newCal
-
-      console.log('onBlurDiscount', this.tranDiscount[item])
-      console.log('onBlurDiscount', this.tranDiscount)
-      //this.onUpdateQty(item)
     },
     addItem() {
-      console.log('addItem', this.masterValue)
       this.tranItems.push({
         nameGroup: this.masterValue ?? 'ETC',
         nameDescription: '',
@@ -642,11 +428,7 @@ export default {
         totalPrice: Number(0).toFixed(2),
         isAdd: true
       })
-
-      // เรียงตามลำดับที่กำหนด
       this.tranItems = _.sortBy(this.tranItems, (item) => this.groupOrderRunning[item.nameGroup])
-
-      //console.log('addItem', this.tranItems)
     },
     addItemDiscount() {
       this.tranDiscount.push({
@@ -666,15 +448,15 @@ export default {
     getGroupName(id) {
       switch (id) {
         case 'Gold':
-          return 'รายการทอง'
+          return this.$t('planUpdate.goldList')
         case 'Gem':
-          return 'รายการวัถุดิบ'
+          return this.$t('planUpdate.materialList')
         case 'Worker':
-          return 'รายการงานช่าง'
+          return this.$t('planUpdate.workerList')
         case 'Embed':
-          return 'รายการงานฝัง'
+          return this.$t('planUpdate.embedList')
         case 'ETC':
-          return 'รายการเพิ่มเติม'
+          return this.$t('planUpdate.etcList')
         default:
           return 'Unknown'
       }
@@ -684,211 +466,74 @@ export default {
         .filter((item) => item.nameGroup === groupName)
         .reduce((total, item) => total + Number(item.totalPrice), 0)
     },
-
-    // --- APIs --- //
-
     async submit() {
-      this.isLoading = true
-      try {
-        let no = 1
-        const param = {
-          productionPlanId: this.model.id,
-          wo: this.model.wo,
-          woNumber: this.model.woNumber,
-          woText: `${this.model.wo}${this.model.woNumber}`,
-          item: this.tranItems.map((item) => {
-            return {
-              no: no++,
-              name: item.isAdd ? item.nameDescription : item.name,
-              nameGroup: item.nameGroup,
-              nameDescription: item.nameDescription,
-              date: item.date ? formatISOString(item.date) : null,
-              qty: item.qty ?? 0,
-              qtyPrice: item.qtyPrice ?? 0,
-              qtyWeight: item.qtyWeight ?? 0,
-              qtyWeightPrice: item.qtyWeightPrice ?? 0,
-              totalPrice: item.totalPrice ?? 0,
-              isAdd: item.isAdd
-            }
-          })
-        }
-        const res = await api.jewelry.post('ProductionPlan/CreatePrice', param)
-        if (res) {
-          swAlert.success(
-            ``,
-            '',
-            () => {
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-      } catch (error) {
-        console.log(error)
+      let no = 1
+      const param = {
+        productionPlanId: this.model.id,
+        wo: this.model.wo,
+        woNumber: this.model.woNumber,
+        woText: `${this.model.wo}${this.model.woNumber}`,
+        item: this.tranItems.map((item) => {
+          return {
+            no: no++,
+            name: item.isAdd ? item.nameDescription : item.name,
+            nameGroup: item.nameGroup,
+            nameDescription: item.nameDescription,
+            date: item.date ? formatISOString(item.date) : null,
+            qty: item.qty ?? 0,
+            qtyPrice: item.qtyPrice ?? 0,
+            qtyWeight: item.qtyWeight ?? 0,
+            qtyWeightPrice: item.qtyWeightPrice ?? 0,
+            totalPrice: item.totalPrice ?? 0,
+            isAdd: item.isAdd
+          }
+        })
       }
-      this.isLoading = false
-    },
-    async onSearchWorker(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null,
-            type: this.status,
-            active: 1
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res)
-          this.workerItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
-      }
-    },
-    async onSearchWorkerByCode(e) {
-      try {
-        if (e === null) {
-          return null
-        }
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            code: e,
-            text: null,
-            type: null,
-            active: 0
-          }
-        }
-        const res = await api.jewelry.post('Worker/Search', params)
-        if (res) {
-          //console.log(res.data[0])
-          return res.data[0]
-        } else {
-          return null
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
-      }
-    },
-    async onSearchGem(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
-        }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          this.gemItemSearch = [...res]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
-      }
-    },
-    async onSearchGemById(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            id: e ?? null,
-            text: null
-          }
-        }
-        const res = await api.jewelry.post('StockGem/Search', params)
-        if (res) {
-          //console.log(res)
-          if (res) {
-            //console.log(res.data[0])
-            return res[0]
-          } else {
-            return null
-          }
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      const res = await api.jewelry.post('ProductionPlan/CreatePrice', param)
+      if (res) {
+        success(``, '', () => {
+          this.$emit('fetch')
+        })
       }
     },
     async fetchAllTransection() {
-      this.isLoading = true
-      try {
-        const res = await api.jewelry.get('ProductionPlan/GetAllTransectionPrice', {
-          wo: this.model.wo,
-          woNumber: this.model.woNumber
-        })
-        if (res) {
-          console.log(res)
-
-          this.tranItems = res.items.map((item) => {
-            return {
-              ...item,
-              //isAdd: false,
-              qtyWeight: item.qtyWeight ? Number(item.qtyWeight).toFixed(3) : '0.000',
-              qtyPrice: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
-              qtyWeightPrice: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
-              totalPrice: Number(
-                item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice
-              ).toFixed(2)
-            }
-          })
-
-          console.log('model priceItems', this.model?.priceItems)
-          if (this.model.priceItems) {
-            const sourceItem = this.model.priceItems.find(
-              (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
-            )
-
-            // หาข้อมูลปลายทางใน array ที่สอง
-            const targetItem = this.tranItems.find(
-              (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
-            )
-
-            // อัปเดตค่าถ้าเจอทั้งสองรายการ
-            if (sourceItem && targetItem) {
-              targetItem.qtyWeightPrice = sourceItem.qtyWeightPrice
-              targetItem.priceReference = sourceItem.totalPrice
-            }
+      const res = await api.jewelry.get('ProductionPlan/GetAllTransectionPrice', {
+        wo: this.model.wo,
+        woNumber: this.model.woNumber
+      })
+      if (res) {
+        this.tranItems = res.items.map((item) => {
+          return {
+            ...item,
+            qtyWeight: item.qtyWeight ? Number(item.qtyWeight).toFixed(3) : '0.000',
+            qtyPrice: item.qtyPrice ? Number(item.qtyPrice).toFixed(2) : '0.00',
+            qtyWeightPrice: item.qtyWeightPrice ? Number(item.qtyWeightPrice).toFixed(2) : '0.00',
+            totalPrice: Number(
+              item.qty * item.qtyPrice + item.qtyWeight * item.qtyWeightPrice
+            ).toFixed(2)
           }
+        })
 
-          // เรียงตามลำดับที่กำหนด
-          this.tranItems = _.sortBy(
-            this.tranItems,
-            (item) => this.groupOrderRunning[item.nameGroup]
+        if (this.model.priceItems) {
+          const sourceItem = this.model.priceItems.find(
+            (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
           )
-
-          this.addItemDiscount()
+          const targetItem = this.tranItems.find(
+            (item) => item.name === 'น้ำหนักทองรวมหลังหักเพชรพลอย'
+          )
+          if (sourceItem && targetItem) {
+            targetItem.qtyWeightPrice = sourceItem.qtyWeightPrice
+            targetItem.priceReference = sourceItem.totalPrice
+          }
         }
-      } catch (error) {
-        console.log(error)
+
+        this.tranItems = _.sortBy(
+          this.tranItems,
+          (item) => this.groupOrderRunning[item.nameGroup]
+        )
+
+        this.addItemDiscount()
       }
-      this.isLoading = false
     }
   }
 }
@@ -897,7 +542,6 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-// ** ------ overide primevue style ------
 .custom-input {
   margin-top: 5px !important;
 }
@@ -906,23 +550,13 @@ input {
 }
 :deep(.p-autocomplete .p-component) {
   margin-top: 0px !important;
-  //background-color: #dad4b5;
 }
-// :deep(.p-datatable .p-datatable-tfoot > tr > td) {
-//   text-align: left;
-//   padding: 1rem 1rem;
-//   border: 1px solid white;
-//   border-width: 0 0 1px 0;
-//   color: white;
-//   background: var(--base-font-color);
-// }
 
 .type-container {
-  font-size: 15px;
+  font-size: var(--fs-base);
   font-weight: bold;
   color: var(--base-font-color);
-  padding: 5px;
-  //margin: 0px 0px 10px 0px;
+  padding: var(--sp-xs);
 }
 .action-group-container {
   display: flex;

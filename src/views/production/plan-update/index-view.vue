@@ -433,7 +433,6 @@ export default {
   data() {
     return {
       // --- flag --- //
-      isLoading: false,
       isShowFormHeaderUpdate: false,
       isShowFormMaterialAdd: false,
       isShowFormStatusAdd: false,
@@ -515,7 +514,6 @@ export default {
       }
 
       if (fetch === 'go-receipt') {
-        console.log('go-receipt', value)
         this.$router.push({ name: 'goods-receipt-production', params: { id: value } })
       }
     },
@@ -530,7 +528,6 @@ export default {
       this.fetchData(this.id)
     },
     onShowAddStatus(status) {
-      //console.log('onShowAddStatus', status)
       this.add = { ...interfaceIsShowAdd }
       if (status === 'casting') {
         this.add.casting = true
@@ -549,7 +546,6 @@ export default {
       }
     },
     onShowUpdateStatus(status) {
-      //console.log('onShowUpdateStatus', status)
       this.update = { ...interfaceIsShowUpdate }
       if (status === 'casting') {
         this.update.casting = true
@@ -580,12 +576,7 @@ export default {
     onTransferJob(job, from) {
       this.statusTransferValue = from
       this.jobTransfer = { ...job }
-
-      //console.log('onTransferJob; job', this.jobTransfer)
-      //console.log('onTransferJob; form', this.statusTransferValue)
-
       this.update.transferJob = true
-      //this.interfaceIsShowUpdate.transferJob = true
     },
     onTransferProduct(job, from) {
       this.statusTransferValue = from
@@ -596,146 +587,95 @@ export default {
 
     // --- APIs --- //
     async fetchData(id) {
-      try {
-        this.isLoading = true
-        const param = {
-          id: id
-        }
-        const res = await api.jewelry.get('ProductionPlan/ProductionPlanGet', param)
-        if (res) {
-          this.data = { ...res }
-          //this.statusName = this.data.statusNavigation.nameTh
-          //console.log('this.data', this.data)
-
-          const planNumber = `${this.data.wo}-${this.data.woNumber}`
-          this.fetchDataGoldCostItem(planNumber)
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const param = { id: id }
+      const res = await api.jewelry.get('ProductionPlan/ProductionPlanGet', param)
+      if (res) {
+        this.data = { ...res }
+        const planNumber = `${this.data.wo}-${this.data.woNumber}`
+        this.fetchDataGoldCostItem(planNumber)
       }
     },
     async fetchMasterData(type) {
-      this.isLoading = true
-      try {
-        let params = null
-        let url = null
-        let res = null
+      let url = null
+      let res = null
 
+      switch (type) {
+        case 'PRODUCTTYPE':
+          url = 'Master/MasterProductType'
+          break
+        case 'CUSTOMERTYPE':
+          url = 'Master/MasterCustomerType'
+          break
+        case 'GOLDSIZE':
+          url = 'Master/MasterGoldSize'
+          break
+        case 'GEM':
+          url = 'Master/MasterGem'
+          break
+        case 'GEMSHAPE':
+          url = 'Master/MasterGemShape'
+          break
+        case 'GOLD':
+          url = 'Master/MasterGold'
+          break
+        case 'STATUS':
+          url = 'ProductionPlan/GetProductionPlanStatus'
+          break
+      }
+
+      const apiGet = ['PRODUCTTYPE', 'CUSTOMERTYPE', 'GOLDSIZE', 'GEMSHAPE', 'GOLD', 'STATUS', 'GEM']
+
+      if (apiGet.includes(type)) {
+        res = await api.jewelry.get(url)
+      }
+
+      if (res) {
         switch (type) {
           case 'PRODUCTTYPE':
-            url = 'Master/MasterProductType'
+            this.masterProduct = [...res]
             break
           case 'CUSTOMERTYPE':
-            url = 'Master/MasterCustomerType'
+            this.masterCustomer = [...res]
             break
           case 'GOLDSIZE':
-            url = 'Master/MasterGoldSize'
+            this.masterGoldSize = [...res]
             break
           case 'GEM':
-            url = 'Master/MasterGem'
+            this.masterGem = [...res]
             break
           case 'GEMSHAPE':
-            url = 'Master/MasterGemShape'
+            this.masterGemShape = [...res]
             break
           case 'GOLD':
-            url = 'Master/MasterGold'
+            this.masterGold = [...res]
             break
           case 'STATUS':
-            url = 'ProductionPlan/GetProductionPlanStatus'
+            this.masterStatus = [...res]
             break
         }
-
-        const apiGet = [
-          'PRODUCTTYPE',
-          'CUSTOMERTYPE',
-          'GOLDSIZE',
-          'GEMSHAPE',
-          'GOLD',
-          'STATUS',
-          'GEM'
-        ]
-        const apiPost = []
-
-        if (apiGet.includes(type)) {
-          res = await api.jewelry.get(url)
-        } else if (apiPost.includes(type)) {
-          res = await api.jewelry.post(url, params)
-        }
-
-        if (res) {
-          //console.log('res', res)
-          switch (type) {
-            case 'PRODUCTTYPE':
-              this.masterProduct = [...res]
-              break
-            case 'CUSTOMERTYPE':
-              this.masterCustomer = [...res]
-              break
-            case 'GOLDSIZE':
-              this.masterGoldSize = [...res]
-              break
-            case 'GEM':
-              this.masterGem = [...res]
-              break
-            case 'GEMSHAPE':
-              this.masterGemShape = [...res]
-              break
-            case 'GOLD':
-              this.masterGold = [...res]
-              break
-            case 'STATUS':
-              this.masterStatus = [...res]
-              break
-          }
-        }
-      } catch (error) {
-        console.log(error)
       }
-      this.isLoading = false
     },
     async fetchDataMat(id) {
-      try {
-        this.isLoading = true
-        const param = {
-          id: id
-        }
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet', param, {
-          skipLoading: true
-        })
-        if (res) {
-          this.mat = [...res]
-        }
-        //console.log('this.mat', this.mat)
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const param = { id: id }
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet', param, {
+        skipLoading: true
+      })
+      if (res) {
+        this.mat = [...res]
       }
     },
     async fetchDataGoldCostItem(planNumber) {
-      try {
-        //console.log('planNumber', planNumber)
-        this.isLoading = true
-        const param = {
-          take: 0,
-          skip: 0,
-          sort: [],
-          search: {
-            ProductionPlanNumber: planNumber
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        sort: [],
+        search: {
+          ProductionPlanNumber: planNumber
         }
-        const res = await api.jewelry.post('ProductionPlanCost/ListGoldCostItem', param)
-        if (res) {
-          this.dataGoldCostItem = [...res.data]
-          //this.statusName = this.data.statusNavigation.nameTh
-          //console.log('this.dataGoldCostItem', this.dataGoldCostItem)
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('ProductionPlanCost/ListGoldCostItem', param)
+      if (res) {
+        this.dataGoldCostItem = [...res.data]
       }
     },
 
