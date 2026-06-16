@@ -11,7 +11,8 @@ export default {
     confirm: 'Confirm',
     export: 'Export',
     create: 'Create',
-    back: 'Back'
+    back: 'Back',
+    advancedSearch: 'Advanced Search'
   },
   field: {
     code: 'Code',
@@ -37,7 +38,8 @@ export default {
     loading: 'Loading...',
     all: 'All',
     start: 'Start',
-    end: 'End'
+    end: 'End',
+    searchPlaceholder: 'Type something to search'
   },
   table: {
     showing: 'Showing',

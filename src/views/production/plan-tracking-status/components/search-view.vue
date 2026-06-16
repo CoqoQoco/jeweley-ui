@@ -4,7 +4,7 @@
       <div>
         <div>
           <pageTitle
-            title="ตรวจสอบสถานะงานผลิต"
+            :title="$t('production.planTrackingStatus.searchTitle')"
             description="ตรวจสอบ ติดตาม การดำเนินงาน รับ-จ่ายงาน เเต่ละเเผนก"
             :isShowBtnClose="false"
           >
@@ -14,50 +14,38 @@
         <div class="form-col-container">
           <!-- receive date -->
           <div>
-            <span class="title-text">วันที่รับโอนงาน</span>
+            <span class="title-text">{{ $t('production.planTrackingStatus.receiveDate') }}</span>
             <div class="flex-group">
-              <Calendar
-                class="w-100"
+              <CalendarGeneric
                 v-model="form.requestDateStart"
-                :max-date="form.requestDateEnd"
-                dateFormat="dd/mm/yy"
+                :maxDate="form.requestDateEnd"
                 :manualInput="false"
-                showIcon
-                placeholder="เริ่มต้น"
+                :placeholder="$t('common.label.start')"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
+              <CalendarGeneric
                 v-model="form.requestDateEnd"
-                :min-date="form.requestDateStart"
-                dateFormat="dd/mm/yy"
+                :minDate="form.requestDateStart"
                 :manualInput="false"
-                showIcon
-                placeholder="สิ้นสุด"
+                :placeholder="$t('common.label.end')"
               />
             </div>
           </div>
 
           <!-- receive work date -->
           <div>
-            <span class="title-text">วันที่ช่างรับงาน</span>
+            <span class="title-text">{{ $t('production.planTrackingStatus.workerReceiveDate') }}</span>
             <div class="flex-group">
-              <Calendar
-                class="w-100"
+              <CalendarGeneric
                 v-model="form.receiveWorkDateStart"
-                :max-date="form.receiveWorkDateEnd"
-                dateFormat="dd/mm/yy"
-                showIcon
-                placeholder="เริ่มต้น"
+                :maxDate="form.receiveWorkDateEnd"
+                :placeholder="$t('common.label.start')"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
+              <CalendarGeneric
                 v-model="form.receiveWorkDateEnd"
-                :min-date="form.receiveWorkDateStart"
-                dateFormat="dd/mm/yy"
-                showIcon
-                placeholder="สิ้นสุด"
+                :minDate="form.receiveWorkDateStart"
+                :placeholder="$t('common.label.end')"
               />
             </div>
           </div>
@@ -67,47 +55,45 @@
           :isShow="isShow.dialog"
           @closeDialog="closeDialog"
           @search="dialogSearch"
-          txtHeader="ค้นหาเพิ่มเติม"
+          :txtHeader="$t('common.btn.advancedSearch')"
         >
           <template #content>
             <div class="form-col-container">
               <!-- status -->
               <div>
-                <span class="title-text">ประเภทงาน</span>
+                <span class="title-text">{{ $t('production.planTrackingStatus.planStatus') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.status"
                     :options="masterApiStore.planStatus"
                     optionLabel="nameTh"
                     optionValue="id"
-                    filter
-                    class="w-full md:w-14rem"
+                    :filter="true"
                   />
                 </div>
               </div>
 
               <!-- gold -->
               <div>
-                <span class="title-text">ประเภททอง</span>
-                <MultiSelect
+                <span class="title-text">{{ $t('production.planTrackingStatus.goldType') }}</span>
+                <MultiSelectGeneric
                   v-model="form.gold"
                   :options="masterApiStore.gold"
-                  filter
+                  :filter="true"
                   optionLabel="description"
                   optionValue="code"
-                  class="w-full md:w-14rem"
                 />
               </div>
 
               <!-- wo -->
               <div>
-                <span class="title-text">เลขที่ใบงาน</span>
+                <span class="title-text">{{ $t('production.planTrackingStatus.workOrder') }}</span>
                 <input :class="['form-control']" type="text" v-model.trim="form.wo" />
               </div>
 
               <!-- product no  -->
               <div>
-                <span class="title-text">รหัสสินค้า</span>
+                <span class="title-text">{{ $t('production.planTrackingStatus.colProductCode') }}</span>
                 <input :class="['form-control']" type="text" v-model.trim="form.productNo" />
               </div>
             </div>
@@ -115,39 +101,24 @@
         </dialogView>
 
         <div class="btn-submit-container-between">
+          <div></div>
           <div>
-            <!-- <button
-              :class="['btn btn-sm', this.isTransfer ? 'btn-secondary' : 'btn-green']"
-              type="button"
-              :disabled="isTransfer"
-              title="โอนงาน"
-            >
-              <span><i class="bi bi-arrow-left-right"></i></span>
-            </button> -->
-          </div>
-          <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
               <span><i class="bi bi-search"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
             <button
               class="btn btn-sm btn-sub-main mr-2"
               type="button"
-              title="เพิ่มเติม"
+              :title="$t('common.btn.advancedSearch')"
               @click="onShowDialog"
             >
               <span><i class="bi bi-zoom-in"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <span><i class="bi bi-x-circle"></i></span>
-              <!-- <span>ล้าง</span> -->
             </button>
             <button
-              :class="[
-                'btn btn-sm btn-primary',
-                { 'btn-secondary': !planStatusDetailStore.dataSearcTotalRecord > 0 }
-              ]"
+              class="btn btn-sm btn-green"
               type="button"
               :disabled="!planStatusDetailStore.dataSearcTotalRecord > 0"
               @click="onExport"
@@ -167,14 +138,11 @@ import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
-import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanStatusDetailApiStore } from '@/stores/modules/api/plan/plan-status-detail-store.js'
-//import api from '@/axios/axios-helper.js'
 
 const interfaceIsShow = {
   dialog: false
@@ -182,9 +150,8 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-    Calendar,
-    //Dropdown,
+    MultiSelectGeneric,
+    CalendarGeneric,
     dialogView
   },
   props: {
@@ -208,7 +175,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow }
     }
@@ -221,27 +187,18 @@ export default {
   },
 
   methods: {
-    // ---------------- event
     onSearch() {
-      console.log('onSubmit')
       this.$emit('search', this.form)
     },
     onExport() {
-      console.log('onExport')
       this.$emit('export')
     },
     dialogSearch() {
       this.isShow.dialog = false
       this.$emit('search', this.form)
     },
-    onSubmitExport() {
-      this.$emit('export', true)
-    },
     onClear() {
       this.$emit('clear')
-    },
-    onCloseModal() {
-      this.isShow = { ...interfaceIsShow }
     },
     onShowDialog() {
       this.isShow.dialog = true

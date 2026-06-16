@@ -11,6 +11,7 @@ import customer from './view/customer/en.js'
 import master from './view/master/en.js'
 import stock from './view/stock/en.js'
 import receiptStock from './view/receipt-stock/en.js'
+import productionLang from './view/production/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -23,6 +24,7 @@ export default {
     master: { ...master },
     receiptStock: { ...receiptStock },
     production: {
+      ...productionLang,
       dashboard: {
         title: 'Production Dashboard',
         lastUpdate: 'Last Update',

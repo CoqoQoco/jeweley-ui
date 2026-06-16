@@ -205,7 +205,7 @@
             <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
               <span class="bi bi-x-circle"></span>
             </button>
-            <button class="btn btn-sm btn-info" type="button" @click="generatePDF()">
+            <button class="btn btn-sm btn-green" type="button" @click="generatePDF()">
               <span class="bi bi-printer"></span>
             </button>
           </div>
@@ -220,19 +220,10 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-import pdfMake from 'pdfmake'
-import { vfs } from '@/assets/fonts/pdf-fonts.js'
-
-// import Dropdown from 'primevue/dropdown'
-// import Calendar from 'primevue/calendar'
-// import DataTable from 'primevue/datatable'
-// import Column from 'primevue/column'
-// import Row from 'primevue/row'
-// import ColumnGroup from 'primevue/columngroup' // optional
-// import AutoComplete from 'primevue/autocomplete'
+import { initPdfMake } from '@/services/utils/pdf-make.js'
 
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatISOString } from '@/services/utils/dayjs'
 
 const interfaceForm = {
@@ -392,8 +383,6 @@ export default {
   },
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
       autoId: 0,
 
       // ---- form ------ //
@@ -425,14 +414,12 @@ export default {
     },
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `เลขที่:${this.form.no} | เล่มที่:${this.form.bookNo} `,
           'ยืนยันเเก้ไขใบเบิกทอง',
           async () => {
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -499,131 +486,80 @@ export default {
 
     // --- APIs --- //
     async submit() {
-      try {
-        this.isLoading = true
-        //console.log(this.form)
+      this.form.items = this.form.items.map((x) => {
+        return {
+          ...x,
+          productionPlanId: x.productionPlan
+            ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
+            : null
+        }
+      })
 
-        this.form.items = this.form.items.map((x) => {
-          return {
-            ...x,
-            productionPlanId: x.productionPlan
-              ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
-              : null
+      const params = {
+        ...this.form,
+        goldCode: this.form.gold.code,
+        goldSizeCode: this.form.goldSize.code,
+        assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
+        meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
+        castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null
+      }
+
+      const res = await api.jewelry.post('ProductionPlanCost/UpdateGoldCost', params)
+      if (res) {
+        success(
+          null,
+          null,
+          () => {
+            this.form = {
+              ...interfaceForm
+            }
+            this.val = {
+              ...interfaceIsValid
+            }
+            this.$emit('fetch')
           }
-        })
-
-        const params = {
-          ...this.form,
-          goldCode: this.form.gold.code,
-          goldSizeCode: this.form.goldSize.code,
-          assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
-          meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
-          castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null
-        }
-        console.log(params)
-
-        const res = await api.jewelry.post('ProductionPlanCost/UpdateGoldCost', params)
-        if (res) {
-          //this.isResetImage = !this.isResetImage
-          swAlert.success(
-            null,
-            null,
-            () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-          //this.onClearVal()
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+        )
       }
     },
     async onSearchProductionPlanId(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-            //type: this.form.status,
-            //active: 1
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
-          params
-        )
-        if (res) {
-          //console.log(res)
-          this.productItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanSearchByProductionPlanId',
+        params
+      )
+      if (res) {
+        this.productItemSearch = [...res.data]
       }
     },
     async onSearchProductionPlanIdByCode(e) {
-      try {
-        //this.isLoading = true
-        //console.log(e)
-        const productionPlanId = e.replace(/-/g, '')
-
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: productionPlanId
-            //type: this.form.status,
-            //active: 1
-          }
+      const productionPlanId = e.replace(/-/g, '')
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: productionPlanId
         }
-        //console.log(params)
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
-          params
-        )
-        if (res) {
-          //console.log(res)
-          //console.log(res.data[0])
-          //return res.data[0]
-          return res.data.find((x) => x.woText === productionPlanId)
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        } else {
-          return null
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanSearchByProductionPlanId',
+        params
+      )
+      if (res) {
+        return res.data.find((x) => x.woText === productionPlanId)
+      } else {
+        return null
       }
     },
 
     // --- PDF --- //
     async generatePDF() {
-      pdfMake.vfs = vfs
-      pdfMake.fonts = {
-        THSarabunNew: {
-          normal: 'THSarabunNew.ttf',
-          bold: 'THSarabunNew Bold.ttf',
-          italics: 'THSarabunNew Italic.ttf',
-          bolditalics: 'THSarabunNew BoldItalic.ttf'
-        }
-      }
+      const pdfMake = initPdfMake()
 
       const docDefinition = {
         pageSize: 'A4',

@@ -3,30 +3,30 @@
     <form @submit.prevent="onSearch">
       <div>
         <div>
-          <pageTitle title="ค้นหาใบจ่าย-รับคืนงาน" :isShowBtnClose="false"> </pageTitle>
+          <pageTitle :title="$t('view.production.planTracking.searchTitle')" :isShowBtnClose="false"> </pageTitle>
         </div>
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">วันที่สร้างใบจ่าย-รับคืน</span>
+            <span class="title-text">{{ $t('view.production.planTracking.createDate') }}</span>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.start"
                 :max-date="form.end"
                 :manualInput="true"
                 showIcon
-                placeholder="เริ่มต้น"
+                :placeholder="$t('common.label.start')"
                 dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.end"
                 :min-date="form.start"
                 showIcon
                 :manualInput="true"
-                placeholder="สิ้นสุด"
+                :placeholder="$t('common.label.end')"
                 dateFormat="dd/mm/yy"
               />
             </div>
@@ -35,14 +35,11 @@
           <div class="form-col-container">
             <!-- text -->
             <div>
-              <span class="title-text">W.O.</span>
+              <span class="title-text">{{ $t('view.production.planTracking.workOrder') }}</span>
               <div class="input-group input-group-inner">
-                <input
+                <InputTextGeneric
                   ref="inputText"
-                  id="inputText"
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.text"
+                  v-model="form.text"
                   placeholder="EX: 202502211"
                 />
                 <div class="input-group-append" @click="focusInputText">
@@ -55,18 +52,16 @@
 
             <!-- status -->
             <div>
-              <span class="title-text">สถานะงานผลิต</span>
+              <span class="title-text">{{ $t('view.production.planTracking.planStatus') }}</span>
               <div>
-                <MultiSelect
+                <MultiSelectGeneric
                   v-model="form.status"
                   :options="planStatus"
                   optionLabel="nameTh"
                   optionValue="id"
-                  class="w-full md:w-14rem"
-                  placeholder="เลือกสถานะ"
+                  :placeholder="$t('common.label.all')"
                 />
               </div>
-              <!-- <small v-if="val.isValStatus" class="p-error">Status is required.</small> -->
             </div>
           </div>
         </div>
@@ -80,45 +75,44 @@
           <template #content>
             <div class="form-col-container">
               <div>
-                <span class="title-text">วันที่สถานะใบงาน</span>
+                <span class="title-text">{{ $t('view.production.planTracking.statusDate') }}</span>
                 <div class="flex-group">
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     v-model="form.sendStart"
                     :max-date="form.sendEnd"
                     showIcon
                     :manualInput="true"
-                    placeholder="เริ่มต้น"
+                    :placeholder="$t('common.label.start')"
                     dateFormat="dd/mm/yy"
                   />
                   <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     v-model="form.sendEnd"
                     :min-date="form.sendStart"
                     showIcon
                     :manualInput="true"
-                    placeholder="สิ้นสุด"
+                    :placeholder="$t('common.label.end')"
                     dateFormat="dd/mm/yy"
                   />
                 </div>
               </div>
 
               <div class="form-col-container">
-                <!-- modld -->
+                <!-- mold -->
                 <div>
-                  <span class="title-text">เเม่พิมพ์</span>
-                  <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
+                  <span class="title-text">{{ $t('view.production.planTracking.mold') }}</span>
+                  <InputTextGeneric v-model="form.mold" />
                 </div>
 
                 <!-- plan target -->
                 <div>
-                  <span class="title-text">กำหนดส่งงาน</span>
-                  <Dropdown
+                  <span class="title-text">{{ $t('view.production.planTracking.planTarget') }}</span>
+                  <DropdownGeneric
                     v-model="form.isOverPlan"
                     :options="overPlanOptions"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -127,80 +121,68 @@
             <div class="form-col-container mt-2">
               <!-- customer code -->
               <div>
-                <span class="title-text">รหัสลูกค้า</span>
-                <input
-                  ref="inputText"
-                  id="inputText"
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.customerCode"
-                />
+                <span class="title-text">{{ $t('view.production.planTracking.customerCode') }}</span>
+                <InputTextGeneric v-model="form.customerCode" />
               </div>
 
               <!-- customer type -->
               <div>
-                <span class="title-text">ประเภทลูกค้า</span>
+                <span class="title-text">{{ $t('view.production.planTracking.customerType') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.customerType"
                     :options="customerType"
                     optionLabel="nameTh"
                     optionValue="code"
-                    class="w-full md:w-14rem"
+                    :placeholder="$t('common.label.all')"
                   />
                 </div>
               </div>
 
               <!-- product type -->
               <div>
-                <span class="title-text">ประเภทสินค้า</span>
+                <span class="title-text">{{ $t('view.production.planTracking.productType') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.productType"
                     :options="productType"
                     optionLabel="nameTh"
                     optionValue="code"
-                    class="w-full md:w-14rem"
+                    :placeholder="$t('common.label.all')"
                   />
                 </div>
               </div>
 
               <!-- product number -->
               <div>
-                <span class="title-text">รหัสสินค้า</span>
-                <input
-                  ref="inputText"
-                  id="inputText"
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.productNumber"
-                />
+                <span class="title-text">{{ $t('view.production.planTracking.productCode') }}</span>
+                <InputTextGeneric v-model="form.productNumber" />
               </div>
 
               <!-- gold -->
               <div>
-                <span class="title-text">สีของทอง/เงิน</span>
+                <span class="title-text">{{ $t('view.production.planTracking.goldColor') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.gold"
                     :options="gold"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
+                    :placeholder="$t('common.label.all')"
                   />
                 </div>
               </div>
 
               <!-- gold size -->
               <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
+                <span class="title-text">{{ $t('view.production.planTracking.goldType') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.goldSize"
                     :options="goldSize"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
+                    :placeholder="$t('common.label.all')"
                   />
                 </div>
               </div>
@@ -209,20 +191,10 @@
         </dialogView>
 
         <div class="btn-submit-container-between">
+          <div></div>
           <div>
-            <!-- <button
-              :class="['btn btn-sm', this.isTransfer ? 'btn-secondary' : 'btn-green']"
-              type="button"
-              :disabled="isTransfer"
-              title="โอนงาน"
-            >
-              <span><i class="bi bi-arrow-left-right"></i></span>
-            </button> -->
-          </div>
-          <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
               <span><i class="bi bi-search"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
             <button
               class="btn btn-sm btn-sub-main mr-2"
@@ -231,16 +203,14 @@
               @click="onShowDialog"
             >
               <span><i class="bi bi-zoom-in"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <span><i class="bi bi-x-circle"></i></span>
-              <!-- <span>ล้าง</span> -->
             </button>
             <button
               :class="[
-                'btn btn-sm btn-primary',
-                { 'btn-secondary': !planSearchStore.dataPlanSearch.total > 0 }
+                'btn btn-sm btn-green',
+                { 'disabled': !planSearchStore.dataPlanSearch.total > 0 }
               ]"
               type="button"
               :disabled="!planSearchStore.dataPlanSearch.total > 0"
@@ -258,31 +228,34 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-
-const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
-
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
-
+// External
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
-//import api from '@/axios/axios-helper.js'
+
+// Local
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 const interfaceIsShow = {
   dialog: false
 }
+
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-    Calendar,
-    Dropdown,
+    CalendarGeneric,
+    MultiSelectGeneric,
+    DropdownGeneric,
+    InputTextGeneric,
     dialogView
   },
+
   props: {
     modelForm: {
       type: Object,
@@ -293,6 +266,7 @@ export default {
       default: () => []
     }
   },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -301,6 +275,7 @@ export default {
       deep: true
     }
   },
+
   computed: {
     isExportData() {
       return true
@@ -315,9 +290,9 @@ export default {
       'overPlanOptions'
     ])
   },
+
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow }
     }
@@ -329,13 +304,10 @@ export default {
   },
 
   methods: {
-    // ---------------- event
     onSearch() {
-      console.log('onSubmit')
       this.$emit('search', this.form)
     },
     onExport() {
-      console.log('onExport')
       this.$emit('export')
     },
     dialogSearch() {
@@ -357,9 +329,6 @@ export default {
     closeDialog() {
       this.isShow.dialog = false
     }
-  },
-  created() {
-    this.$nextTick(() => {})
   }
 }
 </script>

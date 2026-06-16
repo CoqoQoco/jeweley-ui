@@ -58,14 +58,18 @@
 | **production-cost** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 24 | |
 | **production/plan-update** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 99 | ไฟล์ยักษ์ — แตก component |
 | **production/plan-view** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 32 | |
-| **production/plan-tracking-gold** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 15 | |
+| **production/plan-tracking-gold** | ✅ | ✅ | ✅ | ✅ | ✅ | 4* | *4 imports เป็น exception (DataTable/Column/ColumnGroup/Row — editMode="row" ซับซ้อน ใช้ eslint-disable) |
 | **production/plan-tracking** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 8 | |
 | **production/mold** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 8 | |
 | **production/plan-bom** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 4 | |
 | **production/plan-create** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 7 | |
 | **production/plan-gold** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 7 | |
 | **production/plan-price** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 7 | |
-| **production (อื่นๆ)** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | รวม pre-plan, dashboard, tracking-worker ฯลฯ |
+| **production/plan-tracking-transfer** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | MultiSelect/Calendar/Dropdown→generic; btn-primary→btn-green; i18n keys เพิ่ม (transferDate, deptTransfer, goldColor, goldType); console.log removed |
+| **production/plan-tracking-status** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | MultiSelect/Calendar→generic; btn-primary→btn-green; i18n keys เพิ่ม (receiveDate, workerReceiveDate, goldType); console.log removed; isLoading removed |
+| **production/tracking-worker (IndexView)** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | Calendar→CalendarGeneric; console.log removed; try-catch/isLoading removed |
+| **production/tracking-worker (TableMainView)** | ✅ | ✅ | ✅ | ✅ | ✅ | 0 | DataTable→BaseDataTable; columns→computed i18n; try-catch/isLoading/console.log removed; unused imports removed |
+| **production (อื่นๆ)** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | TBD | รวม pre-plan, dashboard ฯลฯ |
 | **sale/sale-order** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 22 | sale-order-view.vue 3,933 บรรทัด — แตก component |
 | **sale/cost-stock** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 12 | |
 | **sale/invoice-detail** | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | 10 | |
@@ -111,3 +115,4 @@
 | 2026-06-17 | receipt-stock (partial — search/data-table/modal) | 🔄 Partial | ลด 9 errors (56→47 ใน receipt-stock); 365→356 total | Calendar/MultiSelect/Input→generic (search-views ทุกกลุ่ม); dataTablePaging mixin (data-table-views); Dialog→ModalView+DropdownGeneric (edit-all-materials); formatISOString/api/get unused imports removed; StockSummaryCards unused removed; console.log/try-catch dashboard; stock-details Dropdown→DropdownGeneric; common.label.start/end เพิ่ม |
 | 2026-06-17 | receipt-stock/gem (13 ไฟล์ครบ) | ✅ Pass | ลด ~20 native PrimeVue imports; gem sub-feature ครบ 100% | Dropdown→DropdownGeneric, Calendar→CalendarGeneric, AutoComplete→AutoCompleteGeneric, Checkbox→CheckboxGeneric, input→InputTextGeneric, textarea→TextareaGeneric; remove try-catch/isLoading/console.log; named imports sweetAlerts; i18n keys เพิ่ม inbound/outbound/pickOff/pickReturnAndOutbound/create sections; 6 ไฟล์ยังคง primevue DataTable/Column/ColumnGroup เป็น exception (ColumnGroup footer ซับซ้อน) |
 | 2026-06-17 | receipt-stock/product (2 ไฟล์สุดท้าย) | ✅ Pass | 0 native PrimeVue imports เหลือใน receipt-stock/product | materials-section: Dropdown→DropdownGeneric, input→InputTextGeneric, remove dead btn-outline-primary/secondary SCSS, design token; adjust-breakdown-view: Dropdown→DropdownGeneric, input→InputTextGeneric, swAlert default→named imports, btn-danger/primary/success/secondary→valid classes, console.log removed, stockColumns/breakdownColumns→computed (i18n), SCSS hardcode→design tokens |
+| 2026-06-17 | production tracking 5 ไฟล์ (plan-tracking-gold/update-view, plan-tracking-transfer/search-view, plan-tracking-status/search-view, tracking-worker/TableMainView, tracking-worker/IndexView) | ✅ Pass | ลด ~10 native PrimeVue imports; 4 เหลือ (exception ColumnGroup) | Dropdown→DropdownGeneric, Calendar→CalendarGeneric, AutoComplete→AutoCompleteGeneric, MultiSelect→MultiSelectGeneric; DataTable→BaseDataTable (tracking-worker TableMainView); columns→computed i18n; btn-primary→btn-green; console.log/try-catch/isLoading removed; i18n keys เพิ่ม (common.btn.advancedSearch, common.label.searchPlaceholder, planTrackingTransfer.transferDate/deptTransfer/goldColor/goldType, planTrackingStatus.receiveDate/workerReceiveDate/goldType, trackingWorker.searchText/colQtySend/colWeightSend/colQtyCheck/colWeightCheck) |

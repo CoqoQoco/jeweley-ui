@@ -11,7 +11,8 @@ export default {
     confirm: 'ยืนยัน',
     export: 'ส่งออก',
     create: 'สร้าง',
-    back: 'กลับ'
+    back: 'กลับ',
+    advancedSearch: 'ค้นหาเพิ่มเติม'
   },
   field: {
     code: 'รหัส',
@@ -37,7 +38,8 @@ export default {
     loading: 'กำลังโหลด...',
     all: 'ทั้งหมด',
     start: 'เริ่มต้น',
-    end: 'สิ้นสุด'
+    end: 'สิ้นสุด',
+    searchPlaceholder: 'พิมพ์บางอย่างเพื่อค้นหา'
   },
   table: {
     showing: 'แสดงข้อมูล',

@@ -2,41 +2,38 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">แก้ไขใบเบิกผสมทอง</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('production.planTrackingGold.updateTitle') }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="gold-update-form">
           <div class="p-4">
             <!-- ข้อมูล -->
-            <pageTitle title="ข้อมูลเบิกผสมทอง" :isShowBtnClose="false" class="mb-3" />
+            <pageTitle :title="$t('production.planTrackingGold.formTitle')" :isShowBtnClose="false" class="mb-3" />
             <div class="border-container p-4">
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>เล่มที่</span>
+                    <span>{{ $t('production.planTrackingGold.bookNo') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.bookNo" required disabled />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>เลขที่</span>
+                    <span>{{ $t('production.planTrackingGold.no') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.no" required disabled />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>วันที่เบิก</span>
+                    <span>{{ $t('production.planTrackingGold.assignDate') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
-                  <Calendar
-                    class="w-100"
-                    :class="val.isValAssignDate === true ? `p-invalid` : ``"
+                  <CalendarGeneric
                     v-model="form.assignDate"
-                    dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showButtonBar="true"
+                    :customClass="val.isValAssignDate === true ? 'p-invalid' : ''"
                   />
                 </div>
                 <div></div>
@@ -44,37 +41,37 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>ประเภททอง</span>
+                    <span>{{ $t('production.planTrackingGold.goldType') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
-                  <Dropdown
-                    v-model="form.gold"
+                  <DropdownGeneric
+                    :modelValue="form.gold"
                     :options="masterGold"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
-                    :class="val.isValGold === true ? `p-invalid` : ``"
-                    :showClear="form.gold?.code ? true : false"
+                    :showClear="!!form.gold?.code"
+                    :customClass="val.isValGold === true ? 'p-invalid' : ''"
+                    @update:modelValue="form.gold = $event"
                   />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>เปอร์เซ็นทอง</span>
+                    <span>{{ $t('production.planTrackingGold.goldPercent') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
-                  <Dropdown
-                    v-model="form.goldSize"
+                  <DropdownGeneric
+                    :modelValue="form.goldSize"
                     :options="masterGoldSize"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
-                    :class="val.isValGoldSize === true ? `p-invalid` : ``"
-                    :showClear="form.goldSize?.code ? true : false"
+                    :showClear="!!form.goldSize?.code"
+                    :customClass="val.isValGoldSize === true ? 'p-invalid' : ''"
+                    @update:modelValue="form.goldSize = $event"
                   />
                 </div>
               </div>
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>สูตรผสมทอง</span>
+                    <span>{{ $t('production.planTrackingGold.goldReceipt') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.goldReceipt" required />
@@ -83,13 +80,13 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>ชื่อผู้เบิกทอง</span>
+                    <span>{{ $t('production.planTrackingGold.assignBy') }}</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.assignBy" />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>ชื่อผู้รับทอง</span>
+                    <span>{{ $t('production.planTrackingGold.receiveBy') }}</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.receiveBy" />
                 </div>
@@ -97,7 +94,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>รายละเอียดอื่นๆ</span>
+                    <span>{{ $t('production.planTrackingGold.otherDetail') }}</span>
                   </span>
                   <textarea class="form-control" v-model="form.remark"></textarea>
                 </div>
@@ -105,7 +102,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>ราคาทอง</span>
+                    <span>{{ $t('production.planTrackingGold.colCost') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input
@@ -128,15 +125,11 @@
                 <div>
                   <span class="title-text">
                     <span>วันที่เบิกหลอม</span>
-                    <!-- <span class="txt-required"> *</span> -->
                   </span>
-                  <Calendar
-                    class="w-100"
-                    :class="val.isValMeltDate === true ? `p-invalid` : ``"
+                  <CalendarGeneric
                     v-model="form.meltDate"
-                    dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showButtonBar="true"
+                    :customClass="val.isValMeltDate === true ? 'p-invalid' : ''"
                   />
                 </div>
                 <div>
@@ -185,12 +178,9 @@
                     <span class="title-text-white">
                       <span>วันที่คืนขี้เบ้า</span>
                     </span>
-                    <Calendar
-                      class="w-100"
+                    <CalendarGeneric
                       v-model="form.returnMeltScrapWeightDate"
-                      dateFormat="dd/mm/yy"
-                      showIcon
-                      showButtonBar
+                      :showButtonBar="true"
                     />
                   </div>
                   <div></div>
@@ -227,22 +217,21 @@
               </div>
               <div class="form-col-container">
                 <div>
-                  <span class="title-text">ซิล</span>
-                  <AutoComplete
-                    v-model="form.zill"
-                    :suggestions="zillItemSearch"
-                    @complete="onSearchZill"
-                    @item-select="onSearchZill"
+                  <span class="title-text">{{ $t('production.planTrackingGold.colZill') }}</span>
+                  <AutoCompleteGeneric
+                    :modelValue="form.zill"
+                    apiEndpoint="Master/ListMaster"
+                    :additionalSearchParams="{ type: 'ZILL', goldCode: form.gold?.code, goldSizeCode: form.goldSize?.code }"
                     placeholder="กรอกรหัสซิล ...."
-                    forceSelection
-                    :min-length="3"
+                    :forceSelection="true"
+                    :minLength="3"
                     :disabled="!form.gold || !form.goldSize"
-                  >
-                  </AutoComplete>
+                    @update:modelValue="form.zill = $event"
+                  />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>จำนวนซิล</span>
+                    <span>{{ $t('production.planTrackingGold.colZillQty') }}</span>
                   </span>
                   <input
                     type="number"
@@ -263,15 +252,11 @@
                 <div>
                   <span class="title-text">
                     <span>วันที่เบิกหล่อ</span>
-                    <!-- <span class="txt-required"> *</span> -->
                   </span>
-                  <Calendar
-                    class="w-100"
-                    :class="val.isValCastDate === true ? `p-invalid` : ``"
+                  <CalendarGeneric
                     v-model="form.castDate"
-                    dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
+                    :showButtonBar="true"
+                    :customClass="val.isValCastDate === true ? 'p-invalid' : ''"
                   />
                 </div>
                 <div>
@@ -413,12 +398,9 @@
                     <span class="title-text-white">
                       <span>วันที่คืนขี้เบ้า</span>
                     </span>
-                    <Calendar
-                      class="w-100"
+                    <CalendarGeneric
                       v-model="form.returnCastScrapWeightDate"
-                      dateFormat="dd/mm/yy"
-                      showIcon
-                      showButtonBar
+                      :showButtonBar="true"
                     />
                   </div>
                   <div></div>
@@ -431,6 +413,7 @@
                 <span>คืนตัวเรือน</span>
               </div>
               <div class="form-col-container">
+                <!-- ColumnGroup exception: DataTable + ColumnGroup + Row with editMode="row" — cannot use BaseDataTable -->
                 <DataTable
                   class="p-datatable-sm"
                   showGridlines
@@ -463,7 +446,7 @@
                   <Column style="width: 30px">
                     <template #body="prop">
                       <div
-                        class="btn btn-sm btn-danger text-center w-100"
+                        class="btn btn-sm btn-red text-center w-100"
                         @click="onDelItem(prop.data)"
                       >
                         <i class="bi bi-trash-fill"></i>
@@ -472,27 +455,19 @@
                   </Column>
                   <Column field="productionPlan" style="min-width: 150px">
                     <template #editor="{ data, field }">
-                      <!-- <input
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      class="form-control"
-                      v-model="data[field]"
-                    /> -->
-                      <AutoComplete
-                        v-model="data[field]"
-                        :suggestions="productItemSearch"
-                        @complete="onSearchProductionPlanId"
-                        placeholder="กรอก WO/WO No. ตัวเรือน"
-                        :class="data[field] ? `` : `p-invalid`"
+                      <AutoCompleteGeneric
+                        :modelValue="data[field]"
+                        apiEndpoint="ProductionPlan/ProductionPlanSearchByProductionPlanId"
                         optionLabel="woText"
-                        forceSelection
+                        placeholder="กรอก WO/WO No. ตัวเรือน"
+                        :forceSelection="true"
+                        :customClass="data[field] ? '' : 'p-invalid'"
+                        @update:modelValue="data[field] = $event"
                       >
-                        <template #option="slotProps">
-                          <div class="flex align-options-center">
-                            <div>{{ `${slotProps.option.wo}-${slotProps.option.woNumber}` }}</div>
-                          </div>
+                        <template #option="{ option }">
+                          <div>{{ `${option.wo}-${option.woNumber}` }}</div>
                         </template>
-                      </AutoComplete>
+                      </AutoCompleteGeneric>
                     </template>
                     <template #body="slotProps">
                       <div v-if="slotProps.data.productionPlan">
@@ -539,7 +514,6 @@
                     <template #editor="{ data, field }">
                       <input
                         type="text"
-                        :class="data[field] ? `` : ``"
                         class="form-control"
                         v-model="data[field]"
                       />
@@ -557,9 +531,6 @@
                       <Column :colspan="2">
                         <template #footer>
                           <div class="d-flex justify-content-end">
-                            <!-- <div>
-                          ทั้งหมด {{ this.form.items ? this.form.items.length : `0` }} รายการ
-                        </div> -->
                             <div @click="addItems">
                               <i class="bi bi-plus-square-fill"></i>
                             </div>
@@ -568,14 +539,6 @@
                       </Column>
                     </Row>
                   </ColumnGroup>
-                  <!-- <template #footer>
-                <div class="d-flex justify-content-between">
-                  <div>ทั้งหมด {{ this.form.items ? this.form.items.length : `0` }} รายการ</div>
-                  <div @click="addItems">
-                    <i class="bi bi-plus-square-fill"></i>
-                  </div>
-                </div>
-              </template> -->
                 </DataTable>
               </div>
             </div>
@@ -584,10 +547,10 @@
       </template>
       <template #action>
         <button class="btn btn-sm btn-main" type="submit" form="gold-update-form">
-          <i class="bi bi-save"></i> บันทึก
+          <i class="bi bi-save"></i> {{ $t('common.btn.save') }}
         </button>
         <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
+          {{ $t('common.btn.cancel') }}
         </button>
       </template>
     </modal>
@@ -600,17 +563,20 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
-import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Row from 'primevue/row'
-import ColumnGroup from 'primevue/columngroup' // optional
-import AutoComplete from 'primevue/autocomplete'
+// eslint-disable-next-line no-restricted-imports
+// ColumnGroup exception: DataTable + ColumnGroup + Row with editMode="row" — cannot use BaseDataTable
+import DataTable from 'primevue/datatable' // eslint-disable-line no-restricted-imports
+import Column from 'primevue/column' // eslint-disable-line no-restricted-imports
+import Row from 'primevue/row' // eslint-disable-line no-restricted-imports
+import ColumnGroup from 'primevue/columngroup' // eslint-disable-line no-restricted-imports
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatISOString } from '@/services/utils/dayjs'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
+import { formatISOString } from '@/services/utils/dayjs'
 
 const interfaceForm = {
   bookNo: null,
@@ -655,11 +621,11 @@ export default {
   components: {
     modal,
     pageTitle,
-    Dropdown,
-    Calendar,
+    DropdownGeneric,
+    CalendarGeneric,
+    AutoCompleteGeneric,
     DataTable,
     Column,
-    AutoComplete,
     Row,
     ColumnGroup
   },
@@ -709,13 +675,7 @@ export default {
         this.val.isValGoldSize = false
       }
     },
-    // 'form.meltDate'() {
-    //   if (this.form.meltDate) {
-    //     this.val.isValMeltDate = false
-    //   }
-    // }
     async modelValue(value) {
-      console.log(' update value', value)
       this.form = {
         bookNo: value.bookNo,
         no: value.no,
@@ -738,7 +698,6 @@ export default {
         returnCastWeight: value.returnCastWeight,
         returnCastMoldWeight: value.returnCastMoldWeight,
         returnCastBodyBrokenWeight: value.returnCastBodyBrokenWeight,
-        //returnCastBodyWeight: value.returnCastBodyWeight,
         returnCastScrapWeight: value.returnCastScrapWeight,
         returnCastScrapWeightDate: value.returnCastScrapWeightDate
           ? new Date(value.returnCastScrapWeightDate)
@@ -755,7 +714,6 @@ export default {
         items: await Promise.all(
           value.items.map(async (x) => {
             const res = await this.onSearchProductionPlanIdByCode(x.productionPlanId)
-            //console.log(res)
             return {
               id: ++this.autoId,
               productionPlan: {
@@ -768,18 +726,12 @@ export default {
           })
         )
       }
-
-      //this.form.gold = this.masterGold.filter((x) => x.code === value.goldCode)
-      console.log(this.form.items)
     }
   },
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
       autoId: 0,
 
-      // ---- form ------ //
       form: {
         ...interfaceForm
       },
@@ -787,15 +739,10 @@ export default {
         ...interfaceIsValid
       },
 
-      // ----- table -------- //
-      editingRows: [],
-      productItemSearch: [],
-
-      zillItemSearch: []
+      editingRows: []
     }
   },
   methods: {
-    // --- controller --- //
     closeModal() {
       this.form = {
         ...interfaceForm
@@ -807,14 +754,12 @@ export default {
     },
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `เลขที่:${this.form.no} | เล่มที่:${this.form.bookNo} `,
-          'ยืนยันเเก้ไขใบเบิกทอง',
+          `${this.$t('production.planTrackingGold.confirmSave')}`,
           async () => {
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -825,12 +770,6 @@ export default {
         }
         return false
       }
-      // if (!this.form.meltDate) {
-      //   this.val = {
-      //     isValMeltDate: true
-      //   }
-      //   return false
-      // }
       if (!this.form.gold) {
         this.val = {
           isValGold: true
@@ -843,11 +782,9 @@ export default {
         }
         return false
       }
-
       return true
     },
 
-    // ----------- Grid -------------------//
     onRowEditSave(event) {
       let { newData, index } = event
       this.form.items[index] = newData
@@ -871,166 +808,69 @@ export default {
           sum += x.returnWeight
         })
       }
-      // return .toFixed(2)
       return sum.toFixed(2)
     },
 
-    // ------ helper ----- //
-    formatDate(date) {
-      return date ? formatDate(date) : ''
-    },
-
-    // --- APIs --- //
     async submit() {
-      try {
-        this.isLoading = true
-        //console.log(this.form)
-
-        this.form.items = this.form.items.map((x) => {
-          return {
-            ...x,
-            id: x.productionPlan ? x.productionPlan.id : null,
-            productionPlanId: x.productionPlan
-              ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
-              : null
-          }
-        })
-
-        const params = {
-          ...this.form,
-          goldCode: this.form.gold.code,
-          goldSizeCode: this.form.goldSize.code,
-          assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
-          meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
-          castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null,
-          returnMeltScrapWeightDate: this.form.returnMeltScrapWeightDate
-            ? formatISOString(this.form.returnMeltScrapWeightDate)
-            : null,
-          returnCastScrapWeightDate: this.form.returnCastScrapWeightDate
-            ? formatISOString(this.form.returnCastScrapWeightDate)
+      this.form.items = this.form.items.map((x) => {
+        return {
+          ...x,
+          id: x.productionPlan ? x.productionPlan.id : null,
+          productionPlanId: x.productionPlan
+            ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
             : null
         }
-        console.log(params)
+      })
 
-        const res = await api.jewelry.post('ProductionPlanCost/UpdateGoldCost', params)
-        if (res) {
-          //this.isResetImage = !this.isResetImage
-          swAlert.success(
-            null,
-            null,
-            () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-          //this.onClearVal()
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const params = {
+        ...this.form,
+        goldCode: this.form.gold.code,
+        goldSizeCode: this.form.goldSize.code,
+        assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
+        meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
+        castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null,
+        returnMeltScrapWeightDate: this.form.returnMeltScrapWeightDate
+          ? formatISOString(this.form.returnMeltScrapWeightDate)
+          : null,
+        returnCastScrapWeightDate: this.form.returnCastScrapWeightDate
+          ? formatISOString(this.form.returnCastScrapWeightDate)
+          : null
       }
-    },
-    async onSearchProductionPlanId(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-            //type: this.form.status,
-            //active: 1
+
+      const res = await api.jewelry.post('ProductionPlanCost/UpdateGoldCost', params)
+      if (res) {
+        success(
+          null,
+          null,
+          () => {
+            this.form = {
+              ...interfaceForm
+            }
+            this.val = {
+              ...interfaceIsValid
+            }
+            this.$emit('fetch')
           }
-        }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
-          params
         )
-        if (res) {
-          //console.log(res)
-          this.productItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
       }
     },
     async onSearchProductionPlanIdByCode(e) {
-      try {
-        //this.isLoading = true
-        //console.log(e)
-        const productionPlanId = e.replace(/-/g, '')
-
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: productionPlanId
-            //type: this.form.status,
-            //active: 1
-          }
+      const productionPlanId = e.replace(/-/g, '')
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: productionPlanId
         }
-        //console.log(params)
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
-          params
-        )
-        if (res) {
-          //console.log(res)
-          //console.log(res.data[0])
-
-          //return fine productionPlanId === wotext
-          return res.data.find((x) => x.woText === productionPlanId)
-
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        } else {
-          return null
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
       }
-    },
-    async onSearchZill(e) {
-      try {
-        this.isLoading = true
-
-        console.log('onSearchZill', e)
-
-        const param = {
-          take: 0,
-          skip: 0,
-          sort: [],
-          search: {
-            type: 'ZILL',
-            text: e.query ?? null,
-            goldCode: this.form.gold.code,
-            goldSizeCode: this.form.goldSize.code
-          }
-        }
-
-        const res = await api.jewelry.post('Master/ListMaster', param)
-        if (res) {
-          this.data = { ...res }
-          this.zillItemSearch = res.data.map((x) => `${x.code}`)
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanSearchByProductionPlanId',
+        params
+      )
+      if (res) {
+        return res.data.find((x) => x.woText === productionPlanId)
+      } else {
+        return null
       }
     }
   }

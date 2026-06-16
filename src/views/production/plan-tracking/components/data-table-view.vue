@@ -1,6 +1,5 @@
 <template>
   <div class="mt-2">
-    <!-- @view="viewplan" -->
     <BaseDataTable
       :items="planSearchStore.dataPlanSearch.data"
       :totalRecords="planSearchStore.dataPlanSearch.total"
@@ -11,12 +10,9 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-green" @click="viewplan(data)">
+          <button class="btn btn-sm btn-green" @click="viewplan(data)">
             <i class="bi bi-search"></i>
           </button>
-          <!-- <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
-              <i class="bi bi-clipboard2-data-fill"></i>
-            </button> -->
         </div>
       </template>
 
@@ -39,7 +35,7 @@
 
       <!-- Status Column -->
       <template #statusTemplate="{ data }">
-        <div style="width: 150px" :class="getStatusSeverity(data.status)">
+        <div :class="getStatusSeverity(data.status)">
           {{ data.statusName }}
         </div>
       </template>
@@ -55,31 +51,31 @@
       <template #requestDateTemplate="{ data }">
         <div class="notification">
           <span>{{ formatDate(data.requestDate) }}</span>
-          <span v-if="data.isOverPlan" class="overdue-tag">เกินกำหนด</span>
+          <span v-if="data.isOverPlan" class="overdue-tag">{{ $t('view.production.planTracking.overdue') }}</span>
         </div>
       </template>
 
       <!-- Custom Footer/Paginator Buttons -->
       <template #paginator-buttons>
         <button
-          :class="['btn btn-sm', isTranferJob ? 'btn-secondary' : 'btn-main']"
+          :class="['btn btn-sm', isTranferJob ? 'btn-outline-main' : 'btn-main']"
           type="button"
           :disabled="isTranferJob"
-          title="โอนงาน"
+          :title="$t('view.production.planTracking.transferJob')"
           @click="onTrnsferJob"
         >
           <span><i class="bi bi-arrow-down-up"></i></span>
-          <span class="ml-2">โอนงาน</span>
+          <span class="ml-2">{{ $t('view.production.planTracking.transferJob') }}</span>
         </button>
         <button
-          :class="['btn btn-sm ml-2', isTransferProduct ? 'btn-secondary' : 'btn-main']"
+          :class="['btn btn-sm ml-2', isTransferProduct ? 'btn-outline-main' : 'btn-main']"
           type="button"
           :disabled="isTransferProduct"
-          title="โอนงาน"
+          :title="$t('view.production.planTracking.transferProduct')"
           @click="onTrnsferProduct"
         >
           <span><i class="bi bi-cart-check-fill"></i></span>
-          <span class="ml-2">โอนสินค้า</span>
+          <span class="ml-2">{{ $t('view.production.planTracking.transferProduct') }}</span>
         </button>
       </template>
     </BaseDataTable>
@@ -101,20 +97,19 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-//import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
+
+// External
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-//import swAlert from '@/services/alert/sweetAlerts'
-
-const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
-//const transferJobView = defineAsyncComponent(() => import('../modal/JobTransfer.vue'))
-
-//import { mapState, mapActions } from 'pinia'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
+// Local
 import TransferJob from '../modal/TransferJob.vue'
 import TransferProduct from '../modal/TransferProduct.vue'
+
+const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
 const interfaceIsShow = {
   transferJob: false,
@@ -123,6 +118,8 @@ const interfaceIsShow = {
 
 export default {
   name: 'ProductionPlanList',
+
+  mixins: [dataTablePaging],
 
   components: {
     BaseDataTable,
@@ -134,7 +131,7 @@ export default {
   props: {
     modelForm: {
       type: Object,
-      default: () => ({}), // ให้ default เป็น empty object แทน
+      default: () => ({}),
       required: true
     },
     modelFormExport: {
@@ -156,13 +153,18 @@ export default {
     return {
       isShow: { ...interfaceIsShow },
       mold: 'MOLD',
-      take: 10,
-      skip: 0,
-      sort: [],
-      statusTransfer: 0,
+      statusTransfer: 0
+    }
+  },
 
-      // Columns Configuration
-      columns: [
+  setup() {
+    const planSearchStore = usePlanSearchApiStore()
+    return { planSearchStore }
+  },
+
+  computed: {
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
@@ -180,100 +182,93 @@ export default {
         },
         {
           field: 'woText',
-          header: 'W.O.',
+          header: this.$t('view.production.planTracking.colWo'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'mold',
-          header: 'เเม่พิมพ์',
+          header: this.$t('view.production.planTracking.colMold'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'status',
-          header: 'สถานะใบงาน',
+          header: this.$t('view.production.planTracking.colStatus'),
           sortable: true,
           minWidth: '150px',
           align: 'center'
         },
         {
           field: 'lastUpdateStatus',
-          header: 'สถานะใบงาน (วันที่)',
+          header: this.$t('view.production.planTracking.colStatusDate'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'requestDate',
-          header: 'วันส่งงานลูกค้า',
+          header: this.$t('view.production.planTracking.colRequestDate'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productNumber',
-          header: 'รหัสสินค้า',
+          header: this.$t('view.production.planTracking.colProductCode'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productTypeName',
-          header: 'ประเภทสินค้า',
+          header: this.$t('view.production.planTracking.colProductType'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productQty',
-          header: 'จำนวนสินค้า',
+          header: this.$t('view.production.planTracking.colProductQty'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'gold',
-          header: 'สีของทอง/เงิน',
+          header: this.$t('view.production.planTracking.colGoldColor'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'goldSize',
-          header: 'ประเภททอง/เงิน',
+          header: this.$t('view.production.planTracking.colGoldType'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'customerNumber',
-          header: 'รหัสลูกค้า',
+          header: this.$t('view.production.planTracking.colCustomerCode'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'customerName',
-          header: 'ชื่อลูกค้า',
+          header: this.$t('view.production.planTracking.colCustomerName'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'customerTypeName',
-          header: 'ประเภทลูกค้า',
+          header: this.$t('view.production.planTracking.colCustomerType'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'createDate',
-          header: 'วันสร้างใบสินค้า',
+          header: this.$t('view.production.planTracking.colCreateDate'),
           sortable: true,
           minWidth: '150px',
           format: 'date'
         }
       ]
-    }
-  },
+    },
 
-  setup() {
-    const planSearchStore = usePlanSearchApiStore()
-    return { planSearchStore }
-  },
-
-  computed: {
     form() {
       return this.modelForm || {}
     },
@@ -282,7 +277,6 @@ export default {
     },
     isTranferJob() {
       let res = true
-      //console.log('isTranferJob', this.modelForm)
       if (this.modelForm && this.modelForm.status && this.modelForm.status.length === 1) {
         const allow = [10, 50, 60, 70, 80, 85, 90, 94, 95]
         allow.includes(this.modelForm.status[0]) && this.planSearchStore.dataPlanSearch.total > 0
@@ -292,7 +286,6 @@ export default {
       return res
     },
     isTransferProduct() {
-      //return true
       let res = true
       if (this.modelForm && this.modelForm.status && this.modelForm.status.length === 1) {
         const allow = [95]
@@ -306,51 +299,26 @@ export default {
 
   watch: {
     async modelForm() {
-      console.log(this.modelForm)
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
+      this.resetPaging()
     },
     async modelFormExport() {
-      console.log(this.modelForm)
       await this.fetchDataExport()
     }
   },
 
   methods: {
-    // ----- data table hnadle
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     // ----- event
     viewplan(item) {
-      console.log('viewplan', item)
       const id = item.id
       window.open(`/plan-order-tracking-update/${id}`, '_blank')
-      //this.$router.push({ name: 'plan-order-tracking-detail', params: { id: 123 } })
     },
     async onTrnsferJob() {
-      //console.log('onTrnsferJob')
       if (this.planSearchStore.dataPlanSearcTotalRecord > this.planSearchStore.totalTransferAllow) {
-        swAlert.warning(
-          `สามารถโอนงานได้ไม่เกินครั้งละ ${this.planSearchStore.totalTransferAllow} รายการ`,
-          'จำนวนงานเกินกำหนด'
+        warning(
+          `${this.$t('view.production.planTracking.transferLimit')} ${this.planSearchStore.totalTransferAllow} ${this.$t('view.production.planTracking.transferLimitUnit')}`,
+          this.$t('view.production.planTracking.transferLimitTitle')
         )
       } else {
-        console.log('onTrnsferJob', this.modelForm)
         this.statusTransfer = this.modelForm.status[0]
         await this.fetchDataTransfer()
         this.isShow.transferJob = true
@@ -358,12 +326,11 @@ export default {
     },
     async onTrnsferProduct() {
       if (this.planSearchStore.dataPlanSearcTotalRecord > this.planSearchStore.totalTransferAllow) {
-        swAlert.warning(
-          `สามารถโอนงานได้ไม่เกินครั้งละ ${this.planSearchStore.totalTransferAllow} รายการ`,
-          'จำนวนงานเกินกำหนด'
+        warning(
+          `${this.$t('view.production.planTracking.transferLimit')} ${this.planSearchStore.totalTransferAllow} ${this.$t('view.production.planTracking.transferLimitUnit')}`,
+          this.$t('view.production.planTracking.transferLimitTitle')
         )
       } else {
-        console.log('onTrnsferJob', this.modelForm)
         this.statusTransfer = this.modelForm.status[0]
         await this.fetchDataTransfer()
         this.isShow.transferProduct = true
@@ -371,7 +338,6 @@ export default {
     },
     closeModal(action) {
       this.isShow = { ...interfaceIsShow }
-
       if (action === 'fetch') {
         this.fetchData()
       }
@@ -397,7 +363,6 @@ export default {
       }
     },
     async fetchDataTransfer() {
-      console.log('fetchDataTransfer', this.form)
       await this.planSearchStore.fetchDataTransfer({
         sort: this.sort,
         formValue: this.form
@@ -435,9 +400,6 @@ export default {
           return 'box-status-show'
       }
     },
-    getStatusName(status) {
-      return status
-    },
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
@@ -454,18 +416,15 @@ export default {
 .notification {
   display: inline-flex;
   align-items: center;
-  //background-color: #ffe6e6; /* ส้มอ่อน */
-  //padding: 4px 8px;
-  //border-radius: 4px;
 }
 
 .overdue-tag {
-  background-color: #ff4d4d; /* สีแดง */
+  background-color: var(--base-red);
   color: white;
   padding: 2px 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin-left: 4px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 
 .image-container {

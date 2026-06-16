@@ -11,6 +11,7 @@ import customer from './view/customer/th.js'
 import master from './view/master/th.js'
 import stock from './view/stock/th.js'
 import receiptStock from './view/receipt-stock/th.js'
+import productionLang from './view/production/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -23,6 +24,7 @@ export default {
     master: { ...master },
     receiptStock: { ...receiptStock },
     production: {
+      ...productionLang,
       dashboard: {
         title: 'แดชบอร์ดงานผลิต',
         lastUpdate: 'อัปเดตล่าสุด',

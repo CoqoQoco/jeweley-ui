@@ -12,14 +12,14 @@
       <template #actionsTemplate="{ data: rowData }">
         <div class="btn-action-container">
           <button
-            class="btn btn-sm btn btn-main"
+            class="btn btn-sm btn-main"
             title="โหมดเเก้ไข"
             @click="UpdatePlanGold(rowData)"
           >
             <i class="bi bi-brush"></i>
           </button>
           <button
-            class="ml-1 btn btn-sm btn btn-dark"
+            class="ml-1 btn btn-sm btn-dark"
             title="โหมดดูรายละเอียด"
             @click="ViewPlanGold(rowData)"
           >
@@ -49,58 +49,60 @@
 </template>
 
 <script>
+// External
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
+// Local
 import moldalUpdate from './update-view.vue'
 import modalView from './data-view.vue'
 
 export default {
+  mixins: [dataTablePaging],
+
   components: {
     BaseDataTable,
     moldalUpdate,
     modalView
   },
+
   props: {
     modelForm: {
       type: Object,
       default: () => ({})
     }
   },
+
   watch: {
     modelForm: {
-      handler(val) {
-        this.form = { ...val }
-        this.fetchData()
+      handler() {
+        this.form = { ...this.modelForm }
+        this.resetPaging()
       },
       deep: true
     }
   },
+
   data() {
     return {
-      isLoading: false,
       isShowMoldalUpdate: false,
       isShowModalView: false,
-
-      //--------- table ---------//
-      totalRecords: 0,
-      take: 10, //all
-      skip: 0,
-      //sortField: 'updateDate',
-      //sortOrder: -1, // หรือ -1 สำหรับ descending
-      //sort: [{ field: 'updateDate', dir: 'desc' }],
-      sort: [],
       data: {},
       dataExcel: {},
-      expnadData: [],
-
       form: null,
       masterGold: [],
-      masterGoldSize: [],
-      modelUpdate: {},
+      masterGoldSize: []
+    }
+  },
 
-      columns: [
+  computed: {
+    modelUpdate() {
+      return this._modelUpdate || {}
+    },
+    columns() {
+      return [
         {
           field: 'actions',
           header: '',
@@ -109,94 +111,78 @@ export default {
         },
         {
           field: 'bookNo',
-          header: 'เล่มที่',
+          header: this.$t('view.production.planTrackingGold.colBookNo'),
           sortable: true
         },
         {
           field: 'no',
-          header: 'เลขที่',
+          header: this.$t('view.production.planTrackingGold.colNo'),
           sortable: true,
           minWidth: '50px'
         },
         {
           field: 'runningNumber',
-          header: 'หมายเลขลำดับ',
+          header: this.$t('view.production.planTrackingGold.colRunningNumber'),
           sortable: true
         },
         {
           field: 'assignDate',
-          header: 'วันที่ออกใบเบิก',
+          header: this.$t('view.production.planTrackingGold.colAssignDate'),
           sortable: true,
           format: 'date'
         },
         {
           field: 'goldName',
-          header: 'ประเภททอง',
+          header: this.$t('view.production.planTrackingGold.colGoldName'),
           sortable: true
         },
         {
           field: 'goldSizeName',
-          header: 'เปอร์เซ็นทอง',
+          header: this.$t('view.production.planTrackingGold.colGoldSizeName'),
           sortable: true
         },
         {
           field: 'cost',
-          header: 'ราคาทอง',
+          header: this.$t('view.production.planTrackingGold.colCost'),
           sortable: true,
           format: 'decimal2'
         },
         {
           field: 'zill',
-          header: 'ซิล',
+          header: this.$t('view.production.planTrackingGold.colZill'),
           sortable: true
         },
         {
           field: 'zillQty',
-          header: 'จำนวนซิล',
+          header: this.$t('view.production.planTrackingGold.colZillQty'),
           sortable: true,
           format: 'number'
         },
         {
           field: 'goldReceipt',
-          header: 'สูตรผสมทอง',
+          header: this.$t('view.production.planTrackingGold.colGoldReceipt'),
           sortable: true
         },
         {
           field: 'assignBy',
-          header: 'ผู้เบิกทอง',
+          header: this.$t('view.production.planTrackingGold.colAssignBy'),
           sortable: true
         },
         {
           field: 'receiveBy',
-          header: 'ผู้รับทอง',
+          header: this.$t('view.production.planTrackingGold.colReceiveBy'),
           sortable: true
         },
         {
           field: 'remark',
-          header: 'รายละเอียด',
+          header: this.$t('common.field.remark'),
           sortable: true
         }
       ]
     }
   },
+
   methods: {
-    // ----------- table ----------- //
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
     // -------- helper function -------- //
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
@@ -207,7 +193,7 @@ export default {
 
     // -------- modal update -------- //
     UpdatePlanGold(e) {
-      this.modelUpdate = { ...e }
+      this._modelUpdate = { ...e }
       this.isShowMoldalUpdate = true
     },
     fetchFormUpdate() {
@@ -220,7 +206,7 @@ export default {
 
     // -------- modal view -------- //
     ViewPlanGold(e) {
-      this.modelUpdate = { ...e }
+      this._modelUpdate = { ...e }
       this.isShowModalView = true
     },
     onCloseFormView() {
@@ -229,66 +215,47 @@ export default {
 
     // --------- APIs ---------//
     async fetchData() {
-      try {
-        this.isLoading = true
-        this.data = {}
-        //console.log(this.formValue)
-        const param = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          search: {
-            bookNo: this.form.bookNo ?? null,
-            no: this.form.no ?? null,
-            text: this.form.text ?? null,
-            runningNumber: this.form.runningNumber ?? null,
-            createStart: this.form.createStart ? formatISOString(this.form.createStart) : null,
-            createEnd: this.form.createEnd ? formatISOString(this.form.createEnd) : null
-          }
+      if (!this.form) return
+      this.data = {}
+      const param = {
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: {
+          bookNo: this.form.bookNo ?? null,
+          no: this.form.no ?? null,
+          text: this.form.text ?? null,
+          runningNumber: this.form.runningNumber ?? null,
+          createStart: this.form.createStart ? formatISOString(this.form.createStart) : null,
+          createEnd: this.form.createEnd ? formatISOString(this.form.createEnd) : null
         }
-        const res = await api.jewelry.post('ProductionPlanCost/ListGoldCost', param)
-        if (res) {
-          this.data = { ...res }
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('ProductionPlanCost/ListGoldCost', param)
+      if (res) {
+        this.data = { ...res }
       }
     },
+
     async fetchMasterGold() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGold')
-        if (res) {
-          this.masterGold = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGold')
+      if (res) {
+        this.masterGold = [...res]
       }
     },
+
     async fetchMasterGoldSize() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGoldSize = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGoldSize')
+      if (res) {
+        this.masterGoldSize = [...res]
       }
     }
   },
+
   created() {
     this.form = { ...this.modelForm }
     this.$nextTick(() => {
       this.fetchMasterGold()
       this.fetchMasterGoldSize()
-      //this.fetchData()
     })
   }
 }

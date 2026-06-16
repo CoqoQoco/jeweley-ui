@@ -1,7 +1,7 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="ค้นหาใบเบิกผสมทอง"
+      :title="$t('view.production.planTrackingGold.searchTitle')"
       description=""
       :isShowBtnClose="false"
       :isShowRightSlot="true"
@@ -15,38 +15,38 @@
     <form @submit.prevent="onSubmit">
       <div class="form-col-container">
         <div>
-          <span class="title-text">วันที่ออกใบเบิกผสมทอง</span>
+          <span class="title-text">{{ $t('view.production.planTrackingGold.createDate') }}</span>
           <div class="flex-group">
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.createStart"
               :max-date="form.createEnd"
               :manualInput="false"
               showIcon
-              placeholder="เริ่มต้น"
+              :placeholder="$t('common.label.start')"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.createEnd"
               :min-date="form.createStart"
               :manualInput="false"
               showIcon
-              placeholder="สิ้นสุด"
+              :placeholder="$t('common.label.end')"
             />
           </div>
         </div>
         <div class="form-col-container">
           <div>
-            <span class="title-text">เล่มที่</span>
+            <span class="title-text">{{ $t('view.production.planTrackingGold.bookNo') }}</span>
             <div class="input-group input-group-inner">
-              <input :class="['form-control bg-input']" type="text" v-model.trim="form.bookNo" />
+              <InputTextGeneric v-model="form.bookNo" />
             </div>
           </div>
           <div>
-            <span class="title-text">เลขที่</span>
+            <span class="title-text">{{ $t('view.production.planTrackingGold.no') }}</span>
             <div class="input-group input-group-inner">
-              <input :class="['form-control bg-input']" type="text" v-model.trim="form.no" />
+              <InputTextGeneric v-model="form.no" />
             </div>
           </div>
         </div>
@@ -61,14 +61,12 @@
         <template #content>
           <div class="form-col-container">
             <div>
-              <span class="title-text">ค้นหาใบผสมทอง</span>
+              <span class="title-text">{{ $t('view.production.planTrackingGold.searchText') }}</span>
               <div class="input-group input-group-inner">
-                <input
+                <InputTextGeneric
                   id="inputStockID"
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.text"
-                  placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                  v-model="form.text"
+                  :placeholder="$t('view.production.planTrackingGold.searchText')"
                 />
                 <div class="input-group-append">
                   <span class="input-group-text">
@@ -78,13 +76,9 @@
               </div>
             </div>
             <div>
-              <span class="title-text">ค้นหาด้วยหมายเลขลำดับ</span>
+              <span class="title-text">{{ $t('view.production.planTrackingGold.runningNumber') }}</span>
               <div class="input-group input-group-inner">
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.runningNumber"
-                />
+                <InputTextGeneric v-model="form.runningNumber" />
               </div>
             </div>
           </div>
@@ -114,10 +108,12 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+// Local
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-
-import Calendar from 'primevue/calendar'
 
 const interfaceIsShow = {
   dialog: false
@@ -126,7 +122,8 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    Calendar,
+    CalendarGeneric,
+    InputTextGeneric,
     dialogView
   },
 
@@ -161,7 +158,6 @@ export default {
       this.$emit('clear')
     },
     onCreate() {
-      //this.$router.push({ name: 'plan-gold-order' })
       this.$router.push('/plan-gold-order')
     },
     dialogSearch() {

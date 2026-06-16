@@ -2,7 +2,7 @@
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">โอนสินค้าเข้าคลัง</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.production.planTracking.transferProductTitle') }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit">
@@ -11,16 +11,16 @@
               <div class="d-flex justify-content-between">
                 <div class="vertical-center-container desc-text-white">
                   <span>
-                    {{ `โอนสินค้าเข้าคลัง[สำเร็จ]: ${statusTransfer.nameTh}` }}
+                    {{ `${$t('view.production.planTracking.transferProductTitle')}[สำเร็จ]: ${statusTransfer ? statusTransfer.nameTh : ''}` }}
                   </span>
                   <span class="ml-2 bi bi-arrow-right"></span>
                   <span class="ml-2">
-                    {{ `คลังสินค้า` }}
+                    {{ $t('view.production.planTracking.transferToWarehouse') }}
                   </span>
                 </div>
                 <div>
                   <span class="mr-5 desc-text-white">
-                    {{ `จำนวนทั้งหมด ${planSearchStore.dataPlanTransfer.total} รายการ` }}
+                    {{ `${$t('view.production.planTracking.totalItems')} ${planSearchStore.dataPlanTransfer.total} ${$t('view.production.planTracking.transferLimitUnit')}` }}
                   </span>
                 </div>
               </div>
@@ -28,24 +28,8 @@
           </div>
 
           <div class="p-2">
-            <!-- target status -->
             <div class="form-col-container mt-1">
-              <!-- <div>
-              <div>
-                <span class="title-text">แผนกรับโอน</span>
-               
-                <div class="text-custom">{{ `คลังสินค้าสำเร็จ` }}</div>
-              </div>
-            </div> -->
-              <div>
-                <!-- <span class="title-text">ผู้โอน</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.name"
-                required
-              /> -->
-              </div>
+              <div></div>
               <div></div>
               <div></div>
               <div></div>
@@ -79,7 +63,7 @@
                 <template #requestDateTemplate="{ data }">
                   <div class="notification">
                     <span>{{ formatDate(data.requestDate) }}</span>
-                    <span v-if="data.isOverPlan" class="overdue-tag">เกินกำหนด</span>
+                    <span v-if="data.isOverPlan" class="overdue-tag">{{ $t('view.production.planTracking.overdue') }}</span>
                   </div>
                 </template>
 
@@ -94,24 +78,24 @@
               <div class="d-flex justify-content-between vertical-center-container">
                 <div class="title-text">
                   <span>{{
-                    `จำนวนที่เลือก ${selectedValue.length} รายการ [เลือกได้สูงสุด ${this.allowItem} รายการ]`
+                    `${$t('view.production.planTracking.selectedItems')} ${selectedValue.length} ${$t('view.production.planTracking.maxItems')} ${this.allowItem} ${$t('view.production.planTracking.maxItemsUnit')}`
                   }}</span>
                 </div>
                 <div class="d-flex justify-content-between vertical-center-container">
                   <div class="check-excel-container">
-                    <Checkbox v-model="form.isExportReceipt" :binary="true" />
-                    <span for="ingredient1" class="ml-2">ออกเอกสารรับสินค้า</span>
+                    <CheckboxGeneric v-model="form.isExportReceipt" :binary="true" />
+                    <span class="ml-2">{{ $t('view.production.planTracking.exportReceipt') }}</span>
                   </div>
                   <button
                     :class="[
                       'btn btn-sm ml-2',
-                      selectedValue.length > 0 ? 'btn-main' : 'btn-secondary'
+                      selectedValue.length > 0 ? 'btn-main' : 'btn-outline-main'
                     ]"
                     :disabled="!selectedValue.length > 0"
                     type="submit"
                   >
                     <span><i class="bi bi-cart-check-fill"></i></span>
-                    <span class="ml-2">โอนสินค้า</span>
+                    <span class="ml-2">{{ $t('view.production.planTracking.transferProduct') }}</span>
                   </button>
                 </div>
               </div>
@@ -126,17 +110,16 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+// External
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-
-import Checkbox from 'primevue/checkbox'
-//import Dropdown from 'primevue/dropdown'
-
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
 import { usrStockProductReceiptApiStore } from '@/stores/modules/api/stock/product-receipt-api.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-//import { CsvHelper } from '@/services/utils/export-excel.js'
+
+// Local
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -156,8 +139,7 @@ export default {
   components: {
     modal,
     BaseDataTable,
-    Checkbox
-    //Dropdown
+    CheckboxGeneric
   },
 
   props: {
@@ -187,7 +169,6 @@ export default {
       selectedValue: [],
       form: {
         ...interfaceForm
-        //targetStatus: this.masterStatusValue.find((item) => item.id === 100)
       },
       val: { ...interfaceVal },
       allowItem: 100,
@@ -296,21 +277,6 @@ export default {
       return this.masterStatusValue.find((item) => item.id === this.stausTransferValue) || null
     },
     allowSelectStatus() {
-      //   const removeStatus = [
-      //     10,
-      //     49,
-      //     55,
-      //     59,
-      //     69,
-      //     79,
-      //     84,
-      //     85,
-      //     89,
-      //     94,
-      //     100,
-      //     500,
-      //     this.stausTransferValue
-      //   ]
       return this.masterStatus.filter((item) => item.id === 100)
     }
   },
@@ -321,12 +287,6 @@ export default {
         this.val.isTargetStatus = false
       }
     }
-    // isShow(value) {
-    //   if (value) {
-    //     // set targetStatus === 100
-    //     this.form.targetStatus = this.masterStatusValue.find((item) => item.id === 100).id
-    //   }
-    // }
   },
 
   methods: {
@@ -338,7 +298,7 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit('', 'ยืนยันโอนสินค้าสำเร็จ?', async () => {
+        confirmSubmit('', this.$t('view.production.planTracking.confirmTransferProduct'), async () => {
           await this.submit()
         })
       }
@@ -353,7 +313,7 @@ export default {
 
       let statusNotAllow = [49, 54, 55, 59, 69, 79, 84, 85, 94, 500]
       if (statusNotAllow.includes(this.form.targetStatus)) {
-        swAlert.warnig('ไม่สามารถโอนสถานงานนี้ได้', '', () => {
+        warning(this.$t('view.production.planTracking.cannotTransfer'), '', () => {
           isValid = false
         })
       }
@@ -373,48 +333,41 @@ export default {
     },
 
     async submit() {
-      try {
-        const res = await this.planUpdateStore.submitTransfer({
-          formerStatus: this.stausTransferValue,
-          targetStatus: 100,
-          transferBy: this.form.name,
-          selectedItems: this.selectedValue
-        })
+      const res = await this.planUpdateStore.submitTransfer({
+        formerStatus: this.stausTransferValue,
+        targetStatus: 100,
+        transferBy: this.form.name,
+        selectedItems: this.selectedValue
+      })
 
-        console.log('res:', res)
-
-        if (res.success) {
-          //export excel
-          if (res.receiptNumber && this.form.isExportReceipt) {
-            const form = {
-              recieptStart: null,
-              recieptEnd: null,
-              receiptNumber: res.receiptNumber
-            }
-            const sort = [
-              {
-                field: 'wo',
-                dir: 'asc'
-              },
-              {
-                field: 'woNumber',
-                dir: 'asc'
-              }
-            ]
-            await this.stockProductReceiptStore.fetchDataSearchExport({
-              sort: sort,
-              form: form,
-              title: `เอกสารโอนสินค้า_${res.receiptNumber}`
-            })
+      if (res && res.success) {
+        if (res.receiptNumber && this.form.isExportReceipt) {
+          const form = {
+            recieptStart: null,
+            recieptEnd: null,
+            receiptNumber: res.receiptNumber
           }
-
-          this.selectedValue = []
-          this.form = { ...interfaceForm }
-
-          this.$emit('closeModal', 'fetch')
+          const sort = [
+            {
+              field: 'wo',
+              dir: 'asc'
+            },
+            {
+              field: 'woNumber',
+              dir: 'asc'
+            }
+          ]
+          await this.stockProductReceiptStore.fetchDataSearchExport({
+            sort: sort,
+            form: form,
+            title: `เอกสารโอนสินค้า_${res.receiptNumber}`
+          })
         }
-      } catch (error) {
-        console.error('Error in submit:', error)
+
+        this.selectedValue = []
+        this.form = { ...interfaceForm }
+
+        this.$emit('closeModal', 'fetch')
       }
     }
   }
@@ -434,12 +387,12 @@ export default {
 }
 
 .overdue-tag {
-  background-color: #ff4d4d;
+  background-color: var(--base-red);
   color: white;
   padding: 2px 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin-left: 4px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 
 .text-custom {

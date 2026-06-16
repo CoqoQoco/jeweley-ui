@@ -20,7 +20,6 @@ import search from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'
 import { mapState, mapActions } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
 const interfaceForm = {
   start: new Date(new Date().setDate(new Date().getDate() - 30)),
@@ -51,7 +50,6 @@ export default {
 
   data() {
     return {
-      isLoading: false,
       isExport: false,
       form: { ...interfaceForm },
       formExport: { ...interfaceForm },
@@ -73,42 +71,24 @@ export default {
     ...mapActions(useMasterApiStore, ['fetchAllMasterData']),
 
     onSearchFilter(data) {
-      //console.log('onSearchFilter', data)
       this.search = { ...data }
     },
 
     onClearFilter() {
-      //console.log('onClearFilter')
       this.form = { ...interfaceForm }
     },
 
     onExport(data) {
-      console.log('onExport', data)
       this.formExport = { ...data }
     },
 
     async initializeMasterData() {
-      const loadingStore = useLoadingStore()
-      try {
-        //loadingStore.showLoading()
-        await this.fetchAllMasterData()
-        //this.search = { ...this.form }
-      } catch (error) {
-        console.error('Error initializing master data:', error)
-      } finally {
-        loadingStore.hideLoading()
-      }
+      await this.fetchAllMasterData()
     }
   },
 
   async created() {
     await this.initializeMasterData()
-    //this.search = { ...this.form }
-  },
-
-  beforeUnmount() {
-    const loadingStore = useLoadingStore()
-    loadingStore.hideLoading() // Ensure loading is hidden when component is destroyed
   }
 }
 </script>

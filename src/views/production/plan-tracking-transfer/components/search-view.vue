@@ -3,56 +3,50 @@
     <form @submit.prevent="onSearch">
       <div>
         <div>
-          <pageTitle title="ติดตามการ โอนงาน/รับงาน, โอนสินค้า" :isShowBtnClose="false">
+          <pageTitle :title="$t('production.planTrackingTransfer.searchTitle')" :isShowBtnClose="false">
           </pageTitle>
         </div>
 
         <div class="form-col-container">
           <!-- date -->
           <div>
-            <span class="title-text">วันที่โอนงาน/สินค้า</span>
+            <span class="title-text">{{ $t('production.planTrackingTransfer.transferDate') }}</span>
             <div class="flex-group">
-              <Calendar
-                class="w-100"
+              <CalendarGeneric
                 v-model="form.start"
-                :max-date="form.end"
+                :maxDate="form.end"
                 :manualInput="false"
-                showIcon
-                placeholder="เริ่มต้น"
-                dateFormat="dd/mm/yy"
+                :placeholder="$t('common.label.start')"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
-                class="w-100"
+              <CalendarGeneric
                 v-model="form.end"
-                :min-date="form.start"
+                :minDate="form.start"
                 :manualInput="false"
-                showIcon
-                placeholder="สิ้นสุด"
-                dateFormat="dd/mm/yy"
+                :placeholder="$t('common.label.end')"
               />
             </div>
           </div>
 
           <div class="form-col-container">
             <div>
-              <span class="title-text">แผนก โอนงาน-รับงาน</span>
+              <span class="title-text">{{ $t('production.planTrackingTransfer.deptTransfer') }}</span>
               <div>
                 <div class="flex-group">
-                  <Dropdown
-                    v-model="form.statusFormer"
+                  <DropdownGeneric
+                    :modelValue="form.statusFormer"
                     :options="planStatus"
                     optionLabel="nameTh"
                     optionValue="id"
-                    class="w-full md:w-14rem"
+                    @update:modelValue="form.statusFormer = $event"
                   />
                   <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                  <Dropdown
-                    v-model="form.statusTarget"
+                  <DropdownGeneric
+                    :modelValue="form.statusTarget"
                     :options="planStatus"
                     optionLabel="nameTh"
                     optionValue="id"
-                    class="w-full md:w-14rem"
+                    @update:modelValue="form.statusTarget = $event"
                   />
                 </div>
               </div>
@@ -64,13 +58,13 @@
           :isShow="isShow.dialog"
           @closeDialog="closeDialog"
           @search="dialogSearch"
-          txtHeader="ค้นหาเพิ่มเติม"
+          :txtHeader="$t('common.btn.advancedSearch')"
         >
           <template #content>
             <div class="form-col-container">
               <!-- wo text -->
               <div>
-                <span class="title-text">เลขที่ W.O.</span>
+                <span class="title-text">{{ $t('production.planTrackingTransfer.workOrder') }}</span>
                 <div class="input-group input-group-inner">
                   <input
                     ref="inputText"
@@ -78,7 +72,7 @@
                     :class="['form-control bg-input']"
                     type="text"
                     v-model.trim="form.woText"
-                    placeholder="พิมพ์บางอย่างเพื่อค้นหา"
+                    :placeholder="$t('common.label.searchPlaceholder')"
                   />
                   <div class="input-group-append" @click="focusInputText">
                     <span class="input-group-text">
@@ -88,32 +82,29 @@
                 </div>
               </div>
 
-              <!-- modld -->
+              <!-- mold -->
               <div>
-                <span class="title-text">เเม่พิมพ์</span>
+                <span class="title-text">{{ $t('production.planTrackingTransfer.colMold') }}</span>
                 <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
               </div>
 
               <!-- product type -->
               <div>
-                <span class="title-text">ประเภทสินค้า</span>
+                <span class="title-text">{{ $t('production.planTrackingTransfer.colProductType') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.productType"
                     :options="productType"
                     optionLabel="nameTh"
                     optionValue="code"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
 
               <!-- product number -->
               <div>
-                <span class="title-text">รหัสสินค้า</span>
+                <span class="title-text">{{ $t('production.planTrackingTransfer.colProductCode') }}</span>
                 <input
-                  ref="inputText"
-                  id="inputText"
                   :class="['form-control bg-input']"
                   type="text"
                   v-model.trim="form.productNumber"
@@ -122,28 +113,26 @@
 
               <!-- gold -->
               <div>
-                <span class="title-text">สีของทอง/เงิน</span>
+                <span class="title-text">{{ $t('production.planTrackingTransfer.goldColor') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.gold"
                     :options="gold"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
 
               <!-- gold size -->
               <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
+                <span class="title-text">{{ $t('production.planTrackingTransfer.goldType') }}</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.goldSize"
                     :options="goldSize"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -152,39 +141,24 @@
         </dialogView>
 
         <div class="btn-submit-container-between">
+          <div></div>
           <div>
-            <!-- <button
-              :class="['btn btn-sm', this.isTransfer ? 'btn-secondary' : 'btn-green']"
-              type="button"
-              :disabled="isTransfer"
-              title="โอนงาน"
-            >
-              <span><i class="bi bi-arrow-left-right"></i></span>
-            </button> -->
-          </div>
-          <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
               <span><i class="bi bi-search"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
             <button
               class="btn btn-sm btn-sub-main mr-2"
               type="button"
-              title="เพิ่มเติม"
+              :title="$t('common.btn.advancedSearch')"
               @click="onShowDialog"
             >
               <span><i class="bi bi-zoom-in"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <span><i class="bi bi-x-circle"></i></span>
-              <!-- <span>ล้าง</span> -->
             </button>
             <button
-              :class="[
-                'btn btn-sm btn-primary',
-                { 'btn-secondary': !planSearchStore.dataTransferTotalRecord > 0 }
-              ]"
+              class="btn btn-sm btn-green"
               type="button"
               :disabled="!planSearchStore.dataTransferTotalRecord > 0"
               @click="onExport"
@@ -202,18 +176,15 @@
 import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
-//import api from '@/axios/axios-helper.js'
 
 const interfaceIsShow = {
   dialog: false
@@ -221,9 +192,9 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-    Calendar,
-    Dropdown,
+    MultiSelectGeneric,
+    CalendarGeneric,
+    DropdownGeneric,
     dialogView
   },
   props: {
@@ -245,10 +216,6 @@ export default {
     }
   },
   computed: {
-    isExportData() {
-      return true
-    },
-
     ...mapState(useMasterApiStore, [
       'planStatus',
       'gold',
@@ -260,7 +227,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow }
     }
@@ -272,27 +238,21 @@ export default {
   },
 
   methods: {
-    // ---------------- event
+    focusInputText() {
+      this.$refs.inputText.focus()
+    },
     onSearch() {
-      console.log('onSubmit')
       this.$emit('search', this.form)
     },
     onExport() {
-      console.log('onExport')
       this.$emit('export')
     },
     dialogSearch() {
       this.isShow.dialog = false
       this.$emit('search', this.form)
     },
-    onSubmitExport() {
-      this.$emit('export', true)
-    },
     onClear() {
       this.$emit('clear')
-    },
-    onCloseModal() {
-      this.isShow = { ...interfaceIsShow }
     },
     onShowDialog() {
       this.isShow.dialog = true
