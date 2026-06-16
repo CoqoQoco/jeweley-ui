@@ -148,6 +148,7 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
+import { error } from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
@@ -321,9 +322,8 @@ export default {
 
         // รีเซ็ต input
         this.$refs.fileInput.value = ''
-      } catch (error) {
-        console.error('Error processing image:', error)
-        alert('เกิดข้อผิดพลาดในการประมวลผลรูปภาพ')
+      } catch {
+        error('เกิดข้อผิดพลาดในการประมวลผลรูปภาพ')
       }
     },
 
