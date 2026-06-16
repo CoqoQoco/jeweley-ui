@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <loading :isLoading="isLoading"> </loading>
     <div class="filter-container">
       <pageTitle
         title="รายงานผลิต"
@@ -13,32 +12,29 @@
         <div class="search-bar-container">
           <div>
             <div>
-              <span class="text-title">วันที่สร้างใบจ่าย-รับคืน</span>
+              <span class="text-title">{{ $t('reportProduction.dateLabel') }}</span>
               <span class="text-required"> *</span>
-              <span></span>
             </div>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.start"
                 :max-date="form.end"
-                showIcon
                 placeholder="เริ่มต้น"
-                :class="val.isValDateStart === true ? `p-invalid` : ``"
+                :customClass="val.isValDateStart === true ? 'p-invalid' : ''"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.end"
                 :min-date="form.start"
-                showIcon
                 placeholder="สิ้นสุด"
-                :class="val.isValDateEnd === true ? `p-invalid` : ``"
+                :customClass="val.isValDateEnd === true ? 'p-invalid' : ''"
               />
             </div>
           </div>
           <div>
-            <span class="text-title">หมายเลขใบผสมทอง</span>
+            <span class="text-title">{{ $t('reportProduction.woLabel') }}</span>
             <div class="input-group input-group-inner">
               <input
                 id="inputStockID"
@@ -57,30 +53,30 @@
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span><i class="bi bi-search"></i></span>
-              <span class="ml-2">ค้นหา</span>
+              <span class="ml-2">{{ $t('common.btn.search') }}</span>
             </button>
             <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear">
               <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ล้างค้นหา</span>
+              <span class="ml-2">{{ $t('common.btn.clear') }}</span>
             </button>
             <button
-              class="btn btn-sm btn-primary"
+              class="btn btn-sm btn-green"
               type="button"
               :disabled="!isShowTable"
               @click="onExport($event)"
             >
               <span><i class="bi bi-filetype-csv"></i></span>
-              <span class="ml-2">ออกเอกสาร</span>
+              <span class="ml-2">{{ $t('common.btn.export') }}</span>
             </button>
           </div>
         </div>
       </form>
     </div>
     <div v-if="isShowTable" class="mt-2">
+      <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
         :totalRecords="data.total"
         :value="data.data"
-        v-model:expandedRows="expnadData"
         dataKey="id"
         ref="dt"
         class="p-datatable-sm"
@@ -99,51 +95,37 @@
         paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
         :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
       >
-        <!-- <template #header>
-          <div style="text-align: left">
-            <button icon="bi bi-filetype-csv" label="Export" @click="exportCSV($event)" />
-          </div>
-        </template> -->
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="วันสร้างใบสินค้า" sortable field="createDate" style="min-width: 150px">
           <template #body="prop">
             {{ formatDate(prop.data.createDate) }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="wo" sortable header="W.O." style="min-width: 150px">
           <template #body="slotProps">
             {{ `${slotProps.data.wo}-${slotProps.data.woNumber}` }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="เเม่พิมพ์" sortable field="mold" style="min-width: 150px"></Column>
-        <Column
-          header="รหัสสินค้า"
-          field="productNumber"
-          sortable
-          style="min-width: 150px"
-        ></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
+        <Column header="รหัสสินค้า" field="productNumber" sortable style="min-width: 150px"></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="ชื่อสินค้า" field="productName" sortable style="min-width: 150px"></Column>
-        <Column
-          header="ประเภทสินค้า"
-          field="productTypeName"
-          sortable
-          style="min-width: 150px"
-        ></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
+        <Column header="ประเภทสินค้า" field="productTypeName" sortable style="min-width: 150px"></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="จำนวน" field="productQty" sortable style="min-width: 150px"></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="หน่วย" field="productQtyUnit" sortable style="min-width: 150px"></Column>
-        <Column
-          header="รหัสลูกค้า"
-          field="customerNumber"
-          sortable
-          style="min-width: 150px"
-        ></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
+        <Column header="รหัสลูกค้า" field="customerNumber" sortable style="min-width: 150px"></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="ชื่อลูกค้า" field="customerName" sortable style="min-width: 150px"></Column>
-        <Column
-          header="ประเภทลูกค้า"
-          field="customerTypeName"
-          sortable
-          style="min-width: 150px"
-        ></Column>
-        <!-- <Column header="วันส่งงานลูกค้า" field="requestDate" style="min-width: 150px"></Column> -->
+        <!-- eslint-disable-next-line no-restricted-imports -->
+        <Column header="ประเภทลูกค้า" field="customerTypeName" sortable style="min-width: 150px"></Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="วันส่งงานลูกค้า" field="requestDate" sortable style="min-width: 150px">
           <template #body="prop">
             {{ formatDate(prop.data.requestDate) }}
@@ -159,9 +141,10 @@ import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
-
-import Calendar from 'primevue/calendar'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 import Papa from 'papaparse'
 
@@ -180,8 +163,7 @@ const interfaceIsValid = {
 export default {
   components: {
     pageTitle,
-  
-    Calendar,
+    CalendarGeneric,
     DataTable,
     Column
   },
@@ -199,21 +181,15 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       isShowTable: false,
-      isShowExcel: false,
 
-      //--------- table ---------//
       totalRecords: 0,
-      take: 10, //all
+      take: 10,
       skip: 0,
-      //sort: [{ field: 'id', dir: 'asc' }],
       sort: [],
       data: {},
       dataExcel: {},
-      expnadData: [],
 
-      // ----- form -----//
       form: {
         ...interfaceForm
       },
@@ -223,9 +199,6 @@ export default {
     }
   },
   methods: {
-    focusInputText() {
-      this.$refs.inputText.focus()
-    },
     onClear() {
       this.form = { ...interfaceForm }
       this.val = { ...interfaceIsValid }
@@ -235,27 +208,25 @@ export default {
       this.sort = []
     },
 
-    // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
+      this.sort = (e.multiSortMeta || []).map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
     handlePageChangeSort(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e.multiSortMeta)
+      this.sort = (e.multiSortMeta || []).map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
 
-    // -------- helper function -------- //
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
@@ -263,49 +234,40 @@ export default {
       return formatDate(date)
     },
 
-    // ----- validate ----- //
     validateForm() {
       if (!this.form.start) {
-        this.val = {
-          isValDateStart: true
-        }
+        this.val = { isValDateStart: true }
         return false
       }
       if (!this.form.end) {
-        this.val = {
-          isValDateEnd: true
-        }
+        this.val = { isValDateEnd: true }
         return false
       }
-
       return true
     },
 
-    // ----- submit ----- //
     onSubmit() {
       if (this.validateForm()) {
-        console.log('form', this.form)
         this.dataExcel = []
         this.fetchData()
       }
     },
     onExport() {
       if (this.validateForm()) {
-        console.log('form', this.form)
         this.fetchExportData()
       }
     },
     exportWithCustomColumnCSV(data, filename) {
-      const utf8BOM = '\uFEFF'
+      const utf8BOM = '﻿'
       const csv = Papa.unparse(data, {
-        quotes: false, //or array of booleans
+        quotes: false,
         quoteChar: '"',
         escapeChar: '"',
         delimiter: ',',
         header: true,
         newline: '\r\n',
-        skipEmptyLines: false, //other option is 'greedy', meaning skip delimiters, quotes, and whitespace.
-        columns: null //or array of strings
+        skipEmptyLines: false,
+        columns: null
       })
       const csvData = utf8BOM + csv
       const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
@@ -318,81 +280,54 @@ export default {
       link.click()
       document.body.removeChild(link)
     },
-    //create excel file with set width column 150px
 
-    // --------- APIs --------- //
     async fetchData() {
-      try {
-        this.isLoading = true
-        this.data = {}
-        //console.log(this.formValue)
-        const param = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          search: {
-            createStart: this.form.start ? formatISOString(this.form.start) : null,
-            createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            woText: this.form.text
-          }
+      this.data = {}
+      const param = {
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: {
+          createStart: this.form.start ? formatISOString(this.form.start) : null,
+          createEnd: this.form.end ? formatISOString(this.form.end) : null,
+          woText: this.form.text
         }
-        const res = await api.jewelry.post('ProductionPlan/ReportProductionPlan', param)
-        if (res) {
-          this.data = { ...res }
-          this.isShowTable = true
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('ProductionPlan/ReportProductionPlan', param)
+      if (res) {
+        this.data = { ...res }
+        this.isShowTable = true
       }
     },
     async fetchExportData() {
-      try {
-        this.isLoading = true
-        //console.log(this.formValue)
-        const param = {
-          take: 0,
-          //skip: this.skip,
-          search: {
-            createStart: this.form.start ? formatISOString(this.form.start) : null,
-            createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            woText: this.form.text
-          }
+      const param = {
+        take: 0,
+        search: {
+          createStart: this.form.start ? formatISOString(this.form.start) : null,
+          createEnd: this.form.end ? formatISOString(this.form.end) : null,
+          woText: this.form.text
         }
-        const res = await api.jewelry.post('ProductionPlan/ReportProductionPlan', param)
-        if (res) {
-          //this.dataExcel = { ...res }
-          //this.isShowTable = true
-          console.log('res', res)
-
-          const dataExcel = res.data.map((item) => {
-            return {
-              วันที่สร้างใบสินค้า: formatDate(item.createDate),
-              'W.O.': `${item.wo}-${item.woNumber}`,
-              เเม่พิมพ์: item.mold,
-              รหัสสินค้า: item.productNumber,
-              ชื่อสินค้า: item.productName,
-              ประเภทสินค้า: item.productTypeName,
-              จำนวน: item.productQty,
-              หน่วย: item.productQtyUnit,
-              รหัสลูกค้า: item.customerNumber,
-              ชื่อลูกค้า: item.customerName,
-              ประเภทลูกค้า: item.customerTypeName,
-              วันส่งงานลูกค้า: formatDate(item.requestDate)
-            }
-          })
-          this.exportWithCustomColumnCSV(
-            dataExcel,
-            `รายงานผลิต[${this.formatDate(this.form.start)} - ${this.formatDate(
-              this.form.end
-            )}].csv`
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('ProductionPlan/ReportProductionPlan', param)
+      if (res) {
+        const dataExcel = res.data.map((item) => ({
+          วันที่สร้างใบสินค้า: formatDate(item.createDate),
+          'W.O.': `${item.wo}-${item.woNumber}`,
+          เเม่พิมพ์: item.mold,
+          รหัสสินค้า: item.productNumber,
+          ชื่อสินค้า: item.productName,
+          ประเภทสินค้า: item.productTypeName,
+          จำนวน: item.productQty,
+          หน่วย: item.productQtyUnit,
+          รหัสลูกค้า: item.customerNumber,
+          ชื่อลูกค้า: item.customerName,
+          ประเภทลูกค้า: item.customerTypeName,
+          วันส่งงานลูกค้า: formatDate(item.requestDate)
+        }))
+        this.exportWithCustomColumnCSV(
+          dataExcel,
+          `รายงานผลิต[${this.formatDate(this.form.start)} - ${this.formatDate(this.form.end)}].csv`
+        )
       }
     }
   }

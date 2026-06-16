@@ -1,0 +1,41 @@
+export default {
+  dateLabel: 'Product Creation Date',
+  woLabel: 'Work Order No.',
+  wages: {
+    dateLabel: 'Job Date',
+    productCode: 'Product Code',
+    goldType: 'Gold Type',
+    selectGoldType: 'Select Gold Type',
+    goldColor: 'Gold Color',
+    selectGoldColor: 'Select Gold Color',
+    department: 'Department',
+    selectDepartment: 'Select Department',
+    worker: 'Worker',
+    searchWorker: 'Search Worker...',
+    mold: 'Mold',
+    totalAll: 'Grand Total',
+    qtySend: 'Qty Send',
+    weightSend: 'Weight Send',
+    qtyCheck: 'Qty Received',
+    weightCheck: 'Weight Received',
+    price: 'Price',
+    colWo: 'Work Order',
+    colJobDate: 'Job Date',
+    colProductNumber: 'Product Code',
+    colWorker: 'Worker',
+    colDepartment: 'Department',
+    colGoldDetail: 'Gold Detail',
+    colGoldColor: 'Gold Color',
+    colQtySend: 'Qty Send',
+    colWeightSend: 'Weight Send',
+    colQtyCheck: 'Qty Received',
+    colWeightCheck: 'Weight Received',
+    colWagesUnit: 'Unit Price',
+    colTotalWages: 'Total Price'
+  },
+  goldCost: {
+    dateLabel: 'Gold Request Date',
+    runningNumber: 'Running Number',
+    searchText: 'Search'
+  }
+}

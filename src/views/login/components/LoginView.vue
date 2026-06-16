@@ -240,11 +240,10 @@
 </template>
 
 <script>
-//import Checkbox from 'primevue/checkbox'
 import { debounce } from 'lodash'
 
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
 const interfaceFormLogin = {
   username: '',
@@ -266,9 +265,6 @@ const interfaceStage = {
 
 export default {
   name: 'LoginView',
-  components: {
-    //Checkbox
-  },
 
   setup() {
     const authStore = useAuthStore()
@@ -338,33 +334,28 @@ export default {
       }
     },
     async handleSubmitLogin() {
-      console.log('formLogin', this.formLogin)
       const res = await this.authStore.login({
         username: this.formLogin.username,
         password: this.formLogin.password
       })
 
       if (res) {
-        console.log('Login success')
         const redirectPath = this.$route.query.redirect
         this.$router.push(redirectPath || '/dashboard') // เปลี่ยนเป็น /dashboard แทน /
       }
     },
     async handleSubmitRegister() {
       if (this.inFormValid) {
-        console.log('formRegister', this.formRegister)
-
         const response = await this.authStore.register({
           form: this.formRegister
         })
 
         if (response) {
-          console.log('Register success')
           this.stage.isLogin = true
           this.stage.isRegister = false
           this.formRegister = { ...interfaceFormRegister }
 
-          swAlert.success('ผู้ดูเเลจะดำเนินการตรวจสอบโดยไว', 'ลงทะเบียนสำเร็จ')
+          success('ผู้ดูเเลจะดำเนินการตรวจสอบโดยไว', 'ลงทะเบียนสำเร็จ')
         }
       }
     },
@@ -457,20 +448,11 @@ export default {
     async checkDuplicateUsername() {
       if (!this.formRegister.username) return
 
-      //this.isCheckingDuplicate = true
-      try {
-        const response = await this.authStore.checkDupUsername({
-          username: this.formRegister.username
-        })
-        console.log('response', response)
-        this.isDuplicate = response
-      } catch (error) {
-        console.error('Failed to check username:', error)
-        this.isDuplicate = true
-      } finally {
-        //this.isCheckingDuplicate = false
-        this.isDuplicateChecked = true
-      }
+      const response = await this.authStore.checkDupUsername({
+        username: this.formRegister.username
+      })
+      this.isDuplicate = response
+      this.isDuplicateChecked = true
     },
 
     debouncedCheckDuplicate: debounce(function () {
@@ -485,8 +467,7 @@ export default {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  color: #921313;
-  //background-color: #921313;
+  color: var(--base-font-color);
   justify-content: center;
   background-color: #f5f5f5;
   padding: 1rem;
@@ -530,7 +511,7 @@ export default {
       transition: color 0.2s;
 
       &:hover {
-        color: #921313;
+        color: var(--base-font-color);
       }
     }
   }
@@ -546,7 +527,7 @@ input {
   label {
     display: block;
     font-size: 0.9rem;
-    color: #921313;
+    color: var(--base-font-color);
     margin-bottom: 0.1rem;
     text-transform: uppercase;
   }
@@ -585,7 +566,7 @@ input {
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #921313; // สีเหลือง
+      background-color: var(--base-font-color);
       padding: 0.75rem;
       width: 45px;
 
@@ -624,7 +605,7 @@ input {
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: #921313;
+      color: var(--base-font-color);
       cursor: pointer;
       padding: 5px;
       display: flex;
@@ -645,7 +626,7 @@ input {
 .sign-in-button {
   width: 100%;
   padding: 0.8rem;
-  background: #921313;
+  background: var(--base-font-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -672,7 +653,7 @@ input {
     font-size: 0.9rem;
 
     input[type='checkbox'] {
-      accent-color: #921313;
+      accent-color: var(--base-font-color);
     }
   }
 
@@ -682,7 +663,7 @@ input {
     text-decoration: none;
 
     &:hover {
-      color: #921313;
+      color: var(--base-font-color);
     }
   }
 }
@@ -690,7 +671,7 @@ input {
 .welcome-section {
   background: #e0e0e0;
   padding: 2.5rem;
-  color: #921313;
+  color: var(--base-font-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -700,26 +681,24 @@ input {
 
   h2 {
     font-size: 2rem;
-    //margin-bottom: 1rem;
   }
 
   p {
     margin-bottom: 1.5rem;
-    //opacity: 0.9;
   }
 
   .sign-up-button {
     padding: 0.8rem 2rem;
-    border: 2px solid #921313;
+    border: 2px solid var(--base-font-color);
     background: transparent;
-    color: #921313;
+    color: var(--base-font-color);
     border-radius: 25px;
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover {
-      background: #921313;
+      background: var(--base-font-color);
       color: #e0e0e0;
     }
   }
@@ -738,11 +717,11 @@ input {
 }
 
 .valid {
-  color: #2ecc71;
+  color: var(--base-green);
 }
 
 .invalid {
-  color: #e74c3c;
+  color: var(--base-red);
 }
 
 .bi {

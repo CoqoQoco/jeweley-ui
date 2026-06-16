@@ -1,0 +1,41 @@
+export default {
+  dateLabel: 'วันที่สร้างใบสินค้า',
+  woLabel: 'เลขที่ใบงาน',
+  wages: {
+    dateLabel: 'วันที่ส่งงาน',
+    productCode: 'รหัสสินค้า',
+    goldType: 'ประเภททอง',
+    selectGoldType: 'เลือกประเภททอง',
+    goldColor: 'สีทอง',
+    selectGoldColor: 'เลือกสีทอง',
+    department: 'เเผนก',
+    selectDepartment: 'เลือกเเผนก',
+    worker: 'ช่าง',
+    searchWorker: 'ค้นหาช่าง...',
+    mold: 'เเม่พิมพ์',
+    totalAll: 'รวมทั้งหมด',
+    qtySend: 'จำนวนจ่าย',
+    weightSend: 'น้ำหนักจ่าย',
+    qtyCheck: 'จำนวนรับ',
+    weightCheck: 'น้ำหนักรับ',
+    price: 'ราคา',
+    colWo: 'เลขที่ใบงาน',
+    colJobDate: 'วันที่ส่งงาน',
+    colProductNumber: 'รหัสสินค้า',
+    colWorker: 'ช่าง',
+    colDepartment: 'เเผนกงาน',
+    colGoldDetail: 'รายละเอียดทอง',
+    colGoldColor: 'สีทอง',
+    colQtySend: 'จำนวนจ่าย',
+    colWeightSend: 'น้ำหนักจ่าย',
+    colQtyCheck: 'จำนวนรับ',
+    colWeightCheck: 'น้ำหนักรับ',
+    colWagesUnit: 'ราคาต่อหน่วย',
+    colTotalWages: 'ราคารวม'
+  },
+  goldCost: {
+    dateLabel: 'วันที่ออกใบเบิก',
+    runningNumber: 'หมายเลขลำดับ',
+    searchText: 'ค้นหา'
+  }
+}

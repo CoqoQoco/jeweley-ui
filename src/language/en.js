@@ -16,11 +16,15 @@ import saleLang from './view/sale/en.js'
 import moldLang from './view/mold/en.js'
 import workerLang from './view/worker/en.js'
 import productionCostLang from './view/production-cost/en.js'
+import settingLang from './view/setting/en.js'
+import reportProductionLang from './view/report-production/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
   button: { ...button },
   common: { ...common },
+  setting: { ...settingLang },
+  reportProduction: { ...reportProductionLang },
   view: {
     pickinglist: { ...pickinglist },
     catalog: { ...catalog },

@@ -87,12 +87,12 @@
                 <button class="btn btn-sm btn-red mr-2" type="button" @click="removeRole(data)">
                   <span class="bi bi-trash"></span>
                 </button>
-                <Dropdown
-                  v-model="data.id"
+                <DropdownGeneric
+                  :modelValue="data.id"
                   :options="masterRoles"
                   optionLabel="name"
                   optionValue="id"
-                  class="w-full md:w-14rem"
+                  @update:modelValue="data.id = $event"
                 />
               </div>
             </template>
@@ -115,18 +115,17 @@
         <!-- action -->
         <div class="submit-container mr-4">
           <button
-            style="width: 120px"
-            :class="['btn btn-sm', shouldShowRegister ? 'btn-secondary' : 'btn-red']"
+            :class="['btn btn-sm', shouldShowRegister ? 'btn-outline-main' : 'btn-red']"
             type="button"
             @click="onCancel"
             :disabled="shouldShowRegister"
           >
             <span class="bi bi-x mr-2"></span>
-            <span>ยกเลิกใช้งาน</span>
+            <span>{{ $t('setting.account.cancelAccount') }}</span>
           </button>
-          <button style="width: 120px" :class="['btn btn-sm  ml-2 btn-green']" type="submit">
+          <button class="btn btn-sm ml-2 btn-main" type="submit">
             <span class="bi bi-check mr-2"></span>
-            <span>{{ shouldShowRegister ? `ลงทะเบียน` : `เเก้ไขบัญชี` }}</span>
+            <span>{{ shouldShowRegister ? $t('setting.account.register') : $t('setting.account.editAccount') }}</span>
           </button>
         </div>
       </form>
@@ -135,18 +134,17 @@
 </template>
 
 <script>
-import Dropdown from 'primevue/dropdown'
-
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
     BaseDataTable,
-    Dropdown
+    DropdownGeneric
   },
 
   setup() {
@@ -222,9 +220,7 @@ export default {
         }
 
         if (res.image) {
-          //this.originalProfileImage = `data:image/png;base64,${res.image}`
           this.originalProfileImage = res.image
-          console.log('originalProfileImage', this.originalProfileImage)
         }
 
         //init masterRoles by remove old rolse
@@ -289,56 +285,40 @@ export default {
       }
     },
     async onSubmit() {
-      console.log('submit')
-      swAlert.confirmSubmit(
-        `${this.data.username}`,
-        `${this.data.isNew ? `ลงทะเบียน` : `เเก้ไขบัญชี`}`,
-        async () => {
-          const validRoles = this.roles
-            .filter((role) => role.id !== null) // ลบ role ที่ไม่มี id
-            .reduce((unique, role) => {
-              // กำจัดค่าซ้ำ
-              if (!unique.some((r) => r.id === role.id)) {
-                unique.push(role)
-              }
-              return unique
-            }, [])
+      const title = this.data.isNew ? this.$t('setting.account.register') : this.$t('setting.account.editAccount')
+      confirmSubmit(`${this.data.username}`, title, async () => {
+        const validRoles = this.roles
+          .filter((role) => role.id !== null)
+          .reduce((unique, role) => {
+            if (!unique.some((r) => r.id === role.id)) {
+              unique.push(role)
+            }
+            return unique
+          }, [])
 
-          const form = {
-            ...this.data,
-            roles: validRoles
-          }
-          const res = await this.userStore.fetchActiveAccount({
-            form: form
-          })
-
-          if (res) {
-            swAlert.success('', '')
-
-            //back router
-            this.$router.go(-1)
-            //this.$router.push({ name: 'edit-account' })
-          }
+        const form = {
+          ...this.data,
+          roles: validRoles
         }
-      )
+        const res = await this.userStore.fetchActiveAccount({ form })
+
+        if (res) {
+          success('', '')
+          this.$router.go(-1)
+        }
+      })
     },
     async onCancel() {
-      console.log('submit')
-      swAlert.confirmSubmit(`${this.data.username}`, `ยกเลิกใช้งาน`, async () => {
+      confirmSubmit(`${this.data.username}`, this.$t('setting.account.cancelAccount'), async () => {
         const form = {
           ...this.data,
           roles: []
         }
-        const res = await this.userStore.fetchInactiveAccount({
-          form: form
-        })
+        const res = await this.userStore.fetchInactiveAccount({ form })
 
         if (res) {
-          swAlert.success('', '')
-
-          //back router
+          success('', '')
           this.$router.go(-1)
-          //this.$router.push({ name: 'edit-account' })
         }
       })
     }
@@ -364,9 +344,9 @@ export default {
 .account-card {
   width: 100%;
   max-width: 900px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
@@ -639,12 +619,12 @@ export default {
 }
 
 .roles-section {
-  padding: 24px;
+  padding: var(--sp-2xl);
 
-  border: 1px solid #dddddd;
-  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  box-shadow: var(--shadow-sm);
   background-color: #f7f7f7;
   overflow: auto;
 
@@ -685,9 +665,9 @@ export default {
 
 .custom-data-table {
   :deep(.p-datatable-wrapper) {
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   :deep(.p-datatable-header) {

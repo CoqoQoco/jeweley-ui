@@ -12,104 +12,74 @@
         <div class="search-bar-container">
           <div>
             <div>
-              <span class="text-title">วันที่ออกใบผสมทอง</span>
+              <span class="text-title">{{ $t('reportProduction.goldCost.dateLabel') }}</span>
               <span class="text-required"> *</span>
-              <span></span>
             </div>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.start"
                 :max-date="form.end"
-                showIcon
                 placeholder="เริ่มต้น"
-                :class="val.isValDateStart === true ? `p-invalid` : ``"
+                :customClass="val.isValDateStart === true ? 'p-invalid' : ''"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.end"
                 :min-date="form.start"
-                showIcon
                 placeholder="สิ้นสุด"
-                :class="val.isValDateEnd === true ? `p-invalid` : ``"
+                :customClass="val.isValDateEnd === true ? 'p-invalid' : ''"
               />
             </div>
           </div>
-          <!-- <div>
-            <span class="text-title">หมายเลขใบผสมทอง</span>
-            <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.text"
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div>
-            </div>
-          </div> -->
           <div>
-            <span class="text-title">หมายเลขลำดับ</span>
+            <span class="text-title">{{ $t('reportProduction.goldCost.runningNumber') }}</span>
             <div class="input-group input-group-inner">
               <input
-                id="inputStockID"
+                id="inputRunningNumber"
                 :class="['form-control bg-input']"
                 type="text"
                 v-model.trim="form.woText"
                 placeholder="หมายเลขใบงาน....."
               />
-              <!-- <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div> -->
             </div>
           </div>
           <div>
-            <span class="text-title">คำค้นหา</span>
+            <span class="text-title">{{ $t('reportProduction.goldCost.searchText') }}</span>
             <div class="input-group input-group-inner">
               <input
-                id="inputStockID"
+                id="inputSearch"
                 :class="['form-control bg-input']"
                 type="text"
                 v-model.trim="form.text"
                 placeholder="พิมพ์บางอย่างเพื่อค้นหา ....."
               />
-              <!-- <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div> -->
             </div>
           </div>
 
           <div class="btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span><i class="bi bi-search"></i></span>
-              <span class="ml-2">ค้นหา</span>
+              <span class="ml-2">{{ $t('common.btn.search') }}</span>
             </button>
             <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear">
               <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ล้างค้นหา</span>
+              <span class="ml-2">{{ $t('common.btn.clear') }}</span>
             </button>
-            <!-- :disabled="!isShowTable" -->
-            <button class="btn btn-sm btn-primary" type="button" disabled @click="onExport($event)">
+            <button class="btn btn-sm btn-green" type="button" disabled @click="onExport($event)">
               <span><i class="bi bi-filetype-csv"></i></span>
-              <span class="ml-2">ออกเอกสาร</span>
+              <span class="ml-2">{{ $t('common.btn.export') }}</span>
             </button>
           </div>
         </div>
       </form>
     </div>
     <div v-if="isShowTable" class="mt-2">
+      <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
         :totalRecords="data.total"
         :value="data.data"
-        v-model:expandedRows="expnadData"
         dataKey="id"
         ref="dt"
         class="p-datatable-sm"
@@ -128,27 +98,39 @@
         paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
         :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
       >
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="bookNo" sortable header="เล่มที่" style="min-width: 150px"> </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="no" sortable header="เลขที่" style="min-width: 150px"> </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="runningNumber" sortable header="หมายเลขลำดับ" style="min-width: 150px">
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column header="วันที่ออกใบเบิก" sortable field="requestDate" style="min-width: 150px">
           <template #body="prop">
             {{ formatDate(prop.data.assignDate) }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="goldName" sortable header="ประเภททอง" style="min-width: 150px"> </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="goldSizeName" sortable header="เปอร์เซ็นทอง" style="min-width: 150px">
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="goldReceipt" sortable header="สูตรผสมทอง" style="min-width: 150px"> </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="assignBy" sortable header="ผู้เบิกทอง" style="min-width: 150px"> </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="receiveBy" sortable header="ผู้รับทอง" style="min-width: 150px"> </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="remark" sortable header="รายละเอียด" style="min-width: 150px"> </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="castWeight" sortable header="เบิกหล่อ" style="min-width: 150px">
           <template #body="slotProps">
             {{ `${slotProps.data.castWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)}` }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="castWeight" sortable header="คืนทองหล่อ" style="min-width: 150px">
           <template #body="slotProps">
             {{
@@ -158,6 +140,7 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="castWeight" sortable header="คืนขี้เบ้า" style="min-width: 150px">
           <template #body="slotProps">
             {{
@@ -168,6 +151,7 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="castWeight" sortable header="คืนเเม่พิมพ์" style="min-width: 150px">
           <template #body="slotProps">
             {{
@@ -178,6 +162,7 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="returnCastBodyWeight" sortable header="คืนตัวเรือน" style="min-width: 150px">
           <template #body="slotProps">
             {{
@@ -188,6 +173,7 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column
           field="returnCastBodyBrokenWeight"
           sortable
@@ -203,6 +189,7 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="returnCastPowderWeight" sortable header="คืนผงทอง" style="min-width: 150px">
           <template #body="slotProps">
             {{
@@ -213,6 +200,7 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="castWeightLoss" sortable header="น้ำหนักขาด" style="min-width: 150px">
           <template #body="slotProps">
             {{
@@ -220,6 +208,7 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <Column field="castWeightOver" sortable header="น้้ำหนักเกิน" style="min-width: 150px">
           <template #body="slotProps">
             {{
@@ -227,21 +216,27 @@
             }}
           </template>
         </Column>
+        <!-- eslint-disable-next-line no-restricted-imports -->
         <ColumnGroup type="footer">
+          <!-- eslint-disable-next-line no-restricted-imports -->
           <Row>
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column footer="รวมทั้งหมด" :colspan="10" footerStyle="text-align:right" />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalReturnCastWeight?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalReturnCastScrapWeight?.toFixed(2) ??
@@ -249,6 +244,7 @@
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalReturnCastMoldWeight?.toFixed(2) ??
@@ -256,6 +252,7 @@
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalReturnCastBodyWeightTotal?.toFixed(2) ??
@@ -263,6 +260,7 @@
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalReturnCastBodyBrokenWeight?.toFixed(2) ??
@@ -270,6 +268,7 @@
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalReturnCastPowderWeight?.toFixed(2) ??
@@ -277,12 +276,14 @@
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalCastWeightLoss?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
               }`"
               footerStyle="text-align:left"
             />
+            <!-- eslint-disable-next-line no-restricted-imports -->
             <Column
               :footer="`${
                 summery.totalCastWeightOver?.toFixed(2) ?? defaultDisplay.emptyValue.toFixed(2)
@@ -301,11 +302,15 @@ import { defineAsyncComponent } from 'vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
-import Calendar from 'primevue/calendar'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import ColumnGroup from 'primevue/columngroup' // optional
+// eslint-disable-next-line no-restricted-imports
+import ColumnGroup from 'primevue/columngroup'
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
@@ -324,8 +329,7 @@ const interfaceIsValid = {
 export default {
   components: {
     pageTitle,
-
-    Calendar,
+    CalendarGeneric,
     DataTable,
     Column,
     Row,
@@ -345,22 +349,16 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       isShowTable: false,
-      isShowExcel: false,
 
-      //--------- table ---------//
       totalRecords: 0,
-      take: 10, //all
+      take: 10,
       skip: 0,
-      //sort: [{ field: 'id', dir: 'asc' }],
       sort: [],
       data: {},
       summery: {},
       dataExcel: {},
-      expnadData: [],
 
-      // ----- form -----//
       form: {
         ...interfaceForm
       },
@@ -373,9 +371,6 @@ export default {
     }
   },
   methods: {
-    focusInputText() {
-      this.$refs.inputText.focus()
-    },
     onClear() {
       this.form = { ...interfaceForm }
       this.val = { ...interfaceIsValid }
@@ -385,27 +380,25 @@ export default {
       this.sort = []
     },
 
-    // ----------- table ----------- //
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e)
+      this.sort = (e.multiSortMeta || []).map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
     handlePageChangeSort(e) {
       this.skip = e.first
       this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => {
-        return { field: item.field, dir: item.order === 1 ? 'asc' : 'desc' }
-      })
-      //console.log(e.multiSortMeta)
+      this.sort = (e.multiSortMeta || []).map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
       this.fetchData()
     },
 
-    // -------- helper function -------- //
     formatDateTime(date) {
       return date ? formatDateTime(date) : ''
     },
@@ -413,49 +406,40 @@ export default {
       return formatDate(date)
     },
 
-    // ----- validate ----- //
     validateForm() {
       if (!this.form.start) {
-        this.val = {
-          isValDateStart: true
-        }
+        this.val = { isValDateStart: true }
         return false
       }
       if (!this.form.end) {
-        this.val = {
-          isValDateEnd: true
-        }
+        this.val = { isValDateEnd: true }
         return false
       }
-
       return true
     },
 
-    // ----- submit ----- //
     onSubmit() {
       if (this.validateForm()) {
-        console.log('form', this.form)
         this.dataExcel = []
         this.fetchData()
       }
     },
     onExport() {
       if (this.validateForm()) {
-        console.log('form', this.form)
         this.fetchExportData()
       }
     },
     exportWithCustomColumnCSV(data, filename) {
-      const utf8BOM = '\uFEFF'
+      const utf8BOM = '﻿'
       const csv = Papa.unparse(data, {
-        quotes: false, //or array of booleans
+        quotes: false,
         quoteChar: '"',
         escapeChar: '"',
         delimiter: ',',
         header: true,
         newline: '\r\n',
-        skipEmptyLines: false, //other option is 'greedy', meaning skip delimiters, quotes, and whitespace.
-        columns: null //or array of strings
+        skipEmptyLines: false,
+        columns: null
       })
       const csvData = utf8BOM + csv
       const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
@@ -468,90 +452,62 @@ export default {
       link.click()
       document.body.removeChild(link)
     },
-    //create excel file with set width column 150px
 
-    // --------- APIs --------- //
     async fetchData() {
-      try {
-        this.isLoading = true
-        this.data = {}
-        //console.log(this.formValue)
-        const param = {
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          search: {
-            createStart: this.form.start ? formatISOString(this.form.start) : null,
-            createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            text: this.form.text,
-            runningNumber: this.form.woText
-          }
+      this.data = {}
+      const param = {
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: {
+          createStart: this.form.start ? formatISOString(this.form.start) : null,
+          createEnd: this.form.end ? formatISOString(this.form.end) : null,
+          text: this.form.text,
+          runningNumber: this.form.woText
         }
-        const res = await api.jewelry.post('ProductionPlanCost/Report', param)
-        const summery = await api.jewelry.post('ProductionPlanCost/SummeryReport', param)
-        if (res) {
-          this.data = { ...res }
-          this.isShowTable = true
-          //console.log('summery', summery)
-          this.summery = { ...summery }
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('ProductionPlanCost/Report', param)
+      const summery = await api.jewelry.post('ProductionPlanCost/SummeryReport', param)
+      if (res) {
+        this.data = { ...res }
+        this.isShowTable = true
+        this.summery = { ...summery }
       }
     },
     async fetchExportData() {
-      try {
-        this.isLoading = true
-        //console.log(this.formValue)
-        const param = {
-          take: 0,
-          //skip: this.skip,
-          search: {
-            createStart: this.form.start ? formatISOString(this.form.start) : null,
-            createEnd: this.form.end ? formatISOString(this.form.end) : null,
-            text: this.form.text,
-            runningNumber: this.form.woText
-          }
+      const param = {
+        take: 0,
+        search: {
+          createStart: this.form.start ? formatISOString(this.form.start) : null,
+          createEnd: this.form.end ? formatISOString(this.form.end) : null,
+          text: this.form.text,
+          runningNumber: this.form.woText
         }
-        const res = await api.jewelry.post('ProductionPlanCost/Report', param)
-        if (res) {
-          //this.dataExcel = { ...res }
-          //this.isShowTable = true
-          console.log('res', res)
-
-          const dataExcel = res.data.map((item) => {
-            return {
-              เลขที่ใบงาน: `${item.wo}-${item.woNumber}`,
-              วันที่ส่งงาน: formatDate(item.jobDate),
-              รหัสสินค้า: item.productNumber,
-              ช่าง: `${item.workerCode}-${item.workerName}`,
-              เเผนกงาน: item.statusName,
-              รายละเอียด: `${item.gold} ${item.description ? `[${item.description}]` : ``}`,
-              จำนวนจ่าย: item.goldQtySend,
-              น้ำหนักจ่าย: item.goldWeightSend,
-              จำนวนรับ: item.goldQtyCheck,
-              น้ำหนกรับ: item.goldWeightCheck,
-              ราคาต่อหน่วย: item.wages
-                ? Number(item.wages).toFixed(2).toLocaleString()
-                : Number(0).toFixed(2).toLocaleString(),
-              ราคา: item.totalWages
-                ? Number(item.totalWages).toFixed(2).toLocaleString()
-                : Number(0).toFixed(2).toLocaleString()
-            }
-          })
-          this.exportWithCustomColumnCSV(
-            dataExcel,
-            `รายงานผลิต[${this.formatDate(this.form.start)} - ${this.formatDate(
-              this.form.end
-            )}].csv`
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('ProductionPlanCost/Report', param)
+      if (res) {
+        const dataExcel = res.data.map((item) => ({
+          เลขที่ใบงาน: `${item.wo}-${item.woNumber}`,
+          วันที่ส่งงาน: formatDate(item.jobDate),
+          รหัสสินค้า: item.productNumber,
+          ช่าง: `${item.workerCode}-${item.workerName}`,
+          เเผนกงาน: item.statusName,
+          รายละเอียด: `${item.gold} ${item.description ? `[${item.description}]` : ``}`,
+          จำนวนจ่าย: item.goldQtySend,
+          น้ำหนักจ่าย: item.goldWeightSend,
+          จำนวนรับ: item.goldQtyCheck,
+          น้ำหนกรับ: item.goldWeightCheck,
+          ราคาต่อหน่วย: item.wages
+            ? Number(item.wages).toFixed(2).toLocaleString()
+            : Number(0).toFixed(2).toLocaleString(),
+          ราคา: item.totalWages
+            ? Number(item.totalWages).toFixed(2).toLocaleString()
+            : Number(0).toFixed(2).toLocaleString()
+        }))
+        this.exportWithCustomColumnCSV(
+          dataExcel,
+          `รายงานผลิต[${this.formatDate(this.form.start)} - ${this.formatDate(this.form.end)}].csv`
+        )
       }
     }
   }
