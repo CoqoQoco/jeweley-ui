@@ -6,7 +6,7 @@
         <div>
           <span class="title-text">วันที่</span>
           <div class="flex-group">
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.start"
               :maxDate="form.end"
@@ -16,7 +16,7 @@
               dateFormat="dd/mm/yy"
             />
             <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-            <Calendar
+            <CalendarGeneric
               class="w-100"
               v-model="form.end"
               :minDate="form.start"
@@ -40,7 +40,7 @@
 
         <div>
           <span class="title-text">ช่าง</span>
-          <Dropdown
+          <DropdownGeneric
             v-model="form.workerCode"
             :options="workerList"
             :optionLabel="option => `${option.code} - ${option.nameTh}`"
@@ -53,7 +53,7 @@
 
         <div>
           <span class="title-text">ประเภททอง</span>
-          <Dropdown
+          <DropdownGeneric
             v-model="form.goldCode"
             :options="masterStore.gold"
             :optionLabel="option => `${option.code} - ${option.nameTh}`"
@@ -66,12 +66,12 @@
       </div>
       <div class="btn-submit-container">
         <div></div>
-        <div class="d-flex gap-2">
+        <div>
           <button @click="$emit('viewJobs')" class="btn btn-sm btn-main mr-2">
             <i class="bi bi-list-ul"></i> ดูใบงาน
           </button>
           <button @click="onSearch" class="btn btn-sm btn-green">
-            <i class="bi bi-search"></i> {{ $t('button.search') }}
+            <i class="bi bi-search"></i> {{ $t('common.btn.search') }}
           </button>
         </div>
       </div>
@@ -80,8 +80,8 @@
 </template>
 
 <script>
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import pageTitle from '@/components/custom/page-title.vue'
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
@@ -91,8 +91,8 @@ export default {
   name: 'GoldLossTangSearchView',
 
   components: {
-    Calendar,
-    Dropdown,
+    CalendarGeneric,
+    DropdownGeneric,
     pageTitle
   },
 

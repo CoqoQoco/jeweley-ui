@@ -10,7 +10,7 @@
           <div>
             <span class="title-text">วันที่สร้างใบงาน</span>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.start"
                 :max-date="form.end"
@@ -20,7 +20,7 @@
                 dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.end"
                 :min-date="form.start"
@@ -53,20 +53,7 @@
               </div>
             </div>
 
-            <!-- status -->
-            <div>
-              <!-- <span class="title-text">สถานะงานผลิต</span>
-              <div>
-                <MultiSelect
-                  v-model="form.status"
-                  :options="planStatus"
-                  optionLabel="nameTh"
-                  optionValue="id"
-                  class="w-full md:w-14rem"
-                  placeholder="เลือกสถานะ"
-                />
-              </div> -->
-            </div>
+            <div></div>
           </div>
         </div>
 
@@ -81,7 +68,7 @@
               <div>
                 <span class="title-text">วันที่สถานะใบงาน</span>
                 <div class="flex-group">
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     v-model="form.sendStart"
                     :max-date="form.sendEnd"
@@ -91,7 +78,7 @@
                     dateFormat="dd/mm/yy"
                   />
                   <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     v-model="form.sendEnd"
                     :min-date="form.sendStart"
@@ -113,11 +100,10 @@
                 <!-- plan target -->
                 <div>
                   <span class="title-text">กำหนดส่งงาน</span>
-                  <Dropdown
+                  <DropdownGeneric
                     v-model="form.isOverPlan"
                     :options="overPlanOptions"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -128,8 +114,6 @@
               <div>
                 <span class="title-text">รหัสลูกค้า</span>
                 <input
-                  ref="inputText"
-                  id="inputText"
                   :class="['form-control bg-input']"
                   type="text"
                   v-model.trim="form.customerCode"
@@ -140,12 +124,11 @@
               <div>
                 <span class="title-text">ประเภทลูกค้า</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.customerType"
                     :options="customerType"
                     optionLabel="nameTh"
                     optionValue="code"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -154,12 +137,11 @@
               <div>
                 <span class="title-text">ประเภทสินค้า</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.productType"
                     :options="productType"
                     optionLabel="nameTh"
                     optionValue="code"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -168,8 +150,6 @@
               <div>
                 <span class="title-text">รหัสสินค้า</span>
                 <input
-                  ref="inputText"
-                  id="inputText"
                   :class="['form-control bg-input']"
                   type="text"
                   v-model.trim="form.productNumber"
@@ -180,12 +160,11 @@
               <div>
                 <span class="title-text">สีของทอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.gold"
                     :options="gold"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -194,12 +173,11 @@
               <div>
                 <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.goldSize"
                     :options="goldSize"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -208,8 +186,7 @@
         </dialogView>
 
         <div class="btn-submit-container-between">
-          <div>
-          </div>
+          <div></div>
           <div>
             <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
               <span><i class="bi bi-search"></i></span>
@@ -243,29 +220,30 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-
-const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
-
-import MultiSelect from 'primevue/multiselect'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
-
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
+const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
+const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
+
 const interfaceIsShow = {
   dialog: false
 }
+
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-    Calendar,
-    Dropdown,
+    MultiSelectGeneric,
+    CalendarGeneric,
+    DropdownGeneric,
     dialogView
   },
+
   props: {
     modelForm: {
       type: Object,
@@ -276,6 +254,12 @@ export default {
       default: () => []
     }
   },
+
+  setup() {
+    const planCompletedStore = usePlanSearchApiStore()
+    return { planCompletedStore }
+  },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -284,11 +268,8 @@ export default {
       deep: true
     }
   },
-  computed: {
-    isExportData() {
-      return true
-    },
 
+  computed: {
     ...mapState(useMasterApiStore, [
       'planStatus',
       'gold',
@@ -298,17 +279,12 @@ export default {
       'overPlanOptions'
     ])
   },
+
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow }
     }
-  },
-
-  setup() {
-    const planCompletedStore = usePlanSearchApiStore()
-    return { planCompletedStore }
   },
 
   methods: {
@@ -316,25 +292,17 @@ export default {
       this.$refs.inputText.focus()
     },
     onSearch() {
-      console.log('onSubmit')
       this.$emit('search', this.form)
     },
     onExport() {
-      console.log('onExport')
       this.$emit('export', this.form)
     },
     dialogSearch() {
       this.isShow.dialog = false
       this.$emit('search', this.form)
     },
-    onSubmitExport() {
-      this.$emit('export', true)
-    },
     onClear() {
       this.$emit('clear')
-    },
-    onCloseModal() {
-      this.isShow = { ...interfaceIsShow }
     },
     onShowDialog() {
       this.isShow.dialog = true
@@ -342,9 +310,6 @@ export default {
     closeDialog() {
       this.isShow.dialog = false
     }
-  },
-  created() {
-    this.$nextTick(() => {})
   }
 }
 </script>

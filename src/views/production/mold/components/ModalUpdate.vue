@@ -31,7 +31,7 @@
                       accept=".jpg, .png"
                       @change="onSelectImg"
                     />
-                    <button class="btn btn-sm btn-warning btn-upload-custom" type="button">
+                    <button class="btn btn-sm btn-main btn-upload-custom" type="button">
                       เลือกเเเก้ไขรูปภาพ
                     </button>
                   </div>
@@ -56,14 +56,13 @@
                     <div class="flex-group">
                       <div class="w-25">{{ model.category }}</div>
                       <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                      <Dropdown
+                      <DropdownGeneric
                         v-model="form.category"
                         :options="masterProduct"
                         optionLabel="description"
-                        class="w-full md:w-14rem"
                         :showClear="form.category ? true : false"
                         :class="val.isValCategory === true ? `p-invalid` : ``"
-                        @change="onResetValDate('isValCategory')"
+                        @update:modelValue="onResetValDate('isValCategory')"
                       />
                     </div>
                   </div>
@@ -91,9 +90,9 @@
             <div class="row form-group">
               <div class="col-md-12">
                 <div class="btn-container">
-                  <button class="btn btn-sm btn-warning" type="submit">
-                    <span class="mr-2"><i class="bi bi-brush"></i></span
-                    ><span>เเก้ไขเเม่พิมพ์</span>
+                  <button class="btn btn-sm btn-main" type="submit">
+                    <span class="mr-2"><i class="bi bi-brush"></i></span>
+                    <span>เเก้ไขเเม่พิมพ์</span>
                   </button>
                 </div>
               </div>
@@ -107,18 +106,19 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import Dropdown from 'primevue/dropdown'
 
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   components: {
     modal,
-    Dropdown
+    DropdownGeneric
   },
   props: {
     isShowModal: {
@@ -150,8 +150,6 @@ export default {
   },
   data() {
     return {
-      // --- flag ---- //
-      isLoading: false,
       isShowUpdateImage: false,
       type: 'ORDERPLAN',
       name: '',
@@ -173,92 +171,50 @@ export default {
     }
   },
   methods: {
-    // --------- controller --------- //
     onSelectImg(e) {
-      this.isLoading = true
       if (e.target.files[0]) {
-        //const maxSizeInBytes = 1024 * 1024 // 1 MB (ตั้งค่าตามที่ต้องการ)
-        // if (e.target.files[0].size > maxSizeInBytes) {
-        //   alert('ไฟล์ที่คุณเลือกมีขนาดเกินกำหนด (1 MB)')
-        //   return
-        // }
         this.name = e.target.files[0].name
 
-        //preview
         const reader = new FileReader()
         reader.onload = (event) => {
           this.urlImage = event.target.result
         }
         reader.readAsDataURL(e.target.files[0])
 
-        //assign
         this.form.image = e.target.files[0]
       }
-      this.isLoading = false
     },
     closeModal() {
-      //this.onclear()
       this.$emit('closeModal')
     },
     onSubmit() {
       if (this.VaidateForm()) {
-        swAlert.confirmSubmit(
-          `${this.form.code}`,
-          `ยืนยันเเก้ไขเเม่พิมพ์`,
-          async () => {
-            //console.log('call submitPlan')
-            await this.submit()
-          },
-          null,
-          null
-        )
+        confirmSubmit(`${this.form.code}`, `ยืนยันเเก้ไขเเม่พิมพ์`, async () => {
+          await this.submit()
+        })
       }
     },
     async submit() {
-      try {
-        this.isLoading = true
+      let params = new FormData()
+      params.append('code', this.form.code)
+      params.append('category', this.form.category.nameTh)
+      params.append('categoryCode', this.form.category.code)
+      params.append('description', this.form.description)
+      params.append('moldBy', this.form.moldBy)
+      params.append('images', this.form.image ? this.form.image : null)
 
-        // let params = {
-        //   code: this.form.code,
-        //   category: this.form.category.nameTh,
-        //   categoryCode: this.form.category.code,
-        //   description: this.form.description,
-        //   Images: this.form.image ? this.form.image : null
-
-        // }
-
-        let params = new FormData()
-        params.append('code', this.form.code)
-        params.append('category', this.form.category.nameTh)
-        params.append('categoryCode', this.form.category.code)
-        params.append('description', this.form.description)
-        params.append('moldBy', this.form.moldBy)
-        params.append('images', this.form.image ? this.form.image : null)
-
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
-          }
+      let options = {
+        headers: {
+          'Content-Type': `multipart/form-data`
         }
+      }
 
-        const res = await api.jewelry.post('Mold/UpdateMold', params, options)
-        if (res) {
-          //console.log(res)
-          swAlert.success(
-            ``,
-            ``,
-            async () => {
-              this.onclear()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.post('Mold/UpdateMold', params, options)
+      if (res) {
+        success(``, ``, async () => {
+          this.onclear()
+          this.$emit('fetch')
+        })
       }
     },
     onclear() {
@@ -295,34 +251,17 @@ export default {
       }
     },
 
-    // -------- APIs --------------- //
     async fetchImageData(path) {
-      try {
-        //console.log
-        switch (this.type) {
-          case 'ORDERPLAN': {
-            // Build Azure Blob URL for mold image
-            const blobPath = `Mold/${path}-Mold.png`
-            this.urlImage = getAzureBlobUrl(blobPath)
-          }
-        }
-      } catch (error) {
-        console.log(error)
+      if (this.type === 'ORDERPLAN') {
+        const blobPath = `Mold/${path}-Mold.png`
+        this.urlImage = getAzureBlobUrl(blobPath)
       }
     },
 
-    // -------- master ---------- //
     async fetchMasterProductType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterProductType')
+      if (res) {
+        this.masterProduct = [...res]
       }
     }
   },

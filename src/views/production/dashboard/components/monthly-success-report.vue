@@ -5,7 +5,7 @@
       <div>
         <div class="title-text">เลือกเดือน</div>
         <div class="form-col-container">
-          <Calendar
+          <CalendarGeneric
             v-model="selectedMonth"
             view="month"
             dateFormat="MM - yy"
@@ -14,7 +14,7 @@
             :manualInput="false"
             @date-select="onMonthChange"
             :class="{ 'p-invalid': !selectedMonth }"
-            class="me-2"
+            class="mr-2"
             placeholder="เลือกเดือนและปี"
           />
           <div></div>
@@ -22,12 +22,12 @@
           <div class="d-flex align-items-end justify-content-end">
             <button
               @click="loadMonthlyReport"
-              class="btn btn-sm btn-green ms-2"
+              class="btn btn-sm btn-green ml-2"
               :disabled="isMonthlyLoading || !selectedMonth"
             >
               <i class="bi bi-search" v-if="!isMonthlyLoading"></i>
               <i class="bi bi-arrow-clockwise spinning" v-else></i>
-              {{ $t('button.search') }}
+              {{ $t('common.btn.search') }}
             </button>
           </div>
         </div>
@@ -214,14 +214,15 @@
 
 <script>
 import { useProductionMonthlyReportApiStore } from '@/stores/modules/api/plan/monthly-report-store-api.js'
-import Calendar from 'primevue/calendar'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
+import { warning } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
 export default {
   name: 'MonthlySuccessReport',
   components: {
-    Calendar,
+    CalendarGeneric,
     HorizontalBarChart
   },
   setup() {
@@ -269,31 +270,14 @@ export default {
     },
 
     async loadMonthlyReport() {
-      try {
-        if (!this.selectedMonth) {
-          this.$swal.fire({
-            icon: 'warning',
-            title: 'คำเตือน',
-            text: 'กรุณาเลือกเดือนและปี'
-          })
-          return
-        }
-
-        console.log('Loading monthly report for month:', this.selectedMonth)
-
-        await this.monthlyReportApiStore.fetchMonthlyReport(true, {
-          selectedMonth: this.selectedMonth
-        })
-
-        console.log('Monthly report loaded:', this.monthlyReportData)
-      } catch (error) {
-        console.error('Error loading monthly report:', error)
-        this.$swal.fire({
-          icon: 'error',
-          title: 'ข้อผิดพลาด',
-          text: 'ไม่สามารถโหลดรายงานรายเดือนได้'
-        })
+      if (!this.selectedMonth) {
+        warning('กรุณาเลือกเดือนและปี', 'คำเตือน')
+        return
       }
+
+      await this.monthlyReportApiStore.fetchMonthlyReport(true, {
+        selectedMonth: this.selectedMonth
+      })
     },
 
     formatMonthYear(date) {

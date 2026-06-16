@@ -10,7 +10,7 @@
           <div>
             <span class="title-text">วันที่ W.O. สำเร็จ</span>
             <div class="flex-group">
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.start"
                 :max-date="form.end"
@@ -20,7 +20,7 @@
                 dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <Calendar
+              <CalendarGeneric
                 class="w-100"
                 v-model="form.end"
                 :min-date="form.start"
@@ -85,12 +85,11 @@
               <div>
                 <span class="title-text">ประเภทลูกค้า</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.customerType"
                     :options="customerType"
                     optionLabel="nameTh"
                     optionValue="code"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -99,12 +98,11 @@
               <div>
                 <span class="title-text">ประเภทสินค้า</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.productType"
                     :options="productType"
                     optionLabel="nameTh"
                     optionValue="code"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -125,12 +123,11 @@
               <div>
                 <span class="title-text">สีของทอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.gold"
                     :options="gold"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -139,12 +136,11 @@
               <div>
                 <span class="title-text">ประเภททอง/เงิน</span>
                 <div>
-                  <MultiSelect
+                  <MultiSelectGeneric
                     v-model="form.goldSize"
                     :options="goldSize"
                     optionLabel="nameTh"
                     optionValue="nameEn"
-                    class="w-full md:w-14rem"
                   />
                 </div>
               </div>
@@ -182,10 +178,7 @@
               <!-- <span>ล้าง</span> -->
             </button>
             <button
-              :class="[
-                'btn btn-sm btn-primary',
-                { 'btn-secondary': !planBOMApiStore.bomData.data > 0 }
-              ]"
+              class="btn btn-sm btn-green"
               type="button"
               :disabled="!planBOMApiStore.bomData.data > 0"
               @click="onExport"
@@ -206,10 +199,8 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
-//import Calendar from 'primevue/calendar'
-import MultiSelect from 'primevue/multiselect'
-import Calendar from 'primevue/calendar'
-//import Dropdown from 'primevue/dropdown'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -222,9 +213,8 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    MultiSelect,
-    Calendar,
-    //Dropdown,
+    MultiSelectGeneric,
+    CalendarGeneric,
     dialogView
   },
   props: {
@@ -275,11 +265,9 @@ export default {
   methods: {
     // ---------------- event
     onSearch() {
-      console.log('onSubmit')
       this.$emit('search', this.form)
     },
     onExport() {
-      console.log('onExport')
       this.$emit('export')
     },
     dialogSearch() {

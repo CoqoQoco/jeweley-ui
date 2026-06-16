@@ -19,7 +19,7 @@
                       accept=".jpg, .png"
                       @change="onSelectImg"
                     />
-                    <button class="btn btn-sm btn-warning btn-upload-custom" type="button">
+                    <button class="btn btn-sm btn-main btn-upload-custom" type="button">
                       เลือกรูปภาพ
                     </button>
                   </div>
@@ -41,14 +41,13 @@
                 <div class="row form-group">
                   <div class="col-md-12">
                     <label>ประเภท</label>
-                    <Dropdown
+                    <DropdownGeneric
                       v-model="form.category"
                       :options="masterProduct"
                       optionLabel="description"
-                      class="w-full md:w-14rem"
                       :showClear="form.category ? true : false"
                       :class="val.isValCategory === true ? `p-invalid` : ``"
-                      @change="onResetValDate('isValCategory')"
+                      @update:modelValue="onResetValDate('isValCategory')"
                     />
                     <!-- <input type="text" class="form-control" v-model="form.category" required /> -->
                   </div>
@@ -92,19 +91,17 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 
-import Dropdown from 'primevue/dropdown'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-//import modal from '@/components/modal/modal-view.vue'
-//const UploadImage = defineAsyncComponent(() => import('@/components/prime-vue/UploadImage.vue'))
 
 export default {
   components: {
     modal,
-    Dropdown
+    DropdownGeneric
   },
   props: {
     isShowModal: {
@@ -114,11 +111,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
-
-      //image
-      //isResetImage: false,
-      //imageConatinerHight: '435px',
       name: '',
       imgUrl: '',
       masterProduct: [],
@@ -158,54 +150,32 @@ export default {
     },
     onSubmit() {
       if (this.VaidateForm()) {
-        swAlert.confirmSubmit(
-          `${this.form.code}`,
-          `ยืนยันสร้างเเม่พิมพ์`,
-          async () => {
-            //console.log('call submitPlan')
-            await this.submit()
-          },
-          null,
-          null
-        )
+        confirmSubmit(`${this.form.code}`, `ยืนยันสร้างเเม่พิมพ์`, async () => {
+          await this.submit()
+        })
       }
     },
     async submit() {
-      try {
-        this.isLoading = true
+      let params = new FormData()
+      params.append('code', this.form.code)
+      params.append('category', this.form.category.nameTh)
+      params.append('categoryCode', this.form.category.code)
+      params.append('moldBy', this.form.moldBy)
+      params.append('description', this.form.description)
+      params.append('images', this.form.image)
 
-        let params = new FormData()
-        params.append('code', this.form.code)
-        params.append('category', this.form.category.nameTh)
-        params.append('categoryCode', this.form.category.code)
-        params.append('moldBy', this.form.moldBy)
-        params.append('description', this.form.description)
-        params.append('images', this.form.image)
-
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
-          }
+      let options = {
+        headers: {
+          'Content-Type': `multipart/form-data`
         }
+      }
 
-        const res = await api.jewelry.post('Mold/CreateMold', params, options)
-        if (res) {
-          //console.log(res)
-          swAlert.success(
-            ``,
-            ``,
-            async () => {
-              this.onclear()
-              this.$emit('fetch')
-            },
-            null,
-            null
-          )
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.post('Mold/CreateMold', params, options)
+      if (res) {
+        success(``, ``, async () => {
+          this.onclear()
+          this.$emit('fetch')
+        })
       }
     },
     onclear() {
@@ -244,21 +214,11 @@ export default {
 
     // -------- master ---------- //
     async fetchMasterProductType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterProductType')
+      if (res) {
+        this.masterProduct = [...res]
       }
     }
-  },
-  created() {
-    //this.isResetImage =
   },
   mounted() {
     this.fetchMasterProductType()

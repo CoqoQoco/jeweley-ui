@@ -11,7 +11,7 @@
           <form @submit.prevent="handleSubmit">
             <div class="form-col-sm-container p-2">
               <div class="d-flex">
-                <AutoComplete
+                <AutoCompleteGeneric
                   v-model="search.mold"
                   :suggestions="moldItemSearch"
                   @complete="onSearchMold"
@@ -48,9 +48,6 @@
                 <button class="btn btn-sm btn btn-green" @click="viewplan(data)">
                   <i class="bi bi-search"></i>
                 </button>
-                <!-- <button class="ml-1 btn btn-sm btn btn-dark" title="โหมดดูรายละเอียด">
-              <i class="bi bi-clipboard2-data-fill"></i>
-            </button> -->
               </div>
             </template>
 
@@ -86,15 +83,17 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
-import AutoComplete from 'primevue/autocomplete'
-import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 import api from '@/axios/axios-helper.js'
+
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
 const interfaceSearch = {
   mold: null
@@ -105,12 +104,15 @@ const interfaceValid = {
 
 export default {
   name: 'ModifyPlanView',
+
   components: {
     modal,
-    AutoComplete,
+    AutoCompleteGeneric,
     BaseDataTable,
     imagePreview
   },
+
+  mixins: [dataTablePaging],
 
   setup() {
     const planSearchStore = usePlanSearchApiStore()
@@ -129,7 +131,6 @@ export default {
   watch: {
     isShow: {
       handler(val) {
-        //console.log('isShow', val)
         this.isShowModal = val
       },
       immediate: true
@@ -153,14 +154,9 @@ export default {
       },
 
       moldItemSearch: [],
-
       dataSearch: {},
-      take: 10,
-      skip: 0,
-      sort: [],
       mold: 'MOLD',
 
-      // Columns Configuration
       columns: [
         {
           field: 'action',
@@ -170,13 +166,6 @@ export default {
           align: 'center',
           bodyTemplate: 'actionTemplate'
         },
-        // {
-        //   field: 'image',
-        //   header: '',
-        //   minWidth: '50px',
-        //   sortable: false,
-        //   align: 'center'
-        // },
         {
           field: 'woText',
           header: 'W.O.',
@@ -261,7 +250,19 @@ export default {
       ]
     }
   },
+
   methods: {
+    async fetchData() {
+      if (this.validateForm()) {
+        this.dataSearch = await this.planSearchStore.SearchData({
+          take: this.take,
+          skip: this.skip,
+          sort: this.sort,
+          formValue: this.search
+        })
+      }
+    },
+
     onClear() {
       this.search = {
         ...interfaceSearch
@@ -277,14 +278,6 @@ export default {
       this.dataSearch = {}
     },
 
-    getBgColor(data) {
-      if (data) {
-        return 'background-color: #b5dad4'
-      } else {
-        return 'background-color: #dad4b5'
-      }
-    },
-    // handle page
     getStatusSeverity(status) {
       switch (status) {
         case 9999:
@@ -317,10 +310,8 @@ export default {
     },
 
     viewplan(item) {
-      console.log('viewplan', item)
       const id = item.id
       window.open(`/plan-order-tracking-update/${id}`, '_blank')
-      //this.$router.push({ name: 'plan-order-tracking-detail', params: { id: 123 } })
     },
 
     validateForm() {
@@ -330,61 +321,28 @@ export default {
         }
         return false
       }
-
       return true
     },
 
-    // ----- data table hnadle
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.handleSubmit()
-    },
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.handleSubmit()
-    },
-    async handleSubmit() {
-      if (this.validateForm()) {
-        this.dataSearch = await this.planSearchStore.SearchData({
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          formValue: this.search
-        })
-
-        //console.log('dataSearch', this.dataSearch)
-      }
+    handleSubmit() {
+      this.resetPaging()
     },
 
     async onSearchMold(e) {
-      try {
-        //this.isLoading = true
-
-        const param = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
-
-        const res = await api.jewelry.post('Mold/SearchMold', param, { skipLoading: true })
-        if (res) {
-          this.moldItemSearch = res.data.map((x) => `${x.code}`)
-        }
-      } catch (error) {
-        console.log(error)
+      }
+      const res = await api.jewelry.post('Mold/SearchMold', param, { skipLoading: true })
+      if (res) {
+        this.moldItemSearch = res.data.map((x) => `${x.code}`)
       }
     },
 
     async modifyPlan(data) {
-      //console.log('modifyPlan', data)
       this.loadingStore.showLoading()
 
       const modifyData = {
@@ -396,14 +354,6 @@ export default {
       const id = {
         id: data.id
       }
-      //   const planNumber = {
-      //     take: 0,
-      //     skip: 0,
-      //     sort: [],
-      //     search: {
-      //       ProductionPlanNumber: `${data.wo}-${data.woNumber}`
-      //     }
-      //   }
 
       const header = await api.jewelry.get('ProductionPlan/ProductionPlanGet', id, {
         skipLoading: true
@@ -411,11 +361,6 @@ export default {
       const headerMat = await api.jewelry.post('ProductionPlan/ProductionPlanMateriaGet', id, {
         skipLoading: true
       })
-      //   const headerMatGoldCostItem = await api.jewelry.post(
-      //     'ProductionPlanCost/ListGoldCostItem',
-      //     planNumber,
-      //     { skipLoading: true }
-      //   )
 
       if (header) {
         modifyData.header = { ...header }
@@ -423,14 +368,9 @@ export default {
       if (headerMat) {
         modifyData.headerMat = [...headerMat]
       }
-      //   if (headerMatGoldCostItem) {
-      //     modifyData.headerMatGoldCostItem = [...headerMatGoldCostItem.data]
-      //   }
 
-      //console.log('modifyData', modifyData)
       this.$emit('modifyPlan', modifyData)
       this.onClear()
-      //this.loadingStore.hideLoading()
     }
   }
 }

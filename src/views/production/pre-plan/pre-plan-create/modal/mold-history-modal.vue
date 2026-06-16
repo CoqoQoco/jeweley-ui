@@ -1,41 +1,43 @@
 <template>
-  <Dialog
-    :visible="isShow"
-    @update:visible="(v) => !v && $emit('closeModal')"
-    :style="{ width: '95vw', height: '90vh' }"
-    :modal="true"
-    :closable="true"
-    :draggable="false"
+  <modal
+    :showModal="isShow"
+    @closeModal="$emit('closeModal')"
+    width="95vw"
+    :isShowActionPart="true"
   >
-    <template #header>
-      <span class="title-text-lg">
+    <template #title>
+      <span class="title-text-lg px-3 pt-3 d-block">
         <i class="bi bi-clock-history mr-2"></i>
         ประวัติการผลิตของแม่พิมพ์ {{ moldCode }}
       </span>
     </template>
 
-    <MoldHistoryContent
-      :moldCode="moldCode"
-      :currentMaterialsCount="currentMaterialsCount"
-      :isShow="isShow"
-      @apply-materials="$emit('apply-materials', $event); $emit('closeModal')"
-      @close="$emit('closeModal')"
-    />
-
-    <template #footer>
-      <button type="button" class="btn btn-sm btn-outline-main" @click="$emit('closeModal')">ปิด</button>
+    <template #content>
+      <MoldHistoryContent
+        :moldCode="moldCode"
+        :currentMaterialsCount="currentMaterialsCount"
+        :isShow="isShow"
+        @apply-materials="$emit('apply-materials', $event); $emit('closeModal')"
+        @close="$emit('closeModal')"
+      />
     </template>
-  </Dialog>
+
+    <template #action>
+      <button type="button" class="btn btn-sm btn-outline-main" @click="$emit('closeModal')">{{ $t('common.btn.close') }}</button>
+    </template>
+  </modal>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog'
+import { defineAsyncComponent } from 'vue'
 import MoldHistoryContent from './mold-history-content.vue'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'MoldHistoryModal',
 
-  components: { Dialog, MoldHistoryContent },
+  components: { modal, MoldHistoryContent },
 
   props: {
     isShow: {

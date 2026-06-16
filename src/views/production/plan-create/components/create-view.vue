@@ -53,7 +53,7 @@
                 </div>
                 <div>
                   <span class="title-text">เเม่พิมพ์</span>
-                  <AutoComplete
+                  <AutoCompleteGeneric
                     v-model="form.mold"
                     :suggestions="moldItemSearch"
                     @complete="onSearchMold"
@@ -72,7 +72,7 @@
               <div class="form-col-sm-container mt-1">
                 <div>
                   <span class="title-text">รหัสลูกค้า</span>
-                  <AutoComplete
+                  <AutoCompleteGeneric
                     v-model="form.customerNumber"
                     :suggestions="customerItemSearch"
                     @complete="onSearchCustomer"
@@ -83,7 +83,7 @@
                 </div>
                 <div>
                   <span class="title-text">ประเภทลูกค้า</span>
-                  <Dropdown
+                  <DropdownGeneric
                     v-model="form.customerType"
                     :options="masterCustomer"
                     optionLabel="description"
@@ -93,7 +93,7 @@
                 </div>
                 <div>
                   <span class="title-text">วันส่งงานลูกค้า</span>
-                  <Calendar v-model="form.requestDate" showIcon showButtonBar required />
+                  <CalendarGeneric v-model="form.requestDate" showIcon showButtonBar required />
                 </div>
               </div>
 
@@ -109,7 +109,7 @@
                 </div>
                 <div>
                   <span class="title-text">ประเภทสินค้า</span>
-                  <Dropdown
+                  <DropdownGeneric
                     v-model="form.productType"
                     :options="masterProduct"
                     optionLabel="description"
@@ -158,29 +158,25 @@
               <div class="form-col-sm-container mt-1">
                 <div>
                   <span class="title-text">สีของทองทอง/เงิน</span>
-                  <Dropdown
+                  <DropdownGeneric
                     v-model="form.gold"
                     :options="masterGold"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                     placeholder="เลือกทอง"
                     :class="val.isValGold === true ? `p-invalid` : ``"
                     :showClear="form.gold ? true : false"
-                  >
-                  </Dropdown>
+                  />
                 </div>
                 <div>
                   <span class="title-text">ประเภททอง/เงิน</span>
-                  <Dropdown
+                  <DropdownGeneric
                     v-model="form.goldSize"
                     :options="masterGoldSize"
                     optionLabel="description"
                     placeholder="เลือกเปอร์เซ็น"
-                    class="w-full md:w-14rem"
                     :class="val.isValGoldSize === true ? `p-invalid` : ``"
                     :showClear="form.goldSize ? true : false"
-                  >
-                  </Dropdown>
+                  />
                 </div>
                 <div></div>
               </div>
@@ -462,8 +458,7 @@
           <!-- action -->
           <div class="submit-container mt-2">
             <div class="check-return-container mr-4 p-1">
-              <Checkbox v-model="form.isModifyPlan" :binary="true" />
-              <span for="ingredient1" class="ml-2 title-text">งานแปลงสินค้า</span>
+              <CheckboxGeneric v-model="form.isModifyPlan" :binary="true" label="งานแปลงสินค้า" />
             </div>
             <button class="btn btn-sm btn-main" type="submit">
               <span class="bi bi-calendar-check mr-2"> </span>
@@ -491,15 +486,20 @@
 <script>
 import pageTitle from '@/components/custom/page-title.vue'
 
-import AutoComplete from 'primevue/autocomplete'
-import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
+// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row" exception
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row" exception
 import Column from 'primevue/column'
-import Checkbox from 'primevue/checkbox'
+// eslint-disable-next-line no-restricted-imports -- Dropdown inside DataTable editor exception
+import Dropdown from 'primevue/dropdown'
+
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
@@ -578,14 +578,15 @@ const interfaceIsShow = {
 export default {
   components: {
     pageTitle,
-    AutoComplete,
+    AutoCompleteGeneric,
+    CalendarGeneric,
+    CheckboxGeneric,
+    DropdownGeneric,
     Dropdown,
-    Calendar,
     DataTable,
     Column,
     modifyPlanView,
-    selectPrePlanItemModal,
-    Checkbox
+    selectPrePlanItemModal
   },
 
   setup() {
@@ -631,7 +632,6 @@ export default {
   data() {
     return {
       // --- flag --- //
-      isLoading: false,
       autoId: 0,
       waitingCount: 0,
       moldProductionCount: 0,
@@ -667,14 +667,12 @@ export default {
     // --- controller --- //
     onSubmitPlan() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `W.O. ${this.form.wo}-${this.form.nowo} `,
           'ยืนยันสร้างใบจ่าย-รับคืน',
           async () => {
             await this.submitPlan()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -789,200 +787,120 @@ export default {
 
     // --- APIs --- //
     async onSearchCustomer(e) {
-      try {
-        //this.isLoading = true
-        const param = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
-
-        const res = await api.jewelry.post('Customer/SearchCustomer', param, { skipLoading: true })
-        if (res) {
-          this.customerItemSearch = res.data.map((x) => `${x.code}`)
-          console.log(this.customerItemSearch)
-        }
-      } catch (error) {
-        console.log(error)
+      }
+      const res = await api.jewelry.post('Customer/SearchCustomer', param, { skipLoading: true })
+      if (res) {
+        this.customerItemSearch = res.data.map((x) => `${x.code}`)
       }
     },
     async onSearchMold(e) {
-      try {
-        //this.isLoading = true
-
-        const param = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
-
-        const res = await api.jewelry.post('Mold/SearchMold', param, { skipLoading: true })
-        if (res) {
-          this.moldItemSearch = res.data.map((x) => `${x.code}`)
-        }
-      } catch (error) {
-        console.log(error)
+      }
+      const res = await api.jewelry.post('Mold/SearchMold', param, { skipLoading: true })
+      if (res) {
+        this.moldItemSearch = res.data.map((x) => `${x.code}`)
       }
     },
     async onSelectMold(e) {
-      try {
-        // Build Azure Blob URL for mold image
-        const blobPath = `Mold/${e.value}-Mold.png`
-        this.imageurl = getAzureBlobUrl(blobPath)
-      } catch (error) {
-        console.log(error)
-      }
+      const blobPath = `Mold/${e.value}-Mold.png`
+      this.imageurl = getAzureBlobUrl(blobPath)
       this.moldProductionCount = await this.moldStore.fetchProductionCount(e.value)
     },
     async submitPlan() {
-      try {
-        //console.log('submitPlan')
-        this.isLoading = true
-        //console.log(this.form)
+      let params = new FormData()
+      params.append('wo', this.form.wo)
+      params.append('woNumber', this.form.nowo)
+      params.append('mold', this.form.mold)
 
-        let params = new FormData()
-        params.append('wo', this.form.wo)
-        params.append('woNumber', this.form.nowo)
-        params.append('mold', this.form.mold)
+      params.append('customerNumber', this.form.customerNumber)
+      params.append('customerType', this.form.customerType.code)
+      params.append('requestDate', formatISOString(this.form.requestDate))
 
-        params.append('customerNumber', this.form.customerNumber)
-        params.append('customerType', this.form.customerType.code)
-        params.append('requestDate', formatISOString(this.form.requestDate))
+      params.append('productNumber', this.form.productNumber)
+      params.append('productName', this.form.productName)
+      params.append('productType', this.form.productType ? this.form.productType.code : '')
 
-        params.append('productNumber', this.form.productNumber)
-        params.append('productName', this.form.productName)
-        params.append('productType', this.form.productType ? this.form.productType.code : '')
+      params.append('gold', this.form.gold ? this.form.gold.nameEn : '')
+      params.append('goldSize', this.form.goldSize ? this.form.goldSize.nameEn : '')
 
-        params.append('gold', this.form.gold ? this.form.gold.nameEn : '')
-        params.append('goldSize', this.form.goldSize ? this.form.goldSize.nameEn : '')
+      params.append('productQty', this.form.productQty)
+      params.append('productQtyUnit', this.form.productQtyUnit)
 
-        params.append('productQty', this.form.productQty)
-        params.append('productQtyUnit', this.form.productQtyUnit)
+      params.append('productDetail', this.form.productDetail)
+      params.append('remark', this.form.remark)
 
-        params.append('productDetail', this.form.productDetail)
-        params.append('remark', this.form.remark)
+      params.append('isModifyPlan', this.form.isModifyPlan)
+      params.append('prePlanItemId', this.form.prePlanItemId || '')
 
-        params.append('isModifyPlan', this.form.isModifyPlan)
-        params.append('prePlanItemId', this.form.prePlanItemId || '')
+      params.append('material', JSON.stringify(this.form.material))
+      let options = {
+        headers: {
+          'Content-Type': `multipart/form-data`
+        }
+      }
+      const res = await api.jewelry.post('ProductionPlan/ProductionPlanCreate', params, options)
 
-        //console.log(this.form.material)
-        params.append('material', JSON.stringify(this.form.material))
-        let options = {
-          headers: {
-            'Content-Type': `multipart/form-data`
+      if (res) {
+        success(
+          `W.O. ${this.form.wo}-${this.form.nowo} `,
+          'สร้างใบจ่าย-รับคืน สำเร็จ',
+          () => {
+            this.onResetPage()
+            this.$router.push('/plan-order-tracking')
           }
-        }
-        const res = await api.jewelry.post('ProductionPlan/ProductionPlanCreate', params, options)
-
-        //let res = true
-        if (res) {
-          //this.isResetImage = !this.isResetImage
-          swAlert.success(
-            `W.O. ${this.form.wo}-${this.form.nowo} `,
-            'สร้างใบจ่าย-รับคืน สำเร็จ',
-            () => {
-              this.onResetPage()
-              this.$router.push('/plan-order-tracking')
-            },
-            null,
-            null
-          )
-          //this.onClearVal()
-        }
-
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+        )
       }
     },
 
     async fetchMasterCustomerType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterCustomerType')
-        if (res) {
-          this.masterCustomer = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterCustomerType')
+      if (res) {
+        this.masterCustomer = [...res]
       }
     },
     async fetchMasterProductType() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterProductType')
-        if (res) {
-          this.masterProduct = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterProductType')
+      if (res) {
+        this.masterProduct = [...res]
       }
     },
     async fetchMasterGold() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGold')
-        if (res) {
-          this.masterGold = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGold')
+      if (res) {
+        this.masterGold = [...res]
       }
     },
     async fetchMasterGoldSize() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGoldSize = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGoldSize')
+      if (res) {
+        this.masterGoldSize = [...res]
       }
     },
     async fetchMasterGem() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGem')
-        if (res) {
-          this.masterGem = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGem')
+      if (res) {
+        this.masterGem = [...res]
       }
     },
     async fetchMasterGemShape() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGemShape')
-        if (res) {
-          this.masterGemShape = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGemShape')
+      if (res) {
+        this.masterGemShape = [...res]
       }
     },
 
     async modifyPlan(item) {
-      //console.log(item)
-
       this.form = {
         wo: item.data.wo,
         nowo: null,
@@ -1036,10 +954,7 @@ export default {
         this.form.material = []
       }
 
-      //alway true
       this.form.isModifyPlan = true
-
-      console.log('modifyPlan', this.form)
 
       this.onCloseModal()
       this.loadingStore.hideLoading()

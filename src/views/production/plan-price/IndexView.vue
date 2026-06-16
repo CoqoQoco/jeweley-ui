@@ -234,39 +234,23 @@ import { defineAsyncComponent } from 'vue'
 
 
 
-// import AutoComplete from 'primevue/autocomplete'
-// import Calendar from 'primevue/calendar'
-// import Dropdown from 'primevue/dropdown'
+// eslint-disable-next-line no-restricted-imports -- DataTable+ColumnGroup+rowGroupMode exception
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports -- DataTable+ColumnGroup exception
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports -- DataTable+ColumnGroup exception
 import ColumnGroup from 'primevue/columngroup'
-import _ from 'lodash'
+// eslint-disable-next-line no-restricted-imports -- DataTable+ColumnGroup exception
 import Row from 'primevue/row'
+import _ from 'lodash'
 
 import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
-
-// const interfaceMat = {
-//   //id: null,
-//   //gold: null,
-//   goldQTYSend: null,
-//   goldWeightSend: null,
-//   goldQTYCheck: null,
-//   goldWeightCheck: null,
-//   workers: null,
-//   workersSub: null,
-//   description: null,
-//   wages: null
-// }
+import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
 export default {
   components: {
-  
-    //AutoComplete,
-    //Calendar,
-    //Dropdown,
     DataTable,
     Column,
     ColumnGroup,
@@ -276,8 +260,6 @@ export default {
   watch: {},
   data() {
     return {
-      // --- flag --- //
-      isLoading: false,
       autoId: 0,
 
       plan: [],
@@ -332,18 +314,14 @@ export default {
       return !_.isEmpty(data.outboundRunning) ? true : false
     },
 
-    // ----- event
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `ยืนยันเเก้ไขงาน [คัดพลอย]`,
           `${this.model.wo}-${this.model.woNumber}`,
           async () => {
-            //console.log('call submitPlan')
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -358,36 +336,16 @@ export default {
       return true
     },
     onBluePrice(item, index) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBlurPrice', item, index)
-
-      let newCal = {
+      this.tranItems[index] = {
         ...item,
         price: item.price ? Number(item.price).toFixed(2) : '0.00'
       }
-
-      // ในVue 3, เราสามารถอัปเดตได้โดยตรง
-      this.tranItems[index] = newCal
-
-      console.log('onBlurPrice', this.tranItems[item])
-      console.log('onBlurPrice', this.tranItems)
-      //this.onUpdateQty(item)
     },
     onBlueDiscount(item, index) {
-      // แปลงค่าเป็นทศนิยม 3 ตำแหน่งเมื่อออกจาก input
-      console.log('onBlurDiscount', item, index)
-
-      let newCal = {
+      this.tranDiscount[index] = {
         ...item,
         price: item.price ? Number(item.price).toFixed(2) : '0.00'
       }
-
-      // ในVue 3, เราสามารถอัปเดตได้โดยตรง
-      this.tranDiscount[index] = newCal
-
-      console.log('onBlurDiscount', this.tranDiscount[item])
-      console.log('onBlurDiscount', this.tranDiscount)
-      //this.onUpdateQty(item)
     },
     addItem() {
       this.tranItems.push({
@@ -429,39 +387,26 @@ export default {
     // --- APIs --- //
 
     async fetchAllTransection(wo, woNumber) {
-      this.isLoading = true
-      try {
-        const res = await api.jewelry.get('ProductionPlan/GetAllTransectionPrice', {
-          wo: wo,
-          woNumber: woNumber
+      const res = await api.jewelry.get('ProductionPlan/GetAllTransectionPrice', {
+        wo: wo,
+        woNumber: woNumber
+      })
+      if (res) {
+        this.tranItems = res.items.map((item) => {
+          return {
+            ...item,
+            price: item.price ? Number(item.price).toFixed(2) : '0.00'
+          }
         })
-        if (res) {
-          console.log(res)
 
-          this.tranItems = res.items.map((item) => {
-            return {
-              ...item,
-              price: item.price ? Number(item.price).toFixed(2) : '0.00'
-            }
-          })
-
-          this.addItemDiscount()
-        }
-      } catch (error) {
-        console.log(error)
+        this.addItemDiscount()
       }
-      this.isLoading = false
     }
   },
   created() {
     this.$nextTick(() => {
       let id = this.$route.params.id
-
-      //seperate id by '-'
       this.plan = id.split('-')
-
-      console.log(this.plan)
-
       this.fetchAllTransection(this.plan[0], this.plan[1])
     })
   }

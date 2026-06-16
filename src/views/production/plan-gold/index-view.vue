@@ -39,7 +39,7 @@
                   <span>วันที่เบิก</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   :class="val.isValAssignDate === true ? `p-invalid` : ``"
                   v-model="form.assignDate"
@@ -55,11 +55,10 @@
                   <span>ประเภททอง</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.gold"
                   :options="masterGold"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
                   :class="val.isValGold === true ? `p-invalid` : ``"
                   :showClear="form.gold?.code ? true : false"
                 />
@@ -69,11 +68,10 @@
                   <span>เปอร์เซ็นทอง</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <Dropdown
+                <DropdownGeneric
                   v-model="form.goldSize"
                   :options="masterGoldSize"
                   optionLabel="description"
-                  class="w-full md:w-14rem"
                   :class="val.isValGoldSize === true ? `p-invalid` : ``"
                   :showClear="form.goldSize?.code ? true : false"
                 />
@@ -139,7 +137,7 @@
                   <span>วันที่เบิกหลอม</span>
                   <!-- <span class="txt-required"> *</span> -->
                 </span>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   :class="val.isValMeltDate === true ? `p-invalid` : ``"
                   v-model="form.meltDate"
@@ -251,7 +249,7 @@
                   <span class="title-text-white">
                     <span>วันที่คืนขี้เบ้า</span>
                   </span>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     v-model="form.returnMeltScrapWeightDate"
                     dateFormat="dd/mm/yy"
@@ -279,7 +277,7 @@
                   <span>วันที่เบิกหล่อ</span>
                   <!-- <span class="txt-required"> *</span> -->
                 </span>
-                <Calendar
+                <CalendarGeneric
                   class="w-100"
                   :class="val.isValCastDate === true ? `p-invalid` : ``"
                   v-model="form.castDate"
@@ -428,7 +426,7 @@
                   <span class="title-text-white">
                     <span>วันที่คืนขี้เบ้า</span>
                   </span>
-                  <Calendar
+                  <CalendarGeneric
                     class="w-100"
                     v-model="form.returnCastScrapWeightDate"
                     dateFormat="dd/mm/yy"
@@ -613,16 +611,22 @@
 <script>
 import pageTitle from '@/components/custom/page-title.vue'
 
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
 import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
 import Row from 'primevue/row'
-import ColumnGroup from 'primevue/columngroup' // optional
+// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
+import ColumnGroup from 'primevue/columngroup'
+// eslint-disable-next-line no-restricted-imports -- AutoComplete inside DataTable editor exception
 import AutoComplete from 'primevue/autocomplete'
 
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
 import api from '@/axios/axios-helper.js'
-import swAlert from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatISOString } from '@/services/utils/dayjs'
 
 const interfaceForm = {
@@ -672,8 +676,8 @@ const interfaceIsValid = {
 export default {
   components: {
     pageTitle,
-    Calendar,
-    Dropdown,
+    CalendarGeneric,
+    DropdownGeneric,
     DataTable,
     Column,
     Row,
@@ -682,7 +686,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       autoId: 0,
 
       // ------ form ------ //
@@ -736,14 +739,12 @@ export default {
     },
     onSubmit() {
       if (this.validateForm()) {
-        swAlert.confirmSubmit(
+        confirmSubmit(
           `เลขที่:${this.form.no} | เล่มที่:${this.form.bookNo} `,
           'ยืนยันเพิ่มใบเบิกทอง',
           async () => {
             await this.submit()
-          },
-          null,
-          null
+          }
         )
       }
     },
@@ -784,150 +785,90 @@ export default {
       return date ? formatDate(date) : ''
     },
 
-    // --- APIs --- //
     async submit() {
-      try {
-        this.isLoading = true
-        //console.log(this.form.items)
-
-        console.log()
-
-        this.form.items = this.form.items.map((x) => {
-          return {
-            ...x,
-            id: x.productionPlan.id,
-            productionPlanId: x.productionPlan
-              ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
-              : null
-          }
-        })
-
-        const params = {
-          ...this.form,
-          goldCode: this.form.gold.code,
-          goldSizeCode: this.form.goldSize.code,
-          assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
-          meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
-          castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null,
-
-          returnMeltScrapWeightDate: this.form.returnMeltScrapWeightDate
-            ? formatISOString(this.form.returnMeltScrapWeightDate)
-            : null,
-          returnCastScrapWeightDate: this.form.returnCastScrapWeightDate
-            ? formatISOString(this.form.returnCastScrapWeightDate)
+      this.form.items = this.form.items.map((x) => {
+        return {
+          ...x,
+          id: x.productionPlan.id,
+          productionPlanId: x.productionPlan
+            ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
             : null
         }
-        //console.log(params)
+      })
 
-        const res = await api.jewelry.post('ProductionPlanCost/CreateGoldCost', params)
-        if (res) {
-          //this.isResetImage = !this.isResetImage
-          swAlert.success(
-            null,
-            null,
-            () => {
-              this.form = {
-                ...interfaceForm
-              }
-              this.form.items = []
-              this.val = {
-                ...interfaceIsValid
-              }
-              this.$router.push('/plan-gold-tracking')
-            },
-            null,
-            null
-          )
-          //this.onClearVal()
-        }
+      const params = {
+        ...this.form,
+        goldCode: this.form.gold.code,
+        goldSizeCode: this.form.goldSize.code,
+        assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
+        meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
+        castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null,
 
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+        returnMeltScrapWeightDate: this.form.returnMeltScrapWeightDate
+          ? formatISOString(this.form.returnMeltScrapWeightDate)
+          : null,
+        returnCastScrapWeightDate: this.form.returnCastScrapWeightDate
+          ? formatISOString(this.form.returnCastScrapWeightDate)
+          : null
+      }
+
+      const res = await api.jewelry.post('ProductionPlanCost/CreateGoldCost', params)
+      if (res) {
+        success(null, null, () => {
+          this.form = {
+            ...interfaceForm
+          }
+          this.form.items = []
+          this.val = {
+            ...interfaceIsValid
+          }
+          this.$router.push('/plan-gold-tracking')
+        })
       }
     },
     async onSearchProductionPlanId(e) {
-      try {
-        //this.isLoading = true
-        //console.log(this.formValue)
-        const params = {
-          take: 0,
-          skip: 0,
-          search: {
-            text: e.query ?? null
-            //type: this.form.status,
-            //active: 1
-          }
+      const params = {
+        take: 0,
+        skip: 0,
+        search: {
+          text: e.query ?? null
         }
-        const res = await api.jewelry.post(
-          'ProductionPlan/ProductionPlanSearchByProductionPlanId',
-          params
-        )
-        if (res) {
-          //console.log(res)
-          this.productItemSearch = [...res.data]
-          //this.workerItemSearch = res.data.map((x) => `${x.code} : ${x.nameTh}`)
-        }
-        //this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        //this.isLoading = false
+      }
+      const res = await api.jewelry.post(
+        'ProductionPlan/ProductionPlanSearchByProductionPlanId',
+        params
+      )
+      if (res) {
+        this.productItemSearch = [...res.data]
       }
     },
     async onSearchZill(e) {
-      try {
-        this.isLoading = true
-
-        console.log('onSearchZill', e)
-
-        const param = {
-          take: 0,
-          skip: 0,
-          sort: [],
-          search: {
-            type: 'ZILL',
-            text: e.query ?? null,
-            goldCode: this.form.gold.code,
-            goldSizeCode: this.form.goldSize.code
-          }
+      const param = {
+        take: 0,
+        skip: 0,
+        sort: [],
+        search: {
+          type: 'ZILL',
+          text: e.query ?? null,
+          goldCode: this.form.gold.code,
+          goldSizeCode: this.form.goldSize.code
         }
-
-        const res = await api.jewelry.post('Master/ListMaster', param)
-        if (res) {
-          this.data = { ...res }
-          this.zillItemSearch = res.data.map((x) => `${x.code}`)
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      }
+      const res = await api.jewelry.post('Master/ListMaster', param)
+      if (res) {
+        this.zillItemSearch = res.data.map((x) => `${x.code}`)
       }
     },
     async fetchMasterGold() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGold')
-        if (res) {
-          this.masterGold = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGold')
+      if (res) {
+        this.masterGold = [...res]
       }
     },
     async fetchMasterGoldSize() {
-      try {
-        this.isLoading = true
-        const res = await api.jewelry.get('Master/MasterGoldSize')
-        if (res) {
-          this.masterGoldSize = [...res]
-        }
-        this.isLoading = false
-      } catch (error) {
-        console.log(error)
-        this.isLoading = false
+      const res = await api.jewelry.get('Master/MasterGoldSize')
+      if (res) {
+        this.masterGoldSize = [...res]
       }
     }
   },
@@ -936,8 +877,6 @@ export default {
       this.fetchMasterGold()
       this.fetchMasterGoldSize()
     })
-    //this.fetchMasterGold()
-    //this.fetchMasterGoldSize()
   }
 }
 </script>
