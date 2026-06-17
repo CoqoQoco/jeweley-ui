@@ -31,7 +31,7 @@
                 type="number"
                 class="form-control"
                 v-model.number="form.sortOrder"
-                placeholder="เช่น 1"
+                placeholder="1"
                 min="0"
               />
             </div>
@@ -53,7 +53,7 @@
                 type="text"
                 class="form-control"
                 v-model.trim="form.nameEn"
-                placeholder="เช่น Main Warehouse"
+                placeholder="e.g. Main Warehouse"
               />
             </div>
           </div>
@@ -66,7 +66,7 @@
                 :options="typeOptions"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="เลือกประเภท"
+                :placeholder="$t('common.label.all')"
                 :showClear="true"
                 @update:modelValue="form.type = $event"
               />

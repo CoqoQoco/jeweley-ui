@@ -11,10 +11,10 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn-green" title="แก้ไข" @click="onEdit(data)">
+          <button class="btn btn-sm btn-green" :title="$t('common.btn.edit')" @click="onEdit(data)">
             <i class="bi bi-pencil"></i>
           </button>
-          <button class="btn btn-sm btn-red ml-2" title="ลบ" @click="onDelete(data)">
+          <button class="btn btn-sm btn-red ml-2" :title="$t('common.btn.delete')" @click="onDelete(data)">
             <i class="bi bi-trash"></i>
           </button>
         </div>

@@ -11,18 +11,18 @@
       <!-- Action Column -->
       <template #actionsTemplate="{ data: rowData }">
         <div class="d-flex justify-content-center">
-          <button class="btn btn-sm btn-main mr-2" title="ประวัติ" @click="onShowHistory(rowData)">
+          <button class="btn btn-sm btn-main mr-2" :title="$t('view.stock.gem.priceHistory')" @click="onShowHistory(rowData)">
             <span class="bi bi-search"></span>
           </button>
-          <button class="btn btn-sm btn-green mr-2" title="เเก้ไข" @click="onShowUpdate(rowData)">
+          <button class="btn btn-sm btn-green mr-2" :title="$t('common.btn.edit')" @click="onShowUpdate(rowData)">
             <span class="bi bi-pencil"></span>
           </button>
-          <button class="btn btn-sm btn-green mr-2" title="ราคา" @click="onShowPrice(rowData)">
+          <button class="btn btn-sm btn-green mr-2" :title="$t('view.stock.gem.adjustPrice')" @click="onShowPrice(rowData)">
             <span class="bi bi-cash-coin"></span>
           </button>
           <!-- <button
             class="btn btn-sm btn-green mr-2"
-            title="พิมพ์ป้าย"
+            :title="$t('view.stock.gem.printLabel')"
             @click="onPrintBarcode(rowData)"
           >
             <i class="bi bi-upc-scan"></i>
@@ -30,7 +30,7 @@
 
           <button
             class="btn btn-sm btn-green"
-            title="พิมพ์ป้าย PDF"
+            :title="$t('view.stock.gem.printLabelPDF')"
             @click="onPrintBarcodePDF(rowData)"
           >
             <i class="bi bi-upc-scan"></i>

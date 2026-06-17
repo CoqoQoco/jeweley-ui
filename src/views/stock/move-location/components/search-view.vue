@@ -11,7 +11,7 @@
               class="form-control bg-input"
               type="text"
               v-model.trim="form.stockNumber"
-              placeholder="เช่น STK-2024-001"
+              placeholder="STK-2024-001"
             />
           </div>
 
@@ -31,7 +31,7 @@
               class="form-control bg-input"
               type="text"
               v-model.trim="form.productNumber"
-              placeholder="เช่น DK-B-001"
+              placeholder="DK-B-001"
             />
           </div>
 
@@ -42,7 +42,7 @@
               :options="locationOptions"
               optionLabel="label"
               optionValue="value"
-              placeholder="ทั้งหมด"
+              :placeholder="$t('common.label.all')"
               :showClear="true"
               @update:modelValue="form.location = $event"
             />
@@ -100,7 +100,7 @@
                   class="form-control bg-input"
                   type="text"
                   v-model.trim="form.productNameTh"
-                  placeholder="EX: แหวนทอง ขนาด #66"
+                  placeholder="EX: Gold Ring #66"
                 />
               </div>
 
@@ -176,7 +176,7 @@
                   :options="costDetailOptions"
                   optionLabel="description"
                   optionValue="value"
-                  placeholder="ทั้งหมด"
+                  :placeholder="$t('common.label.all')"
                   :showClear="true"
                   @update:modelValue="form.hasCostDetail = $event"
                 />
@@ -191,7 +191,7 @@
                     :options="pieceStatusOptions"
                     optionLabel="description"
                     optionValue="value"
-                    placeholder="ทั้งหมด"
+                    :placeholder="$t('common.label.all')"
                     :showClear="true"
                     @update:modelValue="form.pieceStatus = $event"
                   />
@@ -217,21 +217,21 @@
             </span>
           </div>
           <div>
-            <button class="btn btn-sm btn-outline-main mr-2" type="button" @click="$emit('manual')" title="คู่มือการใช้งาน">
-              <i class="bi bi-journal-text"></i> คู่มือ
+            <button class="btn btn-sm btn-outline-main mr-2" type="button" @click="$emit('manual')" :title="$t('view.stock.moveLocation.manualBtnTitle')">
+              <i class="bi bi-journal-text"></i> {{ $t('view.stock.moveLocation.manualBtn') }}
             </button>
-            <button class="btn btn-sm btn-green" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-green" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
             </button>
             <button
               class="btn btn-sm btn-sub-main ml-2"
               type="button"
-              title="เพิ่มเติม"
+              :title="$t('common.btn.advancedSearch')"
               @click="onShowDialog"
             >
               <i class="bi bi-zoom-in"></i>
             </button>
-            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <i class="bi bi-x-circle"></i>
             </button>
             <button

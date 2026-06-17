@@ -5,12 +5,12 @@
         <!-- Header -->
         <div class="title-text-lg-bg">
           <span><i class="bi bi-upc-scan mr-2"></i></span>
-          <span>{{ `พิมพ์ป้ายบาร์โค้ดพลอย | รหัส: ${barcodeData.barcode}` }}</span>
+          <span>{{ $t('view.stock.gem.barcodeModalTitle', { barcode: barcodeData.barcode }) }}</span>
         </div>
 
         <!-- Preview Title -->
         <div class="pl-4 pt-2">
-          <span class="title-text">ภาพตัวอย่าง</span>
+          <span class="title-text">{{ $t('view.stock.gem.previewLabel') }}</span>
         </div>
 
         <!-- Barcode Demo Preview -->
@@ -30,7 +30,7 @@
         <div class="pl-4 pr-4 pt-2 pb-2">
           <div class="title-text">
             <span class="bi bi-exclamation-circle mr-1"></span>
-            <span>โปรดตรวจสอบสถานะโปรแกรมพิมพ์บาร์โค้ด และเครื่องพิมพ์ก่อนการใช้งานทุกครั้ง</span>
+            <span>{{ $t('view.stock.gem.printerWarning') }}</span>
           </div>
 
           <div class="d-flex justify-content-between items-center">
@@ -64,7 +64,7 @@
             <!-- Print Action -->
             <div class="vertical-center-container">
               <div>
-                <span class="title-text">จำนวนพิมพ์</span>
+                <span class="title-text">{{ $t('view.stock.gem.printCount') }}</span>
               </div>
               <div class="ml-2 mr-2">
                 <input
@@ -82,7 +82,7 @@
                 @click="onConfirmPrint"
               >
                 <span class="bi bi-printer mr-1"></span>
-                พิมพ์
+                {{ $t('view.stock.gem.printBtn') }}
               </button>
             </div>
           </div>
@@ -162,9 +162,9 @@ export default {
 
     getPrinterStatusText(status) {
       const statusMap = {
-        unknown: 'กำลังตรวจสอบสถานะเครื่องพิมพ์...',
-        success: 'เครื่องพิมพ์พร้อมใช้งาน',
-        error: 'เครื่องพิมพ์ไม่พร้อมใช้งาน'
+        unknown: this.$t('view.stock.gem.printerChecking'),
+        success: this.$t('view.stock.gem.printerReady'),
+        error: this.$t('view.stock.gem.printerError')
       }
       return statusMap[status] || statusMap.unknown
     },

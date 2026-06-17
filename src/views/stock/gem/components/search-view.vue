@@ -8,7 +8,7 @@
     >
       <template #rightSlot>
         <div>
-          <button class="btn btn-sm btn-main" @click="onShowCreate" title="สร้างข้อมูลวัถุดิบ">
+          <button class="btn btn-sm btn-main" @click="onShowCreate" :title="$t('view.stock.gem.createTitle')">
             <i class="bi bi-pencil"></i>
             <!-- <span class="ml-2">สร้างข้อมูลวัถุดิบ</span> -->
           </button>
@@ -105,20 +105,20 @@
       </dialogView>
 
       <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+        <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
           <span><i class="bi bi-search"></i></span>
           <!-- <span>ค้นหา</span> -->
         </button>
         <button
           class="btn btn-sm btn-sub-main mr-2"
           type="button"
-          title="เพิ่มเติม"
+          :title="$t('common.btn.advancedSearch')"
           @click="onShowDialog"
         >
           <span><i class="bi bi-zoom-in"></i></span>
           <!-- <span>ค้นหา</span> -->
         </button>
-        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
           <span><i class="bi bi-x-circle"></i></span>
           <!-- <span>ล้าง</span> -->
         </button>
@@ -127,7 +127,7 @@
           type="button"
           :disabled="!isExportData"
           @click="onSubmitExport"
-          title="ออกเอกสาร"
+          :title="$t('common.btn.export')"
         >
           <span><i class="bi bi-filetype-csv"></i></span>
         </button>

@@ -33,7 +33,7 @@
                 :options="locationOptions"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="เลือก Storage Location ปลายทาง"
+                :placeholder="$t('view.stock.moveLocation.targetLocation')"
                 :showClear="true"
                 @update:modelValue="targetLocationCode = $event"
               />
@@ -60,7 +60,7 @@
                   type="text"
                   class="form-control"
                   v-model.trim="newSloc.code"
-                  placeholder="เช่น TEMP-001"
+                  placeholder="TEMP-001"
                 />
               </div>
               <div class="form-field">
@@ -69,7 +69,7 @@
                   type="text"
                   class="form-control"
                   v-model.trim="newSloc.nameTh"
-                  placeholder="เช่น บูทงานแฟร์ B"
+                  placeholder="Booth B"
                 />
               </div>
             </div>
@@ -81,7 +81,7 @@
                   :options="typeOptions"
                   optionLabel="label"
                   optionValue="value"
-                  placeholder="TEMP (ชั่วคราว)"
+                  placeholder="TEMP"
                   :showClear="false"
                   @update:modelValue="newSloc.type = $event"
                 />

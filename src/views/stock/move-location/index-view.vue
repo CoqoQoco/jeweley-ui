@@ -95,7 +95,7 @@ export default {
 
     onMove() {
       if (this.selectedItems.length === 0) {
-        warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ', 'ยังไม่ได้เลือกสินค้า')
+        warning(this.$t('view.stock.moveLocation.warnSelectItem'), this.$t('view.stock.moveLocation.warnSelectItemTitle'))
         return
       }
       this.isShowMove = true

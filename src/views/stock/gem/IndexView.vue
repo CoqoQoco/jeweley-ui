@@ -51,6 +51,17 @@ export default {
     dataTable
   },
 
+  computed: {
+    masterTypeCheck() {
+      return [
+        { id: 1, name: this.$t('view.stock.gem.typeCheckQtyRemain'), value: 'qty-remain' },
+        { id: 2, name: this.$t('view.stock.gem.typeCheckQtyProcess'), value: 'qty-process-remain' },
+        { id: 3, name: this.$t('view.stock.gem.typeCheckWeightRemain'), value: 'qty-weight-remain' },
+        { id: 4, name: this.$t('view.stock.gem.typeCheckWeightProcess'), value: 'qty-weight-process-remain' }
+      ]
+    }
+  },
+
   data() {
     return {
       form: { ...interfaceForm },
@@ -63,13 +74,7 @@ export default {
       sizeOptions: [],
       gradeOptions: [],
       masterGemShape: [],
-      masterGrade: [],
-      masterTypeCheck: [
-        { id: 1, name: 'มีจำนวนคงคลัง', value: 'qty-remain' },
-        { id: 2, name: 'มีจำนวนยืมคลัง', value: 'qty-process-remain' },
-        { id: 3, name: 'มีน้ำหนักคงคลัง', value: 'qty-weight-remain' },
-        { id: 4, name: 'มีน้ำหนักยืมคลัง', value: 'qty-weight-process-remain' }
-      ]
+      masterGrade: []
     }
   },
 

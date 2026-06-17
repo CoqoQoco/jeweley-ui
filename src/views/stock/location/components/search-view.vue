@@ -32,7 +32,7 @@
               :options="typeOptions"
               optionLabel="label"
               optionValue="value"
-              placeholder="ทั้งหมด"
+              :placeholder="$t('common.label.all')"
               :showClear="true"
               @update:modelValue="form.type = $event"
             />
@@ -45,7 +45,7 @@
               :options="statusOptions"
               optionLabel="label"
               optionValue="value"
-              placeholder="ทั้งหมด"
+              :placeholder="$t('common.label.all')"
               :showClear="true"
               @update:modelValue="form.isActive = $event"
             />
@@ -55,16 +55,16 @@
         <div class="btn-submit-container-between">
           <div></div>
           <div>
-            <button class="btn btn-sm btn-green" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-green" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
             </button>
-            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <i class="bi bi-x-circle"></i>
             </button>
             <button
               class="btn btn-sm btn-main ml-2"
               type="button"
-              title="สร้างใหม่"
+              :title="$t('common.btn.create')"
               @click="$emit('create')"
             >
               <i class="bi bi-plus"></i>
