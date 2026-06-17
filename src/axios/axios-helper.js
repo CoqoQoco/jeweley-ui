@@ -129,6 +129,7 @@ const configureInterceptors = (instance) => {
             'กรุณาตรวจสอบว่าบริการเครื่องพิมพ์กำลังทำงานอยู่และเครื่องพิมพ์เชื่อมต่ออยู่',
             () => {}
           )
+          error.handledByAxios = true
         }
         return Promise.reject(error)
       }
@@ -193,6 +194,7 @@ const configureInterceptors = (instance) => {
           )
       }
 
+      error.handledByAxios = true
       return Promise.reject(error)
     }
   )

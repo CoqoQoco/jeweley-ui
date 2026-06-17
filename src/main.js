@@ -67,4 +67,30 @@ app.use(PrimeVue)
 // Optionally install the BootstrapVue icon components plugin
 //App.use(IconsPlugin)
 
+// Global error handler — silence AxiosError ที่ axios-helper จัดการแล้ว (popup แสดงแล้ว)
+// error จริง (TypeError, logic bug) ยัง log ใน console เพื่อ debug ได้
+app.config.errorHandler = (err, _instance, info) => {
+  const isHandledAxiosError = err?.handledByAxios === true || err?.isAxiosError === true
+  if (isHandledAxiosError) {
+    if (import.meta.env.DEV) {
+      console.debug('[axios-handled]', info, err?.message)
+    }
+    return
+  }
+  console.error('[Vue errorHandler]', info, err)
+}
+
+// Unhandled promise rejection — กัน noise จาก AxiosError ที่ axios-helper แสดง popup แล้ว
+// rejection จาก bug จริง (TypeError ฯลฯ) ไม่ถูก preventDefault → ยังปรากฏใน console
+window.addEventListener('unhandledrejection', (event) => {
+  const reason = event.reason
+  const isAxiosError = reason?.isAxiosError === true || reason?.handledByAxios === true
+  if (isAxiosError) {
+    event.preventDefault()
+    if (import.meta.env.DEV) {
+      console.debug('[axios-handled rejection]', reason?.message)
+    }
+  }
+})
+
 app.mount('#app')
