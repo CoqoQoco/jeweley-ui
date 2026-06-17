@@ -70,6 +70,25 @@ module.exports = {
           }
         ]
       }
+    },
+    {
+      // ไฟล์ที่ได้รับอนุญาตให้คง <table> ไว้ด้วยเหตุผลพิเศษ
+      // ทุกไฟล์มี comment อธิบายเหตุผลไว้ใน template แล้ว:
+      //   monthly-success-report: summary report layout paired with chart
+      //   payment-tracking dashboard: static demo layout (no real array binding)
+      //   merge-quotation-modal: preview-before-confirm inside scrollable modal with sticky header
+      //   gold-loss-slip-modal: editable form table (inline InputTextGeneric + AutoCompleteGeneric)
+      //   cost-version-detail: mobile detail layout (key-value grid per cost item)
+      files: [
+        'src/views/production/dashboard/components/monthly-success-report.vue',
+        'src/views/sale/payment-tracking/dashboard/index-view.vue',
+        'src/views/sale/quotation-list/components/merge-quotation-modal.vue',
+        'src/views/worker/worker-daily-wages/modal/gold-loss-slip-modal.vue',
+        'src/views/mobile/cost-version-detail/index-view.vue'
+      ],
+      rules: {
+        'vue/no-restricted-syntax': 'off'
+      }
     }
   ]
 }

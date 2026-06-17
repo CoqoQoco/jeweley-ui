@@ -43,6 +43,8 @@
           </div>
 
           <div v-else>
+            <!-- eslint-disable-next-line vue/no-restricted-syntax -->
+            <!-- editable form table — rows contain inline inputs (InputTextGeneric + AutoCompleteGeneric) -->
             <table class="return-table w-100">
               <thead>
                 <tr>

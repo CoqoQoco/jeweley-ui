@@ -71,6 +71,8 @@
               <h5><i class="bi bi-table"></i> รายละเอียดตามประเภททอง</h5>
             </div>
             <div class="card-body">
+              <!-- eslint-disable vue/no-restricted-syntax -->
+              <!-- summary report layout — paired with chart, no pagination needed -->
               <table class="table table-striped">
                 <thead>
                   <tr>
@@ -93,6 +95,7 @@
                   </tr>
                 </tbody>
               </table>
+              <!-- eslint-enable vue/no-restricted-syntax -->
             </div>
           </div>
         </div>
@@ -121,6 +124,8 @@
               <h5><i class="bi bi-table"></i> รายละเอียดตามประเภทสินค้า</h5>
             </div>
             <div class="card-body">
+              <!-- eslint-disable-next-line vue/no-restricted-syntax -->
+              <!-- summary report layout — paired with chart, no pagination needed -->
               <table class="table table-striped">
                 <thead>
                   <tr>
@@ -171,6 +176,8 @@
               <h5><i class="bi bi-table"></i> รายละเอียดตามประเภทลูกค้า</h5>
             </div>
             <div class="card-body">
+              <!-- eslint-disable-next-line vue/no-restricted-syntax -->
+              <!-- summary report layout — paired with chart, no pagination needed -->
               <table class="table table-striped">
                 <thead>
                   <tr>

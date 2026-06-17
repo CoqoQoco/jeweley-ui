@@ -20,7 +20,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="col-md-3">
         <div class="summary-card paid">
           <div class="card-icon">
@@ -33,7 +33,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="col-md-3">
         <div class="summary-card pending">
           <div class="card-icon">
@@ -46,7 +46,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="col-md-3">
         <div class="summary-card overdue">
           <div class="card-icon">
@@ -63,15 +63,15 @@
 
     <!-- Action Buttons -->
     <div class="action-section mb-4">
-      <button class="btn btn-primary mr-2" @click="recordPayment">
+      <button class="btn btn-sm btn-main mr-2" @click="recordPayment">
         <i class="bi bi-plus-circle mr-1"></i>
         บันทึกการรับชำระ
       </button>
-      <button class="btn btn-info mr-2" @click="sendReminder">
+      <button class="btn btn-sm btn-green mr-2" @click="sendReminder">
         <i class="bi bi-send mr-1"></i>
         ส่งแจ้งเตือนชำระ
       </button>
-      <button class="btn btn-success mr-2" @click="generateReport">
+      <button class="btn btn-sm btn-outline-main mr-2" @click="generateReport">
         <i class="bi bi-file-earmark-text mr-1"></i>
         สร้างรายงาน
       </button>
@@ -91,6 +91,8 @@
       </div>
       <div class="card-body">
         <div class="table-responsive">
+          <!-- eslint-disable-next-line vue/no-restricted-syntax -->
+          <!-- static demo layout — not a real data list, no array binding -->
           <table class="table table-hover">
             <thead>
               <tr>
@@ -140,6 +142,8 @@
       </div>
       <div class="card-body">
         <div class="table-responsive">
+          <!-- eslint-disable-next-line vue/no-restricted-syntax -->
+          <!-- static demo layout — not a real data list, no array binding -->
           <table class="table table-hover">
             <thead>
               <tr>
@@ -159,7 +163,7 @@
                 <td>฿25,000</td>
                 <td>7 วัน</td>
                 <td>
-                  <button class="btn btn-sm btn-warning">ส่งแจ้งเตือน</button>
+                  <button class="btn btn-sm btn-main">ส่งแจ้งเตือน</button>
                 </td>
               </tr>
               <tr class="table-warning">
@@ -169,7 +173,7 @@
                 <td>฿18,000</td>
                 <td>-</td>
                 <td>
-                  <button class="btn btn-sm btn-info">ติดตาม</button>
+                  <button class="btn btn-sm btn-green">ติดตาม</button>
                 </td>
               </tr>
             </tbody>
@@ -191,25 +195,21 @@ export default {
   methods: {
     loadFromQueryParams() {
       const query = this.$route.query
-      
+
       if (query.saleOrderNumber) {
-        console.log('ติดตามการชำระเงินสำหรับใบสั่งขาย:', query.saleOrderNumber)
         // TODO: Load specific payment data for sale order
       }
     },
 
     recordPayment() {
-      console.log('บันทึกการรับชำระเงิน')
       // TODO: Navigate to payment entry form
     },
 
     sendReminder() {
-      console.log('ส่งแจ้งเตือนการชำระเงิน')
       // TODO: Send payment reminder
     },
 
     generateReport() {
-      console.log('สร้างรายงานการชำระเงิน')
       // TODO: Generate payment report
     }
   }
@@ -218,18 +218,18 @@ export default {
 
 <style lang="scss" scoped>
 .payment-dashboard {
-  padding: 1.5rem;
+  padding: var(--sp-2xl);
 }
 
 .header-section {
   margin-bottom: 2rem;
-  
+
   .page-title {
-    color: #2c3e50;
+    color: var(--base-font-color);
     margin-bottom: 0.5rem;
     font-weight: 600;
   }
-  
+
   .page-subtitle {
     color: #6c757d;
     margin-bottom: 0;
@@ -239,40 +239,32 @@ export default {
 
 .summary-card {
   background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--sp-2xl);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
   border-left: 4px solid transparent;
-  
+
   &.total {
-    border-left-color: #007bff;
-    .card-icon {
-      background: #007bff;
-    }
+    border-left-color: var(--base-font-color);
+    .card-icon { background: var(--base-font-color); }
   }
-  
+
   &.paid {
-    border-left-color: #28a745;
-    .card-icon {
-      background: #28a745;
-    }
+    border-left-color: var(--base-green);
+    .card-icon { background: var(--base-green); }
   }
-  
+
   &.pending {
-    border-left-color: #ffc107;
-    .card-icon {
-      background: #ffc107;
-    }
+    border-left-color: var(--base-warning);
+    .card-icon { background: var(--base-warning); }
   }
-  
+
   &.overdue {
-    border-left-color: #dc3545;
-    .card-icon {
-      background: #dc3545;
-    }
+    border-left-color: var(--base-red);
+    .card-icon { background: var(--base-red); }
   }
 }
 
@@ -284,7 +276,7 @@ export default {
   align-items: center;
   justify-content: center;
   margin-right: 1rem;
-  
+
   i {
     font-size: 1.5rem;
     color: white;
@@ -299,13 +291,13 @@ export default {
     margin: 0;
     line-height: 1;
   }
-  
+
   p {
     color: #6c757d;
     margin: 0.25rem 0;
     font-size: 0.9rem;
   }
-  
+
   small {
     font-size: 0.8rem;
   }
@@ -314,24 +306,23 @@ export default {
 .action-section {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
 }
 
 .card-container {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 1.5rem;
 }
 
 .card-header {
   background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border);
   padding: 1rem 1.5rem;
-  border-radius: 8px 8px 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 
   h5 {
-    color: #495057;
+    color: var(--base-font-color);
     font-weight: 600;
   }
 }
@@ -342,23 +333,23 @@ export default {
 
 .table {
   margin-bottom: 0;
-  
+
   thead th {
     background: #f8f9fa;
     font-weight: 600;
-    color: #495057;
+    color: var(--base-font-color);
     border-top: none;
   }
-  
+
   tbody tr {
     &:hover {
       background: #f8f9fa;
     }
-    
+
     &.table-danger {
       background: rgba(220, 53, 69, 0.1);
     }
-    
+
     &.table-warning {
       background: rgba(255, 193, 7, 0.1);
     }
@@ -368,19 +359,19 @@ export default {
 .badge {
   font-size: 0.75rem;
   padding: 0.375rem 0.75rem;
-  
+
   &.badge-success {
-    background: #28a745;
+    background: var(--base-green);
     color: white;
   }
-  
+
   &.badge-warning {
-    background: #ffc107;
+    background: var(--base-warning);
     color: #212529;
   }
-  
+
   &.badge-danger {
-    background: #dc3545;
+    background: var(--base-red);
     color: white;
   }
 }
@@ -390,17 +381,17 @@ export default {
   .payment-dashboard {
     padding: 1rem;
   }
-  
+
   .summary-card {
     flex-direction: column;
     text-align: center;
-    
+
     .card-icon {
       margin-right: 0;
       margin-bottom: 1rem;
     }
   }
-  
+
   .action-section {
     .btn {
       width: 100%;

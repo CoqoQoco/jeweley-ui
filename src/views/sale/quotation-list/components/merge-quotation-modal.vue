@@ -57,6 +57,8 @@
         </div>
 
         <div class="items-table-wrapper">
+          <!-- eslint-disable-next-line vue/no-restricted-syntax -->
+          <!-- preview-before-confirm layout inside scrollable modal — custom sticky header -->
           <table class="table table-sm table-bordered items-table">
             <thead>
               <tr>

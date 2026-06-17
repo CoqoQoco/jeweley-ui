@@ -175,6 +175,8 @@
                         <span class="item-name">{{ item.nameDescription }}</span>
                       </div>
                       <div class="item-compact-table">
+                        <!-- eslint-disable-next-line vue/no-restricted-syntax -->
+                        <!-- mobile detail layout — key-value grid (qty/price/weight) per cost item -->
                         <table>
                           <tbody>
                             <tr>
