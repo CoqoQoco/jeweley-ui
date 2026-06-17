@@ -115,12 +115,12 @@
             >
               <ColumnGroup type="header">
                 <Row>
-                  <Column header="รายการ" />
-                  <Column header="จำนวน" />
-                  <Column header="ราคา/หน่วย" />
-                  <Column header="น้ำหนัก" />
-                  <Column header="ราคา/น้ำหนัก" />
-                  <Column header="รวม" />
+                  <Column :header="$t('view.stock.product.costColItem')" />
+                  <Column :header="$t('view.stock.product.costColQty')" />
+                  <Column :header="$t('view.stock.product.costColQtyPrice')" />
+                  <Column :header="$t('view.stock.product.costColWeight')" />
+                  <Column :header="$t('view.stock.product.costColWeightPrice')" />
+                  <Column :header="$t('view.stock.product.costColTotal')" />
                 </Row>
               </ColumnGroup>
 
@@ -355,11 +355,11 @@ export default {
 
     getGroupLabel(group) {
       const labels = {
-        Gold: 'รายการทอง',
-        Gem: 'รายการวัถุดิบ',
-        Worker: 'รายการงานช่าง',
-        Embed: 'รายการงานฝัง',
-        ETC: 'รายการเพิ่มเติม'
+        Gold: this.$t('view.stock.product.groupGold'),
+        Gem: this.$t('view.stock.product.groupGem'),
+        Worker: this.$t('view.stock.product.groupWorker'),
+        Embed: this.$t('view.stock.product.groupEmbed'),
+        ETC: this.$t('view.stock.product.groupEtc')
       }
       return labels[group] || group
     },

@@ -4,24 +4,24 @@
       <template v-slot:content>
         <div class="filter-container-highlight">
           <div class="form-col-container">
-            <span class="desc-text-white">{{ `ราคาเพชร/พลอย: ${gem.name ?? 'loading...'}` }}</span>
+            <span class="desc-text-white">{{ $t('view.stock.gem.priceTitle', { name: gem.name ?? '...' }) }}</span>
           </div>
           <div class="form-col-container mt-1">
             <div class="form-col-container">
               <div class="d-flex flex-column">
-                <span class="title-text-white">ราคาต่อจำนวน</span>
+                <span class="title-text-white">{{ $t('view.stock.gem.pricePerQty') }}</span>
                 <span class="desc-text-white">{{ gem.priceQty.toFixed(3) }}</span>
               </div>
               <div class="d-flex flex-column">
-                <span class="title-text-white">ราคาต่อน้ำหนัก</span>
+                <span class="title-text-white">{{ $t('view.stock.gem.pricePerWeight') }}</span>
                 <span class="desc-text-white">{{ gem.price.toFixed(3) }}</span>
               </div>
               <div class="d-flex flex-column">
-                <span class="title-text-white">หน่วย</span>
+                <span class="title-text-white">{{ $t('view.stock.gem.unit') }}</span>
                 <span class="desc-text-white">{{ gem.unitCode }}</span>
               </div>
               <div class="d-flex flex-column">
-                <span class="title-text-white">รหัสหน่วย</span>
+                <span class="title-text-white">{{ $t('view.stock.gem.unitCode') }}</span>
                 <span class="desc-text-white">{{ gem.unit }}</span>
               </div>
             </div>
@@ -31,13 +31,13 @@
           <div class="filter-container mt-2">
             <div class="title-text-lg">
               <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-              <span>ราคาใหม่</span>
+              <span>{{ $t('view.stock.gem.newPriceTitle') }}</span>
             </div>
             <div class="form-col-container">
               <!-- price -->
               <div>
                 <div>
-                  <span class="title-text">ราคาต่อจำนวน</span>
+                  <span class="title-text">{{ $t('view.stock.gem.pricePerQty') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <input
@@ -54,7 +54,7 @@
               <!-- price qty -->
               <div>
                 <div>
-                  <span class="title-text">ราคาต่อน้ำหนัก</span>
+                  <span class="title-text">{{ $t('view.stock.gem.pricePerWeight') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <input
@@ -71,7 +71,7 @@
               <!-- unit code -->
               <div>
                 <div>
-                  <span class="title-text">หน่วย</span>
+                  <span class="title-text">{{ $t('view.stock.gem.unit') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <input
@@ -85,12 +85,12 @@
               <!-- unit -->
               <div>
                 <div>
-                  <span class="title-text">รหัสหน่วย</span>
+                  <span class="title-text">{{ $t('view.stock.gem.unitCode') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <DropdownGeneric
                   v-model="form.unit"
-                  :options="unitCode"
+                  :options="unitCodeOptions"
                   optionLabel="description"
                   class="w-full md:w-14rem"
                   :showClear="form.unit ? true : false"
@@ -103,14 +103,14 @@
                 <span class="mr-2 mt-1">
                   <i class="bi bi-cash-coin"></i>
                 </span>
-                <span>ปรับราคา</span>
+                <span>{{ $t('view.stock.gem.adjustPrice') }}</span>
               </button>
             </div>
           </div>
         </form>
         <div class="filter-container-highlight mt-2">
           <div class="form-col-container">
-            <span class="desc-text-white">ประวัติราคา</span>
+            <span class="desc-text-white">{{ $t('view.stock.gem.priceHistory') }}</span>
           </div>
         </div>
         <div class="form-col-container">
@@ -190,13 +190,19 @@ export default {
     },
     priceHistoryColumns() {
       return [
-        { field: 'createDate', header: 'วันที่', minWidth: '150px', sortable: false },
-        { field: 'previousPrice', header: 'ราคาต่อจำนวนก่อนปรับ', minWidth: '100px', sortable: false },
-        { field: 'newPrice', header: 'ราคาต่อจำนวนหลังปรับ', minWidth: '100px', sortable: false },
-        { field: 'previousPriceUnit', header: 'ราคาต่อน้ำหนักก่อนปรับ', minWidth: '100px', sortable: false },
-        { field: 'newPriceUnit', header: 'ราคาต่อน้ำหนักหลังปรับ', minWidth: '100px', sortable: false },
-        { field: 'unitCode', header: 'หน่วย', minWidth: '100px' },
-        { field: 'unit', header: 'รหัสหน่วย', minWidth: '100px' }
+        { field: 'createDate', header: this.$t('view.stock.gem.priceHistoryDate'), minWidth: '150px', sortable: false },
+        { field: 'previousPrice', header: this.$t('view.stock.gem.priceHistoryPrevQty'), minWidth: '100px', sortable: false },
+        { field: 'newPrice', header: this.$t('view.stock.gem.priceHistoryNewQty'), minWidth: '100px', sortable: false },
+        { field: 'previousPriceUnit', header: this.$t('view.stock.gem.priceHistoryPrevWeight'), minWidth: '100px', sortable: false },
+        { field: 'newPriceUnit', header: this.$t('view.stock.gem.priceHistoryNewWeight'), minWidth: '100px', sortable: false },
+        { field: 'unitCode', header: this.$t('view.stock.gem.unit'), minWidth: '100px' },
+        { field: 'unit', header: this.$t('view.stock.gem.unitCode'), minWidth: '100px' }
+      ]
+    },
+    unitCodeOptions() {
+      return [
+        { value: 'Q', description: this.$t('view.stock.gem.unitQty') },
+        { value: 'K', description: this.$t('view.stock.gem.unitWeight') }
       ]
     }
   },
@@ -219,11 +225,7 @@ export default {
     return {
       history: {},
       form: { ...interfaceForm },
-      val: { ...interfaceVal },
-      unitCode: [
-        { value: 'Q', description: 'Q [ราคาต่อจำนวน]' },
-        { value: 'K', description: 'K [ราคาต่อน้ำหนัก]' }
-      ]
+      val: { ...interfaceVal }
     }
   },
   methods: {
@@ -247,7 +249,7 @@ export default {
         price: this.gem.price.toFixed(3),
         priceQty: this.gem.priceQty.toFixed(3),
         unitCode: this.gem.unitCode,
-        unit: this.gem.unit ? this.unitCode.find((x) => x.value === this.gem.unit) : ''
+        unit: this.gem.unit ? this.unitCodeOptions.find((x) => x.value === this.gem.unit) : ''
       }
       this.val = { ...interfaceVal }
     },

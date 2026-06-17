@@ -6,9 +6,9 @@
           <div class="form-col-container">
             <div class="d-flex justify-content-between">
               <span class="desc-text-white">
-                {{ `ประวัติเพชร/พลอย: ${gem.name ?? 'loading...'}` }}
+                {{ $t('view.stock.gem.historyTitle', { name: gem.name ?? '...' }) }}
               </span>
-              <span class="mr-5 desc-text-white">{{ `${take} รายการล่าสุด` }}</span>
+              <span class="mr-5 desc-text-white">{{ $t('view.stock.gem.historyLatest', { take }) }}</span>
             </div>
           </div>
         </div>
@@ -106,33 +106,44 @@ export default {
     },
     columns() {
       return [
-        { field: 'requestDate', header: 'วันทำรายการ (ล่าสุด)', minWidth: '200px' },
-        { field: 'running', header: 'เลขที่รายการ', minWidth: '200px' },
-        { field: 'refRunning1', header: 'เลขที่อ้างอิง 1', minWidth: '200px' },
-        { field: 'refRunning2', header: 'เลขที่อ้างอิง 2', minWidth: '200px' },
-        { field: 'type', header: 'ประเภท', minWidth: '200px', sortable: false },
-        { field: 'qty', header: 'จำนวน', minWidth: '200px', sortable: false },
-        { field: 'qtyWeight', header: 'น้ำหนัก', minWidth: '200px', sortable: false },
-        { field: 'previousRemianQty', header: 'จำนวนก่อนใช้', minWidth: '200px' },
-        { field: 'previousRemianQtyWeight', header: 'น้ำหนักก่อนใช้', minWidth: '200px' },
-        { field: 'pointRemianQty', header: 'จำนวนคงเหลือ', minWidth: '200px', sortable: false },
-        { field: 'pointRemianQtyWeight', header: 'น้ำหนักคงเหลือ', minWidth: '200px' },
-        { field: 'woText', header: 'W.O.', minWidth: '200px' },
-        { field: 'mold', header: 'เเม่พิมพ์', minWidth: '200px' },
-        { field: 'remark1', header: 'หมายเหตุ-1', minWidth: '200px' },
-        { field: 'remark2', header: 'หมายเหตุ-2', minWidth: '200px' },
-        { field: 'jobOrPo', header: 'Invoice/Ref No.', minWidth: '200px' },
-        { field: 'subpplierName', header: 'ร้านผลิต/ชื่อร้าน', minWidth: '200px' },
-        { field: 'supplierCost', header: 'ราคาทุน', minWidth: '200px', sortable: false },
-        { field: 'code', header: 'รหัส', minWidth: '200px' },
-        { field: 'groupName', header: 'หมวดหมู่', minWidth: '200px' },
-        { field: 'size', header: 'ขนาด', minWidth: '200px' },
-        { field: 'shape', header: 'รูปร่าง', minWidth: '200px' },
-        { field: 'grade', header: 'เกรด', minWidth: '200px' },
-        { field: 'price', header: 'ราคา', minWidth: '150px', sortable: false },
-        { field: 'priceQty', header: 'ราคาต่อหน่วย', minWidth: '150px', sortable: false },
-        { field: 'unitCode', header: 'หน่วย', minWidth: '150px' },
-        { field: 'unit', header: 'รหัสหน่วย', minWidth: '150px' }
+        { field: 'requestDate', header: this.$t('view.stock.gem.txDate'), minWidth: '200px' },
+        { field: 'running', header: this.$t('view.stock.gem.txRunning'), minWidth: '200px' },
+        { field: 'refRunning1', header: this.$t('view.stock.gem.txRef1'), minWidth: '200px' },
+        { field: 'refRunning2', header: this.$t('view.stock.gem.txRef2'), minWidth: '200px' },
+        { field: 'type', header: this.$t('view.stock.gem.txType'), minWidth: '200px', sortable: false },
+        { field: 'qty', header: this.$t('view.stock.gem.txQty'), minWidth: '200px', sortable: false },
+        { field: 'qtyWeight', header: this.$t('view.stock.gem.txWeight'), minWidth: '200px', sortable: false },
+        { field: 'previousRemianQty', header: this.$t('view.stock.gem.txPrevQty'), minWidth: '200px' },
+        { field: 'previousRemianQtyWeight', header: this.$t('view.stock.gem.txPrevWeight'), minWidth: '200px' },
+        { field: 'pointRemianQty', header: this.$t('view.stock.gem.txRemainQty'), minWidth: '200px', sortable: false },
+        { field: 'pointRemianQtyWeight', header: this.$t('view.stock.gem.txRemainWeight'), minWidth: '200px' },
+        { field: 'woText', header: this.$t('view.stock.gem.txWo'), minWidth: '200px' },
+        { field: 'mold', header: this.$t('view.stock.gem.txMold'), minWidth: '200px' },
+        { field: 'remark1', header: this.$t('view.stock.gem.txRemark1'), minWidth: '200px' },
+        { field: 'remark2', header: this.$t('view.stock.gem.txRemark2'), minWidth: '200px' },
+        { field: 'jobOrPo', header: this.$t('view.stock.gem.txInvoice'), minWidth: '200px' },
+        { field: 'subpplierName', header: this.$t('view.stock.gem.txSupplier'), minWidth: '200px' },
+        { field: 'supplierCost', header: this.$t('view.stock.gem.txCost'), minWidth: '200px', sortable: false },
+        { field: 'code', header: this.$t('view.stock.gem.txCode'), minWidth: '200px' },
+        { field: 'groupName', header: this.$t('view.stock.gem.txGroup'), minWidth: '200px' },
+        { field: 'size', header: this.$t('view.stock.gem.txSize'), minWidth: '200px' },
+        { field: 'shape', header: this.$t('view.stock.gem.txShape'), minWidth: '200px' },
+        { field: 'grade', header: this.$t('view.stock.gem.txGrade'), minWidth: '200px' },
+        { field: 'price', header: this.$t('view.stock.gem.txPrice'), minWidth: '150px', sortable: false },
+        { field: 'priceQty', header: this.$t('view.stock.gem.txPriceUnit'), minWidth: '150px', sortable: false },
+        { field: 'unitCode', header: this.$t('view.stock.gem.txUnit'), minWidth: '150px' },
+        { field: 'unit', header: this.$t('view.stock.gem.txUnitCode'), minWidth: '150px' }
+      ]
+    },
+    masterType() {
+      return [
+        { id: 1, description: this.$t('view.stock.gem.typeNewGem') },
+        { id: 2, description: this.$t('view.stock.gem.typeOutStock') },
+        { id: 3, description: this.$t('view.stock.gem.typeReturn') },
+        { id: 4, description: this.$t('view.stock.gem.typeIssue') },
+        { id: 5, description: this.$t('view.stock.gem.typeBorrow') },
+        { id: 6, description: this.$t('view.stock.gem.typeReturnIn') },
+        { id: 7, description: this.$t('view.stock.gem.typeWithdraw') }
       ]
     }
   },
@@ -147,15 +158,6 @@ export default {
   data() {
     return {
       history: {},
-      masterType: [
-        { id: 1, description: 'รับเข้าคลัง [พลอยใหม่]' },
-        { id: 2, description: 'รับเข้าคลัง [พลอยนอกสต๊อก]' },
-        { id: 3, description: 'รับเข้าคลัง [พลอยคืน]' },
-        { id: 4, description: 'จ่ายออกคลัง' },
-        { id: 5, description: 'ยืมออกคลัง' },
-        { id: 6, description: 'คืนเข้าคลัง' },
-        { id: 7, description: 'เบิกออกคลัง' }
-      ],
       sort: [
         {
           field: 'requestDate',

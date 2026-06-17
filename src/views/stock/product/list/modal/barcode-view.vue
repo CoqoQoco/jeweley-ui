@@ -2,7 +2,7 @@
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="800px">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ `พิมพ์ป้ายสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.stock.product.printTitle', { stockNumber: stock.stockNumber }) }}</span>
       </template>
       <template #content>
         <!-- Tab เลือกแบบ -->
@@ -12,37 +12,37 @@
               :class="['tab-btn', selectedType === 'original' ? 'tab-btn-active' : '']"
               @click="selectedType = 'original'"
             >
-              <i class="bi bi-file-earmark-text mr-1"></i> ดั้งเดิม
+              <i class="bi bi-file-earmark-text mr-1"></i> {{ $t('view.stock.product.tabOriginal') }}
             </button>
             <button
               :class="['tab-btn', selectedType === 'cost-with-gold' ? 'tab-btn-active' : '']"
               @click="selectedType = 'cost-with-gold'"
             >
-              <i class="bi bi-file-earmark mr-1"></i> ทุนรวมทอง
+              <i class="bi bi-file-earmark mr-1"></i> {{ $t('view.stock.product.tabCostWithGold') }}
             </button>
             <button
               :class="['tab-btn', selectedType === 'cost-no-gold' ? 'tab-btn-active' : '']"
               @click="selectedType = 'cost-no-gold'"
             >
-              <i class="bi bi-file-earmark-minus mr-1"></i> ทุนไม่รวมทอง
+              <i class="bi bi-file-earmark-minus mr-1"></i> {{ $t('view.stock.product.tabCostNoGold') }}
             </button>
             <button
               :class="['tab-btn', selectedType === 'tag-with-gold' ? 'tab-btn-active' : '']"
               @click="selectedType = 'tag-with-gold'"
             >
-              <i class="bi bi-tag mr-1"></i> ราคาป้ายรวมทอง
+              <i class="bi bi-tag mr-1"></i> {{ $t('view.stock.product.tabTagWithGold') }}
             </button>
             <button
               :class="['tab-btn', selectedType === 'tag-no-gold' ? 'tab-btn-active' : '']"
               @click="selectedType = 'tag-no-gold'"
             >
-              <i class="bi bi-tag-fill mr-1"></i> ราคาป้ายไม่รวมทอง
+              <i class="bi bi-tag-fill mr-1"></i> {{ $t('view.stock.product.tabTagNoGold') }}
             </button>
           </div>
         </div>
 
         <div class="pl-4 pt-2">
-          <span class="title-text">ภาพตัวอย่าง</span>
+          <span class="title-text">{{ $t('view.stock.product.previewLabel') }}</span>
         </div>
 
         <div class="form-col-container pl-4 pr-4">
@@ -77,9 +77,7 @@
         <div class="pl-4 pr-4 pt-2 pb-2">
           <div class="title-text">
             <span class="bi bi-exclamation-circle mr-1"></span>
-            <span>
-              โปรดตรวจสอบสถานะโปรเเกรมพิมพ์บาร์โค้ด เเละเครื่องพิมพ์ก่อนการใช้งานทุกครั้ง
-            </span>
+            <span>{{ $t('view.stock.product.printerWarning') }}</span>
           </div>
 
           <div class="d-flex justify-content-between items-center">
@@ -112,7 +110,7 @@
             <!-- action -->
             <div class="vertical-center-container">
               <div>
-                <span class="title-text">จำนวนพิมพ์</span>
+                <span class="title-text">{{ $t('view.stock.product.printCount') }}</span>
               </div>
               <div class="ml-2 mr-2">
                 <input
@@ -303,10 +301,9 @@ export default {
     },
 
     getPrinterServiceStatus(check) {
-      let name = 'เครื่องพิมพ์'
-      if (check === 'error') return `${name}ไม่พร้อมใช้งาน`
-      if (check === 'success') return `${name}พร้อมใช้งาน`
-      return `กำลังตรวจสอบสถานะ${name}...`
+      if (check === 'error') return this.$t('view.stock.product.printerError')
+      if (check === 'success') return this.$t('view.stock.product.printerReady')
+      return this.$t('view.stock.product.printerChecking')
     },
 
     validateInput() {

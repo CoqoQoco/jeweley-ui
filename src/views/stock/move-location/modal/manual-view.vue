@@ -7,20 +7,20 @@
     :clickToClose="true"
   >
     <template #title>
-      <span class="title-text-lg px-3 pt-3 d-block">คู่มือการใช้งาน — ย้าย Storage Location</span>
+      <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.stock.moveLocation.manualTitle') }}</span>
     </template>
 
     <template #content>
       <div class="p-3">
-        <h6 class="section-heading">ก) การย้ายสินค้าไปยัง Storage Location</h6>
+        <h6 class="section-heading">{{ $t('view.stock.moveLocation.sectionA') }}</h6>
 
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">1</span>
-            <span class="step-title">ค้นหาและเลือกสินค้า</span>
+            <span class="step-title">{{ $t('view.stock.moveLocation.step1Title') }}</span>
           </div>
           <div class="item-card-body">
-            <p class="step-desc">ค้นหาสินค้าด้วยเลขที่ผลิต รหัสสินค้า หรือ Storage Location ปัจจุบัน จากนั้นเลือกสินค้าที่ต้องการย้ายด้วย checkbox</p>
+            <p class="step-desc">{{ $t('view.stock.moveLocation.step1Desc') }}</p>
             <img :src="imgList" alt="หน้าแสดงรายการสินค้า" class="manual-img mb-2" />
             <img :src="imgSelect" alt="เลือกสินค้าด้วย checkbox" class="manual-img" />
           </div>
@@ -29,10 +29,10 @@
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">2</span>
-            <span class="step-title">กดปุ่มย้าย Storage Location</span>
+            <span class="step-title">{{ $t('view.stock.moveLocation.step2Title') }}</span>
           </div>
           <div class="item-card-body">
-            <p class="step-desc">เมื่อเลือกสินค้าแล้ว กดปุ่ม "ย้าย Storage Location" บนแถบด้านซ้าย ระบบจะเปิด modal ให้เลือก SLOC ปลายทาง</p>
+            <p class="step-desc">{{ $t('view.stock.moveLocation.step2Desc') }}</p>
             <img :src="imgModalTarget" alt="modal เลือก SLOC ปลายทาง" class="manual-img" />
           </div>
         </div>
@@ -40,10 +40,10 @@
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">3</span>
-            <span class="step-title">ยืนยันการย้าย</span>
+            <span class="step-title">{{ $t('view.stock.moveLocation.step3Title') }}</span>
           </div>
           <div class="item-card-body">
-            <p class="step-desc">เลือก Storage Location ปลายทางจาก dropdown แล้วกดปุ่ม "ยืนยันการย้าย" ระบบจะแสดง dialog ยืนยันรายการก่อนดำเนินการ</p>
+            <p class="step-desc">{{ $t('view.stock.moveLocation.step3Desc') }}</p>
             <img :src="imgConfirm" alt="dialog ยืนยันการย้าย" class="manual-img" />
           </div>
         </div>
@@ -51,33 +51,33 @@
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">4</span>
-            <span class="step-title">ย้ายสำเร็จ</span>
+            <span class="step-title">{{ $t('view.stock.moveLocation.step4Title') }}</span>
           </div>
           <div class="item-card-body">
-            <p class="step-desc">เมื่อย้ายสำเร็จ ระบบจะแจ้งผลและโหลดข้อมูลใหม่อัตโนมัติ</p>
+            <p class="step-desc">{{ $t('view.stock.moveLocation.step4Desc') }}</p>
             <img :src="imgSuccess" alt="แจ้งย้ายสำเร็จ" class="manual-img" />
           </div>
         </div>
 
-        <h6 class="section-heading mt-4">ข) การสร้าง Storage Location ชั่วคราว</h6>
+        <h6 class="section-heading mt-4">{{ $t('view.stock.moveLocation.sectionB') }}</h6>
 
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">1</span>
-            <span class="step-title">เปิดฟอร์มสร้าง SLOC ชั่วคราว</span>
+            <span class="step-title">{{ $t('view.stock.moveLocation.stepB1Title') }}</span>
           </div>
           <div class="item-card-body">
-            <p class="step-desc">ใน modal ย้าย Storage Location กดปุ่ม "+ สร้าง SLOC ชั่วคราว" เพื่อขยายฟอร์มสร้าง SLOC ใหม่</p>
+            <p class="step-desc">{{ $t('view.stock.moveLocation.stepB1Desc') }}</p>
           </div>
         </div>
 
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">2</span>
-            <span class="step-title">กรอกข้อมูล &amp; เลือก</span>
+            <span class="step-title">{{ $t('view.stock.moveLocation.stepB2Title') }}</span>
           </div>
           <div class="item-card-body">
-            <p class="step-desc">กรอกรหัสและชื่อ SLOC (ประเภทจะตั้งเป็น "ชั่วคราว" อัตโนมัติ) แล้วกดปุ่ม "เพิ่ม &amp; เลือก" ระบบจะสร้าง SLOC ใหม่และตั้งเป็น SLOC ปลายทางอัตโนมัติ</p>
+            <p class="step-desc">{{ $t('view.stock.moveLocation.stepB2Desc') }}</p>
             <img :src="imgTempForm" alt="ฟอร์มสร้าง SLOC ชั่วคราว" class="manual-img" />
           </div>
         </div>
@@ -85,10 +85,10 @@
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">3</span>
-            <span class="step-title">ยืนยันการย้ายเข้า SLOC ชั่วคราว</span>
+            <span class="step-title">{{ $t('view.stock.moveLocation.stepB3Title') }}</span>
           </div>
           <div class="item-card-body">
-            <p class="step-desc">กดปุ่ม "ยืนยันการย้าย" เพื่อดำเนินการ — ดูขั้นตอนที่ 3-4 ของส่วน ก) สำหรับรายละเอียดเพิ่มเติม</p>
+            <p class="step-desc">{{ $t('view.stock.moveLocation.stepB3Desc') }}</p>
           </div>
         </div>
       </div>

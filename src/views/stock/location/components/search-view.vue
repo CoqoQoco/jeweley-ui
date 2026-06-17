@@ -2,31 +2,31 @@
   <div class="filter-container-searchBar">
     <form @submit.prevent="onSearch">
       <div>
-        <pageTitle title="ค้นหา Storage Location" :isShowBtnClose="false" />
+        <pageTitle :title="$t('view.stock.location.searchTitle')" :isShowBtnClose="false" />
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">รหัส</span>
+            <span class="title-text">{{ $t('view.stock.location.code') }}</span>
             <input
               class="form-control bg-input"
               type="text"
               v-model.trim="form.code"
-              placeholder="เช่น MAIN, SHOW-01"
+              :placeholder="$t('view.stock.location.codePlaceholder')"
             />
           </div>
 
           <div>
-            <span class="title-text">ชื่อ</span>
+            <span class="title-text">{{ $t('view.stock.location.name') }}</span>
             <input
               class="form-control bg-input"
               type="text"
               v-model.trim="form.nameTh"
-              placeholder="เช่น คลังหลัก, โชว์รูม"
+              :placeholder="$t('view.stock.location.namePlaceholder')"
             />
           </div>
 
           <div>
-            <span class="title-text">ประเภท</span>
+            <span class="title-text">{{ $t('view.stock.location.locType') }}</span>
             <DropdownGeneric
               :modelValue="form.type"
               :options="typeOptions"
@@ -39,7 +39,7 @@
           </div>
 
           <div>
-            <span class="title-text">สถานะ</span>
+            <span class="title-text">{{ $t('view.stock.location.isActive') }}</span>
             <DropdownGeneric
               :modelValue="form.isActive"
               :options="statusOptions"
@@ -82,18 +82,6 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
-const TYPE_OPTIONS = [
-  { value: 'WAREHOUSE', label: 'คลัง' },
-  { value: 'SHOWROOM', label: 'โชว์รูม' },
-  { value: 'BRANCH', label: 'สาขา' },
-  { value: 'TEMP', label: 'ชั่วคราว' }
-]
-
-const STATUS_OPTIONS = [
-  { value: true, label: 'ใช้งาน' },
-  { value: false, label: 'ปิด' }
-]
-
 const interfaceForm = {
   code: null,
   nameTh: null,
@@ -118,6 +106,23 @@ export default {
 
   emits: ['search', 'clear', 'create'],
 
+  computed: {
+    typeOptions() {
+      return [
+        { value: 'WAREHOUSE', label: this.$t('view.stock.location.warehouse') },
+        { value: 'SHOWROOM', label: this.$t('view.stock.location.showroom') },
+        { value: 'BRANCH', label: this.$t('view.stock.location.branch') },
+        { value: 'TEMP', label: this.$t('view.stock.location.temp') }
+      ]
+    },
+    statusOptions() {
+      return [
+        { value: true, label: this.$t('view.stock.location.active') },
+        { value: false, label: this.$t('view.stock.location.inactive') }
+      ]
+    }
+  },
+
   watch: {
     modelForm: {
       handler(val) {
@@ -129,9 +134,7 @@ export default {
 
   data() {
     return {
-      form: { ...interfaceForm },
-      typeOptions: TYPE_OPTIONS,
-      statusOptions: STATUS_OPTIONS
+      form: { ...interfaceForm }
     }
   },
 

@@ -7,13 +7,13 @@
       :isShowActionPart="true"
     >
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">ย้าย Storage Location</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.stock.moveLocation.moveTitle') }}</span>
       </template>
 
       <template #content>
         <div class="p-3">
           <div class="summary-box mb-3">
-            <span class="title-text">รายการที่เลือก ({{ selectedItems.length }})</span>
+            <span class="title-text">{{ $t('view.stock.moveLocation.selectedItems', { count: selectedItems.length }) }}</span>
             <div class="summary-list mt-1">
               <span
                 v-for="item in selectedItems"
@@ -27,7 +27,7 @@
 
           <div class="form-row mb-3">
             <div class="form-field">
-              <span class="title-text">ย้ายไปที่ (SLOC ปลายทาง) <span class="text-danger">*</span></span>
+              <span class="title-text">{{ $t('view.stock.moveLocation.targetLocation') }} <span class="text-danger">*</span></span>
               <DropdownGeneric
                 :modelValue="targetLocationCode"
                 :options="locationOptions"
@@ -47,15 +47,15 @@
               @click="toggleCreateForm"
             >
               <i :class="showCreateForm ? 'bi bi-dash' : 'bi bi-plus'"></i>
-              {{ showCreateForm ? 'ยกเลิกสร้าง SLOC' : '+ สร้าง SLOC ชั่วคราว' }}
+              {{ showCreateForm ? $t('view.stock.moveLocation.cancelTempSloc') : $t('view.stock.moveLocation.createTempSloc') }}
             </button>
           </div>
 
           <div v-if="showCreateForm" class="create-sloc-form p-3 mb-3">
-            <h6 class="mb-3">สร้าง SLOC ชั่วคราวใหม่</h6>
+            <h6 class="mb-3">{{ $t('view.stock.moveLocation.createTempTitle') }}</h6>
             <div class="form-row two-col mb-2">
               <div class="form-field">
-                <span class="title-text">รหัส <span class="text-danger">*</span></span>
+                <span class="title-text">{{ $t('view.stock.moveLocation.code') }} <span class="text-danger">*</span></span>
                 <input
                   type="text"
                   class="form-control"
@@ -64,7 +64,7 @@
                 />
               </div>
               <div class="form-field">
-                <span class="title-text">ชื่อ <span class="text-danger">*</span></span>
+                <span class="title-text">{{ $t('view.stock.moveLocation.name') }} <span class="text-danger">*</span></span>
                 <input
                   type="text"
                   class="form-control"
@@ -75,7 +75,7 @@
             </div>
             <div class="form-row mb-2">
               <div class="form-field">
-                <span class="title-text">ประเภท</span>
+                <span class="title-text">{{ $t('view.stock.moveLocation.locType') }}</span>
                 <DropdownGeneric
                   :modelValue="newSloc.type"
                   :options="typeOptions"
@@ -88,7 +88,7 @@
               </div>
             </div>
             <button class="btn btn-sm btn-green" type="button" @click="onAddSloc">
-              <i class="bi bi-plus-circle"></i> เพิ่ม & เลือก
+              <i class="bi bi-plus-circle"></i> {{ $t('view.stock.moveLocation.addSelect') }}
             </button>
           </div>
         </div>
@@ -96,10 +96,10 @@
 
       <template #action>
         <button class="btn btn-sm btn-main" type="button" @click="onConfirmMove">
-          <i class="bi bi-arrow-left-right"></i> ยืนยันการย้าย
+          <i class="bi bi-arrow-left-right"></i> {{ $t('view.stock.moveLocation.confirmMoveBtn') }}
         </button>
         <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
+          {{ $t('common.btn.cancel') }}
         </button>
       </template>
     </modal>
@@ -114,13 +114,6 @@ import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-locat
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-const TYPE_OPTIONS = [
-  { value: 'WAREHOUSE', label: 'คลัง' },
-  { value: 'SHOWROOM', label: 'โชว์รูม' },
-  { value: 'BRANCH', label: 'สาขา' },
-  { value: 'TEMP', label: 'ชั่วคราว' }
-]
 
 const defaultNewSloc = () => ({
   code: null,
@@ -161,10 +154,17 @@ export default {
         .filter((item) => item.isActive)
         .map((item) => ({ value: item.code, label: `${item.code} — ${item.nameTh}` }))
     },
-
     targetLocationLabel() {
       const found = this.locationOptions.find((o) => o.value === this.targetLocationCode)
       return found ? found.label : this.targetLocationCode
+    },
+    typeOptions() {
+      return [
+        { value: 'WAREHOUSE', label: this.$t('view.stock.moveLocation.warehouse') },
+        { value: 'SHOWROOM', label: this.$t('view.stock.moveLocation.showroom') },
+        { value: 'BRANCH', label: this.$t('view.stock.moveLocation.branch') },
+        { value: 'TEMP', label: this.$t('view.stock.moveLocation.temp') }
+      ]
     }
   },
 
@@ -182,8 +182,7 @@ export default {
     return {
       targetLocationCode: null,
       showCreateForm: false,
-      newSloc: defaultNewSloc(),
-      typeOptions: TYPE_OPTIONS
+      newSloc: defaultNewSloc()
     }
   },
 
@@ -208,11 +207,11 @@ export default {
 
     async onAddSloc() {
       if (!this.newSloc.code || !this.newSloc.code.trim()) {
-        warning('กรุณากรอกรหัส SLOC', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.stock.moveLocation.warnCode'), this.$t('view.stock.moveLocation.incomplete'))
         return
       }
       if (!this.newSloc.nameTh || !this.newSloc.nameTh.trim()) {
-        warning('กรุณากรอกชื่อ SLOC', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.stock.moveLocation.warnName'), this.$t('view.stock.moveLocation.incomplete'))
         return
       }
 
@@ -235,7 +234,7 @@ export default {
 
     onConfirmMove() {
       if (!this.targetLocationCode) {
-        warning('กรุณาเลือก Storage Location ปลายทาง', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.stock.moveLocation.warnTarget'), this.$t('view.stock.moveLocation.incomplete'))
         return
       }
 
@@ -243,15 +242,15 @@ export default {
       const label = this.targetLocationLabel
 
       confirmSubmit(
-        `ยืนยันย้าย ${count} รายการไปยัง ${label}?`,
-        'ยืนยันการย้าย',
+        this.$t('view.stock.moveLocation.confirmMove', { count, label }),
+        this.$t('view.stock.moveLocation.confirmMoveTitle'),
         async () => {
           const stockNumbers = this.selectedItems.map((item) => item.stockNumber)
           await this.moveStore.moveLocation({
             stockNumbers,
             targetLocationCode: this.targetLocationCode
           })
-          success('ย้าย Storage Location สำเร็จ')
+          success(this.$t('view.stock.moveLocation.moveSuccess'))
           this.$emit('fetch')
           this.closeModal()
         }

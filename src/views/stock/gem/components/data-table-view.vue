@@ -189,6 +189,96 @@ export default {
     },
     masterGrade() {
       return this.masterGradeData
+    },
+    columns() {
+      return [
+        {
+          field: 'actions',
+          sortable: false,
+          minWidth: '80px'
+        },
+        {
+          field: 'code',
+          header: this.$t('view.stock.gem.code'),
+          sortable: true
+        },
+        {
+          field: 'quantity',
+          header: this.$t('view.stock.gem.stockQty'),
+          sortable: true,
+          format: 'number'
+        },
+        {
+          field: 'quantityOnProcess',
+          header: this.$t('view.stock.gem.borrowQty'),
+          sortable: true,
+          format: 'number'
+        },
+        {
+          field: 'quantityWeight',
+          header: this.$t('view.stock.gem.stockWeight'),
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'quantityWeightOnProcess',
+          header: this.$t('view.stock.gem.borrowWeight'),
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'price',
+          header: this.$t('view.stock.gem.pricePerWeight'),
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'priceQty',
+          header: this.$t('view.stock.gem.pricePerQty'),
+          sortable: true,
+          format: 'decimal3'
+        },
+        {
+          field: 'unitCode',
+          header: this.$t('view.stock.gem.unit'),
+          sortable: true
+        },
+        {
+          field: 'unit',
+          header: this.$t('view.stock.gem.unitCode'),
+          sortable: true
+        },
+        {
+          field: 'groupName',
+          header: this.$t('view.stock.gem.groupName'),
+          sortable: true
+        },
+        {
+          field: 'size',
+          header: this.$t('view.stock.gem.size'),
+          sortable: true
+        },
+        {
+          field: 'shape',
+          header: this.$t('view.stock.gem.shape'),
+          sortable: true
+        },
+        {
+          field: 'grade',
+          header: this.$t('view.stock.gem.grade'),
+          sortable: true
+        },
+        {
+          field: 'region',
+          header: this.$t('view.stock.gem.origin'),
+          sortable: true
+        },
+        {
+          field: 'remark1',
+          header: this.$t('common.field.remark') + '-1',
+          sortable: true
+        }
+      ]
     }
   },
 
@@ -208,96 +298,6 @@ export default {
       form: null,
       export: null,
 
-      columns: [
-        {
-          field: 'actions',
-          //header: 'Actions',
-          sortable: false,
-          minWidth: '80px'
-        },
-        {
-          field: 'code',
-          header: 'รหัส',
-          sortable: true
-        },
-        {
-          field: 'quantity',
-          header: 'จำนวนคงคลัง',
-          sortable: true,
-          format: 'number' // custom format with 3 decimal places
-        },
-        {
-          field: 'quantityOnProcess',
-          header: 'จำนวนยืมคลัง',
-          sortable: true,
-          format: 'number'
-        },
-        {
-          field: 'quantityWeight',
-          header: 'น้ำหนักคงคลัง',
-          sortable: true,
-          format: 'decimal3'
-        },
-        {
-          field: 'quantityWeightOnProcess',
-          header: 'น้ำหนักยืมคลัง',
-          sortable: true,
-          format: 'decimal3'
-        },
-        {
-          field: 'price',
-          header: 'ราคาต่อนำหนัก',
-          sortable: true,
-          format: 'decimal3'
-        },
-        {
-          field: 'priceQty',
-          header: 'ราคาต่อจำนวน',
-          sortable: true,
-          format: 'decimal3'
-        },
-        {
-          field: 'unitCode',
-          header: 'หน่วย',
-          sortable: true
-        },
-        {
-          field: 'unit',
-          header: 'รหัสหน่วย',
-          sortable: true
-        },
-
-        {
-          field: 'groupName',
-          header: 'หมวดหมู่',
-          sortable: true
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: true
-        },
-        {
-          field: 'shape',
-          header: 'รูปร่าง',
-          sortable: true
-        },
-        {
-          field: 'grade',
-          header: 'เกรด',
-          sortable: true
-        },
-        {
-          field: 'region',
-          header: 'แหล่งผลิต',
-          sortable: true
-        },
-        {
-          field: 'remark1',
-          header: 'หมายเหตุ-1',
-          sortable: true
-        }
-      ]
     }
   },
 
@@ -373,7 +373,7 @@ export default {
 
       // ตรวจสอบข้อมูลที่จำเป็น
       if (!rowData.code) {
-        warning('ไม่พบรหัสพัสดุ', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.stock.gem.warnCode'), this.$t('view.stock.gem.incomplete'))
         return
       }
 
@@ -405,7 +405,7 @@ export default {
         // พิมพ์ 1 ใบ
         const result = await gemBarcodeService.printBarcode(this.barcodePreviewData)
         if (result.success) {
-          success('พิมพ์ป้ายสำเร็จ')
+          success(this.$t('view.stock.gem.printSuccess'))
           this.closeBarcodePreview()
         }
       } else {
@@ -420,7 +420,7 @@ export default {
 
     async onPrintBarcodePDF(rowData) {
       if (!rowData.code) {
-        warning('ไม่พบรหัสพัสดุ', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.stock.gem.warnCode'), this.$t('view.stock.gem.incomplete'))
         return
       }
 

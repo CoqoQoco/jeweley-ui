@@ -39,7 +39,7 @@
                     <span>{{ version.createBy || '-' }}</span>
                   </div>
                   <div class="version-total">
-                    <span>รวม: <strong>{{ formatCurrency(version.totalPrice) }}</strong></span>
+                    <span>{{ $t('view.stock.product.versionTotal') }}<strong>{{ formatCurrency(version.totalPrice) }}</strong></span>
                   </div>
                 </div>
               </div>
@@ -208,7 +208,7 @@
 
           <!-- Empty State -->
           <div v-else class="text-center p-5">
-            <p>กรุณาเลือกเวอร์ชันเพื่อดูรายละเอียด</p>
+            <p>{{ $t('view.stock.product.selectVersionFirst') }}</p>
           </div>
         </div>
       </div>
@@ -344,7 +344,7 @@ export default {
 
     async handleExportPDF() {
       if (!this.selectedVersion) {
-        warning('กรุณาเลือกเวอร์ชันที่ต้องการ Export PDF')
+        warning(this.$t('view.stock.product.warnSelectVersion'))
         return
       }
 
@@ -361,7 +361,7 @@ export default {
 
       pdf.download(filename)
 
-      success('Export PDF สำเร็จ', 'สำเร็จ')
+      success(this.$t('view.stock.product.exportPdfSuccess'))
       this.exportingPDF = false
     },
 

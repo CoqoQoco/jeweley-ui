@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="คลังวัถุดิบ"
-      description="ตรวจสอบจำนวนคงคลัง ราคา รายละเอียดต่างๆ ของวัถุดิบ"
+      :title="$t('view.stock.gem.searchTitle')"
+      :description="$t('view.stock.gem.searchDesc')"
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >
@@ -19,13 +19,13 @@
       <div class="form-col-container">
         <!-- code -->
         <div>
-          <span class="title-text">รหัส</span>
+          <span class="title-text">{{ $t('view.stock.gem.code') }}</span>
           <input type="text" class="form-control" v-model="form.code" />
         </div>
 
         <!-- type check -->
         <div>
-          <span class="title-text">ประเภท</span>
+          <span class="title-text">{{ $t('view.stock.gem.checkType') }}</span>
           <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
           <MultiSelectGeneric
             v-model="form.typeCheck"
@@ -41,13 +41,13 @@
         :isShow="isShow.dialog"
         @closeDialog="closeDialog"
         @search="dialogSearch"
-        txtHeader="ค้นหาเพิ่มเติม"
+        :txtHeader="$t('view.stock.gem.searchMore')"
       >
         <template #content>
           <div class="form-col-container">
             <!-- groupName -->
             <div>
-              <span class="title-text">หมวดหมู่</span>
+              <span class="title-text">{{ $t('view.stock.gem.groupName') }}</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelectGeneric
                 v-model="form.groupName"
@@ -61,7 +61,7 @@
 
             <!-- grade -->
             <div>
-              <span class="title-text">เกรด</span>
+              <span class="title-text">{{ $t('view.stock.gem.grade') }}</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelectGeneric
                 v-model="form.grade"
@@ -75,7 +75,7 @@
 
             <!-- size -->
             <div>
-              <span class="title-text">ขนาด</span>
+              <span class="title-text">{{ $t('view.stock.gem.size') }}</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelectGeneric
                 v-model="form.size"
@@ -89,7 +89,7 @@
 
             <!-- shape -->
             <div>
-              <span class="title-text">รูปร่าง</span>
+              <span class="title-text">{{ $t('view.stock.gem.shape') }}</span>
               <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
               <MultiSelectGeneric
                 v-model="form.shape"

@@ -2,11 +2,11 @@
   <div class="filter-container-searchBar">
     <form @submit.prevent="onSearch">
       <div>
-        <pageTitle title="จัดเก็บสินค้า" :isShowBtnClose="false" />
+        <pageTitle :title="$t('view.stock.moveLocation.searchTitle')" :isShowBtnClose="false" />
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">เลขที่ผลิต (ใหม่)</span>
+            <span class="title-text">{{ $t('view.stock.product.stockNumberNew') }}</span>
             <input
               class="form-control bg-input"
               type="text"
@@ -16,7 +16,7 @@
           </div>
 
           <div>
-            <span class="title-text">เลขที่ผลิต (เก่า)</span>
+            <span class="title-text">{{ $t('view.stock.product.stockNumberOld') }}</span>
             <input
               class="form-control bg-input"
               type="text"
@@ -26,7 +26,7 @@
           </div>
 
           <div>
-            <span class="title-text">รหัสสินค้า</span>
+            <span class="title-text">{{ $t('view.stock.product.productNumber') }}</span>
             <input
               class="form-control bg-input"
               type="text"
@@ -36,7 +36,7 @@
           </div>
 
           <div>
-            <span class="title-text">จัดเก็บปัจจุบัน</span>
+            <span class="title-text">{{ $t('view.stock.product.locationHeader') }}</span>
             <DropdownGeneric
               :modelValue="form.location"
               :options="locationOptions"
@@ -53,13 +53,13 @@
           :isShow="isShow.dialog"
           @closeDialog="closeDialog"
           @search="dialogSearch"
-          txtHeader="ค้นหาเพิ่มเติม"
+          :txtHeader="$t('view.stock.gem.searchMore')"
         >
           <template #content>
             <div class="form-col-container">
               <!-- receipt type -->
               <div>
-                <span class="title-text">ประเภทงานรับ</span>
+                <span class="title-text">{{ $t('view.stock.product.receiptType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.receiptType"
@@ -73,7 +73,7 @@
 
               <!-- mold -->
               <div>
-                <span class="title-text">เเม่พิมพ์</span>
+                <span class="title-text">{{ $t('view.stock.product.mold') }}</span>
                 <input
                   class="form-control bg-input"
                   type="text"
@@ -84,7 +84,7 @@
 
               <!-- productNameEn -->
               <div>
-                <span class="title-text">ชื่อสินค้า EN</span>
+                <span class="title-text">{{ $t('view.stock.product.productNameEn') }}</span>
                 <input
                   class="form-control bg-input"
                   type="text"
@@ -95,7 +95,7 @@
 
               <!-- productNameTh -->
               <div>
-                <span class="title-text">ชื่อสินค้า TH</span>
+                <span class="title-text">{{ $t('view.stock.product.productNameTh') }}</span>
                 <input
                   class="form-control bg-input"
                   type="text"
@@ -106,7 +106,7 @@
 
               <!-- woText -->
               <div>
-                <span class="title-text">W.O.</span>
+                <span class="title-text">{{ $t('view.stock.product.wo') }}</span>
                 <input
                   class="form-control bg-input"
                   type="text"
@@ -117,7 +117,7 @@
 
               <!-- size -->
               <div>
-                <span class="title-text">ขนาด</span>
+                <span class="title-text">{{ $t('view.stock.product.size') }}</span>
                 <input
                   class="form-control bg-input"
                   type="text"
@@ -128,7 +128,7 @@
 
               <!-- product type -->
               <div>
-                <span class="title-text">ประเภทสินค้า</span>
+                <span class="title-text">{{ $t('view.stock.product.productType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.productType"
@@ -142,7 +142,7 @@
 
               <!-- gold -->
               <div>
-                <span class="title-text">สีของทอง/เงิน</span>
+                <span class="title-text">{{ $t('view.stock.product.goldColor') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.gold"
@@ -156,7 +156,7 @@
 
               <!-- gold size -->
               <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
+                <span class="title-text">{{ $t('view.stock.product.goldType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.goldSize"
@@ -170,7 +170,7 @@
 
               <!-- cost detail status -->
               <div>
-                <span class="title-text">สถานะต้นทุน</span>
+                <span class="title-text">{{ $t('view.stock.product.costStatus') }}</span>
                 <DropdownGeneric
                   :modelValue="form.hasCostDetail"
                   :options="costDetailOptions"
@@ -184,7 +184,7 @@
 
               <!-- piece status -->
               <div>
-                <span class="title-text">สถานะคงคลัง</span>
+                <span class="title-text">{{ $t('view.stock.product.pieceStatus') }}</span>
                 <div>
                   <DropdownGeneric
                     :modelValue="form.pieceStatus"
@@ -208,12 +208,12 @@
               type="button"
               :disabled="selectedCount === 0"
               @click="onMove"
-              title="ย้าย Storage Location"
+              :title="$t('view.stock.moveLocation.moveBtn')"
             >
-              <i class="bi bi-arrow-left-right"></i> ย้าย Storage Location
+              <i class="bi bi-arrow-left-right"></i> {{ $t('view.stock.moveLocation.moveBtn') }}
             </button>
             <span v-if="selectedCount > 0" class="ml-2 selected-count">
-              เลือกแล้ว {{ selectedCount }} รายการ
+              {{ $t('view.stock.moveLocation.selectedCount', { count: selectedCount }) }}
             </span>
           </div>
           <div>
@@ -330,6 +330,19 @@ export default {
     },
     masterGoldSize() {
       return this.masterStore.goldSize
+    },
+    costDetailOptions() {
+      return [
+        { value: true, description: this.$t('view.stock.moveLocation.hasCost') },
+        { value: false, description: this.$t('view.stock.moveLocation.noCost') }
+      ]
+    },
+    pieceStatusOptions() {
+      return [
+        { value: 'IN_STOCK', description: this.$t('view.stock.moveLocation.inStock') },
+        { value: 'RESERVED', description: this.$t('view.stock.moveLocation.reserved') },
+        { value: 'SOLD', description: this.$t('view.stock.moveLocation.sold') }
+      ]
     }
   },
 
@@ -339,15 +352,6 @@ export default {
       isShow: { dialog: false },
       receiptTypeMaster: [
         { value: 'production', description: 'Production' }
-      ],
-      costDetailOptions: [
-        { value: true, description: 'มีต้นทุน' },
-        { value: false, description: 'ยังไม่มีต้นทุน' }
-      ],
-      pieceStatusOptions: [
-        { value: 'IN_STOCK', description: 'พร้อมขาย' },
-        { value: 'RESERVED', description: 'จองแล้ว' },
-        { value: 'SOLD', description: 'ขายไปแล้ว' }
       ]
     }
   },

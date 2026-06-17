@@ -8,7 +8,7 @@
     >
       <template #title>
         <span class="title-text-lg px-3 pt-3 d-block">
-          {{ isEditMode ? 'แก้ไข Storage Location' : 'สร้าง Storage Location' }}
+          {{ isEditMode ? $t('view.stock.location.editTitle') : $t('view.stock.location.createTitle') }}
         </span>
       </template>
 
@@ -16,17 +16,17 @@
         <div class="p-3">
           <div class="form-row two-col">
             <div class="form-field">
-              <span class="title-text">รหัส <span class="text-danger">*</span></span>
+              <span class="title-text">{{ $t('view.stock.location.code') }} <span class="text-danger">*</span></span>
               <input
                 type="text"
                 class="form-control"
                 v-model.trim="form.code"
-                placeholder="เช่น MAIN, SHOW-01"
+                :placeholder="$t('view.stock.location.codePlaceholder')"
                 :disabled="isEditMode"
               />
             </div>
             <div class="form-field">
-              <span class="title-text">ลำดับ</span>
+              <span class="title-text">{{ $t('view.stock.location.sortOrder') }}</span>
               <input
                 type="number"
                 class="form-control"
@@ -39,16 +39,16 @@
 
           <div class="form-row two-col">
             <div class="form-field">
-              <span class="title-text">ชื่อ (TH) <span class="text-danger">*</span></span>
+              <span class="title-text">{{ $t('view.stock.location.nameTh') }} <span class="text-danger">*</span></span>
               <input
                 type="text"
                 class="form-control"
                 v-model.trim="form.nameTh"
-                placeholder="เช่น คลังหลัก"
+                :placeholder="$t('view.stock.location.namePlaceholder')"
               />
             </div>
             <div class="form-field">
-              <span class="title-text">ชื่อ (EN)</span>
+              <span class="title-text">{{ $t('view.stock.location.nameEn') }}</span>
               <input
                 type="text"
                 class="form-control"
@@ -60,7 +60,7 @@
 
           <div class="form-row">
             <div class="form-field">
-              <span class="title-text">ประเภท</span>
+              <span class="title-text">{{ $t('view.stock.location.locType') }}</span>
               <DropdownGeneric
                 :modelValue="form.type"
                 :options="typeOptions"
@@ -75,9 +75,9 @@
 
           <div class="form-row">
             <div class="checkbox-group">
-              <CheckboxGeneric v-model="form.isSalesPoint" label="จุดขาย" />
-              <CheckboxGeneric v-model="form.isTemporary" label="ชั่วคราว" />
-              <CheckboxGeneric v-model="form.isActive" label="ใช้งาน" />
+              <CheckboxGeneric v-model="form.isSalesPoint" :label="$t('view.stock.location.isSalesPoint')" />
+              <CheckboxGeneric v-model="form.isTemporary" :label="$t('view.stock.location.isTemporary')" />
+              <CheckboxGeneric v-model="form.isActive" :label="$t('view.stock.location.isActiveLabel')" />
             </div>
           </div>
         </div>
@@ -85,10 +85,10 @@
 
       <template #action>
         <button class="btn btn-sm btn-main" type="button" @click="onSubmit">
-          <i class="bi bi-save"></i> บันทึก
+          <i class="bi bi-save"></i> {{ $t('common.btn.save') }}
         </button>
         <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
+          {{ $t('common.btn.cancel') }}
         </button>
       </template>
     </modal>
@@ -103,13 +103,6 @@ import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-const TYPE_OPTIONS = [
-  { value: 'WAREHOUSE', label: 'คลัง' },
-  { value: 'SHOWROOM', label: 'โชว์รูม' },
-  { value: 'BRANCH', label: 'สาขา' },
-  { value: 'TEMP', label: 'ชั่วคราว' }
-]
 
 const defaultForm = () => ({
   code: null,
@@ -152,6 +145,14 @@ export default {
   computed: {
     isEditMode() {
       return !!this.modelData?.code
+    },
+    typeOptions() {
+      return [
+        { value: 'WAREHOUSE', label: this.$t('view.stock.location.warehouse') },
+        { value: 'SHOWROOM', label: this.$t('view.stock.location.showroom') },
+        { value: 'BRANCH', label: this.$t('view.stock.location.branch') },
+        { value: 'TEMP', label: this.$t('view.stock.location.temp') }
+      ]
     }
   },
 
@@ -169,8 +170,7 @@ export default {
 
   data() {
     return {
-      form: defaultForm(),
-      typeOptions: TYPE_OPTIONS
+      form: defaultForm()
     }
   },
 
@@ -182,11 +182,11 @@ export default {
 
     async onSubmit() {
       if (!this.form.nameTh || !this.form.nameTh.trim()) {
-        warning('กรุณากรอกชื่อ Storage Location', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.stock.location.warnName'), this.$t('view.stock.location.incomplete'))
         return
       }
       if (!this.form.code || !this.form.code.trim()) {
-        warning('กรุณากรอกรหัส Storage Location', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.stock.location.warnCode'), this.$t('view.stock.location.incomplete'))
         return
       }
 
@@ -195,7 +195,7 @@ export default {
       } else {
         await this.locationStore.create({ ...this.form })
       }
-      success('บันทึกสำเร็จ')
+      success(this.$t('view.stock.location.saveSuccess'))
       this.$emit('fetch')
     }
   }

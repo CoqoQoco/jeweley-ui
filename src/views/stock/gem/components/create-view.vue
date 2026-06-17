@@ -5,16 +5,14 @@
         <form @submit.prevent="onSubmit">
           <div class="title-text-lg-bg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>
-              สร้างข้อมูลวัถุดิบ ระบุข้อมูล รหัส หมวดหมู่ ขนาด รูปร่าง เกรด เเละคำอธิบายอื่นๆ
-            </span>
+            <span>{{ $t('view.stock.gem.createTitle') }}</span>
           </div>
           <div class="p-2">
             <div class="form-col-container p-2">
               <!-- code -->
               <div>
                 <div>
-                  <span class="title-text">รหัส</span>
+                  <span class="title-text">{{ $t('view.stock.gem.code') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <input
@@ -29,7 +27,7 @@
               <!-- group name -->
               <div>
                 <div>
-                  <span class="title-text">หมวดหมู่</span>
+                  <span class="title-text">{{ $t('view.stock.gem.groupName') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <AutoCompleteGeneric
@@ -44,7 +42,7 @@
 
               <div>
                 <div>
-                  <span class="title-text">เเหล่งผลิต</span>
+                  <span class="title-text">{{ $t('view.stock.gem.origin') }}</span>
                 </div>
                 <input type="text" class="form-control" v-model="form.region" />
               </div>
@@ -53,7 +51,7 @@
               <!-- size -->
               <div>
                 <div>
-                  <span class="title-text">ขนาด</span>
+                  <span class="title-text">{{ $t('view.stock.gem.size') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <input type="text" class="form-control" v-model="form.size" required />
@@ -62,7 +60,7 @@
               <!-- shape -->
               <div>
                 <div>
-                  <span class="title-text">รูปร่าง</span>
+                  <span class="title-text">{{ $t('view.stock.gem.shape') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <DropdownGeneric
@@ -78,7 +76,7 @@
               <!-- grade -->
               <div>
                 <div>
-                  <span class="title-text">เกรด</span>
+                  <span class="title-text">{{ $t('view.stock.gem.grade') }}</span>
                   <span class="txt-required"> *</span>
                 </div>
                 <DropdownGeneric
@@ -95,7 +93,7 @@
               <!-- reamrk -->
               <div>
                 <div>
-                  <span class="title-text">คำอธิบาย</span>
+                  <span class="title-text">{{ $t('view.stock.gem.description') }}</span>
                   <!-- <span class="txt-required"> *</span> -->
                 </div>
                 <textarea class="form-control" v-model="form.remark" rows="3" required></textarea>
@@ -233,7 +231,7 @@ export default {
       if (this.validateForm()) {
         confirmThenSubmit(
           `${this.form.code}`,
-          `ยืนยันสร้างข้อมูลวัถุดิบ`,
+          this.$t('view.stock.gem.confirmCreate'),
           async () => {
             await this.submit()
           }

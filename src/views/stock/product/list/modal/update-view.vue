@@ -2,7 +2,7 @@
   <div>
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1200px" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ `แก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber}` }}</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.stock.product.editTitle', { stockNumber: stock.stockNumber }) }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="stock-update-form" class="form-content">
@@ -11,7 +11,7 @@
             <div class="section-header">
               <div class="section-title">
                 <i class="bi bi-image-fill"></i>
-                <span>รูปภาพสินค้า</span>
+                <span>{{ $t('view.stock.product.imageProduct') }}</span>
               </div>
             </div>
 
@@ -44,7 +44,7 @@
                   @click="onSelectImage('SELECT')"
                 >
                   <i class="bi bi-images mr-1"></i>
-                  <span>เลือกรูปสินค้า</span>
+                  <span>{{ $t('view.stock.product.selectImage') }}</span>
                 </button>
               </div>
             </div>
@@ -111,7 +111,7 @@
                     @click="onSelect"
                   >
                     <i class="bi bi-check-lg mr-1"></i>
-                    เลือก
+                    {{ $t('common.btn.confirm') }}
                   </button>
                 </template>
               </BaseDataTable>
@@ -123,7 +123,7 @@
             <div class="section-header">
               <div class="section-title">
                 <i class="bi bi-clipboard2-check-fill"></i>
-                <span>ข้อมูลสินค้า</span>
+                <span>{{ $t('view.stock.product.stockInfo') }}</span>
               </div>
             </div>
 
@@ -132,7 +132,7 @@
               <div class="form-group full-width">
                 <label class="form-label">
                   <i class="bi bi-box mr-1"></i>
-                  แม่พิมพ์
+                  {{ $t('view.stock.product.mold') }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -148,7 +148,7 @@
               <!-- Product Name EN -->
               <div class="form-group">
                 <label class="form-label">
-                  ชื่อสินค้า (EN)
+                  {{ $t('view.stock.product.productNameEn') }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -164,7 +164,7 @@
               <!-- Product Name TH -->
               <div class="form-group">
                 <label class="form-label">
-                  ชื่อสินค้า (TH)
+                  {{ $t('view.stock.product.productNameTh') }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -181,7 +181,7 @@
               <div class="form-group">
                 <label class="form-label">
                   <i class="bi bi-boxes mr-1"></i>
-                  จำนวน
+                  {{ $t('common.field.quantity') }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -200,7 +200,7 @@
               <div class="form-group">
                 <label class="form-label">
                   <i class="bi bi-cash mr-1"></i>
-                  ราคาขาย
+                  {{ $t('view.stock.product.salePrice') }}
                   <span class="text-danger">*</span>
                 </label>
                 <input
@@ -219,7 +219,7 @@
               <div class="form-group">
                 <label class="form-label">
                   <i class="bi bi-rulers mr-1"></i>
-                  ขนาด
+                  {{ $t('view.stock.product.size') }}
                 </label>
                 <input
                   class="form-control"
@@ -235,7 +235,7 @@
               <div class="form-group">
                 <label class="form-label">
                   <i class="bi bi-geo-alt mr-1"></i>
-                  คลังจัดเก็บ
+                  {{ $t('view.stock.product.storageLocation') }}
                 </label>
                 <input
                   class="form-control"
@@ -253,7 +253,7 @@
             <div class="section-header">
               <div class="section-title">
                 <i class="bi bi-gem"></i>
-                <span>ทอง | เพชร | พลอย</span>
+                <span>{{ $t('view.stock.product.materialsTitle') }}</span>
               </div>
               <button
                 type="button"
@@ -261,7 +261,7 @@
                 @click="addMaterialItem(stock.materials)"
               >
                 <i class="bi bi-plus-lg mr-1"></i>
-                เพิ่มวัสดุ
+                {{ $t('view.stock.product.addMaterial') }}
               </button>
             </div>
 
@@ -317,7 +317,7 @@
                     />
                   </div>
                   <div v-else class="text-muted text-center">
-                    <small>กรุณาเลือกประเภท</small>
+                    <small>{{ $t('view.stock.product.selectTypeFirst') }}</small>
                   </div>
                 </template>
 
@@ -405,10 +405,10 @@
       </template>
       <template #action>
         <button class="btn btn-sm btn-main" type="submit" form="stock-update-form">
-          <i class="bi bi-save"></i> บันทึก
+          <i class="bi bi-save"></i> {{ $t('common.btn.save') }}
         </button>
         <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          ยกเลิก
+          {{ $t('common.btn.cancel') }}
         </button>
       </template>
     </modal>
@@ -467,6 +467,50 @@ export default {
     },
     masterDiamondGrade() {
       return this.masterStore.diamondGrade
+    },
+    imageColumns() {
+      return [
+        {
+          field: 'image',
+          header: '',
+          width: '60px',
+          sortable: false,
+          align: 'center'
+        },
+        {
+          field: 'name',
+          header: this.$t('view.stock.product.imageName'),
+          sortable: false,
+          minWidth: '200px'
+        },
+        {
+          field: 'createDate',
+          header: this.$t('common.field.createDate'),
+          sortable: false,
+          format: 'datetime',
+          minWidth: '150px'
+        }
+      ]
+    },
+    materialColumns() {
+      return [
+        { field: 'type', header: this.$t('view.stock.product.materialType'), sortable: false, width: '120px' },
+        { field: 'typeCode', header: this.$t('view.stock.product.materialCode'), sortable: false, minWidth: '150px' },
+        { field: 'size', header: this.$t('view.stock.product.size'), sortable: false, width: '100px' },
+        { field: 'region', header: this.$t('view.stock.product.origin'), sortable: false, width: '120px' },
+        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '180px' },
+        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '180px' },
+        { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '120px' },
+        { field: 'action', header: '', sortable: false, width: '60px' }
+      ]
+    },
+    masterMaterialType() {
+      return [
+        { value: 'Gold', description: 'ทอง' },
+        { value: 'Silver', description: 'เงิน' },
+        { value: 'Diamond', description: 'เพชร' },
+        { value: 'Gem', description: 'พลอย' }
+      ]
     }
   },
 
@@ -494,28 +538,6 @@ export default {
       stock: {},
       search: null,
 
-      imageColumns: [
-        {
-          field: 'image',
-          header: '',
-          width: '60px',
-          sortable: false,
-          align: 'center'
-        },
-        {
-          field: 'name',
-          header: 'ชื่อ',
-          sortable: false,
-          minWidth: '200px'
-        },
-        {
-          field: 'createDate',
-          header: 'วันที่สร้าง',
-          sortable: false,
-          format: 'datetime',
-          minWidth: '150px'
-        }
-      ],
       take: 10,
       skip: 0,
       sort: [],
@@ -524,22 +546,6 @@ export default {
       selectedItems: [],
       selectionType: 'single',
 
-      materialColumns: [
-        { field: 'type', header: 'ประเภท', sortable: false, width: '120px' },
-        { field: 'typeCode', header: 'รหัส', sortable: false, minWidth: '150px' },
-        { field: 'size', header: 'ขนาด', sortable: false, width: '100px' },
-        { field: 'region', header: 'แหล่งผลิต', sortable: false, width: '120px' },
-        { field: 'qty', header: 'จำนวน', sortable: false, width: '180px' },
-        { field: 'weight', header: 'น้ำหนัก', sortable: false, width: '180px' },
-        { field: 'price', header: 'ราคา', sortable: false, width: '120px' },
-        { field: 'action', header: '', sortable: false, width: '60px' }
-      ],
-      masterMaterialType: [
-        { value: 'Gold', description: 'ทอง' },
-        { value: 'Silver', description: 'เงิน' },
-        { value: 'Diamond', description: 'เพชร' },
-        { value: 'Gem', description: 'พลอย' }
-      ]
     }
   },
 
@@ -636,7 +642,7 @@ export default {
     },
 
     onSubmit() {
-      confirmThenSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      confirmThenSubmit('', this.$t('view.stock.product.confirmSave'), async () => {
         this.fetchConfirm()
       })
     },

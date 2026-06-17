@@ -92,6 +92,7 @@ export default {
       product: { ...stock.product },
       location: { ...stock.location },
       moveLocation: { ...stock.moveLocation },
+      cost: { ...stock.cost },
       gem: {
         ...stock.gem,
         dashboard: {

@@ -2,8 +2,8 @@
   <div>
     <div class="filter-container-searchBar">
       <pageTitle
-        :title="title"
-        description="ตรวจสอบจำนวนคงคลัง ราคา รายละเอียดต่างๆ ของวัถุดิบ"
+        :title="$t('view.stock.cost.title')"
+        :description="$t('view.stock.cost.searchDesc')"
         :isShowBtnClose="false"
         :isShowRightSlot="true"
       >
@@ -24,11 +24,11 @@
           <div class="form-col-container">
             <!-- code -->
             <div>
-              <span class="title-text">WO</span>
+              <span class="title-text">{{ $t('view.stock.cost.wo') }}</span>
               <input type="text" class="form-control" v-model="form.code" />
             </div>
             <div>
-              <span class="title-text">WO No.</span>
+              <span class="title-text">{{ $t('view.stock.cost.woNo') }}</span>
               <input type="text" class="form-control" v-model="form.code" />
             </div>
           </div>
@@ -63,8 +63,6 @@ export default {
       isShow: { ...interfaceIsShow },
       form: { ...interfaceForm },
 
-      // ------- wording
-      title: 'ประเมินราคาสินค้า'
     }
   },
   methods: {
