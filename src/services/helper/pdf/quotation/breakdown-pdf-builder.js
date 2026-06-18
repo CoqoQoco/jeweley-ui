@@ -1,6 +1,5 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
-import { initPdfMake } from '@/services/utils/pdf-make'
 
 export class BreakdownPdfBuilder {
   constructor({ items, customer, invoiceDate, invoiceNo, currencyUnit, currencyMultiplier, profitPercent }) {

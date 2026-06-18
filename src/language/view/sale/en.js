@@ -221,7 +221,6 @@ export const quotation = {
     unknown: 'Unknown Status'
   },
   // Financial inputs
-  currency: 'Currency',
   rate: 'Rate',
   markup: 'Markup',
   discountPercent: 'Discount (%)',
@@ -811,7 +810,6 @@ export const costStock = {
   materialGem: 'Gem',
   materialSize: 'Size',
   materialRegion: 'Region',
-  createDate: 'Create Date',
   totalCostAll: 'Total Cost',
   costPerPieceLabel: 'Cost per Piece',
   useCostPerPiece: 'Use cost per piece as appraisal price',
@@ -1070,7 +1068,7 @@ export const stockReservation = {
     searchType: 'Select search type'
   },
 
-  status: {
+  statusOptions: {
     confirmed: 'Confirmed',
     partiallyFulfilled: 'Partially Fulfilled',
     fulfilled: 'Fulfilled',

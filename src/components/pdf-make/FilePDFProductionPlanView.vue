@@ -11,7 +11,6 @@
 import { formatDate } from '@/services/utils/dayjs'
 import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
-import api from '@/axios/axios-helper.js'
 import jsbarcode from 'jsbarcode'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 

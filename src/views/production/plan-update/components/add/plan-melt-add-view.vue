@@ -152,7 +152,6 @@ import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 import { formatDateTime, formatISOString } from '@/services/utils/dayjs'
 
-import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
@@ -187,7 +186,6 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-    AutoComplete,
     Calendar,
     Dropdown,
     DataTable,

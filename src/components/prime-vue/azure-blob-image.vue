@@ -1,6 +1,6 @@
 <template>
   <div class="azure-blob-image-container">
-    <Image
+    <PvImage
       v-if="imageUrl"
       :class="borderShow ? 'image-preview' : ''"
       :src="imageUrl"
@@ -45,7 +45,7 @@ import { getAzureBlobUrl, isAzureBlobPath } from '@/config/azure-storage-config.
 export default {
   name: 'AzureBlobImage',
   components: {
-    Image
+    PvImage: Image
   },
   props: {
     // Path หรือ URL ของ image (รองรับทั้ง Azure Blob path, Base64, HTTP URL)

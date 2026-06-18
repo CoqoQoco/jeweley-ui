@@ -1,6 +1,5 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
-const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
 const List = () => import('@/views/stock/product/list/index-view.vue')
 

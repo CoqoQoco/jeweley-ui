@@ -4,7 +4,6 @@ const MoldDesignCreateNew = () => import('@/views/mold/create-design-new/IndexVi
 const MoldRededign = () => import('@/views/mold/plan-re-model/IndexView.vue')
 const MoldPlanList = () => import('@/views/mold/plan-list/IndexView.vue')
 const MoldPlanData = () => import('@/views/mold/plan-data/IndexView.vue')
-const MoldDesiged = () => import('@/views/mold/tracking/IndexView.vue')
 const MoldList = () => import('@/views/mold/mold-list/IndexView.vue')
 const MoldpickingList = () => import('@/views/mold/picking-list/IndexView.vue')
 const PrePlanList = () => import('@/views/production/pre-plan/pre-plan-list/index-view.vue')

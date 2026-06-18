@@ -255,7 +255,7 @@ export default {
     },
     modelTransactionBomValue: {
       handler(newVal) {
-        this.transactionBom = newVal.boMs.map((item, index) => ({
+        this.transactionBom = newVal.boMs.map((item) => ({
           ...item,
           quantity: item.quantity ? item.quantity.toFixed(2) : Number(0).toFixed(2),
           price: item.price ? item.price.toFixed(2) : Number(0).toFixed(2)
@@ -347,7 +347,7 @@ export default {
       })
 
       if (transactionBom) {
-        this.transactionBom = transactionBom.boMs.map((item, index) => ({
+        this.transactionBom = transactionBom.boMs.map((item) => ({
           ...item,
           quantity: item.quantity ? item.quantity.toFixed(2) : Number(0).toFixed(2),
           price: item.price ? item.price.toFixed(2) : Number(0).toFixed(2)

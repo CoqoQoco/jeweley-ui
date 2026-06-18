@@ -129,7 +129,7 @@
                 <div class="d-flex justify-content-between">
                   <div class="footer-text-container">
                     <span>
-                      {{ `รวมทั้งหมด  ${formSubmit.gems.length}  รายการ` }}
+                      {{ `รวมทั้งหมด  ${formSubmit.gems.length}  รายการ` }}
                     </span>
                   </div>
                   <div>

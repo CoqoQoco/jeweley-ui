@@ -165,7 +165,7 @@ import moment from 'dayjs'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
-import { confirmSubmit, warning, success } from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, warning } from '@/services/alert/sweetAlerts.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 //import planOverview from './PlanOverview.vue'

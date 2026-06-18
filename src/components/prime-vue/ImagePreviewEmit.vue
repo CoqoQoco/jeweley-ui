@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Image
+    <PvImage
       v-if="imageUrl"
       :src="imageUrl"
       :alt="alt"
@@ -59,7 +59,7 @@ import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 export default {
   name: 'ImagePreviewEmit',
   components: {
-    Image
+    PvImage: Image
   },
   props: {
     // ชื่อ image หรือ blob path

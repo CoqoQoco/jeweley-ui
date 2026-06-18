@@ -296,7 +296,7 @@ import { defineAsyncComponent } from 'vue'
 import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
-import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))

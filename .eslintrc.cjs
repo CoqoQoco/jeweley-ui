@@ -24,7 +24,7 @@ module.exports = {
       rules: {
         // ห้าม import PrimeVue component ตรงๆ ใน views — ใช้ generic wrapper แทน
         'no-restricted-imports': [
-          'warn',
+          'error',
           {
             paths: [
               {
@@ -63,7 +63,7 @@ module.exports = {
         // TODO: เพิ่ม @intlify/vue-i18n/no-raw-text เมื่อแก้ peer dep conflict ได้
         //       (ต้องการ vue-eslint-parser@10 แต่ eslint-plugin-vue@9 lock ที่ ≤9)
         'vue/no-restricted-syntax': [
-          'warn',
+          'error',
           {
             selector: "VElement[name='table']",
             message: 'ห้ามใช้ <table> ตรงๆ ใน views — ใช้ DataTableWithPaging แทน ดู generic-components skill'

@@ -18,7 +18,7 @@
               :alt="slotProps.item.alt"
               class="galleria-main-image"
             /> -->
-            <Image
+            <PvImage
               class="galleria-main-image"
               :src="slotProps.item.itemImageSrc"
               :alt="slotProps.item.alt"
@@ -61,7 +61,7 @@ export default {
   name: 'GalleriaComponent',
   components: {
     Galleria,
-    Image
+    PvImage: Image
   },
   props: {
     urls: {

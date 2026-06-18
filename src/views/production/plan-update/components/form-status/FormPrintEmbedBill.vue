@@ -25,7 +25,6 @@ import pdfMake from 'pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 
 import { formatDate } from '@/services/utils/dayjs'
-import api from '@/axios/axios-helper.js'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 export default {

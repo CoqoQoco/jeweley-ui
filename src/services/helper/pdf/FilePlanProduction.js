@@ -1,5 +1,5 @@
 // src/services/pdf/productionPlanPdf.js
-import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { formatDate } from '@/services/utils/dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import jsbarcode from 'jsbarcode'
 

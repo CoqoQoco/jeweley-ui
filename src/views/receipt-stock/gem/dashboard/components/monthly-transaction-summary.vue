@@ -174,7 +174,7 @@
 import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
 import dayjs from 'dayjs'
 import { formatISOString } from '@/services/utils/dayjs.js'
-import { success, error } from '@/services/alert/sweetAlerts.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'

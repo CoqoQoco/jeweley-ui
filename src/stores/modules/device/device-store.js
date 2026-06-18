@@ -101,7 +101,7 @@ export const useDeviceStore = defineStore('device', {
     /**
      * Get device type string
      */
-    deviceType(state) {
+    deviceType() {
       if (this.shouldUseMobileView) return 'mobile'
       if (this.shouldUseTabletView) return 'tablet'
       return 'desktop'
@@ -150,7 +150,7 @@ export const useDeviceStore = defineStore('device', {
     /**
      * Get icon class for current view mode
      */
-    viewModeIcon(state) {
+    viewModeIcon() {
       if (this.shouldUseMobileView) return 'bi bi-phone'
       if (this.shouldUseTabletView) return 'bi bi-tablet'
       return 'bi bi-laptop'

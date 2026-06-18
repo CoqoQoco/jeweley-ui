@@ -221,7 +221,6 @@ export const quotation = {
     unknown: 'ไม่ทราบสถานะ'
   },
   // Financial inputs
-  currency: 'Currency',
   rate: 'Rate',
   markup: 'Markup',
   discountPercent: 'Discount (%)',
@@ -805,7 +804,6 @@ export const costStock = {
   materialGem: 'พลอย',
   materialSize: 'ขนาด',
   materialRegion: 'เเหล่งผลิต',
-  createDate: 'วันที่สร้าง',
   totalCostAll: 'ต้นทุนรวมทั้งหมด',
   costPerPieceLabel: 'ต้นทุนต่อชิ้น',
   useCostPerPiece: 'ใช้ต้นทุนต่อชิ้นเป็นราคาประเมิน',
@@ -1064,7 +1062,7 @@ export const stockReservation = {
     searchType: 'เลือกประเภทการค้นหา'
   },
 
-  status: {
+  statusOptions: {
     confirmed: 'ยืนยันแล้ว',
     partiallyFulfilled: 'ส่งมอบบางส่วน',
     fulfilled: 'ส่งมอบครบถ้วน',

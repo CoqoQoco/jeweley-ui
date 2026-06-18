@@ -642,7 +642,6 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
-import dayjs from 'dayjs'
 
 export default {
   name: 'AppraisalFormView',

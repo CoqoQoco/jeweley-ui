@@ -439,17 +439,12 @@ export const sale = {
   invoicedItemsTitle: 'ออก Invoice แล้ว',
 
   // detail-view summary
-  itemListTitle: 'รายการสินค้า',
-  summaryItemCount: 'จำนวนรายการ',
-  summaryItemUnit: 'รายการ',
   summaryFob: 'F.O.B Bangkok (รวมสินค้า)',
   summarySpecialDiscount: 'ส่วนลดพิเศษ',
   summarySpecialAddition: 'ส่วนเพิ่มพิเศษ',
   summaryBeforeVat: 'ยอดรวมก่อน VAT',
   summaryNetTotal: 'ยอดรวมสุทธิ',
   summaryGrandTotal: 'ยอดรวมทั้งหมด',
-  summaryEquivalent: 'เทียบเท่า',
-  summaryBahtUnit: 'บาท',
 
   // detail-view other cards
   remarkTitle: 'หมายเหตุ',
@@ -484,6 +479,5 @@ export const sale = {
 
   // detail-view status labels
   statusDraft: 'ร่าง',
-  statusConfirmed: 'ยืนยันแล้ว',
   statusInvoiced: 'ออก Invoice แล้ว'
 }

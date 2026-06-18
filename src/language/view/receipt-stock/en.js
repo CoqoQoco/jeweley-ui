@@ -2,7 +2,7 @@ export default {
   gem: {
     create: {
       title: 'Create Gem Code',
-      description: 'Create gem code, specify code, category, size, shape, grade and other details',
+      pageDescription: 'Create gem code, specify code, category, size, shape, grade and other details',
       createCode: 'Create Code',
       groupName: 'Category',
       size: 'Size',

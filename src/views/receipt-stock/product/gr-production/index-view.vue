@@ -107,7 +107,6 @@
                     <button
                       type="button"
                       class="btn btn-green btn-sm btn-input-group"
-                      class="btn-input-group"
                       @click="onSearchProductName(data, 'EN')"
                     >
                       <span class="bi bi-search"></span>
@@ -148,7 +147,6 @@
                     <button
                       type="button"
                       class="btn btn-green btn-sm btn-input-group"
-                      class="btn-input-group"
                       @click="onSearchProductName(data, 'TH')"
                     >
                       <span class="bi bi-search"></span>
@@ -674,7 +672,8 @@ const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/I
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+// eslint-disable-next-line no-restricted-imports -- Dropdown used with inline style override, migration pending
+import Dropdown from 'primevue/dropdown'
 
 import { warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'

@@ -40,7 +40,6 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { formatDate, formatISOString } from '@/services/utils/dayjs.js'
-import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import api from '@/axios/axios-helper.js'

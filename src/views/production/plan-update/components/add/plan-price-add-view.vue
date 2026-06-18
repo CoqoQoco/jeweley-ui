@@ -229,7 +229,6 @@ import { success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 import _ from 'lodash'
 
-import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
@@ -251,7 +250,6 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-    Dropdown,
     DataTable,
     Column,
     ColumnGroup,

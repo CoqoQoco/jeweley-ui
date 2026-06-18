@@ -13,9 +13,6 @@ const Quotation = () => import('@/views/sale/quotation/index-view.vue')
 const QuotationList = () => import('@/views/sale/quotation-list/index-view.vue')
 const SaleOrder = () => import('@/views/sale/sale-order/index-view.vue')
 const SaleOrderList = () => import('@/views/sale/saleorder-list/index-view.vue')
-const ProductionOrder = () => import('@/views/sale/production-order/index-view.vue')
-const StockReservation = () => import('@/views/sale/stock-reservation/index-view.vue')
-const DeliveryNote = () => import('@/views/sale/delivery-note/index-view.vue')
 const Invoice = () => import('@/views/sale/invoice/index-view.vue')
 const InvoiceDetail = () => import('@/views/sale/invoice-detail/index-view.vue')
 const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
@@ -26,9 +23,6 @@ const CostStockEdit = () => import('@/views/sale/cost-stock/web/cost-edit/index-
 // Sale Document
 const SaleDocument = () => import('@/views/sale/document/index-view.vue')
 const SaleDocumentCatalogBuilder = () => import('@/views/sale/document/catalog-builder/index-view.vue')
-
-// Fallback for incomplete components
-const AccountView = () => import('@/views/setting/user-account/index-view.vue')
 
 const routes = [
   {

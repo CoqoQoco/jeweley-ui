@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Image
+    <PvImage
       :src="imageUrl"
       :alt="alt"
       :width="width"
@@ -32,7 +32,7 @@ import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 export default {
   name: 'ImagePreview',
   components: {
-    Image
+    PvImage: Image
   },
   props: {
     // ชื่อ image หรือ blob path

@@ -230,10 +230,6 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-
-
-
 // eslint-disable-next-line no-restricted-imports -- DataTable+ColumnGroup+rowGroupMode exception
 import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports -- DataTable+ColumnGroup exception

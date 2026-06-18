@@ -439,17 +439,12 @@ export const sale = {
   invoicedItemsTitle: 'Invoiced Items',
 
   // detail-view summary
-  itemListTitle: 'Item List',
-  summaryItemCount: 'Item Count',
-  summaryItemUnit: 'items',
   summaryFob: 'F.O.B Bangkok (Total)',
   summarySpecialDiscount: 'Special Discount',
   summarySpecialAddition: 'Special Surcharge',
   summaryBeforeVat: 'Total Before VAT',
   summaryNetTotal: 'Net Total',
   summaryGrandTotal: 'Grand Total',
-  summaryEquivalent: 'Equivalent',
-  summaryBahtUnit: 'Baht',
 
   // detail-view other cards
   remarkTitle: 'Remark',
@@ -484,6 +479,5 @@ export const sale = {
 
   // detail-view status labels
   statusDraft: 'Draft',
-  statusConfirmed: 'Confirmed',
   statusInvoiced: 'Invoiced'
 }

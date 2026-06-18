@@ -261,8 +261,10 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+// eslint-disable-next-line no-restricted-imports
 import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
