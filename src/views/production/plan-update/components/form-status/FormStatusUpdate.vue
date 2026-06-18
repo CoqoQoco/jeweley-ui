@@ -64,217 +64,19 @@
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>เเก้ไขรายละเอียด</span>
             </div>
-            <div class="form-content-row-grid-container">
-              <DataTable
-                class="p-datatable-sm"
-                showGridlines
-                v-model:editingRows="editingRows"
-                :value="mat"
-                editMode="row"
-                dataKey="id"
-                scrollable
-                @row-edit-save="onRowEditSave"
-                :pt="{
-                  table: { style: 'min-width: 50rem' },
-                  column: {
-                    bodycell: ({ state }) => ({
-                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                    })
-                  }
-                }"
-              >
-                <Column style="width: 20px">
-                  <template #body="prop">
-                    <div
-                      class="btn btn-sm btn-red text-center w-100"
-                      @click="onDelGold(prop.data)"
-                    >
-                      <i class="bi bi-trash-fill"></i>
-                    </div>
-                  </template>
-                </Column>
-                <!-- <Column field="id" header="ID" style="width: 10%">
-                    <template #editor="{ data, field }">
-                      <input type="number" class="form-control" v-model="data[field]" disabled />
-                    </template>
-                  </Column> -->
-                <Column field="gold" header="ทอง" style="width: 100px">
-                  <template #editor="{ data, field }">
-                    <!-- <input type="text" class="form-control" v-model="data[field]" /> -->
-                    <DropdownGeneric
-                      v-model="data[field]"
-                      :options="masterGold"
-                      optionLabel="code"
-                      optionValue="code"
-                      class="w-full md:w-14rem"
-                      placeholder="เลือกทอง"
-                    />
-                  </template>
-                </Column>
-                <Column field="requestDate" header="วันที่" style="min-width: 120px">
-                  <template #editor="{ data, field }">
-                    <div>
-                      <CalendarGeneric
-                        class="w-100"
-                        v-model="data[field]"
-                        dateFormat="dd/mm/yy"
-                        :showIcon="true"
-                        :showButtonBar="true"
-                      />
-                    </div>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.requestDate">
-                      {{ formatDate(slotProps.data.requestDate) }}
-                    </div>
-                  </template>
-                </Column>
-                <Column field="goldQTYSend" header="จำนวนจ่าย" style="width: 100px">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column field="goldWeightSend" header="น้ำหนักจ่าย" style="width: 100px">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      step="any"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column field="goldQTYCheck" header="จำนวนรับ" style="width: 100px">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                      @change="calTotalWages(data)"
-                    />
-                  </template>
-                </Column>
-                <Column field="wages" header="ค่าเเรงต่อชิ้น" style="min-width: 100px">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      min="1"
-                      step="any"
-                      v-model="data[field]"
-                      :disabled="!data.goldQTYCheck"
-                      @change="calTotalWages(data)"
-                    />
-                  </template>
-                </Column>
-                <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      step="any"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column field="description" header="รายละเอียด" style="width: 150px">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="text"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column
-                  field="workers"
-                  :header="modelMat.status === 90 ? `ช่างขัด` : `ช่างรับงาน`"
-                  style="min-width: 150px"
-                >
-                  <template #editor="{ data, field }">
-                    <AutoCompleteGeneric
-                      v-model="data[field]"
-                      :suggestions="workerItemSearch"
-                      @complete="onSearchWorker"
-                      placeholder="กรอกรหัส/ชื่อช่าง...."
-                      :class="data[field] ? `` : `bg-warning`"
-                      optionLabel="code"
-                      :forceSelection="true"
-                    >
-                      <template #option="slotProps">
-                        <div class="flex align-options-center">
-                          <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
-                        </div>
-                      </template>
-                    </AutoCompleteGeneric>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.workers">
-                      {{ `${slotProps.data.workers.code} - ${slotProps.data.workers.nameTh}` }}
-                    </div>
-                  </template>
-                </Column>
-                <Column
-                  v-if="modelMat.status === 90"
-                  field="workersSub"
-                  header="ช่างชุบ"
-                  style="min-width: 150px"
-                >
-                  <template #editor="{ data, field }">
-                    <AutoCompleteGeneric
-                      v-model="data[field]"
-                      :suggestions="workerItemSearch"
-                      @complete="onSearchWorker"
-                      placeholder="กรอกรหัส/ชื่อช่าง...."
-                      :class="data[field] ? `` : `bg-warning`"
-                      optionLabel="code"
-                      :forceSelection="true"
-                    >
-                      <template #option="slotProps">
-                        <div class="flex align-options-center">
-                          <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
-                        </div>
-                      </template>
-                    </AutoCompleteGeneric>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.workersSub">
-                      {{
-                        `${slotProps.data.workersSub.code} - ${slotProps.data.workersSub.nameTh}`
-                      }}
-                    </div>
-                  </template>
-                </Column>
-                <Column field="totalWages" header="รวมค่าแรงช่าง" style="width: 120px">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      min="1"
-                      step="any"
-                      v-model="data[field]"
-                      :disabled="true"
-                    />
-                  </template>
-                </Column>
-                <Column
-                  :rowEditor="true"
-                  style="width: 10%; min-width: 7rem"
-                  bodyStyle="text-align:center"
-                >
-                </Column>
-                <template #footer>
-                  <div class="d-flex justify-content-between">
-                    <div>ทั้งหมด {{ this.mat.length }} รายการ</div>
-                    <div @click="addMat">
-                      <i class="bi bi-plus-square-fill"></i>
-                    </div>
-                  </div>
-                </template>
-              </DataTable>
-            </div>
+            <FormStatusTable
+              :mat="mat"
+              v-model:editingRows="editingRows"
+              :masterGold="masterGold"
+              :workerItemSearch="workerItemSearch"
+              :tableType="1"
+              :status="modelMat.status"
+              @row-edit-save="onRowEditSave"
+              @del-gold="onDelGold"
+              @add-mat="addMat"
+              @cal-total-wages="calTotalWages"
+              @search-worker="onSearchWorker"
+            />
             <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>เเก้ไขมูลเพิ่มเติม</span>
@@ -332,148 +134,18 @@
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>เเก้ไขรายละเอียดทอง</span>
             </div>
-            <div class="form-content-row-grid-container">
-              <DataTable
-                class="p-datatable-sm"
-                showGridlines
-                v-model:editingRows="editingRows"
-                :value="mat"
-                editMode="row"
-                dataKey="id"
-                @row-edit-save="onRowEditSave"
-                :pt="{
-                  table: { style: 'min-width: 50rem' },
-                  column: {
-                    bodycell: ({ state }) => ({
-                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                    })
-                  }
-                }"
-              >
-                <Column style="width: 20px">
-                  <template #body="prop">
-                    <div
-                      class="btn btn-sm btn-red text-center w-100"
-                      @click="onDelGold(prop.data)"
-                    >
-                      <i class="bi bi-trash-fill"></i>
-                    </div>
-                  </template>
-                </Column>
-                <Column field="gold" header="ทอง">
-                  <template #editor="{ data, field }">
-                    <DropdownGeneric
-                      v-model="data[field]"
-                      :options="masterGold"
-                      optionLabel="code"
-                      optionValue="code"
-                      class="w-full md:w-14rem"
-                      placeholder="เลือกทอง"
-                    />
-                  </template>
-                </Column>
-                <Column field="requestDate" header="วันที่">
-                  <template #editor="{ data, field }">
-                    <div>
-                      <CalendarGeneric
-                        class="w-100"
-                        v-model="data[field]"
-                        dateFormat="dd/mm/yy"
-                        :showIcon="true"
-                        :showButtonBar="true"
-                      />
-                    </div>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.requestDate">
-                      {{ formatDate(slotProps.data.requestDate) }}
-                    </div>
-                  </template>
-                </Column>
-                <Column field="goldQTYCheck" header="จำนวน">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column field="goldWeightCheck" header="น้ำหนัก">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      step="any"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column field="workers" header="ช่างคัดพลอ">
-                  <template #editor="{ data, field }">
-                    <AutoCompleteGeneric
-                      v-model="data[field]"
-                      :suggestions="workerItemSearch"
-                      @complete="onSearchWorker"
-                      placeholder="กรอกรหัส/ชื่อช่าง...."
-                      :class="data[field] ? `` : `bg-warning`"
-                      optionLabel="code"
-                      :forceSelection="true"
-                    >
-                      <template #option="slotProps">
-                        <div class="flex align-options-center">
-                          <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
-                        </div>
-                      </template>
-                    </AutoCompleteGeneric>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.workers">
-                      {{ `${slotProps.data.workers.code} - ${slotProps.data.workers.nameTh}` }}
-                    </div>
-                  </template>
-                </Column>
-                <Column field="workersSub" header="ช่างคัดเพชร">
-                  <template #editor="{ data, field }">
-                    <AutoCompleteGeneric
-                      v-model="data[field]"
-                      :suggestions="workerItemSearch"
-                      @complete="onSearchWorker"
-                      placeholder="กรอกรหัส/ชื่อช่าง...."
-                      :class="data[field] ? `` : `bg-warning`"
-                      optionLabel="code"
-                      :forceSelection="true"
-                    >
-                      <template #option="slotProps">
-                        <div class="flex align-options-center">
-                          <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
-                        </div>
-                      </template>
-                    </AutoCompleteGeneric>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.workersSub">
-                      {{
-                        `${slotProps.data.workersSub.code} - ${slotProps.data.workersSub.nameTh}`
-                      }}
-                    </div>
-                  </template>
-                </Column>
-                <Column
-                  :rowEditor="true"
-                  style="width: 10%; min-width: 8rem"
-                  bodyStyle="text-align:center"
-                ></Column>
-                <template #footer>
-                  <div class="d-flex justify-content-between">
-                    <div>ทั้งหมด {{ this.mat.length }} รายการ</div>
-                    <div @click="addMat">
-                      <i class="bi bi-plus-square-fill"></i>
-                    </div>
-                  </div>
-                </template>
-              </DataTable>
-            </div>
+            <FormStatusTable
+              :mat="mat"
+              v-model:editingRows="editingRows"
+              :masterGold="masterGold"
+              :workerItemSearch="workerItemSearch"
+              :tableType="2"
+              :status="modelMat.status"
+              @row-edit-save="onRowEditSave"
+              @del-gold="onDelGold"
+              @add-mat="addMat"
+              @search-worker="onSearchWorker"
+            />
 
             <div class="mb-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
@@ -702,98 +374,17 @@
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>เเก้ไขรายละเอียด</span>
             </div>
-            <div class="form-content-row-grid-container">
-              <DataTable
-                class="p-datatable-sm"
-                showGridlines
-                v-model:editingRows="editingRows"
-                :value="mat"
-                editMode="row"
-                dataKey="id"
-                @row-edit-save="onRowEditSave"
-                :pt="{
-                  table: { style: 'min-width: 50rem' },
-                  column: {
-                    bodycell: ({ state }) => ({
-                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                    })
-                  }
-                }"
-              >
-                <Column style="width: 20px">
-                  <template #body="prop">
-                    <div
-                      class="btn btn-sm btn-red text-center w-100"
-                      @click="onDelGold(prop.data)"
-                    >
-                      <i class="bi bi-trash-fill"></i>
-                    </div>
-                  </template>
-                </Column>
-                <Column field="gold" header="ทอง">
-                  <template #editor="{ data, field }">
-                    <DropdownGeneric
-                      v-model="data[field]"
-                      :options="masterGold"
-                      optionLabel="code"
-                      optionValue="code"
-                      class="w-full md:w-14rem"
-                      placeholder="เลือกทอง"
-                    />
-                  </template>
-                </Column>
-                <Column field="requestDate" header="วันที่">
-                  <template #editor="{ data, field }">
-                    <div>
-                      <CalendarGeneric
-                        class="w-100"
-                        v-model="data[field]"
-                        dateFormat="dd/mm/yy"
-                        :showIcon="true"
-                        :showButtonBar="true"
-                      />
-                    </div>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.requestDate">
-                      {{ formatDate(slotProps.data.requestDate) }}
-                    </div>
-                  </template>
-                </Column>
-                <Column field="goldQTYCheck" header="จำนวน">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column field="goldWeightCheck" header="น้ำหนัก">
-                  <template #editor="{ data, field }">
-                    <InputTextGeneric
-                      type="number"
-                      step="any"
-                      :class="data[field] ? `` : `bg-warning`"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column
-                  :rowEditor="true"
-                  style="width: 10%; min-width: 8rem"
-                  bodyStyle="text-align:center"
-                ></Column>
-                <template #footer>
-                  <div class="d-flex justify-content-between">
-                    <div>ทั้งหมด {{ this.mat.length }} รายการ</div>
-                    <div @click="addMat">
-                      <i class="bi bi-plus-square-fill"></i>
-                    </div>
-                  </div>
-                </template>
-              </DataTable>
-            </div>
+            <FormStatusTable
+              :mat="mat"
+              v-model:editingRows="editingRows"
+              :masterGold="masterGold"
+              :workerItemSearch="workerItemSearch"
+              :tableType="4"
+              :status="modelMat.status"
+              @row-edit-save="onRowEditSave"
+              @del-gold="onDelGold"
+              @add-mat="addMat"
+            />
             <!-- <div class="mb-2 mt-2 txt-title-part">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>เเก้ไขค่าเเรง</span>
@@ -896,10 +487,6 @@ import { defineAsyncComponent } from 'vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-
-// eslint-disable-next-line vue/no-mutating-props
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
 import moment from 'dayjs'
 
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
@@ -907,11 +494,17 @@ import { success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
-import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+
+// eslint-disable-next-line no-restricted-imports
+import DataTable from 'primevue/datatable'
+// eslint-disable-next-line no-restricted-imports
+import Column from 'primevue/column'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+
+import FormStatusTable from './form-status-table.vue'
 
 // const interfaceMat = {
 //   gold: null,
@@ -948,11 +541,11 @@ export default {
     DataTable,
     Column,
 
-    DropdownGeneric,
     CalendarGeneric,
     AutoCompleteGeneric,
     InputTextGeneric,
-    TextareaGeneric
+    TextareaGeneric,
+    FormStatusTable
   },
   props: {
     isShow: {
