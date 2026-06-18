@@ -5,7 +5,7 @@
 
       <!-- Step 1: Select Scan Type -->
       <div v-if="!selectedScanType" class="scan-type-selection">
-        <p class="selection-description">เลือกประเภทที่ต้องการสแกน</p>
+        <p class="selection-description">{{ $t('view.mobile.scan.selectTypeTitle') }}</p>
 
         <div class="scan-type-grid">
           <div
@@ -17,8 +17,8 @@
             <div class="scan-type-icon">
               <i :class="type.icon"></i>
             </div>
-            <div class="scan-type-label">{{ type.label }}</div>
-            <div v-if="type.description" class="scan-type-description">{{ type.description }}</div>
+            <div class="scan-type-label">{{ $t(type.labelKey) }}</div>
+            <div v-if="type.descriptionKey" class="scan-type-description">{{ $t(type.descriptionKey) }}</div>
           </div>
         </div>
       </div>
@@ -32,7 +32,7 @@
           </button>
           <div class="scan-header-title">
             <i :class="selectedScanType.icon"></i>
-            <span>{{ selectedScanType.label }}</span>
+            <span>{{ $t(selectedScanType.labelKey) }}</span>
           </div>
         </div>
 
@@ -40,7 +40,7 @@
         <div v-if="!scannedProduct" class="scanner-section">
           <!-- Search Field Selector -->
           <div class="search-field-selector">
-            <label class="field-selector-label">ค้นหาด้วย</label>
+            <label class="field-selector-label">{{ $t('view.mobile.scan.searchBy') }}</label>
             <div class="field-selector-options">
               <button
                 v-for="option in searchFieldOptions"
@@ -50,7 +50,7 @@
                 @click="searchField = option.value"
               >
                 <i :class="option.icon"></i>
-                {{ option.label }}
+                {{ $t(option.labelKey) }}
               </button>
             </div>
           </div>
@@ -60,7 +60,7 @@
 
           <!-- Divider -->
           <div class="scanner-divider">
-            <span>หรือ</span>
+            <span>{{ $t('view.mobile.scan.orDivider') }}</span>
           </div>
 
           <!-- Manual Input -->
@@ -75,7 +75,7 @@
             />
             <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
               <i class="bi bi-search"></i>
-              ค้นหา
+              {{ $t('view.mobile.scan.searchBtn') }}
             </button>
           </div>
         </div>
@@ -88,7 +88,7 @@
           <div class="action-zone mobile-mt-3">
             <div class="action-zone-header">
               <i class="bi bi-lightning-charge"></i>
-              <span>การดำเนินการ</span>
+              <span>{{ $t('view.mobile.scan.actionZoneTitle') }}</span>
             </div>
 
             <div class="action-buttons">
@@ -99,27 +99,27 @@
                 @click="handleCreateCostPlan"
               >
                 <i class="bi bi-file-earmark-plus"></i>
-                ออกแผนตีราคา
+                {{ $t('view.mobile.scan.createCostPlanBtn') }}
               </button>
 
               <!-- Future actions will be added here -->
               <button class="mobile-btn mobile-btn-outline" disabled>
                 <i class="bi bi-box-seam"></i>
-                อัพเดทสต็อก
+                {{ $t('view.mobile.scan.updateStockBtn') }}
               </button>
               <button class="mobile-btn mobile-btn-outline" disabled>
                 <i class="bi bi-printer"></i>
-                พิมพ์ป้าย
+                {{ $t('view.mobile.scan.printLabelBtn') }}
               </button>
               <button class="mobile-btn mobile-btn-outline" disabled>
                 <i class="bi bi-geo-alt"></i>
-                เปลี่ยนที่จัดเก็บ
+                {{ $t('view.mobile.scan.changeLocationBtn') }}
               </button>
             </div>
 
             <p class="action-note">
               <i class="bi bi-info-circle"></i>
-              ฟีเจอร์การดำเนินการบางส่วนจะพัฒนาในอนาคต
+              {{ $t('view.mobile.scan.futureFeaturesNote') }}
             </p>
           </div>
 
@@ -127,7 +127,7 @@
           <div class="mobile-mt-3">
             <button class="mobile-btn mobile-btn-secondary mobile-btn-block" @click="resetProduct">
               <i class="bi bi-arrow-repeat"></i>
-              สแกนอีกครั้ง
+              {{ $t('view.mobile.scan.scanAgainBtn') }}
             </button>
           </div>
         </div>
@@ -163,16 +163,16 @@ export default {
       imageType: 'STOCK-PRODUCT',
       searchField: 'stockNumber',
       searchFieldOptions: [
-        { value: 'stockNumber', label: 'รหัสสินค้าใหม่', icon: 'bi bi-upc-scan' },
-        { value: 'stockNumberOrigin', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
+        { value: 'stockNumber', labelKey: 'view.mobile.scan.fieldNewCode', icon: 'bi bi-upc-scan' },
+        { value: 'stockNumberOrigin', labelKey: 'view.mobile.scan.fieldOldCode', icon: 'bi bi-tag' }
       ],
 
       // Scan types configuration
       scanTypes: [
         {
           id: 'stock-product',
-          label: 'สแกนสินค้า',
-          description: 'สแกนสต็อกสินค้าสำเร็จรูป',
+          labelKey: 'view.mobile.scan.scanStockLabel',
+          descriptionKey: 'view.mobile.scan.scanStockDesc',
           icon: 'bi bi-gem',
           apiMethod: 'fetchDataGet'
         }
@@ -198,8 +198,8 @@ export default {
   computed: {
     searchFieldPlaceholder() {
       return this.searchField === 'stockNumber'
-        ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
-        : 'กรอกรหัสสินค้าเก่า (Origin)'
+        ? this.$t('view.mobile.scan.placeholderNewCode')
+        : this.$t('view.mobile.scan.placeholderOldCode')
     }
   },
 
@@ -260,7 +260,7 @@ export default {
 
     async handleManualSearch() {
       if (!this.manualInput || !this.manualInput.trim()) {
-        warning('กรุณากรอกเลขที่ผลิตหรือรหัสสินค้า')
+        warning(this.$t('view.mobile.scan.warnEnterCode'))
         return
       }
 
@@ -295,7 +295,7 @@ export default {
       if (response) {
         this.scannedProduct = response
       } else {
-        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบเลขที่ผลิตหรือรหัสสินค้า')
+        error(this.$t('view.mobile.scan.errorProductNotFound'), this.$t('view.mobile.scan.errorCheckCode'))
         this.scannedProduct = null
       }
     },
@@ -308,7 +308,7 @@ export default {
 
       if (response) {
         const planNumber = response.planNumber || response
-        success(`เลขที่แผนตีราคา: ${planNumber}`, 'ออกแผนตีราคาสำเร็จ')
+        success(this.$t('view.mobile.scan.successCreateCostPlan', { planNumber }), this.$t('view.mobile.scan.successCreateCostPlanTitle'))
       }
     }
   }

@@ -17,26 +17,26 @@
 
     <div class="item-details">
       <div v-if="item.productNumber && item.stockNumber" class="detail-row">
-        <span class="detail-label">รหัสสินค้า</span>
+        <span class="detail-label">{{ $t('view.mobile.sale.soItemFieldCode') }}</span>
         <span class="detail-value">{{ item.productNumber }}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">ราคา</span>
-        <span class="detail-value">{{ formatCurrency(displayPrice) }} บาท</span>
+        <span class="detail-label">{{ $t('view.mobile.sale.soItemFieldPrice') }}</span>
+        <span class="detail-value">{{ formatCurrency(displayPrice) }} {{ $t('view.mobile.sale.soItemPriceUnit') }}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">จำนวน</span>
+        <span class="detail-label">{{ $t('view.mobile.sale.soItemFieldQty') }}</span>
         <span class="detail-value">{{ item.qty || 1 }}</span>
       </div>
       <div v-if="displayDiscount > 0" class="detail-row">
-        <span class="detail-label">ส่วนลด</span>
-        <span class="detail-value discount">{{ displayDiscount }}%</span>
+        <span class="detail-label">{{ $t('view.mobile.sale.soItemFieldDiscount') }}</span>
+        <span class="detail-value discount">{{ displayDiscount }}{{ $t('view.mobile.sale.soItemDiscountUnit') }}</span>
       </div>
     </div>
 
     <div class="item-total">
-      <span class="total-label">รวม</span>
-      <span class="total-value">{{ formatCurrency(itemTotal) }} บาท</span>
+      <span class="total-label">{{ $t('view.mobile.sale.soItemTotalLabel') }}</span>
+      <span class="total-value">{{ formatCurrency(itemTotal) }} {{ $t('view.mobile.sale.soItemTotalUnit') }}</span>
     </div>
   </div>
 </template>
@@ -93,9 +93,9 @@ export default {
     statusLabel() {
       switch (this.confirmStatus) {
         case 'confirmed':
-          return 'ยืนยันแล้ว'
+          return this.$t('view.mobile.sale.statusConfirmed')
         case 'invoiced':
-          return 'ออก Invoice แล้ว'
+          return this.$t('view.mobile.sale.statusInvoicedItem')
         default:
           return ''
       }

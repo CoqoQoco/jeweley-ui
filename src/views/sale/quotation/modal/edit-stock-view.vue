@@ -4,7 +4,7 @@
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span><i class="bi bi-brush mr-2"></i></span>
-          <span>{{ `เเก้ไขสินค้า | เลขที่ผลิต: ${stock.stockNumber || stock.stockNumberOrigin || 'New'}` }}</span>
+          <span>{{ $t('view.sale.costStock.editTitle', { stockNumber: stock.stockNumber || stock.stockNumberOrigin || 'New' }) }}</span>
         </div>
 
         <form @submit.prevent="onSubmit" class="mt-2">
@@ -55,7 +55,7 @@
                     @click="$refs.fileInput.click()"
                   >
                     <span class="bi bi-upload"></span>
-                    <span>อัปโหลดรูป</span>
+                    <span>{{ $t('view.sale.costStock.uploadImage') }}</span>
                   </button>
                   <!-- <button
                     v-if="stock.imagePath"
@@ -71,7 +71,7 @@
                     @click="onSelectImage('SELECT')"
                   >
                     <span class="bi bi-images"></span>
-                    <span>เลือกรูปจากคลัง</span>
+                    <span>{{ $t('view.sale.costStock.selectFromGallery') }}</span>
                   </button>
                 </div>
               </div>
@@ -88,7 +88,7 @@
                     autocapitalize="off"
                     spellcheck="false"
                     v-model="search"
-                    placeholder="ค้นหาด้วยชื่อรูปภาพ"
+                    :placeholder="$t('view.sale.costStock.placeholder.imageSearch')"
                     required
                   />
                   <div class="input-group-append">
@@ -145,7 +145,7 @@
                       class="btn btn-sm btn-main"
                       type="button"
                       :disabled="!selectedItems.length > 0"
-                      title="ปรับปรุง"
+                      :title="$t('view.sale.costStock.updateBtn')"
                       @click="onSelect"
                     >
                       <span><i class="bi bi-pencil-square"></i></span>
@@ -160,7 +160,7 @@
             <div class="d-flex justify-content-between">
               <div class="vertical-center-container">
                 <span class="title-text-lg bi bi-clipboard2-check-fill"></span>
-                <span class="title-text-lg ml-2">ข้อมูลสินค้า</span>
+                <span class="title-text-lg ml-2">{{ $t('view.sale.costStock.stockInfo') }}</span>
               </div>
               <div></div>
             </div>
@@ -168,7 +168,7 @@
               <!-- productNumber -->
               <div class="form-col-sm-container">
                 <div>
-                  <span class="title-text">รหัสสินค้า</span>
+                  <span class="title-text">{{ $t('view.sale.costStock.productCode') }}</span>
                   <input
                     class="form-control form-control-sm"
                     type="text"
@@ -181,7 +181,7 @@
               <!-- description -->
               <div class="form-col-sm-container mt-2">
                 <div>
-                  <span class="title-text">รายละเอียด</span>
+                  <span class="title-text">{{ $t('view.sale.costStock.description') }}</span>
                   <input
                     class="form-control form-control-sm"
                     type="text"
@@ -197,7 +197,7 @@
             <div class="d-flex justify-content-between">
               <div class="vertical-center-container">
                 <span class="title-text-lg bi bi-gem"></span>
-                <span class="title-text-lg ml-2">ทอง | เพชร | พลอย</span>
+                <span class="title-text-lg ml-2">{{ $t('view.sale.costStock.gemSection') }}</span>
               </div>
               <!-- Add button -->
               <div class="d-flex justify-content-center mt-2">
@@ -228,7 +228,7 @@
                       :options="masterGold"
                       optionLabel="description"
                       optionValue="code"
-                      placeholder="เลือกทอง"
+                      :placeholder="$t('view.sale.costStock.placeholder.selectGold')"
                       :showClear="data.typeCode ? true : false"
                       @update:modelValue="data.typeCode = $event"
                     />
@@ -239,7 +239,7 @@
                       :options="masterDiamondGrade"
                       optionLabel="description"
                       optionValue="nameEn"
-                      placeholder="เลือกเพชร"
+                      :placeholder="$t('view.sale.costStock.placeholder.selectDiamond')"
                       :showClear="data.typeCode ? true : false"
                       @update:modelValue="data.typeCode = $event"
                     />
@@ -250,13 +250,13 @@
                       :options="masterGem"
                       optionLabel="description"
                       optionValue="nameEn"
-                      placeholder="เลือกพลอย"
+                      :placeholder="$t('view.sale.costStock.placeholder.selectGem')"
                       :showClear="data.typeCode ? true : false"
                       @update:modelValue="data.typeCode = $event"
                     />
                   </div>
                   <div v-else class="vertical-center-container text-center">
-                    <span> --- โปรดระบุประเภท ---</span>
+                    <span> {{ $t('view.sale.costStock.placeholder.selectTypeFirst') }}</span>
                   </div>
                 </div>
               </template>
@@ -266,7 +266,7 @@
                     type="text"
                     v-model="data.size"
                     class="form-control"
-                    placeholder="ขนาด"
+                    :placeholder="$t('view.sale.costStock.materialSize')"
                   />
                 </div>
                 <div v-else class="text-center">—</div>
@@ -277,7 +277,7 @@
                     type="text"
                     v-model="data.region"
                     class="form-control"
-                    placeholder="แหล่งผลิต"
+                    :placeholder="$t('view.sale.costStock.materialRegion')"
                   />
                 </div>
                 <div v-else class="text-center">—</div>
@@ -288,7 +288,7 @@
                     type="number"
                     v-model="data.qty"
                     class="form-control"
-                    placeholder="จำนวน"
+                    :placeholder="$t('common.field.quantity')"
                     min="0"
                   />
                   <input
@@ -296,7 +296,6 @@
                     style="margin-left: 1px"
                     v-model="data.qtyUnit"
                     class="form-control"
-                    placeholder="หน่วย"
                   />
                 </div>
               </template>
@@ -306,7 +305,7 @@
                     type="number"
                     v-model="data.weight"
                     class="form-control"
-                    placeholder="น้ำหนัก"
+                    :placeholder="$t('common.field.weight')"
                     min="0"
                     step="0.01"
                   />
@@ -315,7 +314,6 @@
                     style="margin-left: 1px"
                     v-model="data.weightUnit"
                     class="form-control"
-                    placeholder="หน่วย"
                   />
                 </div>
               </template>
@@ -348,11 +346,11 @@
           <div class="data-container mt-4 pb-4">
             <div class="vertical-center-container mb-2">
               <span class="title-text-lg bi bi-calculator"></span>
-              <span class="title-text-lg ml-2">ประเมินราคาสินค้า</span>
+              <span class="title-text-lg ml-2">{{ $t('view.sale.costStock.appraisalSection') }}</span>
             </div>
             <!-- ข้อความแจ้งเตือนว่ารายการที่แสดงเป็นราคาต่อชิ้น -->
             <div class="mb-2" style="color: #888; font-size: 14px">
-              * รายการที่แสดงในตารางนี้เป็นราคาต่อ 1 ชิ้น (หารต้นทุนตามจำนวนแผนผลิตแล้ว)
+              {{ $t('view.sale.costStock.perItemNote') }}
             </div>
             <DataTable
               :value="tranItems"
@@ -363,12 +361,12 @@
             >
               <ColumnGroup type="header">
                 <Row>
-                  <Column header="รายละเอียดงาน" :colspan="3" />
-                  <Column header="จำนวน" />
-                  <Column header="ราคา/จำนวน" />
-                  <Column header="น้ำหนัก" />
-                  <Column header="ราคา/น้ำหนัก" />
-                  <Column header="ราคารวม" />
+                  <Column :header="$t('view.sale.costStock.jobDetail')" :colspan="3" />
+                  <Column :header="$t('common.field.quantity')" />
+                  <Column :header="$t('view.sale.costStock.pricePerQty')" />
+                  <Column :header="$t('common.field.weight')" />
+                  <Column :header="$t('view.sale.costStock.pricePerWeight')" />
+                  <Column :header="$t('view.sale.costStock.totalPrice')" />
                 </Row>
               </ColumnGroup>
               <Column field="nameGroup" />
@@ -382,7 +380,7 @@
                   <button
                     class="btn btn-sm btn-red"
                     type="button"
-                    title="ลบ"
+                    :title="$t('common.btn.delete')"
                     @click="delTranItem(slotProps.index)"
                   >
                     <span class="bi bi-trash"></span>
@@ -407,7 +405,7 @@
                       class="ml-2 text-ref"
                     >
                       {{
-                        `[ ราคาอ้างอิง --> ${Number(slotProps.data.priceReference).toFixed(2)} ]`
+                        $t('view.sale.costStock.priceReferenceLabel', { price: Number(slotProps.data.priceReference).toFixed(2) })
                       }}
                     </span>
                   </div>
@@ -489,7 +487,7 @@
                 <div class="d-flex align-items-center justify-content-between gap-2 type-container">
                   <div>
                     <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
-                    <span>ต้นทุน</span>
+                    <span>{{ $t('view.sale.costStock.costPrefix') }}</span>
                     <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
                   </div>
                   <div class="text-right mr-2">
@@ -502,7 +500,7 @@
                   <Column :colspan="7">
                     <template #footer>
                       <div class="text-right type-container">
-                        <span>ต้นทุนรวมทั้งหมด</span>
+                        <span>{{ $t('view.sale.costStock.totalCostAll') }}</span>
                       </div>
                     </template>
                   </Column>
@@ -518,7 +516,7 @@
             </DataTable>
             <!-- ต้นทุนต่อชิ้น -->
             <div class="d-flex align-items-center mt-3">
-              <span class="mr-2 type-container">ต้นทุนต่อชิ้น:</span>
+              <span class="mr-2 type-container">{{ $t('view.sale.costStock.costPerPieceLabel') }}:</span>
               <span class="font-weight-bold mr-3 type-container">{{
                 costPerPiece.toFixed(2)
               }}</span>
@@ -526,7 +524,7 @@
                 >(แผนผลิต {{ stock.planQty || stock.qty || 1 }} ชิ้น)</span
               > -->
               <input type="checkbox" id="useCostPerPiece" v-model="useCostPerPiece" class="mr-1" />
-              <span for="useCostPerPiece">ใช้ต้นทุนต่อชิ้นเป็นราคาประเมิน</span>
+              <span for="useCostPerPiece">{{ $t('view.sale.costStock.useCostPerPiece') }}</span>
             </div>
             <div class="action-group-container mt-2">
               <div class="d-flex align-items-center gap-2">
@@ -535,14 +533,14 @@
                   :options="masterType"
                   optionLabel="name"
                   optionValue="code"
-                  placeholder="เลือกรายการ"
+                  :placeholder="$t('view.sale.costStock.placeholder.selectItem')"
                   class="mr-2"
                   @update:modelValue="masterValue = $event"
                 />
                 <button
                   type="button"
                   class="btn btn-sm btn-green mt-1 mr-2"
-                  title="เพิ่มรายการ"
+                  :title="$t('view.sale.costStock.addItem')"
                   @click="addTranItem"
                 >
                   <span><i class="bi bi-plus"></i></span>
@@ -556,11 +554,11 @@
             <div class="d-flex justify-content-center">
               <button class="btn btn-sm btn-green" type="button" @click="onSave">
                 <span class="bi bi-calendar-check mr-2"></span>
-                <span>บันทึก</span>
+                <span>{{ $t('common.btn.save') }}</span>
               </button>
               <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
                 <span class="bi bi-x mr-2"></span>
-                <span>ยกเลิก</span>
+                <span>{{ $t('common.btn.cancel') }}</span>
               </button>
             </div>
           </div>
@@ -644,6 +642,42 @@ export default {
     costPerPiece() {
       // tranItems เป็นราคาต่อชิ้นอยู่แล้ว ไม่ต้องหารซ้ำ
       return Number(this.caltotalPrice(this.tranItems))
+    },
+    masterMaterialType() {
+      return [
+        { value: 'Gold', description: this.$t('view.sale.costStock.materialGold') },
+        { value: 'Silver', description: this.$t('view.sale.costStock.materialSilver') },
+        { value: 'Diamond', description: this.$t('view.sale.costStock.materialDiamond') },
+        { value: 'Gem', description: this.$t('view.sale.costStock.materialGem') }
+      ]
+    },
+    masterType() {
+      return [
+        { code: 'Gold', name: this.$t('view.sale.costStock.group.gold') },
+        { code: 'Gem', name: this.$t('view.sale.costStock.group.material') },
+        { code: 'Worker', name: this.$t('view.sale.costStock.group.worker') },
+        { code: 'Embed', name: this.$t('view.sale.costStock.group.embed') },
+        { code: 'ETC', name: this.$t('view.sale.costStock.group.etc') }
+      ]
+    },
+    imageColumns() {
+      return [
+        { field: 'image', header: '', width: '50px', sortable: false, align: 'center' },
+        { field: 'name', header: this.$t('common.field.name'), sortable: false, minWidth: '150px' },
+        { field: 'createDate', header: this.$t('view.sale.costStock.createDate'), sortable: false, format: 'datetime', minWidth: '150px' }
+      ]
+    },
+    materialColumns() {
+      return [
+        { field: 'type', header: this.$t('common.field.type'), sortable: false, width: '100px' },
+        { field: 'typeCode', header: this.$t('common.field.code'), sortable: false, minWidth: '100px' },
+        { field: 'size', header: this.$t('view.sale.costStock.materialSize'), sortable: false, width: '100px' },
+        { field: 'region', header: this.$t('view.sale.costStock.materialRegion'), sortable: false, width: '80px' },
+        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '200px' },
+        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '200px' },
+        { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '100px' },
+        { field: 'action', header: '', sortable: false, width: '50px' }
+      ]
     }
   },
 
@@ -704,35 +738,6 @@ export default {
       stock: {},
       search: null,
 
-      imageColumns: [
-        {
-          field: 'image',
-          header: '',
-          width: '50px',
-          sortable: false,
-          align: 'center'
-        },
-
-        {
-          field: 'name',
-          header: 'ชื่อ',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'createDate',
-          header: 'วันที่สร้าง',
-          sortable: false,
-          format: 'datetime',
-          minWidth: '150px'
-        }
-        // {
-        //   field: 'remark',
-        //   header: 'รายละเอียด',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // }
-      ],
       tableHeight: '800px',
       take: 10,
       skip: 0,
@@ -743,74 +748,9 @@ export default {
       selectedItems: [],
       selectionType: 'single',
 
-      materialColumns: [
-        {
-          field: 'type',
-          header: 'ประเภท',
-          sortable: false,
-          width: '100px'
-        },
-        {
-          field: 'typeCode',
-          header: 'รหัส',
-          sortable: false,
-          minWidth: '100px'
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: false,
-          width: '100px'
-        },
-        {
-          field: 'region',
-          header: 'เเหล่งผลิต',
-          sortable: false,
-          width: '80px'
-        },
-        {
-          field: 'qty',
-          header: 'จำนวน',
-          sortable: false,
-          width: '200px'
-        },
-        {
-          field: 'weight',
-          header: 'น้ำหนัก',
-          sortable: false,
-          width: '200px'
-        },
-        {
-          field: 'price',
-          header: 'ราคา',
-          sortable: false,
-          width: '100px'
-        },
-
-        {
-          field: 'action',
-          header: '',
-          sortable: false,
-          width: '50px'
-        }
-      ],
-      masterMaterialType: [
-        { value: 'Gold', description: 'ทอง' },
-        { value: 'Silver', description: 'เงิน' },
-        { value: 'Diamond', description: 'เพชร' },
-        { value: 'Gem', description: 'พลอย' }
-      ],
-
       isShowPriceModal: false, // ไม่ใช้ modal แล้ว แต่คงไว้ไม่กระทบ logic เดิม
       tranItems: [],
       masterValue: 'ETC',
-      masterType: [
-        { code: 'Gold', name: 'รายการทอง' },
-        { code: 'Gem', name: 'รายการวัถุดิบ' },
-        { code: 'Worker', name: 'รายการงานช่าง' },
-        { code: 'Embed', name: 'รายการงานฝัง' },
-        { code: 'ETC', name: 'รายการเพิ่มเติม' }
-      ],
       groupOrderRunning: {
         Gold: 1,
         Worker: 2,
@@ -818,16 +758,6 @@ export default {
         Gem: 4,
         ETC: 5
       },
-      priceColumns: [
-        { field: 'nameDescription', header: 'รายละเอียด', sortable: false },
-        { field: 'qty', header: 'จำนวน', sortable: false },
-        { field: 'qtyPrice', header: 'ราคา/จำนวน', sortable: false },
-        { field: 'qtyWeight', header: 'น้ำหนัก', sortable: false },
-        { field: 'qtyWeightPrice', header: 'ราคา/น้ำหนัก', sortable: false },
-        { field: 'totalPrice', header: 'ราคารวม', sortable: false },
-        { field: 'action', header: '', sortable: false }
-      ],
-
       useCostPerPiece: false
     }
   },
@@ -972,7 +902,7 @@ export default {
     },
 
     onSubmit() {
-      confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      confirmSubmit('', this.$t('view.sale.costStock.confirm.save'), async () => {
         this.fetchConfirm()
       })
     },
@@ -1081,20 +1011,14 @@ export default {
       )
     },
     getGroupName(id) {
-      switch (id) {
-        case 'Gold':
-          return 'รายการทอง'
-        case 'Gem':
-          return 'รายการวัถุดิบ'
-        case 'Worker':
-          return 'รายการงานช่าง'
-        case 'Embed':
-          return 'รายการงานฝัง'
-        case 'ETC':
-          return 'รายการเพิ่มเติม'
-        default:
-          return 'Unknown'
+      const map = {
+        Gold: this.$t('view.sale.costStock.group.gold'),
+        Gem: this.$t('view.sale.costStock.group.material'),
+        Worker: this.$t('view.sale.costStock.group.worker'),
+        Embed: this.$t('view.sale.costStock.group.embed'),
+        ETC: this.$t('view.sale.costStock.group.etc')
       }
+      return map[id] || id
     },
     caltotalPrice(data) {
       let total = 0
@@ -1112,7 +1036,7 @@ export default {
       const file = e.target.files[0]
       if (!file) return
       if (!file.type.match(/image.*/)) {
-        warning('กรุณาเลือกไฟล์รูปภาพเท่านั้น')
+        warning(this.$t('view.sale.costStock.error.imageTypeOnly'))
         return
       }
       const compressedFile = await compressOptimalImage(file)
@@ -1129,7 +1053,7 @@ export default {
             this.stock.imageBase64 = ev.target.result
           }
           reader.readAsDataURL(compressedFile)
-          success('อัปโหลดรูปสินค้าสำเร็จ')
+          success(this.$t('view.sale.costStock.success.uploadImage'))
         }
         return
       }

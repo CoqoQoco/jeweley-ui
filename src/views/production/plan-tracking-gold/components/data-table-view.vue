@@ -13,14 +13,14 @@
         <div class="btn-action-container">
           <button
             class="btn btn-sm btn-main"
-            title="โหมดเเก้ไข"
+            :title="$t('view.production.planTrackingGold.editMode')"
             @click="UpdatePlanGold(rowData)"
           >
             <i class="bi bi-brush"></i>
           </button>
           <button
             class="ml-1 btn btn-sm btn-dark"
-            title="โหมดดูรายละเอียด"
+            :title="$t('view.production.planTrackingGold.viewMode')"
             @click="ViewPlanGold(rowData)"
           >
             <i class="bi bi-clipboard2-data-fill"></i>

@@ -2,40 +2,36 @@
   <div>
     <modal :showModal="isShow" @closeModal="onClose" width="1200px" :fitHeight="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">เลือกใบสั่งขายสำหรับสร้างใบสั่งผลิต</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.productionOrder.selectSaleOrderTitle') }}</span>
       </template>
       <template #content>
         <!-- Search Section -->
         <div class="modal-search-section mb-3">
           <div class="form-col-container">
             <div>
-              <span class="title-text">เลขที่ใบสั่งขาย</span>
-              <input
-                type="text"
+              <span class="title-text">{{ $t('view.sale.productionOrder.soNumber') }}</span>
+              <InputTextGeneric
                 v-model="searchForm.saleOrderNumber"
-                class="form-control bg-input"
                 placeholder="SO-2025-001"
                 @keyup.enter="onSearch"
               />
             </div>
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
-              <input
-                type="text"
+              <span class="title-text">{{ $t('view.sale.saleOrder.customerName') }}</span>
+              <InputTextGeneric
                 v-model="searchForm.customerName"
-                class="form-control bg-input"
-                placeholder="ชื่อลูกค้า"
+                :placeholder="$t('view.sale.saleOrder.customerName')"
                 @keyup.enter="onSearch"
               />
             </div>
             <div>
-              <span class="title-text">สถานะ</span>
+              <span class="title-text">{{ $t('view.sale.productionOrder.status') }}</span>
               <DropdownGeneric
                 v-model="searchForm.status"
                 :options="statusOptions"
                 optionLabel="name"
                 optionValue="value"
-                placeholder="เลือกสถานะ"
+                :placeholder="$t('view.sale.productionOrder.selectStatus')"
                 :showClear="true"
                 class="w-100"
               />
@@ -79,7 +75,7 @@
 
           <template #productionItemsTemplate="{ data }">
             <div class="text-center">
-              <span class="badge badge-info">{{ getProductionItemsCount(data.items) }} รายการ</span>
+              <span class="badge badge-info">{{ $t('view.sale.productionOrder.itemCount', { count: getProductionItemsCount(data.items) }) }}</span>
             </div>
           </template>
 
@@ -103,7 +99,7 @@
                 class="btn btn-sm btn-green"
                 @click="selectSaleOrder(data)"
                 :disabled="!hasProductionItems(data.items)"
-                title="เลือกใบสั่งขาย"
+                :title="$t('view.sale.productionOrder.selectSaleOrder')"
               >
                 <i class="bi bi-check-circle"></i>
               </button>
@@ -119,6 +115,7 @@
 import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
@@ -130,7 +127,8 @@ export default {
   components: {
     modal,
     BaseDataTable,
-    DropdownGeneric
+    DropdownGeneric,
+    InputTextGeneric
   },
 
   mixins: [dataTablePaging],
@@ -153,27 +151,29 @@ export default {
       },
 
       saleOrders: [],
-      totalRecords: 0,
-
-      statusOptions: [
-        { name: 'ยืนยันแล้ว', value: 'Confirmed' },
-        { name: 'ส่งมอบบางส่วน', value: 'PartiallyFulfilled' },
-        { name: 'ส่งมอบครบถ้วน', value: 'Fulfilled' }
-      ]
+      totalRecords: 0
     }
   },
 
   computed: {
+    statusOptions() {
+      return [
+        { name: this.$t('view.sale.productionOrder.statusConfirmed'), value: 'Confirmed' },
+        { name: this.$t('view.sale.productionOrder.statusPartiallyFulfilled'), value: 'PartiallyFulfilled' },
+        { name: this.$t('view.sale.productionOrder.statusFulfilled'), value: 'Fulfilled' }
+      ]
+    },
+
     columns() {
       return [
         { field: 'action', header: '', width: '60px', sortable: false },
-        { field: 'number', header: 'เลขที่ใบสั่งขาย', sortable: true, minWidth: '140px', template: 'numberTemplate' },
-        { field: 'orderDate', header: 'วันที่ใบสั่งขาย', sortable: true, minWidth: '120px', template: 'orderDateTemplate' },
-        { field: 'customerName', header: 'ลูกค้า', sortable: true, minWidth: '200px', template: 'customerNameTemplate' },
-        { field: 'productionItems', header: 'รายการผลิต', sortable: false, minWidth: '120px', template: 'productionItemsTemplate' },
-        { field: 'expectedDeliveryDate', header: 'กำหนดส่งมอบ', sortable: true, minWidth: '120px', template: 'expectedDeliveryDateTemplate' },
-        { field: 'totalAmount', header: 'ยอดรวม', sortable: true, minWidth: '120px', template: 'totalAmountTemplate' },
-        { field: 'status', header: 'สถานะ', sortable: true, minWidth: '120px', template: 'statusTemplate' }
+        { field: 'number', header: this.$t('view.sale.productionOrder.soNumber'), sortable: true, minWidth: '140px', template: 'numberTemplate' },
+        { field: 'orderDate', header: this.$t('view.sale.productionOrder.orderDate'), sortable: true, minWidth: '120px', template: 'orderDateTemplate' },
+        { field: 'customerName', header: this.$t('view.sale.saleOrder.customerName'), sortable: true, minWidth: '200px', template: 'customerNameTemplate' },
+        { field: 'productionItems', header: this.$t('view.sale.productionOrder.productionItems'), sortable: false, minWidth: '120px', template: 'productionItemsTemplate' },
+        { field: 'expectedDeliveryDate', header: this.$t('view.sale.productionOrder.deliveryDate'), sortable: true, minWidth: '120px', template: 'expectedDeliveryDateTemplate' },
+        { field: 'totalAmount', header: this.$t('view.sale.productionOrder.totalAmount'), sortable: true, minWidth: '120px', template: 'totalAmountTemplate' },
+        { field: 'status', header: this.$t('view.sale.productionOrder.status'), sortable: true, minWidth: '120px', template: 'statusTemplate' }
       ]
     }
   },
@@ -239,9 +239,9 @@ export default {
 
     getStatusText(status) {
       const texts = {
-        Confirmed: 'ยืนยันแล้ว',
-        PartiallyFulfilled: 'ส่งมอบบางส่วน',
-        Fulfilled: 'ส่งมอบครบถ้วน'
+        Confirmed: this.$t('view.sale.productionOrder.statusConfirmed'),
+        PartiallyFulfilled: this.$t('view.sale.productionOrder.statusPartiallyFulfilled'),
+        Fulfilled: this.$t('view.sale.productionOrder.statusFulfilled')
       }
       return texts[status] || status
     },

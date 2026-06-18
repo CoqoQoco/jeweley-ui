@@ -25,7 +25,8 @@ export default {
     colCheckOutDesc: 'คำอธิบายเบิก',
     tagOverdue: 'เกินกำหนด',
     tagDueToday: 'กำหนดคืนวันนี้',
-    btnReturn: 'คืนเเม่พิมพ์'
+    btnReturn: 'คืนเเม่พิมพ์',
+    paginatorTemplate: 'เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ'
   },
   picking: {
     titleCheckOut: 'เบิกเเม่พิมพ์',

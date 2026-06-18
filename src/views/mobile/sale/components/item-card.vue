@@ -4,7 +4,7 @@
       <div class="item-info">
         <span class="item-stock-number">{{ item.stockNumber }}</span>
         <span class="item-source-badge" :class="item.source">
-          {{ item.source === 'appraisal' ? 'ตีราคา' : item.source === 'quotation' ? 'ใบเสนอราคา' : 'สแกน' }}
+          {{ item.source === 'appraisal' ? $t('view.mobile.sale.itemSourceAppraisal') : item.source === 'quotation' ? $t('view.mobile.sale.itemSourceQuotation') : $t('view.mobile.sale.itemSourceScan') }}
         </span>
       </div>
       <button class="btn-remove" @click="$emit('remove', index)">
@@ -15,8 +15,8 @@
     <div class="item-name">{{ item.description || '-' }}</div>
 
     <div class="cost-info" v-if="item.costPrice">
-      <span class="cost-label">ต้นทุน</span>
-      <span class="cost-value">{{ formatCurrency(item.costPrice) }} บาท</span>
+      <span class="cost-label">{{ $t('view.mobile.sale.itemCostLabel') }}</span>
+      <span class="cost-value">{{ formatCurrency(item.costPrice) }} {{ $t('view.mobile.sale.itemCostUnit') }}</span>
       <span v-if="item.tagPriceMultiplier > 1" class="multiplier-badge">
         x{{ item.tagPriceMultiplier }}
       </span>
@@ -24,48 +24,54 @@
 
     <div class="item-fields">
       <div class="field-group">
-        <label>ราคาป้าย/ชิ้น</label>
-        <input
+        <label>{{ $t('view.mobile.sale.itemFieldPrice') }}</label>
+        <InputTextGeneric
           type="number"
-          :value="item.appraisalPrice || item.price"
-          @input="updateField('appraisalPrice', $event.target.value)"
-          min="0"
-          step="0.01"
+          :modelValue="String(item.appraisalPrice || item.price || '')"
+          @update:modelValue="updateField('appraisalPrice', $event)"
+          :min="0"
+          :step="0.01"
         />
       </div>
       <div class="field-group">
-        <label>จำนวน</label>
-        <input
+        <label>{{ $t('view.mobile.sale.itemFieldQty') }}</label>
+        <InputTextGeneric
           type="number"
-          :value="item.qty"
-          @input="updateField('qty', $event.target.value)"
-          min="1"
-          step="1"
+          :modelValue="String(item.qty || '')"
+          @update:modelValue="updateField('qty', $event)"
+          :min="1"
+          :step="1"
         />
       </div>
       <div class="field-group">
-        <label>ส่วนลด %</label>
-        <input
+        <label>{{ $t('view.mobile.sale.itemFieldDiscount') }}</label>
+        <InputTextGeneric
           type="number"
-          :value="item.discountPercent"
-          @input="updateField('discountPercent', $event.target.value)"
-          min="0"
-          max="100"
-          step="0.01"
+          :modelValue="String(item.discountPercent || '')"
+          @update:modelValue="updateField('discountPercent', $event)"
+          :min="0"
+          :max="100"
+          :step="0.01"
         />
       </div>
     </div>
 
     <div class="item-total">
-      <span class="total-label">รวม</span>
-      <span class="total-value">{{ formatCurrency(calculatedTotal) }} บาท</span>
+      <span class="total-label">{{ $t('view.mobile.sale.itemTotalLabel') }}</span>
+      <span class="total-value">{{ formatCurrency(calculatedTotal) }} {{ $t('view.mobile.sale.itemTotalUnit') }}</span>
     </div>
   </div>
 </template>
 
 <script>
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
 export default {
   name: 'ItemCard',
+
+  components: {
+    InputTextGeneric
+  },
 
   props: {
     item: {
@@ -223,7 +229,7 @@ export default {
         margin-bottom: 4px;
       }
 
-      input {
+      :deep(.form-control) {
         width: 100%;
         padding: 6px 8px;
         border: 1px solid #e0e0e0;

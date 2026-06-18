@@ -2,54 +2,54 @@
   <div class="filter-container-searchBar">
     <form @submit.prevent="onSearch">
       <div>
-        <pageTitle title="ค้นหาการจองสต็อก" :isShowBtnClose="false" />
+        <pageTitle :title="$t('view.sale.stockReservation.searchTitle')" :isShowBtnClose="false" />
 
         <div class="form-col-container">
           <!-- Search Type -->
           <div>
-            <span class="title-text">ประเภทการค้นหา</span>
+            <span class="title-text">{{ $t('view.sale.stockReservation.searchType') }}</span>
             <DropdownGeneric
               v-model="formSearch.searchType"
               :options="searchTypeOptions"
               optionLabel="name"
               optionValue="value"
-              placeholder="เลือกประเภทการค้นหา"
+              :placeholder="$t('view.sale.stockReservation.placeholder.searchType')"
               @update:modelValue="onSearchTypeChange"
             />
           </div>
 
           <!-- Sale Order Number (when searchType = saleOrder) -->
           <div v-if="formSearch.searchType === 'saleOrder'">
-            <span class="title-text">เลขที่ใบสั่งขาย</span>
-            <input
-              class="form-control bg-input"
+            <span class="title-text">{{ $t('view.sale.stockReservation.soNumber') }}</span>
+            <InputTextGeneric
+              v-model="formSearch.saleOrderNumber"
               type="text"
-              v-model.trim="formSearch.saleOrderNumber"
               placeholder="SO-2025-001"
+              :trim="true"
               @keyup.enter="onSearch"
             />
           </div>
 
           <!-- Product Number (when searchType = product) -->
           <div v-if="formSearch.searchType === 'product'">
-            <span class="title-text">รหัสสินค้า</span>
-            <input
-              class="form-control bg-input"
+            <span class="title-text">{{ $t('view.sale.stockReservation.productNumber') }}</span>
+            <InputTextGeneric
+              v-model="formSearch.productNumber"
               type="text"
-              v-model.trim="formSearch.productNumber"
               placeholder="R08X50XXXL หรือ DK-2502-001"
+              :trim="true"
               @keyup.enter="onSearch"
             />
           </div>
 
           <!-- Customer Name (when searchType = customer) -->
           <div v-if="formSearch.searchType === 'customer'">
-            <span class="title-text">ชื่อลูกค้า</span>
-            <input
-              class="form-control bg-input"
+            <span class="title-text">{{ $t('view.sale.stockReservation.customerName') }}</span>
+            <InputTextGeneric
+              v-model="formSearch.customerName"
               type="text"
-              v-model.trim="formSearch.customerName"
-              placeholder="ชื่อลูกค้า"
+              :placeholder="$t('view.sale.stockReservation.customerName')"
+              :trim="true"
               @keyup.enter="onSearch"
             />
           </div>
@@ -61,26 +61,26 @@
               class="btn btn-sm btn-green"
               type="button"
               @click="openSaleOrderModal"
-              title="เลือกจากรายการใบสั่งขาย"
+              :title="$t('view.sale.stockReservation.selectSaleOrder')"
             >
               <i class="bi bi-list-ul mr-1"></i>
-              เลือกใบสั่งขาย
+              {{ $t('view.sale.stockReservation.selectSaleOrder') }}
             </button>
             <button
               class="btn btn-sm btn-outline-main ml-2"
               type="button"
               @click="viewReservations"
-              title="ดูรายการจองทั้งหมด"
+              :title="$t('view.sale.stockReservation.viewAllList')"
             >
               <i class="bi bi-bookmark-check mr-1"></i>
-              รายการจอง
+              {{ $t('view.sale.stockReservation.listLabel') }}
             </button>
           </div>
           <div>
-            <button class="btn btn-sm btn-green" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-green" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
             </button>
-            <button class="btn btn-sm btn-dark ml-2" type="button" @click="clearSearch" title="ล้างข้อมูล">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="clearSearch" :title="$t('common.btn.clear')">
               <i class="bi bi-x-circle"></i>
             </button>
           </div>
@@ -100,6 +100,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
@@ -108,7 +109,8 @@ export default {
 
   components: {
     DropdownGeneric,
-    pageTitle
+    pageTitle,
+    InputTextGeneric
   },
 
   emits: ['update:modelForm', 'search'],
@@ -129,13 +131,17 @@ export default {
         customerName: ''
       },
 
-      searchTypeOptions: [
-        { name: 'ใบสั่งขาย', value: 'saleOrder' },
-        { name: 'รหัสสินค้า', value: 'product' },
-        { name: 'ลูกค้า', value: 'customer' }
-      ],
-
       searchResultInfo: null
+    }
+  },
+
+  computed: {
+    searchTypeOptions() {
+      return [
+        { name: this.$t('view.sale.stockReservation.typeBySONumber'), value: 'saleOrder' },
+        { name: this.$t('view.sale.stockReservation.typeByProduct'), value: 'product' },
+        { name: this.$t('view.sale.stockReservation.typeByCustomer'), value: 'customer' }
+      ]
     }
   },
 
@@ -170,17 +176,17 @@ export default {
       const searchData = { ...this.formSearch }
 
       if (searchData.searchType === 'saleOrder' && !searchData.saleOrderNumber.trim()) {
-        this.searchResultInfo = 'กรุณากรอกเลขที่ใบสั่งขาย'
+        this.searchResultInfo = this.$t('view.sale.stockReservation.enterSoNumber')
         return
       }
 
       if (searchData.searchType === 'product' && !searchData.productNumber.trim()) {
-        this.searchResultInfo = 'กรุณากรอกรหัสสินค้า'
+        this.searchResultInfo = this.$t('view.sale.stockReservation.enterProductNumber')
         return
       }
 
       if (searchData.searchType === 'customer' && !searchData.customerName.trim()) {
-        this.searchResultInfo = 'กรุณากรอกชื่อลูกค้า'
+        this.searchResultInfo = this.$t('view.sale.stockReservation.enterCustomerName')
         return
       }
 

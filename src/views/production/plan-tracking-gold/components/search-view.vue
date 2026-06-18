@@ -56,7 +56,7 @@
         :isShow="isShow.dialog"
         @closeDialog="closeDialog"
         @search="dialogSearch"
-        txtHeader="ค้นหาเพิ่มเติม"
+        :txtHeader="$t('view.production.planTrackingGold.moreSearch')"
       >
         <template #content>
           <div class="form-col-container">
@@ -92,7 +92,7 @@
         <button
           class="btn btn-sm btn-sub-main mr-2"
           type="button"
-          title="เพิ่มเติม"
+          :title="$t('view.production.planTrackingGold.more')"
           @click="onShowDialog"
         >
           <span><i class="bi bi-zoom-in"></i></span>

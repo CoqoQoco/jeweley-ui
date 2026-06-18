@@ -2,8 +2,8 @@
   <div class="index-view-container">
     <!-- Header -->
     <div class="header-section">
-      <h4 class="page-title">ใบสั่งผลิต (Production Order)</h4>
-      <p class="page-subtitle">จัดการใบสั่งผลิตสินค้าจากใบสั่งขาย</p>
+      <h4 class="page-title">{{ $t('view.sale.productionOrder.title') }}</h4>
+      <p class="page-subtitle">{{ $t('view.sale.productionOrder.subtitle') }}</p>
     </div>
 
     <!-- Search Section -->

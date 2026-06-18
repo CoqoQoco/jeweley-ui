@@ -68,47 +68,49 @@ export default {
       default: () => []
     }
   },
-  data() {
-    return {
-      productTypeColumns: [
+  computed: {
+    productTypeColumns() {
+      return [
         {
           field: 'productTypeName',
-          header: 'ประเภทสินค้า',
+          header: this.$t('view.production.dashboard.colProductType'),
           sortable: false,
           width: '2fr'
         },
         {
           field: 'count',
-          header: 'จำนวนคำสั่ง',
+          header: this.$t('view.production.dashboard.colOrderCount'),
           sortable: false,
           align: 'center',
           width: '1fr'
         },
         {
           field: 'totalQty',
-          header: 'จำนวนชิ้น',
+          header: this.$t('view.production.dashboard.colPieceCount'),
           sortable: false,
           align: 'center',
           width: '1fr'
         }
-      ],
-      customerTypeColumns: [
+      ]
+    },
+    customerTypeColumns() {
+      return [
         {
           field: 'customerTypeName',
-          header: 'ประเภทลูกค้า',
+          header: this.$t('view.production.dashboard.colCustomerType'),
           sortable: false,
           width: '2fr'
         },
         {
           field: 'count',
-          header: 'จำนวนคำสั่ง',
+          header: this.$t('view.production.dashboard.colOrderCount'),
           sortable: false,
           align: 'center',
           width: '1fr'
         },
         {
           field: 'totalQty',
-          header: 'จำนวนชิ้น',
+          header: this.$t('view.production.dashboard.colPieceCount'),
           sortable: false,
           align: 'center',
           width: '1fr'

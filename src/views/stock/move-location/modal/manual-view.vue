@@ -21,8 +21,8 @@
           </div>
           <div class="item-card-body">
             <p class="step-desc">{{ $t('view.stock.moveLocation.step1Desc') }}</p>
-            <img :src="imgList" alt="หน้าแสดงรายการสินค้า" class="manual-img mb-2" />
-            <img :src="imgSelect" alt="เลือกสินค้าด้วย checkbox" class="manual-img" />
+            <img :src="imgList" :alt="$t('view.stock.moveLocation.manual.imgList')" class="manual-img mb-2" />
+            <img :src="imgSelect" :alt="$t('view.stock.moveLocation.manual.imgSelect')" class="manual-img" />
           </div>
         </div>
 
@@ -33,7 +33,7 @@
           </div>
           <div class="item-card-body">
             <p class="step-desc">{{ $t('view.stock.moveLocation.step2Desc') }}</p>
-            <img :src="imgModalTarget" alt="modal เลือก SLOC ปลายทาง" class="manual-img" />
+            <img :src="imgModalTarget" :alt="$t('view.stock.moveLocation.manual.imgTarget')" class="manual-img" />
           </div>
         </div>
 
@@ -44,7 +44,7 @@
           </div>
           <div class="item-card-body">
             <p class="step-desc">{{ $t('view.stock.moveLocation.step3Desc') }}</p>
-            <img :src="imgConfirm" alt="dialog ยืนยันการย้าย" class="manual-img" />
+            <img :src="imgConfirm" :alt="$t('view.stock.moveLocation.manual.imgConfirm')" class="manual-img" />
           </div>
         </div>
 
@@ -55,7 +55,7 @@
           </div>
           <div class="item-card-body">
             <p class="step-desc">{{ $t('view.stock.moveLocation.step4Desc') }}</p>
-            <img :src="imgSuccess" alt="แจ้งย้ายสำเร็จ" class="manual-img" />
+            <img :src="imgSuccess" :alt="$t('view.stock.moveLocation.manual.imgSuccess')" class="manual-img" />
           </div>
         </div>
 
@@ -78,7 +78,7 @@
           </div>
           <div class="item-card-body">
             <p class="step-desc">{{ $t('view.stock.moveLocation.stepB2Desc') }}</p>
-            <img :src="imgTempForm" alt="ฟอร์มสร้าง SLOC ชั่วคราว" class="manual-img" />
+            <img :src="imgTempForm" :alt="$t('view.stock.moveLocation.manual.imgTemp')" class="manual-img" />
           </div>
         </div>
 

@@ -4,37 +4,49 @@
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="vertical-center-container">
           <span class="title-text-lg bi bi-clock-history mr-2"></span>
-          <span class="title-text-lg">รายการตีราคาล่าสุด</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.versionList') }}</span>
         </div>
-        <button class="btn btn-sm btn-outline-main" @click="onRefresh" title="รีเฟรช">
+        <button class="btn btn-sm btn-outline-main" @click="onRefresh" :title="$t('common.btn.refresh')">
           <i class="bi bi-arrow-clockwise mr-1"></i>
-          <span>รีเฟรช</span>
+          <span>{{ $t('common.btn.refresh') }}</span>
         </button>
       </div>
 
       <form @submit.prevent="onSearch" class="mb-2">
         <div class="form-col-sm-container">
           <div>
-            <span class="title-text">เลขที่ผลิต</span>
-            <input class="form-control bg-input" type="text"
-              v-model.trim="searchForm.stockNumber" placeholder="ค้นหาเลขที่ผลิต" />
+            <span class="title-text">{{ $t('view.sale.costStock.stockNumber') }}</span>
+            <InputTextGeneric
+              v-model="searchForm.stockNumber"
+              :trim="true"
+              :placeholder="$t('view.sale.costStock.stockNumber')"
+              bgInput
+            />
           </div>
           <div>
-            <span class="title-text">ใบตีราคา</span>
-            <input class="form-control bg-input" type="text"
-              v-model.trim="searchForm.running" placeholder="ค้นหาใบตีราคา" />
+            <span class="title-text">{{ $t('view.sale.costStock.appraisalNo') }}</span>
+            <InputTextGeneric
+              v-model="searchForm.running"
+              :trim="true"
+              :placeholder="$t('view.sale.costStock.appraisalNo')"
+              bgInput
+            />
           </div>
           <div>
-            <span class="title-text">ผู้สร้าง</span>
-            <input class="form-control bg-input" type="text"
-              v-model.trim="searchForm.createBy" placeholder="ค้นหาผู้สร้าง" />
+            <span class="title-text">{{ $t('view.sale.costStock.createBy') }}</span>
+            <InputTextGeneric
+              v-model="searchForm.createBy"
+              :trim="true"
+              :placeholder="$t('view.sale.costStock.createBy')"
+              bgInput
+            />
           </div>
           <div class="d-flex align-items-end gap-1">
             <button class="btn btn-sm btn-green" type="submit">
-              <i class="bi bi-search mr-1"></i>ค้นหา
+              <i class="bi bi-search mr-1"></i>{{ $t('common.btn.search') }}
             </button>
             <button class="btn btn-sm btn-outline-main" type="button" @click="onClearSearch">
-              <i class="bi bi-x-circle mr-1"></i>ล้าง
+              <i class="bi bi-x-circle mr-1"></i>{{ $t('common.btn.clear') }}
             </button>
           </div>
         </div>
@@ -54,7 +66,7 @@
             <button
               class="btn btn-sm btn-green"
               @click="onViewDetail(data)"
-              title="ดูรายละเอียด"
+              :title="$t('common.btn.view')"
             >
               <i class="bi bi-eye"></i>
             </button>
@@ -68,7 +80,7 @@
             <button
               class="btn btn-sm btn-green"
               @click="onDuplicate(data)"
-              title="ตีราคาใหม่จากรายการนี้"
+              :title="$t('view.sale.costStock.duplicateAppraisal')"
             >
               <i class="bi bi-clipboard-plus"></i>
             </button>
@@ -99,17 +111,19 @@
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
-import { success, error, warning } from '@/services/alert/sweetAlerts.js'
+import { success, warning } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
 export default {
   name: 'CostVersionListView',
 
   components: {
-    BaseDataTable
+    BaseDataTable,
+    InputTextGeneric
   },
 
   emits: ['view-detail', 'duplicate'],
@@ -131,7 +145,12 @@ export default {
         createBy: ''
       },
 
-      columns: [
+    }
+  },
+
+  computed: {
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
@@ -140,37 +159,37 @@ export default {
         },
         {
           field: 'stockNumber',
-          header: 'เลขที่ผลิต',
+          header: this.$t('view.sale.costStock.stockNumber'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'running',
-          header: 'ใบตีราคา',
+          header: this.$t('view.sale.costStock.appraisalNo'),
           sortable: true,
           width: '140px'
         },
         {
           field: 'createDate',
-          header: 'วันที่',
+          header: this.$t('view.sale.costStock.date'),
           sortable: true,
           width: '140px'
         },
         {
           field: 'createBy',
-          header: 'ผู้สร้าง',
+          header: this.$t('view.sale.costStock.createBy'),
           sortable: true,
           width: '120px'
         },
         {
           field: 'totalPrice',
-          header: 'ราคารวม',
+          header: this.$t('view.sale.costStock.totalPrice'),
           sortable: false,
           width: '120px'
         },
         {
           field: 'currencyUnit',
-          header: 'สกุลเงิน',
+          header: this.$t('view.sale.costStock.currencyUnit'),
           sortable: false,
           width: '80px'
         }
@@ -246,7 +265,7 @@ export default {
       })
 
       if (!stockData) {
-        warning('ไม่พบข้อมูลสินค้า')
+        warning(this.$t('view.sale.costStock.error.notFound'))
         return
       }
 
@@ -258,7 +277,7 @@ export default {
       const pdf = await pdfBuilder.generatePDF()
       const filename = `Appraisal_${version.stockNumber}_${version.running}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
       pdf.download(filename)
-      success('Export PDF สำเร็จ', 'สำเร็จ')
+      success(this.$t('view.sale.costStock.success.exportPDF'), this.$t('view.sale.costStock.success.successTitle'))
     },
 
     formatDateTime(date) {

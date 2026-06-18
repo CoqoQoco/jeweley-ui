@@ -5,17 +5,17 @@
       <div class="d-flex justify-content-between align-items-center">
         <div class="vertical-center-container">
           <span class="title-text-lg bi bi-calculator-fill mr-2"></span>
-          <span class="title-text-lg">ตีราคาสินค้า</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.title') }}</span>
         </div>
         <div>
           <button
             class="btn btn-sm btn-outline-main"
             type="button"
             @click="onReset"
-            title="รีเซ็ต"
+            :title="$t('common.btn.reset')"
           >
             <i class="bi bi-arrow-clockwise mr-1"></i>
-            <span>รีเซ็ต</span>
+            <span>{{ $t('common.btn.reset') }}</span>
           </button>
         </div>
       </div>
@@ -127,12 +127,12 @@ export default {
     },
 
     onSave(data) {
-      success('บันทึกข้อมูลสำเร็จ', 'บันทึกราคาสินค้าเรียบร้อย')
+      success(this.$t('view.sale.costStock.success.save'), this.$t('view.sale.costStock.success.saveMessage'))
       this.onReset()
     },
 
     onSaveAndNew(data) {
-      success('บันทึกข้อมูลสำเร็จ', 'พร้อมตีราคาสินค้าใหม่')
+      success(this.$t('view.sale.costStock.success.save'), this.$t('view.sale.costStock.success.saveAsOriginMessage'))
       this.selectedStock = null
     },
 

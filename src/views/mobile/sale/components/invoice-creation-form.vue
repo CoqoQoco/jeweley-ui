@@ -3,22 +3,21 @@
     <!-- Header -->
     <div class="form-section-header">
       <i class="bi bi-file-earmark-check"></i>
-      <span>สร้าง Invoice</span>
+      {{ $t('view.mobile.sale.invoiceFormTitle') }}
     </div>
 
     <!-- DK Invoice Number -->
     <div class="info-card mobile-mt-2">
       <div class="card-header">
         <i class="bi bi-hash"></i>
-        <span>Invoice No. (DK)</span>
+        <span>{{ $t('view.mobile.sale.invoiceNoSection') }}</span>
       </div>
       <div class="card-body">
-        <input
-          v-model.trim="dkInvoiceNumber"
-          type="text"
-          class="form-control"
-          placeholder="ระบุเลข Invoice (ไม่บังคับ)"
+        <InputTextGeneric
+          v-model="dkInvoiceNumber"
+          :placeholder="$t('view.mobile.sale.invoiceNoPlaceholder')"
           autocomplete="off"
+          :trim="true"
         />
       </div>
     </div>
@@ -27,7 +26,7 @@
     <div class="info-card mobile-mt-2">
       <div class="card-header">
         <i class="bi bi-box-seam"></i>
-        <span>เลือกสินค้า</span>
+        <span>{{ $t('view.mobile.sale.invoiceItemsSection') }}</span>
         <span class="header-badge">{{ selectedItems.length }}/{{ availableItems.length }}</span>
       </div>
       <div class="card-body">
@@ -38,7 +37,7 @@
             :checked="isAllSelected"
             :disabled="availableItems.length === 0"
           />
-          <span>เลือกทั้งหมด ({{ availableItems.length }} รายการ)</span>
+          <span>{{ $t('view.mobile.sale.invoiceSelectAll', { count: availableItems.length }) }}</span>
         </label>
 
         <!-- Item Cards with Checkbox -->
@@ -61,12 +60,12 @@
               <span v-if="item.description" class="item-desc">{{ item.description }}</span>
             </div>
             <div class="item-price-info">
-              <span class="item-price-thb">{{ formatCurrency(getAppraisalPrice(item)) }} บาท</span>
+              <span class="item-price-thb">{{ formatCurrency(getAppraisalPrice(item)) }} {{ $t('view.mobile.sale.itemCostUnit') }}</span>
               <span v-if="Number(item.discountPercent) > 0" class="item-discount">-{{ item.discountPercent }}%</span>
               <span class="item-qty">x{{ item.qty || 1 }}</span>
             </div>
             <div class="item-total-row">
-              <span class="item-total-label">รวม</span>
+              <span class="item-total-label">{{ $t('common.field.total') }}</span>
               <span class="item-total-value">{{ formatCurrency(getItemTotalConverted(item)) }} {{ displayCurrency }}</span>
             </div>
           </div>
@@ -78,18 +77,18 @@
     <div class="info-card mobile-mt-2">
       <div class="card-header">
         <i class="bi bi-calculator"></i>
-        <span>สรุปราคา ({{ displayCurrency }})</span>
+        <span>{{ $t('view.mobile.sale.invoiceSummarySection', { currency: displayCurrency }) }}</span>
       </div>
       <div class="card-body">
         <!-- Subtotal (F.O.B Bangkok) -->
         <div class="summary-row">
-          <span class="summary-label">F.O.B Bangkok (รวมสินค้า)</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceFob') }}</span>
           <span class="summary-value">{{ formatCurrency(totalSelectedAmount) }}</span>
         </div>
 
         <!-- Special Discount -->
         <div class="summary-input-row">
-          <span class="summary-label">ส่วนลดพิเศษ</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceSpecialDiscount') }}</span>
           <input
             v-model.number="specialDiscount"
             type="number"
@@ -102,7 +101,7 @@
 
         <!-- Special Addition -->
         <div class="summary-input-row">
-          <span class="summary-label">ส่วนเพิ่มพิเศษ</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceSpecialAddition') }}</span>
           <input
             v-model.number="specialAddition"
             type="number"
@@ -117,13 +116,13 @@
 
         <!-- Total After Discount & Addition -->
         <div class="summary-row bold">
-          <span class="summary-label">ยอดรวมหลังปรับ</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceAfterAdjust') }}</span>
           <span class="summary-value">{{ formatCurrency(totalAfterDiscountAndAddition) }}</span>
         </div>
 
         <!-- Freight & Insurance -->
         <div class="summary-input-row">
-          <span class="summary-label">Freight & Insurance</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceFreight') }}</span>
           <input
             v-model.number="freightAndInsurance"
             type="number"
@@ -138,13 +137,13 @@
 
         <!-- Total Before VAT -->
         <div class="summary-row bold">
-          <span class="summary-label">ยอดรวมก่อน VAT</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceBeforeVat') }}</span>
           <span class="summary-value">{{ formatCurrency(totalBeforeVat) }}</span>
         </div>
 
         <!-- VAT -->
         <div class="summary-input-row">
-          <span class="summary-label">VAT (%)</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceVat') }}</span>
           <input
             v-model.number="vatPercent"
             type="number"
@@ -157,7 +156,7 @@
         </div>
 
         <div class="summary-row">
-          <span class="summary-label">จำนวนเงิน VAT</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceVatAmount') }}</span>
           <span class="summary-value">{{ formatCurrency(vatAmount) }}</span>
         </div>
 
@@ -165,7 +164,7 @@
 
         <!-- Grand Total -->
         <div class="summary-row grand-total">
-          <span class="summary-label">ยอดรวม Invoice</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceGrandTotal') }}</span>
           <span class="summary-value">{{ formatCurrency(grandTotal) }} {{ displayCurrency }}</span>
         </div>
       </div>
@@ -175,12 +174,12 @@
     <div class="info-card mobile-mt-2">
       <div class="card-header">
         <i class="bi bi-credit-card"></i>
-        <span>ข้อมูลการชำระเงิน</span>
+        <span>{{ $t('view.mobile.sale.invoicePaymentSection') }}</span>
       </div>
       <div class="card-body">
         <!-- Payment Method -->
         <div class="mobile-form-group">
-          <label class="form-label">วิธีการชำระเงิน</label>
+          <label class="form-label">{{ $t('view.mobile.sale.invoicePaymentMethod') }}</label>
           <select v-model="paymentMethod" class="form-control">
             <option v-for="opt in paymentMethodOptions" :key="opt.value" :value="opt.value">
               {{ opt.name }}
@@ -190,7 +189,7 @@
 
         <!-- Payment Days -->
         <div class="mobile-form-group">
-          <label class="form-label">ระยะเวลาการชำระเงิน (วัน)</label>
+          <label class="form-label">{{ $t('view.mobile.sale.invoicePaymentDays') }}</label>
           <input
             v-model.number="paymentDays"
             type="number"
@@ -200,12 +199,12 @@
             placeholder="0"
             :disabled="paymentMethod === 'cash'"
           />
-          <small v-if="paymentMethod === 'cash'" class="form-hint">ชำระทันที</small>
+          <small v-if="paymentMethod === 'cash'" class="form-hint">{{ $t('view.mobile.sale.invoicePaymentCash') }}</small>
         </div>
 
         <!-- Deposit -->
         <div class="mobile-form-group">
-          <label class="form-label">ราคามัดจำ ({{ displayCurrency }})</label>
+          <label class="form-label">{{ $t('view.mobile.sale.invoiceDeposit', { currency: displayCurrency }) }}</label>
           <input
             v-model.number="depositAmount"
             type="number"
@@ -220,7 +219,7 @@
 
         <!-- Remaining -->
         <div class="summary-row bold">
-          <span class="summary-label">ยอดคงเหลือที่ต้องชำระ</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceRemaining') }}</span>
           <span class="summary-value">{{ formatCurrency(grandTotal - (depositAmount || 0)) }} {{ displayCurrency }}</span>
         </div>
       </div>
@@ -234,11 +233,11 @@
         :disabled="selectedItems.length === 0"
       >
         <i class="bi bi-file-earmark-check"></i>
-        สร้าง Invoice ({{ selectedItems.length }} รายการ)
+        {{ $t('view.mobile.sale.invoiceCreateBtn', { count: selectedItems.length }) }}
       </button>
       <button class="mobile-btn mobile-btn-outline" @click="$emit('cancel')">
         <i class="bi bi-x-circle"></i>
-        ยกเลิก
+        {{ $t('common.btn.cancel') }}
       </button>
     </div>
   </div>
@@ -247,10 +246,16 @@
 <script>
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
-import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { success, error, warning } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'InvoiceCreationForm',
+
+  components: {
+    InputTextGeneric
+  },
 
   props: {
     soData: {
@@ -379,13 +384,13 @@ export default {
 
     handleCreateInvoice() {
       if (this.selectedItems.length === 0) {
-        warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+        warning(this.$t('view.mobile.sale.invoiceWarnSelectItems'))
         return
       }
 
-      confirmSubmit(
-        `ยืนยันสร้าง Invoice ${this.selectedItems.length} รายการ?`,
-        'สร้าง Invoice',
+      confirmThenSubmit(
+        this.$t('view.mobile.sale.invoiceConfirmMsg', { count: this.selectedItems.length }),
+        this.$t('view.mobile.sale.invoiceConfirmTitle'),
         async () => {
           await this.createInvoice()
         }
@@ -415,7 +420,7 @@ export default {
         })
 
         if (!confirmResult) {
-          error('ไม่สามารถยืนยันสินค้าได้')
+          error(this.$t('view.mobile.sale.invoiceErrConfirmStock'))
           return
         }
       }
@@ -481,7 +486,7 @@ export default {
 
       if (invoiceResult) {
         const invoiceNumber = invoiceResult.invoiceNumber || invoiceResult
-        success(`เลขที่ Invoice: ${invoiceNumber}`, 'ออก Invoice สำเร็จ')
+        success(this.$t('view.mobile.sale.invoiceSuccessMsg', { number: invoiceNumber }), this.$t('view.mobile.sale.invoiceSuccessTitle'))
         this.$emit('invoice-created', invoiceResult)
       }
     },

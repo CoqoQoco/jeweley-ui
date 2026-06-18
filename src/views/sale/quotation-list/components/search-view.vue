@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="รายการใบเสนอราคา"
-      description="แสดงรายการใบเสนอราคาทั้งหมด พร้อมฟีเจอร์ค้นหาและกรองข้อมูล"
+      :title="$t('view.sale.quotationList.title')"
+      :description="$t('view.sale.quotationList.pageDescription')"
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >
@@ -10,7 +10,7 @@
         <button
           class="btn btn-sm btn-main"
           type="button"
-          title="สร้างใบเสนอราคา"
+          :title="$t('view.sale.quotationList.createQuotation')"
           @click="$router.push({ name: 'sale-quotation' })"
         >
           <span class="bi bi-database-fill-add"></span>
@@ -34,7 +34,7 @@
         :isShow="isShow.dialog"
         @closeDialog="closeDialog"
         @search="dialogSearch"
-        txtHeader="ค้นหาเพิ่มเติม"
+        :txtHeader="$t('common.label.advancedSearch')"
       >
         <template #content>
           <div class="form-col-container">
@@ -43,7 +43,7 @@
               <InputTextGeneric
                 v-model="form.customerName"
                 :trim="true"
-                placeholder="ชื่อลูกค้า"
+                :placeholder="$t('view.sale.quotationList.customerName')"
               />
             </div>
 
@@ -61,7 +61,7 @@
               <InputTextGeneric
                 v-model="form.createBy"
                 :trim="true"
-                placeholder="ชื่อผู้สร้าง"
+                :placeholder="$t('view.sale.quotationList.createBy')"
               />
             </div>
           </div>
@@ -76,7 +76,7 @@
                   :max-date="form.createDateEnd"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="เริ่มต้น"
+                  :placeholder="$t('common.label.startDate')"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -86,7 +86,7 @@
                   :min-date="form.createDateStart"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="สิ้นสุด"
+                  :placeholder="$t('common.label.endDate')"
                   dateFormat="dd/mm/yy"
                 />
               </div>
@@ -101,7 +101,7 @@
                   :max-date="form.quotationDateEnd"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="เริ่มต้น"
+                  :placeholder="$t('common.label.startDate')"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -111,7 +111,7 @@
                   :min-date="form.quotationDateStart"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="สิ้นสุด"
+                  :placeholder="$t('common.label.endDate')"
                   dateFormat="dd/mm/yy"
                 />
               </div>
@@ -121,18 +121,18 @@
       </dialogView>
 
       <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+        <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
           <span><i class="bi bi-search"></i></span>
         </button>
         <button
           class="btn btn-sm btn-sub-main mr-2"
           type="button"
-          title="เพิ่มเติม"
+          :title="$t('common.btn.more')"
           @click="onShowDialog"
         >
           <span><i class="bi bi-zoom-in"></i></span>
         </button>
-        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
           <span><i class="bi bi-x-circle"></i></span>
         </button>
       </div>

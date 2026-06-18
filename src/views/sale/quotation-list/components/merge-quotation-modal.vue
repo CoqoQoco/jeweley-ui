@@ -1,7 +1,7 @@
 <template>
   <modal :showModal="isShow" @closeModal="$emit('close')" width="860px" :clickToClose="true">
     <template #title>
-      <span class="title-text-lg px-3 pt-3 d-block">รวม Quotation</span>
+      <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.quotationList.mergeTitle') }}</span>
     </template>
     <template #content>
     <div class="merge-modal-body">
@@ -9,7 +9,7 @@
       <div v-if="conflicts.length > 0" class="conflict-section">
         <div class="conflict-header">
           <i class="bi bi-exclamation-triangle-fill text-warning mr-2"></i>
-          <strong>ข้อมูลที่แตกต่างกัน — กรุณาเลือกค่าที่จะใช้</strong>
+          <strong>{{ $t('view.sale.quotationList.conflictInfo') }}</strong>
         </div>
 
         <div
@@ -46,14 +46,14 @@
       <!-- No Conflict Notice -->
       <div v-else class="no-conflict-notice">
         <i class="bi bi-check-circle-fill text-success mr-2"></i>
-        ข้อมูลส่วนหัวของทุกใบตรงกัน ไม่มีข้อมูลขัดแย้ง
+        {{ $t('view.sale.quotationList.noConflict') }}
       </div>
 
       <!-- Merged Items Preview -->
       <div class="items-section">
         <div class="items-header">
-          <strong>รายการสินค้าที่จะรวม</strong>
-          <span class="badge badge-count ml-2">{{ mergedItems.length }} รายการ</span>
+          <strong>{{ $t('view.sale.quotationList.itemsToMerge') }}</strong>
+          <span class="badge badge-count ml-2">{{ $t('view.sale.productionOrder.itemCount', { count: mergedItems.length }) }}</span>
         </div>
 
         <div class="items-table-wrapper">
@@ -62,11 +62,11 @@
           <table class="table table-sm table-bordered items-table">
             <thead>
               <tr>
-                <th>จาก Quotation</th>
+                <th>{{ $t('view.sale.quotationList.fromQuotation') }}</th>
                 <th>Stock No.</th>
-                <th>ชื่อสินค้า</th>
+                <th>{{ $t('view.sale.quotationList.productName') }}</th>
                 <th class="text-right">Qty</th>
-                <th class="text-right">ราคาประเมิน</th>
+                <th class="text-right">{{ $t('view.sale.quotationList.appraisalPrice') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +80,7 @@
                 <td class="text-right">{{ formatPrice(item.appraisalPrice || 0) }}</td>
               </tr>
               <tr v-if="mergedItems.length === 0">
-                <td colspan="5" class="text-center text-muted">ไม่มีรายการสินค้า</td>
+                <td colspan="5" class="text-center text-muted">{{ $t('view.sale.quotationList.noItems') }}</td>
               </tr>
             </tbody>
           </table>
@@ -90,7 +90,7 @@
 
     <div class="modal-footer-actions p-3">
       <button class="btn btn-sm btn-outline-main mr-2" @click="$emit('close')">
-        ยกเลิก
+        {{ $t('common.btn.cancel') }}
       </button>
       <button
         class="btn btn-sm btn-main"
@@ -98,7 +98,7 @@
         :disabled="!isResolved || mergedItems.length === 0"
       >
         <i class="bi bi-diagram-2 mr-1"></i>
-        ยืนยันการรวม ({{ mergedItems.length }} รายการ)
+        {{ $t('view.sale.quotationList.confirmMerge', { count: mergedItems.length }) }}
       </button>
     </div>
     </template>
@@ -114,22 +114,22 @@ import { formatISOString } from '@/services/utils/dayjs.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 
-const HEADER_FIELDS = [
-  { key: 'customerName',    label: 'ชื่อลูกค้า',        type: 'string' },
-  { key: 'customerAddress', label: 'ที่อยู่',             type: 'string' },
-  { key: 'customerPhone',   label: 'เบอร์โทร',           type: 'string' },
-  { key: 'customerEmail',   label: 'อีเมล',              type: 'string' },
-  { key: 'currency',        label: 'สกุลเงิน',           type: 'string' },
-  { key: 'currencyRate',    label: 'อัตราแลกเปลี่ยน',    type: 'number' },
-  { key: 'markUp',          label: 'Markup (%)',         type: 'number' },
-  { key: 'discount',        label: 'ส่วนลด (%)',         type: 'number' },
-  { key: 'freight',         label: 'ค่าขนส่ง',           type: 'number' },
-  { key: 'remark',          label: 'หมายเหตุ',           type: 'string' },
-  { key: 'date',            label: 'วันที่ใบเสนอราคา',   type: 'date'   },
-  { key: 'specialDiscount', label: 'Special Discount',  type: 'number' },
-  { key: 'specialAddition', label: 'Special Addition',  type: 'number' },
-  { key: 'vat',             label: 'VAT (%)',            type: 'number' },
-  { key: 'goldPerOz',       label: 'Gold Per Oz',        type: 'number' }
+const HEADER_FIELD_KEYS = [
+  { key: 'customerName',    type: 'string', labelKey: 'view.sale.saleOrder.customerName' },
+  { key: 'customerAddress', type: 'string', labelKey: 'view.sale.saleOrder.customerAddress' },
+  { key: 'customerPhone',   type: 'string', labelKey: 'common.field.phone' },
+  { key: 'customerEmail',   type: 'string', labelKey: 'common.field.email' },
+  { key: 'currency',        type: 'string', labelKey: 'view.sale.quotationList.currency' },
+  { key: 'currencyRate',    type: 'number', labelKey: 'view.sale.quotationList.currencyRate' },
+  { key: 'markUp',          type: 'number', labelKey: 'view.sale.quotationList.markup' },
+  { key: 'discount',        type: 'number', labelKey: 'view.sale.quotationList.discount' },
+  { key: 'freight',         type: 'number', labelKey: 'view.sale.quotationList.freight' },
+  { key: 'remark',          type: 'string', labelKey: 'common.field.remark' },
+  { key: 'date',            type: 'date',   labelKey: 'view.sale.quotationList.quotationDate' },
+  { key: 'specialDiscount', type: 'number', labelKey: null, label: 'Special Discount' },
+  { key: 'specialAddition', type: 'number', labelKey: null, label: 'Special Addition' },
+  { key: 'vat',             type: 'number', labelKey: null, label: 'VAT (%)' },
+  { key: 'goldPerOz',       type: 'number', labelKey: null, label: 'Gold Per Oz' }
 ]
 
 export default {
@@ -164,10 +164,17 @@ export default {
   },
 
   computed: {
+    headerFields() {
+      return HEADER_FIELD_KEYS.map((f) => ({
+        ...f,
+        label: f.labelKey ? this.$t(f.labelKey) : f.label
+      }))
+    },
+
     conflicts() {
       if (this.quotations.length < 2) return []
 
-      return HEADER_FIELDS.filter((field) => {
+      return this.headerFields.filter((field) => {
         const values = this.quotations.map((q) => q[field.key] ?? null)
         const normalized = values.map((v) =>
           field.type === 'number' ? String(Number(v || 0)) : String(v ?? '')
@@ -208,7 +215,7 @@ export default {
     async onConfirm() {
       // Resolve header values — use radio selection for conflicts, first quotation for non-conflicts
       const merged = {}
-      HEADER_FIELDS.forEach((field) => {
+      this.headerFields.forEach((field) => {
         const conflict = this.conflicts.find((c) => c.key === field.key)
         merged[field.key] = conflict
           ? this.resolved[field.key]
@@ -247,7 +254,7 @@ export default {
 
       const res = await this.quotationStore.fetchSave({ formValue })
       if (res) {
-        success('รวม Quotation สำเร็จ', `เลขที่ใหม่: ${newNumber}`)
+        success(this.$t('view.sale.quotation.success.mergeSuccess'), this.$t('view.sale.quotation.success.mergeNewNumber', { number: newNumber }))
         this.$emit('merge-done', newNumber)
       }
     },

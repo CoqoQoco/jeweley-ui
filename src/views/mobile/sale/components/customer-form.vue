@@ -3,16 +3,16 @@
     <div class="section-header">
       <h3 class="section-title">
         <i class="bi bi-person"></i>
-        ข้อมูลลูกค้า
+        {{ $t('view.mobile.sale.customerSectionTitle') }}
       </h3>
       <div class="header-actions">
         <button class="btn-search-customer" @click="showSearchModal = true">
           <i class="bi bi-search"></i>
-          ค้นหาลูกค้า
+          {{ $t('view.mobile.sale.btnSearchCustomer') }}
         </button>
         <button class="btn-create-customer" @click="showCreateModal = true">
           <i class="bi bi-person-plus"></i>
-          เพิ่มลูกค้าใหม่
+          {{ $t('view.mobile.sale.btnCreateCustomer') }}
         </button>
       </div>
     </div>
@@ -27,57 +27,56 @@
       </div>
 
       <div class="mobile-form-group">
-        <label>ชื่อลูกค้า <span class="required">*</span></label>
-        <input
-          type="text"
-          :value="customer.customerName"
-          @input="updateField('customerName', $event.target.value)"
-          placeholder="กรุณาเลือกลูกค้า"
-          readonly
+        <label>{{ $t('view.mobile.sale.fieldCustomerName') }} <span class="required">*</span></label>
+        <InputTextGeneric
+          :modelValue="customer.customerName"
+          @update:modelValue="updateField('customerName', $event)"
+          :placeholder="$t('view.mobile.sale.fieldCustomerName')"
+          :readonly="true"
         />
       </div>
 
       <div class="mobile-form-group">
-        <label>เบอร์โทรศัพท์</label>
-        <input
+        <label>{{ $t('view.mobile.sale.fieldCustomerTel') }}</label>
+        <InputTextGeneric
           type="tel"
-          :value="customer.customerTel"
-          @input="updateField('customerTel', $event.target.value)"
-          placeholder="เบอร์โทรศัพท์"
-          readonly
+          :modelValue="customer.customerTel"
+          @update:modelValue="updateField('customerTel', $event)"
+          :placeholder="$t('view.mobile.sale.fieldCustomerTel')"
+          :readonly="true"
         />
       </div>
 
       <div class="mobile-form-group">
-        <label>อีเมล</label>
-        <input
+        <label>{{ $t('view.mobile.sale.fieldCustomerEmail') }}</label>
+        <InputTextGeneric
           type="email"
-          :value="customer.customerEmail"
-          @input="updateField('customerEmail', $event.target.value)"
-          placeholder="อีเมล"
-          readonly
+          :modelValue="customer.customerEmail"
+          @update:modelValue="updateField('customerEmail', $event)"
+          :placeholder="$t('view.mobile.sale.fieldCustomerEmail')"
+          :readonly="true"
         />
       </div>
 
       <div class="mobile-form-group">
-        <label>ที่อยู่</label>
-        <textarea
-          :value="customer.customerAddress"
-          @input="updateField('customerAddress', $event.target.value)"
-          placeholder="ที่อยู่"
-          rows="3"
-          readonly
-        ></textarea>
+        <label>{{ $t('view.mobile.sale.fieldCustomerAddress') }}</label>
+        <TextareaGeneric
+          :modelValue="customer.customerAddress"
+          @update:modelValue="updateField('customerAddress', $event)"
+          :placeholder="$t('view.mobile.sale.fieldCustomerAddress')"
+          :rows="3"
+          :disabled="true"
+        />
       </div>
 
       <div class="mobile-form-group">
-        <label>หมายเหตุ</label>
-        <textarea
-          :value="customer.remark"
-          @input="updateField('remark', $event.target.value)"
-          placeholder="หมายเหตุ (ถ้ามี)"
-          rows="2"
-        ></textarea>
+        <label>{{ $t('common.field.remark') }}</label>
+        <TextareaGeneric
+          :modelValue="customer.remark"
+          @update:modelValue="updateField('remark', $event)"
+          :placeholder="$t('common.field.remark')"
+          :rows="2"
+        />
       </div>
     </div>
 
@@ -100,13 +99,17 @@
 <script>
 import CustomerSearchModal from './customer-search-modal.vue'
 import CustomerCreateModal from './customer-create-modal.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 export default {
   name: 'CustomerForm',
 
   components: {
     CustomerSearchModal,
-    CustomerCreateModal
+    CustomerCreateModal,
+    InputTextGeneric,
+    TextareaGeneric
   },
 
   props: {

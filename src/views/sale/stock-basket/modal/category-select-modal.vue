@@ -2,45 +2,41 @@
   <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="500px" :isShowActionPart="true">
     <template #title>
       <span class="title-text-lg">
-        <i class="bi bi-collection mr-2"></i>เลือกทั้ง Category
+        <i class="bi bi-collection mr-2"></i>{{ $t('view.sale.stockBasket.selectAllCategories') }}
       </span>
     </template>
     <template #content>
       <div class="p-3">
         <div class="mb-2">
           <span class="title-text">ProductType</span>
-          <input
-            class="form-control"
-            type="text"
-            v-model.trim="categoryFilter.productType"
-            placeholder="เช่น Ring, Necklace"
+          <InputTextGeneric
+            v-model="categoryFilter.productType"
+            :trim="true"
+            :placeholder="$t('view.sale.stockBasket.placeholder.category')"
           />
         </div>
         <div class="mb-2">
           <span class="title-text">ProductionType</span>
-          <input
-            class="form-control"
-            type="text"
-            v-model.trim="categoryFilter.productionType"
-            placeholder="เช่น Gold, Silver"
+          <InputTextGeneric
+            v-model="categoryFilter.productionType"
+            :trim="true"
+            :placeholder="$t('view.sale.stockBasket.placeholder.material')"
           />
         </div>
         <div class="mb-2">
           <span class="title-text">ProductionTypeSize</span>
-          <input
-            class="form-control"
-            type="text"
-            v-model.trim="categoryFilter.productionTypeSize"
-            placeholder="เช่น 18K, 9K"
+          <InputTextGeneric
+            v-model="categoryFilter.productionTypeSize"
+            :trim="true"
+            :placeholder="$t('view.sale.stockBasket.placeholder.karat')"
           />
         </div>
         <div class="mb-2">
-          <span class="title-text">เลขที่ใบรับ (ReceiptNumber)</span>
-          <input
-            class="form-control"
-            type="text"
-            v-model.trim="categoryFilter.receiptNumber"
-            placeholder="เลขที่ใบรับสินค้า"
+          <span class="title-text">{{ $t('view.sale.stockBasket.receiptNumber') }}</span>
+          <InputTextGeneric
+            v-model="categoryFilter.receiptNumber"
+            :trim="true"
+            :placeholder="$t('view.sale.stockBasket.placeholder.grNo')"
           />
         </div>
       </div>
@@ -48,11 +44,11 @@
     <template #action>
       <button class="btn btn-sm btn-main" @click="onConfirm">
         <i class="bi bi-plus-circle"></i>
-        <span class="ml-1">เพิ่มทั้งหมด</span>
+        <span class="ml-1">{{ $t('view.sale.stockBasket.addAll') }}</span>
       </button>
       <button class="btn btn-sm btn-outline-main" @click="$emit('closeModal')">
         <i class="bi bi-x-circle"></i>
-        <span class="ml-1">ยกเลิก</span>
+        <span class="ml-1">{{ $t('common.btn.cancel') }}</span>
       </button>
     </template>
   </modal>
@@ -61,6 +57,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -75,7 +72,8 @@ export default {
   name: 'CategorySelectModal',
 
   components: {
-    modal
+    modal,
+    InputTextGeneric
   },
 
   props: {
@@ -110,7 +108,7 @@ export default {
         this.categoryFilter.receiptNumber
 
       if (!hasFilter) {
-        warning('กรุณาระบุเงื่อนไขอย่างน้อย 1 ข้อ', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.stockBasket.validation.conditionRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
@@ -122,11 +120,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
-
-.title-text-lg {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: var(--base-font-color);
-}
 </style>

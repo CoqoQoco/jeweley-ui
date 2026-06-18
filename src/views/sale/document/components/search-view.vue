@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="เอกสารสินค้า"
-      description="จัดการเอกสาร PDF ประจำเดือน — upload, download, tag และลบเอกสาร"
+      :title="$t('view.sale.document.title')"
+      :description="$t('view.sale.document.description')"
       :isShowBtnClose="false"
     />
 
@@ -10,48 +10,47 @@
       <div class="form-col-container">
         <!-- เดือน -->
         <div>
-          <span class="title-text">เดือน</span>
+          <span class="title-text">{{ $t('view.sale.document.month') }}</span>
           <select class="form-control bg-input" v-model="form.month">
-            <option :value="null">ทั้งหมด</option>
-            <option v-for="m in months" :key="m.value" :value="m.value">{{ m.label }}</option>
+            <option :value="null">{{ $t('view.sale.document.statusAll') }}</option>
+            <option v-for="m in monthOptions" :key="m.value" :value="m.value">{{ m.label }}</option>
           </select>
         </div>
 
         <!-- ปี -->
         <div>
-          <span class="title-text">ปี</span>
+          <span class="title-text">{{ $t('view.sale.document.year') }}</span>
           <select class="form-control bg-input" v-model="form.year">
-            <option :value="null">ทั้งหมด</option>
+            <option :value="null">{{ $t('view.sale.document.statusAll') }}</option>
             <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
           </select>
         </div>
 
         <!-- ค้นหาชื่อไฟล์ / tag -->
         <div>
-          <span class="title-text">ชื่อไฟล์ / Tag</span>
-          <input
-            class="form-control bg-input"
-            type="text"
-            v-model.trim="form.keyword"
-            placeholder="ค้นหาชื่อไฟล์หรือ tag"
+          <span class="title-text">{{ $t('view.sale.document.fileSearch') }}</span>
+          <InputTextGeneric
+            v-model="form.keyword"
+            :trim="true"
+            :placeholder="$t('view.sale.document.placeholder.fileSearch')"
           />
         </div>
       </div>
 
       <div class="btn-submit-container-between">
         <div>
-          <button class="btn btn-sm btn-main" type="button" title="สร้างเอกสาร" @click="$emit('create-catalog')">
-            <i class="bi bi-plus-circle mr-1"></i> สร้างเอกสาร
+          <button class="btn btn-sm btn-main" type="button" :title="$t('view.sale.document.createDocument')" @click="$emit('create-catalog')">
+            <i class="bi bi-plus-circle mr-1"></i> {{ $t('view.sale.document.createDocument') }}
           </button>
-          <button class="btn btn-sm btn-outline-main ml-2" type="button" title="Upload เอกสาร" @click="$emit('upload')">
-            <i class="bi bi-upload mr-1"></i> Upload เอกสาร
+          <button class="btn btn-sm btn-outline-main ml-2" type="button" :title="$t('view.sale.document.uploadDocument')" @click="$emit('upload')">
+            <i class="bi bi-upload mr-1"></i> {{ $t('view.sale.document.uploadDocument') }}
           </button>
         </div>
         <div>
-          <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
+          <button class="btn btn-sm btn-main" type="submit" :title="$t('common.btn.search')">
             <i class="bi bi-search"></i>
           </button>
-          <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" title="ล้าง">
+          <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
             <i class="bi bi-x-circle"></i>
           </button>
         </div>
@@ -62,21 +61,9 @@
 
 <script>
 import pageTitle from '@/components/custom/page-title.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
-const MONTHS = [
-  { value: 1, label: 'มกราคม' },
-  { value: 2, label: 'กุมภาพันธ์' },
-  { value: 3, label: 'มีนาคม' },
-  { value: 4, label: 'เมษายน' },
-  { value: 5, label: 'พฤษภาคม' },
-  { value: 6, label: 'มิถุนายน' },
-  { value: 7, label: 'กรกฎาคม' },
-  { value: 8, label: 'สิงหาคม' },
-  { value: 9, label: 'กันยายน' },
-  { value: 10, label: 'ตุลาคม' },
-  { value: 11, label: 'พฤศจิกายน' },
-  { value: 12, label: 'ธันวาคม' }
-]
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 const interfaceForm = {
   month: null,
@@ -87,7 +74,7 @@ const interfaceForm = {
 export default {
   name: 'SaleDocumentSearchView',
 
-  components: { pageTitle },
+  components: { pageTitle, InputTextGeneric },
 
   emits: ['search', 'clear', 'update:modelForm', 'create-catalog', 'upload'],
 
@@ -113,8 +100,16 @@ export default {
 
     return {
       form: { ...interfaceForm },
-      months: MONTHS,
       years
+    }
+  },
+
+  computed: {
+    monthOptions() {
+      return MONTH_KEYS.map((key, index) => ({
+        value: index + 1,
+        label: this.$t(`view.sale.document.months.${key}`)
+      }))
     }
   },
 

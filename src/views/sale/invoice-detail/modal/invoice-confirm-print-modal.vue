@@ -7,14 +7,14 @@
             <!-- Modal Header -->
             <div class="title-text-lg-bg">
               <i class="bi bi-printer mr-2"></i>
-              <span>ยืนยันการพิมพ์เอกสาร</span>
+              <span>{{ $t('view.sale.invoiceDetail.confirmPrintTitle') }}</span>
             </div>
 
             <div class="p-3">
               <!-- Form Container -->
               <div class="filter-container mb-2">
                 <div class="title-text-lg mb-2">
-                  <i class="bi bi-file-text mr-2"></i>ข้อมูลเอกสาร
+                  <i class="bi bi-file-text mr-2"></i>{{ $t('view.sale.invoiceDetail.docInfo') }}
                 </div>
                 <div class="p-3">
                   <div class="form-group mb-3">
@@ -25,10 +25,10 @@
                       v-model="printData.invoiceNumber"
                       type="text"
                       class="form-control"
-                      placeholder="เลขที่ใบแจ้งหนี้"
+                      :placeholder="$t('view.sale.invoiceDetail.invoiceNumberPlaceholder')"
                     />
                     <small class="form-text text-muted">
-                      ค่าเดิม: {{ originalData.invoiceNumber }}
+                      {{ $t('view.sale.invoiceDetail.originalValue') }}: {{ originalData.invoiceNumber }}
                     </small>
                   </div>
 
@@ -39,13 +39,13 @@
                     <CalendarGeneric
                       v-model="printData.invoiceDate"
                       dateFormat="dd/mm/yy"
-                      placeholder="เลือกวันที่"
+                      :placeholder="$t('view.sale.invoiceDetail.selectDate')"
                       :showIcon="true"
                       :showButtonBar="true"
                       class="w-100"
                     />
                     <small class="form-text text-muted">
-                      ค่าเดิม: {{ formatDate(originalData.invoiceDate) }}
+                      {{ $t('view.sale.invoiceDetail.originalValue') }}: {{ formatDate(originalData.invoiceDate) }}
                     </small>
                   </div>
 
@@ -58,14 +58,14 @@
                         class="checkbox-input"
                       />
                       <label class="form-label mb-0 label-clickable" for="invoiceCifLabelInput">
-                        <i class="bi bi-tag mr-1"></i>แสดงป้าย C.I.F
+                        <i class="bi bi-tag mr-1"></i>{{ $t('view.sale.invoiceDetail.showCifLabel') }}
                       </label>
                     </div>
                   </div>
 
                   <div class="form-group mb-3">
                     <label class="form-label">
-                      <i class="bi bi-file-earmark mr-1"></i>ขนาดกระดาษ
+                      <i class="bi bi-file-earmark mr-1"></i>{{ $t('view.sale.invoiceDetail.paperSize') }}
                     </label>
                     <div class="paper-size-options">
                       <label class="paper-size-option">
@@ -74,7 +74,7 @@
                           v-model="paperSize"
                           value="a4"
                         />
-                        <span>A4 (มาตรฐาน)</span>
+                        <span>{{ $t('view.sale.invoiceDetail.paperA4') }}</span>
                       </label>
                       <label class="paper-size-option">
                         <input
@@ -82,7 +82,7 @@
                           v-model="paperSize"
                           value="bill"
                         />
-                        <span>bill — ต่อเนื่อง 9x11 (Epson LQ-310)</span>
+                        <span>{{ $t('view.sale.invoiceDetail.paperBill') }}</span>
                       </label>
                       <label class="paper-size-option">
                         <input
@@ -90,25 +90,25 @@
                           v-model="paperSize"
                           value="vat-bridge"
                         />
-                        <span>ใบกำกับภาษี — ต่อเนื่อง 9x11 (Bridge GDI)</span>
+                        <span>{{ $t('view.sale.invoiceDetail.paperTax') }}</span>
                       </label>
                     </div>
                   </div>
 
                   <div v-if="paperSize === 'bill' || paperSize === 'vat-bridge'" class="form-group mb-3">
                     <label class="form-label">
-                      <i class="bi bi-printer mr-1"></i>เครื่องพิมพ์
+                      <i class="bi bi-printer mr-1"></i>{{ $t('view.sale.invoiceDetail.printer') }}
                     </label>
                     <DropdownGeneric
                       v-model="selectedPrinter"
                       :options="printerOptions"
                       optionLabel="label"
                       optionValue="name"
-                      placeholder="เลือกเครื่องพิมพ์"
+                      :placeholder="$t('view.sale.invoiceDetail.selectPrinter')"
                       :showClear="true"
                     />
                     <small v-if="printerOptions.length === 0" class="form-text text-muted">
-                      ไม่พบรายชื่อเครื่องพิมพ์ — ตรวจสอบว่า bridge รันอยู่และ config มี Printers
+                      {{ $t('view.sale.invoiceDetail.noPrinterFound') }}
                     </small>
                   </div>
 
@@ -138,7 +138,7 @@
                       </div>
                     </div>
                     <small class="form-text text-muted">
-                      หากตำแหน่งเหลื่อมเล็กน้อย ปรับ offset ทีละ 0.5-1 mm
+                      {{ $t('view.sale.invoiceDetail.offsetHint') }}
                     </small>
                   </div>
 
@@ -168,7 +168,7 @@
                       </div>
                     </div>
                     <small class="form-text text-muted">
-                      หากตำแหน่งเหลื่อมเล็กน้อย ปรับ offset ทีละ 0.5-1 mm
+                      {{ $t('view.sale.invoiceDetail.offsetHint') }}
                     </small>
                   </div>
                 </div>
@@ -181,10 +181,10 @@
                     <i class="bi bi-info-circle text-info mr-2 info-icon"></i>
                     <div>
                       <p class="mb-1 info-text">
-                        การเปลี่ยนแปลงข้อมูลนี้จะมีผลเฉพาะกับเอกสารที่พิมพ์เท่านั้น
+                        {{ $t('view.sale.deliveryNote.printOnlyNote') }}
                       </p>
                       <p class="mb-0 info-text">
-                        ข้อมูลต้นฉบับในระบบจะไม่มีการเปลี่ยนแปลง
+                        {{ $t('view.sale.deliveryNote.originalNotChanged') }}
                       </p>
                     </div>
                   </div>
@@ -196,12 +196,12 @@
                 <div class="d-flex justify-content-end">
                   <button class="btn btn-green mr-2" type="button" @click="onConfirmPrint">
                     <i class="bi bi-printer mr-1"></i>
-                    พิมพ์เอกสาร
+                    {{ $t('view.sale.invoiceDetail.printBtn') }}
                   </button>
 
                   <button class="btn btn-outline-main" type="button" @click="closeModal">
                     <i class="bi bi-x-circle mr-1"></i>
-                    ยกเลิก
+                    {{ $t('common.btn.cancel') }}
                   </button>
                 </div>
               </div>
@@ -363,12 +363,12 @@ export default {
     onConfirmPrint() {
       // Validate data
       if (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim()) {
-        warning('กรุณากรอก Invoice Number', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.invoiceNumberRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
       if (!this.printData.invoiceDate) {
-        warning('กรุณาเลือก Invoice Date', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.invoiceDateRequired'), this.$t('common.label.incompleteData'))
         return
       }
 

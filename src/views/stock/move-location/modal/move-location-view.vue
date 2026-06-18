@@ -60,7 +60,7 @@
                   type="text"
                   class="form-control"
                   v-model.trim="newSloc.code"
-                  placeholder="TEMP-001"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.tempSlocCode')"
                 />
               </div>
               <div class="form-field">
@@ -69,7 +69,7 @@
                   type="text"
                   class="form-control"
                   v-model.trim="newSloc.nameTh"
-                  placeholder="Booth B"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.tempSlocName')"
                 />
               </div>
             </div>

@@ -5,26 +5,26 @@
         <div class="p-3">
           <div class="title-text-lg mb-3">
             <span><i class="bi bi-person-plus mr-2"></i></span>
-            <span>เพิ่มลูกค้าใหม่</span>
+            <span>{{ $t('view.customer.createTitle') }}</span>
           </div>
 
           <div class="form-content">
             <div class="form-col-container">
               <div>
                 <span class="title-text">
-                  <span>รหัสลูกค้า</span>
+                  <span>{{ $t('view.customer.field.customerCode') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model.trim="form.code" 
-                  required 
+                <InputTextGeneric
+                  :modelValue="form.code"
+                  :trim="true"
+                  :required="true"
+                  @update:modelValue="form.code = $event"
                 />
               </div>
               <div>
                 <span class="title-text">
-                  <span>ประเภทลูกค้า</span>
+                  <span>{{ $t('view.customer.field.customerType') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <DropdownGeneric
@@ -33,7 +33,7 @@
                   optionLabel="description"
                   :class="validation.isValCustomerType === true ? `p-invalid` : ``"
                   :showClear="form.type ? true : false"
-                  placeholder="เลือกประเภทลูกค้า"
+                  :placeholder="$t('view.customer.placeholder.customerType')"
                   @update:modelValue="form.type = $event"
                 />
               </div>
@@ -42,24 +42,24 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>ชื่อภาษาไทย</span>
+                  <span>{{ $t('view.customer.field.nameTh') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model.trim="form.nameTh" 
-                  required 
+                <InputTextGeneric
+                  :modelValue="form.nameTh"
+                  :trim="true"
+                  :required="true"
+                  @update:modelValue="form.nameTh = $event"
                 />
               </div>
               <div>
                 <span class="title-text">
-                  <span>ชื่อภาษาอังกฤษ</span>
+                  <span>{{ $t('view.customer.field.nameEn') }}</span>
                 </span>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model.trim="form.nameEn" 
+                <InputTextGeneric
+                  :modelValue="form.nameEn"
+                  :trim="true"
+                  @update:modelValue="form.nameEn = $event"
                 />
               </div>
             </div>
@@ -67,12 +67,12 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>ที่อยู่ติดต่อ</span>
+                  <span>{{ $t('view.customer.field.address') }}</span>
                 </span>
-                <textarea 
-                  class="form-control" 
-                  v-model.trim="form.address" 
-                  rows="3"
+                <TextareaGeneric
+                  :modelValue="form.address"
+                  :rows="3"
+                  @update:modelValue="form.address = $event"
                 />
               </div>
             </div>
@@ -80,7 +80,7 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>เบอร์โทรติดต่อ 1</span>
+                  <span>{{ $t('view.customer.field.tel1') }}</span>
                 </span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
@@ -88,17 +88,19 @@
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
+                  <InputTextGeneric
+                    :modelValue="form.telephone1"
                     type="tel"
-                    v-model.trim="form.telephone1"
+                    :trim="true"
+                    :bgInput="true"
+                    @update:modelValue="form.telephone1 = $event"
                   />
                 </div>
               </div>
 
               <div>
                 <span class="title-text">
-                  <span>เบอร์โทรติดต่อ 2</span>
+                  <span>{{ $t('view.customer.field.tel2') }}</span>
                 </span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
@@ -106,10 +108,12 @@
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
+                  <InputTextGeneric
+                    :modelValue="form.telephone2"
                     type="tel"
-                    v-model.trim="form.telephone2"
+                    :trim="true"
+                    :bgInput="true"
+                    @update:modelValue="form.telephone2 = $event"
                   />
                 </div>
               </div>
@@ -118,7 +122,7 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>E-mail</span>
+                  <span>{{ $t('view.customer.field.email') }}</span>
                 </span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
@@ -126,17 +130,19 @@
                       <i class="bi bi-envelope-check-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
+                  <InputTextGeneric
+                    :modelValue="form.email"
                     type="email"
-                    v-model.trim="form.email"
+                    :trim="true"
+                    :bgInput="true"
+                    @update:modelValue="form.email = $event"
                   />
                 </div>
               </div>
 
               <div>
                 <span class="title-text">
-                  <span>บุคคลติดต่อ</span>
+                  <span>{{ $t('view.customer.field.contact') }}</span>
                 </span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
@@ -144,10 +150,11 @@
                       <i class="bi bi-person-lines-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
-                    type="text"
-                    v-model.trim="form.contactName"
+                  <InputTextGeneric
+                    :modelValue="form.contactName"
+                    :trim="true"
+                    :bgInput="true"
+                    @update:modelValue="form.contactName = $event"
                   />
                 </div>
               </div>
@@ -156,26 +163,32 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>ข้อมูลเพิ่มเติม</span>
+                  <span>{{ $t('common.field.remark') }}</span>
                 </span>
-                <textarea 
-                  class="form-control" 
-                  v-model.trim="form.remark" 
-                  rows="2"
+                <TextareaGeneric
+                  :modelValue="form.remark"
+                  :rows="2"
+                  @update:modelValue="form.remark = $event"
                 />
               </div>
             </div>
           </div>
 
           <div class="d-flex justify-content-end mt-4">
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onCancel">
-              <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ยกเลิก</span>
-            </button>
-            <button class="btn btn-sm btn-green" type="submit">
-              <span><i class="bi bi-check-circle"></i></span>
-              <span class="ml-2">บันทึก</span>
-            </button>
+            <ButtonGeneric
+              variant="dark"
+              icon="bi-x-circle"
+              :label="$t('common.btn.cancel')"
+              type="button"
+              class="mr-2"
+              @click="onCancel"
+            />
+            <ButtonGeneric
+              variant="green"
+              icon="bi-check-circle"
+              :label="$t('common.btn.save')"
+              type="submit"
+            />
           </div>
         </div>
       </form>
@@ -185,10 +198,14 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { confirmSubmit, success, error } from '@/services/alert/sweetAlerts.js'
+import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -214,7 +231,10 @@ export default {
 
   components: {
     modal,
-    DropdownGeneric
+    DropdownGeneric,
+    InputTextGeneric,
+    TextareaGeneric,
+    ButtonGeneric
   },
 
   props: {
@@ -266,7 +286,7 @@ export default {
       if (this.validateForm()) {
         confirmSubmit(
           `${this.form.code} - ${this.form.nameTh}`,
-          'ยืนยันเพิ่มข้อมูลลูกค้า',
+          this.$t('view.customer.confirm.create'),
           async () => {
             await this.submitCustomer()
           }
@@ -307,7 +327,7 @@ export default {
 
       if (result) {
         success(
-          'เพิ่มลูกค้าสำเร็จ',
+          this.$t('view.customer.success.create'),
           null,
           () => {
             const customerData = {
@@ -369,14 +389,5 @@ export default {
 
 .txt-required {
   color: #dc3545;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-}
-
-.btn i {
-  font-size: 0.875rem;
 }
 </style>

@@ -3,16 +3,14 @@
     <!-- Production Order Information Section -->
     <div class="card-container">
       <div class="card-header">
-        <h6 class="mb-0">ข้อมูลใบสั่งผลิต</h6>
+        <h6 class="mb-0">{{ $t('view.sale.productionOrder.poInfo') }}</h6>
       </div>
       <div class="card-body">
         <div class="form-col-container">
           <!-- Production Order Number -->
           <div>
-            <span class="title-text">เลขที่ใบสั่งผลิต</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
+            <span class="title-text">{{ $t('view.sale.productionOrder.poNumber') }}</span>
+            <InputTextGeneric
               v-model.trim="formProductionOrder.number"
               placeholder="PO-2025-001"
             />
@@ -20,39 +18,39 @@
 
           <!-- Order Date -->
           <div>
-            <span class="title-text">วันที่ใบสั่งผลิต</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.poDate') }}</span>
             <CalendarGeneric
               class="w-100"
               v-model="formProductionOrder.orderDate"
               :showIcon="true"
               :manualInput="false"
-              placeholder="เลือกวันที่"
+              :placeholder="$t('view.sale.productionOrder.selectDate')"
               dateFormat="dd/mm/yy"
             />
           </div>
 
           <!-- Required Date -->
           <div>
-            <span class="title-text">วันที่ต้องการใช้</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.requiredDate') }}</span>
             <CalendarGeneric
               class="w-100"
               v-model="formProductionOrder.requiredDate"
               :showIcon="true"
               :manualInput="false"
-              placeholder="เลือกวันที่"
+              :placeholder="$t('view.sale.productionOrder.selectDate')"
               dateFormat="dd/mm/yy"
             />
           </div>
 
           <!-- Priority -->
           <div>
-            <span class="title-text">ลำดับความสำคัญ</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.priority') }}</span>
             <DropdownGeneric
               v-model="formProductionOrder.priority"
               :options="priorityOptions"
               optionLabel="name"
               optionValue="value"
-              placeholder="เลือกลำดับความสำคัญ"
+              :placeholder="$t('view.sale.productionOrder.selectPriority')"
               class="w-100"
             />
           </div>
@@ -61,51 +59,49 @@
         <div class="form-col-container mt-2">
           <!-- Sale Order Reference -->
           <div>
-            <span class="title-text">อ้างอิงใบสั่งขาย</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
+            <span class="title-text">{{ $t('view.sale.productionOrder.soRef') }}</span>
+            <InputTextGeneric
               v-model.trim="formProductionOrder.saleOrderNumber"
               placeholder="SO-2025-001"
-              readonly
+              :readonly="true"
             />
           </div>
 
           <!-- Status -->
           <div>
-            <span class="title-text">สถานะ</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.status') }}</span>
             <DropdownGeneric
               v-model="formProductionOrder.status"
               :options="statusOptions"
               optionLabel="name"
               optionValue="value"
-              placeholder="เลือกสถานะ"
+              :placeholder="$t('view.sale.productionOrder.selectStatus')"
               class="w-100"
             />
           </div>
 
           <!-- Production Type -->
           <div>
-            <span class="title-text">ประเภทการผลิต</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.productionType') }}</span>
             <DropdownGeneric
               v-model="formProductionOrder.productionType"
               :options="productionTypeOptions"
               optionLabel="name"
               optionValue="value"
-              placeholder="เลือกประเภทการผลิต"
+              :placeholder="$t('view.sale.productionOrder.selectProductionType')"
               class="w-100"
             />
           </div>
 
           <!-- Workshop -->
           <div>
-            <span class="title-text">หน่วยผลิต</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.productionUnit') }}</span>
             <DropdownGeneric
               v-model="formProductionOrder.workshop"
               :options="workshopOptions"
               optionLabel="name"
               optionValue="value"
-              placeholder="เลือกหน่วยผลิต"
+              :placeholder="$t('view.sale.productionOrder.selectProductionUnit')"
               class="w-100"
             />
           </div>
@@ -116,24 +112,24 @@
     <!-- Sale Order Information Section -->
     <div class="card-container mt-3" v-if="saleOrderInfo.number">
       <div class="card-header">
-        <h6 class="mb-0">ข้อมูลใบสั่งขายอ้างอิง</h6>
+        <h6 class="mb-0">{{ $t('view.sale.productionOrder.soRefInfo') }}</h6>
       </div>
       <div class="card-body">
         <div class="form-col-container">
           <div>
-            <span class="title-text">เลขที่ใบสั่งขาย</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.soNumber') }}</span>
             <div class="info-display">{{ saleOrderInfo.number }}</div>
           </div>
           <div>
-            <span class="title-text">ลูกค้า</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.customerField') }}</span>
             <div class="info-display">{{ saleOrderInfo.customerName }}</div>
           </div>
           <div>
-            <span class="title-text">วันที่ใบสั่งขาย</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.soDate') }}</span>
             <div class="info-display">{{ formatDate(saleOrderInfo.orderDate) }}</div>
           </div>
           <div>
-            <span class="title-text">วันที่คาดหวังส่งมอบ</span>
+            <span class="title-text">{{ $t('view.sale.productionOrder.expectedDelivery') }}</span>
             <div class="info-display">{{ formatDate(saleOrderInfo.expectedDeliveryDate) }}</div>
           </div>
         </div>
@@ -143,7 +139,7 @@
     <!-- Production Items Grid -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">รายการสินค้าที่ต้องผลิต</h6>
+        <h6 class="mb-0">{{ $t('view.sale.productionOrder.itemsSection') }}</h6>
         <div class="card-header-actions">
           <label class="d-flex align-items-center">
             <input
@@ -152,7 +148,7 @@
               @change="toggleAllItems"
               class="mr-2"
             />
-            <span>เลือกทั้งหมด</span>
+            <span>{{ $t('view.sale.productionOrder.selectAllItems') }}</span>
           </label>
         </div>
       </div>
@@ -196,15 +192,15 @@
             <div class="materials-info">
               <div v-if="data.materials?.gold" class="material-item">
                 <i class="bi bi-circle-fill text-warning mr-1"></i>
-                ทอง: {{ data.materials.gold.weight }}g
+                {{ $t('view.sale.productionOrder.gold') }}: {{ data.materials.gold.weight }}g
               </div>
               <div v-if="data.materials?.diamond" class="material-item">
                 <i class="bi bi-gem mr-1"></i>
-                เพชร: {{ data.materials.diamond.weight }}ct
+                {{ $t('view.sale.productionOrder.diamond') }}: {{ data.materials.diamond.weight }}ct
               </div>
               <div v-if="data.materials?.gems" class="material-item">
                 <i class="bi bi-hexagon mr-1"></i>
-                พลอย: {{ data.materials.gems.weight }}ct
+                {{ $t('view.sale.productionOrder.gems') }}: {{ data.materials.gems.weight }}ct
               </div>
             </div>
           </template>
@@ -225,7 +221,7 @@
             <div class="text-center">
               <span class="badge badge-info">
                 <i class="bi bi-clock mr-1"></i>
-                {{ data.estimatedProductionDays || 0 }} วัน
+                {{ data.estimatedProductionDays || 0 }} {{ $t('view.sale.productionOrder.productionDaysUnit') }}
               </span>
             </div>
           </template>
@@ -247,42 +243,42 @@
     <!-- Production Summary -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">สรุปใบสั่งผลิต</h6>
+        <h6 class="mb-0">{{ $t('view.sale.productionOrder.summarySection') }}</h6>
       </div>
       <div class="card-body">
         <div class="row">
           <div class="col-md-4">
             <!-- Items Summary -->
             <div class="summary-section">
-              <h6>รายการที่เลือก</h6>
+              <h6>{{ $t('view.sale.productionOrder.summarySelectedItems') }}</h6>
               <div class="summary-item">
-                <span>จำนวนรายการ:</span>
-                <span class="font-weight-bold">{{ selectedItemsCount }} รายการ</span>
+                <span>{{ $t('view.sale.productionOrder.summaryItemCount') }}:</span>
+                <span class="font-weight-bold">{{ selectedItemsCount }} {{ $t('view.sale.productionOrder.itemCount', { count: '' }).replace(' ', '') }}</span>
               </div>
               <div class="summary-item">
-                <span>จำนวนชิ้นรวม:</span>
-                <span class="font-weight-bold">{{ totalQuantity }} ชิ้น</span>
+                <span>{{ $t('view.sale.productionOrder.summaryTotalQty') }}:</span>
+                <span class="font-weight-bold">{{ totalQuantity }}</span>
               </div>
               <div class="summary-item">
-                <span>ระยะเวลาผลิตเฉลี่ย:</span>
-                <span class="font-weight-bold">{{ averageProductionDays }} วัน</span>
+                <span>{{ $t('view.sale.productionOrder.summaryAvgProductionDays') }}:</span>
+                <span class="font-weight-bold">{{ averageProductionDays }} {{ $t('view.sale.productionOrder.productionDaysUnit') }}</span>
               </div>
             </div>
           </div>
           <div class="col-md-4">
             <!-- Materials Summary -->
             <div class="summary-section">
-              <h6>สรุปวัตถุดิบ</h6>
+              <h6>{{ $t('view.sale.productionOrder.summaryMaterials') }}</h6>
               <div class="summary-item">
-                <span>ทองรวม:</span>
+                <span>{{ $t('view.sale.productionOrder.summaryGoldTotal') }}:</span>
                 <span class="font-weight-bold text-warning">{{ totalMaterials.gold }} g</span>
               </div>
               <div class="summary-item">
-                <span>เพชรรวม:</span>
+                <span>{{ $t('view.sale.productionOrder.summaryDiamondTotal') }}:</span>
                 <span class="font-weight-bold">{{ totalMaterials.diamond }} ct</span>
               </div>
               <div class="summary-item">
-                <span>พลอยรวม:</span>
+                <span>{{ $t('view.sale.productionOrder.summaryGemsTotal') }}:</span>
                 <span class="font-weight-bold text-info">{{ totalMaterials.gems }} ct</span>
               </div>
             </div>
@@ -290,17 +286,17 @@
           <div class="col-md-4">
             <!-- Value Summary -->
             <div class="summary-section">
-              <h6>สรุปมูลค่า</h6>
+              <h6>{{ $t('view.sale.productionOrder.summaryValue') }}</h6>
               <div class="summary-item">
-                <span>มูลค่าวัตถุดิบ:</span>
+                <span>{{ $t('view.sale.productionOrder.summaryMaterialValue') }}:</span>
                 <span class="font-weight-bold">{{ formatCurrency(materialsValue) }}</span>
               </div>
               <div class="summary-item">
-                <span>ค่าแรงประมาณ:</span>
+                <span>{{ $t('view.sale.productionOrder.summaryLaborCost') }}:</span>
                 <span class="font-weight-bold">{{ formatCurrency(estimatedLaborCost) }}</span>
               </div>
               <div class="summary-item border-top pt-2 mt-2">
-                <span class="h6">มูลค่ารวม:</span>
+                <span class="h6">{{ $t('view.sale.productionOrder.summaryTotalValue') }}:</span>
                 <span class="h6 font-weight-bold" style="color: var(--base-font-color)">{{ formatCurrency(totalProductionValue) }}</span>
               </div>
             </div>
@@ -311,13 +307,12 @@
         <div class="row mt-3">
           <div class="col-md-12">
             <div>
-              <span class="title-text">หมายเหตุการผลิต</span>
-              <textarea
-                class="form-control"
-                rows="3"
+              <span class="title-text">{{ $t('view.sale.productionOrder.remarkLabel') }}</span>
+              <TextareaGeneric
                 v-model="formProductionOrder.remark"
-                placeholder="หมายเหตุเพิ่มเติมสำหรับการผลิต เช่น ข้อกำหนดพิเศษ, วัตถุดิบที่ต้องการ..."
-              ></textarea>
+                :rows="3"
+                :placeholder="$t('view.sale.productionOrder.remarkPlaceholder')"
+              />
             </div>
           </div>
         </div>
@@ -326,7 +321,7 @@
         <div class="row mt-3" v-if="validationErrors.length > 0">
           <div class="col-md-12">
             <div class="alert alert-warning">
-              <h6><i class="bi bi-exclamation-triangle mr-2"></i>ข้อควรระวัง:</h6>
+              <h6><i class="bi bi-exclamation-triangle mr-2"></i>{{ $t('view.sale.productionOrder.warningLabel') }}</h6>
               <ul class="mb-0">
                 <li v-for="err in validationErrors" :key="err">{{ err }}</li>
               </ul>
@@ -345,7 +340,7 @@
         :disabled="selectedItemsCount === 0"
       >
         <i class="bi bi-file-earmark mr-1"></i>
-        บันทึกร่าง
+        {{ $t('view.sale.productionOrder.saveDraft') }}
       </button>
 
       <button
@@ -355,7 +350,7 @@
         :disabled="selectedItemsCount === 0 || hasValidationErrors"
       >
         <i class="bi bi-check-circle mr-1"></i>
-        ยืนยันใบสั่งผลิต
+        {{ $t('view.sale.productionOrder.confirmOrder') }}
       </button>
 
       <button
@@ -365,7 +360,7 @@
         :disabled="selectedItemsCount === 0"
       >
         <i class="bi bi-file-pdf mr-1"></i>
-        สร้าง PDF
+        {{ $t('view.sale.productionOrder.createPdf') }}
       </button>
 
       <button
@@ -374,7 +369,7 @@
         @click="clearForm"
       >
         <i class="bi bi-arrow-clockwise mr-1"></i>
-        ล้างข้อมูล
+        {{ $t('common.btn.clear') }}
       </button>
 
       <button
@@ -383,7 +378,7 @@
         @click="cancelOrder"
       >
         <i class="bi bi-x-circle mr-1"></i>
-        ยกเลิก
+        {{ $t('common.btn.cancel') }}
       </button>
     </div>
   </div>
@@ -393,6 +388,8 @@
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
@@ -402,7 +399,9 @@ export default {
   components: {
     BaseDataTable,
     CalendarGeneric,
-    DropdownGeneric
+    DropdownGeneric,
+    InputTextGeneric,
+    TextareaGeneric
   },
 
   emits: ['update:modelForm', 'update:modelSaleOrder', 'save', 'confirm', 'cancel'],
@@ -436,53 +435,61 @@ export default {
         remark: ''
       },
 
-      saleOrderInfo: {},
-
-      statusOptions: [
-        { name: 'ร่าง', value: 'Draft' },
-        { name: 'รอการยืนยัน', value: 'PendingApproval' },
-        { name: 'ยืนยันแล้ว', value: 'Confirmed' },
-        { name: 'กำลังผลิต', value: 'InProduction' },
-        { name: 'เสร็จสิ้น', value: 'Completed' },
-        { name: 'ยกเลิก', value: 'Cancelled' }
-      ],
-
-      priorityOptions: [
-        { name: 'ปกติ', value: 'normal' },
-        { name: 'สำคัญ', value: 'high' },
-        { name: 'เร่งด่วน', value: 'urgent' },
-        { name: 'วิกฤต', value: 'critical' }
-      ],
-
-      productionTypeOptions: [
-        { name: 'สั่งทำพิเศษ', value: 'custom' },
-        { name: 'ผลิตมาตรฐาน', value: 'standard' },
-        { name: 'ซ่อมแซม', value: 'repair' },
-        { name: 'ปรับปรุง', value: 'modification' }
-      ],
-
-      workshopOptions: [
-        { name: 'แผนกหล่อ', value: 'casting' },
-        { name: 'แผนกเสริมเพชร', value: 'setting' },
-        { name: 'แผนกขัดเงา', value: 'polishing' },
-        { name: 'แผนกแกะสลัก', value: 'engraving' },
-        { name: 'แผนกประกอบ', value: 'assembly' }
-      ]
+      saleOrderInfo: {}
     }
   },
 
   computed: {
+    priorityOptions() {
+      return [
+        { name: this.$t('view.sale.productionOrder.priorityNormal'), value: 'normal' },
+        { name: this.$t('view.sale.productionOrder.priorityHigh'), value: 'high' },
+        { name: this.$t('view.sale.productionOrder.priorityUrgent'), value: 'urgent' },
+        { name: this.$t('view.sale.productionOrder.priorityCritical'), value: 'critical' }
+      ]
+    },
+
+    statusOptions() {
+      return [
+        { name: this.$t('view.sale.productionOrder.statusDraft'), value: 'Draft' },
+        { name: this.$t('view.sale.productionOrder.statusPendingApproval'), value: 'PendingApproval' },
+        { name: this.$t('view.sale.productionOrder.statusConfirmed'), value: 'Confirmed' },
+        { name: this.$t('view.sale.productionOrder.statusInProduction'), value: 'InProduction' },
+        { name: this.$t('view.sale.productionOrder.statusCompleted'), value: 'Completed' },
+        { name: this.$t('view.sale.productionOrder.statusCancelled'), value: 'Cancelled' }
+      ]
+    },
+
+    productionTypeOptions() {
+      return [
+        { name: this.$t('view.sale.productionOrder.typeCustom'), value: 'custom' },
+        { name: this.$t('view.sale.productionOrder.typeStandard'), value: 'standard' },
+        { name: this.$t('view.sale.productionOrder.typeRepair'), value: 'repair' },
+        { name: this.$t('view.sale.productionOrder.typeModification'), value: 'modification' }
+      ]
+    },
+
+    workshopOptions() {
+      return [
+        { name: this.$t('view.sale.productionOrder.unitCasting'), value: 'casting' },
+        { name: this.$t('view.sale.productionOrder.unitSetting'), value: 'setting' },
+        { name: this.$t('view.sale.productionOrder.unitPolishing'), value: 'polishing' },
+        { name: this.$t('view.sale.productionOrder.unitEngraving'), value: 'engraving' },
+        { name: this.$t('view.sale.productionOrder.unitAssembly'), value: 'assembly' }
+      ]
+    },
+
     tableColumns() {
       return [
-        { field: 'selection', header: 'เลือก', width: '80px', sortable: false, template: 'selectionTemplate' },
-        { field: 'image', header: 'รูปภาพ', width: '80px', sortable: false, template: 'imageTemplate' },
-        { field: 'productNumber', header: 'รหัสสินค้า', minWidth: '120px', sortable: false, template: 'productNumberTemplate' },
-        { field: 'productName', header: 'ชื่อสินค้า', minWidth: '200px', sortable: false, template: 'productNameTemplate' },
-        { field: 'materials', header: 'วัตถุดิบ', minWidth: '180px', sortable: false, template: 'materialsTemplate' },
-        { field: 'quantity', header: 'จำนวน', minWidth: '100px', sortable: false, template: 'quantityTemplate' },
-        { field: 'estimatedProductionDays', header: 'ระยะเวลาผลิต', minWidth: '120px', sortable: false, template: 'estimatedProductionDaysTemplate' },
-        { field: 'unitPrice', header: 'ราคาต่อหน่วย', minWidth: '120px', sortable: false, template: 'unitPriceTemplate' },
-        { field: 'totalValue', header: 'มูลค่ารวม', minWidth: '120px', sortable: false, template: 'totalValueTemplate' }
+        { field: 'selection', header: this.$t('view.sale.productionOrder.colSelect'), width: '80px', sortable: false, template: 'selectionTemplate' },
+        { field: 'image', header: this.$t('view.sale.productionOrder.colImage'), width: '80px', sortable: false, template: 'imageTemplate' },
+        { field: 'productNumber', header: this.$t('view.sale.productionOrder.colProductNumber'), minWidth: '120px', sortable: false, template: 'productNumberTemplate' },
+        { field: 'productName', header: this.$t('view.sale.productionOrder.colProductName'), minWidth: '200px', sortable: false, template: 'productNameTemplate' },
+        { field: 'materials', header: this.$t('view.sale.productionOrder.colMaterials'), minWidth: '180px', sortable: false, template: 'materialsTemplate' },
+        { field: 'quantity', header: this.$t('view.sale.productionOrder.colQuantity'), minWidth: '100px', sortable: false, template: 'quantityTemplate' },
+        { field: 'estimatedProductionDays', header: this.$t('view.sale.productionOrder.colProductionDays'), minWidth: '120px', sortable: false, template: 'estimatedProductionDaysTemplate' },
+        { field: 'unitPrice', header: this.$t('view.sale.productionOrder.colUnitPrice'), minWidth: '120px', sortable: false, template: 'unitPriceTemplate' },
+        { field: 'totalValue', header: this.$t('view.sale.productionOrder.colTotalValue'), minWidth: '120px', sortable: false, template: 'totalValueTemplate' }
       ]
     },
 
@@ -549,15 +556,15 @@ export default {
       const errors = []
 
       if (this.selectedItemsCount === 0) {
-        errors.push('กรุณาเลือกรายการสินค้าที่ต้องผลิตอย่างน้อย 1 รายการ')
+        errors.push(this.$t('view.sale.productionOrder.validation.selectItems'))
       }
 
       if (!this.formProductionOrder.requiredDate) {
-        errors.push('กรุณาระบุวันที่ต้องการใช้สินค้า')
+        errors.push(this.$t('view.sale.productionOrder.validation.requiredDate'))
       }
 
       if (!this.formProductionOrder.workshop) {
-        errors.push('กรุณาเลือกหน่วยผลิต')
+        errors.push(this.$t('view.sale.productionOrder.validation.productionUnit'))
       }
 
       return errors
@@ -601,7 +608,10 @@ export default {
         try {
           items = JSON.parse(query.items)
         } catch {
-          error('ข้อมูลจากใบสั่งขายไม่ถูกต้อง', 'โหลดข้อมูลไม่สำเร็จ')
+          error(
+            this.$t('view.sale.productionOrder.error.loadFail'),
+            this.$t('view.sale.productionOrder.error.loadFailTitle')
+          )
           return
         }
 
@@ -613,7 +623,10 @@ export default {
         }
 
         this.loadSaleOrderData(saleOrderData)
-        success(`โหลดข้อมูลจากใบสั่งขาย ${query.saleOrderNumber} เรียบร้อย`, 'โหลดข้อมูลสำเร็จ')
+        success(
+          this.$t('view.sale.productionOrder.success.loadSO', { soNumber: query.saleOrderNumber }),
+          this.$t('view.sale.productionOrder.success.loadSOTitle')
+        )
       }
     },
 
@@ -654,12 +667,18 @@ export default {
         items: this.selectedItems
       }
       this.$emit('save', productionOrderData)
-      success('บันทึกร่างเรียบร้อยแล้ว', 'บันทึกสำเร็จ')
+      success(
+        this.$t('view.sale.productionOrder.success.saveDraft'),
+        this.$t('view.sale.productionOrder.success.saveDraftTitle')
+      )
     },
 
     confirmProduction() {
       if (this.hasValidationErrors) {
-        error('กรุณาแก้ไขข้อผิดพลาดก่อนยืนยันใบสั่งผลิต', 'ไม่สามารถยืนยันได้')
+        error(
+          this.$t('view.sale.productionOrder.error.cannotConfirm'),
+          this.$t('view.sale.productionOrder.error.cannotConfirmTitle')
+        )
         return
       }
 
@@ -669,19 +688,28 @@ export default {
         items: this.selectedItems
       }
       this.$emit('confirm', productionOrderData)
-      success('ยืนยันใบสั่งผลิตเรียบร้อยแล้ว', 'ยืนยันสำเร็จ')
+      success(
+        this.$t('view.sale.productionOrder.success.confirm'),
+        this.$t('view.sale.productionOrder.success.confirmTitle')
+      )
     },
 
     generatePDF() {
-      // TODO: Implement PDF generation
-      success('สร้าง PDF เรียบร้อยแล้ว', 'สร้างเอกสารสำเร็จ')
+      success(
+        this.$t('view.sale.productionOrder.success.createPdf'),
+        this.$t('view.sale.productionOrder.success.createPdfTitle')
+      )
     },
 
     cancelOrder() {
-      confirmSubmit('คุณต้องการยกเลิกการสร้างใบสั่งผลิตนี้หรือไม่?', 'ยืนยันการยกเลิก', () => {
-        this.clearForm()
-        this.$emit('cancel')
-      })
+      confirmSubmit(
+        this.$t('view.sale.productionOrder.confirm.cancel'),
+        this.$t('view.sale.productionOrder.confirm.cancelTitle'),
+        () => {
+          this.clearForm()
+          this.$emit('cancel')
+        }
+      )
     },
 
     clearForm() {

@@ -2,7 +2,7 @@
   <div class="dashboard-scrap-weight">
     <div class="scrap-weight-card">
       <div class="scrap-weight-header">
-        <h5>น้ำหนักขี้เบ้าทองรายเดือน ({{ new Date().getFullYear() }})</h5>
+        <h5>{{ $t('view.production.dashboard.scrapWeightTitle', { year: new Date().getFullYear() }) }}</h5>
       </div>
       <div class="scrap-weight-body">
         <!-- Loading State -->
@@ -10,7 +10,7 @@
           <div class="loading-spinner">
             <i class="bi bi-arrow-repeat"></i>
           </div>
-          <p>กำลังโหลดข้อมูล...</p>
+          <p>{{ $t('view.production.dashboard.loading') }}</p>
         </div>
 
         <!-- Content -->
@@ -24,7 +24,7 @@
                 @click="activeDataset = 'melt'"
               >
                 <i class="bi bi-fire"></i>
-                ขี้เบ้าหลอม
+                {{ $t('view.production.dashboard.scrapMelt') }}
               </button>
               <button
                 class="tab-button"
@@ -32,7 +32,7 @@
                 @click="activeDataset = 'cast'"
               >
                 <i class="bi bi-gear"></i>
-                ขี้เบ้าหล่อ
+                {{ $t('view.production.dashboard.scrapCast') }}
               </button>
             </div>
 
@@ -44,7 +44,7 @@
                 @click="viewMode = 'monthly'"
               >
                 <i class="bi bi-calendar-month"></i>
-                รายเดือน
+                {{ $t('view.production.dashboard.monthly') }}
               </button>
               <button
                 class="toggle-button ml-2"
@@ -52,7 +52,7 @@
                 @click="viewMode = 'yearly'"
               >
                 <i class="bi bi-calendar"></i>
-                รายปี
+                {{ $t('view.production.dashboard.yearly') }}
               </button>
             </div>
 
@@ -62,11 +62,11 @@
                 class="export-button"
                 @click="exportToExcel"
                 :disabled="isExporting"
-                title="ส่งออกข้อมูล Excel"
+                :title="$t('view.production.dashboard.exportExcel')"
               >
                 <i class="bi bi-file-earmark-excel" v-if="!isExporting"></i>
                 <i class="bi bi-arrow-clockwise spin" v-else></i>
-                <span class="ml-2">{{ isExporting ? 'กำลังส่งออก...' : 'Excel' }}</span>
+                <span class="ml-2">{{ isExporting ? $t('view.production.dashboard.exporting') : $t('view.production.dashboard.excel') }}</span>
               </button>
             </div>
           </div>
@@ -89,7 +89,7 @@
                   <div class="month-content">
                     <div class="total-weight">
                       <span class="weight-value">{{ formatWeight(monthData.totalWeight) }}</span>
-                      <small class="weight-unit"> กรัม</small>
+                      <small class="weight-unit"> {{ $t('view.production.dashboard.weightUnit') }}</small>
                     </div>
 
                     <!-- Gold Categories Details -->
@@ -106,14 +106,14 @@
                           <span class="gold-type">{{ category.goldName }}</span>
                           <span class="gold-size">{{ category.goldSizeName }}</span>
                         </div>
-                        <div class="category-weight">{{ formatWeight(category.weight) }} ก.</div>
+                        <div class="category-weight">{{ formatWeight(category.weight) }} {{ $t('view.production.dashboard.weightUnitShort') }}</div>
                       </div>
                     </div>
 
                     <!-- No Data -->
                     <div v-else class="no-data">
                       <i class="bi bi-dash-circle"></i>
-                      <span>ไม่มีข้อมูล</span>
+                      <span>{{ $t('view.production.dashboard.noData') }}</span>
                     </div>
                   </div>
                 </div>
@@ -152,7 +152,7 @@
                       <span class="total-value">{{
                         formatWeight(category.totalYearlyWeight)
                       }}</span>
-                      <small class="total-unit">กรัม/ปี</small>
+                      <small class="total-unit">{{ $t('view.production.dashboard.weightPerYear') }}</small>
                     </div>
 
                     <div class="category-stats">
@@ -172,7 +172,7 @@
 
                       <div class="stat-item">
                         <i class="bi bi-percent"></i>
-                        <span class="stat-label">ของยอดรวม</span>
+                        <span class="stat-label">{{ $t('view.production.dashboard.ofTotal') }}</span>
                         <span class="stat-value"
                           >{{ calculatePercentage(category.totalYearlyWeight) }}%</span
                         >
@@ -190,9 +190,7 @@
             >
               <i class="bi bi-bar-chart"></i>
               <p>
-                ไม่มีข้อมูลสรุปรายปีสำหรับ{{
-                  activeDataset === 'melt' ? 'ขี้เบ้าหลอม' : 'ขี้เบ้าหล่อ'
-                }}
+                {{ $t('view.production.dashboard.noData') }}
               </p>
             </div>
           </div>
@@ -206,8 +204,8 @@
                     <i class="bi bi-fire"></i>
                   </div>
                   <div class="stat-info">
-                    <h4>{{ formatWeight(totalMeltWeight) }} กรัม</h4>
-                    <p>ขี้เบ้าหลอมรวมทั้งปี</p>
+                    <h4>{{ formatWeight(totalMeltWeight) }} {{ $t('view.production.dashboard.weightUnit') }}</h4>
+                    <p>{{ $t('view.production.dashboard.scrapMelt') }}</p>
                   </div>
                 </div>
               </div>
@@ -217,8 +215,8 @@
                     <i class="bi bi-gear"></i>
                   </div>
                   <div class="stat-info">
-                    <h4>{{ formatWeight(totalCastWeight) }} กรัม</h4>
-                    <p>ขี้เบ้าหล่อรวมทั้งปี</p>
+                    <h4>{{ formatWeight(totalCastWeight) }} {{ $t('view.production.dashboard.weightUnit') }}</h4>
+                    <p>{{ $t('view.production.dashboard.scrapCast') }}</p>
                   </div>
                 </div>
               </div>
@@ -229,7 +227,7 @@
         <!-- Empty State -->
         <div v-else class="scrap-weight-empty">
           <i class="bi bi-bar-chart"></i>
-          <p>ไม่มีข้อมูลน้ำหนักขี้เบ้าทอง</p>
+          <p>{{ $t('view.production.dashboard.noData') }}</p>
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@
         <div class="mb-3">
           <div class="title-text-lg-bg p-2 mb-3">
             <i class="bi bi-receipt mr-2"></i>
-            <span>ข้อมูลใบสั่งขาย : </span>
+            <span>{{ $t('view.sale.saleOrder.saleOrderInfo') }} : </span>
             <span>{{ saleOrderData.number }}</span>
           </div>
 
@@ -72,11 +72,11 @@
                 <div class="d-flex align-items-start ml-3">
                   <i class="bi bi-lightbulb-fill text-warning mr-2"></i>
                   <div>
-                    <strong class="title-text ml-1">คำแนะนำการใช้งาน:</strong>
+                    <strong class="title-text ml-1">{{ $t('view.sale.saleOrder.usageHint') }}:</strong>
                     <ul class="mb-0 mt-1">
-                      <li>เลือกสินค้าที่พร้อมขายและมีในสต็อก</li>
-                      <li>สินค้าที่ยืนยันแล้วจะสามารถออก Invoice ได้</li>
-                      <li>ตรวจสอบข้อมูลและราคาให้ถูกต้องก่อนยืนยัน</li>
+                      <li>{{ $t('view.sale.saleOrder.hint1') }}</li>
+                      <li>{{ $t('view.sale.saleOrder.hint2') }}</li>
+                      <li>{{ $t('view.sale.saleOrder.hint3') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -97,7 +97,7 @@
                       class="mr-2"
                     />
                     <span class="title-text"
-                      >เลือกทั้งหมด ({{ selectableItems.length }} รายการ)</span
+                      >{{ $t('view.sale.saleOrder.selectAll') }} ({{ selectableItems.length }} {{ $t('view.sale.saleOrder.itemUnit') }})</span
                     >
                   </label>
                 </div>
@@ -130,7 +130,7 @@
                 :scrollable="true"
                 responsiveLayout="scroll"
               >
-                <Column :exportable="false" style="width: 50px" header="เลือก">
+                <Column :exportable="false" style="width: 50px" :header="$t('view.sale.saleOrder.selectCol')">
                   <template #body="slotProps">
                     <div class="text-center">
                       <CheckboxGeneric
@@ -143,27 +143,27 @@
                   </template>
                 </Column>
 
-                <Column field="stockNumber" header="รหัสสต็อก" style="width: 120px">
+                <Column field="stockNumber" :header="$t('view.sale.saleOrder.stockCode')" style="width: 120px">
                   <template #body="slotProps">
                     <span class="text-main">{{ slotProps.data.stockNumber }}</span>
                   </template>
                 </Column>
-                <Column field="productNumber" header="รหัสสินค้า" style="width: 120px">
+                <Column field="productNumber" :header="$t('view.sale.saleOrder.productCode')" style="width: 120px">
                   <template #body="slotProps">
                     <span class="text-main">{{ slotProps.data.productNumber }}</span>
                   </template>
                 </Column>
-                <Column field="description" header="รายละเอียดสินค้า" style="min-width: 200px">
+                <Column field="description" :header="$t('view.sale.saleOrder.productDetail')" style="min-width: 200px">
                   <template #body="slotProps">
                     <div>
-                      <div>{{ slotProps.data.description || 'ไม่มีรายละเอียด' }}</div>
+                      <div>{{ slotProps.data.description || $t('view.sale.saleOrder.noDetail') }}</div>
                       <small class="text-muted" v-if="slotProps.data.category">{{
                         slotProps.data.category
                       }}</small>
                     </div>
                   </template>
                 </Column>
-                <Column field="isConfirm" header="สถานะ" style="width: 100px">
+                <Column field="isConfirm" :header="$t('common.field.status')" style="width: 100px">
                   <template #body="slotProps">
                     <div class="text-center">
                       <span
@@ -179,7 +179,7 @@
                               : 'bi bi-clock-fill mr-1'
                           "
                         ></i>
-                        {{ slotProps.data.isConfirm ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
+                        {{ slotProps.data.isConfirm ? $t('view.sale.saleOrder.statusConfirmed') : $t('view.sale.saleOrder.statusPending') }}
                       </span>
                       <div
                         v-if="slotProps.data.isConfirm && slotProps.data.confirmedDate"
@@ -193,7 +193,7 @@
                 </Column>
 
                 <!-- Image Column -->
-                <Column header="รูปภาพ" style="width: 80px">
+                <Column :header="$t('view.sale.saleOrder.image')" style="width: 80px">
                   <template #body="slotProps">
                     <div class="text-center">
                       <imagePreview
@@ -221,7 +221,7 @@
                   </template>
                 </Column>
 
-                <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="width: 140px">
+                <Column field="appraisalPrice" :header="$t('view.sale.saleOrder.appraisalPriceTHB')" style="width: 140px">
                   <template #body="slotProps">
                     <div class="text-right">
                       {{ formatCurrency(getAppraisalPrice(slotProps.data)) }}
@@ -229,7 +229,7 @@
                   </template>
                 </Column>
 
-                <Column field="discountPercent" header="ส่วนลด (%)" style="width: 100px">
+                <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="width: 100px">
                   <template #body="slotProps">
                     <div class="text-right">
                       {{ formatCurrency(slotProps.data.discountPercent || 0) }}%
@@ -237,7 +237,7 @@
                   </template>
                 </Column>
 
-                <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="width: 140px">
+                <Column field="discountPrice" :header="$t('view.sale.saleOrder.discountPriceTHB')" style="width: 140px">
                   <template #body="slotProps">
                     <div class="text-right">
                       {{ formatCurrency(getDiscountedPrice(slotProps.data)) }}
@@ -246,7 +246,7 @@
                 </Column>
 
                 <Column
-                  :header="'ราคาแปลง (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'"
                   style="width: 140px"
                 >
                   <template #body="slotProps">
@@ -256,14 +256,14 @@
                   </template>
                 </Column>
 
-                <Column field="qty" header="จำนวน" style="width: 80px">
+                <Column field="qty" :header="$t('common.field.quantity')" style="width: 80px">
                   <template #body="slotProps">
                     <div class="text-center">{{ slotProps.data.qty }}</div>
                   </template>
                 </Column>
 
                 <Column
-                  :header="'รวมราคา (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'"
                   style="width: 140px"
                 >
                   <template #body="slotProps">
@@ -277,23 +277,23 @@
               <!-- Summary -->
               <div class="mt-3">
                 <div class="filter-container-search p-3">
-                  <div class="title-text-lg mb-3">สรุปข้อมูล</div>
+                  <div class="title-text-lg mb-3">{{ $t('view.sale.saleOrder.summaryTitle') }}</div>
 
                   <!-- Summary Sections using existing styles -->
                   <div class="row">
                     <div class="col-md-6">
                       <div class="summary-section">
-                        <h6>รายการสินค้า</h6>
+                        <h6>{{ $t('view.sale.saleOrder.itemList') }}</h6>
                         <div class="summary-item">
-                          <span>รายการที่เลือก:</span>
+                          <span>{{ $t('view.sale.saleOrder.selectedItems') }}:</span>
                           <span class="font-weight-bold text-primary"
-                            >{{ selectedItemsCount }} รายการ</span
+                            >{{ selectedItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</span
                           >
                         </div>
                         <div class="summary-item">
-                          <span>ยืนยันแล้ว:</span>
+                          <span>{{ $t('view.sale.saleOrder.statusConfirmed') }}:</span>
                           <span class="font-weight-bold text-success"
-                            >{{ confirmedItemsCount }} รายการ</span
+                            >{{ confirmedItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</span
                           >
                         </div>
                       </div>
@@ -301,15 +301,15 @@
 
                     <div class="col-md-6">
                       <div class="summary-section">
-                        <h6>ยอดเงิน</h6>
+                        <h6>{{ $t('view.sale.saleOrder.amountSection') }}</h6>
                         <div class="summary-item">
-                          <span>ยอดรวมที่เลือก:</span>
+                          <span>{{ $t('view.sale.saleOrder.selectedTotal') }}:</span>
                           <span class="font-weight-bold text-warning">{{
                             formatPriceWithCurrency(totalSelectedAmount)
                           }}</span>
                         </div>
                         <div class="summary-item border-top pt-2 mt-2">
-                          <span class="h6">ยอดรวมทั้งหมด:</span>
+                          <span class="h6">{{ $t('view.sale.saleOrder.grandTotal') }}:</span>
                           <span class="h6 font-weight-bold text-main">{{
                             formatPriceWithCurrency(grandTotalAmount)
                           }}</span>
@@ -333,13 +333,13 @@
               :disabled="selectedItemsCount === 0"
             >
               <i class="bi bi-check-square mr-1"></i>
-              ยืนยันการขาย
-              <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
+              {{ $t('view.sale.saleOrder.confirmSale') }}
+              <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }})</span>
             </button>
 
             <button class="btn btn-outline-main mr-2" type="button" @click="closeModal">
               <i class="bi bi-x-circle mr-1"></i>
-              ยกเลิก
+              {{ $t('common.btn.cancel') }}
             </button>
           </div>
         </div>
@@ -546,7 +546,7 @@ export default {
 
     async confirmSelectedItems() {
       if (this.selectedItemsCount === 0) {
-        warning('กรุณาเลือกสินค้าที่จะยืนยันอย่างน้อย 1 รายการ')
+        warning(this.$t('view.sale.saleOrder.validation.selectAtLeastOne'))
         return
       }
 
@@ -587,7 +587,7 @@ export default {
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         // Show success message
-        success('ยืนยันการขายสำเร็จ', `ยืนยันสินค้า ${this.selectedItemsCount} รายการเรียบร้อย`)
+        success(this.$t('view.sale.saleOrder.success.confirmSale'), this.$t('view.sale.saleOrder.success.confirmSaleMessage', { count: this.selectedItemsCount }))
 
         this.closeModal()
       }

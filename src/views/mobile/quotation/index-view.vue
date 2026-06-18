@@ -5,12 +5,12 @@
       <div class="date-filter">
         <label class="date-label">
           <i class="bi bi-calendar3"></i>
-          วันที่ใบเสนอราคา
+          {{ $t('view.mobile.quotation.dateFilterLabel') }}
         </label>
         <CalendarGeneric
           v-model="filterDate"
           dateFormat="dd/mm/yy"
-          placeholder="เลือกวันที่"
+          :placeholder="$t('view.mobile.quotation.dateFilterPlaceholder')"
           :showIcon="true"
           :showButtonBar="true"
           @date-select="onDateChange"
@@ -36,7 +36,7 @@
           <div class="list-card-body">
             <div class="card-customer">
               <i class="bi bi-person"></i>
-              <span>{{ item.customerName || 'ไม่ระบุลูกค้า' }}</span>
+              <span>{{ item.customerName || $t('view.mobile.quotation.unknownCustomer') }}</span>
             </div>
             <div class="card-info-row">
               <div class="card-date">
@@ -53,14 +53,14 @@
           @click="loadMore"
         >
           <i class="bi bi-arrow-down-circle"></i>
-          โหลดเพิ่มเติม
+          {{ $t('view.mobile.quotation.loadMoreBtn') }}
         </button>
       </div>
 
       <div v-else class="mobile-empty-state">
         <i class="bi bi-file-earmark-text"></i>
-        <div class="empty-title">ไม่มีใบเสนอราคา</div>
-        <div class="empty-subtitle">ไม่พบใบเสนอราคาในวันที่เลือก</div>
+        <div class="empty-title">{{ $t('view.mobile.quotation.emptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.quotation.emptySubtitle') }}</div>
       </div>
     </div>
   </div>

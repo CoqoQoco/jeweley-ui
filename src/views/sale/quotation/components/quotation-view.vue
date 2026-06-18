@@ -19,12 +19,12 @@
               </div>
 
               <div>
-                <span class="title-text">เลขที่ใบเสนอราคา</span>
+                <span class="title-text">{{ $t('view.sale.quotation.quotationNumber') }}</span>
                 <InputWithButton
                   v-model="customer.invoiceNumber"
                   type="text"
                   :readonly="true"
-                  btnTitle="สร้างเลขที่ใบเสนอราคาใหม่"
+                  :btnTitle="$t('view.sale.quotation.generateNumber')"
                   @btn-click="generateQuotationNumber"
                 >
                   <template #btn-content>
@@ -37,7 +37,7 @@
             <!-- convert price -->
             <div class="form-col-container d-flex justify-content-end align-items-end">
               <div class="">
-                <span class="title-text">Currency</span>
+                <span class="title-text">{{ $t('view.sale.quotation.currency') }}</span>
                 <InputTextGeneric
                   v-model="customer.currencyUnit"
                   :trim="true"
@@ -45,7 +45,7 @@
                 />
               </div>
               <div class="">
-                <span class="title-text">Rate</span>
+                <span class="title-text">{{ $t('view.sale.quotation.rate') }}</span>
                 <InputTextGeneric
                   v-model.number="customer.currencyMultiplier"
                   type="number"
@@ -55,7 +55,7 @@
                 />
               </div>
               <div class="">
-                <span class="title-text">Markup</span>
+                <span class="title-text">{{ $t('view.sale.quotation.markup') }}</span>
                 <InputTextGeneric
                   v-model.number="customer.markup"
                   type="number"
@@ -65,7 +65,7 @@
                 />
               </div>
               <div class="">
-                <span class="title-text">Discount (%)</span>
+                <span class="title-text">{{ $t('view.sale.quotation.discountPercent') }}</span>
                 <InputWithButton
                   v-model.number="customer.discountPercent"
                   type="number"
@@ -73,7 +73,7 @@
                   min="0"
                   max="100"
                   step="any"
-                  btnTitle="กำหนดส่วนลดให้ทุกรายการ"
+                  :btnTitle="$t('view.sale.quotation.setDiscount')"
                   @btn-click="applyGlobalDiscount"
                 >
                    <template #btn-content>
@@ -82,14 +82,14 @@
                 </InputWithButton>
               </div>
               <div class="">
-                <span class="title-text">Gold (US$/gms)</span>
+                <span class="title-text">{{ $t('view.sale.quotation.goldPerGms') }}</span>
                 <InputWithButton
                   :modelValue="goldPerGramDisplay"
                   type="text"
                   width="120px"
                   :readonly="true"
                   btnClass="btn btn-main btn-sm"
-                  btnTitle="คำนวณราคาทอง"
+                  :btnTitle="$t('view.sale.quotation.calcGold')"
                   @btn-click="isShow.goldCalculator = true"
                 >
                   <template #btn-content>
@@ -98,7 +98,7 @@
                 </InputWithButton>
               </div>
               <div class="">
-                <span class="title-text">Gold (US$/Oz.)</span>
+                <span class="title-text">{{ $t('view.sale.quotation.goldPerOz') }}</span>
                 <InputTextGeneric
                   :modelValue="goldPerOzDisplay"
                   :readonly="true"
@@ -111,35 +111,35 @@
           <!-- Customer Details Section -->
           <div class="customer-details-section mt-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="title-text-lg">ข้อมูลลูกค้า</span>
+              <span class="title-text-lg">{{ $t('view.sale.quotation.customerSection') }}</span>
               <div>
                 <button
                   class="btn btn-sm btn-main mr-2"
                   type="button"
                   @click="onSearchCustomer"
-                  title="ค้นหาลูกค้า"
+                  :title="$t('view.sale.quotation.searchCustomer')"
                 >
                   <i class="bi bi-search mr-1"></i>
-                  <span>ค้นหาลูกค้า</span>
+                  <span>{{ $t('view.sale.quotation.searchCustomer') }}</span>
                 </button>
                 <button
                   class="btn btn-sm btn-green"
                   type="button"
                   @click="onCreateCustomer"
-                  title="เพิ่มลูกค้าใหม่"
+                  :title="$t('view.sale.quotation.addCustomer')"
                 >
                   <i class="bi bi-person-plus mr-1"></i>
-                  <span>เพิ่มลูกค้าใหม่</span>
+                  <span>{{ $t('view.sale.quotation.addCustomer') }}</span>
                 </button>
                 <button
                   v-if="customer.customerCode"
                   class="btn btn-sm btn-outline-main ml-2"
                   type="button"
                   @click="onEditCustomer"
-                  title="แก้ไขลูกค้า"
+                  :title="$t('view.sale.quotation.editCustomer')"
                 >
                   <i class="bi bi-pencil mr-1"></i>
-                  <span>แก้ไข</span>
+                  <span>{{ $t('common.btn.edit') }}</span>
                 </button>
               </div>
             </div>
@@ -147,25 +147,25 @@
             <div class="customer-info-display">
               <div class="form-col-container">
                 <div>
-                  <span class="title-text">ชื่อลูกค้า</span>
+                  <span class="title-text">{{ $t('view.sale.quotation.customerName') }}</span>
                   <div class="customer-display-field">
                     {{ customer.name || '-' }}
                   </div>
                 </div>
                 <div>
-                  <span class="title-text">ที่อยู่</span>
+                  <span class="title-text">{{ $t('view.sale.quotation.address') }}</span>
                   <div class="customer-display-field">
                     {{ customer.address || '-' }}
                   </div>
                 </div>
                 <div>
-                  <span class="title-text">เบอร์โทร</span>
+                  <span class="title-text">{{ $t('common.field.phone') }}</span>
                   <div class="customer-display-field">
                     {{ customer.tel || '-' }}
                   </div>
                 </div>
                 <div>
-                  <span class="title-text">อีเมล</span>
+                  <span class="title-text">{{ $t('common.field.email') }}</span>
                   <div class="customer-display-field">
                     {{ customer.email || '-' }}
                   </div>
@@ -191,7 +191,7 @@
         <div class="d-flex align-items-center gap-2">
           <button class="btn btn-sm btn-main" type="button" @click="onOpenCostVersionPicker">
             <i class="bi bi-clock-history mr-1"></i>
-            <span>ดึงจากรายการตีราคา</span>
+            <span>{{ $t('view.sale.quotation.pullFromAppraisal') }}</span>
           </button>
         </div>
       </div>
@@ -210,20 +210,20 @@
             <Row>
               <Column header="" :colspan="2" />
               <Column header="" />
-              <Column header="เลขที่ผลิต" />
-              <Column header="รหัสสินค้า" />
-              <Column header="รายละเอียด" />
-              <Column header="Gold (gms)" />
-              <Column header="Diamond (cts)" />
-              <Column header="Stone (cts)" />
-              <Column header="ราคาขาย  (THB)" />
-              <Column header="ราคาประเมิน (THB)" />
-              <Column header="ส่วนลด" />
-              <Column header="ราคาส่วนลด (THB)" />
-              <Column header="แปลงเรท" />
-              <Column :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '" />
-              <Column header="จำนวน" />
-              <Column :header="'รวมราคา (' + (customer.currencyUnit || '') + ') '" />
+              <Column :header="$t('view.sale.quotation.stockNumber')" />
+              <Column :header="$t('view.sale.quotation.productCode')" />
+              <Column :header="$t('view.sale.quotation.descriptionCol')" />
+              <Column :header="$t('view.sale.quotation.goldWeight')" />
+              <Column :header="$t('view.sale.quotation.diamondWeight')" />
+              <Column :header="$t('view.sale.quotation.stoneWeight')" />
+              <Column :header="$t('view.sale.quotation.salePriceTHB')" />
+              <Column :header="$t('view.sale.quotation.appraisalPriceTHB')" />
+              <Column :header="$t('view.sale.quotation.discount')" />
+              <Column :header="$t('view.sale.quotation.discountPriceTHB')" />
+              <Column :header="$t('view.sale.quotation.convertedRate')" />
+              <Column :header="$t('view.sale.quotation.convertedPrice') + ' (' + (customer.currencyUnit || '') + ') '" />
+              <Column :header="$t('view.sale.quotation.quantity')" />
+              <Column :header="$t('view.sale.quotation.totalPrice') + ' (' + (customer.currencyUnit || '') + ') '" />
             </Row>
           </ColumnGroup>
 
@@ -239,7 +239,7 @@
                 <button
                   class="btn btn-sm btn-red"
                   type="button"
-                  title="ลบ"
+                  :title="$t('common.btn.delete')"
                   @click="delItem(slotProps.index)"
                 >
                   <span class="bi bi-trash"></span>
@@ -247,7 +247,7 @@
                 <button
                   class="btn btn-sm btn-main ml-2"
                   type="button"
-                  title="แก้ไข"
+                  :title="$t('common.btn.edit')"
                   @click="onEditStock(slotProps.data, slotProps.index)"
                 >
                   <span class="bi bi-brush"></span>
@@ -255,7 +255,7 @@
                 <button
                   class="btn btn-sm btn-outline-dark ml-2"
                   type="button"
-                  title="คัดลอก"
+                  :title="$t('common.btn.copy')"
                   @click="copyItem(slotProps.data)"
                 >
                   <span class="bi bi-files"></span>
@@ -271,7 +271,7 @@
                 <div
                   v-if="slotProps.data._copyId"
                   class="copy-img-wrap"
-                  title="คลิกเพื่อเพิ่ม/เปลี่ยนรูป (ใช้สำหรับ PDF เท่านั้น ไม่บันทึก)"
+                  :title="$t('view.sale.quotation.addImageTitle')"
                   @click="onUploadCopyImage(slotProps.data)"
                 >
                   <img
@@ -296,7 +296,7 @@
             </template>
           </column>
 
-          <column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+          <column field="stockNumber" :header="$t('view.sale.quotation.stockNumber')" style="min-width: 150px">
             <template #body="slotProps">
               <span>{{
                 `${
@@ -307,7 +307,7 @@
               }}</span>
             </template>
           </column>
-          <column field="stockNumber" header="รหัสสินค้า" style="min-width: 150px">
+          <column field="stockNumber" :header="$t('view.sale.quotation.productCode')" style="min-width: 150px">
             <template #body="slotProps">
               <div v-if="!slotProps.data.stockNumber">
                 <input
@@ -324,7 +324,7 @@
             </template>
           </column>
 
-          <column field="description" header="รายละเอียด" style="min-width: 200px">
+          <column field="description" :header="$t('view.sale.quotation.descriptionCol')" style="min-width: 200px">
             <template #body="slotProps">
               <input
                 v-model="slotProps.data.description"
@@ -395,7 +395,7 @@
             </template>
           </column>
 
-          <column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+          <column field="priceOrigin" :header="$t('view.sale.quotation.salePriceTHB')" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
                 <span>{{
@@ -405,7 +405,7 @@
             </template>
           </column>
 
-          <column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
+          <column field="appraisalPrice" :header="$t('view.sale.quotation.appraisalPriceTHB')" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
                 <input
@@ -421,7 +421,7 @@
             </template>
           </column>
 
-          <column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+          <column field="discountPercent" :header="$t('view.sale.quotation.discount') + ' (%)'" style="min-width: 100px">
             <template #body="slotProps">
               <div class="qty-container">
                 <input
@@ -438,7 +438,7 @@
             </template>
           </column>
 
-          <column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+          <column field="discountPrice" :header="$t('view.sale.quotation.discountPriceTHB')" style="min-width: 150px">
             <template #body="slotProps">
               <div class="qty-container">
                 <!-- <input
@@ -464,7 +464,7 @@
             </template>
           </column>
 
-          <column field="currencyMultiplier" header="แปลงเรท" style="min-width: 100px">
+          <column field="currencyMultiplier" :header="$t('view.sale.quotation.convertedRate')" style="min-width: 100px">
             <template #body>
               <div class="qty-container">
                 <span>{{ customer.currencyMultiplier }}</span>
@@ -474,7 +474,7 @@
 
           <column
             field="priceAfterMultiply"
-            :header="'ราคาแปลง (' + (customer.currencyUnit || '') + ') '"
+            :header="$t('view.sale.quotation.convertedPrice') + ' (' + (customer.currencyUnit || '') + ') '"
             style="min-width: 150px"
           >
             <template #body="slotProps">
@@ -490,7 +490,7 @@
             </template>
           </column>
 
-          <column field="qty" header="จำนวน" style="width: 80px">
+          <column field="qty" :header="$t('view.sale.quotation.quantity')" style="width: 80px">
             <template #body="slotProps">
               <div class="qty-container">
                 <input
@@ -507,7 +507,7 @@
           </column>
           <column
             field="total"
-            :header="'รวมราคา (' + (customer.currencyUnit || '') + ') '"
+            :header="$t('view.sale.quotation.totalPrice') + ' (' + (customer.currencyUnit || '') + ') '"
             style="min-width: 150px"
           >
             <template #body="slotProps">
@@ -530,16 +530,16 @@
               <column :colspan="5">
                 <template #footer>
                   <div class="text-left type-container">
-                    <span class="mr-2">Net Weight Of Merchandise</span>
+                    <span class="mr-2">{{ $t('view.sale.quotation.netWeightMerchandise') }}</span>
                     <span class="mr-2">{{ sumNetWeight }}</span>
-                    <span>gms.</span>
+                    <span>{{ $t('view.sale.quotation.unitGrams') }}</span>
                   </div>
                 </template>
               </column>
               <column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>รวม</span>
+                    <span>{{ $t('view.sale.quotation.total') }}</span>
                   </div>
                 </template>
               </column>
@@ -605,7 +605,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ส่วนลดพิเศษ:</span>
+                    <span>{{ $t('view.sale.quotation.specialDiscount') }}:</span>
                   </div>
                 </template>
               </column>
@@ -629,7 +629,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ส่วนเพิ่มพิเศษ:</span>
+                    <span>{{ $t('view.sale.quotation.specialSurcharge') }}:</span>
                   </div>
                 </template>
               </column>
@@ -653,7 +653,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span class="font-weight-bold">ยอดรวมหลังปรับ:</span>
+                    <span class="font-weight-bold">{{ $t('view.sale.quotation.adjustedTotal') }}:</span>
                   </div>
                 </template>
               </column>
@@ -670,7 +670,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>Freight & Insurance</span>
+                    <span>{{ $t('view.sale.quotation.freightInsurance') }}</span>
                   </div>
                 </template>
               </column>
@@ -696,7 +696,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                    <span class="font-weight-bold">{{ $t('view.sale.quotation.beforeVatTotal') }}:</span>
                   </div>
                 </template>
               </column>
@@ -713,7 +713,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container d-flex align-items-center justify-content-end">
-                    <span class="mr-2 mt-1">VAT (%) :</span>
+                    <span class="mr-2 mt-1">{{ $t('view.sale.quotation.vatPercentLabel') }}</span>
                     <input
                       v-model.number="customer.vatPercent"
                       type="number"
@@ -740,7 +740,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ราคารวม (ก่อนปัด)</span>
+                    <span>{{ $t('view.sale.quotation.preTotalBeforeRound') }}</span>
                   </div>
                 </template>
               </column>
@@ -757,7 +757,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ปัดเศษ</span>
+                    <span>{{ $t('view.sale.quotation.rounding') }}</span>
                   </div>
                 </template>
               </column>
@@ -774,7 +774,7 @@
               <column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span class="font-weight-bold">ยอดที่ต้องชำระ</span>
+                    <span class="font-weight-bold">{{ $t('view.sale.quotation.payableTotal') }}</span>
                   </div>
                 </template>
               </column>
@@ -797,22 +797,22 @@
             <div class="action-btn-group">
               <button class="btn btn-sm btn-green" type="button" @click="printInvoice()">
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
-                <span>Quotation</span>
+                <span>{{ $t('view.sale.quotation.quotationBtn') }}</span>
               </button>
               <button class="btn btn-sm btn-outline-main" type="button" @click="previewInvoice()">
                 <i class="bi bi-eye mr-1"></i>
-                <span>Preview</span>
+                <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
               </button>
               <button class="btn btn-sm btn-green" type="button" @click="printBreakdown()">
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
-                <span>Breakdown</span>
+                <span>{{ $t('view.sale.quotation.breakdownBtn') }}</span>
               </button>
               <button class="btn btn-sm btn-outline-main" type="button" @click="previewBreakdown()">
                 <i class="bi bi-eye mr-1"></i>
-                <span>Preview</span>
+                <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
               </button>
               <div class="profit-group ml-2">
-                <span class="title-text mr-2 profit-label">Profit %</span>
+                <span class="title-text mr-2 profit-label">{{ $t('view.sale.quotation.profitPercent') }}</span>
                 <InputTextGeneric
                   v-model.number="customer.profitPercent"
                   type="number"
@@ -828,7 +828,7 @@
               <button class="btn btn-sm btn-green" type="button" @click="exportQuotationExcel"
                 :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
                 <i class="bi bi-file-earmark-excel mr-1"></i>
-                <span>Excel</span>
+                <span>{{ $t('view.sale.quotation.excelBtn') }}</span>
               </button>
             </div>
 
@@ -836,10 +836,10 @@
             <div class="action-btn-group">
               <div class="cif-toggle mr-2" @click="pdfShowCifLabel = !pdfShowCifLabel">
                 <input type="checkbox" v-model="pdfShowCifLabel" class="cif-checkbox" />
-                <span class="cif-label">C.I.F</span>
+                <span class="cif-label">{{ $t('view.sale.quotation.cifLabel') }}</span>
               </div>
               <button class="btn btn-sm btn-main" type="submit">
-                <span>Save Quotation</span>
+                <span>{{ $t('view.sale.quotation.saveQuotation') }}</span>
               </button>
             </div>
           </div>
@@ -904,7 +904,7 @@
       :documentDate="customer.quotationDate"
       numberLabel="Quotation Number"
       dateLabel="Quotation Date"
-      title="ยืนยันการ Export Excel (Quotation)"
+      :title="$t('view.sale.quotation.confirmExcelTitle')"
       @close-modal="showExcelModal = false"
       @confirm-export="handleConfirmExcelExport"
     />
@@ -1252,7 +1252,7 @@ export default {
     getGroupName(id) {
       switch (id) {
         case 'product':
-          return 'รายการสินค้า'
+          return this.$t('view.sale.quotation.itemsLabel')
 
         default:
           return 'Unknown'
@@ -1697,7 +1697,7 @@ export default {
     // Excel Export
     exportQuotationExcel() {
       if (!this.customer.quotationItems || this.customer.quotationItems.length === 0) {
-        warning('ไม่มีสินค้าสำหรับสร้าง Excel', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.quotation.validation.noItems'), this.$t('common.label.incompleteData'))
         return
       }
       this.showExcelModal = true
@@ -1730,7 +1730,7 @@ export default {
         { documentTitle: 'QUOTATION' }
       )
       await builder.downloadExcel()
-      success('Export Excel สำเร็จ', `Quotation: ${documentNumber}`)
+      success(this.$t('view.sale.quotation.success.exportExcel'), `Quotation: ${documentNumber}`)
     },
 
     getRowClass(data, index) {

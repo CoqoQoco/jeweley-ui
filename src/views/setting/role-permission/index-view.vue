@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="title-text mb-3">จัดการสิทธิ์การใช้งาน (Role - Permission)</div>
+    <div class="title-text mb-3">{{ $t('setting.rolePermission.title') }}</div>
 
     <div class="row">
       <!-- Role Selector -->
@@ -23,7 +23,7 @@
           @change="onPermissionChange"
         />
         <div v-else class="text-muted text-center py-5">
-          กรุณาเลือก Role ด้านซ้ายเพื่อจัดการสิทธิ์
+          {{ $t('setting.rolePermission.selectRolePrompt') }}
         </div>
       </div>
     </div>
@@ -77,7 +77,7 @@ export default {
         permissionIds: this.selectedPermissionIds
       })
 
-      success('บันทึกสิทธิ์สำเร็จ')
+      success(this.$t('setting.rolePermission.saveSuccess'))
 
       // reload data
       await this.loadData()

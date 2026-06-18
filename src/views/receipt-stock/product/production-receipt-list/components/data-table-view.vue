@@ -3,7 +3,7 @@
     <!-- @view="viewplan" -->
     <div class="filter-container-highlight">
       <span class="title-text-lg-bg">{{
-        `จำนวนแผนผลิตรอรับ ${receiptProductionStore.dataListPlan.total ?? `0`} รายการ`
+        $t('view.receiptStock.product.productionReceiptList.planCount', { count: receiptProductionStore.dataListPlan.total ?? 0 })
       }}</span>
     </div>
     <BaseDataTable
@@ -17,7 +17,7 @@
     >
       <template #actionTemplate="{ data }">
         <div class="vertical-center-container">
-          <button class="btn btn-sm btn-main" @click="receipt(data)" title="รับสินค้า">
+          <button class="btn btn-sm btn-main" @click="receipt(data)" :title="$t('view.receiptStock.product.productionReceiptList.btnReceive')">
             <span><i class="bi bi-receipt"></i></span>
           </button>
           <div class="ml-2 status-box" :class="getStatusSeverity(data.isRunning)">

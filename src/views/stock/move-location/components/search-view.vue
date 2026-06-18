@@ -11,7 +11,7 @@
               class="form-control bg-input"
               type="text"
               v-model.trim="form.stockNumber"
-              placeholder="STK-2024-001"
+              :placeholder="$t('view.stock.moveLocation.placeholder.newStockNumber')"
             />
           </div>
 
@@ -21,7 +21,7 @@
               class="form-control bg-input"
               type="text"
               v-model.trim="form.stockNumberOrigin"
-              placeholder="EX: A0211XX"
+              :placeholder="$t('view.stock.moveLocation.placeholder.oldStockNumber')"
             />
           </div>
 
@@ -31,7 +31,7 @@
               class="form-control bg-input"
               type="text"
               v-model.trim="form.productNumber"
-              placeholder="DK-B-001"
+              :placeholder="$t('view.stock.moveLocation.placeholder.productNumber')"
             />
           </div>
 
@@ -78,7 +78,7 @@
                   class="form-control bg-input"
                   type="text"
                   v-model.trim="form.mold"
-                  placeholder="EX: CN-2400XX"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.mold')"
                 />
               </div>
 
@@ -89,7 +89,7 @@
                   class="form-control bg-input"
                   type="text"
                   v-model.trim="form.productNameEn"
-                  placeholder="EX: Gold Ring #66"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.productNameEn')"
                 />
               </div>
 
@@ -100,7 +100,7 @@
                   class="form-control bg-input"
                   type="text"
                   v-model.trim="form.productNameTh"
-                  placeholder="EX: Gold Ring #66"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.productNameTh')"
                 />
               </div>
 
@@ -111,7 +111,7 @@
                   class="form-control bg-input"
                   type="text"
                   v-model.trim="form.woText"
-                  placeholder="EX: 6802017XX"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.wo')"
                 />
               </div>
 
@@ -122,7 +122,7 @@
                   class="form-control bg-input"
                   type="text"
                   v-model.trim="form.size"
-                  placeholder="EX: #66"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.size')"
                 />
               </div>
 
@@ -331,6 +331,9 @@ export default {
     masterGoldSize() {
       return this.masterStore.goldSize
     },
+    receiptTypeMaster() {
+      return [{ value: 'production', description: this.$t('view.stock.moveLocation.productionLabel') }]
+    },
     costDetailOptions() {
       return [
         { value: true, description: this.$t('view.stock.moveLocation.hasCost') },
@@ -349,10 +352,7 @@ export default {
   data() {
     return {
       form: { ...interfaceForm },
-      isShow: { dialog: false },
-      receiptTypeMaster: [
-        { value: 'production', description: 'Production' }
-      ]
+      isShow: { dialog: false }
     }
   },
 

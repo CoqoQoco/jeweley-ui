@@ -6,7 +6,7 @@
       <div class="info-card">
         <div class="card-header">
           <i class="bi bi-file-earmark-text"></i>
-          <span>ข้อมูล Invoice</span>
+          <span>{{ $t('view.mobile.sale.invoiceDetailTitle') }}</span>
           <span
             class="header-status-badge"
             :style="{ background: getStatusColor(invoiceData.statusName) }"
@@ -16,23 +16,23 @@
         </div>
         <div class="card-body">
           <div class="info-row">
-            <span class="info-label">เลขที่ Invoice:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceDetailNumber') }}</span>
             <span class="info-value highlight">{{ invoiceData.invoiceNumber }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">เลขที่ SO:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceDetailSoNumber') }}</span>
             <span class="info-value">{{ invoiceData.soNumber || '-' }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">วันที่สร้าง:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceDetailCreateDate') }}</span>
             <span class="info-value">{{ formatDate(invoiceData.createDate) }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">ผู้สร้าง:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceDetailCreateBy') }}</span>
             <span class="info-value">{{ invoiceData.createBy || '-' }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">สกุลเงิน:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceDetailCurrency') }}</span>
             <span class="info-value">{{ invoiceData.currencyUnit || 'THB' }} (Rate: {{ formatNumber(invoiceData.currencyRate) }})</span>
           </div>
         </div>
@@ -42,19 +42,19 @@
       <div v-if="hasCustomerInfo" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-person"></i>
-          <span>ข้อมูลลูกค้า</span>
+          {{ $t('view.mobile.sale.invoiceCustomerTitle') }}
         </div>
         <div class="card-body">
           <div v-if="invoiceData.customerName" class="info-row">
-            <span class="info-label">ชื่อลูกค้า:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceCustomerName') }}</span>
             <span class="info-value">{{ invoiceData.customerName }}</span>
           </div>
           <div v-if="invoiceData.customerTel" class="info-row">
-            <span class="info-label">เบอร์โทร:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceCustomerTel') }}</span>
             <span class="info-value">{{ invoiceData.customerTel }}</span>
           </div>
           <div v-if="invoiceData.customerAddress" class="info-row remark-row">
-            <span class="info-label">ที่อยู่:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceCustomerAddress') }}</span>
             <span class="info-value">{{ invoiceData.customerAddress }}</span>
           </div>
         </div>
@@ -65,7 +65,7 @@
         <div class="section-header">
           <h3 class="section-title">
             <i class="bi bi-box-seam"></i>
-            รายการสินค้า ({{ invoiceItems.length }})
+            {{ $t('view.mobile.sale.invoiceItemsTitle', { count: invoiceItems.length }) }}
           </h3>
         </div>
         <div class="items-container">
@@ -80,33 +80,33 @@
       <!-- Summary -->
       <div class="summary-card mobile-mt-2">
         <div class="summary-row">
-          <span class="summary-label">F.O.B Bangkok (Subtotal)</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceFobLabel') }}</span>
           <span class="summary-value">{{ formatCurrency(totalSelectedAmount) }} {{ displayCurrency }}</span>
         </div>
         <div v-if="invoiceData.specialDiscount" class="summary-row">
-          <span class="summary-label">Special Discount</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceSpecialDiscountLabel') }}</span>
           <span class="summary-value discount">-{{ formatCurrency(invoiceData.specialDiscount) }}</span>
         </div>
         <div v-if="invoiceData.specialAddition" class="summary-row">
-          <span class="summary-label">Special Addition</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceSpecialAdditionLabel') }}</span>
           <span class="summary-value addition">+{{ formatCurrency(invoiceData.specialAddition) }}</span>
         </div>
         <div v-if="invoiceData.freightAndInsurance" class="summary-row">
-          <span class="summary-label">Freight & Insurance</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceFreightLabel') }}</span>
           <span class="summary-value">{{ formatCurrency(invoiceData.freightAndInsurance) }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row">
-          <span class="summary-label">ยอดรวมก่อน VAT</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceBeforeVatLabel') }}</span>
           <span class="summary-value">{{ formatCurrency(totalBeforeVat) }}</span>
         </div>
         <div v-if="invoiceData.vatPercent" class="summary-row">
-          <span class="summary-label">VAT ({{ invoiceData.vatPercent }}%)</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceVatLabel', { percent: invoiceData.vatPercent }) }}</span>
           <span class="summary-value">{{ formatCurrency(vatAmount) }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row total">
-          <span class="summary-label">C.I.F (Grand Total)</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceGrandTotalLabel') }}</span>
           <span class="summary-value">{{ formatCurrency(grandTotal) }} {{ displayCurrency }}</span>
         </div>
       </div>
@@ -115,19 +115,19 @@
       <div v-if="invoiceData.paymentName" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-credit-card"></i>
-          <span>ข้อมูลการชำระเงิน</span>
+          {{ $t('view.mobile.sale.invoicePaymentTitle') }}
         </div>
         <div class="card-body">
           <div class="info-row">
-            <span class="info-label">วิธีชำระ:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoicePaymentMethodLabel') }}</span>
             <span class="info-value">{{ invoiceData.paymentName }}</span>
           </div>
           <div v-if="invoiceData.paymentDay" class="info-row">
-            <span class="info-label">ระยะเวลา:</span>
-            <span class="info-value">{{ invoiceData.paymentDay }} วัน</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoicePaymentDayLabel') }}</span>
+            <span class="info-value">{{ invoiceData.paymentDay }} {{ $t('view.mobile.sale.invoicePaymentDayUnit') }}</span>
           </div>
           <div v-if="invoiceData.deposit" class="info-row">
-            <span class="info-label">มัดจำ:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceDepositLabel') }}</span>
             <span class="info-value">{{ formatCurrency(invoiceData.deposit) }} {{ displayCurrency }}</span>
           </div>
         </div>
@@ -137,7 +137,7 @@
       <div v-if="invoiceData.remark" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-chat-left-text"></i>
-          <span>หมายเหตุ</span>
+          {{ $t('view.mobile.sale.invoiceRemarkTitle') }}
         </div>
         <div class="card-body">
           <div class="remark-text">{{ invoiceData.remark }}</div>
@@ -148,27 +148,19 @@
       <div v-if="showPrintForm" class="print-form-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-printer"></i>
-          <span>ตั้งค่าการพิมพ์</span>
+          {{ $t('view.mobile.sale.invoicePrintSettingsTitle') }}
         </div>
         <div class="card-body">
           <div class="print-note">
-            การเปลี่ยนแปลงมีผลเฉพาะเอกสารที่พิมพ์ ข้อมูลต้นฉบับไม่เปลี่ยน
+            {{ $t('view.mobile.sale.invoicePrintNote') }}
           </div>
           <div class="mobile-form-group">
-            <label class="form-label">Invoice Number</label>
-            <input
-              v-model="printInvoiceNumber"
-              type="text"
-              class="form-control"
-            />
+            <label class="form-label">{{ $t('view.mobile.sale.invoicePrintNumber') }}</label>
+            <InputTextGeneric v-model="printInvoiceNumber" />
           </div>
           <div class="mobile-form-group">
-            <label class="form-label">Invoice Date</label>
-            <input
-              v-model="printInvoiceDate"
-              type="date"
-              class="form-control"
-            />
+            <label class="form-label">{{ $t('view.mobile.sale.invoicePrintDate') }}</label>
+            <InputTextGeneric v-model="printInvoiceDate" type="date" />
           </div>
           <div class="print-form-actions">
             <button
@@ -177,11 +169,11 @@
               :disabled="exportingPDF"
             >
               <i class="bi" :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"></i>
-              {{ exportingPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์เอกสาร' }}
+              {{ exportingPDF ? $t('view.mobile.sale.invoiceGeneratingBtn') : $t('view.mobile.sale.invoicePrintBtn') }}
             </button>
             <button class="mobile-btn mobile-btn-outline" @click="showPrintForm = false">
               <i class="bi bi-x-circle"></i>
-              ยกเลิก
+              {{ $t('common.btn.cancel') }}
             </button>
           </div>
         </div>
@@ -195,7 +187,7 @@
           @click="openPrintForm"
         >
           <i class="bi bi-printer"></i>
-          พิมพ์ Invoice
+          {{ $t('view.mobile.sale.invoicePrintInvoiceBtn') }}
         </button>
         <button
           class="mobile-btn mobile-btn-danger"
@@ -203,11 +195,11 @@
           :disabled="cancelling"
         >
           <i class="bi" :class="cancelling ? 'bi-hourglass-split spin-icon' : 'bi-x-octagon'"></i>
-          {{ cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก Invoice + Confirm' }}
+          {{ cancelling ? $t('view.mobile.sale.invoiceCancellingBtn') : $t('view.mobile.sale.invoiceCancelBtn') }}
         </button>
         <button class="mobile-btn mobile-btn-outline" @click="$router.back()">
           <i class="bi bi-arrow-left"></i>
-          ย้อนกลับ
+          {{ $t('view.mobile.sale.invoiceBackBtn') }}
         </button>
       </div>
     </div>
@@ -216,11 +208,11 @@
     <div v-else class="mobile-container mobile-mt-2">
       <div class="mobile-empty-state">
         <i class="bi bi-exclamation-circle"></i>
-        <div class="empty-title">ไม่พบข้อมูล</div>
-        <div class="empty-subtitle">ไม่สามารถโหลดข้อมูล Invoice ได้</div>
+        <div class="empty-title">{{ $t('view.mobile.sale.invoiceEmptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.sale.invoiceEmptySubtitle') }}</div>
         <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="loadInvoiceData">
           <i class="bi bi-arrow-clockwise"></i>
-          ลองอีกครั้ง
+          {{ $t('view.mobile.sale.invoiceRetryBtn') }}
         </button>
       </div>
     </div>
@@ -231,15 +223,18 @@
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
-import { success, error, confirmSubmit } from '@/services/alert/sweetAlerts.js'
-import SoItemCard from './components/so-item-card.vue'
+import { success, error } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import dayjs from 'dayjs'
+import SoItemCard from './components/so-item-card.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'MobileInvoiceDetailView',
 
   components: {
-    SoItemCard
+    SoItemCard,
+    InputTextGeneric
   },
 
   setup() {
@@ -429,11 +424,11 @@ export default {
         }
 
         await invoicePdfService.generateInvoicePDF(pdfData, options)
-        success('สร้าง PDF สำเร็จ', 'Invoice PDF')
+        success(this.$t('view.mobile.sale.invoiceSuccessPdfMsg'), this.$t('view.mobile.sale.invoiceSuccessPdf'))
         this.showPrintForm = false
       } catch (err) {
         console.error('Error generating PDF:', err)
-        error(err.message || 'ไม่สามารถสร้าง PDF ได้', 'เกิดข้อผิดพลาด')
+        error(err.message || this.$t('view.mobile.sale.invoiceGeneratingBtn'), this.$t('view.mobile.sale.invoiceDetailTitle'))
       } finally {
         this.exportingPDF = false
       }
@@ -441,9 +436,9 @@ export default {
 
     // ==================== Cancel Invoice ====================
     handleCancelInvoice() {
-      confirmSubmit(
-        'ระบบจะยกเลิก Invoice และคืนสินค้ากลับสู่สถานะยังไม่ยืนยัน (Unconfirm)',
-        'ยืนยันการยกเลิก?',
+      confirmThenSubmit(
+        this.$t('view.mobile.sale.invoiceCancelConfirmMsg'),
+        this.$t('view.mobile.sale.invoiceCancelConfirmTitle'),
         async () => {
           this.cancelling = true
 
@@ -482,7 +477,7 @@ export default {
 
           // Step 3: Navigate — ใน success callback เพื่อให้ user กดตกลงก่อนค่อย navigate
           this.cancelling = false
-          success('ยกเลิก Invoice และคืนสินค้าสำเร็จ', 'สำเร็จ', () => {
+          success(this.$t('view.mobile.sale.invoiceCancelSuccessMsg'), this.$t('view.mobile.sale.invoiceCancelSuccessTitle'), () => {
             this.$router.push({
               name: 'mobile-sale-detail',
               params: { soNumber }

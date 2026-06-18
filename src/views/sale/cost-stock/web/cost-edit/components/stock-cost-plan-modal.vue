@@ -7,7 +7,7 @@
   >
     <template #title>
       <span class="title-text-lg px-3 pt-3 d-block">
-        <i class="bi bi-list-ul mr-2"></i>รายการแผนตีราคา
+        <i class="bi bi-list-ul mr-2"></i>{{ $t('view.sale.costStock.planList') }}
       </span>
     </template>
 
@@ -53,7 +53,7 @@
     <template #action>
       <button class="btn btn-sm btn-outline-main mr-2" @click="onClose">
         <i class="bi bi-x-circle mr-1"></i>
-        ปิด
+        {{ $t('common.btn.close') }}
       </button>
       <button
         class="btn btn-main btn-sm"
@@ -61,7 +61,7 @@
         :disabled="selectedPlan.length === 0"
       >
         <i class="bi bi-check-circle mr-1"></i>
-        เลือกแผนนี้
+        {{ $t('view.sale.costStock.selectPlan') }}
       </button>
     </template>
   </modal>
@@ -110,52 +110,57 @@ export default {
       sort: [],
       selectedPlan: [],
 
-      columns: [
+    }
+  },
+
+  computed: {
+    columns() {
+      return [
         {
           field: 'running',
-          header: 'เลขที่แผน',
+          header: this.$t('view.sale.costStock.planNo'),
           sortable: true,
           width: '150px'
         },
         {
           field: 'stockNumber',
-          header: 'เลขที่ผลิต',
+          header: this.$t('view.sale.costStock.stockNumber'),
           sortable: true,
           width: '150px'
         },
         {
           field: 'statusName',
-          header: 'สถานะ',
+          header: this.$t('common.field.status'),
           sortable: true,
           width: '120px'
         },
         {
           field: 'remark',
-          header: 'หมายเหตุ',
+          header: this.$t('common.field.remark'),
           sortable: false,
           width: '200px'
         },
         {
           field: 'createBy',
-          header: 'ผู้สร้าง',
+          header: this.$t('view.sale.costStock.createBy'),
           sortable: true,
           width: '120px'
         },
         {
           field: 'createDate',
-          header: 'วันที่สร้าง',
+          header: this.$t('view.sale.costStock.createDate'),
           sortable: true,
           width: '150px'
         },
         {
           field: 'updateBy',
-          header: 'ผู้แก้ไข',
+          header: this.$t('view.sale.costStock.updateBy'),
           sortable: true,
           width: '120px'
         },
         {
           field: 'updateDate',
-          header: 'วันที่แก้ไข',
+          header: this.$t('view.sale.costStock.updateDate'),
           sortable: true,
           width: '150px'
         }

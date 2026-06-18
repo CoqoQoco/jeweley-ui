@@ -1,12 +1,12 @@
 <template>
   <div class="mobile-notifications-view">
     <div class="mobile-container mobile-mt-2">
-      <h2 class="mobile-title">การแจ้งเตือน</h2>
+      <h2 class="mobile-title">{{ $t('view.mobile.notifications.pageTitle') }}</h2>
 
       <div class="mobile-empty-state mobile-mt-3">
         <i class="bi bi-bell"></i>
-        <div class="empty-title">ไม่มีการแจ้งเตือน</div>
-        <div class="empty-subtitle">Feature นี้จะพัฒนาในอนาคต</div>
+        <div class="empty-title">{{ $t('view.mobile.notifications.emptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.notifications.emptySubtitle') }}</div>
       </div>
     </div>
   </div>

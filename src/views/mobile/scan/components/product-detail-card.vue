@@ -14,7 +14,7 @@
       </div>
       <div v-else class="product-image-placeholder">
         <i class="bi bi-image"></i>
-        <span>ไม่มีรูปภาพ</span>
+        <span>{{ $t('view.mobile.scan.productNoImage') }}</span>
       </div>
     </div>
 
@@ -23,11 +23,11 @@
       <!-- Stock Numbers -->
       <div class="info-group">
         <div class="info-row">
-          <span class="info-label">เลขที่ผลิต (ใหม่):</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productNewCode') }}</span>
           <span class="info-value highlight">{{ product.stockNumber || '-' }}</span>
         </div>
         <div v-if="product.stockNumberOrigin" class="info-row">
-          <span class="info-label">เลขที่ผลิต (เก่า):</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productOldCode') }}</span>
           <span class="info-value">{{ product.stockNumberOrigin }}</span>
         </div>
       </div>
@@ -35,27 +35,27 @@
       <!-- Product Details -->
       <div class="info-group">
         <div class="info-row">
-          <span class="info-label">รหัสสินค้า:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productCode') }}</span>
           <span class="info-value">{{ product.productNumber || '-' }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">แม่พิมพ์:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productMold') }}</span>
           <span class="info-value">{{ product.mold || '-' }}</span>
         </div>
         <div v-if="product.productNameEn" class="info-row">
-          <span class="info-label">ชื่อสินค้า (EN):</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productNameEn') }}</span>
           <span class="info-value">{{ product.productNameEn }}</span>
         </div>
         <div v-if="product.productNameTh" class="info-row">
-          <span class="info-label">ชื่อสินค้า (TH):</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productNameTh') }}</span>
           <span class="info-value">{{ product.productNameTh }}</span>
         </div>
         <div v-if="product.productTypeName" class="info-row">
-          <span class="info-label">ประเภทสินค้า:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productType') }}</span>
           <span class="info-value">{{ product.productTypeName }}</span>
         </div>
         <div v-if="product.size" class="info-row">
-          <span class="info-label">ขนาด:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productSize') }}</span>
           <span class="info-value">{{ product.size }}</span>
         </div>
       </div>
@@ -63,15 +63,15 @@
       <!-- Production Info -->
       <div class="info-group">
         <div v-if="product.productionType" class="info-row">
-          <span class="info-label">สีของทอง/เงิน:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productMetalColor') }}</span>
           <span class="info-value">{{ product.productionType }}</span>
         </div>
         <div v-if="product.productionTypeSize" class="info-row">
-          <span class="info-label">ประเภททอง/เงิน:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productMetalType') }}</span>
           <span class="info-value">{{ product.productionTypeSize }}</span>
         </div>
         <div v-if="product.woText" class="info-row">
-          <span class="info-label">W.O.:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productWo') }}</span>
           <span class="info-value">{{ product.woText }}</span>
         </div>
       </div>
@@ -79,11 +79,11 @@
       <!-- Price & Location -->
       <div class="info-group">
         <div v-if="product.productPrice !== null && product.productPrice !== undefined" class="info-row">
-          <span class="info-label">ราคา:</span>
-          <span class="info-value price">{{ formatPrice(product.productPrice) }} บาท</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productPrice') }}</span>
+          <span class="info-value price">{{ formatPrice(product.productPrice) }} {{ $t('view.mobile.scan.productPriceUnit') }}</span>
         </div>
         <div v-if="product.location" class="info-row">
-          <span class="info-label">จัดเก็บ:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productLocation') }}</span>
           <span class="info-value">{{ product.location }}</span>
         </div>
       </div>
@@ -92,25 +92,25 @@
       <div v-if="hasMaterials" class="info-group materials-section">
         <div class="materials-header">
           <i class="bi bi-gem"></i>
-          <span>วัตถุดิบ</span>
+          <span>{{ $t('view.mobile.scan.productMaterialTitle') }}</span>
         </div>
 
         <!-- Gold -->
         <div v-if="product.goldTotal > 0" class="material-row">
-          <span class="material-label">ทอง:</span>
-          <span class="material-value">{{ formatWeight(product.goldTotal) }} กรัม</span>
+          <span class="material-label">{{ $t('view.mobile.scan.productGold') }}</span>
+          <span class="material-value">{{ formatWeight(product.goldTotal) }} {{ $t('view.mobile.scan.productGoldUnit') }}</span>
         </div>
 
         <!-- Diamond -->
         <div v-if="product.diamondTotal > 0" class="material-row">
-          <span class="material-label">เพชร:</span>
-          <span class="material-value">{{ formatWeight(product.diamondTotal) }} กะรัต</span>
+          <span class="material-label">{{ $t('view.mobile.scan.productDiamond') }}</span>
+          <span class="material-value">{{ formatWeight(product.diamondTotal) }} {{ $t('view.mobile.scan.productDiamondUnit') }}</span>
         </div>
 
         <!-- Gems -->
         <div v-if="product.gemTotal > 0" class="material-row">
-          <span class="material-label">พลอย:</span>
-          <span class="material-value">{{ formatWeight(product.gemTotal) }} กะรัต</span>
+          <span class="material-label">{{ $t('view.mobile.scan.productGem') }}</span>
+          <span class="material-value">{{ formatWeight(product.gemTotal) }} {{ $t('view.mobile.scan.productGemUnit') }}</span>
         </div>
       </div>
 
@@ -193,7 +193,7 @@
       <!-- Remark -->
       <div v-if="product.remark" class="info-group">
         <div class="info-row remark-row">
-          <span class="info-label">หมายเหตุ:</span>
+          <span class="info-label">{{ $t('view.mobile.scan.productRemark') }}</span>
           <span class="info-value">{{ product.remark }}</span>
         </div>
       </div>

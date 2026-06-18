@@ -2,8 +2,8 @@
   <div class="payment-dashboard">
     <!-- Header -->
     <div class="header-section">
-      <h4 class="page-title">ภาพรวมการชำระเงิน (Payment Dashboard)</h4>
-      <p class="page-subtitle">ติดตามสถานะการชำระเงินและหนี้ค้างชำระ</p>
+      <h4 class="page-title">{{ $t('view.sale.paymentTracking.title') }}</h4>
+      <p class="page-subtitle">{{ $t('view.sale.paymentTracking.description') }}</p>
     </div>
 
     <!-- Summary Cards -->
@@ -15,7 +15,7 @@
           </div>
           <div class="card-content">
             <h3>฿2,450,000</h3>
-            <p>ยอดขายรวม</p>
+            <p>{{ $t('view.sale.paymentTracking.totalSales') }}</p>
             <small class="text-success">+12% จากเดือนก่อน</small>
           </div>
         </div>
@@ -28,7 +28,7 @@
           </div>
           <div class="card-content">
             <h3>฿1,980,000</h3>
-            <p>ชำระแล้ว</p>
+            <p>{{ $t('view.sale.paymentTracking.paid') }}</p>
             <small class="text-success">80.8% ของยอดรวม</small>
           </div>
         </div>
@@ -41,7 +41,7 @@
           </div>
           <div class="card-content">
             <h3>฿420,000</h3>
-            <p>รอชำระ</p>
+            <p>{{ $t('view.sale.paymentTracking.pending') }}</p>
             <small class="text-warning">15 รายการ</small>
           </div>
         </div>
@@ -54,7 +54,7 @@
           </div>
           <div class="card-content">
             <h3>฿50,000</h3>
-            <p>เลยกำหนด</p>
+            <p>{{ $t('view.sale.paymentTracking.overdue') }}</p>
             <small class="text-danger">3 รายการ</small>
           </div>
         </div>
@@ -65,29 +65,29 @@
     <div class="action-section mb-4">
       <button class="btn btn-sm btn-main mr-2" @click="recordPayment">
         <i class="bi bi-plus-circle mr-1"></i>
-        บันทึกการรับชำระ
+        {{ $t('view.sale.paymentTracking.recordPayment') }}
       </button>
       <button class="btn btn-sm btn-green mr-2" @click="sendReminder">
         <i class="bi bi-send mr-1"></i>
-        ส่งแจ้งเตือนชำระ
+        {{ $t('view.sale.paymentTracking.sendReminder') }}
       </button>
       <button class="btn btn-sm btn-outline-main mr-2" @click="generateReport">
         <i class="bi bi-file-earmark-text mr-1"></i>
-        สร้างรายงาน
+        {{ $t('view.sale.paymentTracking.createReport') }}
       </button>
     </div>
 
     <!-- Payment Status Demo Message -->
     <div class="alert alert-info" role="alert">
       <i class="bi bi-info-circle mr-2"></i>
-      <strong>หน้านี้เป็น Demo สำหรับแสดงภาพรวมการชำระเงิน</strong><br>
-      ในระบบจริงจะแสดงข้อมูลการชำระเงินที่เชื่อมต่อจากใบแจ้งหนี้และ Sale Order
+      <strong>{{ $t('view.sale.paymentTracking.demoNotice') }}</strong><br>
+      {{ $t('view.sale.paymentTracking.demoNote') }}
     </div>
 
     <!-- Recent Payments -->
     <div class="card-container">
       <div class="card-header">
-        <h5 class="mb-0">การชำระเงินล่าสุด</h5>
+        <h5 class="mb-0">{{ $t('view.sale.paymentTracking.recentPayments') }}</h5>
       </div>
       <div class="card-body">
         <div class="table-responsive">
@@ -96,12 +96,12 @@
           <table class="table table-hover">
             <thead>
               <tr>
-                <th>วันที่</th>
-                <th>เลขที่ใบแจ้งหนี้</th>
-                <th>ลูกค้า</th>
-                <th>จำนวนเงิน</th>
-                <th>วิธีการชำระ</th>
-                <th>สถานะ</th>
+                <th>{{ $t('view.sale.paymentTracking.date') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.invoiceNumber') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.customerName') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.amount') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.paymentMethod') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.status') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -138,7 +138,7 @@
     <!-- Outstanding Payments -->
     <div class="card-container mt-4">
       <div class="card-header">
-        <h5 class="mb-0">หนี้ค้างชำระ</h5>
+        <h5 class="mb-0">{{ $t('view.sale.paymentTracking.outstandingInvoices') }}</h5>
       </div>
       <div class="card-body">
         <div class="table-responsive">
@@ -147,12 +147,12 @@
           <table class="table table-hover">
             <thead>
               <tr>
-                <th>เลขที่ใบแจ้งหนี้</th>
-                <th>ลูกค้า</th>
-                <th>วันที่ครบกำหนด</th>
-                <th>จำนวนเงิน</th>
-                <th>วันที่เลยกำหนด</th>
-                <th>การดำเนินการ</th>
+                <th>{{ $t('view.sale.paymentTracking.invoiceNumber') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.customerName') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.dueDate') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.amount') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.overdueDays') }}</th>
+                <th>{{ $t('view.sale.paymentTracking.action') }}</th>
               </tr>
             </thead>
             <tbody>

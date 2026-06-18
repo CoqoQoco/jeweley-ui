@@ -1,15 +1,15 @@
 <template>
   <div class="item-card">
     <div class="item-card-header d-flex justify-content-between align-items-center">
-      <span class="fw-semibold">#{{ item.productNumber || `รายการที่ ${index + 1}` }}</span>
+      <span class="fw-semibold">#{{ item.productNumber || `${$t('view.sale.document.itemLabel')} ${index + 1}` }}</span>
       <div>
-        <button class="btn btn-sm btn-outline-main" title="เลื่อนขึ้น" :disabled="index === 0" @click="$emit('move-up', index)" type="button">
+        <button class="btn btn-sm btn-outline-main" :title="$t('view.sale.document.moveUp')" :disabled="index === 0" @click="$emit('move-up', index)" type="button">
           <i class="bi bi-arrow-up"></i>
         </button>
-        <button class="btn btn-sm btn-outline-main ml-1" title="เลื่อนลง" :disabled="isLast" @click="$emit('move-down', index)" type="button">
+        <button class="btn btn-sm btn-outline-main ml-1" :title="$t('view.sale.document.moveDown')" :disabled="isLast" @click="$emit('move-down', index)" type="button">
           <i class="bi bi-arrow-down"></i>
         </button>
-        <button class="btn btn-sm btn-red ml-2" title="ลบ" @click="$emit('remove', index)" type="button">
+        <button class="btn btn-sm btn-red ml-2" :title="$t('view.sale.document.removeItem')" @click="$emit('remove', index)" type="button">
           <i class="bi bi-trash"></i>
         </button>
       </div>
@@ -18,40 +18,40 @@
     <div class="item-card-body">
       <div class="form-row two-col mb-3">
         <div class="form-field">
-          <span class="title-text">คำอธิบาย บรรทัด 1</span>
+          <span class="title-text">{{ $t('view.sale.document.descLine1') }}</span>
           <input
             class="form-control"
             type="text"
             :value="item.descriptionLine1"
             @input="updateField('descriptionLine1', $event.target.value)"
-            placeholder="เช่น 18K GOLD RING 1.91 G"
+            :placeholder="$t('view.sale.document.placeholder.descLine1')"
           />
         </div>
         <div class="form-field">
-          <span class="title-text">คำอธิบาย บรรทัด 2</span>
+          <span class="title-text">{{ $t('view.sale.document.descLine2') }}</span>
           <input
             class="form-control"
             type="text"
             :value="item.descriptionLine2"
             @input="updateField('descriptionLine2', $event.target.value)"
-            placeholder="เช่น 17PCS DIAMOND 0.09 CT"
+            :placeholder="$t('view.sale.document.placeholder.descLine2')"
           />
         </div>
       </div>
 
       <div class="images-row">
         <div v-for="(imgSlot, imgIdx) in 3" :key="imgIdx" class="image-slot">
-          <span class="title-text">รูปที่ {{ imgIdx + 1 }}</span>
+          <span class="title-text">{{ $t('view.sale.document.imageLabel') }} {{ imgIdx + 1 }}</span>
           <div class="image-upload-area">
             <div v-if="getImagePreview(imgIdx)" class="image-preview-wrap">
-              <img :src="getImagePreview(imgIdx)" class="image-preview" :alt="`รูปที่ ${imgIdx + 1}`" />
-              <button class="btn btn-sm btn-red btn-clear-img" @click="clearImage(imgIdx)" type="button" title="ลบรูป">
+              <img :src="getImagePreview(imgIdx)" class="image-preview" :alt="`${$t('view.sale.document.imageLabel')} ${imgIdx + 1}`" />
+              <button class="btn btn-sm btn-red btn-clear-img" @click="clearImage(imgIdx)" type="button" :title="$t('view.sale.document.removeImage')">
                 <i class="bi bi-x"></i>
               </button>
             </div>
             <label v-else class="upload-label" :for="`img-${index}-${imgIdx}`">
               <i class="bi bi-camera"></i>
-              <span>เลือกรูป</span>
+              <span>{{ $t('view.sale.document.selectImage') }}</span>
               <input
                 :id="`img-${index}-${imgIdx}`"
                 type="file"
@@ -62,13 +62,13 @@
             </label>
           </div>
           <div class="mt-1">
-            <span class="title-text">ป้ายขนาด</span>
+            <span class="title-text">{{ $t('view.sale.document.tagSize') }}</span>
             <input
               class="form-control"
               type="text"
               :value="getDimension(imgIdx)"
               @input="updateDimension(imgIdx, $event.target.value)"
-              placeholder="เช่น 1.8 CM"
+              :placeholder="$t('view.sale.document.placeholder.size')"
             />
           </div>
         </div>

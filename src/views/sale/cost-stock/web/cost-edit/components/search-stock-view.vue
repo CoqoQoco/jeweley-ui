@@ -4,7 +4,7 @@
       <div class="flex-group mb-2">
         <div class="vertical-center-container">
           <span class="title-text-lg bi bi-search mr-2"></span>
-          <span class="title-text-lg">ค้นหาสินค้า</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.searchStock') }}</span>
         </div>
 
         <!-- Plan List Button with Badge -->
@@ -12,10 +12,10 @@
           type="button"
           class="btn btn-main btn-sm position-relative"
           @click="openPlanModal"
-          title="ดูรายการแผนตีราคา"
+          :title="$t('view.sale.costStock.viewPlanList')"
         >
           <i class="bi bi-list-ul mr-1"></i>
-          รายการแผนตีราคา
+          <span>{{ $t('view.sale.costStock.planList') }}</span>
           <span
             v-if="planCount > 0"
             class="badge badge-danger position-absolute top-0 start-100 translate-middle"
@@ -30,44 +30,41 @@
         <div class="form-col-sm-container">
           <!-- Stock Number (New) -->
           <div>
-            <span class="title-text">เลขที่ผลิต (ใหม่)</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.stockNumber"
+            <span class="title-text">{{ $t('view.sale.costStock.stockNumber') }}</span>
+            <InputTextGeneric
+              v-model="form.stockNumber"
+              :trim="true"
               placeholder="EX: DK-2502-00X"
-              autocomplete="off"
+              :bgInput="true"
             />
           </div>
 
           <!-- Stock Number Origin (Old) -->
           <div>
-            <span class="title-text">เลขที่ผลิต (เก่า)</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.stockNumberOrigin"
+            <span class="title-text">{{ $t('view.sale.costStock.stockNumberOrigin') }}</span>
+            <InputTextGeneric
+              v-model="form.stockNumberOrigin"
+              :trim="true"
               placeholder="EX: AD054XX"
-              autocomplete="off"
+              :bgInput="true"
             />
           </div>
 
           <!-- Product Number -->
           <div>
-            <span class="title-text">รหัสสินค้า</span>
-            <input
-              :class="['form-control bg-input']"
-              type="text"
-              v-model.trim="form.productNumber"
+            <span class="title-text">{{ $t('view.sale.costStock.productNumber') }}</span>
+            <InputTextGeneric
+              v-model="form.productNumber"
+              :trim="true"
               placeholder="EX: R08X50XXXL"
-              autocomplete="off"
+              :bgInput="true"
             />
           </div>
 
           <div class="btn-submit-container-custom">
-            <button class="btn btn-sm btn-green mr-2 mt-4" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-green mr-2 mt-4" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
-              <span class="ml-2">ค้นหา</span>
+              <span class="ml-2">{{ $t('common.btn.search') }}</span>
             </button>
           </div>
         </div>
@@ -85,12 +82,15 @@
 <script>
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
+
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import StockCostPlanModal from './stock-cost-plan-modal.vue'
 
 export default {
   name: 'SearchStockView',
 
   components: {
+    InputTextGeneric,
     StockCostPlanModal
   },
 
@@ -120,7 +120,7 @@ export default {
   methods: {
     async onSearch() {
       if (!this.form.stockNumber && !this.form.stockNumberOrigin && !this.form.productNumber) {
-        warning('กรุณากรอกเลขที่ผลิตหรือรหัสสินค้าอย่างน้อย 1 ช่อง', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.costStock.validation.stockRequired'), this.$t('common.label.incompleteData'))
         return
       }
 

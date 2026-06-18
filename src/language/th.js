@@ -18,6 +18,7 @@ import workerLang from './view/worker/th.js'
 import productionCostLang from './view/production-cost/th.js'
 import settingLang from './view/setting/th.js'
 import reportProductionLang from './view/report-production/th.js'
+import * as mobileLang from './view/mobile/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -81,10 +82,71 @@ export default {
         daily: 'รายวัน',
         monthly: 'รายเดือน',
         monthlyReport: 'รายงานรายเดือน',
-        monthlyComingSoon: 'รายงานรายเดือน เร็วๆ นี้'
+        monthlyComingSoon: 'รายงานรายเดือน เร็วๆ นี้',
+
+        // recent activities columns
+        colType: 'ประเภท',
+        colActivity: 'กิจกรรม',
+        colDate: 'วันที่',
+        colDetail: 'รายละเอียด',
+
+        // summary table columns
+        colProductType: 'ประเภทสินค้า',
+        colOrderCount: 'จำนวนคำสั่ง',
+        colPieceCount: 'จำนวนชิ้น',
+        colCustomerType: 'ประเภทลูกค้า',
+
+        // scrap weight labels
+        scrapWeightTitle: 'น้ำหนักขี้เบ้าทองรายเดือน ({year})',
+        loading: 'กำลังโหลดข้อมูล...',
+        scrapMelt: 'ขี้เบ้าหลอม',
+        scrapCast: 'ขี้เบ้าหล่อ',
+        yearly: 'รายปี',
+        exportExcel: 'ส่งออกข้อมูล Excel',
+        exporting: 'กำลังส่งออก...',
+        excel: 'Excel',
+        weightUnit: 'กรัม',
+        weightUnitShort: 'ก.',
+        yearSummaryTitle: 'สรุปข้อมูลรายปี {year} - แยกตามประเภทและขนาดทอง',
+        weightPerYear: 'กรัม/ปี',
+        monthsWithData: 'เดือนที่มีข้อมูล',
+        avgPerMonth: 'เฉลี่ยต่อเดือน',
+        ofTotal: 'ของยอดรวม',
+
+        // monthly success report
+        selectMonth: 'เลือกเดือน',
+        placeholderMonth: 'เลือกเดือนและปี',
+        selectedMonth: 'เดือนที่เลือก:',
+        goldType2: 'ประเภททอง:',
+        productType2: 'ประเภทสินค้า:',
+        customerType2: 'ประเภทลูกค้า:',
+        chartTitleGold: 'สรุปแผนงานที่สำเร็จ - ตามประเภททอง',
+        chartTitleProduct: 'สรุปแผนงานที่สำเร็จ - ตามประเภทสินค้า',
+        chartTitleCustomer: 'สรุปแผนงานที่สำเร็จ - ตามประเภทลูกค้า',
+        tableDetailGold: 'รายละเอียดตามประเภททอง',
+        tableDetailProduct: 'รายละเอียดตามประเภทสินค้า',
+        tableDetailCustomer: 'รายละเอียดตามประเภทลูกค้า',
+        countLabel: 'จำนวน',
+        colGoldType: 'ประเภททอง',
+        colProductCount: 'จำนวนแผนงาน',
+        colOrderCount2: 'จำนวนสั่งผลิต',
+        colPercent: 'เปอร์เซ็นต์',
+        unitPiece: 'ชิ้น'
       }
     },
     sale: { ...saleLang },
+    mobile: {
+      sale: { ...mobileLang.sale },
+      costVersion: { ...mobileLang.costVersion },
+      scan: { ...mobileLang.scan },
+      dashboard: { ...mobileLang.dashboard },
+      tasks: { ...mobileLang.tasks },
+      profile: { ...mobileLang.profile },
+      quotation: { ...mobileLang.quotation },
+      notifications: { ...mobileLang.notifications },
+      saleIndex: { ...mobileLang.saleIndex },
+      components: { ...mobileLang.components }
+    },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },

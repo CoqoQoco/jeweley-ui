@@ -104,6 +104,9 @@ export default {
     no: 'No',
     codePlaceholder: 'e.g. MAIN, SHOW-01',
     namePlaceholder: 'e.g. Main Warehouse, Showroom',
+    placeholder: {
+      nameEn: 'e.g. Main Warehouse'
+    },
     warnName: 'Please enter Storage Location name',
     warnCode: 'Please enter Storage Location code',
     incomplete: 'Incomplete data',
@@ -165,7 +168,28 @@ export default {
     stepB2Title: 'Enter details & select',
     stepB2Desc: 'Enter SLOC code and name (type will be set to "Temporary" automatically) then click "Add & Select". The system will create the new SLOC and set it as the target SLOC automatically',
     stepB3Title: 'Confirm move to temporary SLOC',
-    stepB3Desc: 'Click "Confirm Move" to proceed — see steps 3-4 of section A) for more details'
+    stepB3Desc: 'Click "Confirm Move" to proceed — see steps 3-4 of section A) for more details',
+    productionLabel: 'Production',
+    placeholder: {
+      newStockNumber: 'STK-2024-001',
+      oldStockNumber: 'EX: A0211XX',
+      productNumber: 'DK-B-001',
+      mold: 'EX: CN-2400XX',
+      productNameEn: 'EX: Gold Ring #66',
+      productNameTh: 'EX: Gold Ring #66',
+      wo: 'EX: 6802017XX',
+      size: 'EX: #66',
+      tempSlocCode: 'TEMP-001',
+      tempSlocName: 'Booth B'
+    },
+    manual: {
+      imgList: 'Item list page',
+      imgSelect: 'Select items with checkbox',
+      imgTarget: 'Select target SLOC modal',
+      imgConfirm: 'Confirm move dialog',
+      imgSuccess: 'Move success notification',
+      imgTemp: 'Create temporary SLOC form'
+    }
   },
   gem: {
     searchTitle: 'Raw Material Stock',

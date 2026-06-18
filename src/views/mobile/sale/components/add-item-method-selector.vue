@@ -7,7 +7,7 @@
         @click="$emit('update:activeTab', 'appraisal')"
       >
         <i class="bi bi-calculator"></i>
-        จากรายการตีราคา
+        {{ $t('view.mobile.sale.methodAppraisal') }}
       </button>
       <button
         class="selector-tab"
@@ -15,7 +15,7 @@
         @click="$emit('update:activeTab', 'scan')"
       >
         <i class="bi bi-qr-code-scan"></i>
-        สแกนสินค้า
+        {{ $t('view.mobile.sale.methodScan') }}
       </button>
     </div>
   </div>

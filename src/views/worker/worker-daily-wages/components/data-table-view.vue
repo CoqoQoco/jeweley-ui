@@ -13,8 +13,8 @@
 
       <template #statusNameTemplate="{ data }">
         <template v-if="data.isGoldLoss">
-          <span class="badge-gold-loss">Gold Loss (งานฝัง)</span>
-          <span v-if="data.workerGoldLossSlipId" class="badge-slipped ml-1">ลง slip {{ data.workerGoldLossSlipDocumentNo }}</span>
+          <span class="badge-gold-loss">{{ $t('view.worker.workerDailyWages.badgeGoldLoss') }}</span>
+          <span v-if="data.workerGoldLossSlipId" class="badge-slipped ml-1">{{ $t('view.worker.workerDailyWages.slipLabel', { docNo: data.workerGoldLossSlipDocumentNo }) }}</span>
         </template>
         <span v-else>{{ data.statusName }}</span>
       </template>
@@ -40,7 +40,7 @@
         <ColumnGroup type="footer">
           <Row v-if="wageTypeFilter === 'wages'">
             <Column :colspan="9" footerStyle="text-align: left">
-              <template #footer>จำนวน {{ filteredItems.length }} รายการ</template>
+              <template #footer>{{ $t('view.worker.workerDailyWages.footerTotal', { count: filteredItems.length }) }}</template>
             </Column>
             <Column footerStyle="text-align: right">
               <template #footer>{{ totalGoldQtyCheck }}</template>
@@ -54,7 +54,7 @@
           </Row>
           <Row v-else>
             <Column :colspan="9" footerStyle="text-align: left">
-              <template #footer>จำนวน {{ filteredItems.length }} รายการ</template>
+              <template #footer>{{ $t('view.worker.workerDailyWages.footerTotal', { count: filteredItems.length }) }}</template>
             </Column>
             <Column footerStyle="text-align: right">
               <template #footer>{{ totalGoldQtyCheck }}</template>

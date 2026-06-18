@@ -3,13 +3,13 @@
     <template v-slot:content>
       <div class="title-text-lg-header mb-3">
         <i class="bi bi-tag mr-2"></i>
-        <span>แก้ไข Tag เอกสาร</span>
+        <span>{{ $t('view.sale.document.editTag') }}</span>
       </div>
 
       <form @submit.prevent="onSubmit" class="p-2">
         <!-- ชื่อไฟล์ (read-only) -->
         <div class="mb-3">
-          <span class="title-text">ชื่อไฟล์</span>
+          <span class="title-text">{{ $t('view.sale.document.fileName') }}</span>
           <div class="form-control bg-input" style="background-color: #f5f5f5; cursor: default">
             {{ data.fileName || '-' }}
           </div>
@@ -17,33 +17,27 @@
 
         <!-- Tags -->
         <div class="mb-3">
-          <span class="title-text">Tags</span>
-          <input
-            class="form-control bg-input"
-            type="text"
-            v-model.trim="form.tags"
-            placeholder="เช่น approved, Q1, pending (คั่นด้วยลูกน้ำ)"
+          <span class="title-text">{{ $t('view.sale.document.tags') }}</span>
+          <InputTextGeneric
+            v-model="form.tags"
+            :trim="true"
+            :placeholder="$t('view.sale.document.placeholder.tagsExample')"
           />
         </div>
 
         <!-- หมายเหตุ -->
         <div class="mb-3">
-          <span class="title-text">หมายเหตุ</span>
-          <textarea
-            class="form-control bg-input"
-            v-model.trim="form.remark"
-            rows="2"
-            placeholder="หมายเหตุ (ถ้ามี)"
-          ></textarea>
+          <span class="title-text">{{ $t('view.sale.document.remark') }}</span>
+          <TextareaGeneric
+            v-model="form.remark"
+            :rows="2"
+            :placeholder="$t('view.sale.document.placeholder.remarkOptional')"
+          />
         </div>
 
         <div class="btn-submit-container">
-          <button class="btn btn-sm btn-main mr-2" type="submit">
-            <i class="bi bi-save mr-1"></i>บันทึก
-          </button>
-          <button class="btn btn-sm btn-outline-main" type="button" @click="closeModal">
-            ยกเลิก
-          </button>
+          <ButtonGeneric variant="main" type="submit" icon="bi-save" :label="$t('common.btn.save')" />
+          <ButtonGeneric variant="outline" type="button" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
         </div>
       </form>
     </template>
@@ -55,12 +49,16 @@ import { defineAsyncComponent } from 'vue'
 import { useSaleDocumentStore } from '@/stores/modules/api/sale/sale-document-store.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'SaleDocumentTagModal',
 
-  components: { modal },
+  components: { modal, InputTextGeneric, TextareaGeneric, ButtonGeneric },
 
   emits: ['close', 'saved'],
 
@@ -106,7 +104,7 @@ export default {
         Tags: this.form.tags,
         Remark: this.form.remark
       })
-      success('บันทึก Tag สำเร็จ')
+      success(this.$t('view.sale.document.success.saveTag'))
       this.$emit('saved')
       this.closeModal()
     },

@@ -7,36 +7,36 @@
             <!-- Modal Header -->
             <div class="title-text-lg-bg mb-3">
               <i class="bi bi-file-earmark-plus mr-2"></i>
-              <span>สร้าง Invoice Version ใหม่ : {{ invoiceData?.invoiceNumber || '' }}</span>
+              <span>{{ $t('view.sale.invoiceDetail.createVersionTitle') }} : {{ invoiceData?.invoiceNumber || '' }}</span>
             </div>
 
             <!-- Currency and Rate Section -->
             <div class="filter-container mb-3">
               <div class="title-text-lg-bg p-2 mb-2">
-                <i class="bi bi-cash-coin mr-2"></i>สกุลเงินและอัตราแลกเปลี่ยน
+                <i class="bi bi-cash-coin mr-2"></i>{{ $t('view.sale.invoiceDetail.currencySection') }}
               </div>
               <div class="p-2">
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label class="form-label">สกุลเงิน</label>
+                      <label class="form-label">{{ $t('view.sale.saleOrder.currency') }}</label>
                       <input
                         v-model="versionData.currencyUnit"
                         type="text"
                         class="form-control"
-                        placeholder="เช่น USD, THB"
+                        :placeholder="$t('view.sale.invoiceDetail.placeholder.currencyUnit')"
                       />
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label class="form-label">อัตราแลกเปลี่ยน</label>
+                      <label class="form-label">{{ $t('view.sale.saleOrder.currencyRate') }}</label>
                       <input
                         v-model.number="versionData.currencyRate"
                         type="number"
                         class="form-control"
                         step="0.01"
-                        placeholder="เช่น 35.50"
+                        :placeholder="$t('view.sale.invoiceDetail.placeholder.currencyRate')"
                         @input="recalculateAll"
                       />
                     </div>
@@ -48,7 +48,7 @@
             <!-- Items Table -->
             <div class="filter-container mb-3">
               <div class="title-text-lg-bg p-2 mb-2">
-                <i class="bi bi-list-ul mr-2"></i>รายการสินค้า (แก้ไขราคาและส่วนลด)
+                <i class="bi bi-list-ul mr-2"></i>{{ $t('view.sale.invoiceDetail.itemsSection') }}
               </div>
               <div class="p-0">
                 <DataTable
@@ -61,7 +61,7 @@
                 >
                   <Column
                     field="stockNumber"
-                    header="เลขที่ผลิต"
+                    :header="$t('view.sale.costStock.stockNumber')"
                     :frozen="true"
                     style="min-width: 150px"
                   >
@@ -70,13 +70,13 @@
                     </template>
                   </Column>
 
-                  <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+                  <Column field="productNumber" :header="$t('view.sale.invoiceDetail.productCode')" style="min-width: 150px">
                     <template #body="slotProps">
                       <span>{{ slotProps.data.productNumber || '-' }}</span>
                     </template>
                   </Column>
 
-                  <Column field="description" header="รายละเอียด" style="min-width: 200px">
+                  <Column field="description" :header="$t('view.sale.saleOrder.description')" style="min-width: 200px">
                     <template #body="slotProps">
                           <input
                         v-model.number="slotProps.data.description"
@@ -88,7 +88,7 @@
 
                   <Column
                     field="appraisalPrice"
-                    header="ราคาประเมิน (THB)"
+                    :header="$t('view.sale.invoiceDetail.appraisalPriceTHB')"
                     style="min-width: 150px"
                   >
                     <template #body="slotProps">
@@ -102,7 +102,7 @@
                     </template>
                   </Column>
 
-                  <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 120px">
+                  <Column field="discountPercent" :header="$t('view.sale.invoiceDetail.discountPercent')" style="min-width: 120px">
                     <template #body="slotProps">
                       <input
                         v-model.number="slotProps.data.discountPercent"
@@ -119,7 +119,7 @@
 
                   <Column
                     field="priceAfterDiscount"
-                    header="ราคาหลังหักส่วนลด (THB)"
+                    :header="$t('view.sale.invoiceDetail.priceAfterDiscount')"
                     style="min-width: 180px"
                   >
                     <template #body="slotProps">
@@ -131,7 +131,7 @@
 
                   <Column
                     field="convertedPrice"
-                    :header="'ราคาแปลง (' + versionData.currencyUnit + ')'"
+                    :header="$t('view.sale.invoiceDetail.convertedPrice') + ' (' + versionData.currencyUnit + ')'"
                     style="min-width: 150px"
                   >
                     <template #body="slotProps">
@@ -141,7 +141,7 @@
                     </template>
                   </Column>
 
-                  <Column field="qty" header="จำนวน" style="min-width: 100px">
+                  <Column field="qty" :header="$t('common.field.quantity')" style="min-width: 100px">
                     <template #body="slotProps">
                       <span class="text-right d-block">{{ slotProps.data.qty || 0 }}</span>
                     </template>
@@ -149,7 +149,7 @@
 
                   <Column
                     field="total"
-                    :header="'รวม (' + versionData.currencyUnit + ')'"
+                    :header="$t('view.sale.invoiceDetail.total') + ' (' + versionData.currencyUnit + ')'"
                     style="min-width: 150px"
                   >
                     <template #body="slotProps">
@@ -165,14 +165,14 @@
             <!-- Financial Adjustments -->
             <div class="filter-container mb-3">
               <div class="title-text-lg-bg p-2 mb-2">
-                <i class="bi bi-calculator mr-2"></i>ส่วนปรับราคา
+                <i class="bi bi-calculator mr-2"></i>{{ $t('view.sale.invoiceDetail.priceAdjustment') }}
               </div>
               <div class="p-2">
                 <div class="row">
                   <div class="col-md-4">
                     <div class="form-group">
                       <label class="form-label">
-                        <i class="bi bi-dash-circle text-danger mr-1"></i>ส่วนลดพิเศษ ({{
+                        <i class="bi bi-dash-circle text-danger mr-1"></i>{{ $t('view.sale.invoiceDetail.specialDiscount') }} ({{
                           versionData.currencyUnit
                         }})
                       </label>
@@ -190,7 +190,7 @@
                   <div class="col-md-4">
                     <div class="form-group">
                       <label class="form-label">
-                        <i class="bi bi-plus-circle text-success mr-1"></i>ส่วนเพิ่มพิเศษ ({{
+                        <i class="bi bi-plus-circle text-success mr-1"></i>{{ $t('view.sale.invoiceDetail.specialSurcharge') }} ({{
                           versionData.currencyUnit
                         }})
                       </label>
@@ -208,7 +208,7 @@
                   <div class="col-md-4">
                     <div class="form-group">
                       <label class="form-label">
-                        <i class="bi bi-truck mr-1"></i>Freight & Insurance ({{
+                        <i class="bi bi-truck mr-1"></i>{{ $t('view.sale.invoiceDetail.freightAndInsurance') }} ({{
                           versionData.currencyUnit
                         }})
                       </label>
@@ -229,33 +229,33 @@
 
             <!-- Summary Section -->
             <div class="filter-container-search mb-3">
-              <div class="title-text-lg p-2"><i class="bi bi-receipt mr-2"></i>สรุปยอดเงิน</div>
+              <div class="title-text-lg p-2"><i class="bi bi-receipt mr-2"></i>{{ $t('view.sale.invoiceDetail.summary') }}</div>
               <div class="p-2">
                 <div class="summary-grid">
                   <div class="summary-row">
-                    <span class="summary-label">ยอดรวมสินค้า:</span>
+                    <span class="summary-label">{{ $t('view.sale.invoiceDetail.subtotal') }}:</span>
                     <span class="summary-value">{{ formatNumber(totalItems) }}</span>
                   </div>
                   <div class="summary-row text-danger" v-if="versionData.specialDiscount > 0">
-                    <span class="summary-label">ส่วนลดพิเศษ:</span>
+                    <span class="summary-label">{{ $t('view.sale.invoiceDetail.discountAmount') }}:</span>
                     <span class="summary-value"
                       >-{{ formatNumber(versionData.specialDiscount) }}</span
                     >
                   </div>
                   <div class="summary-row text-success" v-if="versionData.specialAddition > 0">
-                    <span class="summary-label">ส่วนเพิ่มพิเศษ:</span>
+                    <span class="summary-label">{{ $t('view.sale.invoiceDetail.surchargeAmount') }}:</span>
                     <span class="summary-value"
                       >+{{ formatNumber(versionData.specialAddition) }}</span
                     >
                   </div>
                   <div class="summary-row" v-if="versionData.freightAndInsurance > 0">
-                    <span class="summary-label">Freight & Insurance:</span>
+                    <span class="summary-label">{{ $t('view.sale.invoiceDetail.freightAndInsurance') }}:</span>
                     <span class="summary-value">{{
                       formatNumber(versionData.freightAndInsurance)
                     }}</span>
                   </div>
                   <div class="summary-row summary-total">
-                    <span class="summary-label font-weight-bold">ยอดรวมทั้งสิ้น:</span>
+                    <span class="summary-label font-weight-bold">{{ $t('view.sale.invoiceDetail.grandTotal') }}:</span>
                     <span class="summary-value font-weight-bold text-primary">
                       {{ formatNumber(grandTotal) }} {{ versionData.currencyUnit }}
                     </span>
@@ -269,18 +269,17 @@
               <div class="d-flex justify-content-end">
                 <button class="btn btn-green mr-2" type="button" @click="onPreview">
                   <i class="bi bi-eye mr-1"></i>
-                  พิมพ์ตัวอย่าง
+                  {{ $t('view.sale.invoiceDetail.previewPrint') }}
                 </button>
 
                 <button class="btn btn-green mr-2" type="button" @click="onSaveAndPrint">
                   <i class="bi bi-printer mr-1"></i>
-                  <!-- บันทึกและพิมพ์ -->
-                  บันทึก
+                  {{ $t('common.btn.save') }}
                 </button>
 
                 <button class="btn btn-outline-main" type="button" @click="closeModal">
                   <i class="bi bi-x-circle mr-1"></i>
-                  ยกเลิก
+                  {{ $t('common.btn.cancel') }}
                 </button>
               </div>
             </div>
@@ -442,12 +441,12 @@ export default {
 
     async onSaveAndPrint() {
       if (!this.versionData.currencyUnit) {
-        warning('กรุณากรอกสกุลเงิน', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.currencyRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
       if (!this.versionData.currencyRate || this.versionData.currencyRate <= 0) {
-        warning('กรุณากรอกอัตราแลกเปลี่ยนที่ถูกต้อง', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.exchangeRateRequired'), this.$t('common.label.incompleteData'))
         return
       }
 

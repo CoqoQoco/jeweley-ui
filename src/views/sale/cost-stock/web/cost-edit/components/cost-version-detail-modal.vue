@@ -7,7 +7,7 @@
   >
     <template #title>
       <span class="title-text-lg px-3 pt-3 d-block">
-        <i class="bi bi-calculator mr-2"></i>รายละเอียดใบตีราคา - {{ version?.running }}
+        <i class="bi bi-calculator mr-2"></i>{{ $t('view.sale.costStock.appraisalDetail') }} - {{ version?.running }}
       </span>
     </template>
 
@@ -17,12 +17,12 @@
         <div class="filter-container">
           <div class="vertical-center-container mb-2">
             <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
-            <span class="title-text-lg">ข้อมูลสินค้า</span>
+            <span class="title-text-lg">{{ $t('view.sale.costStock.stockInfo') }}</span>
           </div>
 
           <div class="form-col-sm-container">
             <div>
-              <span class="title-text">เลขที่ผลิต</span>
+              <span class="title-text">{{ $t('view.sale.costStock.stockNumber') }}</span>
               <input
                 class="form-control form-control-sm"
                 type="text"
@@ -32,7 +32,7 @@
               />
             </div>
             <div>
-              <span class="title-text">ใบตีราคา</span>
+              <span class="title-text">{{ $t('view.sale.costStock.appraisalNo') }}</span>
               <input
                 class="form-control form-control-sm"
                 type="text"
@@ -42,7 +42,7 @@
               />
             </div>
             <div>
-              <span class="title-text">วันที่สร้าง</span>
+              <span class="title-text">{{ $t('view.sale.costStock.createDate') }}</span>
               <input
                 class="form-control form-control-sm"
                 type="text"
@@ -52,7 +52,7 @@
               />
             </div>
             <div>
-              <span class="title-text">ผู้สร้าง</span>
+              <span class="title-text">{{ $t('view.sale.costStock.createBy') }}</span>
               <input
                 class="form-control form-control-sm"
                 type="text"
@@ -69,25 +69,25 @@
           <div class="line mb-3"></div>
           <div class="vertical-center-container mb-2">
             <span class="title-text-lg bi bi-person-fill mr-2"></span>
-            <span class="title-text-lg">ข้อมูลลูกค้า</span>
+            <span class="title-text-lg">{{ $t('view.sale.costStock.customerInfo') }}</span>
           </div>
 
           <div class="customer-info-display">
             <div class="form-col-sm-container">
               <div>
-                <span class="title-text">ชื่อลูกค้า</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.customerName') }}</span>
                 <div class="customer-display-field">
                   {{ version.customerName || '-' }}
                 </div>
               </div>
               <div>
-                <span class="title-text">รหัสลูกค้า</span>
+                <span class="title-text">{{ $t('view.sale.costStock.customerCode') }}</span>
                 <div class="customer-display-field">
                   {{ version.customerCode || '-' }}
                 </div>
               </div>
               <div>
-                <span class="title-text">เบอร์โทร</span>
+                <span class="title-text">{{ $t('common.field.phone') }}</span>
                 <div class="customer-display-field">
                   {{ version.customerTel || '-' }}
                 </div>
@@ -100,7 +100,7 @@
         <div v-if="version.remark" class="filter-container mt-3">
           <div class="vertical-center-container mb-2">
             <span class="title-text-lg bi bi-chat-left-text mr-2"></span>
-            <span class="title-text-lg">หมายเหตุ</span>
+            <span class="title-text-lg">{{ $t('common.field.remark') }}</span>
           </div>
           <div class="form-col-sm-container">
             <div>
@@ -137,7 +137,7 @@
       </button>
       <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="handleClose">
         <span class="bi bi-x mr-2"></span>
-        <span>ปิด</span>
+        <span>{{ $t('common.btn.close') }}</span>
       </button>
     </template>
   </modal>
@@ -203,7 +203,7 @@ export default {
 
     async handleExportPDF() {
       if (!this.version) {
-        warning('ไม่พบข้อมูลใบตีราคา')
+        warning(this.$t('view.sale.costStock.error.appraisalNotFound'))
         return
       }
 
@@ -213,7 +213,7 @@ export default {
       })
 
       if (!stockData) {
-        warning('ไม่พบข้อมูลสินค้า')
+        warning(this.$t('view.sale.costStock.error.notFound'))
         this.exportingPDF = false
         return
       }
@@ -226,7 +226,7 @@ export default {
       const pdf = await pdfBuilder.generatePDF()
       const filename = `Appraisal_${this.version.stockNumber}_${this.version.running}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
       pdf.download(filename)
-      success('Export PDF สำเร็จ', 'สำเร็จ')
+      success(this.$t('view.sale.costStock.success.exportPdf'))
       this.exportingPDF = false
     },
 

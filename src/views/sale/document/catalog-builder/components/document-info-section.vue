@@ -1,16 +1,16 @@
 <template>
   <div class="section-card">
-    <h6>ข้อมูลเอกสาร</h6>
+    <h6>{{ $t('view.sale.document.docInfo') }}</h6>
 
     <div class="form-row two-col">
       <div class="form-field">
-        <span class="title-text">หัวเรื่อง (Header) <span class="text-danger">*</span></span>
+        <span class="title-text">{{ $t('view.sale.document.header') }} <span class="text-danger">*</span></span>
         <input
           class="form-control"
           type="text"
           :value="form.headerLabel"
           @input="update('headerLabel', $event.target.value)"
-          placeholder="เช่น 18K RING"
+          :placeholder="$t('view.sale.document.placeholder.headerExample')"
         />
       </div>
       <div class="form-field">
@@ -20,66 +20,66 @@
           type="text"
           :value="form.collectionTitle"
           @input="update('collectionTitle', $event.target.value)"
-          placeholder="เช่น NEW COLLECTION 2025"
+          :placeholder="$t('view.sale.document.placeholder.collectionName')"
         />
       </div>
     </div>
 
     <div class="form-row four-col">
       <div class="form-field">
-        <span class="title-text">เดือน <span class="text-danger">*</span></span>
+        <span class="title-text">{{ $t('view.sale.document.month') }} <span class="text-danger">*</span></span>
         <DropdownGeneric
           :modelValue="form.documentMonth"
-          :options="MONTHS"
+          :options="monthOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="เลือกเดือน"
+          :placeholder="$t('view.sale.document.selectMonth')"
           @update:modelValue="update('documentMonth', $event)"
         />
       </div>
       <div class="form-field">
-        <span class="title-text">ปี <span class="text-danger">*</span></span>
+        <span class="title-text">{{ $t('view.sale.document.year') }} <span class="text-danger">*</span></span>
         <DropdownGeneric
           :modelValue="form.documentYear"
           :options="yearOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="เลือกปี"
+          :placeholder="$t('view.sale.document.selectYear')"
           @update:modelValue="update('documentYear', $event)"
         />
       </div>
       <div class="form-field">
-        <span class="title-text">สถานะ</span>
+        <span class="title-text">{{ $t('view.sale.document.status') }}</span>
         <DropdownGeneric
           :modelValue="form.status"
-          :options="STATUS_OPTIONS"
+          :options="statusOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="เลือกสถานะ"
+          :placeholder="$t('view.sale.document.selectStatus')"
           @update:modelValue="update('status', $event)"
         />
       </div>
       <div class="form-field">
-        <span class="title-text">Tags</span>
+        <span class="title-text">{{ $t('view.sale.document.tags') }}</span>
         <input
           class="form-control"
           type="text"
           :value="form.tags"
           @input="update('tags', $event.target.value)"
-          placeholder="เช่น approved, Q1 (คั่นด้วยลูกน้ำ)"
+          :placeholder="$t('view.sale.document.placeholder.tagsExample')"
         />
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-field">
-        <span class="title-text">หมายเหตุ</span>
+        <span class="title-text">{{ $t('common.field.remark') }}</span>
         <textarea
           class="form-control"
           rows="2"
           :value="form.remark"
           @input="update('remark', $event.target.value)"
-          placeholder="หมายเหตุ (ถ้ามี)"
+          :placeholder="$t('view.sale.document.placeholder.remarkOptional')"
         ></textarea>
       </div>
     </div>
@@ -88,20 +88,6 @@
 
 <script>
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
-
-const MONTHS = [
-  { value: 1, label: 'มกราคม' }, { value: 2, label: 'กุมภาพันธ์' },
-  { value: 3, label: 'มีนาคม' }, { value: 4, label: 'เมษายน' },
-  { value: 5, label: 'พฤษภาคม' }, { value: 6, label: 'มิถุนายน' },
-  { value: 7, label: 'กรกฎาคม' }, { value: 8, label: 'สิงหาคม' },
-  { value: 9, label: 'กันยายน' }, { value: 10, label: 'ตุลาคม' },
-  { value: 11, label: 'พฤศจิกายน' }, { value: 12, label: 'ธันวาคม' }
-]
-
-const STATUS_OPTIONS = [
-  { value: 0, label: 'ร่าง (Draft)' },
-  { value: 1, label: 'Final' }
-]
 
 export default {
   name: 'DocumentInfoSection',
@@ -124,9 +110,34 @@ export default {
       return { value: y, label: String(y) }
     })
     return {
-      MONTHS,
-      STATUS_OPTIONS,
       yearOptions
+    }
+  },
+
+  computed: {
+    monthOptions() {
+      const t = this.$t.bind(this)
+      return [
+        { value: 1, label: t('view.sale.document.months.jan') },
+        { value: 2, label: t('view.sale.document.months.feb') },
+        { value: 3, label: t('view.sale.document.months.mar') },
+        { value: 4, label: t('view.sale.document.months.apr') },
+        { value: 5, label: t('view.sale.document.months.may') },
+        { value: 6, label: t('view.sale.document.months.jun') },
+        { value: 7, label: t('view.sale.document.months.jul') },
+        { value: 8, label: t('view.sale.document.months.aug') },
+        { value: 9, label: t('view.sale.document.months.sep') },
+        { value: 10, label: t('view.sale.document.months.oct') },
+        { value: 11, label: t('view.sale.document.months.nov') },
+        { value: 12, label: t('view.sale.document.months.dec') }
+      ]
+    },
+
+    statusOptions() {
+      return [
+        { value: 0, label: this.$t('view.sale.document.statusDraft') },
+        { value: 1, label: this.$t('view.sale.document.statusFinal') }
+      ]
     }
   },
 

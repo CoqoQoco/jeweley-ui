@@ -20,7 +20,7 @@
             <i class="bi bi-person-circle"></i>
           </div>
           <div class="list-content">
-            <div class="list-title">ข้อมูลส่วนตัว</div>
+            <div class="list-title">{{ $t('view.mobile.profile.personalInfoItem') }}</div>
           </div>
           <div class="list-action">
             <i class="bi bi-chevron-right"></i>
@@ -32,7 +32,7 @@
             <i class="bi bi-shield-check"></i>
           </div>
           <div class="list-content">
-            <div class="list-title">เปลี่ยนรหัสผ่าน</div>
+            <div class="list-title">{{ $t('view.mobile.profile.changePasswordItem') }}</div>
           </div>
           <div class="list-action">
             <i class="bi bi-chevron-right"></i>
@@ -44,7 +44,7 @@
             <i class="bi bi-bell"></i>
           </div>
           <div class="list-content">
-            <div class="list-title">การแจ้งเตือน</div>
+            <div class="list-title">{{ $t('view.mobile.profile.notificationsItem') }}</div>
           </div>
           <div class="list-action">
             <i class="bi bi-chevron-right"></i>
@@ -55,7 +55,7 @@
       <div class="mobile-mt-3">
         <button class="mobile-btn mobile-btn-danger" @click="handleLogout">
           <i class="bi bi-box-arrow-right"></i>
-          ออกจากระบบ
+          {{ $t('view.mobile.profile.logoutBtn') }}
         </button>
       </div>
     </div>
@@ -77,14 +77,14 @@ export default {
   computed: {
     userName() {
       const user = this.authStore.user
-      return `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'ผู้ใช้งาน'
+      return `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || this.$t('view.mobile.profile.defaultUserName')
     },
 
     userRole() {
       const user = this.authStore.user
 
-      if (!user || !user.role) return 'รออนุมัติสิทธิ์'
-      if (Array.isArray(user.role) && user.role.length === 0) return 'รออนุมัติสิทธิ์'
+      if (!user || !user.role) return this.$t('view.mobile.profile.defaultRole')
+      if (Array.isArray(user.role) && user.role.length === 0) return this.$t('view.mobile.profile.defaultRole')
 
       if (!Array.isArray(user.role)) {
         return user.role.name
@@ -95,7 +95,7 @@ export default {
         return highest
       }, null)
 
-      return highestRole ? highestRole.name : 'รออนุมัติสิทธิ์'
+      return highestRole ? highestRole.name : this.$t('view.mobile.profile.defaultRole')
     },
 
     userImage() {
@@ -109,7 +109,7 @@ export default {
     },
 
     handleLogout() {
-      confirmSubmit('', 'ออกจากระบบ', async () => {
+      confirmSubmit('', this.$t('view.mobile.profile.confirmLogoutTitle'), async () => {
         await this.authStore.logout()
         this.$router.push('/login')
       })

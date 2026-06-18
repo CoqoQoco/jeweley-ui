@@ -5,11 +5,11 @@
         <!-- Sale Order Information -->
         <div class="mb-3">
           <div class="title-text-lg-bg p-2 mb-3">
-            <i class="bi bi-receipt mr-2"></i>สร้าง Invoice จาก Sale Order
+            <i class="bi bi-receipt mr-2"></i>{{ $t('view.sale.saleOrderList.createInvoiceTitle') }}
           </div>
           <div class="form-col-container p-2">
             <div>
-              <span class="title-text">เลขที่ใบสั่งขาย</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.soNumber') }}</span>
               <input
                 class="form-control bg-input"
                 type="text"
@@ -18,7 +18,7 @@
               />
             </div>
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.customerName') }}</span>
               <input
                 class="form-control bg-input"
                 type="text"
@@ -27,7 +27,7 @@
               />
             </div>
             <div>
-              <span class="title-text">Currency</span>
+              <span class="title-text">{{ $t('view.sale.quotation.currency') }}</span>
               <input
                 class="form-control bg-input"
                 type="text"
@@ -36,7 +36,7 @@
               />
             </div>
             <div>
-              <span class="title-text">Currency Rate</span>
+              <span class="title-text">{{ $t('view.sale.quotation.currencyRateLabel') }}</span>
               <input
                 class="form-control bg-input"
                 type="text"
@@ -56,11 +56,11 @@
                 <div class="d-flex align-items-start ml-3">
                   <i class="bi bi-lightbulb-fill text-warning mr-2"></i>
                   <div>
-                    <strong class="title-text ml-1">คำแนะนำการใช้งาน:</strong>
+                    <strong class="title-text ml-1">{{ $t('view.sale.saleOrder.usageHint') }}:</strong>
                     <ul class="mb-0 mt-1">
-                      <li>เลือกสินค้าที่ยืนยันการขายแล้วสำหรับออก Invoice</li>
-                      <li>ตรวจสอบข้อมูลและราคาให้ถูกต้องก่อนสร้าง PDF</li>
-                      <li>Invoice จะสร้างไฟล์ PDF พร้อมดาวน์โหลดอัตโนมัติ</li>
+                      <li>{{ $t('view.sale.saleOrderList.hint1Invoice') }}</li>
+                      <li>{{ $t('view.sale.saleOrderList.hint2Invoice') }}</li>
+                      <li>{{ $t('view.sale.saleOrderList.hint3Invoice') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -81,13 +81,13 @@
                       class="mr-2"
                     />
                     <span class="title-text"
-                      >เลือกทั้งหมด ({{ availableItems.length }} รายการ)</span
+                      >{{ $t('view.sale.saleOrder.selectAll') }} ({{ availableItems.length }} {{ $t('view.sale.saleOrder.itemUnit') }})</span
                     >
                   </label>
                 </div>
                 <div>
                   <span class="badge badge-success mr-2">
-                    <i class="bi bi-check-circle mr-1"></i>สินค้าที่ยืนยันแล้ว:
+                    <i class="bi bi-check-circle mr-1"></i>{{ $t('view.sale.saleOrderList.confirmedItems') }}:
                     {{ confirmedItemsCount }}
                   </span>
                 </div>
@@ -108,22 +108,22 @@
                   <Row>
                     <Column header="" />
                     <Column header="" />
-                    <Column header="เลขที่ผลิต (ใหม่)" />
-                    <Column header="เลขที่ผลิต (เก่า)" />
-                    <Column header="รหัสสินค้า" />
+                    <Column :header="$t('view.sale.saleOrder.stockNumberNew')" />
+                    <Column :header="$t('view.sale.saleOrder.stockNumberOld')" />
+                    <Column :header="$t('view.sale.costStock.productCode')" />
                     <!-- <Column header="สถานะการขาย" /> -->
-                    <Column header="รายละเอียด" />
+                    <Column :header="$t('view.sale.saleOrder.description')" />
                     <!-- <Column header="Gold (gms)" />
                     <Column header="Diamond (cts)" />
                     <Column header="Stone (cts)" /> -->
-                    <Column header="ราคาขาย (THB)" />
-                    <Column header="ราคาประเมิน (THB)" />
-                    <Column header="ส่วนลด (%)" />
-                    <Column header="ราคาส่วนลด (THB)" />
-                    <Column header="แปลงเรท" />
-                    <Column :header="'ราคาแปลง (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
-                    <Column header="จำนวน" />
-                    <Column :header="'รวมราคา (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
+                    <Column :header="$t('view.sale.saleOrder.salePriceTHB')" />
+                    <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" />
+                    <Column :header="$t('view.sale.saleOrder.discountPercent')" />
+                    <Column :header="$t('view.sale.saleOrder.discountPriceTHB')" />
+                    <Column :header="$t('view.sale.saleOrder.convertedRate')" />
+                    <Column :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
+                    <Column :header="$t('common.field.quantity')" />
+                    <Column :header="$t('view.sale.saleOrder.totalAmount') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
                   </Row>
                 </ColumnGroup>
 
@@ -159,7 +159,7 @@
                 </Column>
 
                 <!-- Stock Number Column -->
-                <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+                <Column field="stockNumber" :header="$t('view.sale.saleOrder.stockNumberNew')" style="min-width: 150px">
                   <template #body="slotProps">
                     <div class="d-flex flex-column">
                       <span>{{ slotProps.data.stockNumber }}</span>
@@ -171,7 +171,7 @@
                 </Column>
 
                 <!-- Stock Number Origin Column -->
-                <Column field="stockNumberOrigin" header="เลขที่ผลิต" style="min-width: 150px">
+                <Column field="stockNumberOrigin" :header="$t('view.sale.saleOrder.stockNumberOld')" style="min-width: 150px">
                   <template #body="slotProps">
                     <span>{{
                       slotProps.data.stockNumberOrigin
@@ -182,7 +182,7 @@
                 </Column>
 
                 <!-- Product Number Column -->
-                <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+                <Column field="productNumber" :header="$t('view.sale.costStock.productCode')" style="min-width: 150px">
                   <template #body="slotProps">
                     <span class="confirmed-text">
                       {{ slotProps.data.productNumber || '-' }}
@@ -207,7 +207,7 @@
                 </Column> -->
 
                 <!-- Description Column -->
-                <Column field="description" header="รายละเอียด" style="min-width: 200px">
+                <Column field="description" :header="$t('view.sale.saleOrder.description')" style="min-width: 200px">
                   <template #body="slotProps">
                     <span class="confirmed-text">
                       {{ slotProps.data.description || '-' }}
@@ -276,7 +276,7 @@
                 </Column> -->
 
                 <!-- Price Columns -->
-                <Column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+                <Column field="priceOrigin" :header="$t('view.sale.saleOrder.salePriceTHB')" style="min-width: 150px">
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span>{{
@@ -286,7 +286,7 @@
                   </template>
                 </Column>
 
-                <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
+                <Column field="appraisalPrice" :header="$t('view.sale.saleOrder.appraisalPriceTHB')" style="min-width: 150px">
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span class="confirmed-text text-right">
@@ -296,7 +296,7 @@
                   </template>
                 </Column>
 
-                <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+                <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px">
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span class="confirmed-text text-right">
@@ -306,7 +306,7 @@
                   </template>
                 </Column>
 
-                <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+                <Column field="discountPrice" :header="$t('view.sale.saleOrder.discountPriceTHB')" style="min-width: 150px">
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span>{{
@@ -319,7 +319,7 @@
                   </template>
                 </Column>
 
-                <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
+                <Column field="currencyRate" :header="$t('view.sale.saleOrder.convertedRate')" style="min-width: 100px">
                   <template #body>
                     <div class="qty-container">
                       <span>{{ saleOrderData.currencyRate || 1 }}</span>
@@ -329,7 +329,7 @@
 
                 <Column
                   field="priceAfterMultiply"
-                  :header="'ราคาแปลง (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'"
                   style="min-width: 150px"
                 >
                   <template #body="slotProps">
@@ -345,7 +345,7 @@
                   </template>
                 </Column>
 
-                <Column field="qty" header="จำนวน" style="width: 100px">
+                <Column field="qty" :header="$t('common.field.quantity')" style="width: 100px">
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span class="confirmed-text text-right">
@@ -357,7 +357,7 @@
 
                 <Column
                   field="total"
-                  :header="'รวมราคา (' + (saleOrderData.currencyUnit || 'THB') + ')'"
+                  :header="$t('view.sale.saleOrder.totalAmount') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'"
                   style="min-width: 150px"
                 >
                   <template #body="slotProps">
@@ -381,9 +381,9 @@
                     <Column :colspan="4">
                       <template #footer>
                         <div class="text-left type-container">
-                          <span class="mr-2">Net Weight Of Merchandise</span>
+                          <span class="mr-2">{{ $t('view.sale.quotation.netWeightMerchandise') }}</span>
                           <span class="mr-2">{{ getNetWeight() }}</span>
-                          <span>gms.</span>
+                          <span>{{ $t('view.sale.quotation.unitGrams') }}</span>
                         </div>
                       </template>
                     </Column>
@@ -391,7 +391,7 @@
                     <Column>
                       <template #footer>
                         <div class="text-right type-container">
-                          <span>รวม</span>
+                          <span>{{ $t('common.field.total') }}</span>
                         </div>
                       </template>
                     </Column>
@@ -460,7 +460,7 @@
                     <Column :colspan="13">
                       <template #footer>
                         <div class="text-right type-container">
-                          <span>ส่วนลดพิเศษ:</span>
+                          <span>{{ $t('view.sale.quotation.specialDiscount') }}:</span>
                         </div>
                       </template>
                     </Column>
@@ -486,7 +486,7 @@
                     <Column :colspan="13">
                       <template #footer>
                         <div class="text-right type-container">
-                          <span>ส่วนเพิ่มพิเศษ:</span>
+                          <span>{{ $t('view.sale.quotation.specialSurcharge') }}:</span>
                         </div>
                       </template>
                     </Column>
@@ -512,7 +512,7 @@
                     <Column :colspan="13">
                       <template #footer>
                         <div class="text-right type-container">
-                          <span class="font-weight-bold">ยอดรวมหลังปรับ:</span>
+                          <span class="font-weight-bold">{{ $t('view.sale.quotation.adjustedTotal') }}:</span>
                         </div>
                       </template>
                     </Column>
@@ -532,7 +532,7 @@
                     <Column :colspan="13">
                       <template #footer>
                         <div class="text-right type-container">
-                          <span>Freight & Insurance:</span>
+                          <span>{{ $t('view.sale.quotation.freightInsurance') }}:</span>
                         </div>
                       </template>
                     </Column>
@@ -558,7 +558,7 @@
                     <Column :colspan="13">
                       <template #footer>
                         <div class="text-right type-container">
-                          <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                          <span class="font-weight-bold">{{ $t('view.sale.quotation.beforeVatTotal') }}:</span>
                         </div>
                       </template>
                     </Column>
@@ -576,7 +576,7 @@
                     <Column :colspan="13">
                       <template #footer>
                         <div class="text-right type-container d-flex align-items-center justify-content-end">
-                          <span class="mr-2 mt-1">VAT (%) : </span>
+                          <span class="mr-2 mt-1">{{ $t('view.sale.quotation.vatPercentLabel') }} </span>
                           <input
                             v-model.number="vatPercent"
                             type="number"
@@ -606,7 +606,7 @@
                     <Column :colspan="13">
                       <template #footer>
                         <div class="text-right type-container">
-                          <h6 class="mb-0 text-primary">ยอดรวม Invoice:</h6>
+                          <h6 class="mb-0 text-primary">{{ $t('view.sale.saleOrderList.invoiceTotal') }}:</h6>
                         </div>
                       </template>
                     </Column>
@@ -626,13 +626,13 @@
               <!-- Payment and Deposit Information -->
               <div class="mt-3">
                 <div class="filter-container-search p-3">
-                  <div class="title-text-lg mb-3">ข้อมูลการชำระเงินและมัดจำ</div>
+                  <div class="title-text-lg mb-3">{{ $t('view.sale.saleOrder.paymentInfo') }}</div>
 
                   <div class="row">
                     <!-- ราคามัดจำ -->
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label class="title-text">ราคามัดจำ</label>
+                        <label class="title-text">{{ $t('view.sale.saleOrder.depositPrice') }}</label>
                         <input
                           v-model.number="depositAmount"
                           type="number"
@@ -643,7 +643,7 @@
                           placeholder="0.00"
                         />
                         <small class="text-muted"
-                          >สูงสุด: {{ formatPriceWithCurrency(grandTotal) }}</small
+                          >{{ $t('view.sale.saleOrder.maxDeposit') }}: {{ formatPriceWithCurrency(grandTotal) }}</small
                         >
                       </div>
                     </div>
@@ -651,13 +651,13 @@
                     <!-- วิธีการชำระเงิน -->
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label class="title-text">วิธีการชำระเงิน</label>
+                        <label class="title-text">{{ $t('view.sale.saleOrder.paymentMethod') }}</label>
                         <DropdownGeneric
                           v-model="paymentMethod"
                           :options="paymentMethodOptions"
                           optionLabel="name"
                           optionValue="value"
-                          placeholder="เลือกวิธีการชำระเงิน"
+                          :placeholder="$t('view.sale.saleOrderList.placeholder.selectPaymentMethod')"
                           class="w-100"
                         />
                       </div>
@@ -666,7 +666,7 @@
                     <!-- ระยะเวลาการชำระเงิน (วัน) -->
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label class="title-text">ระยะเวลาการชำระเงิน (วัน)</label>
+                        <label class="title-text">{{ $t('view.sale.saleOrder.paymentTerm') }}</label>
                         <input
                           v-model.number="paymentDays"
                           type="number"
@@ -676,9 +676,9 @@
                           placeholder="0"
                           :disabled="paymentMethod === 'cash'"
                         />
-                        <small class="text-muted" v-if="paymentMethod === 'cash'">ชำระทันที</small>
+                        <small class="text-muted" v-if="paymentMethod === 'cash'">{{ $t('view.sale.saleOrder.payCash') }}</small>
                         <small class="text-muted" v-else-if="paymentDays > 0"
-                          >ครบกำหนด: {{ calculateDueDate() }}</small
+                          >{{ $t('view.sale.saleOrder.dueDate') }}: {{ calculateDueDate() }}</small
                         >
                       </div>
                     </div>
@@ -686,7 +686,7 @@
                     <!-- ยอดคงเหลือที่ต้องชำระ -->
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label class="title-text">ยอดคงเหลือที่ต้องชำระ</label>
+                        <label class="title-text">{{ $t('view.sale.saleOrder.remainingBalance') }}</label>
                         <div class="form-control bg-light font-weight-bold text-primary">
                           {{ formatPriceWithCurrency(grandTotal - (depositAmount || 0)) }}
                         </div>
@@ -703,7 +703,7 @@
         <div class="btn-submit-container mt-4 pb-2">
           <div class="d-flex justify-content-end">
             <div>
-              <span class="title-text">Invoice no. (DK)</span>
+              <span class="title-text">{{ $t('view.sale.saleOrderList.dkInvoiceNumber') }}</span>
               <input
                 class="form-control bg-input"
                 type="text"
@@ -720,13 +720,13 @@
                 :disabled="selectedItemsCount === 0"
               >
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
-                สร้าง Invoice
-                <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} รายการ)</span>
+                {{ $t('view.sale.saleOrderList.createInvoice') }}
+                <span v-if="selectedItemsCount > 0">({{ selectedItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }})</span>
               </button>
 
               <button class="btn btn-outline-main mr-2" type="button" @click="closeModal">
                 <i class="bi bi-x-circle mr-1"></i>
-                ยกเลิก
+                {{ $t('common.btn.cancel') }}
               </button>
             </div>
           </div>
@@ -798,18 +798,20 @@ export default {
       paymentMethod: 'cash', // วิธีการชำระเงิน
       paymentDays: 0, // ระยะเวลาการชำระเงิน (วัน)
       dkInvoiceNumber: null,
-      // Payment method options for Dropdown
-      paymentMethodOptions: [
-        { name: 'เงินสด (Cash)', value: 'cash', id: 1 },
-        { name: 'โอนเงิน (Transfer)', value: 'transfer', id: 2 },
-        { name: 'เช็ค (Cheque)', value: 'cheque', id: 3 },
-        { name: 'บัตรเครดิต (Credit Card)', value: 'credit_card', id: 4 },
-        { name: 'เครดิต (Credit Term)', value: 'credit_term', id: 5 }
-      ]
     }
   },
 
   computed: {
+    paymentMethodOptions() {
+      return [
+        { name: this.$t('view.sale.saleOrderList.paymentMethod.cash'), value: 'cash', id: 1 },
+        { name: this.$t('view.sale.saleOrderList.paymentMethod.transfer'), value: 'transfer', id: 2 },
+        { name: this.$t('view.sale.saleOrderList.paymentMethod.cheque'), value: 'cheque', id: 3 },
+        { name: this.$t('view.sale.saleOrderList.paymentMethod.creditCard'), value: 'credit_card', id: 4 },
+        { name: this.$t('view.sale.saleOrderList.paymentMethod.creditTerm'), value: 'credit_term', id: 5 }
+      ]
+    },
+
     // Only show confirmed items that don't have invoice yet
     availableItems() {
       return this.stockItems.filter((item) => item.isConfirm && !item.invoice)
@@ -1124,17 +1126,17 @@ export default {
 
     async generateInvoice() {
       if (this.selectedItemsCount === 0) {
-        warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+        warning(this.$t('view.sale.saleOrder.validation.selectAtLeastOne'))
         return
       }
 
       if (!this.saleOrderData || (!this.saleOrderData.soNumber && !this.saleOrderData.number)) {
-        warning('ไม่พบข้อมูลเลขที่ใบสั่งขาย กรุณาตรวจสอบข้อมูล')
+        warning(this.$t('view.sale.saleOrderList.validation.noSoNumber'))
         return
       }
 
       if (!this.saleOrderData.customerName) {
-        warning('ไม่พบชื่อลูกค้า กรุณาตรวจสอบข้อมูลใบสั่งขาย')
+        warning(this.$t('view.sale.saleOrderList.validation.noCustomerName'))
         return
       }
 
@@ -1199,8 +1201,8 @@ export default {
       })
 
       if (response) {
-        const invoiceNumber = response.invoiceNumber || 'สร้างสำเร็จ'
-        success(`เลขที่ Invoice: ${invoiceNumber}`, 'สร้าง Invoice สำเร็จ')
+        const invoiceNumber = response.invoiceNumber || this.$t('view.sale.saleOrderList.createInvoiceSuccess')
+        success(this.$t('view.sale.saleOrderList.invoiceCreated', { invoiceNumber }), this.$t('view.sale.saleOrderList.createInvoiceSuccess'))
 
         this.$emit('invoice-created', {
           invoiceNumber: response.invoiceNumber,

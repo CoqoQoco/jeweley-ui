@@ -49,7 +49,10 @@ export default {
     colLossPercent: '%loss',
     colWeightLossAllowed: 'Weight Loss Allowed',
     colWeightLossActual: 'Weight Loss',
-    colGoldLossPrice: 'Price/g'
+    colGoldLossPrice: 'Price/g',
+    badgeGoldLoss: 'Gold Loss (Embed Work)',
+    footerTotal: '{count} items',
+    slipLabel: 'Enter slip {docNo}'
   },
   goldLossSlipList: {
     searchTitle: 'Gold Loss Slip History',

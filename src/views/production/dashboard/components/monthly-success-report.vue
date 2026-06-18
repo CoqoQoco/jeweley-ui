@@ -3,7 +3,7 @@
     <!-- Month Selection -->
     <div class="filter-container">
       <div>
-        <div class="title-text">เลือกเดือน</div>
+        <div class="title-text">{{ $t('view.production.dashboard.selectMonth') }}</div>
         <div class="form-col-container">
           <CalendarGeneric
             v-model="selectedMonth"
@@ -15,7 +15,7 @@
             @date-select="onMonthChange"
             :class="{ 'p-invalid': !selectedMonth }"
             class="mr-2"
-            placeholder="เลือกเดือนและปี"
+            :placeholder="$t('view.production.dashboard.placeholderMonth')"
           />
           <div></div>
           <div></div>
@@ -36,11 +36,11 @@
       <div class=" ml-2 mt-1" v-if="selectedMonth">
         <small class="text-muted">
           <i class="bi bi-calendar"></i>
-          เดือนที่เลือก: {{ formatMonthYear(selectedMonth) }}
+          {{ $t('view.production.dashboard.selectedMonth') }} {{ formatMonthYear(selectedMonth) }}
           <span v-if="monthlyReportData">
-            | ประเภททอง: {{ planFinishByType.length }} รายการ | ประเภทสินค้า:
-            {{ planFinishByProductType.length }} รายการ | ประเภทลูกค้า:
-            {{ planFinishByCustomerType.length }} รายการ
+            | {{ $t('view.production.dashboard.goldType2') }} {{ planFinishByType.length }} | {{ $t('view.production.dashboard.productType2') }}
+            {{ planFinishByProductType.length }} | {{ $t('view.production.dashboard.customerType2') }}
+            {{ planFinishByCustomerType.length }}
           </span>
         </small>
       </div>
@@ -53,14 +53,14 @@
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
-              <h5><i class="bi bi-bar-chart"></i> สรุปแผนงานที่สำเร็จ - ตามประเภททอง</h5>
+              <h5><i class="bi bi-bar-chart"></i> {{ $t('view.production.dashboard.chartTitleGold') }}</h5>
             </div>
             <div class="card-body">
               <HorizontalBarChart
                 :data="typeChartData"
                 title=""
                 :height="300"
-                :datasetFields="[{ key: 'count', label: 'จำนวน', labelTH: 'จำนวน' }]"
+                :datasetFields="[{ key: 'count', label: $t('view.production.dashboard.countLabel'), labelTH: $t('view.production.dashboard.countLabel') }]"
               />
             </div>
           </div>
@@ -68,7 +68,7 @@
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
-              <h5><i class="bi bi-table"></i> รายละเอียดตามประเภททอง</h5>
+              <h5><i class="bi bi-table"></i> {{ $t('view.production.dashboard.tableDetailGold') }}</h5>
             </div>
             <div class="card-body">
               <!-- eslint-disable vue/no-restricted-syntax -->
@@ -76,10 +76,10 @@
               <table class="table table-striped">
                 <thead>
                   <tr>
-                    <th>ประเภททอง</th>
-                    <th class="text-center">จำนวนแผนงาน</th>
-                    <th class="text-center">จำนวนสั่งผลิต</th>
-                    <th class="text-center">เปอร์เซ็นต์</th>
+                    <th>{{ $t('view.production.dashboard.colGoldType') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colProductCount') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colOrderCount2') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colPercent') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -88,7 +88,7 @@
                     <td class="text-center">
                       <span class="badge badge-success">{{ item.count }}</span>
                     </td>
-                    <td class="text-center">{{ item.totalQty }} ชิ้น</td>
+                    <td class="text-center">{{ item.totalQty }} {{ $t('view.production.dashboard.unitPiece') }}</td>
                     <td class="text-center">
                       <span class="percentage-badge">{{ item.percentage }}%</span>
                     </td>
@@ -106,14 +106,14 @@
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
-              <h5><i class="bi bi-bar-chart"></i> สรุปแผนงานที่สำเร็จ - ตามประเภทสินค้า</h5>
+              <h5><i class="bi bi-bar-chart"></i> {{ $t('view.production.dashboard.chartTitleProduct') }}</h5>
             </div>
             <div class="card-body">
               <HorizontalBarChart
                 :data="productTypeChartData"
                 title=""
                 :height="300"
-                :datasetFields="[{ key: 'count', label: 'จำนวน', labelTH: 'จำนวน' }]"
+                :datasetFields="[{ key: 'count', label: $t('view.production.dashboard.countLabel'), labelTH: $t('view.production.dashboard.countLabel') }]"
               />
             </div>
           </div>
@@ -121,7 +121,7 @@
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
-              <h5><i class="bi bi-table"></i> รายละเอียดตามประเภทสินค้า</h5>
+              <h5><i class="bi bi-table"></i> {{ $t('view.production.dashboard.tableDetailProduct') }}</h5>
             </div>
             <div class="card-body">
               <!-- eslint-disable-next-line vue/no-restricted-syntax -->
@@ -129,10 +129,10 @@
               <table class="table table-striped">
                 <thead>
                   <tr>
-                    <th>ประเภทสินค้า</th>
-                    <th class="text-center">จำนวนแผนงาน</th>
-                    <th class="text-center">จำนวนสั่งผลิต</th>
-                    <th class="text-center">เปอร์เซ็นต์</th>
+                    <th>{{ $t('view.production.dashboard.colProductType') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colProductCount') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colOrderCount2') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colPercent') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,7 +141,7 @@
                     <td class="text-center">
                       <span class="badge badge-success">{{ item.count }}</span>
                     </td>
-                    <td class="text-center">{{ item.totalQty }} ชิ้น</td>
+                    <td class="text-center">{{ item.totalQty }} {{ $t('view.production.dashboard.unitPiece') }}</td>
                     <td class="text-center">
                       <span class="percentage-badge">{{ item.percentage }}%</span>
                     </td>
@@ -158,14 +158,14 @@
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
-              <h5><i class="bi bi-bar-chart"></i> สรุปแผนงานที่สำเร็จ - ตามประเภทลูกค้า</h5>
+              <h5><i class="bi bi-bar-chart"></i> {{ $t('view.production.dashboard.chartTitleCustomer') }}</h5>
             </div>
             <div class="card-body">
               <HorizontalBarChart
                 :data="customerTypeChartData"
                 title=""
                 :height="300"
-                :datasetFields="[{ key: 'count', label: 'จำนวน', labelTH: 'จำนวน' }]"
+                :datasetFields="[{ key: 'count', label: $t('view.production.dashboard.countLabel'), labelTH: $t('view.production.dashboard.countLabel') }]"
               />
             </div>
           </div>
@@ -173,7 +173,7 @@
         <div class="col-lg-6 col-md-12">
           <div class="report-card">
             <div class="card-header">
-              <h5><i class="bi bi-table"></i> รายละเอียดตามประเภทลูกค้า</h5>
+              <h5><i class="bi bi-table"></i> {{ $t('view.production.dashboard.tableDetailCustomer') }}</h5>
             </div>
             <div class="card-body">
               <!-- eslint-disable-next-line vue/no-restricted-syntax -->
@@ -181,10 +181,10 @@
               <table class="table table-striped">
                 <thead>
                   <tr>
-                    <th>ประเภทลูกค้า</th>
-                    <th class="text-center">จำนวนแผนงาน</th>
-                    <th class="text-center">จำนวนสั่งผลิต</th>
-                    <th class="text-center">เปอร์เซ็นต์</th>
+                    <th>{{ $t('view.production.dashboard.colCustomerType') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colProductCount') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colOrderCount2') }}</th>
+                    <th class="text-center">{{ $t('view.production.dashboard.colPercent') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -195,7 +195,7 @@
                     <td class="text-center">
                       <span class="badge badge-success">{{ item.count }}</span>
                     </td>
-                    <td class="text-center">{{ item.totalQty }} ชิ้น</td>
+                    <td class="text-center">{{ item.totalQty }} {{ $t('view.production.dashboard.unitPiece') }}</td>
                     <td class="text-center">
                       <span class="percentage-badge">{{ item.percentage }}%</span>
                     </td>
@@ -213,7 +213,7 @@
       <div class="placeholder-content">
         <i class="bi bi-calendar-month"></i>
         <h4>{{ $t('view.production.dashboard.monthlyReport') }}</h4>
-        <p>กรุณาเลือกช่วงวันที่เพื่อดูรายงานรายเดือน</p>
+        <p>{{ $t('view.production.dashboard.selectMonth') }}</p>
       </div>
     </div>
   </div>

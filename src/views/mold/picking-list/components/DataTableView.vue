@@ -20,7 +20,7 @@
       sortMode="multiple"
       :rowsPerPageOptions="[10, 30]"
       paginatorTemplate="FirstPageLink PrevPageLink  CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-      :currentPageReportTemplate="`เเสดงข้อมูล {first} - {last} จากทั้งหมด {totalRecords} รายการ`"
+      :currentPageReportTemplate="$t('view.mold.pickingList.paginatorTemplate')"
     >
       <!-- eslint-disable-next-line no-restricted-imports -->
       <Column>

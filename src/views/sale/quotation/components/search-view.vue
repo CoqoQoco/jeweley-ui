@@ -2,8 +2,8 @@
   <div>
     <form @submit.prevent="onSearchQuotation">
       <pageTitle
-        title="เสนอราคา"
-        description="ค้นหาเเละเลือกสินค้า ออกใบเสนอราคา"
+        :title="$t('view.sale.quotation.title')"
+        :description="$t('view.sale.quotation.pageDescription')"
         :isShowBtnClose="false"
         :isShowRightSlot="true"
       >
@@ -68,7 +68,7 @@
             <button
               class="btn btn-sm btn-dark mr-2"
               type="button"
-              title="ค้นหาเพิ่มเติม"
+              :title="$t('common.btn.advancedSearch')"
               disabled
             >
               <span><i class="bi bi-zoom-in"></i></span>

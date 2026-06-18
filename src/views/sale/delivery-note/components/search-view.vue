@@ -2,28 +2,26 @@
   <div class="filter-container-searchBar">
     <form @submit.prevent="onSearch">
       <div>
-        <pageTitle title="ค้นหาใบส่งของ" :isShowBtnClose="false" />
+        <pageTitle :title="$t('view.sale.deliveryNote.searchTitle')" :isShowBtnClose="false" />
 
         <div class="form-col-container">
           <!-- Search Type -->
           <div>
-            <span class="title-text">ประเภทการค้นหา</span>
+            <span class="title-text">{{ $t('view.sale.deliveryNote.searchType') }}</span>
             <DropdownGeneric
               v-model="formSearch.searchType"
               :options="searchTypeOptions"
               optionLabel="name"
               optionValue="value"
-              placeholder="เลือกประเภทการค้นหา"
+              :placeholder="$t('view.sale.deliveryNote.selectSearchType')"
               @update:modelValue="onSearchTypeChange"
             />
           </div>
 
           <!-- Sale Order Number -->
           <div v-if="formSearch.searchType === 'saleOrder'">
-            <span class="title-text">เลขที่ใบสั่งขาย</span>
-            <input
-              class="form-control bg-input"
-              type="text"
+            <span class="title-text">{{ $t('view.sale.deliveryNote.soNumber') }}</span>
+            <InputTextGeneric
               v-model.trim="formSearch.saleOrderNumber"
               placeholder="SO-2025-001"
               @keyup.enter="onSearch"
@@ -32,10 +30,8 @@
 
           <!-- Delivery Note Number -->
           <div v-if="formSearch.searchType === 'deliveryNote'">
-            <span class="title-text">เลขที่ใบส่งของ</span>
-            <input
-              class="form-control bg-input"
-              type="text"
+            <span class="title-text">{{ $t('view.sale.deliveryNote.dnNumber') }}</span>
+            <InputTextGeneric
               v-model.trim="formSearch.deliveryNoteNumber"
               placeholder="DN-2025-001"
               @keyup.enter="onSearch"
@@ -44,12 +40,10 @@
 
           <!-- Customer Name -->
           <div v-if="formSearch.searchType === 'customer'">
-            <span class="title-text">ชื่อลูกค้า</span>
-            <input
-              class="form-control bg-input"
-              type="text"
+            <span class="title-text">{{ $t('view.sale.deliveryNote.customerName') }}</span>
+            <InputTextGeneric
               v-model.trim="formSearch.customerName"
-              placeholder="ชื่อลูกค้า"
+              :placeholder="$t('view.sale.deliveryNote.customerName')"
               @keyup.enter="onSearch"
             />
           </div>
@@ -61,26 +55,26 @@
               class="btn btn-sm btn-green"
               type="button"
               @click="openSaleOrderModal"
-              title="เลือกจากรายการใบสั่งขาย"
+              :title="$t('view.sale.deliveryNote.selectSaleOrder')"
             >
               <i class="bi bi-list-ul mr-1"></i>
-              เลือกใบสั่งขาย
+              {{ $t('view.sale.deliveryNote.selectSaleOrder') }}
             </button>
             <button
               class="btn btn-sm btn-outline-main ml-2"
               type="button"
               @click="viewDeliveries"
-              title="ดูรายการส่งของทั้งหมด"
+              :title="$t('view.sale.deliveryNote.viewAllList')"
             >
               <i class="bi bi-truck mr-1"></i>
-              รายการส่งของ
+              {{ $t('view.sale.deliveryNote.listLabel') }}
             </button>
           </div>
           <div>
-            <button class="btn btn-sm btn-green" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-green" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
             </button>
-            <button class="btn btn-sm btn-dark ml-2" type="button" @click="clearSearch" title="ล้างข้อมูล">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="clearSearch" :title="$t('common.btn.clear')">
               <i class="bi bi-x-circle"></i>
             </button>
           </div>
@@ -100,6 +94,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
@@ -108,6 +103,7 @@ export default {
 
   components: {
     DropdownGeneric,
+    InputTextGeneric,
     pageTitle
   },
 
@@ -129,13 +125,17 @@ export default {
         customerName: ''
       },
 
-      searchTypeOptions: [
-        { name: 'ใบสั่งขาย', value: 'saleOrder' },
-        { name: 'ใบส่งของ', value: 'deliveryNote' },
-        { name: 'ลูกค้า', value: 'customer' }
-      ],
-
       searchResultInfo: null
+    }
+  },
+
+  computed: {
+    searchTypeOptions() {
+      return [
+        { name: this.$t('view.sale.deliveryNote.typeBySONumber'), value: 'saleOrder' },
+        { name: this.$t('view.sale.deliveryNote.typeByDNNumber'), value: 'deliveryNote' },
+        { name: this.$t('view.sale.deliveryNote.typeByCustomer'), value: 'customer' }
+      ]
     }
   },
 
@@ -170,17 +170,17 @@ export default {
       const searchData = { ...this.formSearch }
 
       if (searchData.searchType === 'saleOrder' && !searchData.saleOrderNumber.trim()) {
-        this.searchResultInfo = 'กรุณากรอกเลขที่ใบสั่งขาย'
+        this.searchResultInfo = this.$t('view.sale.deliveryNote.enterSoNumber')
         return
       }
 
       if (searchData.searchType === 'deliveryNote' && !searchData.deliveryNoteNumber.trim()) {
-        this.searchResultInfo = 'กรุณากรอกเลขที่ใบส่งของ'
+        this.searchResultInfo = this.$t('view.sale.deliveryNote.enterDnNumber')
         return
       }
 
       if (searchData.searchType === 'customer' && !searchData.customerName.trim()) {
-        this.searchResultInfo = 'กรุณากรอกชื่อลูกค้า'
+        this.searchResultInfo = this.$t('view.sale.deliveryNote.enterCustomerName')
         return
       }
 

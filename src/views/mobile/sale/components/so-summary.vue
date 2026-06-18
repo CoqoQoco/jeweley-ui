@@ -2,17 +2,17 @@
   <div class="so-summary-section">
     <div class="summary-card">
       <div class="summary-row">
-        <span class="summary-label">จำนวนรายการ</span>
-        <span class="summary-value">{{ itemCount }} รายการ</span>
+        <span class="summary-label">{{ $t('view.mobile.sale.summaryItemCount') }}</span>
+        <span class="summary-value">{{ itemCount }} {{ $t('view.mobile.sale.summaryItemUnit') }}</span>
       </div>
       <div class="summary-divider"></div>
       <div class="summary-row total">
-        <span class="summary-label">ยอดรวม</span>
+        <span class="summary-label">{{ $t('view.mobile.sale.summaryTotalLabel') }}</span>
         <span class="summary-value">{{ formatCurrency(displayTotal) }} {{ displayCurrencyUnit }}</span>
       </div>
       <div v-if="hasCurrencyConversion" class="summary-row reference">
-        <span class="summary-label">เทียบเท่า</span>
-        <span class="summary-value">{{ formatCurrency(totalAmountTHB) }} บาท</span>
+        <span class="summary-label">{{ $t('view.mobile.sale.summaryEquivalent') }}</span>
+        <span class="summary-value">{{ formatCurrency(totalAmountTHB) }} {{ $t('view.mobile.sale.summaryBahtUnit') }}</span>
       </div>
     </div>
   </div>

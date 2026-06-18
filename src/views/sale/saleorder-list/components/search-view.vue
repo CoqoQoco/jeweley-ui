@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container-searchBar">
     <pageTitle
-      title="รายการใบสั่งขาย"
-      description="แสดงรายการใบสั่งขายทั้งหมด พร้อมฟีเจอร์ค้นหาและกรองข้อมูล"
+      :title="$t('view.sale.saleOrderList.title')"
+      :description="$t('view.sale.saleOrderList.pageDescription')"
       :isShowBtnClose="false"
       :isShowRightSlot="true"
     >
@@ -10,7 +10,7 @@
         <button
           class="btn btn-sm btn-main"
           type="button"
-          title="สร้างใบสั่งขาย"
+          :title="$t('view.sale.saleOrderList.createSaleOrder')"
           @click="$router.push({ name: 'sale-order' })"
         >
           <span class="bi bi-database-fill-add"></span>
@@ -22,45 +22,41 @@
       <div class="form-col-container">
         <!-- so number -->
         <div>
-          <span class="title-text">เลขที่ใบสั่งขาย</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.soNumber"
+          <span class="title-text">{{ $t('view.sale.saleOrderList.soNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.soNumber"
+            :trim="true"
             placeholder="EX: SO-2025-001"
           />
         </div>
 
         <!-- stock number -->
         <div>
-          <span class="title-text">เลข Stock</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.stockNumber"
-            placeholder="เลข Stock"
+          <span class="title-text">{{ $t('view.sale.saleOrderList.stockNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.stockNumber"
+            :trim="true"
+            :placeholder="$t('view.sale.saleOrderList.stockNumber')"
           />
         </div>
 
         <!-- product number -->
         <div>
-          <span class="title-text">เลข Product</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.productNumber"
-            placeholder="เลข Product"
+          <span class="title-text">{{ $t('view.sale.saleOrderList.productNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.productNumber"
+            :trim="true"
+            :placeholder="$t('view.sale.saleOrderList.productNumber')"
           />
         </div>
 
         <!-- mold number -->
         <div>
-          <span class="title-text">เลข Mold</span>
-          <input
-            :class="['form-control bg-input']"
-            type="text"
-            v-model.trim="form.moldNumber"
-            placeholder="เลข Mold"
+          <span class="title-text">{{ $t('view.sale.saleOrderList.moldNumber') }}</span>
+          <InputTextGeneric
+            v-model="form.moldNumber"
+            :trim="true"
+            :placeholder="$t('view.sale.saleOrderList.moldNumber')"
           />
         </div>
       </div>
@@ -69,51 +65,47 @@
         :isShow="isShow.dialog"
         @closeDialog="closeDialog"
         @search="dialogSearch"
-        txtHeader="ค้นหาเพิ่มเติม"
+        :txtHeader="$t('common.label.advancedSearch')"
       >
         <template #content>
           <div class="form-col-container">
             <!-- customer name -->
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.customerName"
-                placeholder="ชื่อลูกค้า"
+              <span class="title-text">{{ $t('view.sale.saleOrderList.customerName') }}</span>
+              <InputTextGeneric
+                v-model="form.customerName"
+                :trim="true"
+                :placeholder="$t('view.sale.saleOrderList.customerName')"
               />
             </div>
 
             <!-- ref quotation -->
             <div>
-              <span class="title-text">อ้างอิงใบเสนอราคา</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.refQuotation"
-                placeholder="เลขที่ใบเสนอราคา"
+              <span class="title-text">{{ $t('view.sale.saleOrderList.refQuotation') }}</span>
+              <InputTextGeneric
+                v-model="form.refQuotation"
+                :trim="true"
+                :placeholder="$t('view.sale.saleOrderList.refQuotation')"
               />
             </div>
 
             <!-- currency -->
             <div>
-              <span class="title-text">สกุลเงิน</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.currencyUnit"
+              <span class="title-text">{{ $t('view.sale.saleOrderList.currency') }}</span>
+              <InputTextGeneric
+                v-model="form.currencyUnit"
+                :trim="true"
                 placeholder="EX: USD, THB"
               />
             </div>
 
             <!-- create by -->
             <div>
-              <span class="title-text">ผู้สร้าง</span>
-              <input
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.createBy"
-                placeholder="ชื่อผู้สร้าง"
+              <span class="title-text">{{ $t('view.sale.saleOrderList.createBy') }}</span>
+              <InputTextGeneric
+                v-model="form.createBy"
+                :trim="true"
+                :placeholder="$t('view.sale.saleOrderList.createBy')"
               />
             </div>
           </div>
@@ -121,7 +113,7 @@
           <div class="form-col-container mt-2">
             <!-- create date -->
             <div>
-              <span class="title-text">วันที่สร้าง</span>
+              <span class="title-text">{{ $t('view.sale.saleOrderList.createDate') }}</span>
               <div class="flex-group">
                 <CalendarGeneric
                   class="w-100"
@@ -129,7 +121,7 @@
                   :maxDate="form.createDateEnd"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="เริ่มต้น"
+                  :placeholder="$t('common.label.startDate')"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -139,7 +131,7 @@
                   :minDate="form.createDateStart"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="สิ้นสุด"
+                  :placeholder="$t('common.label.endDate')"
                   dateFormat="dd/mm/yy"
                 />
               </div>
@@ -147,7 +139,7 @@
 
             <!-- delivery date -->
             <div>
-              <span class="title-text">วันที่จัดส่ง</span>
+              <span class="title-text">{{ $t('view.sale.saleOrderList.deliveryDate') }}</span>
               <div class="flex-group">
                 <CalendarGeneric
                   class="w-100"
@@ -155,7 +147,7 @@
                   :maxDate="form.deliveryDateEnd"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="เริ่มต้น"
+                  :placeholder="$t('common.label.startDate')"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -165,7 +157,7 @@
                   :minDate="form.deliveryDateStart"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="สิ้นสุด"
+                  :placeholder="$t('common.label.endDate')"
                   dateFormat="dd/mm/yy"
                 />
               </div>
@@ -175,18 +167,18 @@
       </dialogView>
 
       <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+        <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
           <span><i class="bi bi-search"></i></span>
         </button>
         <button
           class="btn btn-sm btn-sub-main mr-2"
           type="button"
-          title="เพิ่มเติม"
+          :title="$t('common.btn.more')"
           @click="onShowDialog"
         >
           <span><i class="bi bi-zoom-in"></i></span>
         </button>
-        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
           <span><i class="bi bi-x-circle"></i></span>
         </button>
       </div>
@@ -198,6 +190,7 @@
 import { defineAsyncComponent } from 'vue'
 import pageTitle from '@/components/custom/page-title.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
@@ -210,6 +203,7 @@ export default {
 
   components: {
     CalendarGeneric,
+    InputTextGeneric,
     pageTitle,
     dialogView
   },

@@ -17,7 +17,7 @@
       <!-- Quotation Reference Banner -->
       <div v-if="refQuotation" class="quotation-ref-banner">
         <i class="bi bi-link-45deg"></i>
-        <span>อ้างอิงใบเสนอราคา: <strong>{{ refQuotation }}</strong></span>
+        <span>{{ $t('view.mobile.sale.quotationRefBanner') }} <strong>{{ refQuotation }}</strong></span>
       </div>
 
       <!-- Section 1: Add Items -->
@@ -25,7 +25,7 @@
         <div class="section-header-bar">
           <h3 class="section-title">
             <i class="bi bi-plus-circle"></i>
-            เพิ่มสินค้า
+            {{ $t('view.mobile.sale.addItem') }}
           </h3>
         </div>
 
@@ -47,7 +47,7 @@
         <div v-if="addItemTab === 'scan'" class="scan-section">
           <!-- Search Field Selector -->
           <div class="search-field-selector">
-            <label class="field-selector-label">ค้นหาด้วย</label>
+            <label class="field-selector-label">{{ $t('view.mobile.sale.searchBy') }}</label>
             <div class="field-selector-options">
               <button
                 v-for="option in searchFieldOptions"
@@ -67,7 +67,7 @@
 
           <!-- Divider -->
           <div class="scanner-divider">
-            <span>หรือ</span>
+            <span>{{ $t('view.mobile.sale.orDivider') }}</span>
           </div>
 
           <!-- Manual Input -->
@@ -81,7 +81,7 @@
             />
             <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
               <i class="bi bi-search"></i>
-              ค้นหาสินค้า
+              {{ $t('view.mobile.sale.searchProduct') }}
             </button>
           </div>
         </div>
@@ -100,7 +100,7 @@
         <div class="section-header-inline">
           <h3 class="section-title-sm">
             <i class="bi bi-currency-exchange"></i>
-            สกุลเงิน
+            {{ $t('view.mobile.sale.currencySection') }}
           </h3>
         </div>
         <div class="currency-card">
@@ -184,7 +184,7 @@
           :disabled="items.length === 0"
         >
           <i class="bi bi-save"></i>
-          สร้าง SO
+          {{ $t('view.mobile.sale.createSoBtn') }}
         </button>
         <button
           class="mobile-btn mobile-btn-primary"
@@ -192,14 +192,14 @@
           :disabled="items.length === 0"
         >
           <i class="bi bi-file-earmark-check"></i>
-          สร้าง SO + ออก Invoice
+          {{ $t('view.mobile.sale.createSoAndInvoiceBtn') }}
         </button>
         <button
           class="mobile-btn mobile-btn-outline"
           @click="cancelCreate"
         >
           <i class="bi bi-x-circle"></i>
-          ยกเลิก
+          {{ $t('view.mobile.sale.cancelBtn') }}
         </button>
       </div>
     </div>
@@ -247,8 +247,8 @@ export default {
       scanInput: '',
       searchField: 'stockNumber',
       searchFieldOptions: [
-        { value: 'stockNumber', label: 'รหัสสินค้าใหม่', icon: 'bi bi-upc-scan' },
-        { value: 'stockNumberOrigin', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
+        { value: 'stockNumber', label: this.$t('view.mobile.sale.fieldNewCode'), icon: 'bi bi-upc-scan' },
+        { value: 'stockNumberOrigin', label: this.$t('view.mobile.sale.fieldOldCode'), icon: 'bi bi-tag' }
       ],
       items: [],
       currencyUnit: 'US$',
@@ -283,8 +283,8 @@ export default {
   computed: {
     searchFieldPlaceholder() {
       return this.searchField === 'stockNumber'
-        ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
-        : 'กรอกรหัสสินค้าเก่า (Origin)'
+        ? this.$t('view.mobile.sale.scanInputPlaceholderNew')
+        : this.$t('view.mobile.sale.scanInputPlaceholderOld')
     }
   },
 
@@ -367,7 +367,7 @@ export default {
 
     async handleManualSearch() {
       if (!this.scanInput || !this.scanInput.trim()) {
-        warning('กรุณากรอกเลขที่ผลิต')
+        warning(this.$t('view.mobile.sale.warningEnterStockNumber'))
         return
       }
       await this.searchAndAddProduct(this.scanInput.trim())
@@ -379,14 +379,14 @@ export default {
       })
 
       if (!response) {
-        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบรหัสสินค้า')
+        error(this.$t('view.mobile.sale.errorProductNotFound'), this.$t('view.mobile.sale.errorCheckStockNumber'))
         return
       }
 
       // Check duplicate
       const exists = this.items.some((item) => item.stockNumber === response.stockNumber)
       if (exists) {
-        warning('สินค้านี้ถูกเพิ่มในรายการแล้ว')
+        warning(this.$t('view.mobile.sale.warnProductAlreadyAdded'))
         return
       }
 
@@ -410,20 +410,20 @@ export default {
       })
 
       this.scanInput = ''
-      success('เพิ่มสินค้าสำเร็จ', `${response.stockNumber}`)
+      success(this.$t('view.mobile.sale.successAddProduct'), `${response.stockNumber}`)
     },
 
     validateBeforeSave() {
       if (this.items.length === 0) {
-        warning('กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ')
+        warning(this.$t('view.mobile.sale.warnAddAtLeastOne'))
         return false
       }
       if (!this.customer.customerCode) {
-        warning('กรุณาเลือกลูกค้า', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.mobile.sale.warnSelectCustomer'), this.$t('view.mobile.sale.warnIncompleteData'))
         return false
       }
       if (!this.currencyUnit) {
-        warning('กรุณาระบุสกุลเงิน', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.mobile.sale.warnSelectCurrency'), this.$t('view.mobile.sale.warnIncompleteData'))
         return false
       }
       return true
@@ -527,7 +527,7 @@ export default {
 
       if (result) {
         const soNumber = result.soNumber || result
-        const statusLabel = status === 'Draft' ? 'บันทึกร่าง' : 'สร้างใบสั่งขาย'
+        const statusLabel = status === 'Draft' ? this.$t('view.mobile.sale.statusLabelDraft') : this.$t('view.mobile.sale.statusLabelCreate')
         success(`เลขที่: ${soNumber}`, `${statusLabel}สำเร็จ`)
         return soNumber
       }

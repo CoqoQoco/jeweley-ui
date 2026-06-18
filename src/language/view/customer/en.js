@@ -1,6 +1,7 @@
 export default {
   searchTitle: 'Customer List',
   createTitle: 'Add Customer',
+  editTitle: 'Edit Customer',
   createBtn: 'Add Customer',
 
   field: {
@@ -18,11 +19,18 @@ export default {
   },
 
   placeholder: {
-    search: 'EX: Customer name, customer code ...'
+    search: 'EX: Customer name, customer code ...',
+    customerType: 'Select customer type'
   },
 
   confirm: {
-    create: 'Confirm Add Customer'
+    create: 'Confirm Add Customer',
+    edit: 'Confirm Edit Customer'
+  },
+
+  success: {
+    create: 'Customer created successfully',
+    edit: 'Customer updated successfully'
   },
 
   validation: {

@@ -4,14 +4,14 @@
     <div v-if="selectedQuotations.length >= 2" class="merge-toolbar">
       <span class="merge-info">
         <i class="bi bi-check2-square mr-1"></i>
-        เลือก {{ selectedQuotations.length }} ใบ
+        {{ $t('view.sale.quotationList.selectedItems', { count: selectedQuotations.length }) }}
       </span>
       <button class="btn btn-sm btn-main ml-2" @click="onMergeClick">
         <i class="bi bi-diagram-2 mr-1"></i>
-        รวม {{ selectedQuotations.length }} Quotation
+        {{ $t('view.sale.quotationList.mergeCount', { count: selectedQuotations.length }) }}
       </button>
       <button class="btn btn-sm btn-outline-main ml-2" @click="selectedQuotations = []">
-        ยกเลิก
+        {{ $t('common.btn.cancel') }}
       </button>
     </div>
 
@@ -33,7 +33,7 @@
         <div class="btn-action-container">
           <button
             class="btn btn-sm btn-green"
-            title="ดูรายละเอียด"
+            :title="$t('common.btn.view')"
             @click="onView(data)"
           >
             <i class="bi bi-eye"></i>
@@ -43,7 +43,7 @@
 
       <template #statusTemplate>
         <div class="status-container">
-          <span class="badge badge-success">สำเร็จ</span>
+          <span class="badge badge-success">{{ $t('view.sale.quotationList.statusSuccess') }}</span>
         </div>
       </template>
 
@@ -143,15 +143,15 @@ export default {
       return [
         { field: 'action', header: '', width: '50px', sortable: false },
         { field: 'number', header: this.$t('view.sale.quotationList.number'), sortable: true, minWidth: '150px' },
-        { field: 'running', header: 'เลขที่รัน', sortable: true, minWidth: '120px' },
+        { field: 'running', header: this.$t('view.sale.quotationList.running'), sortable: true, minWidth: '120px' },
         { field: 'customerName', header: this.$t('view.sale.quotationList.customerName'), sortable: true, minWidth: '180px' },
-        { field: 'customerPhone', header: 'เบอร์โทร', sortable: true, minWidth: '120px' },
-        { field: 'customerEmail', header: 'อีเมล', sortable: true, minWidth: '150px' },
+        { field: 'customerPhone', header: this.$t('common.field.phone'), sortable: true, minWidth: '120px' },
+        { field: 'customerEmail', header: this.$t('common.field.email'), sortable: true, minWidth: '150px' },
         { field: 'currency', header: this.$t('view.sale.quotationList.currency'), sortable: true, minWidth: '80px' },
-        { field: 'currencyRate', header: 'อัตราแลกเปลี่ยน', sortable: true, minWidth: '120px', template: 'currencyRateTemplate' },
-        { field: 'markUp', header: 'Markup (%)', sortable: true, minWidth: '100px', template: 'markupTemplate' },
-        { field: 'discount', header: 'ส่วนลด (%)', sortable: true, minWidth: '100px', template: 'discountTemplate' },
-        { field: 'freight', header: 'ค่าขนส่ง', sortable: true, minWidth: '100px', template: 'freightTemplate' },
+        { field: 'currencyRate', header: this.$t('view.sale.quotationList.currencyRate'), sortable: true, minWidth: '120px', template: 'currencyRateTemplate' },
+        { field: 'markUp', header: this.$t('view.sale.quotationList.markup'), sortable: true, minWidth: '100px', template: 'markupTemplate' },
+        { field: 'discount', header: this.$t('view.sale.quotationList.discount'), sortable: true, minWidth: '100px', template: 'discountTemplate' },
+        { field: 'freight', header: this.$t('view.sale.quotationList.freight'), sortable: true, minWidth: '100px', template: 'freightTemplate' },
         { field: 'date', header: this.$t('view.sale.quotationList.quotationDate'), sortable: true, minWidth: '140px', template: 'dateTemplate' },
         { field: 'createDate', header: this.$t('view.sale.quotationList.createDate'), sortable: true, minWidth: '140px', template: 'createDateTemplate' },
         { field: 'createBy', header: this.$t('view.sale.quotationList.createBy'), sortable: true, minWidth: '120px' },

@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3 class="section-title">
         <i class="bi bi-box-seam"></i>
-        รายการสินค้า ({{ items.length }})
+        {{ $t('view.mobile.sale.itemListTitle', { count: items.length }) }}
       </h3>
     </div>
 
@@ -21,7 +21,7 @@
 
     <div v-else class="empty-items">
       <i class="bi bi-cart"></i>
-      <span>ยังไม่มีสินค้าในรายการ</span>
+      <span>{{ $t('view.mobile.sale.itemListEmpty') }}</span>
     </div>
   </div>
 </template>

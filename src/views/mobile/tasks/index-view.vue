@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="tasks-header">
       <div class="mobile-container">
-        <h2 class="mobile-title">งานของฉัน</h2>
-        <p class="header-subtitle">รายการงานทั้งหมด</p>
+        <h2 class="mobile-title">{{ $t('view.mobile.tasks.pageTitle') }}</h2>
+        <p class="header-subtitle">{{ $t('view.mobile.tasks.pageSubtitle') }}</p>
       </div>
     </div>
 
@@ -41,15 +41,15 @@
       <!-- Empty State -->
       <div v-else class="mobile-empty-state">
         <i class="bi bi-inbox"></i>
-        <div class="empty-title">ไม่มีงาน</div>
-        <div class="empty-subtitle">ยังไม่มีงานในระบบ</div>
+        <div class="empty-title">{{ $t('view.mobile.tasks.emptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.tasks.emptySubtitle') }}</div>
       </div>
 
       <!-- Load More Button -->
       <div v-if="hasMore" class="mobile-mt-2">
         <button class="mobile-btn mobile-btn-secondary mobile-btn-block" @click="loadMore">
           <i class="bi bi-arrow-down-circle"></i>
-          โหลดเพิ่มเติม
+          {{ $t('view.mobile.tasks.loadMoreBtn') }}
         </button>
       </div>
     </div>
@@ -81,10 +81,20 @@ export default {
       currentPage: 0,
       pageSize: 20,
       hasMore: true,
-      filterTabs: [
-        { label: 'ทั้งหมด', value: 'all', count: null },
-        { label: 'กำลังดำเนินการ', value: 'active', count: null },
-        { label: 'เสร็จสิ้น', value: 'completed', count: null }
+      filterTabValues: [
+        { value: 'all', count: null },
+        { value: 'active', count: null },
+        { value: 'completed', count: null }
+      ]
+    }
+  },
+
+  computed: {
+    filterTabs() {
+      return [
+        { label: this.$t('view.mobile.tasks.filterAll'), value: 'all', count: null },
+        { label: this.$t('view.mobile.tasks.filterActive'), value: 'active', count: null },
+        { label: this.$t('view.mobile.tasks.filterCompleted'), value: 'completed', count: null }
       ]
     }
   },
@@ -129,8 +139,8 @@ export default {
 
     onInactiveJob(job) {
       confirmSubmit(
-        `ต้องการยกเลิกงาน "${job.jobRunning}" ใช่หรือไม่?`,
-        'ยืนยันการยกเลิก',
+        this.$t('view.mobile.tasks.confirmCancelJob', { jobRunning: job.jobRunning }),
+        this.$t('view.mobile.tasks.confirmCancelTitle'),
         async () => {
           await this.userApiStore.fetchInactiveMyJob({ id: job.id, jobRunning: job.jobRunning })
           await this.loadJobs()

@@ -7,7 +7,7 @@
           <i class="bi bi-arrow-left"></i>
         </button>
         <div class="header-content">
-          <h2 class="mobile-title">ข้อมูลการตีราคา</h2>
+          <h2 class="mobile-title">{{ $t('view.mobile.costVersion.headerTitle') }}</h2>
           <p class="header-subtitle">{{ jobRunning }}</p>
         </div>
         <button
@@ -24,7 +24,7 @@
     <div v-if="isLoading" class="mobile-container mobile-mt-2">
       <div class="mobile-loading">
         <div class="spinner"></div>
-        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+        <div class="loading-text">{{ $t('view.mobile.costVersion.loadingText') }}</div>
       </div>
     </div>
 
@@ -34,23 +34,23 @@
       <div class="info-card">
         <div class="card-header">
           <i class="bi bi-box-seam"></i>
-          <span>ข้อมูลสินค้า</span>
+          <span>{{ $t('view.mobile.costVersion.stockInfoTitle') }}</span>
         </div>
         <div class="card-body">
           <div class="info-row">
-            <span class="info-label">เลขที่ผลิต:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.stockNumberLabel') }}</span>
             <span class="info-value highlight">{{ costVersion.stockNumber }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">เลขที่ใบตีราคา:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.runningLabel') }}</span>
             <span class="info-value">{{ costVersion.running }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">วันที่สร้าง:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.createDateLabel') }}</span>
             <span class="info-value">{{ formatDate(costVersion.createDate) }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">ผู้สร้าง:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.createByLabel') }}</span>
             <span class="info-value">{{ costVersion.createBy }}</span>
           </div>
         </div>
@@ -60,27 +60,27 @@
       <div v-if="hasCustomerInfo" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-person"></i>
-          <span>ข้อมูลลูกค้า</span>
+          <span>{{ $t('view.mobile.costVersion.customerInfoTitle') }}</span>
         </div>
         <div class="card-body">
           <div v-if="costVersion.customerCode" class="info-row">
-            <span class="info-label">รหัสลูกค้า:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.customerCodeLabel') }}</span>
             <span class="info-value">{{ costVersion.customerCode }}</span>
           </div>
           <div v-if="costVersion.customerName" class="info-row">
-            <span class="info-label">ชื่อลูกค้า:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.customerNameLabel') }}</span>
             <span class="info-value">{{ costVersion.customerName }}</span>
           </div>
           <div v-if="costVersion.customerTel" class="info-row">
-            <span class="info-label">เบอร์โทร:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.customerTelLabel') }}</span>
             <span class="info-value">{{ costVersion.customerTel }}</span>
           </div>
           <div v-if="costVersion.customerEmail" class="info-row">
-            <span class="info-label">อีเมล:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.customerEmailLabel') }}</span>
             <span class="info-value">{{ costVersion.customerEmail }}</span>
           </div>
           <div v-if="costVersion.customerAddress" class="info-row remark-row">
-            <span class="info-label">ที่อยู่:</span>
+            <span class="info-label">{{ $t('view.mobile.costVersion.customerAddressLabel') }}</span>
             <span class="info-value">{{ costVersion.customerAddress }}</span>
           </div>
         </div>
@@ -90,19 +90,30 @@
       <div class="info-card mobile-mt-2">
         <div class="card-header currency-header" @click="showCurrencyInput = !showCurrencyInput">
           <i class="bi bi-currency-exchange"></i>
-          <span>แปลงสกุลเงิน</span>
+          <span>{{ $t('view.mobile.costVersion.currencyTitle') }}</span>
           <i :class="['bi', showCurrencyInput ? 'bi-chevron-up' : 'bi-chevron-down']" style="margin-left: auto"></i>
         </div>
         <transition name="slide-fade">
           <div v-if="showCurrencyInput" class="card-body">
             <div class="currency-form">
               <div class="currency-field">
-                <label>สกุลเงิน</label>
-                <input type="text" class="form-control" v-model.trim="currencyUnit" placeholder="เช่น US$, EUR" />
+                <label>{{ $t('view.mobile.costVersion.currencyUnitLabel') }}</label>
+                <InputTextGeneric
+                  v-model="currencyUnit"
+                  :placeholder="$t('view.mobile.costVersion.currencyUnitPlaceholder')"
+                  trim
+                />
               </div>
               <div class="currency-field">
-                <label>อัตราแลกเปลี่ยน (1 หน่วย = ? บาท)</label>
-                <input type="number" class="form-control" v-model.number="currencyRate" min="0" step="0.01" placeholder="เช่น 33.50" />
+                <label>{{ $t('view.mobile.costVersion.currencyRateLabel') }}</label>
+                <InputTextGeneric
+                  :modelValue="currencyRate"
+                  type="number"
+                  :placeholder="$t('view.mobile.costVersion.currencyRatePlaceholder')"
+                  min="0"
+                  step="0.01"
+                  @update:modelValue="currencyRate = $event !== '' ? Number($event) : null"
+                />
               </div>
             </div>
           </div>
@@ -114,13 +125,13 @@
         <div class="cost-card-header" @click="toggleCostDetails">
           <div class="cost-header-left">
             <i class="bi bi-calculator"></i>
-            <span>รายการต้นทุน</span>
+            <span>{{ $t('view.mobile.costVersion.costDetailsTitle') }}</span>
           </div>
           <div class="cost-header-right">
             <div>
               <span class="total-amount">{{ formatCurrency(displayTotalCost) }} {{ displayCurrency }}</span>
               <div v-if="hasCurrencyConversion" class="reference-line">
-                เทียบเท่า {{ formatCurrency(totalCost) }} บาท
+                {{ $t('view.mobile.costVersion.equivalentBaht', { amount: formatCurrency(totalCost) }) }}
               </div>
             </div>
             <i :class="['bi', showCostDetails ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
@@ -131,12 +142,12 @@
         <div v-if="tagPriceMultiplier > 0" class="tag-price-bar">
           <div class="tag-price-left">
             <i class="bi bi-tag"></i>
-            <span>ราคาป้าย (× {{ tagPriceMultiplier }})</span>
+            <span>{{ $t('view.mobile.costVersion.tagPriceLabel', { multiplier: tagPriceMultiplier }) }}</span>
           </div>
           <div>
             <span class="tag-price-amount">{{ formatCurrency(displayTagPrice) }} {{ displayCurrency }}</span>
             <div v-if="hasCurrencyConversion" class="tag-reference-line">
-              เทียบเท่า {{ formatCurrency(tagPrice) }} บาท
+              {{ $t('view.mobile.costVersion.equivalentBaht', { amount: formatCurrency(tagPrice) }) }}
             </div>
           </div>
         </div>
@@ -180,19 +191,19 @@
                         <table>
                           <tbody>
                             <tr>
-                              <td class="label">จำนวน</td>
+                              <td class="label">{{ $t('view.mobile.costVersion.tableQty') }}</td>
                               <td class="value">{{ formatNumber(item.qty) }}</td>
-                              <td class="label">ราคา/หน่วย</td>
+                              <td class="label">{{ $t('view.mobile.costVersion.tablePricePerUnit') }}</td>
                               <td class="value">{{ formatCurrency(item.qtyPrice) }}</td>
                             </tr>
                             <tr>
-                              <td class="label">น้ำหนัก</td>
+                              <td class="label">{{ $t('view.mobile.costVersion.tableWeight') }}</td>
                               <td class="value">{{ formatNumber(item.qtyWeight) }}</td>
-                              <td class="label">ราคา/น้ำหนัก</td>
+                              <td class="label">{{ $t('view.mobile.costVersion.tablePricePerWeight') }}</td>
                               <td class="value">{{ formatCurrency(item.qtyWeightPrice) }}</td>
                             </tr>
                             <tr class="total-row">
-                              <td class="label total-label" colspan="3">รวม</td>
+                              <td class="label total-label" colspan="3">{{ $t('view.mobile.costVersion.tableTotal') }}</td>
                               <td class="value total-value">{{ formatCurrency(item.totalPrice) }}</td>
                             </tr>
                           </tbody>
@@ -211,7 +222,7 @@
       <div v-if="costVersion.remark" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-chat-left-text"></i>
-          <span>หมายเหตุ</span>
+          <span>{{ $t('view.mobile.costVersion.remarkTitle') }}</span>
         </div>
         <div class="card-body">
           <div class="remark-text">{{ costVersion.remark }}</div>
@@ -229,7 +240,7 @@
             class="bi"
             :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"
           ></i>
-          <span>{{ exportingPDF ? 'กำลัง Export PDF...' : 'Export PDF' }}</span>
+          <span>{{ exportingPDF ? $t('view.mobile.costVersion.exportingPdfBtn') : $t('view.mobile.costVersion.exportPdfBtn') }}</span>
         </button>
       </div>
     </div>
@@ -238,11 +249,11 @@
     <div v-else class="mobile-container mobile-mt-2">
       <div class="mobile-empty-state">
         <i class="bi bi-exclamation-circle"></i>
-        <div class="empty-title">ไม่พบข้อมูล</div>
-        <div class="empty-subtitle">ไม่สามารถโหลดข้อมูลการตีราคาได้</div>
+        <div class="empty-title">{{ $t('view.mobile.costVersion.emptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.costVersion.emptySubtitle') }}</div>
         <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="loadCostVersion">
           <i class="bi bi-arrow-clockwise"></i>
-          ลองอีกครั้ง
+          {{ $t('view.mobile.costVersion.retryBtn') }}
         </button>
       </div>
     </div>
@@ -256,10 +267,14 @@ import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
 dayjs.locale('th')
 
 export default {
   name: 'MobileCostVersionDetail',
+
+  components: { InputTextGeneric },
 
   setup() {
     const productStore = usrStockProductApiStore()
@@ -308,11 +323,11 @@ export default {
       if (!this.hasCostData) return []
 
       const groups = {
-        Gold: { name: 'รายการทอง', items: [], icon: 'bi-coin', order: 1 },
-        Gem: { name: 'รายการวัถุดิบ', items: [], icon: 'bi-gem', order: 2 },
-        Worker: { name: 'รายการงานช่าง', items: [], icon: 'bi-tools', order: 3 },
-        Embed: { name: 'รายการงานฝัง', items: [], icon: 'bi-grid-3x3', order: 4 },
-        ETC: { name: 'รายการเพิ่มเติม', items: [], icon: 'bi-plus-circle', order: 5 }
+        Gold: { name: this.$t('view.mobile.costVersion.groupGold'), items: [], icon: 'bi-coin', order: 1 },
+        Gem: { name: this.$t('view.mobile.costVersion.groupGem'), items: [], icon: 'bi-gem', order: 2 },
+        Worker: { name: this.$t('view.mobile.costVersion.groupWorker'), items: [], icon: 'bi-tools', order: 3 },
+        Embed: { name: this.$t('view.mobile.costVersion.groupEmbed'), items: [], icon: 'bi-grid-3x3', order: 4 },
+        ETC: { name: this.$t('view.mobile.costVersion.groupEtc'), items: [], icon: 'bi-plus-circle', order: 5 }
       }
 
       this.costVersion.prictransection.forEach((item) => {
@@ -406,12 +421,12 @@ export default {
 
     async handleExportPDF() {
       if (!this.costVersion) {
-        warning('ไม่พบข้อมูลการตีราคา')
+        warning(this.$t('view.mobile.costVersion.warnNoCostVersion'))
         return
       }
 
       if (!this.stockData) {
-        warning('กำลังโหลดข้อมูลสินค้า กรุณารอสักครู่')
+        warning(this.$t('view.mobile.costVersion.warnLoadingStock'))
         return
       }
 
@@ -433,10 +448,10 @@ export default {
         // Download PDF
         pdf.download(filename)
 
-        success('Export PDF สำเร็จ', 'สำเร็จ')
+        success(this.$t('view.mobile.costVersion.successExportPdf'), this.$t('view.mobile.costVersion.successTitle'))
       } catch (err) {
         console.error('Error exporting PDF:', err)
-        error(err.message || 'เกิดข้อผิดพลาดในการ Export PDF', 'ข้อผิดพลาด')
+        error(err.message || this.$t('view.mobile.costVersion.errorExportPdf'), this.$t('view.mobile.costVersion.errorTitle'))
       } finally {
         this.exportingPDF = false
       }

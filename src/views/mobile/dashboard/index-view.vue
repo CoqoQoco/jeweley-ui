@@ -44,28 +44,28 @@
 
     <!-- Quick Actions -->
     <div class="mobile-container mobile-mt-2">
-      <h3 class="mobile-subtitle mobile-mb-2">หัวข้องาน</h3>
+      <h3 class="mobile-subtitle mobile-mb-2">{{ $t('view.mobile.dashboard.quickActionsTitle') }}</h3>
 
       <div class="mobile-grid-2">
         <div class="action-card" @click="navigateTo('/mobile/scan')">
           <div class="action-icon">
             <i class="bi bi-qr-code-scan"></i>
           </div>
-          <div class="action-label">สแกน QR</div>
+          <div class="action-label">{{ $t('view.mobile.dashboard.scanQrLabel') }}</div>
         </div>
 
         <div class="action-card" @click="navigateTo('/mobile/quotation')">
           <div class="action-icon">
             <i class="bi bi-file-earmark-text"></i>
           </div>
-          <div class="action-label">ใบเสนอราคา</div>
+          <div class="action-label">{{ $t('view.mobile.dashboard.quotationLabel') }}</div>
         </div>
         
         <div class="action-card" @click="navigateTo('/mobile/sale')">
           <div class="action-icon">
             <i class="bi bi-receipt"></i>
           </div>
-          <div class="action-label">ใบสั่งขาย</div>
+          <div class="action-label">{{ $t('view.mobile.dashboard.saleOrderLabel') }}</div>
         </div>
 
       </div>
@@ -74,12 +74,12 @@
     <!-- My Jobs List -->
     <div class="mobile-container mobile-mt-2">
       <div class="mobile-flex mobile-flex-between mobile-mb-2">
-        <h3 class="mobile-subtitle">งานของฉัน</h3>
+        <h3 class="mobile-subtitle">{{ $t('view.mobile.dashboard.myJobsTitle') }}</h3>
         <div class="header-actions-group">
           <button class="icon-btn-small" @click="refreshJobs" :disabled="isRefreshing">
             <i class="bi bi-arrow-clockwise" :class="{ 'spin-animation': isRefreshing }"></i>
           </button>
-          <button class="text-link" @click="navigateTo('/mobile/tasks')">ดูทั้งหมด</button>
+          <button class="text-link" @click="navigateTo('/mobile/tasks')">{{ $t('view.mobile.dashboard.viewAllBtn') }}</button>
         </div>
       </div>
 
@@ -98,8 +98,8 @@
       <!-- Empty State -->
       <div v-else class="mobile-empty-state">
         <i class="bi bi-inbox"></i>
-        <div class="empty-title">ไม่มีงาน</div>
-        <div class="empty-subtitle">ยังไม่มีงานในระบบ</div>
+        <div class="empty-title">{{ $t('view.mobile.dashboard.emptyJobTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.dashboard.emptyJobSubtitle') }}</div>
       </div>
     </div>
 
@@ -252,8 +252,8 @@ export default {
 
     onInactiveJob(job) {
       confirmSubmit(
-        `ต้องการยกเลิกงาน "${job.jobRunning}" ใช่หรือไม่?`,
-        'ยืนยันการยกเลิก',
+        this.$t('view.mobile.dashboard.confirmCancelJob', { jobRunning: job.jobRunning }),
+        this.$t('view.mobile.dashboard.confirmCancelTitle'),
         async () => {
           await this.userApiStore.fetchInactiveMyJob({ id: job.id, jobRunning: job.jobRunning })
           await this.loadMyJobs()

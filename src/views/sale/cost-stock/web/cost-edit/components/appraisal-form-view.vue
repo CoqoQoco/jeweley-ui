@@ -5,12 +5,12 @@
       <div class="filter-container mt-2">
         <div class="vertical-center-container mb-2">
           <span class="title-text-lg bi bi-clipboard2-check-fill mr-2"></span>
-          <span class="title-text-lg">ข้อมูลสินค้า</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.stockInfo') }}</span>
         </div>
 
         <div class="form-col-sm-container">
           <div>
-            <span class="title-text">เลขที่ผลิต</span>
+            <span class="title-text">{{ $t('view.sale.costStock.stockNumber') }}</span>
             <input
               class="form-control form-control-sm"
               type="text"
@@ -20,7 +20,7 @@
             />
           </div>
           <div>
-            <span class="title-text">รหัสสินค้า</span>
+            <span class="title-text">{{ $t('view.sale.costStock.productCode') }}</span>
             <input
               class="form-control form-control-sm"
               type="text"
@@ -31,7 +31,7 @@
           </div>
 
           <div>
-            <span class="title-text">รายละเอียด</span>
+            <span class="title-text">{{ $t('view.sale.costStock.description') }}</span>
             <input
               class="form-control form-control-sm"
               type="text"
@@ -42,7 +42,7 @@
           </div>
 
           <div>
-            <span class="title-text">แม่พิมพ์</span>
+            <span class="title-text">{{ $t('view.sale.costStock.mold') }}</span>
             <input
               class="form-control form-control-sm"
               type="text"
@@ -53,7 +53,7 @@
           </div>
 
           <div>
-            <span class="title-text">เลขที่ WO</span>
+            <span class="title-text">{{ $t('view.sale.costStock.woNumber') }}</span>
             <input
               class="form-control form-control-sm"
               type="text"
@@ -70,25 +70,25 @@
 
           <div class="vertical-center-container mb-2">
             <span class="title-text-lg bi bi-list-check mr-2"></span>
-            <span class="title-text-lg">ข้อมูลแผนตีราคา</span>
+            <span class="title-text-lg">{{ $t('view.sale.costStock.planInfo') }}</span>
           </div>
 
           <div class="plan-info-display">
             <div class="form-col-sm-container">
               <div>
-                <span class="title-text">เลขที่แผน</span>
+                <span class="title-text">{{ $t('view.sale.costStock.planNumber') }}</span>
                 <div class="plan-display-field">
                   {{ localStock.planRunning }}
                 </div>
               </div>
               <div>
-                <span class="title-text">วันที่สร้างแผน</span>
+                <span class="title-text">{{ $t('view.sale.costStock.planCreateDate') }}</span>
                 <div class="plan-display-field">
                   {{ formatDate(localStock.planCreateDate) }}
                 </div>
               </div>
               <div>
-                <span class="title-text">ผู้สร้างแผน</span>
+                <span class="title-text">{{ $t('view.sale.costStock.planCreateBy') }}</span>
                 <div class="plan-display-field">
                   {{ localStock.planCreateBy }}
                 </div>
@@ -107,7 +107,7 @@
             @click="showPlanCostModal = true"
           >
             <i class="bi bi-graph-up mr-1"></i>
-            <span>ดูต้นทุนจากแผนผลิต</span>
+            <span>{{ $t('view.sale.costStock.viewPlanCost') }}</span>
           </button>
           <button
             class="btn btn-sm btn-main"
@@ -115,7 +115,7 @@
             @click="openKitco"
           >
             <i class="bi bi-currency-dollar mr-1"></i>
-            <span>ตรวจสอบราคาทองวันนี้</span>
+            <span>{{ $t('view.sale.costStock.checkGoldPrice') }}</span>
           </button>
         </div>
 
@@ -124,10 +124,10 @@
 
         <div class="vertical-center-container mb-2">
           <span class="title-text-lg bi bi-pencil-square mr-2"></span>
-          <span class="title-text-lg">ข้อมูลสินค้าแบบกำหนดเอง (Custom)</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.customStockInfo') }}</span>
         </div>
         <div class="responsive-text-note mb-2">
-          * ถ้ากรอก จะแสดงแทนข้อมูลสินค้าปกติใน PDF
+          {{ $t('view.sale.costStock.customStockNote') }}
         </div>
 
         <div
@@ -139,13 +139,13 @@
             class="form-control form-control-sm custom-info-label"
             type="text"
             v-model="item.label"
-            placeholder="หัวข้อ เช่น ชื่อสินค้า"
+            :placeholder="$t('view.sale.costStock.placeholder.appraisalTitle')"
           />
           <input
             class="form-control form-control-sm custom-info-value"
             type="text"
             v-model="item.value"
-            placeholder="ค่า เช่น แหวนทองคำ"
+            :placeholder="$t('view.sale.costStock.placeholder.appraisalValue')"
           />
           <button
             class="btn btn-sm btn-red"
@@ -157,7 +157,7 @@
         </div>
 
         <button class="btn btn-sm btn-main mt-1" type="button" @click="addCustomInfoItem">
-          <i class="bi bi-plus mr-1"></i>เพิ่มรายการ
+          <i class="bi bi-plus mr-1"></i>{{ $t('view.sale.costStock.addItem') }}
         </button>
 
         <!-- Customer Information -->
@@ -165,7 +165,7 @@
 
         <div class="vertical-center-container mb-2">
           <span class="title-text-lg bi bi-person-fill mr-2"></span>
-          <span class="title-text-lg">ข้อมูลลูกค้า</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.customerSection') }}</span>
         </div>
 
         <div class="mb-2">
@@ -173,44 +173,44 @@
             class="btn btn-sm btn-green mr-2"
             type="button"
             @click="onSearchCustomer"
-            title="ค้นหาลูกค้า"
+            :title="$t('view.sale.costStock.searchCustomer')"
           >
             <i class="bi bi-search mr-1"></i>
-            <span>ค้นหาลูกค้า</span>
+            <span>{{ $t('view.sale.costStock.searchCustomer') }}</span>
           </button>
           <button
             class="btn btn-sm btn-main"
             type="button"
             @click="onCreateCustomer"
-            title="เพิ่มลูกค้าใหม่"
+            :title="$t('view.sale.costStock.addCustomer')"
           >
             <i class="bi bi-database-fill-add mr-1"></i>
-            <span>เพิ่มลูกค้าใหม่</span>
+            <span>{{ $t('view.sale.costStock.addCustomer') }}</span>
           </button>
         </div>
 
         <div class="customer-info-display">
           <div class="form-col-sm-container">
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
+              <span class="title-text">{{ $t('view.sale.costStock.customerName') }}</span>
               <div class="customer-display-field">
                 {{ localStock.customerName || '-' }}
               </div>
             </div>
             <div>
-              <span class="title-text">ที่อยู่</span>
+              <span class="title-text">{{ $t('view.sale.costStock.customerAddress') }}</span>
               <div class="customer-display-field">
                 {{ localStock.customerAddress || '-' }}
               </div>
             </div>
             <div>
-              <span class="title-text">เบอร์โทร</span>
+              <span class="title-text">{{ $t('common.field.phone') }}</span>
               <div class="customer-display-field">
                 {{ localStock.customerPhone || '-' }}
               </div>
             </div>
             <div>
-              <span class="title-text">อีเมล</span>
+              <span class="title-text">{{ $t('common.field.email') }}</span>
               <div class="customer-display-field">
                 {{ localStock.customerEmail || '-' }}
               </div>
@@ -218,11 +218,11 @@
           </div>
           <div class="form-col-sm-container mt-2">
             <div>
-              <span class="title-text">หมายเหตุ</span>
+              <span class="title-text">{{ $t('common.field.remark') }}</span>
               <textarea
                 class="form-control form-control-sm"
                 v-model="localStock.remark"
-                placeholder="กรอกหมายเหตุ"
+                :placeholder="$t('view.sale.costStock.placeholder.remark')"
                 rows="2"
                 autocomplete="off"
               ></textarea>
@@ -235,11 +235,11 @@
       <div class="filter-container mt-3 pb-4">
         <div class="vertical-center-container mb-2">
           <span class="title-text-lg bi bi-calculator mr-2"></span>
-          <span class="title-text-lg">ประเมินราคาสินค้า</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.appraisalSection') }}</span>
         </div>
 
         <div class="responsive-text-note">
-          * รายการที่แสดงในตารางนี้เป็นราคาต่อ 1 ชิ้น (หารต้นทุนตามจำนวนแผนผลิตแล้ว)
+          {{ $t('view.sale.costStock.perItemNote') }}
         </div>
 
         <div class="responsive-table-wrapper">
@@ -252,12 +252,12 @@
         >
           <ColumnGroup type="header">
             <Row>
-              <Column header="รายละเอียดงาน" :colspan="3" />
-              <Column header="จำนวน" />
-              <Column header="ราคา/จำนวน" />
-              <Column header="น้ำหนัก" />
-              <Column header="ราคา/น้ำหนัก" />
-              <Column header="ราคารวม" />
+              <Column :header="$t('view.sale.costStock.jobDetail')" :colspan="3" />
+              <Column :header="$t('common.field.quantity')" />
+              <Column :header="$t('view.sale.costStock.pricePerQty')" />
+              <Column :header="$t('common.field.weight')" />
+              <Column :header="$t('view.sale.costStock.pricePerWeight')" />
+              <Column :header="$t('view.sale.costStock.totalPrice')" />
             </Row>
           </ColumnGroup>
 
@@ -398,7 +398,7 @@
             <div class="d-flex align-items-center justify-content-between gap-2 type-container">
               <div>
                 <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
-                <span>ต้นทุน</span>
+                <span>{{ $t('view.sale.costStock.costPrefix') }}</span>
                 <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
               </div>
               <div class="text-right mr-2">
@@ -412,7 +412,7 @@
               <Column :colspan="7">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ต้นทุนรวมทั้งหมด (THB)</span>
+                    <span>{{ $t('view.sale.costStock.totalCostTHB') }}</span>
                   </div>
                 </template>
               </Column>
@@ -428,7 +428,7 @@
               <Column :colspan="7">
                 <template #footer>
                   <div class="text-right type-container currency-summary-row">
-                    <span>ต้นทุนรวม ({{ displayCurrency }})</span>
+                    <span>{{ $t('view.sale.costStock.totalCostCurrency', { currency: displayCurrency }) }}</span>
                   </div>
                 </template>
               </Column>
@@ -444,14 +444,14 @@
               <Column :colspan="5">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ราคาป้าย ({{ displayCurrency }})</span>
+                    <span>{{ $t('view.sale.costStock.appraisalPrice', { currency: displayCurrency }) }}</span>
                   </div>
                 </template>
               </Column>
               <Column :colspan="2">
                 <template #footer>
                   <div class="tag-price-multiplier">
-                    <span class="multiplier-label">ต้นทุน ×</span>
+                    <span class="multiplier-label">{{ $t('view.sale.costStock.costPrefix') }} ×</span>
                     <input
                       v-model="tagPriceMultiplier"
                       type="number"
@@ -474,7 +474,7 @@
               <Column :colspan="7">
                 <template #footer>
                   <div class="text-right type-container tag-reference-text">
-                    <span>ราคาป้าย (THB)</span>
+                    <span>{{ $t('view.sale.costStock.appraisalPrice', { currency: 'THB' }) }}</span>
                   </div>
                 </template>
               </Column>
@@ -497,16 +497,16 @@
             :options="masterType"
             optionLabel="name"
             optionValue="code"
-            placeholder="เลือกรายการ"
+            :placeholder="$t('common.label.all')"
           />
           <button
             type="button"
             class="btn btn-sm btn-green"
-            title="เพิ่มรายการ"
+            :title="$t('view.sale.costStock.addItem')"
             @click="addTranItem"
           >
             <span><i class="bi bi-plus mr-1"></i></span>
-            <span>เพิ่มรายการ</span>
+            <span>{{ $t('view.sale.costStock.addItem') }}</span>
           </button>
         </div>
       </div>
@@ -515,17 +515,17 @@
       <div class="filter-container mt-3">
         <div class="vertical-center-container mb-2">
           <span class="title-text-lg bi bi-currency-exchange mr-2"></span>
-          <span class="title-text-lg">สกุลเงิน (Currency)</span>
+          <span class="title-text-lg">{{ $t('view.sale.costStock.currency') }}</span>
         </div>
         <div class="form-col-sm-container">
           <div>
-            <span class="title-text">สกุลเงิน</span>
+            <span class="title-text">{{ $t('view.sale.costStock.currencyUnit') }}</span>
             <AutoCompleteGeneric
               :modelValue="currencyUnit"
               :staticOptions="CURRENCY_UNITS"
               :useStaticList="true"
               optionLabel="code"
-              placeholder="เช่น US$, EUR"
+              :placeholder="$t('view.sale.costStock.placeholder.currencyUnit')"
               :forceSelection="false"
               customClass="appraisal-currency-ac"
               @update:modelValue="onCurrencyChange"
@@ -536,14 +536,14 @@
             </AutoCompleteGeneric>
           </div>
           <div>
-            <span class="title-text">อัตราแลกเปลี่ยน (1 หน่วย = ? บาท)</span>
+            <span class="title-text">{{ $t('view.sale.costStock.currencyRate') }}</span>
             <input
               class="form-control form-control-sm"
               type="number"
               v-model.number="currencyRate"
               min="0"
               step="0.01"
-              placeholder="เช่น 33.50"
+              :placeholder="$t('view.sale.costStock.placeholder.currencyRate')"
             />
           </div>
           <div></div>
@@ -553,15 +553,15 @@
         <!-- Currency Rate Summary Preview -->
         <div v-if="hasCurrencyConversion" class="currency-preview-block mt-3">
           <div class="currency-preview-row">
-            <span class="currency-preview-label">อัตราแลกเปลี่ยน</span>
+            <span class="currency-preview-label">{{ $t('view.sale.costStock.currencyRate') }}</span>
             <span class="currency-preview-value">1 {{ currencyUnit }} = {{ currencyRate?.toFixed(2) }} THB</span>
           </div>
           <div class="currency-preview-row">
-            <span class="currency-preview-label">ต้นทุนรวม ({{ currencyUnit }})</span>
+            <span class="currency-preview-label">{{ $t('view.sale.costStock.totalCostCurrency', { currency: currencyUnit }) }}</span>
             <span class="currency-preview-value font-weight-bold">{{ displayTotalCost }}</span>
           </div>
           <div class="currency-preview-row">
-            <span class="currency-preview-label">ราคาป้าย ({{ currencyUnit }})</span>
+            <span class="currency-preview-label">{{ $t('view.sale.costStock.appraisalPrice', { currency: currencyUnit }) }}</span>
             <span class="currency-preview-value font-weight-bold">{{ displayTagPrice }}</span>
           </div>
         </div>
@@ -572,11 +572,11 @@
         <div class="responsive-btn-group">
           <button class="btn btn-sm btn-green" type="submit">
             <span class="bi bi-save mr-2"></span>
-            <span>บันทึก</span>
+            <span>{{ $t('common.btn.save') }}</span>
           </button>
           <button class="btn btn-sm btn-main" type="button" @click="onSaveAsOriginCost">
             <span class="bi bi-save mr-2"></span>
-            <span>บันทึกและใช้เป็นต้นทุนหลัก</span>
+            <span>{{ $t('view.sale.costStock.saveAsOrigin') }}</span>
           </button>
           <button
             class="btn btn-sm btn-main"
@@ -585,11 +585,11 @@
             :disabled="exportingPreviewPDF"
           >
             <span class="bi bi-file-pdf mr-2"></span>
-            <span>{{ exportingPreviewPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์ตัวอย่าง PDF' }}</span>
+            <span>{{ exportingPreviewPDF ? $t('view.sale.costStock.previewPdfLoading') : $t('view.sale.costStock.previewPdf') }}</span>
           </button>
           <button class="btn btn-sm btn-outline-main" type="button" @click="onCancel">
             <span class="bi bi-x mr-2"></span>
-            <span>ยกเลิก</span>
+            <span>{{ $t('common.btn.cancel') }}</span>
           </button>
         </div>
       </div>
@@ -676,6 +676,14 @@ export default {
   },
 
   computed: {
+    hardcodedGoldList() {
+      return [
+        { code: 'น้ำหนักแป้น', name: this.$t('view.sale.costStock.goldListPlate') },
+        { code: 'Gold Loss', name: this.$t('view.sale.costStock.goldListGoldLoss') },
+        { code: 'Alloy', name: this.$t('view.sale.costStock.goldListAlloy') }
+      ]
+    },
+
     tagPrice() {
       const total = this.tranItems.reduce((sum, item) => sum + Number(item.totalPrice), 0)
       return (total * (Number(this.tagPriceMultiplier) || 0)).toFixed(2)
@@ -699,6 +707,45 @@ export default {
       const tagPriceNum = Number(this.tagPrice) || 0
       if (!this.hasCurrencyConversion) return tagPriceNum.toFixed(2)
       return (tagPriceNum / this.currencyRate).toFixed(2)
+    },
+
+    masterType() {
+      return [
+        { code: 'Gold', name: this.$t('view.sale.costStock.group.gold') },
+        { code: 'Gem', name: this.$t('view.sale.costStock.group.material') },
+        { code: 'Worker', name: this.$t('view.sale.costStock.group.worker') },
+        { code: 'Embed', name: this.$t('view.sale.costStock.group.embed') },
+        { code: 'ETC', name: this.$t('view.sale.costStock.group.etc') }
+      ]
+    },
+
+    masterWorkerList() {
+      return [
+        { code: 'WORKER01', name: this.$t('view.sale.costStock.workerJobs.plating') },
+        { code: 'WORKER02', name: this.$t('view.sale.costStock.workerJobs.mold') },
+        { code: 'WORKER03', name: this.$t('view.sale.costStock.workerJobs.laser') },
+        { code: 'WORKER04', name: this.$t('view.sale.costStock.workerJobs.baseWork') },
+        { code: 'WORKER05', name: this.$t('view.sale.costStock.workerJobs.gemSort') }
+      ]
+    },
+
+    masterEmbedList() {
+      return [
+        { code: 'EMBED01', name: this.$t('view.sale.costStock.embedJobs.gem') },
+        { code: 'EMBED02', name: this.$t('view.sale.costStock.embedJobs.diamond') },
+        { code: 'EMBED03', name: this.$t('view.sale.costStock.embedJobs.flower') },
+        { code: 'EMBED04', name: this.$t('view.sale.costStock.embedJobs.bezel') }
+      ]
+    },
+
+    masterETCList() {
+      return [
+        { code: 'ETC01', name: this.$t('view.sale.costStock.etcJobs.packaging') },
+        { code: 'ETC02', name: this.$t('view.sale.costStock.etcJobs.shipping') },
+        { code: 'ETC03', name: this.$t('view.sale.costStock.etcJobs.fee') },
+        { code: 'ETC04', name: this.$t('view.sale.costStock.etcJobs.other') },
+        { code: 'ETC05', name: this.$t('view.sale.costStock.etcJobs.qc') }
+      ]
     },
 
     masterGoldList() {
@@ -809,14 +856,6 @@ export default {
       showPlanCostModal: false,
       customInfoItems: [],
 
-      masterType: [
-        { code: 'Gold', name: 'รายการทอง' },
-        { code: 'Gem', name: 'รายการวัถุดิบ' },
-        { code: 'Worker', name: 'รายการงานช่าง' },
-        { code: 'Embed', name: 'รายการงานฝัง' },
-        { code: 'ETC', name: 'รายการเพิ่มเติม' }
-      ],
-
       groupOrderRunning: {
         Gold: 1,
         Worker: 2,
@@ -825,37 +864,7 @@ export default {
         ETC: 5
       },
 
-      // Hardcoded Gold master list (combined with API)
-      hardcodedGoldList: [
-        { code: 'น้ำหนักแป้น'  , name: 'น้ำหนักแป้น' },
-        { code: 'Gold Loss'  , name: 'Gold Loss' },
-        { code: 'Alloy'  , name: 'Alloy' }
-        
-      ],
 
-      // Static master lists (temporary until API is ready)
-      masterWorkerList: [
-        { code: 'WORKER01', name: 'ค่าชุบ' },
-        { code: 'WORKER02', name: 'ค่าเเม่พิมพ์' },
-        { code: 'WORKER03', name: 'ค่ายิงเลเซอร์' },
-        { code: 'WORKER04', name: 'ค่าเเรงทำแป้น' },
-        { code: 'WORKER05', name: 'ค่าคัดพลอย' }
-      ],
-
-      masterEmbedList: [
-        { code: 'EMBED01', name: 'งานฝังพลอย' },
-        { code: 'EMBED02', name: 'งานฝังเพชร' },
-        { code: 'EMBED03', name: 'งานฝังเกสร' },
-        { code: 'EMBED04', name: 'งานฝังแบบตัวเรือน' }
-      ],
-
-      masterETCList: [
-        { code: 'ETC01', name: 'ค่าบรรจุภัณฑ์' },
-        { code: 'ETC02', name: 'ค่าขนส่ง' },
-        { code: 'ETC03', name: 'ค่าธรรมเนียม' },
-        { code: 'ETC04', name: 'ค่าใช้จ่ายอื่นๆ' },
-        { code: 'ETC05', name: 'ค่าตรวจสอบคุณภาพ' }
-      ]
     }
   },
 
@@ -907,17 +916,17 @@ export default {
     getGroupName(id) {
       switch (id) {
         case 'Gold':
-          return 'รายการทอง'
+          return this.$t('view.sale.costStock.group.gold')
         case 'Gem':
-          return 'รายการวัถุดิบ'
+          return this.$t('view.sale.costStock.group.material')
         case 'Worker':
-          return 'รายการงานช่าง'
+          return this.$t('view.sale.costStock.group.worker')
         case 'Embed':
-          return 'รายการงานฝัง'
+          return this.$t('view.sale.costStock.group.embed')
         case 'ETC':
-          return 'รายการเพิ่มเติม'
+          return this.$t('view.sale.costStock.group.etc')
         default:
-          return 'Unknown'
+          return id
       }
     },
 
@@ -936,13 +945,13 @@ export default {
     },
 
     onSubmit() {
-      confirmThenSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      confirmThenSubmit('', this.$t('view.sale.costStock.confirm.save'), async () => {
         await this.fetchSave(false)
       })
     },
 
     onSaveAsOriginCost() {
-      confirmThenSubmit('', 'ยืนยันการบันทึกและใช้เป็นต้นทุนหลัก?', async () => {
+      confirmThenSubmit('', this.$t('view.sale.costStock.confirm.saveAsOrigin'), async () => {
         await this.fetchSave(true)
       })
     },
@@ -1116,17 +1125,17 @@ export default {
     getPlaceholder(nameGroup) {
       switch (nameGroup) {
         case 'Gold':
-          return 'ค้นหาทอง...'
+          return this.$t('view.sale.costStock.searchGold')
         case 'Gem':
-          return 'ค้นหาพลอย/เพชร...'
+          return this.$t('view.sale.costStock.searchGem')
         case 'Worker':
-          return 'ค้นหางานช่าง...'
+          return this.$t('view.sale.costStock.searchWorker')
         case 'Embed':
-          return 'ค้นหางานฝัง...'
+          return this.$t('view.sale.costStock.searchEmbed')
         case 'ETC':
-          return 'ค้นหารายการอื่นๆ...'
+          return this.$t('view.sale.costStock.searchEtc')
         default:
-          return 'ค้นหา...'
+          return this.$t('view.sale.costStock.searchDefault')
       }
     },
 

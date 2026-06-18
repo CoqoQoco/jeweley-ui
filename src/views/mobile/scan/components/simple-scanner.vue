@@ -5,9 +5,9 @@
       <div class="capture-icon">
         <i class="bi bi-camera-fill"></i>
       </div>
-      <p class="capture-instruction">ถ่ายรูป QR Code หรือ Barcode</p>
+      <p class="capture-instruction">{{ $t('view.mobile.scan.simpleScannerTitle') }}</p>
 
-      <!-- Native File Input with Camera -->
+      <!-- Native File Input with Camera — scanner input: leave as-is -->
       <input
         ref="fileInput"
         type="file"
@@ -19,24 +19,24 @@
 
       <button class="mobile-btn mobile-btn-primary mobile-btn-lg" @click="openCamera">
         <i class="bi bi-camera"></i>
-        ถ่ายรูป
+        {{ $t('view.mobile.scan.simpleScannerCaptureBtn') }}
       </button>
 
-      <p class="capture-note">หรือเลือกรูปจากแกลเลอรี่</p>
+      <p class="capture-note">{{ $t('view.mobile.scan.simpleScannerOrDivider') }}</p>
 
       <button class="mobile-btn mobile-btn-outline mobile-mt-2" @click="openGallery">
         <i class="bi bi-image"></i>
-        เลือกรูปจากแกลเลอรี่
+        {{ $t('view.mobile.scan.simpleScannerGalleryBtn') }}
       </button>
     </div>
 
     <!-- Preview Image -->
     <div v-if="previewImage" class="preview-section mobile-mt-3">
-      <p class="preview-label">รูปที่เลือก:</p>
+      <p class="preview-label">{{ $t('view.mobile.scan.simpleScannerSelectedLabel') }}</p>
       <img :src="previewImage" alt="Preview" class="preview-image" />
       <button class="mobile-btn mobile-btn-sm mobile-btn-secondary mobile-mt-2" @click="clearImage">
         <i class="bi bi-x-circle"></i>
-        ลบรูป
+        {{ $t('view.mobile.scan.simpleScannerRemoveBtn') }}
       </button>
     </div>
 
@@ -44,7 +44,7 @@
     <div v-if="isProcessing" class="processing-section mobile-mt-3">
       <div class="mobile-loading">
         <div class="spinner"></div>
-        <p class="loading-text">กำลังอ่าน QR Code...</p>
+        <p class="loading-text">{{ $t('view.mobile.scan.simpleScannerReadingText') }}</p>
       </div>
     </div>
 
@@ -108,11 +108,11 @@ export default {
           this.$emit('scan', result.getText())
           this.clearImage()
         } else {
-          this.errorMessage = 'ไม่พบ QR Code หรือ Barcode ในรูปภาพ\nกรุณาลองถ่ายใหม่ให้ชัดเจนขึ้น'
+          this.errorMessage = this.$t('view.mobile.scan.simpleScannerErrNoQr')
         }
       } catch (err) {
         console.error('Error decoding image:', err)
-        this.errorMessage = 'ไม่สามารถอ่าน QR Code ได้\nกรุณาลองถ่ายใหม่อีกครั้ง'
+        this.errorMessage = this.$t('view.mobile.scan.simpleScannerErrReadFail')
       } finally {
         this.isProcessing = false
         // Reset file input

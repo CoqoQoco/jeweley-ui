@@ -13,19 +13,19 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn-main" title="แก้ไข" @click="onEdit(data)">
+          <button class="btn btn-sm btn-main" :title="$t('common.btn.edit')" @click="onEdit(data)">
             <i class="bi bi-brush"></i>
           </button>
-          <!-- <button 
-            class="btn btn-sm btn-green ml-2" 
-            title="ดูรายละเอียด" 
+          <!-- <button
+            class="btn btn-sm btn-green ml-2"
+            :title="$t('common.btn.view')"
             @click="onView(data)"
           >
             <i class="bi bi-eye"></i>
           </button>
-          <button 
-            class="btn btn-sm btn-info ml-2" 
-            title="สร้าง Invoice" 
+          <button
+            class="btn btn-sm btn-green ml-2"
+            :title="$t('view.sale.saleOrderList.createInvoice')"
             @click="onCreateInvoice(data)"
           >
             <i class="bi bi-receipt"></i>
@@ -114,10 +114,10 @@ export default {
       return [
         { field: 'action', header: '', width: '50px', sortable: false },
         { field: 'soNumber', header: this.$t('view.sale.saleOrderList.soNumber'), sortable: true, minWidth: '150px' },
-        { field: 'running', header: 'Running', sortable: true, minWidth: '120px' },
+        { field: 'running', header: this.$t('view.sale.saleOrderList.running'), sortable: true, minWidth: '120px' },
         { field: 'customerName', header: this.$t('view.sale.saleOrderList.customerName'), sortable: true, minWidth: '180px' },
-        { field: 'customerTel', header: 'เบอร์โทร', sortable: true, minWidth: '120px' },
-        { field: 'customerEmail', header: 'อีเมล', sortable: true, minWidth: '150px' },
+        { field: 'customerTel', header: this.$t('common.field.phone'), sortable: true, minWidth: '120px' },
+        { field: 'customerEmail', header: this.$t('common.field.email'), sortable: true, minWidth: '150px' },
         { field: 'refQuotation', header: this.$t('view.sale.saleOrderList.refQuotation'), sortable: true, minWidth: '150px' },
         { field: 'currencyUnit', header: this.$t('view.sale.saleOrderList.currency'), sortable: true, minWidth: '80px' },
         { field: 'currencyRate', header: this.$t('view.sale.saleOrderList.currencyRate'), sortable: true, minWidth: '120px', template: 'currencyRateTemplate' },

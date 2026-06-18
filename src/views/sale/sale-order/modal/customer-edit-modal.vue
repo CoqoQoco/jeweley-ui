@@ -5,19 +5,19 @@
         <div class="p-3">
           <div class="title-text-lg mb-3">
             <span><i class="bi bi-pencil-square mr-2"></i></span>
-            <span>แก้ไขข้อมูลลูกค้า</span>
+            <span>{{ $t('view.sale.saleOrder.editCustomerTitle') }}</span>
           </div>
 
           <div class="form-content">
             <div class="form-col-container mb-2">
               <div>
-                <span class="title-text">ขอบเขตการแก้ไข</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.editScope') }}</span>
                 <div class="d-flex mt-1">
                   <label class="mr-3">
-                    <input type="radio" value="document" v-model="scope" /> แก้เฉพาะใบขายนี้
+                    <input type="radio" value="document" v-model="scope" /> {{ $t('view.sale.saleOrder.editScopeDocument') }}
                   </label>
                   <label>
-                    <input type="radio" value="master" v-model="scope" /> แก้ข้อมูลลูกค้าหลัก (ทุกเอกสาร)
+                    <input type="radio" value="master" v-model="scope" /> {{ $t('view.sale.saleOrder.editScopeMaster') }}
                   </label>
                 </div>
               </div>
@@ -26,26 +26,23 @@
             <div class="form-col-container">
               <div>
                 <span class="title-text">
-                  <span>รหัสลูกค้า</span>
+                  <span>{{ $t('view.sale.costStock.customerCode') }}</span>
                 </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  :value="form.code"
-                  readonly
-                  style="background-color: #e9ecef;"
+                <InputTextGeneric
+                  :modelValue="form.code"
+                  :readonly="true"
+                  bgInput="#e9ecef"
                 />
               </div>
               <div>
                 <span class="title-text">
-                  <span>ชื่อภาษาไทย</span>
+                  <span>{{ $t('view.sale.saleOrder.nameTh') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model.trim="form.nameTh"
-                  required
+                <InputTextGeneric
+                  v-model="form.nameTh"
+                  :trim="true"
+                  :required="true"
                 />
               </div>
             </div>
@@ -53,12 +50,11 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>ชื่อภาษาอังกฤษ</span>
+                  <span>{{ $t('view.sale.saleOrder.nameEn') }}</span>
                 </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model.trim="form.nameEn"
+                <InputTextGeneric
+                  v-model="form.nameEn"
+                  :trim="true"
                 />
               </div>
             </div>
@@ -66,12 +62,11 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>ที่อยู่ติดต่อ</span>
+                  <span>{{ $t('view.sale.saleOrder.contactAddress') }}</span>
                 </span>
-                <textarea
-                  class="form-control"
-                  v-model.trim="form.address"
-                  rows="3"
+                <TextareaGeneric
+                  v-model="form.address"
+                  :rows="3"
                 />
               </div>
             </div>
@@ -79,7 +74,7 @@
             <div class="form-col-container mt-2">
               <div>
                 <span class="title-text">
-                  <span>เบอร์โทรติดต่อ 1</span>
+                  <span>{{ $t('view.sale.saleOrder.phone1') }}</span>
                 </span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
@@ -87,17 +82,17 @@
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
+                  <InputTextGeneric
+                    v-model="form.telephone1"
                     type="tel"
-                    v-model.trim="form.telephone1"
+                    :trim="true"
                   />
                 </div>
               </div>
 
               <div>
                 <span class="title-text">
-                  <span>เบอร์โทรติดต่อ 2</span>
+                  <span>{{ $t('view.sale.saleOrder.phone2') }}</span>
                 </span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
@@ -105,10 +100,10 @@
                       <i class="bi bi-telephone-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
+                  <InputTextGeneric
+                    v-model="form.telephone2"
                     type="tel"
-                    v-model.trim="form.telephone2"
+                    :trim="true"
                   />
                 </div>
               </div>
@@ -125,17 +120,17 @@
                       <i class="bi bi-envelope-check-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
+                  <InputTextGeneric
+                    v-model="form.email"
                     type="email"
-                    v-model.trim="form.email"
+                    :trim="true"
                   />
                 </div>
               </div>
 
               <div>
                 <span class="title-text">
-                  <span>บุคคลติดต่อ</span>
+                  <span>{{ $t('view.sale.saleOrder.contactPerson') }}</span>
                 </span>
                 <div class="input-group input-group-inner">
                   <div class="input-group-append">
@@ -143,10 +138,9 @@
                       <i class="bi bi-person-lines-fill txt-main-color"></i>
                     </span>
                   </div>
-                  <input
-                    class="form-control bg-input"
-                    type="text"
-                    v-model.trim="form.contactName"
+                  <InputTextGeneric
+                    v-model="form.contactName"
+                    :trim="true"
                   />
                 </div>
               </div>
@@ -154,13 +148,13 @@
           </div>
 
           <div class="d-flex justify-content-end mt-4">
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onCancel">
+            <button class="btn btn-sm btn-outline-main mr-2" type="button" @click="onCancel">
               <span><i class="bi bi-x-circle"></i></span>
-              <span class="ml-2">ยกเลิก</span>
+              <span class="ml-2">{{ $t('common.btn.cancel') }}</span>
             </button>
-            <button class="btn btn-sm btn-green" type="submit">
+            <button class="btn btn-sm btn-main" type="submit">
               <span><i class="bi bi-check-circle"></i></span>
-              <span class="ml-2">บันทึก</span>
+              <span class="ml-2">{{ $t('common.btn.save') }}</span>
             </button>
           </div>
         </div>
@@ -173,6 +167,8 @@
 import { defineAsyncComponent } from 'vue'
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -191,7 +187,9 @@ export default {
   name: 'CustomerEditModal',
 
   components: {
-    modal
+    modal,
+    InputTextGeneric,
+    TextareaGeneric
   },
 
   props: {
@@ -249,10 +247,12 @@ export default {
       }
 
       const isMaster = this.scope === 'master'
-      const confirmTitle = isMaster ? 'ยืนยันแก้ไขข้อมูลลูกค้าหลัก' : 'ยืนยันแก้ไขข้อมูลลูกค้า'
+      const confirmTitle = isMaster
+        ? this.$t('view.sale.saleOrder.confirmEditMasterTitle')
+        : this.$t('view.sale.saleOrder.confirmEditDocumentTitle')
       const confirmMsg = isMaster
-        ? `${this.form.code} - ${this.form.nameTh} (มีผลกับทุกเอกสารของลูกค้ารายนี้)`
-        : `${this.form.code} - ${this.form.nameTh} (แก้ไขเฉพาะใบขายนี้)`
+        ? `${this.form.code} - ${this.form.nameTh} (${this.$t('view.sale.saleOrder.confirmEditMasterMessage')})`
+        : `${this.form.code} - ${this.form.nameTh} (${this.$t('view.sale.saleOrder.confirmEditDocumentMessage')})`
 
       swAlert.confirmSubmit(confirmMsg, confirmTitle, async () => {
         if (isMaster) {
@@ -278,7 +278,7 @@ export default {
       const result = await this.customerStore.fetchUpdateCustomer({ formValue })
 
       if (result) {
-        swAlert.success('แก้ไขข้อมูลลูกค้าหลักสำเร็จ', null, () => {
+        swAlert.success(this.$t('view.sale.saleOrder.success.editMaster'), null, () => {
           const updatedData = {
             code: this.form.code,
             nameTh: this.form.nameTh,
@@ -297,7 +297,7 @@ export default {
 
     async submitUpdateDocumentOnly() {
       await this.$nextTick()
-      swAlert.success('แก้ไขข้อมูลลูกค้าในใบขายสำเร็จ', null, () => {
+      swAlert.success(this.$t('view.sale.saleOrder.success.editDocument'), null, () => {
         const updatedData = {
           code: this.form.code,
           nameTh: this.form.nameTh,

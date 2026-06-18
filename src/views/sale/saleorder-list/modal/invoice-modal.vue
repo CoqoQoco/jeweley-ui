@@ -3,18 +3,18 @@
     <modal :showModal="isShowModal" @closeModal="closeModal" :width="'90%'" :fitHeight="true">
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
-          <span>สร้าง Invoice จาก Sale Order: {{ saleOrderData.soNumber }}</span>
+          <span>{{ $t('view.sale.saleOrder.invoiceTitle') }}: {{ saleOrderData.soNumber }}</span>
         </div>
-        
+
         <!-- Sale Order Information -->
         <div class="card-container mb-3">
           <div class="card-header">
-            <h6 class="mb-0">ข้อมูลใบสั่งขาย</h6>
+            <h6 class="mb-0">{{ $t('view.sale.saleOrder.saleOrderInfo') }}</h6>
           </div>
           <div class="card-body">
             <div class="form-col-container">
               <div>
-                <span class="title-text">เลขที่ใบสั่งขาย</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.soNumber') }}</span>
                 <input
                   :class="['form-control bg-input']"
                   type="text"
@@ -23,7 +23,7 @@
                 />
               </div>
               <div>
-                <span class="title-text">ชื่อลูกค้า</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.customerName') }}</span>
                 <input
                   :class="['form-control bg-input']"
                   type="text"
@@ -32,7 +32,7 @@
                 />
               </div>
               <div>
-                <span class="title-text">สกุลเงิน</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.currency') }}</span>
                 <input
                   :class="['form-control bg-input']"
                   type="text"
@@ -41,7 +41,7 @@
                 />
               </div>
               <div>
-                <span class="title-text">อัตราแลกเปลี่ยน</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.currencyRate') }}</span>
                 <input
                   :class="['form-control bg-input']"
                   type="number"
@@ -57,7 +57,7 @@
         <!-- Stock Items Selection -->
         <div class="card-container">
           <div class="card-header">
-            <h6 class="mb-0">เลือกสินค้าสำหรับออก Invoice</h6>
+            <h6 class="mb-0">{{ $t('view.sale.saleOrder.selectItemsForInvoice') }}</h6>
           </div>
           <div class="card-body">
             <div>
@@ -70,11 +70,12 @@
                     @change="toggleSelectAll"
                     class="mr-2"
                   />
-                  <span class="title-text">เลือกทั้งหมด</span>
+                  <span class="title-text">{{ $t('view.sale.saleOrder.selectAll') }}</span>
                 </label>
               </div>
 
               <!-- Stock Items Table -->
+              <!-- eslint-disable-next-line no-restricted-imports -->
               <DataTable
                 :value="stockItems"
                 dataKey="id"
@@ -92,21 +93,21 @@
                     />
                   </template>
                 </Column>
-                
+
                 <Column field="stockNumber" header="Stock Number" style="width: 120px"></Column>
                 <Column field="productNumber" header="Product Number" style="width: 120px"></Column>
-                <Column field="description" header="รายละเอียด" style="min-width: 200px"></Column>
-                <Column field="qty" header="จำนวน" style="width: 80px">
+                <Column :header="$t('view.sale.saleOrder.description')" field="description" style="min-width: 200px"></Column>
+                <Column :header="$t('common.field.quantity')" field="qty" style="width: 80px">
                   <template #body="slotProps">
                     <div class="text-center">{{ slotProps.data.qty }}</div>
                   </template>
                 </Column>
-                <Column field="appraisalPrice" header="ราคาประเมิน" style="width: 120px">
+                <Column :header="$t('view.sale.saleOrder.appraisalPrice')" field="appraisalPrice" style="width: 120px">
                   <template #body="slotProps">
                     <div class="text-right">{{ formatCurrency(slotProps.data.appraisalPrice) }}</div>
                   </template>
                 </Column>
-                <Column header="ราคารวม" style="width: 120px">
+                <Column :header="$t('view.sale.costStock.totalPrice')" style="width: 120px">
                   <template #body="slotProps">
                     <div class="text-right">{{ formatCurrency(slotProps.data.appraisalPrice * slotProps.data.qty) }}</div>
                   </template>
@@ -119,15 +120,15 @@
                   <div class="summary-container">
                     <div class="row">
                       <div class="col-6 text-right">
-                        <strong>จำนวนรายการที่เลือก:</strong>
+                        <strong>{{ $t('view.sale.saleOrder.selectedItemsCount') }}:</strong>
                       </div>
                       <div class="col-6 text-right">
-                        <strong>{{ selectedItemsCount }} รายการ</strong>
+                        <strong>{{ selectedItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</strong>
                       </div>
                     </div>
                     <div class="row">
                       <div class="col-6 text-right">
-                        <strong>ยอดรวม:</strong>
+                        <strong>{{ $t('view.sale.saleOrder.totalAmount') }}:</strong>
                       </div>
                       <div class="col-6 text-right">
                         <strong>{{ formatCurrency(totalAmount) }} {{ invoiceForm.currencyUnit }}</strong>
@@ -149,11 +150,11 @@
             :disabled="selectedItemsCount === 0"
           >
             <i class="bi bi-file-earmark-pdf mr-1"></i>
-            สร้าง Invoice PDF
+            {{ $t('view.sale.saleOrder.createInvoicePdf') }}
           </button>
           <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
             <i class="bi bi-x-circle mr-1"></i>
-            ยกเลิก
+            {{ $t('common.btn.cancel') }}
           </button>
         </div>
       </template>
@@ -216,10 +217,10 @@ export default {
     },
 
     totalAmount() {
-      const selectedStockItems = this.stockItems.filter(item => 
+      const selectedStockItems = this.stockItems.filter(item =>
         this.selectedItems.includes(item.id)
       )
-      
+
       return selectedStockItems.reduce((total, item) => {
         return total + (item.appraisalPrice * item.qty)
       }, 0)
@@ -291,7 +292,7 @@ export default {
 
     async generateInvoice() {
       if (this.selectedItemsCount === 0) {
-        warning('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ')
+        warning(this.$t('view.sale.saleOrder.validation.selectAtLeastOne'))
         return
       }
 
@@ -320,7 +321,7 @@ export default {
 
       const validation = invoicePdfService.previewInvoiceData(invoiceData)
       if (!validation.valid) {
-        warning(validation.errors.join('\n'), 'ข้อมูลไม่ถูกต้อง')
+        warning(validation.errors.join('\n'), this.$t('common.alert.invalidData'))
         return
       }
 
@@ -329,7 +330,7 @@ export default {
         open: false
       })
 
-      success('สร้าง Invoice PDF สำเร็จ')
+      success(this.$t('view.sale.saleOrder.success.createInvoicePdf'))
       this.closeModal()
     },
 

@@ -9,24 +9,24 @@
           <div class="create-action-row">
             <button class="btn-close-form" type="button" @click="onCancel">
               <i class="bi bi-x-lg"></i>
-              ปิด
+              {{ $t('view.mobile.sale.btnClose') }}
             </button>
-            <span class="action-row-title">เพิ่มลูกค้าใหม่</span>
+            <span class="action-row-title">{{ $t('view.mobile.sale.createModalTitle') }}</span>
             <button class="btn-save-form" type="button" @click="onSubmit">
               <i class="bi bi-check-circle"></i>
-              บันทึก
+              {{ $t('view.mobile.sale.btnSave') }}
             </button>
           </div>
 
           <div class="mobile-form-group">
-            <label>รหัสลูกค้า <span class="required">*</span></label>
+            <label>{{ $t('view.mobile.sale.fieldCustomerCode') }} <span class="required">*</span></label>
             <div class="code-input-row">
-              <input
-                v-model.trim="form.code"
-                type="text"
-                placeholder="CUST-YYMMDD-XXXX"
-                required
-                readonly
+              <InputTextGeneric
+                v-model="form.code"
+                :placeholder="$t('view.mobile.sale.placeholderCustomerCode')"
+                :required="true"
+                :readonly="true"
+                :trim="true"
               />
               <button type="button" class="btn-refresh-code mt-2" @click="generateCode" title="สร้างรหัสใหม่">
                 <i class="bi bi-arrow-repeat"></i>
@@ -35,9 +35,9 @@
           </div>
 
           <div class="mobile-form-group">
-            <label>ประเภทลูกค้า <span class="required">*</span></label>
+            <label>{{ $t('view.mobile.sale.fieldCustomerType') }} <span class="required">*</span></label>
             <select v-model="form.typeCode" required>
-              <option value="" disabled>เลือกประเภทลูกค้า</option>
+              <option value="" disabled>{{ $t('view.mobile.sale.placeholderCustomerType') }}</option>
               <option
                 v-for="type in customerTypes"
                 :key="type.code"
@@ -49,67 +49,69 @@
           </div>
 
           <div class="mobile-form-group">
-            <label>ชื่อภาษาไทย <span class="required">*</span></label>
-            <input
-              v-model.trim="form.nameTh"
-              type="text"
-              placeholder="ชื่อลูกค้า (ภาษาไทย)"
-              required
+            <label>{{ $t('view.mobile.sale.fieldNameTh') }} <span class="required">*</span></label>
+            <InputTextGeneric
+              v-model="form.nameTh"
+              :placeholder="$t('view.mobile.sale.placeholderNameTh')"
+              :required="true"
+              :trim="true"
             />
           </div>
 
           <div class="mobile-form-group">
-            <label>ชื่อภาษาอังกฤษ</label>
-            <input
-              v-model.trim="form.nameEn"
-              type="text"
-              placeholder="Customer Name (English)"
+            <label>{{ $t('view.mobile.sale.fieldNameEn') }}</label>
+            <InputTextGeneric
+              v-model="form.nameEn"
+              :placeholder="$t('view.mobile.sale.placeholderNameEn')"
+              :trim="true"
             />
           </div>
 
           <div class="mobile-form-group">
-            <label>ที่อยู่</label>
-            <textarea
-              v-model.trim="form.address"
-              placeholder="ที่อยู่ติดต่อ"
-              rows="3"
-            ></textarea>
+            <label>{{ $t('view.mobile.sale.fieldCustomerAddress') }}</label>
+            <TextareaGeneric
+              v-model="form.address"
+              :placeholder="$t('view.mobile.sale.placeholderAddress')"
+              :rows="3"
+            />
           </div>
 
           <div class="mobile-form-group">
-            <label>เบอร์โทรศัพท์</label>
-            <input
-              v-model.trim="form.telephone1"
+            <label>{{ $t('view.mobile.sale.fieldTel') }}</label>
+            <InputTextGeneric
+              v-model="form.telephone1"
               type="tel"
-              placeholder="เบอร์โทรติดต่อ"
+              :placeholder="$t('view.mobile.sale.placeholderTel')"
+              :trim="true"
             />
           </div>
 
           <div class="mobile-form-group">
-            <label>อีเมล</label>
-            <input
-              v-model.trim="form.email"
+            <label>{{ $t('view.mobile.sale.fieldCustomerEmail') }}</label>
+            <InputTextGeneric
+              v-model="form.email"
               type="email"
-              placeholder="email@example.com"
+              :placeholder="$t('view.mobile.sale.placeholderEmail')"
+              :trim="true"
             />
           </div>
 
           <div class="mobile-form-group">
-            <label>บุคคลติดต่อ</label>
-            <input
-              v-model.trim="form.contactName"
-              type="text"
-              placeholder="ชื่อบุคคลติดต่อ"
+            <label>{{ $t('view.mobile.sale.fieldContactName') }}</label>
+            <InputTextGeneric
+              v-model="form.contactName"
+              :placeholder="$t('view.mobile.sale.placeholderContactName')"
+              :trim="true"
             />
           </div>
 
           <div class="mobile-form-group">
-            <label>หมายเหตุ</label>
-            <textarea
-              v-model.trim="form.remark"
-              placeholder="หมายเหตุ (ถ้ามี)"
-              rows="2"
-            ></textarea>
+            <label>{{ $t('common.field.remark') }}</label>
+            <TextareaGeneric
+              v-model="form.remark"
+              :placeholder="$t('view.mobile.sale.placeholderRemark')"
+              :rows="2"
+            />
           </div>
 
         </form>
@@ -123,6 +125,8 @@
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 
 const defaultForm = {
   code: '',
@@ -138,6 +142,11 @@ const defaultForm = {
 
 export default {
   name: 'CustomerCreateModal',
+
+  components: {
+    InputTextGeneric,
+    TextareaGeneric
+  },
 
   props: {
     visible: {
@@ -184,12 +193,12 @@ export default {
 
     async onSubmit() {
       if (!this.form.code || !this.form.nameTh) {
-        warning('กรุณากรอกรหัสลูกค้าและชื่อ', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.mobile.sale.warnEnterCodeAndName'), this.$t('view.mobile.sale.warnIncompleteTitle'))
         return
       }
 
       if (!this.form.typeCode) {
-        warning('กรุณาเลือกประเภทลูกค้า', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.mobile.sale.warnSelectType'), this.$t('view.mobile.sale.warnIncompleteTitle'))
         return
       }
 
@@ -209,7 +218,7 @@ export default {
       const result = await this.customerStore.fetchCreateCustomer({ formValue })
 
       if (result) {
-        success('เพิ่มลูกค้าสำเร็จ', this.form.code, () => {
+        success(this.$t('view.mobile.sale.successCreateCustomer'), this.form.code, () => {
           this.$emit('customer-created', {
             id: result.id,
             code: this.form.code,

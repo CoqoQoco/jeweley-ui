@@ -6,7 +6,7 @@
       <div class="info-card">
         <div class="card-header">
           <i class="bi bi-receipt"></i>
-          <span>ข้อมูลใบสั่งขาย</span>
+          <span>{{ $t('view.mobile.sale.soInfoTitle') }}</span>
           <span
             class="header-status-badge"
             :style="{ background: getStatusColor(soData.status) }"
@@ -16,19 +16,19 @@
         </div>
         <div class="card-body">
           <div class="info-row">
-            <span class="info-label">เลขที่ SO:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.soNumberLabel') }}</span>
             <span class="info-value highlight">{{ soData.soNumber }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">วันที่สร้าง:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.createDateLabel') }}</span>
             <span class="info-value">{{ formatDate(soData.createDate) }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">ผู้สร้าง:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.createByLabel') }}</span>
             <span class="info-value">{{ soData.createBy || '-' }}</span>
           </div>
           <div v-if="soData.currencyUnit" class="info-row">
-            <span class="info-label">สกุลเงิน:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.currencyLabel') }}</span>
             <span class="info-value">{{ soData.currencyUnit }} (Rate: {{ soData.currencyRate || 1 }})</span>
           </div>
         </div>
@@ -38,19 +38,19 @@
       <div v-if="hasCustomerInfo" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-person"></i>
-          <span>ข้อมูลลูกค้า</span>
+          <span>{{ $t('view.mobile.sale.customerInfoTitle') }}</span>
         </div>
         <div class="card-body">
           <div v-if="soData.customerName" class="info-row">
-            <span class="info-label">ชื่อลูกค้า:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.customerNameLabel') }}</span>
             <span class="info-value">{{ soData.customerName }}</span>
           </div>
           <div v-if="soData.customerTel" class="info-row">
-            <span class="info-label">เบอร์โทร:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.customerTelLabel') }}</span>
             <span class="info-value">{{ soData.customerTel }}</span>
           </div>
           <div v-if="soData.customerAddress" class="info-row remark-row">
-            <span class="info-label">ที่อยู่:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.customerAddressLabel') }}</span>
             <span class="info-value">{{ soData.customerAddress }}</span>
           </div>
         </div>
@@ -63,12 +63,12 @@
           <div class="section-header-bar">
             <h3 class="section-title">
               <i class="bi bi-currency-exchange"></i>
-              สกุลเงิน
+              {{ $t('view.mobile.sale.currencySection') }}
             </h3>
           </div>
           <div class="currency-edit-row">
             <div class="currency-edit-field">
-              <label class="currency-edit-label">สกุลเงิน</label>
+              <label class="currency-edit-label">{{ $t('view.mobile.sale.currencyEditLabel') }}</label>
               <AutoCompleteGeneric
                 :modelValue="editCurrencyUnit"
                 :staticOptions="CURRENCY_UNITS"
@@ -85,7 +85,7 @@
               </AutoCompleteGeneric>
             </div>
             <div class="currency-edit-field">
-              <label class="currency-edit-label">อัตราแลกเปลี่ยน</label>
+              <label class="currency-edit-label">{{ $t('view.mobile.sale.currencyRateLabel') }}</label>
               <input
                 v-model="editCurrencyRate"
                 type="number"
@@ -103,7 +103,7 @@
           <div class="section-header-bar">
             <h3 class="section-title">
               <i class="bi bi-plus-circle"></i>
-              เพิ่มสินค้า
+              {{ $t('view.mobile.sale.addItem') }}
             </h3>
           </div>
 
@@ -123,7 +123,7 @@
           <!-- Tab B: Scan -->
           <div v-if="addItemTab === 'scan'" class="scan-section">
             <div class="search-field-selector">
-              <label class="field-selector-label">ค้นหาด้วย</label>
+              <label class="field-selector-label">{{ $t('view.mobile.sale.searchBy') }}</label>
               <div class="field-selector-options">
                 <button
                   v-for="option in searchFieldOptions"
@@ -140,7 +140,7 @@
 
             <QrScanner @scan="handleScan" />
 
-            <div class="scanner-divider"><span>หรือ</span></div>
+            <div class="scanner-divider"><span>{{ $t('view.mobile.sale.orDivider') }}</span></div>
 
             <div class="manual-input-section">
               <input
@@ -152,7 +152,7 @@
               />
               <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
                 <i class="bi bi-search"></i>
-                ค้นหาสินค้า
+                {{ $t('view.mobile.sale.searchProduct') }}
               </button>
             </div>
           </div>
@@ -163,7 +163,7 @@
           <div class="section-header">
             <h3 class="section-title locked-title">
               <i class="bi bi-lock"></i>
-              ออก Invoice แล้ว ({{ invoicedItems.length }})
+              {{ $t('view.mobile.sale.invoicedItemsTitle') }} ({{ invoicedItems.length }})
             </h3>
           </div>
           <div class="items-container">
@@ -190,7 +190,7 @@
           <div class="section-header">
             <h3 class="section-title">
               <i class="bi bi-box-seam"></i>
-              รายการสินค้า ({{ soItems.length }})
+              {{ $t('view.mobile.sale.itemListTitle') }} ({{ soItems.length }})
             </h3>
           </div>
           <div class="items-container">
@@ -206,20 +206,20 @@
       <!-- Summary -->
       <div class="summary-card mobile-mt-2">
         <div class="summary-row">
-          <span class="summary-label">จำนวนรายการ</span>
-          <span class="summary-value">{{ displayItemCount }} รายการ</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.summaryItemCount') }}</span>
+          <span class="summary-value">{{ displayItemCount }} {{ $t('view.mobile.sale.summaryItemUnit') }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row">
-          <span class="summary-label">F.O.B Bangkok (รวมสินค้า)</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.summaryFob') }}</span>
           <span class="summary-value">{{ formatCurrency(displayTotalAmount) }} {{ displayCurrency }}</span>
         </div>
         <div v-if="Number(soData.specialDiscount) > 0" class="summary-row">
-          <span class="summary-label">ส่วนลดพิเศษ</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.summarySpecialDiscount') }}</span>
           <span class="summary-value discount">-{{ formatCurrency(soData.specialDiscount) }}</span>
         </div>
         <div v-if="Number(soData.specialAddition) > 0" class="summary-row">
-          <span class="summary-label">ส่วนเพิ่มพิเศษ</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.summarySpecialAddition') }}</span>
           <span class="summary-value addition">+{{ formatCurrency(soData.specialAddition) }}</span>
         </div>
         <div v-if="Number(soData.freight) > 0" class="summary-row">
@@ -228,7 +228,7 @@
         </div>
         <div v-if="hasFinancialFields" class="summary-divider"></div>
         <div v-if="hasFinancialFields" class="summary-row">
-          <span class="summary-label">ยอดรวมก่อน VAT</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.summaryBeforeVat') }}</span>
           <span class="summary-value">{{ formatCurrency(soTotalBeforeVat) }} {{ displayCurrency }}</span>
         </div>
         <div v-if="Number(soData.vat) > 0" class="summary-row">
@@ -237,12 +237,12 @@
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row total">
-          <span class="summary-label">{{ hasFinancialFields ? 'ยอดรวมสุทธิ' : 'ยอดรวมทั้งหมด' }}</span>
+          <span class="summary-label">{{ hasFinancialFields ? $t('view.mobile.sale.summaryNetTotal') : $t('view.mobile.sale.summaryGrandTotal') }}</span>
           <span class="summary-value">{{ formatCurrency(soGrandTotal) }} {{ displayCurrency }}</span>
         </div>
         <div v-if="hasCurrencyConversion" class="summary-row reference">
-          <span class="summary-label">เทียบเท่า</span>
-          <span class="summary-value">{{ formatCurrency(currentTotalAmountTHB) }} บาท</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.summaryEquivalent') }}</span>
+          <span class="summary-value">{{ formatCurrency(currentTotalAmountTHB) }} {{ $t('view.mobile.sale.summaryBahtUnit') }}</span>
         </div>
       </div>
 
@@ -250,7 +250,7 @@
       <div v-if="soData.remark" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-chat-left-text"></i>
-          <span>หมายเหตุ</span>
+          <span>{{ $t('view.mobile.sale.remarkTitle') }}</span>
         </div>
         <div class="card-body">
           <div class="remark-text">{{ soData.remark }}</div>
@@ -261,11 +261,11 @@
       <div v-if="soData.invoiceNumber" class="info-card mobile-mt-2">
         <div class="card-header invoice-header">
           <i class="bi bi-file-earmark-check"></i>
-          <span>ข้อมูล Invoice</span>
+          <span>{{ $t('view.mobile.sale.invoiceInfoTitle') }}</span>
         </div>
         <div class="card-body">
           <div class="info-row">
-            <span class="info-label">เลขที่ Invoice:</span>
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceNumberLabel') }}</span>
             <span class="info-value highlight">{{ soData.invoiceNumber }}</span>
           </div>
         </div>
@@ -290,11 +290,11 @@
             :disabled="editItems.length === 0 && invoicedItems.length === 0"
           >
             <i class="bi bi-check-circle"></i>
-            บันทึกการแก้ไข
+            {{ $t('view.mobile.sale.saveEditBtn') }}
           </button>
           <button class="mobile-btn mobile-btn-outline" @click="cancelEdit">
             <i class="bi bi-x-circle"></i>
-            ยกเลิก
+            {{ $t('view.mobile.sale.cancelBtn') }}
           </button>
         </template>
 
@@ -306,7 +306,7 @@
             @click="startEdit"
           >
             <i class="bi bi-pencil-square"></i>
-            แก้ไขรายการ
+            {{ $t('view.mobile.sale.editItemsBtn') }}
           </button>
 
           <!-- Print PDF -->
@@ -316,7 +316,7 @@
             :disabled="exportingPDF"
           >
             <i class="bi" :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"></i>
-            {{ exportingPDF ? 'กำลังสร้าง PDF...' : 'พิมพ์ใบสั่งขาย' }}
+            {{ exportingPDF ? $t('view.mobile.sale.pdfLoadingBtn') : $t('view.mobile.sale.printSoBtn') }}
           </button>
           <div
             class="d-flex align-items-center"
@@ -328,7 +328,7 @@
               v-model="pdfShowCifLabel"
               style="width: 15px; height: 15px; cursor: pointer"
             />
-            <span style="font-size: 0.8rem; color: #555; cursor: pointer">แสดงป้าย C.I.F</span>
+            <span style="font-size: 0.8rem; color: #555; cursor: pointer">{{ $t('view.mobile.sale.showCifLabel') }}</span>
           </div>
 
           <!-- Create Invoice -->
@@ -338,9 +338,9 @@
             :disabled="allItemsInvoiced"
           >
             <i class="bi bi-file-earmark-check"></i>
-            {{ allItemsInvoiced ? 'ออก Invoice แล้วทั้งหมด'
-               : hasUnconfirmedItems ? 'Confirm Stock + ออก Invoice'
-               : 'ออก Invoice' }}
+            {{ allItemsInvoiced ? $t('view.mobile.sale.invoicedAllBtn')
+               : hasUnconfirmedItems ? $t('view.mobile.sale.confirmAndInvoiceBtn')
+               : $t('view.mobile.sale.invoiceBtn') }}
           </button>
 
           <!-- Delete SO -->
@@ -349,7 +349,7 @@
             @click="inactiveSaleOrder()"
           >
             <i class="bi bi-trash"></i>
-            ลบใบสั่งขาย
+            {{ $t('view.mobile.sale.deleteSoBtn') }}
           </button>
         </template>
       </div>
@@ -359,11 +359,11 @@
     <div v-else class="mobile-container mobile-mt-2">
       <div class="mobile-empty-state">
         <i class="bi bi-exclamation-circle"></i>
-        <div class="empty-title">ไม่พบข้อมูล</div>
-        <div class="empty-subtitle">ไม่สามารถโหลดข้อมูลใบสั่งขายได้</div>
+        <div class="empty-title">{{ $t('view.mobile.sale.emptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.sale.emptySubtitle') }}</div>
         <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="loadSaleOrder">
           <i class="bi bi-arrow-clockwise"></i>
-          ลองอีกครั้ง
+          {{ $t('view.mobile.sale.retryBtn') }}
         </button>
       </div>
     </div>
@@ -426,8 +426,8 @@ export default {
       scanInput: '',
       searchField: 'stockNumber',
       searchFieldOptions: [
-        { value: 'stockNumber', label: 'รหัสสินค้าใหม่', icon: 'bi bi-upc-scan' },
-        { value: 'stockNumberOrigin', label: 'รหัสสินค้าเก่า', icon: 'bi bi-tag' }
+        { value: 'stockNumber', label: this.$t('view.mobile.sale.fieldNewCode'), icon: 'bi bi-upc-scan' },
+        { value: 'stockNumberOrigin', label: this.$t('view.mobile.sale.fieldOldCode'), icon: 'bi bi-tag' }
       ]
     }
   },
@@ -503,8 +503,8 @@ export default {
 
     searchFieldPlaceholder() {
       return this.searchField === 'stockNumber'
-        ? 'กรอกรหัสสินค้าใหม่ (Stock Number)'
-        : 'กรอกรหัสสินค้าเก่า (Origin)'
+        ? this.$t('view.mobile.sale.scanInputPlaceholderNew')
+        : this.$t('view.mobile.sale.scanInputPlaceholderOld')
     },
 
     hasFinancialFields() {
@@ -652,7 +652,7 @@ export default {
 
     async handleManualSearch() {
       if (!this.scanInput || !this.scanInput.trim()) {
-        warning('กรุณากรอกเลขที่ผลิต')
+        warning(this.$t('view.mobile.sale.warningEnterStockNumber'))
         return
       }
       await this.searchAndAddProduct(this.scanInput.trim())
@@ -664,7 +664,7 @@ export default {
       })
 
       if (!response) {
-        error('ไม่พบข้อมูลสินค้า', 'กรุณาตรวจสอบรหัสสินค้า')
+        error(this.$t('view.mobile.sale.errorProductNotFound'), this.$t('view.mobile.sale.errorCheckStockNumber'))
         return
       }
 
@@ -672,7 +672,7 @@ export default {
       const allItems = [...this.invoicedItems, ...this.editItems]
       const exists = allItems.some((item) => item.stockNumber === response.stockNumber)
       if (exists) {
-        warning('สินค้านี้ถูกเพิ่มในรายการแล้ว')
+        warning(this.$t('view.mobile.sale.warnProductAlreadyAdded'))
         return
       }
 
@@ -696,7 +696,7 @@ export default {
       })
 
       this.scanInput = ''
-      success('เพิ่มสินค้าสำเร็จ', `${response.stockNumber}`)
+      success(this.$t('view.mobile.sale.successAddProduct'), `${response.stockNumber}`)
     },
 
     async saveChanges() {
@@ -773,7 +773,7 @@ export default {
       if (result) {
         this.isEditing = false
         this.editItems = []
-        success('บันทึกการแก้ไขสำเร็จ')
+        success(this.$t('view.mobile.sale.successSaveEdit'))
         await this.loadSaleOrder()
       }
     },
@@ -781,7 +781,7 @@ export default {
     // ==================== PDF ====================
     async handlePrintPDF() {
       if (!this.soData) {
-        warning('ไม่พบข้อมูลใบสั่งขาย')
+        warning(this.$t('view.mobile.sale.warnNoSoData'))
         return
       }
 
@@ -800,10 +800,10 @@ export default {
         const pdf = await pdfBuilder.generatePDF()
         const filename = `SO_${this.soData.soNumber}_${dayjs().format('YYYYMMDDHHmmss')}.pdf`
         pdf.download(filename)
-        success('สร้าง PDF สำเร็จ')
+        success(this.$t('view.mobile.sale.successCreatePdf'))
       } catch (err) {
         console.error('Error generating PDF:', err)
-        error(err.message || 'เกิดข้อผิดพลาดในการสร้าง PDF')
+        error(err.message || this.$t('view.mobile.sale.errorCreatePdf'))
       } finally {
         this.exportingPDF = false
       }
@@ -813,8 +813,8 @@ export default {
     inactiveSaleOrder() {
       if (this.invoicedItems.length > 0) {
         warning(
-          'ไม่สามารถลบใบสั่งขายได้ เนื่องจากมีสินค้าที่ออก Invoice แล้ว กรุณายกเลิก Invoice ก่อน',
-          'ไม่สามารถลบได้'
+          this.$t('view.mobile.sale.warnCannotDeleteInvoiced'),
+          this.$t('view.mobile.sale.warnCannotDeleteTitle')
         )
         return
       }
@@ -823,9 +823,9 @@ export default {
         ? `ใบสั่งขาย ${this.soData.soNumber} มีสินค้าที่ยืนยันแล้ว ${this.confirmedStockItemsCount} รายการ\nระบบจะยกเลิกการยืนยันสินค้าทั้งหมดและลบใบสั่งขายนี้ ต้องการดำเนินการหรือไม่?`
         : `ต้องการลบใบสั่งขายเลขที่ ${this.soData.soNumber} หรือไม่?`
 
-      confirmSubmit(msg, 'ยืนยันการลบ', async () => {
+      confirmSubmit(msg, this.$t('view.mobile.sale.confirmDeleteTitle'), async () => {
         await this.saleOrderStore.fetchInactive({ soNumber: this.soData.soNumber })
-        success('ลบใบสั่งขายสำเร็จ')
+        success(this.$t('view.mobile.sale.successDeleteSo'))
         this.$router.back()
       })
     },
@@ -853,13 +853,13 @@ export default {
     getStatusLabel(status) {
       switch (status) {
         case 'Draft':
-          return 'ร่าง'
+          return this.$t('view.mobile.sale.statusDraft')
         case 'Confirmed':
-          return 'ยืนยันแล้ว'
+          return this.$t('view.mobile.sale.statusConfirmed')
         case 'Invoiced':
-          return 'ออก Invoice แล้ว'
+          return this.$t('view.mobile.sale.statusInvoiced')
         default:
-          return status || 'ร่าง'
+          return status || this.$t('view.mobile.sale.statusDraft')
       }
     },
 

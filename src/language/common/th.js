@@ -12,7 +12,15 @@ export default {
     export: 'ส่งออก',
     create: 'สร้าง',
     back: 'กลับ',
-    advancedSearch: 'ค้นหาเพิ่มเติม'
+    advancedSearch: 'ค้นหาเพิ่มเติม',
+    view: 'ดูรายละเอียด',
+    more: 'เพิ่มเติม',
+    select: 'เลือก',
+    reset: 'รีเซ็ต',
+    refresh: 'รีเฟรช',
+    download: 'ดาวน์โหลด',
+    upload: 'Upload',
+    copy: 'คัดลอก'
   },
   field: {
     code: 'รหัส',
@@ -31,7 +39,9 @@ export default {
     price: 'ราคา',
     total: 'รวม',
     description: 'คำอธิบาย',
-    action: 'การดำเนินการ'
+    action: 'การดำเนินการ',
+    phone: 'เบอร์โทร',
+    email: 'อีเมล'
   },
   label: {
     noData: 'ไม่พบข้อมูล',
@@ -39,7 +49,12 @@ export default {
     all: 'ทั้งหมด',
     start: 'เริ่มต้น',
     end: 'สิ้นสุด',
-    searchPlaceholder: 'พิมพ์บางอย่างเพื่อค้นหา'
+    startDate: 'เริ่มต้น',
+    endDate: 'สิ้นสุด',
+    advancedSearch: 'ค้นหาเพิ่มเติม',
+    searchPlaceholder: 'พิมพ์บางอย่างเพื่อค้นหา',
+    incompleteData: 'ข้อมูลไม่ครบถ้วน',
+    confirmDelete: 'ยืนยันการลบ'
   },
   table: {
     showing: 'แสดงข้อมูล',
@@ -49,5 +64,8 @@ export default {
   lang: {
     th: 'ไทย',
     en: 'English'
+  },
+  alert: {
+    invalidData: 'ข้อมูลไม่ถูกต้อง'
   }
 }

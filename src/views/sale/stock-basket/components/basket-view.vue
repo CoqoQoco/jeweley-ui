@@ -3,7 +3,7 @@
     <!-- Header Information -->
     <div class="card-container">
       <div class="card-header d-flex align-items-center justify-content-between">
-        <h6 class="mb-0">ข้อมูลตะกร้าสินค้า</h6>
+        <h6 class="mb-0">{{ $t('view.sale.stockBasket.basketInfo') }}</h6>
         <span :class="getStatusBadgeClass(form.status)" style="font-size: 0.9rem;">
           {{ form.statusName || 'Draft' }}
         </span>
@@ -12,22 +12,21 @@
         <div class="form-col-container">
           <!-- Basket Number -->
           <div>
-            <span class="title-text">เลขที่ตะกร้า</span>
-            <input
-              class="form-control bg-input"
-              type="text"
-              v-model="form.basketNumber"
-              readonly
+            <span class="title-text">{{ $t('view.sale.stockBasket.basketNumber') }}</span>
+            <InputTextGeneric
+              :modelValue="form.basketNumber"
+              :readonly="true"
+              bgInput="bg-input"
             />
           </div>
 
           <!-- Event Date -->
           <div>
-            <span class="title-text">วันที่งาน</span>
+            <span class="title-text">{{ $t('view.sale.stockBasket.eventDate') }}</span>
             <CalendarGeneric
               v-model="form.eventDate"
               dateFormat="dd/mm/yy"
-              placeholder="เลือกวันที่"
+              :placeholder="$t('view.sale.stockBasket.selectDate')"
               :showIcon="true"
               :disabled="isReadOnly"
             />
@@ -35,37 +34,34 @@
 
           <!-- Basket Name -->
           <div>
-            <span class="title-text">ชื่องาน/บูท <span class="text-danger">*</span></span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.trim="form.basketName"
-              placeholder="ชื่องาน/บูท"
+            <span class="title-text">{{ $t('view.sale.stockBasket.basketName') }} <span class="text-danger">*</span></span>
+            <InputTextGeneric
+              v-model="form.basketName"
+              :placeholder="$t('view.sale.stockBasket.basketName')"
               :disabled="isReadOnly"
+              :trim="true"
             />
           </div>
 
           <!-- Responsible -->
           <div>
-            <span class="title-text">ผู้รับผิดชอบ</span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.trim="form.responsible"
-              placeholder="ผู้รับผิดชอบ"
+            <span class="title-text">{{ $t('view.sale.stockBasket.responsible') }}</span>
+            <InputTextGeneric
+              v-model="form.responsible"
+              :placeholder="$t('view.sale.stockBasket.responsible')"
               :disabled="isReadOnly"
+              :trim="true"
             />
           </div>
 
           <!-- Remark -->
           <div>
-            <span class="title-text">หมายเหตุ</span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.trim="form.remark"
-              placeholder="หมายเหตุ"
+            <span class="title-text">{{ $t('common.field.remark') }}</span>
+            <InputTextGeneric
+              v-model="form.remark"
+              :placeholder="$t('common.field.remark')"
               :disabled="isReadOnly"
+              :trim="true"
             />
           </div>
         </div>
@@ -75,12 +71,12 @@
     <!-- Add Items Section (only when status === 0) -->
     <div class="card-container mt-3" v-if="form.status === 0">
       <div class="card-header">
-        <h6 class="mb-0">เพิ่มสินค้าในตะกร้า</h6>
+        <h6 class="mb-0">{{ $t('view.sale.stockBasket.addItemsSection') }}</h6>
       </div>
       <div class="card-body">
         <!-- Scan Input -->
         <div class="mb-3">
-          <span class="title-text">Scan สินค้า</span>
+          <span class="title-text">{{ $t('view.sale.stockBasket.scanProduct') }}</span>
           <ScanInput
             v-model="scanValue"
             placeholder="Scan หรือพิมพ์ Stock Number..."
@@ -92,11 +88,11 @@
         <div class="d-flex gap-2">
           <button class="btn btn-sm btn-green" @click="isShowStockSearchModal = true">
             <i class="bi bi-search"></i>
-            <span class="ml-1">ค้นหาสินค้า</span>
+            <span class="ml-1">{{ $t('view.sale.stockBasket.searchProducts') }}</span>
           </button>
-          <button class="btn btn-sm btn-outline-main" @click="isShowCategorySelectModal = true">
+          <button class="btn btn-sm btn-outline-main ml-2" @click="isShowCategorySelectModal = true">
             <i class="bi bi-collection"></i>
-            <span class="ml-1">เลือกทั้ง Category</span>
+            <span class="ml-1">{{ $t('view.sale.stockBasket.selectAllCategories') }}</span>
           </button>
         </div>
       </div>
@@ -105,13 +101,13 @@
     <!-- Items Table -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">รายการสินค้า ({{ items.length }} รายการ)</h6>
+        <h6 class="mb-0">{{ $t('view.sale.stockBasket.itemListTitle', { count: items.length }) }}</h6>
       </div>
       <div class="card-body">
         <BaseDataTable
           :items="items"
           :totalRecords="itemsTotal"
-          :columns="itemColumns"
+          :columns="columns"
           :perPage="50"
           :paginator="true"
           @page="handleItemsPageChange"
@@ -127,7 +123,7 @@
               v-if="data.status === 'InBasket' && form.status === 0"
               class="btn btn-sm btn-red"
               @click="onRemoveItem(data)"
-              title="ลบ"
+              :title="$t('common.btn.delete')"
             >
               <i class="bi bi-trash"></i>
             </button>
@@ -141,18 +137,18 @@
       <template v-if="form.status === 0">
         <button class="btn btn-sm btn-main" @click="onSave">
           <i class="bi bi-save"></i>
-          <span class="ml-1">บันทึก</span>
+          <span class="ml-1">{{ $t('common.btn.save') }}</span>
         </button>
-        <button class="btn btn-sm btn-outline-main" @click="onSubmitApproval">
+        <button class="btn btn-sm btn-outline-main ml-2" @click="onSubmitApproval">
           <i class="bi bi-send"></i>
-          <span class="ml-1">ส่งอนุมัติ</span>
+          <span class="ml-1">{{ $t('view.sale.stockBasket.submitApproval') }}</span>
         </button>
       </template>
 
       <template v-else-if="form.status === 1">
         <button class="btn btn-sm btn-main" @click="onApprove">
           <i class="bi bi-check-circle"></i>
-          <span class="ml-1">อนุมัติ</span>
+          <span class="ml-1">{{ $t('view.sale.stockBasket.approve') }}</span>
         </button>
       </template>
 
@@ -163,9 +159,9 @@
         </button>
       </template>
 
-      <button class="btn btn-sm btn-outline-main" @click="$router.push('/sale/stock-basket')">
+      <button class="btn btn-sm btn-outline-main ml-2" @click="$router.push('/sale/stock-basket')">
         <i class="bi bi-arrow-left"></i>
-        <span class="ml-1">กลับ</span>
+        <span class="ml-1">{{ $t('common.btn.back') }}</span>
       </button>
     </div>
 
@@ -185,10 +181,10 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ScanInput from '@/components/custom/scan-input.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { useStockBasketApiStore } from '@/stores/modules/api/sale/stock-basket-store.js'
 import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import stockSearchModal from '../modal/stock-search-modal.vue'
@@ -212,6 +208,7 @@ export default {
     BaseDataTable,
     ScanInput,
     CalendarGeneric,
+    InputTextGeneric,
     stockSearchModal,
     categorySelectModal
   },
@@ -226,15 +223,6 @@ export default {
       isShowStockSearchModal: false,
       isShowCategorySelectModal: false,
 
-      itemColumns: [
-        { field: 'stockNumber', header: 'Stock Number', minWidth: '140px', sortable: true },
-        { field: 'productNameTh', header: 'ชื่อสินค้า', minWidth: '160px', sortable: true },
-        { field: 'productType', header: 'ประเภท', minWidth: '120px', sortable: true },
-        { field: 'productionTypeSize', header: 'ขนาดทอง', minWidth: '110px', sortable: true },
-        { field: 'statusName', header: 'สถานะ', minWidth: '110px', sortable: false },
-        { field: 'createDate', header: 'วันที่เพิ่ม', minWidth: '110px', format: 'date', sortable: true },
-        { field: 'action', header: '', minWidth: '80px', sortable: false }
-      ]
     }
   },
 
@@ -246,6 +234,18 @@ export default {
   computed: {
     isReadOnly() {
       return this.form.status > 0
+    },
+
+    columns() {
+      return [
+        { field: 'stockNumber', header: 'Stock Number', minWidth: '140px', sortable: true },
+        { field: 'productNameTh', header: this.$t('view.sale.stockBasket.productName'), minWidth: '160px', sortable: true },
+        { field: 'productType', header: this.$t('view.sale.stockBasket.type'), minWidth: '120px', sortable: true },
+        { field: 'productionTypeSize', header: this.$t('view.sale.stockBasket.goldSize'), minWidth: '110px', sortable: true },
+        { field: 'statusName', header: this.$t('view.sale.stockBasket.status'), minWidth: '110px', sortable: false },
+        { field: 'createDate', header: this.$t('view.sale.stockBasket.addDate'), minWidth: '110px', format: 'date', sortable: true },
+        { field: 'action', header: '', minWidth: '80px', sortable: false }
+      ]
     }
   },
 
@@ -283,13 +283,13 @@ export default {
 
     async onSave() {
       if (!this.form.basketName) {
-        warning('กรุณากรอกชื่องาน/บูท', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.stockBasket.validation.nameRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
       const response = await this.store.fetchUpsert({ formValue: this.form })
       if (response) {
-        success('บันทึกข้อมูลสำเร็จ')
+        success(this.$t('view.sale.stockBasket.success.save'))
 
         if (!this.form.running && response.running) {
           this.form.running = response.running
@@ -300,7 +300,7 @@ export default {
 
     async onScanItem(stockNumber) {
       if (!this.form.running) {
-        warning('กรุณาบันทึกตะกร้าก่อนเพิ่มสินค้า', 'ยังไม่ได้บันทึก')
+        warning(this.$t('view.sale.stockBasket.validation.saveFirst'), this.$t('view.sale.stockBasket.notSavedTitle'))
         return
       }
 
@@ -313,7 +313,7 @@ export default {
 
       if (response) {
         if (response.skippedStockNumbers && response.skippedStockNumbers.includes(stockNumber)) {
-          warning('สินค้านี้อยู่ในตะกร้าอื่นแล้ว', 'ไม่สามารถเพิ่มได้')
+          warning(this.$t('view.sale.stockBasket.validation.alreadyInBasket'), this.$t('view.sale.stockBasket.cannotAddTitle'))
         }
         if (response.addedCount > 0) {
           await this.loadBasket(this.form.running)
@@ -325,7 +325,7 @@ export default {
 
     async onStockSelectedFromModal(stockNumber) {
       if (!this.form.running) {
-        warning('กรุณาบันทึกตะกร้าก่อนเพิ่มสินค้า', 'ยังไม่ได้บันทึก')
+        warning(this.$t('view.sale.stockBasket.validation.saveFirst'), this.$t('view.sale.stockBasket.notSavedTitle'))
         return
       }
 
@@ -338,9 +338,9 @@ export default {
 
       if (response) {
         if (response.skippedStockNumbers && response.skippedStockNumbers.includes(stockNumber)) {
-          warning('สินค้านี้อยู่ในตะกร้าอื่นแล้ว', 'ไม่สามารถเพิ่มได้')
+          warning(this.$t('view.sale.stockBasket.validation.alreadyInBasket'), this.$t('view.sale.stockBasket.cannotAddTitle'))
         } else if (response.addedCount > 0) {
-          success('เพิ่มสินค้าสำเร็จ')
+          success(this.$t('view.sale.stockBasket.success.addItem'))
           await this.loadBasket(this.form.running)
         }
       }
@@ -348,7 +348,7 @@ export default {
 
     async onCategorySelected(categoryFilter) {
       if (!this.form.running) {
-        warning('กรุณาบันทึกตะกร้าก่อนเพิ่มสินค้า', 'ยังไม่ได้บันทึก')
+        warning(this.$t('view.sale.stockBasket.validation.saveFirst'), this.$t('view.sale.stockBasket.notSavedTitle'))
         return
       }
 
@@ -360,15 +360,15 @@ export default {
       })
 
       if (response) {
-        success(`เพิ่มสินค้า ${response.addedCount || 0} รายการ`)
+        success(this.$t('view.sale.stockBasket.success.addItems', { count: response.addedCount || 0 }))
         await this.loadBasket(this.form.running)
       }
     },
 
     onRemoveItem(item) {
       confirmSubmit(
-        `ต้องการลบสินค้า ${item.stockNumber} ออกจากตะกร้าหรือไม่?`,
-        'ยืนยันการลบ',
+        this.$t('view.sale.stockBasket.confirm.deleteItem', { stockNumber: item.stockNumber }),
+        this.$t('view.sale.stockBasket.confirm.deleteTitle'),
         async () => {
           const response = await this.store.fetchRemoveItem({
             formValue: {
@@ -377,7 +377,7 @@ export default {
             }
           })
           if (response) {
-            success('ลบสินค้าสำเร็จ')
+            success(this.$t('view.sale.stockBasket.success.deleteItem'))
             await this.loadBasket(this.form.running)
           }
         }
@@ -386,14 +386,14 @@ export default {
 
     onSubmitApproval() {
       confirmSubmit(
-        'ต้องการส่งตะกร้านี้เพื่อขออนุมัติหรือไม่?',
-        'ยืนยันการส่งอนุมัติ',
+        this.$t('view.sale.stockBasket.confirm.submitApproval'),
+        this.$t('view.sale.stockBasket.confirm.submitApprovalTitle'),
         async () => {
           const response = await this.store.fetchSubmitApproval({
             formValue: { running: this.form.running }
           })
           if (response) {
-            success('ส่งอนุมัติสำเร็จ')
+            success(this.$t('view.sale.stockBasket.submitApproval'))
             await this.loadBasket(this.form.running)
           }
         }
@@ -402,14 +402,14 @@ export default {
 
     onApprove() {
       confirmSubmit(
-        'ต้องการอนุมัติตะกร้านี้หรือไม่?',
-        'ยืนยันการอนุมัติ',
+        this.$t('view.sale.stockBasket.confirm.approve'),
+        this.$t('view.sale.stockBasket.confirm.approveTitle'),
         async () => {
           const response = await this.store.fetchApprove({
             formValue: { running: this.form.running }
           })
           if (response) {
-            success('อนุมัติสำเร็จ')
+            success(this.$t('view.sale.stockBasket.approve'))
             await this.loadBasket(this.form.running)
           }
         }
@@ -418,14 +418,14 @@ export default {
 
     onCheckout() {
       confirmSubmit(
-        'ต้องการ Checkout ตะกร้านี้หรือไม่?',
-        'ยืนยัน Checkout',
+        this.$t('view.sale.stockBasket.confirm.checkout'),
+        this.$t('view.sale.stockBasket.confirm.checkoutTitle'),
         async () => {
           const response = await this.store.fetchCheckout({
             formValue: { running: this.form.running }
           })
           if (response) {
-            success('Checkout สำเร็จ')
+            success('Checkout')
             await this.loadBasket(this.form.running)
           }
         }

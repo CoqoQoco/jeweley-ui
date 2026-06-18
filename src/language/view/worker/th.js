@@ -49,7 +49,10 @@ export default {
     colLossPercent: '%loss',
     colWeightLossAllowed: 'น้ำหนักที่ loss ได้',
     colWeightLossActual: 'น้ำหนัก loss',
-    colGoldLossPrice: 'ราคา/กรัม'
+    colGoldLossPrice: 'ราคา/กรัม',
+    badgeGoldLoss: 'Gold Loss (งานฝัง)',
+    footerTotal: 'จำนวน {count} รายการ',
+    slipLabel: 'ลง slip {docNo}'
   },
   goldLossSlipList: {
     searchTitle: 'ประวัติ Gold Loss Slip',

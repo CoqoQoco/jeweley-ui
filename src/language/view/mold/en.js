@@ -25,7 +25,8 @@ export default {
     colCheckOutDesc: 'Checkout Description',
     tagOverdue: 'Overdue',
     tagDueToday: 'Due Today',
-    btnReturn: 'Return Mold'
+    btnReturn: 'Return Mold',
+    paginatorTemplate: 'Showing {first} - {last} of {totalRecords} items'
   },
   picking: {
     titleCheckOut: 'Checkout Mold',

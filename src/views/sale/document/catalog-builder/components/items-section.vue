@@ -1,15 +1,15 @@
 <template>
   <div class="section-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h6 class="mb-0">รายการสินค้า</h6>
+      <h6 class="mb-0">{{ $t('view.sale.document.itemsTitle') }}</h6>
       <button class="btn btn-sm btn-main" @click="$emit('add-item')" type="button">
-        <i class="bi bi-plus-circle mr-1"></i> เพิ่มสินค้า
+        <i class="bi bi-plus-circle mr-1"></i> {{ $t('view.sale.document.addItem') }}
       </button>
     </div>
 
     <div v-if="items.length === 0" class="empty-state">
       <i class="bi bi-box-seam"></i>
-      <p>ยังไม่มีสินค้า — กด "เพิ่มสินค้า" เพื่อเลือกจาก Stock</p>
+      <p>{{ $t('view.sale.document.emptyItems') }}</p>
     </div>
 
     <catalogItemCard

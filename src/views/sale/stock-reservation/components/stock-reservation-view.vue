@@ -4,15 +4,15 @@
     <div class="filter-container">
       <div class="vertical-center-container mb-2">
         <span class="title-text-lg bi bi-bookmark-plus mr-2"></span>
-        <span class="title-text-lg">ข้อมูลการจองสต็อก</span>
+        <span class="title-text-lg">{{ $t('view.sale.stockReservation.reservationInfo') }}</span>
       </div>
       <div class="form-col-container">
         <!-- Reservation Date -->
         <div>
-          <span class="title-text">วันที่จอง</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.reservationDate') }}</span>
           <CalendarGeneric
             v-model="formReservation.reservationDate"
-            placeholder="เลือกวันที่"
+            :placeholder="$t('view.sale.stockReservation.selectDate')"
             dateFormat="dd/mm/yy"
             :showIcon="true"
           />
@@ -20,10 +20,10 @@
 
         <!-- Expiry Date -->
         <div>
-          <span class="title-text">วันที่หมดอายุ</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.expiryDate') }}</span>
           <CalendarGeneric
             v-model="formReservation.expiryDate"
-            placeholder="เลือกวันที่หมดอายุ"
+            :placeholder="$t('view.sale.stockReservation.selectExpiryDate')"
             dateFormat="dd/mm/yy"
             :showIcon="true"
           />
@@ -31,27 +31,27 @@
 
         <!-- Status -->
         <div>
-          <span class="title-text">สถานะ</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.status') }}</span>
           <DropdownGeneric
             v-model="formReservation.status"
             :options="statusOptions"
             optionLabel="name"
             optionValue="value"
-            placeholder="เลือกสถานะ"
+            :placeholder="$t('view.sale.stockReservation.selectStatus')"
           />
         </div>
 
         <!-- Auto Expiry Days -->
         <div>
-          <span class="title-text">จำนวนวันหมดอายุอัตโนมัติ</span>
-          <input
-            class="form-control bg-input"
+          <span class="title-text">{{ $t('view.sale.stockReservation.autoExpiryDays') }}</span>
+          <InputTextGeneric
             type="number"
-            min="1"
-            max="90"
-            v-model.number="formReservation.autoExpiryDays"
+            :min="1"
+            :max="90"
+            v-model="formReservation.autoExpiryDays"
             placeholder="30"
-            @input="calculateExpiryDate"
+            bgInput
+            @blur="calculateExpiryDate"
           />
         </div>
       </div>
@@ -59,49 +59,47 @@
       <div class="form-col-container mt-2">
         <!-- Sale Order Reference -->
         <div>
-          <span class="title-text">อ้างอิงใบสั่งขาย</span>
-          <input
-            class="form-control bg-input"
-            type="text"
-            v-model.trim="formReservation.saleOrderNumber"
+          <span class="title-text">{{ $t('view.sale.stockReservation.soRef') }}</span>
+          <InputTextGeneric
+            v-model="formReservation.saleOrderNumber"
             placeholder="SO-2025-001"
-            readonly
+            :readonly="true"
+            bgInput
           />
         </div>
 
         <!-- Customer Name -->
         <div>
-          <span class="title-text">ลูกค้า</span>
-          <input
-            class="form-control bg-input"
-            type="text"
-            v-model.trim="formReservation.customerName"
-            placeholder="ชื่อลูกค้า"
-            readonly
+          <span class="title-text">{{ $t('view.sale.stockReservation.customerName') }}</span>
+          <InputTextGeneric
+            v-model="formReservation.customerName"
+            :placeholder="$t('view.sale.stockReservation.customerNamePlaceholder')"
+            :readonly="true"
+            bgInput
           />
         </div>
 
         <!-- Reservation Type -->
         <div>
-          <span class="title-text">ประเภทการจอง</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.reservationType') }}</span>
           <DropdownGeneric
             v-model="formReservation.reservationType"
             :options="reservationTypeOptions"
             optionLabel="name"
             optionValue="value"
-            placeholder="เลือกประเภทการจอง"
+            :placeholder="$t('view.sale.stockReservation.selectType')"
           />
         </div>
 
         <!-- Priority -->
         <div>
-          <span class="title-text">ลำดับความสำคัญ</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.priority') }}</span>
           <DropdownGeneric
             v-model="formReservation.priority"
             :options="priorityOptions"
             optionLabel="name"
             optionValue="value"
-            placeholder="เลือกลำดับความสำคัญ"
+            :placeholder="$t('view.sale.stockReservation.selectPriority')"
           />
         </div>
       </div>
@@ -111,23 +109,23 @@
     <div class="filter-container mt-3" v-if="saleOrderInfo.number">
       <div class="vertical-center-container mb-2">
         <span class="title-text-lg bi bi-receipt mr-2"></span>
-        <span class="title-text-lg">ข้อมูลใบสั่งขายอ้างอิง</span>
+        <span class="title-text-lg">{{ $t('view.sale.stockReservation.soRefInfo') }}</span>
       </div>
       <div class="form-col-container">
         <div>
-          <span class="title-text">เลขที่ใบสั่งขาย</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.soNumber') }}</span>
           <div class="info-display">{{ saleOrderInfo.number }}</div>
         </div>
         <div>
-          <span class="title-text">วันที่ใบสั่งขาย</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.soDate') }}</span>
           <div class="info-display">{{ formatDate(saleOrderInfo.orderDate) }}</div>
         </div>
         <div>
-          <span class="title-text">วันที่คาดหวังส่งมอบ</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.expectedDelivery') }}</span>
           <div class="info-display">{{ formatDate(saleOrderInfo.expectedDeliveryDate) }}</div>
         </div>
         <div>
-          <span class="title-text">สถานะใบสั่งขาย</span>
+          <span class="title-text">{{ $t('view.sale.stockReservation.soStatus') }}</span>
           <div class="info-display">
             <span :class="getSaleOrderStatusClass(saleOrderInfo.status)">
               {{ getSaleOrderStatusText(saleOrderInfo.status) }}
@@ -142,7 +140,7 @@
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="vertical-center-container">
           <span class="title-text-lg bi bi-box-seam mr-2"></span>
-          <span class="title-text-lg">รายการสินค้าสต็อกที่ต้องจอง</span>
+          <span class="title-text-lg">{{ $t('view.sale.stockReservation.itemsSection') }}</span>
         </div>
         <div class="d-flex align-items-center">
           <label class="d-flex align-items-center mr-3">
@@ -152,7 +150,7 @@
               @change="toggleAllItems"
               class="mr-2"
             />
-            <span>เลือกทั้งหมด</span>
+            <span>{{ $t('view.sale.stockReservation.selectAllItems') }}</span>
           </label>
           <button
             class="btn btn-sm btn-main"
@@ -160,7 +158,7 @@
             :disabled="selectedItemsCount === 0 || hasReservationIssues"
           >
             <i class="bi bi-bookmark-plus mr-1"></i>
-            จองรายการที่เลือก
+            {{ $t('view.sale.stockReservation.reserveSelected') }}
           </button>
         </div>
       </div>
@@ -175,7 +173,7 @@
           scrollHeight="400px"
         >
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column header="เลือก" style="width: 80px">
+          <Column :header="$t('view.sale.stockReservation.selectCol')" style="width: 80px">
             <template #body="{ data }">
               <input
                 type="checkbox"
@@ -188,31 +186,31 @@
           </Column>
 
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column field="productNumber" header="รหัสสินค้า" style="min-width: 120px">
+          <Column field="productNumber" :header="$t('view.sale.stockReservation.productCode')" style="min-width: 120px">
             <template #body="{ data }">
               <span class="font-weight-bold">{{ data.productNumber }}</span>
             </template>
           </Column>
 
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column field="productName" header="ชื่อสินค้า" style="min-width: 200px" />
+          <Column field="productName" :header="$t('view.sale.stockReservation.productName')" style="min-width: 200px" />
 
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column header="สถานะสต็อก" style="min-width: 150px">
+          <Column :header="$t('view.sale.stockReservation.stockStatus')" style="min-width: 150px">
             <template #body="{ data }">
               <div class="stock-status">
                 <div class="stock-item">
-                  <span class="stock-label">คงคลัง:</span>
+                  <span class="stock-label">{{ $t('view.sale.stockReservation.stockInStock') }}:</span>
                   <span :class="getStockStatusClass(data.stockAvailable, data.quantity)">
                     {{ data.stockAvailable || 0 }}
                   </span>
                 </div>
                 <div class="stock-item">
-                  <span class="stock-label">จองแล้ว:</span>
+                  <span class="stock-label">{{ $t('view.sale.stockReservation.reservedBadge') }}:</span>
                   <span class="text-warning font-weight-bold">{{ data.reserved || 0 }}</span>
                 </div>
                 <div class="stock-item">
-                  <span class="stock-label">พร้อมจอง:</span>
+                  <span class="stock-label">{{ $t('view.sale.stockReservation.stockReadyToReserve') }}:</span>
                   <span :class="getAvailableStockClass(data.stockAvailable - data.reserved)">
                     {{ (data.stockAvailable || 0) - (data.reserved || 0) }}
                   </span>
@@ -222,7 +220,7 @@
           </Column>
 
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column field="quantity" header="จำนวนที่ต้องการ" style="min-width: 140px">
+          <Column field="quantity" :header="$t('view.sale.stockReservation.quantityRequired')" style="min-width: 140px">
             <template #body="{ data }">
               <input
                 type="number"
@@ -235,13 +233,13 @@
                 :class="{ 'is-invalid': isQuantityInvalid(data) }"
               />
               <div v-if="isQuantityInvalid(data)" class="invalid-feedback">
-                จำนวนเกินสต็อกที่พร้อมจอง
+                {{ $t('view.sale.stockReservation.overStockWarning') }}
               </div>
             </template>
           </Column>
 
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column field="unitPrice" header="ราคาต่อหน่วย" style="min-width: 120px">
+          <Column field="unitPrice" :header="$t('view.sale.stockReservation.pricePerUnit')" style="min-width: 120px">
             <template #body="{ data }">
               <div class="text-right">
                 {{ formatCurrency(data.unitPrice) }}
@@ -250,14 +248,14 @@
           </Column>
 
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column header="สถานะการจอง" style="min-width: 140px">
+          <Column :header="$t('view.sale.stockReservation.reservationStatus')" style="min-width: 140px">
             <template #body="{ data }">
               <div v-if="data.isReserved" class="reservation-status">
                 <span class="badge badge-success">
-                  <i class="bi bi-bookmark-check mr-1"></i>จองแล้ว
+                  <i class="bi bi-bookmark-check mr-1"></i>{{ $t('view.sale.stockReservation.reservedBadge') }}
                 </span>
                 <div class="reservation-details">
-                  <small class="text-muted">จองเมื่อ: {{ formatDate(data.reservedDate) }}</small>
+                  <small class="text-muted">{{ $t('view.sale.stockReservation.reservedDate') }}: {{ formatDate(data.reservedDate) }}</small>
                 </div>
               </div>
               <div v-else class="reservation-status">
@@ -270,7 +268,7 @@
           </Column>
 
           <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column header="การดำเนินการ" style="width: 120px">
+          <Column :header="$t('common.field.action')" style="width: 120px">
             <template #body="{ data }">
               <div class="action-buttons">
                 <button
@@ -278,7 +276,7 @@
                   class="btn btn-sm btn-main"
                   @click="reserveItem(data)"
                   :disabled="!canReserveItem(data) || isQuantityInvalid(data)"
-                  title="จองรายการนี้"
+                  :title="$t('view.sale.stockReservation.reserveItemTitle')"
                 >
                   <i class="bi bi-bookmark-plus"></i>
                 </button>
@@ -286,7 +284,7 @@
                   v-else
                   class="btn btn-sm btn-red"
                   @click="unreserveItem(data)"
-                  title="ยกเลิกการจอง"
+                  :title="$t('view.sale.stockReservation.cancelReservationTitle')"
                 >
                   <i class="bi bi-bookmark-dash"></i>
                 </button>
@@ -301,58 +299,58 @@
     <div class="filter-container mt-3">
       <div class="vertical-center-container mb-2">
         <span class="title-text-lg bi bi-clipboard-data mr-2"></span>
-        <span class="title-text-lg">สรุปการจองสต็อก</span>
+        <span class="title-text-lg">{{ $t('view.sale.stockReservation.summarySection') }}</span>
       </div>
 
       <div class="form-col-container">
         <div class="summary-section">
-          <h6>รายการสินค้า</h6>
+          <h6>{{ $t('view.sale.stockReservation.summaryItemsLabel') }}</h6>
           <div class="summary-item">
-            <span>รายการทั้งหมด:</span>
-            <span class="font-weight-bold">{{ stockItemsCount }} รายการ</span>
+            <span>{{ $t('view.sale.stockReservation.summaryAllItems') }}:</span>
+            <span class="font-weight-bold">{{ stockItemsCount }} {{ $t('view.sale.stockReservation.itemUnit') }}</span>
           </div>
           <div class="summary-item">
-            <span>รายการที่เลือก:</span>
-            <span class="font-weight-bold" style="color: var(--base-font-color)">{{ selectedItemsCount }} รายการ</span>
+            <span>{{ $t('view.sale.stockReservation.summarySelectedItems') }}:</span>
+            <span class="font-weight-bold" style="color: var(--base-font-color)">{{ selectedItemsCount }} {{ $t('view.sale.stockReservation.itemUnit') }}</span>
           </div>
           <div class="summary-item">
-            <span>จองสำเร็จแล้ว:</span>
-            <span class="font-weight-bold" style="color: var(--base-green)">{{ reservedItemsCount }} รายการ</span>
+            <span>{{ $t('view.sale.stockReservation.summaryReserved') }}:</span>
+            <span class="font-weight-bold" style="color: var(--base-green)">{{ reservedItemsCount }} {{ $t('view.sale.stockReservation.itemUnit') }}</span>
           </div>
           <div class="summary-item">
-            <span>ไม่สามารถจองได้:</span>
-            <span class="font-weight-bold" style="color: var(--base-red)">{{ unavailableItemsCount }} รายการ</span>
-          </div>
-        </div>
-
-        <div class="summary-section">
-          <h6>สรุปจำนวน</h6>
-          <div class="summary-item">
-            <span>จำนวนรวมที่ต้องการ:</span>
-            <span class="font-weight-bold">{{ totalRequestedQuantity }} ชิ้น</span>
-          </div>
-          <div class="summary-item">
-            <span>จำนวนที่จองแล้ว:</span>
-            <span class="font-weight-bold" style="color: var(--base-green)">{{ totalReservedQuantity }} ชิ้น</span>
-          </div>
-          <div class="summary-item">
-            <span>จำนวนที่ขาด:</span>
-            <span class="font-weight-bold" style="color: var(--base-warning)">{{ totalShortageQuantity }} ชิ้น</span>
+            <span>{{ $t('view.sale.stockReservation.summaryUnavailable') }}:</span>
+            <span class="font-weight-bold" style="color: var(--base-red)">{{ unavailableItemsCount }} {{ $t('view.sale.stockReservation.itemUnit') }}</span>
           </div>
         </div>
 
         <div class="summary-section">
-          <h6>สรุปมูลค่า</h6>
+          <h6>{{ $t('view.sale.stockReservation.summaryCount') }}</h6>
           <div class="summary-item">
-            <span>มูลค่าที่จองแล้ว:</span>
+            <span>{{ $t('view.sale.stockReservation.summaryTotalRequested') }}:</span>
+            <span class="font-weight-bold">{{ totalRequestedQuantity }} {{ $t('view.sale.stockReservation.pieceUnit') }}</span>
+          </div>
+          <div class="summary-item">
+            <span>{{ $t('view.sale.stockReservation.summaryTotalReserved') }}:</span>
+            <span class="font-weight-bold" style="color: var(--base-green)">{{ totalReservedQuantity }} {{ $t('view.sale.stockReservation.pieceUnit') }}</span>
+          </div>
+          <div class="summary-item">
+            <span>{{ $t('view.sale.stockReservation.summaryTotalShortage') }}:</span>
+            <span class="font-weight-bold" style="color: var(--base-warning)">{{ totalShortageQuantity }} {{ $t('view.sale.stockReservation.pieceUnit') }}</span>
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <h6>{{ $t('view.sale.stockReservation.summaryValue') }}</h6>
+          <div class="summary-item">
+            <span>{{ $t('view.sale.stockReservation.summaryReservedValue') }}:</span>
             <span class="font-weight-bold" style="color: var(--base-green)">{{ formatCurrency(reservedValue) }}</span>
           </div>
           <div class="summary-item">
-            <span>มูลค่าที่รอจอง:</span>
+            <span>{{ $t('view.sale.stockReservation.summaryPendingValue') }}:</span>
             <span class="font-weight-bold" style="color: var(--base-warning)">{{ formatCurrency(pendingValue) }}</span>
           </div>
           <div class="summary-item border-top pt-2 mt-2">
-            <span class="title-text">มูลค่ารวม:</span>
+            <span class="title-text">{{ $t('view.sale.stockReservation.summaryTotalValue') }}:</span>
             <span class="title-text" style="color: var(--base-font-color)">{{ formatCurrency(totalValue) }}</span>
           </div>
         </div>
@@ -360,19 +358,18 @@
 
       <!-- Reservation Notes -->
       <div class="mt-3">
-        <span class="title-text">หมายเหตุการจอง</span>
-        <textarea
-          class="form-control"
-          rows="3"
+        <span class="title-text">{{ $t('view.sale.stockReservation.remark') }}</span>
+        <TextareaGeneric
           v-model="formReservation.remark"
-          placeholder="หมายเหตุเพิ่มเติมสำหรับการจองสต็อก..."
-        ></textarea>
+          :rows="3"
+          :placeholder="$t('view.sale.stockReservation.remarkPlaceholder')"
+        />
       </div>
 
       <!-- Validation Messages -->
       <div class="mt-3" v-if="validationErrors.length > 0">
         <div class="alert alert-warning">
-          <h6><i class="bi bi-exclamation-triangle mr-2"></i>ข้อควรระวัง:</h6>
+          <h6><i class="bi bi-exclamation-triangle mr-2"></i>{{ $t('common.label.incompleteData') }}:</h6>
           <ul class="mb-0">
             <li v-for="err in validationErrors" :key="err">{{ err }}</li>
           </ul>
@@ -390,7 +387,7 @@
           :disabled="selectedItemsCount === 0 || hasReservationIssues"
         >
           <i class="bi bi-bookmark-plus mr-1"></i>
-          จองทั้งหมด
+          {{ $t('view.sale.stockReservation.reserveAll') }}
         </button>
 
         <button
@@ -400,7 +397,7 @@
           :disabled="reservedItemsCount === 0"
         >
           <i class="bi bi-bookmark-dash mr-1"></i>
-          ยกเลิกการจองทั้งหมด
+          {{ $t('view.sale.stockReservation.unreserveAll') }}
         </button>
 
         <button
@@ -410,7 +407,7 @@
           :disabled="stockItemsCount === 0"
         >
           <i class="bi bi-file-pdf mr-1"></i>
-          รายงานการจอง
+          {{ $t('view.sale.stockReservation.report') }}
         </button>
 
         <button
@@ -419,7 +416,7 @@
           @click="clearForm"
         >
           <i class="bi bi-arrow-clockwise mr-1"></i>
-          ล้างข้อมูล
+          {{ $t('common.btn.clear') }}
         </button>
 
         <button
@@ -428,7 +425,7 @@
           @click="cancelReservation"
         >
           <i class="bi bi-x-circle mr-1"></i>
-          ยกเลิก
+          {{ $t('common.btn.cancel') }}
         </button>
       </div>
     </div>
@@ -442,8 +439,10 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
-import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 
 export default {
@@ -453,7 +452,9 @@ export default {
     DataTable,
     Column,
     CalendarGeneric,
-    DropdownGeneric
+    DropdownGeneric,
+    InputTextGeneric,
+    TextareaGeneric
   },
 
   emits: ['update:modelForm', 'update:modelSaleOrder', 'reserve', 'unreserve', 'confirm', 'cancel'],
@@ -487,31 +488,37 @@ export default {
         remark: ''
       },
 
-      saleOrderInfo: {},
-
-      statusOptions: [
-        { name: 'ใช้งาน', value: 'Active' },
-        { name: 'หมดอายุ', value: 'Expired' },
-        { name: 'ยกเลิก', value: 'Cancelled' },
-        { name: 'ใช้แล้ว', value: 'Used' }
-      ],
-
-      reservationTypeOptions: [
-        { name: 'การขาย', value: 'sales' },
-        { name: 'การซ่อม', value: 'repair' },
-        { name: 'การแลกเปลี่ยน', value: 'exchange' },
-        { name: 'อื่นๆ', value: 'others' }
-      ],
-
-      priorityOptions: [
-        { name: 'ปกติ', value: 'normal' },
-        { name: 'สำคัญ', value: 'high' },
-        { name: 'เร่งด่วน', value: 'urgent' }
-      ]
+      saleOrderInfo: {}
     }
   },
 
   computed: {
+    statusOptions() {
+      return [
+        { name: this.$t('view.sale.stockReservation.statusActive'), value: 'Active' },
+        { name: this.$t('view.sale.stockReservation.statusExpired'), value: 'Expired' },
+        { name: this.$t('view.sale.stockReservation.statusCancelled'), value: 'Cancelled' },
+        { name: this.$t('view.sale.stockReservation.statusUsed'), value: 'Used' }
+      ]
+    },
+
+    reservationTypeOptions() {
+      return [
+        { name: this.$t('view.sale.stockReservation.typeSale'), value: 'sales' },
+        { name: this.$t('view.sale.stockReservation.typeRepair'), value: 'repair' },
+        { name: this.$t('view.sale.stockReservation.typeExchange'), value: 'exchange' },
+        { name: this.$t('view.sale.stockReservation.typeOthers'), value: 'others' }
+      ]
+    },
+
+    priorityOptions() {
+      return [
+        { name: this.$t('view.sale.stockReservation.priorityNormal'), value: 'normal' },
+        { name: this.$t('view.sale.stockReservation.priorityHigh'), value: 'high' },
+        { name: this.$t('view.sale.stockReservation.priorityUrgent'), value: 'urgent' }
+      ]
+    },
+
     allItemsSelected() {
       return this.stockItems.length > 0 &&
              this.stockItems.filter(item => this.canReserveItem(item)).every(item => item.isSelected)
@@ -573,16 +580,16 @@ export default {
       const errors = []
 
       if (this.totalShortageQuantity > 0) {
-        errors.push(`มีสินค้าขาดสต็อก ${this.totalShortageQuantity} ชิ้น`)
+        errors.push(this.$t('view.sale.stockReservation.validation.stockShortage', { count: this.totalShortageQuantity }))
       }
 
       if (!this.formReservation.expiryDate) {
-        errors.push('กรุณาระบุวันที่หมดอายุการจอง')
+        errors.push(this.$t('view.sale.stockReservation.validation.expiryRequired'))
       }
 
       const invalidItems = this.stockItems.filter(item => this.isQuantityInvalid(item))
       if (invalidItems.length > 0) {
-        errors.push(`มีรายการที่จำนวนเกินสต็อกที่พร้อมจอง ${invalidItems.length} รายการ`)
+        errors.push(this.$t('view.sale.stockReservation.validation.overQuantity', { count: invalidItems.length }))
       }
 
       return errors
@@ -631,7 +638,10 @@ export default {
         }
 
         this.loadSaleOrderData(saleOrderData)
-        success(`โหลดข้อมูลจากใบสั่งขาย ${query.saleOrderNumber} เรียบร้อย`, 'โหลดข้อมูลสำเร็จ')
+        success(
+          this.$t('view.sale.stockReservation.success.loadSO', { soNumber: query.saleOrderNumber }),
+          this.$t('view.sale.stockReservation.success.loadSOTitle')
+        )
       }
     },
 
@@ -720,7 +730,10 @@ export default {
       })
 
       this.$emit('reserve', { items: itemsToReserve, type: 'multiple' })
-      success(`จองสต็อกเรียบร้อยแล้ว ${itemsToReserve.length} รายการ`, 'จองสต็อกสำเร็จ')
+      success(
+        this.$t('view.sale.stockReservation.success.reserve', { count: itemsToReserve.length }),
+        this.$t('view.sale.stockReservation.success.reserveTitle')
+      )
     },
 
     async reserveAll() {
@@ -745,18 +758,28 @@ export default {
       })
 
       this.$emit('unreserve', { items: reservedItems, type: 'all' })
-      success(`ยกเลิกการจองเรียบร้อยแล้ว ${reservedItems.length} รายการ`, 'ยกเลิกสำเร็จ')
+      success(
+        this.$t('view.sale.stockReservation.success.cancelReservation', { count: reservedItems.length }),
+        this.$t('view.sale.stockReservation.success.cancelTitle')
+      )
     },
 
     async generateReport() {
-      success('สร้างรายงานเรียบร้อยแล้ว', 'สร้างรายงานสำเร็จ')
+      success(
+        this.$t('view.sale.stockReservation.success.createReport'),
+        this.$t('view.sale.stockReservation.success.createReportTitle')
+      )
     },
 
     cancelReservation() {
-      confirmThenSubmit('', 'คุณต้องการยกเลิกการจองสต็อกนี้หรือไม่?', () => {
-        this.clearForm()
-        this.$emit('cancel')
-      })
+      confirmThenSubmit(
+        this.$t('view.sale.stockReservation.confirm.cancel'),
+        this.$t('view.sale.stockReservation.confirm.cancelTitle'),
+        () => {
+          this.clearForm()
+          this.$emit('cancel')
+        }
+      )
     },
 
     clearForm() {
@@ -796,9 +819,9 @@ export default {
     },
 
     getReservationStatusText(item) {
-      if (!this.canReserveItem(item)) return 'ไม่สามารถจองได้'
-      if (item.isSelected) return 'เลือกแล้ว'
-      return 'พร้อมจอง'
+      if (!this.canReserveItem(item)) return this.$t('view.sale.stockReservation.cannotReserve')
+      if (item.isSelected) return this.$t('view.sale.stockReservation.selectedState')
+      return this.$t('view.sale.stockReservation.readyToReserveState')
     },
 
     getSaleOrderStatusClass(status) {
@@ -812,9 +835,9 @@ export default {
 
     getSaleOrderStatusText(status) {
       const texts = {
-        'Confirmed': 'ยืนยันแล้ว',
-        'PartiallyFulfilled': 'ส่งมอบบางส่วน',
-        'Fulfilled': 'ส่งมอบครบถ้วน'
+        'Confirmed': this.$t('view.sale.stockReservation.statusConfirmed'),
+        'PartiallyFulfilled': this.$t('view.sale.stockReservation.statusPartiallyFulfilled'),
+        'Fulfilled': this.$t('view.sale.stockReservation.statusFulfilled')
       }
       return texts[status] || status
     },

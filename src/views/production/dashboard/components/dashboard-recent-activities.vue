@@ -92,25 +92,25 @@ export default {
       default: () => []
     }
   },
-  data() {
-    return {
-      recentActivitiesColumns: [
+  computed: {
+    recentActivitiesColumns() {
+      return [
         {
           field: 'type',
-          header: 'ประเภท',
+          header: this.$t('view.production.dashboard.colType'),
           sortable: false,
           width: '60px',
           align: 'center'
         },
         {
           field: 'title',
-          header: 'กิจกรรม',
+          header: this.$t('view.production.dashboard.colActivity'),
           sortable: false,
           width: '250px'
         },
         {
           field: 'date',
-          header: 'วันที่',
+          header: this.$t('view.production.dashboard.colDate'),
           sortable: false,
           format: 'datetime',
           width: '150px',
@@ -118,7 +118,7 @@ export default {
         },
         {
           field: 'details',
-          header: 'รายละเอียด',
+          header: this.$t('view.production.dashboard.colDetail'),
           sortable: false,
           width: '300px'
         },

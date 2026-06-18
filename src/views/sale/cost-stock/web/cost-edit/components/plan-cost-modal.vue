@@ -7,14 +7,14 @@
   >
     <template #title>
       <span class="title-text-lg px-3 pt-3 d-block">
-        <i class="bi bi-graph-up mr-2"></i>ต้นทุนจากแผนผลิต (อ้างอิง)
+        <i class="bi bi-graph-up mr-2"></i>{{ $t('view.sale.costStock.planCost') }}
       </span>
     </template>
 
     <template #content>
       <div class="px-3 pb-3">
         <div class="responsive-text-note mb-3">
-          * ข้อมูลต้นทุนจากแผนผลิต WO{{ wo }}{{ woNumber }} ({{ planProductQty }} ชิ้น) — แสดงเพื่ออ้างอิงเท่านั้น
+          {{ $t('view.sale.costStock.planCostNoteTemplate', { wo, woNumber, qty: planProductQty }) }}
         </div>
 
         <div class="responsive-table-wrapper">
@@ -31,17 +31,17 @@
               <!-- eslint-disable-next-line no-restricted-imports -->
               <Row>
                 <!-- eslint-disable-next-line no-restricted-imports -->
-                <Column header="รายละเอียดงาน" :colspan="1" />
+                <Column :header="$t('view.sale.costStock.jobDetail')" :colspan="1" />
                 <!-- eslint-disable-next-line no-restricted-imports -->
-                <Column header="จำนวน" />
+                <Column :header="$t('common.field.quantity')" />
                 <!-- eslint-disable-next-line no-restricted-imports -->
-                <Column header="ราคา/จำนวน" />
+                <Column :header="$t('view.sale.costStock.pricePerQty')" />
                 <!-- eslint-disable-next-line no-restricted-imports -->
-                <Column header="น้ำหนัก" />
+                <Column :header="$t('common.field.weight')" />
                 <!-- eslint-disable-next-line no-restricted-imports -->
-                <Column header="ราคา/น้ำหนัก" />
+                <Column :header="$t('view.sale.costStock.pricePerWeight')" />
                 <!-- eslint-disable-next-line no-restricted-imports -->
-                <Column header="ราคารวม" />
+                <Column :header="$t('view.sale.costStock.totalPrice')" />
               </Row>
             </ColumnGroup>
 
@@ -137,7 +137,7 @@
               <div class="d-flex align-items-center justify-content-between gap-2 type-container">
                 <div>
                   <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
-                  <span>ต้นทุน{{ getGroupName(slotProps.data.nameGroup) }}</span>
+                  <span>{{ $t('view.sale.costStock.costPrefix') }}{{ getGroupName(slotProps.data.nameGroup) }}</span>
                 </div>
                 <div class="text-right mr-2">
                   {{ calcGroupTotal(slotProps.data.nameGroup).toFixed(2) }}
@@ -153,7 +153,7 @@
                 <Column :colspan="5">
                   <template #footer>
                     <div class="text-right type-container">
-                      <span>ต้นทุนรวมทั้งหมด (THB)</span>
+                      <span>{{ $t('view.sale.costStock.totalCostTHB') }}</span>
                     </div>
                   </template>
                 </Column>
@@ -172,7 +172,7 @@
                 <Column :colspan="5">
                   <template #footer>
                     <div class="text-right type-container plan-per-piece">
-                      <span>ต้นทุนต่อชิ้น (÷ {{ planProductQty }} ชิ้น)</span>
+                      <span>{{ $t('view.sale.costStock.costPerPiece', { qty: planProductQty }) }}</span>
                     </div>
                   </template>
                 </Column>
@@ -194,7 +194,7 @@
     <template #action>
       <button class="btn btn-sm btn-outline-main" @click="onClose">
         <i class="bi bi-x-circle mr-1"></i>
-        ปิด
+        {{ $t('common.btn.close') }}
       </button>
     </template>
   </modal>
@@ -262,11 +262,11 @@ export default {
 
     getGroupName(id) {
       switch (id) {
-        case 'Gold':   return 'รายการทอง'
-        case 'Gem':    return 'รายการวัถุดิบ'
-        case 'Worker': return 'รายการงานช่าง'
-        case 'Embed':  return 'รายการงานฝัง'
-        case 'ETC':    return 'รายการเพิ่มเติม'
+        case 'Gold':   return this.$t('view.sale.costStock.group.gold')
+        case 'Gem':    return this.$t('view.sale.costStock.group.material')
+        case 'Worker': return this.$t('view.sale.costStock.group.worker')
+        case 'Embed':  return this.$t('view.sale.costStock.group.embed')
+        case 'ETC':    return this.$t('view.sale.costStock.group.etc')
         default:       return id || 'Unknown'
       }
     },

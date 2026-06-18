@@ -2,7 +2,7 @@
   <div class="filter-container-searchBar">
     <pageTitle
       :title="$t('view.sale.invoice.title')"
-      description="แสดงรายการใบแจ้งหนี้ทั้งหมด พร้อมฟีเจอร์ค้นหาและกรองข้อมูล"
+      :description="$t('view.sale.invoice.pageDescription')"
       :isShowBtnClose="false"
     />
 
@@ -53,7 +53,7 @@
         :isShow="isShow.dialog"
         @closeDialog="closeDialog"
         @search="dialogSearch"
-        txtHeader="ค้นหาเพิ่มเติม"
+        :txtHeader="$t('common.label.advancedSearch')"
       >
         <template #content>
           <div class="form-col-container">
@@ -79,7 +79,7 @@
                   :max-date="form.createDateEnd"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="เริ่มต้น"
+                  :placeholder="$t('common.label.startDate')"
                   dateFormat="dd/mm/yy"
                 />
                 <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -89,7 +89,7 @@
                   :min-date="form.createDateStart"
                   :showIcon="true"
                   :manualInput="false"
-                  placeholder="สิ้นสุด"
+                  :placeholder="$t('common.label.endDate')"
                   dateFormat="dd/mm/yy"
                 />
               </div>
@@ -105,7 +105,7 @@
         <button
           class="btn btn-sm btn-sub-main mr-2"
           type="button"
-          title="เพิ่มเติม"
+          :title="$t('common.btn.more')"
           @click="onShowDialog"
         >
           <span><i class="bi bi-zoom-in"></i></span>

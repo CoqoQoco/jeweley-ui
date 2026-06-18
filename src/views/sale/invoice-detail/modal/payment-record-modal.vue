@@ -7,25 +7,25 @@
             <!-- Modal Header -->
             <div class="title-text-lg-bg">
               <i class="bi bi-cash-coin mr-2"></i>
-              <span>บันทึกการเก็บเงิน</span>
+              <span>{{ $t('view.sale.invoiceDetail.recordPaymentTitle') }}</span>
             </div>
 
             <div class="p-3">
               <!-- Payment Information -->
               <div class="filter-container mb-2">
                 <div class="title-text-lg mb-2">
-                  <i class="bi bi-receipt mr-2"></i>ข้อมูลการชำระเงิน
+                  <i class="bi bi-receipt mr-2"></i>{{ $t('view.sale.invoiceDetail.paymentInfo') }}
                 </div>
                 <div class="p-3">
                   <!-- Payment Date -->
                   <div class="form-group mb-3">
                     <label class="form-label required">
-                      <i class="bi bi-calendar-event mr-1"></i>วันที่จ่ายเงิน
+                      <i class="bi bi-calendar-event mr-1"></i>{{ $t('view.sale.invoiceDetail.paymentDate') }}
                     </label>
                     <CalendarGeneric
                       v-model="paymentData.paymentDate"
                       dateFormat="dd/mm/yy"
-                      placeholder="เลือกวันที่"
+                      :placeholder="$t('view.sale.invoiceDetail.placeholder.paymentDate')"
                       :showIcon="true"
                       :showButtonBar="true"
                       class="w-100"
@@ -35,20 +35,17 @@
                   <!-- Payment Amount -->
                   <div class="form-group mb-3">
                     <label class="form-label required">
-                      <i class="bi bi-currency-exchange mr-1"></i>ยอดเงิน ({{
-                        invoiceData.currencyUnit || 'THB'
-                      }})
+                      <i class="bi bi-currency-exchange mr-1"></i>{{ $t('view.sale.invoiceDetail.amount') }} ({{ invoiceData.currencyUnit || 'THB' }})
                     </label>
-                    <input
-                      v-model.number="paymentData.amount"
+                    <InputTextGeneric
+                      v-model="paymentData.amount"
                       type="number"
-                      class="form-control"
-                      placeholder="กรอกยอดเงิน"
-                      step="0.01"
-                      min="0"
+                      placeholder="0.00"
+                      :step="0.01"
+                      :min="0"
                     />
                     <small class="form-text text-muted">
-                      ยอดคงเหลือ: {{ formatNumber(remainingAmount) }}
+                      {{ $t('view.sale.invoiceDetail.remaining') }}: {{ formatNumber(remainingAmount) }}
                       {{ invoiceData.currencyUnit || 'THB' }}
                     </small>
                   </div>
@@ -56,14 +53,14 @@
                   <!-- Payment Method -->
                   <div class="form-group mb-3">
                     <label class="form-label required">
-                      <i class="bi bi-credit-card mr-1"></i>วิธีการชำระเงิน
+                      <i class="bi bi-credit-card mr-1"></i>{{ $t('view.sale.invoiceDetail.paymentMethod') }}
                     </label>
                     <DropdownGeneric
                       v-model="paymentData.paymentMethod"
                       :options="paymentMethods"
                       optionLabel="name"
                       optionValue="value"
-                      placeholder="-- เลือกวิธีการชำระ --"
+                      :placeholder="$t('view.sale.invoiceDetail.placeholder.paymentMethod')"
                       class="w-100"
                     />
                   </div>
@@ -74,14 +71,14 @@
                     class="form-group mb-3"
                   >
                     <label class="form-label required">
-                      <i class="bi bi-bank mr-1"></i>ธนาคาร
+                      <i class="bi bi-bank mr-1"></i>{{ $t('view.sale.invoiceDetail.bank') }}
                     </label>
                     <AutoCompleteGeneric
                       :modelValue="selectedBank"
                       :staticOptions="bankList"
                       :useStaticList="true"
                       optionLabel="nameTh"
-                      placeholder="-- เลือกธนาคาร --"
+                      :placeholder="$t('view.sale.invoiceDetail.placeholder.bank')"
                       :forceSelection="true"
                       customClass="bank-ac w-100"
                       @update:modelValue="onBankChange"
@@ -95,39 +92,35 @@
                   <!-- Branch Input (Cheque only) -->
                   <div v-if="paymentData.paymentId === 3" class="form-group mb-3">
                     <label class="form-label required">
-                      <i class="bi bi-geo-alt mr-1"></i>สาขา
+                      <i class="bi bi-geo-alt mr-1"></i>{{ $t('view.sale.invoiceDetail.branch') }}
                     </label>
-                    <input
+                    <InputTextGeneric
                       v-model="paymentData.bankBranch"
-                      type="text"
-                      class="form-control"
-                      placeholder="กรอกชื่อสาขา"
+                      :placeholder="$t('view.sale.invoiceDetail.branch')"
                     />
                   </div>
 
                   <!-- Reference Number -->
                   <div class="form-group mb-3">
                     <label class="form-label">
-                      <i class="bi bi-hash mr-1"></i>เลขที่อ้างอิง / หมายเลขธุรกรรม
+                      <i class="bi bi-hash mr-1"></i>{{ $t('view.sale.invoiceDetail.referenceNumber') }}
                     </label>
-                    <input
+                    <InputTextGeneric
                       v-model="paymentData.referenceNumber"
-                      type="text"
-                      class="form-control"
-                      placeholder="กรอกเลขที่อ้างอิง (ถ้ามี)"
+                      :placeholder="$t('view.sale.invoiceDetail.referenceNumber')"
                     />
                   </div>
 
                   <!-- Remark -->
                   <div class="form-group mb-3">
                     <label class="form-label">
-                      <i class="bi bi-chat-left-text mr-1"></i>หมายเหตุ
+                      <i class="bi bi-chat-left-text mr-1"></i>{{ $t('common.field.remark') }}
                     </label>
                     <textarea
                       v-model="paymentData.remark"
                       class="form-control"
                       rows="3"
-                      placeholder="กรอกหมายเหตุ (ถ้ามี)"
+                      :placeholder="$t('view.sale.invoiceDetail.placeholder.remark')"
                     ></textarea>
                   </div>
                 </div>
@@ -136,7 +129,7 @@
               <!-- Upload Receipt Image -->
               <div class="filter-container mb-2">
                 <div class="title-text-lg mb-2">
-                  <i class="bi bi-image mr-2"></i>หลักฐานการชำระเงิน
+                  <i class="bi bi-image mr-2"></i>{{ $t('view.sale.invoiceDetail.paymentEvidence') }}
                 </div>
                 <div class="p-3">
                   <UploadImage
@@ -145,7 +138,7 @@
                     @onImportFile="onUploadImage"
                   />
                   <small class="form-text text-muted mt-2">
-                    * รองรับไฟล์: JPG, PNG (รูปภาพจะถูกบีบอัดอัตโนมัติ)
+                    {{ $t('view.sale.invoiceDetail.imageHint') }}
                   </small>
                 </div>
               </div>
@@ -161,7 +154,7 @@
                         <strong>{{ invoiceData.invoiceNumber }}</strong>
                       </p>
                       <p class="mb-0 mt-1 info-text">
-                        <i class="bi bi-cash-stack mr-1"></i>ยอด Invoice:
+                        <i class="bi bi-cash-stack mr-1"></i>{{ $t('view.sale.invoiceDetail.invoiceAmount') }}:
                         <strong
                           >{{ formatNumber(invoiceData.grandTotal) }}
                           {{ invoiceData.currencyUnit || 'THB' }}</strong
@@ -175,14 +168,14 @@
               <!-- Action Buttons -->
               <div class="btn-submit-container mb-2">
                 <div class="d-flex justify-content-end">
-                  <button class="btn btn-green mr-2" type="button" @click="onSavePayment">
+                  <button class="btn btn-main mr-2" type="button" @click="onSavePayment">
                     <i class="bi bi-check-circle mr-1"></i>
-                    บันทึก
+                    {{ $t('common.btn.save') }}
                   </button>
 
                   <button class="btn btn-outline-main" type="button" @click="closeModal">
                     <i class="bi bi-x-circle mr-1"></i>
-                    ยกเลิก
+                    {{ $t('common.btn.cancel') }}
                   </button>
                 </div>
               </div>
@@ -200,6 +193,7 @@ import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import UploadImage from '@/components/prime-vue/UploadImage.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import dayjs from 'dayjs'
@@ -214,7 +208,8 @@ export default {
     CalendarGeneric,
     DropdownGeneric,
     UploadImage,
-    AutoCompleteGeneric
+    AutoCompleteGeneric,
+    InputTextGeneric
   },
 
   props: {
@@ -250,12 +245,12 @@ export default {
         remark: '',
         receiptImage: null
       },
-      paymentMethods: [
-        { name: 'เงินสด (Cash)', value: 'cash', id: 1 },
-        { name: 'โอนเงิน (Transfer)', value: 'transfer', id: 2 },
-        { name: 'เช็ค (Cheque)', value: 'cheque', id: 3 },
-        { name: 'บัตรเครดิต (Credit Card)', value: 'credit_card', id: 4 },
-        { name: 'เครดิต (Credit Term)', value: 'credit_term', id: 5 }
+      paymentMethodsData: [
+        { value: 'cash', id: 1, key: 'cash' },
+        { value: 'transfer', id: 2, key: 'transfer' },
+        { value: 'cheque', id: 3, key: 'cheque' },
+        { value: 'credit_card', id: 4, key: 'creditCard' },
+        { value: 'credit_term', id: 5, key: 'creditTerm' }
       ],
       resetUpload: false,
       compressedImage: null
@@ -267,6 +262,13 @@ export default {
       const total = this.invoiceData.grandTotal || 0
       const paid = this.paidAmount || 0
       return total - paid
+    },
+
+    paymentMethods() {
+      return this.paymentMethodsData.map((m) => ({
+        ...m,
+        name: this.$t(`view.sale.invoiceDetail.paymentMethods.${m.key}`)
+      }))
     }
   },
 
@@ -281,7 +283,7 @@ export default {
     },
     'paymentData.paymentMethod': {
       handler(newValue) {
-        const selected = this.paymentMethods.find((m) => m.value === newValue)
+        const selected = this.paymentMethodsData.find((m) => m.value === newValue)
         this.paymentData.paymentId = selected ? selected.id : null
         this.paymentData.bankCode = null
         this.paymentData.bankBranch = ''
@@ -334,7 +336,7 @@ export default {
         this.compressedImage = compressedFile
         this.paymentData.receiptImage = file.name
       } catch (err) {
-        warning('ไม่สามารถบีบอัดรูปภาพได้', 'เกิดข้อผิดพลาด')
+        warning(this.$t('view.sale.invoiceDetail.validation.compressError'))
       }
     },
 
@@ -411,17 +413,17 @@ export default {
 
     async onSavePayment() {
       if (!this.paymentData.paymentDate) {
-        warning('กรุณาเลือกวันที่จ่ายเงิน', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.paymentDateRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
       if (!this.paymentData.amount || this.paymentData.amount <= 0) {
-        warning('กรุณากรอกยอดเงินที่ถูกต้อง', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.amountRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
       if (!this.paymentData.paymentMethod) {
-        warning('กรุณาเลือกวิธีการชำระเงิน', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.paymentMethodRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
@@ -429,12 +431,12 @@ export default {
         (this.paymentData.paymentId === 2 || this.paymentData.paymentId === 3) &&
         !this.paymentData.bankCode
       ) {
-        warning('กรุณาเลือกธนาคาร', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.bankRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
       if (this.paymentData.paymentId === 3 && !this.paymentData.bankBranch) {
-        warning('กรุณากรอกสาขาธนาคาร', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.invoiceDetail.validation.branchRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
@@ -459,7 +461,7 @@ export default {
       }
 
       this.$emit('save-payment', paymentDataToEmit)
-      success('บันทึกการเก็บเงินสำเร็จ', 'บันทึกสำเร็จ')
+      success(this.$t('view.sale.invoiceDetail.success.recordPayment'))
       this.closeModal()
     }
   }

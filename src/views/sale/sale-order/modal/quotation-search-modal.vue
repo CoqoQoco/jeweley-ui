@@ -3,7 +3,7 @@
     <modal :showModal="isShowModal" @closeModal="closeModal" :width="'90%'" :fitHeight="true">
       <template v-slot:content>
         <div class="title-text-lg-header mb-2">
-          <span>เลือกใบเสนอราคา</span>
+          <span>{{ $t('view.sale.saleOrder.selectQuotationTitle') }}</span>
         </div>
         
         <!-- Search Form -->
@@ -11,12 +11,12 @@
           <form @submit.prevent="searchQuotations">
             <div class="form-col-container">
               <div>
-                <span class="title-text">เลขที่ใบเสนอราคา</span>
-                <input
-                  :class="['form-control bg-input']"
+                <span class="title-text">{{ $t('view.sale.quotationList.number') }}</span>
+                <InputTextGeneric
+                  v-model="searchForm.number"
                   type="text"
-                  v-model.trim="searchForm.number"
                   placeholder="EX: QUO-2025-001"
+                  :trim="true"
                 />
               </div>
             </div>
@@ -25,44 +25,44 @@
               :isShow="showDialogs.dialog"
               @closeDialog="closeDialog"
               @search="dialogSearch"
-              txtHeader="ค้นหาเพิ่มเติม"
+              :txtHeader="$t('common.label.advancedSearch')"
             >
               <template #content>
                 <div class="form-col-container">
                   <div>
-                    <span class="title-text">ชื่อลูกค้า</span>
-                    <input
-                      :class="['form-control bg-input']"
+                    <span class="title-text">{{ $t('view.sale.saleOrder.customerName') }}</span>
+                    <InputTextGeneric
+                      v-model="searchForm.customerName"
                       type="text"
-                      v-model.trim="searchForm.customerName"
-                      placeholder="ชื่อลูกค้า"
+                      :placeholder="$t('view.sale.saleOrder.customerName')"
+                      :trim="true"
                     />
                   </div>
 
                   <div>
-                    <span class="title-text">สกุลเงิน</span>
-                    <input
-                      :class="['form-control bg-input']"
+                    <span class="title-text">{{ $t('view.sale.saleOrder.currency') }}</span>
+                    <InputTextGeneric
+                      v-model="searchForm.currency"
                       type="text"
-                      v-model.trim="searchForm.currency"
                       placeholder="EX: USD, THB"
+                      :trim="true"
                     />
                   </div>
 
                   <div>
-                    <span class="title-text">ผู้สร้าง</span>
-                    <input
-                      :class="['form-control bg-input']"
+                    <span class="title-text">{{ $t('view.sale.quotationList.createBy') }}</span>
+                    <InputTextGeneric
+                      v-model="searchForm.createBy"
                       type="text"
-                      v-model.trim="searchForm.createBy"
-                      placeholder="ชื่อผู้สร้าง"
+                      :placeholder="$t('view.sale.quotationList.createBy')"
+                      :trim="true"
                     />
                   </div>
                 </div>
 
                 <div class="form-col-container mt-2">
                   <div>
-                    <span class="title-text">วันที่สร้าง</span>
+                    <span class="title-text">{{ $t('view.sale.quotationList.createDate') }}</span>
                     <div class="flex-group">
                       <CalendarGeneric
                         class="w-100"
@@ -70,7 +70,7 @@
                         :maxDate="searchForm.createDateEnd"
                         :showIcon="true"
                         :manualInput="false"
-                        placeholder="เริ่มต้น"
+                        :placeholder="$t('common.label.startDate')"
                         dateFormat="dd/mm/yy"
                       />
                       <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -80,14 +80,14 @@
                         :minDate="searchForm.createDateStart"
                         :showIcon="true"
                         :manualInput="false"
-                        placeholder="สิ้นสุด"
+                        :placeholder="$t('common.label.endDate')"
                         dateFormat="dd/mm/yy"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <span class="title-text">วันที่ใบเสนอราคา</span>
+                    <span class="title-text">{{ $t('view.sale.quotationList.quotationDate') }}</span>
                     <div class="flex-group">
                       <CalendarGeneric
                         class="w-100"
@@ -95,7 +95,7 @@
                         :maxDate="searchForm.quotationDateEnd"
                         :showIcon="true"
                         :manualInput="false"
-                        placeholder="เริ่มต้น"
+                        :placeholder="$t('common.label.startDate')"
                         dateFormat="dd/mm/yy"
                       />
                       <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -105,7 +105,7 @@
                         :minDate="searchForm.quotationDateStart"
                         :showIcon="true"
                         :manualInput="false"
-                        placeholder="สิ้นสุด"
+                        :placeholder="$t('common.label.endDate')"
                         dateFormat="dd/mm/yy"
                       />
                     </div>
@@ -115,18 +115,18 @@
             </dialogView>
 
             <div class="btn-submit-container">
-              <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+              <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
                 <span><i class="bi bi-search"></i></span>
               </button>
               <button
                 class="btn btn-sm btn-sub-main mr-2"
                 type="button"
-                title="เพิ่มเติม"
+                :title="$t('common.btn.more')"
                 @click="onShowDialog"
               >
                 <span><i class="bi bi-zoom-in"></i></span>
               </button>
-              <button class="btn btn-sm btn-dark mr-2" type="button" @click="clearSearch" title="ล้าง">
+              <button class="btn btn-sm btn-dark mr-2" type="button" @click="clearSearch" :title="$t('common.btn.clear')">
                 <span><i class="bi bi-x-circle"></i></span>
               </button>
             </div>
@@ -151,10 +151,10 @@
                 <button
                   class="btn btn-sm btn-green"
                   @click="selectQuotation(data)"
-                  title="เลือกใบเสนอราคานี้"
+                  :title="$t('view.sale.saleOrder.selectQuotationTitle')"
                 >
                   <i class="bi bi-check-circle mr-1"></i>
-                  เลือก
+                  {{ $t('common.btn.select') }}
                 </button>
               </div>
             </template>
@@ -221,6 +221,7 @@
 import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
@@ -236,7 +237,8 @@ export default {
     modal,
     CalendarGeneric,
     dialogView,
-    BaseDataTable
+    BaseDataTable,
+    InputTextGeneric
   },
 
   mixins: [dataTablePaging],
@@ -291,13 +293,13 @@ export default {
       return [
         { field: 'action', header: this.$t('common.field.action'), width: '120px', sortable: false },
         { field: 'number', header: this.$t('view.sale.saleOrder.quotationRef'), sortable: true, minWidth: '150px' },
-        { field: 'running', header: 'เลขที่รัน', sortable: true, minWidth: '120px' },
+        { field: 'running', header: this.$t('view.sale.quotationList.running'), sortable: true, minWidth: '120px' },
         { field: 'customerName', header: this.$t('view.sale.saleOrderList.customerName'), sortable: true, minWidth: '200px', template: 'customerTemplate' },
         { field: 'currency', header: this.$t('view.sale.saleOrderList.currency'), sortable: true, minWidth: '80px' },
         { field: 'currencyRate', header: this.$t('view.sale.saleOrderList.currencyRate'), sortable: true, minWidth: '120px', template: 'currencyRateTemplate' },
-        { field: 'markUp', header: 'Markup (%)', sortable: true, minWidth: '100px', template: 'markupTemplate' },
-        { field: 'discount', header: 'ส่วนลด (%)', sortable: true, minWidth: '100px', template: 'discountTemplate' },
-        { field: 'freight', header: 'ค่าขนส่ง', sortable: true, minWidth: '100px', template: 'freightTemplate' },
+        { field: 'markUp', header: this.$t('view.sale.quotationList.markup'), sortable: true, minWidth: '100px', template: 'markupTemplate' },
+        { field: 'discount', header: this.$t('view.sale.quotationList.discount'), sortable: true, minWidth: '100px', template: 'discountTemplate' },
+        { field: 'freight', header: this.$t('view.sale.quotationList.freight'), sortable: true, minWidth: '100px', template: 'freightTemplate' },
         { field: 'date', header: this.$t('view.sale.saleOrder.soDate'), sortable: true, minWidth: '140px', template: 'dateTemplate' },
         { field: 'createDate', header: this.$t('view.sale.saleOrderList.createDate'), sortable: true, minWidth: '140px', template: 'createDateTemplate' },
         { field: 'createBy', header: this.$t('view.sale.saleOrderList.createBy'), sortable: true, minWidth: '120px' }
@@ -381,14 +383,8 @@ export default {
     },
 
     getStatusText(status) {
-      const statusText = {
-        draft: 'ร่าง',
-        pending: 'รอการยืนยัน',
-        confirmed: 'ยืนยันแล้ว',
-        rejected: 'ปฏิเสธ',
-        expired: 'หมดอายุ'
-      }
-      return statusText[status] || 'ไม่ทราบสถานะ'
+      const key = `view.sale.quotation.status.${status}`
+      return this.$te(key) ? this.$t(key) : this.$t('view.sale.quotation.status.unknown')
     }
   },
 

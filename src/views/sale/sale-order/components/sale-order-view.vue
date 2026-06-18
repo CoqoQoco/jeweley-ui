@@ -3,13 +3,13 @@
     <!-- Sale Order Information Section -->
     <div class="card-container">
       <div class="card-header">
-        <h6 class="mb-0">ข้อมูลใบสั่งขาย</h6>
+        <h6 class="mb-0">{{ $t('view.sale.saleOrder.saleOrderInfo') }}</h6>
       </div>
       <div class="card-body">
         <div class="form-col-container">
           <!-- Sale Order Number -->
           <div>
-            <span class="title-text">เลขที่ใบสั่งขาย</span>
+            <span class="title-text">{{ $t('view.sale.saleOrder.soNumber') }}</span>
             <div class="d-flex align-items-center">
               <input
                 :class="['form-control bg-input']"
@@ -23,13 +23,13 @@
 
           <!-- Sale Order Date -->
           <div>
-            <span class="title-text">วันที่ใบสั่งขาย</span>
+            <span class="title-text">{{ $t('view.sale.saleOrder.soDate') }}</span>
             <CalendarGeneric
               class="w-100"
               v-model="formSaleOrder.date"
               :showIcon="true"
               :manualInput="false"
-              placeholder="เลือกวันที่"
+              :placeholder="$t('view.sale.saleOrder.selectDatePlaceholder')"
               dateFormat="dd/mm/yy"
               :disabled="isViewMode"
             />
@@ -37,13 +37,13 @@
 
           <!-- Expected Delivery Date -->
           <div>
-            <span class="title-text">วันที่คาดหวังส่งมอบ</span>
+            <span class="title-text">{{ $t('view.sale.saleOrder.deliveryDate') }}</span>
             <CalendarGeneric
               class="w-100"
               v-model="formSaleOrder.expectedDeliveryDate"
               :showIcon="true"
               :manualInput="false"
-              placeholder="เลือกวันที่"
+              :placeholder="$t('view.sale.saleOrder.selectDatePlaceholder')"
               dateFormat="dd/mm/yy"
               :disabled="isViewMode"
             />
@@ -53,7 +53,7 @@
         <div class="form-col-container mt-2">
           <!-- Quotation Reference -->
           <div>
-            <span class="title-text">อ้างอิงใบเสนอราคา</span>
+            <span class="title-text">{{ $t('view.sale.saleOrder.quotationRef') }}</span>
             <input
               :class="['form-control bg-input']"
               type="text"
@@ -65,13 +65,13 @@
 
           <!-- Priority -->
           <div>
-            <span class="title-text">ลำดับความสำคัญ</span>
+            <span class="title-text">{{ $t('view.sale.saleOrder.priority') }}</span>
             <DropdownGeneric
               v-model="formSaleOrder.priority"
               :options="priorityOptions"
-              optionLabel="name"
+              optionLabel="label"
               optionValue="value"
-              placeholder="เลือกลำดับความสำคัญ"
+              :placeholder="$t('view.sale.saleOrder.selectPriorityPlaceholder')"
               class="w-100"
               :disabled="isViewMode"
             />
@@ -132,7 +132,7 @@
                 min="0"
                 max="100"
                 step="any"
-                btnTitle="กำหนดส่วนลดให้ทุกรายการ"
+                :btnTitle="$t('view.sale.quotation.setDiscount')"
                 :disabled="isViewMode"
                 @btn-click="applyOverallDiscount"
               >
@@ -151,7 +151,7 @@
     <!-- Customer Information Section (Like Quotation) -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">ข้อมูลลูกค้า</h6>
+        <h6 class="mb-0">{{ $t('view.sale.saleOrder.customerSection') }}</h6>
       </div>
       <div class="card-body">
         <div class="">
@@ -164,30 +164,30 @@
                 ]"
                 type="button"
                 @click="onSearchCustomer"
-                title="ค้นหาลูกค้า"
+                :title="$t('common.btn.search')"
                 :disabled="hasSaleOrderNumber"
               >
                 <i class="bi bi-search mr-1"></i>
-                <span>ค้นหาลูกค้า</span>
+                <span>{{ $t('common.btn.search') }}</span>
               </button>
               <button
                 class="btn btn-sm btn-green mr-2"
                 type="button"
                 @click="onCreateCustomer"
-                title="เพิ่มลูกค้าใหม่"
+                :title="$t('common.btn.add')"
                 :disabled="hasSaleOrderNumber || isViewMode"
               >
-                <i class="bi bi-plus-circle mr-1"></i><span>เพิ่มลูกค้าใหม่</span>
+                <i class="bi bi-plus-circle mr-1"></i><span>{{ $t('common.btn.add') }}</span>
               </button>
               <button
                 v-if="formSaleOrder.customerCode"
                 class="btn btn-sm btn-outline-main ml-2"
                 type="button"
                 @click="onEditCustomer"
-                title="แก้ไขลูกค้า"
+                :title="$t('common.btn.edit')"
                 :disabled="isViewMode"
               >
-                <i class="bi bi-pencil mr-1"></i><span>แก้ไข</span>
+                <i class="bi bi-pencil mr-1"></i><span>{{ $t('common.btn.edit') }}</span>
               </button>
             </div>
           </div>
@@ -195,25 +195,25 @@
           <div class="customer-info-display">
             <div class="form-col-container">
               <div>
-                <span class="title-text">ชื่อลูกค้า</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.customerName') }}</span>
                 <div class="customer-display-field">
                   {{ formSaleOrder.customerName || '-' }}
                 </div>
               </div>
               <div>
-                <span class="title-text">ที่อยู่</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.address') }}</span>
                 <div class="customer-display-field">
                   {{ formSaleOrder.customerAddress || '-' }}
                 </div>
               </div>
               <div>
-                <span class="title-text">เบอร์โทร</span>
+                <span class="title-text">{{ $t('view.sale.saleOrder.tel') }}</span>
                 <div class="customer-display-field">
                   {{ formSaleOrder.customerPhone || '-' }}
                 </div>
               </div>
               <div>
-                <span class="title-text">อีเมล</span>
+                <span class="title-text">{{ $t('common.field.email') }}</span>
                 <div class="customer-display-field">
                   {{ formSaleOrder.customerEmail || '-' }}
                 </div>
@@ -221,7 +221,7 @@
             </div>
             <div class="form-col-container mt-2">
               <div>
-                <span class="title-text">หมายเหตุ</span>
+                <span class="title-text">{{ $t('common.field.remark') }}</span>
                 <input
                   :class="['form-control bg-input', 'input-bg']"
                   type="text"
@@ -238,14 +238,14 @@
     <!-- Product Search Section (Like Quotation) -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">ค้นหาเพิ่มสินค้า</h6>
+        <h6 class="mb-0">{{ $t('view.sale.saleOrder.searchAddProduct') }}</h6>
       </div>
       <div class="card-body">
         <form @submit.prevent="onSearchProduct">
           <div class="form-col-sm-container">
             <!-- Stock number (new) -->
             <div>
-              <span class="title-text">เลขที่ผลิต (ใหม่)</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.stockNumberNew') }}</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
@@ -256,7 +256,7 @@
 
             <!-- Stock number (old) -->
             <div>
-              <span class="title-text">เลขที่ผลิต (เก่า)</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.stockNumberOld') }}</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
@@ -267,7 +267,7 @@
 
             <!-- Product number -->
             <div>
-              <span class="title-text">รหัสสินค้า</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.productCode') }}</span>
               <input
                 :class="['form-control bg-input']"
                 type="text"
@@ -277,9 +277,9 @@
             </div>
 
             <div class="btn-submit-container-custom">
-              <button class="btn btn-sm btn-green mr-2" type="submit" title="ค้นหา">
+              <button class="btn btn-sm btn-green mr-2" type="submit" :title="$t('common.btn.search')">
                 <i class="bi bi-search"></i>
-                <span class="ml-2">ค้นหา</span>
+                <span class="ml-2">{{ $t('common.btn.search') }}</span>
               </button>
             </div>
           </div>
@@ -291,9 +291,9 @@
     <!-- Stock Items Table (Like Quotation) -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">รายการสินค้า</h6>
+        <h6 class="mb-0">{{ $t('view.sale.saleOrder.itemList') }}</h6>
         <div class="card-header-actions">
-          <span class="badge badge-warning">{{ stockItems.length }} รายการ</span>
+          <span class="badge badge-warning">{{ stockItems.length }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
         </div>
       </div>
       <div class="card-body p-0">
@@ -315,22 +315,22 @@
             <Row>
               <Column header="" :colspan="2" />
               <Column header="" />
-              <Column header="เลขที่ผลิต (ใหม่)" />
-              <Column header="เลขที่ผลิต (เก่า)" />
-              <Column header="รหัสสินค้า" />
-              <Column header="สถานะการขาย" />
-              <Column header="รายละเอียด" />
+              <Column :header="$t('view.sale.saleOrder.stockNumberNew')" />
+              <Column :header="$t('view.sale.saleOrder.stockNumberOld')" />
+              <Column :header="$t('view.sale.saleOrder.productCode')" />
+              <Column :header="$t('view.sale.saleOrder.saleStatus')" />
+              <Column :header="$t('view.sale.saleOrder.description')" />
               <Column header="Gold (gms)" />
               <Column header="Diamond (cts)" />
               <Column header="Stone (cts)" />
-              <Column header="ราคาขาย (THB)" />
-              <Column header="ราคาประเมิน (THB)" />
-              <Column header="ส่วนลด (%)" />
-              <Column header="ราคาส่วนลด (THB)" />
-              <Column header="แปลงเรท" />
-              <Column :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '" />
-              <Column header="จำนวน" />
-              <Column :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '" />
+              <Column :header="$t('view.sale.saleOrder.salePriceTHB')" />
+              <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" />
+              <Column :header="$t('view.sale.saleOrder.discountPercent')" />
+              <Column :header="$t('view.sale.saleOrder.discountPriceTHB')" />
+              <Column :header="$t('view.sale.saleOrder.convertedRate')" />
+              <Column :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (formSaleOrder.currencyUnit || 'THB') + ')'" />
+              <Column :header="$t('common.field.quantity')" />
+              <Column :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (formSaleOrder.currencyUnit || 'THB') + ')'" />
             </Row>
           </ColumnGroup>
 
@@ -350,7 +350,7 @@
                     slotProps.data.isConfirm || slotProps.data.invoice ? 'btn-dark' : 'btn-red'
                   ]"
                   type="button"
-                  title="ลบ"
+                  :title="$t('common.btn.delete')"
                   @click="deleteStockItem(slotProps.data)"
                   :disabled="slotProps.data.isConfirm || slotProps.data.invoice"
                 >
@@ -366,7 +366,7 @@
                       : 'btn-main'
                   ]"
                   type="button"
-                  title="แก้ไข"
+                  :title="$t('common.btn.edit')"
                   @click="onEditStock(slotProps.data)"
                   :disabled="slotProps.data.isConfirm || slotProps.data.invoice"
                 >
@@ -376,7 +376,7 @@
                   v-if="slotProps.data.isConfirm && !slotProps.data.invoice"
                   class="btn btn-sm btn-danger ml-2"
                   type="button"
-                  title="ยกเลิกยืนยันการขาย"
+                  :title="$t('view.sale.saleOrder.cancelConfirmTitle')"
                   @click="reverseStockConfirm(slotProps.data)"
                 >
                   <span class="bi bi-arrow-counterclockwise"></span>
@@ -466,7 +466,7 @@
                 <span
                   :class="['badge', slotProps.data.isConfirm ? 'badge-success' : 'badge-warning']"
                 >
-                  {{ slotProps.data.isConfirm ? 'ยืนยันแล้ว' : 'รอยืนยัน' }}
+                  {{ slotProps.data.isConfirm ? $t('view.sale.saleOrder.statusConfirmed') : $t('view.sale.saleOrder.statusPending') }}
                 </span>
               </div>
             </template>
@@ -689,7 +689,7 @@
               class="p-1"
               style="background-color: #f8f9fa; border-left: 4px solid #038387"
             >
-              <span class="font-weight-bold">เลขที่ Invoice: </span>
+              <span class="font-weight-bold">{{ $t('view.sale.saleOrder.invoiceLabel') }}: </span>
               <a
                 href="#"
                 @click.prevent="openInvoiceDetail(slotProps.data.invoice)"
@@ -710,7 +710,7 @@
               class="p-1"
               style="background-color: var(--base-green); border-left: 4px solid #038387"
             >
-              <span class="font-weight-bold text-white">รอออก Invoice</span>
+              <span class="font-weight-bold text-white">{{ $t('view.sale.saleOrder.pendingInvoice') }}</span>
               <!-- <span class="ml-3 badge badge-light">ยืนยันแล้ว</span> -->
             </div>
             <!-- สินค้าที่ยังไม่ได้ยืนยัน (รอยืนยันสินค้า) -->
@@ -719,7 +719,7 @@
               class="p-1"
               style="background-color: #fff3cd; border-left: 4px solid #fabc3f"
             >
-              <span class="font-weight-bold badge badge-warning">รอยืนยันสินค้า</span>
+              <span class="font-weight-bold badge badge-warning">{{ $t('view.sale.saleOrder.pendingConfirm') }}</span>
               <!-- <span class="ml-3 badge badge-warning">ยังไม่ยืนยัน</span> -->
             </div>
           </template>
@@ -740,7 +740,7 @@
               <Column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>รวม</span>
+                    <span>{{ $t('view.sale.quotation.total') }}</span>
                   </div>
                 </template>
               </Column>
@@ -841,7 +841,7 @@
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ส่วนลดพิเศษ:</span>
+                    <span>{{ $t('view.sale.quotation.specialDiscount') }}:</span>
                   </div>
                 </template>
               </Column>
@@ -866,7 +866,7 @@
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ส่วนเพิ่มพิเศษ:</span>
+                    <span>{{ $t('view.sale.quotation.specialSurcharge') }}:</span>
                   </div>
                 </template>
               </Column>
@@ -891,7 +891,7 @@
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span class="font-weight-bold">ยอดรวมหลังปรับ:</span>
+                    <span class="font-weight-bold">{{ $t('view.sale.quotation.adjustedTotal') }}:</span>
                   </div>
                 </template>
               </Column>
@@ -933,7 +933,7 @@
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                    <span class="font-weight-bold">{{ $t('view.sale.quotation.beforeVatTotal') }}:</span>
                   </div>
                 </template>
               </Column>
@@ -978,7 +978,7 @@
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ราคารวม (ก่อนปัด)</span>
+                    <span>{{ $t('view.sale.quotation.preTotalBeforeRound') }}</span>
                   </div>
                 </template>
               </Column>
@@ -995,7 +995,7 @@
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ปัดเศษ</span>
+                    <span>{{ $t('view.sale.quotation.rounding') }}</span>
                   </div>
                 </template>
               </Column>
@@ -1012,7 +1012,7 @@
               <Column :colspan="18">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span class="font-weight-bold">ยอดที่ต้องชำระ</span>
+                    <span class="font-weight-bold">{{ $t('view.sale.quotation.payableTotal') }}</span>
                   </div>
                 </template>
               </Column>
@@ -1032,9 +1032,9 @@
     <!-- Copy Items Table (without Stock ID - requires production) -->
     <div class="card-container mt-3" v-if="copyItems.length > 0">
       <div class="card-header">
-        <h6 class="mb-0">สินค้าสำเนา (ต้องออกใบสั่งผลิตก่อน)</h6>
+        <h6 class="mb-0">{{ $t('view.sale.saleOrder.copyItemsTitle') }}</h6>
         <div class="card-header-actions">
-          <span class="badge badge-warning">{{ copyItems.length }} รายการ</span>
+          <span class="badge badge-warning">{{ copyItems.length }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
         </div>
       </div>
       <div class="card-body p-0">
@@ -1052,20 +1052,20 @@
             <Row>
               <Column header="" :colspan="2" />
               <Column header="" />
-              <Column header="เลขที่ผลิต" />
-              <Column header="รหัสสินค้า" />
-              <Column header="รายละเอียด" />
+              <Column :header="$t('view.sale.saleOrder.stockNumberNew')" />
+              <Column :header="$t('view.sale.saleOrder.productCode')" />
+              <Column :header="$t('view.sale.saleOrder.description')" />
               <Column header="Gold (gms)" />
               <Column header="Diamond (cts)" />
               <Column header="Stone (cts)" />
-              <Column header="ราคาขาย (THB)" />
-              <Column header="ราคาประเมิน (THB)" />
-              <Column header="ส่วนลด" />
-              <Column header="ราคาส่วนลด (THB)" />
-              <Column header="แปลงเรท" />
-              <Column :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '" />
-              <Column header="จำนวน" />
-              <Column :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '" />
+              <Column :header="$t('view.sale.saleOrder.salePriceTHB')" />
+              <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" />
+              <Column :header="$t('view.sale.saleOrder.discountPercent')" />
+              <Column :header="$t('view.sale.saleOrder.discountPriceTHB')" />
+              <Column :header="$t('view.sale.saleOrder.convertedRate')" />
+              <Column :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (formSaleOrder.currencyUnit || 'THB') + ')'" />
+              <Column :header="$t('common.field.quantity')" />
+              <Column :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (formSaleOrder.currencyUnit || 'THB') + ')'" />
             </Row>
           </ColumnGroup>
 
@@ -1081,7 +1081,7 @@
                 <button
                   class="btn btn-sm btn-red"
                   type="button"
-                  title="ลบ"
+                  :title="$t('common.btn.delete')"
                   @click="deleteCopyItem(slotProps.index)"
                 >
                   <span class="bi bi-trash"></span>
@@ -1089,7 +1089,7 @@
                 <button
                   class="btn btn-sm btn-main ml-2"
                   type="button"
-                  title="แก้ไข"
+                  :title="$t('common.btn.edit')"
                   @click="onEditCopyItem(slotProps.data)"
                 >
                   <span class="bi bi-brush"></span>
@@ -1097,7 +1097,7 @@
                 <button
                   class="btn btn-sm btn-main ml-2"
                   type="button"
-                  title="สร้างใบสั่งผลิต"
+                  :title="$t('view.sale.saleOrder.createProductionOrder')"
                   @click="createProductionOrder(slotProps.data)"
                 >
                   <span class="bi bi-tools"></span>
@@ -1126,7 +1126,7 @@
 
           <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
             <template #body>
-              <span class="text-muted font-italic">ต้องผลิต</span>
+              <span class="text-muted font-italic">{{ $t('view.sale.saleOrder.needsProduction') }}</span>
             </template>
           </Column>
 
@@ -1374,7 +1374,7 @@
               <Column>
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>รวม</span>
+                    <span>{{ $t('view.sale.quotation.total') }}</span>
                   </div>
                 </template>
               </Column>
@@ -1440,7 +1440,7 @@
               <Column :colspan="16">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>ราคารวม (สินค้าสำเนา)</span>
+                    <span>{{ $t('view.sale.saleOrder.copyItemsTotal') }}</span>
                   </div>
                 </template>
               </Column>
@@ -1460,7 +1460,7 @@
     <!-- Order Summary -->
     <div class="card-container mt-3">
       <div class="card-header">
-        <h6 class="mb-0">สรุปใบสั่งขาย</h6>
+        <h6 class="mb-0">{{ $t('view.sale.saleOrder.soSummary') }}</h6>
       </div>
       <div class="card-body">
         <div class="row">
@@ -1468,14 +1468,14 @@
             <!-- Invoice Items Summary -->
             <div class="summary-section">
               <h6 class="text-success">
-                <i class="bi bi-receipt-cutoff mr-1"></i>สินค้ามี Invoice
+                <i class="bi bi-receipt-cutoff mr-1"></i>{{ $t('view.sale.saleOrder.invoicedItems') }}
               </h6>
               <div class="summary-item">
-                <span>จำนวน:</span>
-                <span class="font-weight-bold text-success">{{ invoiceItemsCount }} รายการ</span>
+                <span>{{ $t('common.field.quantity') }}:</span>
+                <span class="font-weight-bold text-success">{{ invoiceItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
               </div>
               <div class="summary-item">
-                <span>ยอดรวม:</span>
+                <span>{{ $t('view.sale.saleOrder.totalAmount') }}:</span>
                 <span class="font-weight-bold text-success">{{
                   formatCurrency(invoiceItemsTotal)
                 }}</span>
@@ -1485,13 +1485,13 @@
           <div class="col-md-3">
             <!-- Confirmed Items Summary -->
             <div class="summary-section">
-              <h6 class="text-primary"><i class="bi bi-check-circle mr-1"></i>สินค้ายืนยันแล้ว</h6>
+              <h6 class="text-primary"><i class="bi bi-check-circle mr-1"></i>{{ $t('view.sale.saleOrder.confirmedItemsTitle') }}</h6>
               <div class="summary-item">
-                <span>จำนวน:</span>
-                <span class="font-weight-bold text-primary">{{ confirmedItemsCount }} รายการ</span>
+                <span>{{ $t('common.field.quantity') }}:</span>
+                <span class="font-weight-bold text-primary">{{ confirmedItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
               </div>
               <div class="summary-item">
-                <span>ยอดรวม:</span>
+                <span>{{ $t('view.sale.saleOrder.totalAmount') }}:</span>
                 <span class="font-weight-bold text-primary">{{
                   formatCurrency(confirmedItemsTotal)
                 }}</span>
@@ -1501,13 +1501,13 @@
           <div class="col-md-3">
             <!-- Pending Confirmation Items Summary -->
             <div class="summary-section">
-              <h6 class="text-warning"><i class="bi bi-clock-history mr-1"></i>สินค้ารอยืนยัน</h6>
+              <h6 class="text-warning"><i class="bi bi-clock-history mr-1"></i>{{ $t('view.sale.saleOrder.pendingItemsTitle') }}</h6>
               <div class="summary-item">
-                <span>จำนวน:</span>
-                <span class="font-weight-bold text-warning">{{ pendingItemsCount }} รายการ</span>
+                <span>{{ $t('common.field.quantity') }}:</span>
+                <span class="font-weight-bold text-warning">{{ pendingItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
               </div>
               <div class="summary-item">
-                <span>ยอดรวม:</span>
+                <span>{{ $t('view.sale.saleOrder.totalAmount') }}:</span>
                 <span class="font-weight-bold text-warning">{{
                   formatCurrency(pendingItemsTotal)
                 }}</span>
@@ -1517,13 +1517,13 @@
           <div class="col-md-3">
             <!-- Production Items Summary -->
             <div class="summary-section">
-              <h6 class="text-info"><i class="bi bi-tools mr-1"></i>สินค้ารอสั่งผลิต</h6>
+              <h6 class="text-info"><i class="bi bi-tools mr-1"></i>{{ $t('view.sale.saleOrder.productionPendingTitle') }}</h6>
               <div class="summary-item">
-                <span>จำนวน:</span>
-                <span class="font-weight-bold text-info">{{ productionItemsCount }} รายการ</span>
+                <span>{{ $t('common.field.quantity') }}:</span>
+                <span class="font-weight-bold text-info">{{ productionItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
               </div>
               <div class="summary-item">
-                <span>ยอดรวม:</span>
+                <span>{{ $t('view.sale.saleOrder.totalAmount') }}:</span>
                 <span class="font-weight-bold text-info">{{
                   formatCurrency(productionItemsTotal)
                 }}</span>
@@ -1538,22 +1538,22 @@
             <div class="summary-section border-top pt-3">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 class="mb-1">รวมทั้งหมด</h6>
-                  <small class="text-muted">{{ selectedItemsCount }} รายการ</small>
+                  <h6 class="mb-1">{{ $t('view.sale.saleOrder.allTotal') }}</h6>
+                  <small class="text-muted">{{ selectedItemsCount }} {{ $t('view.sale.saleOrder.itemUnit') }}</small>
                 </div>
                 <div class="text-right">
                   <div class="mb-1">
-                    <span class="mr-2">ยอดรวมสินค้า:</span>
+                    <span class="mr-2">{{ $t('view.sale.saleOrder.subtotalLabel') }}</span>
                     <span class="font-weight-bold">{{ formatCurrency(selectedItemsTotal) }}</span>
                   </div>
                   <div class="mb-1">
-                    <span class="mr-2">ค่าขนส่ง:</span>
+                    <span class="mr-2">{{ $t('view.sale.saleOrder.freightLabel') }}</span>
                     <span class="font-weight-bold">{{
                       formatCurrency(formSaleOrder.freight || 0)
                     }}</span>
                   </div>
                   <div class="border-top pt-2 mt-2">
-                    <span class="h6 mr-2">ยอดรวมใบสั่งขาย:</span>
+                    <span class="h6 mr-2">{{ $t('view.sale.saleOrder.soTotalLabel') }}</span>
                     <span class="h5 font-weight-bold text-primary">{{
                       formatCurrency(totalOrderAmount)
                     }}</span>
@@ -1568,12 +1568,12 @@
         <div class="row mt-3">
           <div class="col-md-12">
             <div>
-              <span class="title-text">หมายเหตุใบสั่งขาย</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.soRemarkLabel') }}</span>
               <textarea
                 class="form-control"
                 rows="3"
                 v-model="formSaleOrder.remark"
-                placeholder="หมายเหตุเพิ่มเติมสำหรับใบสั่งขาย..."
+                :placeholder="$t('view.sale.saleOrder.soRemarkPlaceholder')"
                 :readonly="isViewMode"
               ></textarea>
             </div>
@@ -1584,7 +1584,7 @@
         <div class="row mt-3" v-if="validationErrors.length > 0">
           <div class="col-md-12">
             <div class="alert alert-warning">
-              <h6><i class="bi bi-exclamation-triangle mr-2"></i>ข้อควรระวัง:</h6>
+              <h6><i class="bi bi-exclamation-triangle mr-2"></i>{{ $t('common.label.incompleteData') }}:</h6>
               <ul class="mb-0">
                 <li v-for="error in validationErrors" :key="error">{{ error }}</li>
               </ul>
@@ -1605,7 +1605,7 @@
           <button class="btn btn-sm btn-red" type="button"
                   @click="inactiveSaleOrder()">
             <i class="bi bi-trash mr-1"></i>
-            ลบใบสั่งขาย
+            {{ $t('view.sale.saleOrder.deleteSOBtn') }}
           </button>
         </div>
 
@@ -1623,7 +1623,7 @@
             "
           >
             <i class="bi bi-check-square mr-1"></i>
-            ยืนยันสินค้า
+            {{ $t('view.sale.saleOrder.confirmItemsBtn') }}
             <span v-if="pendingConfirmationStockItemsCount > 0" class="badge badge-warning ml-1">
               {{ pendingConfirmationStockItemsCount }}
             </span>
@@ -1638,7 +1638,7 @@
             "
           >
             <i class="bi bi-receipt mr-1"></i>
-            ใบเเจ้งหนี้
+            {{ $t('view.sale.saleOrder.invoiceBtn') }}
             <span v-if="pendingInvoiceStockItemsCount > 0" class="badge badge-warning ml-1">
               {{ pendingInvoiceStockItemsCount }}
             </span>
@@ -1656,7 +1656,7 @@
             "
           >
             <i class="bi bi-lightning-charge mr-1"></i>
-            ยืนยัน + ออกใบแจ้งหนี้
+            {{ $t('view.sale.saleOrder.confirmAndInvoiceBtn') }}
             <span
               v-if="stockItemsForConfirmAndInvoice.length > 0"
               class="badge badge-warning ml-1"
@@ -1722,7 +1722,7 @@
           >
             <span v-if="isOnDraft" class="spinner-border spinner-border-sm mr-2"></span>
             <i class="bi bi-file-earmark mr-1"></i>
-            บันทึกร่าง
+            {{ $t('view.sale.saleOrder.saveDraft') }}
           </button>
         </div>
 
@@ -1731,7 +1731,7 @@
       <!-- Back to List Button (visible in view mode) -->
       <button v-if="isViewMode" class="btn btn-outline-main mr-2" type="button" @click="backToList">
         <i class="bi bi-arrow-left mr-1"></i>
-        กลับรายการ
+        {{ $t('view.sale.saleOrder.backToList') }}
       </button>
     </div>
   </div>
@@ -1939,16 +1939,18 @@ export default {
         vatPercent: 0
       },
 
-      priorityOptions: [
-        { name: 'ปกติ', value: 'normal', id: 1 },
-        { name: 'สำคัญ', value: 'high', id: 2 },
-        { name: 'เร่งด่วน', value: 'urgent', id: 3 },
-        { name: 'วิกฤต', value: 'critical', id: 4 }
-      ]
     }
   },
 
   computed: {
+    priorityOptions() {
+      return [
+        { label: this.$t('view.sale.saleOrder.priorityNormal'), value: 'normal', id: 1 },
+        { label: this.$t('view.sale.saleOrder.priorityHigh'), value: 'high', id: 2 },
+        { label: this.$t('view.sale.saleOrder.priorityUrgent'), value: 'urgent', id: 3 },
+        { label: this.$t('view.sale.saleOrder.priorityCritical'), value: 'critical', id: 4 }
+      ]
+    },
     stockItemsWithGrouping() {
       return this.stockItems
         .map((item) => {
@@ -2111,7 +2113,7 @@ export default {
       const errors = []
 
       if (!this.hasQuotationData) {
-        errors.push('กรุณาเลือกใบเสนอราคาก่อน')
+        errors.push(this.$t('view.sale.saleOrder.validation.selectQuotationFirst'))
       }
 
       return errors
@@ -2490,7 +2492,7 @@ export default {
           (item) => item.stockNumber === data.stockNumber
         )
         if (existingIndex !== -1) {
-          warning(`สินค้าหมายเลข ${data.stockNumber} มีอยู่ในรายการแล้ว`)
+          warning(this.$t('view.sale.saleOrder.warn.duplicateItem', { stockNumber: data.stockNumber }))
         } else {
           this.stockItems.push(data)
           this.recalculateAll()
@@ -2560,13 +2562,13 @@ export default {
 
     async openConfirmStockModal() {
       if (!this.hasCustomerInfo) {
-        warning('กรุณาเลือกลูกค้าก่อนดำเนินการ', 'ข้อมูลลูกค้าไม่ครบ')
+        warning(this.$t('view.sale.saleOrder.warn.selectCustomerFirst'), this.$t('view.sale.saleOrder.warn.incompleteCustomer'))
         this.isShow.searchCustomer = true
         return
       }
 
       if (this.stockItems.length === 0) {
-        warning('ไม่พบสินค้าสำหรับยืนยันการขาย')
+        warning(this.$t('view.sale.saleOrder.warn.noItemsToConfirm'))
         return
       }
 
@@ -2591,12 +2593,12 @@ export default {
 
     openInvoiceModal() {
       if (this.confirmedStockItemsCount === 0) {
-        warning('กรุณายืนยันสินค้าก่อนออก Invoice')
+        warning(this.$t('view.sale.saleOrder.warn.confirmFirstForInvoice'))
         return
       }
 
       if (this.stockItems.length === 0) {
-        warning('ไม่พบสินค้าสำหรับออก Invoice')
+        warning(this.$t('view.sale.saleOrder.warn.noItemsForInvoice'))
         return
       }
 
@@ -2609,13 +2611,13 @@ export default {
 
     async openConfirmAndInvoiceModal() {
       if (!this.hasCustomerInfo) {
-        warning('กรุณาเลือกลูกค้าก่อนดำเนินการ', 'ข้อมูลลูกค้าไม่ครบ')
+        warning(this.$t('view.sale.saleOrder.warn.selectCustomerFirst'), this.$t('view.sale.saleOrder.warn.incompleteCustomer'))
         this.isShow.searchCustomer = true
         return
       }
 
       if (this.stockItems.length === 0) {
-        warning('ไม่พบสินค้าสำหรับดำเนินการ')
+        warning(this.$t('view.sale.saleOrder.warn.noItemsToProcess'))
         return
       }
 
@@ -2631,7 +2633,7 @@ export default {
     async onInvoiceCreated(invoiceData) {
       this.isShow.invoiceModal = false
 
-      success(`เลขที่ Invoice: ${invoiceData.invoiceNumber}`, 'Invoice ถูกสร้างเรียบร้อยแล้ว')
+      success(this.$t('view.sale.saleOrder.success.invoiceCreated', { invoiceNumber: invoiceData.invoiceNumber }), this.$t('view.sale.saleOrder.success.confirmTitle'))
 
       if (this.formSaleOrder.number) {
         const response = await this.getSaleOrderData(this.formSaleOrder.number)
@@ -2655,7 +2657,7 @@ export default {
 
     async saveDraft() {
       if (!this.hasCustomerInfo) {
-        warning('กรุณาเลือกลูกค้าก่อนบันทึก', 'ข้อมูลลูกค้าไม่ครบ')
+        warning(this.$t('view.sale.saleOrder.warn.saveCustomerFirst'), this.$t('view.sale.saleOrder.warn.incompleteCustomer'))
         this.isShow.searchCustomer = true
         return
       }
@@ -2733,7 +2735,7 @@ export default {
 
     async exportPDF() {
       if (this.stockItems.length === 0) {
-        warning('ไม่มีสินค้าสำหรับสร้าง PDF')
+        warning(this.$t('view.sale.saleOrder.warn.noItemsForPDF'))
         return
       }
 
@@ -2765,7 +2767,7 @@ export default {
 
     async previewPDF() {
       if (this.stockItems.length === 0) {
-        warning('ไม่มีสินค้าสำหรับสร้าง PDF')
+        warning(this.$t('view.sale.saleOrder.warn.noItemsForPDF'))
         return
       }
 
@@ -2796,7 +2798,7 @@ export default {
 
     async exportExcel() {
       if (this.stockItems.length === 0) {
-        warning('ไม่มีสินค้าสำหรับสร้าง Excel')
+        warning(this.$t('view.sale.saleOrder.warn.noItemsForExcel'))
         return
       }
 
@@ -2827,27 +2829,27 @@ export default {
 
     async confirmOrder() {
       if (this.hasValidationErrors) {
-        error('กรุณาแก้ไขข้อผิดพลาดก่อนยืนยันใบสั่งขาย', 'ไม่สามารถยืนยันได้')
+        error(this.$t('view.sale.saleOrder.error.fixBeforeConfirm'), this.$t('view.sale.saleOrder.error.cannotConfirmTitle'))
         return
       }
 
       await this.fetchSaveSaleOrder('ยืนยันแล้ว')
-      success('ยืนยันใบสั่งขายเรียบร้อยแล้ว', 'ยืนยันสำเร็จ')
+      success(this.$t('view.sale.saleOrder.success.soConfirmed'), this.$t('view.sale.saleOrder.success.soConfirmTitle'))
     },
 
     cancelOrder() {
       confirmSubmit(
-        'คุณต้องการยกเลิกการสร้างใบสั่งขายนี้หรือไม่?',
-        'ยืนยันการยกเลิก',
+        this.$t('view.sale.saleOrder.confirm.cancelCreate'),
+        this.$t('view.sale.saleOrder.confirm.cancelTitle'),
         (result) => {
           if (result.isConfirm) {
             this.clearForm()
-            success('ยกเลิกการสร้างใบสั่งขายแล้ว', 'ยกเลิกแล้ว')
+            success(this.$t('view.sale.saleOrder.success.cancelCreate'), this.$t('view.sale.saleOrder.success.cancelTitle'))
           }
         },
         {
-          confirmText: 'ยกเลิก',
-          cancelText: 'กลับ'
+          confirmText: this.$t('common.btn.confirm'),
+          cancelText: this.$t('common.btn.back')
         },
         'question'
       )
@@ -2877,7 +2879,7 @@ export default {
 
     async reverseStockConfirm(item) {
       if (!item.isConfirm || item.invoice) {
-        warning('ไม่สามารถยกเลิกการยืนยันได้', 'สินค้านี้ยังไม่ได้ยืนยันหรือออก Invoice แล้ว')
+        warning(this.$t('view.sale.saleOrder.warn.cannotCancelConfirm'), this.$t('view.sale.saleOrder.warn.cannotCancelTitle'))
         return
       }
 
@@ -2886,16 +2888,16 @@ export default {
 
 
       confirmSubmit(
-        `คุณต้องการยกเลิกการยืนยันสินค้า ${stockNumber} ${productInfo} หรือไม่?`,
-        'ยืนยันการยกเลิก',
+        this.$t('view.sale.saleOrder.confirm.cancelConfirmItem', { stockNumber, productInfo }),
+        this.$t('view.sale.saleOrder.confirm.cancelTitle'),
         async (result) => {
           if (result.isConfirmed) {
             await this.onReverseStockConfirm(item)
           }
         },
         {
-          confirmText: 'ยืนยัน',
-          cancelText: 'ยกเลิก'
+          confirmText: this.$t('common.btn.confirm'),
+          cancelText: this.$t('common.btn.cancel')
         },
         'warning'
       )
@@ -2915,7 +2917,7 @@ export default {
       })
 
       const stockNumber = item.stockNumberOrigin || item.stockNumber
-      success('ยกเลิกการยืนยันสำเร็จ', `ยกเลิกการยืนยันสินค้า ${stockNumber} แล้ว`)
+      success(this.$t('view.sale.saleOrder.success.cancelConfirmTitle'), this.$t('view.sale.saleOrder.success.cancelConfirm', { stockNumber }))
 
       if (this.formSaleOrder.number) {
         const response = await this.getSaleOrderData(this.formSaleOrder.number)
@@ -2934,7 +2936,7 @@ export default {
       const productionItems = this.selectedItems.filter((item) => item.itemType === 'Production')
 
       if (productionItems.length === 0) {
-        error('ไม่พบสินค้าที่ต้องผลิต', 'ไม่สามารถสร้างใบสั่งผลิตได้')
+        error(this.$t('view.sale.saleOrder.error.noProductionItems'), this.$t('view.sale.saleOrder.error.cannotCreatePO'))
         return
       }
 
@@ -2953,7 +2955,7 @@ export default {
       const stockItems = this.selectedItems.filter((item) => item.itemType === 'Stock')
 
       if (stockItems.length === 0) {
-        error('ไม่พบสินค้าคงคลังที่ต้องจอง', 'ไม่สามารถสร้างการจองได้')
+        error(this.$t('view.sale.saleOrder.error.noStockToReserve'), this.$t('view.sale.saleOrder.error.cannotReserve'))
         return
       }
 
@@ -3029,11 +3031,11 @@ export default {
     inactiveSaleOrder() {
       if (!this.hasSaleOrderNumber) {
         confirmSubmit(
-          'ต้องการยกเลิกการสร้างใบสั่งขายนี้หรือไม่?',
-          'ยืนยันการยกเลิก',
+          this.$t('view.sale.saleOrder.confirm.cancelCreate'),
+          this.$t('view.sale.saleOrder.confirm.cancelTitle'),
           () => {
             this.clearForm()
-            success('ยกเลิกการสร้างใบสั่งขายแล้ว')
+            success(this.$t('view.sale.saleOrder.success.cancelCreate'))
           }
         )
         return
@@ -3041,19 +3043,19 @@ export default {
 
       if (this.invoiceItemsCount > 0) {
         warning(
-          'ไม่สามารถลบใบสั่งขายได้ เนื่องจากมีสินค้าที่ออก Invoice แล้ว กรุณายกเลิก Invoice ก่อน',
-          'ไม่สามารถลบได้'
+          this.$t('view.sale.saleOrder.warn.cannotDeleteSO'),
+          this.$t('view.sale.saleOrder.warn.cannotDeleteTitle')
         )
         return
       }
 
       const msg = this.confirmedStockItemsCount > 0
-        ? `ใบสั่งขาย ${this.formSaleOrder.number} มีสินค้าที่ยืนยันแล้ว ${this.confirmedStockItemsCount} รายการ\nระบบจะยกเลิกการยืนยันสินค้าทั้งหมดและลบใบสั่งขายนี้ ต้องการดำเนินการหรือไม่?`
-        : `ต้องการลบใบสั่งขายเลขที่ ${this.formSaleOrder.number} หรือไม่?`
+        ? this.$t('view.sale.saleOrder.confirm.deleteWithConfirmed', { soNumber: this.formSaleOrder.number, count: this.confirmedStockItemsCount })
+        : this.$t('view.sale.saleOrder.confirm.deleteSO', { soNumber: this.formSaleOrder.number })
 
-      confirmSubmit(msg, 'ยืนยันการลบ', async () => {
+      confirmSubmit(msg, this.$t('view.sale.saleOrder.confirm.deleteTitle'), async () => {
         await this.saleOrderStore.fetchInactive({ soNumber: this.formSaleOrder.number })
-        success('ลบใบสั่งขายสำเร็จ')
+        success(this.$t('view.sale.saleOrder.success.deleteSO'))
         this.$router.push({ path: '/sale-order-list' })
       })
     },
@@ -3304,7 +3306,7 @@ export default {
 
     applyOverallDiscount() {
       if (this.overallDiscountPercent < 0 || this.overallDiscountPercent > 100) {
-        warning('เปอร์เซ็นต์ส่วนลดต้องอยู่ระหว่าง 0 ถึง 100')
+        warning(this.$t('view.sale.saleOrder.warn.discountRange'))
         return
       }
 

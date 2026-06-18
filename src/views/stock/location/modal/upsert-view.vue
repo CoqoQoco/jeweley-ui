@@ -53,7 +53,7 @@
                 type="text"
                 class="form-control"
                 v-model.trim="form.nameEn"
-                placeholder="e.g. Main Warehouse"
+                :placeholder="$t('view.stock.location.placeholder.nameEn')"
               />
             </div>
           </div>

@@ -3,13 +3,13 @@
     <template v-slot:content>
       <div class="title-text-lg-header mb-3">
         <i class="bi bi-upload mr-2"></i>
-        <span>Upload เอกสาร PDF</span>
+        <span>{{ $t('view.sale.document.uploadTitle') }}</span>
       </div>
 
       <form @submit.prevent="onSubmit" class="p-2">
         <!-- เลือกไฟล์ -->
         <div class="mb-3">
-          <span class="title-text">ไฟล์ PDF <span class="text-danger">*</span></span>
+          <span class="title-text">{{ $t('view.sale.document.pdfFile') }} <span class="text-danger">*</span></span>
           <input
             type="file"
             accept=".pdf"
@@ -23,18 +23,18 @@
         <div class="form-col-container">
           <!-- เดือน -->
           <div>
-            <span class="title-text">เดือน <span class="text-danger">*</span></span>
+            <span class="title-text">{{ $t('view.sale.document.month') }} <span class="text-danger">*</span></span>
             <select class="form-control bg-input" v-model="form.month" required>
-              <option :value="null" disabled>เลือกเดือน</option>
-              <option v-for="m in months" :key="m.value" :value="m.value">{{ m.label }}</option>
+              <option :value="null" disabled>{{ $t('view.sale.document.selectMonth') }}</option>
+              <option v-for="m in monthOptions" :key="m.value" :value="m.value">{{ m.label }}</option>
             </select>
           </div>
 
           <!-- ปี -->
           <div>
-            <span class="title-text">ปี <span class="text-danger">*</span></span>
+            <span class="title-text">{{ $t('view.sale.document.year') }} <span class="text-danger">*</span></span>
             <select class="form-control bg-input" v-model="form.year" required>
-              <option :value="null" disabled>เลือกปี</option>
+              <option :value="null" disabled>{{ $t('view.sale.document.selectYear') }}</option>
               <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
             </select>
           </div>
@@ -42,33 +42,27 @@
 
         <!-- Tags -->
         <div class="mt-2">
-          <span class="title-text">Tags</span>
-          <input
-            class="form-control bg-input"
-            type="text"
-            v-model.trim="form.tags"
-            placeholder="เช่น approved, Q1, pending (คั่นด้วยลูกน้ำ)"
+          <span class="title-text">{{ $t('view.sale.document.tags') }}</span>
+          <InputTextGeneric
+            v-model="form.tags"
+            :trim="true"
+            :placeholder="$t('view.sale.document.placeholder.tagsExample')"
           />
         </div>
 
         <!-- หมายเหตุ -->
         <div class="mt-2">
-          <span class="title-text">หมายเหตุ</span>
-          <textarea
-            class="form-control bg-input"
-            v-model.trim="form.remark"
-            rows="2"
-            placeholder="หมายเหตุ (ถ้ามี)"
-          ></textarea>
+          <span class="title-text">{{ $t('view.sale.document.remark') }}</span>
+          <TextareaGeneric
+            v-model="form.remark"
+            :rows="2"
+            :placeholder="$t('view.sale.document.placeholder.remarkOptional')"
+          />
         </div>
 
         <div class="btn-submit-container mt-3">
-          <button class="btn btn-sm btn-main mr-2" type="submit">
-            <i class="bi bi-save mr-1"></i>บันทึก
-          </button>
-          <button class="btn btn-sm btn-outline-main" type="button" @click="closeModal">
-            ยกเลิก
-          </button>
+          <ButtonGeneric variant="main" type="submit" icon="bi-save" :label="$t('common.btn.save')" />
+          <ButtonGeneric variant="outline" type="button" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
         </div>
       </form>
     </template>
@@ -80,16 +74,11 @@ import { defineAsyncComponent } from 'vue'
 import { useSaleDocumentStore } from '@/stores/modules/api/sale/sale-document-store.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
-const MONTHS = [
-  { value: 1, label: 'มกราคม' }, { value: 2, label: 'กุมภาพันธ์' },
-  { value: 3, label: 'มีนาคม' }, { value: 4, label: 'เมษายน' },
-  { value: 5, label: 'พฤษภาคม' }, { value: 6, label: 'มิถุนายน' },
-  { value: 7, label: 'กรกฎาคม' }, { value: 8, label: 'สิงหาคม' },
-  { value: 9, label: 'กันยายน' }, { value: 10, label: 'ตุลาคม' },
-  { value: 11, label: 'พฤศจิกายน' }, { value: 12, label: 'ธันวาคม' }
-]
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   file: null,
@@ -99,10 +88,12 @@ const interfaceForm = {
   remark: null
 }
 
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
 export default {
   name: 'SaleDocumentUploadModal',
 
-  components: { modal },
+  components: { modal, InputTextGeneric, TextareaGeneric, ButtonGeneric },
 
   emits: ['close', 'saved'],
 
@@ -123,12 +114,18 @@ export default {
     const currentMonth = new Date().getMonth() + 1
     return {
       form: { ...interfaceForm, month: currentMonth, year: currentYear },
-      months: MONTHS,
       years: Array.from({ length: 4 }, (_, i) => currentYear - i)
     }
   },
 
   computed: {
+    monthOptions() {
+      return MONTH_KEYS.map((key, index) => ({
+        value: index + 1,
+        label: this.$t(`view.sale.document.months.${key}`)
+      }))
+    },
+
     fileSizeLabel() {
       if (!this.form.file) return ''
       const kb = this.form.file.size / 1024
@@ -143,11 +140,11 @@ export default {
 
     async onSubmit() {
       if (!this.form.file) {
-        warning('กรุณาเลือกไฟล์ PDF', 'ข้อมูลไม่ครบ')
+        warning(this.$t('view.sale.document.validation.pdfRequired'), this.$t('common.label.incompleteData'))
         return
       }
       if (!this.form.month || !this.form.year) {
-        warning('กรุณาเลือกเดือนและปี', 'ข้อมูลไม่ครบ')
+        warning(this.$t('view.sale.document.validation.monthYearRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
@@ -159,7 +156,7 @@ export default {
       if (this.form.remark) formData.append('Remark', this.form.remark)
 
       await this.store.uploadDocument(formData)
-      success('Upload เอกสารสำเร็จ')
+      success(this.$t('view.sale.document.success.upload'))
       this.$emit('saved')
       this.closeModal()
     },

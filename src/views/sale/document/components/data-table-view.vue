@@ -1,7 +1,7 @@
 <template>
   <div class="mt-2">
     <div class="mb-2 text-right">
-      <span class="title-text">{{ mergedList.length }} รายการ</span>
+      <span class="title-text">{{ $t('view.sale.document.itemCount', { count: mergedList.length }) }}</span>
     </div>
 
     <BaseDataTable
@@ -16,30 +16,30 @@
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
           <template v-if="data.sourceType === 'catalog'">
-            <button class="btn btn-sm btn-main mr-1" title="แก้ไข" @click="onEditCatalog(data)">
+            <button class="btn btn-sm btn-main mr-1" :title="$t('common.btn.edit')" @click="onEditCatalog(data)">
               <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-sm btn-green mr-1" title="Preview PDF" @click="onPreviewCatalog(data)">
+            <button class="btn btn-sm btn-green mr-1" :title="$t('view.sale.document.previewPdf')" @click="onPreviewCatalog(data)">
               <i class="bi bi-eye"></i>
             </button>
-            <button class="btn btn-sm btn-sub-main mr-1" title="ดาวน์โหลด PDF" @click="onDownloadCatalog(data)">
+            <button class="btn btn-sm btn-sub-main mr-1" :title="$t('common.btn.download')" @click="onDownloadCatalog(data)">
               <i class="bi bi-download"></i>
             </button>
-            <button class="btn btn-sm btn-red" title="ลบ" @click="onDeleteCatalog(data)">
+            <button class="btn btn-sm btn-red" :title="$t('common.btn.delete')" @click="onDeleteCatalog(data)">
               <i class="bi bi-trash"></i>
             </button>
           </template>
           <template v-else>
-            <button class="btn btn-sm btn-green mr-1" title="Preview" @click="onPreview(data)">
+            <button class="btn btn-sm btn-green mr-1" :title="$t('view.sale.document.previewPdf')" @click="onPreview(data)">
               <i class="bi bi-eye"></i>
             </button>
-            <button class="btn btn-sm btn-main mr-1" title="Download" @click="onDownload(data)">
+            <button class="btn btn-sm btn-main mr-1" :title="$t('common.btn.download')" @click="onDownload(data)">
               <i class="bi bi-download"></i>
             </button>
-            <button class="btn btn-sm btn-sub-main mr-1" title="แก้ไข Tag" @click="$emit('tag', data)">
+            <button class="btn btn-sm btn-sub-main mr-1" :title="$t('view.sale.document.editTag')" @click="$emit('tag', data)">
               <i class="bi bi-tag"></i>
             </button>
-            <button class="btn btn-sm btn-red" title="ลบ" @click="onDelete(data)">
+            <button class="btn btn-sm btn-red" :title="$t('common.btn.delete')" @click="onDelete(data)">
               <i class="bi bi-trash"></i>
             </button>
           </template>
@@ -48,17 +48,17 @@
 
       <template #sourceTypeTemplate="{ data }">
         <span :class="['type-badge', data.sourceType === 'catalog' ? 'type-catalog' : 'type-upload']">
-          {{ data.sourceType === 'catalog' ? 'สร้างในระบบ' : 'อัปโหลด' }}
+          {{ data.sourceType === 'catalog' ? $t('view.sale.document.sourceTypeSystem') : $t('view.sale.document.sourceTypeUpload') }}
         </span>
       </template>
 
       <template #monthYearTemplate="{ data }">
-        <span>{{ getMonthName(data.documentMonth) }} {{ data.documentYear }}</span>
+        <span>{{ monthName(data.documentMonth) }} {{ data.documentYear }}</span>
       </template>
 
       <template #statusTemplate="{ data }">
         <span v-if="data.sourceType === 'catalog'" :class="['status-badge', data.status === 1 ? 'status-final' : 'status-draft']">
-          {{ data.status === 1 ? 'Final' : 'ร่าง' }}
+          {{ data.status === 1 ? $t('view.sale.document.statusFinal') : $t('view.sale.document.statusDraft') }}
         </span>
         <span v-else class="text-muted">-</span>
       </template>
@@ -89,8 +89,7 @@ import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDateTime } from '@/services/utils/dayjs.js'
 import { ProductCatalogPdfBuilder } from '@/services/helper/pdf/product-catalog/product-catalog-pdf-builder.js'
 
-const MONTHS = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 export default {
   name: 'SaleDocumentDataTableView',
@@ -112,23 +111,21 @@ export default {
     return { store, catalogStore }
   },
 
-  data() {
-    return {
-      columns: [
-        { field: 'action', header: '', width: '180px', sortable: false },
-        { field: 'sourceType', header: 'ประเภท', minWidth: '120px', sortable: false, template: 'sourceTypeTemplate' },
-        { field: 'fileName', header: 'ชื่อ / หัวเรื่อง', minWidth: '200px', sortable: true },
-        { field: 'status', header: 'สถานะ', minWidth: '90px', sortable: false, template: 'statusTemplate' },
-        { field: 'monthYear', header: 'เดือน/ปี', minWidth: '130px', sortable: false, template: 'monthYearTemplate' },
-        { field: 'tags', header: 'Tags', minWidth: '160px', sortable: false, template: 'tagsTemplate' },
-        { field: 'remark', header: 'หมายเหตุ', minWidth: '160px', sortable: false },
-        { field: 'createBy', header: 'ผู้สร้าง', minWidth: '120px', sortable: true },
-        { field: 'createDate', header: 'วันที่', minWidth: '160px', sortable: true, template: 'createDateTemplate' }
-      ]
-    }
-  },
-
   computed: {
+    columns() {
+      return [
+        { field: 'action', header: '', width: '180px', sortable: false },
+        { field: 'sourceType', header: this.$t('view.sale.document.sourceTypeTitle'), minWidth: '120px', sortable: false, template: 'sourceTypeTemplate' },
+        { field: 'fileName', header: this.$t('view.sale.document.fileNameTitle'), minWidth: '200px', sortable: true },
+        { field: 'status', header: this.$t('common.field.status'), minWidth: '90px', sortable: false, template: 'statusTemplate' },
+        { field: 'monthYear', header: this.$t('view.sale.document.monthYear'), minWidth: '130px', sortable: false, template: 'monthYearTemplate' },
+        { field: 'tags', header: this.$t('view.sale.document.tags'), minWidth: '160px', sortable: false, template: 'tagsTemplate' },
+        { field: 'remark', header: this.$t('common.field.remark'), minWidth: '160px', sortable: false },
+        { field: 'createBy', header: this.$t('common.field.createBy'), minWidth: '120px', sortable: true },
+        { field: 'createDate', header: this.$t('common.field.createDate'), minWidth: '160px', sortable: true, template: 'createDateTemplate' }
+      ]
+    },
+
     form() {
       return this.modelForm || {}
     },
@@ -185,8 +182,10 @@ export default {
       ])
     },
 
-    getMonthName(month) {
-      return MONTHS[month] || '-'
+    monthName(month) {
+      if (!month || month < 1 || month > 12) return '-'
+      const key = MONTH_KEYS[month - 1]
+      return this.$t(`view.sale.document.months.${key}`)
     },
 
     parseTags(tags) {
@@ -224,11 +223,15 @@ export default {
     },
 
     onDeleteCatalog(data) {
-      confirmSubmit(`คุณต้องการลบเอกสาร "${data.fileName}" หรือไม่?`, 'ยืนยันการลบ', async () => {
-        await this.catalogStore.delete(data.id)
-        success('ลบเอกสารสำเร็จ')
-        await this.fetchData()
-      })
+      confirmSubmit(
+        this.$t('view.sale.document.confirm.delete', { fileName: data.fileName }),
+        this.$t('view.sale.document.confirm.deleteTitle'),
+        async () => {
+          await this.catalogStore.delete(data.id)
+          success(this.$t('view.sale.document.success.delete'))
+          await this.fetchData()
+        }
+      )
     },
 
     async onPreview(data) {
@@ -254,11 +257,15 @@ export default {
     },
 
     onDelete(data) {
-      confirmSubmit(`คุณต้องการลบเอกสาร "${data.fileName}" หรือไม่?`, 'ยืนยันการลบ', async () => {
-        await this.store.deleteDocument(data.id)
-        success('ลบเอกสารสำเร็จ')
-        await this.fetchData()
-      })
+      confirmSubmit(
+        this.$t('view.sale.document.confirm.delete', { fileName: data.fileName }),
+        this.$t('view.sale.document.confirm.deleteTitle'),
+        async () => {
+          await this.store.deleteDocument(data.id)
+          success(this.$t('view.sale.document.success.delete'))
+          await this.fetchData()
+        }
+      )
     }
   },
 

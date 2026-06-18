@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <div class="page-header-bar">
-      <button class="btn-back" @click="$router.push({ name: 'sale-document' })" title="กลับ" type="button">
+      <button class="btn-back" @click="$router.push({ name: 'sale-document' })" :title="$t('common.btn.back')" type="button">
         <i class="bi bi-arrow-left"></i>
       </button>
-      <h2 class="page-title">{{ isEditMode ? 'แก้ไขเอกสาร Lookbook' : 'สร้างเอกสาร Lookbook' }}</h2>
+      <h2 class="page-title">{{ isEditMode ? $t('view.sale.document.editTitle') : $t('view.sale.document.createTitle') }}</h2>
     </div>
 
     <documentInfoSection
@@ -21,16 +21,16 @@
 
     <div class="action-bar">
       <button class="btn btn-sm btn-main" @click="onSaveDraft" type="button">
-        <i class="bi bi-save mr-1"></i> บันทึกร่าง
+        <i class="bi bi-save mr-1"></i> {{ $t('view.sale.document.saveDraft') }}
       </button>
       <button class="btn btn-sm btn-green ml-2" @click="onPreviewPDF" type="button">
-        <i class="bi bi-eye mr-1"></i> Preview PDF
+        <i class="bi bi-eye mr-1"></i> {{ $t('view.sale.document.previewPdf') }}
       </button>
       <button class="btn btn-sm btn-sub-main ml-2" @click="onDownloadPDF" type="button">
-        <i class="bi bi-download mr-1"></i> ดาวน์โหลด PDF
+        <i class="bi bi-download mr-1"></i> {{ $t('view.sale.document.downloadPdf') }}
       </button>
       <button class="btn btn-sm btn-outline-main ml-2" @click="$router.push({ name: 'sale-document' })" type="button">
-        กลับ
+        {{ $t('common.btn.back') }}
       </button>
     </div>
 
@@ -161,11 +161,11 @@ export default {
 
     validateForm() {
       if (!this.docForm.headerLabel?.trim()) {
-        warning('กรุณากรอกหัวเรื่อง (Header Label)', 'ข้อมูลไม่ครบ')
+        warning(this.$t('view.sale.document.validation.headerRequired'), this.$t('common.label.incompleteData'))
         return false
       }
       if (!this.docForm.documentMonth || !this.docForm.documentYear) {
-        warning('กรุณาเลือกเดือนและปี', 'ข้อมูลไม่ครบ')
+        warning(this.$t('view.sale.document.validation.monthYearRequired'), this.$t('common.label.incompleteData'))
         return false
       }
       return true
@@ -209,7 +209,7 @@ export default {
             params: { id: returnedId }
           })
         }
-        success('บันทึกร่างสำเร็จ')
+        success(this.$t('view.sale.document.success.saveDraft'))
       }
     },
 

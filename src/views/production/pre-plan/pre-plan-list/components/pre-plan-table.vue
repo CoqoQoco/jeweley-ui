@@ -11,20 +11,20 @@
   >
     <template #actionTemplate="{ data }">
       <div class="btn-action-container">
-        <button class="btn btn-sm btn-green ml-1" @click="onView(data)" title="ดูรายละเอียด">
+        <button class="btn btn-sm btn-green ml-1" @click="onView(data)" :title="$t('view.production.prePlan.btnView')">
           <i class="bi bi-eye"></i>
         </button>
         <button
           class="btn btn-sm btn-green ml-1"
           @click="onPrintPdf(data)"
-          title="พิมพ์ใบสั่งผลิต"
+          :title="$t('view.production.prePlan.btnPrint')"
         >
           <i class="bi bi-printer"></i>
         </button>
         <button
           class="btn btn-sm btn-green ml-1"
           @click="onDuplicate(data)"
-          title="คัดลอกเป็นใบใหม่"
+          :title="$t('view.production.prePlan.btnCopy')"
         >
           <i class="bi bi-files"></i>
         </button>
@@ -40,15 +40,15 @@
           v-if="data.status === 'Submitted'"
           class="btn btn-sm btn-main ml-1"
           @click="onApprove(data)"
-          title="อนุมัติ"
+          :title="$t('view.production.prePlan.btnApprove')"
         >
-          <i class="bi bi-check-lg"></i> อนุมัติ
+          <i class="bi bi-check-lg"></i> {{ $t('view.production.prePlan.btnApprove') }}
         </button>
         <button
           v-if="data.status === 'Approved' && data.approvedDocumentPath"
           class="btn btn-sm btn-green ml-1"
           @click="onViewApprovedDoc(data)"
-          title="ดูเอกสารอนุมัติ"
+          :title="$t('view.production.prePlan.btnViewApproval')"
         >
           <i class="bi bi-file-earmark-text"></i>
         </button>
@@ -56,7 +56,7 @@
           v-if="isDocCancellable(data.status)"
           class="btn btn-sm btn-red ml-1"
           @click="onOpenCancel(data)"
-          title="ยกเลิกใบสั่งผลิต"
+          :title="$t('view.production.prePlan.btnCancel')"
         >
           <i class="bi bi-x-circle"></i>
         </button>
@@ -80,7 +80,7 @@
     </template>
 
     <template #itemCountTemplate="{ data }">
-      <span>{{ data.itemCount }} รายการ</span>
+      <span>{{ $t('view.production.prePlan.itemCount', { count: data.itemCount }) }}</span>
     </template>
 
     <template #primaryMoldCodeTemplate="{ data }">
@@ -97,9 +97,9 @@
     <template #expansion="{ data }">
       <div class="p-3">
         <div class="mb-2">
-          <span class="title-text">เลขที่ใบสั่ง:</span> {{ data.orderNo || '-' }} ·
-          <span class="title-text">ประเภทงาน:</span> {{ getDesc(masterStore.jobTypes, data.jobType) }} ·
-          <span class="title-text">วันที่ส่ง:</span> {{ formatDate(data.deliveryDate) }}
+          <span class="title-text">{{ $t('view.production.prePlan.orderNoLabel') }}</span> {{ data.orderNo || '-' }} ·
+          <span class="title-text">{{ $t('view.production.prePlan.jobTypeLabel') }}</span> {{ getDesc(masterStore.jobTypes, data.jobType) }} ·
+          <span class="title-text">{{ $t('view.production.prePlan.deliveryDateLabel') }}</span> {{ formatDate(data.deliveryDate) }}
         </div>
 
         <div v-for="item in data.items" :key="item.id" class="item-expand-card mb-2">
@@ -116,19 +116,19 @@
               </ul>
 
               <div v-if="item.linkedProductionPlanId" class="plan-info">
-                <span class="badge bg-success mr-2">สร้างแผนแล้ว</span>
+                <span class="badge bg-success mr-2">{{ $t('view.production.prePlan.planCreated') }}</span>
                 <span class="title-text">WO:</span> {{ item.woText || `${item.wo}-${item.woNumber}` }}
                 <span v-if="item.planStatus" class="ml-2">
-                  · <span class="title-text">สถานะแผน:</span> {{ item.planStatus }}
+                  · <span class="title-text">{{ $t('view.production.prePlan.planStatus') }}</span> {{ item.planStatus }}
                 </span>
               </div>
               <div v-else-if="item.isCancelled" class="plan-info">
-                <span class="badge bg-secondary">ยกเลิกแล้ว</span>
+                <span class="badge bg-secondary">{{ $t('view.production.prePlan.planCancelled') }}</span>
               </div>
               <div v-else class="text-muted d-flex align-items-center">
-                <i class="bi bi-clock"></i>&nbsp;ยังไม่ได้สร้างแผน
-                <button class="btn btn-sm btn-red ml-2" @click="onCancelItem(data, item)" title="ยกเลิกรายการนี้">
-                  <i class="bi bi-x-circle"></i> ยกเลิกรายการ
+                <i class="bi bi-clock"></i>&nbsp;{{ $t('view.production.prePlan.notPlanned') }}
+                <button class="btn btn-sm btn-red ml-2" @click="onCancelItem(data, item)" :title="$t('view.production.prePlan.cancelItem')">
+                  <i class="bi bi-x-circle"></i> {{ $t('view.production.prePlan.cancelItem') }}
                 </button>
               </div>
             </div>
@@ -189,22 +189,26 @@ export default {
       sort: [],
       showCancelModal: false,
       cancelTarget: null,
-      columns: [
-        { field: 'action', header: '', minWidthwidth: '150px', sortable: false, align: 'center' },
-        { field: 'status', header: 'สถานะ', minWidth: '130px', align: 'center' },
-        { field: 'linkedProgress', header: 'สร้างแผน', minWidth: '110px', align: 'center', sortable: false },
-        { field: 'orderNo', header: 'เลขที่ใบสั่ง', minWidth: '140px' },
-        { field: 'jobType', header: 'ประเภทงาน', minWidth: '130px' },
-        { field: 'jobLocation', header: 'สถานที่', minWidth: '120px' },
-        { field: 'productionRound', header: 'ครั้งที่', minWidth: '70px', align: 'center' },
-        { field: 'goldType', header: 'ประเภททอง', minWidth: '110px' },
-        { field: 'itemCount', header: 'จำนวนรายการ', minWidth: '110px', align: 'center', sortable: false },
-        { field: 'primaryMoldCode', header: 'แม่พิมพ์หลัก', minWidth: '130px', sortable: false },
-        { field: 'orderDate', header: 'วันที่ออก', minWidth: '110px', format: 'date' },
-        { field: 'deliveryDate', header: 'วันที่ส่งงาน', minWidth: '110px', format: 'date' },
-        { field: 'createBy', header: 'ผู้สร้าง', minWidth: '120px' },
-      ],
     }
+  },
+  computed: {
+    columns() {
+      return [
+        { field: 'action', header: '', minWidthwidth: '150px', sortable: false, align: 'center' },
+        { field: 'status', header: this.$t('view.production.prePlan.colStatus'), minWidth: '130px', align: 'center' },
+        { field: 'linkedProgress', header: this.$t('view.production.prePlan.colLinkedProgress'), minWidth: '110px', align: 'center', sortable: false },
+        { field: 'orderNo', header: this.$t('view.production.prePlan.colOrderNo'), minWidth: '140px' },
+        { field: 'jobType', header: this.$t('view.production.prePlan.colJobType'), minWidth: '130px' },
+        { field: 'jobLocation', header: this.$t('view.production.prePlan.colJobLocation'), minWidth: '120px' },
+        { field: 'productionRound', header: this.$t('view.production.prePlan.colProductionRound'), minWidth: '70px', align: 'center' },
+        { field: 'goldType', header: this.$t('view.production.prePlan.colGoldType'), minWidth: '110px' },
+        { field: 'itemCount', header: this.$t('view.production.prePlan.colItemCount'), minWidth: '110px', align: 'center', sortable: false },
+        { field: 'primaryMoldCode', header: this.$t('view.production.prePlan.colPrimaryMoldCode'), minWidth: '130px', sortable: false },
+        { field: 'orderDate', header: this.$t('view.production.prePlan.colOrderDate'), minWidth: '110px', format: 'date' },
+        { field: 'deliveryDate', header: this.$t('view.production.prePlan.colDeliveryDate'), minWidth: '110px', format: 'date' },
+        { field: 'createBy', header: this.$t('view.production.prePlan.colCreateBy'), minWidth: '120px' },
+      ]
+    },
   },
   watch: {
     async modelForm() {
@@ -248,7 +252,7 @@ export default {
 
       const data = this.store.prePlanList
       if (!data || data.length === 0) {
-        warning('ไม่มีข้อมูลให้ Export')
+        warning(this.$t('view.production.prePlan.exportNoData'))
         return
       }
 
@@ -398,7 +402,7 @@ export default {
         cancelReason: reason,
       })
       this.showCancelModal = false
-      success('ยกเลิกใบสั่งผลิตสำเร็จ')
+      success(this.$t('view.production.prePlan.cancelSuccess'))
       await this.fetchData()
     },
     onCancelItem(data, item) {
@@ -407,7 +411,7 @@ export default {
           itemId: Number(item.id),
           cancelReason: null,
         })
-        success('ยกเลิกรายการสำเร็จ')
+        success(this.$t('view.production.prePlan.cancelItemSuccess'))
         await this.fetchData()
       })
     },
@@ -416,8 +420,8 @@ export default {
     getLinkedProgressClass,
     formatMaterialBrief(m) {
       const parts = []
-      if (m.gold) parts.push(`ทอง: ${this.getDesc(this.masterStore.golds, m.gold)} × ${m.goldQty || ''}`)
-      if (m.gem) parts.push(`พลอย: ${this.getDesc(this.masterStore.gems, m.gem)} ${m.gemQty || ''}`)
+      if (m.gold) parts.push(`${this.$t('view.production.prePlan.goldLabel')} ${this.getDesc(this.masterStore.golds, m.gold)} × ${m.goldQty || ''}`)
+      if (m.gem) parts.push(`${this.$t('view.production.prePlan.gemLabel')} ${this.getDesc(this.masterStore.gems, m.gem)} ${m.gemQty || ''}`)
       return parts.join(' · ') || '(ไม่ระบุ)'
     },
     formatDate,

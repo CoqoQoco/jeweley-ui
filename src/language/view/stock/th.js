@@ -104,6 +104,9 @@ export default {
     no: 'ไม่',
     codePlaceholder: 'เช่น MAIN, SHOW-01',
     namePlaceholder: 'เช่น คลังหลัก, โชว์รูม',
+    placeholder: {
+      nameEn: 'เช่น Main Warehouse'
+    },
     warnName: 'กรุณากรอกชื่อ Storage Location',
     warnCode: 'กรุณากรอกรหัส Storage Location',
     incomplete: 'ข้อมูลไม่ครบถ้วน',
@@ -165,7 +168,28 @@ export default {
     stepB2Title: 'กรอกข้อมูล & เลือก',
     stepB2Desc: 'กรอกรหัสและชื่อ SLOC (ประเภทจะตั้งเป็น "ชั่วคราว" อัตโนมัติ) แล้วกดปุ่ม "เพิ่ม & เลือก" ระบบจะสร้าง SLOC ใหม่และตั้งเป็น SLOC ปลายทางอัตโนมัติ',
     stepB3Title: 'ยืนยันการย้ายเข้า SLOC ชั่วคราว',
-    stepB3Desc: 'กดปุ่ม "ยืนยันการย้าย" เพื่อดำเนินการ — ดูขั้นตอนที่ 3-4 ของส่วน ก) สำหรับรายละเอียดเพิ่มเติม'
+    stepB3Desc: 'กดปุ่ม "ยืนยันการย้าย" เพื่อดำเนินการ — ดูขั้นตอนที่ 3-4 ของส่วน ก) สำหรับรายละเอียดเพิ่มเติม',
+    productionLabel: 'Production',
+    placeholder: {
+      newStockNumber: 'STK-2024-001',
+      oldStockNumber: 'EX: A0211XX',
+      productNumber: 'DK-B-001',
+      mold: 'EX: CN-2400XX',
+      productNameEn: 'EX: Gold Ring #66',
+      productNameTh: 'EX: Gold Ring #66',
+      wo: 'EX: 6802017XX',
+      size: 'EX: #66',
+      tempSlocCode: 'TEMP-001',
+      tempSlocName: 'Booth B'
+    },
+    manual: {
+      imgList: 'หน้าแสดงรายการสินค้า',
+      imgSelect: 'เลือกสินค้าด้วย checkbox',
+      imgTarget: 'modal เลือก SLOC ปลายทาง',
+      imgConfirm: 'dialog ยืนยันการย้าย',
+      imgSuccess: 'แจ้งย้ายสำเร็จ',
+      imgTemp: 'ฟอร์มสร้าง SLOC ชั่วคราว'
+    }
   },
   gem: {
     searchTitle: 'คลังวัตถุดิบ',

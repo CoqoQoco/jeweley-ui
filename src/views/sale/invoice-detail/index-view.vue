@@ -5,10 +5,10 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
           <i class="bi bi-file-earmark-text mr-2"></i>
-          รายละเอียด Invoice
+          {{ $t('view.sale.invoiceDetail.title') }}
           <span v-if="currentViewingVersion" class="badge badge-warning ml-2">
             <i class="bi bi-eye mr-1"></i>
-            กำลังดู: {{ currentViewingVersion }}
+            {{ $t('view.sale.invoiceDetail.viewingVersion') }}: {{ currentViewingVersion }}
           </span>
         </h5>
         <div>
@@ -66,16 +66,16 @@
       <!-- Invoice and Customer Information -->
       <div class="card-container mb-3">
         <div class="card-header">
-          <h6 class="mb-0"><i class="bi bi-file-earmark-text mr-2"></i>ข้อมูล Invoice และลูกค้า</h6>
+          <h6 class="mb-0"><i class="bi bi-file-earmark-text mr-2"></i>{{ $t('view.sale.invoiceDetail.invoiceAndCustomer') }}</h6>
         </div>
         <div class="card-body">
           <!-- Invoice Information Section -->
           <div class="info-section mb-2">
-            <h6 class="section-title mb-2"><i class="bi bi-receipt mr-2"></i>ข้อมูล Invoice</h6>
+            <h6 class="section-title mb-2"><i class="bi bi-receipt mr-2"></i>{{ $t('view.sale.invoiceDetail.invoiceInfo') }}</h6>
             <div class="row">
               <div class="col-md-3">
                 <div class="info-item">
-                  <label class="info-label">เลขที่ Invoice</label>
+                  <label class="info-label">{{ $t('view.sale.invoice.invoiceNumber') }}</label>
                   <p class="info-value font-weight-bold text-primary">
                     {{ invoiceData.invoiceNumber || '-' }}
                   </p>
@@ -83,19 +83,19 @@
               </div>
               <div class="col-md-3">
                 <div class="info-item">
-                  <label class="info-label">เลขที่ SO</label>
+                  <label class="info-label">{{ $t('view.sale.invoiceDetail.soNumber') }}</label>
                   <p class="info-value">{{ invoiceData.soNumber || '-' }}</p>
                 </div>
               </div>
               <div class="col-md-3">
                 <div class="info-item">
-                  <label class="info-label">วันที่สร้าง</label>
+                  <label class="info-label">{{ $t('view.sale.invoice.createDate') }}</label>
                   <p class="info-value">{{ formatDate(invoiceData.createDate) }}</p>
                 </div>
               </div>
               <div class="col-md-3">
                 <div class="info-item">
-                  <label class="info-label">วันกำหนดส่ง</label>
+                  <label class="info-label">{{ $t('view.sale.invoiceDetail.deliveryDateLabel') }}</label>
                   <p class="info-value">{{ formatDate(invoiceData.deliveryDate) }}</p>
                 </div>
               </div>
@@ -103,7 +103,7 @@
             <div class="row mt-1">
               <div class="col-md-3">
                 <div class="info-item">
-                  <label class="info-label">สถานะ</label>
+                  <label class="info-label">{{ $t('view.sale.invoice.status') }}</label>
                   <p class="info-value">
                     <span :class="getStatusBadgeClass(invoiceData.statusName)">
                       {{ invoiceData.statusName || '-' }}
@@ -113,13 +113,13 @@
               </div>
               <div class="col-md-3">
                 <div class="info-item">
-                  <label class="info-label">ผู้สร้าง</label>
+                  <label class="info-label">{{ $t('view.sale.invoice.createBy') }}</label>
                   <p class="info-value">{{ invoiceData.createBy || '-' }}</p>
                 </div>
               </div>
               <div class="col-md-3">
                 <div class="info-item">
-                  <label class="info-label">สกุลเงิน</label>
+                  <label class="info-label">{{ $t('view.sale.invoiceDetail.currencyLabel') }}</label>
                   <p class="info-value">
                     {{ invoiceData.currencyUnit || 'THB' }} ({{
                       formatNumber(invoiceData.currencyRate)
@@ -133,11 +133,11 @@
 
           <!-- Customer Information Section -->
           <div class="info-section">
-            <h6 class="section-title mb-2"><i class="bi bi-person mr-2"></i>ข้อมูลลูกค้า</h6>
+            <h6 class="section-title mb-2"><i class="bi bi-person mr-2"></i>{{ $t('view.sale.invoiceDetail.customerInfo') }}</h6>
             <div class="row">
               <div class="col-md-4">
                 <div class="info-item">
-                  <label class="info-label">ชื่อลูกค้า</label>
+                  <label class="info-label">{{ $t('view.sale.invoice.customerName') }}</label>
                   <p class="info-value font-weight-bold">
                     {{ invoiceData.customerName || '-' }}
                   </p>
@@ -145,7 +145,7 @@
               </div>
               <div class="col-md-4">
                 <div class="info-item">
-                  <label class="info-label">เบอร์โทร</label>
+                  <label class="info-label">{{ $t('view.sale.invoiceDetail.customerTel') }}</label>
                   <p class="info-value">
                     <i class="bi bi-telephone mr-1"></i>{{ invoiceData.customerTel || '-' }}
                   </p>
@@ -153,7 +153,7 @@
               </div>
               <div class="col-md-4">
                 <div class="info-item">
-                  <label class="info-label">อีเมล</label>
+                  <label class="info-label">{{ $t('view.sale.invoiceDetail.customerEmail') }}</label>
                   <p class="info-value">
                     <i class="bi bi-envelope mr-1"></i>{{ invoiceData.customerEmail || '-' }}
                   </p>
@@ -163,7 +163,7 @@
             <div class="row mt-1">
               <div class="col-md-12">
                 <div class="info-item">
-                  <label class="info-label">ที่อยู่</label>
+                  <label class="info-label">{{ $t('view.sale.invoiceDetail.customerAddress') }}</label>
                   <p class="info-value">{{ invoiceData.customerAddress || '-' }}</p>
                 </div>
               </div>
@@ -175,7 +175,7 @@
       <!-- Invoice Items -->
       <div class="card-container mb-3">
         <div class="card-header">
-          <h6 class="mb-0">รายการสินค้า</h6>
+          <h6 class="mb-0">{{ $t('view.sale.invoiceDetail.productList') }}</h6>
         </div>
         <div class="card-body p-0">
           <DataTable
@@ -189,21 +189,21 @@
             <ColumnGroup type="header">
               <Row>
                 <Column header="#" />
-                <Column header="รูปภาพ" />
-                <Column header="เลขที่ผลิต (ใหม่)" />
-                <Column header="เลขที่ผลิต (เก่า)" />
-                <Column header="รหัสสินค้า" />
-                <Column header="รายละเอียด" />
+                <Column :header="$t('view.sale.invoiceDetail.imageHeader')" />
+                <Column :header="$t('view.sale.saleOrder.stockNumberNew')" />
+                <Column :header="$t('view.sale.saleOrder.stockNumberOld')" />
+                <Column :header="$t('view.sale.saleOrder.productCode')" />
+                <Column :header="$t('view.sale.saleOrder.description')" />
                 <Column header="Gold (gms)" />
                 <Column header="Diamond (cts)" />
                 <Column header="Stone (cts)" />
-                <Column header="ราคาขาย (THB)" />
-                <Column header="ราคาประเมิน (THB)" />
-                <Column header="ส่วนลด (%)" />
-                <Column header="ราคาส่วนลด (THB)" />
-                <Column header="แปลงเรท" />
+                <Column :header="$t('view.sale.saleOrder.salePriceTHB')" />
+                <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" />
+                <Column :header="$t('view.sale.saleOrder.discountPercent')" />
+                <Column :header="$t('view.sale.invoiceDetail.priceAfterDiscount')" />
+                <Column :header="$t('view.sale.saleOrder.convertedRate')" />
                 <Column :header="'ราคาแปลง (' + (invoiceData.currencyUnit || 'THB') + ')'" />
-                <Column header="จำนวน" />
+                <Column :header="$t('view.sale.quotation.quantity')" />
                 <Column :header="'รวมราคา (' + (invoiceData.currencyUnit || 'THB') + ')'" />
               </Row>
             </ColumnGroup>
@@ -354,7 +354,7 @@
               </template>
             </Column>
 
-            <Column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+            <Column field="priceOrigin" :header="$t('view.sale.saleOrder.salePriceTHB')" style="min-width: 150px">
               <template #body="slotProps">
                 <div class="qty-container">
                   <span>{{
@@ -364,7 +364,7 @@
               </template>
             </Column>
 
-            <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
+            <Column field="appraisalPrice" :header="$t('view.sale.saleOrder.appraisalPriceTHB')" style="min-width: 150px">
               <template #body="slotProps">
                 <div class="qty-container">
                   <input
@@ -387,7 +387,7 @@
               </template>
             </Column>
 
-            <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+            <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px">
               <template #body="slotProps">
                 <div class="qty-container">
                   <input
@@ -412,7 +412,7 @@
               </template>
             </Column>
 
-            <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+            <Column field="discountPrice" :header="$t('view.sale.invoiceDetail.priceAfterDiscount')" style="min-width: 150px">
               <template #body="slotProps">
                 <div class="qty-container">
                   <span>{{
@@ -425,7 +425,7 @@
               </template>
             </Column>
 
-            <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
+            <Column field="currencyRate" :header="$t('view.sale.saleOrder.convertedRate')" style="min-width: 100px">
               <template #body>
                 <div class="qty-container">
                   <span>{{ formSaleOrder.currencyRate }}</span>
@@ -451,7 +451,7 @@
               </template>
             </Column>
 
-            <Column field="qty" header="จำนวน" style="width: 80px">
+            <Column field="qty" :header="$t('view.sale.quotation.quantity')" style="width: 80px">
               <template #body="slotProps">
                 <div class="qty-container">
                   <input
@@ -509,7 +509,7 @@
                 <Column>
                   <template #footer>
                     <div class="text-right type-container">
-                      <span>รวม</span>
+                      <span>{{ $t('view.sale.invoiceDetail.total') }}</span>
                     </div>
                   </template>
                 </Column>
@@ -585,7 +585,7 @@
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <span>ส่วนลดพิเศษ:</span>
+                      <span>{{ $t('view.sale.invoiceDetail.specialDiscount') }}:</span>
                     </div>
                   </template>
                 </Column>
@@ -603,7 +603,7 @@
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <span>ส่วนเพิ่มพิเศษ:</span>
+                      <span>{{ $t('view.sale.invoiceDetail.specialSurcharge') }}:</span>
                     </div>
                   </template>
                 </Column>
@@ -621,7 +621,7 @@
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <span class="font-weight-bold">ยอดรวมหลังปรับ:</span>
+                      <span class="font-weight-bold">{{ $t('view.sale.saleOrder.adjustedTotal') }}:</span>
                     </div>
                   </template>
                 </Column>
@@ -659,7 +659,7 @@
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <span class="font-weight-bold">ยอดรวมก่อน VAT:</span>
+                      <span class="font-weight-bold">{{ $t('view.sale.saleOrder.beforeVatTotal') }}:</span>
                     </div>
                   </template>
                 </Column>
@@ -695,7 +695,7 @@
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <h6 class="mb-0">ราคารวม (ก่อนปัด):</h6>
+                      <h6 class="mb-0">{{ $t('view.sale.quotation.preTotalBeforeRound') }}:</h6>
                     </div>
                   </template>
                 </Column>
@@ -712,7 +712,7 @@
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <h6 class="mb-0">ปัดเศษ:</h6>
+                      <h6 class="mb-0">{{ $t('view.sale.quotation.rounding') }}:</h6>
                     </div>
                   </template>
                 </Column>
@@ -729,7 +729,7 @@
                 <Column :colspan="16">
                   <template #footer>
                     <div class="text-right type-container">
-                      <h6 class="mb-0 text-primary">ยอดที่ต้องชำระ:</h6>
+                      <h6 class="mb-0 text-primary">{{ $t('view.sale.quotation.payableTotal') }}:</h6>
                     </div>
                   </template>
                 </Column>
@@ -754,12 +754,12 @@
         <div class="">
           <div class="card-container mb-3">
             <div class="card-header">
-              <h6 class="mb-0"><i class="bi bi-clock-history mr-2"></i>Invoice Versions</h6>
+              <h6 class="mb-0"><i class="bi bi-clock-history mr-2"></i>{{ $t('view.sale.invoiceDetail.invoiceVersions') }}</h6>
             </div>
             <div class="card-body p-2">
               <div v-if="versionList.length === 0" class="text-center text-muted py-3">
                 <i class="bi bi-inbox" style="font-size: 2rem"></i>
-                <p class="mb-0 mt-2">ไม่มี Version</p>
+                <p class="mb-0 mt-2">{{ $t('view.sale.invoiceDetail.noVersion') }}</p>
               </div>
               <div v-else class="version-list">
                 <div
@@ -807,23 +807,23 @@
           <div class="card-container mb-3">
             <div class="card-header">
               <h6 class="mb-0">
-                <i class="bi bi-credit-card mr-2"></i>ข้อมูลการชำระเงินและสรุปยอด
+                <i class="bi bi-credit-card mr-2"></i>{{ $t('view.sale.invoiceDetail.paymentAndSummary') }}
               </h6>
               <button class="btn btn-sm btn-green" @click="showPaymentModal = true">
                 <i class="bi bi-cash-coin mr-1"></i>
-                บันทึกการเก็บเงิน
+                {{ $t('view.sale.invoiceDetail.recordPayment') }}
               </button>
             </div>
             <div class="card-body">
               <!-- Payment Information Section -->
               <div class="info-section mb-4">
                 <h6 class="section-title mb-3">
-                  <i class="bi bi-wallet2 mr-2"></i>ข้อมูลการชำระเงิน
+                  <i class="bi bi-wallet2 mr-2"></i>{{ $t('view.sale.invoiceDetail.paymentInfo') }}
                 </h6>
                 <div class="row">
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">วิธีการชำระเงิน</label>
+                      <label class="info-label">{{ $t('view.sale.invoiceDetail.paymentMethod') }}</label>
                       <p class="info-value">
                         <i class="bi bi-cash-stack mr-2"></i>{{ invoiceData.paymentName || '-' }}
                       </p>
@@ -831,10 +831,10 @@
                   </div>
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">ระยะเวลาชำระ (วัน)</label>
+                      <label class="info-label">{{ $t('view.sale.invoiceDetail.paymentTerm') }}</label>
                       <p class="info-value">
                         <i class="bi bi-calendar-event mr-2"></i
-                        >{{ invoiceData.paymentDay || 0 }} วัน
+                        >{{ invoiceData.paymentDay || 0 }} {{ $t('view.sale.invoiceDetail.dayUnit') }}
                         <span v-if="invoiceData.paymentDay > 0" class="text-muted ml-2"
                           >({{ calculateDueDate() }})</span
                         >
@@ -843,7 +843,7 @@
                   </div>
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">ราคามัดจำ</label>
+                      <label class="info-label">{{ $t('view.sale.saleOrder.depositPrice') }}</label>
                       <p class="info-value font-weight-bold text-success">
                         {{ formatPriceWithCurrency(invoiceData.deposit || 0) }}
                       </p>
@@ -851,7 +851,7 @@
                   </div>
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
+                      <label class="info-label">{{ $t('view.sale.saleOrder.remainingBalance') }}</label>
                       <p class="info-value font-weight-bold text-danger">
                         {{ formatPriceWithCurrency(grandTotalRounded - (invoiceData.deposit || 0)) }}
                       </p>
@@ -862,11 +862,11 @@
 
               <!-- Financial Summary Section -->
               <div class="info-section">
-                <h6 class="section-title mb-3"><i class="bi bi-calculator mr-2"></i>สรุปยอดเงิน</h6>
+                <h6 class="section-title mb-3"><i class="bi bi-calculator mr-2"></i>{{ $t('view.sale.invoiceDetail.financialSummary') }}</h6>
                 <div class="row">
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">สกุลเงิน</label>
+                      <label class="info-label">{{ $t('view.sale.invoiceDetail.currencyLabel') }}</label>
                       <p class="info-value">
                         {{ invoiceData.currencyUnit || 'THB' }}
                       </p>
@@ -874,13 +874,13 @@
                   </div>
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">อัตราแลกเปลี่ยน</label>
+                      <label class="info-label">{{ $t('view.sale.saleOrder.currencyRate') }}</label>
                       <p class="info-value">{{ formatNumber(invoiceData.currencyRate) }}</p>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">ส่วนลดพิเศษ</label>
+                      <label class="info-label">{{ $t('view.sale.invoiceDetail.specialDiscount') }}</label>
                       <p class="info-value text-danger">
                         -{{ formatNumber(invoiceData.specialDiscount || 0) }}
                       </p>
@@ -888,7 +888,7 @@
                   </div>
                   <div class="col-md-3">
                     <div class="info-item">
-                      <label class="info-label">ส่วนเพิ่มพิเศษ</label>
+                      <label class="info-label">{{ $t('view.sale.invoiceDetail.specialSurcharge') }}</label>
                       <p class="info-value text-success">
                         +{{ formatNumber(invoiceData.specialAddition || 0) }}
                       </p>
@@ -906,7 +906,7 @@
                   </div>
                   <div class="col-md-4">
                     <div class="info-item">
-                      <label class="info-label">ยอดรวมหลังปรับ</label>
+                      <label class="info-label">{{ $t('view.sale.saleOrder.adjustedTotal') }}</label>
                       <p class="info-value font-weight-bold">
                         {{ formatNumber(totalAfterDiscountAndAddition) }}
                       </p>
@@ -914,7 +914,7 @@
                   </div>
                   <div class="col-md-4">
                     <div class="info-item">
-                      <label class="info-label">ยอดรวมก่อน VAT</label>
+                      <label class="info-label">{{ $t('view.sale.saleOrder.beforeVatTotal') }}</label>
                       <p class="info-value font-weight-bold">
                         {{ formatNumber(totalBeforeVat) }}
                       </p>
@@ -940,7 +940,7 @@
                   </div>
                   <div class="col-md-4">
                     <div class="info-item highlight-total">
-                      <label class="info-label">ยอดที่ต้องชำระ</label>
+                      <label class="info-label">{{ $t('view.sale.quotation.payableTotal') }}</label>
                       <p class="info-value font-weight-bold text-primary">
                         <i class="bi bi-receipt mr-2"></i>{{ formatPriceWithCurrency(grandTotalRounded) }}
                       </p>
@@ -953,7 +953,7 @@
           <!-- Remark -->
           <div v-if="invoiceData.remark" class="card-container mb-3">
             <div class="card-header">
-              <h6 class="mb-0">หมายเหตุ</h6>
+              <h6 class="mb-0">{{ $t('view.sale.invoice.remark') }}</h6>
             </div>
             <div class="card-body">
               <p class="mb-0">{{ invoiceData.remark }}</p>
@@ -963,7 +963,7 @@
           <!-- Payment History Section -->
           <div class="card-container mb-3">
             <div class="card-header">
-              <h6 class="mb-0"><i class="bi bi-clock-history mr-2"></i>ประวัติการชำระเงิน</h6>
+              <h6 class="mb-0"><i class="bi bi-clock-history mr-2"></i>{{ $t('view.sale.invoiceDetail.paymentHistory') }}</h6>
             </div>
             <div class="card-body">
               <!-- Empty State -->
@@ -972,7 +972,7 @@
                 class="text-center text-muted py-4"
               >
                 <i class="bi bi-inbox" style="font-size: 2rem"></i>
-                <p class="mb-0 mt-2">ยังไม่มีประวัติการชำระเงิน</p>
+                <p class="mb-0 mt-2">{{ $t('view.sale.invoiceDetail.noPaymentHistory') }}</p>
               </div>
 
               <!-- Payment History Table -->
@@ -1019,7 +1019,7 @@
                       <button
                         class="btn btn-sm btn-red"
                         @click="confirmDeletePayment(slotProps.data)"
-                        title="ลบประวัติการชำระเงิน"
+                        :title="$t('view.sale.invoiceDetail.deletePaymentBtn')"
                       >
                         <i class="bi bi-trash"></i>
                       </button>
@@ -1032,13 +1032,13 @@
                   <div class="row mb-2">
                     <div class="col-md-3">
                       <div class="info-item">
-                        <label class="info-label">จำนวนครั้งที่ชำระ</label>
-                        <p class="info-value">{{ invoiceData.payments.length }} ครั้ง</p>
+                        <label class="info-label">{{ $t('view.sale.invoiceDetail.paymentCount') }}</label>
+                        <p class="info-value">{{ invoiceData.payments.length }} {{ $t('view.sale.invoiceDetail.timeUnit') }}</p>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="info-item">
-                        <label class="info-label">ยอดที่ต้องชำระ</label>
+                        <label class="info-label">{{ $t('view.sale.quotation.payableTotal') }}</label>
                         <p class="info-value font-weight-bold">
                           {{ formatNumber(grandTotalRounded) }} {{ invoiceData.currencyUnit }}
                         </p>
@@ -1046,7 +1046,7 @@
                     </div>
                     <div class="col-md-3">
                       <div class="info-item">
-                        <label class="info-label">มัดจำ</label>
+                        <label class="info-label">{{ $t('view.sale.invoiceDetail.deposit') }}</label>
                         <p class="info-value text-info">
                           {{ formatNumber(invoiceData.deposit || 0) }}
                           {{ invoiceData.currencyUnit }}
@@ -1055,7 +1055,7 @@
                     </div>
                     <div class="col-md-3">
                       <div class="info-item">
-                        <label class="info-label">ยอดชำระแล้ว</label>
+                        <label class="info-label">{{ $t('view.sale.invoiceDetail.paidAmount') }}</label>
                         <p class="info-value text-success">
                           {{ formatNumber(paidAmount) }} {{ invoiceData.currencyUnit }}
                         </p>
@@ -1065,7 +1065,7 @@
                   <div class="row mt-2">
                     <div class="col-md-12">
                       <div class="info-item highlight-total">
-                        <label class="info-label">ยอดคงเหลือที่ต้องชำระ</label>
+                        <label class="info-label">{{ $t('view.sale.saleOrder.remainingBalance') }}</label>
                         <p
                           class="info-value font-weight-bold text-danger remaining-amount"
                         >
@@ -1194,55 +1194,56 @@ export default {
       originalInvoiceData: null,
       originalInvoiceItems: [],
       currentViewingVersion: null,
-      // Payment History Columns
-      paymentColumns: [
+    }
+  },
+
+  computed: {
+    paymentColumns() {
+      return [
         { field: 'index', header: '#', width: '50px', sortable: false, align: 'center' },
-        { field: 'image', header: 'หลักฐาน', width: '80px', sortable: false, align: 'center' },
+        { field: 'image', header: this.$t('view.sale.invoiceDetail.imageHeader'), width: '80px', sortable: false, align: 'center' },
         {
           field: 'paymentDate',
-          header: 'วันที่ชำระ',
+          header: this.$t('view.sale.invoiceDetail.paymentDate'),
           minWidth: '120px',
           sortable: true,
           format: 'date'
         },
         {
           field: 'amount',
-          header: 'จำนวนเงิน',
+          header: this.$t('view.sale.invoiceDetail.amount'),
           minWidth: '120px',
           sortable: true,
           align: 'right'
         },
         {
           field: 'currencyUnit',
-          header: 'สกุลเงิน',
+          header: this.$t('view.sale.invoiceDetail.currencyLabel'),
           width: '100px',
           sortable: false,
           align: 'center'
         },
-        { field: 'paymentMethod', header: 'วิธีชำระ', minWidth: '150px', sortable: true },
-        { field: 'bankName', header: 'ธนาคาร', minWidth: '120px', sortable: false },
-        { field: 'bankBranch', header: 'สาขา', minWidth: '120px', sortable: false },
+        { field: 'paymentMethod', header: this.$t('view.sale.invoiceDetail.paymentMethod'), minWidth: '150px', sortable: true },
+        { field: 'bankName', header: this.$t('view.sale.invoiceDetail.bank'), minWidth: '120px', sortable: false },
+        { field: 'bankBranch', header: this.$t('view.sale.invoiceDetail.branch'), minWidth: '120px', sortable: false },
         {
           field: 'referenceNumber',
-          header: 'เลขที่อ้างอิง',
+          header: this.$t('view.sale.invoiceDetail.referenceNumber'),
           minWidth: '150px',
           sortable: false
         },
-        { field: 'remark', header: 'หมายเหตุ', minWidth: '200px', sortable: false },
-        { field: 'createBy', header: 'ผู้บันทึก', minWidth: '120px', sortable: true },
+        { field: 'remark', header: this.$t('view.sale.invoice.remark'), minWidth: '200px', sortable: false },
+        { field: 'createBy', header: this.$t('view.sale.invoiceDetail.recordBy'), minWidth: '120px', sortable: true },
         {
           field: 'createDate',
-          header: 'วันที่บันทึก',
+          header: this.$t('view.sale.invoiceDetail.recordDate'),
           minWidth: '150px',
           sortable: true,
           format: 'datetime'
         },
-        { field: 'action', header: 'จัดการ', width: '100px', sortable: false, align: 'center' }
+        { field: 'action', header: this.$t('common.field.action'), width: '100px', sortable: false, align: 'center' }
       ]
-    }
-  },
-
-  computed: {
+    },
     totalSelectedAmount() {
       return Number(this.getSumTotalConvertedPrice(this.invoiceItems) || 0)
     },
@@ -1292,7 +1293,7 @@ export default {
       // Load payment history after invoice data is loaded
       await this.loadPaymentHistory()
     } else {
-      this.loadError = 'ไม่พบเลขที่ Invoice ในระบบ'
+      this.loadError = this.$t('view.sale.invoiceDetail.error.noInvoiceNumber')
     }
   },
 
@@ -1743,11 +1744,11 @@ export default {
       }
 
       await invoiceExcelService.generateInvoiceExcel(excelData, options)
-      success('Export Excel สำเร็จ', 'Invoice Excel')
+      success(this.$t('view.sale.invoiceDetail.success.exportExcel'), 'Invoice Excel')
     },
     async handleConfirmDeliveryPrint(printData) {
       if (!printData || !printData.deliveryNumber) {
-        error('ไม่พบข้อมูล Delivery Note', 'ไม่สามารถสร้าง PDF ได้')
+        error(this.$t('view.sale.invoiceDetail.error.noDeliveryNote'), this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
         return
       }
 
@@ -1792,7 +1793,7 @@ export default {
         }
 
         await deliveryPdfService.generateDeliveryPDF(deliveryData, options)
-        success('สร้าง Delivery Note PDF สำเร็จ', 'Delivery Note')
+        success(this.$t('view.sale.invoiceDetail.success.deliveryNotePDF'), 'Delivery Note')
       }
     },
     getImageUrl(imagePath) {
@@ -1808,18 +1809,18 @@ export default {
     },
     confirmReverseInvoice() {
       confirmThenSubmit(
-        'การยกเลิก Invoice จะลบข้อมูลการออก Invoice และคืนสถานะสินค้ากลับไปยัง Sale Order',
-        'คุณต้องการยกเลิก Invoice นี้หรือไม่?',
+        this.$t('view.sale.invoiceDetail.confirm.cancelInvoice'),
+        this.$t('view.sale.invoiceDetail.confirm.cancelInvoiceTitle'),
         async () => {
           await this.reverseInvoice()
         },
-        { confirmText: 'ยืนยัน', cancelText: 'ยกเลิก' },
+        { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
         'warning'
       )
     },
     async reverseInvoice() {
       if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
-        error('ไม่พบข้อมูล Invoice', 'ไม่สามารถยกเลิก Invoice ได้')
+        error(this.$t('view.sale.invoiceDetail.error.noInvoiceData'), this.$t('view.sale.invoiceDetail.error.cannotCancel'))
         return
       }
 
@@ -1827,7 +1828,7 @@ export default {
         formValue: { invoiceNumber: this.invoiceData.invoiceNumber }
       })
 
-      success('ยกเลิก Invoice สำเร็จ', 'Invoice ได้ถูกยกเลิกแล้ว')
+      success(this.$t('view.sale.invoiceDetail.success.cancelInvoice'), this.$t('view.sale.invoiceDetail.success.cancelInvoiceTitle'))
 
       if (this.fromRoute === 'sale-order' && this.invoiceData.soNumber) {
         this.$router.push({
@@ -1850,7 +1851,7 @@ export default {
     },
     async handleConfirmPrint(printData) {
       if (!printData || !printData.invoiceNumber) {
-        error('ไม่พบข้อมูล Invoice', 'ไม่สามารถสร้าง PDF ได้')
+        error(this.$t('view.sale.invoiceDetail.error.noInvoiceData'), this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
         return
       }
 
@@ -1930,7 +1931,7 @@ export default {
           }
           if (layoutPayload) payload.layout = layoutPayload
           await printVat(payload)
-          success('พิมพ์ใบกำกับภาษีสำเร็จ', 'Bridge GDI')
+          success(this.$t('view.sale.invoiceDetail.success.printVat'), 'Bridge GDI')
           return
         } else if (printData.paperSize === 'bill') {
           const { printBill } = await import('@/services/api/print-bridge-service.js')
@@ -1980,12 +1981,12 @@ export default {
           }
           if (layoutPayload) billPayload.layout = layoutPayload
           await printBill(billPayload)
-          success('พิมพ์ Bill (K&P) สำเร็จ', 'Bridge GDI')
+          success(this.$t('view.sale.invoiceDetail.success.printBill'), 'Bridge GDI')
           return
         } else {
           await invoicePdfService.generateInvoicePDF(pdfData, options)
         }
-        success('สร้าง PDF สำเร็จ', 'Invoice PDF')
+        success(this.$t('view.sale.invoiceDetail.success.createPDF'), 'Invoice PDF')
       }
     },
     async generateVersionPDF(versionData, options = { open: false, download: true }) {
@@ -2028,7 +2029,7 @@ export default {
         await invoicePdfService.generateInvoicePDF(pdfData, pdfOptions)
 
         if (options.download) {
-          success('สร้าง PDF สำเร็จ', 'Invoice Version PDF')
+          success(this.$t('view.sale.invoiceDetail.success.createPDF'), 'Invoice Version PDF')
         }
       }
     },
@@ -2090,19 +2091,19 @@ export default {
 
     confirmDeletePayment(paymentData) {
       confirmThenSubmit(
-        `ลบประวัติการชำระเงิน ${this.formatNumber(paymentData.amount)} ${paymentData.currencyUnit}`,
-        'คุณต้องการลบประวัติการชำระเงินนี้หรือไม่?',
+        this.$t('view.sale.invoiceDetail.confirm.deletePayment', { amount: this.formatNumber(paymentData.amount), currency: paymentData.currencyUnit }),
+        this.$t('view.sale.invoiceDetail.confirm.deletePaymentTitle'),
         async () => {
           await this.deletePayment(paymentData)
         },
-        { confirmText: 'ยืนยัน', cancelText: 'ยกเลิก' },
+        { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
         'warning'
       )
     },
 
     async deletePayment(paymentData) {
       if (!paymentData || !paymentData.running) {
-        error('ไม่พบข้อมูลการชำระเงิน', 'ไม่สามารถลบได้')
+        error(this.$t('view.sale.invoiceDetail.error.noPaymentData'), this.$t('view.sale.invoiceDetail.error.cannotDelete'))
         return
       }
 
@@ -2110,7 +2111,7 @@ export default {
         formValue: { paymentRunning: paymentData.running }
       })
 
-      success('ลบประวัติการชำระเงินสำเร็จ', 'ข้อมูลได้ถูกลบแล้ว')
+      success(this.$t('view.sale.invoiceDetail.success.deletePayment'), this.$t('view.sale.invoiceDetail.success.deletePaymentTitle'))
 
       await this.loadInvoiceData(this.invoiceData.invoiceNumber)
     }

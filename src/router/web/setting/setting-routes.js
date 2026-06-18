@@ -4,8 +4,6 @@ import Layout from '@/layout/web/LayoutDashboard.vue'
 import account from '@/views/setting/user-account/index-view.vue'
 import EditAccount from '@/views/setting/edit-account/index-view.vue'
 import EditAccountView from '@/views/setting/edit-account/view/account-view.vue'
-import testApi from '@/views/admin/dev/call-api/index-view.vue'
-
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   //----- Main Dashboard -----
@@ -60,19 +58,6 @@ const routes = [
           },
           minorShow: false,
           permissions: [PERMISSIONS.USER_DEV]
-        }
-      },
-       {
-        path: '/test-api',
-        name: 'test-api',
-        component: testApi,
-        meta: {
-          Displayname: {
-            en: 'API TEST',
-            th: 'API TEST'
-          },
-          minorShow: true,
-           permissions: [PERMISSIONS.USER_EDIT]
         }
       },
       {

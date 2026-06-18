@@ -26,27 +26,27 @@
       <div class="info-card">
         <div class="card-header">
           <i class="bi bi-file-earmark-text"></i>
-          <span>ข้อมูลใบเสนอราคา</span>
+          <span>{{ $t('view.mobile.quotation.detailInfoTitle') }}</span>
         </div>
         <div class="card-body">
           <div class="info-row">
-            <span class="info-label">เลขที่:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.detailNumberLabel') }}</span>
             <span class="info-value highlight">{{ quotation.number }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">วันที่:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.detailDateLabel') }}</span>
             <span class="info-value">{{ formatDate(quotation.date) }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">สกุลเงิน:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.detailCurrencyLabel') }}</span>
             <span class="info-value">{{ quotation.currency || 'THB' }}</span>
           </div>
           <div v-if="quotation.currencyRate" class="info-row">
-            <span class="info-label">อัตราแลกเปลี่ยน:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.detailExchangeRateLabel') }}</span>
             <span class="info-value">{{ quotation.currencyRate }}</span>
           </div>
           <div v-if="quotation.remark" class="info-row remark-row">
-            <span class="info-label">หมายเหตุ:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.detailRemarkLabel') }}</span>
             <span class="info-value">{{ quotation.remark }}</span>
           </div>
         </div>
@@ -56,23 +56,23 @@
       <div v-if="hasCustomerInfo" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-person"></i>
-          <span>ข้อมูลลูกค้า</span>
+          <span>{{ $t('view.mobile.quotation.customerInfoTitle') }}</span>
         </div>
         <div class="card-body">
           <div v-if="quotation.customerName" class="info-row">
-            <span class="info-label">ชื่อลูกค้า:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.customerNameLabel') }}</span>
             <span class="info-value">{{ quotation.customerName }}</span>
           </div>
           <div v-if="quotation.customerPhone" class="info-row">
-            <span class="info-label">เบอร์โทร:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.customerPhoneLabel') }}</span>
             <span class="info-value">{{ quotation.customerPhone }}</span>
           </div>
           <div v-if="quotation.customerEmail" class="info-row">
-            <span class="info-label">อีเมล:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.customerEmailLabel') }}</span>
             <span class="info-value">{{ quotation.customerEmail }}</span>
           </div>
           <div v-if="quotation.customerAddress" class="info-row remark-row">
-            <span class="info-label">ที่อยู่:</span>
+            <span class="info-label">{{ $t('view.mobile.quotation.customerAddressLabel') }}</span>
             <span class="info-value">{{ quotation.customerAddress }}</span>
           </div>
         </div>
@@ -82,7 +82,7 @@
       <div v-if="items.length > 0" class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-box-seam"></i>
-          <span>รายการสินค้า ({{ items.length }})</span>
+          <span>{{ $t('view.mobile.quotation.itemsTitle', { count: items.length }) }}</span>
         </div>
         <div class="items-list">
           <div v-for="(item, index) in items" :key="index" class="item-card">
@@ -93,19 +93,19 @@
             <div v-if="item.description" class="item-description">{{ item.description }}</div>
             <div class="item-details">
               <div class="detail-row">
-                <span class="detail-label">ราคา:</span>
+                <span class="detail-label">{{ $t('view.mobile.quotation.itemPriceLabel') }}</span>
                 <span class="detail-value">{{ formatCurrency(item.appraisalPrice || item.productPrice || item.price || 0) }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">จำนวน:</span>
+                <span class="detail-label">{{ $t('view.mobile.quotation.itemQtyLabel') }}</span>
                 <span class="detail-value">{{ item.qty || 1 }}</span>
               </div>
               <div v-if="item.discountPercent" class="detail-row">
-                <span class="detail-label">ส่วนลด:</span>
+                <span class="detail-label">{{ $t('view.mobile.quotation.itemDiscountLabel') }}</span>
                 <span class="detail-value">{{ item.discountPercent }}%</span>
               </div>
               <div class="detail-row total">
-                <span class="detail-label">รวม:</span>
+                <span class="detail-label">{{ $t('view.mobile.quotation.itemTotalLabel') }}</span>
                 <span class="detail-value">{{ formatCurrency(calculateItemTotal(item)) }}</span>
               </div>
             </div>
@@ -117,23 +117,23 @@
       <div class="summary-card mobile-mt-2">
         <div class="summary-header">
           <i class="bi bi-calculator"></i>
-          <span>สรุปราคา</span>
+          <span>{{ $t('view.mobile.quotation.summaryTitle') }}</span>
         </div>
         <div class="summary-body">
           <div class="summary-row">
-            <span>ยอดรวม ({{ displayCurrency }})</span>
+            <span>{{ $t('view.mobile.quotation.summaryTotal', { currency: displayCurrency }) }}</span>
             <span class="summary-value">{{ formatCurrency(displayTotal) }}</span>
           </div>
           <div v-if="hasCurrencyConversion" class="summary-row reference">
-            <span>เทียบเท่า (THB)</span>
+            <span>{{ $t('view.mobile.quotation.summaryEquivalentThb') }}</span>
             <span class="summary-value">{{ formatCurrency(totalAmountTHB) }}</span>
           </div>
           <div v-if="quotation.specialDiscount" class="summary-row discount">
-            <span>ส่วนลดพิเศษ</span>
+            <span>{{ $t('view.mobile.quotation.summarySpecialDiscount') }}</span>
             <span class="summary-value">-{{ formatCurrency(quotation.specialDiscount) }}</span>
           </div>
           <div v-if="quotation.specialAddition" class="summary-row addition">
-            <span>ส่วนเพิ่มพิเศษ</span>
+            <span>{{ $t('view.mobile.quotation.summarySpecialAddition') }}</span>
             <span class="summary-value">+{{ formatCurrency(quotation.specialAddition) }}</span>
           </div>
           <div v-if="quotation.freight" class="summary-row">
@@ -145,7 +145,7 @@
             <span class="summary-value">{{ formatCurrency(vatAmount) }}</span>
           </div>
           <div class="summary-row grand-total">
-            <span>ยอดรวมทั้งหมด</span>
+            <span>{{ $t('view.mobile.quotation.summaryGrandTotal') }}</span>
             <span class="summary-value">{{ formatCurrency(grandTotal) }} {{ displayCurrency }}</span>
           </div>
         </div>
@@ -159,7 +159,7 @@
           :disabled="!quotation || items.length === 0"
         >
           <i class="bi bi-cart-plus"></i>
-          สร้างใบสั่งขาย
+          {{ $t('view.mobile.quotation.createSoBtn') }}
         </button>
         <button
           class="mobile-btn mobile-btn-success"
@@ -167,7 +167,7 @@
           :disabled="exportingPDF || !quotation"
         >
           <i class="bi" :class="exportingPDF ? 'bi-hourglass-split spin-icon' : 'bi-file-pdf'"></i>
-          {{ exportingPDF ? 'กำลัง Export PDF...' : 'Export PDF' }}
+          {{ exportingPDF ? $t('view.mobile.quotation.exportingPdfBtn') : $t('view.mobile.quotation.exportPdfBtn') }}
         </button>
       </div>
     </div>
@@ -176,11 +176,11 @@
     <div v-else class="mobile-container mobile-mt-2">
       <div class="mobile-empty-state">
         <i class="bi bi-exclamation-circle"></i>
-        <div class="empty-title">ไม่พบข้อมูล</div>
-        <div class="empty-subtitle">ไม่สามารถโหลดข้อมูลใบเสนอราคาได้</div>
+        <div class="empty-title">{{ $t('view.mobile.quotation.errorLoadTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.quotation.errorLoadSubtitle') }}</div>
         <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="loadQuotation">
           <i class="bi bi-arrow-clockwise"></i>
-          ลองอีกครั้ง
+          {{ $t('view.mobile.quotation.retryBtn') }}
         </button>
       </div>
     </div>
@@ -314,7 +314,7 @@ export default {
         })
       } catch (err) {
         console.error('Error exporting PDF:', err)
-        error(err.message || 'เกิดข้อผิดพลาดในการ Export PDF', 'ข้อผิดพลาด')
+        error(err.message || this.$t('view.mobile.quotation.errorExportPdf'), this.$t('view.mobile.quotation.errorTitle'))
       } finally {
         this.exportingPDF = false
       }

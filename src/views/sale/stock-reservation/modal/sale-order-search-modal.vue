@@ -7,7 +7,7 @@
   >
     <template #title>
       <span class="title-text-lg px-3 pt-3 d-block">
-        <i class="bi bi-receipt mr-2"></i>เลือกใบสั่งขายสำหรับจองสต็อก
+        <i class="bi bi-receipt mr-2"></i>{{ $t('view.sale.stockReservation.selectSaleOrderTitle') }}
       </span>
     </template>
 
@@ -17,7 +17,7 @@
         <div class="filter-container mb-3">
           <div class="form-col-container">
             <div>
-              <span class="title-text">เลขที่ใบสั่งขาย</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.soNumber') }}</span>
               <input
                 type="text"
                 v-model="searchForm.saleOrderNumber"
@@ -27,23 +27,23 @@
               />
             </div>
             <div>
-              <span class="title-text">ชื่อลูกค้า</span>
+              <span class="title-text">{{ $t('view.sale.saleOrder.customerName') }}</span>
               <input
                 type="text"
                 v-model="searchForm.customerName"
                 class="form-control"
-                placeholder="ชื่อลูกค้า"
+                :placeholder="$t('view.sale.saleOrder.customerName')"
                 @keyup.enter="onSearch"
               />
             </div>
             <div>
-              <span class="title-text">สถานะ</span>
+              <span class="title-text">{{ $t('view.sale.stockReservation.status') }}</span>
               <DropdownGeneric
                 v-model="searchForm.status"
                 :options="statusOptions"
                 optionLabel="name"
                 optionValue="value"
-                placeholder="เลือกสถานะ"
+                :placeholder="$t('view.sale.stockReservation.selectStatus')"
                 :showClear="true"
               />
             </div>
@@ -52,10 +52,10 @@
             <div></div>
             <div>
               <button class="btn btn-sm btn-green" @click="onSearch">
-                <i class="bi bi-search mr-1"></i>ค้นหา
+                <i class="bi bi-search mr-1"></i>{{ $t('common.btn.search') }}
               </button>
               <button class="btn btn-sm btn-dark ml-2" @click="clearSearch">
-                <i class="bi bi-arrow-clockwise mr-1"></i>ล้างข้อมูล
+                <i class="bi bi-arrow-clockwise mr-1"></i>{{ $t('common.btn.clear') }}
               </button>
             </div>
           </div>
@@ -73,21 +73,21 @@
             responsiveLayout="scroll"
           >
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column field="number" header="เลขที่ใบสั่งขาย" :sortable="true" style="min-width: 140px">
+            <Column field="number" :header="$t('view.sale.saleOrder.soNumber')" :sortable="true" style="min-width: 140px">
               <template #body="{ data }">
                 <span class="font-weight-bold" style="color: var(--base-font-color)">{{ data.number }}</span>
               </template>
             </Column>
 
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column field="orderDate" header="วันที่ใบสั่งขาย" :sortable="true" style="min-width: 120px">
+            <Column field="orderDate" :header="$t('view.sale.stockReservation.orderDate')" :sortable="true" style="min-width: 120px">
               <template #body="{ data }">
                 {{ formatDate(data.orderDate) }}
               </template>
             </Column>
 
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column field="customerName" header="ลูกค้า" :sortable="true" style="min-width: 200px">
+            <Column field="customerName" :header="$t('view.sale.saleOrder.customerName')" :sortable="true" style="min-width: 200px">
               <template #body="{ data }">
                 <div>
                   <div class="font-weight-bold">{{ data.customerName }}</div>
@@ -97,31 +97,31 @@
             </Column>
 
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column header="รายการสต็อก" style="min-width: 120px">
+            <Column :header="$t('view.sale.stockReservation.stockItems')" style="min-width: 120px">
               <template #body="{ data }">
                 <div class="text-center">
                   <span class="badge badge-info">
                     <i class="bi bi-box mr-1"></i>
-                    {{ getStockItemsCount(data.items) }} รายการ
+                    {{ $t('view.sale.stockReservation.itemCount', { count: getStockItemsCount(data.items) }) }}
                   </span>
                 </div>
               </template>
             </Column>
 
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column header="สถานะสต็อก" style="min-width: 140px">
+            <Column :header="$t('view.sale.stockReservation.stockStatus')" style="min-width: 140px">
               <template #body="{ data }">
                 <div class="stock-status-summary">
                   <div class="status-item">
-                    <span class="status-label">พร้อมจอง:</span>
+                    <span class="status-label">{{ $t('view.sale.stockReservation.readyToReserve') }}:</span>
                     <span class="font-weight-bold" style="color: var(--base-green)">{{ getAvailableItemsCount(data.items) }}</span>
                   </div>
                   <div class="status-item">
-                    <span class="status-label">จองแล้ว:</span>
+                    <span class="status-label">{{ $t('view.sale.stockReservation.reserved') }}:</span>
                     <span class="font-weight-bold" style="color: var(--base-warning)">{{ getReservedItemsCount(data.items) }}</span>
                   </div>
                   <div class="status-item">
-                    <span class="status-label">หมดสต็อก:</span>
+                    <span class="status-label">{{ $t('view.sale.stockReservation.outOfStock') }}:</span>
                     <span class="font-weight-bold" style="color: var(--base-red)">{{ getOutOfStockItemsCount(data.items) }}</span>
                   </div>
                 </div>
@@ -129,7 +129,7 @@
             </Column>
 
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column field="expectedDeliveryDate" header="กำหนดส่งมอบ" :sortable="true" style="min-width: 120px">
+            <Column field="expectedDeliveryDate" :header="$t('view.sale.stockReservation.deliveryDate')" :sortable="true" style="min-width: 120px">
               <template #body="{ data }">
                 <div :class="getDeliveryDateClass(data.expectedDeliveryDate)">
                   {{ formatDate(data.expectedDeliveryDate) }}
@@ -138,7 +138,7 @@
             </Column>
 
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column field="status" header="สถานะ" :sortable="true" style="min-width: 120px">
+            <Column field="status" :header="$t('view.sale.stockReservation.status')" :sortable="true" style="min-width: 120px">
               <template #body="{ data }">
                 <span :class="getStatusClass(data.status)">
                   {{ getStatusText(data.status) }}
@@ -147,16 +147,16 @@
             </Column>
 
             <!-- eslint-disable-next-line no-restricted-imports -->
-            <Column header="การดำเนินการ" style="width: 100px">
+            <Column :header="$t('common.field.action')" style="width: 100px">
               <template #body="{ data }">
                 <button
                   class="btn btn-sm btn-green"
                   @click="selectSaleOrder(data)"
                   :disabled="!hasStockItems(data.items)"
-                  :title="hasStockItems(data.items) ? 'เลือกใบสั่งขายนี้' : 'ไม่มีรายการสต็อกที่สามารถจองได้'"
+                  :title="hasStockItems(data.items) ? $t('view.sale.stockReservation.selectThisSO') : $t('view.sale.stockReservation.noStockAvailable')"
                 >
                   <i class="bi bi-check-circle mr-1"></i>
-                  เลือก
+                  {{ $t('common.btn.select') }}
                 </button>
               </template>
             </Column>
@@ -166,15 +166,15 @@
         <!-- No Results Message -->
         <div v-if="!loading && saleOrders.length === 0" class="text-center text-muted py-4">
           <i class="bi bi-inbox" style="font-size: 4rem; opacity: 0.3"></i>
-          <div class="mt-2">ไม่พบข้อมูลใบสั่งขาย</div>
-          <div>ลองปรับเปลี่ยนเงื่อนไขการค้นหา</div>
+          <div class="mt-2">{{ $t('view.sale.stockReservation.noData') }}</div>
+          <div>{{ $t('view.sale.stockReservation.tryAdjustSearch') }}</div>
         </div>
       </div>
     </template>
 
     <template #action>
       <button class="btn btn-sm btn-outline-main" @click="onClose">
-        <i class="bi bi-x mr-1"></i>ปิด
+        <i class="bi bi-x mr-1"></i>{{ $t('common.btn.close') }}
       </button>
     </template>
   </modal>
@@ -222,10 +222,15 @@ export default {
 
       saleOrders: [],
 
-      statusOptions: [
-        { name: 'ยืนยันแล้ว', value: 'Confirmed' },
-        { name: 'ส่งมอบบางส่วน', value: 'PartiallyFulfilled' },
-        { name: 'ส่งมอบครบถ้วน', value: 'Fulfilled' }
+    }
+  },
+
+  computed: {
+    statusOptions() {
+      return [
+        { name: this.$t('view.sale.stockReservation.status.confirmed'), value: 'Confirmed' },
+        { name: this.$t('view.sale.stockReservation.status.partiallyFulfilled'), value: 'PartiallyFulfilled' },
+        { name: this.$t('view.sale.stockReservation.status.fulfilled'), value: 'Fulfilled' }
       ]
     }
   },
@@ -382,12 +387,15 @@ export default {
     },
 
     getStatusText(status) {
-      const texts = {
-        'Confirmed': 'ยืนยันแล้ว',
-        'PartiallyFulfilled': 'ส่งมอบบางส่วน',
-        'Fulfilled': 'ส่งมอบครบถ้วน'
+      const keyMap = {
+        'Confirmed': 'confirmed',
+        'PartiallyFulfilled': 'partiallyFulfilled',
+        'Fulfilled': 'fulfilled'
       }
-      return texts[status] || status
+      const key = keyMap[status]
+      return key
+        ? this.$t(`view.sale.stockReservation.status.${key}`)
+        : this.$t('view.sale.stockReservation.status.unknown')
     },
 
     getDeliveryDateClass(date) {

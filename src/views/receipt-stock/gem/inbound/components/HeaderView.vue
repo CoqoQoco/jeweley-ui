@@ -1,8 +1,8 @@
 <template>
   <div class="filter-container-search">
     <pageTitle
-      title="ใบรับวัถุดิบ"
-      description="รับวัถุดิบเข้าคลัง ระบุรหัส จำนวน และรายละเอียดอื่นๆ"
+      :title="$t('view.receiptStock.gem.inbound.headerTitle')"
+      :description="$t('view.receiptStock.gem.inbound.headerSubtitle')"
       :isShowBtnClose="false"
       :isShowRightSlot="false"
     >
@@ -10,7 +10,7 @@
     </pageTitle>
     <div class="form-col-container">
       <div>
-        <span class="title-text">สเเกนรหัส</span>
+        <span class="title-text">{{ $t('view.receiptStock.gem.inbound.headerScan') }}</span>
         <scanInput
           v-model.trim="formScan.code"
           class="w-100"

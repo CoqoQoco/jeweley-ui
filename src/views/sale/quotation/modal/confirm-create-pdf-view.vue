@@ -4,11 +4,11 @@
       <div class="p-3">
         <div class="title-text-lg mb-3">
           <span><i class="bi bi-file-earmark-pdf mr-2"></i></span>
-          <span>ยืนยันการสร้าง PDF ใบเสนอราคา</span>
+          <span>{{ $t('view.sale.quotation.confirmPdfTitle') }}</span>
         </div>
         <div class="form-group mb-3">
           <span class="title-text" for="itemsPerPageInput"
-            >จำนวนรายการต่อหน้า (Items per page):</span
+            >{{ $t('view.sale.quotation.itemsPerPage') }}:</span
           >
           <input
             id="itemsPerPageInput"
@@ -28,7 +28,7 @@
               v-model="showCifLabel"
               style="width: 16px; height: 16px; cursor: pointer"
             />
-            <span class="title-text" for="showCifLabelInput" style="cursor: pointer">แสดงป้าย C.I.F</span>
+            <span class="title-text" for="showCifLabelInput" style="cursor: pointer">{{ $t('view.sale.quotation.showCifLabel') }}</span>
           </div>
         </div>
         <div class="d-flex justify-content-end mt-4">

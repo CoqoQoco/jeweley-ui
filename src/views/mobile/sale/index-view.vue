@@ -40,7 +40,7 @@
           <div class="list-card-body">
             <div class="card-customer">
               <i class="bi bi-person"></i>
-              <span>{{ so.customerName || 'ไม่ระบุลูกค้า' }}</span>
+              <span>{{ so.customerName || $t('view.mobile.saleIndex.unknownCustomer') }}</span>
             </div>
             <div class="card-info-row">
               <div class="card-date">
@@ -57,14 +57,14 @@
           @click="loadMoreSo"
         >
           <i class="bi bi-arrow-down-circle"></i>
-          โหลดเพิ่มเติม
+          {{ $t('view.mobile.saleIndex.loadMoreBtn') }}
         </button>
       </div>
 
       <div v-else class="mobile-empty-state">
         <i class="bi bi-receipt"></i>
-        <div class="empty-title">ไม่มีใบสั่งขาย</div>
-        <div class="empty-subtitle">ยังไม่มีใบสั่งขายที่คุณสร้าง</div>
+        <div class="empty-title">{{ $t('view.mobile.saleIndex.soEmptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.saleIndex.soEmptySubtitle') }}</div>
       </div>
     </div>
 
@@ -86,7 +86,7 @@
           <div class="list-card-body">
             <div class="card-customer">
               <i class="bi bi-person"></i>
-              <span>{{ inv.customerName || 'ไม่ระบุลูกค้า' }}</span>
+              <span>{{ inv.customerName || $t('view.mobile.saleIndex.unknownCustomer') }}</span>
             </div>
             <div class="card-info-row">
               <div class="card-date">
@@ -95,12 +95,12 @@
               </div>
               <div v-if="inv.itemCount" class="card-items-count">
                 <i class="bi bi-box-seam"></i>
-                <span>{{ inv.itemCount }} รายการ</span>
+                <span>{{ inv.itemCount }} {{ $t('view.mobile.saleIndex.itemsUnit') }}</span>
               </div>
             </div>
             <div v-if="inv.totalAmount" class="card-total">
-              <span class="total-label">ยอดรวม</span>
-              <span class="total-value">{{ formatCurrency(inv.totalAmount) }} บาท</span>
+              <span class="total-label">{{ $t('view.mobile.saleIndex.totalLabel') }}</span>
+              <span class="total-value">{{ formatCurrency(inv.totalAmount) }} {{ $t('view.mobile.saleIndex.bahtUnit') }}</span>
             </div>
           </div>
         </div>
@@ -111,14 +111,14 @@
           @click="loadMoreInvoice"
         >
           <i class="bi bi-arrow-down-circle"></i>
-          โหลดเพิ่มเติม
+          {{ $t('view.mobile.saleIndex.loadMoreBtn') }}
         </button>
       </div>
 
       <div v-else class="mobile-empty-state">
         <i class="bi bi-file-earmark-text"></i>
-        <div class="empty-title">ไม่มี Invoice</div>
-        <div class="empty-subtitle">ยังไม่มี Invoice ที่คุณสร้าง</div>
+        <div class="empty-title">{{ $t('view.mobile.saleIndex.invoiceEmptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.saleIndex.invoiceEmptySubtitle') }}</div>
       </div>
     </div>
 
@@ -126,7 +126,7 @@
     <div v-if="activeTab === 'so'" class="sticky-bottom-btn">
       <button class="mobile-btn mobile-btn-primary" @click="$router.push('/mobile/sale/create')">
         <i class="bi bi-plus-circle"></i>
-        สร้างใบสั่งขาย
+        {{ $t('view.mobile.saleIndex.createSoBtn') }}
       </button>
     </div>
   </div>

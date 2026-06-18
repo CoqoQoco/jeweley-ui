@@ -18,6 +18,7 @@ import workerLang from './view/worker/en.js'
 import productionCostLang from './view/production-cost/en.js'
 import settingLang from './view/setting/en.js'
 import reportProductionLang from './view/report-production/en.js'
+import * as mobileLang from './view/mobile/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
   alert: { ...alerts },
@@ -81,10 +82,71 @@ export default {
         daily: 'Daily',
         monthly: 'Monthly',
         monthlyReport: 'Monthly Report',
-        monthlyComingSoon: 'Monthly Report Coming Soon'
+        monthlyComingSoon: 'Monthly Report Coming Soon',
+
+        // recent activities columns
+        colType: 'Type',
+        colActivity: 'Activity',
+        colDate: 'Date',
+        colDetail: 'Detail',
+
+        // summary table columns
+        colProductType: 'Product Type',
+        colOrderCount: 'Order Count',
+        colPieceCount: 'Piece Count',
+        colCustomerType: 'Customer Type',
+
+        // scrap weight labels
+        scrapWeightTitle: 'Monthly Gold Scrap Weight ({year})',
+        loading: 'Loading...',
+        scrapMelt: 'Melt Scrap',
+        scrapCast: 'Cast Scrap',
+        yearly: 'Yearly',
+        exportExcel: 'Export Excel',
+        exporting: 'Exporting...',
+        excel: 'Excel',
+        weightUnit: 'Grams',
+        weightUnitShort: 'g.',
+        yearSummaryTitle: 'Annual Summary {year} - By Type and Gold Size',
+        weightPerYear: 'g./year',
+        monthsWithData: 'Months with data',
+        avgPerMonth: 'Average per month',
+        ofTotal: 'of total',
+
+        // monthly success report
+        selectMonth: 'Select Month',
+        placeholderMonth: 'Select month and year',
+        selectedMonth: 'Selected month:',
+        goldType2: 'Gold Type:',
+        productType2: 'Product Type:',
+        customerType2: 'Customer Type:',
+        chartTitleGold: 'Completed Plans Summary - By Gold Type',
+        chartTitleProduct: 'Completed Plans Summary - By Product Type',
+        chartTitleCustomer: 'Completed Plans Summary - By Customer Type',
+        tableDetailGold: 'Details by Gold Type',
+        tableDetailProduct: 'Details by Product Type',
+        tableDetailCustomer: 'Details by Customer Type',
+        countLabel: 'Count',
+        colGoldType: 'Gold Type',
+        colProductCount: 'Plan Count',
+        colOrderCount2: 'Production Count',
+        colPercent: 'Percent',
+        unitPiece: 'pcs'
       }
     },
     sale: { ...saleLang },
+    mobile: {
+      sale: { ...mobileLang.sale },
+      costVersion: { ...mobileLang.costVersion },
+      scan: { ...mobileLang.scan },
+      dashboard: { ...mobileLang.dashboard },
+      tasks: { ...mobileLang.tasks },
+      profile: { ...mobileLang.profile },
+      quotation: { ...mobileLang.quotation },
+      notifications: { ...mobileLang.notifications },
+      saleIndex: { ...mobileLang.saleIndex },
+      components: { ...mobileLang.components }
+    },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },

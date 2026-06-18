@@ -5,7 +5,7 @@
         <div>
           <pageTitle
             title="Sale Order"
-            description="สร้างใบสั่งขายจากใบเสนอราคา พร้อมจัดการข้อมูลการขายและการส่งมอบ"
+            :description="$t('view.sale.saleOrder.pageDescription')"
             :isShowBtnClose="false"
             :isShowRightSlot="true"
           >
@@ -14,10 +14,10 @@
                 class="btn btn-sm btn-green mr-2"
                 type="button"
                 @click="onSearchQuotation"
-                title="ค้นหาใบเสนอราคา"
+                :title="$t('view.sale.saleOrder.searchQuotation')"
               >
                 <span><i class="bi bi-file-earmark-text"></i></span>
-                <span class="ml-2">ค้นหาใบเสนอราคา</span>
+                <span class="ml-2">{{ $t('view.sale.saleOrder.searchQuotation') }}</span>
               </button>
             </template>
           </pageTitle>

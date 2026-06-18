@@ -18,7 +18,7 @@
             <div class="table-btn-action-container">
               <button
                 class="btn btn-sm btn-red"
-                title="ลบรายการ"
+                :title="$t('view.receiptStock.gem.inbound.btnDelete')"
                 @click="onDelGem(slotProps.data)"
                 type="button"
               >
@@ -28,9 +28,9 @@
           </template>
         </Column>
 
-        <Column field="name" header="รหัส" style="min-width: 100px"> </Column>
+        <Column field="name" :header="$t('view.receiptStock.gem.inbound.colCode')" style="min-width: 100px"> </Column>
 
-        <Column field="quantity" header="จำนวนคงคลัง" style="min-width: 100px">
+        <Column field="quantity" :header="$t('view.receiptStock.gem.inbound.colStockQty')" style="min-width: 100px">
           <template #body="slotProps">
             {{
               slotProps.data.quantity
@@ -39,7 +39,7 @@
             }}
           </template>
         </Column>
-        <Column field="quantityOnProcess" header="จำนวนยืมคลัง" style="min-width: 100px">
+        <Column field="quantityOnProcess" :header="$t('view.receiptStock.gem.inbound.colBorrowQty')" style="min-width: 100px">
           <template #body="slotProps">
             {{
               slotProps.data.quantityOnProcess
@@ -48,7 +48,7 @@
             }}
           </template>
         </Column>
-        <Column field="quantityWeight" header="น้ำหนักคงคลัง" style="min-width: 100px">
+        <Column field="quantityWeight" :header="$t('view.receiptStock.gem.inbound.colStockWeight')" style="min-width: 100px">
           <template #body="slotProps">
             {{
               slotProps.data.quantityWeight
@@ -57,7 +57,7 @@
             }}
           </template>
         </Column>
-        <Column field="quantityWeightOnProcess" header="น้ำหนักยืมคลัง" style="min-width: 100px">
+        <Column field="quantityWeightOnProcess" :header="$t('view.receiptStock.gem.inbound.colBorrowWeight')" style="min-width: 100px">
           <template #body="slotProps">
             {{
               slotProps.data.quantityWeightOnProcess
@@ -66,7 +66,7 @@
             }}
           </template>
         </Column>
-        <Column field="receiveQty" header="จำนวนรับเข้า" style="width: 100px">
+        <Column field="receiveQty" :header="$t('view.receiptStock.gem.inbound.colReceiveQty')" style="width: 100px">
           <template #body="slotProps">
             <input
               style="width: 100px; background-color: #dad4b5"
@@ -81,7 +81,7 @@
             />
           </template>
         </Column>
-        <Column field="receiveQtyWeight" header="น้ำหนักรับเข้า" style="width: 100px">
+        <Column field="receiveQtyWeight" :header="$t('view.receiptStock.gem.inbound.colReceiveWeight')" style="width: 100px">
           <template #body="slotProps">
             <input
               style="width: 100px; background-color: #dad4b5"
@@ -96,7 +96,7 @@
             />
           </template>
         </Column>
-        <Column field="supplierCost" header="ราคาทุน" style="width: 100px">
+        <Column field="supplierCost" :header="$t('view.receiptStock.gem.inbound.colCostPrice')" style="width: 100px">
           <template #body="slotProps">
             <input
               style="width: 100px; background-color: #dad4b5"

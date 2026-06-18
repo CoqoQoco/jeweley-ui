@@ -1,19 +1,19 @@
 <template>
   <div class="card-container">
     <div class="card-header">
-      <h6 class="mb-0">ค้นหาข้อมูล</h6>
+      <h6 class="mb-0">{{ $t('view.sale.productionOrder.searchTitle') }}</h6>
     </div>
     <div class="card-body">
       <div class="form-col-container">
         <!-- Search Type -->
         <div>
-          <span class="title-text">ประเภทการค้นหา</span>
+          <span class="title-text">{{ $t('view.sale.productionOrder.searchType') }}</span>
           <DropdownGeneric
             v-model="formSearch.searchType"
             :options="searchTypeOptions"
             optionLabel="name"
             optionValue="value"
-            placeholder="เลือกประเภทการค้นหา"
+            :placeholder="$t('view.sale.productionOrder.selectSearchType')"
             class="w-100"
             @change="onSearchTypeChange"
           />
@@ -21,11 +21,9 @@
 
         <!-- Sale Order Number (when searchType = saleOrder) -->
         <div v-if="formSearch.searchType === 'saleOrder'">
-          <span class="title-text">เลขที่ใบสั่งขาย</span>
+          <span class="title-text">{{ $t('view.sale.productionOrder.soNumber') }}</span>
           <div class="input-group">
-            <input
-              :class="['form-control bg-input']"
-              type="text"
+            <InputTextGeneric
               v-model.trim="formSearch.saleOrderNumber"
               placeholder="SO-2025-001"
               @keyup.enter="onSearch"
@@ -35,10 +33,10 @@
                 class="btn btn-green"
                 type="button"
                 @click="onSearch"
-                title="ค้นหาใบสั่งขาย"
+                :title="$t('view.sale.saleOrder.title')"
               >
                 <i class="bi bi-receipt mr-1"></i>
-                ใบสั่งขาย
+                {{ $t('view.sale.saleOrder.title') }}
               </button>
             </div>
           </div>
@@ -46,13 +44,11 @@
 
         <!-- Product Number (when searchType = product) -->
         <div v-if="formSearch.searchType === 'product'">
-          <span class="title-text">รหัสสินค้า</span>
+          <span class="title-text">{{ $t('view.sale.productionOrder.productNumber') }}</span>
           <div class="input-group">
-            <input
-              :class="['form-control bg-input']"
-              type="text"
+            <InputTextGeneric
               v-model.trim="formSearch.productNumber"
-              placeholder="R08X50XXXL หรือ DK-2502-001"
+              :placeholder="$t('view.sale.productionOrder.placeholder.stockNumberExample')"
               @keyup.enter="onSearch"
             />
             <div class="input-group-append">
@@ -60,10 +56,10 @@
                 class="btn btn-main"
                 type="button"
                 @click="onSearch"
-                title="ค้นหาสินค้า"
+                :title="$t('common.btn.search')"
               >
                 <i class="bi bi-search mr-1"></i>
-                ค้นหา
+                {{ $t('common.btn.search') }}
               </button>
             </div>
           </div>
@@ -71,25 +67,25 @@
 
         <!-- Quick Actions -->
         <div>
-          <span class="title-text">การดำเนินการ</span>
+          <span class="title-text">{{ $t('view.sale.productionOrder.actions') }}</span>
           <div class="btn-group" role="group">
             <button
               class="btn btn-green"
               type="button"
               @click="openSaleOrderModal"
-              title="เลือกจากรายการใบสั่งขาย"
+              :title="$t('view.sale.productionOrder.selectFromSaleOrder')"
             >
               <i class="bi bi-list-ul mr-1"></i>
-              เลือกใบสั่งขาย
+              {{ $t('view.sale.productionOrder.selectSaleOrder') }}
             </button>
             <button
               class="btn btn-dark"
               type="button"
               @click="clearSearch"
-              title="ล้างข้อมูลการค้นหา"
+              :title="$t('common.btn.clear')"
             >
               <i class="bi bi-arrow-clockwise mr-1"></i>
-              ล้างข้อมูล
+              {{ $t('common.btn.clear') }}
             </button>
           </div>
         </div>
@@ -106,12 +102,14 @@
 
 <script>
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'SearchView',
 
   components: {
-    DropdownGeneric
+    DropdownGeneric,
+    InputTextGeneric
   },
 
   emits: ['update:modelForm', 'search'],
@@ -131,12 +129,16 @@ export default {
         productNumber: ''
       },
 
-      searchTypeOptions: [
-        { name: 'ใบสั่งขาย', value: 'saleOrder' },
-        { name: 'รหัสสินค้า', value: 'product' }
-      ],
-
       searchResultInfo: null
+    }
+  },
+
+  computed: {
+    searchTypeOptions() {
+      return [
+        { name: this.$t('view.sale.productionOrder.searchBySaleOrder'), value: 'saleOrder' },
+        { name: this.$t('view.sale.productionOrder.searchByProduct'), value: 'product' }
+      ]
     }
   },
 
@@ -172,12 +174,12 @@ export default {
       
       // Validate search input
       if (searchData.searchType === 'saleOrder' && !searchData.saleOrderNumber.trim()) {
-        this.searchResultInfo = 'กรุณากรอกเลขที่ใบสั่งขาย'
+        this.searchResultInfo = this.$t('view.sale.productionOrder.enterSoNumber')
         return
       }
-      
+
       if (searchData.searchType === 'product' && !searchData.productNumber.trim()) {
-        this.searchResultInfo = 'กรุณากรอกรหัสสินค้า'
+        this.searchResultInfo = this.$t('view.sale.productionOrder.enterProductNumber')
         return
       }
 

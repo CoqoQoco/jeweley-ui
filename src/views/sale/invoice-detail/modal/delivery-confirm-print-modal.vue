@@ -7,28 +7,27 @@
             <!-- Modal Header -->
             <div class="title-text-lg-bg">
               <i class="bi bi-truck mr-2"></i>
-              <span>ยืนยันการพิมพ์ใบส่งสินค้า</span>
+              <span>{{ $t('view.sale.deliveryNote.confirmPrintTitle') }}</span>
             </div>
 
             <div class="p-3">
               <!-- Form Container -->
               <div class="filter-container mb-2">
                 <div class="title-text-lg mb-2">
-                  <i class="bi bi-file-text mr-2"></i>ข้อมูลเอกสาร
+                  <i class="bi bi-file-text mr-2"></i>{{ $t('view.sale.deliveryNote.docInfo') }}
                 </div>
                 <div class="p-3">
                   <div class="form-group mb-3">
                     <label class="form-label">
                       <i class="bi bi-hash mr-1"></i>Delivery Note Number
                     </label>
-                    <input
+                    <InputTextGeneric
                       v-model="printData.deliveryNumber"
                       type="text"
-                      class="form-control"
-                      placeholder="เลขที่ใบส่งสินค้า"
+                      :placeholder="$t('view.sale.deliveryNote.dnNumberPlaceholder')"
                     />
                     <small class="form-text text-muted">
-                      ค่าเดิม: {{ originalData.deliveryNumber }}
+                      {{ $t('view.sale.deliveryNote.originalValue') }}: {{ originalData.deliveryNumber }}
                     </small>
                   </div>
 
@@ -39,13 +38,13 @@
                     <CalendarGeneric
                       v-model="printData.deliveryDate"
                       dateFormat="dd/mm/yy"
-                      placeholder="เลือกวันที่"
+                      :placeholder="$t('view.sale.deliveryNote.selectDate')"
                       :showIcon="true"
                       :showButtonBar="true"
                       class="w-100"
                     />
                     <small class="form-text text-muted">
-                      ค่าเดิม: {{ formatDate(originalData.deliveryDate) }}
+                      {{ $t('view.sale.deliveryNote.originalValue') }}: {{ formatDate(originalData.deliveryDate) }}
                     </small>
                   </div>
                 </div>
@@ -58,10 +57,10 @@
                     <i class="bi bi-info-circle text-info mr-2 info-icon"></i>
                     <div>
                       <p class="mb-1 info-text">
-                        การเปลี่ยนแปลงข้อมูลนี้จะมีผลเฉพาะกับเอกสารที่พิมพ์เท่านั้น
+                        {{ $t('view.sale.deliveryNote.printOnlyNote') }}
                       </p>
                       <p class="mb-0 info-text">
-                        ข้อมูลต้นฉบับในระบบจะไม่มีการเปลี่ยนแปลง
+                        {{ $t('view.sale.deliveryNote.originalNotChanged') }}
                       </p>
                     </div>
                   </div>
@@ -73,12 +72,12 @@
                 <div class="d-flex justify-content-end">
                   <button class="btn btn-green mr-2" type="button" @click="onConfirmPrint">
                     <i class="bi bi-truck mr-1"></i>
-                    พิมพ์ใบส่งสินค้า
+                    {{ $t('view.sale.deliveryNote.printBtn') }}
                   </button>
 
                   <button class="btn btn-outline-main" type="button" @click="closeModal">
                     <i class="bi bi-x-circle mr-1"></i>
-                    ยกเลิก
+                    {{ $t('common.btn.cancel') }}
                   </button>
                 </div>
               </div>
@@ -94,6 +93,7 @@
 import { defineAsyncComponent } from 'vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import dayjs from 'dayjs'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -103,7 +103,8 @@ export default {
 
   components: {
     modal,
-    CalendarGeneric
+    CalendarGeneric,
+    InputTextGeneric
   },
 
   props: {
@@ -177,12 +178,12 @@ export default {
     onConfirmPrint() {
       // Validate data
       if (!this.printData.deliveryNumber || !this.printData.deliveryNumber.trim()) {
-        warning('กรุณากรอก Delivery Note Number', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.deliveryNote.validation.dnRequired'), this.$t('common.label.incompleteData'))
         return
       }
 
       if (!this.printData.deliveryDate) {
-        warning('กรุณาเลือก Delivery Date', 'ข้อมูลไม่ครบถ้วน')
+        warning(this.$t('view.sale.deliveryNote.validation.dateRequired'), this.$t('common.label.incompleteData'))
         return
       }
 

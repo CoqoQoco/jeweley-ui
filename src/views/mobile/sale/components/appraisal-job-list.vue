@@ -1,13 +1,7 @@
 <template>
   <div class="appraisal-job-list">
-    <!-- Loading -->
-    <div v-if="isLoading" class="mobile-loading">
-      <div class="spinner"></div>
-      <div class="loading-text">กำลังโหลดรายการตีราคา...</div>
-    </div>
-
     <!-- Job List -->
-    <div v-else-if="jobs.length > 0" class="job-list">
+    <div v-if="jobs.length > 0" class="job-list">
       <JobCard
         v-for="job in jobs"
         :key="job.id"
@@ -21,8 +15,8 @@
     <!-- Empty State -->
     <div v-else class="mobile-empty-state">
       <i class="bi bi-calculator"></i>
-      <div class="empty-title">ไม่มีรายการตีราคา</div>
-      <div class="empty-subtitle">ยังไม่มี Job ตีราคาที่เสร็จสิ้น</div>
+      <div class="empty-title">{{ $t('view.mobile.sale.emptyAppraisalTitle') }}</div>
+      <div class="empty-subtitle">{{ $t('view.mobile.sale.emptyAppraisalSubtitle') }}</div>
     </div>
   </div>
 </template>
@@ -58,8 +52,7 @@ export default {
 
   data() {
     return {
-      jobs: [],
-      isLoading: false
+      jobs: []
     }
   },
 
@@ -69,7 +62,6 @@ export default {
 
   methods: {
     async loadJobs() {
-      this.isLoading = true
       const result = await this.userApiStore.fetchListMyJob({
         take: 10,
         skip: 0,
@@ -83,7 +75,6 @@ export default {
       if (result && result.data) {
         this.jobs = result.data
       }
-      this.isLoading = false
     },
 
     isSelected(job) {
@@ -92,7 +83,7 @@ export default {
 
     async selectJob(job) {
       if (this.isSelected(job)) {
-        warning('รายการนี้ถูกเพิ่มแล้ว')
+        warning(this.$t('view.mobile.sale.warnItemAlreadyAdded'))
         return
       }
 
@@ -114,7 +105,7 @@ export default {
         )
 
         if (alreadyExists) {
-          warning('สินค้านี้ถูกเพิ่มในรายการแล้ว')
+          warning(this.$t('view.mobile.sale.warnProductAlreadyAdded'))
           return
         }
 
@@ -158,35 +149,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.mobile-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 20px;
-  background: white;
-  border-radius: 12px;
-
-  .spinner {
-    width: 36px;
-    height: 36px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid var(--base-font-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  .loading-text {
-    margin-top: 12px;
-    color: #666;
-    font-size: 0.85rem;
-  }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .mobile-empty-state {

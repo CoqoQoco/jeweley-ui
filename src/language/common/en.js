@@ -12,7 +12,15 @@ export default {
     export: 'Export',
     create: 'Create',
     back: 'Back',
-    advancedSearch: 'Advanced Search'
+    advancedSearch: 'Advanced Search',
+    view: 'View Detail',
+    more: 'More',
+    select: 'Select',
+    reset: 'Reset',
+    refresh: 'Refresh',
+    download: 'Download',
+    upload: 'Upload',
+    copy: 'Copy'
   },
   field: {
     code: 'Code',
@@ -31,7 +39,9 @@ export default {
     price: 'Price',
     total: 'Total',
     description: 'Description',
-    action: 'Action'
+    action: 'Action',
+    phone: 'Phone',
+    email: 'Email'
   },
   label: {
     noData: 'No data found',
@@ -39,7 +49,12 @@ export default {
     all: 'All',
     start: 'Start',
     end: 'End',
-    searchPlaceholder: 'Type something to search'
+    startDate: 'Start',
+    endDate: 'End',
+    advancedSearch: 'Advanced Search',
+    searchPlaceholder: 'Type something to search',
+    incompleteData: 'Incomplete data',
+    confirmDelete: 'Confirm Delete'
   },
   table: {
     showing: 'Showing',
@@ -49,5 +64,8 @@ export default {
   lang: {
     th: 'ไทย',
     en: 'English'
+  },
+  alert: {
+    invalidData: 'Invalid Data'
   }
 }

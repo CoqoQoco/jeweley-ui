@@ -2,7 +2,7 @@
   <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="1000px">
     <template #title>
       <span class="title-text-lg">
-        <i class="bi bi-search mr-2"></i>ค้นหาสินค้า
+        <i class="bi bi-search mr-2"></i>{{ $t('view.sale.stockBasket.searchProducts') }}
       </span>
     </template>
     <template #content>
@@ -11,54 +11,50 @@
         <div class="form-col-container mb-3">
           <div>
             <span class="title-text">Stock Number</span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.trim="searchForm.stockNumber"
+            <InputTextGeneric
+              v-model="searchForm.stockNumber"
+              :trim="true"
               placeholder="Stock Number"
               @keypress.enter="onSearch"
             />
           </div>
           <div>
-            <span class="title-text">ชื่อสินค้า</span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.trim="searchForm.productName"
-              placeholder="ชื่อสินค้า"
+            <span class="title-text">{{ $t('view.sale.stockBasket.productName') }}</span>
+            <InputTextGeneric
+              v-model="searchForm.productName"
+              :trim="true"
+              :placeholder="$t('view.sale.stockBasket.productName')"
               @keypress.enter="onSearch"
             />
           </div>
           <div>
-            <span class="title-text">ประเภทสินค้า</span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.trim="searchForm.productType"
-              placeholder="ประเภทสินค้า"
+            <span class="title-text">{{ $t('view.sale.stockBasket.productType') }}</span>
+            <InputTextGeneric
+              v-model="searchForm.productType"
+              :trim="true"
+              :placeholder="$t('view.sale.stockBasket.productType')"
               @keypress.enter="onSearch"
             />
           </div>
           <div>
-            <span class="title-text">ขนาดทอง</span>
-            <input
-              class="form-control"
-              type="text"
-              v-model.trim="searchForm.productionTypeSize"
-              placeholder="เช่น 18K, 9K"
+            <span class="title-text">{{ $t('view.sale.stockBasket.goldSize') }}</span>
+            <InputTextGeneric
+              v-model="searchForm.productionTypeSize"
+              :trim="true"
+              :placeholder="$t('view.sale.stockBasket.placeholder.karat')"
               @keypress.enter="onSearch"
             />
           </div>
         </div>
 
-        <div class="d-flex gap-2 mb-3">
+        <div class="mb-3">
           <button class="btn btn-sm btn-green" @click="onSearch">
             <i class="bi bi-search"></i>
-            <span class="ml-1">ค้นหา</span>
+            <span class="ml-1">{{ $t('common.btn.search') }}</span>
           </button>
-          <button class="btn btn-sm btn-outline-main" @click="onClear">
+          <button class="btn btn-sm btn-outline-main ml-2" @click="onClear">
             <i class="bi bi-x-circle"></i>
-            <span class="ml-1">ล้าง</span>
+            <span class="ml-1">{{ $t('common.btn.clear') }}</span>
           </button>
         </div>
 
@@ -76,10 +72,10 @@
             <button
               class="btn btn-sm btn-green"
               @click="onSelectStock(data)"
-              title="เพิ่ม"
+              :title="$t('common.btn.add')"
             >
               <i class="bi bi-plus-circle"></i>
-              <span class="ml-1">เพิ่ม</span>
+              <span class="ml-1">{{ $t('common.btn.add') }}</span>
             </button>
           </template>
         </BaseDataTable>
@@ -87,7 +83,7 @@
         <div class="d-flex justify-content-end mt-3">
           <button class="btn btn-sm btn-outline-main" @click="$emit('closeModal')">
             <i class="bi bi-x-circle"></i>
-            <span class="ml-1">ปิด</span>
+            <span class="ml-1">{{ $t('common.btn.close') }}</span>
           </button>
         </div>
       </div>
@@ -98,6 +94,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -114,7 +111,8 @@ export default {
 
   components: {
     modal,
-    BaseDataTable
+    BaseDataTable,
+    InputTextGeneric
   },
 
   props: {
@@ -137,16 +135,20 @@ export default {
       stockData: { data: [], total: 0 },
       take: 10,
       skip: 0,
-      sort: [],
+      sort: []
+    }
+  },
 
-      columns: [
+  computed: {
+    columns() {
+      return [
         { field: 'action', header: '', width: '100px', sortable: false },
         { field: 'stockNumber', header: 'Stock Number', minWidth: '140px', sortable: true },
-        { field: 'productNameTh', header: 'ชื่อสินค้า (TH)', minWidth: '160px', sortable: true },
-        { field: 'productNameEn', header: 'ชื่อสินค้า (EN)', minWidth: '160px', sortable: true },
-        { field: 'productTypeName', header: 'ประเภท', minWidth: '120px', sortable: true },
-        { field: 'productionTypeSize', header: 'ขนาดทอง', minWidth: '100px', sortable: true },
-        { field: 'location', header: 'จัดเก็บ', minWidth: '100px', sortable: true }
+        { field: 'productNameTh', header: this.$t('view.sale.stockBasket.productNameTh'), minWidth: '160px', sortable: true },
+        { field: 'productNameEn', header: this.$t('view.sale.stockBasket.productNameEn'), minWidth: '160px', sortable: true },
+        { field: 'productTypeName', header: this.$t('view.sale.stockBasket.type'), minWidth: '120px', sortable: true },
+        { field: 'productionTypeSize', header: this.$t('view.sale.stockBasket.goldSize'), minWidth: '100px', sortable: true },
+        { field: 'location', header: this.$t('view.sale.stockBasket.location'), minWidth: '100px', sortable: true }
       ]
     }
   },
@@ -216,15 +218,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
-
-.title-text-lg {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: var(--base-font-color);
-}
-
-.gap-2 {
-  gap: 8px;
-}
 </style>

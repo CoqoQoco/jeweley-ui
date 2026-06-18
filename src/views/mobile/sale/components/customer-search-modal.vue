@@ -9,7 +9,7 @@
         </button>
         <h3 class="search-title">
           <i class="bi bi-search"></i>
-          ค้นหาลูกค้า
+          {{ $t('view.mobile.sale.searchModalTitle') }}
         </h3>
       </div>
 
@@ -17,12 +17,11 @@
       <div class="search-input-section">
         <form @submit.prevent="onSearch">
           <div class="search-input-wrapper">
-            <input
+            <InputTextGeneric
               ref="searchInput"
-              v-model.trim="searchText"
-              type="text"
-              class="search-input"
-              placeholder="ชื่อลูกค้า, รหัสลูกค้า..."
+              v-model="searchText"
+              :placeholder="$t('view.mobile.sale.searchPlaceholder')"
+              :trim="true"
               @keyup.enter="onSearch"
             />
             <button class="btn-search" type="submit">
@@ -67,7 +66,7 @@
             @click="loadMore"
           >
             <i class="bi bi-arrow-down-circle"></i>
-            โหลดเพิ่มเติม
+            {{ $t('view.mobile.sale.loadMoreBtn') }}
           </button>
         </div>
 
@@ -75,7 +74,7 @@
         <div v-else class="empty-state">
           <i class="bi bi-people"></i>
           <div class="empty-text">
-            {{ searchText ? 'ไม่พบลูกค้า' : 'กรุณาค้นหาลูกค้า' }}
+            {{ searchText ? $t('view.mobile.sale.searchEmptyFound') : $t('view.mobile.sale.searchEmptyPrompt') }}
           </div>
         </div>
       </div>
@@ -86,9 +85,14 @@
 
 <script>
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'CustomerSearchModal',
+
+  components: {
+    InputTextGeneric
+  },
 
   props: {
     visible: {
@@ -252,17 +256,10 @@ export default {
     display: flex;
     gap: 8px;
 
-    .search-input {
+    :deep(.form-control) {
       flex: 1;
-      padding: 10px 14px;
-      border: 1px solid #e0e0e0;
       border-radius: 10px;
       font-size: 0.9rem;
-      outline: none;
-
-      &:focus {
-        border-color: var(--base-font-color);
-      }
 
       &::placeholder {
         color: #bbb;

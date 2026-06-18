@@ -1,4 +1,50 @@
 export default {
+  prePlan: {
+    searchTitle: 'ค้นหาใบสั่งผลิต',
+    moldCode: 'รหัสแม่พิมพ์',
+    orderDate: 'วันที่ออกใบสั่ง',
+    showCompleted: 'แสดงรายการที่สร้างแผนครบแล้ว',
+    placeholder: {
+      moldCode: 'รหัสแม่พิมพ์',
+      startDate: 'เริ่มต้น',
+      endDate: 'สิ้นสุด',
+      selectMonth: 'เลือกเดือนและปี'
+    },
+    colStatus: 'สถานะ',
+    colLinkedProgress: 'สร้างแผน',
+    colOrderNo: 'เลขที่ใบสั่ง',
+    colJobType: 'ประเภทงาน',
+    colJobLocation: 'สถานที่',
+    colProductionRound: 'ครั้งที่',
+    colGoldType: 'ประเภททอง',
+    colItemCount: 'จำนวนรายการ',
+    colPrimaryMoldCode: 'แม่พิมพ์หลัก',
+    colOrderDate: 'วันที่ออก',
+    colDeliveryDate: 'วันที่ส่งงาน',
+    colCreateBy: 'ผู้สร้าง',
+    btnView: 'ดูรายละเอียด',
+    btnPrint: 'พิมพ์ใบสั่งผลิต',
+    btnCopy: 'คัดลอกเป็นใบใหม่',
+    btnApprove: 'อนุมัติ',
+    btnViewApproval: 'ดูเอกสารอนุมัติ',
+    btnCancel: 'ยกเลิกใบสั่งผลิต',
+    btnCreate: 'สร้างใบสั่งผลิต',
+    itemCount: '{count} รายการ',
+    planCreated: 'สร้างแผนแล้ว',
+    planStatus: 'สถานะแผน:',
+    planCancelled: 'ยกเลิกแล้ว',
+    notPlanned: 'ยังไม่ได้สร้างแผน',
+    cancelItem: 'ยกเลิกรายการ',
+    goldLabel: 'ทอง:',
+    gemLabel: 'พลอย:',
+    exportNoData: 'ไม่มีข้อมูลให้ Export',
+    cancelSuccess: 'ยกเลิกใบสั่งผลิตสำเร็จ',
+    cancelItemSuccess: 'ยกเลิกรายการสำเร็จ',
+    orderNoLabel: 'เลขที่ใบสั่ง:',
+    jobTypeLabel: 'ประเภทงาน:',
+    deliveryDateLabel: 'วันที่ส่ง:'
+  },
+
   planTracking: {
     searchTitle: 'ค้นหาใบจ่าย-รับคืนงาน',
     createDate: 'วันที่สร้างใบจ่าย-รับคืน',
@@ -48,7 +94,11 @@ export default {
     cannotTransfer: 'ไม่สามารถโอนสถานงานนี้ได้',
     transferLimit: 'สามารถโอนงานได้ไม่เกินครั้งละ',
     transferLimitUnit: 'รายการ',
-    transferLimitTitle: 'จำนวนงานเกินกำหนด'
+    transferLimitTitle: 'จำนวนงานเกินกำหนด',
+    transferTitle: 'เอกสารโอนสินค้า',
+    more: 'เพิ่มเติม',
+    editMode: 'โหมดเเก้ไข',
+    viewMode: 'โหมดดูรายละเอียด'
   },
 
   planTrackingGold: {
@@ -92,7 +142,11 @@ export default {
     colSilverInput: 'เงินเข้า (กรัม)',
     confirmSave: 'ยืนยันการบันทึก',
     saveSuccess: 'บันทึกสำเร็จ',
-    printPdf: 'พิมพ์'
+    printPdf: 'พิมพ์',
+    moreSearch: 'ค้นหาเพิ่มเติม',
+    more: 'เพิ่มเติม',
+    editMode: 'โหมดเเก้ไข',
+    viewMode: 'โหมดดูรายละเอียด'
   },
 
   planTrackingWorker: {
@@ -310,6 +364,18 @@ export default {
     costCardDescription: 'รายละเอียดงาน',
     pricePerQty: 'ราคา/จำนวน',
     pricePerWeight: 'ราคา/น้ำหนัก',
-    totalPrice: 'ราคารวม'
+    totalPrice: 'ราคารวม',
+    tabDetail: 'รายละเอียด',
+    tabGold: 'ทอง',
+    tabDecorate: 'แต่ง',
+    tabPolishRaw: 'ขัดดิบ',
+    tabGemSort: 'คัดพลอย',
+    tabEmbed: 'ฝัง',
+    tabPolishPlate: 'ขัดชุบ',
+    tabCostCard: 'บัตรต้นทุน',
+    tabSuccess: 'สำเร็จ',
+    tabMelt: 'หลอม',
+    pageTitle: 'ข้อมูลแผนงานผลิต ใบจ่าย-รับคืนงาน เลขที่:',
+    pageDesc: 'เเก้ไข/ปรับปรุง/ตรวจสอบ แผนงานผลิตเเละรายละเอียดต่างๆ'
   }
 }

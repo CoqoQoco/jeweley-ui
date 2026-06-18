@@ -171,88 +171,7 @@ export default {
         ...interfaceForm
       },
       val: { ...interfaceVal },
-      allowItem: 100,
-      columns: [
-        {
-          field: 'wo',
-          header: 'W.O.',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'mold',
-          header: 'เเม่พิมพ์',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'lastUpdateStatus',
-          header: 'สถานะใบงาน (วันที่)',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'requestDate',
-          header: 'วันส่งงานลูกค้า',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'productNumber',
-          header: 'รหัสสินค้า',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'productTypeName',
-          header: 'ประเภทสินค้า',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'productQty',
-          header: 'จำนวนสินค้า',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'gold',
-          header: 'สีของทอง/เงิน',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'goldSize',
-          header: 'ประเภททอง/เงิน',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'customerNumber',
-          header: 'รหัสลูกค้า',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'customerName',
-          header: 'ชื่อลูกค้า',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'customerTypeName',
-          header: 'ประเภทลูกค้า',
-          minWidth: '150px',
-          sortable: false
-        },
-        {
-          field: 'createDate',
-          header: 'วันสร้างใบสินค้า',
-          minWidth: '150px',
-          format: 'date',
-          sortable: false
-        }
-      ]
+      allowItem: 100
     }
   },
 
@@ -275,6 +194,89 @@ export default {
     },
     statusTransfer() {
       return this.masterStatusValue.find((item) => item.id === this.stausTransferValue) || null
+    },
+    columns() {
+      return [
+        {
+          field: 'wo',
+          header: this.$t('view.production.planTracking.colWo'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'mold',
+          header: this.$t('view.production.planTracking.colMold'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'lastUpdateStatus',
+          header: this.$t('view.production.planTracking.colStatusDate'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'requestDate',
+          header: this.$t('view.production.planTracking.colRequestDate'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'productNumber',
+          header: this.$t('view.production.planTracking.colProductCode'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'productTypeName',
+          header: this.$t('view.production.planTracking.colProductType'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'productQty',
+          header: this.$t('view.production.planTracking.colProductQty'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'gold',
+          header: this.$t('view.production.planTracking.colGoldColor'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'goldSize',
+          header: this.$t('view.production.planTracking.colGoldType'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'customerNumber',
+          header: this.$t('view.production.planTracking.colCustomerCode'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'customerName',
+          header: this.$t('view.production.planTracking.colCustomerName'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'customerTypeName',
+          header: this.$t('view.production.planTracking.colCustomerType'),
+          minWidth: '150px',
+          sortable: false
+        },
+        {
+          field: 'createDate',
+          header: this.$t('view.production.planTracking.colCreateDate'),
+          minWidth: '150px',
+          format: 'date',
+          sortable: false
+        }
+      ]
     },
     allowSelectStatus() {
       return this.masterStatus.filter((item) => item.id === 100)
@@ -360,7 +362,7 @@ export default {
           await this.stockProductReceiptStore.fetchDataSearchExport({
             sort: sort,
             form: form,
-            title: `เอกสารโอนสินค้า_${res.receiptNumber}`
+            title: `${this.$t('view.production.planTracking.transferTitle')}_${res.receiptNumber}`
           })
         }
 

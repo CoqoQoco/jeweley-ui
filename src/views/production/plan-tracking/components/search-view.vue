@@ -199,7 +199,7 @@
             <button
               class="btn btn-sm btn-sub-main mr-2"
               type="button"
-              title="เพิ่มเติม"
+              :title="$t('view.production.planTracking.more')"
               @click="onShowDialog"
             >
               <span><i class="bi bi-zoom-in"></i></span>

@@ -2,22 +2,22 @@
   <div class="filter-container-searchBar">
     <form @submit.prevent="$emit('search')">
       <div>
-        <pageTitle title="ค้นหาใบสั่งผลิต" :isShowBtnClose="false" />
+        <pageTitle :title="$t('view.production.prePlan.searchTitle')" :isShowBtnClose="false" />
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">รหัสแม่พิมพ์</span>
+            <span class="title-text">{{ $t('view.production.prePlan.moldCode') }}</span>
             <input
               class="form-control bg-input"
               type="text"
               :value="modelForm.moldCode"
               @input="update('moldCode', $event.target.value)"
-              placeholder="รหัสแม่พิมพ์"
+              :placeholder="$t('view.production.prePlan.placeholder.moldCode')"
             />
           </div>
 
           <div>
-            <span class="title-text">สถานะ</span>
+            <span class="title-text">{{ $t('common.field.status') }}</span>
             <DropdownGeneric
               :modelValue="modelForm.status"
               :options="masterStore.statuses"
@@ -30,7 +30,7 @@
           </div>
 
           <div>
-            <span class="title-text">วันที่ออกใบสั่ง</span>
+            <span class="title-text">{{ $t('view.production.prePlan.orderDate') }}</span>
             <div class="flex-group">
               <CalendarGeneric
                 class="w-100"
@@ -38,7 +38,7 @@
                 dateFormat="dd/mm/yy"
                 :showIcon="true"
                 :manualInput="true"
-                placeholder="เริ่มต้น"
+                :placeholder="$t('view.production.prePlan.placeholder.startDate')"
                 @update:modelValue="update('orderDateFrom', $event)"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -48,7 +48,7 @@
                 dateFormat="dd/mm/yy"
                 :showIcon="true"
                 :manualInput="true"
-                placeholder="สิ้นสุด"
+                :placeholder="$t('view.production.prePlan.placeholder.endDate')"
                 @update:modelValue="update('orderDateTo', $event)"
               />
             </div>
@@ -61,7 +61,7 @@
                 :checked="modelForm.includeCompleted"
                 @change="update('includeCompleted', $event.target.checked)"
               />
-              <span class="title-text checkbox-text">แสดงรายการที่สร้างแผนครบแล้ว</span>
+              <span class="title-text checkbox-text">{{ $t('view.production.prePlan.showCompleted') }}</span>
             </label>
           </div>
         </div>
@@ -69,10 +69,10 @@
         <div class="btn-submit-container-between">
           <div></div>
           <div>
-            <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
             </button>
-            <button class="btn btn-sm btn-dark ml-2" type="button" @click="$emit('clear')" title="ล้าง">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="$emit('clear')" :title="$t('common.btn.clear')">
               <i class="bi bi-x-circle"></i>
             </button>
             <button
@@ -87,7 +87,7 @@
             <button
               class="btn btn-sm btn-main ml-2"
               type="button"
-              title="สร้างใบสั่งผลิต"
+              :title="$t('view.production.prePlan.btnCreate')"
               @click="$router.push({ name: 'pre-plan-create' })"
             >
               <i class="bi bi-plus"></i>

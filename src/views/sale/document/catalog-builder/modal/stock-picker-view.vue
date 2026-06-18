@@ -1,32 +1,32 @@
 <template>
   <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="1100px">
     <template #title>
-      <span class="title-text-lg px-3 pt-3 d-block">เลือกสินค้าจาก Stock</span>
+      <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.document.stockPickerTitle') }}</span>
     </template>
     <template #content>
       <div class="p-3">
         <div class="search-row mb-3">
           <div class="form-row four-col">
             <div class="form-field">
-              <span class="title-text">รหัสสินค้า</span>
-              <input class="form-control" v-model="searchForm.productNumber" placeholder="เช่น DR24013D" @keyup.enter="onSearch" />
+              <span class="title-text">{{ $t('view.sale.document.productNumber') }}</span>
+              <input class="form-control" v-model="searchForm.productNumber" :placeholder="$t('view.sale.document.placeholder.productNumber')" @keyup.enter="onSearch" />
             </div>
             <div class="form-field">
-              <span class="title-text">ชื่อสินค้า (EN)</span>
-              <input class="form-control" v-model="searchForm.productNameEn" placeholder="ชื่อภาษาอังกฤษ" @keyup.enter="onSearch" />
+              <span class="title-text">{{ $t('view.sale.document.productNameEn') }}</span>
+              <input class="form-control" v-model="searchForm.productNameEn" :placeholder="$t('view.sale.document.placeholder.productNameEn')" @keyup.enter="onSearch" />
             </div>
             <div class="form-field">
-              <span class="title-text">ชื่อสินค้า (TH)</span>
-              <input class="form-control" v-model="searchForm.productNameTh" placeholder="ชื่อภาษาไทย" @keyup.enter="onSearch" />
+              <span class="title-text">{{ $t('view.sale.document.productNameTh') }}</span>
+              <input class="form-control" v-model="searchForm.productNameTh" :placeholder="$t('view.sale.document.placeholder.productNameTh')" @keyup.enter="onSearch" />
             </div>
             <div class="form-field">
-              <span class="title-text">ประเภทสินค้า</span>
-              <input class="form-control" v-model="searchForm.productType" placeholder="ประเภท" @keyup.enter="onSearch" />
+              <span class="title-text">{{ $t('view.sale.document.productType') }}</span>
+              <input class="form-control" v-model="searchForm.productType" :placeholder="$t('view.sale.document.placeholder.productType')" @keyup.enter="onSearch" />
             </div>
           </div>
           <div class="mt-2">
             <button class="btn btn-sm btn-green" @click="onSearch">
-              <i class="bi bi-search mr-1"></i> ค้นหา
+              <i class="bi bi-search mr-1"></i> {{ $t('common.btn.search') }}
             </button>
             <button class="btn btn-sm btn-outline-main ml-2" @click="onClear">
               <i class="bi bi-x-circle"></i>
@@ -46,7 +46,7 @@
         >
           <template #actionTemplate="{ data }">
             <button class="btn btn-sm btn-main" @click="onSelect(data)">
-              <i class="bi bi-plus-circle mr-1"></i> เลือก
+              <i class="bi bi-plus-circle mr-1"></i> {{ $t('common.btn.select') }}
             </button>
           </template>
         </BaseDataTable>
@@ -89,14 +89,19 @@ export default {
       dataList: [],
       total: 0,
       pageSize: 10,
-      currentSkip: 0,
-      columns: [
+      currentSkip: 0
+    }
+  },
+
+  computed: {
+    columns() {
+      return [
         { field: 'action', header: '', width: '90px', sortable: false },
-        { field: 'productNumber', header: 'รหัสสินค้า', minWidth: '120px' },
-        { field: 'productNameEn', header: 'ชื่อ (EN)', minWidth: '180px' },
-        { field: 'productNameTh', header: 'ชื่อ (TH)', minWidth: '180px' },
-        { field: 'productTypeName', header: 'ประเภท', minWidth: '120px' },
-        { field: 'productionType', header: 'สีทอง', minWidth: '100px' }
+        { field: 'productNumber', header: this.$t('view.sale.document.productNumber'), minWidth: '120px' },
+        { field: 'productNameEn', header: this.$t('view.sale.document.productNameEn'), minWidth: '180px' },
+        { field: 'productNameTh', header: this.$t('view.sale.document.productNameTh'), minWidth: '180px' },
+        { field: 'productTypeName', header: this.$t('view.sale.document.productType'), minWidth: '120px' },
+        { field: 'productionType', header: this.$t('view.sale.document.goldColor'), minWidth: '100px' }
       ]
     }
   },

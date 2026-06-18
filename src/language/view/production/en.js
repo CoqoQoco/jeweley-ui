@@ -1,4 +1,50 @@
 export default {
+  prePlan: {
+    searchTitle: 'Search Production Orders',
+    moldCode: 'Mold Code',
+    orderDate: 'Order Date',
+    showCompleted: 'Show completed plan items',
+    placeholder: {
+      moldCode: 'Mold Code',
+      startDate: 'Start',
+      endDate: 'End',
+      selectMonth: 'Select month and year'
+    },
+    colStatus: 'Status',
+    colLinkedProgress: 'Plan Created',
+    colOrderNo: 'Order No.',
+    colJobType: 'Job Type',
+    colJobLocation: 'Location',
+    colProductionRound: 'Round',
+    colGoldType: 'Gold Type',
+    colItemCount: 'Items',
+    colPrimaryMoldCode: 'Primary Mold',
+    colOrderDate: 'Order Date',
+    colDeliveryDate: 'Delivery Date',
+    colCreateBy: 'Created By',
+    btnView: 'View Details',
+    btnPrint: 'Print Production Order',
+    btnCopy: 'Copy as New',
+    btnApprove: 'Approve',
+    btnViewApproval: 'View Approval Document',
+    btnCancel: 'Cancel Production Order',
+    btnCreate: 'Create Production Order',
+    itemCount: '{count} items',
+    planCreated: 'Plan Created',
+    planStatus: 'Plan Status:',
+    planCancelled: 'Cancelled',
+    notPlanned: 'Not planned yet',
+    cancelItem: 'Cancel Item',
+    goldLabel: 'Gold:',
+    gemLabel: 'Gem:',
+    exportNoData: 'No data to export',
+    cancelSuccess: 'Production order cancelled successfully',
+    cancelItemSuccess: 'Item cancelled successfully',
+    orderNoLabel: 'Order No.:',
+    jobTypeLabel: 'Job Type:',
+    deliveryDateLabel: 'Delivery Date:'
+  },
+
   planTracking: {
     searchTitle: 'Search Plan Tracking',
     createDate: 'Plan Create Date',
@@ -48,7 +94,11 @@ export default {
     cannotTransfer: 'Cannot transfer this status',
     transferLimit: 'Transfer limit per batch:',
     transferLimitUnit: 'items',
-    transferLimitTitle: 'Exceeded Transfer Limit'
+    transferLimitTitle: 'Exceeded Transfer Limit',
+    transferTitle: 'Transfer Document',
+    more: 'More',
+    editMode: 'Edit Mode',
+    viewMode: 'View Mode'
   },
 
   planTrackingGold: {
@@ -92,7 +142,11 @@ export default {
     colSilverInput: 'Silver Input (Gms)',
     confirmSave: 'Confirm Save',
     saveSuccess: 'Saved Successfully',
-    printPdf: 'Print'
+    printPdf: 'Print',
+    moreSearch: 'Advanced Search',
+    more: 'More',
+    editMode: 'Edit Mode',
+    viewMode: 'View Mode'
   },
 
   planTrackingWorker: {
@@ -310,6 +364,18 @@ export default {
     costCardDescription: 'Job Description',
     pricePerQty: 'Price/Qty',
     pricePerWeight: 'Price/Weight',
-    totalPrice: 'Total Price'
+    totalPrice: 'Total Price',
+    tabDetail: 'Details',
+    tabGold: 'Gold',
+    tabDecorate: 'Decorate',
+    tabPolishRaw: 'Raw Polish',
+    tabGemSort: 'Gem Sort',
+    tabEmbed: 'Embed',
+    tabPolishPlate: 'Polish & Plate',
+    tabCostCard: 'Cost Card',
+    tabSuccess: 'Success',
+    tabMelt: 'Melt',
+    pageTitle: 'Production Plan — Issue/Return Receipt No:',
+    pageDesc: 'Edit/Update/Review production plan and details'
   }
 }

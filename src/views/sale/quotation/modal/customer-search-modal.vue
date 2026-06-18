@@ -4,7 +4,7 @@
       <div class="p-3">
         <div class="title-text-lg mb-3">
           <span><i class="bi bi-search mr-2"></i></span>
-          <span>ค้นหาลูกค้า</span>
+          <span>{{ $t('view.customer.searchTitle') }}</span>
         </div>
 
         <!-- Search Form -->
@@ -12,27 +12,34 @@
           <form @submit.prevent="onSearch">
             <div class="form-group">
               <div class="d-flex">
-                <input
-                  id="searchInput"
-                  v-model.trim="searchForm.text"
-                  type="text"
-                  class="form-control"
-                  placeholder="ชื่อลูกค้า, รหัสลูกค้า..."
-                  style="flex: 1"
+                <div class="search-input-wrapper">
+                  <InputTextGeneric
+                    :modelValue="searchForm.text"
+                    :trim="true"
+                    :placeholder="$t('view.customer.placeholder.search')"
+                    @update:modelValue="searchForm.text = $event"
+                  />
+                </div>
+                <ButtonGeneric
+                  variant="main"
+                  icon="bi-search"
+                  type="submit"
+                  class="ml-2 mt-1"
                 />
-                <button class="btn btn-sm btn-main ml-2 mt-1" type="submit">
-                  <i class="bi bi-search"></i>
-                </button>
-                <button class="btn btn-sm btn-dark ml-2 mt-1" type="button" @click="onClearSearch">
-                  <i class="bi bi-x-circle"></i>
-                </button>
+                <ButtonGeneric
+                  variant="dark"
+                  icon="bi-x-circle"
+                  type="button"
+                  class="ml-2 mt-1"
+                  @click="onClearSearch"
+                />
               </div>
             </div>
           </form>
         </div>
 
         <!-- Customer Table -->
-        <div class="customer-table-container" style="max-height: 400px; overflow-y: auto">
+        <div class="customer-table-container">
           <BaseDataTable
             :items="customerData.data"
             :totalRecords="customerData.total"
@@ -44,24 +51,25 @@
           >
             <template #actionTemplate="{ data }">
               <div class="text-center">
-                <button
-                  class="btn btn-sm btn-green"
+                <ButtonGeneric
+                  variant="green"
+                  icon="bi-check-circle"
+                  :label="$t('common.btn.select')"
+                  :title="$t('common.btn.select')"
                   @click="onSelectCustomer(data)"
-                  title="เลือกลูกค้า"
-                >
-                  <i class="bi bi-check-circle"></i>
-                  <span class="ml-1">เลือก</span>
-                </button>
+                />
               </div>
             </template>
           </BaseDataTable>
         </div>
 
         <div class="d-flex justify-content-end mt-4">
-          <button class="btn btn-sm btn-dark" @click="onCancel">
-            <span><i class="bi bi-x-circle"></i></span>
-            <span class="ml-2">ยกเลิก</span>
-          </button>
+          <ButtonGeneric
+            variant="dark"
+            icon="bi-x-circle"
+            :label="$t('common.btn.cancel')"
+            @click="onCancel"
+          />
         </div>
       </div>
     </template>
@@ -70,7 +78,10 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -84,7 +95,9 @@ export default {
 
   components: {
     modal,
-    BaseDataTable
+    BaseDataTable,
+    InputTextGeneric,
+    ButtonGeneric
   },
 
   props: {
@@ -105,10 +118,13 @@ export default {
       customerData: { data: [], total: 0 },
       take: 10,
       skip: 0,
-      sort: [],
+      sort: []
+    }
+  },
 
-      // Columns Configuration for Customer Table
-      columns: [
+  computed: {
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
@@ -117,37 +133,37 @@ export default {
         },
         {
           field: 'code',
-          header: 'รหัส',
+          header: this.$t('common.field.code'),
           sortable: true,
           minWidth: '120px'
         },
         {
           field: 'nameTh',
-          header: 'ชื่อ (TH)',
+          header: this.$t('common.field.nameTh'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'nameEn',
-          header: 'ชื่อ (EN)',
+          header: this.$t('common.field.nameEn'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'address',
-          header: 'ที่อยู่',
+          header: this.$t('view.customer.field.address'),
           sortable: true,
           minWidth: '200px'
         },
         {
           field: 'telephone1',
-          header: 'โทรศัพท์',
+          header: this.$t('common.field.phone'),
           sortable: true,
           minWidth: '120px'
         },
         {
           field: 'email',
-          header: 'E-mail',
+          header: this.$t('view.customer.field.email'),
           sortable: true,
           minWidth: '150px'
         }
@@ -201,7 +217,6 @@ export default {
       this.sort = []
     },
 
-    // Data table handlers
     handlePageChange(e) {
       this.skip = e.first
       this.take = e.rows
@@ -218,18 +233,15 @@ export default {
       this.fetchCustomerData()
     },
 
-    // API Methods
     async fetchCustomerData() {
-      try {
-        this.customerData = await this.customerStore.fetchCustomerSearch({
-          take: this.take,
-          skip: this.skip,
-          sort: this.sort,
-          formValue: this.searchForm
-        })
-      } catch (error) {
-        console.error('Error fetching customer data:', error)
-        this.customerData = { data: [], total: 0 }
+      const result = await this.customerStore.fetchCustomerSearch({
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        formValue: this.searchForm
+      })
+      if (result) {
+        this.customerData = result
       }
     }
   }
@@ -240,30 +252,22 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .title-text-lg {
-  font-size: 1.2rem;
+  font-size: var(--fs-lg);
   font-weight: bold;
   color: var(--base-font-color);
   display: flex;
   align-items: center;
 }
 
+.search-input-wrapper {
+  flex: 1;
+}
+
 .customer-table-container {
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  background-color: white;
-}
-
-.form-group label {
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-}
-
-.btn i {
-  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-card-bg);
+  max-height: 400px;
+  overflow-y: auto;
 }
 </style>
