@@ -2,8 +2,8 @@
   <div class="app-container">
     <div class="filter-container-search">
       <pageTitle
-        title="สร้างใบเบิกผสมทอง"
-        description="สร้างใบเบิกผสมทอง ระบุข้อมูลทองเบิก ทองหล่อ ทองหลอม ตัวเรือน เเละคำอธิบายอื่นๆ"
+        :title="$t('view.production.planGold.pageTitle')"
+        :description="$t('view.production.planGold.pageDesc')"
         :isShowBtnClose="false"
         :isShowRightSlot="false"
       >
@@ -16,27 +16,27 @@
         <div class="mt-2">
           <div class="title-text-lg-bg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>ข้อมูลเบิกผสมทอง</span>
+            <span>{{ $t('view.production.planGold.sectionGoldInfo') }}</span>
           </div>
           <div class="border-container p-4">
             <div class="form-col-container">
               <div>
                 <span class="title-text">
-                  <span>เล่มที่</span>
+                  <span>{{ $t('view.production.planGold.fieldBookNo') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <input type="text" class="form-control" v-model="form.bookNo" required />
               </div>
               <div>
                 <span class="title-text">
-                  <span>เลขที่</span>
+                  <span>{{ $t('view.production.planGold.fieldNo') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <input type="text" class="form-control" v-model="form.no" required />
               </div>
               <div>
                 <span class="title-text">
-                  <span>วันที่เบิก</span>
+                  <span>{{ $t('view.production.planGold.fieldAssignDate') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <CalendarGeneric
@@ -52,7 +52,7 @@
             <div class="form-col-container mt-1">
               <div>
                 <span class="title-text">
-                  <span>ประเภททอง</span>
+                  <span>{{ $t('view.production.planGold.fieldGoldType') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <DropdownGeneric
@@ -65,7 +65,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>เปอร์เซ็นทอง</span>
+                  <span>{{ $t('view.production.planGold.fieldGoldPercent') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <DropdownGeneric
@@ -78,7 +78,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>สูตรผสมทอง</span>
+                  <span>{{ $t('view.production.planGold.fieldGoldReceipt') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <input type="text" class="form-control" v-model="form.goldReceipt" required />
@@ -87,20 +87,20 @@
             <div class="form-col-container mt-1">
               <div>
                 <span class="title-text">
-                  <span>ผู้เบิกทอง</span>
+                  <span>{{ $t('view.production.planGold.fieldAssignBy') }}</span>
                 </span>
                 <input type="text" class="form-control" v-model="form.assignBy" />
               </div>
               <div>
                 <span class="title-text">
-                  <span>ผู้รับทอง</span>
+                  <span>{{ $t('view.production.planGold.fieldReceiveBy') }}</span>
                 </span>
                 <input type="text" class="form-control" v-model="form.receiveBy" />
               </div>
 
               <div>
                 <span class="title-text">
-                  <span>ราคาทอง</span>
+                  <span>{{ $t('view.production.planGold.fieldCost') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
                 <input
@@ -116,7 +116,7 @@
             <div class="mt-1">
               <div>
                 <span class="title-text">
-                  <span>รายละเอียด</span>
+                  <span>{{ $t('view.production.planGold.fieldRemark') }}</span>
                 </span>
                 <textarea class="form-control" v-model="form.remark"></textarea>
               </div>
@@ -128,13 +128,13 @@
         <div class="mt-4">
           <div class="title-text-lg-bg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>ข้อมูลทองหลอม (โปรดระบุน้ำหนัก)</span>
+            <span>{{ $t('view.production.planGold.sectionMeltInfo') }}</span>
           </div>
           <div class="border-container p-4">
             <div class="form-col-container">
               <div>
                 <span class="title-text">
-                  <span>วันที่เบิกหลอม</span>
+                  <span>{{ $t('view.production.planGold.fieldMeltDate') }}</span>
                   <!-- <span class="txt-required"> *</span> -->
                 </span>
                 <CalendarGeneric
@@ -148,7 +148,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>เบิกทองหลอม</span>
+                  <span>{{ $t('view.production.planGold.fieldMeltWeight') }}</span>
                 </span>
                 <input
                   type="number"
@@ -160,7 +160,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>คืนทองหลอม</span>
+                  <span>{{ $t('view.production.planGold.fieldReturnMeltWeight') }}</span>
                 </span>
                 <input
                   type="number"
@@ -175,7 +175,7 @@
             <div class="form-col-container mt-1">
               <div>
                 <span class="title-text">
-                  <span>น้ำหนักขาด</span>
+                  <span>{{ $t('view.production.planGold.fieldWeightLoss') }}</span>
                 </span>
                 <input
                   type="number"
@@ -188,7 +188,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>น้้ำหนักเกิน</span>
+                  <span>{{ $t('view.production.planGold.fieldWeightOver') }}</span>
                 </span>
                 <input
                   type="number"
@@ -201,14 +201,14 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>ซิล</span>
+                  <span>{{ $t('view.production.planGold.fieldZill') }}</span>
                   <small></small>
                 </span>
                 <AutoComplete
                   v-model="form.zill"
                   :suggestions="zillItemSearch"
                   @complete="onSearchZill"
-                  placeholder="กรอกรหัสซิล ...."
+                  :placeholder="$t('view.production.planGold.placeholderZill')"
                   forceSelection
                   @item-select="onSearchZill"
                   :min-length="3"
@@ -217,7 +217,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>จำนวนซิล</span>
+                  <span>{{ $t('view.production.planGold.fieldZillQty') }}</span>
                 </span>
                 <input
                   type="number"
@@ -235,7 +235,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text-white">
-                    <span>คืนขี้เบ้า</span>
+                    <span>{{ $t('view.production.planGold.fieldReturnScrap') }}</span>
                   </span>
                   <input
                     type="number"
@@ -247,7 +247,7 @@
                 </div>
                 <div>
                   <span class="title-text-white">
-                    <span>วันที่คืนขี้เบ้า</span>
+                    <span>{{ $t('view.production.planGold.fieldReturnScrapDate') }}</span>
                   </span>
                   <CalendarGeneric
                     class="w-100"
@@ -268,13 +268,13 @@
         <div class="mt-4">
           <div class="title-text-lg-bg">
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>ข้อมูลทองหล่อ (โปรดระบุน้ำหนัก)</span>
+            <span>{{ $t('view.production.planGold.sectionCastInfo') }}</span>
           </div>
           <div class="border-container p-4">
             <div class="form-col-container">
               <div>
                 <span class="title-text">
-                  <span>วันที่เบิกหล่อ</span>
+                  <span>{{ $t('view.production.planGold.fieldCastDate') }}</span>
                   <!-- <span class="txt-required"> *</span> -->
                 </span>
                 <CalendarGeneric
@@ -288,7 +288,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>เบิกทองหล่อ</span>
+                  <span>{{ $t('view.production.planGold.fieldCastWeight') }}</span>
                 </span>
                 <input
                   type="number"
@@ -300,7 +300,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>เบิกพลอยเพชร</span>
+                  <span>{{ $t('view.production.planGold.fieldGemWeight') }}</span>
                 </span>
                 <input
                   type="number"
@@ -316,7 +316,7 @@
             <div class="form-col-container mt-1">
               <div>
                 <span class="title-text">
-                  <span>คืนทองหล่อ</span>
+                  <span>{{ $t('view.production.planGold.fieldReturnCastWeight') }}</span>
                 </span>
                 <input
                   type="number"
@@ -329,7 +329,7 @@
 
               <div>
                 <span class="title-text">
-                  <span>คืนเเม่พิมพ์</span>
+                  <span>{{ $t('view.production.planGold.fieldReturnMold') }}</span>
                 </span>
                 <input
                   type="number"
@@ -341,7 +341,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>คืนตัวเรือนเสีย</span>
+                  <span>{{ $t('view.production.planGold.fieldReturnBodyBroken') }}</span>
                 </span>
                 <input
                   type="number"
@@ -353,7 +353,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>รวมคืนตัวเรือน</span>
+                  <span>{{ $t('view.production.planGold.fieldReturnBodyTotal') }}</span>
                 </span>
                 <input
                   type="number"
@@ -368,7 +368,7 @@
             <div class="form-col-container mt-1">
               <div>
                 <span class="title-text">
-                  <span>คืนผงทอง</span>
+                  <span>{{ $t('view.production.planGold.fieldReturnPowder') }}</span>
                 </span>
                 <input
                   type="number"
@@ -380,7 +380,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>น้ำหนักขาด</span>
+                  <span>{{ $t('view.production.planGold.fieldWeightLoss') }}</span>
                 </span>
                 <input
                   type="number"
@@ -393,7 +393,7 @@
               </div>
               <div>
                 <span class="title-text">
-                  <span>น้้ำหนักเกิน</span>
+                  <span>{{ $t('view.production.planGold.fieldWeightOver') }}</span>
                 </span>
                 <input
                   type="number"
@@ -412,7 +412,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text-white">
-                    <span>คืนขี้เบ้า</span>
+                    <span>{{ $t('view.production.planGold.fieldReturnScrap') }}</span>
                   </span>
                   <input
                     type="number"
@@ -424,7 +424,7 @@
                 </div>
                 <div>
                   <span class="title-text-white">
-                    <span>วันที่คืนขี้เบ้า</span>
+                    <span>{{ $t('view.production.planGold.fieldReturnScrapDate') }}</span>
                   </span>
                   <CalendarGeneric
                     class="w-100"
@@ -441,7 +441,7 @@
 
             <div class="title-text-lg mt-4 mt-2">
               <span class="mr-2"><i class="bi bi-gem"></i></span>
-              <span>คืนตัวเรือน</span>
+              <span>{{ $t('view.production.planGold.subHeaderReturnBody') }}</span>
             </div>
 
             <div class="form-col-container mt-1">
@@ -467,10 +467,10 @@
                 <ColumnGroup type="header">
                   <Row>
                     <Column header=""></Column>
-                    <Column header="WO ตัวเรือน"></Column>
-                    <Column header="จำนวนคืนตัวเรือน"></Column>
-                    <Column header="น้ำหนักคืนตัวเรือน"></Column>
-                    <Column header="รายละเอียด"></Column>
+                    <Column :header="$t('view.production.planGold.colWoBody')"></Column>
+                    <Column :header="$t('view.production.planGold.colReturnQty')"></Column>
+                    <Column :header="$t('view.production.planGold.colReturnWeight')"></Column>
+                    <Column :header="$t('view.production.planGold.colRemark')"></Column>
                     <Column header=""></Column>
                   </Row>
                 </ColumnGroup>
@@ -496,7 +496,7 @@
                       v-model="data[field]"
                       :suggestions="productItemSearch"
                       @complete="onSearchProductionPlanId"
-                      placeholder="กรอก WO/WO No. ตัวเรือน"
+                      :placeholder="$t('view.production.planGold.placeholderWoBody')"
                       :class="data[field] ? `` : `p-invalid`"
                       optionLabel="woText"
                       forceSelection
@@ -514,11 +514,11 @@
                         `${slotProps.data.productionPlan.wo}-${slotProps.data.productionPlan.woNumber}`
                       }}
                     </div>
-                    <div v-else>โปรดระบุ WO/WO No. ตัวเรือน</div>
+                    <div v-else>{{ $t('view.production.planGold.promptSpecifyWo') }}</div>
                     <!-- <input type="text" class="form-control" v-model="form.bookNo" required /> -->
                   </template>
                 </Column>
-                <Column field="returnQTY" header="จำนวนคืนตัวเรือน" style="width: 30px">
+                <Column field="returnQTY" :header="$t('view.production.planGold.colReturnQty')" style="width: 30px">
                   <template #editor="{ data, field }">
                     <input
                       type="number"
@@ -534,7 +534,7 @@
                     </div>
                   </template>
                 </Column>
-                <Column field="returnWeight" header="น้ำหนักคืนตัวเรือน" style="width: 30px">
+                <Column field="returnWeight" :header="$t('view.production.planGold.colReturnWeight')" style="width: 30px">
                   <template #editor="{ data, field }">
                     <input
                       type="number"
@@ -550,7 +550,7 @@
                     </div>
                   </template>
                 </Column>
-                <Column field="remark" header="รายละเอียด" style="min-width: 150px">
+                <Column field="remark" :header="$t('view.production.planGold.colRemark')" style="min-width: 150px">
                   <template #editor="{ data, field }">
                     <input
                       type="text"
@@ -564,7 +564,7 @@
                 <ColumnGroup type="footer">
                   <Row>
                     <Column
-                      footer="รวมน้ำหนักคืนตัวเรือน"
+                      :footer="$t('view.production.planGold.footerReturnWeight')"
                       footerStyle="text-align:right"
                       :colspan="3"
                     />
@@ -600,7 +600,7 @@
         <div class="submit-container mt-2">
           <button class="btn btn-sm btn-main mr-2" type="submit">
             <span class="bi bi-calendar-check mr-2"></span>
-            <span>สร้างใบเบิกผสมทอง</span>
+            <span>{{ $t('view.production.planGold.btnCreate') }}</span>
           </button>
         </div>
       </form>
@@ -741,7 +741,7 @@ export default {
       if (this.validateForm()) {
         confirmSubmit(
           `เลขที่:${this.form.no} | เล่มที่:${this.form.bookNo} `,
-          'ยืนยันเพิ่มใบเบิกทอง',
+          this.$t('view.production.planGold.confirmCreate'),
           async () => {
             await this.submit()
           }

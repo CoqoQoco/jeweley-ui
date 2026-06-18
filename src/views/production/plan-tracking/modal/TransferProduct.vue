@@ -11,7 +11,7 @@
               <div class="d-flex justify-content-between">
                 <div class="vertical-center-container desc-text-white">
                   <span>
-                    {{ `${$t('view.production.planTracking.transferProductTitle')}[สำเร็จ]: ${statusTransfer ? statusTransfer.nameTh : ''}` }}
+                    {{ `${$t('view.production.planTracking.transferProductTitle')}[${$t('view.production.planTracking.transferProductSuccess')}]: ${statusTransfer ? statusTransfer.nameTh : ''}` }}
                   </span>
                   <span class="ml-2 bi bi-arrow-right"></span>
                   <span class="ml-2">

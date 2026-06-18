@@ -2,9 +2,9 @@
   <div class="app-container">
   
     <div class="title-text-lg-header mb-2">
-      <span>บัตรต้นทุน</span>
+      <span>{{ $t('view.production.planPrice.pageTitle') }}</span>
       <span class="bi bi-arrow-right ml-1"></span>
-      <span class="ml-1">{{ `ใบจ่าย-รับคืนงาน เลขที่: ${plan[0]}-${plan[1]}` }}</span>
+      <span class="ml-1">{{ `${$t('view.production.planPrice.pageBreadcrumb')} ${plan[0]}-${plan[1]}` }}</span>
     </div>
     <form @submit.prevent="onSubmit">
       <!-- transection -->
@@ -18,10 +18,10 @@
         >
           <ColumnGroup type="header">
             <Row>
-              <Column header="รายละเอียดงานต่างๆ" :colspan="3" />
-              <Column header="วันที่" />
-              <Column header="จำนวน" />
-              <Column header="ราคา" />
+              <Column :header="$t('view.production.planPrice.colWorkDetail')" :colspan="3" />
+              <Column :header="$t('view.production.planPrice.colDate')" />
+              <Column :header="$t('common.field.quantity')" />
+              <Column :header="$t('common.field.price')" />
             </Row>
           </ColumnGroup>
 
@@ -99,7 +99,7 @@
               <column :colspan="5">
                 <template #footer>
                   <div class="text-right">
-                    <span>ราคาก่อนส่วนลด</span>
+                    <span>{{ $t('view.production.planPrice.priceBeforeDiscount') }}</span>
                   </div>
                 </template>
               </column>
@@ -119,10 +119,10 @@
       <DataTable :value="tranDiscount" stripedRows showGridlines>
         <ColumnGroup type="header">
           <Row>
-            <Column header="รายละเอียดส่วนลด" :colspan="3" />
-            <Column header="วันที่" />
-            <Column header="จำนวน" />
-            <Column header="ราคา" />
+            <Column :header="$t('view.production.planPrice.colDiscountDetail')" :colspan="3" />
+            <Column :header="$t('view.production.planPrice.colDate')" />
+            <Column :header="$t('common.field.quantity')" />
+            <Column :header="$t('common.field.price')" />
           </Row>
         </ColumnGroup>
         <Column field="index" style="width: 10px">
@@ -193,7 +193,7 @@
             <column :colspan="5">
               <template #footer>
                 <div class="text-right">
-                  <span>ราคาหลังส่วนลด</span>
+                  <span>{{ $t('view.production.planPrice.priceAfterDiscount') }}</span>
                 </div>
               </template>
             </column>
@@ -313,7 +313,7 @@ export default {
     onSubmit() {
       if (this.validateForm()) {
         confirmSubmit(
-          `ยืนยันเเก้ไขงาน [คัดพลอย]`,
+          this.$t('view.production.planPrice.confirmEditGem'),
           `${this.model.wo}-${this.model.woNumber}`,
           async () => {
             await this.submit()
@@ -370,13 +370,13 @@ export default {
     getGroupName(id) {
       switch (id) {
         case 'Gold':
-          return 'รายการทอง'
+          return this.$t('view.production.planPrice.groupGold')
         case 'Gem':
-          return 'รายการวัถุดิบ'
+          return this.$t('view.production.planPrice.groupMaterial')
         case 'Worker':
-          return 'รายการงานช่าง'
+          return this.$t('view.production.planPrice.groupWorker')
         default:
-          return 'อื่นๆ'
+          return this.$t('view.production.planPrice.groupEtc')
       }
     },
 
