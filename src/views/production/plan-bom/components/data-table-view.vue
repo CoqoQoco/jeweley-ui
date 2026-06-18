@@ -85,130 +85,7 @@ export default {
     return {
       take: 10,
       skip: 0,
-      sort: [],
-
-      // Columns Configuration
-
-      columns: [
-        {
-          field: 'completedDate',
-          header: 'วันที่',
-          sortable: true,
-          width: '120px',
-          format: 'datetime'
-        },
-        {
-          field: 'woText',
-          header: 'W.O.',
-          sortable: true,
-          width: '120px'
-        },
-        {
-          field: 'mold',
-          header: 'แม่พิมพ์',
-          sortable: true,
-          width: '120px'
-        },
-        {
-          field: 'productTypeName',
-          header: 'สินค้า',
-          sortable: true,
-          minWidth: '120px'
-        },
-        // {
-        //   field: 'productType',
-        //   header: 'ประเภทสินค้า',
-        //   sortable: true,
-        //   minWidth: '120px'
-        // },
-        {
-          field: 'name',
-          header: 'รายการ',
-          sortable: false,
-          minWidth: '200px'
-        },
-        // {
-        //   field: 'nameGroup',
-        //   header: 'ประเภท',
-        //   sortable: true,
-        //   minWidth: '80px',
-        //   maxWidth: '100px',
-        //   align: 'center'
-        // },
-        {
-          field: 'qty',
-          header: 'จำนวน',
-          sortable: true,
-          width: '110px',
-          align: 'right',
-          format: 'number'
-        },
-        {
-          field: 'qtyPrice',
-          header: 'ราคา/จำนวน',
-          sortable: true,
-          width: '110px',
-          align: 'right',
-          format: 'decimal2'
-        },
-        {
-          field: 'qtyWeight',
-          header: 'น้ำหนัก',
-          sortable: true,
-          width: '110px',
-          maxWidth: '110px',
-          align: 'right',
-          format: 'decimal3'
-        },
-        {
-          field: 'qtyWeightPrice',
-          header: 'ราคา/น้ำหนัก',
-          sortable: true,
-          width: '110px',
-          align: 'right',
-          format: 'decimal2'
-        },
-        {
-          field: 'total',
-          header: 'ราคารวม',
-          sortable: true,
-          width: '110px',
-          align: 'right',
-          format: 'decimal2'
-        }
-        // {
-        //   field: 'gold',
-        //   header: 'สีทอง/เงิน',
-        //   sortable: true,
-        //   minWidth: '110px'
-        // },
-        // {
-        //   field: 'goldSize',
-        //   header: 'ประเภททอง',
-        //   sortable: true,
-        //   minWidth: '100px'
-        // },
-        // {
-        //   field: 'customerCode',
-        //   header: 'รหัสลูกค้า',
-        //   sortable: true,
-        //   minWidth: '100px'
-        // },
-        // {
-        //   field: 'customerName',
-        //   header: 'ชื่อลูกค้า',
-        //   sortable: true,
-        //   minWidth: '150px'
-        // },
-
-        // {
-        //   field: 'date',
-        //   header: 'วันที่สร้าง',
-        //   sortable: true,
-        //   minWidth: '130px',
-        //   format: 'datetime'
-        // }
-      ]
+      sort: []
     }
   },
 
@@ -223,6 +100,82 @@ export default {
     },
     planStatus() {
       return this.masterPlanStatus
+    },
+    columns() {
+      return [
+        {
+          field: 'completedDate',
+          header: this.$t('view.production.planBom.colDate'),
+          sortable: true,
+          width: '120px',
+          format: 'datetime'
+        },
+        {
+          field: 'woText',
+          header: 'W.O.',
+          sortable: true,
+          width: '120px'
+        },
+        {
+          field: 'mold',
+          header: this.$t('view.production.planBom.colMold'),
+          sortable: true,
+          width: '120px'
+        },
+        {
+          field: 'productTypeName',
+          header: this.$t('view.production.planBom.colProductType'),
+          sortable: true,
+          minWidth: '120px'
+        },
+        {
+          field: 'name',
+          header: this.$t('view.production.planBom.colName'),
+          sortable: false,
+          minWidth: '200px'
+        },
+        {
+          field: 'qty',
+          header: this.$t('common.field.quantity'),
+          sortable: true,
+          width: '110px',
+          align: 'right',
+          format: 'number'
+        },
+        {
+          field: 'qtyPrice',
+          header: this.$t('view.production.planBom.colPricePerQty'),
+          sortable: true,
+          width: '110px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'qtyWeight',
+          header: this.$t('common.field.weight'),
+          sortable: true,
+          width: '110px',
+          maxWidth: '110px',
+          align: 'right',
+          format: 'decimal3'
+        },
+        {
+          field: 'qtyWeightPrice',
+          header: this.$t('view.production.planBom.colPricePerWeight'),
+          sortable: true,
+          width: '110px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'total',
+          header: this.$t('view.production.planBom.colTotal'),
+          sortable: true,
+          width: '110px',
+          align: 'right',
+          format: 'decimal2'
+        }
+      ]
     }
   },
 

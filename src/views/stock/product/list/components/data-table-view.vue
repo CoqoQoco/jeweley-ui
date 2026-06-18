@@ -13,18 +13,18 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-green" title="พิมพ์ป้าย" @click="onPrintBarcode(data)">
+          <button class="btn btn-sm btn btn-green" :title="$t('view.stock.product.printBarcode')" @click="onPrintBarcode(data)">
             <i class="bi bi-upc-scan"></i>
           </button>
-          <button class="btn btn-sm btn btn-main ml-2" title="แก้ไข" @click="onUpdate(data)">
+          <button class="btn btn-sm btn btn-main ml-2" :title="$t('common.btn.edit')" @click="onUpdate(data)">
             <i class="bi bi-brush"></i>
           </button>
-          <button class="btn btn-sm btn-green ml-2" title="ดูต้นทุนสินค้า" @click="onViewCost(data)">
+          <button class="btn btn-sm btn-green ml-2" :title="$t('view.stock.product.viewCost')" @click="onViewCost(data)">
             <i class="bi bi-calculator"></i>
           </button>
           <button
             class="btn btn-sm btn-outline-main ml-2"
-            title="ดูประวัติตีราคา"
+            :title="$t('view.stock.product.viewHistory')"
             @click="onViewHistory(data)"
           >
             <i class="bi bi-clock-history"></i>

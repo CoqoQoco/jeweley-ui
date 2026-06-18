@@ -1,7 +1,7 @@
 # ProductImageUpload.vue
 <template>
   <div>
-    <pageTitle title="รูปสินค้า" description="อัพโหลดเเละตรวจสอบรูปสินค้า" :isShowBtnClose="false">
+    <pageTitle :title="$t('view.stock.product.imageProduct')" :description="$t('view.stock.product.imageUploadDesc')" :isShowBtnClose="false">
     </pageTitle>
 
     <div class="form-col-container mt-2">
@@ -29,9 +29,9 @@
                   <div v-else class="upload-content" @click="$refs.fileInput.click()">
                     <img src="@/assets/duangkaew-logo.png" class="upload-icon" alt="Upload Icon" />
                     <p class="upload-text">
-                      วางรูปภาพที่นี่หรือ <span class="browse-text">เลือกรูปภาพ</span>
+                      {{ $t('view.stock.product.imageUploadDropHere') }} <span class="browse-text">{{ $t('view.stock.product.imageUploadBrowse') }}</span>
                     </p>
-                    <p class="upload-subtext">รองรับไฟล์ JPG, JPEG</p>
+                    <p class="upload-subtext">{{ $t('view.stock.product.imageUploadSupportedFormat') }}</p>
                   </div>
 
                   <input
@@ -44,12 +44,12 @@
                   />
                 </div>
                 <!-- Error Message -->
-                <div v-if="isSubmitted && !imageUrl" class="error-message">กรุณาเลือกรูปภาพ</div>
+                <div v-if="isSubmitted && !imageUrl" class="error-message">{{ $t('view.stock.product.imageUploadRequired') }}</div>
               </div>
               <div>
                 <div class="filter-container-bg">
                   <span class="desc-text-white"><i class="bi bi-image"></i></span>
-                  <span class="desc-text-white ml-2">บันทึกรูปสินค้า</span>
+                  <span class="desc-text-white ml-2">{{ $t('view.stock.product.imageUploadSaveTitle') }}</span>
                 </div>
 
                 <!-- name -->
@@ -89,7 +89,7 @@
                         autocapitalize="off"
                         spellcheck="false"
                         v-model="form.name"
-                        placeholder="ชื่อรูปภาพ"
+                        :placeholder="$t('view.stock.product.imageNamePlaceholder')"
                         required
                       />
                       <div class="input-group-append">
@@ -133,7 +133,7 @@
       <div class="filter-container">
         <div class="title-text">
           <span><i class="bi bi-database-fill-up mr-1"></i></span>
-          <span>{{ ` >>> ${latestImageTake} รายการอัพโหลดล่าสุด` }}</span>
+          <span>{{ $t('view.stock.product.imageLatestUploads', { take: latestImageTake }) }}</span>
         </div>
         <BaseDataTable
           scrollHeight="250px"
@@ -195,6 +195,39 @@ export default {
     return { stockProductImageStore }
   },
 
+  computed: {
+    columns() {
+      return [
+        {
+          field: 'image',
+          header: '',
+          width: '50px',
+          sortable: false,
+          align: 'center'
+        },
+        {
+          field: 'name',
+          header: this.$t('common.field.name'),
+          sortable: false,
+          width: '150px'
+        },
+        {
+          field: 'createDate',
+          header: this.$t('common.field.createDate'),
+          sortable: false,
+          format: 'datetime',
+          width: '150px'
+        },
+        {
+          field: 'remark',
+          header: this.$t('view.stock.product.imageDetailHeader'),
+          sortable: false,
+          minWidth: '150px'
+        }
+      ]
+    }
+  },
+
   data() {
     return {
       imageUrl: null,
@@ -208,35 +241,7 @@ export default {
 
       latestImage: [],
       latestImageTake: 20,
-      tableHeight: '800px',
-      columns: [
-        {
-          field: 'image',
-          header: '',
-          width: '50px',
-          sortable: false,
-          align: 'center'
-        },
-        {
-          field: 'name',
-          header: 'ชื่อ',
-          sortable: false,
-          width: '150px'
-        },
-        {
-          field: 'createDate',
-          header: 'วันที่สร้าง',
-          sortable: false,
-          format: 'datetime',
-          width: '150px'
-        },
-        {
-          field: 'remark',
-          header: 'รายละเอียด',
-          sortable: false,
-          minWidth: '150px'
-        }
-      ]
+      tableHeight: '800px'
     }
   },
 
@@ -257,7 +262,7 @@ export default {
 
     async processFile(file) {
       if (!file.type.match(/image\/(jpeg|jpg)/i)) {
-        swAlert.warning('', 'รองรับเฉพาะไฟล์ .jpg / .jpeg เท่านั้น')
+        swAlert.warning('', this.$t('view.stock.product.uploadFormatWarning'))
         return
       }
 
@@ -270,7 +275,7 @@ export default {
         this.imageUrl = URL.createObjectURL(compressedFile)
       } catch (error) {
         console.error('Error:', error)
-        swAlert.error('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ')
+        swAlert.error(this.$t('view.stock.product.uploadError'))
       } finally {
         this.loading = false
       }
@@ -296,7 +301,7 @@ export default {
       this.isSubmitted = true
 
       if (!this.imageUrl || !this.form.name) {
-        swAlert.warning('', 'กรุณากรอกข้อมูลให้ครบถ้วน')
+        swAlert.warning('', this.$t('view.stock.product.uploadIncompleteWarning'))
         return
       }
 

@@ -200,18 +200,18 @@
         <div class="btn-submit-container-between">
           <div></div>
           <div>
-            <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main" type="submit" :title="$t('common.btn.search')">
               <span><i class="bi bi-search"></i></span>
             </button>
             <button
               class="btn btn-sm btn-sub-main ml-2"
               type="button"
-              title="เพิ่มเติม"
+              :title="$t('common.btn.more')"
               @click="onShowDialog"
             >
               <span><i class="bi bi-zoom-in"></i></span>
             </button>
-            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark ml-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <span><i class="bi bi-x-circle"></i></span>
             </button>
 

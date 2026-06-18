@@ -1,6 +1,6 @@
 <template>
   <div class="expnad-container">
-    <h6>ยอดคงเหลือตาม Storage Location</h6>
+    <h6>{{ $t('view.stock.product.slocBalanceTitle') }}</h6>
     <BaseDataTable
       :items="slocBalanceRows"
       :columns="slocColumns"
@@ -74,26 +74,8 @@ export default {
       return this.masterStore.gem
     },
 
-    slocBalanceRows() {
-      const rows = this.modelFormValue?.slocBalances || []
-      const totalOnHand = rows.reduce((s, r) => s + (r.qtyOnHand ?? 0), 0)
-      const totalReserved = rows.reduce((s, r) => s + (r.qtyReserved ?? 0), 0)
-      const totalAvailable = rows.reduce((s, r) => s + (r.qtyAvailable ?? 0), 0)
+    slocColumns() {
       return [
-        ...rows,
-        {
-          location: 'รวม',
-          qtyOnHand: totalOnHand,
-          qtyReserved: totalReserved,
-          qtyAvailable: totalAvailable
-        }
-      ]
-    }
-  },
-
-  data() {
-    return {
-      slocColumns: [
         {
           field: 'location',
           header: 'Storage Location',
@@ -102,7 +84,7 @@ export default {
         },
         {
           field: 'qtyOnHand',
-          header: 'คงเหลือ',
+          header: this.$t('view.stock.product.slocQtyOnHand'),
           sortable: false,
           minWidth: '100px',
           align: 'right',
@@ -110,7 +92,7 @@ export default {
         },
         {
           field: 'qtyReserved',
-          header: 'จอง',
+          header: this.$t('view.stock.product.slocQtyReserved'),
           sortable: false,
           minWidth: '100px',
           align: 'right',
@@ -118,15 +100,17 @@ export default {
         },
         {
           field: 'qtyAvailable',
-          header: 'พร้อมขาย',
+          header: this.$t('view.stock.product.slocQtyAvailable'),
           sortable: false,
           minWidth: '100px',
           align: 'right',
           format: 'decimal2'
         }
-      ],
+      ]
+    },
 
-      columns: [
+    columns() {
+      return [
         {
           field: 'type',
           header: '',
@@ -136,34 +120,54 @@ export default {
         },
         {
           field: 'size',
-          header: 'ขนาด',
+          header: this.$t('view.stock.product.size'),
           sortable: false,
           width: '100px'
         },
         {
           field: 'qty',
-          header: 'จำนวน',
+          header: this.$t('common.field.quantity'),
           sortable: false,
           width: '100px',
           align: 'right'
         },
         {
           field: 'weight',
-          header: 'น้ำหนัก',
+          header: this.$t('common.field.weight'),
           sortable: false,
           width: '100px',
           align: 'right'
         },
         {
           field: 'price',
-          header: 'ราคา',
+          header: this.$t('common.field.price'),
           sortable: false,
           width: '150px',
           format: 'decimal2',
           align: 'right'
         }
       ]
+    },
+
+    slocBalanceRows() {
+      const rows = this.modelFormValue?.slocBalances || []
+      const totalOnHand = rows.reduce((s, r) => s + (r.qtyOnHand ?? 0), 0)
+      const totalReserved = rows.reduce((s, r) => s + (r.qtyReserved ?? 0), 0)
+      const totalAvailable = rows.reduce((s, r) => s + (r.qtyAvailable ?? 0), 0)
+      return [
+        ...rows,
+        {
+          location: this.$t('view.stock.product.slocTotal'),
+          qtyOnHand: totalOnHand,
+          qtyReserved: totalReserved,
+          qtyAvailable: totalAvailable
+        }
+      ]
     }
+  },
+
+  data() {
+    return {}
   },
 
   methods: {

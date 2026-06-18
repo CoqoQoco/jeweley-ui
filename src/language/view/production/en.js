@@ -395,6 +395,46 @@ export default {
     groupEtc: 'Others'
   },
 
+  planBom: {
+    searchTitle: 'Material Report',
+    completedDate: 'W.O. Completed Date',
+    placeholderStart: 'Start',
+    placeholderEnd: 'End',
+    mold: 'Mold',
+    advancedSearch: 'Advanced Search',
+    customerCode: 'Customer Code',
+    customerType: 'Customer Type',
+    productType: 'Product Type',
+    productCode: 'Product Code',
+    goldColor: 'Gold/Silver Color',
+    goldType: 'Gold/Silver Type',
+    colDate: 'Date',
+    colMold: 'Mold',
+    colProductType: 'Product',
+    colName: 'Item',
+    colPricePerQty: 'Price/Qty',
+    colPricePerWeight: 'Price/Weight',
+    colTotal: 'Total Price'
+  },
+
+  mold: {
+    pageTitle: 'Mold Design & Creation',
+    pageDesc: 'Mold design, creation and related details',
+    searchText: 'Search',
+    searchPlaceholder: 'Search ... code, type, description',
+    colImage: 'Mold Image',
+    moldBy: 'Mold Maker',
+    description: 'Description',
+    btnCreate: 'Create Mold',
+    btnUpdate: 'Edit Mold',
+    btnSelectImage: 'Select Image',
+    btnEditImage: 'Change Image',
+    createTitle: 'Create Mold',
+    updateTitle: 'Edit Mold',
+    confirmCreate: 'Confirm Create Mold',
+    confirmUpdate: 'Confirm Edit Mold'
+  },
+
   planGold: {
     pageTitle: 'Create Gold Mixing Request',
     pageDesc: 'Create gold mixing request — specify gold withdrawal, casting, melting, body and other details',

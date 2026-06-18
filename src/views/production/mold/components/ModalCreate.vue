@@ -2,10 +2,10 @@
   <div class="app-container-modal">
     <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
       <!-- <template v-slot:title>
-        <h5>สร้างเเม่พิมพ์</h5>
+        <h5>{{ $t('view.production.mold.createTitle') }}</h5>
       </template> -->
       <template v-slot:content>
-        <h5>สร้างเเม่พิมพ์</h5>
+        <h5>{{ $t('view.production.mold.createTitle') }}</h5>
         <form @submit.prevent="onSubmit">
           <div class="form-container">
             <div class="row form-group">
@@ -20,7 +20,7 @@
                       @change="onSelectImg"
                     />
                     <button class="btn btn-sm btn-main btn-upload-custom" type="button">
-                      เลือกรูปภาพ
+                      {{ $t('view.production.mold.btnSelectImage') }}
                     </button>
                   </div>
                   <div class="upload-preview">
@@ -34,13 +34,13 @@
               <div class="col-md-5">
                 <div class="row form-group">
                   <div class="col-md-12">
-                    <label>รหัส</label>
+                    <label>{{ $t('common.field.code') }}</label>
                     <input type="text" class="form-control" v-model="form.code" required />
                   </div>
                 </div>
                 <div class="row form-group">
                   <div class="col-md-12">
-                    <label>ประเภท</label>
+                    <label>{{ $t('common.field.type') }}</label>
                     <DropdownGeneric
                       v-model="form.category"
                       :options="masterProduct"
@@ -54,13 +54,13 @@
                 </div>
                 <div class="row form-group">
                   <div class="col-md-12">
-                    <label>ช่างขึ้นพิมพ์</label>
+                    <label>{{ $t('view.production.mold.moldBy') }}</label>
                     <input type="text" class="form-control" v-model="form.moldBy" />
                   </div>
                 </div>
                 <div class="row form-group">
                   <div class="col-md-12">
-                    <label>คำอธิบาย</label>
+                    <label>{{ $t('view.production.mold.description') }}</label>
                     <textarea
                       class="form-control"
                       v-model="form.description"
@@ -76,7 +76,7 @@
               <div class="col-md-12">
                 <div class="btn-container">
                   <button class="btn btn-sm btn-main" type="submit">
-                    <span class="mr-2"><i class="bi bi-gem"></i></span><span>สร้างเเม่พิมพ์</span>
+                    <span class="mr-2"><i class="bi bi-gem"></i></span><span>{{ $t('view.production.mold.btnCreate') }}</span>
                   </button>
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default {
     },
     onSubmit() {
       if (this.VaidateForm()) {
-        confirmSubmit(`${this.form.code}`, `ยืนยันสร้างเเม่พิมพ์`, async () => {
+        confirmSubmit(`${this.form.code}`, this.$t('view.production.mold.confirmCreate'), async () => {
           await this.submit()
         })
       }

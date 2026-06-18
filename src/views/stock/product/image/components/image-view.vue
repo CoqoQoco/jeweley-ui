@@ -15,7 +15,7 @@
                   autocapitalize="off"
                   spellcheck="false"
                   v-model="search.name"
-                  placeholder="ค้นหาด้วยชื่อรูปภาพ"
+                  :placeholder="$t('view.stock.product.imageSearchByName')"
                   required
                 />
                 <div class="input-group-append">
@@ -40,7 +40,7 @@
                   autocapitalize="off"
                   spellcheck="false"
                   v-model="search.stock"
-                  placeholder="ค้นหาด้วยรหัสสินค้า"
+                  :placeholder="$t('view.stock.product.imageSearchByStock')"
                   required
                 />
                 <div class="input-group-append">

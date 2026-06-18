@@ -9,7 +9,7 @@
       >
         <template #rightSlot>
           <div v-if="isShow.searchBtn">
-            <button class="btn btn-sm btn-main" title="ค้นหาสินค้า" @click="onShowSearch">
+            <button class="btn btn-sm btn-main" :title="$t('common.btn.search')" @click="onShowSearch">
               <span class="bi bi-search"></span>
             </button>
           </div>

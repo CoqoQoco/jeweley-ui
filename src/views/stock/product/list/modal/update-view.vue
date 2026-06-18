@@ -56,7 +56,7 @@
                     class="form-control"
                     type="text"
                     v-model="search"
-                    placeholder="ค้นหาด้วยชื่อรูปภาพ..."
+                    :placeholder="$t('view.stock.product.imageSearchPlaceholder')"
                     @keyup.enter="fetchLatestImage"
                   />
                   <button
@@ -140,7 +140,7 @@
                   :class="{ 'has-value': stock.mold }"
                   type="text"
                   v-model="stock.mold"
-                  placeholder="ระบุแม่พิมพ์"
+                  :placeholder="$t('view.stock.product.placeholderMold')"
                   required
                 />
               </div>
@@ -172,7 +172,7 @@
                   :class="{ 'has-value': stock.productNameTh }"
                   type="text"
                   v-model="stock.productNameTh"
-                  placeholder="ชื่อสินค้า (ไทย)"
+                  :placeholder="$t('view.stock.product.productNameTh')"
                   required
                 />
               </div>
@@ -226,7 +226,7 @@
                   :class="{ 'has-value': stock.size }"
                   type="text"
                   v-model="stock.size"
-                  placeholder="ระบุขนาด"
+                  :placeholder="$t('view.stock.product.placeholderSize')"
                   :required="isRequiredSizeField(stock.productType)"
                 />
               </div>
@@ -241,7 +241,7 @@
                   class="form-control"
                   type="text"
                   v-model="stock.location"
-                  placeholder="คลังจัดเก็บ"
+                  :placeholder="$t('view.stock.product.storageLocation')"
                   disabled
                 />
               </div>
@@ -277,7 +277,7 @@
                     :options="masterMaterialType"
                     optionLabel="description"
                     optionValue="value"
-                    placeholder="เลือกประเภท"
+                    :placeholder="$t('view.stock.product.selectMaterialType')"
                     class="w-full"
                   />
                 </template>
@@ -289,7 +289,7 @@
                       :options="masterGold"
                       optionLabel="description"
                       optionValue="code"
-                      placeholder="เลือกทอง"
+                      :placeholder="$t('view.stock.product.selectGold')"
                       :showClear="!!data.typeCode"
                       class="w-full"
                     />
@@ -300,7 +300,7 @@
                       :options="masterDiamondGrade"
                       optionLabel="description"
                       optionValue="nameEn"
-                      placeholder="เลือกเพชร"
+                      :placeholder="$t('view.stock.product.selectDiamond')"
                       :showClear="!!data.typeCode"
                       class="w-full"
                     />
@@ -311,7 +311,7 @@
                       :options="masterGem"
                       optionLabel="description"
                       optionValue="nameEn"
-                      placeholder="เลือกพลอย"
+                      :placeholder="$t('view.stock.product.selectGem')"
                       :showClear="!!data.typeCode"
                       class="w-full"
                     />
@@ -326,7 +326,7 @@
                     type="text"
                     v-model="data.size"
                     class="form-control form-control-sm"
-                    placeholder="ขนาด"
+                    :placeholder="$t('view.stock.product.size')"
                   />
                 </template>
 
@@ -335,7 +335,7 @@
                     type="text"
                     v-model="data.region"
                     class="form-control form-control-sm"
-                    placeholder="แหล่งผลิต"
+                    :placeholder="$t('view.stock.product.origin')"
                   />
                 </template>
 
@@ -345,14 +345,14 @@
                       type="number"
                       v-model="data.qty"
                       class="form-control form-control-sm"
-                      placeholder="จำนวน"
+                      :placeholder="$t('common.field.quantity')"
                       min="0"
                     />
                     <input
                       type="text"
                       v-model="data.qtyUnit"
                       class="form-control form-control-sm"
-                      placeholder="หน่วย"
+                      :placeholder="$t('view.stock.product.unit')"
                     />
                   </div>
                 </template>
@@ -363,7 +363,7 @@
                       type="number"
                       v-model="data.weight"
                       class="form-control form-control-sm"
-                      placeholder="น้ำหนัก"
+                      :placeholder="$t('common.field.weight')"
                       min="0"
                       step="0.01"
                     />
@@ -371,7 +371,7 @@
                       type="text"
                       v-model="data.weightUnit"
                       class="form-control form-control-sm"
-                      placeholder="หน่วย"
+                      :placeholder="$t('view.stock.product.unit')"
                     />
                   </div>
                 </template>
@@ -381,7 +381,7 @@
                     type="number"
                     v-model="data.price"
                     class="form-control form-control-sm"
-                    placeholder="ราคา"
+                    :placeholder="$t('common.field.price')"
                     min="0"
                     step="0.01"
                   />
@@ -392,7 +392,7 @@
                     type="button"
                     class="btn btn-red btn-sm"
                     @click="removeMaterialItem(stock, index)"
-                    title="ลบรายการ"
+                    :title="$t('common.btn.delete')"
                   >
                     <i class="bi bi-trash"></i>
                   </button>
@@ -506,10 +506,10 @@ export default {
     },
     masterMaterialType() {
       return [
-        { value: 'Gold', description: 'ทอง' },
-        { value: 'Silver', description: 'เงิน' },
-        { value: 'Diamond', description: 'เพชร' },
-        { value: 'Gem', description: 'พลอย' }
+        { value: 'Gold', description: this.$t('view.stock.product.materialTypeGold') },
+        { value: 'Silver', description: this.$t('view.stock.product.materialTypeSilver') },
+        { value: 'Diamond', description: this.$t('view.stock.product.materialTypeDiamond') },
+        { value: 'Gem', description: this.$t('view.stock.product.materialTypeGem') }
       ]
     }
   },

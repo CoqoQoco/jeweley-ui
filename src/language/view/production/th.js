@@ -395,6 +395,46 @@ export default {
     groupEtc: 'อื่นๆ'
   },
 
+  planBom: {
+    searchTitle: 'รายงานวัถุดิบ',
+    completedDate: 'วันที่ W.O. สำเร็จ',
+    placeholderStart: 'เริ่มต้น',
+    placeholderEnd: 'สิ้นสุด',
+    mold: 'เเม่พิมพ์',
+    advancedSearch: 'ค้นหาเพิ่มเติม',
+    customerCode: 'รหัสลูกค้า',
+    customerType: 'ประเภทลูกค้า',
+    productType: 'ประเภทสินค้า',
+    productCode: 'รหัสสินค้า',
+    goldColor: 'สีของทอง/เงิน',
+    goldType: 'ประเภททอง/เงิน',
+    colDate: 'วันที่',
+    colMold: 'แม่พิมพ์',
+    colProductType: 'สินค้า',
+    colName: 'รายการ',
+    colPricePerQty: 'ราคา/จำนวน',
+    colPricePerWeight: 'ราคา/น้ำหนัก',
+    colTotal: 'ราคารวม'
+  },
+
+  mold: {
+    pageTitle: 'ออกเเบบ สร้างเเม่พิมพ์',
+    pageDesc: 'ข้อมูลออกเเบบ สร้างเเม่พิมพ์ เเละรายละเอียดต่างๆ',
+    searchText: 'คำค้นหา',
+    searchPlaceholder: 'คำค้นหา ... รหัส ประเภท รายละเอียด',
+    colImage: 'รูปเเม่พิมพ์',
+    moldBy: 'ช่างขึ้นพิมพ์',
+    description: 'คำอธิบาย',
+    btnCreate: 'สร้างเเม่พิมพ์',
+    btnUpdate: 'เเก้ไขเเม่พิมพ์',
+    btnSelectImage: 'เลือกรูปภาพ',
+    btnEditImage: 'เลือกเเเก้ไขรูปภาพ',
+    createTitle: 'สร้างเเม่พิมพ์',
+    updateTitle: 'เเก้ไขเเม่พิมพ์',
+    confirmCreate: 'ยืนยันสร้างเเม่พิมพ์',
+    confirmUpdate: 'ยืนยันเเก้ไขเเม่พิมพ์'
+  },
+
   planGold: {
     pageTitle: 'สร้างใบเบิกผสมทอง',
     pageDesc: 'สร้างใบเบิกผสมทอง ระบุข้อมูลทองเบิก ทองหล่อ ทองหลอม ตัวเรือน เเละคำอธิบายอื่นๆ',

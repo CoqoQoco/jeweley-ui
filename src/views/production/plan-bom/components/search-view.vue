@@ -3,12 +3,12 @@
     <form @submit.prevent="onSearch">
       <div>
         <div>
-          <pageTitle title="รายงานวัถุดิบ" :isShowBtnClose="false"> </pageTitle>
+          <pageTitle :title="$t('view.production.planBom.searchTitle')" :isShowBtnClose="false"> </pageTitle>
         </div>
 
         <div class="form-col-container">
           <div>
-            <span class="title-text">วันที่ W.O. สำเร็จ</span>
+            <span class="title-text">{{ $t('view.production.planBom.completedDate') }}</span>
             <div class="flex-group">
               <CalendarGeneric
                 class="w-100"
@@ -16,7 +16,7 @@
                 :max-date="form.end"
                 :manualInput="true"
                 showIcon
-                placeholder="เริ่มต้น"
+                :placeholder="$t('view.production.planBom.placeholderStart')"
                 dateFormat="dd/mm/yy"
               />
               <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -26,7 +26,7 @@
                 :min-date="form.start"
                 showIcon
                 :manualInput="true"
-                placeholder="สิ้นสุด"
+                :placeholder="$t('view.production.planBom.placeholderEnd')"
                 dateFormat="dd/mm/yy"
               />
             </div>
@@ -55,7 +55,7 @@
 
             <!-- modld -->
             <div>
-              <span class="title-text">เเม่พิมพ์</span>
+              <span class="title-text">{{ $t('view.production.planBom.mold') }}</span>
               <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
             </div>
           </div>
@@ -65,13 +65,13 @@
           :isShow="isShow.dialog"
           @closeDialog="closeDialog"
           @search="dialogSearch"
-          txtHeader="ค้นหาเพิ่มเติม"
+          :txtHeader="$t('view.production.planBom.advancedSearch')"
         >
           <template #content>
             <div class="form-col-container">
               <!-- customer code -->
               <div>
-                <span class="title-text">รหัสลูกค้า</span>
+                <span class="title-text">{{ $t('view.production.planBom.customerCode') }}</span>
                 <input
                   ref="inputText"
                   id="inputText"
@@ -83,7 +83,7 @@
 
               <!-- customer type -->
               <div>
-                <span class="title-text">ประเภทลูกค้า</span>
+                <span class="title-text">{{ $t('view.production.planBom.customerType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.customerType"
@@ -96,7 +96,7 @@
 
               <!-- product type -->
               <div>
-                <span class="title-text">ประเภทสินค้า</span>
+                <span class="title-text">{{ $t('view.production.planBom.productType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.productType"
@@ -109,7 +109,7 @@
 
               <!-- product number -->
               <div>
-                <span class="title-text">รหัสสินค้า</span>
+                <span class="title-text">{{ $t('view.production.planBom.productCode') }}</span>
                 <input
                   ref="inputText"
                   id="inputText"
@@ -121,7 +121,7 @@
 
               <!-- gold -->
               <div>
-                <span class="title-text">สีของทอง/เงิน</span>
+                <span class="title-text">{{ $t('view.production.planBom.goldColor') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.gold"
@@ -134,7 +134,7 @@
 
               <!-- gold size -->
               <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
+                <span class="title-text">{{ $t('view.production.planBom.goldType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.goldSize"

@@ -3,34 +3,34 @@
     <form @submit.prevent="onSearch">
       <div class="filter-container mb-3">
         <pageTitle
-          title="ออกเเบบ สร้างเเม่พิมพ์"
-          description="ข้อมูลออกเเบบ สร้างเเม่พิมพ์ เเละรายละเอียดต่างๆ"
+          :title="$t('view.production.mold.pageTitle')"
+          :description="$t('view.production.mold.pageDesc')"
           :isShowBtnClose="false"
           isShowRightSlot
         />
         <div class="row form-group">
           <div class="col-md-8">
-            <label>คำค้นหา</label>
+            <label>{{ $t('view.production.mold.searchText') }}</label>
             <input
               type="text"
               style="width: 30rem"
               class="form-control"
-              placeholder="คำค้นหา ... รหัส ประเภท รายละเอียด"
+              :placeholder="$t('view.production.mold.searchPlaceholder')"
               v-model="form.text"
             />
           </div>
           <div class="col-md-4 btn-container">
             <button class="btn btn-sm btn-main mr-2" type="submit">
               <span class="mr-2"><i class="bi bi-search"></i></span>
-              <span>ค้นหา</span>
+              <span>{{ $t('common.btn.search') }}</span>
             </button>
             <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear">
               <span class="mr-2"><i class="bi bi-x-circle"></i></span>
-              <span>ล้างค้นหา</span>
+              <span>{{ $t('common.btn.clear') }}</span>
             </button>
             <button class="btn btn-sm btn-main" type="button" @click="showModalAddMold">
               <span class="mr-2"><i class="bi bi-gem"></i></span>
-              <span>สร้างเเม่พิมพ์</span>
+              <span>{{ $t('view.production.mold.btnCreate') }}</span>
             </button>
           </div>
         </div>
@@ -110,9 +110,13 @@ export default {
 
       totalRecords: 0,
       data: [],
-      dataUpdate: {},
+      dataUpdate: {}
+    }
+  },
 
-      columns: [
+  computed: {
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
@@ -122,31 +126,31 @@ export default {
         },
         {
           field: 'code',
-          header: 'รหัส',
+          header: this.$t('common.field.code'),
           minWidth: '120px',
           sortable: true
         },
         {
           field: 'category',
-          header: 'ประเภท',
+          header: this.$t('common.field.type'),
           minWidth: '120px',
           sortable: true
         },
         {
           field: 'image',
-          header: 'รูปเเม่พิมพ์',
+          header: this.$t('view.production.mold.colImage'),
           minWidth: '100px',
           sortable: false
         },
         {
           field: 'moldBy',
-          header: 'ช่างขึ้นพิมพ์',
+          header: this.$t('view.production.mold.moldBy'),
           minWidth: '120px',
           sortable: true
         },
         {
           field: 'description',
-          header: 'รายละเอียด',
+          header: this.$t('common.field.remark'),
           minWidth: '200px',
           sortable: true
         }
