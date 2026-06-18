@@ -4,7 +4,7 @@
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span><i class="bi bi-collection mr-2"></i></span>
-          <span>ค้นหาใบจา่ย-รับคืน | ระบุเเม่พิมพ์เพื่อสร้างเเบบงาน</span>
+          <span>{{ $t('view.production.planCreate.modifyPlanSearchTitle') }}</span>
         </div>
 
         <div>
@@ -15,7 +15,7 @@
                   v-model="search.mold"
                   :suggestions="moldItemSearch"
                   @complete="onSearchMold"
-                  placeholder="พิมพ์รหัสเเม่พิมพ์ที่ต้องการค้นหา"
+                  :placeholder="$t('view.production.planCreate.modifyPlanPlaceholder')"
                   :class="val.isValMold === true ? `p-invalid` : ``"
                   forceSelection
                   @change="clearDataSearch"
@@ -43,7 +43,7 @@
               <div class="btn-action-container">
                 <button class="btn btn-sm btn btn-dark mr-2" @click="modifyPlan(data)">
                   <i class="bi bi-collection"></i>
-                  <span class="ml-1">เลือกเเบบงาน</span>
+                  <span class="ml-1">{{ $t('view.production.planCreate.btnSelectStyle') }}</span>
                 </button>
                 <button class="btn btn-sm btn btn-green" @click="viewplan(data)">
                   <i class="bi bi-search"></i>
@@ -155,9 +155,13 @@ export default {
 
       moldItemSearch: [],
       dataSearch: {},
-      mold: 'MOLD',
+      mold: 'MOLD'
+    }
+  },
 
-      columns: [
+  computed: {
+    columns() {
+      return [
         {
           field: 'action',
           header: '',
@@ -168,81 +172,81 @@ export default {
         },
         {
           field: 'woText',
-          header: 'W.O.',
+          header: this.$t('view.production.planCreate.colWo'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'mold',
-          header: 'เเม่พิมพ์',
+          header: this.$t('view.production.planCreate.colMold'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'status',
-          header: 'สถานะใบงาน',
+          header: this.$t('view.production.planCreate.colPlanStatus'),
           sortable: true,
           minWidth: '150px',
           align: 'center'
         },
         {
           field: 'lastUpdateStatus',
-          header: 'สถานะใบงาน (วันที่)',
+          header: this.$t('view.production.planCreate.colPlanStatusDate'),
           sortable: true,
           minWidth: '150px',
           format: 'datetime'
         },
         {
           field: 'productNumber',
-          header: 'รหัสสินค้า',
+          header: this.$t('view.production.planCreate.colProductCode'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productTypeName',
-          header: 'ประเภทสินค้า',
+          header: this.$t('view.production.planCreate.colProductTypeName'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'productQty',
-          header: 'จำนวนสินค้า',
+          header: this.$t('view.production.planCreate.colProductQty'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'gold',
-          header: 'สีของทอง/เงิน',
+          header: this.$t('view.production.planCreate.colGoldColorTable'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'goldSize',
-          header: 'ประเภททอง/เงิน',
+          header: this.$t('view.production.planCreate.colGoldTypeTable'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'customerNumber',
-          header: 'รหัสลูกค้า',
+          header: this.$t('view.production.planCreate.colCustomerCode'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'customerName',
-          header: 'ชื่อลูกค้า',
+          header: this.$t('view.production.planCreate.colCustomerName'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'customerTypeName',
-          header: 'ประเภทลูกค้า',
+          header: this.$t('view.production.planCreate.colCustomerType'),
           sortable: true,
           minWidth: '150px'
         },
         {
           field: 'createDate',
-          header: 'วันสร้างใบสินค้า',
+          header: this.$t('view.production.planCreate.colCreateDate'),
           sortable: true,
           minWidth: '150px',
           format: 'date'

@@ -1,7 +1,7 @@
 <template>
   <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
     <template #title>
-      <span class="title-text-lg px-3 pt-2 d-block">เลือกใบสั่งผลิต (Pre-Plan) เพื่อสร้างแผน</span>
+      <span class="title-text-lg px-3 pt-2 d-block">{{ $t('view.production.planCreate.selectPrePlanTitle') }}</span>
     </template>
     <template #content>
       <div class="p-3">
@@ -10,7 +10,7 @@
             type="text"
             class="form-control"
             v-model="search.moldCode"
-            placeholder="รหัสแม่พิมพ์ (ไม่บังคับ)"
+            :placeholder="$t('view.production.planCreate.prePlanPlaceholderMold')"
             style="max-width: 280px"
             @keyup.enter="onSearch"
           />
@@ -28,7 +28,7 @@
         >
           <template #actionTemplate="{ data }">
             <button class="btn btn-sm btn-main" type="button" @click="onSelect(data)">
-              <i class="bi bi-check"></i> เลือก
+              <i class="bi bi-check"></i> {{ $t('common.btn.select') }}
             </button>
           </template>
 
@@ -92,15 +92,20 @@ export default {
         moldCode: '',
       },
       items: [],
-      columns: [
+    }
+  },
+
+  computed: {
+    columns() {
+      return [
         { field: 'action', header: '', width: '90px', sortable: false, align: 'center' },
-        { field: 'moldImage', header: 'รูป', width: '70px', sortable: false, align: 'center' },
-        { field: 'orderNo', header: 'เลขที่ใบสั่ง', minWidth: '140px' },
-        { field: 'moldCode', header: 'รหัสแม่พิมพ์', minWidth: '130px' },
-        { field: 'productType', header: 'ประเภทสินค้า', minWidth: '130px' },
-        { field: 'productQty', header: 'จำนวน', minWidth: '80px', align: 'center' },
-        { field: 'deliveryDate', header: 'วันที่ส่ง', minWidth: '110px', sortable: false },
-      ],
+        { field: 'moldImage', header: this.$t('view.production.planCreate.prePlanColImage'), width: '70px', sortable: false, align: 'center' },
+        { field: 'orderNo', header: this.$t('view.production.planCreate.prePlanColOrderNo'), minWidth: '140px' },
+        { field: 'moldCode', header: this.$t('view.production.planCreate.prePlanColMoldCode'), minWidth: '130px' },
+        { field: 'productType', header: this.$t('view.production.planCreate.prePlanColProductType'), minWidth: '130px' },
+        { field: 'productQty', header: this.$t('view.production.planCreate.prePlanColQty'), minWidth: '80px', align: 'center' },
+        { field: 'deliveryDate', header: this.$t('view.production.planCreate.prePlanColDeliveryDate'), minWidth: '110px', sortable: false },
+      ]
     }
   },
 
