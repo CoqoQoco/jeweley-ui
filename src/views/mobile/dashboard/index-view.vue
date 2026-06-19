@@ -263,11 +263,10 @@ export default {
 
     viewAllActivities() {
       // Navigate to activities page
-      console.log('View all activities')
     },
 
-    viewActivity(activity) {
-      console.log('View activity:', activity)
+    viewActivity() {
+      // Navigate to activity detail
     },
 
     viewJob(job) {
@@ -276,8 +275,6 @@ export default {
           name: 'mobile-cost-version-detail',
           params: { jobRunning: job.jobRunning }
         })
-      } else {
-        console.log('View job:', job)
       }
     }
   }
@@ -295,9 +292,9 @@ export default {
 
 .dashboard-header {
   background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
-  padding: 24px 16px;
+  padding: var(--sp-2xl) var(--sp-lg);
   color: white;
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-lg);
 
   .header-content {
     display: flex;
@@ -311,7 +308,7 @@ export default {
     .greeting-text {
       font-size: 1.5rem;
       font-weight: 600;
-      margin: 0 0 4px 0;
+      margin: 0 0 var(--sp-xs) 0;
     }
 
     .greeting-subtitle {
@@ -347,7 +344,7 @@ export default {
         color: white;
         font-size: 0.7rem;
         padding: 2px 5px;
-        border-radius: 10px;
+        border-radius: var(--radius-sm);
         min-width: 18px;
         text-align: center;
       }
@@ -360,18 +357,18 @@ export default {
 }
 
 .stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  gap: var(--sp-md);
+  box-shadow: var(--shadow-sm);
 
   .stat-icon {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -385,7 +382,7 @@ export default {
       font-size: 1.5rem;
       font-weight: 600;
       line-height: 1;
-      margin-bottom: 4px;
+      margin-bottom: var(--sp-xs);
     }
 
     .stat-label {
@@ -418,17 +415,17 @@ export default {
 }
 
 .action-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-xl);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--sp-sm);
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 
   .action-icon {
     width: 56px;
@@ -462,7 +459,7 @@ export default {
 .header-actions-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-sm);
 }
 
 .icon-btn-small {
@@ -471,7 +468,7 @@ export default {
   color: var(--base-font-color);
   font-size: 1.1rem;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--sp-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -511,9 +508,9 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: white;
-  border-radius: 12px;
+  padding: 40px var(--sp-xl);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
 
   .spinner {
     width: 40px;
@@ -525,7 +522,7 @@ export default {
   }
 
   .loading-text {
-    margin-top: 16px;
+    margin-top: var(--sp-lg);
     color: #666;
     font-size: 0.9rem;
   }
@@ -545,22 +542,22 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: white;
-  border-radius: 12px;
+  padding: 40px var(--sp-xl);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 3rem;
-    color: #ddd;
-    margin-bottom: 16px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-lg);
   }
 
   .empty-title {
     font-size: 1rem;
     font-weight: 600;
     color: #666;
-    margin-bottom: 4px;
+    margin-bottom: var(--sp-xs);
   }
 
   .empty-subtitle {

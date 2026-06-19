@@ -609,10 +609,10 @@ input {
 }
 
 .section-card {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-header-bar {
@@ -657,9 +657,9 @@ input {
       justify-content: center;
       gap: 6px;
       padding: 10px 12px;
-      border-radius: 8px;
-      border: 1.5px solid #e0e0e0;
-      background: white;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--color-border);
+      background: var(--color-card-bg);
       color: #666;
       font-size: 0.85rem;
       font-weight: 500;
@@ -690,7 +690,7 @@ input {
       content: '';
       flex: 1;
       height: 1px;
-      background: #e0e0e0;
+      background: var(--color-border);
     }
 
     span {
@@ -733,10 +733,10 @@ input {
 }
 
 .currency-card {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
   padding: 14px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 
   .currency-row {
     display: flex;
@@ -758,8 +758,8 @@ input {
         width: 100%;
         height: 35px;
         padding: 0 12px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
         font-size: 0.9rem;
         outline: none;
         transition: border-color 0.2s ease;
@@ -808,8 +808,8 @@ input {
   .p-autocomplete-input {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
     font-size: 0.9rem;
     outline: none;
     transition: border-color 0.2s ease;

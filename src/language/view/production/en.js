@@ -392,7 +392,9 @@ export default {
     groupGold: 'Gold Items',
     groupMaterial: 'Material Items',
     groupWorker: 'Worker Items',
-    groupEtc: 'Others'
+    groupEtc: 'Others',
+    btnAddItem: 'Add Item',
+    btnAddDiscount: 'Add Discount'
   },
 
   planBom: {
@@ -510,7 +512,8 @@ export default {
     prePlanColMoldCode: 'Mold Code',
     prePlanColProductType: 'Product Type',
     prePlanColQty: 'Qty',
-    prePlanColDeliveryDate: 'Delivery Date'
+    prePlanColDeliveryDate: 'Delivery Date',
+    defaultUnit: 'pcs'
   },
 
   planGold: {
@@ -556,6 +559,8 @@ export default {
     placeholderWoBody: 'Enter WO/WO No. Body',
     promptSpecifyWo: 'Please specify WO/WO No. Body',
     confirmCreate: 'Confirm Create Gold Request',
-    btnCreate: 'Create Gold Mixing Request'
+    btnCreate: 'Create Gold Mixing Request',
+    labelNo: 'No.:',
+    labelBookNo: 'Book No.:'
   }
 }

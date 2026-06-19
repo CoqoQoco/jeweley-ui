@@ -155,7 +155,7 @@
       <template v-else-if="form.status === 2">
         <button class="btn btn-sm btn-green" @click="onCheckout">
           <i class="bi bi-box-arrow-right"></i>
-          <span class="ml-1">Checkout</span>
+          <span class="ml-1">{{ $t('view.sale.stockBasket.checkout') }}</span>
         </button>
       </template>
 

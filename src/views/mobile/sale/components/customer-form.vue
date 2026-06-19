@@ -222,7 +222,7 @@ export default {
   padding: 6px 10px;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -245,10 +245,10 @@ export default {
 }
 
 .form-card {
-  background: white;
-  border-radius: 10px;
-  padding: 16px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  border: 1px solid var(--color-border);
 
   .selected-customer-badge {
     display: flex;
@@ -256,7 +256,7 @@ export default {
     justify-content: space-between;
     padding: 8px 12px;
     background: rgba(var(--base-font-color-rgb, 0, 0, 0), 0.06);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     margin-bottom: 14px;
 
     .badge-code {
@@ -299,7 +299,7 @@ export default {
       margin-bottom: 6px;
 
       .required {
-        color: #e74c3c;
+        color: var(--base-red);
       }
     }
 
@@ -307,8 +307,8 @@ export default {
     textarea {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
       font-size: 0.9rem;
       outline: none;
       transition: border-color 0.2s ease;

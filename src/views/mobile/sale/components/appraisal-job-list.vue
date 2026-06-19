@@ -156,14 +156,14 @@ export default {
   flex-direction: column;
   align-items: center;
   padding: 40px 20px;
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 3rem;
-    color: #ddd;
-    margin-bottom: 12px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-md);
   }
 
   .empty-title {

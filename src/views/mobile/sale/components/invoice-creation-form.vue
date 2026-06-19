@@ -524,10 +524,10 @@ export default {
 
 // ==================== Info Card ====================
 .info-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-header {
@@ -536,7 +536,7 @@ export default {
   gap: 8px;
   padding: 12px 16px;
   background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   font-weight: 600;
   color: var(--base-font-color);
   font-size: 0.95rem;
@@ -548,7 +548,7 @@ export default {
   .header-badge {
     margin-left: auto;
     padding: 2px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     font-size: 0.75rem;
     font-weight: 600;
     background: var(--base-font-color);
@@ -557,7 +557,7 @@ export default {
 }
 
 .card-body {
-  padding: 16px;
+  padding: var(--sp-lg);
 }
 
 // ==================== Item Selection ====================
@@ -587,8 +587,8 @@ export default {
   align-items: flex-start;
   gap: 10px;
   padding: 12px;
-  border: 1.5px solid #e8e8e8;
-  border-radius: 10px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -645,7 +645,7 @@ export default {
     color: #888;
 
     .item-discount {
-      color: #f44336;
+      color: var(--base-red);
       font-weight: 500;
     }
   }
@@ -740,7 +740,7 @@ export default {
 
 .summary-divider {
   height: 1px;
-  background: #e8e8e8;
+  background: var(--color-border);
   margin: 8px 0;
 }
 
@@ -759,10 +759,10 @@ export default {
   .form-control {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
     font-size: 0.9rem;
-    background: white;
+    background: var(--color-card-bg);
 
     &:focus {
       border-color: var(--base-font-color);
@@ -817,7 +817,7 @@ export default {
     color: white;
     border: none;
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;

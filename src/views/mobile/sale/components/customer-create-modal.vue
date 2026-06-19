@@ -291,18 +291,18 @@ export default {
     gap: 8px;
     padding: 10px 14px;
     margin-bottom: 16px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: var(--color-card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
 
     .btn-close-form {
       display: flex;
       align-items: center;
       gap: 4px;
       padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #e0e0e0;
-      background: white;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-card-bg);
       color: #666;
       font-size: 0.85rem;
       cursor: pointer;
@@ -330,7 +330,7 @@ export default {
       align-items: center;
       gap: 4px;
       padding: 8px 16px;
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       border: none;
       background: var(--base-font-color);
       color: white;
@@ -364,7 +364,7 @@ export default {
       margin-bottom: 6px;
 
       .required {
-        color: #e74c3c;
+        color: var(--base-red);
       }
     }
 
@@ -380,9 +380,9 @@ export default {
         width: 44px;
         min-width: 44px;
         height: 44px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        background: white;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        background: var(--color-card-bg);
         color: var(--base-font-color);
         font-size: 1.1rem;
         display: flex;
@@ -403,12 +403,12 @@ export default {
     select {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
       font-size: 0.9rem;
       outline: none;
       transition: border-color 0.2s ease;
-      background: white;
+      background: var(--color-card-bg);
       color: #333;
 
       &:focus {

@@ -133,7 +133,7 @@
         :disabled="exportingPDF"
       >
         <span class="bi bi-file-pdf mr-2"></span>
-        <span>Export PDF</span>
+        <span>{{ $t('view.sale.costStock.exportPdf') }}</span>
       </button>
       <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="handleClose">
         <span class="bi bi-x mr-2"></span>

@@ -346,7 +346,7 @@ export default {
         try {
           parsedData = JSON.parse(soResponse.data)
         } catch (e) {
-          console.error('Error parsing SO data:', e)
+          // parse fail → parsedData remains null
         }
       } else if (soResponse.data && typeof soResponse.data === 'object') {
         parsedData = soResponse.data
@@ -427,7 +427,6 @@ export default {
         success(this.$t('view.mobile.sale.invoiceSuccessPdfMsg'), this.$t('view.mobile.sale.invoiceSuccessPdf'))
         this.showPrintForm = false
       } catch (err) {
-        console.error('Error generating PDF:', err)
         error(err.message || this.$t('view.mobile.sale.invoiceGeneratingBtn'), this.$t('view.mobile.sale.invoiceDetailTitle'))
       } finally {
         this.exportingPDF = false
@@ -472,7 +471,7 @@ export default {
               })
             }
           } catch (err) {
-            console.error('Error unconfirming stock items:', err)
+            // non-critical — invoice already deleted, continue to navigate
           }
 
           // Step 3: Navigate — ใน success callback เพื่อให้ user กดตกลงก่อนค่อย navigate
@@ -531,10 +530,10 @@ export default {
 }
 
 .info-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-header {
@@ -543,7 +542,7 @@ export default {
   gap: 8px;
   padding: 12px 16px;
   background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   font-weight: 600;
   color: var(--base-font-color);
   font-size: 0.95rem;
@@ -555,7 +554,7 @@ export default {
   .header-status-badge {
     margin-left: auto;
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     font-size: 0.75rem;
     color: white;
     font-weight: 500;
@@ -563,7 +562,7 @@ export default {
 }
 
 .card-body {
-  padding: 16px;
+  padding: var(--sp-lg);
 }
 
 .info-row {
@@ -639,10 +638,10 @@ export default {
 
 // ==================== Summary ====================
 .summary-card {
-  background: white;
-  border-radius: 10px;
-  padding: 16px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  border: 1px solid var(--color-border);
 
   .summary-row {
     display: flex;
@@ -661,7 +660,7 @@ export default {
       color: #333;
 
       &.discount {
-        color: #f44336;
+        color: var(--base-red);
       }
 
       &.addition {
@@ -693,19 +692,19 @@ export default {
 
 // ==================== Print Form ====================
 .print-form-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   border: 2px solid var(--base-font-color);
 
   .print-note {
     font-size: 0.8rem;
     color: #999;
     background: #fff8e1;
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 16px;
+    padding: var(--sp-sm) var(--sp-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--sp-lg);
     line-height: 1.4;
   }
 
@@ -723,8 +722,8 @@ export default {
     .form-control {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
       font-size: 0.9rem;
       color: #333;
       background: #fafafa;
@@ -785,14 +784,14 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 16px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-lg);
   }
 
   .empty-title {

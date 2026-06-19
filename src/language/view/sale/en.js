@@ -304,6 +304,7 @@ export const saleOrder = {
   selectAllCount: 'Select All ({count} items)',
   confirmedItems: 'Confirmed Items',
   pendingItems: 'Pending',
+  productionNumber: 'Production No.',
   stockNumberNew: 'Stock No. (New)',
   stockNumberOld: 'Stock No. (Old)',
   salePriceTHB: 'Sale Price (THB)',
@@ -711,6 +712,7 @@ export const stockBasket = {
   addDate: 'Add Date',
   submitApproval: 'Submit for Approval',
   approve: 'Approve',
+  checkout: 'Checkout',
   validation: {
     conditionRequired: 'Please specify at least 1 condition',
     nameRequired: 'Please enter event/booth name',
@@ -1176,7 +1178,18 @@ export const paymentTracking = {
   status: 'Status',
   dueDate: 'Due Date',
   overdueDays: 'Days Overdue',
-  action: 'Action'
+  action: 'Action',
+  paidBadge: 'Paid',
+  pendingBadge: 'Pending',
+  sendNotification: 'Send Notification',
+  follow: 'Follow Up',
+  fromLastMonth: 'from last month',
+  ofTotal: 'of total',
+  itemsUnit: 'items',
+  daysUnit: 'days',
+  transferMethod: 'Transfer',
+  cashMethod: 'Cash',
+  creditMethod: 'Credit 30 days'
 }
 
 export const document = {

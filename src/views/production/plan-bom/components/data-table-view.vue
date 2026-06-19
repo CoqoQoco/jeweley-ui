@@ -41,17 +41,10 @@
 </template>
 
 <script>
-//import { defineAsyncComponent } from 'vue'
-//import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-//import swAlert from '@/services/alert/sweetAlerts'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
-//const transferJobView = defineAsyncComponent(() => import('../modal/JobTransfer.vue'))
-
-//import { mapState, mapActions } from 'pinia'
 import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
-import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-//import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
   name: 'ProductionPlanList',
@@ -60,32 +53,20 @@ export default {
     BaseDataTable
   },
 
+  mixins: [dataTablePaging],
+
   props: {
     modelForm: {
       type: Object,
-      default: () => ({}), // ให้ default เป็น empty object แทน
-      required: true
+      default: () => ({})
     },
     modelFormExport: {
       type: Object,
       default: () => ({})
     },
-    formValueExport: {
-      type: Object,
-      default: () => ({})
-    },
     masterPlanStatus: {
       type: Array,
-      default: () => [],
-      required: true
-    }
-  },
-
-  data() {
-    return {
-      take: 10,
-      skip: 0,
-      sort: []
+      default: () => []
     }
   },
 
@@ -181,36 +162,14 @@ export default {
 
   watch: {
     async modelForm() {
-      console.log(this.modelForm)
-      this.take = 10
-      this.skip = 0
-      await this.fetchData()
+      this.resetPaging()
     },
     async modelFormExport() {
-      console.log(this.modelForm)
       await this.fetchDataExport()
     }
   },
 
   methods: {
-    // ----- data table hnadle
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchData()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchData()
-    },
-
-    // ---- APIs
     async fetchData() {
       await this.planBOMApiStore.fetchList({
         take: this.take,
@@ -219,6 +178,7 @@ export default {
         formValue: this.form
       })
     },
+
     async fetchDataExport() {
       await this.planBOMApiStore.fetchListReport({
         take: 0,
@@ -226,14 +186,6 @@ export default {
         sort: this.sort,
         formValue: this.form
       })
-    },
-    // handle page
-
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
-    formatDate(date) {
-      return formatDate(date)
     }
   }
 }

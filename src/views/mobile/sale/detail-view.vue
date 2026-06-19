@@ -567,7 +567,7 @@ export default {
         try {
           parsedData = JSON.parse(response.data)
         } catch (e) {
-          console.error('Error parsing SO data:', e)
+          // parse fail → parsedData remains null, parseItems will return early
         }
       } else if (response.data && typeof response.data === 'object') {
         parsedData = response.data
@@ -802,7 +802,6 @@ export default {
         pdf.download(filename)
         success(this.$t('view.mobile.sale.successCreatePdf'))
       } catch (err) {
-        console.error('Error generating PDF:', err)
         error(err.message || this.$t('view.mobile.sale.errorCreatePdf'))
       } finally {
         this.exportingPDF = false
@@ -893,10 +892,10 @@ input {
 }
 
 .info-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-header {
@@ -905,7 +904,7 @@ input {
   gap: 8px;
   padding: 12px 16px;
   background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   font-weight: 600;
   color: var(--base-font-color);
   font-size: 0.95rem;
@@ -917,7 +916,7 @@ input {
   .header-status-badge {
     margin-left: auto;
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     font-size: 0.75rem;
     color: white;
     font-weight: 500;
@@ -931,7 +930,7 @@ input {
 }
 
 .card-body {
-  padding: 16px;
+  padding: var(--sp-lg);
 }
 
 .info-row {
@@ -1015,10 +1014,10 @@ input {
 
 // ==================== Edit Mode - Add Item ====================
 .section-card {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-header-bar {
@@ -1063,9 +1062,9 @@ input {
       justify-content: center;
       gap: 6px;
       padding: 10px 12px;
-      border-radius: 8px;
-      border: 1.5px solid #e0e0e0;
-      background: white;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--color-border);
+      background: var(--color-card-bg);
       color: #666;
       font-size: 0.85rem;
       font-weight: 500;
@@ -1096,7 +1095,7 @@ input {
       content: '';
       flex: 1;
       height: 1px;
-      background: #e0e0e0;
+      background: var(--color-border);
     }
 
     span {
@@ -1118,10 +1117,10 @@ input {
 
 // ==================== Summary ====================
 .summary-card {
-  background: white;
-  border-radius: 10px;
-  padding: 16px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  border: 1px solid var(--color-border);
 
   .summary-row {
     display: flex;
@@ -1140,7 +1139,7 @@ input {
       color: #333;
 
       &.discount {
-        color: #f44336;
+        color: var(--base-red);
       }
 
       &.addition {
@@ -1201,8 +1200,8 @@ input {
 
 .currency-edit-input {
   padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s ease;
@@ -1223,8 +1222,8 @@ input {
   .p-autocomplete-input {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
     font-size: 0.9rem;
     outline: none;
     transition: border-color 0.2s ease;
@@ -1268,7 +1267,7 @@ input {
     color: white;
     border: none;
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
@@ -1283,7 +1282,7 @@ input {
     color: white;
     border: none;
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
@@ -1304,8 +1303,8 @@ input {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
 
   .spinner {
     width: 40px;
@@ -1334,14 +1333,14 @@ input {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 16px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-lg);
   }
 
   .empty-title {

@@ -96,9 +96,9 @@ export default {
     flex-direction: column;
     align-items: center;
     padding: 30px 20px;
-    background: white;
-    border-radius: 10px;
-    border: 2px dashed #e0e0e0;
+    background: var(--color-card-bg);
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--color-border);
     color: #999;
     gap: 8px;
 

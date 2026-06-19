@@ -304,6 +304,7 @@ export const saleOrder = {
   selectAllCount: 'เลือกทั้งหมด ({count} รายการ)',
   confirmedItems: 'สินค้าที่ยืนยันแล้ว',
   pendingItems: 'รอยืนยัน',
+  productionNumber: 'เลขที่ผลิต',
   stockNumberNew: 'เลขที่ผลิต (ใหม่)',
   stockNumberOld: 'เลขที่ผลิต (เก่า)',
   salePriceTHB: 'ราคาขาย (THB)',
@@ -705,6 +706,7 @@ export const stockBasket = {
   addDate: 'วันที่เพิ่ม',
   submitApproval: 'ส่งอนุมัติ',
   approve: 'อนุมัติ',
+  checkout: 'ชำระเงิน',
   validation: {
     conditionRequired: 'กรุณาระบุเงื่อนไขอย่างน้อย 1 ข้อ',
     nameRequired: 'กรุณากรอกชื่องาน/บูท',
@@ -1170,7 +1172,18 @@ export const paymentTracking = {
   status: 'สถานะ',
   dueDate: 'วันที่ครบกำหนด',
   overdueDays: 'วันที่เลยกำหนด',
-  action: 'การดำเนินการ'
+  action: 'การดำเนินการ',
+  paidBadge: 'ชำระแล้ว',
+  pendingBadge: 'รอชำระ',
+  sendNotification: 'ส่งแจ้งเตือน',
+  follow: 'ติดตาม',
+  fromLastMonth: 'จากเดือนก่อน',
+  ofTotal: 'ของยอดรวม',
+  itemsUnit: 'รายการ',
+  daysUnit: 'วัน',
+  transferMethod: 'โอนเงิน',
+  cashMethod: 'เงินสด',
+  creditMethod: 'เครดิต 30 วัน'
 }
 
 export const document = {

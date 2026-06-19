@@ -740,7 +740,7 @@ export default {
     onSubmit() {
       if (this.validateForm()) {
         confirmSubmit(
-          `เลขที่:${this.form.no} | เล่มที่:${this.form.bookNo} `,
+          `${this.$t('view.production.planGold.labelNo')}${this.form.no} | ${this.$t('view.production.planGold.labelBookNo')}${this.form.bookNo}`,
           this.$t('view.production.planGold.confirmCreate'),
           async () => {
             await this.submit()

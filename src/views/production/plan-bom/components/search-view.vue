@@ -149,33 +149,21 @@
         </dialogView>
 
         <div class="btn-submit-container-between">
+          <div></div>
           <div>
-            <!-- <button
-              :class="['btn btn-sm', this.isTransfer ? 'btn-secondary' : 'btn-green']"
-              type="button"
-              :disabled="isTransfer"
-              title="โอนงาน"
-            >
-              <span><i class="bi bi-arrow-left-right"></i></span>
-            </button> -->
-          </div>
-          <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
+            <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
               <span><i class="bi bi-search"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
             <button
               class="btn btn-sm btn-sub-main mr-2"
               type="button"
-              title="เพิ่มเติม"
+              :title="$t('view.production.planBom.advancedSearch')"
               @click="onShowDialog"
             >
               <span><i class="bi bi-zoom-in"></i></span>
-              <!-- <span>ค้นหา</span> -->
             </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
+            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
               <span><i class="bi bi-x-circle"></i></span>
-              <!-- <span>ล้าง</span> -->
             </button>
             <button
               class="btn btn-sm btn-green"
@@ -205,7 +193,6 @@ import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
-//import api from '@/axios/axios-helper.js'
 
 const interfaceIsShow = {
   dialog: false
@@ -251,7 +238,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       form: { ...this.modelForm },
       isShow: { ...interfaceIsShow }
     }
@@ -290,10 +276,8 @@ export default {
       this.isShow.dialog = false
     }
   },
-  created() {
-    this.$nextTick(() => {})
-  }
 }
+
 </script>
 
 <style lang="scss" scoped>

@@ -94,8 +94,8 @@
                   </template>
                 </Column>
 
-                <Column field="stockNumber" header="Stock Number" style="width: 120px"></Column>
-                <Column field="productNumber" header="Product Number" style="width: 120px"></Column>
+                <Column field="stockNumber" :header="$t('view.sale.saleOrderList.stockNumber')" style="width: 120px"></Column>
+                <Column field="productNumber" :header="$t('view.sale.saleOrderList.productNumber')" style="width: 120px"></Column>
                 <Column :header="$t('view.sale.saleOrder.description')" field="description" style="min-width: 200px"></Column>
                 <Column :header="$t('common.field.quantity')" field="qty" style="width: 80px">
                   <template #body="slotProps">

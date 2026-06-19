@@ -150,6 +150,14 @@ export default {
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },
+    dashboard: {
+      messageBox1: 'Message Box 1',
+      messageBox2: 'Message Box 2',
+      messageBox3: 'Message Box 3',
+      messageBox4: 'Message Box 4',
+      welcomeDesc: 'Welcome to the Jewelry Production / Storage / Sales / Service Management System',
+      companyFooter: '@Duangkaew Jewelry Manufacturer'
+    },
     stock: {
       product: { ...stock.product },
       location: { ...stock.location },

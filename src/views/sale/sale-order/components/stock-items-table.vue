@@ -114,7 +114,7 @@
           </template>
         </Column>
 
-        <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+        <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 150px">
           <template #body="slotProps">
             <div class="d-flex flex-column">
               <span>{{ `${slotProps.data.stockNumber}` }}</span>
@@ -125,7 +125,7 @@
           </template>
         </Column>
 
-        <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+        <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 150px">
           <template #body="slotProps">
             <span>{{
               `${
@@ -137,7 +137,7 @@
           </template>
         </Column>
 
-        <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+        <Column field="productNumber" :header="$t('view.sale.saleOrder.productCode')" style="min-width: 150px">
           <template #body="slotProps">
             <div v-if="!slotProps.data.stockNumber">
               <input
@@ -159,7 +159,7 @@
         </Column>
 
         <!-- Confirmation Status Column for Stock Items -->
-        <Column field="isConfirm" header="สถานะการขาย" style="min-width: 120px">
+        <Column field="isConfirm" :header="$t('view.sale.saleOrder.saleStatus')" style="min-width: 120px">
           <template #body="slotProps">
             <div v-if="!slotProps.data.isRemainProduct && !slotProps.data.isConfirm">
               <span class="text-center text-main">
@@ -181,7 +181,7 @@
           </template>
         </Column>
 
-        <Column field="description" header="รายละเอียด" style="min-width: 200px">
+        <Column field="description" :header="$t('view.sale.saleOrder.description')" style="min-width: 200px">
           <template #body="slotProps">
             <input
               v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
@@ -257,7 +257,7 @@
           </template>
         </Column>
 
-        <Column field="priceOrigin" header="ราคาขาย (THB)" style="min-width: 150px">
+        <Column field="priceOrigin" :header="$t('view.sale.saleOrder.salePriceTHB')" style="min-width: 150px">
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
@@ -267,7 +267,7 @@
           </template>
         </Column>
 
-        <Column field="appraisalPrice" header="ราคาประเมิน (THB)" style="min-width: 150px">
+        <Column field="appraisalPrice" :header="$t('view.sale.saleOrder.appraisalPriceTHB')" style="min-width: 150px">
           <template #body="slotProps">
             <div class="qty-container">
               <input
@@ -287,7 +287,7 @@
           </template>
         </Column>
 
-        <Column field="discountPercent" header="ส่วนลด (%)" style="min-width: 100px">
+        <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px">
           <template #body="slotProps">
             <div class="qty-container">
               <input
@@ -309,7 +309,7 @@
           </template>
         </Column>
 
-        <Column field="discountPrice" header="ราคาส่วนลด (THB)" style="min-width: 150px">
+        <Column field="discountPrice" :header="$t('view.sale.saleOrder.discountPriceTHB')" style="min-width: 150px">
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
@@ -322,7 +322,7 @@
           </template>
         </Column>
 
-        <Column field="currencyRate" header="แปลงเรท" style="min-width: 100px">
+        <Column field="currencyRate" :header="$t('view.sale.saleOrder.convertedRate')" style="min-width: 100px">
           <template #body>
             <div class="qty-container">
               <span>{{ formSaleOrder.currencyRate }}</span>
@@ -332,7 +332,7 @@
 
         <Column
           field="priceAfterMultiply"
-          :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '"
+          :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (formSaleOrder.currencyUnit || '') + ')'"
           style="min-width: 150px"
         >
           <template #body="slotProps">
@@ -348,7 +348,7 @@
           </template>
         </Column>
 
-        <Column field="qty" header="จำนวน" style="width: 80px">
+        <Column field="qty" :header="$t('common.field.quantity')" style="width: 80px">
           <template #body="slotProps">
             <div class="qty-container">
               <input
@@ -370,7 +370,7 @@
 
         <Column
           field="total"
-          :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '"
+          :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (formSaleOrder.currencyUnit || '') + ')'"
           style="min-width: 150px"
         >
           <template #body="slotProps">

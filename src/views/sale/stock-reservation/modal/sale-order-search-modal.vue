@@ -228,9 +228,9 @@ export default {
   computed: {
     statusOptions() {
       return [
-        { name: this.$t('view.sale.stockReservation.status.confirmed'), value: 'Confirmed' },
-        { name: this.$t('view.sale.stockReservation.status.partiallyFulfilled'), value: 'PartiallyFulfilled' },
-        { name: this.$t('view.sale.stockReservation.status.fulfilled'), value: 'Fulfilled' }
+        { name: this.$t('view.sale.stockReservation.statusOptions.confirmed'), value: 'Confirmed' },
+        { name: this.$t('view.sale.stockReservation.statusOptions.partiallyFulfilled'), value: 'PartiallyFulfilled' },
+        { name: this.$t('view.sale.stockReservation.statusOptions.fulfilled'), value: 'Fulfilled' }
       ]
     }
   },
@@ -394,8 +394,8 @@ export default {
       }
       const key = keyMap[status]
       return key
-        ? this.$t(`view.sale.stockReservation.status.${key}`)
-        : this.$t('view.sale.stockReservation.status.unknown')
+        ? this.$t(`view.sale.stockReservation.statusOptions.${key}`)
+        : this.$t('view.sale.stockReservation.statusOptions.unknown')
     },
 
     getDeliveryDateClass(date) {

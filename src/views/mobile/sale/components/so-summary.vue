@@ -89,10 +89,10 @@ export default {
 }
 
 .summary-card {
-  background: white;
-  border-radius: 10px;
-  padding: 16px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  padding: var(--sp-lg);
+  border: 1px solid var(--color-border);
 
   .summary-row {
     display: flex;

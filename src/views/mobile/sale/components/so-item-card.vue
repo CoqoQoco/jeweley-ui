@@ -118,10 +118,10 @@ export default {
 @import '@/assets/scss/responsive-style/mobile';
 
 .so-item-card {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
   padding: 14px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 
   .item-card-header {
     display: flex;
@@ -175,7 +175,7 @@ export default {
         font-weight: 500;
 
         &.discount {
-          color: #f44336;
+          color: var(--base-red);
         }
       }
     }

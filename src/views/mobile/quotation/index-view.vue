@@ -166,9 +166,9 @@ export default {
 }
 
 .date-filter {
-  background: white;
-  border-radius: 12px;
-  padding: 12px 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-md) var(--sp-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .date-label {
@@ -178,7 +178,7 @@ export default {
     font-size: 0.85rem;
     font-weight: 500;
     color: #666;
-    margin-bottom: 8px;
+    margin-bottom: var(--sp-sm);
 
     i {
       font-size: 0.9rem;
@@ -194,8 +194,8 @@ export default {
 }
 
 .list-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
@@ -209,7 +209,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: var(--sp-md) var(--sp-lg);
     border-bottom: 1px solid #f0f0f0;
 
     .card-number {
@@ -220,7 +220,7 @@ export default {
 
     .card-currency-badge {
       padding: 3px 10px;
-      border-radius: 12px;
+      border-radius: var(--radius-lg);
       font-size: 0.75rem;
       color: white;
       font-weight: 500;
@@ -229,7 +229,7 @@ export default {
   }
 
   .list-card-body {
-    padding: 12px 16px;
+    padding: var(--sp-md) var(--sp-lg);
 
     .card-customer {
       display: flex;
@@ -237,7 +237,7 @@ export default {
       gap: 6px;
       font-size: 0.9rem;
       color: #333;
-      margin-bottom: 8px;
+      margin-bottom: var(--sp-sm);
 
       i {
         color: #666;
@@ -268,22 +268,22 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
+  padding: 60px var(--sp-xl);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 16px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-lg);
   }
 
   .empty-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: #666;
-    margin-bottom: 4px;
+    margin-bottom: var(--sp-xs);
   }
 
   .empty-subtitle {

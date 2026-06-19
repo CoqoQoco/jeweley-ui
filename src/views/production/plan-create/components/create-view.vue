@@ -741,7 +741,7 @@ export default {
       this.form.mold = item.moldCode
       this.form.productType = this.masterProduct.find((x) => x.code === item.productType) || null
       this.form.productQty = item.productQty
-      this.form.productQtyUnit = item.productQtyUnit || 'ชิ้น'
+      this.form.productQtyUnit = item.productQtyUnit || this.$t('view.production.planCreate.defaultUnit')
       this.form.productDetail = item.productDetail || ''
       this.form.gold = this.masterGold.find((x) => x.code === item.goldType) || null
       this.form.material = (item.materials || []).map((m, idx) => ({

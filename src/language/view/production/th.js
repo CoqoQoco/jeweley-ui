@@ -392,7 +392,9 @@ export default {
     groupGold: 'รายการทอง',
     groupMaterial: 'รายการวัถุดิบ',
     groupWorker: 'รายการงานช่าง',
-    groupEtc: 'อื่นๆ'
+    groupEtc: 'อื่นๆ',
+    btnAddItem: 'เพิ่มรายการ',
+    btnAddDiscount: 'เพิ่มส่วนลด'
   },
 
   planBom: {
@@ -510,7 +512,8 @@ export default {
     prePlanColMoldCode: 'รหัสแม่พิมพ์',
     prePlanColProductType: 'ประเภทสินค้า',
     prePlanColQty: 'จำนวน',
-    prePlanColDeliveryDate: 'วันที่ส่ง'
+    prePlanColDeliveryDate: 'วันที่ส่ง',
+    defaultUnit: 'ชิ้น'
   },
 
   planGold: {
@@ -556,6 +559,8 @@ export default {
     placeholderWoBody: 'กรอก WO/WO No. ตัวเรือน',
     promptSpecifyWo: 'โปรดระบุ WO/WO No. ตัวเรือน',
     confirmCreate: 'ยืนยันเพิ่มใบเบิกทอง',
-    btnCreate: 'สร้างใบเบิกผสมทอง'
+    btnCreate: 'สร้างใบเบิกผสมทอง',
+    labelNo: 'เลขที่:',
+    labelBookNo: 'เล่มที่:'
   }
 }

@@ -308,10 +308,10 @@ export default {
 .main-tabs {
   display: flex;
   gap: 0;
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 
   .main-tab {
     flex: 1;
@@ -321,7 +321,7 @@ export default {
     gap: 6px;
     padding: 12px 16px;
     border: none;
-    background: white;
+    background: var(--color-card-bg);
     font-size: 0.9rem;
     font-weight: 500;
     color: #666;
@@ -350,10 +350,10 @@ export default {
 }
 
 .list-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -366,7 +366,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border);
 
     .card-number {
       font-weight: 600;
@@ -423,7 +423,7 @@ export default {
       align-items: center;
       padding-top: 8px;
       margin-top: 8px;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid var(--color-border);
 
       .total-label {
         font-size: 0.85rem;
@@ -466,14 +466,14 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 16px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-lg);
   }
 
   .empty-title {

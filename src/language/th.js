@@ -150,6 +150,14 @@ export default {
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },
+    dashboard: {
+      messageBox1: 'กล่องข้อความที่ 1',
+      messageBox2: 'กล่องข้อความที่ 2',
+      messageBox3: 'กล่องข้อความที่ 3',
+      messageBox4: 'กล่องข้อความที่ 4',
+      welcomeDesc: 'ยินดีต้อนรับสู่เครื่องมือบริหารเเละจัดการ ผลิต/จัดเก็บ/ขาย/บริการ สินค้า',
+      companyFooter: '@บริษัท ดวงแก้วจิวเวลรี่ แมนูแฟคเจอเรอร์'
+    },
     stock: {
       product: { ...stock.product },
       location: { ...stock.location },

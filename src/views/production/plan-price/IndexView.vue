@@ -36,7 +36,7 @@
               <button
                 class="btn btn-sm btn-red"
                 type="button"
-                title="ลบ"
+                :title="$t('common.btn.delete')"
                 @click="delItem(slotProps.index)"
               >
                 <span class="bi bi-trash"></span>
@@ -135,7 +135,7 @@
             <button
               class="btn btn-sm btn-red"
               type="button"
-              title="ลบ"
+              :title="$t('common.btn.delete')"
               @click="delItemDiscount(slotProps.index)"
             >
               <span class="bi bi-trash"></span>
@@ -210,18 +210,18 @@
       <div></div>
 
       <div class="text-right mt-2">
-        <button type="button" class="btn btn-green mr-2" title="เพิ่มรายการ" @click="addItem">
+        <button type="button" class="btn btn-green mr-2" :title="$t('view.production.planPrice.btnAddItem')" @click="addItem">
           <span><i class="bi bi-plus"></i></span>
         </button>
         <button
           type="button"
           class="btn btn-green mr-2"
-          title="เพิ่มส่วนลด"
+          :title="$t('view.production.planPrice.btnAddDiscount')"
           @click="addItemDiscount"
         >
           <span><i class="bi bi-cash-coin"></i></span>
         </button>
-        <button type="button" class="btn btn-main" title="บันทึก">
+        <button type="button" class="btn btn-main" :title="$t('common.btn.save')">
           <span><i class="bi bi-calendar-check"></i></span>
         </button>
       </div>

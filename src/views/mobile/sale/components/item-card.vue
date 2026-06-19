@@ -121,10 +121,10 @@ export default {
 @import '@/assets/scss/responsive-style/mobile';
 
 .item-card {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
   padding: 14px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 
   .item-card-header {
     display: flex;
@@ -167,7 +167,7 @@ export default {
     .btn-remove {
       background: none;
       border: none;
-      color: #f44336;
+      color: var(--base-red);
       font-size: 1rem;
       cursor: pointer;
       padding: 4px;
@@ -232,7 +232,7 @@ export default {
       :deep(.form-control) {
         width: 100%;
         padding: 6px 8px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--color-border);
         border-radius: 6px;
         font-size: 0.85rem;
         text-align: right;

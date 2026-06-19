@@ -110,8 +110,7 @@ export default {
         } else {
           this.errorMessage = this.$t('view.mobile.scan.simpleScannerErrNoQr')
         }
-      } catch (err) {
-        console.error('Error decoding image:', err)
+      } catch {
         this.errorMessage = this.$t('view.mobile.scan.simpleScannerErrReadFail')
       } finally {
         this.isProcessing = false
@@ -173,16 +172,16 @@ export default {
 }
 
 .camera-capture-section {
-  background: white;
-  border-radius: 12px;
-  padding: 32px 20px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: 32px var(--sp-xl);
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .capture-icon {
     width: 100px;
     height: 100px;
-    margin: 0 auto 16px;
+    margin: 0 auto var(--sp-lg);
     background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
     border-radius: 50%;
     display: flex;
@@ -199,42 +198,42 @@ export default {
     font-size: 1.05rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: var(--sp-xl);
   }
 
   .capture-note {
     font-size: 0.9rem;
     color: #999;
-    margin: 16px 0 0 0;
+    margin: var(--sp-lg) 0 0 0;
   }
 }
 
 .preview-section {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .preview-label {
     font-size: 0.9rem;
     font-weight: 500;
     color: #666;
-    margin: 0 0 12px 0;
+    margin: 0 0 var(--sp-md) 0;
   }
 
   .preview-image {
     width: 100%;
     max-height: 300px;
     object-fit: contain;
-    border-radius: 8px;
-    border: 2px solid #e0e0e0;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-border);
   }
 }
 
 .processing-section {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -242,11 +241,11 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  border-radius: 8px;
+  gap: var(--sp-sm);
+  padding: var(--sp-lg);
+  background: var(--color-highlight-bg);
+  border: 1px solid var(--base-warning);
+  border-radius: var(--radius-md);
 
   i {
     font-size: 2rem;

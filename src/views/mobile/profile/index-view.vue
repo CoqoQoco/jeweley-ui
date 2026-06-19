@@ -129,14 +129,14 @@ export default {
 
 .profile-header {
   background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
-  padding: 40px 16px 32px;
+  padding: 40px var(--sp-lg) 32px;
   text-align: center;
   color: white;
 
   .avatar-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: var(--sp-lg);
   }
 
   .avatar {
@@ -145,7 +145,7 @@ export default {
     border-radius: 50%;
     overflow: hidden;
     border: 4px solid rgba(255, 255, 255, 0.3);
-    background: white;
+    background: var(--color-card-bg);
 
     img {
       width: 100%;
@@ -169,7 +169,7 @@ export default {
   .user-name {
     font-size: 1.5rem;
     font-weight: 600;
-    margin: 0 0 4px 0;
+    margin: 0 0 var(--sp-xs) 0;
   }
 
   .user-role {

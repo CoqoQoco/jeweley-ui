@@ -341,8 +341,8 @@ export default {
 @import '@/assets/scss/responsive-style/mobile';
 
 .product-detail-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -351,9 +351,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: var(--sp-xl);
   background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
 
   .product-image {
     display: flex;
@@ -368,14 +368,14 @@ export default {
     justify-content: center;
     width: 200px;
     height: 200px;
-    background: white;
-    border: 2px dashed #ddd;
-    border-radius: 8px;
+    background: var(--color-card-bg);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
     color: #999;
 
     i {
       font-size: 3rem;
-      margin-bottom: 8px;
+      margin-bottom: var(--sp-sm);
     }
 
     span {
@@ -385,12 +385,12 @@ export default {
 }
 
 .product-info-section {
-  padding: 16px;
+  padding: var(--sp-lg);
 }
 
 .info-group {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
+  margin-bottom: var(--sp-lg);
+  padding-bottom: var(--sp-lg);
   border-bottom: 1px solid #f0f0f0;
 
   &:last-child {
@@ -404,8 +404,8 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
-  gap: 12px;
+  margin-bottom: var(--sp-sm);
+  gap: var(--sp-md);
 
   &:last-child {
     margin-bottom: 0;
@@ -413,7 +413,7 @@ export default {
 
   &.remark-row {
     flex-direction: column;
-    gap: 4px;
+    gap: var(--sp-xs);
   }
 }
 
@@ -445,17 +445,17 @@ export default {
 
 .materials-section {
   background: #f8f9fa;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  padding: var(--sp-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 
   .materials-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--sp-sm);
     font-weight: 600;
     color: var(--base-font-color);
-    margin-bottom: 12px;
+    margin-bottom: var(--sp-md);
     font-size: 0.95rem;
 
     i {

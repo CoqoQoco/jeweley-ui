@@ -181,8 +181,6 @@ export default {
           name: 'mobile-cost-version-detail',
           params: { jobRunning: job.jobRunning }
         })
-      } else {
-        console.log('View job detail:', job)
       }
     }
   }
@@ -228,9 +226,9 @@ export default {
 
   .filter-tab {
     flex-shrink: 0;
-    padding: 8px 16px;
-    background: white;
-    border: 1px solid #ddd;
+    padding: var(--sp-sm) var(--sp-lg);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
     border-radius: 20px;
     font-size: 0.85rem;
     cursor: pointer;
@@ -242,7 +240,7 @@ export default {
 
     .tab-count {
       background: #f0f0f0;
-      padding: 2px 6px;
+      padding: 2px var(--sp-sm);
       border-radius: 10px;
       font-size: 0.75rem;
       font-weight: 600;
@@ -270,9 +268,9 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: white;
-  border-radius: 12px;
+  padding: 40px var(--sp-xl);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
 
   .spinner {
     width: 40px;
@@ -284,7 +282,7 @@ export default {
   }
 
   .loading-text {
-    margin-top: 16px;
+    margin-top: var(--sp-lg);
     color: #666;
     font-size: 0.9rem;
   }
@@ -304,22 +302,22 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
+  padding: 60px var(--sp-xl);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 16px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-lg);
   }
 
   .empty-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: #666;
-    margin-bottom: 4px;
+    margin-bottom: var(--sp-xs);
   }
 
   .empty-subtitle {

@@ -59,7 +59,7 @@ export default {
   gap: 6px;
   padding: 10px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: #666;
   font-size: 0.85rem;
@@ -72,7 +72,7 @@ export default {
   }
 
   &.active {
-    background: white;
+    background: var(--color-card-bg);
     color: var(--base-font-color);
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

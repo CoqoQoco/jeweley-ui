@@ -109,7 +109,8 @@ export default {
     selectDiamond: 'Select diamond',
     selectGem: 'Select gem',
     imageSearchPlaceholder: 'Search by image name...',
-    unit: 'Unit'
+    unit: 'Unit',
+    remarkPlaceholder: 'Details ...'
   },
   location: {
     searchTitle: 'Search Storage Location',

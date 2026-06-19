@@ -211,8 +211,8 @@ export default {
   gap: 12px;
   padding: 12px 16px;
   padding-top: calc(12px + env(safe-area-inset-top, 0px));
-  background: white;
-  border-bottom: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  border-bottom: 1px solid var(--color-border);
 
   .btn-close-modal {
     background: none;
@@ -249,8 +249,8 @@ export default {
 
 .search-input-section {
   padding: 12px 16px;
-  background: white;
-  border-bottom: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  border-bottom: 1px solid var(--color-border);
 
   .search-input-wrapper {
     display: flex;
@@ -296,10 +296,10 @@ export default {
 }
 
 .customer-item {
-  background: white;
-  border-radius: 10px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
   padding: 14px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -373,8 +373,8 @@ export default {
 
   i {
     font-size: 3rem;
-    color: #ddd;
-    margin-bottom: 12px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-md);
   }
 
   .empty-text {

@@ -341,9 +341,9 @@ export default {
 }
 
 .scan-type-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-xl);
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
@@ -358,7 +358,7 @@ export default {
   .scan-type-icon {
     width: 60px;
     height: 60px;
-    margin: 0 auto 12px;
+    margin: 0 auto var(--sp-md);
     background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
     border-radius: 16px;
     display: flex;
@@ -375,7 +375,7 @@ export default {
     font-size: 1.1rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 4px;
+    margin-bottom: var(--sp-xs);
   }
 
   .scan-type-description {
@@ -417,10 +417,10 @@ export default {
 
 // Search Field Selector
 .search-field-selector {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  margin-bottom: var(--sp-md);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .field-selector-label {
@@ -433,7 +433,7 @@ export default {
 
   .field-selector-options {
     display: flex;
-    gap: 8px;
+    gap: var(--sp-sm);
   }
 
   .field-option-btn {
@@ -442,10 +442,10 @@ export default {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1.5px solid #e0e0e0;
-    background: white;
+    padding: 10px var(--sp-md);
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-card-bg);
     color: #666;
     font-size: 0.85rem;
     font-weight: 500;
@@ -471,14 +471,14 @@ export default {
 
 // Scanner Section
 .scanner-section {
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-lg);
 }
 
 .scanner-divider {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 20px 0;
+  margin: var(--sp-xl) 0;
   position: relative;
 
   &::before,
@@ -486,11 +486,11 @@ export default {
     content: '';
     flex: 1;
     height: 1px;
-    background: #e0e0e0;
+    background: var(--color-border);
   }
 
   span {
-    padding: 0 16px;
+    padding: 0 var(--sp-lg);
     color: #999;
     font-size: 0.9rem;
   }
@@ -512,19 +512,19 @@ export default {
 
 // Action Zone
 .action-zone {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .action-zone-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--sp-sm);
     font-size: 1rem;
     font-weight: 600;
     color: var(--base-font-color);
-    margin-bottom: 16px;
+    margin-bottom: var(--sp-lg);
 
     i {
       font-size: 1.2rem;
@@ -534,13 +534,13 @@ export default {
   .action-buttons {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: var(--sp-sm);
+    margin-bottom: var(--sp-md);
 
     button {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--sp-sm);
       justify-content: center;
 
       i {
@@ -556,7 +556,7 @@ export default {
     font-size: 0.8rem;
     color: #999;
     margin: 0;
-    padding-top: 12px;
+    padding-top: var(--sp-md);
     border-top: 1px solid #f0f0f0;
 
     i {

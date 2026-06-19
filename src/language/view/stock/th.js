@@ -109,7 +109,8 @@ export default {
     selectDiamond: 'เลือกเพชร',
     selectGem: 'เลือกพลอย',
     imageSearchPlaceholder: 'ค้นหาด้วยชื่อรูปภาพ...',
-    unit: 'หน่วย'
+    unit: 'หน่วย',
+    remarkPlaceholder: 'รายละเอียด ...'
   },
   location: {
     searchTitle: 'ค้นหา Storage Location',

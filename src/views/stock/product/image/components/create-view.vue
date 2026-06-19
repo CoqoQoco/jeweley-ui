@@ -118,7 +118,7 @@
                       autocapitalize="off"
                       spellcheck="false"
                       v-model="form.remark"
-                      placeholder=" รายละเอียด ..."
+                      :placeholder="$t('view.stock.product.remarkPlaceholder')"
                     />
                   </div>
                   <!-- <div class="vertical-end-container"></div> -->

@@ -16,7 +16,7 @@
           <div class="card-content">
             <h3>฿2,450,000</h3>
             <p>{{ $t('view.sale.paymentTracking.totalSales') }}</p>
-            <small class="text-success">+12% จากเดือนก่อน</small>
+            <small class="text-success">+12% {{ $t('view.sale.paymentTracking.fromLastMonth') }}</small>
           </div>
         </div>
       </div>
@@ -29,7 +29,7 @@
           <div class="card-content">
             <h3>฿1,980,000</h3>
             <p>{{ $t('view.sale.paymentTracking.paid') }}</p>
-            <small class="text-success">80.8% ของยอดรวม</small>
+            <small class="text-success">80.8% {{ $t('view.sale.paymentTracking.ofTotal') }}</small>
           </div>
         </div>
       </div>
@@ -42,7 +42,7 @@
           <div class="card-content">
             <h3>฿420,000</h3>
             <p>{{ $t('view.sale.paymentTracking.pending') }}</p>
-            <small class="text-warning">15 รายการ</small>
+            <small class="text-warning">15 {{ $t('view.sale.paymentTracking.itemsUnit') }}</small>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@
           <div class="card-content">
             <h3>฿50,000</h3>
             <p>{{ $t('view.sale.paymentTracking.overdue') }}</p>
-            <small class="text-danger">3 รายการ</small>
+            <small class="text-danger">3 {{ $t('view.sale.paymentTracking.itemsUnit') }}</small>
           </div>
         </div>
       </div>
@@ -110,24 +110,24 @@
                 <td>INV-2025-001</td>
                 <td>บริษัท ABC จำกัด</td>
                 <td>฿42,000</td>
-                <td>โอนเงิน</td>
-                <td><span class="badge badge-success">ชำระแล้ว</span></td>
+                <td>{{ $t('view.sale.paymentTracking.transferMethod') }}</td>
+                <td><span class="badge badge-success">{{ $t('view.sale.paymentTracking.paidBadge') }}</span></td>
               </tr>
               <tr>
                 <td>21/01/2025</td>
                 <td>INV-2025-002</td>
                 <td>คุณสมชาย ใจดี</td>
                 <td>฿21,500</td>
-                <td>เงินสด</td>
-                <td><span class="badge badge-success">ชำระแล้ว</span></td>
+                <td>{{ $t('view.sale.paymentTracking.cashMethod') }}</td>
+                <td><span class="badge badge-success">{{ $t('view.sale.paymentTracking.paidBadge') }}</span></td>
               </tr>
               <tr>
                 <td>20/01/2025</td>
                 <td>INV-2025-003</td>
                 <td>บริษัท XYZ จำกัด</td>
                 <td>฿57,500</td>
-                <td>เครดิต 30 วัน</td>
-                <td><span class="badge badge-warning">รอชำระ</span></td>
+                <td>{{ $t('view.sale.paymentTracking.creditMethod') }}</td>
+                <td><span class="badge badge-warning">{{ $t('view.sale.paymentTracking.pendingBadge') }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -161,9 +161,9 @@
                 <td>บริษัท DEF จำกัด</td>
                 <td>15/01/2025</td>
                 <td>฿25,000</td>
-                <td>7 วัน</td>
+                <td>7 {{ $t('view.sale.paymentTracking.daysUnit') }}</td>
                 <td>
-                  <button class="btn btn-sm btn-main">ส่งแจ้งเตือน</button>
+                  <button class="btn btn-sm btn-main">{{ $t('view.sale.paymentTracking.sendNotification') }}</button>
                 </td>
               </tr>
               <tr class="table-warning">
@@ -173,7 +173,7 @@
                 <td>฿18,000</td>
                 <td>-</td>
                 <td>
-                  <button class="btn btn-sm btn-green">ติดตาม</button>
+                  <button class="btn btn-sm btn-green">{{ $t('view.sale.paymentTracking.follow') }}</button>
                 </td>
               </tr>
             </tbody>

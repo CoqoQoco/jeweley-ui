@@ -313,7 +313,6 @@ export default {
           openInNewTab: false
         })
       } catch (err) {
-        console.error('Error exporting PDF:', err)
         error(err.message || this.$t('view.mobile.quotation.errorExportPdf'), this.$t('view.mobile.quotation.errorTitle'))
       } finally {
         this.exportingPDF = false
@@ -414,8 +413,8 @@ export default {
 }
 
 .info-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -423,10 +422,10 @@ export default {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
   background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   font-weight: 600;
   color: var(--base-font-color);
   font-size: 0.95rem;
@@ -437,7 +436,7 @@ export default {
 }
 
 .card-body {
-  padding: 16px;
+  padding: var(--sp-lg);
 }
 
 .info-row {
@@ -445,7 +444,7 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 10px;
-  gap: 12px;
+  gap: var(--sp-md);
 
   &:last-child {
     margin-bottom: 0;
@@ -453,7 +452,7 @@ export default {
 
   &.remark-row {
     flex-direction: column;
-    gap: 4px;
+    gap: var(--sp-xs);
   }
 }
 
@@ -481,7 +480,7 @@ export default {
 // Items list
 .items-list {
   .item-card {
-    padding: 12px 16px;
+    padding: var(--sp-md) var(--sp-lg);
     border-bottom: 1px solid #f0f0f0;
 
     &:last-child {
@@ -491,14 +490,14 @@ export default {
     .item-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
+      gap: var(--sp-sm);
+      margin-bottom: var(--sp-xs);
 
       .item-index {
         font-size: 0.75rem;
         color: white;
         background: var(--base-font-color);
-        padding: 2px 8px;
+        padding: 2px var(--sp-sm);
         border-radius: 10px;
         font-weight: 600;
       }
@@ -513,14 +512,14 @@ export default {
     .item-description {
       font-size: 0.8rem;
       color: #666;
-      margin-bottom: 8px;
-      padding-left: 4px;
+      margin-bottom: var(--sp-sm);
+      padding-left: var(--sp-xs);
     }
 
     .item-details {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4px 16px;
+      gap: 4px var(--sp-lg);
 
       .detail-row {
         display: flex;
@@ -540,7 +539,7 @@ export default {
         &.total {
           grid-column: 1 / -1;
           padding-top: 6px;
-          margin-top: 4px;
+          margin-top: var(--sp-xs);
           border-top: 1px solid #f0f0f0;
 
           .detail-label {
@@ -561,16 +560,16 @@ export default {
 
 // Summary card
 .summary-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .summary-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: var(--sp-sm);
+    padding: var(--sp-md) var(--sp-lg);
     background: linear-gradient(135deg, var(--base-green) 0%, #026266 100%);
     color: white;
     font-weight: 600;
@@ -582,7 +581,7 @@ export default {
   }
 
   .summary-body {
-    padding: 16px;
+    padding: var(--sp-lg);
 
     .summary-row {
       display: flex;
@@ -600,21 +599,21 @@ export default {
         color: #999;
         font-size: 0.8rem;
         border-bottom: 1px solid #f0f0f0;
-        padding-bottom: 8px;
-        margin-bottom: 4px;
+        padding-bottom: var(--sp-sm);
+        margin-bottom: var(--sp-xs);
       }
 
       &.discount {
-        color: #f44336;
+        color: var(--base-red);
       }
 
       &.addition {
-        color: #4caf50;
+        color: var(--base-green);
       }
 
       &.grand-total {
         border-top: 2px solid var(--base-font-color);
-        margin-top: 8px;
+        margin-top: var(--sp-sm);
         padding-top: 10px;
         font-size: 1rem;
         font-weight: 700;
@@ -688,22 +687,22 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
+  padding: 60px var(--sp-xl);
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
   text-align: center;
 
   i {
     font-size: 4rem;
-    color: #ddd;
-    margin-bottom: 16px;
+    color: var(--color-border);
+    margin-bottom: var(--sp-lg);
   }
 
   .empty-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: #666;
-    margin-bottom: 4px;
+    margin-bottom: var(--sp-xs);
   }
 
   .empty-subtitle {
