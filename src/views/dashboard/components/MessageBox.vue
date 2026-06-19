@@ -10,17 +10,13 @@
 export default {}
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .message-box {
   display: inline-block;
-  width: 25%; /* แบ่งเป็น 4 ส่วนเท่าๆกันในแนวนอน */
-  padding: 10px;
+  width: 25%;
+  padding: var(--sp-sm);
   box-sizing: border-box;
-  border: 1px solid #ccc;
-  margin-right: 10px;
-}
-
-.message-content {
-  /* ปรับแต่งสไตล์ของเนื้อหาในกล่องข้อความ */
+  border: 1px solid var(--color-border);
+  margin-right: var(--sp-sm);
 }
 </style>

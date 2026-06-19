@@ -59,14 +59,9 @@ export default {
 
 <style lang="scss" scoped>
 .jewelry-dashboard {
-  padding-top: 35px;
-  /* display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; */
+  padding-top: var(--sp-2xl);
 }
 .chart {
   width: 600px;
-  //height: 400px;
 }
 </style>

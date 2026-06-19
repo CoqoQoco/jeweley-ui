@@ -244,7 +244,7 @@ import { defineAsyncComponent } from 'vue'
 import imgStep1 from '@/assets/manuals/<feature>/01-step1.png'
 import imgStep2 from '@/assets/manuals/<feature>/02-step2.png'
 
-const modal = defineAsyncComponent(() => import('@/components/modal/ModalView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'ManualView',

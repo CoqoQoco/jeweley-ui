@@ -140,8 +140,8 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .app-container {
-  padding: 1rem;
+  padding: var(--sp-lg);
 }
 </style>

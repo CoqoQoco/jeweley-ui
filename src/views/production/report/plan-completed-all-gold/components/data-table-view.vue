@@ -402,19 +402,19 @@ export default {
 }
 
 .overdue-tag {
-  background-color: #ff4d4d;
+  background-color: var(--base-red);
   color: white;
-  padding: 2px 4px;
-  border-radius: 2px;
-  margin-left: 4px;
-  font-size: 12px;
+  padding: var(--sp-xs) calc(var(--sp-xs) * 1);
+  border-radius: var(--radius-sm);
+  margin-left: var(--sp-xs);
+  font-size: var(--fs-sm);
 }
 
 .image-container {
   display: flex;
   justify-content: start;
   align-items: center;
-  margin-left: 4px;
+  margin-left: var(--sp-xs);
 }
 
 .gold-info {
@@ -422,25 +422,24 @@ export default {
   flex-direction: column;
   .gold-type {
     font-weight: 600;
-    color: #d4af37;
+    color: var(--base-warning);
   }
 }
 
-
 .success-status {
   .success-tag {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: var(--sp-xs) var(--sp-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
     font-weight: 600;
-    
+
     &.complete {
-      background-color: #28a745;
+      background-color: var(--base-green);
       color: white;
     }
-    
+
     &:not(.complete) {
-      background-color: #17a2b8;
+      background-color: var(--base-font-color);
       color: white;
     }
   }
