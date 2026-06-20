@@ -5,7 +5,7 @@
     <div class="form-col-container">
       <div>
         <div>
-          <span class="title-text">จำนวน</span>
+          <span class="title-text">{{ $t('common.field.quantity') }}</span>
           <span class="title-text"> *</span>
         </div>
         <input
@@ -21,7 +21,7 @@
 
       <div>
         <div>
-          <span class="title-text">ราคาขาย</span>
+          <span class="title-text">{{ $t('view.receiptStock.product.grProduction.salePrice') }}</span>
           <span class="title-text"> *</span>
         </div>
         <input
@@ -41,7 +41,7 @@
       <div class="form-col-sm-container">
         <div>
           <div>
-            <span class="title-text">ขนาด</span>
+            <span class="title-text">{{ $t('view.receiptStock.product.grProduction.matSize') }}</span>
           </div>
           <input
             type="text"
@@ -57,14 +57,14 @@
 
         <div>
           <div>
-            <span class="title-text">แป้นต่างหู</span>
+            <span class="title-text">{{ $t('view.receiptStock.product.grProduction.studEarring') }}</span>
           </div>
           <DropdownGeneric
             :modelValue="slotProps.data.studEarring"
             :options="masterStud"
             optionLabel="description"
             optionValue="value"
-            placeholder="เลือกแป้นต่างหู"
+            :placeholder="$t('view.receiptStock.product.grProduction.studEarring')"
             :showClear="!!slotProps.data.studEarring"
             :disabled="!requiredStud"
             @update:modelValue="val => { slotProps.data.studEarring = val }"
@@ -75,7 +75,7 @@
       <!-- Location -->
       <div>
         <div>
-          <span class="title-text">คลังจัดเก็บ</span>
+          <span class="title-text">{{ $t('view.receiptStock.product.grProduction.location') }}</span>
         </div>
         <input
           type="text"
@@ -94,7 +94,7 @@
     <div class="form-col-container mt-2">
       <div>
         <div>
-          <span class="title-text">หมายเหตุ</span>
+          <span class="title-text">{{ $t('common.field.remark') }}</span>
         </div>
         <textarea
           type="text"

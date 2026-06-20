@@ -3,17 +3,17 @@
     <div class="line"></div>
     <div class="d-flex justify-content-between items-center">
       <div class="vertical-center-container">
-        <span class="title-text">จำนวนรายการที่เลือก: {{ selectedItemsLength }}</span>
+        <span class="title-text">{{ $t('view.receiptStock.product.grProduction.selectedCountFooter', { count: selectedItemsLength }) }}</span>
         <button class="btn btn-sm btn-green ml-3" type="button" @click="$emit('adjustBreakdown')">
           <span class="bi bi-hammer mr-1"></span>
-          <span>ปรับปรุง Breakdown</span>
+          <span>{{ $t('view.receiptStock.product.grProduction.adjustBreakdownBtn') }}</span>
         </button>
       </div>
       <div>
         <button class="btn btn-sm btn-green" type="button" @click="$emit('fetchDraft')">
           <span v-if="isOnDraft" class="spinner-border spinner-border-sm"></span>
           <span v-else class="bi bi-clipboard2-pulse-fill"></span>
-          <span class="ml-2">บันทึกฉบับร่าง</span>
+          <span class="ml-2">{{ $t('view.receiptStock.product.grProduction.saveDraft') }}</span>
         </button>
         <button
           :class="['btn btn-sm ml-2', selectedItemsLength === 0 ? 'btn-secondary' : 'btn-main']"
@@ -22,7 +22,7 @@
           @click="$emit('submit')"
         >
           <span class="bi bi-upload"></span>
-          <span class="ml-2">บันทึกสินค้า</span>
+          <span class="ml-2">{{ $t('view.receiptStock.product.grProduction.saveStock') }}</span>
         </button>
       </div>
     </div>

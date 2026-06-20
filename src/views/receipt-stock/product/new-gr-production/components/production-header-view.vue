@@ -4,13 +4,14 @@
       <div class="d-flex justify-content-between">
         <span class="desc-text-white">
           {{
-            `รับสินค้างานผลิต แผนผลิตเลขที่ [ W.O. ] : 
-              ${data.wo ? `${data.wo}-${data.woNumber}` : 'loading...'}`
+            data.wo
+              ? $t('view.receiptStock.product.grProduction.receiveProductionTitle', { wo: `${data.wo}-${data.woNumber}` })
+              : $t('view.receiptStock.product.grProduction.receiveProductionTitleLoading')
           }}
         </span>
         <div class="desc-text-white">
           <div class="d-flex align-items-center">
-            <span>{{ `จำนวนรับแล้ว ${data.qtyRunning ?? 0}/${data.productQty ?? 0}` }}</span>
+            <span>{{ $t('view.receiptStock.product.grProduction.receivedCount', { running: data.qtyRunning ?? 0, total: data.productQty ?? 0 }) }}</span>
             <div class="bi bi-arrow-clockwise ml-2" @click="onFetch"></div>
           </div>
         </div>
@@ -22,7 +23,7 @@
     <div>
       <div class="title-text ml-2">
         <span class="bi bi-database-fill-gear mr-2"></span>
-        <span>รายละเอียดแผนผลิต</span>
+        <span>{{ $t('view.receiptStock.product.grProduction.productionDetail') }}</span>
       </div>
 
       <!-- Production Details Grid -->
@@ -38,33 +39,33 @@
           <div class="item-details">
             <div class="detail-row">
               <div class="detail-item">
-                <span class="detail-label">วันที่ผลิตสำเร็จ:</span>
+                <span class="detail-label">{{ $t('view.receiptStock.product.grProduction.receiptDate') }}</span>
                 <span class="detail-value">{{ formatDateTime(item.receiptDate) }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">แม่พิมพ์:</span>
+                <span class="detail-label">{{ $t('view.receiptStock.product.grProduction.moldLabel') }}</span>
                 <span class="detail-value">{{ item.mold || '-' }}</span>
               </div>
             </div>
 
             <div class="detail-row">
               <div class="detail-item">
-                <span class="detail-label">รหัสสินค้าผลิต:</span>
+                <span class="detail-label">{{ $t('view.receiptStock.product.grProduction.productNumberLabel') }}</span>
                 <span class="detail-value">{{ item.productNumber || '-' }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">ประเภทสินค้า:</span>
+                <span class="detail-label">{{ $t('view.receiptStock.product.grProduction.productTypeLabel') }}</span>
                 <span class="detail-value">{{ item.productTypeName || '-' }}</span>
               </div>
             </div>
 
             <div class="detail-row">
               <div class="detail-item">
-                <span class="detail-label">สีของทอง/เงิน:</span>
+                <span class="detail-label">{{ $t('view.receiptStock.product.grProduction.goldColorLabel') }}</span>
                 <span class="detail-value">{{ item.gold || '-' }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">ประเภททอง/เงิน:</span>
+                <span class="detail-label">{{ $t('view.receiptStock.product.grProduction.goldTypeLabel') }}</span>
                 <span class="detail-value">{{ item.goldSize || '-' }}</span>
               </div>
             </div>
@@ -76,7 +77,7 @@
       <div v-else class="text-center py-4">
         <div class="empty-message">
           <span class="bi bi-inbox mr-2"></span>
-          ไม่พบข้อมูลการผลิต
+          {{ $t('view.receiptStock.product.grProduction.noProductionData') }}
         </div>
       </div>
     </div>

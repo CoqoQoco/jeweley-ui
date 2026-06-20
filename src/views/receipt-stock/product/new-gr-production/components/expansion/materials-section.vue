@@ -5,10 +5,10 @@
         <div class="group-title pl-2">
           <div>
             <span class="title-text-lg bi bi-hammer"></span>
-            <span class="title-text-lg ml-2">{{ $t('receipt-stock.product.grProduction.materialComponents') }}</span>
+            <span class="title-text-lg ml-2">{{ $t('view.receiptStock.product.grProduction.materialComponents') }}</span>
           </div>
           <small class="pl-4"
-            >{{ $t('receipt-stock.product.grProduction.materialDescriptionBreakdown') }}</small
+            >{{ $t('view.receiptStock.product.grProduction.materialDescriptionBreakdown') }}</small
           >
         </div>
         <!-- Control buttons -->
@@ -17,7 +17,7 @@
             type="button"
             class="p-2 text-dark cursor-pointer"
             @click="$emit('addMaterial', data.materials)"
-            :title="$t('receipt-stock.product.grProduction.addMaterial')"
+            :title="$t('view.receiptStock.product.grProduction.addMaterial')"
           >
             <span class="bi bi-plus-lg"></span>
           </div>
@@ -48,10 +48,22 @@
         <!-- Type Name -->
         <template #typeNameTemplate="{ data: materialData }">
           <div class="d-flex justify-content-center">
+            <AutoCompleteGeneric
+              v-if="materialData.type === 'Gem'"
+              :modelValue="materialData.typeName"
+              :suggestions="gemSuggestions"
+              optionLabel="name"
+              :forceSelection="false"
+              :placeholder="$t('view.receiptStock.product.grProduction.colMaterialName')"
+              customClass="gem-autocomplete"
+              @complete="onSearchGem"
+              @update:modelValue="(val) => onSelectGem(val, materialData)"
+            />
             <InputTextGeneric
+              v-else
               v-model="materialData.typeName"
               :bgInput="getBgColor(false, materialData.typeName)"
-              :placeholder="$t('receipt-stock.product.grProduction.colMaterialName')"
+              :placeholder="$t('view.receiptStock.product.grProduction.colMaterialName')"
               @blur="emitUpdateTypeBarcode(materialData)"
             />
           </div>
@@ -66,7 +78,7 @@
                 optionLabel="description"
                 optionValue="code"
                 class="w-full"
-                :placeholder="$t('receipt-stock.product.grProduction.matTypeCode')"
+                :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                 :showClear="materialData.typeCode ? true : false"
                 @update:modelValue="materialData.typeCode = $event; emitUpdateTypeBarcode(materialData)"
               />
@@ -78,7 +90,7 @@
                 optionLabel="description"
                 optionValue="nameEn"
                 class="w-full"
-                :placeholder="$t('receipt-stock.product.grProduction.matTypeCode')"
+                :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                 :showClear="materialData.typeCode ? true : false"
                 @update:modelValue="materialData.typeCode = $event; emitUpdateTypeBarcode(materialData)"
               />
@@ -90,13 +102,13 @@
                 optionLabel="description"
                 optionValue="nameEn"
                 class="w-full"
-                :placeholder="$t('receipt-stock.product.grProduction.matTypeCode')"
+                :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                 :showClear="materialData.typeCode ? true : false"
                 @update:modelValue="materialData.typeCode = $event; emitUpdateTypeBarcode(materialData)"
               />
             </div>
             <div v-else class="vertical-center-container text-center">
-              <span> --- {{ $t('receipt-stock.product.grProduction.matType') }} ---</span>
+              <span> --- {{ $t('view.receiptStock.product.grProduction.matType') }} ---</span>
             </div>
           </div>
         </template>
@@ -112,12 +124,15 @@
         </template>
 
         <template #regionTemplate="{ data: materialData }">
-          <div class="d-flex justify-content-center">
+          <div>
             <InputTextGeneric
               v-model="materialData.region"
               :bgInput="getBgColor(false, materialData.region)"
               @blur="emitUpdateTypeBarcode(materialData)"
             />
+            <div v-if="materialData.regionOrigin" class="region-from-plan-hint">
+              {{ $t('view.receiptStock.product.grProduction.regionFromPlan', { region: materialData.regionOrigin }) }}
+            </div>
           </div>
         </template>
 
@@ -127,7 +142,7 @@
               <InputTextGeneric
                 v-model="materialData.qty"
                 type="number"
-                :placeholder="$t('receipt-stock.product.grProduction.matQty')"
+                :placeholder="$t('view.receiptStock.product.grProduction.matQty')"
                 min="0"
                 step="0.01"
                 :bgInput="getBgColor(false, materialData.qty)"
@@ -149,7 +164,7 @@
             <InputTextGeneric
               v-model="materialData.qtyPrice"
               type="number"
-              :placeholder="$t('receipt-stock.product.grProduction.matPrice')"
+              :placeholder="$t('view.receiptStock.product.grProduction.matPrice')"
               min="0"
               step="0.01"
               :bgInput="getBgColor(false, materialData.qtyPrice)"
@@ -164,7 +179,7 @@
               <InputTextGeneric
                 v-model="materialData.qtyWeight"
                 type="number"
-                :placeholder="$t('receipt-stock.product.grProduction.matWeight')"
+                :placeholder="$t('view.receiptStock.product.grProduction.matWeight')"
                 min="0"
                 step="0.01"
                 :bgInput="getBgColor(false, materialData.qtyWeight)"
@@ -186,7 +201,7 @@
             <InputTextGeneric
               v-model="materialData.qtyWeightPrice"
               type="number"
-              :placeholder="$t('receipt-stock.product.grProduction.matPrice')"
+              :placeholder="$t('view.receiptStock.product.grProduction.matPrice')"
               min="0"
               step="0.01"
               :bgInput="getBgColor(false, materialData.qtyWeightPrice)"
@@ -206,7 +221,7 @@
                 })
               }}
             </span>
-            <small class="currency-unit">{{ $t('receipt-stock.product.grProduction.currencyTHB') }}</small>
+            <small class="currency-unit">{{ $t('view.receiptStock.product.grProduction.currencyTHB') }}</small>
           </div>
         </template>
 
@@ -214,7 +229,7 @@
           <div class="d-flex justify-content-center">
             <InputTextGeneric
               v-model="materialData.typeBarcode"
-              :placeholder="$t('receipt-stock.product.grProduction.colBarcode')"
+              :placeholder="$t('view.receiptStock.product.grProduction.colBarcode')"
               :disabled="true"
             />
           </div>
@@ -237,9 +252,12 @@
 </template>
 
 <script>
+import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'
+
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
 export default {
   name: 'MaterialsSection',
@@ -247,7 +265,13 @@ export default {
   components: {
     BaseDataTable,
     DropdownGeneric,
-    InputTextGeneric
+    InputTextGeneric,
+    AutoCompleteGeneric
+  },
+
+  setup() {
+    const gemApiStore = usrStockGemApiStore()
+    return { gemApiStore }
   },
 
   props: {
@@ -297,6 +321,12 @@ export default {
     'editAllMaterials'
   ],
 
+  data() {
+    return {
+      gemSuggestions: []
+    }
+  },
+
   computed: {
     hasBreakdownData() {
       return this.breakdownData && this.breakdownData.length > 0
@@ -304,6 +334,37 @@ export default {
   },
 
   methods: {
+    async onSearchGem(event) {
+      const query = event.query || ''
+      const res = await this.gemApiStore.fetchDataSearch({
+        take: 20,
+        skip: 0,
+        sort: [],
+        form: { code: query }
+      })
+      if (res && res.data) {
+        this.gemSuggestions = res.data.map((item) => ({
+          name: item.groupName || item.code,
+          code: item.code,
+          region: item.original || item.region || '',
+          grade: item.grade,
+          size: item.size,
+          shape: item.shape
+        }))
+      } else {
+        this.gemSuggestions = []
+      }
+    },
+
+    onSelectGem(value, materialData) {
+      if (value && typeof value === 'object') {
+        materialData.typeName = value.name || value.code
+        materialData.region = value.region || materialData.region
+      } else if (typeof value === 'string') {
+        materialData.typeName = value
+      }
+      this.emitUpdateTypeBarcode(materialData)
+    },
     calculateTotalPrice(material) {
       if (!material) return 0
 
@@ -412,6 +473,29 @@ export default {
     .unit-input {
       flex: 1 1 auto;
     }
+  }
+}
+
+.region-from-plan-hint {
+  font-size: var(--fs-sm);
+  color: #6c757d;
+  margin-top: var(--sp-xs);
+  font-style: italic;
+}
+
+:deep(.gem-autocomplete) {
+  width: 100%;
+
+  .p-autocomplete {
+    width: 100%;
+  }
+
+  .p-autocomplete-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-base);
   }
 }
 </style>

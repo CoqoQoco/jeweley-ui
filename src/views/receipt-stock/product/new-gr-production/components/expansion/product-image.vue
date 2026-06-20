@@ -31,7 +31,7 @@
           @click="$emit('selectImage', data)"
         >
           <span class="bi bi-image"></span>
-          <span>เลือกรูปสินค้า</span>
+          <span>{{ $t('view.receiptStock.product.grProduction.selectProductImage') }}</span>
         </button>
       </div>
     </div>

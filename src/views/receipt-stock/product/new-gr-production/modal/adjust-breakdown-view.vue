@@ -5,7 +5,7 @@
         <div>
           <div class="title-text-lg-bg">
             <span><i class="bi bi-hammer mr-2"></i></span>
-            <span>{{ $t('receipt-stock.product.grProduction.adjustBreakdownTitle') }}</span>
+            <span>{{ $t('view.receiptStock.product.grProduction.adjustBreakdownTitle') }}</span>
             <span class="ml-2">| W.O. : {{ planData.wo }}-{{ planData.woNumber }}</span>
           </div>
 
@@ -13,8 +13,8 @@
           <div class="mt-2">
             <div class="d-flex justify-content-between align-items-center ml-3">
               <div>
-                <span class="title-text">{{ $t('receipt-stock.product.grProduction.masterBreakdownLabel') }}</span>
-                <small class="text-muted ml-2">{{ $t('receipt-stock.product.grProduction.masterBreakdownDesc') }}</small>
+                <span class="title-text">{{ $t('view.receiptStock.product.grProduction.masterBreakdownLabel') }}</span>
+                <small class="text-muted ml-2">{{ $t('view.receiptStock.product.grProduction.masterBreakdownDesc') }}</small>
               </div>
               <div class="d-flex gap-2">
                 <button
@@ -23,7 +23,7 @@
                   @click="addBreakdownItem"
                 >
                   <span class="bi bi-plus-lg mr-1"></span>
-                  {{ $t('receipt-stock.product.grProduction.addMaterial') }}
+                  {{ $t('view.receiptStock.product.grProduction.addMaterial') }}
                 </button>
                 <button
                   type="button"
@@ -31,7 +31,7 @@
                   @click="resetBreakdown"
                 >
                   <span class="bi bi-arrow-clockwise mr-1"></span>
-                  {{ $t('receipt-stock.product.grProduction.resetBreakdown') }}
+                  {{ $t('view.receiptStock.product.grProduction.resetBreakdown') }}
                 </button>
               </div>
             </div>
@@ -51,7 +51,7 @@
                   optionLabel="description"
                   optionValue="value"
                   class="w-full"
-                  :placeholder="$t('receipt-stock.product.grProduction.colMaterialType')"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colMaterialType')"
                   @update:modelValue="materialData.type = $event; updateMaterialBarcode(materialData)"
                 />
               </template>
@@ -61,7 +61,7 @@
                 <InputTextGeneric
                   v-model="materialData.typeName"
                   :bgInput="getBgColor(false, materialData.typeName)"
-                  :placeholder="$t('receipt-stock.product.grProduction.colMaterialName')"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colMaterialName')"
                 />
               </template>
 
@@ -74,7 +74,7 @@
                     optionLabel="description"
                     optionValue="code"
                     class="w-full"
-                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colMaterialCode')"
                     :showClear="true"
                     @update:modelValue="materialData.typeCode = $event; updateMaterialBarcode(materialData)"
                   />
@@ -86,7 +86,7 @@
                     optionLabel="description"
                     optionValue="nameEn"
                     class="w-full"
-                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colMaterialCode')"
                     :showClear="true"
                   />
                 </div>
@@ -97,7 +97,7 @@
                     optionLabel="description"
                     optionValue="code"
                     class="w-full"
-                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colMaterialCode')"
                     :showClear="true"
                   />
                 </div>
@@ -105,7 +105,7 @@
                   <InputTextGeneric
                     v-model="materialData.typeCode"
                     :bgInput="getBgColor(false, materialData.typeCode)"
-                    :placeholder="$t('receipt-stock.product.grProduction.colMaterialCode')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colMaterialCode')"
                   />
                 </div>
               </template>
@@ -117,7 +117,7 @@
                     v-model="materialData.qty"
                     type="number"
                     :bgInput="getBgColor(false, materialData.qty)"
-                    :placeholder="$t('receipt-stock.product.grProduction.colQty')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colQty')"
                     min="0"
                     step="0.01"
                   />
@@ -135,7 +135,7 @@
                     v-model="materialData.qtyPrice"
                     type="number"
                     :bgInput="getBgColor(false, materialData.qtyPrice)"
-                    :placeholder="$t('receipt-stock.product.grProduction.colPriceQty')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colPriceQty')"
                     min="0"
                     step="0.01"
                   />
@@ -149,7 +149,7 @@
                     v-model="materialData.qtyWeight"
                     type="number"
                     :bgInput="getBgColor(false, materialData.qtyWeight)"
-                    :placeholder="$t('receipt-stock.product.grProduction.colQtyWeight')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colQtyWeight')"
                     min="0"
                     step="0.01"
                   />
@@ -168,7 +168,7 @@
                     v-model="materialData.qtyWeightPrice"
                     type="number"
                     :bgInput="getBgColor(false, materialData.qtyWeightPrice)"
-                    :placeholder="$t('receipt-stock.product.grProduction.colPriceWeight')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.colPriceWeight')"
                     min="0"
                     step="0.01"
                   />
@@ -180,7 +180,7 @@
                 <InputTextGeneric
                   v-model="materialData.region"
                   :bgInput="getBgColor(false, materialData.region)"
-                  :placeholder="$t('receipt-stock.product.grProduction.colRegion')"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colRegion')"
                 />
               </template>
 
@@ -195,7 +195,7 @@
                       })
                     }}
                   </span>
-                  <small class="currency-unit">{{ $t('receipt-stock.product.grProduction.currencyTHB') }}</small>
+                  <small class="currency-unit">{{ $t('view.receiptStock.product.grProduction.currencyTHB') }}</small>
                 </div>
               </template>
 
@@ -203,7 +203,7 @@
               <template #typeBarcodeTemplate="{ data: materialData }">
                 <InputTextGeneric
                   v-model="materialData.typeBarcode"
-                  :placeholder="$t('receipt-stock.product.grProduction.colBarcode')"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colBarcode')"
                   :readonly="true"
                 />
               </template>
@@ -230,12 +230,12 @@
                   <div class="card-header">
                     <h6 class="mb-0">
                       <span class="bi bi-arrow-down-circle mr-1"></span>
-                      {{ $t('receipt-stock.product.grProduction.applyToStockLabel') }}
+                      {{ $t('view.receiptStock.product.grProduction.applyToStockLabel') }}
                     </h6>
                   </div>
                   <div class="card-body">
                     <div class="mb-2">
-                      <label class="form-label">{{ $t('receipt-stock.product.grProduction.selectStockLabel') }}</label>
+                      <label class="form-label">{{ $t('view.receiptStock.product.grProduction.selectStockLabel') }}</label>
                     </div>
                     <div class="stock-selection">
                       <div class="form-check mb-2">
@@ -248,7 +248,7 @@
                           v-model="applyType"
                         />
                         <label class="form-check-label" for="applyAll">
-                          {{ $t('receipt-stock.product.grProduction.selectAllLabel') }} ({{ filteredStockList.length }} {{ $t('common.table.entries') }})
+                          {{ $t('view.receiptStock.product.grProduction.selectAllLabel') }} ({{ filteredStockList.length }} {{ $t('common.table.entries') }})
                         </label>
                       </div>
                       <div class="form-check mb-2">
@@ -260,7 +260,7 @@
                           value="selected"
                           v-model="applyType"
                         />
-                        <label class="form-check-label" for="applySelected">{{ $t('receipt-stock.product.grProduction.selectedOnlyLabel') }}</label>
+                        <label class="form-check-label" for="applySelected">{{ $t('view.receiptStock.product.grProduction.selectedOnlyLabel') }}</label>
                       </div>
                     </div>
 
@@ -285,7 +285,7 @@
                               class="badge"
                               :class="stockData.isReceipt ? 'badge-secondary' : 'badge-success'"
                             >
-                              {{ stockData.isReceipt ? $t('receipt-stock.product.grProduction.stockReceiptStatus_received') : $t('receipt-stock.product.grProduction.stockReceiptStatus_pending') }}
+                              {{ stockData.isReceipt ? $t('view.receiptStock.product.grProduction.stockReceiptStatus_received') : $t('view.receiptStock.product.grProduction.stockReceiptStatus_pending') }}
                             </span>
                           </div>
                         </template>
@@ -301,7 +301,7 @@
                         :disabled="!canApply"
                       >
                         <span class="bi bi-check-lg mr-1"></span>
-                        {{ $t('receipt-stock.product.grProduction.applyToStock') }}
+                        {{ $t('view.receiptStock.product.grProduction.applyToStock') }}
                       </button>
                       <button
                         type="button"
@@ -310,7 +310,7 @@
                         :disabled="!hasValidBreakdown"
                       >
                         <span class="bi bi-floppy mr-1"></span>
-                        {{ $t('receipt-stock.product.grProduction.saveDraftBreakdown') }}
+                        {{ $t('view.receiptStock.product.grProduction.saveDraftBreakdown') }}
                       </button>
                     </div>
                   </div>
@@ -322,28 +322,28 @@
                   <div class="card-header">
                     <h6 class="mb-0">
                       <span class="bi bi-info-circle mr-1"></span>
-                      {{ $t('receipt-stock.product.grProduction.summaryLabel') }}
+                      {{ $t('view.receiptStock.product.grProduction.summaryLabel') }}
                     </h6>
                   </div>
                   <div class="card-body">
                     <div class="summary-info">
                       <div class="summary-item">
-                        <span class="label">{{ $t('receipt-stock.product.grProduction.materialCountLabel') }}</span>
+                        <span class="label">{{ $t('view.receiptStock.product.grProduction.materialCountLabel') }}</span>
                         <span class="value">{{ editableBreakdown.length }} {{ $t('common.table.entries') }}</span>
                       </div>
                       <div class="summary-item">
-                        <span class="label">{{ $t('receipt-stock.product.grProduction.stockCountLabel') }}</span>
+                        <span class="label">{{ $t('view.receiptStock.product.grProduction.stockCountLabel') }}</span>
                         <span class="value">{{ filteredStockList.length }} {{ $t('common.table.entries') }}</span>
                       </div>
                       <div class="summary-item">
-                        <span class="label">{{ $t('receipt-stock.product.grProduction.selectedCountLabel') }}</span>
+                        <span class="label">{{ $t('view.receiptStock.product.grProduction.selectedCountLabel') }}</span>
                         <span class="value">{{ selectedCount }} {{ $t('common.table.entries') }}</span>
                       </div>
                     </div>
 
                     <!-- Material Summary -->
                     <div class="material-summary mt-3">
-                      <h6 class="text-muted">{{ $t('receipt-stock.product.grProduction.materialsToApplyLabel') }}</h6>
+                      <h6 class="text-muted">{{ $t('view.receiptStock.product.grProduction.materialsToApplyLabel') }}</h6>
                       <div class="material-list">
                         <div
                           v-for="(material, index) in validBreakdownMaterials"
@@ -453,25 +453,25 @@ export default {
       return [
         {
           field: 'stockReceiptNumber',
-          header: this.$t('receipt-stock.product.grProduction.colStockReceiptNum'),
+          header: this.$t('view.receiptStock.product.grProduction.colStockReceiptNum'),
           minWidth: '150px',
           sortable: false
         },
         {
           field: 'productNumber',
-          header: this.$t('receipt-stock.product.grProduction.colProductCode'),
+          header: this.$t('view.receiptStock.product.grProduction.colProductCode'),
           width: '120px',
           sortable: false
         },
         {
           field: 'productNameTH',
-          header: this.$t('receipt-stock.product.grProduction.colProductName'),
+          header: this.$t('view.receiptStock.product.grProduction.colProductName'),
           minWidth: '200px',
           sortable: false
         },
         {
           field: 'isReceipt',
-          header: this.$t('receipt-stock.product.grProduction.colStatus'),
+          header: this.$t('view.receiptStock.product.grProduction.colStatus'),
           width: '80px',
           sortable: false,
           align: 'center'
@@ -483,53 +483,53 @@ export default {
       return [
         {
           field: 'type',
-          header: this.$t('receipt-stock.product.grProduction.colMaterialType'),
+          header: this.$t('view.receiptStock.product.grProduction.colMaterialType'),
           minWidth: '120px',
           sortable: false
         },
         {
           field: 'typeName',
-          header: this.$t('receipt-stock.product.grProduction.colMaterialName'),
+          header: this.$t('view.receiptStock.product.grProduction.colMaterialName'),
           minWidth: '180px',
           sortable: false
         },
         {
           field: 'typeCode',
-          header: this.$t('receipt-stock.product.grProduction.colMaterialCode'),
+          header: this.$t('view.receiptStock.product.grProduction.colMaterialCode'),
           minWidth: '130px',
           sortable: false
         },
         {
           field: 'qty',
-          header: this.$t('receipt-stock.product.grProduction.colQty'),
+          header: this.$t('view.receiptStock.product.grProduction.colQty'),
           minWidth: '150px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'priceQty',
-          header: this.$t('receipt-stock.product.grProduction.colPriceQty'),
+          header: this.$t('view.receiptStock.product.grProduction.colPriceQty'),
           minWidth: '120px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'qtyWeight',
-          header: this.$t('receipt-stock.product.grProduction.colQtyWeight'),
+          header: this.$t('view.receiptStock.product.grProduction.colQtyWeight'),
           minWidth: '150px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'priceWeight',
-          header: this.$t('receipt-stock.product.grProduction.colPriceWeight'),
+          header: this.$t('view.receiptStock.product.grProduction.colPriceWeight'),
           minWidth: '120px',
           sortable: false,
           align: 'center'
         },
         {
           field: 'totalPrice',
-          header: this.$t('receipt-stock.product.grProduction.colTotalPrice'),
+          header: this.$t('view.receiptStock.product.grProduction.colTotalPrice'),
           minWidth: '150px',
           sortable: false,
           align: 'right',
@@ -537,19 +537,19 @@ export default {
         },
         {
           field: 'region',
-          header: this.$t('receipt-stock.product.grProduction.colRegion'),
+          header: this.$t('view.receiptStock.product.grProduction.colRegion'),
           minWidth: '100px',
           sortable: false
         },
         {
           field: 'typeBarcode',
-          header: this.$t('receipt-stock.product.grProduction.colBarcode'),
+          header: this.$t('view.receiptStock.product.grProduction.colBarcode'),
           minWidth: '150px',
           sortable: false
         },
         {
           field: 'action',
-          header: this.$t('receipt-stock.product.grProduction.colManage'),
+          header: this.$t('view.receiptStock.product.grProduction.colManage'),
           minWidth: '80px',
           sortable: false,
           align: 'center'
@@ -696,8 +696,8 @@ export default {
 
       if (targetStocks.length === 0) {
         warning(
-          this.$t('receipt-stock.product.grProduction.noStockToApplyDesc'),
-          this.$t('receipt-stock.product.grProduction.noStockToApply')
+          this.$t('view.receiptStock.product.grProduction.noStockToApplyDesc'),
+          this.$t('view.receiptStock.product.grProduction.noStockToApply')
         )
         return
       }
@@ -716,16 +716,16 @@ export default {
       })
 
       success(
-        this.$t('receipt-stock.product.grProduction.applySuccessDesc', { count: targetStocks.length }),
-        this.$t('receipt-stock.product.grProduction.applyToStock')
+        this.$t('view.receiptStock.product.grProduction.applySuccessDesc', { count: targetStocks.length }),
+        this.$t('view.receiptStock.product.grProduction.applyToStock')
       )
     },
 
     saveDraft() {
       if (!this.hasValidBreakdown) {
         warning(
-          this.$t('receipt-stock.product.grProduction.invalidBreakdown'),
-          this.$t('receipt-stock.product.grProduction.summaryLabel')
+          this.$t('view.receiptStock.product.grProduction.invalidBreakdown'),
+          this.$t('view.receiptStock.product.grProduction.summaryLabel')
         )
         return
       }
@@ -734,7 +734,7 @@ export default {
         breakdown: this.validBreakdownMaterials
       })
 
-      success(this.$t('receipt-stock.product.grProduction.saveDraftSuccess'))
+      success(this.$t('view.receiptStock.product.grProduction.saveDraftSuccess'))
     },
 
     closeModal() {

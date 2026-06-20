@@ -6,7 +6,7 @@
     :isShowActionPart="true"
   >
     <template #title>
-      <span class="title-text-lg px-3 pt-3 d-block">แก้ไขวัสดุทั้งหมด (Edit All Materials)</span>
+      <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.receiptStock.product.grProduction.editAll') }}</span>
     </template>
 
     <template #content>
@@ -17,8 +17,8 @@
             <div class="d-flex align-items-center">
               <span class="bi bi-info-circle mr-2"></span>
               <div>
-                <strong>การแก้ไขวัสดุทั้งหมด:</strong>
-                การเปลี่ยนแปลงในหน้านี้จะส่งผลต่อสินค้าทั้งหมดที่เลือก ({{ selectedStocks.length }} รายการ)
+                <strong>{{ $t('view.receiptStock.product.grProduction.editAll') }}:</strong>
+                {{ $t('view.receiptStock.product.grProduction.editAllDesc', { count: selectedStocks.length }) }}
               </div>
             </div>
           </div>
@@ -35,7 +35,7 @@
                 :disabled="!hasBreakdownData"
               >
                 <span class="bi bi-download mr-1"></span>
-                โหลดจาก Breakdown
+                {{ $t('view.receiptStock.product.grProduction.loadBreakdown') }}
               </button>
               <button
                 type="button"
@@ -43,7 +43,7 @@
                 @click="resetToOriginal"
               >
                 <span class="bi bi-arrow-clockwise mr-1"></span>
-                รีเซ็ตเป็นค่าเดิม
+                {{ $t('view.receiptStock.product.grProduction.resetBreakdown') }}
               </button>
             </div>
             <div>
@@ -53,7 +53,7 @@
                 @click="addMaterial"
               >
                 <span class="bi bi-plus-lg mr-1"></span>
-                เพิ่มวัสดุ
+                {{ $t('view.receiptStock.product.grProduction.addMaterial') }}
               </button>
             </div>
           </div>
@@ -75,7 +75,7 @@
                 :options="masterMaterialType"
                 optionLabel="description"
                 optionValue="value"
-                placeholder="เลือกประเภท"
+                :placeholder="$t('view.receiptStock.product.grProduction.matType')"
                 @update:modelValue="val => { materialData.type = val; updateMaterialBarcode(materialData) }"
               />
             </template>
@@ -88,7 +88,7 @@
                   :options="masterGold"
                   optionLabel="description"
                   optionValue="code"
-                  placeholder="เลือกทอง/เงิน"
+                  :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                   :showClear="true"
                   @update:modelValue="val => { materialData.typeCode = val; updateMaterialBarcode(materialData) }"
                 />
@@ -99,7 +99,7 @@
                   :options="masterDiamondGrade"
                   optionLabel="description"
                   optionValue="nameEn"
-                  placeholder="เลือกเกรดเพชร"
+                  :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                   :showClear="true"
                   @update:modelValue="val => { materialData.typeCode = val; updateMaterialBarcode(materialData) }"
                 />
@@ -110,7 +110,7 @@
                   :options="masterGem"
                   optionLabel="description"
                   optionValue="nameEn"
-                  placeholder="เลือกพลอย"
+                  :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                   :showClear="true"
                   @update:modelValue="val => { materialData.typeCode = val; updateMaterialBarcode(materialData) }"
                 />
@@ -118,18 +118,18 @@
               <div v-else-if="materialData.type === 'Worker'">
                 <InputTextGeneric
                   v-model="materialData.typeCode"
-                  placeholder="รหัสงาน"
+                  :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                   :readonly="true"
                 />
               </div>
               <div v-else-if="materialData.type === 'Setting' || materialData.type === 'ETC'">
                 <InputTextGeneric
                   v-model="materialData.typeCode"
-                  placeholder="รหัส"
+                  :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
                 />
               </div>
               <div v-else>
-                <span class="text-muted">--- เลือกประเภทก่อน ---</span>
+                <span class="text-muted">--- {{ $t('view.receiptStock.product.grProduction.matType') }} ---</span>
               </div>
             </template>
 
@@ -139,14 +139,14 @@
                 <InputTextGeneric
                   v-model="materialData.qty"
                   type="number"
-                  placeholder="จำนวน"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colQty')"
                   :min="0"
                   :step="0.01"
                   @blur="updateMaterialBarcode(materialData)"
                 />
                 <InputTextGeneric
                   v-model="materialData.qtyUnit"
-                  placeholder="หน่วย"
+                  :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
                   class="mt-1 unit-input"
                 />
               </div>
@@ -158,14 +158,14 @@
                 <InputTextGeneric
                   v-model="materialData.qtyWeight"
                   type="number"
-                  placeholder="น้ำหนัก"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colQtyWeight')"
                   :min="0"
                   :step="0.01"
                   @blur="updateMaterialBarcode(materialData)"
                 />
                 <InputTextGeneric
                   v-model="materialData.qtyWeightUnit"
-                  placeholder="หน่วย"
+                  :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
                   class="mt-1 unit-input"
                 />
               </div>
@@ -177,14 +177,14 @@
                 <InputTextGeneric
                   v-model="materialData.qtyPrice"
                   type="number"
-                  placeholder="ราคา/หน่วย"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colPriceQty')"
                   :min="0"
                   :step="0.01"
                 />
                 <InputTextGeneric
                   v-model="materialData.qtyWeightPrice"
                   type="number"
-                  placeholder="ราคา/น้ำหนัก"
+                  :placeholder="$t('view.receiptStock.product.grProduction.colPriceWeight')"
                   :min="0"
                   :step="0.01"
                   class="mt-1"
@@ -196,7 +196,7 @@
             <template #regionTemplate="{ data: materialData }">
               <InputTextGeneric
                 v-model="materialData.region"
-                placeholder="แหล่งที่มา"
+                :placeholder="$t('view.receiptStock.product.grProduction.colRegion')"
               />
             </template>
 
@@ -204,7 +204,7 @@
             <template #typeBarcodeTemplate="{ data: materialData }">
               <InputTextGeneric
                 v-model="materialData.typeBarcode"
-                placeholder="ข้อความ Barcode"
+                :placeholder="$t('view.receiptStock.product.grProduction.colBarcode')"
                 :readonly="true"
               />
             </template>
@@ -227,7 +227,7 @@
         <div class="origin-section mt-3" v-if="hasBreakdownData">
           <h6 class="text-muted">
             <span class="bi bi-info-circle mr-1"></span>
-            วัสดุจาก Breakdown (อ้างอิง)
+            {{ $t('view.receiptStock.product.grProduction.breakdownRef') }}
           </h6>
           <div class="origin-materials">
             <div
@@ -243,8 +243,8 @@
                 </div>
               </div>
               <div class="material-values">
-                <div v-if="material.qty">{{ material.qty }} {{ material.qtyUnit || 'หน่วย' }}</div>
-                <div v-if="material.qtyWeight">{{ material.qtyWeight }} {{ material.qtyWeightUnit || 'กรัม' }}</div>
+                <div v-if="material.qty">{{ material.qty }} {{ material.qtyUnit || $t('view.receiptStock.product.grProduction.unitLabel') }}</div>
+                <div v-if="material.qtyWeight">{{ material.qtyWeight }} {{ material.qtyWeightUnit || $t('view.receiptStock.product.grProduction.gramLabel') }}</div>
               </div>
             </div>
           </div>
@@ -255,7 +255,7 @@
     <template #action>
       <div class="d-flex justify-content-between w-100">
         <div class="text-muted">
-          <small>จำนวนวัสดุ: {{ editableMaterials.length }} รายการ</small>
+          <small>{{ $t('view.receiptStock.product.grProduction.materialCountLabel') }} {{ editableMaterials.length }}</small>
         </div>
         <div>
           <button
@@ -263,7 +263,7 @@
             class="btn btn-outline-main btn-sm"
             @click="closeModal"
           >
-            ยกเลิก
+            {{ $t('common.btn.cancel') }}
           </button>
           <button
             type="button"
@@ -272,7 +272,7 @@
             :disabled="!hasValidMaterials"
           >
             <span class="bi bi-check-lg mr-1"></span>
-            บันทึกการเปลี่ยนแปลง
+            {{ $t('view.receiptStock.product.grProduction.saveChanges') }}
           </button>
         </div>
       </div>
@@ -332,44 +332,50 @@ export default {
 
   emits: ['closeModal', 'saveMaterials'],
 
-  data() {
-    return {
-      editableMaterials: [],
-      originalMaterials: [],
-      materialColumns: [
+  computed: {
+    hasBreakdownData() {
+      return this.breakdownData && this.breakdownData.length > 0
+    },
+
+    hasValidMaterials() {
+      return this.editableMaterials.some(m => m.type && (m.qty > 0 || m.qtyWeight > 0))
+    },
+
+    materialColumns() {
+      return [
         {
           field: 'type',
-          header: 'ประเภท',
+          header: this.$t('view.receiptStock.product.grProduction.matType'),
           width: '120px'
         },
         {
           field: 'typeCode',
-          header: 'รหัส',
+          header: this.$t('view.receiptStock.product.grProduction.matTypeCode'),
           width: '150px'
         },
         {
           field: 'qty',
-          header: 'จำนวน',
+          header: this.$t('view.receiptStock.product.grProduction.colQty'),
           width: '120px'
         },
         {
           field: 'weight',
-          header: 'น้ำหนัก',
+          header: this.$t('view.receiptStock.product.grProduction.colQtyWeight'),
           width: '120px'
         },
         {
           field: 'price',
-          header: 'ราคา',
+          header: this.$t('view.receiptStock.product.grProduction.colPriceQty'),
           width: '140px'
         },
         {
           field: 'region',
-          header: 'แหล่งที่มา',
+          header: this.$t('view.receiptStock.product.grProduction.colRegion'),
           width: '100px'
         },
         {
           field: 'typeBarcode',
-          header: 'Barcode',
+          header: this.$t('view.receiptStock.product.grProduction.colBarcode'),
           minWidth: '150px'
         },
         {
@@ -381,13 +387,10 @@ export default {
     }
   },
 
-  computed: {
-    hasBreakdownData() {
-      return this.breakdownData && this.breakdownData.length > 0
-    },
-
-    hasValidMaterials() {
-      return this.editableMaterials.some(m => m.type && (m.qty > 0 || m.qtyWeight > 0))
+  data() {
+    return {
+      editableMaterials: [],
+      originalMaterials: []
     }
   },
 
@@ -500,7 +503,7 @@ export default {
           break
 
         case 'Worker':
-          display = `${material.typeName || 'ค่าแรง'}`
+          display = `${material.typeName || this.$t('view.receiptStock.product.grProduction.workerLabel')}`
           break
 
         case 'Setting':

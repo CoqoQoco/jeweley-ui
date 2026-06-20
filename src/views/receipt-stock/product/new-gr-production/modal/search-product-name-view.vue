@@ -5,7 +5,7 @@
         <div>
           <div class="title-text-lg-bg">
             <span><i class="bi bi-brush mr-2"></i></span>
-            <span>{{ $t('receipt-stock.product.grProduction.searchProductNameTitle', { mode: typeMode }) }}</span>
+            <span>{{ $t('view.receiptStock.product.grProduction.searchProductNameTitle', { mode: typeMode }) }}</span>
           </div>
 
           <div>
@@ -21,7 +21,7 @@
                     autocapitalize="off"
                     spellcheck="false"
                     v-model="search.name"
-                    :placeholder="$t('receipt-stock.product.grProduction.searchProductNamePlaceholder')"
+                    :placeholder="$t('view.receiptStock.product.grProduction.searchProductNamePlaceholder')"
                     required
                   />
                   <div class="input-group-append mr-1">
@@ -48,18 +48,18 @@
             </BaseDataTable>
             <div class="d-flex justify-content-between mt-2 pb-2">
               <div class="check-return-container">
-                <CheckboxGeneric v-model="editAll" :label="$t('receipt-stock.product.grProduction.editAll')" />
+                <CheckboxGeneric v-model="editAll" :label="$t('view.receiptStock.product.grProduction.editAll')" />
               </div>
               <div>
                 <button
                   class="btn btn-sm btn-main"
                   type="button"
                   :disabled="!selectedItems.length"
-                  :title="$t('receipt-stock.product.grProduction.updateProductName')"
+                  :title="$t('view.receiptStock.product.grProduction.updateProductName')"
                   @click="onSelect"
                 >
                   <span><i class="bi bi-pencil-square"></i></span>
-                  <span class="ml-2">{{ $t('receipt-stock.product.grProduction.updateProductName') }}</span>
+                  <span class="ml-2">{{ $t('view.receiptStock.product.grProduction.updateProductName') }}</span>
                 </button>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default {
       return [
         {
           field: 'text',
-          header: this.$t('receipt-stock.product.grProduction.productName'),
+          header: this.$t('view.receiptStock.product.grProduction.productName'),
           sortable: false
         }
       ]

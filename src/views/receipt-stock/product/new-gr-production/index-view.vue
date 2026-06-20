@@ -143,6 +143,128 @@ export default {
       const res = this.data.productType === 'ES'
       console.log('requiredStud', res)
       return res
+    },
+    columns() {
+      return [
+        {
+          field: 'no',
+          header: this.$t('view.receiptStock.product.grProduction.colNo'),
+          sortable: false,
+          width: '50px'
+        },
+        {
+          field: 'stockReceiptNumber',
+          header: this.$t('view.receiptStock.product.grProduction.colStockReceiptNumber'),
+          sortable: false,
+          minWidth: '140px'
+        },
+        {
+          field: 'stockNumber',
+          header: this.$t('view.receiptStock.product.grProduction.colStockNumber'),
+          sortable: false,
+          minWidth: '140px'
+        },
+        {
+          field: 'productNumber',
+          header: this.$t('view.receiptStock.product.grProduction.colProductNumber'),
+          sortable: false,
+          minWidth: '140px'
+        },
+        {
+          field: 'moldDesign',
+          header: this.$t('view.receiptStock.product.grProduction.colMoldDesign'),
+          sortable: false,
+          minWidth: '120px'
+        },
+        {
+          field: 'productNameEn',
+          header: this.$t('view.receiptStock.product.grProduction.colProductNameEn'),
+          sortable: false,
+          minWidth: '150px'
+        },
+        {
+          field: 'productNameTh',
+          header: this.$t('view.receiptStock.product.grProduction.colProductNameTh'),
+          sortable: false,
+          minWidth: '150px'
+        }
+      ]
+    },
+    materialColumns() {
+      return [
+        {
+          field: 'type',
+          header: this.$t('view.receiptStock.product.grProduction.matType'),
+          sortable: false,
+          width: '120px'
+        },
+        {
+          field: 'typeName',
+          header: this.$t('view.receiptStock.product.grProduction.colMaterialName'),
+          sortable: false
+        },
+        {
+          field: 'typeCode',
+          header: this.$t('view.receiptStock.product.grProduction.matTypeCode'),
+          sortable: false,
+          width: '130px'
+        },
+        {
+          field: 'qty',
+          header: this.$t('view.receiptStock.product.grProduction.colQty'),
+          sortable: false,
+          width: '150px',
+          align: 'center'
+        },
+        {
+          field: 'priceQty',
+          header: this.$t('view.receiptStock.product.grProduction.colPriceQty'),
+          sortable: false,
+          width: '120px',
+          align: 'center'
+        },
+        {
+          field: 'qtyWeight',
+          header: this.$t('view.receiptStock.product.grProduction.colQtyWeight'),
+          sortable: false,
+          width: '150px',
+          align: 'center'
+        },
+        {
+          field: 'priceWeight',
+          header: this.$t('view.receiptStock.product.grProduction.colPriceWeight'),
+          sortable: false,
+          width: '120px',
+          align: 'center'
+        },
+        {
+          field: 'totalPrice',
+          header: this.$t('view.receiptStock.product.grProduction.colTotalPrice'),
+          sortable: false,
+          width: '150px',
+          align: 'right',
+          format: 'decimal2'
+        },
+        {
+          field: 'size',
+          header: this.$t('view.receiptStock.product.grProduction.matSize'),
+          sortable: false,
+          width: '100px'
+        },
+        {
+          field: 'region',
+          header: this.$t('view.receiptStock.product.grProduction.colRegion'),
+          sortable: false,
+          width: '100px'
+        },
+        {
+          field: 'action',
+          header: this.$t('view.receiptStock.product.grProduction.colManage'),
+          sortable: false,
+          width: '10px',
+          align: 'center'
+        }
+      ]
     }
   },
 
@@ -174,8 +296,7 @@ export default {
       itemsToPreSelect: [],
       masterMaterialType: [
         { value: 'Gold', description: 'Gold' },
-        //{ value: 'Silver', description: 'Silver' },
-        //{ value: 'Diamond', description: 'Diamond' },
+        { value: 'Diamond', description: 'Diamond' },
         { value: 'Gem', description: 'Gem ' },
         { value: 'Worker', description: 'Worker ' },
         { value: 'Setting', description: 'Setting ' },
@@ -185,132 +306,6 @@ export default {
         { value: 'lg', description: 'แป้นใหญ่' },
         { value: 'md', description: 'แป้นกลาง' },
         { value: 'sm', description: 'แป้นเล็ก' }
-      ],
-
-      columns: [
-        {
-          field: 'no',
-          header: 'ลำดับ',
-          sortable: false,
-          width: '50px'
-        },
-        {
-          field: 'stockReceiptNumber',
-          header: 'เลขที่ตั้งรับ',
-          sortable: false,
-          minWidth: '140px'
-        },
-        {
-          field: 'stockNumber',
-          header: 'เลขที่ผลิต',
-          sortable: false,
-          minWidth: '140px'
-        },
-        {
-          field: 'productNumber',
-          header: 'รหัสสินค้า',
-          sortable: false,
-          minWidth: '140px'
-        },
-        {
-          field: 'moldDesign',
-          header: 'เเม่พิมพ์',
-          sortable: false,
-          minWidth: '120px'
-        },
-        {
-          field: 'productNameEn',
-          header: 'ชื่อสินค้า EN',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'productNameTh',
-          header: 'ชื่อสินค้า TH',
-          sortable: false,
-          minWidth: '150px'
-        }
-      ],
-      materialColumns: [
-        {
-          field: 'type',
-          header: 'ประเภท',
-          sortable: false,
-          width: '120px'
-        },
-        {
-          field: 'typeName',
-          header: 'ชื่อวัสดุ',
-          sortable: false,
-          //width: '180px'
-        },
-        {
-          field: 'typeCode',
-          header: 'รหัส/เกรด',
-          sortable: false,
-          width: '130px'
-        },
-        {
-          field: 'qty',
-          header: 'จำนวน',
-          sortable: false,
-          width: '150px',
-          align: 'center'
-        },
-        {
-          field: 'priceQty',
-          header: 'ราคา/หน่วย',
-          sortable: false,
-          width: '120px',
-          align: 'center'
-        },
-        {
-          field: 'qtyWeight',
-          header: 'น้ำหนัก',
-          sortable: false,
-          width: '150px',
-          align: 'center'
-        },
-        {
-          field: 'priceWeight',
-          header: 'ราคา/น้ำหนัก',
-          sortable: false,
-          width: '120px',
-          align: 'center'
-        },
-        {
-          field: 'totalPrice',
-          header: 'รวมราคา',
-          sortable: false,
-          width: '150px',
-          align: 'right',
-          format: 'decimal2'
-        },
-        {
-          field: 'size',
-          header: 'ขนาด',
-          sortable: false,
-          width: '100px'
-        },
-        {
-          field: 'region',
-          header: 'แหล่งที่มา',
-          sortable: false,
-          width: '100px'
-        },
-        // {
-        //   field: 'typeBarcode',
-        //   header: 'Barcode',
-        //   sortable: false,
-        //   width: '150px'
-        // },
-        {
-          field: 'action',
-          header: 'จัดการ',
-          sortable: false,
-          width: '10px',
-          align: 'center'
-        }
       ],
 
       btnClearImg: null,
@@ -373,14 +368,14 @@ export default {
       if (!isValid) {
         if (duplicateProductNumbers.length > 0) {
           swAlert.warning(
-            'พบรหัสสินค้าซ้ำกัน',
-            `กรุณาตรวจสอบรหัสสินค้าต่อไปนี้: ${duplicateProductNumbers.join(', ')}`,
+            this.$t('view.receiptStock.product.grProduction.dupProductNumber'),
+            this.$t('view.receiptStock.product.grProduction.dupProductNumberDesc', { codes: duplicateProductNumbers.join(', ') }),
             () => {
               console.log('swAlert.warning - duplicate productNumber')
             }
           )
         } else {
-          swAlert.warning('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', '', () => {
+          swAlert.warning(this.$t('view.receiptStock.product.grProduction.requiredFields'), '', () => {
             console.log('swAlert.warning')
           })
         }
@@ -659,7 +654,7 @@ export default {
         Stocks: [...confirm]
       }
 
-      swAlert.confirmSubmit('', 'ยืนยันการบันทึกข้อมูล?', async () => {
+      swAlert.confirmSubmit('', this.$t('view.receiptStock.product.grProduction.confirmSave'), async () => {
         this.fetchConfirm(formValue)
       })
     },
@@ -693,7 +688,11 @@ export default {
         location: item.location?.trim() || 'MAIN',
         price: 0,
         barcodeGold: '',
-        barcodeGems: []
+        barcodeGems: [],
+        materials: (item.materials || []).map((m) => ({
+          ...m,
+          regionOrigin: m.regionOrigin !== undefined ? m.regionOrigin : (m.region || '')
+        }))
       }))
 
       this.itemsToDisable = this.form.filter((item) => item.isReceipt)
@@ -772,8 +771,8 @@ export default {
     onEditAllMaterials() {
       if (this.selectedItems.length === 0) {
         swAlert.warning(
-          'กรุณาเลือกสินค้าก่อน',
-          'ต้องเลือกสินค้าอย่างน้อย 1 รายการเพื่อแก้ไขวัสดุ',
+          this.$t('view.receiptStock.product.grProduction.selectProductFirst'),
+          this.$t('view.receiptStock.product.grProduction.selectProductFirstDesc'),
           () => {
             console.log('No items selected for material editing')
           }
@@ -785,9 +784,13 @@ export default {
 
     onLoadFromBreakdown(stockReceiptNumber) {
       if (!this.data.breakDown || this.data.breakDown.length === 0) {
-        swAlert.warning('ไม่พบข้อมูล Breakdown', 'ไม่มีข้อมูลวัสดุจาก Breakdown ให้โหลด', () => {
-          console.log('No breakdown data available')
-        })
+        swAlert.warning(
+          this.$t('view.receiptStock.product.grProduction.noBreakdownData'),
+          this.$t('view.receiptStock.product.grProduction.noBreakdownDataDesc'),
+          () => {
+            console.log('No breakdown data available')
+          }
+        )
         return
       }
 
@@ -805,14 +808,15 @@ export default {
           qty: material.qty || 0,
           qtyUnit: material.qtyUnit || 'pc',
           qtyPrice: material.qtyPrice || 0,
-          weight: material.qtyWeight || 0, // Map qtyWeight to weight for compatibility
+          weight: material.qtyWeight || 0,
           weightUnit: material.qtyWeightUnit || 'g',
           qtyWeight: material.qtyWeight || 0,
           qtyWeightUnit: material.qtyWeightUnit || 'g',
           qtyWeightPrice: material.qtyWeightPrice || 0,
-          size: '', // Not in breakdown, keep empty
+          size: '',
           region: material.region || '',
-          price: 0, // Individual item price, different from material price
+          regionOrigin: material.region || '',
+          price: 0,
           isOrigin: material.isOrigin || false
         }))
 
@@ -820,8 +824,8 @@ export default {
         this.updateFormBarcodeIndex(stockReceiptNumber)
 
         swAlert.success(
-          'โหลดข้อมูลสำเร็จ',
-          `โหลดวัสดุจาก Breakdown เรียบร้อยแล้ว (${this.data.breakDown.length} รายการ)`,
+          this.$t('view.receiptStock.product.grProduction.loadBreakdownSuccess'),
+          this.$t('view.receiptStock.product.grProduction.loadBreakdownSuccessDesc', { count: this.data.breakDown.length }),
           () => {
             console.log('Breakdown materials loaded successfully')
           }
@@ -835,8 +839,11 @@ export default {
           (x) => x.stockReceiptNumber === selectedStock.stockReceiptNumber
         )
         if (stockIndex > -1) {
-          // Deep copy materials to avoid reference issues
-          this.form[stockIndex].materials = JSON.parse(JSON.stringify(materials))
+          // Deep copy materials to avoid reference issues, preserve regionOrigin
+          this.form[stockIndex].materials = JSON.parse(JSON.stringify(materials)).map((m) => ({
+            ...m,
+            regionOrigin: m.regionOrigin !== undefined ? m.regionOrigin : m.region || ''
+          }))
 
           // Update barcode for this stock
           this.updateFormBarcodeIndex(selectedStock.stockReceiptNumber)
@@ -844,8 +851,8 @@ export default {
       })
 
       swAlert.success(
-        'อัปเดตสำเร็จ',
-        `อัปเดตวัสดุสำหรับสินค้า ${selectedStocks.length} รายการเรียบร้อยแล้ว`,
+        this.$t('view.receiptStock.product.grProduction.updateMaterialsSuccess'),
+        this.$t('view.receiptStock.product.grProduction.updateMaterialsSuccessDesc', { count: selectedStocks.length }),
         () => {
           console.log('Materials updated for all selected stocks')
         }
@@ -878,9 +885,10 @@ export default {
             qtyWeight: material.qtyWeight || 0,
             qtyWeightUnit: material.qtyWeightUnit || 'g',
             qtyWeightPrice: material.qtyWeightPrice || 0,
-            size: '', // Not applicable for breakdown materials
+            size: '',
             region: material.region || '',
-            price: 0, // Individual item price, different from breakdown price
+            regionOrigin: material.regionOrigin !== undefined ? material.regionOrigin : (material.region || ''),
+            price: 0,
             isOrigin: material.isOrigin || false
           }))
 
