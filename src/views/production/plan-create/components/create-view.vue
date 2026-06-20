@@ -59,6 +59,7 @@
                     @complete="onSearchMold"
                     :placeholder="$t('view.production.planCreate.placeholderMold')"
                     :class="val.isValMold === true ? `p-invalid` : ``"
+                    :minLength="3"
                     forceSelection
                     @item-select="onSelectMold"
                   />
@@ -78,6 +79,7 @@
                     @complete="onSearchCustomer"
                     :placeholder="$t('view.production.planCreate.placeholderCustomerCode')"
                     :class="val.isValCustomerNumber === true ? `p-invalid` : ``"
+                    :minLength="3"
                     forceSelection
                   />
                 </div>
@@ -788,7 +790,7 @@ export default {
     // --- APIs --- //
     async onSearchCustomer(e) {
       const param = {
-        take: 0,
+        take: 30,
         skip: 0,
         search: {
           text: e.query ?? null
@@ -801,7 +803,7 @@ export default {
     },
     async onSearchMold(e) {
       const param = {
-        take: 0,
+        take: 30,
         skip: 0,
         search: {
           text: e.query ?? null

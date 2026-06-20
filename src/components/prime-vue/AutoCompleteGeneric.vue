@@ -2,10 +2,10 @@
   <div @keydown.enter.prevent="handleEnterKey">
     <AutoComplete
       v-model="localValue"
-      :suggestions="suggestions"
+      :suggestions="displaySuggestions"
       @complete="onSearch"
       :placeholder="placeholder"
-      :optionLabel="optionLabel"
+      :optionLabel="effectiveOptionLabel"
       :forceSelection="forceSelection"
       :minLength="minLength"
       :disabled="disabled"
@@ -94,14 +94,18 @@ export default {
     skipLoading: {
       type: Boolean,
       default: true
+    },
+    suggestions: {
+      type: Array,
+      default: () => []
     }
   },
 
-  emits: ['update:modelValue', 'item-select', 'search-complete'],
+  emits: ['update:modelValue', 'item-select', 'search-complete', 'complete'],
 
   data() {
     return {
-      suggestions: [],
+      internalSuggestions: [],
       localValue: this.modelValue
     }
   },
@@ -109,6 +113,18 @@ export default {
   computed: {
     hasOptionSlot() {
       return !!this.$slots.option
+    },
+
+    displaySuggestions() {
+      return this.apiEndpoint || this.useStaticList ? this.internalSuggestions : this.suggestions
+    },
+
+    effectiveOptionLabel() {
+      const list = this.displaySuggestions
+      if (Array.isArray(list) && list.length > 0 && typeof list[0] === 'string') {
+        return null
+      }
+      return this.optionLabel
     }
   },
 
@@ -123,20 +139,21 @@ export default {
 
   methods: {
     async onSearch(event) {
+      // Static list mode
+      if (this.useStaticList) {
+        this.internalSuggestions = this.filterStaticList(event.query)
+        this.$emit('search-complete', this.internalSuggestions)
+        return
+      }
+
+      // Passthrough mode — let parent handle the search
+      if (!this.apiEndpoint) {
+        this.$emit('complete', event)
+        return
+      }
+
+      // API mode
       try {
-        // Static list mode
-        if (this.useStaticList) {
-          this.suggestions = this.filterStaticList(event.query)
-          this.$emit('search-complete', this.suggestions)
-          return
-        }
-
-        // API mode
-        if (!this.apiEndpoint) {
-          console.warn('AutoCompleteGeneric: apiEndpoint is required when useStaticList is false')
-          return
-        }
-
         const params = {
           take: 0,
           skip: 0,
@@ -151,12 +168,12 @@ export default {
         })
 
         if (res) {
-          this.suggestions = Array.isArray(res) ? [...res] : res.data ? [...res.data] : []
-          this.$emit('search-complete', this.suggestions)
+          this.internalSuggestions = Array.isArray(res) ? [...res] : res.data ? [...res.data] : []
+          this.$emit('search-complete', this.internalSuggestions)
         }
       } catch (error) {
         console.error('Error in AutoCompleteGeneric search:', error)
-        this.suggestions = []
+        this.internalSuggestions = []
       }
     },
 
