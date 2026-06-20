@@ -13,7 +13,7 @@
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">{{ $t('production.planView.goldColor') }}</span>
+                <span class="title-text">{{ $t('view.production.planView.goldColor') }}</span>
                 <DropdownGeneric
                   :modelValue="form.gold"
                   :options="masterGold"
@@ -25,7 +25,7 @@
               </div>
               <div class="form-content-row-sub-container">
                 <div>
-                  <span class="title-text">{{ $t('production.planView.goldPercent') }}</span>
+                  <span class="title-text">{{ $t('view.production.planView.goldPercent') }}</span>
                   <DropdownGeneric
                     :modelValue="form.goldSize"
                     :options="masterGoldSize"
@@ -36,7 +36,7 @@
                   />
                 </div>
                 <div>
-                  <span class="title-text">{{ $t('production.planView.goldQtyLabel') }}</span>
+                  <span class="title-text">{{ $t('view.production.planView.goldQtyLabel') }}</span>
                   <input type="number" min="1" class="form-control" v-model="form.goldQty" />
                 </div>
               </div>
@@ -47,7 +47,7 @@
             </div>
             <div class="form-col-container">
               <div>
-                <span class="title-text">{{ $t('production.planView.gemType') }}</span>
+                <span class="title-text">{{ $t('view.production.planView.gemType') }}</span>
                 <DropdownGeneric
                   :modelValue="form.gem"
                   :options="masterGem"
@@ -58,7 +58,7 @@
                 />
               </div>
               <div>
-                <span class="title-text">{{ $t('production.planView.gemShape') }}</span>
+                <span class="title-text">{{ $t('view.production.planView.gemShape') }}</span>
                 <DropdownGeneric
                   :modelValue="form.gemShape"
                   :options="masterGemShape"

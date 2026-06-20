@@ -24,7 +24,7 @@
             <!-- target status -->
             <div class="form-col-container">
               <div>
-                <span class="title-text">{{ $t('production.planTracking.targetDept') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.targetDept') }}</span>
                 <DropdownGeneric
                   :modelValue="form.targetStatus"
                   :options="allowSelectStatus"
@@ -38,7 +38,7 @@
 
             <div class="form-col-container mt-2">
               <div>
-                <span class="title-text">{{ $t('production.planView.workerAssign') }}</span>
+                <span class="title-text">{{ $t('view.production.planView.workerAssign') }}</span>
                 <AutoCompleteGeneric
                   v-model="form.worker"
                   :suggestions="workerItemSearch"
@@ -58,7 +58,7 @@
                 type="submit"
               >
                 <span><i class="bi bi-calendar-check"></i></span>
-                <span class="ml-2">{{ $t('production.planTracking.transferJob') }}</span>
+                <span class="ml-2">{{ $t('view.production.planTracking.transferJob') }}</span>
               </button>
             </div>
           </div>
@@ -194,7 +194,7 @@ export default {
 
     onSubmit() {
       if (this.validateForm()) {
-        confirmSubmit('', this.$t('production.planTracking.confirmTransfer'), async () => {
+        confirmSubmit('', this.$t('view.production.planTracking.confirmTransfer'), async () => {
           await this.submit()
         })
       }
@@ -210,7 +210,7 @@ export default {
 
       let statusNotAllow = [49, 54, 55, 59, 69, 79, 84, 85, 94, 500]
       if (statusNotAllow.includes(this.form.targetStatus)) {
-        warning(this.$t('production.planTracking.cannotTransfer'), '', () => {
+        warning(this.$t('view.production.planTracking.cannotTransfer'), '', () => {
           isValid = false
         })
       }

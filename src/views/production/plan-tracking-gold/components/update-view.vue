@@ -2,32 +2,32 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal" :isShowActionPart="true">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('production.planTrackingGold.updateTitle') }}</span>
+        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.production.planTrackingGold.updateTitle') }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="gold-update-form">
           <div class="p-4">
             <!-- ข้อมูล -->
-            <pageTitle :title="$t('production.planTrackingGold.formTitle')" :isShowBtnClose="false" class="mb-3" />
+            <pageTitle :title="$t('view.production.planTrackingGold.formTitle')" :isShowBtnClose="false" class="mb-3" />
             <div class="border-container p-4">
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.bookNo') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.bookNo') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.bookNo" required disabled />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.no') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.no') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.no" required disabled />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.assignDate') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.assignDate') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <CalendarGeneric
@@ -41,7 +41,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.goldType') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.goldType') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <DropdownGeneric
@@ -55,7 +55,7 @@
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.goldPercent') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.goldPercent') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <DropdownGeneric
@@ -71,7 +71,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.goldReceipt') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.goldReceipt') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.goldReceipt" required />
@@ -80,13 +80,13 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.assignBy') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.assignBy') }}</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.assignBy" />
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.receiveBy') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.receiveBy') }}</span>
                   </span>
                   <input type="text" class="form-control" v-model="form.receiveBy" />
                 </div>
@@ -94,7 +94,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.otherDetail') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.otherDetail') }}</span>
                   </span>
                   <textarea class="form-control" v-model="form.remark"></textarea>
                 </div>
@@ -102,7 +102,7 @@
               <div class="form-col-container">
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.colCost') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.colCost') }}</span>
                     <span class="txt-required"> *</span>
                   </span>
                   <input
@@ -217,7 +217,7 @@
               </div>
               <div class="form-col-container">
                 <div>
-                  <span class="title-text">{{ $t('production.planTrackingGold.colZill') }}</span>
+                  <span class="title-text">{{ $t('view.production.planTrackingGold.colZill') }}</span>
                   <AutoCompleteGeneric
                     :modelValue="form.zill"
                     apiEndpoint="Master/ListMaster"
@@ -231,7 +231,7 @@
                 </div>
                 <div>
                   <span class="title-text">
-                    <span>{{ $t('production.planTrackingGold.colZillQty') }}</span>
+                    <span>{{ $t('view.production.planTrackingGold.colZillQty') }}</span>
                   </span>
                   <input
                     type="number"
@@ -756,7 +756,7 @@ export default {
       if (this.validateForm()) {
         confirmSubmit(
           `เลขที่:${this.form.no} | เล่มที่:${this.form.bookNo} `,
-          `${this.$t('production.planTrackingGold.confirmSave')}`,
+          `${this.$t('view.production.planTrackingGold.confirmSave')}`,
           async () => {
             await this.submit()
           }

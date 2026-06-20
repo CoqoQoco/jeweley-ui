@@ -4,7 +4,7 @@
       <div>
         <div>
           <pageTitle
-            :title="$t('production.planTrackingStatus.searchTitle')"
+            :title="$t('view.production.planTrackingStatus.searchTitle')"
             description="ตรวจสอบ ติดตาม การดำเนินงาน รับ-จ่ายงาน เเต่ละเเผนก"
             :isShowBtnClose="false"
           >
@@ -14,7 +14,7 @@
         <div class="form-col-container">
           <!-- receive date -->
           <div>
-            <span class="title-text">{{ $t('production.planTrackingStatus.receiveDate') }}</span>
+            <span class="title-text">{{ $t('view.production.planTrackingStatus.receiveDate') }}</span>
             <div class="flex-group">
               <CalendarGeneric
                 v-model="form.requestDateStart"
@@ -34,7 +34,7 @@
 
           <!-- receive work date -->
           <div>
-            <span class="title-text">{{ $t('production.planTrackingStatus.workerReceiveDate') }}</span>
+            <span class="title-text">{{ $t('view.production.planTrackingStatus.workerReceiveDate') }}</span>
             <div class="flex-group">
               <CalendarGeneric
                 v-model="form.receiveWorkDateStart"
@@ -61,7 +61,7 @@
             <div class="form-col-container">
               <!-- status -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingStatus.planStatus') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingStatus.planStatus') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.status"
@@ -75,7 +75,7 @@
 
               <!-- gold -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingStatus.goldType') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingStatus.goldType') }}</span>
                 <MultiSelectGeneric
                   v-model="form.gold"
                   :options="masterApiStore.gold"
@@ -87,13 +87,13 @@
 
               <!-- wo -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingStatus.workOrder') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingStatus.workOrder') }}</span>
                 <input :class="['form-control']" type="text" v-model.trim="form.wo" />
               </div>
 
               <!-- product no  -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingStatus.colProductCode') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingStatus.colProductCode') }}</span>
                 <input :class="['form-control']" type="text" v-model.trim="form.productNo" />
               </div>
             </div>

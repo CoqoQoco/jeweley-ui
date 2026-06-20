@@ -3,14 +3,14 @@
     <form @submit.prevent="onSearch">
       <div>
         <div>
-          <pageTitle :title="$t('production.planTrackingTransfer.searchTitle')" :isShowBtnClose="false">
+          <pageTitle :title="$t('view.production.planTrackingTransfer.searchTitle')" :isShowBtnClose="false">
           </pageTitle>
         </div>
 
         <div class="form-col-container">
           <!-- date -->
           <div>
-            <span class="title-text">{{ $t('production.planTrackingTransfer.transferDate') }}</span>
+            <span class="title-text">{{ $t('view.production.planTrackingTransfer.transferDate') }}</span>
             <div class="flex-group">
               <CalendarGeneric
                 v-model="form.start"
@@ -30,7 +30,7 @@
 
           <div class="form-col-container">
             <div>
-              <span class="title-text">{{ $t('production.planTrackingTransfer.deptTransfer') }}</span>
+              <span class="title-text">{{ $t('view.production.planTrackingTransfer.deptTransfer') }}</span>
               <div>
                 <div class="flex-group">
                   <DropdownGeneric
@@ -64,7 +64,7 @@
             <div class="form-col-container">
               <!-- wo text -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingTransfer.workOrder') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingTransfer.workOrder') }}</span>
                 <div class="input-group input-group-inner">
                   <input
                     ref="inputText"
@@ -84,13 +84,13 @@
 
               <!-- mold -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingTransfer.colMold') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingTransfer.colMold') }}</span>
                 <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
               </div>
 
               <!-- product type -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingTransfer.colProductType') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingTransfer.colProductType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.productType"
@@ -103,7 +103,7 @@
 
               <!-- product number -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingTransfer.colProductCode') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingTransfer.colProductCode') }}</span>
                 <input
                   :class="['form-control bg-input']"
                   type="text"
@@ -113,7 +113,7 @@
 
               <!-- gold -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingTransfer.goldColor') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingTransfer.goldColor') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.gold"
@@ -126,7 +126,7 @@
 
               <!-- gold size -->
               <div>
-                <span class="title-text">{{ $t('production.planTrackingTransfer.goldType') }}</span>
+                <span class="title-text">{{ $t('view.production.planTrackingTransfer.goldType') }}</span>
                 <div>
                   <MultiSelectGeneric
                     v-model="form.goldSize"

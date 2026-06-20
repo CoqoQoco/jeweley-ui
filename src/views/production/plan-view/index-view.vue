@@ -240,16 +240,16 @@ export default {
     return {
       tabActive: 0,
       tabItems: [
-        { id: 0, label: this.$t('production.planView.tabDetail'), icon: 'bi bi-clipboard-data' },
-        { id: 1, label: this.$t('production.planView.tabGold'), icon: 'bi bi-box-fill' },
-        { id: 2, label: this.$t('production.planView.tabShape'), icon: 'bi bi-hammer' },
-        { id: 3, label: this.$t('production.planView.tabGrindRaw'), icon: 'bi bi-hammer' },
-        { id: 4, label: this.$t('production.planView.tabPickGem'), icon: 'bi bi-hammer' },
-        { id: 5, label: this.$t('production.planView.tabEmbed'), icon: 'bi bi-hammer' },
-        { id: 6, label: this.$t('production.planView.tabPolish'), icon: 'bi bi-hammer' },
-        { id: 7, label: this.$t('production.planView.tabCostCard'), icon: 'bi bi-cash-coin' },
-        { id: 8, label: this.$t('production.planView.tabDone'), icon: 'bi bi-clipboard-check-fill' },
-        { id: 9, label: this.$t('production.planView.tabMelt'), icon: 'bi bi-clipboard-x-fill' }
+        { id: 0, label: this.$t('view.production.planView.tabDetail'), icon: 'bi bi-clipboard-data' },
+        { id: 1, label: this.$t('view.production.planView.tabGold'), icon: 'bi bi-box-fill' },
+        { id: 2, label: this.$t('view.production.planView.tabShape'), icon: 'bi bi-hammer' },
+        { id: 3, label: this.$t('view.production.planView.tabGrindRaw'), icon: 'bi bi-hammer' },
+        { id: 4, label: this.$t('view.production.planView.tabPickGem'), icon: 'bi bi-hammer' },
+        { id: 5, label: this.$t('view.production.planView.tabEmbed'), icon: 'bi bi-hammer' },
+        { id: 6, label: this.$t('view.production.planView.tabPolish'), icon: 'bi bi-hammer' },
+        { id: 7, label: this.$t('view.production.planView.tabCostCard'), icon: 'bi bi-cash-coin' },
+        { id: 8, label: this.$t('view.production.planView.tabDone'), icon: 'bi bi-clipboard-check-fill' },
+        { id: 9, label: this.$t('view.production.planView.tabMelt'), icon: 'bi bi-clipboard-x-fill' }
       ],
 
       isUpdate: {

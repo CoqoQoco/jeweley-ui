@@ -19,7 +19,7 @@
       </template>
 
       <template #statusTemplate="{ data: row }">
-        {{ row.wagesStatus === 100 ? $t('production.trackingWorker.statusDone') : $t('production.trackingWorker.statusActive') }}
+        {{ row.wagesStatus === 100 ? $t('view.production.trackingWorker.statusDone') : $t('view.production.trackingWorker.statusActive') }}
       </template>
 
       <template #workerCodeTemplate="{ data: row }">
@@ -78,18 +78,18 @@ export default {
   computed: {
     columns() {
       return [
-        { field: 'image', header: this.$t('production.trackingWorker.colMold'), minWidth: '100px', sortable: false },
-        { field: 'wo', header: this.$t('production.trackingWorker.colWo'), minWidth: '150px', sortable: false },
-        { field: 'status', header: this.$t('production.trackingWorker.colStatus'), minWidth: '150px', sortable: false },
-        { field: 'workerCode', header: this.$t('production.trackingWorker.colWorker'), minWidth: '150px', sortable: false },
-        { field: 'jobDate', header: this.$t('production.trackingWorker.colCreateDate'), minWidth: '150px', sortable: false },
-        { field: 'productNumber', header: this.$t('production.trackingWorker.colProductCode'), minWidth: '150px', sortable: false },
-        { field: 'statusName', header: this.$t('production.trackingWorker.colStatus'), minWidth: '150px', sortable: false },
+        { field: 'image', header: this.$t('view.production.trackingWorker.colMold'), minWidth: '100px', sortable: false },
+        { field: 'wo', header: this.$t('view.production.trackingWorker.colWo'), minWidth: '150px', sortable: false },
+        { field: 'status', header: this.$t('view.production.trackingWorker.colStatus'), minWidth: '150px', sortable: false },
+        { field: 'workerCode', header: this.$t('view.production.trackingWorker.colWorker'), minWidth: '150px', sortable: false },
+        { field: 'jobDate', header: this.$t('view.production.trackingWorker.colCreateDate'), minWidth: '150px', sortable: false },
+        { field: 'productNumber', header: this.$t('view.production.trackingWorker.colProductCode'), minWidth: '150px', sortable: false },
+        { field: 'statusName', header: this.$t('view.production.trackingWorker.colStatus'), minWidth: '150px', sortable: false },
         { field: 'desc', header: this.$t('common.field.description'), minWidth: '150px', sortable: false },
-        { field: 'goldQtySend', header: this.$t('production.trackingWorker.colQtySend'), minWidth: '150px', sortable: false },
-        { field: 'goldWeightSend', header: this.$t('production.trackingWorker.colWeightSend'), minWidth: '150px', sortable: false },
-        { field: 'goldQtyCheck', header: this.$t('production.trackingWorker.colQtyCheck'), minWidth: '150px', sortable: false },
-        { field: 'goldWeightCheck', header: this.$t('production.trackingWorker.colWeightCheck'), minWidth: '150px', sortable: false }
+        { field: 'goldQtySend', header: this.$t('view.production.trackingWorker.colQtySend'), minWidth: '150px', sortable: false },
+        { field: 'goldWeightSend', header: this.$t('view.production.trackingWorker.colWeightSend'), minWidth: '150px', sortable: false },
+        { field: 'goldQtyCheck', header: this.$t('view.production.trackingWorker.colQtyCheck'), minWidth: '150px', sortable: false },
+        { field: 'goldWeightCheck', header: this.$t('view.production.trackingWorker.colWeightCheck'), minWidth: '150px', sortable: false }
       ]
     }
   },

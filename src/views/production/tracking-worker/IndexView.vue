@@ -3,11 +3,11 @@
     <form @submit.prevent="onSearch">
       <div class="filter-container">
         <div>
-          <pageTitle :title="$t('production.trackingWorker.searchTitle')" :isShowBtnClose="false"> </pageTitle>
+          <pageTitle :title="$t('view.production.trackingWorker.searchTitle')" :isShowBtnClose="false"> </pageTitle>
         </div>
         <div class="search-bar-container">
           <div>
-            <span class="text-title">{{ $t('production.trackingWorker.createDate') }}</span>
+            <span class="text-title">{{ $t('view.production.trackingWorker.createDate') }}</span>
             <div class="flex-group">
               <CalendarGeneric
                 v-model="search.start"
@@ -23,7 +23,7 @@
             </div>
           </div>
           <div>
-            <span class="text-title">{{ $t('production.trackingWorker.searchText') }}</span>
+            <span class="text-title">{{ $t('view.production.trackingWorker.searchText') }}</span>
             <div class="input-group input-group-inner">
               <input
                 ref="inputText"

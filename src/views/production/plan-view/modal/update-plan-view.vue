@@ -9,7 +9,7 @@
           <div class="p-2">
             <div class="form-col-container">
               <div>
-                <span class="title-text">{{ $t('production.planTracking.mold') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.mold') }}</span>
                 <AutoCompleteGeneric
                   v-model="form.mold"
                   :suggestions="modelMold"
@@ -25,7 +25,7 @@
             </div>
             <div class="form-col-container mt-3">
               <div>
-                <span class="title-text">{{ $t('production.planTracking.colRequestDate') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.colRequestDate') }}</span>
                 <CalendarGeneric
                   v-model="form.requestDate"
                   dateFormat="dd/mm/yy"
@@ -34,7 +34,7 @@
                 />
               </div>
               <div>
-                <span class="title-text">{{ $t('production.planTracking.customerCode') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.customerCode') }}</span>
                 <AutoCompleteGeneric
                   v-model="form.customerNumber"
                   :suggestions="modelCustomer"
@@ -46,7 +46,7 @@
               </div>
 
               <div>
-                <span class="title-text">{{ $t('production.planTracking.customerType') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.customerType') }}</span>
                 <DropdownGeneric
                   :modelValue="form.customerType"
                   :options="modelMasterCustomerType"
@@ -62,17 +62,17 @@
 
             <div class="form-col-container mt-3">
               <div>
-                <span class="title-text">{{ $t('production.planView.productName') }}</span>
+                <span class="title-text">{{ $t('view.production.planView.productName') }}</span>
                 <input type="text" class="form-control" v-model="form.productName" required />
               </div>
 
               <div>
-                <span class="title-text">{{ $t('production.planTracking.colProductCode') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.colProductCode') }}</span>
                 <input type="text" class="form-control" v-model="form.productNumber" required />
               </div>
 
               <div>
-                <span class="title-text">{{ $t('production.planTracking.productType') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.productType') }}</span>
                 <DropdownGeneric
                   :modelValue="form.productType"
                   :options="modelMasterProductType"
@@ -86,7 +86,7 @@
             <div class="form-col-container filter-container-highlight mt-2 p-2">
               <div class="form-col-sm-container pl-2">
                 <div>
-                  <span class="title-text-white">{{ $t('production.planTracking.colProductQty') }}</span>
+                  <span class="title-text-white">{{ $t('view.production.planTracking.colProductQty') }}</span>
                   <input
                     type="number"
                     min="1"
@@ -98,7 +98,7 @@
                 </div>
 
                 <div>
-                  <span class="title-text-white">{{ $t('production.planView.unitLabel') }}</span>
+                  <span class="title-text-white">{{ $t('view.production.planView.unitLabel') }}</span>
                   <input
                     type="text"
                     class="form-control"
@@ -114,7 +114,7 @@
             </div>
             <div class="form-col-container mt-2">
               <div>
-                <span class="title-text">{{ $t('production.planView.productDetail') }}</span>
+                <span class="title-text">{{ $t('view.production.planView.productDetail') }}</span>
                 <textarea
                   class="form-control textarea-sm"
                   v-model="form.productDetail"
@@ -126,22 +126,22 @@
 
             <div class="form-col-container mt-2">
               <div>
-                <span class="title-text">{{ $t('production.planTracking.goldColor') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.goldColor') }}</span>
                 <DropdownGeneric
                   :modelValue="form.gold"
                   :options="modelMastergold"
                   optionLabel="description"
-                  :placeholder="$t('production.planView.selectGold')"
+                  :placeholder="$t('view.production.planView.selectGold')"
                   @update:modelValue="form.gold = $event"
                 />
               </div>
               <div>
-                <span class="title-text">{{ $t('production.planTracking.goldType') }}</span>
+                <span class="title-text">{{ $t('view.production.planTracking.goldType') }}</span>
                 <DropdownGeneric
                   :modelValue="form.goldSize"
                   :options="modelMasterGoldSize"
                   optionLabel="description"
-                  :placeholder="$t('production.planView.selectGoldPercent')"
+                  :placeholder="$t('view.production.planView.selectGoldPercent')"
                   @update:modelValue="form.goldSize = $event"
                 />
               </div>

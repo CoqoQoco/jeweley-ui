@@ -333,7 +333,7 @@
                 :options="masterType"
                 optionLabel="name"
                 optionValue="code"
-                :placeholder="$t('production.planView.selectItem')"
+                :placeholder="$t('view.production.planView.selectItem')"
                 @update:modelValue="masterValue = $event"
               />
 

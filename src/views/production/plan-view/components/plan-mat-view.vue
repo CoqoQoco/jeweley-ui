@@ -4,7 +4,7 @@
       <div class="d-flex justify-content-between">
         <div class="title-text-white vertical-center-container">
           <span class="bi bi-list-check mr-2"></span>
-          <span>{{ $t('production.planView.matSectionTitle') }}</span>
+          <span>{{ $t('view.production.planView.matSectionTitle') }}</span>
         </div>
         <div>
           <div class="btn-add" :title="$t('common.btn.add')" type="button" @click="onShowFormMaterialUpdate">
@@ -85,7 +85,7 @@
       <div class="d-flex justify-content-between">
         <div class="title-text-white vertical-center-container">
           <span class="bi bi-list-check mr-2"></span>
-          <span>{{ $t('production.planView.goldRequestSectionTitle') }}</span>
+          <span>{{ $t('view.production.planView.goldRequestSectionTitle') }}</span>
         </div>
       </div>
     </div>
@@ -158,28 +158,28 @@ export default {
     matColumns() {
       return [
         { field: 'action', header: '', minWidth: '60px', sortable: false },
-        { field: 'goldNavigation', header: this.$t('production.planView.colGoldType'), minWidth: '120px', sortable: false },
-        { field: 'goldSizeNavigation', header: this.$t('production.planView.colGoldPercent'), minWidth: '100px', sortable: false },
-        { field: 'goldQty', header: this.$t('production.planView.colGoldQty'), minWidth: '80px', sortable: false },
-        { field: 'gemNavigation', header: this.$t('production.planView.colGemType'), minWidth: '120px', sortable: false },
-        { field: 'gemShapeNavigation', header: this.$t('production.planView.colGemShape'), minWidth: '150px', sortable: false },
-        { field: 'gemQty', header: this.$t('production.planView.colGemQty'), minWidth: '100px', sortable: false },
-        { field: 'gemWeight', header: this.$t('production.planView.colGemWeight'), minWidth: '100px', sortable: false },
-        { field: 'diamondQty', header: this.$t('production.planView.colDiamondQty'), minWidth: '100px', sortable: false },
-        { field: 'diamondWeight', header: this.$t('production.planView.colDiamondWeight'), minWidth: '100px', sortable: false },
-        { field: 'diamondSize', header: this.$t('production.planView.colDiamondSize'), minWidth: '80px', sortable: false },
-        { field: 'diamondQuality', header: this.$t('production.planView.colDiamondQuality'), minWidth: '100px', sortable: false }
+        { field: 'goldNavigation', header: this.$t('view.production.planView.colGoldType'), minWidth: '120px', sortable: false },
+        { field: 'goldSizeNavigation', header: this.$t('view.production.planView.colGoldPercent'), minWidth: '100px', sortable: false },
+        { field: 'goldQty', header: this.$t('view.production.planView.colGoldQty'), minWidth: '80px', sortable: false },
+        { field: 'gemNavigation', header: this.$t('view.production.planView.colGemType'), minWidth: '120px', sortable: false },
+        { field: 'gemShapeNavigation', header: this.$t('view.production.planView.colGemShape'), minWidth: '150px', sortable: false },
+        { field: 'gemQty', header: this.$t('view.production.planView.colGemQty'), minWidth: '100px', sortable: false },
+        { field: 'gemWeight', header: this.$t('view.production.planView.colGemWeight'), minWidth: '100px', sortable: false },
+        { field: 'diamondQty', header: this.$t('view.production.planView.colDiamondQty'), minWidth: '100px', sortable: false },
+        { field: 'diamondWeight', header: this.$t('view.production.planView.colDiamondWeight'), minWidth: '100px', sortable: false },
+        { field: 'diamondSize', header: this.$t('view.production.planView.colDiamondSize'), minWidth: '80px', sortable: false },
+        { field: 'diamondQuality', header: this.$t('view.production.planView.colDiamondQuality'), minWidth: '100px', sortable: false }
       ]
     },
     goldColumns() {
       return [
-        { field: 'goldCode', header: this.$t('production.planView.colGoldType'), minWidth: '120px', sortable: false },
-        { field: 'goldSizeName', header: this.$t('production.planView.colGoldPercent'), minWidth: '100px', sortable: false },
-        { field: 'goldReceipt', header: this.$t('production.planView.colGoldReceipt'), minWidth: '100px', sortable: false },
-        { field: 'bookNo', header: this.$t('production.planView.colBookNo'), minWidth: '80px', sortable: false },
+        { field: 'goldCode', header: this.$t('view.production.planView.colGoldType'), minWidth: '120px', sortable: false },
+        { field: 'goldSizeName', header: this.$t('view.production.planView.colGoldPercent'), minWidth: '100px', sortable: false },
+        { field: 'goldReceipt', header: this.$t('view.production.planView.colGoldReceipt'), minWidth: '100px', sortable: false },
+        { field: 'bookNo', header: this.$t('view.production.planView.colBookNo'), minWidth: '80px', sortable: false },
         { field: 'no', header: this.$t('common.field.code'), minWidth: '80px', sortable: false },
         { field: 'cost', header: this.$t('common.field.price'), minWidth: '80px', sortable: false },
-        { field: 'assignDate', header: this.$t('production.planView.colAssignDate'), minWidth: '150px', sortable: false }
+        { field: 'assignDate', header: this.$t('view.production.planView.colAssignDate'), minWidth: '150px', sortable: false }
       ]
     }
   },
