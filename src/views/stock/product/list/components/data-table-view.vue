@@ -13,13 +13,13 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn btn-green" :title="$t('view.stock.product.printBarcode')" @click="onPrintBarcode(data)">
+          <button class="btn btn-sm btn-main" :title="$t('view.stock.product.printBarcode')" @click="onPrintBarcode(data)">
             <i class="bi bi-upc-scan"></i>
           </button>
-          <button class="btn btn-sm btn btn-main ml-2" :title="$t('common.btn.edit')" @click="onUpdate(data)">
+          <button class="btn btn-sm btn-main ml-2" :title="$t('common.btn.edit')" @click="onUpdate(data)">
             <i class="bi bi-brush"></i>
           </button>
-          <button class="btn btn-sm btn-green ml-2" :title="$t('view.stock.product.viewCost')" @click="onViewCost(data)">
+          <button class="btn btn-sm btn-main ml-2" :title="$t('view.stock.product.viewCost')" @click="onViewCost(data)">
             <i class="bi bi-calculator"></i>
           </button>
           <button

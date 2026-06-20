@@ -39,6 +39,7 @@ export default {
     exportPdf: 'Export PDF',
     printCount: 'จำนวนพิมพ์',
     selectImage: 'เลือกรูปสินค้า',
+    selectProductType: 'เลือกประเภทสินค้า',
     imageProduct: 'รูปภาพสินค้า',
     materialsTitle: 'ทอง | เพชร | พลอย',
     addMaterial: 'เพิ่มวัสดุ',
@@ -109,6 +110,7 @@ export default {
     selectDiamond: 'เลือกเพชร',
     selectGem: 'เลือกพลอย',
     imageSearchPlaceholder: 'ค้นหาด้วยชื่อรูปภาพ...',
+    imageCreateDate: 'วันที่สร้าง',
     unit: 'หน่วย',
     remarkPlaceholder: 'รายละเอียด ...'
   },

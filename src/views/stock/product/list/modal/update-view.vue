@@ -15,13 +15,13 @@
               </div>
             </div>
 
-            <div v-if="imageStage === 'SHOW'" class="image-upload-container">
-              <div class="image-preview-box">
+            <div class="image-upload-container">
+              <!-- SHOW stage: display current image + select button -->
+              <div v-if="imageStage === 'SHOW'" class="image-preview-box">
                 <div class="image-preview">
                   <imagePreview
                     v-if="stock.imagePath"
                     :imageName="stock.imagePath"
-                    :path="stock.imagePath"
                     :type="type"
                     :width="150"
                     :height="150"
@@ -37,54 +37,50 @@
                     class="image-body no-image"
                   />
                 </div>
-
-                <button
-                  class="btn btn-green btn-sm mt-3"
-                  type="button"
-                  @click="onSelectImage('SELECT')"
-                >
-                  <i class="bi bi-images mr-1"></i>
-                  <span>{{ $t('view.stock.product.selectImage') }}</span>
-                </button>
+                <div class="mt-3">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-main"
+                    @click="onSelectImage('SELECT')"
+                  >
+                    <i class="bi bi-images mr-1"></i>
+                    {{ $t('view.stock.product.selectImage') }}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div v-if="imageStage === 'SELECT'" class="image-select-container">
-              <div class="search-box mb-3">
-                <div class="input-group">
+              <!-- SELECT stage: gallery search + table -->
+              <div v-else-if="imageStage === 'SELECT'" class="image-select-stage">
+                <div class="mb-2 d-flex align-items-center">
                   <input
-                    class="form-control"
-                    type="text"
+                    class="form-control form-control-sm"
                     v-model="search"
                     :placeholder="$t('view.stock.product.imageSearchPlaceholder')"
                     @keyup.enter="fetchLatestImage"
                   />
                   <button
                     type="button"
-                    class="btn btn-main"
+                    class="btn btn-sm btn-main ml-2"
                     @click="fetchLatestImage"
                   >
                     <i class="bi bi-search"></i>
                   </button>
                 </div>
-              </div>
 
-              <BaseDataTable
-                scrollHeight="250px"
-                :items="latestImage"
-                :totalRecords="latestImageTotalRecords"
-                :columns="imageColumns"
-                :perPage="take"
-                :rowsPerPageOptions="[10, 20, 50]"
-                :selectionMode="true"
-                :itemsSelection="selectedItems"
-                :selectionType="selectionType"
-                @update:itemsSelection="updateSelection"
-                @page="handlePageChange"
-                @sort="handleSortChange"
-              >
-                <template #imageTemplate="{ data }">
-                  <div class="table-image">
+                <BaseDataTable
+                  :items="latestImage"
+                  :totalRecords="latestImageTotalRecords"
+                  :columns="imageColumns"
+                  :perPage="take"
+                  :selectionMode="true"
+                  :itemsSelection="selectedItems"
+                  :selectionType="selectionType"
+                  scrollHeight="250px"
+                  @update:itemsSelection="updateSelection"
+                  @page="handlePageChange"
+                  @sort="handleSortChange"
+                >
+                  <template #imageTemplate="{ data }">
                     <imagePreview
                       :imageName="data.path"
                       :path="data.path"
@@ -93,28 +89,27 @@
                       :height="40"
                       :preview="true"
                     />
-                  </div>
-                </template>
+                  </template>
 
-                <template #paginator-buttons>
-                  <button
-                    class="btn btn-sm btn-outline-main mr-2"
-                    type="button"
-                    @click="onSelectImage('SHOW')"
-                  >
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                  <button
-                    class="btn btn-sm btn-main"
-                    type="button"
-                    :disabled="!selectedItems.length"
-                    @click="onSelect"
-                  >
-                    <i class="bi bi-check-lg mr-1"></i>
-                    {{ $t('common.btn.confirm') }}
-                  </button>
-                </template>
-              </BaseDataTable>
+                  <template #paginator-buttons>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-main"
+                      @click="onSelectImage('SHOW')"
+                    >
+                      {{ $t('common.btn.cancel') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-main ml-2"
+                      :disabled="!selectedItems.length"
+                      @click="onSelect"
+                    >
+                      {{ $t('common.btn.confirm') }}
+                    </button>
+                  </template>
+                </BaseDataTable>
+              </div>
             </div>
           </div>
 
@@ -231,6 +226,22 @@
                 />
               </div>
 
+              <!-- Product Type -->
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="bi bi-tag mr-1"></i>
+                  {{ $t('view.stock.product.productType') }}
+                </label>
+                <DropdownGeneric
+                  v-model="stock.productType"
+                  :options="masterProductType"
+                  optionLabel="description"
+                  optionValue="code"
+                  :showClear="false"
+                  :placeholder="$t('view.stock.product.selectProductType')"
+                />
+              </div>
+
               <!-- Location -->
               <div class="form-group">
                 <label class="form-label">
@@ -257,7 +268,7 @@
               </div>
               <button
                 type="button"
-                class="btn btn-sm btn-green"
+                class="btn btn-sm btn-main"
                 @click="addMaterialItem(stock.materials)"
               >
                 <i class="bi bi-plus-lg mr-1"></i>
@@ -468,29 +479,8 @@ export default {
     masterDiamondGrade() {
       return this.masterStore.diamondGrade
     },
-    imageColumns() {
-      return [
-        {
-          field: 'image',
-          header: '',
-          width: '60px',
-          sortable: false,
-          align: 'center'
-        },
-        {
-          field: 'name',
-          header: this.$t('view.stock.product.imageName'),
-          sortable: false,
-          minWidth: '200px'
-        },
-        {
-          field: 'createDate',
-          header: this.$t('common.field.createDate'),
-          sortable: false,
-          format: 'datetime',
-          minWidth: '150px'
-        }
-      ]
+    masterProductType() {
+      return this.masterStore.productType
     },
     materialColumns() {
       return [
@@ -511,13 +501,24 @@ export default {
         { value: 'Diamond', description: this.$t('view.stock.product.materialTypeDiamond') },
         { value: 'Gem', description: this.$t('view.stock.product.materialTypeGem') }
       ]
+    },
+    imageColumns() {
+      return [
+        { field: 'image', header: '', width: '60px', sortable: false, align: 'center' },
+        { field: 'name', header: this.$t('view.stock.product.imageName'), sortable: false, minWidth: '150px' },
+        { field: 'createDate', header: this.$t('view.stock.product.imageCreateDate'), sortable: false, format: 'datetime', minWidth: '150px' },
+        { field: 'remark', header: this.$t('view.stock.product.imageDetailHeader'), sortable: false, minWidth: '150px' }
+      ]
     }
   },
 
   watch: {
     isShow: {
-      handler(val) {
+      async handler(val) {
         this.isShowModal = val
+        if (val) {
+          await this.masterStore.fetchProductType()
+        }
       },
       immediate: true
     },
@@ -534,18 +535,16 @@ export default {
     return {
       isShowModal: false,
       type: 'STOCK-PRODUCT',
-      imageStage: 'SHOW',
       stock: {},
+      imageStage: 'SHOW',
       search: null,
-
       take: 10,
       skip: 0,
       sort: [],
       latestImage: [],
       latestImageTotalRecords: 0,
       selectedItems: [],
-      selectionType: 'single',
-
+      selectionType: 'single'
     }
   },
 
@@ -582,20 +581,11 @@ export default {
       })
     },
 
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchLatestImage()
-    },
-
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchLatestImage()
+    onSelectImage(stage) {
+      this.imageStage = stage
+      if (stage === 'SELECT') {
+        this.fetchLatestImage()
+      }
     },
 
     async fetchLatestImage() {
@@ -604,13 +594,9 @@ export default {
         take: this.take,
         skip: this.skip,
         sort: [{ field: 'createDate', dir: 'desc' }],
-        search: {
-          name: this.search,
-          year: null
-        },
+        search: { name: this.search, year: null },
         skipLoading: true
       })
-
       if (res) {
         this.latestImageTotalRecords = res.total
         this.latestImage = res.data.map((item) => ({
@@ -628,16 +614,26 @@ export default {
       this.selectedItems = newSelection
     },
 
-    onSelectImage(stage) {
-      this.imageStage = stage
-      if (stage === 'SELECT') {
-        this.fetchLatestImage()
-      }
+    handlePageChange(e) {
+      this.skip = e.first
+      this.take = e.rows
+      this.fetchLatestImage()
+    },
+
+    handleSortChange(e) {
+      this.skip = e.first
+      this.take = e.rows
+      this.sort = e.multiSortMeta.map((item) => ({
+        field: item.field,
+        dir: item.order === 1 ? 'asc' : 'desc'
+      }))
+      this.fetchLatestImage()
     },
 
     onSelect() {
+      this.stock.imageName = this.selectedItems[0].name
+      this.stock.imageYear = this.selectedItems[0].year
       this.stock.imagePath = this.selectedItems[0].path
-      this.stock.name = this.selectedItems[0].name
       this.imageStage = 'SHOW'
     },
 
@@ -710,8 +706,8 @@ export default {
 }
 
 .section-header {
-  background: linear-gradient(135deg, var(--base-green) 0%, #026b6e 100%);
-  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, var(--base-font-color) 0%, #7a0f0f 100%);
+  padding: var(--sp-lg) var(--sp-2xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -730,7 +726,7 @@ export default {
   }
 }
 
-// Image Upload Section
+// Image Section
 .image-upload-container {
   padding: 2rem;
 }
@@ -747,7 +743,7 @@ export default {
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: var(--base-green);
+    border-color: var(--base-font-color);
     background: linear-gradient(145deg, #fff 0%, #f8f9fa 100%);
   }
 
@@ -770,38 +766,8 @@ export default {
   }
 }
 
-.image-select-container {
-  padding: 1.5rem;
-}
-
-.search-box {
-  .input-group {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    overflow: hidden;
-
-    input {
-      border: 1px solid #dee2e6;
-      border-right: none;
-      padding: 0.75rem 1rem;
-
-      &:focus {
-        border-color: var(--base-green);
-        box-shadow: none;
-      }
-    }
-
-    .btn {
-      border: 1px solid var(--base-green);
-      padding: 0.75rem 1.5rem;
-    }
-  }
-}
-
-.table-image {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.image-select-stage {
+  width: 100%;
 }
 
 // Form Grid
@@ -831,7 +797,7 @@ export default {
   margin-bottom: 0;
 
   i {
-    color: var(--base-green);
+    color: var(--base-font-color);
   }
 
   .text-danger {
@@ -848,19 +814,23 @@ export default {
   background: #fff;
 
   &:focus {
-    border-color: var(--base-green);
-    box-shadow: 0 0 0 0.2rem rgba(3, 131, 135, 0.15);
+    border-color: var(--base-font-color);
+    box-shadow: 0 0 0 0.2rem rgba(146, 19, 19, 0.15);
   }
 
   &.has-value {
-    background: #e8f5f3;
-    border-color: var(--base-green);
+    background: var(--color-highlight-bg);
+    border-color: var(--base-font-color);
   }
 
   &:disabled {
     background: #f5f5f5;
     cursor: not-allowed;
   }
+}
+
+.w-full {
+  width: 100%;
 }
 
 // Material Table

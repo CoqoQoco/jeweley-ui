@@ -216,7 +216,7 @@
             </button>
 
             <button
-              class="btn btn-sm btn-green ml-2"
+              class="btn btn-sm btn-main ml-2"
               type="button"
               :disabled="!productStore.dataSearch.total > 0"
               @click="onExport"

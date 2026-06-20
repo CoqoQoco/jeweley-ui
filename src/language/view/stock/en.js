@@ -39,6 +39,7 @@ export default {
     exportPdf: 'Export PDF',
     printCount: 'Print Count',
     selectImage: 'Select Product Image',
+    selectProductType: 'Select product type',
     imageProduct: 'Product Image',
     materialsTitle: 'Gold | Diamond | Gem',
     addMaterial: 'Add Material',
@@ -109,6 +110,7 @@ export default {
     selectDiamond: 'Select diamond',
     selectGem: 'Select gem',
     imageSearchPlaceholder: 'Search by image name...',
+    imageCreateDate: 'Create Date',
     unit: 'Unit',
     remarkPlaceholder: 'Details ...'
   },
