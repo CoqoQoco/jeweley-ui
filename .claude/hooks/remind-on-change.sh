@@ -12,6 +12,7 @@ MESSAGES=""
 
 if [[ "$FILE_PATH" == *"src/components/prime-vue/"* ]] || [[ "$FILE_PATH" == *"src/components/generic/"* ]]; then
   MESSAGES="${MESSAGES}📝 แก้ generic component แล้ว — อัปเดต skill generic-components/native-call-policy ให้ตรง props/emits\n"
+  MESSAGES="${MESSAGES}🎨 ออกแบบ/แก้ UI — ต้องยึด docs/design-system.md; ถ้าเพิ่ม/เปลี่ยน design pattern ใหม่ → อัปเดต Design Decision Log ใน docs/design-system.md\n"
 fi
 
 if [[ "$FILE_PATH" == *"src/assets/scss/"* ]] && [[ "$FILE_PATH" != *"custom-style/"* ]]; then
@@ -20,6 +21,7 @@ fi
 
 if [[ "$FILE_PATH" == *"src/views/"* ]] && [[ "$FILE_PATH" == *.vue ]]; then
   MESSAGES="${MESSAGES}🌐 แก้ไฟล์ view — ตรวจว่าไม่มี hardcode ภาษาไทยใหม่ (ใช้ \$t) + ใช้ generic component แทน native; ถ้าหน้านี้อยู่ใน migration ให้อัปเดต docs/refactor-migration.md\n"
+  MESSAGES="${MESSAGES}🎨 ออกแบบ/แก้ UI — ต้องยึด docs/design-system.md (Core Principles + baseline); ถ้าเพิ่ม/เปลี่ยน design pattern ใหม่ → อัปเดต Design Decision Log ใน docs/design-system.md\n"
 fi
 
 if [[ "$FILE_PATH" == *".claude/skills/"* ]]; then

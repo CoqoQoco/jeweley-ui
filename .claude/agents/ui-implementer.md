@@ -29,8 +29,9 @@ skills:
 
 ## ขั้นตอนการทำงาน
 
-### 1. อ่าน Plan
+### 1. อ่าน Plan + Design System
 - อ่าน plan ให้เข้าใจครบก่อน implement
+- **อ่าน + ทำตาม `docs/design-system.md` (Core Principles + baseline) เสมอ ก่อน implement UI ใดๆ**
 - ระบุไฟล์ที่ต้องแก้ / สร้างใหม่
 - ถ้า plan ไม่ชัด → ถามก่อน ห้ามเดา
 
@@ -60,6 +61,10 @@ skills:
 - ห้าม `this.loading = true/false` — axios-helper.js จัดการ loading อัตโนมัติ
 - ห้ามใช้ `alert()` / `confirm()` native — ใช้ sweetAlerts service
 - ห้าม `localStorage` ตรงๆ — ใช้ `storage` service (`src/services/storage.js`)
+
+### Design System (Source of Truth)
+- **`docs/design-system.md` คือมาตรฐาน UI กลาง — ทุกหน้าต้องยึด** (multi-box แยก border, `PageHeaderGeneric`+`#actions`, `FormFieldGeneric` เป็น label แหล่งเดียว, footer นอก box, token/generic/`$t()` เท่านั้น)
+- **ถ้าเพิ่ม/เปลี่ยน design pattern ใหม่ → ต้องอัปเดต Design Decision Log ใน `docs/design-system.md`**
 
 ### Styling
 - ห้ามแตะ `src/assets/scss/custom-style/` (legacy — read-only)

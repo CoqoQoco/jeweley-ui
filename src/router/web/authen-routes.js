@@ -6,6 +6,8 @@ import stockProduct from '../web/stock/product/stock-product-routes.js'
 import sale from '../web/sale/sale-routes.js'
 import settingRoutes from '../web/setting/setting-routes.js'
 import catalog from '../web/catalog/catalog-routes.js'
+import ticketRoutes from '../web/ticket/ticket-routes.js'
+import graphRoutes from '../web/graph/graph-routes.js'
 
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
@@ -294,6 +296,12 @@ const routes = [
   },
 
   //----- Setting -----
-  ...settingRoutes
+  ...settingRoutes,
+
+  // ----- Ticket -----
+  ...ticketRoutes,
+
+  // ----- Graph (dev) -----
+  ...graphRoutes
 ]
 export default routes

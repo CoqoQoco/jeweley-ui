@@ -1,0 +1,76 @@
+# Design System — Source of Truth
+
+เอกสารนี้คือ **มาตรฐานกลางของการออกแบบ UI** ในโปรเจกต์ jeweley-ui — ทุกหน้า/ทุก feature ต้องยึดตามนี้
+
+> **บังคับ**: ก่อน implement/ออกแบบ UI ต้องอ่านเอกสารนี้ก่อน และทุกครั้งที่เพิ่ม/เปลี่ยน design pattern ใหม่ → ต้องบันทึกใน [Design Decision Log](#design-decision-log) ท้ายไฟล์
+>
+> เอกสารนี้เป็น **source-of-truth** (หลักการ + baseline) — รายละเอียดเชิงลึกอยู่ใน skill (ไม่ copy ซ้ำ):
+> `design-system`(tokens) · `ui-layout`(layout) · `native-call-policy`(generic) · `i18n-system` · `generic-components`
+
+---
+
+## Purpose
+
+สถาปนา design language เดียวกันทั้งระบบ เริ่มจากหน้า **Ticket — แจ้งปัญหา/ขอฟีเจอร์** เป็น baseline แล้วใช้ refactor หน้าอื่นต่อ เป้าหมาย: สะอาด, focus, เรียบง่าย, consistent, reusable
+
+---
+
+## Core Principles
+
+| # | หลักการ | รายละเอียด |
+|---|---|---|
+| 1 | **Page header มาตรฐาน** | ใช้ `PageHeaderGeneric` (back + title) — ปุ่มรอง (เช่น คู่มือ) วางใน `#actions` slot เท่านั้น ห้ามปุ่มลอยในการ์ด |
+| 2 | **แบ่งเป็นหลาย box ตาม logic** | จัด field เป็นกลุ่มตามความหมาย แต่ละกลุ่ม = `SectionCardGeneric` **มี border + title ของตัวเอง** (ไม่รวมทุกอย่างในการ์ดใบเดียว) เพื่อสร้าง focus |
+| 3 | **Label แหล่งเดียว** | `FormFieldGeneric` เป็นที่มาของ label เพียงแหล่งเดียว — component ลูก (เช่น upload) **ห้าม render title/label ซ้ำ** |
+| 4 | **Multi-column = grid** | แถวหลายคอลัมน์ใช้ mixin `form-row-grid(n)` (responsive ≤1024px ยุบเป็น 1 คอลัมน์) ห้ามเขียน media query เอง |
+| 5 | **Footer action bar** | ปุ่ม action หลักอยู่ **นอก box** ชิดขวา, primary ขวาสุด, เว้นด้วย `ml-2` (Bootstrap 4) ห้าม flex gap |
+| 6 | **Token เท่านั้น** | สี/ระยะ/มุม/เงา ใช้ `var(--sp-*)`,`var(--radius-*)`,`var(--shadow-*)`,`var(--base-*)`,`var(--color-*)` — ห้าม hardcode px/hex (ดู `design-system` skill) |
+| 7 | **Generic component เท่านั้น** | ห้าม native `<input>`/`<button>`/`<table>`/`<img>` หรือ PrimeVue ตรงๆ — ใช้ generic wrapper (ดู `native-call-policy` skill); รูป Azure ใช้ `ImagePreview` |
+| 8 | **i18n เท่านั้น** | ห้าม hardcode ข้อความไทย ใช้ `$t()` เสมอ (ดู `i18n-system` skill) |
+| 9 | **Reusable first** | ถ้าต้องการ UI ซ้ำ 2+ ที่ → สร้าง generic component ใหม่ (เช่น `MultiImageUpload`) อย่า inline ซ้ำ |
+
+---
+
+## Reference Layout (canonical — หน้า Ticket create)
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│ (←)  <Page Title>                                       [ปุ่มรอง...] │  PageHeaderGeneric + #actions
+└────────────────────────────────────────────────────────────────────┘
+  ┌─ Box 1 · <กลุ่ม logic 1> (border + title) ───────────────────────┐
+  │  Label A *        Label B *        Label C *                      │  form-row-grid(n) inline
+  │  [____]           [▼ ____]         [____]                         │  (≤1024px ยุบ 1 คอลัมน์)
+  │  Label D (full width)                                             │
+  │  [______________________________________________]                │
+  └────────────────────────────────────────────────────────────────────┘
+  ┌─ Box 2 · <กลุ่ม logic 2> (border + title) ───────────────────────┐
+  │  <fields / MultiImageUpload / ...>                                │
+  └────────────────────────────────────────────────────────────────────┘
+                                          [ยกเลิก]  [➤ บันทึก]  footer นอก box ชิดขวา
+```
+
+**ไฟล์อ้างอิงจริง**: `src/views/ticket/create-view.vue`
+
+---
+
+## Spacing Rhythm (baseline)
+
+| ตำแหน่ง | ค่า token |
+|---|---|
+| padding ภายใน box | `var(--sp-xl)` |
+| เว้นระหว่าง box | `var(--sp-lg)` |
+| เว้นระหว่าง field ใน box | `var(--sp-lg)` |
+| เว้นปุ่มใน footer | `ml-2` |
+
+---
+
+## Design Decision Log
+
+> บันทึกทุกครั้งที่ออกแบบ/เปลี่ยน design pattern ใหม่ (บังคับโดย hook `remind-on-change.sh`)
+
+| วันที่ | หน้า/Feature | สิ่งที่เปลี่ยน / pattern ใหม่ |
+|---|---|---|
+| 2026-06-22 | ticket/create-view | สถาปนา baseline design system: multi-box แยก border, `PageHeaderGeneric` + `#actions` slot, `MultiImageUpload` (generic ใหม่), footer action bar นอก box, label แหล่งเดียวผ่าน `FormFieldGeneric` |
+| 2026-06-22 | PageHeaderGeneric (global) | เพิ่ม `border-top: 2px solid var(--base-font-color)` ให้ page header bar — กรอบบน-ล่างเข้มสมมาตร |
+| 2026-06-22 | PageHeaderGeneric (global) | เปลี่ยน page header เป็น filled bg สี main (`--base-font-color`) + inner elements (title/back/actions) เป็นสีสว่าง (white-outline auto ใน actions slot) |
+| 2026-06-22 | ticket/create-view + router | เพิ่ม **tab/segment-switch pattern** (ButtonGeneric active=main, inactive=outline) รวมหลายมุมมองในหน้าเดียว (แจ้งใหม่ + Ticket ของฉัน); เมนูกลุ่มที่มี in-page toggle ให้ใช้ลิงก์ตรง (`minorShow: false`) เพื่อ discoverability |

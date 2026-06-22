@@ -5,6 +5,8 @@ description: ตารางโทเค็นทั้งหมด (spacing/rad
 
 # Design System
 
+> **Source of truth ของหลักการ/baseline UI อยู่ที่ `docs/design-system.md`** (multi-box layout, page structure, Design Decision Log) — skill นี้คือ **detail ของ tokens/mixins/button** ที่เอกสารนั้นอ้างถึง ออกแบบ UI ใหม่ต้องยึด `docs/design-system.md` และอัปเดต Decision Log เมื่อมี pattern ใหม่
+
 ## Design Tokens
 
 ทั้งหมดนิยามใน `src/assets/scss/variable.scss` ทั้งแบบ SCSS variable (`$sp-lg`) และ CSS custom property (`var(--sp-lg)`)

@@ -18,6 +18,8 @@ import workerLang from './view/worker/th.js'
 import productionCostLang from './view/production-cost/th.js'
 import settingLang from './view/setting/th.js'
 import reportProductionLang from './view/report-production/th.js'
+import ticketLang from './view/ticket/th.js'
+import graphLang from './view/graph/th.js'
 import * as mobileLang from './view/mobile/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -147,6 +149,8 @@ export default {
       saleIndex: { ...mobileLang.saleIndex },
       components: { ...mobileLang.components }
     },
+    ticket: { ...ticketLang },
+    graph: { ...graphLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },

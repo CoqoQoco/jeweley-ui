@@ -21,7 +21,16 @@ const router = createRouter({
 // Helper: Check route permission
 const checkRoutePermission = (user, route) => {
   // อนุญาต dashboard และ user-account เสมอ (ทั้ง web และ mobile)
-  const allowedRoutes = ['dashboard', 'user-account', 'mobile-dashboard', 'mobile-profile']
+  const allowedRoutes = [
+    'dashboard',
+    'user-account',
+    'mobile-dashboard',
+    'mobile-profile',
+    'ticket-create',
+    'ticket-create-group',
+    'ticket-my',
+    'ticket-my-group'
+  ]
   if (allowedRoutes.includes(route.name)) return true
 
   // ถ้าไม่มี user หรือไม่มี role ไม่อนุญาตให้เข้าถึง route อื่น

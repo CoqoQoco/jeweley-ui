@@ -58,6 +58,9 @@ export const PERMISSIONS = {
   SALE_VIEW: 'sale:view',
   SALE_CREATE: 'sale:create',
 
+  // Ticket Management
+  TICKET_MANAGE: 'ticket:manage',
+
   // ========== Mobile-Specific Features ==========
   // Mobile Dashboard (ทุกคนเข้าได้)
   MOBILE_DASHBOARD: 'mobile:dashboard',
@@ -127,6 +130,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.SALE_CREATE,
 
     PERMISSIONS.CATALOG_VIEW,
+
+    PERMISSIONS.TICKET_MANAGE,
 
     // Mobile Features (Dev มีสิทธิ์ทั้งหมด)
     PERMISSIONS.MOBILE_DASHBOARD,

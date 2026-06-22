@@ -70,6 +70,7 @@ src/
 | ❌ ห้าม hardcode ข้อความไทยในโค้ดใหม่ | ใช้ `$t('common.btn.*')` / `$t('common.field.*')` |
 | ❌ ห้าม hardcode สี/px ใน SCSS ใหม่ | ใช้ token `var(--sp-*)`, `var(--radius-*)`, `var(--base-*)` |
 | ✅ Migration loop: แตะหน้าไหน → ใช้ token+generic+$t+composable ในไฟล์นั้น | ดู ui-implementer agent |
+| ✅ ออกแบบ/แก้ UI → ยึด `docs/design-system.md` (source-of-truth); เพิ่ม pattern ใหม่ต้องอัปเดต Decision Log | มาตรฐาน design กลาง |
 
 ---
 

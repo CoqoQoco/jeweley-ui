@@ -21,11 +21,19 @@
           </div>
           <div
             class="nav-item"
+            :class="{ active: isActive('report') }"
+            @click="navigateTo('report', 'ticket-create')"
+          >
+            <i class="bi bi-megaphone"></i>
+            <span>{{ $t('breadcrumb.report') }}</span>
+          </div>
+          <div
+            class="nav-item"
             :class="{ active: isActive('profile') }"
             @click="navigateTo('profile', 'user-account')"
           >
             <i class="bi bi-person"></i>
-            <span>ข้อมูลบุคคล</span>
+            <span>{{ $t('breadcrumb.userAccount') }}</span>
           </div>
         </div>
       </div>
@@ -142,11 +150,12 @@ export default {
 
   watch: {
     $route(to) {
-      //console.log('Route Changed to:', to)
       if (to.name === 'dashboard') {
         this.setActive('home')
       } else if (to.name === 'user-account') {
         this.setActive('profile')
+      } else if (to.name === 'ticket-create') {
+        this.setActive('report')
       } else {
         this.setActive('menu')
       }
@@ -223,6 +232,8 @@ export default {
       this.setActive('home')
     } else if (this.$route.name === 'user-account') {
       this.setActive('profile')
+    } else if (this.$route.name === 'ticket-create') {
+      this.setActive('report')
     } else {
       this.setActive('menu')
     }

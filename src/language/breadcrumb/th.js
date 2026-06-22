@@ -59,4 +59,8 @@ export default {
 
    //all
    create: 'สร้าง',
+
+  //ticket
+  report: 'แจ้งปัญหา',
+  userAccount: 'ข้อมูลบุคคล',
 }
