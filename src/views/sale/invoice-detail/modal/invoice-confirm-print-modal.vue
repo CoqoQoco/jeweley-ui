@@ -95,6 +95,22 @@
                     </div>
                   </div>
 
+                  <div v-if="paperSize === 'a4'" class="form-group mb-3">
+                    <label class="form-label">
+                      <i class="bi bi-list-ol mr-1"></i>{{ $t('view.sale.invoiceDetail.itemsPerPage') }}
+                    </label>
+                    <input
+                      v-model.number="printData.itemsPerPage"
+                      type="number"
+                      min="1"
+                      max="20"
+                      class="form-control"
+                    />
+                    <small class="form-text text-muted">
+                      {{ $t('view.sale.invoiceDetail.itemsPerPageHint') }}
+                    </small>
+                  </div>
+
                   <div v-if="paperSize === 'bill' || paperSize === 'vat-bridge'" class="form-group mb-3">
                     <label class="form-label">
                       <i class="bi bi-printer mr-1"></i>{{ $t('view.sale.invoiceDetail.printer') }}
@@ -194,6 +210,11 @@
               <!-- Action Buttons -->
               <div class="btn-submit-container mb-2">
                 <div class="d-flex justify-content-end">
+                  <button v-if="paperSize === 'a4'" class="btn btn-main mr-2" type="button" @click="onPreviewPDF">
+                    <i class="bi bi-eye mr-1"></i>
+                    {{ $t('view.sale.invoiceDetail.previewBtn') }}
+                  </button>
+
                   <button class="btn btn-green mr-2" type="button" @click="onConfirmPrint">
                     <i class="bi bi-printer mr-1"></i>
                     {{ $t('view.sale.invoiceDetail.printBtn') }}
@@ -246,7 +267,7 @@ export default {
     }
   },
 
-  emits: ['close-modal', 'confirm-print'],
+  emits: ['close-modal', 'confirm-print', 'preview-print'],
 
   data() {
     return {
@@ -257,7 +278,8 @@ export default {
       printData: {
         invoiceNumber: '',
         invoiceDate: '',
-        showCifLabel: true
+        showCifLabel: true,
+        itemsPerPage: 10
       },
       paperSize: 'vat-bridge',
       continuousOffset: { x: 0, y: 0 },
@@ -347,7 +369,8 @@ export default {
       this.printData = {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
         invoiceDate: new Date(), // Default to current date
-        showCifLabel: true
+        showCifLabel: true,
+        itemsPerPage: 10
       }
     },
 
@@ -360,18 +383,7 @@ export default {
       this.$emit('close-modal')
     },
 
-    onConfirmPrint() {
-      // Validate data
-      if (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim()) {
-        warning(this.$t('view.sale.invoiceDetail.validation.invoiceNumberRequired'), this.$t('common.label.incompleteData'))
-        return
-      }
-
-      if (!this.printData.invoiceDate) {
-        warning(this.$t('view.sale.invoiceDetail.validation.invoiceDateRequired'), this.$t('common.label.incompleteData'))
-        return
-      }
-
+    buildPrintData() {
       // Normalize date to start of day (remove time component)
       const normalizedDate = new Date(this.printData.invoiceDate)
       normalizedDate.setHours(0, 0, 0, 0)
@@ -382,19 +394,46 @@ export default {
         storage.setItem('invoice-bill-offset', JSON.stringify(this.billOffset))
       }
 
-      const printDataToEmit = {
+      return {
         ...this.invoiceData,
-        invoiceNumber: this.printData.invoiceNumber.trim(), // Override with modified value
-        invoiceDate: normalizedDate, // Override with normalized date (time = 00:00:00)
+        invoiceNumber: this.printData.invoiceNumber.trim(),
+        invoiceDate: normalizedDate,
         showCifLabel: this.printData.showCifLabel,
+        itemsPerPage: Number(this.printData.itemsPerPage) || 10,
         paperSize: this.paperSize,
         continuousOffset: { ...this.continuousOffset },
         billOffset: { ...this.billOffset },
         printerName: this.selectedPrinter
       }
+    },
 
+    validatePrintData() {
+      if (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim()) {
+        warning(this.$t('view.sale.invoiceDetail.validation.invoiceNumberRequired'), this.$t('common.label.incompleteData'))
+        return false
+      }
+
+      if (!this.printData.invoiceDate) {
+        warning(this.$t('view.sale.invoiceDetail.validation.invoiceDateRequired'), this.$t('common.label.incompleteData'))
+        return false
+      }
+
+      return true
+    },
+
+    onConfirmPrint() {
+      if (!this.validatePrintData()) return
+
+      const printDataToEmit = this.buildPrintData()
       this.$emit('confirm-print', printDataToEmit)
       this.closeModal()
+    },
+
+    onPreviewPDF() {
+      if (!this.validatePrintData()) return
+
+      const printDataToEmit = this.buildPrintData()
+      this.$emit('preview-print', printDataToEmit)
     }
   }
 }

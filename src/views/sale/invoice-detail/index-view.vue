@@ -320,6 +320,15 @@
         :invoiceData="invoiceData"
         @close-modal="showConfirmPrintModal = false"
         @confirm-print="handleConfirmPrint"
+        @preview-print="handlePreviewPrint"
+      />
+
+      <!-- Invoice PDF Preview Modal -->
+      <InvoicePdfPreviewModal
+        :isShowModal="isShowPreviewModal"
+        :previewUrl="previewUrl"
+        @close-modal="closePreviewModal"
+        @download="handlePreviewDownload"
       />
 
       <!-- Delivery Note Confirm Print Modal -->
@@ -356,6 +365,7 @@
 <script>
 import InvoiceVersionModal from './modal/invoice-version-modal.vue'
 import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
+import InvoicePdfPreviewModal from './modal/invoice-pdf-preview-modal.vue'
 import DeliveryConfirmPrintModal from './modal/delivery-confirm-print-modal.vue'
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
@@ -378,6 +388,7 @@ export default {
   components: {
     InvoiceVersionModal,
     InvoiceConfirmPrintModal,
+    InvoicePdfPreviewModal,
     DeliveryConfirmPrintModal,
     ExcelExportConfirmModal,
     PaymentRecordModal,
@@ -401,6 +412,9 @@ export default {
       showDeliveryPrintModal: false,
       showConfirmExcelModal: false,
       showPaymentModal: false,
+      isShowPreviewModal: false,
+      previewUrl: '',
+      lastPreviewPrintData: null,
       paidAmount: 0,
       versionList: [],
       originalInvoiceData: null,
@@ -1056,7 +1070,8 @@ export default {
           invoiceDate: formattedDate,
           download: true,
           open: false,
-          showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true
+          showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
+          itemsPerPage: Number(printData.itemsPerPage) || 10
         }
 
         if (printData.paperSize === 'vat-bridge') {
@@ -1155,6 +1170,66 @@ export default {
         success(this.$t('view.sale.invoiceDetail.success.createPDF'), 'Invoice PDF')
       }
     },
+    async handlePreviewPrint(printData) {
+      if (!printData || !printData.invoiceNumber) return
+
+      const formattedDate = dayjs(printData.invoiceDate)
+
+      const pdfData = {
+        saleOrder: {
+          soNumber: this.invoiceData.soNumber,
+          date: this.invoiceData.createDate,
+          expectedDeliveryDate: this.invoiceData.deliveryDate,
+          paymentTerms: this.invoiceData.paymentName,
+          depositPercent: this.invoiceData.depositPercent,
+          remark: this.invoiceData.remark,
+          specialDiscount: this.invoiceData.specialDiscount || 0,
+          specialAddition: this.invoiceData.specialAddition || 0,
+          freightAndInsurance: this.invoiceData.freightAndInsurance || 0
+        },
+        customer: {
+          name: this.invoiceData.customerName,
+          address: this.invoiceData.customerAddress,
+          tel: this.invoiceData.customerTel,
+          email: this.invoiceData.customerEmail,
+          phone: this.invoiceData.customerTel
+        },
+        currency: {
+          unit: this.invoiceData.currencyUnit || 'THB',
+          rate: this.invoiceData.currencyRate || 1
+        },
+        items: this.invoiceItems
+      }
+
+      const options = {
+        invoiceNo: printData.invoiceNumber,
+        invoiceDate: formattedDate,
+        download: false,
+        open: false,
+        preview: true,
+        showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
+        itemsPerPage: Number(printData.itemsPerPage) || 10
+      }
+
+      const res = await invoicePdfService.generateInvoicePDF(pdfData, options)
+      this.previewUrl = res.previewUrl
+      this.lastPreviewPrintData = printData
+      this.isShowPreviewModal = true
+    },
+
+    closePreviewModal() {
+      if (this.previewUrl) {
+        URL.revokeObjectURL(this.previewUrl)
+      }
+      this.previewUrl = ''
+      this.isShowPreviewModal = false
+    },
+
+    handlePreviewDownload() {
+      this.handleConfirmPrint(this.lastPreviewPrintData)
+      this.closePreviewModal()
+    },
+
     async generateVersionPDF(versionData, options = { open: false, download: true }) {
       {
         const pdfData = {

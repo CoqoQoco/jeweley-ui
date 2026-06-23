@@ -44,8 +44,18 @@ export class InvoicePdfIntegration {
         currencyUnit,
         currencyRate,
         invoiceNo,
-        10 // itemsPerPage
+        options.itemsPerPage || 10 // itemsPerPage
       )
+
+      // Preview mode — return blob URL instead of downloading
+      if (options.preview) {
+        const previewUrl = await this.pdfBuilder.getPreviewUrl()
+        return {
+          success: true,
+          invoiceNo: invoiceNo,
+          previewUrl: previewUrl
+        }
+      }
 
       // Generate and download PDF
       if (options.download !== false) {

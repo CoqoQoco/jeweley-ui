@@ -1200,4 +1200,11 @@ export class InvoicePdfBuilder {
       throw error
     }
   }
+
+  async getPreviewUrl() {
+    const pdf = await this.generatePDF()
+    return new Promise((resolve) => {
+      pdf.getBlob((blob) => resolve(URL.createObjectURL(blob)))
+    })
+  }
 }
