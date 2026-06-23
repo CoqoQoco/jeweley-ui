@@ -41,23 +41,23 @@
       >
         <ColumnGroup type="header">
           <Row>
-            <Column header="#" />
-            <Column :header="$t('view.sale.invoiceDetail.imageHeader')" />
-            <Column :header="$t('view.sale.saleOrder.stockNumberNew')" />
-            <Column :header="$t('view.sale.saleOrder.stockNumberOld')" />
-            <Column :header="$t('view.sale.saleOrder.productCode')" />
-            <Column :header="$t('view.sale.saleOrder.description')" />
-            <Column header="Gold (gms)" />
-            <Column header="Diamond (cts)" />
-            <Column header="Stone (cts)" />
-            <Column :header="$t('view.sale.saleOrder.salePriceTHB')" />
-            <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" />
-            <Column :header="$t('view.sale.saleOrder.discountPercent')" />
-            <Column :header="$t('view.sale.invoiceDetail.priceAfterDiscount')" />
-            <Column :header="$t('view.sale.saleOrder.convertedRate')" />
-            <Column :header="'ราคาแปลง (' + (invoiceData.currencyUnit || 'THB') + ')'" />
-            <Column :header="$t('view.sale.quotation.quantity')" />
-            <Column :header="'รวมราคา (' + (invoiceData.currencyUnit || 'THB') + ')'" />
+            <Column header="#" :frozen="!!frozenCols['index']" :alignFrozen="frozenCols['index'] || undefined" />
+            <Column :header="$t('view.sale.invoiceDetail.imageHeader')" :frozen="!!frozenCols['image']" :alignFrozen="frozenCols['image'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.stockNumberNew')" :frozen="!!frozenCols['stockNumber']" :alignFrozen="frozenCols['stockNumber'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.stockNumberOld')" :frozen="!!frozenCols['stockNumberOld']" :alignFrozen="frozenCols['stockNumberOld'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.productCode')" :frozen="!!frozenCols['productNumber']" :alignFrozen="frozenCols['productNumber'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.description')" :frozen="!!frozenCols['description']" :alignFrozen="frozenCols['description'] || undefined" />
+            <Column header="Gold (gms)" :frozen="!!frozenCols['gold']" :alignFrozen="frozenCols['gold'] || undefined" />
+            <Column header="Diamond (cts)" :frozen="!!frozenCols['diamond']" :alignFrozen="frozenCols['diamond'] || undefined" />
+            <Column header="Stone (cts)" :frozen="!!frozenCols['gem']" :alignFrozen="frozenCols['gem'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.salePriceTHB')" :frozen="!!frozenCols['priceOrigin']" :alignFrozen="frozenCols['priceOrigin'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" :frozen="!!frozenCols['appraisalPrice']" :alignFrozen="frozenCols['appraisalPrice'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.discountPercent')" :frozen="!!frozenCols['discountPercent']" :alignFrozen="frozenCols['discountPercent'] || undefined" />
+            <Column :header="$t('view.sale.invoiceDetail.priceAfterDiscount')" :frozen="!!frozenCols['discountPrice']" :alignFrozen="frozenCols['discountPrice'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.convertedRate')" :frozen="!!frozenCols['currencyRate']" :alignFrozen="frozenCols['currencyRate'] || undefined" />
+            <Column :header="'ราคาแปลง (' + (invoiceData.currencyUnit || 'THB') + ')'" :frozen="!!frozenCols['priceAfterMultiply']" :alignFrozen="frozenCols['priceAfterMultiply'] || undefined" />
+            <Column :header="$t('view.sale.quotation.quantity')" :frozen="!!frozenCols['qty']" :alignFrozen="frozenCols['qty'] || undefined" />
+            <Column :header="'รวมราคา (' + (invoiceData.currencyUnit || 'THB') + ')'" :frozen="!!frozenCols['total']" :alignFrozen="frozenCols['total'] || undefined" />
           </Row>
         </ColumnGroup>
 
