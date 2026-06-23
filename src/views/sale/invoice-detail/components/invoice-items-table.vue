@@ -2,6 +2,33 @@
   <div class="card-container">
     <div class="card-header">
       <h6 class="mb-0">{{ $t('view.sale.invoiceDetail.productList') }}</h6>
+      <div class="stock-col-settings-wrapper">
+        <button class="stock-col-settings-btn" @click.stop="isSettingsOpen = !isSettingsOpen" title="ตั้งค่าคอลัมน์">
+          <i class="bi bi-gear-fill"></i>
+        </button>
+        <div v-if="isSettingsOpen" class="stock-col-settings-panel">
+          <div class="stock-col-settings-header">
+            <i class="bi bi-gear-fill"></i> ตั้งค่าคอลัมน์
+          </div>
+          <div class="stock-col-settings-list">
+            <div v-for="col in columnFreezeList" :key="col.field" class="stock-col-settings-item">
+              <span class="stock-col-settings-name">{{ col.label }}</span>
+              <div class="stock-col-freeze-btns">
+                <button
+                  :class="['freeze-btn', { active: isFrozenLeft(col.field) }]"
+                  @click="toggleFreezeCol(col.field, 'left')"
+                  title="ปักหมุดซ้าย"
+                ><i class="bi bi-pin-angle-fill"></i> ซ้าย</button>
+                <button
+                  :class="['freeze-btn', { active: isFrozenRight(col.field) }]"
+                  @click="toggleFreezeCol(col.field, 'right')"
+                  title="ปักหมุดขวา"
+                ><i class="bi bi-pin-angle-fill"></i> ขวา</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="card-body p-0">
       <DataTable
@@ -34,13 +61,19 @@
           </Row>
         </ColumnGroup>
 
-        <Column field="index" style="width: 10px">
+        <Column field="index" style="width: 10px"
+          :frozen="!!frozenCols['index']"
+          :alignFrozen="frozenCols['index'] || undefined"
+        >
           <template #body="slotProps">
             <span>{{ slotProps.index + 1 }}</span>
           </template>
         </Column>
 
-        <Column field="image" header="" style="width: 50px">
+        <Column field="image" header="" style="width: 50px"
+          :frozen="!!frozenCols['image']"
+          :alignFrozen="frozenCols['image'] || undefined"
+        >
           <template #body="slotProps">
             <div class="image-container">
               <div v-if="slotProps.data.imagePath">
@@ -56,7 +89,10 @@
           </template>
         </Column>
 
-        <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+        <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px"
+          :frozen="!!frozenCols['stockNumber']"
+          :alignFrozen="frozenCols['stockNumber'] || undefined"
+        >
           <template #body="slotProps">
             <div class="d-flex flex-column">
               <span>{{ `${slotProps.data.stockNumber}` }}</span>
@@ -67,7 +103,10 @@
           </template>
         </Column>
 
-        <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px">
+        <Column field="stockNumber" header="เลขที่ผลิต" style="min-width: 150px"
+          :frozen="!!frozenCols['stockNumberOld']"
+          :alignFrozen="frozenCols['stockNumberOld'] || undefined"
+        >
           <template #body="slotProps">
             <span>{{
               `${
@@ -79,7 +118,10 @@
           </template>
         </Column>
 
-        <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px">
+        <Column field="productNumber" header="รหัสสินค้า" style="min-width: 150px"
+          :frozen="!!frozenCols['productNumber']"
+          :alignFrozen="frozenCols['productNumber'] || undefined"
+        >
           <template #body="slotProps">
             <div v-if="!slotProps.data.stockNumber">
               <input
@@ -99,7 +141,10 @@
           </template>
         </Column>
 
-        <Column field="description" header="รายละเอียด" style="min-width: 200px">
+        <Column field="description" header="รายละเอียด" style="min-width: 200px"
+          :frozen="!!frozenCols['description']"
+          :alignFrozen="frozenCols['description'] || undefined"
+        >
           <template #body="slotProps">
             <input
               v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
@@ -115,7 +160,10 @@
         </Column>
 
         <!-- Materials Columns like Quotation -->
-        <Column field="gold" style="min-width: 120px; max-width: 300px">
+        <Column field="gold" style="min-width: 120px; max-width: 300px"
+          :frozen="!!frozenCols['gold']"
+          :alignFrozen="frozenCols['gold'] || undefined"
+        >
           <template #body="slotProps">
             <div v-if="slotProps.data.materials">
               <div
@@ -134,7 +182,10 @@
           </template>
         </Column>
 
-        <Column field="diamond" style="min-width: 140px; max-width: 300px">
+        <Column field="diamond" style="min-width: 140px; max-width: 300px"
+          :frozen="!!frozenCols['diamond']"
+          :alignFrozen="frozenCols['diamond'] || undefined"
+        >
           <template #body="slotProps">
             <div v-if="slotProps.data.materials">
               <div
@@ -155,7 +206,10 @@
           </template>
         </Column>
 
-        <Column field="gem" style="min-width: 140px; max-width: 300px">
+        <Column field="gem" style="min-width: 140px; max-width: 300px"
+          :frozen="!!frozenCols['gem']"
+          :alignFrozen="frozenCols['gem'] || undefined"
+        >
           <template #body="slotProps">
             <div v-if="slotProps.data.materials">
               <div
@@ -174,7 +228,10 @@
           </template>
         </Column>
 
-        <Column field="priceOrigin" :header="$t('view.sale.saleOrder.salePriceTHB')" style="min-width: 150px">
+        <Column field="priceOrigin" :header="$t('view.sale.saleOrder.salePriceTHB')" style="min-width: 150px"
+          :frozen="!!frozenCols['priceOrigin']"
+          :alignFrozen="frozenCols['priceOrigin'] || undefined"
+        >
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
@@ -184,7 +241,10 @@
           </template>
         </Column>
 
-        <Column field="appraisalPrice" :header="$t('view.sale.saleOrder.appraisalPriceTHB')" style="min-width: 150px">
+        <Column field="appraisalPrice" :header="$t('view.sale.saleOrder.appraisalPriceTHB')" style="min-width: 150px"
+          :frozen="!!frozenCols['appraisalPrice']"
+          :alignFrozen="frozenCols['appraisalPrice'] || undefined"
+        >
           <template #body="slotProps">
             <div class="qty-container">
               <input
@@ -203,7 +263,10 @@
           </template>
         </Column>
 
-        <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px">
+        <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px"
+          :frozen="!!frozenCols['discountPercent']"
+          :alignFrozen="frozenCols['discountPercent'] || undefined"
+        >
           <template #body="slotProps">
             <div class="qty-container">
               <input
@@ -224,7 +287,10 @@
           </template>
         </Column>
 
-        <Column field="discountPrice" :header="$t('view.sale.invoiceDetail.priceAfterDiscount')" style="min-width: 150px">
+        <Column field="discountPrice" :header="$t('view.sale.invoiceDetail.priceAfterDiscount')" style="min-width: 150px"
+          :frozen="!!frozenCols['discountPrice']"
+          :alignFrozen="frozenCols['discountPrice'] || undefined"
+        >
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
@@ -237,7 +303,10 @@
           </template>
         </Column>
 
-        <Column field="currencyRate" :header="$t('view.sale.saleOrder.convertedRate')" style="min-width: 100px">
+        <Column field="currencyRate" :header="$t('view.sale.saleOrder.convertedRate')" style="min-width: 100px"
+          :frozen="!!frozenCols['currencyRate']"
+          :alignFrozen="frozenCols['currencyRate'] || undefined"
+        >
           <template #body>
             <div class="qty-container">
               <span>{{ formSaleOrder.currencyRate }}</span>
@@ -249,6 +318,8 @@
           field="priceAfterMultiply"
           :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '"
           style="min-width: 150px"
+          :frozen="!!frozenCols['priceAfterMultiply']"
+          :alignFrozen="frozenCols['priceAfterMultiply'] || undefined"
         >
           <template #body="slotProps">
             <div class="qty-container">
@@ -263,7 +334,10 @@
           </template>
         </Column>
 
-        <Column field="qty" :header="$t('view.sale.quotation.quantity')" style="width: 80px">
+        <Column field="qty" :header="$t('view.sale.quotation.quantity')" style="width: 80px"
+          :frozen="!!frozenCols['qty']"
+          :alignFrozen="frozenCols['qty'] || undefined"
+        >
           <template #body="slotProps">
             <div class="qty-container">
               <input
@@ -286,6 +360,8 @@
           field="total"
           :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '"
           style="min-width: 150px"
+          :frozen="!!frozenCols['total']"
+          :alignFrozen="frozenCols['total'] || undefined"
         >
           <template #body="slotProps">
             <div class="qty-container">
@@ -375,7 +451,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ getSumTotalConvertedPrice(invoiceItems) }}</span>
@@ -393,7 +472,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ formatNumber(invoiceData.specialDiscount || 0) }}</span>
@@ -411,7 +493,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ formatNumber(invoiceData.specialAddition || 0) }}</span>
@@ -429,7 +514,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <span class="font-weight-bold">{{
@@ -449,7 +537,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ formatNumber(invoiceData.freightAndInsurance || 0) }}</span>
@@ -467,7 +558,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <span class="font-weight-bold">{{ formatNumber(totalBeforeVat) }}</span>
@@ -485,7 +579,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ formatNumber(vatAmount) }}</span>
@@ -503,7 +600,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <h6 class="mb-0">{{ formatNumber(grandTotalRounded) }}</h6>
@@ -521,7 +621,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <h6 class="mb-0">+{{ formatNumber(roundingAdjustment) }}</h6>
@@ -539,7 +642,10 @@
                 </div>
               </template>
             </Column>
-            <Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
               <template #footer>
                 <div class="text-right type-container">
                   <h6 class="mb-0 font-weight-bold text-primary">
@@ -578,6 +684,13 @@ export default {
     imagePreview
   },
 
+  data() {
+    return {
+      isSettingsOpen: false,
+      frozenCols: {}
+    }
+  },
+
   props: {
     invoiceItems: {
       type: Array,
@@ -613,7 +726,69 @@ export default {
     }
   },
 
+  computed: {
+    isTotalFrozenRight() {
+      return this.frozenCols['total'] === 'right'
+    },
+
+    columnFreezeList() {
+      return [
+        { field: 'index', label: '#' },
+        { field: 'image', label: 'รูป' },
+        { field: 'stockNumber', label: this.$t('view.sale.saleOrder.stockNumberNew') },
+        { field: 'stockNumberOld', label: this.$t('view.sale.saleOrder.stockNumberOld') },
+        { field: 'productNumber', label: this.$t('view.sale.saleOrder.productCode') },
+        { field: 'description', label: this.$t('view.sale.saleOrder.description') },
+        { field: 'gold', label: 'Gold (gms)' },
+        { field: 'diamond', label: 'Diamond (cts)' },
+        { field: 'gem', label: 'Stone (cts)' },
+        { field: 'priceOrigin', label: this.$t('view.sale.saleOrder.salePriceTHB') },
+        { field: 'appraisalPrice', label: this.$t('view.sale.saleOrder.appraisalPriceTHB') },
+        { field: 'discountPercent', label: this.$t('view.sale.saleOrder.discountPercent') },
+        { field: 'discountPrice', label: this.$t('view.sale.invoiceDetail.priceAfterDiscount') },
+        { field: 'currencyRate', label: this.$t('view.sale.saleOrder.convertedRate') },
+        { field: 'priceAfterMultiply', label: 'ราคาแปลง' },
+        { field: 'qty', label: this.$t('view.sale.quotation.quantity') },
+        { field: 'total', label: 'รวมราคา' }
+      ]
+    }
+  },
+
+  mounted() {
+    document.addEventListener('click', this.handleOutsideClick)
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleOutsideClick)
+  },
+
   methods: {
+    isFrozenLeft(field) {
+      return this.frozenCols[field] === 'left'
+    },
+
+    isFrozenRight(field) {
+      return this.frozenCols[field] === 'right'
+    },
+
+    toggleFreezeCol(field, side) {
+      const current = this.frozenCols[field]
+      if (current === side) {
+        const updated = { ...this.frozenCols }
+        delete updated[field]
+        this.frozenCols = updated
+      } else {
+        this.frozenCols = { ...this.frozenCols, [field]: side }
+      }
+    },
+
+    handleOutsideClick(e) {
+      const wrapper = this.$el.querySelector('.stock-col-settings-wrapper')
+      if (wrapper && !wrapper.contains(e.target)) {
+        this.isSettingsOpen = false
+      }
+    },
+
     formatDate(date) {
       if (!date) return '-'
       return dayjs(date).format('DD/MM/YYYY')
@@ -773,6 +948,114 @@ export default {
   padding: 1rem;
   font-weight: 300;
   color: white;
+}
+
+/* Column settings gear */
+.stock-col-settings-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.stock-col-settings-btn {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 4px;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255,255,255,0.2);
+  }
+}
+
+.stock-col-settings-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 280px;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+
+.stock-col-settings-header {
+  padding: 8px 12px;
+  background: var(--base-font-color);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stock-col-settings-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.stock-col-settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #333;
+
+  &:last-child { border-bottom: none; }
+}
+
+.stock-col-settings-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.stock-col-freeze-btns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.freeze-btn {
+  padding: 2px 6px;
+  font-size: 11px;
+  border: 1px solid #dee2e6;
+  border-radius: 3px;
+  background: #f8f9fa;
+  color: #666;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--base-font-color);
+    color: var(--base-font-color);
+  }
+
+  &.active {
+    background: var(--base-font-color);
+    border-color: var(--base-font-color);
+    color: #fff;
+  }
 }
 
 .material-cell {
