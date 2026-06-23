@@ -7,6 +7,9 @@
       :columns="columns"
       :perPage="take"
       :scrollHeight="'calc(100vh - 340px)'"
+      :reorderableColumns="true"
+      :showColumnSettings="true"
+      :defaultSortMeta="[{ field: 'createDate', order: -1 }]"
       class="base-data-table"
       @page="handlePageChange"
       @sort="handleSortChange"
@@ -112,8 +115,8 @@ export default {
     },
     columns() {
       return [
-        { field: 'action', header: '', width: '50px', sortable: false },
-        { field: 'soNumber', header: this.$t('view.sale.saleOrderList.soNumber'), sortable: true, minWidth: '150px' },
+        { field: 'action', header: '', width: '60px', sortable: false, frozen: true, alignFrozen: 'left' },
+        { field: 'soNumber', header: this.$t('view.sale.saleOrderList.soNumber'), sortable: true, minWidth: '150px', frozen: true, alignFrozen: 'left' },
         { field: 'running', header: this.$t('view.sale.saleOrderList.running'), sortable: true, minWidth: '120px' },
         { field: 'customerName', header: this.$t('view.sale.saleOrderList.customerName'), sortable: true, minWidth: '180px' },
         { field: 'customerTel', header: this.$t('common.field.phone'), sortable: true, minWidth: '120px' },
@@ -190,9 +193,7 @@ export default {
     }
   },
 
-  async mounted() {
-    await this.fetchData()
-  }
+
 }
 </script>
 

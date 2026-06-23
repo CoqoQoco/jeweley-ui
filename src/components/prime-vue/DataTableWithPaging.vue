@@ -1,5 +1,35 @@
 <template>
   <div class="base-datatable">
+    <!-- Toolbar gear: สำหรับตารางที่ไม่มี paginator -->
+    <div v-if="showColumnSettings && !paginator" class="table-settings-toolbar">
+      <div class="col-settings-btn-wrapper">
+        <button class="col-settings-btn" @click.stop="isSettingsOpen = !isSettingsOpen" title="ตั้งค่าคอลัมน์">
+          <i class="bi bi-gear-fill"></i>
+        </button>
+        <div v-if="isSettingsOpen" class="col-settings-panel col-settings-panel--down">
+          <div class="col-settings-header">
+            <i class="bi bi-gear-fill"></i> ตั้งค่าคอลัมน์
+          </div>
+          <div class="col-settings-list">
+            <div v-for="col in columns" :key="col.field" class="col-settings-item">
+              <span class="col-settings-name">{{ col.header || col.field }}</span>
+              <div class="col-settings-freeze-btns">
+                <button
+                  :class="['freeze-btn', { active: isFreezeBtnActive(col, 'left') }]"
+                  @click="toggleFreeze(col.field, 'left')"
+                  title="ปักหมุดซ้าย"
+                ><i class="bi bi-pin-angle-fill"></i> ซ้าย</button>
+                <button
+                  :class="['freeze-btn', { active: isFreezeBtnActive(col, 'right') }]"
+                  @click="toggleFreeze(col.field, 'right')"
+                  title="ปักหมุดขวา"
+                ><i class="bi bi-pin-angle-fill"></i> ขวา</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <DataTable
       :value="items"
       :selection="itemsSelection"
@@ -24,6 +54,9 @@
       :totalRecords="totalRecords"
       :paginatorTemplate="paginatorTemplate"
       :currentPageReportTemplate="computedPageReport"
+      :reorderableColumns="reorderableColumns"
+      v-model:multiSortMeta="internalSortMeta"
+      @column-reorder="$emit('column-reorder', $event)"
       v-bind="$attrs"
     >
       <!-- Expander Column -->
@@ -108,7 +141,7 @@
       </Column>
 
       <!-- Dynamic Columns -->
-      <template v-for="col in columns" :key="col.field">
+      <template v-for="col in computedColumns" :key="col.field">
         <Column
           v-bind="col"
           :sortable="col.sortable !== false"
@@ -121,8 +154,12 @@
           :bodyStyle="{ textAlign: col.align || 'left' }"
           :class="col.className"
         >
-          <template #header v-if="$slots[`header-${col.field}`]">
-            <slot :name="`header-${col.field}`"></slot>
+          <template #header v-if="$slots[`header-${col.field}`] || col.frozen">
+            <slot :name="`header-${col.field}`">
+              <span v-if="col.frozen" class="frozen-icon-wrapper">
+                <i class="bi bi-pin-angle-fill"></i>
+              </span>
+            </slot>
           </template>
 
           <template #body="slotProps">
@@ -164,6 +201,33 @@
       <template #paginatorend>
         <div class="paginator-end-content">
           <slot name="paginator-buttons"></slot>
+          <div v-if="showColumnSettings && paginator" class="col-settings-btn-wrapper">
+            <button class="col-settings-btn" @click.stop="isSettingsOpen = !isSettingsOpen" title="ตั้งค่าคอลัมน์">
+              <i class="bi bi-gear-fill"></i>
+            </button>
+            <div v-if="isSettingsOpen" class="col-settings-panel">
+              <div class="col-settings-header">
+                <i class="bi bi-gear-fill"></i> ตั้งค่าคอลัมน์
+              </div>
+              <div class="col-settings-list">
+                <div v-for="col in columns" :key="col.field" class="col-settings-item">
+                  <span class="col-settings-name">{{ col.header || col.field }}</span>
+                  <div class="col-settings-freeze-btns">
+                    <button
+                      :class="['freeze-btn', { active: isFreezeBtnActive(col, 'left') }]"
+                      @click="toggleFreeze(col.field, 'left')"
+                      title="ปักหมุดซ้าย"
+                    ><i class="bi bi-pin-angle-fill"></i> ซ้าย</button>
+                    <button
+                      :class="['freeze-btn', { active: isFreezeBtnActive(col, 'right') }]"
+                      @click="toggleFreeze(col.field, 'right')"
+                      title="ปักหมุดขวา"
+                    ><i class="bi bi-pin-angle-fill"></i> ขวา</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </template>
 
@@ -284,6 +348,19 @@ export default {
       // สำหรับ items ที่ต้องการให้ติ๊กถูกไว้
       type: Array,
       default: () => []
+    },
+    reorderableColumns: {
+      type: Boolean,
+      default: false
+    },
+    showColumnSettings: {
+      type: Boolean,
+      default: false
+    },
+    defaultSortMeta: {
+      type: Array,
+      default: () => []
+      // Format: [{ field: 'createDate', order: -1 }]  order: 1=ASC, -1=DESC
     }
   },
 
@@ -293,10 +370,25 @@ export default {
     'update:itemsSelection',
     'update:modelValue', // สำหรับ v-model ของ expanded rows
     'row-expand', // เมื่อ row ถูก expand
-    'row-collapse' // เมื่อ row ถูก collapse
+    'row-collapse', // เมื่อ row ถูก collapse
+    'column-reorder'
   ],
 
   computed: {
+    computedColumns() {
+      if (!this.showColumnSettings) return this.columns
+      return this.columns.map(col => {
+        const override = this.localFrozenMap[col.field]
+        if (override === undefined) {
+          return col
+        } else if (override === null) {
+          return { ...col, frozen: false, alignFrozen: undefined }
+        } else {
+          return { ...col, frozen: true, alignFrozen: override }
+        }
+      })
+    },
+
     computedEmptyMessage() {
       return this.emptyMessage !== null ? this.emptyMessage : this.$t('common.label.noData')
     },
@@ -347,7 +439,10 @@ export default {
 
   data() {
     return {
-      expandedRows: []
+      expandedRows: [],
+      isSettingsOpen: false,
+      localFrozenMap: {},
+      internalSortMeta: []
     }
   },
 
@@ -523,7 +618,7 @@ export default {
       }
 
       this.$emit('update:itemsSelection', newSelection)
-    }
+    },
 
     // เช็คว่า item อยู่ใน preSelectedItems หรือไม่
     // isPreSelected(item) {
@@ -531,6 +626,62 @@ export default {
     //     (preSelected) => preSelected[this.dataKey] === item[this.dataKey]
     //   )
     // }
+
+    toggleFreeze(field, side) {
+      const current = this.localFrozenMap[field]
+      const isCurrentlyThisSide = current === side ||
+        (current === undefined && this.isColDefaultFrozen(field, side))
+
+      if (isCurrentlyThisSide) {
+        this.localFrozenMap = { ...this.localFrozenMap, [field]: null }
+      } else {
+        this.localFrozenMap = { ...this.localFrozenMap, [field]: side }
+      }
+    },
+
+    isColDefaultFrozen(field, side) {
+      const col = this.columns.find(c => c.field === field)
+      if (!col || !col.frozen) return false
+      if (side === 'right') return col.alignFrozen === 'right'
+      return col.alignFrozen !== 'right'
+    },
+
+    isFreezeBtnActive(col, side) {
+      const override = this.localFrozenMap[col.field]
+      if (override === null) return false
+      if (override !== undefined) return override === side
+      if (!col.frozen) return false
+      return side === 'right' ? col.alignFrozen === 'right' : col.alignFrozen !== 'right'
+    },
+
+    closeSettings() {
+      this.isSettingsOpen = false
+    },
+
+    handleOutsideClick(e) {
+      const panel = this.$el.querySelector('.col-settings-btn-wrapper')
+      if (panel && !panel.contains(e.target)) {
+        this.isSettingsOpen = false
+      }
+    }
+  },
+
+  mounted() {
+    if (this.defaultSortMeta.length > 0) {
+      this.internalSortMeta = [...this.defaultSortMeta]
+      this.$nextTick(() => {
+        this.$emit('sort', {
+          first: 0,
+          rows: this.perPage,
+          multiSortMeta: this.internalSortMeta
+        })
+      })
+    }
+    document.addEventListener('click', this.handleOutsideClick)
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleOutsideClick)
   }
 }
 </script>
@@ -629,6 +780,35 @@ export default {
     .p-datatable-emptymessage > td {
       text-align: center !important;
       padding: 2rem !important;
+    }
+
+    // Frozen column body cells — must have explicit background to prevent bleed-through
+    .p-datatable-tbody > tr {
+      > td.p-frozen-column {
+        background-color: #ffffff !important;
+        z-index: 1;
+      }
+
+      &:nth-child(even) > td.p-frozen-column {
+        background-color: #f8f9fa !important;
+      }
+
+      &:hover > td.p-frozen-column {
+        background-color: #e9ecef !important;
+      }
+
+      &.p-highlight > td.p-frozen-column {
+        background-color: #e3f2fd !important;
+      }
+
+      &.p-highlight:hover > td.p-frozen-column {
+        background-color: #bbdefb !important;
+      }
+    }
+
+    // Frozen header cells z-index
+    .p-datatable-thead > tr > th.p-frozen-column {
+      z-index: 2 !important;
     }
   }
 
@@ -745,9 +925,153 @@ export default {
 
   // Resize Handle
   :deep(.p-column-resizer) {
+    width: 4px !important;
     &:hover {
-      background-color: var(--base-font) !important;
+      background-color: var(--base-font-color) !important;
     }
+  }
+
+  // Frozen column visual separation
+  :deep(.p-datatable) {
+    .p-datatable-thead > tr > th.p-frozen-column {
+      border-right: 2px solid var(--base-font-color) !important;
+    }
+
+    .p-datatable-tbody > tr > td.p-frozen-column {
+      border-right: 2px solid #dee2e6 !important;
+    }
+  }
+
+  // Column settings button
+  .col-settings-btn-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+  }
+
+  .col-settings-btn {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #fff;
+    color: var(--base-font-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--base-font-color);
+      color: #fff;
+      border-color: var(--base-font-color);
+    }
+  }
+
+  .col-settings-panel {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    right: 0;
+    min-width: 260px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 100;
+  }
+
+  .col-settings-header {
+    padding: 8px 12px;
+    background: var(--base-font-color);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .col-settings-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .col-settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .col-settings-name {
+    flex: 1;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 8px;
+  }
+
+  .col-settings-freeze-btns {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .freeze-btn {
+    padding: 2px 6px;
+    font-size: 11px;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    background: #f8f9fa;
+    color: #666;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: var(--base-font-color);
+      color: var(--base-font-color);
+    }
+
+    &.active {
+      background: var(--base-font-color);
+      border-color: var(--base-font-color);
+      color: #fff;
+    }
+  }
+
+  .frozen-icon-wrapper {
+    margin-right: 4px;
+    color: #fff;
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
+
+  .table-settings-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 0;
+    margin-bottom: 4px;
+  }
+
+  // Panel opens downward for toolbar mode (no paginator)
+  .col-settings-panel--down {
+    top: calc(100% + 4px);
+    bottom: auto;
   }
 
   // Override for sort icons
