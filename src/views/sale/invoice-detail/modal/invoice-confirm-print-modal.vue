@@ -111,6 +111,18 @@
                     </small>
                   </div>
 
+                  <div v-if="paperSize === 'a4'" class="form-group mb-3">
+                    <label class="form-label">
+                      <i class="bi bi-layout-text-window mr-1"></i>{{ $t('view.sale.invoiceDetail.template') }}
+                    </label>
+                    <DropdownGeneric
+                      v-model="invoiceTemplate"
+                      :options="templateOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                    />
+                  </div>
+
                   <div v-if="paperSize === 'bill' || paperSize === 'vat-bridge'" class="form-group mb-3">
                     <label class="form-label">
                       <i class="bi bi-printer mr-1"></i>{{ $t('view.sale.invoiceDetail.printer') }}
@@ -281,6 +293,7 @@ export default {
         showCifLabel: true,
         itemsPerPage: 10
       },
+      invoiceTemplate: 'standard',
       paperSize: 'vat-bridge',
       continuousOffset: { x: 0, y: 0 },
       billOffset: { x: 0, y: 0 },
@@ -288,6 +301,15 @@ export default {
       selectedPrinter: null,
       defaultBillPrinter: null,
       defaultVatPrinter: null
+    }
+  },
+
+  computed: {
+    templateOptions() {
+      return [
+        { value: 'standard', label: this.$t('view.sale.invoiceDetail.templateStandard') },
+        { value: 'summary', label: this.$t('view.sale.invoiceDetail.templateSummary') }
+      ]
     }
   },
 
@@ -372,6 +394,7 @@ export default {
         showCifLabel: true,
         itemsPerPage: 10
       }
+      this.invoiceTemplate = 'standard'
     },
 
     formatDate(date) {
@@ -400,6 +423,7 @@ export default {
         invoiceDate: normalizedDate,
         showCifLabel: this.printData.showCifLabel,
         itemsPerPage: Number(this.printData.itemsPerPage) || 10,
+        invoiceTemplate: this.invoiceTemplate,
         paperSize: this.paperSize,
         continuousOffset: { ...this.continuousOffset },
         billOffset: { ...this.billOffset },

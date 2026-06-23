@@ -1,15 +1,22 @@
 import pdfMake from 'pdfmake/build/pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import { acherusVfs } from '@/assets/fonts/acherus-grotesque-font.js'
+import { promptVfs } from '@/assets/fonts/prompt-font.js'
 
 export const initPdfMake = () => {
-  pdfMake.vfs = { ...vfs, ...acherusVfs }
+  pdfMake.vfs = { ...vfs, ...acherusVfs, ...promptVfs }
   pdfMake.fonts = {
     AngsanaNew: {
       normal: "Angsana New Regular.ttf",
       bold: "Angsana New Bold.ttf",
       italics: "Angsana New Italic.ttf",
       bolditalics: "Angsana New Bold Italic.ttf"
+    },
+    Prompt: {
+      normal: 'Prompt-Regular.ttf',
+      bold: 'Prompt-Bold.ttf',
+      italics: 'Prompt-Regular.ttf',
+      bolditalics: 'Prompt-Bold.ttf'
     },
     THSarabunNew: {
       normal: 'THSarabunNew.ttf',

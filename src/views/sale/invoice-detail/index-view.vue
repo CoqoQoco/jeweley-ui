@@ -377,6 +377,7 @@ import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store
 import { error, success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { invoiceSummaryPdfService } from '@/services/helper/pdf/invoice-summary/invoice-summary-integration.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import dayjs from 'dayjs'
@@ -1049,14 +1050,22 @@ export default {
             remark: this.invoiceData.remark,
             specialDiscount: this.invoiceData.specialDiscount || 0,
             specialAddition: this.invoiceData.specialAddition || 0,
-            freightAndInsurance: this.invoiceData.freightAndInsurance || 0
+            freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
+            createDate: this.invoiceData.createDate,
+            paymentDay: this.invoiceData.paymentDay,
+            deposit: this.invoiceData.deposit || 0,
+            amountPaid: Array.isArray(this.invoiceData.payments)
+              ? this.invoiceData.payments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
+              : 0,
+            vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat
           },
           customer: {
             name: this.invoiceData.customerName,
             address: this.invoiceData.customerAddress,
             tel: this.invoiceData.customerTel,
             email: this.invoiceData.customerEmail,
-            phone: this.invoiceData.customerTel
+            phone: this.invoiceData.customerTel,
+            taxId: this.invoiceData.customerTaxId
           },
           currency: {
             unit: this.invoiceData.currencyUnit || 'THB',
@@ -1165,7 +1174,11 @@ export default {
           success(this.$t('view.sale.invoiceDetail.success.printBill'), 'Bridge GDI')
           return
         } else {
-          await invoicePdfService.generateInvoicePDF(pdfData, options)
+          if (printData.invoiceTemplate === 'summary') {
+            await invoiceSummaryPdfService.generateInvoiceSummaryPDF(pdfData, options)
+          } else {
+            await invoicePdfService.generateInvoicePDF(pdfData, options)
+          }
         }
         success(this.$t('view.sale.invoiceDetail.success.createPDF'), 'Invoice PDF')
       }
@@ -1185,14 +1198,22 @@ export default {
           remark: this.invoiceData.remark,
           specialDiscount: this.invoiceData.specialDiscount || 0,
           specialAddition: this.invoiceData.specialAddition || 0,
-          freightAndInsurance: this.invoiceData.freightAndInsurance || 0
+          freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
+          createDate: this.invoiceData.createDate,
+          paymentDay: this.invoiceData.paymentDay,
+          deposit: this.invoiceData.deposit || 0,
+          amountPaid: Array.isArray(this.invoiceData.payments)
+            ? this.invoiceData.payments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
+            : 0,
+          vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat
         },
         customer: {
           name: this.invoiceData.customerName,
           address: this.invoiceData.customerAddress,
           tel: this.invoiceData.customerTel,
           email: this.invoiceData.customerEmail,
-          phone: this.invoiceData.customerTel
+          phone: this.invoiceData.customerTel,
+          taxId: this.invoiceData.customerTaxId
         },
         currency: {
           unit: this.invoiceData.currencyUnit || 'THB',
@@ -1211,7 +1232,9 @@ export default {
         itemsPerPage: Number(printData.itemsPerPage) || 10
       }
 
-      const res = await invoicePdfService.generateInvoicePDF(pdfData, options)
+      const res = printData.invoiceTemplate === 'summary'
+        ? await invoiceSummaryPdfService.generateInvoiceSummaryPDF(pdfData, options)
+        : await invoicePdfService.generateInvoicePDF(pdfData, options)
       this.previewUrl = res.previewUrl
       this.lastPreviewPrintData = printData
       this.isShowPreviewModal = true
