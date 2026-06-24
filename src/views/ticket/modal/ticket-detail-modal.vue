@@ -64,6 +64,25 @@
           <span class="detail-label">{{ $t('view.ticket.field.devResponse') }}:</span>
           <div class="response-content">{{ ticket.devResponse }}</div>
         </div>
+
+        <div class="mt-3" v-if="ticket.logs && ticket.logs.length">
+          <span class="detail-label">{{ $t('view.ticket.log.title') }}</span>
+          <div class="log-timeline mt-2">
+            <div v-for="log in ticket.logs" :key="log.id" class="log-entry">
+              <span class="log-dot"></span>
+              <div class="log-body">
+                <div class="log-meta">
+                  <span class="log-date">{{ formatDate(log.createDate) }}</span>
+                  <span class="log-author">{{ log.createBy }}</span>
+                  <span :class="['log-action-badge', `log-action-${log.action}`]">
+                    {{ getActionLabel(log.action) }}
+                  </span>
+                </div>
+                <div class="log-text">{{ logText(log) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </template>
   </modal>
@@ -135,6 +154,29 @@ export default {
     formatDate(date) {
       if (!date) return '-'
       return dayjs(date).format('DD/MM/YYYY HH:mm')
+    },
+
+    getStatusLabelById(statusId) {
+      const map = {
+        1: this.$t('view.ticket.status.open'),
+        2: this.$t('view.ticket.status.inProgress'),
+        3: this.$t('view.ticket.status.resolved'),
+        4: this.$t('view.ticket.status.closed')
+      }
+      return map[statusId] || String(statusId)
+    },
+
+    getActionLabel(action) {
+      if (action === 'status') return this.$t('view.ticket.log.actionStatus')
+      if (action === 'dev') return this.$t('view.ticket.log.actionDev')
+      return this.$t('view.ticket.log.actionNote')
+    },
+
+    logText(log) {
+      if (log.action === 'status') {
+        return `${this.$t('view.ticket.log.actionStatus')}: ${this.getStatusLabelById(Number(log.oldValue))} → ${this.getStatusLabelById(Number(log.newValue))}`
+      }
+      return log.detail
     }
   }
 }
@@ -264,5 +306,79 @@ export default {
 
 .ml-2 {
   margin-left: var(--sp-sm);
+}
+
+.log-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.log-entry {
+  display: flex;
+  gap: var(--sp-md);
+  align-items: flex-start;
+}
+
+.log-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--base-font-color);
+  margin-top: 5px;
+}
+
+.log-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.log-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  align-items: center;
+  margin-bottom: var(--sp-xs);
+}
+
+.log-date {
+  font-size: var(--fs-sm);
+  color: #666;
+}
+
+.log-author {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--base-font-color);
+}
+
+.log-action-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+
+  &.log-action-status {
+    background: #cce5ff;
+    color: #004085;
+  }
+
+  &.log-action-dev {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  &.log-action-note {
+    background: #f0f0f0;
+    color: #555;
+  }
+}
+
+.log-text {
+  font-size: var(--fs-base);
+  color: var(--base-font-color);
+  line-height: var(--lh-md);
 }
 </style>

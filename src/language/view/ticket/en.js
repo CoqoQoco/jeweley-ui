@@ -86,6 +86,19 @@ export default {
     noImage: 'No images'
   },
 
+  log: {
+    title: 'Edit Log',
+    addBtn: 'Add Note',
+    placeholder: 'Type what was fixed / how it was fixed...',
+    actionStatus: 'Status changed',
+    actionDev: 'Dev info updated',
+    actionNote: 'Note',
+    empty: 'No log entries yet',
+    success: {
+      add: 'Note added successfully'
+    }
+  },
+
   manual: {
     title: 'How to Report an Issue / Request a Feature',
     btnLabel: 'Guide',

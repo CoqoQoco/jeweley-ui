@@ -28,6 +28,10 @@ export const useTicketStore = defineStore('ticket', {
 
     async updateDev(ticketId, devAnalysis, devResponse) {
       return await api.jewelry.post('Ticket/UpdateDev', { ticketId, devAnalysis, devResponse })
+    },
+
+    async addTicketLog(ticketId, detail) {
+      return await api.jewelry.post('Ticket/AddLog', { ticketId, detail })
     }
   }
 })

@@ -86,6 +86,19 @@ export default {
     noImage: 'ไม่มีรูป'
   },
 
+  log: {
+    title: 'บันทึกการแก้ไข (Log)',
+    addBtn: 'เพิ่มบันทึก',
+    placeholder: 'พิมพ์สิ่งที่แก้ / วิธีแก้...',
+    actionStatus: 'เปลี่ยนสถานะ',
+    actionDev: 'อัปเดตข้อมูล Dev',
+    actionNote: 'บันทึก',
+    empty: 'ยังไม่มีบันทึกการแก้ไข',
+    success: {
+      add: 'เพิ่มบันทึกสำเร็จ'
+    }
+  },
+
   manual: {
     title: 'คู่มือการแจ้งปัญหา / ขอฟีเจอร์',
     btnLabel: 'คู่มือ',

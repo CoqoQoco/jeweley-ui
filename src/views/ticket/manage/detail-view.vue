@@ -90,7 +90,7 @@
       </SectionCardGeneric>
 
       <!-- Dev Analysis & Response Card -->
-      <SectionCardGeneric :title="$t('view.ticket.field.devAnalysis')">
+      <SectionCardGeneric :title="$t('view.ticket.field.devAnalysis')" class="mb-3">
         <FormFieldGeneric :label="$t('view.ticket.field.devAnalysis')">
           <TextareaGeneric
             v-model="editAnalysis"
@@ -114,6 +114,47 @@
             :label="$t('view.ticket.btn.saveDev')"
             @click="onSaveDev"
           />
+        </div>
+      </SectionCardGeneric>
+
+      <!-- Work Log Card -->
+      <SectionCardGeneric :title="$t('view.ticket.log.title')">
+        <div class="log-add-row">
+          <TextareaGeneric
+            v-model="newLogDetail"
+            :rows="2"
+            :placeholder="$t('view.ticket.log.placeholder')"
+          />
+          <div class="log-add-btn">
+            <ButtonGeneric
+              variant="main"
+              icon="bi-plus"
+              :label="$t('view.ticket.log.addBtn')"
+              :disabled="!newLogDetail || !newLogDetail.trim()"
+              @click="onAddLog"
+            />
+          </div>
+        </div>
+
+        <div class="log-divider"></div>
+
+        <div v-if="ticket.logs && ticket.logs.length" class="log-timeline">
+          <div v-for="log in ticket.logs" :key="log.id" class="log-entry">
+            <span class="log-dot"></span>
+            <div class="log-body">
+              <div class="log-meta">
+                <span class="log-date">{{ formatDate(log.createDate) }}</span>
+                <span class="log-author">{{ log.createBy }}</span>
+                <span :class="['log-action-badge', `log-action-${log.action}`]">
+                  {{ getActionLabel(log.action) }}
+                </span>
+              </div>
+              <div class="log-text">{{ logText(log) }}</div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="log-empty">
+          {{ $t('view.ticket.log.empty') }}
         </div>
       </SectionCardGeneric>
     </div>
@@ -155,7 +196,8 @@ export default {
       ticket: {},
       editStatus: null,
       editAnalysis: '',
-      editResponse: ''
+      editResponse: '',
+      newLogDetail: ''
     }
   },
 
@@ -206,6 +248,24 @@ export default {
       return dayjs(date).format('DD/MM/YYYY HH:mm')
     },
 
+    getStatusLabel(statusId) {
+      const opt = this.statusOptions.find((s) => s.value === statusId)
+      return opt ? opt.label : String(statusId)
+    },
+
+    getActionLabel(action) {
+      if (action === 'status') return this.$t('view.ticket.log.actionStatus')
+      if (action === 'dev') return this.$t('view.ticket.log.actionDev')
+      return this.$t('view.ticket.log.actionNote')
+    },
+
+    logText(log) {
+      if (log.action === 'status') {
+        return `${this.$t('view.ticket.log.actionStatus')}: ${this.getStatusLabel(Number(log.oldValue))} → ${this.getStatusLabel(Number(log.newValue))}`
+      }
+      return log.detail
+    },
+
     onUpdateStatus() {
       if (!this.editStatus) return
 
@@ -218,7 +278,7 @@ export default {
           const res = await this.ticketStore.updateStatus(this.ticket.id, this.editStatus)
           if (res !== undefined) {
             success(this.$t('view.ticket.success.updateStatus'))
-            this.ticket.statusId = this.editStatus
+            this.loadTicket()
           }
         }
       )
@@ -236,11 +296,21 @@ export default {
           )
           if (res !== undefined) {
             success(this.$t('view.ticket.success.saveDev'))
-            this.ticket.devAnalysis = this.editAnalysis
-            this.ticket.devResponse = this.editResponse
+            this.loadTicket()
           }
         }
       )
+    },
+
+    async onAddLog() {
+      if (!this.newLogDetail || !this.newLogDetail.trim()) return
+
+      const res = await this.ticketStore.addTicketLog(this.ticket.id, this.newLogDetail)
+      if (res !== undefined) {
+        success(this.$t('view.ticket.log.success.add'))
+        this.newLogDetail = ''
+        this.loadTicket()
+      }
     }
   }
 }
@@ -360,5 +430,101 @@ export default {
 
 .align-items-end {
   align-items: flex-end;
+}
+
+.log-add-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.log-add-btn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.log-divider {
+  margin: var(--sp-lg) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.log-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.log-entry {
+  display: flex;
+  gap: var(--sp-md);
+  align-items: flex-start;
+}
+
+.log-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--base-font-color);
+  margin-top: 5px;
+}
+
+.log-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.log-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  align-items: center;
+  margin-bottom: var(--sp-xs);
+}
+
+.log-date {
+  font-size: var(--fs-sm);
+  color: #666;
+}
+
+.log-author {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--base-font-color);
+}
+
+.log-action-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+
+  &.log-action-status {
+    background: #cce5ff;
+    color: #004085;
+  }
+
+  &.log-action-dev {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  &.log-action-note {
+    background: #f0f0f0;
+    color: #555;
+  }
+}
+
+.log-text {
+  font-size: var(--fs-base);
+  color: var(--base-font-color);
+  line-height: var(--lh-md);
+}
+
+.log-empty {
+  font-size: var(--fs-base);
+  color: #888;
+  padding: var(--sp-md) 0;
 }
 </style>
