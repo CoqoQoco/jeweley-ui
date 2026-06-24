@@ -1,5 +1,17 @@
 <template>
   <div class="mt-2">
+    <div class="gold-type-filter-bar">
+      <span class="title-text filter-label">{{ $t('view.worker.workerDailyWages.filterGoldTypeLabel') }}</span>
+      <MultiSelectGeneric
+        v-model="selectedGoldTypes"
+        :options="goldTypeOptions"
+        optionLabel="label"
+        optionValue="value"
+        :filter="true"
+        :showClear="true"
+        :placeholder="$t('view.worker.workerDailyWages.filterGoldTypePlaceholder')"
+      />
+    </div>
     <BaseDataTable
       :items="filteredItems"
       :totalRecords="filteredItems.length"
@@ -101,6 +113,9 @@ import Row from 'primevue/row'
 import Column from 'primevue/column'
 import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
 
+// Local components
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+
 export default {
   name: 'WorkerDailyWagesDataTableView',
 
@@ -108,7 +123,8 @@ export default {
     BaseDataTable,
     ColumnGroup,
     Row,
-    Column
+    Column,
+    MultiSelectGeneric
   },
 
   props: {
@@ -119,6 +135,21 @@ export default {
     wageTypeFilter: {
       type: String,
       default: 'wages'
+    }
+  },
+
+  data() {
+    return {
+      selectedGoldTypes: []
+    }
+  },
+
+  watch: {
+    wageTypeFilter() {
+      this.selectedGoldTypes = []
+    },
+    items() {
+      this.selectedGoldTypes = []
     }
   },
 
@@ -157,6 +188,22 @@ export default {
       return this.baseColumns
     },
 
+    goldTypeOptions() {
+      const items = this.items || []
+      let modeFiltered
+      if (this.wageTypeFilter === 'goldLoss') {
+        modeFiltered = items.filter((r) => r.isGoldLoss)
+      } else {
+        modeFiltered = items.filter((r) => !r.isGoldLoss)
+      }
+      const seen = new Set()
+      modeFiltered.forEach((r) => {
+        const combined = [r.gold, r.goldSize].filter(Boolean).join(' - ')
+        if (combined) seen.add(combined)
+      })
+      return Array.from(seen).map((v) => ({ label: v, value: v }))
+    },
+
     filteredItems() {
       const items = this.items || []
       let filtered
@@ -164,6 +211,13 @@ export default {
         filtered = items.filter((r) => r.isGoldLoss)
       } else {
         filtered = items.filter((r) => !r.isGoldLoss)
+      }
+
+      if (this.selectedGoldTypes.length > 0) {
+        filtered = filtered.filter((r) => {
+          const combined = [r.gold, r.goldSize].filter(Boolean).join(' - ')
+          return this.selectedGoldTypes.includes(combined)
+        })
       }
 
       return filtered.map((row) => {
@@ -211,6 +265,24 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.gold-type-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  .filter-label {
+    white-space: nowrap;
+    font-size: var(--fs-base);
+    flex-shrink: 0;
+  }
+}
 
 .badge-gold-loss {
   display: inline-block;

@@ -52,7 +52,9 @@ export default {
     colGoldLossPrice: 'ราคา/กรัม',
     badgeGoldLoss: 'Gold Loss (งานฝัง)',
     footerTotal: 'จำนวน {count} รายการ',
-    slipLabel: 'ลง slip {docNo}'
+    slipLabel: 'ลง slip {docNo}',
+    filterGoldTypeLabel: 'ประเภททอง',
+    filterGoldTypePlaceholder: 'ทั้งหมด'
   },
   goldLossSlipList: {
     searchTitle: 'ประวัติ Gold Loss Slip',

@@ -52,7 +52,9 @@ export default {
     colGoldLossPrice: 'Price/g',
     badgeGoldLoss: 'Gold Loss (Embed Work)',
     footerTotal: '{count} items',
-    slipLabel: 'Enter slip {docNo}'
+    slipLabel: 'Enter slip {docNo}',
+    filterGoldTypeLabel: 'Gold Type',
+    filterGoldTypePlaceholder: 'All'
   },
   goldLossSlipList: {
     searchTitle: 'Gold Loss Slip History',
