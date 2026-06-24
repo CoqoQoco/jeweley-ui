@@ -50,11 +50,12 @@
         <div class="mt-3" v-if="ticketImageUrls.length">
           <span class="detail-label">{{ $t('view.ticket.field.screenshot') }}:</span>
           <div class="image-gallery mt-2">
-            <img
+            <ImagePreview
               v-for="(url, idx) in ticketImageUrls"
               :key="idx"
               :src="url"
-              class="screenshot-img"
+              :preview="true"
+              :width="220"
               :alt="`${$t('view.ticket.field.screenshot')} ${idx + 1}`"
             />
           </div>
@@ -148,6 +149,7 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import ImagePreview from '@/components/prime-vue/ImagePreview.vue'
 import TicketThread from '../components/ticket-thread.vue'
 
 export default {
@@ -159,6 +161,7 @@ export default {
     FormFieldGeneric,
     ButtonGeneric,
     DropdownGeneric,
+    ImagePreview,
     TicketThread
   },
 
@@ -349,15 +352,6 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-md);
-}
-
-.screenshot-img {
-  max-width: 100%;
-  max-height: 300px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  object-fit: contain;
 }
 
 .no-image-hint {

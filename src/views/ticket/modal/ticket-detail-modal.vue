@@ -46,11 +46,12 @@
         <div class="mt-3" v-if="hasImages">
           <span class="detail-label">{{ $t('view.ticket.field.screenshot') }}:</span>
           <div class="image-gallery mt-2">
-            <img
+            <ImagePreview
               v-for="(url, idx) in imageUrls"
               :key="idx"
               :src="url"
-              class="screenshot-img"
+              :preview="true"
+              :width="220"
               :alt="`${$t('view.ticket.field.screenshot')} ${idx + 1}`"
             />
           </div>
@@ -99,6 +100,7 @@ import { success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import dayjs from 'dayjs'
 
+import ImagePreview from '@/components/prime-vue/ImagePreview.vue'
 import TicketThread from '../components/ticket-thread.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -106,7 +108,7 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 export default {
   name: 'TicketDetailModal',
 
-  components: { modal, TicketThread },
+  components: { modal, TicketThread, ImagePreview },
 
   props: {
     isShow: {
@@ -282,15 +284,6 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-md);
-}
-
-.screenshot-img {
-  max-width: 100%;
-  max-height: 300px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  object-fit: contain;
 }
 
 .no-image-hint {

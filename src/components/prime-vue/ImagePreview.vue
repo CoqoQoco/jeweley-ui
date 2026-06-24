@@ -35,10 +35,15 @@ export default {
     PvImage: Image
   },
   props: {
+    // Direct URL — ถ้าระบุ จะใช้ URL นี้โดยตรง ไม่ผ่าน getAzureBlobUrl
+    src: {
+      type: String,
+      default: ''
+    },
     // ชื่อ image หรือ blob path
     imageName: {
       type: String,
-      required: true,
+      required: false,
       default: ''
     },
     // Path สำหรับ type='PATH' (deprecated - ใช้ imageName โดยตรงแทน)
@@ -97,10 +102,11 @@ export default {
       return this.buildBlobPathFromType()
     },
     /**
-     * สร้าง Azure Blob URL จาก blob path
-     * @returns {string} - Azure Blob URL
+     * สร้าง Azure Blob URL จาก blob path หรือ return src โดยตรง
+     * @returns {string} - Image URL
      */
     imageUrl() {
+      if (this.src) return this.src
       if (!this.imagePath) return ''
       return getAzureBlobUrl(this.imagePath)
     },
