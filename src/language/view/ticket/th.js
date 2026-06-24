@@ -7,6 +7,8 @@ export default {
     my: 'Ticket ของฉัน'
   },
   manageTitle: 'จัดการ Ticket',
+  manageDesc: 'ติดตามและจัดการรายการแจ้งปัญหา/ขอฟีเจอร์ทั้งหมด',
+  myTicketDesc: 'รายการแจ้งปัญหา/ขอฟีเจอร์ที่คุณสร้าง',
   detailTitle: 'รายละเอียด Ticket',
 
   field: {
@@ -96,6 +98,27 @@ export default {
     empty: 'ยังไม่มีบันทึกการแก้ไข',
     success: {
       add: 'เพิ่มบันทึกสำเร็จ'
+    }
+  },
+
+  thread: {
+    analysisTitle: 'ผลการวิเคราะห์ (Dev)',
+    responseTitle: 'คำตอบถึงผู้แจ้ง',
+    replyTitle: 'คำตอบจากทีมพัฒนา',
+    changeTitle: 'สิ่งที่เราแก้เข้าไป',
+    progressTitle: 'ความคืบหน้า',
+    addBtn: 'เพิ่ม',
+    sendBtn: 'ส่ง',
+    placeholder: 'พิมพ์ข้อความ...',
+    empty: 'ยังไม่มีรายการ',
+    roleDev: 'ทีมพัฒนา',
+    roleUser: 'ผู้แจ้ง',
+    systemBadge: 'ระบบ',
+    deleteBtn: 'ลบ',
+    confirmDelete: 'ยืนยันลบความคิดเห็นนี้?',
+    success: {
+      add: 'บันทึกสำเร็จ',
+      delete: 'ลบสำเร็จ'
     }
   },
 

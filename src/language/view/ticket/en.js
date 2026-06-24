@@ -7,6 +7,8 @@ export default {
     my: 'My Tickets'
   },
   manageTitle: 'Manage Tickets',
+  manageDesc: 'Track and manage all issue/feature tickets',
+  myTicketDesc: 'Issue/feature tickets you created',
   detailTitle: 'Ticket Detail',
 
   field: {
@@ -96,6 +98,27 @@ export default {
     empty: 'No log entries yet',
     success: {
       add: 'Note added successfully'
+    }
+  },
+
+  thread: {
+    analysisTitle: 'Dev Analysis',
+    responseTitle: 'Response to Reporter',
+    replyTitle: 'Response from Dev Team',
+    changeTitle: 'Changes Made',
+    progressTitle: 'Progress',
+    addBtn: 'Add',
+    sendBtn: 'Send',
+    placeholder: 'Type a message...',
+    empty: 'No entries yet',
+    roleDev: 'Dev Team',
+    roleUser: 'Reporter',
+    systemBadge: 'System',
+    deleteBtn: 'Delete',
+    confirmDelete: 'Confirm delete this comment?',
+    success: {
+      add: 'Saved successfully',
+      delete: 'Deleted successfully'
     }
   },
 

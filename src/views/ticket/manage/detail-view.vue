@@ -89,73 +89,49 @@
         </div>
       </SectionCardGeneric>
 
-      <!-- Dev Analysis & Response Card -->
-      <SectionCardGeneric :title="$t('view.ticket.field.devAnalysis')" class="mb-3">
-        <FormFieldGeneric :label="$t('view.ticket.field.devAnalysis')">
-          <TextareaGeneric
-            v-model="editAnalysis"
-            :rows="5"
-            :placeholder="$t('view.ticket.field.devAnalysis')"
-          />
-        </FormFieldGeneric>
-
-        <FormFieldGeneric :label="$t('view.ticket.field.devResponse')" class="mt-3">
-          <TextareaGeneric
-            v-model="editResponse"
-            :rows="4"
-            :placeholder="$t('view.ticket.field.devResponse')"
-          />
-        </FormFieldGeneric>
-
-        <div class="mt-3">
-          <ButtonGeneric
-            variant="main"
-            icon="bi-save"
-            :label="$t('view.ticket.btn.saveDev')"
-            @click="onSaveDev"
-          />
-        </div>
+      <!-- Analysis Thread -->
+      <SectionCardGeneric :title="$t('view.ticket.thread.analysisTitle')" class="mb-3">
+        <TicketThread
+          variant="timeline"
+          :entries="analysisComments"
+          :canPost="true"
+          deleteMode="all"
+          meRole="dev"
+          :placeholder="$t('view.ticket.thread.placeholder')"
+          :emptyText="$t('view.ticket.thread.empty')"
+          @post="onPostAnalysis"
+          @delete="onDeleteComment"
+        />
       </SectionCardGeneric>
 
-      <!-- Work Log Card -->
-      <SectionCardGeneric :title="$t('view.ticket.log.title')">
-        <div class="log-add-row">
-          <TextareaGeneric
-            v-model="newLogDetail"
-            :rows="2"
-            :placeholder="$t('view.ticket.log.placeholder')"
-          />
-          <div class="log-add-btn">
-            <ButtonGeneric
-              variant="main"
-              icon="bi-plus"
-              :label="$t('view.ticket.log.addBtn')"
-              :disabled="!newLogDetail || !newLogDetail.trim()"
-              @click="onAddLog"
-            />
-          </div>
-        </div>
+      <!-- Response Thread -->
+      <SectionCardGeneric :title="$t('view.ticket.thread.responseTitle')" class="mb-3">
+        <TicketThread
+          variant="chat"
+          :entries="responseComments"
+          :canPost="true"
+          deleteMode="all"
+          meRole="dev"
+          :placeholder="$t('view.ticket.thread.placeholder')"
+          :emptyText="$t('view.ticket.thread.empty')"
+          @post="onPostResponse"
+          @delete="onDeleteComment"
+        />
+      </SectionCardGeneric>
 
-        <div class="log-divider"></div>
-
-        <div v-if="ticket.logs && ticket.logs.length" class="log-timeline">
-          <div v-for="log in ticket.logs" :key="log.id" class="log-entry">
-            <span class="log-dot"></span>
-            <div class="log-body">
-              <div class="log-meta">
-                <span class="log-date">{{ formatDate(log.createDate) }}</span>
-                <span class="log-author">{{ log.createBy }}</span>
-                <span :class="['log-action-badge', `log-action-${log.action}`]">
-                  {{ getActionLabel(log.action) }}
-                </span>
-              </div>
-              <div class="log-text">{{ logText(log) }}</div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="log-empty">
-          {{ $t('view.ticket.log.empty') }}
-        </div>
+      <!-- Change Thread -->
+      <SectionCardGeneric :title="$t('view.ticket.thread.changeTitle')" class="mb-3">
+        <TicketThread
+          variant="timeline"
+          :entries="changeComments"
+          :canPost="true"
+          deleteMode="all"
+          meRole="dev"
+          :placeholder="$t('view.ticket.thread.placeholder')"
+          :emptyText="$t('view.ticket.thread.empty')"
+          @post="onPostChange"
+          @delete="onDeleteComment"
+        />
       </SectionCardGeneric>
     </div>
   </div>
@@ -170,9 +146,9 @@ import dayjs from 'dayjs'
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
-import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import TicketThread from '../components/ticket-thread.vue'
 
 export default {
   name: 'TicketManageDetailView',
@@ -181,9 +157,9 @@ export default {
     PageHeaderGeneric,
     SectionCardGeneric,
     FormFieldGeneric,
-    TextareaGeneric,
     ButtonGeneric,
-    DropdownGeneric
+    DropdownGeneric,
+    TicketThread
   },
 
   setup() {
@@ -194,10 +170,7 @@ export default {
   data() {
     return {
       ticket: {},
-      editStatus: null,
-      editAnalysis: '',
-      editResponse: '',
-      newLogDetail: ''
+      editStatus: null
     }
   },
 
@@ -215,6 +188,18 @@ export default {
         { value: 3, label: this.$t('view.ticket.status.resolved') },
         { value: 4, label: this.$t('view.ticket.status.closed') }
       ]
+    },
+
+    analysisComments() {
+      return (this.ticket.comments || []).filter((c) => c.type === 'analysis')
+    },
+
+    responseComments() {
+      return (this.ticket.comments || []).filter((c) => c.type === 'response')
+    },
+
+    changeComments() {
+      return (this.ticket.comments || []).filter((c) => c.type === 'change')
     }
   },
 
@@ -238,32 +223,12 @@ export default {
         const t = res.data[0]
         this.ticket = t
         this.editStatus = t.statusId
-        this.editAnalysis = t.devAnalysis || ''
-        this.editResponse = t.devResponse || ''
       }
     },
 
     formatDate(date) {
       if (!date) return '-'
       return dayjs(date).format('DD/MM/YYYY HH:mm')
-    },
-
-    getStatusLabel(statusId) {
-      const opt = this.statusOptions.find((s) => s.value === statusId)
-      return opt ? opt.label : String(statusId)
-    },
-
-    getActionLabel(action) {
-      if (action === 'status') return this.$t('view.ticket.log.actionStatus')
-      if (action === 'dev') return this.$t('view.ticket.log.actionDev')
-      return this.$t('view.ticket.log.actionNote')
-    },
-
-    logText(log) {
-      if (log.action === 'status') {
-        return `${this.$t('view.ticket.log.actionStatus')}: ${this.getStatusLabel(Number(log.oldValue))} → ${this.getStatusLabel(Number(log.newValue))}`
-      }
-      return log.detail
     },
 
     onUpdateStatus() {
@@ -284,33 +249,40 @@ export default {
       )
     },
 
-    onSaveDev() {
-      confirmThenSubmit(
-        this.ticket.ticketNo,
-        this.$t('view.ticket.confirm.saveDev'),
-        async () => {
-          const res = await this.ticketStore.updateDev(
-            this.ticket.id,
-            this.editAnalysis,
-            this.editResponse
-          )
-          if (res !== undefined) {
-            success(this.$t('view.ticket.success.saveDev'))
-            this.loadTicket()
-          }
-        }
-      )
-    },
-
-    async onAddLog() {
-      if (!this.newLogDetail || !this.newLogDetail.trim()) return
-
-      const res = await this.ticketStore.addTicketLog(this.ticket.id, this.newLogDetail)
+    async onPostAnalysis(msg) {
+      const res = await this.ticketStore.addTicketComment(this.ticket.id, 'analysis', msg)
       if (res !== undefined) {
-        success(this.$t('view.ticket.log.success.add'))
-        this.newLogDetail = ''
+        success(this.$t('view.ticket.thread.success.add'))
         this.loadTicket()
       }
+    },
+
+    async onPostResponse(msg) {
+      const res = await this.ticketStore.addTicketComment(this.ticket.id, 'response', msg)
+      if (res !== undefined) {
+        success(this.$t('view.ticket.thread.success.add'))
+        this.loadTicket()
+      }
+    },
+
+    async onPostChange(msg) {
+      const res = await this.ticketStore.addTicketComment(this.ticket.id, 'change', msg)
+      if (res !== undefined) {
+        success(this.$t('view.ticket.thread.success.add'))
+        this.loadTicket()
+      }
+    },
+
+    onDeleteComment(entry) {
+      confirmThenSubmit(
+        this.$t('view.ticket.thread.confirmDelete'),
+        this.$t('common.btn.delete'),
+        async () => {
+          await this.ticketStore.deleteTicketComment(entry.id)
+          success(this.$t('view.ticket.thread.success.delete'))
+          this.loadTicket()
+        }
+      )
     }
   }
 }
@@ -432,99 +404,7 @@ export default {
   align-items: flex-end;
 }
 
-.log-add-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-sm);
-}
-
-.log-add-btn {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.log-divider {
-  margin: var(--sp-lg) 0;
-  border-top: 1px solid var(--color-border);
-}
-
-.log-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-md);
-}
-
-.log-entry {
-  display: flex;
-  gap: var(--sp-md);
-  align-items: flex-start;
-}
-
-.log-dot {
-  flex-shrink: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--base-font-color);
-  margin-top: 5px;
-}
-
-.log-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.log-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-sm);
-  align-items: center;
-  margin-bottom: var(--sp-xs);
-}
-
-.log-date {
-  font-size: var(--fs-sm);
-  color: #666;
-}
-
-.log-author {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--base-font-color);
-}
-
-.log-action-badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-
-  &.log-action-status {
-    background: #cce5ff;
-    color: #004085;
-  }
-
-  &.log-action-dev {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  &.log-action-note {
-    background: #f0f0f0;
-    color: #555;
-  }
-}
-
-.log-text {
-  font-size: var(--fs-base);
-  color: var(--base-font-color);
-  line-height: var(--lh-md);
-}
-
-.log-empty {
-  font-size: var(--fs-base);
-  color: #888;
-  padding: var(--sp-md) 0;
+.ml-2 {
+  margin-left: var(--sp-sm);
 }
 </style>

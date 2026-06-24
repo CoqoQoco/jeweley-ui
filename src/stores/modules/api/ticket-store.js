@@ -32,6 +32,22 @@ export const useTicketStore = defineStore('ticket', {
 
     async addTicketLog(ticketId, detail) {
       return await api.jewelry.post('Ticket/AddLog', { ticketId, detail })
+    },
+
+    async addTicketComment(ticketId, type, message) {
+      return await api.jewelry.post('Ticket/AddComment', { ticketId, type, message })
+    },
+
+    async addMyTicketComment(ticketId, message) {
+      return await api.jewelry.post('Ticket/AddMyComment', { ticketId, message })
+    },
+
+    async deleteTicketComment(commentId) {
+      return await api.jewelry.post('Ticket/DeleteComment', { commentId })
+    },
+
+    async deleteMyTicketComment(commentId) {
+      return await api.jewelry.post('Ticket/DeleteMyComment', { commentId })
     }
   }
 })

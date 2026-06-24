@@ -2,13 +2,14 @@
   <div class="app-container">
     <SearchBarGeneric
       :title="$t('view.ticket.myTicketTitle')"
+      :description="$t('view.ticket.myTicketDesc')"
       @search="onSearch"
       @clear="onClear"
     >
       <template #fields>
         <div class="form-field">
           <span class="title-text">{{ $t('view.ticket.field.status') }}</span>
-          <DropdownGeneric
+          <MultiSelectGeneric
             :modelValue="filter.status"
             :options="statusOptions"
             optionLabel="label"
@@ -20,7 +21,7 @@
         </div>
         <div class="form-field">
           <span class="title-text">{{ $t('view.ticket.field.type') }}</span>
-          <DropdownGeneric
+          <MultiSelectGeneric
             :modelValue="filter.type"
             :options="typeOptions"
             optionLabel="label"
@@ -64,6 +65,7 @@
       :isShow="isShowModal"
       :ticket="selectedTicket"
       @closeModal="isShowModal = false"
+      @refresh="fetchData"
     />
   </div>
 </template>
@@ -74,7 +76,7 @@ import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ticketDetailModal from './modal/ticket-detail-modal.vue'
 
@@ -84,7 +86,7 @@ export default {
   components: {
     SearchBarGeneric,
     ButtonGeneric,
-    DropdownGeneric,
+    MultiSelectGeneric,
     BaseDataTable,
     ticketDetailModal
   },
@@ -101,8 +103,8 @@ export default {
       dataList: [],
       total: 0,
       filter: {
-        status: null,
-        type: null
+        status: [],
+        type: []
       },
       isShowModal: false,
       selectedTicket: {}
@@ -149,8 +151,8 @@ export default {
         take: this.take,
         skip: this.skip,
         sort: this.sort,
-        status: this.filter.status || undefined,
-        type: this.filter.type || undefined
+        status: this.filter.status?.length ? this.filter.status : undefined,
+        type: this.filter.type?.length ? this.filter.type : undefined
       })
       if (res) {
         this.dataList = res.data
@@ -163,7 +165,7 @@ export default {
     },
 
     onClear() {
-      this.filter = { status: null, type: null }
+      this.filter = { status: [], type: [] }
       this.resetPaging()
     },
 

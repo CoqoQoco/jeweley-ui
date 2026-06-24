@@ -9,12 +9,12 @@
     <template #title>
       <span class="title-text-lg px-3 pt-3 d-block">
         {{ $t('view.ticket.detailTitle') }}
-        <span v-if="ticket.ticketNo" class="ticket-no ml-2">#{{ ticket.ticketNo }}</span>
+        <span v-if="localTicket.ticketNo" class="ticket-no ml-2">#{{ localTicket.ticketNo }}</span>
       </span>
     </template>
 
     <template #content>
-      <div class="p-3" v-if="ticket.id">
+      <div class="p-3" v-if="localTicket.id">
         <div class="detail-grid">
           <div class="detail-row">
             <span class="detail-label">{{ $t('view.ticket.field.type') }}:</span>
@@ -22,11 +22,11 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('view.ticket.field.topic') }}:</span>
-            <span class="detail-value">{{ ticket.topicName }}</span>
+            <span class="detail-value">{{ localTicket.topicName }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('view.ticket.field.title') }}:</span>
-            <span class="detail-value">{{ ticket.title }}</span>
+            <span class="detail-value">{{ localTicket.title }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('view.ticket.field.status') }}:</span>
@@ -34,13 +34,13 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">{{ $t('view.ticket.field.createDate') }}:</span>
-            <span class="detail-value">{{ formatDate(ticket.createDate) }}</span>
+            <span class="detail-value">{{ formatDate(localTicket.createDate) }}</span>
           </div>
         </div>
 
         <div class="mt-3">
           <span class="detail-label">{{ $t('view.ticket.field.description') }}:</span>
-          <div class="description-box">{{ ticket.description }}</div>
+          <div class="description-box">{{ localTicket.description }}</div>
         </div>
 
         <div class="mt-3" v-if="hasImages">
@@ -55,33 +55,37 @@
             />
           </div>
         </div>
-        <div class="mt-3" v-else-if="ticket.id">
+        <div class="mt-3" v-else-if="localTicket.id">
           <span class="detail-label">{{ $t('view.ticket.field.screenshot') }}:</span>
           <span class="no-image-hint ml-2">{{ $t('view.ticket.label.noImage') }}</span>
         </div>
 
-        <div class="mt-3 dev-response-box" v-if="ticket.devResponse">
-          <span class="detail-label">{{ $t('view.ticket.field.devResponse') }}:</span>
-          <div class="response-content">{{ ticket.devResponse }}</div>
+        <!-- Response Thread (user can reply) -->
+        <div class="mt-3">
+          <TicketThread
+            :title="$t('view.ticket.thread.replyTitle')"
+            variant="chat"
+            :entries="responseComments"
+            :canPost="true"
+            deleteMode="own"
+            meRole="user"
+            :placeholder="$t('view.ticket.thread.placeholder')"
+            :emptyText="$t('view.ticket.thread.empty')"
+            @post="onPostReply"
+            @delete="onDeleteMyComment"
+          />
         </div>
 
-        <div class="mt-3" v-if="ticket.logs && ticket.logs.length">
-          <span class="detail-label">{{ $t('view.ticket.log.title') }}</span>
-          <div class="log-timeline mt-2">
-            <div v-for="log in ticket.logs" :key="log.id" class="log-entry">
-              <span class="log-dot"></span>
-              <div class="log-body">
-                <div class="log-meta">
-                  <span class="log-date">{{ formatDate(log.createDate) }}</span>
-                  <span class="log-author">{{ log.createBy }}</span>
-                  <span :class="['log-action-badge', `log-action-${log.action}`]">
-                    {{ getActionLabel(log.action) }}
-                  </span>
-                </div>
-                <div class="log-text">{{ logText(log) }}</div>
-              </div>
-            </div>
-          </div>
+        <!-- Progress / Change Thread (read-only) -->
+        <div class="mt-3">
+          <TicketThread
+            :title="$t('view.ticket.thread.progressTitle')"
+            variant="timeline"
+            :entries="changeComments"
+            :canPost="false"
+            deleteMode="none"
+            :emptyText="$t('view.ticket.thread.empty')"
+          />
         </div>
       </div>
     </template>
@@ -90,14 +94,19 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { useTicketStore } from '@/stores/modules/api/ticket-store.js'
+import { success } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import dayjs from 'dayjs'
+
+import TicketThread from '../components/ticket-thread.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'TicketDetailModal',
 
-  components: { modal },
+  components: { modal, TicketThread },
 
   props: {
     isShow: {
@@ -110,12 +119,32 @@ export default {
     }
   },
 
-  emits: ['closeModal'],
+  emits: ['closeModal', 'refresh'],
+
+  setup() {
+    const ticketStore = useTicketStore()
+    return { ticketStore }
+  },
+
+  data() {
+    return {
+      localTicket: {}
+    }
+  },
+
+  watch: {
+    ticket: {
+      immediate: true,
+      handler(val) {
+        this.localTicket = val ? { ...val, comments: [...(val.comments || [])] } : {}
+      }
+    }
+  },
 
   computed: {
     imageUrls() {
-      if (this.ticket.imageUrls?.length) return this.ticket.imageUrls
-      if (this.ticket.screenshotUrl) return [this.ticket.screenshotUrl]
+      if (this.localTicket.imageUrls?.length) return this.localTicket.imageUrls
+      if (this.localTicket.screenshotUrl) return [this.localTicket.screenshotUrl]
       return []
     },
 
@@ -124,8 +153,8 @@ export default {
     },
 
     typeLabel() {
-      if (this.ticket.type === 1) return this.$t('view.ticket.type.bug')
-      if (this.ticket.type === 2) return this.$t('view.ticket.type.feature')
+      if (this.localTicket.type === 1) return this.$t('view.ticket.type.bug')
+      if (this.localTicket.type === 2) return this.$t('view.ticket.type.feature')
       return '-'
     },
 
@@ -136,7 +165,7 @@ export default {
         3: this.$t('view.ticket.status.resolved'),
         4: this.$t('view.ticket.status.closed')
       }
-      return map[this.ticket.statusId] || this.ticket.statusNameTh || '-'
+      return map[this.localTicket.statusId] || this.localTicket.statusNameTh || '-'
     },
 
     statusClass() {
@@ -146,7 +175,15 @@ export default {
         3: 'status-resolved',
         4: 'status-closed'
       }
-      return map[this.ticket.statusId] || ''
+      return map[this.localTicket.statusId] || ''
+    },
+
+    responseComments() {
+      return (this.localTicket.comments || []).filter((c) => c.type === 'response')
+    },
+
+    changeComments() {
+      return (this.localTicket.comments || []).filter((c) => c.type === 'change')
     }
   },
 
@@ -156,27 +193,38 @@ export default {
       return dayjs(date).format('DD/MM/YYYY HH:mm')
     },
 
-    getStatusLabelById(statusId) {
-      const map = {
-        1: this.$t('view.ticket.status.open'),
-        2: this.$t('view.ticket.status.inProgress'),
-        3: this.$t('view.ticket.status.resolved'),
-        4: this.$t('view.ticket.status.closed')
+    async onPostReply(msg) {
+      const res = await this.ticketStore.addMyTicketComment(this.localTicket.id, msg)
+      if (res !== undefined) {
+        success(this.$t('view.ticket.thread.success.add'))
+        // Optimistically push new comment into localTicket so thread updates instantly
+        const newComment = {
+          id: Date.now(),
+          type: 'response',
+          authorRole: 'user',
+          message: msg,
+          createBy: '',
+          createDate: new Date().toISOString()
+        }
+        this.localTicket.comments = [...(this.localTicket.comments || []), newComment]
+        // Signal parent to reload its list so next open has fresh data
+        this.$emit('refresh')
       }
-      return map[statusId] || String(statusId)
     },
 
-    getActionLabel(action) {
-      if (action === 'status') return this.$t('view.ticket.log.actionStatus')
-      if (action === 'dev') return this.$t('view.ticket.log.actionDev')
-      return this.$t('view.ticket.log.actionNote')
-    },
-
-    logText(log) {
-      if (log.action === 'status') {
-        return `${this.$t('view.ticket.log.actionStatus')}: ${this.getStatusLabelById(Number(log.oldValue))} → ${this.getStatusLabelById(Number(log.newValue))}`
-      }
-      return log.detail
+    onDeleteMyComment(entry) {
+      confirmThenSubmit(
+        this.$t('view.ticket.thread.confirmDelete'),
+        this.$t('common.btn.delete'),
+        async () => {
+          await this.ticketStore.deleteMyTicketComment(entry.id)
+          success(this.$t('view.ticket.thread.success.delete'))
+          this.localTicket.comments = (this.localTicket.comments || []).filter(
+            (c) => c.id !== entry.id
+          )
+          this.$emit('refresh')
+        }
+      )
     }
   }
 }
@@ -250,24 +298,6 @@ export default {
   color: #888;
 }
 
-.dev-response-box {
-  background: #f0f9f0;
-  border: 1px solid #b8ddb8;
-  border-radius: var(--radius-md);
-  padding: var(--sp-md);
-
-  .detail-label {
-    color: #2d7d2d;
-  }
-
-  .response-content {
-    margin-top: var(--sp-xs);
-    white-space: pre-wrap;
-    line-height: var(--lh-md);
-    color: #1a4a1a;
-  }
-}
-
 .status-badge {
   display: inline-block;
   padding: 2px 10px;
@@ -306,79 +336,5 @@ export default {
 
 .ml-2 {
   margin-left: var(--sp-sm);
-}
-
-.log-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-md);
-}
-
-.log-entry {
-  display: flex;
-  gap: var(--sp-md);
-  align-items: flex-start;
-}
-
-.log-dot {
-  flex-shrink: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--base-font-color);
-  margin-top: 5px;
-}
-
-.log-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.log-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-sm);
-  align-items: center;
-  margin-bottom: var(--sp-xs);
-}
-
-.log-date {
-  font-size: var(--fs-sm);
-  color: #666;
-}
-
-.log-author {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--base-font-color);
-}
-
-.log-action-badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-
-  &.log-action-status {
-    background: #cce5ff;
-    color: #004085;
-  }
-
-  &.log-action-dev {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  &.log-action-note {
-    background: #f0f0f0;
-    color: #555;
-  }
-}
-
-.log-text {
-  font-size: var(--fs-base);
-  color: var(--base-font-color);
-  line-height: var(--lh-md);
 }
 </style>
