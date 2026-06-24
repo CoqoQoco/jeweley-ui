@@ -69,5 +69,27 @@ export default {
     colNetWeightLoss: 'Net Loss',
     colTotalMoney: 'Total Amount',
     colCreateDate: 'Created Date'
+  },
+  goldLossSlipModal: {
+    selectAll: 'Select all',
+    includeItem: 'Include',
+    moneyZeroHint: '฿0',
+    printGoldTypeLabel: 'Print gold type',
+    printGoldTypePlaceholder: 'All',
+    colInclude: 'Include',
+    typeSummaryTitle: 'Summary by Gold Type',
+    colGoldType: 'Gold Type',
+    colWeightLoss: 'Loss wt (g)',
+    colMoneyLoss: 'Loss (amt)',
+    colReturnWeight: 'Return (g)',
+    colReturnAmount: 'Return (amt)',
+    colNetWeight: 'Net (g)',
+    colNetAmount: 'Net (amt)',
+    returnGoldTypeLabel: 'Gold Type',
+    returnTitle: 'Gold Return',
+    filterGoldTypeLabel: 'Gold Type',
+    filterGoldTypePlaceholder: 'All',
+    hideZeroLabel: 'Hide ฿0 rows',
+    selectCountLabel: 'Selected {selected} / Shown {displayed} / Total {total}'
   }
 }

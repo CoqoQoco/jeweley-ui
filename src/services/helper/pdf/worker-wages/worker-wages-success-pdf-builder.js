@@ -178,6 +178,93 @@ export class WorkerWagesSuccessPdfBuilder {
     return [headerRow, ...dataRows, footerRow]
   }
 
+  computeTypeSummaries() {
+    const map = {}
+    const combineGoldKey = (gold, goldSize) => [gold, goldSize].filter(Boolean).join(' - ') || ''
+
+    const items = this.slip ? (this.slip.items || this.items) : this.items
+    for (const item of items) {
+      const key = combineGoldKey(item.gold, item.goldSize)
+      if (!map[key]) {
+        map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
+      }
+      map[key].totalWeightLoss += item.weightLossActual ?? 0
+      map[key].totalMoneyLoss += item.moneyDiff ?? 0
+    }
+
+    const returnItems = (this.slip && this.slip.goldReturnItems) ? this.slip.goldReturnItems : []
+    for (const r of returnItems) {
+      const key = combineGoldKey(r.gold, r.goldSize)
+      if (!map[key]) {
+        map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
+      }
+      map[key].returnWeight += r.weight || 0
+      map[key].returnAmount += r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))
+    }
+
+    return Object.values(map).map((entry) => ({
+      ...entry,
+      netWeight: entry.totalWeightLoss - entry.returnWeight,
+      netAmount: entry.totalMoneyLoss + entry.returnAmount
+    }))
+  }
+
+  buildTypeSummaryTableContent() {
+    let summaries = (this.slip && this.slip.typeSummaries && this.slip.typeSummaries.length > 0)
+      ? this.slip.typeSummaries
+      : this.computeTypeSummaries()
+
+    if (summaries.length === 0) return null
+
+    const getGoldTypeLabel = (row) => {
+      if (row.goldType != null) return row.goldType || '-'
+      const combined = [row.gold, row.goldSize].filter(Boolean).join(' - ')
+      return combined || (row.gold || '-')
+    }
+
+    const headerRow = [
+      { text: 'ประเภททอง', style: 'tableHeader' },
+      { text: 'น.น. loss (g)', style: 'tableHeader', alignment: 'right' },
+      { text: 'loss (เงิน)', style: 'tableHeader', alignment: 'right' },
+      { text: 'คืนทอง (g)', style: 'tableHeader', alignment: 'right' },
+      { text: 'คืนทอง (เงิน)', style: 'tableHeader', alignment: 'right' },
+      { text: 'สุทธิ (g)', style: 'tableHeader', alignment: 'right' },
+      { text: 'สุทธิ (เงิน)', style: 'tableHeader', alignment: 'right' }
+    ]
+
+    const dataRows = summaries.map((row) => [
+      { text: getGoldTypeLabel(row) },
+      { text: this.fmtSign2(row.totalWeightLoss), alignment: 'right' },
+      { text: this.fmt2(row.totalMoneyLoss), alignment: 'right' },
+      { text: this.fmt2(row.returnWeight), alignment: 'right' },
+      { text: this.fmt2(row.returnAmount), alignment: 'right' },
+      { text: this.fmtSign2(row.netWeight), alignment: 'right', color: row.netWeight < 0 ? '#ff4d4d' : undefined },
+      { text: this.fmt2(row.netAmount), alignment: 'right' }
+    ])
+
+    return {
+      margin: [0, 8, 0, 0],
+      stack: [
+        { text: 'สรุปแยกตามประเภททอง', bold: true, fontSize: 12, margin: [0, 0, 0, 4] },
+        {
+          fontSize: 11,
+          table: {
+            headerRows: 1,
+            widths: ['*', 60, 65, 55, 65, 55, 65],
+            body: [headerRow, ...dataRows]
+          },
+          layout: {
+            hLineWidth: () => 0.5,
+            vLineWidth: () => 0.5,
+            hLineColor: () => '#cccccc',
+            vLineColor: () => '#cccccc',
+            fillColor: (rowIndex) => rowIndex === 0 ? '#921313' : null
+          }
+        }
+      ]
+    }
+  }
+
   buildGoldReturnTableContent() {
     const returnItems = (this.slip && this.slip.goldReturnItems) ? this.slip.goldReturnItems : []
     if (returnItems.length === 0) return null
@@ -295,6 +382,14 @@ export class WorkerWagesSuccessPdfBuilder {
 
     if (returnTableContent) {
       result.push(returnTableContent)
+    }
+
+    const typeSummaryContent = this.buildTypeSummaryTableContent()
+    if (typeSummaryContent) {
+      result.push(typeSummaryContent)
+    }
+
+    if (returnTableContent || typeSummaryContent) {
       result.push({
         margin: [0, 6, 0, 0],
         table: {

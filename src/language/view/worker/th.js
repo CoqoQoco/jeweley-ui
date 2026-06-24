@@ -69,5 +69,27 @@ export default {
     colNetWeightLoss: 'loss สุทธิ',
     colTotalMoney: 'รวมเงิน',
     colCreateDate: 'วันที่บันทึก'
+  },
+  goldLossSlipModal: {
+    selectAll: 'เลือกทั้งหมด',
+    includeItem: 'รวมรายการ',
+    moneyZeroHint: 'เงิน 0',
+    printGoldTypeLabel: 'พิมพ์ประเภททอง',
+    printGoldTypePlaceholder: 'ทั้งหมด',
+    colInclude: 'รวม',
+    typeSummaryTitle: 'สรุปแยกตามประเภททอง',
+    colGoldType: 'ประเภททอง',
+    colWeightLoss: 'น.น. loss (g)',
+    colMoneyLoss: 'loss (เงิน)',
+    colReturnWeight: 'คืนทอง (g)',
+    colReturnAmount: 'คืนทอง (เงิน)',
+    colNetWeight: 'สุทธิ (g)',
+    colNetAmount: 'สุทธิ (เงิน)',
+    returnGoldTypeLabel: 'ประเภททอง',
+    returnTitle: 'รับคืนทอง',
+    filterGoldTypeLabel: 'ประเภททอง',
+    filterGoldTypePlaceholder: 'ทั้งหมด',
+    hideZeroLabel: 'ซ่อนรายการ ฿0',
+    selectCountLabel: 'เลือก {selected} / แสดง {displayed} / ทั้งหมด {total}'
   }
 }

@@ -132,8 +132,9 @@ export default {
         .generatePDF().open()
     },
 
-    onSlipSaved(slip) {
-      new WorkerWagesSuccessPdfBuilder(this.data, this.form, slip.items || [], 'goldLoss', slip)
+    onSlipSaved({ slip }) {
+      const pdfItems = slip.items || []
+      new WorkerWagesSuccessPdfBuilder(this.data, this.form, pdfItems, 'goldLoss', slip)
         .generatePDF().open()
       this.isShowSlipModal = false
       this.onSearch()

@@ -75,10 +75,11 @@ export default {
     async onPrint(slip) {
       const full = await api.jewelry.post('Worker/GetGoldLossSlip', { id: slip.id })
       if (full) {
+        const pdfItems = full.items || []
         new WorkerWagesSuccessPdfBuilder(
           { code: full.workerCode, nameTh: full.workerName },
           { requestDateStart: full.requestDateStart, requestDateEnd: full.requestDateEnd },
-          full.items || [],
+          pdfItems,
           'goldLoss',
           full
         ).generatePDF().open()
