@@ -1,6 +1,6 @@
 ---
 name: design-system
-description: ตารางโทเค็นทั้งหมด (spacing/radius/shadow/typography/color), วิธีใช้ mixin, กฎห้าม hardcode สี/px, และโทนปุ่มมาตรฐาน — ใช้เมื่อเขียน SCSS ใหม่, เพิ่ม component, หรือตรวจว่าค่าที่ใช้ถูกต้องตาม token
+description: ตารางโทเค็นทั้งหมด (spacing/radius/shadow/typography/color), วิธีใช้ mixin, กฎห้าม hardcode สี/px, button standard + icon-only rule สำหรับหน้า list, กฎห้ามทำปุ่ม — ใช้เมื่อเขียน SCSS ใหม่, เพิ่ม component, เลือก button class, หรือตรวจว่าค่าที่ใช้ถูกต้องตาม token
 ---
 
 # Design System
@@ -127,14 +127,51 @@ button.btn-custom {
 
 นิยามใน `src/assets/scss/main.scss` — ใช้ `ButtonGeneric` เป็นหลักสำหรับโค้ดใหม่
 
-| Class | สี | ใช้เมื่อ |
-|---|---|---|
-| `btn-main` | `$base-font-color` (#921313) | primary action — บันทึก, ยืนยัน |
-| `btn-outline-main` | outline #921313 | secondary — ยกเลิก, ล้าง |
-| `btn-sub-main` | `$base-font-color` | sub-primary (เหมือน btn-main) |
-| `btn-green` | `$base-green` (#038387) | view/search — ดูรายละเอียด, ค้นหา |
-| `btn-red` | `$base-red` (#ff4d4d) | destructive — ลบ |
-| `btn-dark` | `$base-sub-color` (#393939) | clear/neutral — ล้าง, ยกเลิกอ่อน |
+| Class | ButtonGeneric variant | สี | ใช้เมื่อ |
+|---|---|---|---|
+| `btn-main` | `variant="main"` | `$base-font-color` (#921313) | primary action — บันทึก, ยืนยัน |
+| `btn-outline-main` | `variant="outline"` | outline #921313 | secondary — ยกเลิก, ล้าง |
+| `btn-sub-main` | `variant="sub-main"` | `$base-font-color` | sub-primary (เหมือน btn-main) |
+| `btn-green` | `variant="green"` | `$base-green` (#038387) | view/search — ดูรายละเอียด, ค้นหา |
+| `btn-red` | `variant="red"` | `$base-red` (#ff4d4d) | destructive — ลบ |
+| `btn-dark` | `variant="dark"` | `$base-sub-color` (#393939) | clear/neutral — ล้าง, ยกเลิกอ่อน |
+
+### ตัวอย่าง native button (migration)
+
+```vue
+<!-- ✅ Good — native ใช้ได้ใน migration -->
+<button class="btn btn-sm btn-main">ยืนยัน</button>
+<button class="btn btn-sm btn-outline-main ml-2">ยกเลิก</button>
+<button class="btn btn-sm btn-green">ดูรายละเอียด</button>
+<button class="btn btn-sm btn-red ml-2">ลบ</button>
+<button class="btn btn-sm btn-dark ml-2">ล้าง</button>
+
+<!-- ❌ Bad -->
+<button class="btn btn-sm btn-warning">ยืนยัน</button>
+<button class="btn btn-sm btn-primary">บันทึก</button>
+```
+
+### หน้า List = Icon-Only
+
+หน้า **list/search** ปุ่มใน action bar ต้องเป็น icon-only เสมอ — ไม่ส่ง `:label`, ใช้ `:title` แทน (tooltip):
+
+```vue
+<!-- ✅ Good — list page icon-only -->
+<ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+<ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
+<ButtonGeneric variant="main" icon="bi-plus" class="ml-2" :title="$t('common.btn.create')" @click="onCreate" />
+
+<!-- ❌ Bad — label ใน list page -->
+<ButtonGeneric variant="main" icon="bi-search" :label="$t('common.btn.search')" type="submit" />
+```
+
+หน้า **create/edit form** ปุ่มยังคง label ตามปกติ:
+
+```vue
+<!-- ✅ Good — form page มี label -->
+<ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" @click="onSave" />
+<ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="onCancel" />
+```
 
 ---
 
@@ -181,4 +218,6 @@ button.btn-custom {
 - ❌ ห้าม hardcode สี เช่น `#921313`, `#038387`, `#e0e0e0` ในโค้ดใหม่ — ใช้ CSS var เสมอ
 - ❌ ห้าม hardcode px spacing เช่น `padding: 16px` — ใช้ `var(--sp-lg)` หรือ `@include card-base`
 - ❌ ห้ามใช้ `btn-warning`, `btn-custom`, `btn-primary`, `btn-secondary` — ไม่มีใน design system
+- ❌ ห้ามใช้ `btn-outline-dark` / `btn-outline-secondary` สำหรับ cancel — ใช้ `btn-outline-main`
+- ❌ ห้ามใส่ `:label` ในปุ่ม action bar ของหน้า list — ใช้ icon-only + `:title` เสมอ
 - ❌ ห้ามเขียน `border-radius: 8px` เองเมื่อใช้ mixin ได้ — ใช้ `var(--radius-md)`

@@ -1,6 +1,6 @@
 ---
 name: code-structure
-description: naming convention (kebab-case + ข้อยกเว้น), folder layout, ที่อยู่ของ generic component / composable / services — ใช้เมื่อสร้างไฟล์ใหม่, ย้ายไฟล์, หรือหาว่าของอยู่ที่ไหน
+description: naming convention (kebab-case + ข้อยกเว้น), folder layout, ที่อยู่ของ generic component / composable / services, เกณฑ์แตก component, props best practices, Options API rule — ใช้เมื่อสร้างไฟล์ใหม่, ย้ายไฟล์, ออกแบบ component structure, หรือหาว่าของอยู่ที่ไหน
 ---
 
 # Code Structure
@@ -97,7 +97,7 @@ src/
 
 ## View Structure Pattern
 
-สำหรับ view ที่ซับซ้อน (เกิน 400-500 บรรทัด หรือมีหลาย section):
+สำหรับ view ที่ซับซ้อน ให้แยก component ตามนี้:
 
 ```
 views/<feature>/
@@ -110,6 +110,56 @@ views/<feature>/
     ├── detail-modal.vue
     └── confirm-modal.vue
 ```
+
+### เกณฑ์การแตก Component
+
+แยกเมื่อตรงอย่างน้อย 1 ข้อ:
+1. ไฟล์หลักเกิน **400-500 บรรทัด**
+2. มี UI section ที่แยกกันได้ชัดเจน
+3. Section นั้นอาจถูก reuse ใน view อื่น
+4. ทีมหลายคนทำงานพร้อมกัน
+
+### ตัวอย่าง: Stock Appraisal
+
+```
+/cost-stock/web/cost-edit/
+├── index-view.vue
+├── components/
+│   ├── search-stock-view.vue
+│   └── appraisal-form-view.vue
+└── modal/
+```
+
+---
+
+## Props Best Practices
+
+```javascript
+// ✅ Good — typed, descriptive, has default
+props: {
+  stockSummary: {
+    type: Object,
+    default: () => ({})
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
+  }
+}
+
+// ❌ Bad — too generic, no type
+props: {
+  data: Object
+}
+```
+
+**กฎ**: ส่งเฉพาะ data ที่ child ต้องการ ไม่ส่ง object ใหญ่ทั้งก้อน
+
+---
+
+## API Pattern
+
+ใช้ **Options API** ทั้ง Web และ Mobile — ห้ามใช้ Composition API
 
 ---
 

@@ -4,8 +4,6 @@ description: Implement UI plans — สร้าง/แก้ไข Vue componen
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 skills:
-  - component-patterns
-  - button-system
   - alert-system
   - error-handling
   - responsive-web

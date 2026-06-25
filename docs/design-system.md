@@ -28,6 +28,9 @@
 | 7 | **Generic component เท่านั้น** | ห้าม native `<input>`/`<button>`/`<table>`/`<img>` หรือ PrimeVue ตรงๆ — ใช้ generic wrapper (ดู `native-call-policy` skill); รูป Azure ใช้ `ImagePreview` |
 | 8 | **i18n เท่านั้น** | ห้าม hardcode ข้อความไทย ใช้ `$t()` เสมอ (ดู `i18n-system` skill) |
 | 9 | **Reusable first** | ถ้าต้องการ UI ซ้ำ 2+ ที่ → สร้าง generic component ใหม่ (เช่น `MultiImageUpload`) อย่า inline ซ้ำ |
+| 10 | **List page = icon-only buttons** | ปุ่มใน search/action bar ของหน้า list (search/clear/create/export) ใช้ `ButtonGeneric` แบบ **ไม่ส่ง `label`** เหลือแค่ `icon` + `:title` (tooltip) — ref: `/plan-order-tracking` |
+| 11 | **Filter = MultiSelect เป็น default** | filter field ที่เป็น choice ใช้ `MultiSelectGeneric` เสมอ **ห้ามใช้ `DropdownGeneric`** เว้นแต่ field นั้นเลือกได้ค่าเดียวโดยธรรมชาติจริงๆ (ระบุเหตุผลใน Decision Log) |
+| 12 | **Page title มี description เสมอ** | ทุก `SearchBarGeneric` ต้องส่ง prop `description` อธิบายหน้านั้น (i18n) — ห้ามมีแต่ title เปล่า |
 
 ---
 
@@ -74,3 +77,6 @@
 | 2026-06-22 | PageHeaderGeneric (global) | เพิ่ม `border-top: 2px solid var(--base-font-color)` ให้ page header bar — กรอบบน-ล่างเข้มสมมาตร |
 | 2026-06-22 | PageHeaderGeneric (global) | เปลี่ยน page header เป็น filled bg สี main (`--base-font-color`) + inner elements (title/back/actions) เป็นสีสว่าง (white-outline auto ใน actions slot) |
 | 2026-06-22 | ticket/create-view + router | เพิ่ม **tab/segment-switch pattern** (ButtonGeneric active=main, inactive=outline) รวมหลายมุมมองในหน้าเดียว (แจ้งใหม่ + Ticket ของฉัน); เมนูกลุ่มที่มี in-page toggle ให้ใช้ลิงก์ตรง (`minorShow: false`) เพื่อ discoverability |
+| 2026-06-24 | list-page standard (global) | **#10 icon-only buttons**: ปุ่ม search/clear/create/export ในหน้า list ไม่ส่ง `:label` — ใช้แค่ `icon` + `:title` tooltip; ฟอร์ม create/edit ยังคง label ตามเดิม |
+| 2026-06-24 | list-page standard (global) | **#11 MultiSelect default**: filter choice ทุกตัวในหน้า list ใช้ `MultiSelectGeneric` (array, chip display) แทน `DropdownGeneric` (single); `data().filter` ต้องเริ่มต้นเป็น `[]`; ส่ง API เฉพาะเมื่อ `array.length > 0` |
+| 2026-06-24 | list-page standard (global) | **#12 description บังคับ**: `SearchBarGeneric` เพิ่ม prop `description` (String, default '') และส่งต่อให้ `pageTitle` — ทุก list page ต้องใส่ `:description="$t('view.xxx.xxxDesc')"` (i18n key ทั้ง th และ en) |

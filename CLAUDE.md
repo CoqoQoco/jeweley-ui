@@ -81,8 +81,6 @@ src/
 | Skill | ใช้เมื่อ |
 |---|---|
 | @.claude/skills/md-instruction/SKILL.md | เขียน/แก้ไขไฟล์ .md |
-| @.claude/skills/component-patterns/SKILL.md | สร้าง component, naming, props |
-| @.claude/skills/button-system/SKILL.md | เลือก button class, สี |
 | @.claude/skills/alert-system/SKILL.md | แสดง popup, confirm, error |
 | @.claude/skills/error-handling/SKILL.md | API call, async function |
 | @.claude/skills/responsive-web/SKILL.md | Web layout, responsive classes |
@@ -95,8 +93,8 @@ src/
 | @.claude/skills/ui-layout/SKILL.md | Page header, card section, form row, button spacing |
 | @.claude/skills/user-manual/SKILL.md | สร้างปุ่มคู่มือ + manual modal พร้อม screenshot |
 | @.claude/skills/chrome-mcp-testing/SKILL.md | ทดสอบ UI ด้วย chrome MCP, สร้าง/รัน test case, verify feature, reproduce bug |
-| @.claude/skills/design-system/SKILL.md | Token spacing/radius/shadow/typography/color, mixins, button standard |
+| @.claude/skills/design-system/SKILL.md | Token spacing/radius/shadow/typography/color, mixins, button class + สี, icon-only rule |
 | @.claude/skills/native-call-policy/SKILL.md | ตาราง ❌→✅ ทุก native element/PrimeVue/alert/localStorage |
 | @.claude/skills/i18n-system/SKILL.md | namespace common.btn/field/label, $t(), setLocale, เพิ่ม key ใหม่ |
 | @.claude/skills/composables/SKILL.md | useDataTablePaging mixin, confirmThenSubmit helper |
-| @.claude/skills/code-structure/SKILL.md | naming kebab-case, folder layout, ที่อยู่ generic/composable/services |
+| @.claude/skills/code-structure/SKILL.md | naming kebab-case, props best practices, เกณฑ์แตก component, Options API, folder layout |

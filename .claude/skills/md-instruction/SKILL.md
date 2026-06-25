@@ -27,14 +27,14 @@ jeweley-ui/
     ├── settings.json
     └── skills/
         ├── md-instruction/SKILL.md  ← คู่มือนี้
-        ├── component-patterns/SKILL.md
-        ├── button-system/SKILL.md
         ├── alert-system/SKILL.md
         ├── error-handling/SKILL.md
         ├── responsive-web/SKILL.md
         ├── mobile-dev/SKILL.md
         ├── image-system/SKILL.md
-        └── generic-components/SKILL.md
+        ├── generic-components/SKILL.md
+        ├── design-system/SKILL.md
+        └── code-structure/SKILL.md
 ```
 
 ---

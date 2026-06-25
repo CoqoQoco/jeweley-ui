@@ -125,6 +125,8 @@ Props สำคัญ:
 - `optionValue` — field ที่ใช้เป็น value (default: `null` = ส่ง full object)
 - `showClear` — แสดงปุ่มล้างค่า (default: `false`)
 
+**กฎ**: ใช้สำหรับ field ที่เลือกได้ค่าเดียวโดยธรรมชาติ (เช่น เลือกสาขา, สกุลเงิน) — **ห้ามใช้ใน filter ของหน้า list** → ใช้ `MultiSelectGeneric` แทน (Core Principle #11)
+
 Import:
 ```javascript
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -153,6 +155,13 @@ Props สำคัญ:
 - `filter` — แสดง search filter (default: `true`)
 - `showClear` — ปุ่มล้างค่า (default: `false`)
 - แสดงผลแบบ `display="chip"` อัตโนมัติ
+
+**กฎ List Page Filter (Core Principle #11)**:
+- ✅ filter ทุกตัวในหน้า list ต้องใช้ `MultiSelectGeneric` — ให้ผู้ใช้เลือกหลายค่าได้
+- ✅ `data().filter` เริ่มต้นเป็น `[]` (ไม่ใช่ `null`)
+- ✅ ส่ง API: `status: this.filter.status?.length ? this.filter.status : undefined`
+- ✅ `onClear()` reset เป็น `[]` (ไม่ใช่ `null`)
+- ❌ ห้ามใช้ `DropdownGeneric` สำหรับ filter ในหน้า list
 
 Import:
 ```javascript
