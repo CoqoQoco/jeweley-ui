@@ -30,6 +30,7 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | page header (create/edit) เอง | `PageHeaderGeneric` | `@/components/generic/PageHeaderGeneric.vue` |
 | search bar 4-section เอง | `SearchBarGeneric` | `@/components/generic/SearchBarGeneric.vue` |
 | section card เอง | `SectionCardGeneric` | `@/components/generic/SectionCardGeneric.vue` |
+| `<div class="input-group">` + icon addon manual | `InputTextGeneric :icon` | `@/components/generic/InputTextGeneric.vue` |
 
 ---
 

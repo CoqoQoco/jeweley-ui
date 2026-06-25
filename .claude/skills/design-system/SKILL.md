@@ -175,6 +175,97 @@ button.btn-custom {
 
 ---
 
+## Icon Input
+
+icon ที่อยู่ภายในช่องกรอก (leading icon) ใช้ prop `icon` ของ `InputTextGeneric` เท่านั้น
+
+```vue
+<!-- ✅ Good — icon ผ่าน prop, token เท่านั้น -->
+<InputTextGeneric id="tel1" type="tel" icon="bi-telephone-fill" v-model.trim="form.tel1" />
+<InputTextGeneric id="email" type="email" icon="bi-envelope-check-fill" v-model.trim="form.email" />
+
+<!-- ❌ Bad — input-group manual (icon ลอยเหนือ input, flex พัง) -->
+<div class="input-group input-group-inner">
+  <div class="input-group-append">
+    <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
+  </div>
+  <InputTextGeneric type="tel" v-model="form.tel1" />
+</div>
+```
+
+SCSS ที่ `InputTextGeneric` จัดการเองแล้ว (ไม่ต้องเขียนซ้ำ):
+
+```scss
+.input-icon-group {
+  position: relative;
+  width: 100%;
+  .input-icon {
+    position: absolute;
+    left: var(--sp-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--base-font-color);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  input.form-control.has-icon-left { padding-left: calc(var(--sp-md) + 20px); }
+  &.is-disabled .input-icon { opacity: 0.5; }
+}
+```
+
+---
+
+## Modal Form Styling
+
+modal form ที่มีหลาย field ต้องแบ่งกลุ่มด้วย `SectionCardGeneric` และใช้ title bar สี main:
+
+1. `<modal headerVariant="main">` — title bar bg สีหลัก + text/✕ ขาว
+2. แต่ละกลุ่ม logic ใช้ `SectionCardGeneric` (กล่อง border + title) — เว้นระหว่างกล่อง `var(--sp-lg)`
+
+```vue
+<!-- ✅ Good — title bar filled + SectionCardGeneric ต่อกลุ่ม -->
+<modal headerVariant="main" ...>
+  <template #title>
+    <span class="title-text-lg d-block">หัวข้อ Modal</span>
+  </template>
+  <template #content>
+    <div class="p-3">
+      <SectionCardGeneric :title="$t('view.x.section.main')" class="modal-section">
+        <div class="form-row two-col">...</div>
+      </SectionCardGeneric>
+      <SectionCardGeneric :title="$t('view.x.section.contact')" class="modal-section">
+        <div class="form-row two-col">...</div>
+      </SectionCardGeneric>
+    </div>
+  </template>
+</modal>
+
+<!-- ❌ Bad — เส้นใต้ h6 (เลิกใช้แล้ว) -->
+<h6 class="form-section-title">ข้อมูลหลัก</h6>
+
+<!-- ❌ Bad — title ธรรมดาบนพื้นขาว ไม่ใช้ headerVariant -->
+<span class="title-text-lg px-3 pt-3 d-block">หัวข้อ</span>
+
+<!-- ❌ Bad — รวมทุก field กล่องเดียว -->
+<SectionCardGeneric title="ข้อมูลทั้งหมด"><!-- ทุก group รวมกัน --></SectionCardGeneric>
+```
+
+SCSS scoped ใน modal component:
+
+```scss
+.modal-section {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+```
+
+**Reference**: `src/views/customer/list-customer/modal/create-view.vue`
+
+---
+
 ## กฎการใช้ Token
 
 **✅ Good — ใช้ token เสมอ:**

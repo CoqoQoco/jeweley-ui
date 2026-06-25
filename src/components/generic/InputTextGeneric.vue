@@ -21,24 +21,60 @@
     :max="100"
   />
 
+  <InputTextGeneric
+    id="tel1"
+    type="tel"
+    icon="bi-telephone-fill"
+    v-model.trim="form.tel1"
+  />
+
   Props:
-    modelValue  — v-model value
-    type        — 'text' | 'number' | 'email' | 'tel' (default: 'text')
-    placeholder — placeholder text
-    disabled    — disable input
-    readonly    — readonly input
-    required    — mark as required (HTML attr)
-    trim        — auto-trim value on update:modelValue
-    bgInput     — adds class bg-input (bg #f5f5f5)
-    step        — HTML step attribute (Number/String, default null — only bound when provided)
-    min         — HTML min attribute (Number/String, default null — only bound when provided)
-    max         — HTML max attribute (Number/String, default null — only bound when provided)
-    maxlength   — HTML maxlength attribute (Number/String, default null — only bound when provided)
+    modelValue   — v-model value
+    type         — 'text' | 'number' | 'email' | 'tel' (default: 'text')
+    placeholder  — placeholder text
+    disabled     — disable input
+    readonly     — readonly input
+    required     — mark as required (HTML attr)
+    trim         — auto-trim value on update:modelValue
+    bgInput      — adds class bg-input (bg #f5f5f5)
+    step         — HTML step attribute (Number/String, default null — only bound when provided)
+    min          — HTML min attribute (Number/String, default null — only bound when provided)
+    max          — HTML max attribute (Number/String, default null — only bound when provided)
+    maxlength    — HTML maxlength attribute (Number/String, default null — only bound when provided)
+    icon         — Bootstrap icon class name e.g. 'bi-telephone-fill' (default '' = no icon)
+    iconPosition — 'left' (default) — 'right' support reserved for future use
 
   Emits: update:modelValue, blur, focus
 -->
 <template>
+  <div
+    v-if="icon"
+    class="input-icon-group"
+    :class="{ 'is-disabled': disabled }"
+  >
+    <i :class="['bi', icon, 'input-icon']"></i>
+    <input
+      v-bind="$attrs"
+      :type="type"
+      class="form-control has-icon-left"
+      :class="{ 'bg-input': bgInput }"
+      :value="modelValue"
+      :placeholder="placeholder"
+      :disabled="disabled"
+      :readonly="readonly"
+      :required="required"
+      :step="step !== null ? step : undefined"
+      :min="min !== null ? min : undefined"
+      :max="max !== null ? max : undefined"
+      :maxlength="maxlength !== null ? maxlength : undefined"
+      @input="onInput"
+      @blur="$emit('blur', $event)"
+      @focus="$emit('focus', $event)"
+    />
+  </div>
   <input
+    v-else
+    v-bind="$attrs"
     :type="type"
     class="form-control"
     :class="{ 'bg-input': bgInput }"
@@ -60,6 +96,8 @@
 <script>
 export default {
   name: 'InputTextGeneric',
+
+  inheritAttrs: false,
 
   props: {
     modelValue: {
@@ -108,6 +146,14 @@ export default {
     maxlength: {
       type: [Number, String],
       default: null
+    },
+    icon: {
+      type: String,
+      default: ''
+    },
+    iconPosition: {
+      type: String,
+      default: 'left'
     }
   },
 
@@ -127,5 +173,28 @@ export default {
 
 input.form-control {
   @include input-control;
+}
+
+.input-icon-group {
+  position: relative;
+  width: 100%;
+
+  .input-icon {
+    position: absolute;
+    left: var(--sp-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--base-font-color);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+
+  input.form-control.has-icon-left {
+    padding-left: calc(var(--sp-md) + 20px);
+  }
+
+  &.is-disabled .input-icon {
+    opacity: 0.5;
+  }
 }
 </style>

@@ -10,7 +10,10 @@ import search from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'
 
 const interfaceForm = {
-  text: null
+  text: null,
+  typeCodes: [],
+  discountMin: null,
+  discountMax: null
 }
 
 export default {

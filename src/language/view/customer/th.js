@@ -1,5 +1,6 @@
 export default {
   searchTitle: 'รายชื่อลูกค้า',
+  searchDesc: 'ค้นหาและจัดการข้อมูลลูกค้า',
   createTitle: 'เพิ่มข้อมูลลูกค้า',
   editTitle: 'แก้ไขข้อมูลลูกค้า',
   createBtn: 'เพิ่มลูกค้า',
@@ -15,12 +16,16 @@ export default {
     email: 'E-mail',
     contact: 'บุคคลติดต่อ',
     productionPlanCount: 'ยอดสั่งผลิต',
-    saleCount: 'ยอดขาย'
+    saleCount: 'ยอดขาย',
+    discount: 'ส่วนลด (%)'
   },
 
   placeholder: {
     search: 'EX: ชื่อลูกค้า, รหัสลูกค้า ...',
-    customerType: 'เลือกประเภทลูกค้า'
+    customerType: 'เลือกประเภทลูกค้า',
+    customerTypeFilter: 'เลือกประเภทลูกค้า',
+    discountMin: 'ส่วนลดต่ำสุด',
+    discountMax: 'ส่วนลดสูงสุด'
   },
 
   confirm: {
@@ -33,7 +38,14 @@ export default {
     edit: 'แก้ไขข้อมูลลูกค้าสำเร็จ'
   },
 
+  section: {
+    main: 'ข้อมูลหลัก',
+    contact: 'ช่องทางติดต่อ',
+    sale: 'การขาย'
+  },
+
   validation: {
-    customerTypeRequired: 'กรุณาเลือกประเภทลูกค้า'
+    customerTypeRequired: 'กรุณาเลือกประเภทลูกค้า',
+    discountRange: 'ส่วนลดต้องเป็นจำนวนเต็ม 0–99'
   }
 }

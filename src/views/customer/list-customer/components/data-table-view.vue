@@ -16,11 +16,19 @@
             icon="bi-brush"
             :title="$t('common.btn.edit')"
             @click="onUpdate(rowData)"
-            :disabled="true"
           />
         </div>
       </template>
     </BaseDataTable>
+
+    <createView
+      :isShow="editModal.isShow"
+      :isEdit="true"
+      :editData="editModal.data"
+      :masterCustomer="masterCustomerType"
+      @closeModal="editModal.isShow = false"
+      @saved="onEditSaved"
+    />
   </div>
 </template>
 
@@ -30,13 +38,16 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { useCustomerDetailApiStore } from '@/stores/modules/api/customer/customer-detail-store.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import createView from '../modal/create-view.vue'
 
 export default {
   name: 'customer-list-data-table',
 
   components: {
     BaseDataTable,
-    ButtonGeneric
+    ButtonGeneric,
+    createView
   },
 
   mixins: [dataTablePaging],
@@ -55,16 +66,24 @@ export default {
 
   setup() {
     const customerStore = useCustomerDetailApiStore()
-    return { customerStore }
+    const masterStore = useMasterApiStore()
+    return { customerStore, masterStore }
   },
 
   data() {
     return {
-      data: {}
+      data: {},
+      editModal: {
+        isShow: false,
+        data: {}
+      }
     }
   },
 
   computed: {
+    masterCustomerType() {
+      return this.masterStore.customerType
+    },
     form() {
       return this.modelForm || {}
     },
@@ -139,6 +158,14 @@ export default {
           minWidth: '150px'
         },
         {
+          field: 'discount',
+          header: this.$t('view.customer.field.discount'),
+          sortable: true,
+          minWidth: '90px',
+          format: 'number',
+          align: 'right'
+        },
+        {
           field: 'contactName',
           header: this.$t('view.customer.field.contact'),
           sortable: true,
@@ -160,10 +187,20 @@ export default {
     }
   },
 
+  created() {
+    this.$nextTick(async () => {
+      await this.masterStore.fetchCustomerType()
+    })
+  },
+
   methods: {
-    onUpdate(data) {
-      // reserved for future edit functionality
-      void data
+    onUpdate(row) {
+      this.editModal = { isShow: true, data: { ...row } }
+    },
+
+    onEditSaved() {
+      this.editModal.isShow = false
+      this.fetchData()
     },
 
     async fetchData() {

@@ -67,6 +67,108 @@
 
 ---
 
+## Icon Input
+
+กฎ: icon ที่อยู่ภายในช่องกรอกข้อมูล (leading icon) ต้องใช้ `InputTextGeneric` พร้อม prop `:icon` เท่านั้น
+
+- icon ฝังอยู่ใน control เดียวกับ input (inline) — ไม่ใช่กล่อง addon แยก
+- ใช้ Bootstrap Icon class name เช่น `'bi-telephone-fill'`, `'bi-envelope-check-fill'`
+- ห้ามเขียน `<div class="input-group">` + `.input-group-append` + `.input-group-text` manual อีก
+
+```vue
+<!-- ✅ Good — icon ผ่าน prop -->
+<InputTextGeneric id="tel1" type="tel" icon="bi-telephone-fill" v-model.trim="form.tel1" />
+<InputTextGeneric id="email" type="email" icon="bi-envelope-check-fill" v-model.trim="form.email" />
+
+<!-- ❌ Bad — input-group manual (พัง: icon ลอยเหนือ input) -->
+<div class="input-group input-group-inner">
+  <div class="input-group-append">
+    <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
+  </div>
+  <InputTextGeneric type="tel" v-model="form.tel1" />
+</div>
+```
+
+---
+
+## Modal Form Standard
+
+modal form ที่มีหลาย field ต้องแบ่งเป็นกลุ่มตาม logic ดังนี้:
+
+1. **title bar** ใช้ `<modal headerVariant="main">` — bg สี main (`--base-font-color`) + text/✕ ขาว ให้ title เด่น
+2. แต่ละกลุ่ม logic ใช้ `SectionCardGeneric` (กล่อง border + title) เหมือน page form (Core Principle #2) — เว้นระหว่างกล่อง `var(--sp-lg)`
+3. ใช้ `InputTextGeneric` พร้อม prop `icon` สำหรับ field ที่มี icon (ห้าม input-group manual)
+4. spacing ใช้ token `var(--sp-*)` ทั้งหมด — ห้าม hardcode px
+5. footer (บันทึก/ยกเลิก) อยู่ใน `#action` slot ของ `modal-view.vue` เสมอ (นอกกล่อง)
+
+```
+╔════════════════════════════════════════════════════════════════════════════════╗
+║  แก้ไขข้อมูลลูกค้า                                               (ขาว)  [ ✕ ] ║  ◀ bg = main, text/✕ ขาว
+╠════════════════════════════════════════════════════════════════════════════════╣
+│  ┌─ ข้อมูลหลัก ───────────────────────────────────────────────────────────┐   │
+│  │ รหัสลูกค้า *  [201901](disabled)   ประเภทลูกค้า * [▼ L: ในประเทศ      ✕] │   │
+│  │ ชื่อภาษาไทย * [เดบิว           ]     ชื่อภาษาอังกฤษ [Debut             ]  │   │
+│  │ ที่อยู่ติดต่อ  [BKK (textarea) ]     หมายเหตุ      [(textarea)         ]  │   │
+│  └────────────────────────────────────────────────────────────────────────┘   │
+│  ┌─ ช่องทางติดต่อ ────────────────────────────────────────────────────────┐   │
+│  │ เบอร์โทร 1   [☎  0930515544  ]      เบอร์โทร 2   [☎                 ]    │   │
+│  │ E-mail      [✉  debutbkk@..  ]      บุคคลติดต่อ  [👤  Art            ]   │   │
+│  └────────────────────────────────────────────────────────────────────────┘   │
+│  ┌─ การขาย ──────────────────────────────────────────────────────────────┐   │
+│  │ ส่วนลด (%)  [0]                                                          │   │
+│  └────────────────────────────────────────────────────────────────────────┘   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                  [ 💾 บันทึก ]   [ ยกเลิก ]     │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+SCSS มาตรฐานสำหรับเว้นระหว่างกล่อง (scoped ใน modal):
+
+```scss
+.modal-section {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+```
+
+**✅ Good:**
+```vue
+<modal headerVariant="main" ...>
+  <template #title>
+    <span class="title-text-lg d-block">หัวข้อ Modal</span>
+  </template>
+  <template #content>
+    <div class="p-3">
+      <SectionCardGeneric :title="$t('view.x.section.main')" class="modal-section">
+        <!-- form rows -->
+      </SectionCardGeneric>
+      <SectionCardGeneric :title="$t('view.x.section.contact')" class="modal-section">
+        <!-- form rows -->
+      </SectionCardGeneric>
+    </div>
+  </template>
+</modal>
+```
+
+**❌ Bad:**
+```vue
+<!-- เส้นใต้ h6 เดิม (เลิกใช้แล้ว) -->
+<h6 class="form-section-title">ข้อมูลหลัก</h6>
+
+<!-- title bar ธรรมดาบนพื้นขาว -->
+<span class="title-text-lg px-3 pt-3 d-block">หัวข้อ</span>
+
+<!-- รวมทุก field กล่องเดียว -->
+<SectionCardGeneric title="ข้อมูลทั้งหมด">...</SectionCardGeneric>
+```
+
+**Reference implementation**: `src/views/customer/list-customer/modal/create-view.vue`
+
+---
+
 ## Design Decision Log
 
 > บันทึกทุกครั้งที่ออกแบบ/เปลี่ยน design pattern ใหม่ (บังคับโดย hook `remind-on-change.sh`)
@@ -80,3 +182,5 @@
 | 2026-06-24 | list-page standard (global) | **#10 icon-only buttons**: ปุ่ม search/clear/create/export ในหน้า list ไม่ส่ง `:label` — ใช้แค่ `icon` + `:title` tooltip; ฟอร์ม create/edit ยังคง label ตามเดิม |
 | 2026-06-24 | list-page standard (global) | **#11 MultiSelect default**: filter choice ทุกตัวในหน้า list ใช้ `MultiSelectGeneric` (array, chip display) แทน `DropdownGeneric` (single); `data().filter` ต้องเริ่มต้นเป็น `[]`; ส่ง API เฉพาะเมื่อ `array.length > 0` |
 | 2026-06-24 | list-page standard (global) | **#12 description บังคับ**: `SearchBarGeneric` เพิ่ม prop `description` (String, default '') และส่งต่อให้ `pageTitle` — ทุก list page ต้องใส่ `:description="$t('view.xxx.xxxDesc')"` (i18n key ทั้ง th และ en) |
+| 2026-06-25 | InputTextGeneric (global) | เพิ่ม prop `icon` — icon-input ฝังในช่อง (leading), เลิก input-group manual ที่ icon ลอย; migrate ทีละหน้าในรอบถัดไป |
+| 2026-06-25 | customer/create-view (modal) | Modal Form Standard: title bar headerVariant=main (filled bg), แต่ละกลุ่มใช้ SectionCardGeneric (border box + title) แทนเส้นใต้ h6, footer นอกกล่อง — reference customer create-view |

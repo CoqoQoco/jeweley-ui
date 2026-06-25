@@ -1,5 +1,6 @@
 export default {
   searchTitle: 'Customer List',
+  searchDesc: 'Search and manage customers',
   createTitle: 'Add Customer',
   editTitle: 'Edit Customer',
   createBtn: 'Add Customer',
@@ -15,12 +16,16 @@ export default {
     email: 'E-mail',
     contact: 'Contact Person',
     productionPlanCount: 'Production Orders',
-    saleCount: 'Sales'
+    saleCount: 'Sales',
+    discount: 'Discount (%)'
   },
 
   placeholder: {
     search: 'EX: Customer name, customer code ...',
-    customerType: 'Select customer type'
+    customerType: 'Select customer type',
+    customerTypeFilter: 'Select customer type',
+    discountMin: 'Min discount',
+    discountMax: 'Max discount'
   },
 
   confirm: {
@@ -33,7 +38,14 @@ export default {
     edit: 'Customer updated successfully'
   },
 
+  section: {
+    main: 'Main Info',
+    contact: 'Contact',
+    sale: 'Sales'
+  },
+
   validation: {
-    customerTypeRequired: 'Please select customer type'
+    customerTypeRequired: 'Please select customer type',
+    discountRange: 'Discount must be an integer 0–99'
   }
 }

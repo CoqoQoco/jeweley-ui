@@ -1,5 +1,5 @@
 <template>
-  <SearchBarGeneric :title="$t('view.customer.searchTitle')" @search="onSearch" @clear="onClear">
+  <SearchBarGeneric :title="$t('view.customer.searchTitle')" :description="$t('view.customer.searchDesc')" @search="onSearch" @clear="onClear">
     <template #fields>
       <div>
         <span class="title-text">{{ $t('common.field.name') }}</span>
@@ -8,6 +8,37 @@
           :placeholder="$t('view.customer.placeholder.search')"
           :bgInput="true"
         />
+      </div>
+      <div>
+        <span class="title-text">{{ $t('view.customer.field.customerType') }}</span>
+        <MultiSelectGeneric
+          v-model="form.typeCodes"
+          :options="masterCustomerType"
+          optionLabel="description"
+          optionValue="code"
+          :placeholder="$t('view.customer.placeholder.customerTypeFilter')"
+          :showClear="true"
+        />
+      </div>
+      <div>
+        <span class="title-text">{{ $t('view.customer.field.discount') }}</span>
+        <div class="discount-range">
+          <InputTextGeneric
+            v-model.number="form.discountMin"
+            type="number"
+            :min="0"
+            :max="99"
+            :placeholder="$t('view.customer.placeholder.discountMin')"
+          />
+          <span class="range-separator">–</span>
+          <InputTextGeneric
+            v-model.number="form.discountMax"
+            type="number"
+            :min="0"
+            :max="99"
+            :placeholder="$t('view.customer.placeholder.discountMax')"
+          />
+        </div>
       </div>
     </template>
 
@@ -31,6 +62,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import createView from '../modal/create-view.vue'
 
 const interfaceIsShow = {
@@ -42,6 +74,7 @@ export default {
     SearchBarGeneric,
     InputTextGeneric,
     ButtonGeneric,
+    MultiSelectGeneric,
     createView
   },
 
@@ -106,4 +139,16 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.discount-range {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+
+  .range-separator {
+    flex-shrink: 0;
+    color: var(--base-font-color);
+    font-weight: 600;
+  }
+}
 </style>

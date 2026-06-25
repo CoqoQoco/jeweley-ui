@@ -1,87 +1,73 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal" width="1000px" :isShowActionPart="true">
+    <modal :showModal="isShow" @closeModal="closeModal" width="1000px" :isShowActionPart="true" headerVariant="main">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.customer.createTitle') }}</span>
+        <span class="title-text-lg d-block">{{ isEdit ? $t('view.customer.editTitle') : $t('view.customer.createTitle') }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="customer-create-form">
-          <div class="p-4">
-            <div class="form-row two-col">
-              <FormFieldGeneric :label="$t('view.customer.field.customerCode')" :required="true">
-                <InputTextGeneric v-model="form.code" :required="true" />
-              </FormFieldGeneric>
-              <FormFieldGeneric :label="$t('view.customer.field.customerType')" :required="true">
-                <DropdownGeneric
-                  :modelValue="form.type"
-                  :options="masterCustomer"
-                  optionLabel="description"
-                  :class="val.isValCustomerType ? 'p-invalid' : ''"
-                  :showClear="!!form.type"
-                  @update:modelValue="form.type = $event"
-                />
-              </FormFieldGeneric>
-            </div>
-            <div class="form-row two-col">
-              <FormFieldGeneric :label="$t('view.customer.field.nameTh')" :required="true">
-                <InputTextGeneric v-model="form.nameTh" :required="true" />
-              </FormFieldGeneric>
-              <FormFieldGeneric :label="$t('view.customer.field.nameEn')">
-                <InputTextGeneric v-model="form.nameEn" />
-              </FormFieldGeneric>
-            </div>
-            <div class="form-row two-col">
-              <FormFieldGeneric :label="$t('view.customer.field.address')">
-                <TextareaGeneric v-model="form.address" />
-              </FormFieldGeneric>
-              <FormFieldGeneric :label="$t('common.field.remark')">
-                <TextareaGeneric v-model="form.remark" />
-              </FormFieldGeneric>
-            </div>
-            <div class="form-row two-col">
-              <FormFieldGeneric :label="$t('view.customer.field.tel1')">
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-telephone-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric id="tel1" type="tel" v-model.trim="form.tel1" />
-                </div>
-              </FormFieldGeneric>
-              <FormFieldGeneric :label="$t('view.customer.field.tel2')">
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-telephone-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric id="tel2" type="tel" v-model.trim="form.tel2" />
-                </div>
-              </FormFieldGeneric>
-            </div>
-            <div class="form-row two-col">
-              <FormFieldGeneric :label="$t('view.customer.field.email')">
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-envelope-check-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric id="email" type="email" v-model.trim="form.email" />
-                </div>
-              </FormFieldGeneric>
-              <FormFieldGeneric :label="$t('view.customer.field.contact')">
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-person-lines-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric id="contact" type="text" v-model.trim="form.contact" />
-                </div>
-              </FormFieldGeneric>
-            </div>
+          <div class="p-3">
+            <SectionCardGeneric :title="$t('view.customer.section.main')" class="modal-section">
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.customer.field.customerCode')" :required="true">
+                  <InputTextGeneric v-model="form.code" :required="true" :disabled="isEdit" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.customer.field.customerType')" :required="true">
+                  <DropdownGeneric
+                    :modelValue="form.type"
+                    :options="masterCustomer"
+                    optionLabel="description"
+                    :class="val.isValCustomerType ? 'p-invalid' : ''"
+                    :showClear="!!form.type"
+                    @update:modelValue="form.type = $event"
+                  />
+                </FormFieldGeneric>
+              </div>
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.customer.field.nameTh')" :required="true">
+                  <InputTextGeneric v-model="form.nameTh" :required="true" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.customer.field.nameEn')">
+                  <InputTextGeneric v-model="form.nameEn" />
+                </FormFieldGeneric>
+              </div>
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.customer.field.address')">
+                  <TextareaGeneric v-model="form.address" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('common.field.remark')">
+                  <TextareaGeneric v-model="form.remark" />
+                </FormFieldGeneric>
+              </div>
+            </SectionCardGeneric>
+
+            <SectionCardGeneric :title="$t('view.customer.section.contact')" class="modal-section">
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.customer.field.tel1')">
+                  <InputTextGeneric id="tel1" type="tel" icon="bi-telephone-fill" v-model.trim="form.tel1" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.customer.field.tel2')">
+                  <InputTextGeneric id="tel2" type="tel" icon="bi-telephone-fill" v-model.trim="form.tel2" />
+                </FormFieldGeneric>
+              </div>
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.customer.field.email')">
+                  <InputTextGeneric id="email" type="email" icon="bi-envelope-check-fill" v-model.trim="form.email" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.customer.field.contact')">
+                  <InputTextGeneric id="contact" type="text" icon="bi-person-lines-fill" v-model.trim="form.contact" />
+                </FormFieldGeneric>
+              </div>
+            </SectionCardGeneric>
+
+            <SectionCardGeneric :title="$t('view.customer.section.sale')" class="modal-section">
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.customer.field.discount')">
+                  <InputTextGeneric v-model.number="form.discount" type="number" :min="0" :max="99" />
+                </FormFieldGeneric>
+                <div></div>
+              </div>
+            </SectionCardGeneric>
           </div>
         </form>
       </template>
@@ -99,6 +85,7 @@ import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
@@ -117,7 +104,8 @@ const interfaceForm = {
   type: null,
   contact: null,
   email: null,
-  remark: null
+  remark: null,
+  discount: 0
 }
 
 const interfaceIsValid = {
@@ -131,6 +119,7 @@ export default {
     TextareaGeneric,
     FormFieldGeneric,
     ButtonGeneric,
+    SectionCardGeneric,
     DropdownGeneric
   },
 
@@ -148,15 +137,38 @@ export default {
       type: Array,
       required: true,
       default: () => []
+    },
+    isEdit: {
+      type: Boolean,
+      default: false
+    },
+    editData: {
+      type: Object,
+      default: () => ({})
     }
   },
 
-  emits: ['closeModal'],
+  emits: ['closeModal', 'saved'],
 
   watch: {
     'form.type'() {
       if (this.form.type) {
         this.val.isValCustomerType = false
+      }
+    },
+    isShow(val) {
+      if (val && this.isEdit) {
+        this.form.code = this.editData.code
+        this.form.nameTh = this.editData.nameTh
+        this.form.nameEn = this.editData.nameEn
+        this.form.address = this.editData.address
+        this.form.tel1 = this.editData.telephone1
+        this.form.tel2 = this.editData.telephone2
+        this.form.email = this.editData.email
+        this.form.contact = this.editData.contactName
+        this.form.remark = this.editData.remark
+        this.form.discount = this.editData.discount ?? 0
+        this.form.type = this.masterCustomer.find((t) => t.code === this.editData.typeCode) || null
       }
     }
   },
@@ -180,7 +192,7 @@ export default {
 
       confirmThenSubmit(
         `${this.form.code} - ${this.form.nameTh}`,
-        this.$t('view.customer.confirm.create'),
+        this.isEdit ? this.$t('view.customer.confirm.edit') : this.$t('view.customer.confirm.create'),
         async () => {
           await this.submit()
         }
@@ -191,6 +203,15 @@ export default {
       if (!this.form.type) {
         this.val = { isValCustomerType: true }
         warning(this.$t('view.customer.validation.customerTypeRequired'))
+        return false
+      }
+      if (
+        this.form.discount !== null &&
+        this.form.discount !== undefined &&
+        this.form.discount !== '' &&
+        (!Number.isInteger(Number(this.form.discount)) || this.form.discount < 0 || this.form.discount > 99)
+      ) {
+        warning(this.$t('view.customer.validation.discountRange'))
         return false
       }
       return true
@@ -206,17 +227,23 @@ export default {
         tel1: this.form.tel1,
         tel2: this.form.tel2,
         email: this.form.email,
-        contactName: this.form.contact,
-        remark: this.form.remark
+        contact: this.form.contact,
+        remark: this.form.remark,
+        discount: this.form.discount
       }
 
-      const res = await this.customerStore.fetchCreateCustomer({
-        formValue: params
-      })
+      let res
+      if (this.isEdit) {
+        res = await this.customerStore.fetchUpdateCustomer({ formValue: params })
+      } else {
+        res = await this.customerStore.fetchCreateCustomer({ formValue: params })
+      }
 
       if (res) {
-        success(null, null, () => {
+        const msg = this.isEdit ? this.$t('view.customer.success.edit') : this.$t('view.customer.success.create')
+        success(msg, null, () => {
           this.closeModal()
+          this.$emit('saved')
         })
       }
     }
@@ -248,8 +275,11 @@ export default {
   }
 }
 
-.input-group-text {
-  height: 35px;
-  margin-top: 5px;
+.modal-section {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>

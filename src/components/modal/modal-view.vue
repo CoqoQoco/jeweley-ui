@@ -12,7 +12,7 @@
     <!-- Main Workspace -->
     <div class="modal-container" :style="`overflow-y:auto; height:${fitHeight ? genHeight : ''}`">
       <!-- Header -->
-      <div class="base-modal__header">
+      <div class="base-modal__header" :class="{ 'is-main': headerVariant === 'main' }">
         <div>
           <slot name="title"></slot>
         </div>
@@ -59,6 +59,10 @@ export default {
     isShowActionPart: {
       type: Boolean,
       default: false
+    },
+    headerVariant: {
+      type: String,
+      default: 'default'
     }
   },
   data() {
@@ -96,6 +100,19 @@ export default {
     //padding: 20px;
     //border-bottom: 1px solid #dddddd;
     width: 100%;
+
+    &.is-main {
+      background: var(--base-font-color);
+      padding: var(--sp-md) var(--sp-lg);
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+
+      .title-text-lg { color: #ffffff !important; }
+      .float-close .text-custom {
+        color: #ffffff;
+        background-color: transparent;
+      }
+    }
   }
   &__operation {
     border-top: 1px solid #dddddd;
