@@ -180,11 +180,11 @@ export class WorkerWagesSuccessPdfBuilder {
 
   computeTypeSummaries() {
     const map = {}
-    const combineGoldKey = (gold, goldSize) => [gold, goldSize].filter(Boolean).join(' - ') || ''
+    const purityKey = (gold, goldSize) => gold === 'SV' ? 'SILVER' : (goldSize || gold || '')
 
     const items = this.slip ? (this.slip.items || this.items) : this.items
     for (const item of items) {
-      const key = combineGoldKey(item.gold, item.goldSize)
+      const key = purityKey(item.gold, item.goldSize)
       if (!map[key]) {
         map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
       }
@@ -194,7 +194,7 @@ export class WorkerWagesSuccessPdfBuilder {
 
     const returnItems = (this.slip && this.slip.goldReturnItems) ? this.slip.goldReturnItems : []
     for (const r of returnItems) {
-      const key = combineGoldKey(r.gold, r.goldSize)
+      const key = purityKey(r.gold, r.goldSize)
       if (!map[key]) {
         map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
       }

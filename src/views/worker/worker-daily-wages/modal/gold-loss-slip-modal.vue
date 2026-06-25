@@ -106,11 +106,10 @@
 
           <div v-else>
             <!-- eslint-disable-next-line vue/no-restricted-syntax -->
-            <!-- editable form table — rows contain inline inputs (InputTextGeneric + AutoCompleteGeneric + DropdownGeneric) -->
+            <!-- editable form table — rows contain inline inputs (InputTextGeneric + AutoCompleteGeneric) -->
             <table class="return-table w-100">
               <thead>
                 <tr>
-                  <th>{{ $t('view.worker.goldLossSlipModal.returnGoldTypeLabel') }}</th>
                   <th>Gold Size</th>
                   <th>{{ $t('common.field.weight') }} (g)</th>
                   <th>{{ $t('view.worker.workerDailyWages.colGoldLossPrice') }}</th>
@@ -119,17 +118,6 @@
               </thead>
               <tbody>
                 <tr v-for="(row, idx) in goldReturnItems" :key="idx">
-                  <td class="return-gold-type-cell">
-                    <DropdownGeneric
-                      :modelValue="row.gold || null"
-                      :options="goldTypeOptions"
-                      optionLabel="label"
-                      optionValue="value"
-                      :placeholder="$t('view.worker.goldLossSlipModal.returnGoldTypeLabel')"
-                      :showClear="true"
-                      @update:modelValue="row.gold = $event"
-                    />
-                  </td>
                   <td>
                     <span class="title-text">{{ row.goldSize }}</span>
                   </td>
@@ -273,11 +261,9 @@ import dayjs from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
-import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -289,7 +275,7 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 export default {
   name: 'GoldLossSlipModal',
 
-  components: { modal, BaseDataTable, AutoCompleteGeneric, MultiSelectGeneric, DropdownGeneric, CheckboxGeneric, ButtonGeneric, pageTitle, InputTextGeneric, TextareaGeneric },
+  components: { modal, BaseDataTable, AutoCompleteGeneric, MultiSelectGeneric, CheckboxGeneric, ButtonGeneric, pageTitle, InputTextGeneric, TextareaGeneric },
 
   props: {
     isShow: {
@@ -311,11 +297,6 @@ export default {
   },
 
   emits: ['closeModal', 'saved'],
-
-  setup() {
-    const masterStore = useMasterApiStore()
-    return { masterStore }
-  },
 
   data() {
     return {
@@ -430,18 +411,12 @@ export default {
       return this.totalMoneyLoss + this.totalGoldReturnAmount
     },
 
-    goldTypeOptions() {
-      return (this.masterStore.gold || []).map((g) => ({
-        label: `${g.code} - ${g.nameTh}`,
-        value: g.code
-      }))
-    },
-
     typeSummaries() {
+      const purityKey = (gold, goldSize) => gold === 'SV' ? 'SILVER' : (goldSize || gold || '')
       const map = {}
 
       for (const item of this.selectedItems) {
-        const key = [item.gold, item.goldSize].filter(Boolean).join(' - ') || ''
+        const key = purityKey(item.gold, item.goldSize)
         if (!map[key]) {
           map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
         }
@@ -450,7 +425,7 @@ export default {
       }
 
       for (const row of this.goldReturnItems) {
-        const key = [row.gold, row.goldSize].filter(Boolean).join(' - ') || ''
+        const key = purityKey(row.gold, row.goldSize)
         if (!map[key]) {
           map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
         }
@@ -476,7 +451,6 @@ export default {
         if (this.goldReturnItems.length === 0) {
           this.initReturnRowsFromItems()
         }
-        this.ensureGoldLoaded()
       }
     },
 
@@ -517,12 +491,6 @@ export default {
     fmt2(val) {
       if (val == null) return '0.00'
       return Number(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    },
-
-    async ensureGoldLoaded() {
-      if (!this.masterStore.gold || this.masterStore.gold.length === 0) {
-        await this.masterStore.fetchGold()
-      }
     },
 
     moneyOf(item) {
@@ -597,12 +565,12 @@ export default {
       const groups = new Map()
       for (const it of this.availableItems) {
         if (it.goldSize && !groups.has(it.goldSize)) {
-          groups.set(it.goldSize, { price: it.goldLossPrice ?? it.wages ?? 0, gold: it.gold || '' })
+          groups.set(it.goldSize, { price: it.goldLossPrice ?? it.wages ?? 0 })
         }
       }
       this.goldReturnItems = Array.from(groups.entries()).map(([goldSize, meta]) => ({
         goldSize,
-        gold: meta.gold,
+        gold: null,
         weight: 0,
         pricePerGram: meta.price,
         amount: 0
@@ -623,7 +591,7 @@ export default {
         remark: this.remark,
         goldReturnItems: this.goldReturnItems.map((r) => ({
           goldSize: r.goldSize,
-          gold: r.gold || null,
+          gold: null,
           weight: r.weight || 0,
           pricePerGram: r.pricePerGram || 0,
           amount: this.getRowAmount(r)
@@ -823,9 +791,5 @@ export default {
     border-radius: var(--radius-md);
     font-size: var(--fs-base);
   }
-}
-
-.return-gold-type-cell {
-  min-width: 140px;
 }
 </style>
