@@ -2,13 +2,14 @@
   <div class="app-container">
     <SearchBarGeneric
       :title="$t('view.ticket.manageTitle')"
+      :description="$t('view.ticket.manageDesc')"
       @search="onSearch"
       @clear="onClear"
     >
       <template #fields>
         <div class="form-field">
           <span class="title-text">{{ $t('view.ticket.field.status') }}</span>
-          <DropdownGeneric
+          <MultiSelectGeneric
             :modelValue="filter.status"
             :options="statusOptions"
             optionLabel="label"
@@ -20,7 +21,7 @@
         </div>
         <div class="form-field">
           <span class="title-text">{{ $t('view.ticket.field.type') }}</span>
-          <DropdownGeneric
+          <MultiSelectGeneric
             :modelValue="filter.type"
             :options="typeOptions"
             optionLabel="label"
@@ -38,6 +39,11 @@
           />
         </div>
       </template>
+
+      <template #actions-right>
+        <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+        <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
+      </template>
     </SearchBarGeneric>
 
     <div class="mt-2">
@@ -46,6 +52,7 @@
         :totalRecords="total"
         :columns="columns"
         :perPage="take"
+        :showColumnSettings="true"
         @page="handlePageChange"
         @sort="handleSortChange"
       >
@@ -80,7 +87,7 @@ import dataTablePaging from '@/composables/useDataTablePaging.js'
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {
@@ -90,7 +97,7 @@ export default {
     SearchBarGeneric,
     InputTextGeneric,
     ButtonGeneric,
-    DropdownGeneric,
+    MultiSelectGeneric,
     BaseDataTable
   },
 
@@ -106,8 +113,8 @@ export default {
       dataList: [],
       total: 0,
       filter: {
-        status: null,
-        type: null,
+        status: [],
+        type: [],
         keyword: null
       }
     }
@@ -132,14 +139,14 @@ export default {
 
     columns() {
       return [
+        { field: 'action', header: this.$t('common.field.action'), width: '90px', align: 'center', sortable: false },
         { field: 'ticketNo', header: this.$t('view.ticket.field.ticketNo'), minWidth: '100px' },
         { field: 'type', header: this.$t('view.ticket.field.type'), minWidth: '120px', sortable: false },
         { field: 'topicName', header: this.$t('view.ticket.field.topic'), minWidth: '150px' },
         { field: 'title', header: this.$t('view.ticket.field.title'), minWidth: '200px' },
         { field: 'createBy', header: this.$t('view.ticket.field.createBy'), minWidth: '120px' },
         { field: 'status', header: this.$t('view.ticket.field.status'), minWidth: '120px', sortable: false },
-        { field: 'createDate', header: this.$t('view.ticket.field.createDate'), minWidth: '120px', format: 'datetime' },
-        { field: 'action', header: this.$t('common.field.action'), minWidth: '80px', sortable: false }
+        { field: 'createDate', header: this.$t('view.ticket.field.createDate'), minWidth: '120px', format: 'datetime' }
       ]
     }
   },
@@ -154,8 +161,8 @@ export default {
         take: this.take,
         skip: this.skip,
         sort: this.sort,
-        status: this.filter.status || undefined,
-        type: this.filter.type || undefined,
+        status: this.filter.status?.length ? this.filter.status : undefined,
+        type: this.filter.type?.length ? this.filter.type : undefined,
         keyword: this.filter.keyword || undefined
       })
       if (res) {
@@ -169,7 +176,7 @@ export default {
     },
 
     onClear() {
-      this.filter = { status: null, type: null, keyword: null }
+      this.filter = { status: [], type: [], keyword: null }
       this.resetPaging()
     },
 

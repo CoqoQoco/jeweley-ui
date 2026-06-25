@@ -5,6 +5,7 @@
   ตัวอย่างการใช้งาน:
   <SearchBarGeneric
     title="ค้นหาใบสั่งผลิต"
+    description="อธิบายหน้านี้สั้นๆ"
     @search="onSearch"
     @clear="onClear"
   >
@@ -15,30 +16,25 @@
       </div>
       <div>
         <span class="title-text">สถานะ</span>
-        <DropdownGeneric v-model="form.status" :options="statusOptions" placeholder="ทั้งหมด" :showClear="true" />
+        <MultiSelectGeneric v-model="form.status" :options="statusOptions" placeholder="ทั้งหมด" :showClear="true" />
       </div>
     </template>
 
     <template #actions-right>
-      <button class="btn btn-sm btn-main" type="submit" title="ค้นหา">
-        <i class="bi bi-search"></i>
-      </button>
-      <button class="btn btn-sm btn-dark ml-2" type="button" @click="$emit('clear')" title="ล้าง">
-        <i class="bi bi-x-circle"></i>
-      </button>
-      <button class="btn btn-sm btn-main ml-2" type="button" @click="$router.push({ name: 'create-route' })">
-        <i class="bi bi-plus"></i>
-      </button>
+      <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+      <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="$emit('clear')" />
+      <ButtonGeneric variant="main" icon="bi-plus" class="ml-2" :title="$t('common.btn.create')" @click="$router.push({ name: 'create-route' })" />
     </template>
   </SearchBarGeneric>
 
   Props:
-    title — search bar title text (i18n caller ส่ง $t(...) มา)
+    title       — search bar title text (i18n caller ส่ง $t(...) มา)
+    description — คำอธิบายหน้า (บังคับใส่ทุกหน้า list — i18n)
 
   Slots:
     #fields        — filter fields (ใน .form-col-container)
     #actions-left  — bulk actions ฝั่งซ้าย (optional)
-    #actions-right — search/clear/create buttons ฝั่งขวา
+    #actions-right — search/clear/create buttons ฝั่งขวา (icon-only + :title tooltip)
 
   Emits: search, clear
 -->
@@ -46,7 +42,7 @@
   <div class="filter-container-searchBar">
     <form @submit.prevent="$emit('search')">
       <div>
-        <pageTitle :title="title" :isShowBtnClose="false" />
+        <pageTitle :title="title" :description="description" :isShowBtnClose="false" />
 
         <div class="form-col-container">
           <slot name="fields" />
@@ -79,6 +75,10 @@ export default {
 
   props: {
     title: {
+      type: String,
+      default: ''
+    },
+    description: {
       type: String,
       default: ''
     }
