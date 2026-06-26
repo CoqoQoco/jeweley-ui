@@ -248,19 +248,24 @@ export default {
 
     async uploadPendingImages() {
       for (const it of this.items) {
-        if (it.productImageFile) {
+        if (it.productImageFile instanceof File) {
           const path = await this.store.uploadProductImage(it.productImageFile)
           if (path) {
             it.productImageBlobPath = path
             it.productImageFile = null
+          } else {
+            warning('อัปโหลดรูปสินค้าไม่สำเร็จ กรุณาเลือกรูปใหม่อีกครั้ง', 'อัปโหลดรูปไม่สำเร็จ')
+            return false
           }
         }
       }
+      return true
     },
 
     async onSaveDraft() {
       if (!this.validateForm()) return
-      await this.uploadPendingImages()
+      const uploaded = await this.uploadPendingImages()
+      if (!uploaded) return
       const payload = this.buildPayload()
       let result
       if (this.isEditMode) {
@@ -307,7 +312,8 @@ export default {
     onSubmit() {
       if (!this.validateForm()) return
       confirmSubmit('ยืนยันส่งใบสั่งผลิตเพื่อรออนุมัติ?', 'ยืนยันการส่ง', async () => {
-        await this.uploadPendingImages()
+        const uploaded = await this.uploadPendingImages()
+        if (!uploaded) return
         const payload = this.buildPayload()
         let savedId = this.prePlanId
         if (this.isEditMode) {

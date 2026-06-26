@@ -1,4 +1,5 @@
 <template>
+  <div>
   <BaseDataTable
     :items="store.prePlanList"
     :totalRecords="store.prePlanTotal"
@@ -143,6 +144,7 @@
     @submit="onConfirmCancel"
     @closeModal="showCancelModal = false"
   />
+  </div>
 </template>
 
 <script>
@@ -228,7 +230,7 @@ export default {
     async fetchData() {
       await this.store.searchPrePlan({
         moldCode: this.modelForm.moldCode || null,
-        status: this.modelForm.status || null,
+        status: this.modelForm.status?.length ? this.modelForm.status : null,
         orderDateFrom: this.modelForm.orderDateFrom || null,
         orderDateTo: this.modelForm.orderDateTo || null,
         includeCompleted: this.modelForm.includeCompleted ?? false,
@@ -241,7 +243,7 @@ export default {
     async fetchDataExport() {
       await this.store.searchPrePlan({
         moldCode: this.modelForm.moldCode || null,
-        status: this.modelForm.status || null,
+        status: this.modelForm.status?.length ? this.modelForm.status : null,
         orderDateFrom: this.modelForm.orderDateFrom || null,
         orderDateTo: this.modelForm.orderDateTo || null,
         includeCompleted: this.modelForm.includeCompleted ?? false,
@@ -317,7 +319,11 @@ export default {
       this.fetchData()
     },
     onView(data) {
-      this.$router.push({ name: 'pre-plan-edit', params: { id: data.id } })
+      if (isEditableStatus(data.status)) {
+        this.$router.push({ name: 'pre-plan-edit', params: { id: data.id } })
+      } else {
+        this.$router.push({ name: 'pre-plan-view', params: { id: data.id } })
+      }
     },
     onDuplicate(data) {
       this.$router.push({ name: 'pre-plan-create', query: { duplicateFrom: data.id } })

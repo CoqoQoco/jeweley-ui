@@ -160,7 +160,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
-import { createEmptyItem } from '@/services/helper/pre-plan-helpers.js'
+import { createEmptyItem, cloneItem } from '@/services/helper/pre-plan-helpers.js'
 import { info } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -265,7 +265,7 @@ export default {
   methods: {
     resetForm() {
       if (this.item) {
-        this.form = JSON.parse(JSON.stringify(this.item))
+        this.form = cloneItem(this.item)
       } else {
         this.form = createEmptyItem()
       }

@@ -9,15 +9,15 @@
       >
         <i class="bi bi-arrow-left"></i>
       </button>
-      <h2 class="page-title">อนุมัติใบสั่งผลิต</h2>
+      <h2 class="page-title">{{ isApprovalMode ? 'อนุมัติใบสั่งผลิต' : 'ดูใบสั่งผลิต' }}</h2>
     </div>
 
     <infoReadonly :form="form" :items="items" />
 
     <div class="section-card mt-3">
-      <h6>เอกสารอนุมัติ (เซ็นแล้ว) <span v-if="form.status !== 'Approved'" class="text-danger">*</span></h6>
+      <h6>เอกสารอนุมัติ (เซ็นแล้ว) <span v-if="isApprovalMode" class="text-danger">*</span></h6>
 
-      <div v-if="form.status === 'Approved' && form.approvedDocumentPath">
+      <div v-if="form.approvedDocumentPath">
         <div class="approved-doc-preview">
           <imagePreview
             :imageName="form.approvedDocumentPath"
@@ -37,7 +37,7 @@
         </div>
       </div>
 
-      <div v-else-if="form.status !== 'Approved'">
+      <div v-else-if="isApprovalMode">
         <p class="text-muted mb-2" style="font-size: 0.9rem;">
           <i class="bi bi-exclamation-triangle text-warning"></i>
           กรุณา upload รูปเอกสารใบสั่งผลิตที่เซ็นอนุมัติแล้ว ก่อนกดปุ่มอนุมัติ
@@ -56,9 +56,13 @@
           @clear="approvedDocumentFile = null; approvedDocumentPreview = null"
         />
       </div>
+
+      <div v-else>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">— ไม่มีเอกสารอนุมัติ</p>
+      </div>
     </div>
 
-    <div v-if="form.status !== 'Approved'" class="action-bar mt-3">
+    <div v-if="isApprovalMode" class="action-bar mt-3">
       <button class="btn btn-sm btn-main" @click="onApprove">
         <i class="bi bi-check-lg"></i> อนุมัติ
       </button>
@@ -110,6 +114,9 @@ export default {
     id() {
       return this.$route.params.id
     },
+    isApprovalMode() {
+      return this.$route.name === 'pre-plan-approve'
+    },
   },
   async created() {
     await this.masterStore.fetchAll()
@@ -119,11 +126,6 @@ export default {
     async loadPrePlan() {
       const data = await this.store.getPrePlan(this.id)
       if (!data) return
-      if (data.status !== 'Submitted' && data.status !== 'Approved') {
-        warning('ใบสั่งผลิตนี้ไม่อยู่ในสถานะที่สามารถดูได้')
-        this.$router.push({ name: 'pre-plan-list' })
-        return
-      }
       this.form = data
       this.items = data.items || []
     },

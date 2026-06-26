@@ -18,6 +18,15 @@ export function createEmptyItem() {
   }
 }
 
+export function cloneItem(item) {
+  if (!item) return item
+  return {
+    ...item,
+    productImageFile: item.productImageFile,
+    materials: (item.materials || []).map((m) => ({ ...m })),
+  }
+}
+
 export function mapPlanMaterialsToPrePlan(planMaterials) {
   if (!Array.isArray(planMaterials)) return []
   return planMaterials.map((m, i) => ({

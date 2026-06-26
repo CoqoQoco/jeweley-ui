@@ -22,7 +22,7 @@ import prePlanTable from './components/pre-plan-table.vue'
 
 const interfaceForm = {
   moldCode: null,
-  status: null,
+  status: [],
   orderDateFrom: null,
   orderDateTo: null,
   includeCompleted: false,

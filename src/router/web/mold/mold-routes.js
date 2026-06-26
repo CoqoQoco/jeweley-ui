@@ -167,6 +167,16 @@ const routes = [
           permissions: [PERMISSIONS.PRE_PLAN_APPROVE]
         }
       },
+      {
+        path: '/pre-plan-view/:id',
+        name: 'pre-plan-view',
+        component: PrePlanApprove,
+        meta: {
+          Displayname: { en: 'View Pre Plan', th: 'ดูใบสั่งผลิต' },
+          minorShow: false,
+          permissions: [PERMISSIONS.PRE_PLAN_VIEW],
+        },
+      },
       // {
       //   path: 'report-plan-mold',
       //   name: 'report-plan-mold',

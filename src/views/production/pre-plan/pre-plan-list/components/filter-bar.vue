@@ -7,23 +7,21 @@
         <div class="form-col-container">
           <div>
             <span class="title-text">{{ $t('view.production.prePlan.moldCode') }}</span>
-            <input
-              class="form-control bg-input"
-              type="text"
-              :value="modelForm.moldCode"
-              @input="update('moldCode', $event.target.value)"
+            <InputTextGeneric
+              :modelValue="modelForm.moldCode"
               :placeholder="$t('view.production.prePlan.placeholder.moldCode')"
+              @update:modelValue="update('moldCode', $event)"
             />
           </div>
 
           <div>
             <span class="title-text">{{ $t('common.field.status') }}</span>
-            <DropdownGeneric
+            <MultiSelectGeneric
               :modelValue="modelForm.status"
               :options="masterStore.statuses"
               optionLabel="description"
               optionValue="code"
-              placeholder="ทั้งหมด"
+              :placeholder="$t('common.label.all')"
               :showClear="true"
               @update:modelValue="update('status', $event)"
             />
@@ -53,21 +51,16 @@
               />
             </div>
           </div>
-
-          <div class="checkbox-field d-flex align-items-center">
-            <label class="checkbox-label d-flex align-items-center mb-0">
-              <input
-                type="checkbox"
-                :checked="modelForm.includeCompleted"
-                @change="update('includeCompleted', $event.target.checked)"
-              />
-              <span class="title-text checkbox-text">{{ $t('view.production.prePlan.showCompleted') }}</span>
-            </label>
-          </div>
         </div>
 
         <div class="btn-submit-container-between">
-          <div></div>
+          <div class="d-flex align-items-center">
+            <CheckboxGeneric
+              :modelValue="modelForm.includeCompleted"
+              :label="$t('view.production.prePlan.showCompleted')"
+              @update:modelValue="update('includeCompleted', $event)"
+            />
+          </div>
           <div>
             <button class="btn btn-sm btn-main" type="submit" :title="$t('common.btn.search')">
               <i class="bi bi-search"></i>
@@ -76,9 +69,9 @@
               <i class="bi bi-x-circle"></i>
             </button>
             <button
-              :class="['btn btn-sm ml-2', canExport ? 'btn-primary' : 'btn-secondary']"
+              :class="['btn btn-sm ml-2', canExport ? 'btn-green' : 'btn-secondary']"
               type="button"
-              title="Export Excel"
+              title="Export CSV"
               :disabled="!canExport"
               @click="$emit('export')"
             >
@@ -103,14 +96,16 @@
 import { defineAsyncComponent } from 'vue'
 
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { useMasterPrePlanStore } from '@/stores/modules/api/master/master-pre-plan-store.js'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   name: 'FilterBar',
-  components: { pageTitle, CalendarGeneric, DropdownGeneric },
+  components: { pageTitle, CalendarGeneric, MultiSelectGeneric, CheckboxGeneric, InputTextGeneric },
   props: {
     modelForm: {
       type: Object,
@@ -142,17 +137,4 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
-
-.checkbox-field {
-  padding-top: 22px;
-}
-
-.checkbox-label {
-  cursor: pointer;
-  gap: 8px;
-}
-
-.checkbox-text {
-  margin-bottom: 0;
-}
 </style>

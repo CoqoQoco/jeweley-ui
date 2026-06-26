@@ -32,6 +32,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { cloneItem } from '@/services/helper/pre-plan-helpers.js'
 
 const itemCard = defineAsyncComponent(() => import('./item-card.vue'))
 const itemFormModal = defineAsyncComponent(() => import('../modal/item-form-modal.vue'))
@@ -70,7 +71,7 @@ export default {
 
     openEditModal(idx) {
       this.editingIndex = idx
-      this.editingItem = JSON.parse(JSON.stringify(this.items[idx]))
+      this.editingItem = cloneItem(this.items[idx])
       this.showItemModal = true
     },
 
