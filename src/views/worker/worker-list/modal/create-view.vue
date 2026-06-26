@@ -1,49 +1,43 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true" headerVariant="main">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.worker.workerList.titleCreate') }}</span>
+        <span class="title-text-lg d-block">{{ $t('view.worker.workerList.titleCreate') }}</span>
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="worker-create-form">
           <div class="p-3">
-            <div class="form-row two-col">
-              <div class="form-field">
-                <span class="title-text">{{ $t('view.worker.workerList.fieldDept') }} <span class="text-required">*</span></span>
-                <DropdownGeneric
-                  v-model="form.type"
-                  :options="masterWorkerProductionType"
-                  optionLabel="description"
-                  optionValue="id"
-                  :class="val.isValWorkerProductionType === true ? 'p-invalid' : ''"
-                  :showClear="!!form.type"
-                />
+            <SectionCardGeneric class="modal-section">
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.worker.workerList.fieldDept')" :required="true">
+                  <DropdownGeneric
+                    v-model="form.type"
+                    :options="masterWorkerProductionType"
+                    optionLabel="description"
+                    optionValue="id"
+                    :class="val.isValWorkerProductionType === true ? 'p-invalid' : ''"
+                    :showClear="!!form.type"
+                  />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.worker.workerList.fieldCode')" :required="true">
+                  <InputTextGeneric v-model="form.code" :required="true" />
+                </FormFieldGeneric>
               </div>
-              <div class="form-field">
-                <span class="title-text">{{ $t('view.worker.workerList.fieldCode') }} <span class="txt-required">*</span></span>
-                <input type="text" class="form-control" v-model="form.code" required />
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.worker.workerList.fieldNameTh')" :required="true">
+                  <InputTextGeneric v-model="form.nameTh" :required="true" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.worker.workerList.fieldNameEn')">
+                  <InputTextGeneric v-model="form.nameEn" />
+                </FormFieldGeneric>
               </div>
-            </div>
-            <div class="form-row two-col">
-              <div class="form-field">
-                <span class="title-text">{{ $t('view.worker.workerList.fieldNameTh') }} <span class="txt-required">*</span></span>
-                <input type="text" class="form-control" v-model="form.nameTh" required />
-              </div>
-              <div class="form-field">
-                <span class="title-text">{{ $t('view.worker.workerList.fieldNameEn') }}</span>
-                <input type="text" class="form-control" v-model="form.nameEn" />
-              </div>
-            </div>
+            </SectionCardGeneric>
           </div>
         </form>
       </template>
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="worker-create-form">
-          <i class="bi bi-save"></i> {{ $t('common.btn.save') }}
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          {{ $t('common.btn.cancel') }}
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="worker-create-form" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -56,6 +50,10 @@ import { success } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
@@ -73,7 +71,11 @@ const interfaceIsValid = {
 export default {
   components: {
     modal,
-    DropdownGeneric
+    DropdownGeneric,
+    FormFieldGeneric,
+    InputTextGeneric,
+    ButtonGeneric,
+    SectionCardGeneric
   },
 
   setup() {
@@ -160,8 +162,6 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
 
-.card { background: #ffffff !important; }
-
 .form-row {
   margin-bottom: var(--sp-lg);
 
@@ -176,27 +176,11 @@ export default {
   }
 }
 
-.form-field {
-  width: 100%;
+.modal-section {
+  margin-bottom: var(--sp-lg);
 
-  .title-text {
-    display: block;
-    font-weight: 500;
-    margin-bottom: var(--sp-xs);
-  }
-}
-
-input.form-control,
-textarea.form-control {
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--fs-base);
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 </style>

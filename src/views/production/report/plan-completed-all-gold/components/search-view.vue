@@ -36,21 +36,14 @@
             <!-- text -->
             <div>
               <span class="title-text">W.O.</span>
-              <div class="input-group input-group-inner">
-                <input
-                  ref="inputText"
-                  id="inputText"
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.text"
-                  placeholder="EX: 202502211"
-                />
-                <div class="input-group-append" @click="focusInputText">
-                  <span class="input-group-text">
-                    <i class="bi bi-upc-scan text-main-color"></i>
-                  </span>
-                </div>
-              </div>
+              <InputTextGeneric
+                ref="inputText"
+                id="inputText"
+                v-model="form.text"
+                :trim="true"
+                placeholder="EX: 202502211"
+                icon="bi-upc-scan"
+              />
             </div>
 
             <div></div>
@@ -227,6 +220,7 @@ import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
@@ -241,6 +235,7 @@ export default {
     MultiSelectGeneric,
     CalendarGeneric,
     DropdownGeneric,
+    InputTextGeneric,
     dialogView
   },
 
@@ -288,9 +283,6 @@ export default {
   },
 
   methods: {
-    focusInputText() {
-      this.$refs.inputText.focus()
-    },
     onSearch() {
       this.$emit('search', this.form)
     },

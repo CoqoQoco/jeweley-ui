@@ -36,21 +36,14 @@
             <!-- text -->
             <div>
               <span class="title-text">W.O.</span>
-              <div class="input-group input-group-inner">
-                <input
-                  ref="inputText"
-                  id="inputText"
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.woText"
-                  placeholder="EX: 202502211"
-                />
-                <div class="input-group-append" @click="focusInputText">
-                  <span class="input-group-text">
-                    <i class="bi bi-upc-scan text-main-color"></i>
-                  </span>
-                </div>
-              </div>
+              <InputTextGeneric
+                ref="inputText"
+                id="inputText"
+                v-model="form.woText"
+                :trim="true"
+                placeholder="EX: 202502211"
+                icon="bi-upc-scan"
+              />
             </div>
 
             <!-- modld -->
@@ -189,6 +182,7 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -202,6 +196,7 @@ export default {
     pageTitle,
     MultiSelectGeneric,
     CalendarGeneric,
+    InputTextGeneric,
     dialogView
   },
   props: {

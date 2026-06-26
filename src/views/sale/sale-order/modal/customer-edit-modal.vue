@@ -76,36 +76,24 @@
                 <span class="title-text">
                   <span>{{ $t('view.sale.saleOrder.phone1') }}</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-telephone-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    v-model="form.telephone1"
-                    type="tel"
-                    :trim="true"
-                  />
-                </div>
+                <InputTextGeneric
+                  v-model="form.telephone1"
+                  type="tel"
+                  :trim="true"
+                  icon="bi-telephone-fill"
+                />
               </div>
 
               <div>
                 <span class="title-text">
                   <span>{{ $t('view.sale.saleOrder.phone2') }}</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-telephone-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    v-model="form.telephone2"
-                    type="tel"
-                    :trim="true"
-                  />
-                </div>
+                <InputTextGeneric
+                  v-model="form.telephone2"
+                  type="tel"
+                  :trim="true"
+                  icon="bi-telephone-fill"
+                />
               </div>
             </div>
 
@@ -114,35 +102,23 @@
                 <span class="title-text">
                   <span>E-mail</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-envelope-check-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    v-model="form.email"
-                    type="email"
-                    :trim="true"
-                  />
-                </div>
+                <InputTextGeneric
+                  v-model="form.email"
+                  type="email"
+                  :trim="true"
+                  icon="bi-envelope-check-fill"
+                />
               </div>
 
               <div>
                 <span class="title-text">
                   <span>{{ $t('view.sale.saleOrder.contactPerson') }}</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-person-lines-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    v-model="form.contactName"
-                    :trim="true"
-                  />
-                </div>
+                <InputTextGeneric
+                  v-model="form.contactName"
+                  :trim="true"
+                  icon="bi-person-lines-fill"
+                />
               </div>
             </div>
           </div>
@@ -338,10 +314,6 @@ export default {
   overflow-y: auto;
 }
 
-.input-group-text {
-  height: 35px;
-  margin-top: 5px;
-}
 
 .txt-required {
   color: #dc3545;

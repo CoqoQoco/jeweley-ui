@@ -24,21 +24,14 @@
           </div>
           <div>
             <span class="text-title">{{ $t('view.production.trackingWorker.searchText') }}</span>
-            <div class="input-group input-group-inner">
-              <input
-                ref="inputText"
-                id="inputText"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="search.text"
-                :placeholder="$t('common.label.searchPlaceholder')"
-              />
-              <div class="input-group-append" @click="focusInputText">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div>
-            </div>
+            <InputTextGeneric
+              ref="inputText"
+              id="inputText"
+              v-model="search.text"
+              :trim="true"
+              :placeholder="$t('common.label.searchPlaceholder')"
+              icon="bi-upc-scan"
+            />
           </div>
           <div></div>
           <div class="btn-container">
@@ -64,6 +57,7 @@ import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import tableMain from './components/TableMainView.vue'
 
 import api from '@/axios/axios-helper.js'
@@ -81,7 +75,8 @@ export default {
   components: {
     tableMain,
     pageTitle,
-    CalendarGeneric
+    CalendarGeneric,
+    InputTextGeneric
   },
   data() {
     return {
@@ -95,9 +90,6 @@ export default {
     }
   },
   methods: {
-    focusInputText() {
-      this.$refs.inputText.focus()
-    },
     onView(item) {
       this.$router.push(`pickinglist-tag/${item.wo}-${item.woNumber}`)
     },

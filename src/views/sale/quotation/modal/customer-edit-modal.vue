@@ -65,40 +65,28 @@
                 <span class="title-text">
                   <span>{{ $t('view.customer.field.tel1') }}</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-telephone-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    :modelValue="form.telephone1"
-                    type="tel"
-                    :trim="true"
-                    :bgInput="true"
-                    @update:modelValue="form.telephone1 = $event"
-                  />
-                </div>
+                <InputTextGeneric
+                  :modelValue="form.telephone1"
+                  type="tel"
+                  :trim="true"
+                  :bgInput="true"
+                  icon="bi-telephone-fill"
+                  @update:modelValue="form.telephone1 = $event"
+                />
               </div>
 
               <div>
                 <span class="title-text">
                   <span>{{ $t('view.customer.field.tel2') }}</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-telephone-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    :modelValue="form.telephone2"
-                    type="tel"
-                    :trim="true"
-                    :bgInput="true"
-                    @update:modelValue="form.telephone2 = $event"
-                  />
-                </div>
+                <InputTextGeneric
+                  :modelValue="form.telephone2"
+                  type="tel"
+                  :trim="true"
+                  :bgInput="true"
+                  icon="bi-telephone-fill"
+                  @update:modelValue="form.telephone2 = $event"
+                />
               </div>
             </div>
 
@@ -107,39 +95,27 @@
                 <span class="title-text">
                   <span>{{ $t('view.customer.field.email') }}</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-envelope-check-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    :modelValue="form.email"
-                    type="email"
-                    :trim="true"
-                    :bgInput="true"
-                    @update:modelValue="form.email = $event"
-                  />
-                </div>
+                <InputTextGeneric
+                  :modelValue="form.email"
+                  type="email"
+                  :trim="true"
+                  :bgInput="true"
+                  icon="bi-envelope-check-fill"
+                  @update:modelValue="form.email = $event"
+                />
               </div>
 
               <div>
                 <span class="title-text">
                   <span>{{ $t('view.customer.field.contact') }}</span>
                 </span>
-                <div class="input-group input-group-inner">
-                  <div class="input-group-append">
-                    <span class="input-group-text">
-                      <i class="bi bi-person-lines-fill txt-main-color"></i>
-                    </span>
-                  </div>
-                  <InputTextGeneric
-                    :modelValue="form.contactName"
-                    :trim="true"
-                    :bgInput="true"
-                    @update:modelValue="form.contactName = $event"
-                  />
-                </div>
+                <InputTextGeneric
+                  :modelValue="form.contactName"
+                  :trim="true"
+                  :bgInput="true"
+                  icon="bi-person-lines-fill"
+                  @update:modelValue="form.contactName = $event"
+                />
               </div>
             </div>
           </div>
@@ -320,10 +296,6 @@ export default {
   overflow-y: auto;
 }
 
-.input-group-text {
-  height: 35px;
-  margin-top: 5px;
-}
 
 .txt-required {
   color: #dc3545;

@@ -65,21 +65,14 @@
               <!-- wo text -->
               <div>
                 <span class="title-text">{{ $t('view.production.planTrackingTransfer.workOrder') }}</span>
-                <div class="input-group input-group-inner">
-                  <input
-                    ref="inputText"
-                    id="inputText"
-                    :class="['form-control bg-input']"
-                    type="text"
-                    v-model.trim="form.woText"
-                    :placeholder="$t('common.label.searchPlaceholder')"
-                  />
-                  <div class="input-group-append" @click="focusInputText">
-                    <span class="input-group-text">
-                      <i class="bi bi-upc-scan text-main-color"></i>
-                    </span>
-                  </div>
-                </div>
+                <InputTextGeneric
+                  ref="inputText"
+                  id="inputText"
+                  v-model="form.woText"
+                  :trim="true"
+                  :placeholder="$t('common.label.searchPlaceholder')"
+                  icon="bi-upc-scan"
+                />
               </div>
 
               <!-- mold -->
@@ -181,6 +174,7 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
@@ -195,6 +189,7 @@ export default {
     MultiSelectGeneric,
     CalendarGeneric,
     DropdownGeneric,
+    InputTextGeneric,
     dialogView
   },
   props: {
@@ -238,9 +233,6 @@ export default {
   },
 
   methods: {
-    focusInputText() {
-      this.$refs.inputText.focus()
-    },
     onSearch() {
       this.$emit('search', this.form)
     },

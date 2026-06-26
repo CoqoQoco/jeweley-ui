@@ -35,19 +35,12 @@
           </div>
           <div>
             <span class="text-title">{{ $t('reportProduction.woLabel') }}</span>
-            <div class="input-group input-group-inner">
-              <input
-                id="inputStockID"
-                :class="['form-control bg-input']"
-                type="text"
-                v-model.trim="form.text"
-              />
-              <div class="input-group-append">
-                <span class="input-group-text">
-                  <i class="bi bi-upc-scan text-main-color"></i>
-                </span>
-              </div>
-            </div>
+            <InputTextGeneric
+              id="inputStockID"
+              v-model="form.text"
+              :trim="true"
+              icon="bi-upc-scan"
+            />
           </div>
           <div></div>
           <div class="btn-container">
@@ -142,6 +135,7 @@ import { defineAsyncComponent } from 'vue'
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 // eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
@@ -164,6 +158,7 @@ export default {
   components: {
     pageTitle,
     CalendarGeneric,
+    InputTextGeneric,
     DataTable,
     Column
   },

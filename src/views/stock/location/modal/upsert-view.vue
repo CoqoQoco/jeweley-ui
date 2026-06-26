@@ -5,91 +5,79 @@
       @closeModal="closeModal"
       width="600px"
       :isShowActionPart="true"
+      headerVariant="main"
     >
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">
+        <span class="title-text-lg d-block">
           {{ isEditMode ? $t('view.stock.location.editTitle') : $t('view.stock.location.createTitle') }}
         </span>
       </template>
 
       <template #content>
         <div class="p-3">
-          <div class="form-row two-col">
-            <div class="form-field">
-              <span class="title-text">{{ $t('view.stock.location.code') }} <span class="text-danger">*</span></span>
-              <input
-                type="text"
-                class="form-control"
-                v-model.trim="form.code"
-                :placeholder="$t('view.stock.location.codePlaceholder')"
-                :disabled="isEditMode"
-              />
+          <SectionCardGeneric class="modal-section">
+            <div class="form-row two-col">
+              <FormFieldGeneric :label="$t('view.stock.location.code')" :required="true">
+                <InputTextGeneric
+                  v-model.trim="form.code"
+                  :placeholder="$t('view.stock.location.codePlaceholder')"
+                  :disabled="isEditMode"
+                />
+              </FormFieldGeneric>
+              <FormFieldGeneric :label="$t('view.stock.location.sortOrder')">
+                <InputTextGeneric
+                  type="number"
+                  v-model.number="form.sortOrder"
+                  placeholder="1"
+                  :min="0"
+                />
+              </FormFieldGeneric>
             </div>
-            <div class="form-field">
-              <span class="title-text">{{ $t('view.stock.location.sortOrder') }}</span>
-              <input
-                type="number"
-                class="form-control"
-                v-model.number="form.sortOrder"
-                placeholder="1"
-                min="0"
-              />
-            </div>
-          </div>
 
-          <div class="form-row two-col">
-            <div class="form-field">
-              <span class="title-text">{{ $t('view.stock.location.nameTh') }} <span class="text-danger">*</span></span>
-              <input
-                type="text"
-                class="form-control"
-                v-model.trim="form.nameTh"
-                :placeholder="$t('view.stock.location.namePlaceholder')"
-              />
+            <div class="form-row two-col">
+              <FormFieldGeneric :label="$t('view.stock.location.nameTh')" :required="true">
+                <InputTextGeneric
+                  v-model.trim="form.nameTh"
+                  :placeholder="$t('view.stock.location.namePlaceholder')"
+                />
+              </FormFieldGeneric>
+              <FormFieldGeneric :label="$t('view.stock.location.nameEn')">
+                <InputTextGeneric
+                  v-model.trim="form.nameEn"
+                  :placeholder="$t('view.stock.location.placeholder.nameEn')"
+                />
+              </FormFieldGeneric>
             </div>
-            <div class="form-field">
-              <span class="title-text">{{ $t('view.stock.location.nameEn') }}</span>
-              <input
-                type="text"
-                class="form-control"
-                v-model.trim="form.nameEn"
-                :placeholder="$t('view.stock.location.placeholder.nameEn')"
-              />
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-field">
-              <span class="title-text">{{ $t('view.stock.location.locType') }}</span>
-              <DropdownGeneric
-                :modelValue="form.type"
-                :options="typeOptions"
-                optionLabel="label"
-                optionValue="value"
-                :placeholder="$t('common.label.all')"
-                :showClear="true"
-                @update:modelValue="form.type = $event"
-              />
+            <div class="form-row two-col">
+              <FormFieldGeneric :label="$t('view.stock.location.locType')">
+                <DropdownGeneric
+                  :modelValue="form.type"
+                  :options="typeOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :placeholder="$t('common.label.all')"
+                  :showClear="true"
+                  @update:modelValue="form.type = $event"
+                />
+              </FormFieldGeneric>
+              <div></div>
             </div>
-          </div>
 
-          <div class="form-row">
-            <div class="checkbox-group">
-              <CheckboxGeneric v-model="form.isSalesPoint" :label="$t('view.stock.location.isSalesPoint')" />
-              <CheckboxGeneric v-model="form.isTemporary" :label="$t('view.stock.location.isTemporary')" />
-              <CheckboxGeneric v-model="form.isActive" :label="$t('view.stock.location.isActiveLabel')" />
+            <div class="form-row">
+              <div class="checkbox-group">
+                <CheckboxGeneric v-model="form.isSalesPoint" :label="$t('view.stock.location.isSalesPoint')" />
+                <CheckboxGeneric v-model="form.isTemporary" :label="$t('view.stock.location.isTemporary')" />
+                <CheckboxGeneric v-model="form.isActive" :label="$t('view.stock.location.isActiveLabel')" />
+              </div>
             </div>
-          </div>
+          </SectionCardGeneric>
         </div>
       </template>
 
       <template #action>
-        <button class="btn btn-sm btn-main" type="button" @click="onSubmit">
-          <i class="bi bi-save"></i> {{ $t('common.btn.save') }}
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          {{ $t('common.btn.cancel') }}
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" @click="onSubmit" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -97,6 +85,10 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
@@ -120,6 +112,10 @@ export default {
 
   components: {
     modal,
+    FormFieldGeneric,
+    InputTextGeneric,
+    ButtonGeneric,
+    SectionCardGeneric,
     DropdownGeneric,
     CheckboxGeneric
   },
@@ -207,45 +203,24 @@ export default {
 @import '@/assets/scss/responsive-style/web';
 
 .form-row {
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-lg);
 
   &.two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: var(--sp-lg);
 
-    @media (max-width: 600px) {
+    @media (max-width: 1024px) {
       grid-template-columns: 1fr;
     }
   }
 }
 
-.form-field {
-  width: 100%;
+.modal-section {
+  margin-bottom: var(--sp-lg);
 
-  .title-text {
-    display: block;
-    margin-bottom: 6px;
-  }
-}
-
-input.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--fs-base);
-  line-height: var(--lh-sm);
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: none;
-    outline: none;
-  }
-
-  &:disabled {
-    background: #f8f9fa;
-    cursor: not-allowed;
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 

@@ -1,58 +1,46 @@
 <template>
   <div class="app-container-modal">
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="1100px">
-      <!-- <template v-slot:title>
-        <h5>{{ `${$t('view.production.mold.updateTitle')} - ${model.code}` }}</h5>
-      </template> -->
-      <template v-slot:content>
-        <h5>{{ `${$t('view.production.mold.updateTitle')} - ${model.code}` }}</h5>
-        <form @submit.prevent="onSubmit">
-          <div class="form-container">
-            <div class="row form-group">
-              <!-- <div class="col-md-7">
-                <div class="image-container">
-                  <div v-if="!isShowUpdateImage" class="image-box-container">
-                    <div v-if="urlImage">
-                      <img class="image-preview" :src="urlImage" alt="Image" preview />
+    <modal
+      :showModal="isShowModal"
+      @closeModal="closeModal"
+      width="1100px"
+      headerVariant="main"
+      :isShowActionPart="true"
+    >
+      <template #title>
+        <span class="title-text-lg d-block">{{ `${$t('view.production.mold.updateTitle')} - ${model.code}` }}</span>
+      </template>
+      <template #content>
+        <form @submit.prevent="onSubmit" id="mold-update-form">
+          <div class="p-3">
+            <SectionCardGeneric class="modal-section">
+              <div class="row">
+                <div class="col-md-7">
+                  <div class="image-container">
+                    <div class="upload-btn">
+                      <input
+                        class="hidden-input"
+                        type="file"
+                        ref="fileInput"
+                        accept=".jpg, .png"
+                        @change="onSelectImg"
+                      />
+                      <button class="btn btn-sm btn-main btn-upload-custom" type="button">
+                        {{ $t('view.production.mold.btnEditImage') }}
+                      </button>
                     </div>
-                    <div v-else class="spinner-border" role="status">
-                      <span class="sr-only">Loading...</span>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
-              <div class="col-md-7">
-                <div class="image-container">
-                  <div class="upload-btn">
-                    <input
-                      class="hidden-input"
-                      type="file"
-                      ref="fileInput"
-                      accept=".jpg, .png"
-                      @change="onSelectImg"
-                    />
-                    <button class="btn btn-sm btn-main btn-upload-custom" type="button">
-                      {{ $t('view.production.mold.btnEditImage') }}
-                    </button>
-                  </div>
-                  <div class="upload-preview">
-                    <div v-if="urlImage">
-                      <img :src="urlImage" alt="Preview" class="preview-image" />
-                      <!-- <i class="bi bi-x del-iamge-x"></i> -->
+                    <div class="upload-preview">
+                      <div v-if="urlImage">
+                        <img :src="urlImage" alt="Preview" class="preview-image" />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-5">
-                <div class="row form-group">
-                  <div class="col-md-12">
-                    <label>{{ $t('common.field.code') }}</label>
-                    <input type="text" class="form-control" v-model="form.code" disabled required />
-                  </div>
-                </div>
-                <div class="row form-group">
-                  <div class="col-md-12">
-                    <label>{{ $t('common.field.type') }}</label>
+                <div class="col-md-5">
+                  <FormFieldGeneric :label="$t('common.field.code')" :required="true">
+                    <InputTextGeneric v-model="form.code" :disabled="true" :required="true" />
+                  </FormFieldGeneric>
+                  <FormFieldGeneric :label="$t('common.field.type')" :required="true">
                     <div class="flex-group">
                       <div class="w-25">{{ model.category }}</div>
                       <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
@@ -65,40 +53,33 @@
                         @update:modelValue="onResetValDate('isValCategory')"
                       />
                     </div>
-                  </div>
-                </div>
-                <div class="row form-group">
-                  <div class="col-md-12">
-                    <label>{{ $t('view.production.mold.moldBy') }}</label>
-                    <input type="text" class="form-control" v-model="form.moldBy" />
-                  </div>
-                </div>
-                <div class="row form-group">
-                  <div class="col-md-12">
-                    <label>{{ $t('view.production.mold.description') }}</label>
-                    <textarea
-                      class="form-control"
-                      v-model="form.description"
-                      style="height: 9.3rem"
-                      required
-                    />
-                  </div>
+                  </FormFieldGeneric>
+                  <FormFieldGeneric :label="$t('view.production.mold.moldBy')">
+                    <InputTextGeneric v-model="form.moldBy" />
+                  </FormFieldGeneric>
+                  <FormFieldGeneric :label="$t('view.production.mold.description')" :required="true">
+                    <TextareaGeneric v-model="form.description" :rows="5" :required="true" />
+                  </FormFieldGeneric>
                 </div>
               </div>
-            </div>
-            <!-- <div class="line"></div> -->
-            <div class="row form-group">
-              <div class="col-md-12">
-                <div class="btn-container">
-                  <button class="btn btn-sm btn-main" type="submit">
-                    <span class="mr-2"><i class="bi bi-brush"></i></span>
-                    <span>{{ $t('view.production.mold.btnUpdate') }}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            </SectionCardGeneric>
           </div>
         </form>
+      </template>
+      <template #action>
+        <ButtonGeneric
+          variant="main"
+          icon="bi-brush"
+          :label="$t('view.production.mold.btnUpdate')"
+          type="submit"
+          form="mold-update-form"
+        />
+        <ButtonGeneric
+          variant="outline"
+          :label="$t('common.btn.cancel')"
+          class="ml-2"
+          @click="closeModal"
+        />
       </template>
     </modal>
   </div>
@@ -111,6 +92,11 @@ import api from '@/axios/axios-helper.js'
 import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -118,6 +104,11 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 export default {
   components: {
     modal,
+    FormFieldGeneric,
+    InputTextGeneric,
+    TextareaGeneric,
+    ButtonGeneric,
+    SectionCardGeneric,
     DropdownGeneric
   },
   props: {
@@ -133,7 +124,6 @@ export default {
   },
   computed: {
     model() {
-      //console.log(this.modelValue)
       return this.modelValue
     }
   },
@@ -144,7 +134,6 @@ export default {
         moldBy: value.moldBy,
         description: value.description
       }
-      //console.log(value)
       await this.fetchImageData(value.code)
     }
   },
@@ -218,7 +207,6 @@ export default {
       }
     },
     onclear() {
-      //this.$refs.fileInput.value = null
       this.imgUrl = ''
       this.form = {
         image: null,
@@ -242,11 +230,9 @@ export default {
       return true // pass
     },
     onResetValDate(index) {
-      //console.log(index)
       if (index === 'isValCategory') {
         if (this.form.category) {
           this.val.isValCategory = false
-          //console.log(this.val.isValCategory)
         }
       }
     },
@@ -272,43 +258,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-h5 {
-  padding: 10px 0px 0px 10px;
-  font-size: 21px;
-  font-weight: 600;
-  color: var(--base-font-color);
-}
-label {
-  color: var(--base-font-color);
-  font-weight: 300;
-  margin: 5px 0px 0px 0px;
-}
-.form-container {
-  padding: 10px;
-}
-.form-group {
-  margin-bottom: 5px;
-}
-.title {
-  font-size: 21px;
-  font-weight: 600;
-  width: 100%;
-}
-.btn-container {
-  margin-top: 10px;
-  display: grid;
-  place-items: end;
-}
-.line {
-  border-bottom: 1px solid var(--base-font-color);
-  margin: 10px 20px;
+@import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.modal-section {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .image-container {
   border: 1px solid var(--base-color);
   background-color: #ffff;
   padding: 0px;
-  //display: grid;
+  display: grid;
 }
 .hidden-input {
   opacity: 0;
@@ -324,33 +289,13 @@ label {
 .upload-preview {
   display: grid;
   place-items: center;
-  //width: 20rem;
   height: 22rem;
 }
 .preview-image {
   width: 20rem;
   height: 20rem;
   margin: 10px 0px;
-  //border: 1px solid var(--base-sub-color);
-  //box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  border-radius: 10px;
-}
-
-.image-preview {
-  max-width: 300px;
-  height: auto;
-  //border: 1px solid var(--base-color);
-  border-radius: 8px;
-  object-fit: contain;
-}
-.image-container {
-  display: grid;
-  //place-items: center;
-  //height: 300px;
-}
-.image-box-container {
-  //border: 1px solid var(--base-color);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 .flex-group {
   display: flex;

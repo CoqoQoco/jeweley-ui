@@ -1,51 +1,53 @@
 <template>
   <div class="app-container-modal">
-    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true" headerVariant="main">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.master.gem.createTitle') }}</span>
+        <span class="title-text-lg d-block">{{ $t('view.master.gem.createTitle') }}</span>
       </template>
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-gem-create">
           <div class="p-3">
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('common.field.code')" :required="true">
-                <InputTextGeneric
-                  v-model="form.code"
-                  :placeholder="$t('view.master.gem.placeholder.code')"
-                  :required="true"
-                />
-              </FormFieldGeneric>
-            </div>
+            <SectionCardGeneric class="modal-section">
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('common.field.code')" :required="true">
+                  <InputTextGeneric
+                    v-model="form.code"
+                    :placeholder="$t('view.master.gem.placeholder.code')"
+                    :required="true"
+                  />
+                </FormFieldGeneric>
+              </div>
 
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('view.master.gem.field.nameTh')" :required="true">
-                <InputTextGeneric
-                  v-model="form.nameTh"
-                  :placeholder="$t('view.master.gem.placeholder.nameTh')"
-                  :required="true"
-                />
-              </FormFieldGeneric>
-            </div>
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('view.master.gem.field.nameTh')" :required="true">
+                  <InputTextGeneric
+                    v-model="form.nameTh"
+                    :placeholder="$t('view.master.gem.placeholder.nameTh')"
+                    :required="true"
+                  />
+                </FormFieldGeneric>
+              </div>
 
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('view.master.gem.field.nameEn')" :required="true">
-                <InputTextGeneric
-                  v-model="form.nameEn"
-                  :placeholder="$t('view.master.gem.placeholder.nameEn')"
-                  :required="true"
-                />
-              </FormFieldGeneric>
-            </div>
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('view.master.gem.field.nameEn')" :required="true">
+                  <InputTextGeneric
+                    v-model="form.nameEn"
+                    :placeholder="$t('view.master.gem.placeholder.nameEn')"
+                    :required="true"
+                  />
+                </FormFieldGeneric>
+              </div>
 
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('view.master.gem.field.color')">
-                <InputTextGeneric
-                  v-model="form.color"
-                  :placeholder="$t('view.master.gem.placeholder.color')"
-                />
-              </FormFieldGeneric>
-            </div>
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('view.master.gem.field.color')">
+                  <InputTextGeneric
+                    v-model="form.color"
+                    :placeholder="$t('view.master.gem.placeholder.color')"
+                  />
+                </FormFieldGeneric>
+              </div>
+            </SectionCardGeneric>
           </div>
         </form>
       </template>
@@ -63,6 +65,7 @@ import { defineAsyncComponent } from 'vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 
@@ -79,7 +82,7 @@ const interfaceForm = {
 }
 
 export default {
-  components: { modal, InputTextGeneric, FormFieldGeneric, ButtonGeneric },
+  components: { modal, InputTextGeneric, FormFieldGeneric, ButtonGeneric, SectionCardGeneric },
 
   props: {
     isShow: {
@@ -146,5 +149,13 @@ export default {
 
 .form-row {
   margin-bottom: 12px;
+}
+
+.modal-section {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>

@@ -1,124 +1,72 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal">
-      <template v-slot:content>
-        <form @submit.prevent="onSubmit">
-          <div class="title-text-lg-bg">
-            <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>
-              {{ $t('view.stock.gem.editTitle', { name: model.name }) }}
-            </span>
-          </div>
-          <div class="p-2">
-            <div class="form-col-container p-2">
-              <!-- code -->
-              <div>
-                <div>
-                  <span class="title-text">{{ $t('view.stock.gem.code') }}</span>
-                  <span class="txt-required"> *</span>
-                </div>
-                <input
-                  type="text"
-                  class="form-control"
-                  :class="form.code ? `` : `bg-warning`"
-                  v-model="form.code"
-                  disabled
-                  required
-                />
+    <modal :showModal="isShow" @closeModal="closeModal" :isShowActionPart="true" headerVariant="main">
+      <template #title>
+        <span class="title-text-lg d-block">
+          {{ $t('view.stock.gem.editTitle', { name: model.name }) }}
+        </span>
+      </template>
+      <template #content>
+        <form @submit.prevent="onSubmit" id="gem-update-form">
+          <div class="p-3">
+            <SectionCardGeneric class="modal-section">
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.stock.gem.code')" :required="true">
+                  <InputTextGeneric v-model="form.code" :disabled="true" :required="true" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.gem.groupName')" :required="true">
+                  <AutoCompleteGeneric
+                    v-model="form.groupName"
+                    :suggestions="suggestionsGroupName"
+                    optionLabel="value"
+                    optionValue="value"
+                    @complete="searchGroupName"
+                    :invalid="val.isGroupName"
+                  />
+                </FormFieldGeneric>
               </div>
-
-              <!-- group name -->
-              <div>
-                <div>
-                  <span class="title-text">{{ $t('view.stock.gem.groupName') }}</span>
-                  <span class="txt-required"> *</span>
-                </div>
-                <!-- <input
-                type="text"
-                class="form-control"
-                :class="form.groupName ? `` : `bg-warning`"
-                v-model="form.groupName"
-                disabled
-                required
-              /> -->
-                <AutoCompleteGeneric
-                  v-model="form.groupName"
-                  :suggestions="suggestionsGroupName"
-                  optionLabel="value"
-                  optionValue="value"
-                  @complete="searchGroupName"
-                  :invalid="val.isGroupName"
-                />
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.stock.gem.origin')">
+                  <InputTextGeneric v-model="form.region" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.gem.size')" :required="true">
+                  <InputTextGeneric v-model="form.size" :required="true" />
+                </FormFieldGeneric>
               </div>
-
-              <div>
-                <div>
-                  <span class="title-text">{{ $t('view.stock.gem.origin') }}</span>
-                </div>
-                <input type="text" class="form-control" v-model="form.region" />
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.stock.gem.shape')" :required="true">
+                  <DropdownGeneric
+                    v-model="form.shape"
+                    :options="gemShape"
+                    optionLabel="description"
+                    class="w-full md:w-14rem"
+                    :showClear="form.shape ? true : false"
+                    :class="val.isShape === true ? `p-invalid` : ``"
+                  />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.gem.grade')" :required="true">
+                  <DropdownGeneric
+                    v-model="form.grade"
+                    :options="grade"
+                    optionLabel="description"
+                    class="w-full md:w-14rem"
+                    :showClear="form.grade ? true : false"
+                    :class="val.isGrade === true ? `p-invalid` : ``"
+                  />
+                </FormFieldGeneric>
               </div>
-            </div>
-            <div class="form-col-container p-2">
-              <!-- size -->
-              <div>
-                <div>
-                  <span class="title-text">{{ $t('view.stock.gem.size') }}</span>
-                  <span class="txt-required"> *</span>
-                </div>
-                <input type="text" class="form-control" v-model="form.size" required />
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('view.stock.gem.description')" :required="true">
+                  <TextareaGeneric v-model="form.remark" :rows="3" :required="true" />
+                </FormFieldGeneric>
               </div>
-
-              <!-- shape -->
-              <div>
-                <div>
-                  <span class="title-text">{{ $t('view.stock.gem.shape') }}</span>
-                  <span class="txt-required"> *</span>
-                </div>
-                <DropdownGeneric
-                  v-model="form.shape"
-                  :options="gemShape"
-                  optionLabel="description"
-                  class="w-full md:w-14rem"
-                  :showClear="form.shape ? true : false"
-                  :class="val.isShape === true ? `p-invalid` : ``"
-                />
-              </div>
-
-              <!-- grade -->
-              <div>
-                <div>
-                  <span class="title-text">{{ $t('view.stock.gem.grade') }}</span>
-                  <span class="txt-required"> *</span>
-                </div>
-                <DropdownGeneric
-                  v-model="form.grade"
-                  :options="grade"
-                  optionLabel="description"
-                  class="w-full md:w-14rem"
-                  :showClear="form.grade ? true : false"
-                  :class="val.isGrade === true ? `p-invalid` : ``"
-                />
-              </div>
-            </div>
-            <div class="form-col-container p-2">
-              <!-- reamrk -->
-              <div>
-                <div>
-                  <span class="title-text">{{ $t('view.stock.gem.description') }}</span>
-                  <!-- <span class="txt-required"> *</span> -->
-                </div>
-                <textarea class="form-control" v-model="form.remark" rows="3" required></textarea>
-              </div>
-            </div>
-            <!-- btn -->
-            <div class="d-flex justify-content-end mt-2">
-              <!-- <button class="btn btn-sm btn-main mr-2" type="button" @click="onTest">TEST</button> -->
-              <button class="btn btn-sm btn-green" type="submit">
-                <span class="bi bi-calendar-check"> </span>
-              </button>
-            </div>
+            </SectionCardGeneric>
           </div>
         </form>
+      </template>
+      <template #action>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="gem-update-form" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -126,15 +74,19 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
+
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 const interfaceForm = {
   code: null,
@@ -151,6 +103,11 @@ const interfaceIsVal = {
 export default {
   components: {
     modal,
+    FormFieldGeneric,
+    InputTextGeneric,
+    TextareaGeneric,
+    ButtonGeneric,
+    SectionCardGeneric,
     AutoCompleteGeneric,
     DropdownGeneric
   },
@@ -300,4 +257,27 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
+
+.form-row {
+  margin-bottom: var(--sp-lg);
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-lg);
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.modal-section {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
 </style>

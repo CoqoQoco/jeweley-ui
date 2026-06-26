@@ -38,18 +38,12 @@
           <div class="form-col-container">
             <div>
               <span class="title-text">{{ $t('common.btn.search') }}</span>
-              <div class="input-group input-group-inner">
-                <InputTextGeneric
-                  ref="inputText"
-                  v-model="form.text"
-                  :placeholder="$t('common.btn.search')"
-                />
-                <div class="input-group-append" @click="focusInputText">
-                  <span class="input-group-text">
-                    <i class="bi bi-upc-scan text-main-color"></i>
-                  </span>
-                </div>
-              </div>
+              <InputTextGeneric
+                ref="inputText"
+                v-model="form.text"
+                :placeholder="$t('common.btn.search')"
+                icon="bi-upc-scan"
+              />
             </div>
           </div>
         </div>

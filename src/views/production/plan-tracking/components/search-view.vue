@@ -36,18 +36,12 @@
             <!-- text -->
             <div>
               <span class="title-text">{{ $t('view.production.planTracking.workOrder') }}</span>
-              <div class="input-group input-group-inner">
-                <InputTextGeneric
-                  ref="inputText"
-                  v-model="form.text"
-                  placeholder="EX: 202502211"
-                />
-                <div class="input-group-append" @click="focusInputText">
-                  <span class="input-group-text">
-                    <i class="bi bi-upc-scan text-main-color"></i>
-                  </span>
-                </div>
-              </div>
+              <InputTextGeneric
+                ref="inputText"
+                v-model="form.text"
+                placeholder="EX: 202502211"
+                icon="bi-upc-scan"
+              />
             </div>
 
             <!-- status -->

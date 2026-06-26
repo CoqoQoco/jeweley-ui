@@ -39,15 +39,11 @@
         <div class="form-col-container">
           <div>
             <span class="title-text">{{ $t('view.production.planTrackingGold.bookNo') }}</span>
-            <div class="input-group input-group-inner">
-              <InputTextGeneric v-model="form.bookNo" />
-            </div>
+            <InputTextGeneric v-model="form.bookNo" />
           </div>
           <div>
             <span class="title-text">{{ $t('view.production.planTrackingGold.no') }}</span>
-            <div class="input-group input-group-inner">
-              <InputTextGeneric v-model="form.no" />
-            </div>
+            <InputTextGeneric v-model="form.no" />
           </div>
         </div>
       </div>
@@ -62,24 +58,16 @@
           <div class="form-col-container">
             <div>
               <span class="title-text">{{ $t('view.production.planTrackingGold.searchText') }}</span>
-              <div class="input-group input-group-inner">
-                <InputTextGeneric
-                  id="inputStockID"
-                  v-model="form.text"
-                  :placeholder="$t('view.production.planTrackingGold.searchText')"
-                />
-                <div class="input-group-append">
-                  <span class="input-group-text">
-                    <i class="bi bi-upc-scan text-main-color"></i>
-                  </span>
-                </div>
-              </div>
+              <InputTextGeneric
+                id="inputStockID"
+                v-model="form.text"
+                :placeholder="$t('view.production.planTrackingGold.searchText')"
+                icon="bi-upc-scan"
+              />
             </div>
             <div>
               <span class="title-text">{{ $t('view.production.planTrackingGold.runningNumber') }}</span>
-              <div class="input-group input-group-inner">
-                <InputTextGeneric v-model="form.runningNumber" />
-              </div>
+              <InputTextGeneric v-model="form.runningNumber" />
             </div>
           </div>
         </template>

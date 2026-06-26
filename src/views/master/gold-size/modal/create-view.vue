@@ -1,56 +1,58 @@
 <template>
   <div>
-    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true">
+    <modal :showModal="isShow" @closeModal="closeModal" width="500px" :isShowActionPart="true" headerVariant="main">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.master.goldSize.createTitle') }}</span>
+        <span class="title-text-lg d-block">{{ $t('view.master.goldSize.createTitle') }}</span>
       </template>
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-gold-size-create">
           <div class="p-3">
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('common.field.code')" :required="true">
-                <InputTextGeneric
-                  v-model="form.code"
-                  :placeholder="$t('view.master.goldSize.placeholder.code')"
-                  :required="true"
-                />
-              </FormFieldGeneric>
-            </div>
+            <SectionCardGeneric class="modal-section">
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('common.field.code')" :required="true">
+                  <InputTextGeneric
+                    v-model="form.code"
+                    :placeholder="$t('view.master.goldSize.placeholder.code')"
+                    :required="true"
+                  />
+                </FormFieldGeneric>
+              </div>
 
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('view.master.goldSize.field.nameTh')" :required="true">
-                <InputTextGeneric
-                  v-model="form.nameTh"
-                  :placeholder="$t('view.master.goldSize.placeholder.nameTh')"
-                  :required="true"
-                />
-              </FormFieldGeneric>
-            </div>
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('view.master.goldSize.field.nameTh')" :required="true">
+                  <InputTextGeneric
+                    v-model="form.nameTh"
+                    :placeholder="$t('view.master.goldSize.placeholder.nameTh')"
+                    :required="true"
+                  />
+                </FormFieldGeneric>
+              </div>
 
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('view.master.goldSize.field.nameEn')" :required="true">
-                <InputTextGeneric
-                  v-model="form.nameEn"
-                  :placeholder="$t('view.master.goldSize.placeholder.nameEn')"
-                  :required="true"
-                />
-              </FormFieldGeneric>
-            </div>
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('view.master.goldSize.field.nameEn')" :required="true">
+                  <InputTextGeneric
+                    v-model="form.nameEn"
+                    :placeholder="$t('view.master.goldSize.placeholder.nameEn')"
+                    :required="true"
+                  />
+                </FormFieldGeneric>
+              </div>
 
-            <div class="form-row">
-              <FormFieldGeneric :label="$t('view.master.goldSize.field.goldPercent')" :required="true">
-                <InputTextGeneric
-                  v-model.number="form.goldPercent"
-                  type="number"
-                  :placeholder="$t('view.master.goldSize.placeholder.goldPercent')"
-                  :required="true"
-                  :step="0.01"
-                  :min="0"
-                  :max="100"
-                />
-              </FormFieldGeneric>
-            </div>
+              <div class="form-row">
+                <FormFieldGeneric :label="$t('view.master.goldSize.field.goldPercent')" :required="true">
+                  <InputTextGeneric
+                    v-model.number="form.goldPercent"
+                    type="number"
+                    :placeholder="$t('view.master.goldSize.placeholder.goldPercent')"
+                    :required="true"
+                    :step="0.01"
+                    :min="0"
+                    :max="100"
+                  />
+                </FormFieldGeneric>
+              </div>
+            </SectionCardGeneric>
           </div>
         </form>
       </template>
@@ -68,6 +70,7 @@ import { defineAsyncComponent } from 'vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -83,7 +86,7 @@ const interfaceForm = {
 }
 
 export default {
-  components: { modal, InputTextGeneric, FormFieldGeneric, ButtonGeneric },
+  components: { modal, InputTextGeneric, FormFieldGeneric, ButtonGeneric, SectionCardGeneric },
 
   props: {
     isShow: {
@@ -145,5 +148,13 @@ export default {
 
 .form-row {
   margin-bottom: 12px;
+}
+
+.modal-section {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>
