@@ -330,10 +330,11 @@ export default {
     //   }
     // }
     async modelValue(value) {
+      if (!value || !Object.keys(value).length) return
       this.form = {
         bookNo: value.bookNo,
         no: value.no,
-        assignDate: new Date(value.assignDate),
+        assignDate: value.assignDate ? new Date(value.assignDate) : null,
         gold: this.masterGold.find((x) => x.code === value.goldCode),
         goldSize: this.masterGoldSize.find((x) => x.code === value.goldSizeCode),
         goldReceipt: value.goldReceipt,
@@ -363,22 +364,26 @@ export default {
         zill: value.zill,
         zillQty: value.zillQty,
         cost: value.cost,
-        items: await Promise.all(
-          value.items.map(async (x) => {
-            const res = await this.onSearchProductionPlanIdByCode(x.productionPlanId)
-            //console.log(res)
-            return {
-              id: ++this.autoId,
-              productionPlan: {
-                ...res
-              },
-              returnWeight: x.returnWeight,
-              returnQTY: x.returnQTY,
-              remark: x.remark
-            }
-          })
-        )
+        items: []
       }
+      // per-item recovery: one failed lookup must not blank the whole slip
+      this.form.items = await Promise.all(
+        (value.items ?? []).map(async (x) => {
+          let res = null
+          try {
+            res = await this.onSearchProductionPlanIdByCode(x.productionPlanId)
+          } catch {
+            res = null
+          }
+          return {
+            id: ++this.autoId,
+            productionPlan: { ...(res ?? {}) },
+            returnWeight: x.returnWeight,
+            returnQTY: x.returnQTY,
+            remark: x.remark
+          }
+        })
+      )
     }
   },
   data() {
@@ -550,11 +555,10 @@ export default {
         'ProductionPlan/ProductionPlanSearchByProductionPlanId',
         params
       )
-      if (res) {
-        return res.data.find((x) => x.woText === productionPlanId)
-      } else {
-        return null
+      if (res && Array.isArray(res.data)) {
+        return res.data.find((x) => x.woText === productionPlanId) ?? null
       }
+      return null
     },
 
     // --- PDF --- //

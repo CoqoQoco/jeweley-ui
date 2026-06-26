@@ -32,7 +32,7 @@
       :isShow="isShowMoldalUpdate"
       :modelMasterGold="masterGold"
       :modelMasterGoldSize="masterGoldSize"
-      :modelValue="modelUpdate"
+      :modelValue="updateModel"
       @fetch="fetchFormUpdate"
       @closeModal="onCloseFormUpdate"
     >
@@ -41,7 +41,7 @@
       :isShow="isShowModalView"
       :modelMasterGold="masterGold"
       :modelMasterGoldSize="masterGoldSize"
-      :modelValue="modelUpdate"
+      :modelValue="viewModel"
       @closeModal="onCloseFormView"
     >
     </modalView>
@@ -93,14 +93,13 @@ export default {
       dataExcel: {},
       form: null,
       masterGold: [],
-      masterGoldSize: []
+      masterGoldSize: [],
+      viewModel: {},
+      updateModel: {}
     }
   },
 
   computed: {
-    modelUpdate() {
-      return this._modelUpdate || {}
-    },
     columns() {
       return [
         {
@@ -193,7 +192,7 @@ export default {
 
     // -------- modal update -------- //
     UpdatePlanGold(e) {
-      this._modelUpdate = { ...e }
+      this.updateModel = { ...e }
       this.isShowMoldalUpdate = true
     },
     fetchFormUpdate() {
@@ -206,7 +205,7 @@ export default {
 
     // -------- modal view -------- //
     ViewPlanGold(e) {
-      this._modelUpdate = { ...e }
+      this.viewModel = { ...e }
       this.isShowModalView = true
     },
     onCloseFormView() {
