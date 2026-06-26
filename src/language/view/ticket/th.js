@@ -24,6 +24,8 @@ export default {
     createBy: 'แจ้งโดย',
     createDate: 'วันที่แจ้ง',
     updateDate: 'อัปเดตล่าสุด',
+    changeStatus: 'เปลี่ยนสถานะ',
+    latestAnalysis: 'ผลวิเคราะห์ล่าสุด',
     keyword: 'ค้นหา'
   },
 
@@ -36,7 +38,8 @@ export default {
     open: 'เปิด',
     inProgress: 'กำลังดำเนินการ',
     resolved: 'แก้เสร็จ',
-    closed: 'ปิด'
+    closed: 'ปิด',
+    cancelled: 'ยกเลิก'
   },
 
   placeholder: {
@@ -120,6 +123,11 @@ export default {
       add: 'บันทึกสำเร็จ',
       delete: 'ลบสำเร็จ'
     }
+  },
+
+  statusModal: {
+    title: 'เปลี่ยนสถานะ Ticket',
+    required: 'กรุณาเลือกสถานะ'
   },
 
   manual: {

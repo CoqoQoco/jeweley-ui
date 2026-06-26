@@ -74,9 +74,27 @@
             icon="bi-eye"
             @click="onViewDetail(data)"
           />
+          <ButtonGeneric
+            variant="main"
+            icon="bi-arrow-repeat"
+            class="ml-1"
+            :title="$t('view.ticket.field.changeStatus')"
+            @click="onOpenStatusModal(data)"
+          />
+        </template>
+
+        <template #latestAnalysisTemplate="{ data }">
+          <span class="analysis-cell" :title="data.latestAnalysis || ''">{{ data.latestAnalysis || '-' }}</span>
         </template>
       </BaseDataTable>
     </div>
+
+    <statusChangeModal
+      :isShow="statusModal.isShow"
+      :ticket="statusModal.ticket"
+      @closeModal="statusModal.isShow = false"
+      @saved="onStatusSaved"
+    />
   </div>
 </template>
 
@@ -90,6 +108,8 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
+import statusChangeModal from './modal/status-change-modal.vue'
+
 export default {
   name: 'TicketManageIndexView',
 
@@ -98,7 +118,8 @@ export default {
     InputTextGeneric,
     ButtonGeneric,
     MultiSelectGeneric,
-    BaseDataTable
+    BaseDataTable,
+    statusChangeModal
   },
 
   mixins: [dataTablePaging],
@@ -116,6 +137,10 @@ export default {
         status: [],
         type: [],
         keyword: null
+      },
+      statusModal: {
+        isShow: false,
+        ticket: {}
       }
     }
   },
@@ -133,19 +158,22 @@ export default {
         { value: 1, label: this.$t('view.ticket.status.open') },
         { value: 2, label: this.$t('view.ticket.status.inProgress') },
         { value: 3, label: this.$t('view.ticket.status.resolved') },
-        { value: 4, label: this.$t('view.ticket.status.closed') }
+        { value: 4, label: this.$t('view.ticket.status.closed') },
+        { value: 5, label: this.$t('view.ticket.status.cancelled') }
       ]
     },
 
     columns() {
       return [
-        { field: 'action', header: this.$t('common.field.action'), width: '90px', align: 'center', sortable: false },
+        { field: 'action', header: this.$t('common.field.action'), width: '110px', align: 'center', sortable: false },
         { field: 'ticketNo', header: this.$t('view.ticket.field.ticketNo'), minWidth: '100px' },
         { field: 'type', header: this.$t('view.ticket.field.type'), minWidth: '120px', sortable: false },
         { field: 'topicName', header: this.$t('view.ticket.field.topic'), minWidth: '150px' },
         { field: 'title', header: this.$t('view.ticket.field.title'), minWidth: '200px' },
         { field: 'createBy', header: this.$t('view.ticket.field.createBy'), minWidth: '120px' },
         { field: 'status', header: this.$t('view.ticket.field.status'), minWidth: '120px', sortable: false },
+        { field: 'updateDate', header: this.$t('view.ticket.field.updateDate'), minWidth: '140px', format: 'datetime' },
+        { field: 'latestAnalysis', header: this.$t('view.ticket.field.latestAnalysis'), minWidth: '200px', sortable: false },
         { field: 'createDate', header: this.$t('view.ticket.field.createDate'), minWidth: '120px', format: 'datetime' }
       ]
     }
@@ -189,7 +217,8 @@ export default {
         1: this.$t('view.ticket.status.open'),
         2: this.$t('view.ticket.status.inProgress'),
         3: this.$t('view.ticket.status.resolved'),
-        4: this.$t('view.ticket.status.closed')
+        4: this.$t('view.ticket.status.closed'),
+        5: this.$t('view.ticket.status.cancelled')
       }
       return map[statusId] || fallback || '-'
     },
@@ -199,9 +228,19 @@ export default {
         1: 'status-open',
         2: 'status-in-progress',
         3: 'status-resolved',
-        4: 'status-closed'
+        4: 'status-closed',
+        5: 'status-cancelled'
       }
       return map[statusId] || ''
+    },
+
+    onOpenStatusModal(row) {
+      this.statusModal = { isShow: true, ticket: { ...row } }
+    },
+
+    onStatusSaved() {
+      this.statusModal.isShow = false
+      this.fetchData()
     }
   }
 }
@@ -242,6 +281,20 @@ export default {
     background: #e2e3e5;
     color: #383d41;
   }
+
+  &.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.analysis-cell {
+  display: inline-block;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
 }
 
 .type-badge {

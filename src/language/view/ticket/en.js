@@ -24,6 +24,8 @@ export default {
     createBy: 'Reported By',
     createDate: 'Date Reported',
     updateDate: 'Last Updated',
+    changeStatus: 'Change Status',
+    latestAnalysis: 'Latest Analysis',
     keyword: 'Search'
   },
 
@@ -36,7 +38,8 @@ export default {
     open: 'Open',
     inProgress: 'In Progress',
     resolved: 'Resolved',
-    closed: 'Closed'
+    closed: 'Closed',
+    cancelled: 'Cancelled'
   },
 
   placeholder: {
@@ -120,6 +123,11 @@ export default {
       add: 'Saved successfully',
       delete: 'Deleted successfully'
     }
+  },
+
+  statusModal: {
+    title: 'Change Ticket Status',
+    required: 'Please select a status'
   },
 
   manual: {

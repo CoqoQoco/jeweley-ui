@@ -9,5 +9,6 @@ export default {
 
   //ticket
   report: 'Report Issue',
-  userAccount: 'My Profile'
+  userAccount: 'My Profile',
+  ticketManage: 'Manage Tickets'
 }

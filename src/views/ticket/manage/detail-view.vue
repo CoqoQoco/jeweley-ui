@@ -189,7 +189,8 @@ export default {
         { value: 1, label: this.$t('view.ticket.status.open') },
         { value: 2, label: this.$t('view.ticket.status.inProgress') },
         { value: 3, label: this.$t('view.ticket.status.resolved') },
-        { value: 4, label: this.$t('view.ticket.status.closed') }
+        { value: 4, label: this.$t('view.ticket.status.closed') },
+        { value: 5, label: this.$t('view.ticket.status.cancelled') }
       ]
     },
 

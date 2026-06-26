@@ -4,7 +4,8 @@ import api from '@/axios/axios-helper.js'
 export const useTicketStore = defineStore('ticket', {
   state: () => ({
     dataList: [],
-    total: 0
+    total: 0,
+    openCount: 0
   }),
 
   actions: {
@@ -48,6 +49,12 @@ export const useTicketStore = defineStore('ticket', {
 
     async deleteMyTicketComment(commentId) {
       return await api.jewelry.post('Ticket/DeleteMyComment', { commentId })
+    },
+
+    async fetchOpenCount() {
+      const res = await api.jewelry.post('Ticket/CountOpen', {}, { skipLoading: true })
+      this.openCount = typeof res === 'number' ? res : 0
+      return this.openCount
     }
   }
 })

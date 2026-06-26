@@ -80,7 +80,7 @@ const routes = [
         en: 'Manage Tickets'
       },
       classIcon: 'bi bi-card-checklist',
-      majorShow: true,
+      majorShow: false,
       permissions: [PERMISSIONS.TICKET_MANAGE]
     },
     children: [

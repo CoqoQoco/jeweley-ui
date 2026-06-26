@@ -28,6 +28,16 @@
             <span>{{ $t('breadcrumb.report') }}</span>
           </div>
           <div
+            v-if="hasTicketPermission"
+            class="nav-item nav-item--badge"
+            :class="{ active: isActive('ticket') }"
+            @click="navigateTo('ticket', 'ticket-manage')"
+          >
+            <i class="bi bi-card-checklist"></i>
+            <span>{{ $t('breadcrumb.ticketManage') }}</span>
+            <span v-if="ticketOpenCount > 0" class="nav-badge">{{ ticketOpenCount }}</span>
+          </div>
+          <div
             class="nav-item"
             :class="{ active: isActive('profile') }"
             @click="navigateTo('profile', 'user-account')"
@@ -95,6 +105,7 @@
 <script>
 import SidebarView from '@/components/layout/side-bar.vue'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { useTicketStore } from '@/stores/modules/api/ticket-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { setLocale } from '@/plugins/i18n/config.js'
 import { storage } from '@/services/storage.js'
@@ -106,10 +117,19 @@ export default {
 
   setup() {
     const authStore = useAuthStore()
-    return { authStore }
+    const ticketStore = useTicketStore()
+    return { authStore, ticketStore }
   },
 
   computed: {
+    hasTicketPermission() {
+      return this.authStore.hasPermission('ticket:manage')
+    },
+
+    ticketOpenCount() {
+      return this.ticketStore.openCount
+    },
+
     userName() {
       return `${this.authStore?.user.firstName} ${this.authStore?.user.lastName}`
     },
@@ -149,15 +169,28 @@ export default {
   },
 
   watch: {
-    $route(to) {
+    $route(to, from) {
       if (to.name === 'dashboard') {
         this.setActive('home')
       } else if (to.name === 'user-account') {
         this.setActive('profile')
       } else if (to.name === 'ticket-create') {
         this.setActive('report')
+      } else if (to.name === 'ticket-manage' || to.name === 'ticket-manage-detail') {
+        this.setActive('ticket')
       } else {
         this.setActive('menu')
+      }
+
+      // refresh badge เมื่อออกจากหน้า ticket-manage
+      if (
+        this.hasTicketPermission &&
+        from &&
+        (from.name === 'ticket-manage' || from.name === 'ticket-manage-detail') &&
+        to.name !== 'ticket-manage' &&
+        to.name !== 'ticket-manage-detail'
+      ) {
+        this.ticketStore.fetchOpenCount()
       }
 
       this.closeSidebar()
@@ -168,7 +201,8 @@ export default {
     return {
       isSideBarVisible: false,
       activePage: 'home',
-      currentLang: storage.getItem('lang', 'th')
+      currentLang: storage.getItem('lang', 'th'),
+      ticketPollId: null
     }
   },
 
@@ -222,6 +256,10 @@ export default {
   beforeUnmount() {
     document.body.style.overflow = '' // คืนค่าการเลื่อนหน้าเว็บ
 
+    if (this.ticketPollId) {
+      clearInterval(this.ticketPollId)
+    }
+
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.removeEventListener('keydown', this.handleKeyDown)
   },
@@ -234,9 +272,21 @@ export default {
       this.setActive('profile')
     } else if (this.$route.name === 'ticket-create') {
       this.setActive('report')
+    } else if (
+      this.$route.name === 'ticket-manage' ||
+      this.$route.name === 'ticket-manage-detail'
+    ) {
+      this.setActive('ticket')
     } else {
       this.setActive('menu')
     }
+
+    // fetch badge + start polling ถ้ามีสิทธิ์
+    if (this.hasTicketPermission) {
+      this.ticketStore.fetchOpenCount()
+      this.ticketPollId = setInterval(() => this.ticketStore.fetchOpenCount(), 60000)
+    }
+
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.addEventListener('keydown', this.handleKeyDown)
   },
@@ -313,6 +363,26 @@ export default {
     background-color: var(--base-font-sub-color);
     color: white;
   }
+}
+
+.nav-item--badge {
+  position: relative;
+}
+
+.nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--base-red);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 8px;
 }
 
 .main-right-container {

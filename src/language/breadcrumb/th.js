@@ -40,7 +40,6 @@ export default {
   masterProductType: 'ข้อมูลประเภทสินค้า',
 
   //setting
-  userAccount: 'จัดการบัญชีผู้ใช้',
   systemAdmin: 'ผู้ดูเเลระบบ',
 
   detail: 'รายละเอียด',
@@ -63,4 +62,5 @@ export default {
   //ticket
   report: 'แจ้งปัญหา',
   userAccount: 'ข้อมูลบุคคล',
+  ticketManage: 'จัดการ Ticket',
 }
