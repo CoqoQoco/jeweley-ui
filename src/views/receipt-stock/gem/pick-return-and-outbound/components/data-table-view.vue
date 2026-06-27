@@ -158,7 +158,7 @@ export default {
         },
         {
           field: 'operatorBy',
-          header: 'ผู้ยืม',
+          header: 'ผู้เบิก',
           sortable: true,
           width: '150px'
         },

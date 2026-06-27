@@ -101,7 +101,7 @@ export default {
       description: 'Process return/outbound transactions from borrow slips',
       borrowDate: 'Borrow Date',
       returnDate: 'Return Deadline',
-      operator: 'Borrower',
+      operator: 'Issued By',
       createBy: 'Created By',
       borrowNo: 'Borrow No.',
       code: 'Code',

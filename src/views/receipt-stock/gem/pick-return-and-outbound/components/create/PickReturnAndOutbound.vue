@@ -22,7 +22,7 @@
             <span class="desc-text-white">{{ formatDateTime(model.returnDate) }}</span>
           </div>
           <div class="d-flex flex-column">
-            <span class="title-text-white">ผู้ยืม</span>
+            <span class="title-text-white">ผู้เบิก</span>
             <span class="desc-text-white">{{ model.operatorBy }}</span>
           </div>
           <div class="d-flex flex-column">

@@ -101,7 +101,7 @@ export default {
       description: 'ทำรายการคืนเข้าคลัง/เบิกออกคลัง จากใบยืมออกคลัง',
       borrowDate: 'วันที่ยืมออกคลัง',
       returnDate: 'กำหนดคืนเข้าคลัง',
-      operator: 'ผู้ยืม',
+      operator: 'ผู้เบิก',
       createBy: 'ผู้ทำรายการ',
       borrowNo: 'เลขที่ใบยืม',
       code: 'รหัส',
