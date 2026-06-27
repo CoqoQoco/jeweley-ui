@@ -55,6 +55,10 @@ export const useTicketStore = defineStore('ticket', {
       const res = await api.jewelry.post('Ticket/CountOpen', {}, { skipLoading: true })
       this.openCount = typeof res === 'number' ? res : 0
       return this.openCount
+    },
+
+    async fetchDashboard(params) {
+      return await api.jewelry.post('Ticket/Dashboard', params)
     }
   }
 })

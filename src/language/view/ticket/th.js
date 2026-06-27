@@ -130,6 +130,49 @@ export default {
     required: 'กรุณาเลือกสถานะ'
   },
 
+  dashboard: {
+    title: 'สรุปภาพรวม Ticket',
+    subtitle: 'ภาพรวมสถานะและแนวโน้มการแจ้งปัญหา/ขอฟีเจอร์ทั้งหมด',
+    refresh: 'รีเฟรช',
+    period: {
+      label: 'ช่วงเวลา',
+      days7: '7 วันล่าสุด',
+      days30: '30 วันล่าสุด',
+      days90: '90 วันล่าสุด',
+      all: 'ทั้งหมด'
+    },
+    kpi: {
+      total: 'ทั้งหมด',
+      pending: 'ค้างดำเนินการ',
+      resolved: 'แก้เสร็จแล้ว',
+      resolvedRate: 'อัตราแก้ไข',
+      unanalyzed: 'ยังไม่ได้วิเคราะห์'
+    },
+    chart: {
+      byStatus: 'สัดส่วนตามสถานะ',
+      byTopic: 'Ticket ตามโมดูล',
+      trend: 'แนวโน้มต่อวัน',
+      aging: 'อายุ Ticket ค้าง'
+    },
+    legend: {
+      created: 'เข้าใหม่',
+      resolved: 'ปิดงาน'
+    },
+    type: {
+      bug: 'Bug',
+      feature: 'Feature'
+    },
+    aging: {
+      today: 'วันนี้',
+      days1to3: '1-3 วัน',
+      days4to7: '4-7 วัน',
+      over7: 'เกิน 7 วัน'
+    },
+    unit: {
+      items: 'รายการ'
+    }
+  },
+
   manual: {
     title: 'คู่มือการแจ้งปัญหา / ขอฟีเจอร์',
     btnLabel: 'คู่มือ',

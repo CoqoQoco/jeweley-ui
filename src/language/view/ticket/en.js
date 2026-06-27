@@ -130,6 +130,49 @@ export default {
     required: 'Please select a status'
   },
 
+  dashboard: {
+    title: 'Ticket Overview',
+    subtitle: 'Overview of all ticket statuses and trends',
+    refresh: 'Refresh',
+    period: {
+      label: 'Period',
+      days7: 'Last 7 days',
+      days30: 'Last 30 days',
+      days90: 'Last 90 days',
+      all: 'All time'
+    },
+    kpi: {
+      total: 'Total',
+      pending: 'Pending',
+      resolved: 'Resolved',
+      resolvedRate: 'Resolution Rate',
+      unanalyzed: 'Unanalyzed'
+    },
+    chart: {
+      byStatus: 'By Status',
+      byTopic: 'By Module',
+      trend: 'Daily Trend',
+      aging: 'Ticket Age'
+    },
+    legend: {
+      created: 'New',
+      resolved: 'Resolved'
+    },
+    type: {
+      bug: 'Bug',
+      feature: 'Feature'
+    },
+    aging: {
+      today: 'Today',
+      days1to3: '1-3 days',
+      days4to7: '4-7 days',
+      over7: 'Over 7 days'
+    },
+    unit: {
+      items: 'items'
+    }
+  },
+
   manual: {
     title: 'How to Report an Issue / Request a Feature',
     btnLabel: 'Guide',

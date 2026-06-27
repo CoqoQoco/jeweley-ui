@@ -1,5 +1,7 @@
 <template>
   <div class="app-container">
+    <ticketDashboard />
+
     <SearchBarGeneric
       :title="$t('view.ticket.manageTitle')"
       :description="$t('view.ticket.manageDesc')"
@@ -84,7 +86,15 @@
         </template>
 
         <template #latestAnalysisTemplate="{ data }">
-          <span class="analysis-cell" :title="data.latestAnalysis || ''">{{ data.latestAnalysis || '-' }}</span>
+          <span
+            class="analysis-cell"
+            :class="{ clickable: !!data.latestAnalysis }"
+            :title="data.latestAnalysis || ''"
+            @click="onViewAnalysis(data)"
+          >
+            {{ data.latestAnalysis || '-' }}
+            <i v-if="data.latestAnalysis" class="bi bi-eye analysis-icon"></i>
+          </span>
         </template>
       </BaseDataTable>
     </div>
@@ -94,6 +104,12 @@
       :ticket="statusModal.ticket"
       @closeModal="statusModal.isShow = false"
       @saved="onStatusSaved"
+    />
+
+    <analysisModal
+      :isShow="analysisModal.isShow"
+      :ticket="analysisModal.ticket"
+      @closeModal="analysisModal.isShow = false"
     />
   </div>
 </template>
@@ -109,6 +125,8 @@ import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import statusChangeModal from './modal/status-change-modal.vue'
+import analysisModal from './modal/analysis-modal.vue'
+import ticketDashboard from './components/ticket-dashboard.vue'
 
 export default {
   name: 'TicketManageIndexView',
@@ -119,7 +137,9 @@ export default {
     ButtonGeneric,
     MultiSelectGeneric,
     BaseDataTable,
-    statusChangeModal
+    statusChangeModal,
+    analysisModal,
+    ticketDashboard
   },
 
   mixins: [dataTablePaging],
@@ -139,6 +159,10 @@ export default {
         keyword: null
       },
       statusModal: {
+        isShow: false,
+        ticket: {}
+      },
+      analysisModal: {
         isShow: false,
         ticket: {}
       }
@@ -241,6 +265,12 @@ export default {
     onStatusSaved() {
       this.statusModal.isShow = false
       this.fetchData()
+    },
+
+    onViewAnalysis(data) {
+      if (!data.latestAnalysis) return
+      this.analysisModal.ticket = data
+      this.analysisModal.isShow = true
     }
   }
 }
@@ -295,6 +325,16 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
+
+  &.clickable {
+    cursor: pointer;
+    color: var(--base-font-color);
+  }
+}
+
+.analysis-icon {
+  margin-left: var(--sp-xs);
+  font-size: var(--fs-sm);
 }
 
 .type-badge {
