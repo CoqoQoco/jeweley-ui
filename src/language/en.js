@@ -20,6 +20,7 @@ import settingLang from './view/setting/en.js'
 import reportProductionLang from './view/report-production/en.js'
 import ticketLang from './view/ticket/en.js'
 import graphLang from './view/graph/en.js'
+import downloadsLang from './view/downloads/en.js'
 import * as mobileLang from './view/mobile/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -151,6 +152,7 @@ export default {
     },
     ticket: { ...ticketLang },
     graph: { ...graphLang },
+    downloads: { ...downloadsLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },

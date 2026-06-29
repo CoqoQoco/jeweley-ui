@@ -20,6 +20,7 @@ import settingLang from './view/setting/th.js'
 import reportProductionLang from './view/report-production/th.js'
 import ticketLang from './view/ticket/th.js'
 import graphLang from './view/graph/th.js'
+import downloadsLang from './view/downloads/th.js'
 import * as mobileLang from './view/mobile/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -151,6 +152,7 @@ export default {
     },
     ticket: { ...ticketLang },
     graph: { ...graphLang },
+    downloads: { ...downloadsLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },
