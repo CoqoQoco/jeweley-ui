@@ -226,6 +226,19 @@
                 />
               </div>
 
+              <!-- Earring Stem Size -->
+              <div class="form-group">
+                <label class="form-label">
+                  {{ $t('view.stock.product.earringStemSize') }}
+                </label>
+                <input
+                  class="form-control"
+                  :class="{ 'has-value': stock.earringStemSize }"
+                  type="text"
+                  v-model="stock.earringStemSize"
+                />
+              </div>
+
               <!-- Product Type -->
               <div class="form-group">
                 <label class="form-label">

@@ -117,6 +117,7 @@ export default {
     grProduction: {
       salePrice: 'Sale Price',
       studEarring: 'Stud Earring',
+      earringStemSize: 'Earring Stem Size',
       location: 'Storage',
       materialComponents: 'Material Components',
       materialDescription: 'Add/edit materials used in the piece',

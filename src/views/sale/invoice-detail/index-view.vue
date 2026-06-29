@@ -1084,94 +1084,108 @@ export default {
         }
 
         if (printData.paperSize === 'vat-bridge') {
-          const { printVat } = await import('@/services/api/print-bridge-service.js')
+          const { printGeneric } = await import('@/services/api/print-bridge-service.js')
           const { getVatLayout } = await import('@/services/helper/print/vat-layout-store.js')
+          const { buildVatPrintModel } = await import('@/services/helper/print/vat-print-model-builder.js')
           const layout = await getVatLayout()
           const offsetMm = printData.continuousOffset || { x: 0, y: 0 }
-          const layoutPayload = layout
+          const mergedLayout = layout
             ? { ...layout, offsetX: (layout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (layout.offsetY ?? 0) + (offsetMm.y || 0) }
             : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
-          if (layoutPayload && printData.printerName != null) {
-            layoutPayload.printerName = printData.printerName
-          } else if (!layoutPayload && printData.printerName != null) {
-            // no-op: printerName will be set in payload directly below if needed
+          const vatInvoice = {
+            invoiceNo: options.invoiceNo,
+            invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
+            customer: {
+              name: this.invoiceData.customerName || '',
+              address: this.invoiceData.customerAddress || '',
+              taxId: this.invoiceData.customerTaxId || ''
+            },
+            customerTaxId: this.invoiceData.customerTaxId || '',
+            items: (this.invoiceItems || []).map(i => ({
+              productNameEN: i.productNameEN || i.description || i.productNumber || '',
+              qty: Number(i.qty) || 0,
+              appraisalPrice: Number(i.appraisalPrice) || 0,
+              discountPercent: Number(i.discountPercent) || 0
+            })),
+            currencyRate: Number(this.invoiceData.currencyRate) || 1,
+            specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
+            specialAddition: Number(this.invoiceData.specialAddition) || 0,
+            freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
+            vatPercent: Number(this.invoiceData.vatPercent) || 0
           }
-          const payload = {
-            invoice: {
-              invoiceNo: options.invoiceNo,
-              invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
-              customer: {
-                name: this.invoiceData.customerName || '',
-                address: this.invoiceData.customerAddress || '',
-                taxId: this.invoiceData.customerTaxId || ''
-              },
-              customerTaxId: this.invoiceData.customerTaxId || '',
-              items: (this.invoiceItems || []).map(i => ({
+          const vatModel = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null })
+          await printGeneric(vatModel)
+          success(this.$t('view.sale.invoiceDetail.success.printVat'), 'Bridge GDI')
+          this.invoiceStore.createPrintLog({
+            invoiceNumber: printData.invoiceNumber,
+            paperType: 'vat',
+            data: JSON.stringify({ flags: null, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate })
+          })
+          return
+        } else if (printData.paperSize === 'bill') {
+          const { printGeneric } = await import('@/services/api/print-bridge-service.js')
+          const { getBillLayout } = await import('@/services/helper/print/bill-layout-store.js')
+          const { buildBillPrintModel } = await import('@/services/helper/print/bill-print-model-builder.js')
+          const billLayout = await getBillLayout()
+          const offsetMm = printData.billOffset || { x: 0, y: 0 }
+          const mergedBillLayout = billLayout
+            ? { ...billLayout, offsetX: (billLayout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (billLayout.offsetY ?? 0) + (offsetMm.y || 0) }
+            : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
+          const billInvoice = {
+            invoiceNo: options.invoiceNo,
+            invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
+            customer: {
+              name: this.invoiceData.customerName || '',
+              address: this.invoiceData.customerAddress || '',
+              taxId: this.invoiceData.customerTaxId || ''
+            },
+            customerTaxId: this.invoiceData.customerTaxId || '',
+            items: (this.invoiceItems || []).map(i => {
+              const mats = Array.isArray(i.materials) ? i.materials : []
+              const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+              const stoneWeight = mats.filter(m => m.type === 'Gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+              const diamondWeight = mats.filter(m => m.type === 'Diamond').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+              return {
+                stockNumber: i.stockNumberOrigin || i.stockNumber || '',
+                productNumber: i.productNumber || '',
                 productNameEN: i.productNameEN || i.description || i.productNumber || '',
                 qty: Number(i.qty) || 0,
                 appraisalPrice: Number(i.appraisalPrice) || 0,
-                discountPercent: Number(i.discountPercent) || 0
-              })),
-              currencyRate: Number(this.invoiceData.currencyRate) || 1,
-              specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
-              specialAddition: Number(this.invoiceData.specialAddition) || 0,
-              freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
-              vatPercent: Number(this.invoiceData.vatPercent) || 0
-            }
+                discountPercent: Number(i.discountPercent) || 0,
+                goldWeight: goldWeight || null,
+                stoneWeight: stoneWeight || null,
+                diamondWeight: diamondWeight || null,
+                earringStemSize: i.earringStemSize || ''
+              }
+            }),
+            currencyRate: Number(this.invoiceData.currencyRate) || 1,
+            specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
+            specialAddition: Number(this.invoiceData.specialAddition) || 0,
+            freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
+            vatPercent: Number(this.invoiceData.vatPercent) || 0
           }
-          if (layoutPayload) payload.layout = layoutPayload
-          await printVat(payload)
-          success(this.$t('view.sale.invoiceDetail.success.printVat'), 'Bridge GDI')
-          return
-        } else if (printData.paperSize === 'bill') {
-          const { printBill } = await import('@/services/api/print-bridge-service.js')
-          const { getBillLayout } = await import('@/services/helper/print/bill-layout-store.js')
-          const billLayout = await getBillLayout()
-          const offsetMm = printData.billOffset || { x: 0, y: 0 }
-          const layoutPayload = billLayout
-            ? { ...billLayout, offsetX: (billLayout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (billLayout.offsetY ?? 0) + (offsetMm.y || 0) }
-            : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
-          if (layoutPayload && printData.printerName != null) {
-            layoutPayload.printerName = printData.printerName
+          const layoutPayload = mergedBillLayout ? { ...mergedBillLayout } : {}
+          const BILL_FLAG_KEYS = [
+            'showInvoiceNo', 'showDate', 'showPageNumber',
+            'showCustomerName', 'showCustomerTaxId', 'showCustomerAddress',
+            'showItemNo', 'showDescription', 'showStockNumber', 'showProductNumber',
+            'showPriceBeforeDiscount', 'showPriceIncludingVat',
+            'showGoldWeight', 'showStoneWeight', 'showDiamondWeight',
+            'showQty', 'showUnitPrice', 'showAmount', 'showRemark',
+            'showSubtotal', 'showVat', 'showTotal', 'showAmountText',
+            'unitPriceMode', 'unitVatPercent', 'summaryVatPercent'
+          ]
+          for (const key of BILL_FLAG_KEYS) {
+            if (printData[key] !== undefined) layoutPayload[key] = printData[key]
           }
-          const billPayload = {
-            invoice: {
-              invoiceNo: options.invoiceNo,
-              invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
-              customer: {
-                name: this.invoiceData.customerName || '',
-                address: this.invoiceData.customerAddress || '',
-                taxId: this.invoiceData.customerTaxId || ''
-              },
-              customerTaxId: this.invoiceData.customerTaxId || '',
-              items: (this.invoiceItems || []).map(i => {
-                const mats = Array.isArray(i.materials) ? i.materials : []
-                const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-                const stoneWeight = mats.filter(m => m.type === 'Gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-                const diamondWeight = mats.filter(m => m.type === 'Diamond').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-                return {
-                  stockNumber: i.stockNumber || '',
-                  productNumber: i.productNumber || '',
-                  productNameEN: i.productNameEN || i.description || i.productNumber || '',
-                  description: i.description || '',
-                  qty: Number(i.qty) || 0,
-                  appraisalPrice: Number(i.appraisalPrice) || 0,
-                  discountPercent: Number(i.discountPercent) || 0,
-                  goldWeight: goldWeight || null,
-                  stoneWeight: stoneWeight || null,
-                  diamondWeight: diamondWeight || null
-                }
-              }),
-              currencyRate: Number(this.invoiceData.currencyRate) || 1,
-              specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
-              specialAddition: Number(this.invoiceData.specialAddition) || 0,
-              freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
-              vatPercent: Number(this.invoiceData.vatPercent) || 0
-            }
-          }
-          if (layoutPayload) billPayload.layout = layoutPayload
-          await printBill(billPayload)
+          const billModel = buildBillPrintModel(billInvoice, layoutPayload, { printerName: printData.printerName ?? null })
+          await printGeneric(billModel)
           success(this.$t('view.sale.invoiceDetail.success.printBill'), 'Bridge GDI')
+          this.invoiceStore.createPrintLog({
+            invoiceNumber: printData.invoiceNumber,
+            paperType: 'bill',
+            data: JSON.stringify({ unitPriceMode: printData.unitPriceMode, unitVatPercent: printData.unitVatPercent, summaryVatPercent: printData.summaryVatPercent, flags: Object.fromEntries(Object.entries(printData).filter(([k]) => k.startsWith('show'))), billOffset: printData.billOffset, continuousOffset: null, printerName: printData.printerName, template: printData.invoiceTemplate })
+          })
           return
         } else {
           if (printData.invoiceTemplate === 'summary') {
@@ -1181,6 +1195,12 @@ export default {
           }
         }
         success(this.$t('view.sale.invoiceDetail.success.createPDF'), 'Invoice PDF')
+        const a4PaperType = printData.invoiceTemplate === 'summary' ? 'a4-summary' : 'a4'
+        this.invoiceStore.createPrintLog({
+          invoiceNumber: printData.invoiceNumber,
+          paperType: a4PaperType,
+          data: JSON.stringify({ flags: null, billOffset: null, continuousOffset: null, printerName: printData.printerName, template: printData.invoiceTemplate })
+        })
       }
     },
     async handlePreviewPrint(printData) {

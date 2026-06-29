@@ -14,9 +14,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.invoiceNo.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.invoiceNo.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.invoiceNo.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.invoiceNo.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -26,9 +26,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.date.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.date.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.date.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.date.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -43,9 +43,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.customerName.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.customerName.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.customerName.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.customerName.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -55,9 +55,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.customerTaxId.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.customerTaxId.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.customerTaxId.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.customerTaxId.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -67,9 +67,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.customerAddress.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.customerAddress.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.customerAddress.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.customerAddress.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -84,108 +84,115 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.itemsStart.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.itemsStart.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.itemsStart.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.itemsStart.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">ตำแหน่ง X — ลำดับ</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemNoX" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.itemNoX" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Stock Number X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.xStockNumber" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xStockNumber" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Product Number X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.xProductNumber" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xProductNumber" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">ชื่อสินค้า X (Product Name)</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemDescX" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.itemDescX" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">ราคาทุน X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.xPriceBeforeDiscount" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xPriceBeforeDiscount" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">ราคาขาย + VAT X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.xPriceIncludingVat" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xPriceIncludingVat" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Qty X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemQtyX" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.itemQtyX" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Gold (gms) X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.xGoldWeight" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xGoldWeight" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Stone (cts) X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.xStoneWeight" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xStoneWeight" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Diamond (cts) X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.xDiamondWeight" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xDiamondWeight" type="number" step="0.01" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ตำแหน่ง X — หมายเหตุ (ขนาดแป้นต่างหู)</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xRemark" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Unit Price X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemPriceX" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.itemPriceX" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Amount X</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemAmountX" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.itemAmountX" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Row Height</label>
-            <div class="form-input-col">
-              <input v-model.number="form.rowHeight" type="number" step="0.01" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.rowHeight" type="number" step="0.01" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">แถวสูงสุด/หน้า</label>
-            <div class="form-input-col">
-              <input v-model.number="form.maxRowsPerPage" type="number" step="1" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.maxRowsPerPage" type="number" step="1" />
             </div>
           </div>
         </div>
@@ -199,31 +206,216 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.pageNumber.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.pageNumber.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.pageNumber.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.pageNumber.y" type="number" step="0.01" />
               </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label-col">แสดงคอลัมน์ "ราคาทุน"</label>
-            <div class="form-input-col">
-              <input v-model="form.showPriceBeforeDiscount" type="checkbox" class="form-check-input" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label-col">แสดงคอลัมน์ "ราคาขาย + VAT"</label>
-            <div class="form-input-col">
-              <input v-model="form.showPriceIncludingVat" type="checkbox" class="form-check-input" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">ใช้ปี พ.ศ. (Buddhist year)</label>
             <div class="form-input-col">
-              <input v-model="form.useBuddhistYear" type="checkbox" class="form-check-input" />
+              <CheckboxGeneric v-model="form.useBuddhistYear" />
+            </div>
+          </div>
+
+          <!-- Header group -->
+          <div class="toggle-group-title mt-3 mb-1">Header</div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดง Invoice No.</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showInvoiceNo" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงวันที่</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showDate" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงเลขหน้า</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showPageNumber" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงชื่อลูกค้า</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showCustomerName" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงเลขผู้เสียภาษีลูกค้า</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showCustomerTaxId" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงที่อยู่ลูกค้า</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showCustomerAddress" />
+            </div>
+          </div>
+
+          <!-- Table group -->
+          <div class="toggle-group-title mt-3 mb-1">ตาราง</div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงลำดับที่ (Item No.)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showItemNo" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงชื่อสินค้า (Description)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showDescription" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงคอลัมน์ Stock No.</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showStockNumber" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงคอลัมน์ รหัสสินค้า</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showProductNumber" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงคอลัมน์ "ราคาทุน"</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showPriceBeforeDiscount" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงคอลัมน์ "ราคาขาย+VAT"</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showPriceIncludingVat" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงน้ำหนักทอง (Gold gms)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showGoldWeight" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงน้ำหนักพลอย (Stone cts)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showStoneWeight" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงน้ำหนักเพชร (Diamond cts)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showDiamondWeight" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงจำนวน (Qty)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showQty" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงราคาต่อหน่วย (Unit Price)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showUnitPrice" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงยอดรวมต่อแถว (Amount)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showAmount" />
+            </div>
+          </div>
+
+          <!-- Footer group -->
+          <div class="toggle-group-title mt-3 mb-1">Footer</div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดง Subtotal (ก่อน VAT)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showSubtotal" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดง VAT</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showVat" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดง Total</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showTotal" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงจำนวนเงินตัวอักษร</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showAmountText" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงคอลัมน์ หมายเหตุ (ขนาดแป้นต่างหู)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showRemark" />
+            </div>
+          </div>
+
+          <!-- VAT/price mode -->
+          <div class="toggle-group-title mt-3 mb-1">รูปแบบ VAT / ราคา</div>
+
+          <div class="form-row">
+            <label class="form-label-col">คอลัมน์ Unit Price แสดง</label>
+            <div class="form-input-col">
+              <RadioGroupGeneric
+                v-model="form.unitPriceMode"
+                :options="unitPriceModeOptions"
+                optionLabel="label"
+                optionValue="value"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">VAT % (ต่อหน่วย)</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.unitVatPercent" type="number" step="0.01" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">VAT % (สรุป)</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.summaryVatPercent" type="number" step="0.01" />
             </div>
           </div>
         </div>
@@ -237,9 +429,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.subtotal.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.subtotal.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.subtotal.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.subtotal.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -249,9 +441,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.vat.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.vat.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.vat.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.vat.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -261,9 +453,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.total.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.total.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.total.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.total.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -273,9 +465,9 @@
             <div class="form-input-col">
               <div class="xy-pair">
                 <span class="xy-tag">X</span>
-                <input v-model.number="form.amountText.x" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.amountText.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
-                <input v-model.number="form.amountText.y" type="number" step="0.01" class="form-control" />
+                <InputTextGeneric v-model="form.amountText.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -287,29 +479,43 @@
 
           <div class="form-row">
             <label class="form-label-col">Header Font Size</label>
-            <div class="form-input-col">
-              <input v-model.number="form.headerFontSize" type="number" step="1" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.headerFontSize" type="number" step="1" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ขนาดฟอนต์ลูกค้า</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.customerFontSize" type="number" step="1" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">{{ $t('view.sale.invoiceDetail.customerAddressMaxCharsLabel') }}</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.customerAddressMaxChars" type="number" step="1" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Item Font Size</label>
-            <div class="form-input-col">
-              <input v-model.number="form.itemFontSize" type="number" step="1" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.itemFontSize" type="number" step="1" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Offset X (mm)</label>
-            <div class="form-input-col">
-              <input v-model.number="form.offsetX" type="number" step="0.5" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.offsetX" type="number" step="0.5" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label-col">Offset Y (mm)</label>
-            <div class="form-input-col">
-              <input v-model.number="form.offsetY" type="number" step="0.5" class="form-control single" />
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.offsetY" type="number" step="0.5" />
             </div>
           </div>
 
@@ -353,9 +559,13 @@
 
 <script>
 import { getBillLayout, saveBillLayout } from '@/services/helper/print/bill-layout-store.js'
-import { printBill } from '@/services/api/print-bridge-service.js'
+import { printGeneric } from '@/services/api/print-bridge-service.js'
+import { buildBillPrintModel } from '@/services/helper/print/bill-print-model-builder.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { getPrinterList } from '@/services/api/printer-config-service.js'
 
 const DEFAULT_LAYOUT = {
@@ -392,7 +602,40 @@ const DEFAULT_LAYOUT = {
   offsetY: 8,
   useBuddhistYear: true,
   showPriceBeforeDiscount: true,
-  showPriceIncludingVat: true
+  showPriceIncludingVat: true,
+  xRemark: 2.0,
+  showRemark: true,
+  showStockNumber: true,
+  showProductNumber: true,
+  // Header element flags
+  showInvoiceNo: true,
+  showDate: true,
+  showPageNumber: true,
+  showCustomerName: true,
+  showCustomerTaxId: true,
+  showCustomerAddress: true,
+  // Table element flags
+  showItemNo: true,
+  showDescription: true,
+  showGoldWeight: true,
+  showStoneWeight: true,
+  showDiamondWeight: true,
+  showQty: true,
+  showUnitPrice: true,
+  showAmount: true,
+  // Footer element flags
+  showSubtotal: true,
+  showVat: true,
+  showTotal: true,
+  showAmountText: true,
+  // Unit price mode and VAT percents
+  unitPriceMode: 'tag',
+  unitVatPercent: 7,
+  summaryVatPercent: 7,
+  // Customer font size (separate from header)
+  customerFontSize: 12,
+  // Address word-wrap: max characters per line
+  customerAddressMaxChars: 70
 }
 
 function deepClone(obj) {
@@ -402,12 +645,22 @@ function deepClone(obj) {
 export default {
   name: 'BillPrintLayoutView',
 
-  components: { DropdownGeneric },
+  components: { DropdownGeneric, CheckboxGeneric, RadioGroupGeneric, InputTextGeneric },
 
   data() {
     return {
       form: deepClone(DEFAULT_LAYOUT),
       printerOptions: []
+    }
+  },
+
+  computed: {
+    unitPriceModeOptions() {
+      return [
+        { value: 'tag', label: 'ราคาป้าย' },
+        { value: 'addVat', label: '+VAT' },
+        { value: 'subVat', label: '−VAT' }
+      ]
     }
   },
 
@@ -424,8 +677,25 @@ export default {
   },
 
   methods: {
+    coerceNumerics(obj) {
+      const result = deepClone(obj)
+      const numFields = [
+        'itemNoX', 'xStockNumber', 'xProductNumber', 'itemDescX', 'xPriceBeforeDiscount',
+        'xPriceIncludingVat', 'itemQtyX', 'xGoldWeight', 'xStoneWeight', 'xDiamondWeight',
+        'itemPriceX', 'itemAmountX', 'xRemark', 'rowHeight', 'maxRowsPerPage',
+        'headerFontSize', 'customerFontSize', 'itemFontSize', 'offsetX', 'offsetY', 'stockSecondLineDy',
+        'unitVatPercent', 'summaryVatPercent', 'customerAddressMaxChars'
+      ]
+      numFields.forEach(k => { if (result[k] !== undefined) result[k] = Number(result[k]) })
+      const xyFields = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText', 'pageNumber']
+      xyFields.forEach(k => {
+        if (result[k]) { result[k].x = Number(result[k].x); result[k].y = Number(result[k].y) }
+      })
+      return result
+    },
+
     async onSave() {
-      await saveBillLayout(this.form)
+      await saveBillLayout(this.coerceNumerics(this.form))
       success('บันทึกค่า Layout สำเร็จ', 'Bill Print Layout')
     },
 
@@ -435,47 +705,44 @@ export default {
     },
 
     async onTestPrint() {
-      const dummy = {
-        invoice: {
-          invoiceNo: 'TEST-' + Date.now(),
-          invoiceDate: new Date().toISOString().slice(0, 10),
-          customer: { name: 'ทดสอบ พิมพ์', address: '123 ถนนทดสอบ', taxId: '0000000000000' },
-          customerTaxId: '0000000000000',
-          items: [
-            {
-              stockNumber: 'NEW00001',
-              productNumber: 'R-TEST-001',
-              productNameEN: 'Test Ring 1',
-              qty: 2,
-              appraisalPrice: 5000,
-              discountPercent: 10,
-              goldWeight: 1.22,
-              stoneWeight: 0.44,
-              diamondWeight: 0.18
-            },
-            {
-              stockNumber: 'NEW00002',
-              productNumber: 'R-TEST-002',
-              productNameEN: 'Test Ring 2',
-              qty: 3,
-              appraisalPrice: 3000,
-              discountPercent: 5,
-              goldWeight: 0.85,
-              stoneWeight: 0.22,
-              diamondWeight: 0.05
-            }
-          ],
-          currencyRate: 1,
-          specialDiscount: 0,
-          specialAddition: 0,
-          freightAndInsurance: 0,
-          vatPercent: 7
-        },
-        layout: this.form,
-        printerName: this.form.printerName || null
+      const dummyInvoice = {
+        invoiceNo: 'TEST-' + Date.now(),
+        invoiceDate: new Date().toISOString().slice(0, 10),
+        customer: { name: 'ทดสอบ พิมพ์', address: '123 ถนนทดสอบ', taxId: '0000000000000' },
+        customerTaxId: '0000000000000',
+        items: [
+          {
+            stockNumber: 'NEW00001',
+            productNumber: 'R-TEST-001',
+            productNameEN: 'Test Ring 1',
+            qty: 2,
+            appraisalPrice: 5000,
+            discountPercent: 10,
+            goldWeight: 1.22,
+            stoneWeight: 0.44,
+            diamondWeight: 0.18
+          },
+          {
+            stockNumber: 'NEW00002',
+            productNumber: 'R-TEST-002',
+            productNameEN: 'Test Ring 2',
+            qty: 3,
+            appraisalPrice: 3000,
+            discountPercent: 5,
+            goldWeight: 0.85,
+            stoneWeight: 0.22,
+            diamondWeight: 0.05
+          }
+        ],
+        currencyRate: 1,
+        specialDiscount: 0,
+        specialAddition: 0,
+        freightAndInsurance: 0,
+        vatPercent: 7
       }
       try {
-        await printBill(dummy)
+        const model = buildBillPrintModel(dummyInvoice, this.coerceNumerics(this.form), { printerName: this.form.printerName || null })
+        await printGeneric(model)
         success('พิมพ์ทดสอบสำเร็จ', 'Bill Print Layout')
       } catch (err) {
         error(err.message || 'ไม่สามารถพิมพ์ทดสอบได้', 'เกิดข้อผิดพลาด')
@@ -505,7 +772,7 @@ export default {
   .form-input-col {
     flex: 1;
 
-    .form-control.single {
+    &.single-input {
       max-width: 160px;
     }
   }
@@ -521,31 +788,17 @@ export default {
       font-weight: 600;
       flex-shrink: 0;
     }
-
-    .form-control {
-      flex: 1;
-    }
   }
 }
 
-.form-control {
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 0.4rem 0.6rem;
-  font-size: var(--base-font-size);
-  width: 100%;
-
-  &:focus {
-    border-color: var(--base-green);
-    box-shadow: 0 0 0 0.2rem rgba(3, 131, 135, 0.25);
-    outline: none;
-  }
-}
-
-.form-check-input {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
+.toggle-group-title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--base-font-color);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 @media (max-width: 576px) {
@@ -557,7 +810,7 @@ export default {
       flex: none;
     }
 
-    .form-input-col .form-control.single {
+    .form-input-col.single-input {
       max-width: 100%;
     }
   }

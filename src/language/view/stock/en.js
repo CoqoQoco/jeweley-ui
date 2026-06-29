@@ -104,6 +104,7 @@ export default {
     materialTypeDiamond: 'Diamond',
     materialTypeGem: 'Gem',
     placeholderMold: 'Enter mold',
+    earringStemSize: 'Earring Stem Size',
     placeholderSize: 'Enter size',
     selectMaterialType: 'Select type',
     selectGold: 'Select gold',

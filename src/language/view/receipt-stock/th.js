@@ -117,6 +117,7 @@ export default {
     grProduction: {
       salePrice: 'ราคาขาย',
       studEarring: 'แป้นต่างหู',
+      earringStemSize: 'ขนาดแป้นต่างหู',
       location: 'จัดเก็บ',
       materialComponents: 'ส่วนประกอบวัสดุ',
       materialDescription: 'เพิ่ม/แก้ไขวัสดุที่ใช้ในชิ้นงาน',

@@ -151,6 +151,14 @@ export const useInvoiceApiStore = defineStore('invoice', {
         skipLoading: false
       })
     },
+    async createPrintLog({ invoiceNumber, paperType, data }) {
+      const param = { invoiceNumber, paperType, data }
+      return await api.jewelry.post('Invoice/PrintLog/Create', param, { skipLoading: true })
+    },
+    async fetchPrintLogList({ invoiceNumber }) {
+      const param = { invoiceNumber }
+      return await api.jewelry.post('Invoice/PrintLog/List', param, { skipLoading: true })
+    },
     // Invoice Payment APIs
     async createPayment(formData) {
       try {

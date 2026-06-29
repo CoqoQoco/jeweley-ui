@@ -23,6 +23,7 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | PrimeVue `<AutoComplete>` ตรงๆ | `AutoCompleteGeneric` | `@/components/prime-vue/AutoCompleteGeneric.vue` |
 | PrimeVue `<MultiSelect>` ตรงๆ | `MultiSelectGeneric` | `@/components/prime-vue/MultiSelectGeneric.vue` |
 | PrimeVue `<Checkbox>` ตรงๆ | `CheckboxGeneric` | `@/components/prime-vue/CheckboxGeneric.vue` |
+| `<input type="radio">` group | `RadioGroupGeneric` | `@/components/prime-vue/RadioGroupGeneric.vue` |
 | PrimeVue `<Dialog>` | `ModalView` | `@/components/modal/modal-view.vue` |
 | `alert()` / `confirm()` native | `sweetAlerts` service | `@/services/alert/sweetAlerts.js` |
 | `localStorage.getItem/setItem` | `storage` service | `@/services/storage.js` |

@@ -57,6 +57,21 @@
 
         <div>
           <div>
+            <span class="title-text">{{ $t('view.receiptStock.product.grProduction.earringStemSize') }}</span>
+          </div>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            v-model="slotProps.data.earringStemSize"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div>
+          <div>
             <span class="title-text">{{ $t('view.receiptStock.product.grProduction.studEarring') }}</span>
           </div>
           <DropdownGeneric
@@ -153,7 +168,7 @@ export default {
 .form-col-sm-container {
   display: grid;
   gap: var(--sp-sm);
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .title-text {

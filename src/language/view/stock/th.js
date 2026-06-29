@@ -104,6 +104,7 @@ export default {
     materialTypeDiamond: 'เพชร',
     materialTypeGem: 'พลอย',
     placeholderMold: 'ระบุแม่พิมพ์',
+    earringStemSize: 'ขนาดแป้นต่างหู',
     placeholderSize: 'ระบุขนาด',
     selectMaterialType: 'เลือกประเภท',
     selectGold: 'เลือกทอง',
