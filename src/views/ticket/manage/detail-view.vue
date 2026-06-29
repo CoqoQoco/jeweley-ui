@@ -6,134 +6,141 @@
     />
 
     <div v-if="ticket.id" class="mt-2">
-      <!-- Ticket Info Card -->
-      <SectionCardGeneric :title="$t('view.ticket.detailTitle')" class="mb-3">
-        <div class="detail-grid">
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('view.ticket.field.ticketNo') }}:</span>
-            <span class="detail-value">{{ ticket.ticketNo }}</span>
+      <!-- 2-column work grid -->
+      <div class="work-grid">
+        <!-- LEFT: combined detail + response panel -->
+        <SectionCardGeneric class="detail-panel">
+          <!-- Ticket Info section -->
+          <div class="panel-section-header">{{ $t('view.ticket.detailTitle') }}</div>
+          <div class="detail-grid">
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('view.ticket.field.ticketNo') }}:</span>
+              <span class="detail-value">{{ ticket.ticketNo }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('view.ticket.field.type') }}:</span>
+              <span :class="['type-badge', ticket.type === 1 ? 'type-bug' : 'type-feature']">
+                {{ ticket.type === 1 ? $t('view.ticket.type.bug') : $t('view.ticket.type.feature') }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('view.ticket.field.topic') }}:</span>
+              <span class="detail-value">{{ ticket.topicName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('view.ticket.field.createBy') }}:</span>
+              <span class="detail-value">{{ ticket.createBy }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('view.ticket.field.createDate') }}:</span>
+              <span class="detail-value">{{ formatDate(ticket.createDate) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('view.ticket.field.updateDate') }}:</span>
+              <span class="detail-value">{{ formatDate(ticket.updateDate) }}</span>
+            </div>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('view.ticket.field.type') }}:</span>
-            <span :class="['type-badge', ticket.type === 1 ? 'type-bug' : 'type-feature']">
-              {{ ticket.type === 1 ? $t('view.ticket.type.bug') : $t('view.ticket.type.feature') }}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('view.ticket.field.topic') }}:</span>
-            <span class="detail-value">{{ ticket.topicName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('view.ticket.field.createBy') }}:</span>
-            <span class="detail-value">{{ ticket.createBy }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('view.ticket.field.createDate') }}:</span>
-            <span class="detail-value">{{ formatDate(ticket.createDate) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ $t('view.ticket.field.updateDate') }}:</span>
-            <span class="detail-value">{{ formatDate(ticket.updateDate) }}</span>
-          </div>
-        </div>
 
-        <div class="mt-3">
-          <span class="detail-label">{{ $t('view.ticket.field.title') }}:</span>
-          <div class="detail-value mt-1">{{ ticket.title }}</div>
-        </div>
+          <div class="mt-3">
+            <span class="detail-label">{{ $t('view.ticket.field.title') }}:</span>
+            <div class="detail-value mt-1">{{ ticket.title }}</div>
+          </div>
 
-        <div class="mt-3">
-          <span class="detail-label">{{ $t('view.ticket.field.description') }}:</span>
-          <div class="description-box">{{ ticket.description }}</div>
-        </div>
+          <div class="mt-3">
+            <span class="detail-label">{{ $t('view.ticket.field.description') }}:</span>
+            <div class="description-box">{{ ticket.description }}</div>
+          </div>
 
-        <div class="mt-3" v-if="ticketImageUrls.length">
-          <span class="detail-label">{{ $t('view.ticket.field.screenshot') }}:</span>
-          <div class="image-gallery mt-2">
-            <ImagePreview
-              v-for="(url, idx) in ticketImageUrls"
-              :key="idx"
-              :src="url"
-              :preview="true"
-              :width="220"
-              :alt="`${$t('view.ticket.field.screenshot')} ${idx + 1}`"
+          <div class="mt-3" v-if="ticketImageUrls.length">
+            <span class="detail-label">{{ $t('view.ticket.field.screenshot') }}:</span>
+            <div class="image-gallery mt-2">
+              <ImagePreview
+                v-for="(url, idx) in ticketImageUrls"
+                :key="idx"
+                :src="url"
+                :preview="true"
+                :width="220"
+                :alt="`${$t('view.ticket.field.screenshot')} ${idx + 1}`"
+              />
+            </div>
+          </div>
+          <div class="mt-3" v-else>
+            <span class="detail-label">{{ $t('view.ticket.field.screenshot') }}:</span>
+            <span class="no-image-hint ml-2">{{ $t('view.ticket.label.noImage') }}</span>
+          </div>
+
+          <!-- Divider -->
+          <div class="panel-divider"></div>
+
+          <!-- Response section -->
+          <div class="panel-section-header">{{ $t('view.ticket.thread.responseTitle') }}</div>
+          <TicketThread
+            variant="chat"
+            :entries="responseComments"
+            :canPost="true"
+            deleteMode="all"
+            meRole="dev"
+            :placeholder="$t('view.ticket.thread.placeholder')"
+            :emptyText="$t('view.ticket.thread.empty')"
+            @post="onPostResponse"
+            @delete="onDeleteComment"
+          />
+        </SectionCardGeneric>
+
+        <!-- RIGHT: Status + Analysis + Change -->
+        <div>
+          <SectionCardGeneric :title="$t('view.ticket.field.status')" class="mb-3">
+            <div class="form-row two-col">
+              <FormFieldGeneric :label="$t('view.ticket.field.status')" :required="true">
+                <DropdownGeneric
+                  :modelValue="editStatus"
+                  :options="statusOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :placeholder="$t('view.ticket.placeholder.status')"
+                  @update:modelValue="editStatus = $event"
+                />
+              </FormFieldGeneric>
+              <div class="d-flex align-items-end">
+                <ButtonGeneric
+                  variant="main"
+                  icon="bi-arrow-repeat"
+                  :label="$t('view.ticket.btn.updateStatus')"
+                  @click="onUpdateStatus"
+                />
+              </div>
+            </div>
+          </SectionCardGeneric>
+
+          <SectionCardGeneric :title="$t('view.ticket.thread.analysisTitle')" class="mb-3">
+            <TicketThread
+              variant="timeline"
+              :entries="analysisComments"
+              :canPost="true"
+              deleteMode="all"
+              meRole="dev"
+              :placeholder="$t('view.ticket.thread.placeholder')"
+              :emptyText="$t('view.ticket.thread.empty')"
+              @post="onPostAnalysis"
+              @delete="onDeleteComment"
             />
-          </div>
-        </div>
-        <div class="mt-3" v-else>
-          <span class="detail-label">{{ $t('view.ticket.field.screenshot') }}:</span>
-          <span class="no-image-hint ml-2">{{ $t('view.ticket.label.noImage') }}</span>
-        </div>
-      </SectionCardGeneric>
+          </SectionCardGeneric>
 
-      <!-- Status Update Card -->
-      <SectionCardGeneric :title="$t('view.ticket.field.status')" class="mb-3">
-        <div class="form-row two-col">
-          <FormFieldGeneric :label="$t('view.ticket.field.status')" :required="true">
-            <DropdownGeneric
-              :modelValue="editStatus"
-              :options="statusOptions"
-              optionLabel="label"
-              optionValue="value"
-              :placeholder="$t('view.ticket.placeholder.status')"
-              @update:modelValue="editStatus = $event"
+          <SectionCardGeneric :title="$t('view.ticket.thread.changeTitle')" class="mb-3">
+            <TicketThread
+              variant="timeline"
+              :entries="changeComments"
+              :canPost="true"
+              deleteMode="all"
+              meRole="dev"
+              :placeholder="$t('view.ticket.thread.placeholder')"
+              :emptyText="$t('view.ticket.thread.empty')"
+              @post="onPostChange"
+              @delete="onDeleteComment"
             />
-          </FormFieldGeneric>
-          <div class="d-flex align-items-end">
-            <ButtonGeneric
-              variant="main"
-              icon="bi-arrow-repeat"
-              :label="$t('view.ticket.btn.updateStatus')"
-              @click="onUpdateStatus"
-            />
-          </div>
+          </SectionCardGeneric>
         </div>
-      </SectionCardGeneric>
-
-      <!-- Analysis Thread -->
-      <SectionCardGeneric :title="$t('view.ticket.thread.analysisTitle')" class="mb-3">
-        <TicketThread
-          variant="timeline"
-          :entries="analysisComments"
-          :canPost="true"
-          deleteMode="all"
-          meRole="dev"
-          :placeholder="$t('view.ticket.thread.placeholder')"
-          :emptyText="$t('view.ticket.thread.empty')"
-          @post="onPostAnalysis"
-          @delete="onDeleteComment"
-        />
-      </SectionCardGeneric>
-
-      <!-- Response Thread -->
-      <SectionCardGeneric :title="$t('view.ticket.thread.responseTitle')" class="mb-3">
-        <TicketThread
-          variant="chat"
-          :entries="responseComments"
-          :canPost="true"
-          deleteMode="all"
-          meRole="dev"
-          :placeholder="$t('view.ticket.thread.placeholder')"
-          :emptyText="$t('view.ticket.thread.empty')"
-          @post="onPostResponse"
-          @delete="onDeleteComment"
-        />
-      </SectionCardGeneric>
-
-      <!-- Change Thread -->
-      <SectionCardGeneric :title="$t('view.ticket.thread.changeTitle')" class="mb-3">
-        <TicketThread
-          variant="timeline"
-          :entries="changeComments"
-          :canPost="true"
-          deleteMode="all"
-          meRole="dev"
-          :placeholder="$t('view.ticket.thread.placeholder')"
-          :emptyText="$t('view.ticket.thread.empty')"
-          @post="onPostChange"
-          @delete="onDeleteComment"
-        />
-      </SectionCardGeneric>
+      </div>
     </div>
   </div>
 </template>
@@ -227,6 +234,7 @@ export default {
         const t = res.data[0]
         this.ticket = t
         this.editStatus = t.statusId
+        this.ticketStore.markTicketAsRead(t.id)
       }
     },
 
@@ -264,7 +272,9 @@ export default {
     async onPostResponse(msg) {
       const res = await this.ticketStore.addTicketComment(this.ticket.id, 'response', msg)
       if (res !== undefined) {
-        success(this.$t('view.ticket.thread.success.add'))
+        this.ticket.comments = [...(this.ticket.comments || []), {
+          id: Date.now(), type: 'response', authorRole: 'dev', message: msg, createBy: '', createDate: new Date().toISOString()
+        }]
         this.loadTicket()
       }
     },
@@ -294,6 +304,35 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/responsive-style/web';
+
+.work-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-lg);
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+:deep(.detail-panel.section-card) {
+  background: var(--color-highlight-bg);
+}
+
+.panel-section-header {
+  background: var(--base-font-color);
+  color: #fff;
+  font-weight: 600;
+  padding: var(--sp-sm) var(--sp-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--sp-md);
+}
+
+.panel-divider {
+  border-top: 1px solid var(--color-border);
+  margin: var(--sp-xl) 0;
+}
 
 .mt-1 {
   margin-top: var(--sp-xs);
@@ -339,7 +378,7 @@ export default {
 }
 
 .description-box {
-  background: #f9f9f9;
+  background: #fff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--sp-md);

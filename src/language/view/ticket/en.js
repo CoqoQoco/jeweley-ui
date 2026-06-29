@@ -26,7 +26,8 @@ export default {
     updateDate: 'Last Updated',
     changeStatus: 'Change Status',
     latestAnalysis: 'Latest Analysis',
-    keyword: 'Search'
+    keyword: 'Search',
+    newMsg: 'New message'
   },
 
   type: {

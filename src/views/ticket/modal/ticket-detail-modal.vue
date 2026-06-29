@@ -198,7 +198,6 @@ export default {
     async onPostReply(msg) {
       const res = await this.ticketStore.addMyTicketComment(this.localTicket.id, msg)
       if (res !== undefined) {
-        success(this.$t('view.ticket.thread.success.add'))
         // Optimistically push new comment into localTicket so thread updates instantly
         const newComment = {
           id: Date.now(),

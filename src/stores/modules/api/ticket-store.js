@@ -51,6 +51,10 @@ export const useTicketStore = defineStore('ticket', {
       return await api.jewelry.post('Ticket/DeleteMyComment', { commentId })
     },
 
+    async markTicketAsRead(ticketId) {
+      return await api.jewelry.post('Ticket/MarkAsRead', { ticketId }, { skipLoading: true })
+    },
+
     async fetchOpenCount() {
       const res = await api.jewelry.post('Ticket/CountOpen', {}, { skipLoading: true })
       this.openCount = typeof res === 'number' ? res : 0

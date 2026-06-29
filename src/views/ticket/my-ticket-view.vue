@@ -43,6 +43,11 @@
         @page="handlePageChange"
         @sort="handleSortChange"
       >
+        <template #ticketNoTemplate="{ data }">
+          <span>{{ data.ticketNo }}</span>
+          <span v-if="data.hasNewMessage" class="new-msg-badge">{{ $t('view.ticket.field.newMsg') }}</span>
+        </template>
+
         <template #typeTemplate="{ data }">
           <span :class="['type-badge', data.type === 1 ? 'type-bug' : 'type-feature']">
             {{ data.type === 1 ? $t('view.ticket.type.bug') : $t('view.ticket.type.feature') }}
@@ -169,7 +174,9 @@ export default {
       this.resetPaging()
     },
 
-    onViewDetail(ticket) {
+    async onViewDetail(ticket) {
+      await this.ticketStore.markTicketAsRead(ticket.id)
+      ticket.hasNewMessage = false
       this.selectedTicket = ticket
       this.isShowModal = true
     },
@@ -232,6 +239,17 @@ export default {
     background: #e2e3e5;
     color: #383d41;
   }
+}
+
+.new-msg-badge {
+  display: inline-block;
+  margin-left: var(--sp-sm);
+  padding: 1px 8px;
+  background: var(--base-red);
+  color: #fff;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
 }
 
 .type-badge {
