@@ -1,80 +1,77 @@
 <template>
-  <div>
-    <modal
-      :showModal="isShowModal"
-      @closeModal="closeModal"
-      width="560px"
-    >
-      <template #title>
-        <div class="title-text-lg-bg">
-          <i class="bi bi-file-earmark-excel mr-2"></i>
-          <span>{{ title }}</span>
+  <DrawerGeneric
+    :show="isShowModal"
+    width="480px"
+    :isShowActionPart="true"
+    headerVariant="main"
+    @close="closeModal"
+  >
+    <template #title>
+      <span class="drawer-print-title">
+        <i class="bi bi-file-earmark-excel mr-2"></i>
+        {{ title }}
+      </span>
+    </template>
+
+    <template #content>
+      <div class="p-3">
+        <!-- Document Number -->
+        <div class="form-group mb-3">
+          <span class="title-text">{{ numberLabel }}</span>
+          <input
+            v-model.trim="form.documentNumber"
+            type="text"
+            class="form-control bg-input mt-1"
+            :placeholder="numberLabel"
+          />
+          <small class="text-muted">ค่าเดิม: {{ documentNumber || '-' }}</small>
         </div>
-      </template>
 
-      <template #content>
-        <div class="p-3">
-          <!-- Document Number -->
-          <div class="form-group mb-3">
-            <span class="title-text">{{ numberLabel }}</span>
-            <input
-              v-model.trim="form.documentNumber"
-              type="text"
-              class="form-control bg-input mt-1"
-              :placeholder="numberLabel"
-            />
-            <small class="text-muted">ค่าเดิม: {{ documentNumber || '-' }}</small>
-          </div>
-
-          <!-- Document Date -->
-          <div class="form-group mb-3">
-            <span class="title-text">{{ dateLabel }}</span>
-            <CalendarGeneric
-              v-model="form.documentDate"
-              dateFormat="dd/mm/yy"
-              :placeholder="dateLabel"
-              :showIcon="true"
-              :showButtonBar="true"
-              customClass="w-100 mt-1"
-            />
-            <small class="text-muted">ค่าเดิม: {{ formatDate(documentDate) }}</small>
-          </div>
-
-          <!-- Info notice -->
-          <div class="notice-box">
-            <i class="bi bi-info-circle mr-2"></i>
-            <span>การเปลี่ยนแปลงข้อมูลนี้มีผลเฉพาะเอกสาร Excel ที่ Export เท่านั้น ข้อมูลในระบบจะไม่เปลี่ยนแปลง</span>
-          </div>
-
-          <!-- Actions -->
-          <div class="d-flex justify-content-end mt-3" style="gap: 8px;">
-            <button class="btn btn-sm btn-outline-main" type="button" @click="closeModal">
-              ยกเลิก
-            </button>
-            <button class="btn btn-sm btn-main" type="button" @click="onConfirm">
-              <i class="bi bi-file-earmark-excel mr-1"></i>
-              Export Excel
-            </button>
-          </div>
+        <!-- Document Date -->
+        <div class="form-group mb-3">
+          <span class="title-text">{{ dateLabel }}</span>
+          <CalendarGeneric
+            v-model="form.documentDate"
+            dateFormat="dd/mm/yy"
+            :placeholder="dateLabel"
+            :showIcon="true"
+            :showButtonBar="true"
+            customClass="w-100 mt-1"
+          />
+          <small class="text-muted">ค่าเดิม: {{ formatDate(documentDate) }}</small>
         </div>
-      </template>
-    </modal>
-  </div>
+
+        <!-- Info notice -->
+        <div class="notice-box">
+          <i class="bi bi-info-circle mr-2"></i>
+          <span>การเปลี่ยนแปลงข้อมูลนี้มีผลเฉพาะเอกสาร Excel ที่ Export เท่านั้น ข้อมูลในระบบจะไม่เปลี่ยนแปลง</span>
+        </div>
+      </div>
+    </template>
+
+    <template #action>
+      <button class="btn btn-main mr-2" type="button" @click="onConfirm">
+        <i class="bi bi-file-earmark-excel mr-1"></i>
+        Export Excel
+      </button>
+      <button class="btn btn-outline-main" type="button" @click="closeModal">
+        ยกเลิก
+      </button>
+    </template>
+  </DrawerGeneric>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DrawerGeneric from '@/components/generic/DrawerGeneric.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
-
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'ExcelExportConfirmModal',
 
   components: {
-    modal,
+    DrawerGeneric,
     CalendarGeneric
   },
 
@@ -164,6 +161,12 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.drawer-print-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: #ffffff;
+}
 
 .notice-box {
   padding: 8px 12px;

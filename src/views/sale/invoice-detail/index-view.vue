@@ -28,10 +28,7 @@
             <i class="bi bi-printer mr-1"></i>
             {{ $t('view.sale.invoiceDetail.printInvoice') }}
           </button>
-          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="spikeTestHello">
-            <i class="bi bi-usb-symbol mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.testHelloUsb') }}
-          </button>
+
           <button class="btn btn-green btn-sm btn-header-action mr-2" @click="exportInvoiceExcel">
             <i class="bi bi-file-earmark-excel mr-1"></i>
             {{ $t('view.sale.invoiceDetail.exportExcel') }}

@@ -1,108 +1,104 @@
 <template>
-  <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" :width="'600px'">
-      <template v-slot:content>
-        <div class="delivery-confirm-print-container">
-          <div class="">
-            <!-- Modal Header -->
-            <div class="title-text-lg-bg">
-              <i class="bi bi-truck mr-2"></i>
-              <span>{{ $t('view.sale.deliveryNote.confirmPrintTitle') }}</span>
+  <DrawerGeneric
+    :show="isShowModal"
+    width="480px"
+    :isShowActionPart="true"
+    headerVariant="main"
+    @close="closeModal"
+  >
+    <template #title>
+      <span class="drawer-print-title">
+        <i class="bi bi-truck mr-2"></i>
+        {{ $t('view.sale.deliveryNote.confirmPrintTitle') }}
+      </span>
+    </template>
+
+    <template #content>
+      <div class="delivery-confirm-print-container p-3">
+        <!-- Form Container -->
+        <div class="filter-container mb-2">
+          <div class="title-text-lg mb-2">
+            <i class="bi bi-file-text mr-2"></i>{{ $t('view.sale.deliveryNote.docInfo') }}
+          </div>
+          <div class="p-3">
+            <div class="form-group mb-3">
+              <label class="form-label">
+                <i class="bi bi-hash mr-1"></i>Delivery Note Number
+              </label>
+              <InputTextGeneric
+                v-model="printData.deliveryNumber"
+                type="text"
+                :placeholder="$t('view.sale.deliveryNote.dnNumberPlaceholder')"
+              />
+              <small class="form-text text-muted">
+                {{ $t('view.sale.deliveryNote.originalValue') }}: {{ originalData.deliveryNumber }}
+              </small>
             </div>
 
-            <div class="p-3">
-              <!-- Form Container -->
-              <div class="filter-container mb-2">
-                <div class="title-text-lg mb-2">
-                  <i class="bi bi-file-text mr-2"></i>{{ $t('view.sale.deliveryNote.docInfo') }}
-                </div>
-                <div class="p-3">
-                  <div class="form-group mb-3">
-                    <label class="form-label">
-                      <i class="bi bi-hash mr-1"></i>Delivery Note Number
-                    </label>
-                    <InputTextGeneric
-                      v-model="printData.deliveryNumber"
-                      type="text"
-                      :placeholder="$t('view.sale.deliveryNote.dnNumberPlaceholder')"
-                    />
-                    <small class="form-text text-muted">
-                      {{ $t('view.sale.deliveryNote.originalValue') }}: {{ originalData.deliveryNumber }}
-                    </small>
-                  </div>
+            <div class="form-group mb-3">
+              <label class="form-label">
+                <i class="bi bi-calendar-event mr-1"></i>Delivery Date
+              </label>
+              <CalendarGeneric
+                v-model="printData.deliveryDate"
+                dateFormat="dd/mm/yy"
+                :placeholder="$t('view.sale.deliveryNote.selectDate')"
+                :showIcon="true"
+                :showButtonBar="true"
+                class="w-100"
+              />
+              <small class="form-text text-muted">
+                {{ $t('view.sale.deliveryNote.originalValue') }}: {{ formatDate(originalData.deliveryDate) }}
+              </small>
+            </div>
+          </div>
+        </div>
 
-                  <div class="form-group mb-3">
-                    <label class="form-label">
-                      <i class="bi bi-calendar-event mr-1"></i>Delivery Date
-                    </label>
-                    <CalendarGeneric
-                      v-model="printData.deliveryDate"
-                      dateFormat="dd/mm/yy"
-                      :placeholder="$t('view.sale.deliveryNote.selectDate')"
-                      :showIcon="true"
-                      :showButtonBar="true"
-                      class="w-100"
-                    />
-                    <small class="form-text text-muted">
-                      {{ $t('view.sale.deliveryNote.originalValue') }}: {{ formatDate(originalData.deliveryDate) }}
-                    </small>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Info Container -->
-              <div class="filter-container-search mb-2">
-                <div class="p-2">
-                  <div class="d-flex align-items-start">
-                    <i class="bi bi-info-circle text-info mr-2 info-icon"></i>
-                    <div>
-                      <p class="mb-1 info-text">
-                        {{ $t('view.sale.deliveryNote.printOnlyNote') }}
-                      </p>
-                      <p class="mb-0 info-text">
-                        {{ $t('view.sale.deliveryNote.originalNotChanged') }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="btn-submit-container mb-2">
-                <div class="d-flex justify-content-end">
-                  <button class="btn btn-green mr-2" type="button" @click="onConfirmPrint">
-                    <i class="bi bi-truck mr-1"></i>
-                    {{ $t('view.sale.deliveryNote.printBtn') }}
-                  </button>
-
-                  <button class="btn btn-outline-main" type="button" @click="closeModal">
-                    <i class="bi bi-x-circle mr-1"></i>
-                    {{ $t('common.btn.cancel') }}
-                  </button>
-                </div>
+        <!-- Info Container -->
+        <div class="filter-container-search mb-2">
+          <div class="p-2">
+            <div class="d-flex align-items-start">
+              <i class="bi bi-info-circle text-info mr-2 info-icon"></i>
+              <div>
+                <p class="mb-1 info-text">
+                  {{ $t('view.sale.deliveryNote.printOnlyNote') }}
+                </p>
+                <p class="mb-0 info-text">
+                  {{ $t('view.sale.deliveryNote.originalNotChanged') }}
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </template>
-    </modal>
-  </div>
+      </div>
+    </template>
+
+    <template #action>
+      <button class="btn btn-green mr-2" type="button" @click="onConfirmPrint">
+        <i class="bi bi-truck mr-1"></i>
+        {{ $t('view.sale.deliveryNote.printBtn') }}
+      </button>
+
+      <button class="btn btn-outline-main" type="button" @click="closeModal">
+        <i class="bi bi-x-circle mr-1"></i>
+        {{ $t('common.btn.cancel') }}
+      </button>
+    </template>
+  </DrawerGeneric>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import DrawerGeneric from '@/components/generic/DrawerGeneric.vue'
 import dayjs from 'dayjs'
-
-const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
   name: 'DeliveryConfirmPrintModal',
 
   components: {
-    modal,
+    DrawerGeneric,
     CalendarGeneric,
     InputTextGeneric
   },
@@ -212,6 +208,12 @@ export default {
   // Component-specific styles only
 }
 
+.drawer-print-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: #ffffff;
+}
+
 .info-icon {
   font-size: var(--fs-lg);
 }
@@ -232,19 +234,6 @@ export default {
   }
 }
 
-.form-control {
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 0.5rem 0.75rem;
-  font-size: var(--base-font-size);
-
-  &:focus {
-    border-color: var(--base-green);
-    box-shadow: 0 0 0 0.2rem rgba(3, 131, 135, 0.25);
-    outline: none;
-  }
-}
-
 .form-text {
   display: block;
   margin-top: 0.25rem;
@@ -258,7 +247,7 @@ export default {
   .p-inputtext {
     width: 100%;
     border: 1px solid #ced4da;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     padding: 0.5rem 0.75rem;
     font-size: var(--base-font-size);
 
