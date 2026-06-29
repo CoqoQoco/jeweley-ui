@@ -62,7 +62,7 @@ export function buildSeekHeader({ logoBase64, companyName, companyTaxId, title, 
         margin: [0, 8, 0, 8],
         canvas: [{
           type: 'line',
-          x1: 0, y1: 0, x2: 555, y2: 0,
+          x1: 0, y1: 0, x2: 565, y2: 0,
           lineWidth: 1.2,
           lineColor: PDF_COLORS.primary
         }]
@@ -91,26 +91,26 @@ export function buildSeekHeader({ logoBase64, companyName, companyTaxId, title, 
  * 4-quadrant band (This Invoice | Amount Paid | Total Owed | Due Date).
  * Last two columns use accent fill.
  */
-export function buildStatusBand({ thisInvoice, amountPaid, totalOwed, dueDate, accent = PDF_COLORS.primary }) {
-  const labelStyle = { fontSize: 9, margin: [0, 0, 0, 2] }
-  const valueStyle = { fontSize: 12, bold: true }
+export function buildStatusBand({ thisInvoice, amountPaid, totalOwed, dueDate, accent = PDF_COLORS.primary, green = PDF_COLORS.green }) {
+  const labelStyle = { fontSize: 8, margin: [0, 0, 0, 2] }
+  const valueStyle = { fontSize: 11, bold: true }
 
   return {
-    margin: [0, 10, 0, 10],
+    margin: [0, 6, 0, 6],
     table: {
       widths: ['*', '*', '*', '*'],
       body: [
         // Label row
         [
-          { ...labelStyle, text: 'This Invoice', color: PDF_COLORS.darkGray },
-          { ...labelStyle, text: 'Amount Paid', color: PDF_COLORS.darkGray },
+          { ...labelStyle, text: 'This Invoice', color: PDF_COLORS.white, fillColor: green },
+          { ...labelStyle, text: 'Amount Paid', color: PDF_COLORS.white, fillColor: green },
           { ...labelStyle, text: 'Total Owed', color: PDF_COLORS.white, fillColor: accent },
           { ...labelStyle, text: 'Due Date', color: PDF_COLORS.white, fillColor: accent }
         ],
         // Value row
         [
-          { ...valueStyle, text: thisInvoice || '-', color: PDF_COLORS.darkGray },
-          { ...valueStyle, text: amountPaid || '-', color: PDF_COLORS.darkGray },
+          { ...valueStyle, text: thisInvoice || '-', color: PDF_COLORS.white, fillColor: green },
+          { ...valueStyle, text: amountPaid || '-', color: PDF_COLORS.white, fillColor: green },
           { ...valueStyle, text: totalOwed || '-', color: PDF_COLORS.white, fillColor: accent },
           { ...valueStyle, text: dueDate || '-', color: PDF_COLORS.white, fillColor: accent }
         ]
@@ -121,8 +121,8 @@ export function buildStatusBand({ thisInvoice, amountPaid, totalOwed, dueDate, a
       vLineWidth: () => 0,
       paddingLeft: () => 8,
       paddingRight: () => 8,
-      paddingTop: () => 6,
-      paddingBottom: () => 6
+      paddingTop: () => 3,
+      paddingBottom: () => 3
     }
   }
 }
@@ -131,45 +131,39 @@ export function buildStatusBand({ thisInvoice, amountPaid, totalOwed, dueDate, a
  * buildSeekSummary
  * Right-aligned financial summary table. rows = [{label, value, color?}].
  * Ends with a divider then Net Payable in accent color.
+ * Wrapped in a gray panel (panelBg).
  */
 export function buildSeekSummary({ rows = [], netPayableLabel = 'Net Payable', netPayableValue = '', accent = PDF_COLORS.primary }) {
-  const body = rows.map(row => [
-    { text: row.label || '', fontSize: 12, bold: true, color: row.color || PDF_COLORS.darkGray, alignment: 'left' },
-    { text: row.value || '', fontSize: 12, bold: true, color: row.color || PDF_COLORS.darkGray, alignment: 'right' }
-  ])
+  const dividerIndex = rows.length
 
-  // Divider row — top border (main color), before Net Payable
-  body.push([
-    { text: '', border: [false, true, false, false], borderColor: [null, accent, null, null], margin: [0, 2, 0, 2] },
-    { text: '', border: [false, true, false, false], borderColor: [null, accent, null, null], margin: [0, 2, 0, 2] }
-  ])
+  const body = rows.map(row => {
+    const rowColor = row.label === 'Amount Paid' ? PDF_COLORS.muted : (row.color || PDF_COLORS.darkGray)
+    return [
+      { text: row.label || '', fontSize: 10, bold: true, color: rowColor, alignment: 'left' },
+      { text: row.value || '', fontSize: 10, bold: true, color: rowColor, alignment: 'right' }
+    ]
+  })
 
-  // Net Payable row — emphasized
+  // Net Payable row — accent divider line + red text
   body.push([
-    { text: netPayableLabel, bold: true, fontSize: 15, color: accent, alignment: 'left' },
-    { text: netPayableValue, bold: true, fontSize: 15, color: accent, alignment: 'right' }
+    { text: (netPayableLabel || '').toUpperCase(), bold: true, fontSize: 11, color: accent, alignment: 'left' },
+    { text: netPayableValue, bold: true, fontSize: 13, color: accent, alignment: 'right' }
   ])
 
   return {
-    columns: [
-      { width: '55%', text: '' },
-      {
-        width: '45%',
-        table: {
-          widths: ['*', 'auto'],
-          body
-        },
-        layout: {
-          vLineWidth: () => 0,
-          hLineWidth: () => 0,
-          paddingTop: () => 1.5,
-          paddingBottom: () => 1.5,
-          paddingLeft: () => 0,
-          paddingRight: () => 0
-        }
-      }
-    ],
-    margin: [0, 8, 0, 4]
+    table: {
+      widths: ['*', 'auto'],
+      body
+    },
+    layout: {
+      vLineWidth: () => 0,
+      hLineWidth: (i) => (i === dividerIndex ? 1 : 0),
+      hLineColor: () => accent,
+      paddingTop: (i) => (i === dividerIndex ? 5 : 1.5),
+      paddingBottom: () => 1.5,
+      paddingLeft: () => 0,
+      paddingRight: () => 0
+    }
   }
 }
 
@@ -180,17 +174,31 @@ export function buildSeekSummary({ rows = [], netPayableLabel = 'Net Payable', n
 export function buildPaymentOptions({ bank }) {
   if (!bank || !bank.accountNumber) return null
 
-  const lines = [{ text: 'Bank Transfer', bold: true, fontSize: 9, margin: [0, 2, 0, 2] }]
-  if (bank.bankName) lines.push({ text: 'Bank: ' + bank.bankName, fontSize: 9, color: PDF_COLORS.darkGray })
-  if (bank.accountName) lines.push({ text: 'Account Name: ' + bank.accountName, fontSize: 9, color: PDF_COLORS.darkGray })
-  if (bank.accountNumber) lines.push({ text: 'Account No: ' + bank.accountNumber, fontSize: 9, color: PDF_COLORS.darkGray })
-  if (bank.swift) lines.push({ text: 'SWIFT: ' + bank.swift, fontSize: 9, color: PDF_COLORS.darkGray })
-  if (bank.branch) lines.push({ text: 'Branch: ' + bank.branch, fontSize: 9, color: PDF_COLORS.darkGray })
+  const bankLines = [
+    { text: 'BANK TRANSFER', bold: true, fontSize: 8, color: PDF_COLORS.primary, margin: [0, 0, 0, 4] }
+  ]
+  if (bank.bankName) bankLines.push({ text: [{ text: 'Bank: ', color: PDF_COLORS.muted }, { text: bank.bankName, bold: true, color: PDF_COLORS.darkGray }], fontSize: 8, margin: [0, 1, 0, 1] })
+  if (bank.accountName) bankLines.push({ text: [{ text: 'Account Name: ', color: PDF_COLORS.muted }, { text: bank.accountName, bold: true, color: PDF_COLORS.darkGray }], fontSize: 8, margin: [0, 1, 0, 1] })
+  if (bank.accountNumber) bankLines.push({ text: [{ text: 'Account No: ', color: PDF_COLORS.muted }, { text: bank.accountNumber, bold: true, color: PDF_COLORS.darkGray }], fontSize: 8, margin: [0, 1, 0, 1] })
+  if (bank.swift) bankLines.push({ text: [{ text: 'SWIFT: ', color: PDF_COLORS.muted }, { text: bank.swift, bold: true, color: PDF_COLORS.darkGray }], fontSize: 8, margin: [0, 1, 0, 1] })
+  if (bank.branch) bankLines.push({ text: [{ text: 'Branch: ', color: PDF_COLORS.muted }, { text: bank.branch, bold: true, color: PDF_COLORS.darkGray }], fontSize: 8, margin: [0, 1, 0, 1] })
 
   return {
     stack: [
-      { text: 'Payment Options', bold: true, fontSize: 11, color: PDF_COLORS.darkGray, margin: [0, 10, 0, 4] },
-      ...lines
+      {
+        columns: [
+          { width: 3, canvas: [{ type: 'rect', x: 0, y: 0, w: 3, h: 12, color: PDF_COLORS.primary }] },
+          { width: '*', text: 'Payment Options', bold: true, fontSize: 11, color: PDF_COLORS.darkGray, margin: [6, 0, 0, 0] }
+        ],
+        margin: [0, 0, 0, 6]
+      },
+      {
+        table: {
+          widths: ['*'],
+          body: [[{ fillColor: PDF_COLORS.panelBg, border: [false, false, false, false], stack: bankLines }]]
+        },
+        layout: { defaultBorder: false, paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 6, paddingBottom: () => 6 }
+      }
     ]
   }
 }
@@ -221,7 +229,7 @@ export function buildSeekSignature({ companyName, companyTaxId, companyAddress, 
         margin: [0, 16, 0, 8],
         canvas: [{
           type: 'line',
-          x1: 0, y1: 0, x2: 555, y2: 0,
+          x1: 0, y1: 0, x2: 565, y2: 0,
           lineWidth: 0.8,
           lineColor: PDF_COLORS.lightGray
         }]
@@ -229,21 +237,30 @@ export function buildSeekSignature({ companyName, companyTaxId, companyAddress, 
       {
         columns: [
           {
-            width: '50%',
+            width: '*',
+            alignment: 'left',
             stack: [
-              { text: 'For ' + (companyName || ''), fontSize: 9, margin: [0, 0, 0, 24] },
-              { text: '____________________', fontSize: 9, margin: [0, 0, 0, 2] },
-              { text: 'Authorized Signature', fontSize: 9, color: PDF_COLORS.darkGray }
+              { text: companyName || '', fontSize: 8, bold: true, margin: [0, 0, 0, 2] },
+              { text: 'TAX ID: ' + (companyTaxId || ''), fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
+              { text: companyAddress || '', fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
+              { text: 'Tel: ' + (companyPhone || ''), fontSize: 7, color: PDF_COLORS.darkGray }
             ]
           },
           {
-            width: '50%',
-            alignment: 'right',
+            width: 165,
             stack: [
-              { text: companyName || '', fontSize: 9, bold: true, margin: [0, 0, 0, 2] },
-              { text: 'TAX ID: ' + (companyTaxId || ''), fontSize: 8, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
-              { text: companyAddress || '', fontSize: 8, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
-              { text: 'Tel: ' + (companyPhone || ''), fontSize: 8, color: PDF_COLORS.darkGray }
+              { text: ' ', fontSize: 8, margin: [0, 0, 0, 18] },
+              { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }], margin: [0, 0, 0, 4] },
+              { text: 'Authorized Signature', fontSize: 8, bold: true, color: PDF_COLORS.darkGray },
+              { text: 'For ' + (companyName || ''), fontSize: 6, color: PDF_COLORS.darkGray, margin: [0, 1, 0, 0] }
+            ]
+          },
+          {
+            width: 165,
+            stack: [
+              { text: ' ', fontSize: 8, margin: [0, 0, 0, 18] },
+              { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }], margin: [0, 0, 0, 4] },
+              { text: 'Customer Signature', fontSize: 8, bold: true, color: PDF_COLORS.darkGray }
             ]
           }
         ]

@@ -178,14 +178,22 @@ export class InvoiceSummaryPdfBuilder {
           i === 0 || i === 1 || i === node.table.body.length
             ? PDF_COLORS.primary
             : PDF_COLORS.lightGray,
-        paddingTop: () => 3,
-        paddingBottom: () => 3
+        paddingTop: () => 2,
+        paddingBottom: () => 2
       }
     }
   }
 
   getDocDefinition() {
     const self = this
+
+    // Build a FRESH signature object per call — pdfmake mutates nodes during layout.
+    const makeSignature = () => buildSeekSignature({
+      companyName: COMPANY_INFO.name,
+      companyTaxId: COMPANY_TAX_ID,
+      companyAddress: COMPANY_INFO.address,
+      companyPhone: COMPANY_INFO.phone
+    })
 
     // Build a FRESH header object per page — pdfmake mutates content nodes during
     // layout, so reusing one reference across pages renders later pages incompletely.
@@ -225,16 +233,15 @@ export class InvoiceSummaryPdfBuilder {
 
     return {
       pageSize: 'A4',
-      pageMargins: [20, 18, 20, 36],
+      pageMargins: [10, 18, 20, 95],
       defaultStyle: { font: 'Prompt', fontSize: 11 },
       styles: PDF_STYLES,
       footer: function (currentPage, pageCount) {
-        return {
-          text: 'Page ' + currentPage + ' of ' + pageCount,
-          alignment: 'center',
-          fontSize: 8,
-          margin: [0, 10, 0, 0]
+        const pageText = { text: 'Page ' + currentPage + ' of ' + pageCount, alignment: 'center', fontSize: 7, margin: [0, 6, 0, 0] }
+        if (currentPage === pageCount) {
+          return { margin: [10, 0, 20, 0], stack: [makeSignature(), pageText] }
         }
+        return pageText
       },
       content: paginate(
         self.data,
@@ -259,24 +266,23 @@ export class InvoiceSummaryPdfBuilder {
           blocks.push(self.getItemsTableContent(pageItems, pageNum))
 
           if (isLastPage) {
-            blocks.push(buildSeekSummary({
+            const summaryNode = buildSeekSummary({
               rows: summaryRows,
               netPayableLabel: self.showCifLabel ? 'Net Payable (C.I.F)' : 'Net Payable',
               netPayableValue: self._fmt(self.netPayable)
-            }))
-
+            })
             const pay = buildPaymentOptions({ bank: COMPANY_BANK })
-            if (pay) blocks.push(pay)
+            blocks.push({
+              columns: [
+                { width: '52%', stack: pay ? [pay] : [{ text: '' }] },
+                { width: '48%', stack: [summaryNode] }
+              ],
+              columnGap: 16,
+              margin: [0, 8, 0, 4]
+            })
 
             const rem = buildRemarks({ text: self.remark })
             if (rem) blocks.push(rem)
-
-            blocks.push(buildSeekSignature({
-              companyName: COMPANY_INFO.name,
-              companyTaxId: COMPANY_TAX_ID,
-              companyAddress: COMPANY_INFO.address,
-              companyPhone: COMPANY_INFO.phone
-            }))
           }
 
           return blocks

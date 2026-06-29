@@ -4,7 +4,9 @@ export const PDF_COLORS = {
   darkGray: '#393939',
   green: '#038387',
   red: '#ff4d4d',
-  white: '#ffffff'
+  white: '#ffffff',
+  panelBg: '#e8e8e8',
+  muted: '#9e9e9e'
 }
 
 export const PDF_FONT = 'THSarabunNew'
