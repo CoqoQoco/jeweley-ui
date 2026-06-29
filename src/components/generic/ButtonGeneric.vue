@@ -40,7 +40,7 @@
     <i v-if="loading" class="bi bi-arrow-repeat spin"></i>
     <i v-else-if="icon" :class="['bi', icon]"></i>
     <slot v-if="$slots.default" />
-    <span v-else-if="label"> {{ label }}</span>
+    <span v-else-if="label">{{ label }}</span>
   </button>
 </template>
 
@@ -107,5 +107,12 @@ export default {
 .spin {
   display: inline-block;
   animation: spin 0.8s linear infinite;
+}
+
+.btn {
+  i + span,
+  i + :deep(*) {
+    margin-left: var(--sp-xs);
+  }
 }
 </style>
