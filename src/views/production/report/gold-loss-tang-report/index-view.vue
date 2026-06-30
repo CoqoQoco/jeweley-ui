@@ -1,139 +1,293 @@
 <template>
   <div class="app-container">
-    <searchView @search="onSearch" @viewJobs="isShowViewJobs = true" />
-    <dataTableView
-      v-if="reportData"
-      :reportData="reportData"
-      :readonly="isReadonly"
-      :jobInfo="currentJobInfo"
+    <PageHeaderGeneric
+      :title="editingId ? $t('view.production.goldLossTang.editTitle') : $t('view.production.goldLossTang.title')"
+      backRoute="gold-loss-tang-report"
+    >
+      <template #actions>
+        <ButtonGeneric
+          variant="outline"
+          icon="bi-journal-text"
+          :label="$t('view.production.goldLossTang.manual')"
+          @click="isShowManual = true"
+        />
+      </template>
+    </PageHeaderGeneric>
+
+    <ManualView :isShow="isShowManual" @closeModal="isShowManual = false" />
+
+    <SearchView
+      v-model:workerCode="workerCode"
+      v-model:workerName="workerName"
+      v-model:dateStart="dateStart"
+      v-model:dateEnd="dateEnd"
+      v-model:goldFilter="goldFilter"
       class="mt-3"
-      @createJob="onCreateJob"
-      @reload="onReload"
-      @deleteRow="onDeleteRow"
-      @edit="onEdit"
-      @exportPdf="onExportPdf"
-      @saveEdit="onSaveEdit"
+      @search="onSearch"
     />
-    <viewJobsModal
-      :isShow="isShowViewJobs"
-      @closeModal="isShowViewJobs = false"
-      @jobSelected="onJobSelected"
-      @exportJobPdf="onExportJobPdf"
+
+    <JobSelectTable
+      v-if="jobs.length > 0"
+      :jobs="jobs"
+      v-model:selectionMap="selectionMap"
+      :editingSlipId="editingId ? Number(editingId) : null"
+      class="mt-3"
+    />
+
+    <div v-if="hasSelectedJobs" class="form-row two-col mt-3">
+      <IssuedLinesSection
+        v-model:lines="issuedLines"
+        :baseSum="issuedBaseSum"
+      />
+      <ReturnedLinesSection
+        v-model:lines="returnedLines"
+        :baseSum="returnedBaseSum"
+      />
+    </div>
+
+    <SummaryPanel
+      v-if="hasSelectedJobs"
+      v-model:lossPercent="lossPercent"
+      v-model:pricePerGram="pricePerGram"
+      v-model:remark="remark"
+      :calc="calc"
+      class="mt-3"
+      @save="onSave"
     />
   </div>
 </template>
 
 <script>
-import searchView from './components/search-view.vue'
-import dataTableView from './components/data-table-view.vue'
-import viewJobsModal from './modal/view-jobs-modal.vue'
-import { useGoldLossTangReportStore } from '@/stores/modules/api/plan/gold-loss-tang-report-store.js'
-import { success } from '@/services/alert/sweetAlerts.js'
-import { GoldLossPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-loss-pdf-builder.js'
+import { useGoldLossTangStore } from '@/stores/modules/api/plan/gold-loss-tang-store.js'
+import { calcGoldLossTang } from '@/services/utils/gold-loss-tang-calc.js'
+import { formatISOString } from '@/services/utils/dayjs.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { GoldLossTangPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-loss-tang-pdf-builder.js'
+
+import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
+import SearchView from './components/search-view.vue'
+import JobSelectTable from './components/job-select-table.vue'
+import IssuedLinesSection from './components/issued-lines-section.vue'
+import ReturnedLinesSection from './components/returned-lines-section.vue'
+import SummaryPanel from './components/summary-panel.vue'
+import ManualView from './modal/manual-view.vue'
 
 export default {
   name: 'GoldLossTangReport',
 
   components: {
-    searchView,
-    dataTableView,
-    viewJobsModal
+    PageHeaderGeneric,
+    ButtonGeneric,
+    SearchView,
+    JobSelectTable,
+    IssuedLinesSection,
+    ReturnedLinesSection,
+    SummaryPanel,
+    ManualView
   },
 
   data() {
     return {
-      reportData: null,
-      currentParams: null,
-      isReadonly: false,
-      currentJobId: null,
-      currentJobInfo: null,
-      isShowViewJobs: false
+      editingId: this.$route.params.id || null,
+      isShowManual: false,
+
+      workerCode: '',
+      workerName: '',
+      dateStart: null,
+      dateEnd: null,
+      goldFilter: [],
+
+      jobs: [],
+      selectionMap: {},
+
+      issuedLines: [],
+      returnedLines: [],
+
+      lossPercent: '',
+      pricePerGram: '',
+      remark: ''
+    }
+  },
+
+  async created() {
+    if (this.editingId) {
+      await this.loadEditData()
+    }
+  },
+
+  computed: {
+    selectedJobs() {
+      return this.jobs.filter((j, idx) => {
+        const key = `job-${idx}`
+        if (!this.selectionMap[key]) return false
+        if (!j.goldLossTangSlipId) return true
+        return j.goldLossTangSlipId === Number(this.editingId)
+      })
+    },
+
+    hasSelectedJobs() {
+      return this.selectedJobs.length > 0 || this.issuedLines.length > 0 || this.returnedLines.length > 0
+    },
+
+    issuedBaseSum() {
+      return this.selectedJobs.reduce((sum, j) => sum + (parseFloat(j.goldWeightSend) || 0), 0)
+    },
+
+    returnedBaseSum() {
+      return this.selectedJobs.reduce((sum, j) => sum + (parseFloat(j.goldWeightCheck) || 0), 0)
+    },
+
+    calc() {
+      return calcGoldLossTang(
+        this.selectedJobs,
+        this.issuedLines,
+        this.returnedLines,
+        this.lossPercent,
+        this.pricePerGram
+      )
     }
   },
 
   methods: {
-    async onSearch({ startDate, endDate, wo, workerCode, goldCode }) {
-      this.currentParams = { startDate, endDate, wo, workerCode, goldCode }
-      this.isReadonly = false
-      this.currentJobId = null
-      this.currentJobInfo = null
-
-      const store = useGoldLossTangReportStore()
-      const res = await store.fetchReport({ startDate, endDate, wo, workerCode, goldCode })
-
-      if (res) {
-        this.reportData = res
+    async onSearch() {
+      if (!this.workerCode) {
+        warning(this.$t('view.production.goldLossTang.validationSelectWorker'))
+        return
       }
-    },
+      if (!this.dateStart || !this.dateEnd) {
+        warning(this.$t('view.production.goldLossTang.validationSelectDate'))
+        return
+      }
 
-    async onCreateJob(items) {
-      const store = useGoldLossTangReportStore()
-      await store.createJob({
-        startDate: this.currentParams.startDate,
-        endDate: this.currentParams.endDate,
-        items
+      const store = useGoldLossTangStore()
+      const res = await store.searchJobs({
+        workerCode: this.workerCode,
+        requestDateStart: formatISOString(this.dateStart),
+        requestDateEnd: formatISOString(this.dateEnd),
+        goldSize: this.goldFilter.length ? this.goldFilter : undefined
       })
 
-      success('สร้างใบงาน Gold Loss สำเร็จ')
-      this.isReadonly = true
-
-      // reload data
-      await this.onReload()
-    },
-
-    onDeleteRow(idx) {
-      if (this.reportData && this.reportData.rows) {
-        this.reportData.rows.splice(idx, 1)
-      }
-    },
-
-    async onReload() {
-      if (this.currentParams) {
-        await this.onSearch(this.currentParams)
-      }
-    },
-
-    async onJobSelected(jobId) {
-      this.isShowViewJobs = false
-      const store = useGoldLossTangReportStore()
-      const res = await store.fetchJobDetail(jobId)
       if (res) {
-        this.reportData = { hasSavedData: true, rows: res.items }
-        this.currentJobId = res.id
-        this.currentJobInfo = { id: res.id, documentNo: res.documentNo }
-        this.isReadonly = true
+        this.jobs = Array.isArray(res) ? res : res.data || []
+        this.selectionMap = {}
+        this.issuedLines = []
+        this.returnedLines = []
       }
     },
 
-    onEdit() {
-      this.isReadonly = false
+    onSave() {
+      if (this.selectedJobs.length === 0 && this.issuedLines.length === 0) {
+        warning(this.$t('view.production.goldLossTang.validationSelectJobs'))
+        return
+      }
+      if (!this.lossPercent) {
+        warning(this.$t('view.production.goldLossTang.validationLossPercent'))
+        return
+      }
+      if (!this.pricePerGram) {
+        warning(this.$t('view.production.goldLossTang.validationPricePerGram'))
+        return
+      }
+
+      const workerDisplay = `${this.workerCode} - ${this.workerName}`
+      confirmThenSubmit(
+        workerDisplay,
+        this.$t('view.production.goldLossTang.confirmSave'),
+        async () => {
+          await this.doSave()
+        }
+      )
     },
 
-    async onSaveEdit(items) {
-      const store = useGoldLossTangReportStore()
-      await store.updateJob({
-        jobId: this.currentJobId,
-        items
-      })
-      success('บันทึกแก้ไขสำเร็จ')
-      await this.onJobSelected(this.currentJobId)
-    },
+    async loadEditData() {
+      const store = useGoldLossTangStore()
+      const res = await store.getSlip(Number(this.editingId))
+      if (!res) return
+      const slip = res.data || res
 
-    async onExportPdf() {
-      if (!this.currentJobInfo || !this.reportData) return
-      const builder = new GoldLossPdfBuilder(this.currentJobInfo, this.reportData.rows)
-      builder.generatePDF().open()
-    },
+      this.workerCode = slip.workerCode || ''
+      this.workerName = slip.workerName || ''
+      this.dateStart = slip.requestDateStart ? new Date(slip.requestDateStart) : null
+      this.dateEnd = slip.requestDateEnd ? new Date(slip.requestDateEnd) : null
+      this.lossPercent = slip.lossPercent != null ? String(slip.lossPercent) : ''
+      this.pricePerGram = slip.pricePerGram != null ? String(slip.pricePerGram) : ''
+      this.remark = slip.remark || ''
 
-    async onExportJobPdf(jobId) {
-      const store = useGoldLossTangReportStore()
-      const res = await store.fetchJobDetail(jobId)
-      if (res) {
-        const builder = new GoldLossPdfBuilder(
-          { id: res.id, documentNo: res.documentNo, startDate: res.startDate, endDate: res.endDate, createBy: res.createBy, createDate: res.createDate, remark: res.remark },
-          res.items
+      // โหลดงานก่อน (onSearch จะ reset issued/returned lines) แล้วค่อย prefill รายการเพิ่มเอง + selection
+      await this.onSearch()
+
+      this.issuedLines = (slip.issuedLines || []).map((l, i) => ({
+        _id: `issued-${i}`,
+        name: l.name || '',
+        weight: l.weight != null ? String(l.weight) : ''
+      }))
+      this.returnedLines = (slip.returnedLines || []).map((l, i) => ({
+        _id: `returned-${i}`,
+        name: l.name || '',
+        weight: l.weight != null ? String(l.weight) : ''
+      }))
+
+      const slipItems = slip.items || []
+      const newMap = {}
+      this.jobs.forEach((j, idx) => {
+        const key = `job-${idx}`
+        const match = slipItems.find(
+          (si) => si.productionPlanId === j.productionPlanId && si.itemNo === j.itemNo
         )
-        builder.generatePDF().open()
+        if (match) {
+          newMap[key] = true
+        }
+      })
+      this.selectionMap = newMap
+    },
+
+    async doSave() {
+      const store = useGoldLossTangStore()
+
+      const jobItems = this.selectedJobs.map((j) => ({
+        productionPlanId: j.productionPlanId,
+        itemNo: j.itemNo
+      }))
+
+      const issuedLinePayload = this.issuedLines
+        .filter((l) => l.name || l.weight)
+        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0 }))
+
+      const returnedLinePayload = this.returnedLines
+        .filter((l) => l.name || l.weight)
+        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0 }))
+
+      const payload = {
+        workerCode: this.workerCode,
+        workerName: this.workerName,
+        requestDateStart: formatISOString(this.dateStart),
+        requestDateEnd: formatISOString(this.dateEnd),
+        lossPercent: parseFloat(this.lossPercent),
+        pricePerGram: parseFloat(this.pricePerGram),
+        remark: this.remark,
+        items: jobItems,
+        issuedLines: issuedLinePayload,
+        returnedLines: returnedLinePayload
+      }
+
+      if (this.editingId) {
+        const res = await store.updateSlip({ id: Number(this.editingId), ...payload })
+        if (res) {
+          success(this.$t('view.production.goldLossTang.updateSuccess'))
+          this.$router.push({ name: 'gold-loss-tang-report' })
+        }
+      } else {
+        const res = await store.createSlip(payload)
+        if (res) {
+          success(this.$t('view.production.goldLossTang.saveSuccess'))
+          const slipData = res.data || res
+          const builder = new GoldLossTangPdfBuilder(slipData)
+          builder.generatePDF().open()
+          this.$router.push({ name: 'gold-loss-tang-report' })
+        }
       }
     }
   }
@@ -141,7 +295,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/responsive-style/web';
+
 .app-container {
   padding: var(--sp-lg);
+}
+
+.form-row {
+  display: grid;
+  gap: var(--sp-md);
+
+  &.two-col {
+    grid-template-columns: 1fr 1fr;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 </style>

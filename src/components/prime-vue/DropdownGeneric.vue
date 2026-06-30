@@ -7,6 +7,7 @@
     :placeholder="placeholder"
     :showClear="showClear"
     :disabled="disabled"
+    :filter="filter"
     :class="customClass"
     :style="customStyle"
     @change="onChange"
@@ -62,6 +63,10 @@ export default {
     customStyle: {
       type: Object,
       default: () => ({})
+    },
+    filter: {
+      type: Boolean,
+      default: false
     }
   },
 

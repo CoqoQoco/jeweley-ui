@@ -19,7 +19,8 @@ const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue
 
 //E:\coqo_duangkeaw\Code\jeweley-ui\src\views\production\report\plan-completed-all-gold\index-view.vue
 const reportPlanCompletedWithAllGold = () => import('@/views/production/report/plan-completed-all-gold/index-view.vue')
-const GoldLossTangReport = () => import('@/views/production/report/gold-loss-tang-report/index-view.vue')
+const GoldLossTangCreate = () => import('@/views/production/report/gold-loss-tang-report/index-view.vue')
+const GoldLossTangSlipList = () => import('@/views/production/report/gold-loss-tang-report/list/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
@@ -81,13 +82,39 @@ const routes = [
       {
         path: '/gold-loss-tang-report',
         name: 'gold-loss-tang-report',
-        component: GoldLossTangReport,
+        component: GoldLossTangSlipList,
         meta: {
           Displayname: {
-            en: 'Create Gold Loss Job',
-            th: 'สร้างใบงาน Gold Loss'
+            en: 'Gold Loss Tang',
+            th: 'Gold Loss ช่างแต่ง'
           },
           minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/gold-loss-tang-create',
+        name: 'gold-loss-tang-create',
+        component: GoldLossTangCreate,
+        meta: {
+          Displayname: {
+            en: 'Create Gold Loss Tang Slip',
+            th: 'สร้างใบงาน Gold Loss ช่างแต่ง'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/gold-loss-tang-edit/:id',
+        name: 'gold-loss-tang-edit',
+        component: GoldLossTangCreate,
+        meta: {
+          Displayname: {
+            en: 'Edit Gold Loss Tang Slip',
+            th: 'แก้ไขใบงาน Gold Loss ช่างแต่ง'
+          },
+          minorShow: false,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
