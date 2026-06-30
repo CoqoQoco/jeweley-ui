@@ -1,9 +1,9 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
 
-function fmt4(val) {
-  if (val == null) return '0.0000'
-  return Number(val).toFixed(4)
+function fmtW(val) {
+  if (val == null) return '0.00'
+  return Number(val).toFixed(2)
 }
 
 function fmt2(val) {
@@ -64,8 +64,8 @@ export class GoldLossTangPdfBuilder {
       { text: item.wo + (item.woNumber ? '-' + item.woNumber : '') },
       { text: fmtDate(item.jobDate) },
       { text: [item.gold, item.goldSize].filter(Boolean).join(' ') },
-      { text: fmt4(item.goldWeightSend), alignment: 'right' },
-      { text: fmt4(item.goldWeightCheck), alignment: 'right' }
+      { text: fmtW(item.goldWeightSend), alignment: 'right' },
+      { text: fmtW(item.goldWeightCheck), alignment: 'right' }
     ])
 
     return {
@@ -96,14 +96,14 @@ export class GoldLossTangPdfBuilder {
     if (issued.length) {
       stack.push({ text: 'รายการเบิกเพิ่มเติม', style: 'sectionTitle', margin: [0, 4, 0, 2] })
       issued.forEach((e) => {
-        stack.push({ text: `  ${e.name}: ${fmt4(e.weight)} g`, style: 'subText' })
+        stack.push({ text: `  ${e.name}: ${fmtW(e.weight)} g`, style: 'subText' })
       })
     }
 
     if (returned.length) {
       stack.push({ text: 'รายการคืนเพิ่มเติม', style: 'sectionTitle', margin: [0, 6, 0, 2] })
       returned.forEach((e) => {
-        stack.push({ text: `  ${e.name}: ${fmt4(e.weight)} g`, style: 'subText' })
+        stack.push({ text: `  ${e.name}: ${fmtW(e.weight)} g`, style: 'subText' })
       })
     }
 
@@ -115,13 +115,13 @@ export class GoldLossTangPdfBuilder {
     const diffLoss = Number(s.diffLoss || 0)
     const money = Number(s.totalMoneyDiff || 0)
 
-    const diffText = `${diffLoss >= 0 ? '+' : ''}${fmt4(diffLoss)} g`
+    const diffText = `${diffLoss >= 0 ? '+' : ''}${fmtW(diffLoss)} g`
     const moneyText = `${money >= 0 ? '+' : ''}${fmt2(money)} บาท`
 
     const rows = [
       ['%Loss', `${s.lossPercent}%`, 'ราคา/กรัม', `${fmt2(s.pricePerGram)} บาท`],
-      ['เบิกรวม', `${fmt4(s.issuedTotal)} g`, 'คืนรวม', `${fmt4(s.returnedTotal)} g`],
-      ['สูญหายจริง', `${fmt4(s.rawLoss)} g`, 'สูญหายที่อนุญาต', `${fmt4(s.allowedLoss)} g`],
+      ['เบิกรวม', `${fmtW(s.issuedTotal)} g`, 'คืนรวม', `${fmtW(s.returnedTotal)} g`],
+      ['สูญหายจริง', `${fmtW(s.rawLoss)} g`, 'สูญหายที่อนุญาต', `${fmtW(s.allowedLoss)} g`],
       ['ผลต่าง', diffText, 'เงินได้/ขาด', moneyText]
     ]
 

@@ -593,6 +593,7 @@ export default {
     lineWeight: 'Weight (g)',
     totalIssued: 'Total Issued',
     totalReturned: 'Total Returned',
+    noExtraLines: 'No extra lines added',
     summaryTitle: 'Summary & Calculation',
     lossPercent: '% Loss',
     pricePerGram: 'Price/gram',
@@ -654,6 +655,17 @@ export default {
     manualStep3Desc: 'Click "View" on a row to see a read-only detail: worker info, jobs, issued/returned lines and the full calculation summary.',
     manualImgList: 'Slip list page',
     manualImgCreate: 'Create/Edit slip page',
-    manualImgDetail: 'Slip detail page'
+    manualImgDetail: 'Slip detail page',
+    searchModalTitle: 'Search Tang Worker Jobs',
+    selectWorkerSection: 'Select Worker',
+    dateGoldSection: 'Date Range & Gold',
+    searchWorkerPlaceholder: 'Search worker code/name',
+    conditionBarTitle: 'Search Conditions',
+    btnNewSearch: 'Search / Change Conditions',
+    btnOpenSearch: 'Search',
+    conditionEmpty: 'No conditions selected — press Search to begin',
+    resetSearchWarning: 'A new search will clear all selected jobs and added lines',
+    resetSearchTitle: 'Confirm New Search',
+    emptyJobsHint: 'Press Search to display worker jobs'
   }
 }

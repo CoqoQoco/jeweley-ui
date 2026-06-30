@@ -593,6 +593,7 @@ export default {
     lineWeight: 'น้ำหนัก (g)',
     totalIssued: 'รวมเบิกทั้งหมด',
     totalReturned: 'รวมคืนทั้งหมด',
+    noExtraLines: 'ยังไม่มีรายการเพิ่ม',
     summaryTitle: 'สรุป & คำนวณ',
     lossPercent: '% Loss',
     pricePerGram: 'ราคา/กรัม',
@@ -654,6 +655,17 @@ export default {
     manualStep3Desc: 'กดปุ่ม "ดู" ที่หน้ารายการ เพื่อดูรายละเอียดใบงานแบบอ่านอย่างเดียว: ข้อมูลช่าง รายการงาน รายการเบิก/คืน และสรุปการคำนวณทั้งหมด',
     manualImgList: 'หน้ารายการใบงาน',
     manualImgCreate: 'หน้าสร้าง/แก้ไขใบงาน',
-    manualImgDetail: 'หน้ารายละเอียดใบงาน'
+    manualImgDetail: 'หน้ารายละเอียดใบงาน',
+    searchModalTitle: 'ค้นหารายการงานช่างแต่ง',
+    selectWorkerSection: 'เลือกช่าง',
+    dateGoldSection: 'ช่วงเวลา & ทอง',
+    searchWorkerPlaceholder: 'ค้นหาช่าง รหัส/ชื่อ',
+    conditionBarTitle: 'เงื่อนไขการค้นหา',
+    btnNewSearch: 'ค้นหา / เปลี่ยนเงื่อนไข',
+    btnOpenSearch: 'ค้นหา',
+    conditionEmpty: 'ยังไม่ได้เลือกเงื่อนไข — กดค้นหาเพื่อเริ่ม',
+    resetSearchWarning: 'การค้นหาใหม่จะล้างรายการที่เลือกและรายการที่เพิ่มทั้งหมด',
+    resetSearchTitle: 'ยืนยันค้นหาใหม่',
+    emptyJobsHint: 'กดค้นหาเพื่อแสดงรายการงานของช่าง'
   }
 }

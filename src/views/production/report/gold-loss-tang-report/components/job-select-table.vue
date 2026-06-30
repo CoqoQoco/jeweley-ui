@@ -1,11 +1,15 @@
 <template>
-  <SectionCardGeneric>
+  <SectionCardGeneric
+    :title="$t('view.production.goldLossTang.selectJobsTitle')"
+    icon="bi-list-check"
+    accent="main"
+    headerStyle="legend"
+  >
     <div class="job-table-header mb-2">
-      <span class="title-text">
-        {{ $t('view.production.goldLossTang.selectJobsTitle') }}
-        <span class="count-badge">{{ selectedCount }}/{{ jobs.length }}</span>
+      <span class="count-badge-wrap">
+        <span v-if="jobs.length > 0" class="count-badge">{{ selectedCount }}/{{ jobs.length }}</span>
       </span>
-      <div class="filter-row">
+      <div v-if="jobs.length > 0" class="filter-row">
         <MultiSelectGeneric
           v-model="filterGoldTypes"
           :options="goldTypeOptions"
@@ -24,7 +28,13 @@
       </div>
     </div>
 
+    <div v-if="jobs.length === 0" class="empty-jobs-state">
+      <i class="bi bi-inbox empty-jobs-icon"></i>
+      <span class="empty-jobs-text">{{ $t('view.production.goldLossTang.emptyJobsHint') }}</span>
+    </div>
+
     <BaseDataTable
+      v-else
       :items="displayedJobs"
       :totalRecords="displayedJobs.length"
       :columns="columns"
@@ -63,11 +73,11 @@
       </template>
 
       <template #goldWeightSendTemplate="{ data }">
-        <span>{{ fmt4(data.goldWeightSend) }}</span>
+        <span>{{ fmt2(data.goldWeightSend) }}</span>
       </template>
 
       <template #goldWeightCheckTemplate="{ data }">
-        <span>{{ fmt4(data.goldWeightCheck) }}</span>
+        <span>{{ fmt2(data.goldWeightCheck) }}</span>
       </template>
 
       <template #statusTemplate="{ data }">
@@ -181,9 +191,9 @@ export default {
       return dayjs(val).format('DD/MM/YYYY')
     },
 
-    fmt4(val) {
-      if (val == null) return '0.0000'
-      return Number(val).toFixed(4)
+    fmt2(val) {
+      if (val == null) return '0.00'
+      return Number(val).toFixed(2)
     },
 
     onRowSelect(key, val) {
@@ -213,6 +223,11 @@ export default {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--sp-sm);
+}
+
+.count-badge-wrap {
+  display: flex;
+  align-items: center;
 }
 
 .filter-row {
@@ -258,5 +273,26 @@ export default {
   &[data-slipped='true'] {
     opacity: 0.5;
   }
+}
+
+.empty-jobs-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-2xl) var(--sp-lg);
+  gap: var(--sp-sm);
+}
+
+.empty-jobs-icon {
+  font-size: 2.5rem;
+  color: var(--base-green);
+  opacity: 0.5;
+}
+
+.empty-jobs-text {
+  color: var(--base-font-color);
+  opacity: 0.6;
+  font-size: var(--fs-base);
 }
 </style>

@@ -16,25 +16,35 @@
 
     <ManualView :isShow="isShowManual" @closeModal="isShowManual = false" />
 
-    <SearchView
-      v-model:workerCode="workerCode"
-      v-model:workerName="workerName"
-      v-model:dateStart="dateStart"
-      v-model:dateEnd="dateEnd"
-      v-model:goldFilter="goldFilter"
-      class="mt-3"
-      @search="onSearch"
+    <SearchConditionBar
+      :workerCode="workerCode"
+      :workerName="workerName"
+      :dateStart="dateStart"
+      :dateEnd="dateEnd"
+      :goldFilter="goldFilter"
+      class="mt-4"
+      @open-search="openSearchModal"
+    />
+
+    <SearchJobsModal
+      :isShow="isShowSearchModal"
+      :workerCode="workerCode"
+      :workerName="workerName"
+      :dateStart="dateStart"
+      :dateEnd="dateEnd"
+      :goldFilter="goldFilter"
+      @closeModal="isShowSearchModal = false"
+      @search="onSearchConfirm"
     />
 
     <JobSelectTable
-      v-if="jobs.length > 0"
       :jobs="jobs"
       v-model:selectionMap="selectionMap"
       :editingSlipId="editingId ? Number(editingId) : null"
-      class="mt-3"
+      class="mt-4"
     />
 
-    <div v-if="hasSelectedJobs" class="form-row two-col mt-3">
+    <div class="form-row two-col mt-4">
       <IssuedLinesSection
         v-model:lines="issuedLines"
         :baseSum="issuedBaseSum"
@@ -46,12 +56,12 @@
     </div>
 
     <SummaryPanel
-      v-if="hasSelectedJobs"
       v-model:lossPercent="lossPercent"
       v-model:pricePerGram="pricePerGram"
       v-model:remark="remark"
       :calc="calc"
-      class="mt-3"
+      :canSave="canSave"
+      class="mt-4"
       @save="onSave"
     />
   </div>
@@ -68,12 +78,13 @@ import { GoldLossTangPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-los
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
-import SearchView from './components/search-view.vue'
+import SearchConditionBar from './components/search-condition-bar.vue'
 import JobSelectTable from './components/job-select-table.vue'
 import IssuedLinesSection from './components/issued-lines-section.vue'
 import ReturnedLinesSection from './components/returned-lines-section.vue'
 import SummaryPanel from './components/summary-panel.vue'
 import ManualView from './modal/manual-view.vue'
+import SearchJobsModal from './modal/search-jobs-modal.vue'
 
 export default {
   name: 'GoldLossTangReport',
@@ -81,18 +92,21 @@ export default {
   components: {
     PageHeaderGeneric,
     ButtonGeneric,
-    SearchView,
+    SearchConditionBar,
     JobSelectTable,
     IssuedLinesSection,
     ReturnedLinesSection,
     SummaryPanel,
-    ManualView
+    ManualView,
+    SearchJobsModal
   },
 
   data() {
     return {
       editingId: this.$route.params.id || null,
       isShowManual: false,
+      isShowSearchModal: false,
+      hasSearched: false,
 
       workerCode: '',
       workerName: '',
@@ -148,19 +162,48 @@ export default {
         this.lossPercent,
         this.pricePerGram
       )
+    },
+
+    canSave() {
+      return (
+        this.hasSelectedJobs &&
+        !!this.lossPercent &&
+        !!this.pricePerGram
+      )
     }
   },
 
   methods: {
-    async onSearch() {
-      if (!this.workerCode) {
-        warning(this.$t('view.production.goldLossTang.validationSelectWorker'))
-        return
+    openSearchModal() {
+      this.isShowSearchModal = true
+    },
+
+    onSearchConfirm(payload) {
+      const hasPendingData =
+        this.jobs.length > 0 ||
+        this.issuedLines.length > 0 ||
+        this.returnedLines.length > 0 ||
+        Object.values(this.selectionMap).some(Boolean)
+
+      if (hasPendingData) {
+        confirmThenSubmit(
+          this.$t('view.production.goldLossTang.resetSearchWarning'),
+          this.$t('view.production.goldLossTang.resetSearchTitle'),
+          () => {
+            this.doSearch(payload)
+          }
+        )
+      } else {
+        this.doSearch(payload)
       }
-      if (!this.dateStart || !this.dateEnd) {
-        warning(this.$t('view.production.goldLossTang.validationSelectDate'))
-        return
-      }
+    },
+
+    async doSearch(payload) {
+      this.workerCode = payload.workerCode
+      this.workerName = payload.workerName
+      this.dateStart = payload.dateStart
+      this.dateEnd = payload.dateEnd
+      this.goldFilter = payload.goldFilter || []
 
       const store = useGoldLossTangStore()
       const res = await store.searchJobs({
@@ -170,12 +213,17 @@ export default {
         goldSize: this.goldFilter.length ? this.goldFilter : undefined
       })
 
+      this.selectionMap = {}
+      this.issuedLines = []
+      this.returnedLines = []
+
       if (res) {
         this.jobs = Array.isArray(res) ? res : res.data || []
-        this.selectionMap = {}
-        this.issuedLines = []
-        this.returnedLines = []
+      } else {
+        this.jobs = []
       }
+
+      this.hasSearched = true
     },
 
     onSave() {
@@ -216,8 +264,13 @@ export default {
       this.pricePerGram = slip.pricePerGram != null ? String(slip.pricePerGram) : ''
       this.remark = slip.remark || ''
 
-      // โหลดงานก่อน (onSearch จะ reset issued/returned lines) แล้วค่อย prefill รายการเพิ่มเอง + selection
-      await this.onSearch()
+      await this.doSearch({
+        workerCode: this.workerCode,
+        workerName: this.workerName,
+        dateStart: this.dateStart,
+        dateEnd: this.dateEnd,
+        goldFilter: []
+      })
 
       this.issuedLines = (slip.issuedLines || []).map((l, i) => ({
         _id: `issued-${i}`,
