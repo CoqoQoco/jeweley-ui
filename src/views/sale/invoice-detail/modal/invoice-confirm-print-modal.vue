@@ -111,6 +111,13 @@
             </div>
 
             <div v-if="paperSize === 'a4'" class="form-group mb-3">
+              <CheckboxGeneric
+                v-model="printData.hideCompanyHeader"
+                :label="$t('view.sale.invoiceDetail.hideCompanyHeader')"
+              />
+            </div>
+
+            <div v-if="paperSize === 'a4'" class="form-group mb-3">
               <label class="form-label">
                 <i class="bi bi-list-ol mr-1"></i>{{ $t('view.sale.invoiceDetail.itemsPerPage') }}
               </label>
@@ -486,6 +493,7 @@ export default {
         invoiceNumber: '',
         invoiceDate: '',
         showCifLabel: true,
+        hideCompanyHeader: false,
         itemsPerPage: 10
       },
       invoiceTemplate: 'standard',
@@ -716,6 +724,7 @@ export default {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
         invoiceDate: new Date(),
         showCifLabel: true,
+        hideCompanyHeader: false,
         itemsPerPage: 10
       }
       this.invoiceTemplate = 'standard'
@@ -749,6 +758,7 @@ export default {
         invoiceNumber: this.printData.invoiceNumber.trim(),
         invoiceDate: normalizedDate,
         showCifLabel: this.paperSize === 'a4' ? this.printData.showCifLabel : false,
+        hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
         itemsPerPage: Number(this.printData.itemsPerPage) || 10,
         invoiceTemplate: this.invoiceTemplate,
         paperSize: this.paperSize,

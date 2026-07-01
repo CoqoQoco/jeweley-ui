@@ -40,7 +40,7 @@ export class InvoicePdfIntegration {
         items,
         customer,
         invoiceDate,
-        { ...saleOrder, showCifLabel: options.showCifLabel !== undefined ? options.showCifLabel : true },
+        { ...saleOrder, showCifLabel: options.showCifLabel !== undefined ? options.showCifLabel : true, hideCompanyHeader: options.hideCompanyHeader || false },
         currencyUnit,
         currencyRate,
         invoiceNo,

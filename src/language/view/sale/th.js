@@ -60,6 +60,7 @@ export const invoiceDetail = {
   originalValue: 'ค่าเดิม',
   selectDate: 'เลือกวันที่',
   showCifLabel: 'แสดงป้าย C.I.F',
+  hideCompanyHeader: 'พิมพ์แบบไม่มีหัวบริษัท',
   itemsPerPage: 'จำนวนรายการต่อหน้า',
   itemsPerPageHint: 'ลดจำนวนลงหากกล่องลายเซ็นตกหน้ากระดาษ',
   template: 'รูปแบบใบแจ้งหนี้',

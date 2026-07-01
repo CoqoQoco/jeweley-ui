@@ -1077,6 +1077,7 @@ export default {
           download: true,
           open: false,
           showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
+          hideCompanyHeader: printData.hideCompanyHeader || false,
           itemsPerPage: Number(printData.itemsPerPage) || 10
         }
 
@@ -1246,6 +1247,7 @@ export default {
         open: false,
         preview: true,
         showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
+        hideCompanyHeader: printData.hideCompanyHeader || false,
         itemsPerPage: Number(printData.itemsPerPage) || 10
       }
 

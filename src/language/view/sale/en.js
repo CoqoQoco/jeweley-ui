@@ -60,6 +60,7 @@ export const invoiceDetail = {
   originalValue: 'Original',
   selectDate: 'Select Date',
   showCifLabel: 'Show C.I.F Label',
+  hideCompanyHeader: 'Print without company header',
   itemsPerPage: 'Items per page',
   itemsPerPageHint: 'Reduce if the signature box overflows the page',
   template: 'Invoice template',

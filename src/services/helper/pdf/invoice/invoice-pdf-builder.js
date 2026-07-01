@@ -41,6 +41,7 @@ export class InvoicePdfBuilder {
     this.discount = Number(saleOrderData.discount) || 0
     this.itemsPerPage = Number(itemsPerPage) || 10
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
+    this.hideCompanyHeader = saleOrderData?.hideCompanyHeader || false
 
     // Calculate totals with new fields
     this.subtotal = this.calculateSubtotal()
@@ -144,6 +145,48 @@ export class InvoicePdfBuilder {
   }
 
   getHeaderContent() {
+    const leftHeaderCell = this.hideCompanyHeader
+      ? { text: '', fillColor: '#e0e0e0' }
+      : {
+          fillColor: '#e0e0e0',
+          stack: [
+            {
+              columns: [
+                this.logoBase64
+                  ? {
+                      image: this.logoBase64,
+                      width: 35,
+                      height: 35,
+                      margin: [15, 10, 10, 0]
+                    }
+                  : {
+                      text: 'LOGO',
+                      fontSize: 14,
+                      color: 'white',
+                      margin: [15, 20, 10, 0]
+                    },
+                {
+                  stack: [
+                    {
+                      text: 'Duang Kaew Jewelry',
+                      fontSize: 30,
+                      bold: true,
+                      color: '#8B0000',
+                      margin: [25, 5, 0, 0]
+                    },
+                    {
+                      text: 'The first step is always the hardest',
+                      fontSize: 12,
+                      color: '#8B0000',
+                      margin: [25, -10, 0, 0]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+
     return {
       stack: [
         // --- Main Header with dark blue background and green accent ---
@@ -153,46 +196,7 @@ export class InvoicePdfBuilder {
             widths: ['70%', '30%'],
             body: [
               [
-                {
-                  // Left side - Company info with dark blue background
-                  fillColor: '#e0e0e0',
-                  stack: [
-                    {
-                      columns: [
-                        this.logoBase64
-                          ? {
-                              image: this.logoBase64,
-                              width: 35,
-                              height: 35,
-                              margin: [15, 10, 10, 0]
-                            }
-                          : {
-                              text: 'LOGO',
-                              fontSize: 14,
-                              color: 'white',
-                              margin: [15, 20, 10, 0]
-                            },
-                        {
-                          stack: [
-                            {
-                              text: 'Duang Kaew Jewelry',
-                              fontSize: 30,
-                              bold: true,
-                              color: '#8B0000',
-                              margin: [25, 5, 0, 0]
-                            },
-                            {
-                              text: 'The first step is always the hardest',
-                              fontSize: 12,
-                              color: '#8B0000',
-                              margin: [25, -10, 0, 0]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
+                leftHeaderCell,
                 {
                   // Right side - Invoice title
                   stack: [
@@ -290,43 +294,45 @@ export class InvoicePdfBuilder {
         {
           margin: [0, 0, 0, 0],
           columns: [
-            {
-              width: '50%',
-              stack: [
-                // Company Address
-                {
-                  text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                  fontSize: 14,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
+            this.hideCompanyHeader
+              ? { width: '50%', text: '' }
+              : {
+                  width: '50%',
+                  stack: [
+                    // Company Address
+                    {
+                      text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
+                      fontSize: 14,
+                      bold: true,
+                      color: '#8B0000',
+                      margin: [0, 0, 0, 0]
+                    },
+                    {
+                      text: 'Address: ' + (this.companyInfo.address || ''),
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 0, 0, 0]
+                    },
+                    {
+                      text: 'TEL: ' + (this.companyInfo.phone || ''),
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 0, 0, 0]
+                    },
+                    {
+                      text: 'FAX: ' + (this.companyInfo.fax || ''),
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 0, 0, 0]
+                    },
+                    {
+                      text: 'E-Mail: ' + (this.companyInfo.email || ''),
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 0, 0, 0]
+                    }
+                  ]
                 },
-                {
-                  text: 'Address: ' + (this.companyInfo.address || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'TEL: ' + (this.companyInfo.phone || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'FAX: ' + (this.companyInfo.fax || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'E-Mail: ' + (this.companyInfo.email || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                }
-              ]
-            },
             {
               width: '50%',
               stack: [
