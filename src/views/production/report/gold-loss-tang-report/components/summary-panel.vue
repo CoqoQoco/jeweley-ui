@@ -51,7 +51,7 @@
       </div>
       <div class="calc-row">
         <span class="calc-label">{{ $t('view.production.goldLossTang.rawLoss') }}</span>
-        <span class="calc-value">{{ fmtSign2w(calc.rawLoss) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
+        <span class="calc-value">{{ fmtSign2w(calc.net) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
       </div>
       <div class="calc-row">
         <span class="calc-label">{{ $t('view.production.goldLossTang.limitLoss') }}</span>
@@ -121,6 +121,7 @@ export default {
         issuedTotal: 0,
         returnedTotal: 0,
         rawLoss: 0,
+        net: 0,
         allowedLoss: 0,
         diffLoss: 0,
         money: 0
