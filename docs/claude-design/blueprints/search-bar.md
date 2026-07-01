@@ -161,6 +161,15 @@ SearchBarGeneric เดิม `@import` `standard-search-bar.scss` + `standard-f
 
 ผลลัพธ์: caller ใช้ `<ButtonGeneric variant="green" :label="..." @click="..." />` ใน `#header-actions`
 
+## Refinement รอบ 6 (2026-07-01) — adopt ref #1 (dot pattern) + #2 (outline chip) · #3 คง icon-only
+
+ผู้ใช้ตัดสิน ref เต็ม: เอา #1+#2 (global), #3 คง icon-only ตาม #10 (ทางเลือก ก) — ไม่แตะ action bar
+
+- **#1 dot pattern** (`page-title.vue` `.page-title-filled`): เพิ่มบนพื้นแดง
+  `background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1.5px); background-size: 14px 14px;` (คง `background-color: var(--base-font-color)`)
+- **#2 outline chip** (`SearchBarGeneric.vue` `:deep(.p-multiselect-token)`): `background: var(--color-green-bg)` → `background: transparent` (คง border + text `var(--base-green)`)
+- **#3 ไม่รับ**: ปุ่ม list page คง icon-only ตาม #10 (ไม่เปลี่ยนเป็น label segmented)
+
 ## Screenshots
 
 - ดูที่ Claude Design → Explore · SearchBar → `search-bar-c-recommended.html` (เทียบ A/B ในกลุ่มเดียวกัน)

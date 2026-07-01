@@ -152,9 +152,9 @@ padding: var(--sp-lg) var(--sp-lg) var(--sp-lg); /* ← เปลี่ยนเ
   }
 }
 
-// Chip teal สำหรับ MultiSelect ภายใน SearchBarGeneric
+// Chip teal outline สำหรับ MultiSelect ภายใน SearchBarGeneric
 :deep(.p-multiselect-token) {
-  background: var(--color-green-bg);
+  background: transparent;
   color: var(--base-green);
   border: 1px solid var(--base-green);
 

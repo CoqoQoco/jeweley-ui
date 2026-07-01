@@ -120,6 +120,9 @@ export default {
 // Filled variant — header zone bg main red, ตัวอักษรขาว (ใช้ใน SearchBarGeneric)
 .page-title-container.page-title-filled {
   background-color: var(--base-font-color);
+  /* dot texture จางๆ บนพื้นแดง — rgba white = intentional overlay (ไม่มี token) */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.5px);
+  background-size: 14px 14px;
   border-bottom: none;
   padding: var(--sp-md) var(--sp-lg);
   margin-bottom: 0;
