@@ -47,6 +47,7 @@ export default {
 
   planTracking: {
     searchTitle: 'ค้นหาใบจ่าย-รับคืนงาน',
+    searchDesc: 'ค้นหาและติดตามสถานะใบสั่งผลิต',
     createDate: 'วันที่สร้างใบจ่าย-รับคืน',
     workOrder: 'W.O.',
     planStatus: 'สถานะงานผลิต',

@@ -47,6 +47,7 @@ export default {
 
   planTracking: {
     searchTitle: 'Search Plan Tracking',
+    searchDesc: 'Search and track production order status',
     createDate: 'Plan Create Date',
     workOrder: 'W.O.',
     planStatus: 'Production Status',
