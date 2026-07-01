@@ -1,5 +1,9 @@
 <template>
   <SearchBarGeneric :title="$t('view.catalog.searchTitle')" @search="onSubmit" @clear="onClear">
+    <template #header-actions>
+      <ButtonGeneric variant="green" icon="bi-journal-plus" :label="$t('view.catalog.createBtn')" @click="onCreate" />
+    </template>
+
     <template #fields>
       <div>
         <span class="title-text">{{ $t('view.catalog.field.code') }}</span>
@@ -22,7 +26,6 @@
     <template #actions-right>
       <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
       <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" @click="onClear" :title="$t('common.btn.clear')" />
-      <ButtonGeneric variant="main" icon="bi-journal-plus" class="ml-2" @click="onCreate" :label="$t('view.catalog.createBtn')" />
     </template>
   </SearchBarGeneric>
 
