@@ -1,0 +1,21 @@
+{
+  "name": "design-system-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server เสิร์ฟ design system ของ jeweley-ui (token/component/archetype) สดจากไฟล์จริง",
+  "bin": {
+    "design-system-mcp": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "selftest": "node selftest.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

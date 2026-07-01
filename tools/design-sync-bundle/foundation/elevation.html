@@ -1,0 +1,43 @@
+<!-- @dsCard group="Elevation" -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Radius &amp; Elevation — Duangkeaw Jewelry DS</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; font-family:"Segoe UI","Sarabun",system-ui,sans-serif; background:#f7f7f7; color:#393939; }
+  .head { margin:0 0 4px; font-size:20px; font-weight:700; color:#921313; }
+  .sub { margin:0 0 20px; font-size:13px; color:#777; }
+  .section-label { font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#999; margin:18px 0 12px; }
+  .grid { display:flex; gap:20px; flex-wrap:wrap; }
+  .demo { background:#fff; border:1px solid #e0e0e0; padding:16px 18px; min-width:150px; }
+  .r-sm { border-radius:4px; } .r-md { border-radius:8px; } .r-lg { border-radius:12px; }
+  .s-sm { box-shadow: rgba(0,0,0,.06) 0 2px 8px; }
+  .s-md { box-shadow: rgba(0,0,0,.1) 0 4px 12px; }
+  .s-lg { box-shadow: rgba(0,0,0,.15) 0 8px 24px; }
+  .name { font-size:13px; font-weight:600; color:#222; }
+  .meta { font-size:11px; color:#999; margin-top:4px; font-family:ui-monospace,monospace; }
+  .pad-grid { gap:28px; }
+</style>
+</head>
+<body>
+  <h1 class="head">Radius &amp; Elevation</h1>
+  <p class="sub">มุมมน default = 8px · เงาบางสำหรับการ์ด หนักขึ้นสำหรับ overlay</p>
+
+  <div class="section-label">Radius</div>
+  <div class="grid">
+    <div class="demo r-sm s-sm"><div class="name">radius-sm</div><div class="meta">4px</div></div>
+    <div class="demo r-md s-sm"><div class="name">radius-md · default</div><div class="meta">8px · card/input/button</div></div>
+    <div class="demo r-lg s-sm"><div class="name">radius-lg</div><div class="meta">12px</div></div>
+  </div>
+
+  <div class="section-label">Shadow</div>
+  <div class="grid pad-grid">
+    <div class="demo r-md s-sm"><div class="name">shadow-sm</div><div class="meta">0 2px 8px /.06 · card</div></div>
+    <div class="demo r-md s-md"><div class="name">shadow-md</div><div class="meta">0 4px 12px /.1</div></div>
+    <div class="demo r-md s-lg"><div class="name">shadow-lg</div><div class="meta">0 8px 24px /.15 · modal</div></div>
+  </div>
+</body>
+</html>

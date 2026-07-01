@@ -1,0 +1,90 @@
+<!-- @dsCard group="Explore · SearchBar" -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SearchBar — แบบ B · Bold</title>
+<style>
+  :root{
+    --primary:#921313; --primary-deep:#360505; --teal:#038387; --teal-bg:#e6f4f4;
+    --border:#e0e0e0; --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:24px;background:#f7f7f7;font-family:"Segoe UI","Sarabun",system-ui,sans-serif;color:#333;}
+  .tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#888;margin-bottom:12px;}
+  .tag b{color:var(--primary);}
+
+  .card{background:#fff;border-radius:var(--radius);box-shadow:rgba(0,0,0,.1) 0 4px 12px;overflow:hidden;}
+  /* header band filled + ลวดลายเพชร */
+  .hd{
+    position:relative;
+    background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+    color:#fff;padding:18px 20px;overflow:hidden;
+  }
+  .hd::after{
+    content:"◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆";
+    position:absolute;right:-4px;top:8px;font-size:22px;letter-spacing:6px;
+    color:rgba(255,255,255,.08);white-space:nowrap;pointer-events:none;
+  }
+  .hd .title{font-size:20px;font-weight:700;margin:0;position:relative;}
+  .hd .title .dia{color:var(--teal);margin-right:8px;}
+  .hd .desc{font-size:12px;margin:3px 0 0;color:rgba(255,255,255,.8);}
+  .accent{height:3px;background:var(--teal);}
+
+  .body{padding:20px;}
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;}
+  .field{border-left:3px solid var(--primary);padding-left:10px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--primary);margin-bottom:6px;}
+  .inp{width:100%;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:13px;color:#333;display:flex;align-items:center;gap:6px;background:#fff;}
+  .inp .ico{color:#999;}
+  .range{display:flex;align-items:center;gap:8px;} .range .inp{flex:1;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal);border-radius:20px;padding:3px 10px;font-size:12px;}
+
+  .bar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;}
+  .sep{color:var(--primary);opacity:.4;}
+  .btn{height:40px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;}
+  .btn.search{background:var(--primary);color:#fff;}
+  .btn.adv{background:#fff;border-color:var(--primary);color:var(--primary);}
+  .btn.clear{background:#fff;border-color:var(--border);color:#777;}
+  .btn.exp{background:var(--teal);color:#fff;}
+</style>
+</head>
+<body>
+  <div class="tag">แบบ <b>B · Bold / มีลวดลาย</b> — header แบรนด์ + ลายเพชร + accent teal</div>
+  <div class="card">
+    <div class="hd">
+      <p class="title"><span class="dia">◆</span>ติดตามใบสั่งผลิต</p>
+      <p class="desc">ค้นหาและติดตามสถานะใบสั่งผลิตทั้งหมด</p>
+    </div>
+    <div class="accent"></div>
+    <div class="body">
+      <div class="fields">
+        <div class="field">
+          <label>วันที่สร้าง</label>
+          <div class="range">
+            <div class="inp"><span class="ico">📅</span> เริ่ม</div><span class="sep">→</span>
+            <div class="inp"><span class="ico">📅</span> สิ้นสุด</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>เลขใบสั่งงาน</label>
+          <div class="inp"><span class="ico">▥</span> EX: 202502211</div>
+        </div>
+        <div class="field">
+          <label>สถานะแผน</label>
+          <div class="inp"><div class="chips"><span class="chip">กำลังผลิต ✕</span><span class="chip">รอจ่าย ✕</span></div></div>
+        </div>
+      </div>
+      <div class="bar">
+        <span class="btn search">🔍 ค้นหา</span>
+        <span class="btn adv">🔎</span>
+        <span class="sep">◆</span>
+        <span class="btn clear">✖</span>
+        <span class="btn exp">⬇ CSV</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!-- @dsCard group="Type" -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Typography — Duangkeaw Jewelry DS</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font-family: "Segoe UI", "Sarabun", system-ui, -apple-system, sans-serif;
+    background: #f7f7f7; color: #393939;
+  }
+  .head { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: #921313; }
+  .sub { margin: 0 0 20px; font-size: 13px; color: #777; }
+  .card {
+    background:#fff; border:1px solid #e0e0e0; border-radius:8px;
+    box-shadow: rgba(0,0,0,.06) 0 2px 8px; padding:20px; margin-bottom:16px;
+  }
+  .row { display:flex; align-items:baseline; gap:16px; padding:10px 0; border-bottom:1px solid #f0f0f0; }
+  .row:last-child { border-bottom:none; }
+  .token { width:160px; flex-shrink:0; font-size:12px; font-family: ui-monospace, monospace; color:#888; }
+  .sample { color:#222; }
+  .note { font-size:11px; color:#aaa; margin-left:auto; }
+  .lh-card .bar { background:#fdf2f2; border-left:3px solid #921313; padding:8px 12px; margin-top:8px; color:#444; }
+</style>
+</head>
+<body>
+  <h1 class="head">Typography</h1>
+  <p class="sub">Base 14px · ฟอนต์ระบบ + Sarabun (ไทย) · scale + line-height tokens</p>
+
+  <div class="card">
+    <div class="row"><span class="token">--fs-xl · 20px</span><span class="sample" style="font-size:20px; font-weight:700;">หัวข้อหน้า · Page Title</span><span class="note">page title</span></div>
+    <div class="row"><span class="token">--fs-lg · 17px</span><span class="sample" style="font-size:17px; font-weight:700;">หัวข้อ Modal / Section</span><span class="note">modal / section</span></div>
+    <div class="row"><span class="token">--fs-base · 14px</span><span class="sample" style="font-size:14px;">ข้อความเนื้อหาทั่วไป Body text</span><span class="note">body</span></div>
+    <div class="row"><span class="token">--fs-sm · 12px</span><span class="sample" style="font-size:12px; color:#777;">คำอธิบายย่อย / caption</span><span class="note">helper</span></div>
+  </div>
+
+  <div class="card lh-card">
+    <div style="font-size:13px; font-weight:700; color:#921313; margin-bottom:6px;">Line-height</div>
+    <div class="bar" style="line-height:1.4;">--lh-sm · 1.4 — input / compact · บรรทัดชิด เหมาะกับช่องกรอกและตาราง</div>
+    <div class="bar" style="line-height:1.6;">--lh-md · 1.6 — body · ระยะอ่านสบายสำหรับเนื้อหาทั่วไป</div>
+    <div class="bar" style="line-height:1.8;">--lh-lg · 1.8 — อ่านยาว · ย่อหน้าเนื้อหาที่ต้องอ่านต่อเนื่อง</div>
+  </div>
+</body>
+</html>

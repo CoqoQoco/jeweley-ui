@@ -1,0 +1,71 @@
+<!-- @dsCard group="Explore · SearchBar" -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SearchBar — แบบ A · Simple</title>
+<style>
+  :root{
+    --primary:#921313; --teal:#038387; --border:#e0e0e0; --muted:#888;
+    --sp-sm:8px; --sp-md:12px; --sp-lg:16px; --sp-xl:20px; --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:24px;background:#f7f7f7;font-family:"Segoe UI","Sarabun",system-ui,sans-serif;color:#333;}
+  .tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;}
+  .tag b{color:var(--primary);}
+
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:rgba(0,0,0,.06) 0 2px 8px;padding:var(--sp-xl);}
+  .hd{padding-bottom:var(--sp-md);border-bottom:1px solid #f0f0f0;margin-bottom:var(--sp-lg);}
+  .hd .title{font-size:18px;font-weight:700;color:var(--primary);margin:0;}
+  .hd .desc{font-size:12px;color:var(--muted);margin:2px 0 0;}
+
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--sp-lg);}
+  label{display:block;font-size:12px;color:#666;margin-bottom:6px;}
+  .inp{width:100%;height:38px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;color:#333;background:#fff;display:flex;align-items:center;gap:6px;}
+  .inp .ico{color:var(--muted);}
+  .range{display:flex;align-items:center;gap:8px;}
+  .range .inp{flex:1;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{background:#f0f0f0;border-radius:20px;padding:3px 10px;font-size:12px;color:#555;}
+
+  .bar{display:flex;justify-content:flex-end;gap:8px;margin-top:var(--sp-xl);padding-top:var(--sp-lg);border-top:1px solid #f0f0f0;}
+  .ib{width:38px;height:38px;border-radius:var(--radius);display:inline-flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;border:1px solid var(--border);background:#fff;color:#666;}
+  .ib.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .ib.teal{border-color:var(--teal);color:var(--teal);}
+</style>
+</head>
+<body>
+  <div class="tag">แบบ <b>A · Simple</b> — สะอาด เรียบ โล่ง เน้น focus</div>
+  <div class="card">
+    <div class="hd">
+      <p class="title">ติดตามใบสั่งผลิต</p>
+      <p class="desc">ค้นหาและติดตามสถานะใบสั่งผลิตทั้งหมด</p>
+    </div>
+    <div class="fields">
+      <div>
+        <label>วันที่สร้าง</label>
+        <div class="range">
+          <div class="inp"><span class="ico">📅</span> เริ่ม</div>
+          <span style="color:var(--muted)">→</span>
+          <div class="inp"><span class="ico">📅</span> สิ้นสุด</div>
+        </div>
+      </div>
+      <div>
+        <label>เลขใบสั่งงาน</label>
+        <div class="inp"><span class="ico">▥</span> EX: 202502211</div>
+      </div>
+      <div>
+        <label>สถานะแผน</label>
+        <div class="inp"><div class="chips"><span class="chip">กำลังผลิต ✕</span><span class="chip">รอจ่าย ✕</span></div></div>
+      </div>
+    </div>
+    <div class="bar">
+      <span class="ib primary" title="ค้นหา">🔍</span>
+      <span class="ib" title="ค้นหาเพิ่มเติม">🔎</span>
+      <span class="ib" title="ล้าง">✖</span>
+      <span class="ib teal" title="Export CSV">⬇</span>
+    </div>
+  </div>
+</body>
+</html>

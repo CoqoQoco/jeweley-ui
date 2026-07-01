@@ -1,0 +1,74 @@
+<!-- @dsCard group="Colors" -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Colors — Duangkeaw Jewelry DS</title>
+<style>
+  :root {
+    --base-font-color: #921313;
+    --base-font-sub-color: #360505;
+    --base-green: #038387;
+    --base-warning: #fabc3f;
+    --base-red: #ff4d4d;
+    --base-sub-color: #393939;
+    --color-border: #e0e0e0;
+    --color-card-bg: #ffffff;
+    --color-highlight-bg: #fdf2f2;
+    --color-green-bg: #e6f4f4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    font-family: "Segoe UI", "Sarabun", system-ui, -apple-system, sans-serif;
+    background: #f7f7f7;
+    color: #393939;
+  }
+  .head { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: var(--base-font-color); }
+  .sub { margin: 0 0 20px; font-size: 13px; color: #777; }
+  .section-label { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #999; margin: 20px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .swatch {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: rgba(0,0,0,.06) 0 2px 8px;
+  }
+  .chip { height: 64px; }
+  .meta { padding: 10px 12px; }
+  .name { font-size: 13px; font-weight: 600; color: #222; }
+  .hex { font-size: 12px; color: #888; font-family: ui-monospace, "Cascadia Code", monospace; }
+  .role { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .border-demo { border: 1px dashed #bbb; }
+</style>
+</head>
+<body>
+  <h1 class="head">Color Palette</h1>
+  <p class="sub">Duangkeaw Jewelry Design System · ดึงจาก variable.scss (source of truth)</p>
+
+  <div class="section-label">Brand</div>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#921313"></div><div class="meta"><div class="name">--base-font-color</div><div class="hex">#921313</div><div class="role">Primary · brand, ปุ่มหลัก, title, focus</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#360505"></div><div class="meta"><div class="name">--base-font-sub-color</div><div class="hex">#360505</div><div class="role">Primary deep · hover</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#038387"></div><div class="meta"><div class="name">--base-green</div><div class="hex">#038387</div><div class="role">Secondary · success, view/search</div></div></div>
+  </div>
+
+  <div class="section-label">Status</div>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#fabc3f"></div><div class="meta"><div class="name">--base-warning</div><div class="hex">#fabc3f</div><div class="role">Warning</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#ff4d4d"></div><div class="meta"><div class="name">--base-red</div><div class="hex">#ff4d4d</div><div class="role">Danger · ลบ</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#393939"></div><div class="meta"><div class="name">--base-sub-color</div><div class="hex">#393939</div><div class="role">Neutral · clear/neutral</div></div></div>
+  </div>
+
+  <div class="section-label">Surface &amp; Border</div>
+  <div class="grid">
+    <div class="swatch"><div class="chip border-demo" style="background:#ffffff"></div><div class="meta"><div class="name">--color-card-bg</div><div class="hex">#ffffff</div><div class="role">พื้นการ์ด</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#e0e0e0"></div><div class="meta"><div class="name">--color-border</div><div class="hex">#e0e0e0</div><div class="role">เส้นขอบ</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#fdf2f2"></div><div class="meta"><div class="name">--color-highlight-bg</div><div class="hex">#fdf2f2</div><div class="role">Highlight (ชมพู) · header การ์ด</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#e6f4f4"></div><div class="meta"><div class="name">--color-green-bg</div><div class="hex">#e6f4f4</div><div class="role">Calc zone (teal อ่อน) · โซนสรุป</div></div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!-- @dsCard group="Components" -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PageHeaderGeneric — Duangkeaw Jewelry DS</title>
+<style>
+  :root {
+    --base-font-color: #921313;
+    --color-card-bg: #ffffff;
+    --radius-md: 8px;
+    --shadow-sm: rgba(0,0,0,.06) 0 2px 8px;
+    --sp-sm: 8px; --sp-md: 12px; --sp-lg: 16px;
+    --fs-xl: 20px;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; font-family:"Segoe UI","Sarabun",system-ui,sans-serif; background:#f7f7f7; color:#393939; }
+  .head { margin:0 0 4px; font-size:20px; font-weight:700; color:var(--base-font-color); }
+  .sub { margin:0 0 18px; font-size:13px; color:#777; }
+  .state-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#999; margin:18px 0 8px; }
+
+  /* ===== PageHeaderGeneric (ตรงตาม src/components/generic/PageHeaderGeneric.vue) ===== */
+  .page-header-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:var(--sp-md);
+    padding:var(--sp-md) var(--sp-lg);
+    background:var(--base-font-color);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+  }
+  .page-header-left { display:flex; align-items:center; gap:var(--sp-md); }
+  .page-header-actions { display:flex; align-items:center; gap:var(--sp-sm); flex-shrink:0; }
+  .btn-back {
+    width:36px; height:36px; border-radius:50%;
+    border:1px solid var(--color-card-bg); color:var(--color-card-bg); background:transparent;
+    display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0;
+    transition:all .2s; flex-shrink:0; font-size:16px; line-height:1;
+  }
+  .btn-back.is-hover { background:var(--color-card-bg); color:var(--base-font-color); }
+  .page-title { margin:0; font-size:var(--fs-xl); font-weight:600; color:var(--color-card-bg); }
+
+  .page-header-actions .btn {
+    background:transparent; border:1px solid var(--color-card-bg); color:var(--color-card-bg);
+    font-size:13px; font-weight:600; padding:6px 14px; border-radius:8px; cursor:pointer;
+    font-family:inherit; display:inline-flex; align-items:center; gap:6px;
+  }
+  .hint { font-size:11px; color:#aaa; margin-top:6px; }
+</style>
+</head>
+<body>
+  <h1 class="head">PageHeaderGeneric</h1>
+  <p class="sub">หัวหน้าหน้า create/edit/detail · พื้นสีหลัก (filled) + back วงกลม + title ขาว + slot #actions · props: title, backRoute</p>
+
+  <div class="state-label">1 · without actions (หน้า create)</div>
+  <div class="page-header-bar">
+    <div class="page-header-left">
+      <button class="btn-back" title="กลับ">←</button>
+      <h2 class="page-title">สร้างใบสั่งผลิต</h2>
+    </div>
+  </div>
+
+  <div class="state-label">2 · with #actions (หน้า detail / edit)</div>
+  <div class="page-header-bar">
+    <div class="page-header-left">
+      <button class="btn-back" title="กลับ">←</button>
+      <h2 class="page-title">รายละเอียดใบสั่งผลิต</h2>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn">✏ แก้ไข</button>
+      <button class="btn">🗑 ลบ</button>
+    </div>
+  </div>
+
+  <div class="state-label">3 · back button hover (พื้นขาว / ตัวแดง)</div>
+  <div class="page-header-bar">
+    <div class="page-header-left">
+      <button class="btn-back is-hover" title="กลับ">←</button>
+      <h2 class="page-title">แก้ไขข้อมูลลูกค้า</h2>
+    </div>
+  </div>
+  <p class="hint">ปุ่ม action ใน slot เป็นขอบขาวโปร่ง — hover กลับด้าน (พื้นขาว/ตัวแดง) เหมือนปุ่ม back</p>
+</body>
+</html>
