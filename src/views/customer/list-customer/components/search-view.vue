@@ -1,5 +1,9 @@
 <template>
   <SearchBarGeneric :title="$t('view.customer.searchTitle')" :description="$t('view.customer.searchDesc')" @search="onSearch" @clear="onClear">
+    <template #header-actions>
+      <ButtonGeneric variant="green" icon="bi-database-fill-add" :label="$t('view.customer.createBtn')" @click="onCreate" />
+    </template>
+
     <template #fields>
       <div>
         <span class="title-text">{{ $t('common.field.name') }}</span>
@@ -45,7 +49,6 @@
     <template #actions-right>
       <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
       <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" @click="onClear" :title="$t('common.btn.clear')" />
-      <ButtonGeneric variant="main" icon="bi-database-fill-add" class="ml-2" @click="onCreate" :title="$t('view.customer.createBtn')" />
     </template>
   </SearchBarGeneric>
 

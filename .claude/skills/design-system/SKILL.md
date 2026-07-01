@@ -151,24 +151,27 @@ button.btn-custom {
 <button class="btn btn-sm btn-primary">บันทึก</button>
 ```
 
-### หน้า List = Icon-Only
+### หน้า List — ปุ่ม primary search ใส่ label ได้ (#10)
 
-หน้า **list/search** ปุ่มใน action bar ต้องเป็น icon-only เสมอ — ไม่ส่ง `:label`, ใช้ `:title` แทน (tooltip):
+หน้า **list/search** action bar:
+- **ปุ่ม primary search** ใส่ label ได้ (เช่น "ค้นหา") เพื่อให้ action หลักเด่นชัด
+- **ปุ่มรอง** (clear/export/advanced/create) คง **icon-only** + `:title` (tooltip) เท่านั้น — ไม่ส่ง `:label`
 
 ```vue
-<!-- ✅ Good — list page icon-only -->
-<ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+<!-- ✅ Good — list page: primary search มี label, ปุ่มรอง icon-only -->
+<ButtonGeneric variant="main" icon="bi-search" :label="$t('common.btn.search')" type="submit" />
 <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
 <ButtonGeneric variant="main" icon="bi-plus" class="ml-2" :title="$t('common.btn.create')" @click="onCreate" />
 
-<!-- ❌ Bad — label ใน list page -->
-<ButtonGeneric variant="main" icon="bi-search" :label="$t('common.btn.search')" type="submit" />
+<!-- ❌ Bad — ปุ่มรอง มี label -->
+<ButtonGeneric variant="dark" icon="bi-x-circle" :label="$t('common.btn.clear')" @click="onClear" />
+<ButtonGeneric variant="main" icon="bi-plus" :label="$t('common.btn.create')" @click="onCreate" />
 ```
 
 หน้า **create/edit form** ปุ่มยังคง label ตามปกติ:
 
 ```vue
-<!-- ✅ Good — form page มี label -->
+<!-- ✅ Good — form page มี label ทุกปุ่ม -->
 <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" @click="onSave" />
 <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="onCancel" />
 ```
@@ -310,5 +313,5 @@ SCSS scoped ใน modal component:
 - ❌ ห้าม hardcode px spacing เช่น `padding: 16px` — ใช้ `var(--sp-lg)` หรือ `@include card-base`
 - ❌ ห้ามใช้ `btn-warning`, `btn-custom`, `btn-primary`, `btn-secondary` — ไม่มีใน design system
 - ❌ ห้ามใช้ `btn-outline-dark` / `btn-outline-secondary` สำหรับ cancel — ใช้ `btn-outline-main`
-- ❌ ห้ามใส่ `:label` ในปุ่ม action bar ของหน้า list — ใช้ icon-only + `:title` เสมอ
+- ❌ ห้ามใส่ `:label` ในปุ่มรอง (clear/export/advanced/create) ของหน้า list — ใช้ icon-only + `:title` เสมอ (ปุ่ม primary search ใส่ label ได้)
 - ❌ ห้ามเขียน `border-radius: 8px` เองเมื่อใช้ mixin ได้ — ใช้ `var(--radius-md)`
