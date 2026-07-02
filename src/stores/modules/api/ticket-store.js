@@ -5,7 +5,8 @@ export const useTicketStore = defineStore('ticket', {
   state: () => ({
     dataList: [],
     total: 0,
-    openCount: 0
+    openCount: 0,
+    myUnreadCount: 0
   }),
 
   actions: {
@@ -59,6 +60,12 @@ export const useTicketStore = defineStore('ticket', {
       const res = await api.jewelry.post('Ticket/CountOpen', {}, { skipLoading: true })
       this.openCount = typeof res === 'number' ? res : 0
       return this.openCount
+    },
+
+    async fetchMyUnreadCount() {
+      const res = await api.jewelry.post('Ticket/CountMyUnread', {}, { skipLoading: true })
+      this.myUnreadCount = typeof res === 'number' ? res : 0
+      return this.myUnreadCount
     },
 
     async fetchDashboard(params) {

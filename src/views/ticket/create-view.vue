@@ -22,10 +22,12 @@
       <ButtonGeneric
         :variant="activeTab === 'my' ? 'main' : 'outline'"
         icon="bi-ticket-detailed"
-        :label="$t('view.ticket.tab.my')"
         class="ml-2"
         @click="activeTab = 'my'"
-      />
+      >
+        {{ $t('view.ticket.tab.my') }}
+        <span v-if="myUnreadCount > 0" class="tab-badge">{{ myUnreadCount }}</span>
+      </ButtonGeneric>
     </div>
 
     <!-- Tab: แจ้งใหม่ (report) -->
@@ -168,6 +170,10 @@ export default {
   },
 
   computed: {
+    myUnreadCount() {
+      return this.ticketStore.myUnreadCount
+    },
+
     typeOptions() {
       return [
         { value: 1, label: this.$t('view.ticket.type.bug') },
@@ -178,6 +184,7 @@ export default {
 
   mounted() {
     this.topicOptions = this.getMenuTopics()
+    this.ticketStore.fetchMyUnreadCount()
   },
 
   methods: {
@@ -282,5 +289,20 @@ export default {
   color: #666;
   margin-top: calc(var(--sp-xs) * -1);
   margin-bottom: var(--sp-md);
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--sp-xs);
+  border-radius: var(--radius-lg);
+  background: var(--base-red);
+  color: #fff;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  line-height: 1;
 }
 </style>

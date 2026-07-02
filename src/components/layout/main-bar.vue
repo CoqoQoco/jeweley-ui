@@ -20,12 +20,13 @@
             <span>{{ $t('breadcrumb.dashboard') }}</span>
           </div>
           <div
-            class="nav-item"
+            class="nav-item nav-item--badge"
             :class="{ active: isActive('report') }"
             @click="navigateTo('report', 'ticket-create')"
           >
             <i class="bi bi-megaphone"></i>
             <span>{{ $t('breadcrumb.report') }}</span>
+            <span v-if="reportUnreadCount > 0" class="nav-badge">{{ reportUnreadCount }}</span>
           </div>
           <div
             v-if="hasTicketPermission"
@@ -130,6 +131,10 @@ export default {
       return this.ticketStore.openCount
     },
 
+    reportUnreadCount() {
+      return this.ticketStore.myUnreadCount
+    },
+
     userName() {
       return `${this.authStore?.user.firstName} ${this.authStore?.user.lastName}`
     },
@@ -193,6 +198,10 @@ export default {
         this.ticketStore.fetchOpenCount()
       }
 
+      if (from && from.name === 'ticket-my' && to.name !== 'ticket-my') {
+        this.ticketStore.fetchMyUnreadCount()
+      }
+
       this.closeSidebar()
     }
   },
@@ -202,7 +211,8 @@ export default {
       isSideBarVisible: false,
       activePage: 'home',
       currentLang: storage.getItem('lang', 'th'),
-      ticketPollId: null
+      ticketPollId: null,
+      reportPollId: null
     }
   },
 
@@ -260,6 +270,10 @@ export default {
       clearInterval(this.ticketPollId)
     }
 
+    if (this.reportPollId) {
+      clearInterval(this.reportPollId)
+    }
+
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.removeEventListener('keydown', this.handleKeyDown)
   },
@@ -286,6 +300,9 @@ export default {
       this.ticketStore.fetchOpenCount()
       this.ticketPollId = setInterval(() => this.ticketStore.fetchOpenCount(), 60000)
     }
+
+    this.ticketStore.fetchMyUnreadCount()
+    this.reportPollId = setInterval(() => this.ticketStore.fetchMyUnreadCount(), 60000)
 
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.addEventListener('keydown', this.handleKeyDown)

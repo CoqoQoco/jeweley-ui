@@ -177,6 +177,7 @@ export default {
     async onViewDetail(ticket) {
       await this.ticketStore.markTicketAsRead(ticket.id)
       ticket.hasNewMessage = false
+      this.ticketStore.fetchMyUnreadCount()
       this.selectedTicket = ticket
       this.isShowModal = true
     },
