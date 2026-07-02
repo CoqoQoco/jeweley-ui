@@ -50,11 +50,11 @@ export function calcGoldLossTang(selectedJobs, issuedLines, returnedLines, lossP
   const pricePerGramNum = parseFloat(pricePerGram) || 0
 
   const jobIssuedSum = jobsArray.reduce((sum, j) => sum + (parseFloat(j.goldWeightSend) || 0), 0)
-  const extraIssuedSum = issuedArray.reduce((sum, l) => sum + (parseFloat(l.weight) || 0), 0)
+  const extraIssuedSum = issuedArray.reduce((sum, l) => sum + (l.countInCalc !== false ? (parseFloat(l.weight) || 0) : 0), 0)
   const issuedTotal = jobIssuedSum + extraIssuedSum
 
   const jobReturnedSum = jobsArray.reduce((sum, j) => sum + (parseFloat(j.goldWeightCheck) || 0), 0)
-  const extraReturnedSum = returnedArray.reduce((sum, l) => sum + (parseFloat(l.weight) || 0), 0)
+  const extraReturnedSum = returnedArray.reduce((sum, l) => sum + (l.countInCalc !== false ? (parseFloat(l.weight) || 0) : 0), 0)
   const returnedTotal = jobReturnedSum + extraReturnedSum
 
   const rawLoss = issuedTotal - returnedTotal

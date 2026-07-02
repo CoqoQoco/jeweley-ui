@@ -275,12 +275,14 @@ export default {
       this.issuedLines = (slip.issuedLines || []).map((l, i) => ({
         _id: `issued-${i}`,
         name: l.name || '',
-        weight: l.weight != null ? String(l.weight) : ''
+        weight: l.weight != null ? String(l.weight) : '',
+        countInCalc: l.countInCalc !== false
       }))
       this.returnedLines = (slip.returnedLines || []).map((l, i) => ({
         _id: `returned-${i}`,
         name: l.name || '',
-        weight: l.weight != null ? String(l.weight) : ''
+        weight: l.weight != null ? String(l.weight) : '',
+        countInCalc: l.countInCalc !== false
       }))
 
       const slipItems = slip.items || []
@@ -307,11 +309,11 @@ export default {
 
       const issuedLinePayload = this.issuedLines
         .filter((l) => l.name || l.weight)
-        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0 }))
+        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0, countInCalc: l.countInCalc !== false }))
 
       const returnedLinePayload = this.returnedLines
         .filter((l) => l.name || l.weight)
-        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0 }))
+        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0, countInCalc: l.countInCalc !== false }))
 
       const payload = {
         workerCode: this.workerCode,
@@ -337,7 +339,7 @@ export default {
         if (res) {
           success(this.$t('view.production.goldLossTang.saveSuccess'))
           const slipData = res.data || res
-          const builder = new GoldLossTangPdfBuilder(slipData)
+          const builder = new GoldLossTangPdfBuilder(slipData, { includeJobs: true })
           builder.generatePDF().open()
           this.$router.push({ name: 'gold-loss-tang-report' })
         }

@@ -667,6 +667,8 @@ export default {
     conditionEmpty: 'ยังไม่ได้เลือกเงื่อนไข — กดค้นหาเพื่อเริ่ม',
     resetSearchWarning: 'การค้นหาใหม่จะล้างรายการที่เลือกและรายการที่เพิ่มทั้งหมด',
     resetSearchTitle: 'ยืนยันค้นหาใหม่',
-    emptyJobsHint: 'กดค้นหาเพื่อแสดงรายการงานของช่าง'
+    emptyJobsHint: 'กดค้นหาเพื่อแสดงรายการงานของช่าง',
+    countInCalc: 'คิด',
+    notCounted: 'ไม่นำมาคิด'
   }
 }

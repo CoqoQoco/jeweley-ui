@@ -134,6 +134,8 @@ SCSS มาตรฐานสำหรับเว้นระหว่างก
 }
 ```
 
+Section cards inside modals should use the legend header style (`headerStyle="legend"` with matching `icon` and `accent`) to match the visual language of page forms — this applies to both create/edit modals and detail/read-only modals. Legend boxes reserve top space (`margin-top: var(--sp-2xl)`) for the straddling chip, and box padding must remain uniform via `card-base` (`var(--sp-xl)`) — do not override padding per box.
+
 **✅ Good:**
 ```vue
 <modal headerVariant="main" ...>
@@ -142,10 +144,10 @@ SCSS มาตรฐานสำหรับเว้นระหว่างก
   </template>
   <template #content>
     <div class="p-3">
-      <SectionCardGeneric :title="$t('view.x.section.main')" class="modal-section">
+      <SectionCardGeneric :title="$t('view.x.section.main')" headerStyle="legend" icon="bi-card-list" accent="main" class="modal-section">
         <!-- form rows -->
       </SectionCardGeneric>
-      <SectionCardGeneric :title="$t('view.x.section.contact')" class="modal-section">
+      <SectionCardGeneric :title="$t('view.x.section.contact')" headerStyle="legend" icon="bi-card-list" accent="main" class="modal-section">
         <!-- form rows -->
       </SectionCardGeneric>
     </div>
@@ -192,3 +194,5 @@ SCSS มาตรฐานสำหรับเว้นระหว่างก
 | 2026-06-30 | SearchBarGeneric/pageTitle (global) | search bar header → filled main ตัวอักษรขาว (prop `filled` ใน `page-title.vue`, non-breaking); input focus ring (`border-color: var(--base-font-color)` + `box-shadow: 0 0 0 3px rgba(146,19,19,.08)`); status chip teal (`var(--color-green-bg)` bg + `var(--base-green)` text); **#10 ปรับ**: primary search ใส่ label ได้ — ปุ่มรอง (clear/export/advanced/create) คง icon-only + `:title` — blueprint: docs/claude-design/blueprints/search-bar.md |
 | 2026-06-30 | SearchBarGeneric filled header (global) | เพิ่ม slot `#header-actions` (มุมขวาบน header filled แดง) — รองรับหลายปุ่ม, width เท่ากัน (grid `auto-columns: 1fr`), default style `btn-green` (var(--base-green)); ปุ่ม create ย้ายจาก action bar มาที่นี่, caller ใช้ `variant="green"` เพื่อตรง semantic default |
 | 2026-07-01 | SearchBarGeneric/pageTitle (global) | adopt ref บางส่วน: (#1) filled header เพิ่ม dot texture `radial-gradient(rgba(255,255,255,.08) 1px, transparent 1.5px)` size 14px; (#2) MultiSelect chip เปลี่ยนเป็น outline teal (`background: transparent` + border/text `var(--base-green)`); (#3 ไม่รับ) ปุ่ม list page คง icon-only ตาม #10 — ไม่รับ ref แบบ label segmented |
+| 2026-07-02 | gold-loss-tang detail modal | Detail/read-only modal ใช้ Modal Standard เต็ม: headerVariant="main" (title bar filled) + section cards ใช้ headerStyle="legend" (icon+accent main/green) ให้สไตล์ box title ตรงกับหน้า create — reference gold-loss-tang list/modal/detail-view |
+| 2026-07-02 | SectionCardGeneric (global) | headerStyle='legend': เพิ่ม margin-top var(--sp-2xl) ให้ chip ที่คร่อมขอบบน (top:0/translateY(-50%)) ไม่ชนขอบ box ก่อนหน้า; padding ทุก box ต้องเท่ากันจาก card-base (var(--sp-xl)) ห้าม override |

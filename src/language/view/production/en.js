@@ -667,6 +667,8 @@ export default {
     conditionEmpty: 'No conditions selected — press Search to begin',
     resetSearchWarning: 'A new search will clear all selected jobs and added lines',
     resetSearchTitle: 'Confirm New Search',
-    emptyJobsHint: 'Press Search to display worker jobs'
+    emptyJobsHint: 'Press Search to display worker jobs',
+    countInCalc: 'Count',
+    notCounted: 'Not counted'
   }
 }

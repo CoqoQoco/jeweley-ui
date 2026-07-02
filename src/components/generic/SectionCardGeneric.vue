@@ -126,5 +126,6 @@ export default {
 
 .section-card--legend {
   position: relative;
+  margin-top: var(--sp-2xl); /* clearance for the legend chip that straddles the top border */
 }
 </style>

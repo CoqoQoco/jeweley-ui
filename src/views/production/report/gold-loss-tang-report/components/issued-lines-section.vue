@@ -11,11 +11,13 @@
           <span class="row-label title-text">{{ $t('view.production.goldLossTang.baseFromJobs') }} ({{ $t('common.field.weight') }})</span>
           <span class="row-weight row-weight--right">{{ fmt2(baseSum) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
           <span class="row-action"></span>
+          <span class="row-action"></span>
         </div>
 
         <div class="lines-row lines-row--header">
           <span class="row-label title-text">{{ $t('view.production.goldLossTang.lineName') }}</span>
           <span class="row-weight title-text">{{ $t('view.production.goldLossTang.lineWeight') }}</span>
+          <span class="row-action title-text row-header-calc">{{ $t('view.production.goldLossTang.countInCalc') }}</span>
           <span class="row-action"></span>
         </div>
 
@@ -33,6 +35,10 @@
               :min="0"
               :placeholder="$t('view.production.goldLossTang.lineWeight')"
               @update:modelValue="onUpdate(idx, 'weight', $event)"
+            />
+            <CheckboxGeneric
+              :modelValue="line.countInCalc !== false"
+              @update:modelValue="onUpdate(idx, 'countInCalc', $event)"
             />
             <ButtonGeneric
               variant="red"
@@ -61,6 +67,7 @@
             <span class="row-label title-text">{{ $t('view.production.goldLossTang.totalIssued') }}</span>
             <span class="row-weight row-weight--right total-value">{{ fmt2(total) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
             <span class="row-action"></span>
+            <span class="row-action"></span>
           </div>
         </div>
       </div>
@@ -72,6 +79,7 @@
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 
 export default {
@@ -80,7 +88,8 @@ export default {
   components: {
     SectionCardGeneric,
     InputTextGeneric,
-    ButtonGeneric
+    ButtonGeneric,
+    CheckboxGeneric
   },
 
   props: {
@@ -98,7 +107,7 @@ export default {
 
   computed: {
     total() {
-      const extraSum = this.lines.reduce((sum, l) => sum + (parseFloat(l.weight) || 0), 0)
+      const extraSum = this.lines.reduce((sum, l) => sum + (l.countInCalc !== false ? (parseFloat(l.weight) || 0) : 0), 0)
       return this.baseSum + extraSum
     }
   },
@@ -110,7 +119,7 @@ export default {
     },
 
     onAdd() {
-      this.$emit('update:lines', [...this.lines, { name: '', weight: '' }])
+      this.$emit('update:lines', [...this.lines, { name: '', weight: '', countInCalc: true }])
     },
 
     onRemove(idx) {
@@ -148,7 +157,7 @@ export default {
 
 .lines-grid {
   display: grid;
-  grid-template-columns: 1fr 140px 44px;
+  grid-template-columns: 1fr 140px 44px 44px;
   gap: var(--sp-xs) var(--sp-sm);
   align-items: center;
 }
@@ -230,6 +239,15 @@ export default {
 
 .row-action {
   display: flex;
+  justify-content: center;
+}
+
+.row-header-calc {
+  font-weight: 700;
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  padding-bottom: var(--sp-xs);
+  border-bottom: 1px solid var(--color-border);
   justify-content: center;
 }
 

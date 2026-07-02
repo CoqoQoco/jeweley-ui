@@ -31,7 +31,7 @@ import dayjs from 'dayjs'
 import { useGoldLossTangStore } from '@/stores/modules/api/plan/gold-loss-tang-store.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
-import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { success, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { GoldLossTangPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-loss-tang-pdf-builder.js'
 
@@ -98,11 +98,11 @@ export default {
         workerName: x.workerName,
         requestDateStart: x.requestDateStart ? dayjs(x.requestDateStart).format('DD/MM/YYYY') : '',
         requestDateEnd: x.requestDateEnd ? dayjs(x.requestDateEnd).format('DD/MM/YYYY') : '',
-        lossPercent: x.lossPercent != null ? Number(x.lossPercent).toFixed(4) : '',
+        lossPercent: x.lossPercent != null ? Number(x.lossPercent).toFixed(2) : '',
         pricePerGram: x.pricePerGram != null ? Number(x.pricePerGram).toFixed(2) : '',
-        issuedTotal: x.issuedTotal != null ? Number(x.issuedTotal).toFixed(4) : '',
-        returnedTotal: x.returnedTotal != null ? Number(x.returnedTotal).toFixed(4) : '',
-        diffLoss: x.diffLoss != null ? Number(x.diffLoss).toFixed(4) : '',
+        issuedTotal: x.issuedTotal != null ? Number(x.issuedTotal).toFixed(2) : '',
+        returnedTotal: x.returnedTotal != null ? Number(x.returnedTotal).toFixed(2) : '',
+        diffLoss: x.diffLoss != null ? Number(x.diffLoss).toFixed(2) : '',
         totalMoneyDiff: x.totalMoneyDiff != null ? Number(x.totalMoneyDiff).toFixed(2) : '',
         createDate: x.createDate ? dayjs(x.createDate).format('DD/MM/YYYY') : ''
       }))
@@ -154,8 +154,17 @@ export default {
       const res = await store.getSlip(slip.id)
       if (res) {
         const data = res.data || res
-        const builder = new GoldLossTangPdfBuilder(data)
-        builder.generatePDF().open()
+        confirmSubmit(
+          'ต้องการแนบรายละเอียดใบงาน (WO) ท้ายเอกสารหรือไม่?',
+          'พิมพ์เอกสาร',
+          (choice) => {
+            const includeJobs = choice.isConfirmed
+            const builder = new GoldLossTangPdfBuilder(data, { includeJobs })
+            builder.generatePDF().open()
+          },
+          { confirmText: 'แนบรายละเอียด WO', denyText: 'เฉพาะสรุป', cancelText: 'ยกเลิก' },
+          'question'
+        )
       }
     }
   }

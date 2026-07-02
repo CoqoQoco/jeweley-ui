@@ -1,12 +1,12 @@
 <template>
-  <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="1100px" :fitHeight="true" :clickToClose="true">
+  <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="1100px" :fitHeight="true" :clickToClose="true" headerVariant="main">
     <template #title>
       <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.production.goldLossTang.detailTitle') }}</span>
     </template>
 
     <template #content>
       <div class="p-3" v-if="slip">
-        <SectionCardGeneric :title="$t('view.production.goldLossTang.colDocumentNo')" class="modal-section">
+        <SectionCardGeneric :title="$t('view.production.goldLossTang.colDocumentNo')" headerStyle="legend" icon="bi-file-earmark-text" accent="main" class="modal-section">
           <div class="detail-header-grid">
             <div class="detail-field">
               <span class="detail-label">{{ $t('view.production.goldLossTang.colDocumentNo') }}</span>
@@ -35,7 +35,7 @@
           </div>
         </SectionCardGeneric>
 
-        <SectionCardGeneric :title="$t('view.production.goldLossTang.selectJobsTitle')" class="modal-section">
+        <SectionCardGeneric :title="$t('view.production.goldLossTang.selectJobsTitle')" headerStyle="legend" icon="bi-list-check" accent="main" class="modal-section">
           <BaseDataTable
             :items="slip.items || []"
             :totalRecords="(slip.items || []).length"
@@ -63,7 +63,7 @@
         </SectionCardGeneric>
 
         <div class="form-row two-col modal-section">
-          <SectionCardGeneric :title="$t('view.production.goldLossTang.issuedTitle')">
+          <SectionCardGeneric :title="$t('view.production.goldLossTang.issuedTitle')" headerStyle="legend" icon="bi-box-arrow-up" accent="main">
             <BaseDataTable
               :items="slip.issuedLines || []"
               :totalRecords="(slip.issuedLines || []).length"
@@ -78,7 +78,7 @@
             </BaseDataTable>
           </SectionCardGeneric>
 
-          <SectionCardGeneric :title="$t('view.production.goldLossTang.returnedTitle')">
+          <SectionCardGeneric :title="$t('view.production.goldLossTang.returnedTitle')" headerStyle="legend" icon="bi-box-arrow-in-down" accent="green">
             <BaseDataTable
               :items="slip.returnedLines || []"
               :totalRecords="(slip.returnedLines || []).length"
@@ -94,7 +94,7 @@
           </SectionCardGeneric>
         </div>
 
-        <SectionCardGeneric :title="$t('view.production.goldLossTang.summaryTitle')" class="modal-section">
+        <SectionCardGeneric :title="$t('view.production.goldLossTang.summaryTitle')" headerStyle="legend" icon="bi-calculator" accent="main" class="modal-section">
           <div class="calc-summary">
             <div class="calc-row">
               <span class="calc-label">{{ $t('view.production.goldLossTang.lossPercent') }}</span>
@@ -228,8 +228,8 @@ export default {
     },
 
     fmt4(val) {
-      if (val == null) return '0.0000'
-      return Number(val).toFixed(4)
+      if (val == null) return '0.00'
+      return Number(val).toFixed(2)
     },
 
     fmt2(val) {
@@ -238,9 +238,9 @@ export default {
     },
 
     fmtSign4(val) {
-      if (val == null) return '0.0000'
+      if (val == null) return '0.00'
       const v = Number(val)
-      const abs = Math.abs(v).toFixed(4)
+      const abs = Math.abs(v).toFixed(2)
       if (v > 0) return `+${abs}`
       if (v < 0) return `-${abs}`
       return abs
@@ -269,7 +269,7 @@ export default {
 @import '@/assets/scss/responsive-style/web';
 
 .modal-section {
-  margin-bottom: var(--sp-lg);
+  margin-bottom: var(--sp-2xl);
 
   &:last-child {
     margin-bottom: 0;
