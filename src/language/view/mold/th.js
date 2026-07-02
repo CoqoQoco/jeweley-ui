@@ -95,6 +95,34 @@ export default {
     btnSubmit: 'จัดเก็บพิมพ์',
     confirmTitle: 'ยืนยันสร้างเเบบจัดเก็บพิมพ์'
   },
+  editDesign: {
+    btnEdit: 'แก้ไขข้อมูล',
+    modalTitle: 'แก้ไขข้อมูลออกแบบและขึ้น 3D',
+    sectionInfo: 'ข้อมูลออกแบบ',
+    fieldMoldCode: 'รหัสตั้งแม่พิมพ์',
+    fieldDesignBy: 'ออกแบบโดย',
+    fieldResinBy: 'ปริ้นเรซิ่นโดย',
+    fieldQtyReceive: 'น้ำหนักรับ',
+    fieldQtySend: 'น้ำหนักส่ง',
+    confirmTitle: 'ยืนยันแก้ไขข้อมูลออกแบบ',
+    successMsg: 'แก้ไขข้อมูลออกแบบสำเร็จ'
+  },
+  editStore: {
+    btnEdit: 'แก้ไขข้อมูล',
+    modalTitle: 'แก้ไขข้อมูลจัดเก็บพิมพ์',
+    sectionInfo: 'ข้อมูลจัดเก็บพิมพ์',
+    fieldMoldCode: 'รหัสแม่พิมพ์สำเร็จ',
+    fieldWorkBy: 'ช่างพิมพ์',
+    fieldLocation: 'จัดเก็บพิมพ์ (คลัง)',
+    fieldPrintBy: 'แต่งพิมพ์โดย',
+    fieldCuttingBy: 'ผ่าพิมพ์โดย',
+    fieldQtyResin: 'น้ำหนักเรซิน',
+    fieldQtySilverCast: 'น้ำหนักพิมพ์เงิน',
+    fieldQtyReceive: 'น้ำหนักรับ',
+    fieldQtySend: 'น้ำหนักส่ง',
+    confirmTitle: 'ยืนยันแก้ไขข้อมูลจัดเก็บพิมพ์',
+    successMsg: 'แก้ไขข้อมูลจัดเก็บพิมพ์สำเร็จ'
+  },
   gems: {
     sectionTitle: 'ส่วนประกอบเพชร/พลอย',
     btnEdit: 'แก้ไขเพชร/พลอย',

@@ -29,6 +29,14 @@ export const useMoldPlanStore = defineStore('moldPlan', {
 
     async updateStageImage(formData) {
       return await api.jewelry.post('Mold/PlanStageImage', formData)
+    },
+
+    async updatePlanDesign(payload) {
+      return await api.jewelry.post('Mold/UpdatePlanDesign', payload)
+    },
+
+    async updatePlanStore(payload) {
+      return await api.jewelry.post('Mold/UpdatePlanStore', payload)
     }
   }
 })

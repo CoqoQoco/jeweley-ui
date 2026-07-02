@@ -6,10 +6,24 @@
         <span class="mr-2"><i class="bi bi-journal-text"></i></span>
         <span>ออกแบบและขึ้น 3D</span>
       </div>
-      <div>
-        <span>{{ formatDate(valueDesign?.createDate) }}</span>
+      <div class="d-flex align-items-center">
+        <span class="mr-2">{{ formatDate(valueDesign?.createDate) }}</span>
+        <ButtonGeneric
+          v-if="value.status !== 500"
+          variant="outline"
+          icon="bi-pencil"
+          :label="$t('view.mold.editDesign.btnEdit')"
+          @click="isShowEditModal = true"
+        />
       </div>
     </div>
+
+    <editDesignModal
+      :isShow="isShowEditModal"
+      :modelValue="value"
+      @closeModal="isShowEditModal = false"
+      @updated="$emit('updated')"
+    />
 
     <div class="row">
       <div class="col-4">
@@ -74,11 +88,15 @@
 
 <script>
 import { formatDate } from '@/services/utils/dayjs.js'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import stageImageEditor from './stage-image-editor.vue'
+import editDesignModal from '../modal/edit-design-modal.vue'
 
 export default {
   components: {
-    stageImageEditor
+    stageImageEditor,
+    ButtonGeneric,
+    editDesignModal
   },
 
   props: {
@@ -90,6 +108,12 @@ export default {
   },
 
   emits: ['updated'],
+
+  data() {
+    return {
+      isShowEditModal: false
+    }
+  },
 
   computed: {
     value() {

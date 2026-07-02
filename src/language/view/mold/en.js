@@ -95,6 +95,34 @@ export default {
     btnSubmit: 'Store Mold',
     confirmTitle: 'Confirm Create Store Template'
   },
+  editDesign: {
+    btnEdit: 'Edit Info',
+    modalTitle: 'Edit Design & 3D Info',
+    sectionInfo: 'Design Information',
+    fieldMoldCode: 'Mold Setup Code',
+    fieldDesignBy: 'Designed By',
+    fieldResinBy: 'Resin Printed By',
+    fieldQtyReceive: 'Receive Weight',
+    fieldQtySend: 'Send Weight',
+    confirmTitle: 'Confirm Edit Design Info',
+    successMsg: 'Design info updated successfully'
+  },
+  editStore: {
+    btnEdit: 'Edit Info',
+    modalTitle: 'Edit Store Mold Info',
+    sectionInfo: 'Store Mold Information',
+    fieldMoldCode: 'Finished Mold Code',
+    fieldWorkBy: 'Mold Worker',
+    fieldLocation: 'Storage Location',
+    fieldPrintBy: 'Mold Dresser',
+    fieldCuttingBy: 'Mold Cutter',
+    fieldQtyResin: 'Resin Weight',
+    fieldQtySilverCast: 'Silver Cast Weight',
+    fieldQtyReceive: 'Receive Weight',
+    fieldQtySend: 'Send Weight',
+    confirmTitle: 'Confirm Edit Store Mold Info',
+    successMsg: 'Store mold info updated successfully'
+  },
   gems: {
     sectionTitle: 'Diamond/Gem Components',
     btnEdit: 'Edit Diamonds/Gems',

@@ -6,10 +6,24 @@
         <span class="mr-2"><i class="bi bi-journal-text"></i></span>
         <span>จัดเก็บพิมพ์</span>
       </div>
-      <div>
-        <span>{{ formatDate(item?.createDate) }}</span>
+      <div class="d-flex align-items-center">
+        <span class="mr-2">{{ formatDate(item?.createDate) }}</span>
+        <ButtonGeneric
+          v-if="value.status !== 500"
+          variant="outline"
+          icon="bi-pencil"
+          :label="$t('view.mold.editStore.btnEdit')"
+          @click="isShowEditModal = true"
+        />
       </div>
     </div>
+
+    <editStoreModal
+      :isShow="isShowEditModal"
+      :modelValue="value"
+      @closeModal="isShowEditModal = false"
+      @updated="$emit('updated')"
+    />
 
     <div class="row">
       <div class="col-4">
@@ -94,11 +108,15 @@
 
 <script>
 import { formatDate } from '@/services/utils/dayjs.js'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import stageImageEditor from './stage-image-editor.vue'
+import editStoreModal from '../modal/edit-store-modal.vue'
 
 export default {
   components: {
-    stageImageEditor
+    stageImageEditor,
+    ButtonGeneric,
+    editStoreModal
   },
 
   props: {
@@ -113,6 +131,7 @@ export default {
 
   data() {
     return {
+      isShowEditModal: false,
       masterLocation: [
         { id: 1, code: 'A', value: 'คลัง 1' },
         { id: 2, code: 'B', value: 'คลัง 2' },
