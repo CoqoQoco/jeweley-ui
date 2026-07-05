@@ -41,7 +41,8 @@ export default {
     description: 'คำอธิบาย',
     action: 'การดำเนินการ',
     phone: 'เบอร์โทร',
-    email: 'อีเมล'
+    email: 'อีเมล',
+    showDecimals: 'แสดงทศนิยม (2 ตำแหน่ง)'
   },
   label: {
     noData: 'ไม่พบข้อมูล',

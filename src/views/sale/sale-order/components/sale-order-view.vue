@@ -459,6 +459,11 @@
             />
             <span style="font-size: 0.8rem; color: #555; cursor: pointer">C.I.F</span>
           </div>
+          <CheckboxGeneric
+            v-model="pdfShowDecimals"
+            :label="$t('common.field.showDecimals')"
+            @update:modelValue="onPdfShowDecimalsChange"
+          />
         </div>
 
         <!-- Save Group -->
@@ -554,10 +559,12 @@ import CustomerEditModal from '../modal/customer-edit-modal.vue'
 import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
 import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
 import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
-import { formatDecimal, ceilToInteger } from '@/services/utils/decimal.js'
+import { formatDecimal, ceilToInteger, isForeignCurrency } from '@/services/utils/decimal.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
+import { storage } from '@/services/storage.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
@@ -584,7 +591,8 @@ export default {
     CustomerEditModal,
     StockItemsTable,
     CopyItemsTable,
-    OrderSummarySection
+    OrderSummarySection,
+    CheckboxGeneric
   },
 
   setup() {
@@ -627,6 +635,7 @@ export default {
       isPreviewingPDF: false,
       isExportingExcel: false,
       pdfShowCifLabel: true,
+      pdfShowDecimals: true,
       productSearch: {
         stockNumber: '',
         stockNumberOrigin: '',
@@ -946,7 +955,16 @@ export default {
     }
   },
 
+  mounted() {
+    const saved = storage.getItem('sale-order-print-show-decimals')
+    this.pdfShowDecimals = saved !== null ? saved === 'true' : !isForeignCurrency(this.formSaleOrder.currencyUnit)
+  },
+
   methods: {
+    onPdfShowDecimalsChange(val) {
+      storage.setItem('sale-order-print-show-decimals', String(val))
+    },
+
     // ============================================
     // DATA LOADING METHODS
     // ============================================
@@ -1498,7 +1516,8 @@ export default {
       const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
         currencyRate: Number(this.formSaleOrder.currencyRate) || 1,
-        showCifLabel: this.pdfShowCifLabel
+        showCifLabel: this.pdfShowCifLabel,
+        showDecimals: this.pdfShowDecimals
       })
       const pdf = await pdfBuilder.generatePDF()
       const soNumber = this.formSaleOrder.number || 'DRAFT'
@@ -1530,7 +1549,8 @@ export default {
       const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
         currencyRate: Number(this.formSaleOrder.currencyRate) || 1,
-        showCifLabel: this.pdfShowCifLabel
+        showCifLabel: this.pdfShowCifLabel,
+        showDecimals: this.pdfShowDecimals
       })
       const pdf = await pdfBuilder.generatePDF()
       pdf.open()
@@ -1561,7 +1581,8 @@ export default {
       const builder = new SaleOrderExcelBuilder(data, {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
         currencyRate: Number(this.formSaleOrder.currencyRate) || 1,
-        showCifLabel: this.pdfShowCifLabel
+        showCifLabel: this.pdfShowCifLabel,
+        showDecimals: this.pdfShowDecimals
       })
       await builder.prepare()
       await builder.downloadExcel('SO_' + (this.formSaleOrder.number || 'DRAFT') + '.xlsx')

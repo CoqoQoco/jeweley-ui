@@ -305,6 +305,7 @@
       :defaultItemsPerPage="itemsPerPageInput"
       :quotationNumber="customer.invoiceNumber"
       :defaultShowCifLabel="pdfShowCifLabel"
+      :currencyUnit="customer.currencyUnit"
       @closeModal="showItemsPerPageModal = false"
       @confirm="onConfirmItemsPerPage"
       @saveAndCreate="onSaveAndCreatePdfAndSave"
@@ -377,8 +378,9 @@ import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.
 import { InvoiceExcelBuilder } from '@/services/helper/excel/invoice/invoice-excel-builder.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { ceilToInteger, isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { storage } from '@/services/storage.js'
 import dayjs from 'dayjs'
 
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
@@ -536,7 +538,7 @@ export default {
           ((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
           (this.customer.currencyMultiplier || 1)
       })
-      return sum.toFixed(2)
+      return isForeignCurrency(this.customer.currencyUnit) ? String(Math.floor(sum)) : sum.toFixed(2)
     },
     sumTotalConvertedPrice() {
       let sum = 0
@@ -546,7 +548,7 @@ export default {
             (this.customer.currencyMultiplier || 1)) *
           (Number(item.qty) || 0)
       })
-      return sum.toFixed(2)
+      return isForeignCurrency(this.customer.currencyUnit) ? String(Math.floor(sum)) : sum.toFixed(2)
     },
     sumNetWeight() {
       let gold = 0
@@ -728,15 +730,9 @@ export default {
       }
       this.customer.quotationItems[index] = newCal
     },
-    // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้มีลูกน้ำและทศนิยม 2 ตำแหน่ง
+    // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้มีลูกน้ำและทศนิยม 2 ตำแหน่ง (floor เป็นจำนวนเต็มเมื่อเป็นสกุลเงินต่างประเทศ)
     formatPrice(price) {
-      const numPrice = Number(price)
-
-      // ใช้ toLocaleString เพื่อจัดรูปแบบตัวเลขให้มีลูกน้ำคั่นและทศนิยม 2 ตำแหน่ง
-      return numPrice.toLocaleString('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
+      return formatDocCurrency(price, this.customer.currencyUnit, 'th-TH')
     },
 
     applyGlobalDiscount() {
@@ -785,14 +781,14 @@ export default {
       }
       this.showItemsPerPageModal = true
     },
-    onConfirmItemsPerPage(itemsPerPage, showCifLabel) {
+    onConfirmItemsPerPage(itemsPerPage, showCifLabel, showDecimals) {
       this.showItemsPerPageModal = false
       if (!this.pendingInvoiceParams) return
       generateInvoicePdf({
         ...this.pendingInvoiceParams,
         itemsPerPage: itemsPerPage,
         openInNewTab: false,
-        customer: { ...this.pendingInvoiceParams.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true }
+        customer: { ...this.pendingInvoiceParams.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true, showDecimals }
       })
       this.pendingInvoiceParams = null
     },
@@ -1042,13 +1038,13 @@ export default {
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
       }
     },
-    onSaveAndCreatePdfAndSave(itemsPerPage, showCifLabel) {
+    onSaveAndCreatePdfAndSave(itemsPerPage, showCifLabel, showDecimals) {
       // Save the quotation first
       this.fetchSaveQuotation().then(() => {
         // After saving, generate and download the PDF
         generateInvoicePdf({
           items: this.customer.quotationItems,
-          customer: { ...this.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true },
+          customer: { ...this.customer, showCifLabel: showCifLabel !== undefined ? showCifLabel : true, showDecimals },
           invoiceDate: this.customer.quotationDate,
           filename: `Invoice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
           openInNewTab: false,
@@ -1142,6 +1138,11 @@ export default {
         email: this.customer.email || '',
         phone: this.customer.tel || ''
       }
+      const savedShowDecimals = storage.getItem('quotation-print-show-decimals')
+      const showDecimals = savedShowDecimals !== null
+        ? savedShowDecimals === 'true'
+        : !isForeignCurrency(this.customer.currencyUnit)
+
       const builder = new InvoiceExcelBuilder(
         this.customer.quotationItems,
         customerData,
@@ -1151,7 +1152,7 @@ export default {
         this.customer.currencyMultiplier || 1,
         documentNumber,
         10,
-        { documentTitle: 'QUOTATION' }
+        { documentTitle: 'QUOTATION', showDecimals }
       )
       await builder.downloadExcel()
       success(this.$t('view.sale.quotation.success.exportExcel'), `Quotation: ${documentNumber}`)

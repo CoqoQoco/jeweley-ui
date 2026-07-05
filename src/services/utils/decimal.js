@@ -182,6 +182,42 @@ const ceilToInteger = (value) => {
   return Math.ceil(Math.round(parsed * 100) / 100)
 }
 
+/**
+ * Check if a currency unit is foreign (not THB)
+ * @param {string} unit - Currency unit code
+ * @returns {boolean} true if foreign currency
+ */
+const isForeignCurrency = (unit) => String(unit || '').trim().toUpperCase() !== 'THB'
+
+/**
+ * Format a money value denominated in a document currency.
+ * Foreign currency values are floored (truncated) to whole numbers.
+ * THB values keep the existing 2-decimal behavior.
+ * @param {number|string} value - Value to format
+ * @param {string} unit - Currency unit code
+ * @param {string} locale - Locale for toLocaleString (default: 'th-TH')
+ * @returns {string} Formatted value
+ */
+const formatDocCurrency = (value, unit, locale = 'th-TH') => {
+  const num = Number(value) || 0
+  if (isForeignCurrency(unit)) return Math.floor(num).toLocaleString(locale, { maximumFractionDigits: 0 })
+  return num.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+/**
+ * Format a money value based on an explicit showDecimals flag.
+ * @param {number|string} value - Value to format
+ * @param {Object} options
+ * @param {boolean} [options.showDecimals=true] - true = 2 decimals, false = floor to whole number
+ * @param {string} [options.locale='th-TH'] - Locale for toLocaleString
+ * @returns {string} Formatted value
+ */
+const formatMoney = (value, { showDecimals = true, locale = 'th-TH' } = {}) => {
+  const num = Number(value) || 0
+  if (!showDecimals) return Math.floor(num).toLocaleString(locale, { maximumFractionDigits: 0 })
+  return num.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 export {
   formatDecimal,
   formatNumber,
@@ -192,5 +228,8 @@ export {
   multiplyDecimal,
   divideDecimal,
   parseDecimal,
-  ceilToInteger
+  ceilToInteger,
+  isForeignCurrency,
+  formatDocCurrency,
+  formatMoney
 }

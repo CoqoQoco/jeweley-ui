@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -29,6 +29,9 @@ export class InvoicePdfBuilder {
     this.logoBase64 = null
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyRate = Number(currencyRate) || 1
+    this.showDecimals = saleOrderData?.showDecimals !== undefined && saleOrderData?.showDecimals !== null
+      ? saleOrderData.showDecimals
+      : !isForeignCurrency(this.currencyUnit)
 
     // Financial adjustments from invoice data
     this.specialDiscount = Number(saleOrderData.specialDiscount) || 0
@@ -1083,18 +1086,12 @@ export class InvoicePdfBuilder {
 
   formatPrice(price) {
     if (typeof price !== 'number' || isNaN(price)) return '0.00'
-    return price.toLocaleString('th-TH', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+    return formatMoney(price, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
-    return num.toLocaleString('th-TH', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+    return formatMoney(num, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
   getDocDefinition() {

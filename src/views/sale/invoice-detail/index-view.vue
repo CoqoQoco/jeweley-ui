@@ -378,7 +378,7 @@ import { invoiceSummaryPdfService } from '@/services/helper/pdf/invoice-summary/
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import dayjs from 'dayjs'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { ceilToInteger, formatDocCurrency } from '@/services/utils/decimal.js'
 
 export default {
   name: 'InvoiceDetailView',
@@ -685,10 +685,7 @@ export default {
     },
     formatNumber(value) {
       if (!value && value !== 0) return '0.00'
-      return Number(value).toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
+      return formatDocCurrency(value, this.invoiceData?.currencyUnit, 'en-US')
     },
     formatPriceWithCurrency(price) {
       const currency = this.invoiceData?.currencyUnit || 'THB'
@@ -1078,6 +1075,7 @@ export default {
           open: false,
           showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
           hideCompanyHeader: printData.hideCompanyHeader || false,
+          showDecimals: printData.showDecimals,
           itemsPerPage: Number(printData.itemsPerPage) || 10
         }
 
@@ -1111,7 +1109,7 @@ export default {
             freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
             vatPercent: Number(this.invoiceData.vatPercent) || 0
           }
-          const vatModel = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null })
+          const vatModel = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
           await printGeneric(vatModel)
           success(this.$t('view.sale.invoiceDetail.success.printVat'), 'Bridge GDI')
           this.invoiceStore.createPrintLog({
@@ -1176,7 +1174,7 @@ export default {
           for (const key of BILL_FLAG_KEYS) {
             if (printData[key] !== undefined) layoutPayload[key] = printData[key]
           }
-          const billModel = buildBillPrintModel(billInvoice, layoutPayload, { printerName: printData.printerName ?? null })
+          const billModel = buildBillPrintModel(billInvoice, layoutPayload, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
           await printGeneric(billModel)
           success(this.$t('view.sale.invoiceDetail.success.printBill'), 'Bridge GDI')
           this.invoiceStore.createPrintLog({
@@ -1248,6 +1246,7 @@ export default {
         preview: true,
         showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
         hideCompanyHeader: printData.hideCompanyHeader || false,
+        showDecimals: printData.showDecimals,
         itemsPerPage: Number(printData.itemsPerPage) || 10
       }
 

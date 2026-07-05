@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 
 export class SaleOrderPdfBuilder {
   constructor(soData, options = {}) {
@@ -18,6 +18,7 @@ export class SaleOrderPdfBuilder {
     this.currencyRate = Number(options.currencyRate) || 1
     this.itemsPerPage = Number(options.itemsPerPage) || 10
     this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
+    this.showDecimals = options.showDecimals != null ? options.showDecimals : !isForeignCurrency(this.currencyUnit)
 
     // Financial adjustments
     this.specialDiscount = Number(soData.specialDiscount) || 0
@@ -1043,18 +1044,13 @@ export class SaleOrderPdfBuilder {
 
   formatPrice(price) {
     if (typeof price !== 'number' || isNaN(price)) return '0.00'
-    return price.toLocaleString('th-TH', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+    return formatMoney(price, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
+  // Note: previously misnamed (always emitted 2 decimals) — now honors showDecimals like formatPrice.
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
-    return num.toLocaleString('th-TH', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+    return formatMoney(num, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
   getDocDefinition() {

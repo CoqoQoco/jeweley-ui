@@ -41,7 +41,8 @@ export default {
     description: 'Description',
     action: 'Action',
     phone: 'Phone',
-    email: 'Email'
+    email: 'Email',
+    showDecimals: 'Show decimals (2 places)'
   },
   label: {
     noData: 'No data found',

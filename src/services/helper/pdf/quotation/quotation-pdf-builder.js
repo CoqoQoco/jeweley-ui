@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -39,6 +39,9 @@ export class InvoicePdfBuilder {
     this.currencyMultiplier = Number(currencyMultiplier) || 1
     this.itemsPerPage = Number(itemsPerPage) || 10 // default 10 ถ้าไม่ส่งมา
     this.showCifLabel = customer?.showCifLabel !== undefined ? customer.showCifLabel : true
+    this.showDecimals = customer?.showDecimals !== undefined && customer?.showDecimals !== null
+      ? customer.showDecimals
+      : !isForeignCurrency(this.currencyUnit)
 
     // เพิ่มการคำนวณ totalAmount ใน constructor
     this.totalAmount = this.calculateTotalAmount()
@@ -64,7 +67,7 @@ export class InvoicePdfBuilder {
         const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
 
         const qtyVal = Number(item.qty) || 0
-        const convertedPrice = this.roundNoDecimal(priceAfterDiscount / this.currencyMultiplier)
+        const convertedPrice = this.roundPriceForCalc(priceAfterDiscount / this.currencyMultiplier)
 
         total += convertedPrice * qtyVal
       })
@@ -585,7 +588,7 @@ export class InvoicePdfBuilder {
       const qty = Number(item.qty) || 0
       // --- ปรับ logic ตรงนี้ ---
 
-      const price = this.roundNoDecimal(
+      const price = this.roundPriceForCalc(
         ((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
           this.currencyMultiplier
       )
@@ -1131,14 +1134,23 @@ export class InvoicePdfBuilder {
 
   formatPrice(price) {
     if (typeof price !== 'number' || isNaN(price)) return '0.00'
-    return price.toLocaleString('th-TH', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+    return formatMoney(price, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
+  // Numeric rounding used for internal calculations (price/amount build-up) — returns a Number,
+  // never used for display. Preserves the pre-existing calc behavior: round to whole number for
+  // THB, floor for foreign currency.
+  roundPriceForCalc(num) {
+    if (typeof num !== 'number' || isNaN(num)) return 0
+    return this.showDecimals ? Math.round(num) : Math.floor(num)
+  }
+
+  // Display-only formatter for amounts/summary totals.
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
+    if (!this.showDecimals) {
+      return Math.floor(num).toLocaleString('th-TH', { maximumFractionDigits: 0 })
+    }
     return Math.round(num).toFixed(2)
   }
 

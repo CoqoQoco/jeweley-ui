@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { ceilToInteger, isForeignCurrency } from '@/services/utils/decimal.js'
 
 export class InvoiceExcelBuilder {
   constructor(
@@ -28,6 +28,7 @@ export class InvoiceExcelBuilder {
     this.invoiceNo = invoiceNo || this.generateInvoiceNumber()
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyRate = Number(currencyRate) || 1
+    this.showDecimals = options.showDecimals != null ? options.showDecimals : !isForeignCurrency(this.currencyUnit)
 
     // Financial adjustments
     this.specialDiscount = Number(saleOrderData.specialDiscount) || 0
@@ -70,10 +71,13 @@ export class InvoiceExcelBuilder {
   }
 
   formatCurrency(amount) {
+    if (!this.showDecimals) {
+      return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(Math.floor(Number(amount) || 0))
+    }
     return new Intl.NumberFormat('th-TH', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(amount || 0)
+    }).format(Number(amount) || 0)
   }
 
   generateInvoiceNumber() {

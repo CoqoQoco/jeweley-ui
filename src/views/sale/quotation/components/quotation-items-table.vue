@@ -84,12 +84,20 @@
                 <i class="bi bi-camera"></i>
               </div>
             </div>
-            <div v-else-if="slotProps.data.imagePath">
+            <div v-else-if="slotProps.data.imageBase64 || slotProps.data.imagePath">
+              <img
+                v-if="slotProps.data.imageBase64"
+                :src="slotProps.data.imageBase64"
+                class="stock-img-thumb"
+              />
               <imagePreview
+                v-else
                 :imageName="slotProps.data.imagePath"
-                :type="type"
+                :path="slotProps.data.imagePath"
+                type="STOCK-PRODUCT"
                 :width="25"
                 :height="25"
+                :emitImage="false"
               />
             </div>
           </div>
@@ -268,11 +276,11 @@
         <template #body="slotProps">
           <div class="qty-container">
             <span>{{
-              (
+              formatDocMoney(
                 (Number(slotProps.data.appraisalPrice || 0) *
                   (1 - (slotProps.data.discountPercent || 0) / 100)) /
                 (customer.currencyMultiplier || 1)
-              ).toFixed(2)
+              )
             }}</span>
           </div>
         </template>
@@ -302,12 +310,12 @@
         <template #body="slotProps">
           <div class="qty-container">
             <span>{{
-              (
+              formatDocMoney(
                 ((Number(slotProps.data.appraisalPrice || 0) *
                   (1 - (slotProps.data.discountPercent || 0) / 100)) /
                   (customer.currencyMultiplier || 1)) *
                 (Number(slotProps.data.qty) || 0)
-              ).toFixed(2)
+              )
             }}</span>
           </div>
         </template>
@@ -594,7 +602,9 @@ import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 
-import imagePreview from '@/components/prime-vue/ImagePreview.vue'
+import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+
+import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 
 export default {
   name: 'QuotationItemsTable',
@@ -652,11 +662,13 @@ export default {
 
   methods: {
     formatPrice(price) {
-      const numPrice = Number(price)
-      return numPrice.toLocaleString('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
+      return formatDocCurrency(price, this.customer.currencyUnit, 'th-TH')
+    },
+
+    formatDocMoney(value) {
+      return isForeignCurrency(this.customer.currencyUnit)
+        ? String(Math.floor(Number(value) || 0))
+        : (Number(value) || 0).toFixed(2)
     },
 
     getRowClass(data, index) {
@@ -714,6 +726,13 @@ export default {
   &:hover .copy-img-placeholder {
     color: var(--base-font-color);
   }
+}
+
+.stock-img-thumb {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .qty-container {

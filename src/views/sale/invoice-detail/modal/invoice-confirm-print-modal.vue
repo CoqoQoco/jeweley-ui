@@ -117,6 +117,14 @@
               />
             </div>
 
+            <div class="form-group mb-3">
+              <CheckboxGeneric
+                v-model="printData.showDecimals"
+                :label="$t('common.field.showDecimals')"
+                @update:modelValue="onShowDecimalsChange"
+              />
+            </div>
+
             <div v-if="paperSize === 'a4'" class="form-group mb-3">
               <label class="form-label">
                 <i class="bi bi-list-ol mr-1"></i>{{ $t('view.sale.invoiceDetail.itemsPerPage') }}
@@ -443,6 +451,7 @@
 <script>
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
+import { isForeignCurrency } from '@/services/utils/decimal.js'
 import dayjs from 'dayjs'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -494,6 +503,7 @@ export default {
         invoiceDate: '',
         showCifLabel: true,
         hideCompanyHeader: false,
+        showDecimals: true,
         itemsPerPage: 10
       },
       invoiceTemplate: 'standard',
@@ -720,14 +730,24 @@ export default {
         invoiceDate: this.invoiceData.invoiceDate || ''
       }
 
+      const savedShowDecimals = storage.getItem('invoice-print-show-decimals')
+      const showDecimals = savedShowDecimals !== null
+        ? savedShowDecimals === 'true'
+        : !isForeignCurrency(this.invoiceData.currencyUnit)
+
       this.printData = {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
         invoiceDate: new Date(),
         showCifLabel: true,
         hideCompanyHeader: false,
+        showDecimals,
         itemsPerPage: 10
       }
       this.invoiceTemplate = 'standard'
+    },
+
+    onShowDecimalsChange(val) {
+      storage.setItem('invoice-print-show-decimals', String(val))
     },
 
     formatDate(date) {
@@ -759,6 +779,7 @@ export default {
         invoiceDate: normalizedDate,
         showCifLabel: this.paperSize === 'a4' ? this.printData.showCifLabel : false,
         hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
+        showDecimals: this.printData.showDecimals,
         itemsPerPage: Number(this.printData.itemsPerPage) || 10,
         invoiceTemplate: this.invoiceTemplate,
         paperSize: this.paperSize,

@@ -69,6 +69,8 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
   const oy = L.offsetYInch
   const hfs = L.headerFontSize
   const ifs = L.itemFontSize
+  const showDecimals = options?.showDecimals ?? true
+  const money = (val) => showDecimals ? n2(val) : n0(val)
 
   const currencyRate = Number(invoice.currencyRate) || 1
 
@@ -121,19 +123,19 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
       left(item.productNameEN || '', L.xItemDesc, y, ifs)
 
       right(n0(item.qty), L.xItemQty, y, ifs)
-      right(n2(item.appraisalPrice), L.xItemPrice, y, ifs)
+      right(money(item.appraisalPrice), L.xItemPrice, y, ifs)
 
       const lineAmount = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate * Number(item.qty)
-      right(n2(lineAmount), L.xItemAmount, y, ifs)
+      right(money(lineAmount), L.xItemAmount, y, ifs)
 
       y += L.rowHeight
       itemNo++
     }
 
     if (currentPage === totalPages - 1) {
-      right(n2(totalBeforeVat), L.xSubtotal, L.ySubtotal, hfs)
-      right(n2(vatAmount), L.xVat, L.yVat, hfs)
-      right(n2(totalAmount), L.xTotal, L.yTotal, hfs)
+      right(money(totalBeforeVat), L.xSubtotal, L.ySubtotal, hfs)
+      right(money(vatAmount), L.xVat, L.yVat, hfs)
+      right(money(totalAmount), L.xTotal, L.yTotal, hfs)
       const bahtText = convertAmountToThaiText(totalAmount)
       left(bahtText, L.xAmountText, L.yAmountText, hfs)
     }

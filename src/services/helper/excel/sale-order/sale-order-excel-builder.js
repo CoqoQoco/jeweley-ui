@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { ceilToInteger, isForeignCurrency } from '@/services/utils/decimal.js'
 
 export class SaleOrderExcelBuilder {
   constructor(soData, options = {}) {
@@ -17,6 +17,7 @@ export class SaleOrderExcelBuilder {
     this.currencyUnit = options.currencyUnit || 'THB'
     this.currencyRate = Number(options.currencyRate) || 1
     this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
+    this.showDecimals = options.showDecimals != null ? options.showDecimals : !isForeignCurrency(this.currencyUnit)
 
     // Financial adjustments — freight field (SO uses "freight", not freightAndInsurance)
     this.specialDiscount = Number(soData.specialDiscount) || 0
@@ -53,10 +54,13 @@ export class SaleOrderExcelBuilder {
   }
 
   formatCurrency(amount) {
+    if (!this.showDecimals) {
+      return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(Math.floor(Number(amount) || 0))
+    }
     return new Intl.NumberFormat('th-TH', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(amount || 0)
+    }).format(Number(amount) || 0)
   }
 
   // === ASYNC PREPARE (logo + item images) ===

@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import { formatDecimal } from '@/services/utils/decimal.js'
+import { isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 
 export default {
   name: 'OrderSummarySection',
@@ -206,16 +206,18 @@ export default {
 
   methods: {
     formatCurrency(amount, currency = null) {
-      const formattedAmount = formatDecimal(amount, 2)
       const displayCurrency = currency || this.formSaleOrder.currencyUnit || 'THB'
+      const formattedAmount = formatMoney(amount, {
+        showDecimals: !isForeignCurrency(displayCurrency),
+        locale: 'th-TH'
+      })
       return formattedAmount + ' ' + displayCurrency
     },
 
     formatPrice(price) {
-      const numPrice = Number(price)
-      return numPrice.toLocaleString('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+      return formatMoney(price, {
+        showDecimals: !isForeignCurrency(this.formSaleOrder.currencyUnit),
+        locale: 'th-TH'
       })
     }
   }

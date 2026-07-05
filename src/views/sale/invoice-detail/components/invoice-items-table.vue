@@ -324,11 +324,11 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                (
+                formatDocMoney(
                   (Number(slotProps.data.appraisalPrice || 0) *
                     (1 - (slotProps.data.discountPercent || 0) / 100)) /
                   (formSaleOrder.currencyRate || 1)
-                ).toFixed(2)
+                )
               }}</span>
             </div>
           </template>
@@ -366,12 +366,12 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                (
+                formatDocMoney(
                   ((Number(slotProps.data.appraisalPrice || 0) *
                     (1 - (slotProps.data.discountPercent || 0) / 100)) /
                     (formSaleOrder.currencyRate || 1)) *
                   (Number(slotProps.data.qty) || 0)
-                ).toFixed(2)
+                )
               }}</span>
             </div>
           </template>
@@ -672,6 +672,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import dayjs from 'dayjs'
+import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
 
 export default {
   name: 'InvoiceItemsTable',
@@ -795,10 +796,12 @@ export default {
     },
     formatNumber(value) {
       if (!value && value !== 0) return '0.00'
-      return Number(value).toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
+      return formatDocCurrency(value, this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit, 'en-US')
+    },
+    formatDocMoney(value) {
+      return isForeignCurrency(this.formSaleOrder.currencyUnit)
+        ? String(Math.floor(Number(value) || 0))
+        : (Number(value) || 0).toFixed(2)
     },
     formatPriceWithCurrency(value) {
       return `${this.formatNumber(value)} ${this.invoiceData.currencyUnit || 'THB'}`
@@ -879,7 +882,10 @@ export default {
     getConvertedPrice(item) {
       const discountedPrice = this.getDiscountedPrice(item)
       const currencyRate = this.invoiceData.currencyRate || 1
-      return discountedPrice / currencyRate
+      const converted = discountedPrice / currencyRate
+      return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
+        ? Math.floor(converted)
+        : converted
     },
     getTotalConvertedPrice(item) {
       const convertedPrice = this.getConvertedPrice(item)
@@ -908,7 +914,9 @@ export default {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
+        ? String(Math.floor(total))
+        : Number(total).toFixed(2)
     },
     getSumQty(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return 0
@@ -922,7 +930,9 @@ export default {
         const price = this.getTotalConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
+        ? String(Math.floor(total))
+        : Number(total).toFixed(2)
     }
   }
 }

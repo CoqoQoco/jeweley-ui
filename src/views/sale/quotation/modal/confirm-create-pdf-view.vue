@@ -31,6 +31,13 @@
             <span class="title-text" for="showCifLabelInput" style="cursor: pointer">{{ $t('view.sale.quotation.showCifLabel') }}</span>
           </div>
         </div>
+        <div class="form-group mb-3">
+          <CheckboxGeneric
+            v-model="showDecimals"
+            :label="$t('common.field.showDecimals')"
+            @update:modelValue="onShowDecimalsChange"
+          />
+        </div>
         <div class="d-flex justify-content-end mt-4">
           <button class="btn btn-sm btn-green mr-2" @click="onConfirm">
             <span><i class="bi bi-calendar-check"></i></span>
@@ -52,32 +59,42 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import { storage } from '@/services/storage.js'
+import { isForeignCurrency } from '@/services/utils/decimal.js'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
+
+const SHOW_DECIMALS_STORAGE_KEY = 'quotation-print-show-decimals'
 
 export default {
   name: 'ConfirmCreatePdfView',
 
   components: {
-    modal
+    modal,
+    CheckboxGeneric
   },
 
   props: {
     showModal: { type: Boolean, default: false },
     defaultItemsPerPage: { type: Number, default: 10 },
     quotationNumber: { type: String, default: '' },
-    defaultShowCifLabel: { type: Boolean, default: true }
+    defaultShowCifLabel: { type: Boolean, default: true },
+    currencyUnit: { type: String, default: 'THB' }
   },
 
   data() {
     return {
       isShowModal: this.showModal,
       itemsPerPage: this.defaultItemsPerPage,
-      showCifLabel: this.defaultShowCifLabel
+      showCifLabel: this.defaultShowCifLabel,
+      showDecimals: true
     }
   },
   watch: {
     showModal(val) {
       this.isShowModal = val
+      if (val) this.initShowDecimals()
     },
     isShowModal(val) {
       if (!val) this.$emit('closeModal')
@@ -86,13 +103,23 @@ export default {
       this.showCifLabel = val
     }
   },
+  mounted() {
+    this.initShowDecimals()
+  },
   methods: {
+    initShowDecimals() {
+      const saved = storage.getItem(SHOW_DECIMALS_STORAGE_KEY)
+      this.showDecimals = saved !== null ? saved === 'true' : !isForeignCurrency(this.currencyUnit)
+    },
+    onShowDecimalsChange(val) {
+      storage.setItem(SHOW_DECIMALS_STORAGE_KEY, String(val))
+    },
     onConfirm() {
-      this.$emit('confirm', this.itemsPerPage, this.showCifLabel)
+      this.$emit('confirm', this.itemsPerPage, this.showCifLabel, this.showDecimals)
       this.isShowModal = false
     },
     onSaveAndCreate() {
-      this.$emit('saveAndCreate', this.itemsPerPage, this.showCifLabel)
+      this.$emit('saveAndCreate', this.itemsPerPage, this.showCifLabel, this.showDecimals)
       this.isShowModal = false
     },
     onCancel() {

@@ -417,11 +417,11 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                (
+                formatDocMoney(
                   (Number(slotProps.data.appraisalPrice || 0) *
                     (1 - (slotProps.data.discountPercent || 0) / 100)) /
                   (formSaleOrder.currencyRate || 1)
-                ).toFixed(2)
+                )
               }}</span>
             </div>
           </template>
@@ -460,12 +460,12 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                (
+                formatDocMoney(
                   ((Number(slotProps.data.appraisalPrice || 0) *
                     (1 - (slotProps.data.discountPercent || 0) / 100)) /
                     (formSaleOrder.currencyRate || 1)) *
                   (Number(slotProps.data.qty) || 0)
-                ).toFixed(2)
+                )
               }}</span>
             </div>
           </template>
@@ -830,7 +830,7 @@ import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
-import { formatDecimal } from '@/services/utils/decimal.js'
+import { formatDecimal, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 
 export default {
   name: 'StockItemsTable',
@@ -1096,14 +1096,14 @@ export default {
     },
 
     getSumConvertedPrice(items) {
-      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      if (!items || !Array.isArray(items) || items.length === 0) return this.formatDocMoney(0)
 
       const total = items.reduce((sum, item) => {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return this.formatDocMoney(total)
     },
 
     getSumQty(items) {
@@ -1115,14 +1115,14 @@ export default {
     },
 
     getSumTotalConvertedPrice(items) {
-      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      if (!items || !Array.isArray(items) || items.length === 0) return this.formatDocMoney(0)
 
       const total = items.reduce((sum, item) => {
         const price = this.getTotalConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return this.formatDocMoney(total)
     },
 
     formatCurrency(amount, currency = null) {
@@ -1132,11 +1132,16 @@ export default {
     },
 
     formatPrice(price) {
-      const numPrice = Number(price)
-      return numPrice.toLocaleString('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+      return formatMoney(price, {
+        showDecimals: !isForeignCurrency(this.formSaleOrder.currencyUnit),
+        locale: 'th-TH'
       })
+    },
+
+    formatDocMoney(value) {
+      return isForeignCurrency(this.formSaleOrder.currencyUnit)
+        ? String(Math.floor(Number(value) || 0))
+        : (Number(value) || 0).toFixed(2)
     }
   }
 }

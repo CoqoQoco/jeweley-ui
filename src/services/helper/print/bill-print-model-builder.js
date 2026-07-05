@@ -161,6 +161,8 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
   const currencyRate = Number(invoice.currencyRate) || 1
   const uv = L.unitVatPercent
   const sv = L.summaryVatPercent
+  const showDecimals = options?.showDecimals ?? true
+  const money = (val) => showDecimals ? n2(val) : n0(val)
 
   const items = invoice.items || []
   const totalPages = Math.max(1, Math.ceil(items.length / L.maxRowsPerPage))
@@ -234,12 +236,12 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
 
       // priceBeforeDiscount column = appraisalPrice (cost price, unchanged)
       if (L.showPriceBeforeDiscount) {
-        right(n2(item.appraisalPrice), L.xPriceBeforeDiscount, y, ifs)
+        right(money(item.appraisalPrice), L.xPriceBeforeDiscount, y, ifs)
       }
 
       // priceIncludingVat column = tagAfterDisc (stable tag price after discount)
       if (L.showPriceIncludingVat) {
-        right(n2(tagAfterDisc), L.xPriceIncludingVat, y, ifs)
+        right(money(tagAfterDisc), L.xPriceIncludingVat, y, ifs)
       }
 
       const goldWeight = item.goldWeight != null ? Number(item.goldWeight) : 0
@@ -258,8 +260,8 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
       }
 
       if (L.showQty) right(n0(item.qty), L.xItemQty, y, ifs)
-      if (L.showUnitPrice) right(n2(unitPrice), L.xItemPrice, y, ifs)
-      if (L.showAmount) right(n2(lineAmount), L.xItemAmount, y, ifs)
+      if (L.showUnitPrice) right(money(unitPrice), L.xItemPrice, y, ifs)
+      if (L.showAmount) right(money(lineAmount), L.xItemAmount, y, ifs)
 
       y += L.rowHeight
       itemNo++
@@ -267,9 +269,9 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
 
     // --- Footer (last page only) ---
     if (currentPage === totalPages - 1) {
-      if (L.showSubtotal) right(n2(subtotalSum), L.xSubtotal, L.ySubtotal, hfs)
-      right(n2(vatAmount), L.xVat, L.yVat, hfs)
-      if (L.showTotal) right(n2(grandTotal), L.xTotal, L.yTotal, hfs)
+      if (L.showSubtotal) right(money(subtotalSum), L.xSubtotal, L.ySubtotal, hfs)
+      right(money(vatAmount), L.xVat, L.yVat, hfs)
+      if (L.showTotal) right(money(grandTotal), L.xTotal, L.yTotal, hfs)
 
       if (L.showRemark) {
         const remarkValues = items
