@@ -69,17 +69,18 @@
       </div>
     </div>
 
-    <!-- Row B: donut + horizontal bar -->
+    <!-- Row B: donut + horizontal bar (2 คอลัมน์) -->
     <div class="charts-row-b">
-      <!-- Left: donut by status + bug/feature chips -->
-      <SectionCardGeneric :title="$t('view.ticket.dashboard.chart.byStatus')">
-        <apexchart
-          v-if="donutReady"
-          type="donut"
-          height="240"
-          :options="donutOptions"
-          :series="donutSeries"
-        />
+      <SectionCardGeneric :title="$t('view.ticket.dashboard.chart.byStatus')" class="donut-card">
+        <div class="donut-chart-wrap">
+          <apexchart
+            v-if="donutReady"
+            type="donut"
+            height="380"
+            :options="donutOptions"
+            :series="donutSeries"
+          />
+        </div>
         <div class="type-chips">
           <span class="type-chip chip-bug">
             <i class="bi bi-bug"></i>
@@ -92,7 +93,6 @@
         </div>
       </SectionCardGeneric>
 
-      <!-- Right: horizontal bar by module -->
       <SectionCardGeneric :title="$t('view.ticket.dashboard.chart.byTopic')">
         <apexchart
           v-if="barReady"
@@ -150,12 +150,13 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 
+// สี status ใช้ design token (mirror var จาก variable.scss) — apexcharts อ่าน CSS var ไม่ได้
 const STATUS_COLORS = {
-  1: '#fff3cd',
-  2: '#cce5ff',
-  3: '#d4edda',
-  4: '#e2e3e5',
-  5: '#f8d7da'
+  1: '#fabc3f', // เปิด           → var(--base-warning)
+  2: '#921313', // กำลังดำเนินการ → var(--base-font-color)
+  3: '#038387', // แก้เสร็จ       → var(--base-green)
+  4: '#e0e0e0', // ปิด            → var(--color-border)
+  5: '#ff4d4d'  // ยกเลิก         → var(--base-red)
 }
 
 // apexcharts (canvas/SVG) อ่าน CSS var ไม่ได้ — ใช้ hex ที่ mirror design token
@@ -230,20 +231,52 @@ export default {
     },
 
     donutOptions() {
+      const unit = this.$t('view.ticket.dashboard.unit.items')
       return {
         chart: { type: 'donut', toolbar: { show: false } },
         labels: this.byStatus.map((s) => (this.$i18n.locale === 'en' ? s.nameEn : s.nameTh)),
-        colors: this.byStatus.map((s) => STATUS_COLORS[s.statusId] || '#e2e3e5'),
-        legend: { position: 'bottom', fontSize: '12px' },
+        colors: this.byStatus.map((s) => STATUS_COLORS[s.statusId] || '#e0e0e0'),
+        legend: {
+          position: 'right',
+          fontSize: '13px',
+          itemMargin: { vertical: 6 },
+          markers: { width: 12, height: 12, radius: 12 },
+          formatter: (seriesName, opts) => {
+            const value = opts.w.globals.series[opts.seriesIndex]
+            const total = opts.w.globals.series.reduce((a, b) => a + b, 0)
+            const pct = total ? Math.round((value / total) * 100) : 0
+            return `${pct}% ${seriesName} (${value})`
+          }
+        },
         plotOptions: {
-          pie: { donut: { size: '65%' } }
+          pie: {
+            customScale: 1.1,
+            donut: {
+              size: '70%',
+              labels: {
+                show: true,
+                name: { fontSize: '13px' },
+                value: { fontSize: '26px', fontWeight: 700, color: TOKEN_PRIMARY },
+                total: {
+                  show: true,
+                  label: this.$t('common.label.all'),
+                  fontSize: '13px',
+                  formatter: (w) => `${w.globals.series.reduce((a, b) => a + b, 0)}`
+                }
+              }
+            }
+          }
         },
         dataLabels: { enabled: false },
         tooltip: {
-          y: {
-            formatter: (val) => `${val} ${this.$t('view.ticket.dashboard.unit.items')}`
+          y: { formatter: (val) => `${val} ${unit}` }
+        },
+        responsive: [
+          {
+            breakpoint: 640,
+            options: { legend: { position: 'bottom' } }
           }
-        }
+        ]
       }
     },
 
@@ -542,6 +575,17 @@ export default {
     color: var(--base-green);
     border: 1px solid var(--color-border);
   }
+}
+
+.donut-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.donut-chart-wrap {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
 }
 
 /* Aging */
