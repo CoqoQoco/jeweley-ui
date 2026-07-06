@@ -19,7 +19,8 @@ const routes = [
       },
       classIcon: 'bi bi-tools',
       majorShow: true,
-      tpLineShow: true
+      tpLineShow: true,
+      menuSection: 'system'
     },
     children: [
       {

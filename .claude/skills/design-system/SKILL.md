@@ -62,6 +62,56 @@ description: ตารางโทเค็นทั้งหมด (spacing/rad
 | card-bg | `var(--color-card-bg)` | #ffffff | พื้นหลัง card |
 | highlight-bg | `var(--color-highlight-bg)` | #fdf2f2 | highlight (card header) |
 
+### Filled / Inverse Surface (maroon)
+
+ใช้กับ top bar, navigation drawer, page-title filled header, modal `headerVariant="main"` — ดู `docs/design-system.md` หัวข้อ "Filled / Inverse Surface" สำหรับกติกาเต็ม
+
+| Token | CSS var | ค่า |
+|---|---|---|
+| surface flat | `var(--surface-inverse)` | `var(--base-font-color)` |
+| surface gradient (panel/drawer — แนวตั้ง) | `var(--surface-inverse-gradient)` | `linear-gradient(180deg, var(--base-font-color), var(--base-font-sub-color))` |
+| surface gradient (bar — แนวนอน) | `var(--surface-inverse-gradient-bar)` | `linear-gradient(90deg, var(--base-font-color), var(--base-font-sub-color))` |
+| dot texture | `var(--surface-dot)` | `radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1.5px)` — canonical alpha 0.08 |
+| overlay subtle | `var(--overlay-white-subtle)` | rgba(255,255,255,0.06) — rest/expanded อ่อน |
+| overlay hover | `var(--overlay-white-hover)` | rgba(255,255,255,0.08) — hover |
+| overlay chip | `var(--overlay-white-chip)` | rgba(255,255,255,0.12) — chip/pill พื้น |
+| overlay solid | `var(--overlay-white-solid)` | rgba(255,255,255,0.15) — icon box/border/active |
+| overlay strong | `var(--overlay-white-strong)` | rgba(255,255,255,0.25) — active counter/scrollbar |
+| text หลัก | `var(--on-inverse)` | #ffffff |
+| text รอง | `var(--on-inverse-muted)` | rgba(255,255,255,0.85) |
+| icon/arrow | `var(--on-inverse-dim)` | rgba(255,255,255,0.65) |
+| section label | `var(--on-inverse-label)` | rgba(255,255,255,0.5) |
+
+วิธีสร้าง filled surface ใหม่:
+
+```scss
+@import '@/assets/scss/mixin.scss';
+
+// gradient แนวตั้ง + dot (default) — drawer/sidebar
+.my-drawer { @include filled-surface; }
+
+// flat + dot — page-title filled header
+.my-filled-header { @include filled-surface($gradient: false, $dot: true); }
+
+// flat ล้วน ไม่มี dot — modal headerVariant="main"
+.my-modal-header { @include filled-surface($gradient: false, $dot: false); }
+```
+
+```vue
+<!-- ใช้ token โดยตรงเมื่อไม่ต้อง mixin (เช่น top bar แนวนอน ไม่มี dot) -->
+<style lang="scss" scoped>
+.top-bar { background: var(--surface-inverse-gradient-bar); }
+.top-bar-label { color: var(--on-inverse-dim); }
+.top-bar-btn:hover { background: var(--overlay-white-hover); }
+</style>
+```
+
+**❌ Bad — rgba มือบน filled surface:**
+```scss
+.drawer-item:hover { background-color: rgba(255, 255, 255, 0.08); }
+.drawer-label { color: rgba(255, 255, 255, 0.85); }
+```
+
 ---
 
 ## Mixins
@@ -110,6 +160,10 @@ textarea.form-control {
   @include form-row-grid(4);  // 4 col → 2 col ที่ ≤1024px → 1 col ที่ ≤600px
 }
 ```
+
+### filled-surface($gradient, $dot)
+
+ดูรายละเอียดเต็มในหัวข้อ [Filled / Inverse Surface](#filled--inverse-surface-maroon) ด้านบน
 
 ### button-variant($bg, $fg)
 

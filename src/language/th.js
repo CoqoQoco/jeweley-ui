@@ -3,6 +3,7 @@ import breadcrumb from './breadcrumb/th.js'
 import alerts from './alerts/th.js'
 import button from './button/th.js'
 import common from './common/th.js'
+import sidebar from './sidebar/th.js'
 
 //view
 import pickinglist from './view/pickinglist/th.js'
@@ -27,6 +28,7 @@ export default {
   alert: { ...alerts },
   button: { ...button },
   common: { ...common },
+  sidebar: { ...sidebar },
   setting: { ...settingLang },
   reportProduction: { ...reportProductionLang },
   view: {

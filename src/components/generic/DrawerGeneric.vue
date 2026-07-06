@@ -167,18 +167,18 @@ export default {
   z-index: 1;
 
   &.is-main {
-    background: var(--base-font-color);
+    background: var(--surface-inverse);
     border-bottom-color: transparent;
 
     .drawer-title-text {
-      color: #ffffff;
+      color: var(--on-inverse);
     }
 
     .drawer-close-btn {
-      color: #ffffff;
+      color: var(--on-inverse);
 
       &:hover {
-        background: rgba(255, 255, 255, 0.15);
+        background: var(--overlay-white-solid);
       }
     }
   }

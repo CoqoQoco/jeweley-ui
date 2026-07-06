@@ -88,8 +88,10 @@
     <div class="custom-sidebar" :class="{ 'sidebar-visible': isSideBarVisible }">
       <div class="sidebar-header">
         <div class="sidebar-title">
-          <i class="bi bi-grid-fill menu-icon"></i>
-          <span>เลือกงาน</span>
+          <span class="sidebar-icon-box">
+            <i class="bi bi-grid-fill menu-icon"></i>
+          </span>
+          <span>{{ $t('sidebar.title') }}</span>
         </div>
         <button class="close-sidebar-btn" @click="closeSidebar" :title="$t('common.btn.close')">
           <i class="bi bi-x-lg"></i>
@@ -249,7 +251,7 @@ export default {
       //this.$store.dispatch('auth/logout')
       swAlert.confirmSubmit(
         '',
-        'ออกจากระบบ',
+        this.$t('common.btn.logout'),
         async () => {
           await this.authStore.logout()
           const redirectPath = this.$route.query.redirect
@@ -320,10 +322,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/mixin.scss';
+
 .main-bar-container {
   border-bottom: 1px solid var(--base-font-color);
   //background-color: var(--base-color);
-  background: linear-gradient(to right, var(--base-font-color), var(--base-font-sub-color));
+  background: var(--surface-inverse-gradient-bar);
   padding: 5px 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative; /* สำคัญสำหรับการจัดวาง sidebar */
@@ -419,7 +423,7 @@ export default {
 .lang-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--on-inverse-dim);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -429,19 +433,19 @@ export default {
   line-height: 1;
 
   &:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--on-inverse);
+    background-color: var(--overlay-white-hover);
   }
 
   &--active {
-    color: #ffffff;
+    color: var(--on-inverse);
     font-weight: 700;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: var(--overlay-white-solid);
   }
 }
 
 .lang-divider {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--on-inverse-label);
   font-size: 0.75rem;
   line-height: 1;
 }
@@ -459,11 +463,11 @@ export default {
 
   .user-name {
     font-size: 0.9rem;
-    color: white;
+    color: var(--on-inverse);
   }
   .user-role {
     font-size: 0.7rem;
-    color: white;
+    color: var(--on-inverse);
   }
 
   .avatar {
@@ -495,7 +499,7 @@ export default {
     }
   }
 
-  border-right: 2px solid white;
+  border-right: 2px solid var(--on-inverse);
 }
 
 .menu-icon {
@@ -506,7 +510,7 @@ export default {
   justify-content: center;
   width: 24px;
   //color: var(--base-font-color);
-  color: white;
+  color: var(--on-inverse);
   transition: color 0.2s ease; // เพิ่ม transition เพื่อให้การเปลี่ยนสีดูนุ่มนวล
   cursor: pointer;
 
@@ -537,8 +541,7 @@ export default {
   left: 0;
   height: 100vh;
   width: 320px;
-  background-color: var(--base-sub-color);
-  color: #fff;
+  @include filled-surface;
   z-index: 1000;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -555,8 +558,8 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--sp-lg);
+  border-bottom: 1px solid var(--overlay-white-hover);
 }
 
 .sidebar-title {
@@ -564,16 +567,28 @@ export default {
   font-weight: 500;
   display: flex;
   align-items: center;
+  gap: var(--sp-sm);
+
+  .sidebar-icon-box {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background: var(--overlay-white-solid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   .menu-icon {
-    margin-right: 10px;
+    margin-right: 0;
   }
 }
 
 .close-sidebar-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--on-inverse);
   font-size: 1.2rem;
   cursor: pointer;
   width: 32px;
@@ -585,7 +600,7 @@ export default {
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--overlay-white-hover);
   }
 }
 
@@ -602,12 +617,12 @@ export default {
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--overlay-white-strong);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: var(--overlay-white-strong);
   }
 }
 

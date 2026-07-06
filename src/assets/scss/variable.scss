@@ -7,6 +7,22 @@ $base-green: #038387;
 $base-warning: #fabc3f;
 $base-red: #ff4d4d;
 
+// Filled / inverse surface (maroon) — flat alias, mirrors --surface-inverse
+$surface-inverse: $base-font-color;
+
+// Overlay-white scale — ใช้บน filled surface แทน rgba มือ
+$overlay-white-subtle: rgba(255, 255, 255, 0.06);
+$overlay-white-hover: rgba(255, 255, 255, 0.08);
+$overlay-white-chip: rgba(255, 255, 255, 0.12);
+$overlay-white-solid: rgba(255, 255, 255, 0.15);
+$overlay-white-strong: rgba(255, 255, 255, 0.25);
+
+// Text tiers บน filled surface
+$on-inverse: #ffffff;
+$on-inverse-muted: rgba(255, 255, 255, 0.85);
+$on-inverse-dim: rgba(255, 255, 255, 0.65);
+$on-inverse-label: rgba(255, 255, 255, 0.5);
+
 //DAD4B5
 //b5dad4
 
@@ -68,6 +84,25 @@ $radius-lg: 12px;
   --color-card-bg: #ffffff;
   --color-highlight-bg: #fdf2f2;
   --color-green-bg: #e6f4f4;
+
+  // Filled / inverse surface (maroon) — top bar / drawer / filled header / modal headerVariant="main"
+  --surface-inverse: var(--base-font-color);
+  --surface-inverse-gradient: linear-gradient(180deg, var(--base-font-color), var(--base-font-sub-color));
+  --surface-inverse-gradient-bar: linear-gradient(90deg, var(--base-font-color), var(--base-font-sub-color));
+  --surface-dot: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.5px);
+
+  // Overlay-white scale — ใช้บน filled surface แทน rgba มือ
+  --overlay-white-subtle: rgba(255, 255, 255, 0.06);
+  --overlay-white-hover: rgba(255, 255, 255, 0.08);
+  --overlay-white-chip: rgba(255, 255, 255, 0.12);
+  --overlay-white-solid: rgba(255, 255, 255, 0.15);
+  --overlay-white-strong: rgba(255, 255, 255, 0.25);
+
+  // Text tiers บน filled surface
+  --on-inverse: #ffffff;
+  --on-inverse-muted: rgba(255, 255, 255, 0.85);
+  --on-inverse-dim: rgba(255, 255, 255, 0.65);
+  --on-inverse-label: rgba(255, 255, 255, 0.5);
 
   // Ticket / generic status palette — solid + tint pairs
   --status-open: var(--base-warning);

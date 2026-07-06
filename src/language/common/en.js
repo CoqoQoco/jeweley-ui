@@ -20,7 +20,8 @@ export default {
     refresh: 'Refresh',
     download: 'Download',
     upload: 'Upload',
-    copy: 'Copy'
+    copy: 'Copy',
+    logout: 'Logout'
   },
   field: {
     code: 'Code',

@@ -76,7 +76,7 @@ export default {
   justify-content: space-between;
   gap: var(--sp-md);
   padding: var(--sp-md) var(--sp-lg);
-  background: var(--base-font-color);
+  background: var(--surface-inverse);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--sp-lg);
@@ -99,8 +99,8 @@ export default {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid var(--color-card-bg);
-  color: var(--color-card-bg);
+  border: 1px solid var(--on-inverse);
+  color: var(--on-inverse);
   background: transparent;
   display: inline-flex;
   align-items: center;
@@ -120,13 +120,13 @@ export default {
   margin: 0;
   font-size: var(--fs-xl);
   font-weight: 600;
-  color: var(--color-card-bg);
+  color: var(--on-inverse);
 }
 
 .page-header-actions :deep(.btn) {
   background: transparent !important;
-  border: 1px solid var(--color-card-bg) !important;
-  color: var(--color-card-bg) !important;
+  border: 1px solid var(--on-inverse) !important;
+  color: var(--on-inverse) !important;
 
   &:hover {
     background: var(--color-card-bg) !important;

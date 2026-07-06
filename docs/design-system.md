@@ -24,7 +24,7 @@
 | 3 | **Label แหล่งเดียว** | `FormFieldGeneric` เป็นที่มาของ label เพียงแหล่งเดียว — component ลูก (เช่น upload) **ห้าม render title/label ซ้ำ** |
 | 4 | **Multi-column = grid** | แถวหลายคอลัมน์ใช้ mixin `form-row-grid(n)` (responsive ≤1024px ยุบเป็น 1 คอลัมน์) ห้ามเขียน media query เอง |
 | 5 | **Footer action bar** | ปุ่ม action หลักอยู่ **นอก box** ชิดขวา, primary ขวาสุด, เว้นด้วย `ml-2` (Bootstrap 4) ห้าม flex gap |
-| 6 | **Token เท่านั้น** | สี/ระยะ/มุม/เงา ใช้ `var(--sp-*)`,`var(--radius-*)`,`var(--shadow-*)`,`var(--base-*)`,`var(--color-*)` — ห้าม hardcode px/hex (ดู `design-system` skill) |
+| 6 | **Token เท่านั้น** | สี/ระยะ/มุม/เงา ใช้ `var(--sp-*)`,`var(--radius-*)`,`var(--shadow-*)`,`var(--base-*)`,`var(--color-*)` — ห้าม hardcode px/hex (ดู `design-system` skill); **บน filled surface** (พื้น maroon เช่น top bar/drawer/page header/modal main) ใช้ `var(--overlay-white-*)` / `var(--on-inverse-*)` แทน rgba มือ — ดูหัวข้อ [Filled / Inverse Surface](#filled--inverse-surface) |
 | 7 | **Generic component เท่านั้น** | ห้าม native `<input>`/`<button>`/`<table>`/`<img>` หรือ PrimeVue ตรงๆ — ใช้ generic wrapper (ดู `native-call-policy` skill); รูป Azure ใช้ `ImagePreview` |
 | 8 | **i18n เท่านั้น** | ห้าม hardcode ข้อความไทย ใช้ `$t()` เสมอ (ดู `i18n-system` skill) |
 | 9 | **Reusable first** | ถ้าต้องการ UI ซ้ำ 2+ ที่ → สร้าง generic component ใหม่ (เช่น `MultiImageUpload`) อย่า inline ซ้ำ |
@@ -171,6 +171,67 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 
 ---
 
+## Filled / Inverse Surface
+
+พื้น maroon เต็ม (filled) ที่ใช้ซ้ำใน top bar, navigation drawer, page-title filled header (`SearchBarGeneric`), และ modal `headerVariant="main"` — codify เป็น token + mixin แทนการเขียน rgba/gradient มือ (เดิมค่าเพี้ยนกันเองระหว่างหน้า)
+
+**ใช้เมื่อไหร่**: top bar (`main-bar.vue`), navigation drawer (`.custom-sidebar`, `side-bar.vue`), page-title filled header (`page-title.vue` / `SearchBarGeneric`), `PageHeaderGeneric`, `DrawerGeneric` (`headerVariant="main"`), modal `headerVariant="main"`
+
+**Canonical gradient**: panel/drawer = **แนวตั้ง** `--surface-inverse-gradient` (`linear-gradient(180deg, ...)`), แถบ/bar แนวนอน (top bar, section header bar) = **แนวนอน** `--surface-inverse-gradient-bar` (`linear-gradient(90deg, ...)`) — ห้ามใช้มุมทแยง (135deg) กับ core surface ใหม่ (มุมทแยงเหลือเฉพาะ mobile/one-off เดิม รอ migrate รอบถัดไป)
+
+**Dot texture**: `--surface-dot` (`radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1.5px)`) — canonical alpha = **0.08** (เดิม drawer ใช้ 0.06, page-title ใช้ 0.08 — รวมเป็นค่าเดียว ต่างกัน ≤0.02 มองไม่ออก)
+
+### Overlay-white scale (ใช้บน filled surface แทน rgba มือ)
+
+| Token | ค่า | ใช้เมื่อ |
+|---|---|---|
+| `--overlay-white-subtle` | rgba(255,255,255,0.06) | rest/expanded state อ่อน |
+| `--overlay-white-hover` | rgba(255,255,255,0.08) | hover |
+| `--overlay-white-chip` | rgba(255,255,255,0.12) | chip/pill พื้น |
+| `--overlay-white-solid` | rgba(255,255,255,0.15) | icon box, border, active-emphasis, divider |
+| `--overlay-white-strong` | rgba(255,255,255,0.25) | active counter, scrollbar thumb |
+
+### Text tiers บน filled surface
+
+| Token | ค่า | ใช้เมื่อ |
+|---|---|---|
+| `--on-inverse` | #ffffff | label หลัก |
+| `--on-inverse-muted` | rgba(255,255,255,0.85) | label รอง |
+| `--on-inverse-dim` | rgba(255,255,255,0.65) | icon/arrow |
+| `--on-inverse-label` | rgba(255,255,255,0.5) | section label |
+
+### Inner element บน filled surface — กติกา 2 สำนวน
+
+| สำนวน | ใช้ที่ | ตัวอย่าง |
+|---|---|---|
+| **Teal active** | เมื่อ inner element ต้องการ active state เด่น (ไม่กลืนพื้น maroon) | drawer route active pill (`var(--base-green)`) |
+| **White outline** | เมื่อ inner element เป็นปุ่ม action บนพื้น filled ทั่วไป | `PageHeaderGeneric` back button/actions (border/color `--on-inverse`, hover พลิกเป็นพื้นขาว) |
+
+### Mixin
+
+```scss
+@import '@/assets/scss/mixin.scss';
+
+// gradient แนวตั้ง + dot (ค่า default) — ใช้กับ drawer/sidebar
+.custom-sidebar {
+  @include filled-surface;
+}
+
+// flat + dot — ใช้กับ page-title filled header
+.page-title-filled {
+  @include filled-surface($gradient: false, $dot: true);
+}
+
+// flat ล้วน ไม่มี dot — ใช้กับ DrawerGeneric is-main
+.drawer-header.is-main {
+  @include filled-surface($gradient: false, $dot: false);
+}
+```
+
+ดูรายละเอียด token/mixin เพิ่มเติมใน `design-system` skill
+
+---
+
 ## Design Decision Log
 
 > บันทึกทุกครั้งที่ออกแบบ/เปลี่ยน design pattern ใหม่ (บังคับโดย hook `remind-on-change.sh`)
@@ -190,6 +251,7 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 | 2026-06-30 | SectionCardGeneric (global) | headerStyle='legend': เปลี่ยน `.section-legend` เป็น **outlined chip** — เพิ่ม `border: 1px solid` (accent color), `border-radius: var(--radius-md)`, padding บน-ล่าง `var(--sp-xs)` (จากเดิม `0`) ให้ title อยู่ในกล่องมีกรอบสีตาม accent มุมมน คร่อมเส้น border บนของ card |
 | 2026-06-30 | variable.scss (global) | เพิ่ม token `--color-green-bg: #e6f4f4` (teal tint อ่อน, SCSS `$color-green-bg` + CSS custom property) — ใช้กับ zone สรุป/คำนวณที่ต้องการ focus เป็นพื้นเขียวอ่อน (teal) แทน highlight-bg (ชมพู) |
 | 2026-06-30 | gold-loss-tang / summary-panel | `.calc-summary` เปลี่ยน background เป็น `var(--color-green-bg)` + border เป็น `var(--base-green)` — สร้าง visual focus ที่ zone สรุป&คำนวณ; remark TextareaGeneric แยกลงแถวล่างเต็มกว้าง (จาก three-col เป็น two-col + แถวล่าง full-width) |
+| 2026-07-06 | layout/slide-menu | Work vs system menu grouping ผ่าน `meta.menuSection: 'system'` (route-level, ไม่แตะ logic); กลุ่ม system (ตั้งค่าระบบ/Project Graph/ดาวน์โหลด) ได้ gold (`--base-warning`) left-accent 3px + warm tint bg + section label — แยกโซนจากกลุ่มงาน translucent-white เดิม |
 | 2026-06-30 | gold-loss-tang / issued+returned lines | เปลี่ยน `FormFieldGeneric` ต่อแถว → **div-grid table** `grid-template-columns: 1fr 140px 44px` ให้ทุกแถว (base/header/input/total) อยู่แนวเดียวกัน; ค่าน้ำหนักจาก 4dp → **2dp** ทุกจุด (display เท่านั้น — logic calc ไม่เปลี่ยน); step input 0.0001 → 0.01 |
 | 2026-06-30 | SearchBarGeneric/pageTitle (global) | search bar header → filled main ตัวอักษรขาว (prop `filled` ใน `page-title.vue`, non-breaking); input focus ring (`border-color: var(--base-font-color)` + `box-shadow: 0 0 0 3px rgba(146,19,19,.08)`); status chip teal (`var(--color-green-bg)` bg + `var(--base-green)` text); **#10 ปรับ**: primary search ใส่ label ได้ — ปุ่มรอง (clear/export/advanced/create) คง icon-only + `:title` — blueprint: docs/claude-design/blueprints/search-bar.md |
 | 2026-06-30 | SearchBarGeneric filled header (global) | เพิ่ม slot `#header-actions` (มุมขวาบน header filled แดง) — รองรับหลายปุ่ม, width เท่ากัน (grid `auto-columns: 1fr`), default style `btn-green` (var(--base-green)); ปุ่ม create ย้ายจาก action bar มาที่นี่, caller ใช้ `variant="green"` เพื่อตรง semantic default |
@@ -198,3 +260,7 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 | 2026-07-02 | SectionCardGeneric (global) | headerStyle='legend': เพิ่ม margin-top var(--sp-2xl) ให้ chip ที่คร่อมขอบบน (top:0/translateY(-50%)) ไม่ชนขอบ box ก่อนหน้า; padding ทุก box ต้องเท่ากันจาก card-base (var(--sp-xl)) ห้าม override |
 | 2026-07-06 | variable.scss (global) | เพิ่ม status color tokens (`--status-open/-progress/-resolved/-closed/-cancelled` + คู่ `-bg`) — mirror สีจาก dashboard donut เดิม ให้ table badge กับ dashboard chart ใช้แหล่งสีเดียวกัน แก้ปัญหาสถานะเดียวกันแสดงคนละสีระหว่างหน้า |
 | 2026-07-06 | ticket/manage (list+detail+dashboard) | box-title เขียนเอง (`.panel-section-header`/`.panel-divider`) → แปลงเป็น `SectionCardGeneric headerStyle="legend"` ทุกกล่อง (detail panel ซ้าย 2 กล่อง, การ์ดฝั่งขวา 3 กล่อง, chart การ์ด dashboard 4 กล่อง); สร้าง shared `ticket-status-badge.vue`/`ticket-type-badge.vue` + `ticket-status.js` constants แทน array/method ซ้ำ 3 ไฟล์ |
+| 2026-07-06 | layout/slide-menu (global) | redesign navigation drawer จากโทนเทา hardcode → **maroon filled-surface + teal active accent**: `.custom-sidebar` bg gradient แนวตั้ง `var(--base-font-color)`→`var(--base-font-sub-color)` + dot texture (เหมือน page-title-filled); เมนู item ทุกระดับ = translucent-white (rest `.06`/hover `.12`/expanded `.15`); route active accent เปลี่ยนจาก maroon → `var(--base-green)` (teal) กันกลืนพื้น; counter badge แดง (`--base-red`) เมื่อมีค่า; logout = red tint; ทุก spacing/radius → token; i18n header (`sidebar.title` namespace ใหม่) + logout (`common.btn.logout`) + `showMenuName()` locale-aware; ลบ dead code `.social-banner` — blueprint: docs/claude-design/blueprints/slide-menu.md |
+| 2026-07-06 | design-system tokens (global) | ยก "filled maroon surface" pattern (top bar/drawer/page-title filled header/modal headerVariant="main") เป็น token กลาง: `--surface-inverse`/`--surface-inverse-gradient`/`--surface-inverse-gradient-bar`/`--surface-dot`, `--overlay-white-*` (5 tiers), `--on-inverse-*` (4 tiers) + `@mixin filled-surface`; adopt ใน `main-bar.vue`/`side-bar.vue`/`page-title.vue`/`PageHeaderGeneric.vue`/`DrawerGeneric.vue`/stock product update modal — ไม่เปลี่ยนหน้าตา (canonical dot alpha 0.08 แทน 0.06 เดิมของ drawer — ต่างกันมองไม่ออก) |
+| 2026-07-06 | layout/slide-menu (global) | **supersede** gold-accent grouping ด้วย **3 section labels + dividers + flat muted items** (ตาม ref ผู้ใช้ — คง maroon bg เดิม): item ทุกระดับ bg `transparent`(rest)→`rgba(255,255,255,.08)`(hover)→`rgba(255,255,255,.06)`(expanded), text ~85%/icon ~65% ขาว; ลบ `.is-system` (gold left-border/tint) ทั้งหมด; เพิ่ม `meta.menuSection: 'data'` ให้ customer/worker/report-production-worker-wages/master (system เดิมคงไว้); template คำนวณ `sectionOf(index)`/`showSectionHeader(index)` render `.menu-section-label` (uppercase muted) + `.menu-section-divider` เมื่อกลุ่มเปลี่ยน (แทนที่ `tpLineShow` divider เดิม กันเส้นซ้อน); active pill คง teal (`--base-green`) + `border-radius: var(--radius-md)`; i18n `sidebar.section.{main,data,system}` แทน `sidebar.sectionSystem` — blueprint: docs/claude-design/blueprints/slide-menu.md |
+| 2026-07-06 | layout/slide-menu | เพิ่ม 3-level menu hierarchy (L1 main/L2 sub/L3 children) หลังจาก flatten ทำให้แยกชั้นไม่ออก: L1 label ขาวเต็ม (`--on-inverse`) weight 600 + parent เปิดอยู่ bg เข้มขึ้น (`--overlay-white-hover`); L2 เยื้อง `--sp-md` + left rail 2px (`--overlay-white-solid`) + text 0.85rem dim (`--on-inverse-dim`); L3 เยื้องลึกกว่า + left rail 1px จางกว่า (`--overlay-white-hover`) + text 0.8rem dim สุด — teal active pill ยัง override สีจางทุกระดับ, SCSS เท่านั้น ไม่แตะ behavior — blueprint: docs/claude-design/blueprints/slide-menu.md |

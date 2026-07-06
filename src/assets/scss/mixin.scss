@@ -58,6 +58,27 @@
   }
 }
 
+// Filled / inverse surface (maroon) — top bar / drawer / filled header
+// $gradient: true = vertical panel gradient (--surface-inverse-gradient), false = flat (--surface-inverse)
+// $dot: true = ทับ dot texture (--surface-dot) บนพื้น
+@mixin filled-surface($gradient: true, $dot: true) {
+  background-color: var(--surface-inverse);
+
+  @if $gradient {
+    @if $dot {
+      background-image: var(--surface-dot), var(--surface-inverse-gradient);
+      background-size: 14px 14px, 100% 100%;
+    } @else {
+      background: var(--surface-inverse-gradient);
+    }
+  } @else if $dot {
+    background-image: var(--surface-dot);
+    background-size: 14px 14px;
+  }
+
+  color: var(--on-inverse);
+}
+
 @mixin button-variant($bg, $fg: #fff) {
   background-color: $bg;
   color: $fg;

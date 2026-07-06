@@ -3,15 +3,17 @@
     <!-- STEP 1 : MAIN MENU -->
     <!-- Render List Menu -->
     <div class="menu-list-container">
-      <div
-        v-for="(mainMenu, index) in menuForPermission"
-        :key="index"
-        class="cursor menu-item-container"
-      >
+      <div v-for="(mainMenu, index) in menuForPermission" :key="index" class="cursor menu-item-container">
+        <!-- Section divider + label -->
+        <div v-if="showSectionHeader(index)">
+          <div v-if="index !== 0" class="menu-section-divider"></div>
+          <div class="menu-section-label">
+            {{ $t('sidebar.section.' + sectionOf(index)) }}
+          </div>
+        </div>
+
         <!-- Wrapper -->
         <div class="main-menu">
-          <div v-if="mainMenu.meta.tpLineShow" class="bottom-line-menu"></div>
-
           <!-- Has SubMenu -->
           <div
             v-if="mainMenu.subMenu.length"
@@ -169,29 +171,12 @@
           <button class="btn-link btn-main-menu" @click="handleLogout">
             <div class="menu-title">
               <span class="menu-icon bi bi-power"></span>
-              <span class="menu-label">ออกจากระบบ</span>
+              <span class="menu-label">{{ $t('common.btn.logout') }}</span>
             </div>
           </button>
         </div>
       </div>
     </div>
-
-    <!-- Footer Banner -->
-    <!-- <div class="social-banner">
-      <h2>ติดตามเราได้ที่</h2>
-      <p>รับข่าวสารและข้อมูลอัพเดทล่าสุดของระบบ</p>
-      <div class="social-icons">
-        <a href="#" class="social-icon">
-          <i class="bi bi-facebook"></i>
-        </a>
-        <a href="#" class="social-icon">
-          <i class="bi bi-line"></i>
-        </a>
-        <a href="#" class="social-icon">
-          <i class="bi bi-instagram"></i>
-        </a>
-      </div>
-    </div> -->
   </div>
 </template>
 
@@ -338,7 +323,7 @@ export default {
     },
     async handleLogout() {
       //this.$store.dispatch('auth/logout')
-      swAlert.confirmSubmit('', 'ออกจากระบบ', async () => {
+      swAlert.confirmSubmit('', this.$t('common.btn.logout'), async () => {
         await this.authStore.logout()
         const redirectPath = this.$route.query.redirect
         this.$router.push(redirectPath || '/')
@@ -347,7 +332,14 @@ export default {
 
     // ------------ Utils ------------
     showMenuName(data) {
-      return data.meta.Displayname.th
+      return data.meta.Displayname[this.$i18n.locale] || data.meta.Displayname.th
+    },
+    sectionOf(index) {
+      const mainMenu = this.menuForPermission[index]
+      return (mainMenu && mainMenu.meta.menuSection) || 'main'
+    },
+    showSectionHeader(index) {
+      return index === 0 || this.sectionOf(index) !== this.sectionOf(index - 1)
     }
   },
   async created() {
@@ -381,60 +373,60 @@ export default {
   height: calc(100vh - 150px);
   padding: 0;
   margin: 0;
-  background-color: var(--base-sub-color);
-  color: #ffffff;
+  background-color: transparent;
+  color: var(--on-inverse);
 }
 
 .menu-list-container {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: var(--sp-sm);
   scrollbar-width: thin;
-  scrollbar-color: #555 var(--base-font-sub-color);
+  scrollbar-color: var(--overlay-white-strong) transparent;
 
   &::-webkit-scrollbar {
     width: 8px;
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--base-font-sub-color);
+    background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 4px;
+    background-color: var(--overlay-white-strong);
+    border-radius: var(--radius-sm);
   }
 }
 
 .menu-item-container {
-  margin-bottom: 6px;
+  margin-bottom: var(--sp-xs);
 }
 
 .bottom-line-menu {
-  border-bottom: 2px solid #555;
-  margin: 5px 0;
+  border-bottom: 2px solid var(--overlay-white-solid);
+  margin: var(--sp-xs) 0;
 }
 
 /* Main Menu Styling */
 .main-menu-wrapper {
   @include menu-wrapper;
-  background-color: #2d2d2d;
-  border-radius: 8px;
-  margin-bottom: 4px;
+  background-color: transparent;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--sp-xs);
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #3a3a3a;
+    background-color: var(--overlay-white-hover);
   }
 
   &.main-menu-active {
-    background-color: #404040;
+    background-color: var(--overlay-white-hover);
   }
 }
 
 .btn-main-menu {
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: var(--sp-md) var(--sp-lg);
+  border-radius: var(--radius-md);
   width: 100%;
   display: flex;
   align-items: center;
@@ -448,26 +440,30 @@ export default {
 
 .menu-icon {
   font-size: 1.2rem;
-  margin-right: 12px;
+  margin-right: var(--sp-md);
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
+  color: var(--on-inverse-muted);
 }
 
 .menu-label {
   font-size: 0.95rem;
+  color: var(--on-inverse);
+  font-weight: 600;
 }
 
 .menu-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-sm);
 }
 
 .menu-counter {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 2px 8px;
+  /* แสดงเฉพาะเมื่อ meta.counter มีค่าจริง (v-if truthy) → ใช้สีแดงเป็นค่าเริ่มต้นเสมอ */
+  background-color: var(--base-red);
+  padding: 2px var(--sp-sm);
   border-radius: 10px;
   font-size: 0.75rem;
   min-width: 30px;
@@ -476,13 +472,14 @@ export default {
 
 .menu-arrow {
   font-size: 0.7rem;
-  color: #888;
+  color: var(--on-inverse-dim);
 }
 
 /* Submenu Styling */
 .submenu-container {
-  padding-left: 10px;
-  margin-bottom: 8px;
+  margin: var(--sp-xs) 0 var(--sp-xs) var(--sp-md);
+  padding-left: var(--sp-md);
+  border-left: 2px solid var(--overlay-white-solid);
 }
 
 .submenu-item {
@@ -491,21 +488,21 @@ export default {
 
 .sub-menu-wrapper {
   @include menu-wrapper;
-  background-color: #2d2d2d;
-  border-radius: 6px;
+  background-color: transparent;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #333333;
+    background-color: var(--overlay-white-hover);
   }
 
   &.sub-menu-active {
-    background-color: #383838;
+    background-color: var(--overlay-white-subtle);
   }
 }
 
 .btn-sub-menu {
-  padding: 10px 14px;
+  padding: var(--sp-md) 14px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -515,20 +512,24 @@ export default {
 .submenu-text {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
+  gap: var(--sp-sm);
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--on-inverse-dim);
 }
 
 .submenu-icon {
   font-size: 0.8rem;
-  color: #888;
-  margin-right: 4px;
+  color: var(--on-inverse-dim);
+  margin-right: var(--sp-xs);
 }
 
 /* Children Menu Styling */
 .children-container {
-  padding-left: 15px;
-  margin-bottom: 4px;
+  padding-left: var(--sp-md);
+  margin-left: var(--sp-sm);
+  border-left: 1px solid var(--overlay-white-hover);
+  margin-bottom: var(--sp-xs);
 }
 
 .children-item {
@@ -536,106 +537,83 @@ export default {
 }
 
 .children-menu-wrapper {
-  background-color: #2d2d2d;
-  border-radius: 6px;
+  background-color: transparent;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #333333;
+    background-color: var(--overlay-white-hover);
   }
 }
 
 .btn-children-menu {
-  padding: 8px 12px;
+  padding: var(--sp-sm) var(--sp-md);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  color: var(--on-inverse-dim);
 }
 
 .children-counter {
   font-size: 0.7rem;
 }
 
+/* Section Label + Divider */
+.menu-section-label {
+  padding: var(--sp-md) var(--sp-md) var(--sp-xs);
+  color: var(--on-inverse-label);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.menu-section-divider {
+  border-top: 1px solid var(--overlay-white-solid);
+  margin: var(--sp-sm) var(--sp-xs);
+}
+
 /* Menu Separator */
 .menu-separator {
   height: 1px;
-  background-color: #444;
-  margin: 15px 0;
+  background-color: var(--overlay-white-solid);
+  margin: var(--sp-xl) 0;
 }
 
 /* Logout Button */
 .logout-item {
-  margin-top: 10px;
-  background-color: rgba(220, 53, 69, 0.2);
+  margin-top: var(--sp-sm);
+  background-color: rgba(255, 77, 77, 0.15);
 
   &:hover {
-    background-color: rgba(220, 53, 69, 0.3);
+    background-color: rgba(255, 77, 77, 0.25);
   }
 
-  .menu-icon {
-    color: #dc3545;
+  .menu-icon,
+  .menu-label {
+    color: var(--base-red);
   }
 }
 
 /* Active Route Styling */
 .router-link-active {
   > .btn-link {
-    background-color: var(--base-font-color);
+    background-color: var(--base-green);
+    border-radius: var(--radius-md);
     color: white !important;
     font-weight: 500;
 
-    .menu-counter {
-      background-color: rgba(255, 255, 255, 0.2);
+    .menu-icon,
+    .submenu-icon,
+    .menu-label,
+    .submenu-text {
+      color: #ffffff;
     }
-  }
-}
 
-/* Social Banner */
-.social-banner {
-  background: linear-gradient(135deg, #6f42c1, #007bff);
-  padding: 20px;
-  margin: 15px 10px;
-  border-radius: 12px;
-  color: white;
-
-  h2 {
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  p {
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    opacity: 0.9;
-  }
-}
-
-.social-icons {
-  display: flex;
-  gap: 15px;
-}
-
-.social-icon {
-  width: 36px;
-  height: 36px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-
-  i {
-    font-size: 1.1rem;
-    color: white;
-  }
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+    .menu-counter {
+      background-color: var(--overlay-white-strong);
+    }
   }
 }
 
@@ -646,11 +624,11 @@ export default {
   outline: none;
   text-align: left;
   text-decoration: none;
-  color: #ffffff;
+  color: var(--on-inverse);
 
   &:hover,
   &:focus {
-    color: #ffffff !important;
+    color: var(--on-inverse) !important;
     text-decoration: none !important;
   }
 }

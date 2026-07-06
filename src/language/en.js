@@ -3,6 +3,7 @@ import breadcrumb from './breadcrumb/en.js'
 import alerts from './alerts/en.js'
 import button from './button/en.js'
 import common from './common/en.js'
+import sidebar from './sidebar/en.js'
 
 //view
 import pickinglist from './view/pickinglist/en.js'
@@ -27,6 +28,7 @@ export default {
   alert: { ...alerts },
   button: { ...button },
   common: { ...common },
+  sidebar: { ...sidebar },
   setting: { ...settingLang },
   reportProduction: { ...reportProductionLang },
   view: {

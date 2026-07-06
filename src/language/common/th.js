@@ -20,7 +20,8 @@ export default {
     refresh: 'รีเฟรช',
     download: 'ดาวน์โหลด',
     upload: 'Upload',
-    copy: 'คัดลอก'
+    copy: 'คัดลอก',
+    logout: 'ออกจากระบบ'
   },
   field: {
     code: 'รหัส',

@@ -88,6 +88,7 @@ const routes = [
       },
       classIcon: 'bi bi-person-lines-fill',
       majorShow: true,
+      menuSection: 'data',
       permissions: [PERMISSIONS.CUSTOMER_VIEW]
     },
     children: [
@@ -121,6 +122,7 @@ const routes = [
       classIcon: 'bi bi-person-gear',
       majorShow: true,
       btsubLineShow: true,
+      menuSection: 'data',
       permissions: [PERMISSIONS.WORKER_VIEW]
     },
     children: [
@@ -179,6 +181,7 @@ const routes = [
       },
       classIcon: 'bi bi-file-spreadsheet',
       majorShow: true,
+      menuSection: 'data',
       permissions: [PERMISSIONS.WORKER_VIEW]
     },
     children: [
@@ -212,6 +215,7 @@ const routes = [
       classIcon: 'bi bi-database',
       majorShow: true,
       btsubLineShow: true,
+      menuSection: 'data',
       permissions: [PERMISSIONS.MASTER_VIEW]
     },
     children: [

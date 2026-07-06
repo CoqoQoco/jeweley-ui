@@ -719,7 +719,7 @@ export default {
 }
 
 .section-header {
-  background: linear-gradient(135deg, var(--base-font-color) 0%, #7a0f0f 100%);
+  background: var(--surface-inverse-gradient-bar);
   padding: var(--sp-lg) var(--sp-2xl);
   display: flex;
   justify-content: space-between;

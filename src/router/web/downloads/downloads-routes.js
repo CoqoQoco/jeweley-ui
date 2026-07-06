@@ -15,7 +15,8 @@ const routes = [
       },
       classIcon: 'bi bi-download',
       majorShow: true,
-      permissions: [PERMISSIONS.USER_VIEW]
+      permissions: [PERMISSIONS.USER_VIEW],
+      menuSection: 'system'
     },
     children: [
       {

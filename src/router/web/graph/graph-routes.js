@@ -16,7 +16,8 @@ const routes = [
       },
       classIcon: 'bi bi-diagram-3',
       majorShow: true,
-      permissions: [PERMISSIONS.TICKET_MANAGE]
+      permissions: [PERMISSIONS.TICKET_MANAGE],
+      menuSection: 'system'
     },
     children: [
       {

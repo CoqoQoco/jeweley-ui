@@ -85,6 +85,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/mixin.scss';
+
 // Custom
 .page-title-container {
   border-bottom: 1px solid var(--base-font-color);
@@ -119,10 +121,7 @@ export default {
 
 // Filled variant — header zone bg main red, ตัวอักษรขาว (ใช้ใน SearchBarGeneric)
 .page-title-container.page-title-filled {
-  background-color: var(--base-font-color);
-  /* dot texture จางๆ บนพื้นแดง — rgba white = intentional overlay (ไม่มี token) */
-  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.5px);
-  background-size: 14px 14px;
+  @include filled-surface($gradient: false, $dot: true);
   border-bottom: none;
   padding: var(--sp-md) var(--sp-lg);
   margin-bottom: 0;
@@ -133,20 +132,19 @@ export default {
     gap: var(--sp-md);
   }
 
-  // กล่องไอคอน: translucent white บนพื้นแดง
-  // rgba(255,255,255,.15) = ไม่มี token — intentional translucent overlay
+  // กล่องไอคอน: translucent white บนพื้นแดง — token overlay-white-solid
   .filled-icon-box {
     flex-shrink: 0;
     width: 40px;
     height: 40px;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--overlay-white-solid);
     display: flex;
     align-items: center;
     justify-content: center;
 
     .bi {
-      color: #fff;
+      color: var(--on-inverse);
       font-size: var(--fs-xl);
     }
   }
@@ -160,11 +158,11 @@ export default {
     font-size: var(--fs-xl);
     font-weight: 700;
     line-height: 1.2;
-    color: #fff;
+    color: var(--on-inverse);
   }
 
   .description {
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--on-inverse-muted);
     font-size: var(--fs-sm);
     margin-top: 0;
     line-height: 1.3;
