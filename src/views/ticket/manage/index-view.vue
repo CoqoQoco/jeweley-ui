@@ -64,15 +64,11 @@
         </template>
 
         <template #typeTemplate="{ data }">
-          <span :class="['type-badge', data.type === 1 ? 'type-bug' : 'type-feature']">
-            {{ data.type === 1 ? $t('view.ticket.type.bug') : $t('view.ticket.type.feature') }}
-          </span>
+          <ticketTypeBadge :type="data.type" />
         </template>
 
         <template #statusTemplate="{ data }">
-          <span :class="['status-badge', getStatusClass(data.statusId)]">
-            {{ getStatusLabel(data.statusId, data.statusNameTh) }}
-          </span>
+          <ticketStatusBadge :statusId="data.statusId" :fallback="data.statusNameTh" />
         </template>
 
         <template #actionTemplate="{ data }">
@@ -122,6 +118,7 @@
 <script>
 import { useTicketStore } from '@/stores/modules/api/ticket-store.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { getStatusOptions } from '../constants/ticket-status.js'
 
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -132,6 +129,8 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import statusChangeModal from './modal/status-change-modal.vue'
 import analysisModal from './modal/analysis-modal.vue'
 import ticketDashboard from './components/ticket-dashboard.vue'
+import ticketStatusBadge from '../components/ticket-status-badge.vue'
+import ticketTypeBadge from '../components/ticket-type-badge.vue'
 
 export default {
   name: 'TicketManageIndexView',
@@ -144,7 +143,9 @@ export default {
     BaseDataTable,
     statusChangeModal,
     analysisModal,
-    ticketDashboard
+    ticketDashboard,
+    ticketStatusBadge,
+    ticketTypeBadge
   },
 
   mixins: [dataTablePaging],
@@ -183,13 +184,7 @@ export default {
     },
 
     statusOptions() {
-      return [
-        { value: 1, label: this.$t('view.ticket.status.open') },
-        { value: 2, label: this.$t('view.ticket.status.inProgress') },
-        { value: 3, label: this.$t('view.ticket.status.resolved') },
-        { value: 4, label: this.$t('view.ticket.status.closed') },
-        { value: 5, label: this.$t('view.ticket.status.cancelled') }
-      ]
+      return getStatusOptions(this.$t)
     },
 
     columns() {
@@ -241,28 +236,6 @@ export default {
       this.$router.push({ name: 'ticket-manage-detail', params: { id: ticket.id } })
     },
 
-    getStatusLabel(statusId, fallback) {
-      const map = {
-        1: this.$t('view.ticket.status.open'),
-        2: this.$t('view.ticket.status.inProgress'),
-        3: this.$t('view.ticket.status.resolved'),
-        4: this.$t('view.ticket.status.closed'),
-        5: this.$t('view.ticket.status.cancelled')
-      }
-      return map[statusId] || fallback || '-'
-    },
-
-    getStatusClass(statusId) {
-      const map = {
-        1: 'status-open',
-        2: 'status-in-progress',
-        3: 'status-resolved',
-        4: 'status-closed',
-        5: 'status-cancelled'
-      }
-      return map[statusId] || ''
-    },
-
     onOpenStatusModal(row) {
       this.statusModal = { isShow: true, ticket: { ...row } }
     },
@@ -290,45 +263,12 @@ export default {
   margin-top: var(--sp-sm);
 }
 
-.status-badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-
-  &.status-open {
-    background: #fff3cd;
-    color: #856404;
-  }
-
-  &.status-in-progress {
-    background: #cce5ff;
-    color: #004085;
-  }
-
-  &.status-resolved {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  &.status-closed {
-    background: #e2e3e5;
-    color: #383d41;
-  }
-
-  &.status-cancelled {
-    background: #f8d7da;
-    color: #721c24;
-  }
-}
-
 .new-msg-badge {
   display: inline-block;
   margin-left: var(--sp-sm);
-  padding: 1px 8px;
+  padding: 1px var(--sp-sm);
   background: var(--base-red);
-  color: #fff;
+  color: var(--color-card-bg);
   font-size: var(--fs-sm);
   font-weight: 700;
   border-radius: var(--radius-sm);
@@ -351,23 +291,5 @@ export default {
 .analysis-icon {
   margin-left: var(--sp-xs);
   font-size: var(--fs-sm);
-}
-
-.type-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-
-  &.type-bug {
-    background: #fde8e8;
-    color: var(--base-font-color);
-  }
-
-  &.type-feature {
-    background: #e8f4fd;
-    color: #0066a1;
-  }
 }
 </style>

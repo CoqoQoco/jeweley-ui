@@ -68,4 +68,16 @@ $radius-lg: 12px;
   --color-card-bg: #ffffff;
   --color-highlight-bg: #fdf2f2;
   --color-green-bg: #e6f4f4;
+
+  // Ticket / generic status palette — solid + tint pairs
+  --status-open: var(--base-warning);
+  --status-open-bg: #fff6e0;
+  --status-progress: var(--base-font-color);
+  --status-progress-bg: var(--color-highlight-bg);
+  --status-resolved: var(--base-green);
+  --status-resolved-bg: var(--color-green-bg);
+  --status-closed: var(--base-sub-color);
+  --status-closed-bg: #f0f0f0;
+  --status-cancelled: var(--base-red);
+  --status-cancelled-bg: #ffecec;
 }

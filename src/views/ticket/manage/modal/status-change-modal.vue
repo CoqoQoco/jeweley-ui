@@ -50,6 +50,7 @@
 import { defineAsyncComponent } from 'vue'
 import { useTicketStore } from '@/stores/modules/api/ticket-store.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { getStatusOptions } from '../../constants/ticket-status.js'
 
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -93,13 +94,7 @@ export default {
 
   computed: {
     statusOptions() {
-      return [
-        { value: 1, label: this.$t('view.ticket.status.open') },
-        { value: 2, label: this.$t('view.ticket.status.inProgress') },
-        { value: 3, label: this.$t('view.ticket.status.resolved') },
-        { value: 4, label: this.$t('view.ticket.status.closed') },
-        { value: 5, label: this.$t('view.ticket.status.cancelled') }
-      ]
+      return getStatusOptions(this.$t)
     }
   },
 

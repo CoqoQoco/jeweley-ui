@@ -20,7 +20,7 @@
 | # | หลักการ | รายละเอียด |
 |---|---|---|
 | 1 | **Page header มาตรฐาน** | ใช้ `PageHeaderGeneric` (back + title) — ปุ่มรอง (เช่น คู่มือ) วางใน `#actions` slot เท่านั้น ห้ามปุ่มลอยในการ์ด |
-| 2 | **แบ่งเป็นหลาย box ตาม logic** | จัด field เป็นกลุ่มตามความหมาย แต่ละกลุ่ม = `SectionCardGeneric` **มี border + title ของตัวเอง** (ไม่รวมทุกอย่างในการ์ดใบเดียว) เพื่อสร้าง focus |
+| 2 | **แบ่งเป็นหลาย box ตาม logic** | จัด field เป็นกลุ่มตามความหมาย แต่ละกลุ่ม = `SectionCardGeneric` **มี border + title ของตัวเอง** (ไม่รวมทุกอย่างในการ์ดใบเดียว) เพื่อสร้าง focus — **หัวข้อกล่อง/section ต้องมาจาก `SectionCardGeneric` (แนะนำ `headerStyle="legend"` + icon + accent เหมือนหน้า gold-loss-tang) เท่านั้น — ห้ามประดิษฐ์แถบ box-title/section-header เอง** |
 | 3 | **Label แหล่งเดียว** | `FormFieldGeneric` เป็นที่มาของ label เพียงแหล่งเดียว — component ลูก (เช่น upload) **ห้าม render title/label ซ้ำ** |
 | 4 | **Multi-column = grid** | แถวหลายคอลัมน์ใช้ mixin `form-row-grid(n)` (responsive ≤1024px ยุบเป็น 1 คอลัมน์) ห้ามเขียน media query เอง |
 | 5 | **Footer action bar** | ปุ่ม action หลักอยู่ **นอก box** ชิดขวา, primary ขวาสุด, เว้นด้วย `ml-2` (Bootstrap 4) ห้าม flex gap |
@@ -196,3 +196,5 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 | 2026-07-01 | SearchBarGeneric/pageTitle (global) | adopt ref บางส่วน: (#1) filled header เพิ่ม dot texture `radial-gradient(rgba(255,255,255,.08) 1px, transparent 1.5px)` size 14px; (#2) MultiSelect chip เปลี่ยนเป็น outline teal (`background: transparent` + border/text `var(--base-green)`); (#3 ไม่รับ) ปุ่ม list page คง icon-only ตาม #10 — ไม่รับ ref แบบ label segmented |
 | 2026-07-02 | gold-loss-tang detail modal | Detail/read-only modal ใช้ Modal Standard เต็ม: headerVariant="main" (title bar filled) + section cards ใช้ headerStyle="legend" (icon+accent main/green) ให้สไตล์ box title ตรงกับหน้า create — reference gold-loss-tang list/modal/detail-view |
 | 2026-07-02 | SectionCardGeneric (global) | headerStyle='legend': เพิ่ม margin-top var(--sp-2xl) ให้ chip ที่คร่อมขอบบน (top:0/translateY(-50%)) ไม่ชนขอบ box ก่อนหน้า; padding ทุก box ต้องเท่ากันจาก card-base (var(--sp-xl)) ห้าม override |
+| 2026-07-06 | variable.scss (global) | เพิ่ม status color tokens (`--status-open/-progress/-resolved/-closed/-cancelled` + คู่ `-bg`) — mirror สีจาก dashboard donut เดิม ให้ table badge กับ dashboard chart ใช้แหล่งสีเดียวกัน แก้ปัญหาสถานะเดียวกันแสดงคนละสีระหว่างหน้า |
+| 2026-07-06 | ticket/manage (list+detail+dashboard) | box-title เขียนเอง (`.panel-section-header`/`.panel-divider`) → แปลงเป็น `SectionCardGeneric headerStyle="legend"` ทุกกล่อง (detail panel ซ้าย 2 กล่อง, การ์ดฝั่งขวา 3 กล่อง, chart การ์ด dashboard 4 กล่อง); สร้าง shared `ticket-status-badge.vue`/`ticket-type-badge.vue` + `ticket-status.js` constants แทน array/method ซ้ำ 3 ไฟล์ |

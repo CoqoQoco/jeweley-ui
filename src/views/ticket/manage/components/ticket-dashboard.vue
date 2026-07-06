@@ -71,7 +71,13 @@
 
     <!-- Row B: donut + horizontal bar (2 คอลัมน์) -->
     <div class="charts-row-b">
-      <SectionCardGeneric :title="$t('view.ticket.dashboard.chart.byStatus')" class="donut-card">
+      <SectionCardGeneric
+        :title="$t('view.ticket.dashboard.chart.byStatus')"
+        icon="bi-pie-chart"
+        accent="main"
+        headerStyle="legend"
+        class="donut-card"
+      >
         <div class="donut-chart-wrap">
           <apexchart
             v-if="donutReady"
@@ -93,7 +99,12 @@
         </div>
       </SectionCardGeneric>
 
-      <SectionCardGeneric :title="$t('view.ticket.dashboard.chart.byTopic')">
+      <SectionCardGeneric
+        :title="$t('view.ticket.dashboard.chart.byTopic')"
+        icon="bi-bar-chart"
+        accent="main"
+        headerStyle="legend"
+      >
         <apexchart
           v-if="barReady"
           type="bar"
@@ -107,7 +118,12 @@
     <!-- Row C: trend + aging -->
     <div class="charts-row-c">
       <!-- Left: line trend -->
-      <SectionCardGeneric :title="$t('view.ticket.dashboard.chart.trend')">
+      <SectionCardGeneric
+        :title="$t('view.ticket.dashboard.chart.trend')"
+        icon="bi-graph-up"
+        accent="green"
+        headerStyle="legend"
+      >
         <apexchart
           v-if="trendReady"
           type="area"
@@ -118,7 +134,13 @@
       </SectionCardGeneric>
 
       <!-- Right: aging buckets -->
-      <SectionCardGeneric :title="$t('view.ticket.dashboard.chart.aging')" class="aging-card">
+      <SectionCardGeneric
+        :title="$t('view.ticket.dashboard.chart.aging')"
+        icon="bi-hourglass-split"
+        accent="green"
+        headerStyle="legend"
+        class="aging-card"
+      >
         <div class="aging-grid">
           <div class="aging-bucket">
             <div class="aging-value">{{ aging.today }}</div>
@@ -152,11 +174,11 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 
 // สี status ใช้ design token (mirror var จาก variable.scss) — apexcharts อ่าน CSS var ไม่ได้
 const STATUS_COLORS = {
-  1: '#fabc3f', // เปิด           → var(--base-warning)
-  2: '#921313', // กำลังดำเนินการ → var(--base-font-color)
-  3: '#038387', // แก้เสร็จ       → var(--base-green)
-  4: '#e0e0e0', // ปิด            → var(--color-border)
-  5: '#ff4d4d'  // ยกเลิก         → var(--base-red)
+  1: '#fabc3f', // เปิด           → var(--status-open)
+  2: '#921313', // กำลังดำเนินการ → var(--status-progress)
+  3: '#038387', // แก้เสร็จ       → var(--status-resolved)
+  4: '#393939', // ปิด            → var(--status-closed)
+  5: '#ff4d4d'  // ยกเลิก         → var(--status-cancelled)
 }
 
 // apexcharts (canvas/SVG) อ่าน CSS var ไม่ได้ — ใช้ hex ที่ mirror design token
