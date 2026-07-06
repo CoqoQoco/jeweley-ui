@@ -400,6 +400,7 @@ export default {
 
   planBom: {
     searchTitle: 'Material Report',
+    searchDesc: 'Material summary report by completed W.O.',
     completedDate: 'W.O. Completed Date',
     placeholderStart: 'Start',
     placeholderEnd: 'End',

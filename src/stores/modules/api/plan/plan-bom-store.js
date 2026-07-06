@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
+import ExcelJS from 'exceljs'
 import api from '@/axios/axios-helper.js'
 import { formatISOString, formatDate } from '@/services/utils/dayjs.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
+import { PlanBomSummaryExcelBuilder } from '@/services/helper/excel/plan-bom/plan-bom-summary-excel-builder.js'
 
 export const usePlanBOMApiStore = defineStore('planBOM', {
   state: () => ({
@@ -199,60 +201,122 @@ export const usePlanBOMApiStore = defineStore('planBOM', {
             'Total_Price รวม': safeNumber(group.totalPrice, 2)
           }))
 
-          const sheets = [
-            {
-              data: dataExcel,
-              sheetName: 'รายงานวัถุดิบ',
-              columnWidths: {
-                วันที่: 15,
-                WO: 12,
-                'WO No.': 15,
-                สินค้า: 25,
-                รายการ: 30,
-                QTY: 10,
-                QTY_Price: 12,
-                Weight: 12,
-                Weight_Price: 15,
-                Total_Price: 15
-              }
-            },
-            {
-              data: groupedExcel,
-              sheetName: 'สรุปตามประเภทสินค้า',
-              columnWidths: {
-                รหัสประเภทสินค้า: 20,
-                ประเภทสินค้า: 25,
-                จำนวนรายการ: 15,
-                'QTY รวม': 12,
-                'QTY_Price รวม': 15,
-                'Weight รวม': 12,
-                'Weight_Price รวม': 15,
-                'Total_Price รวม': 15
-              }
-            }
-          ]
-
-          const options = {
-            filename: `รายงานวัถุดิบ_${formatDate(formValue.start)}-${formatDate(
-              formValue.end
-            )}.xlsx`,
-            styles: {
-              ...ExcelHelper.defaultStyles,
-              headerFill: {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: '921313' }
-              }
+          const styles = {
+            ...ExcelHelper.defaultStyles,
+            headerFill: {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: '921313' }
             }
           }
 
-          // Export with multiple sheets
-          ExcelHelper.exportToExcelMultiSheet(sheets, options)
+          const workbook = new ExcelJS.Workbook()
+          workbook.creator = 'DK Jewelry Management System'
+          workbook.lastModifiedBy = 'DK Jewelry Management System'
+          workbook.created = new Date()
+          workbook.modified = new Date()
+          workbook.lastPrinted = new Date()
+
+          this.addSimpleSheet(workbook, dataExcel, 'รายงานวัตถุดิบ', {
+            วันที่: 15,
+            WO: 12,
+            'WO No.': 15,
+            สินค้า: 25,
+            รายการ: 30,
+            QTY: 10,
+            QTY_Price: 12,
+            Weight: 12,
+            Weight_Price: 15,
+            Total_Price: 15
+          }, styles)
+
+          this.addSimpleSheet(workbook, groupedExcel, 'สรุปตามประเภทสินค้า', {
+            รหัสประเภทสินค้า: 20,
+            ประเภทสินค้า: 25,
+            จำนวนรายการ: 15,
+            'QTY รวม': 12,
+            'QTY_Price รวม': 15,
+            'Weight รวม': 12,
+            'Weight_Price รวม': 15,
+            'Total_Price รวม': 15
+          }, styles)
+
+          const summaryBuilder = new PlanBomSummaryExcelBuilder(res.data, {
+            goldSize: formValue.goldSize,
+            start: formValue.start,
+            end: formValue.end
+          })
+          summaryBuilder.buildSheet(workbook)
+
+          const filename = `รายงานวัตถุดิบ_${formatDate(formValue.start)}-${formatDate(
+            formValue.end
+          )}.xlsx`
+
+          const buffer = await workbook.xlsx.writeBuffer()
+          const blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = filename
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
         }
       } catch (error) {
         console.error('Error fetching delete data:', error)
         throw error
       }
+    },
+
+    addSimpleSheet(workbook, data, sheetName, columnWidths, styles) {
+      if (!data || data.length === 0) return
+
+      const worksheet = workbook.addWorksheet(sheetName, {
+        views: [{ showGridLines: true }]
+      })
+
+      const columnDefinitions = Object.keys(data[0]).map((key) => ({
+        header: key,
+        key: key
+      }))
+
+      worksheet.columns = columnDefinitions.map((col) => ({
+        header: col.header,
+        key: col.key,
+        width: columnWidths[col.key] || 25
+      }))
+
+      const headerRow = worksheet.getRow(1)
+      headerRow.height = 30
+      headerRow.eachCell((cell) => {
+        cell.fill = styles.headerFill
+        cell.font = styles.headerFont
+        cell.alignment = styles.headerAlignment
+      })
+
+      worksheet.addRows(data)
+
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+          row.eachCell((cell) => {
+            cell.alignment = styles.bodyAlignment
+            cell.font = styles.bodyFont
+          })
+          row.height = 25
+        }
+      })
+
+      worksheet.columns.forEach((column) => {
+        let maxLength = 0
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          const cellLength = cell.value ? cell.value.toString().length : 10
+          maxLength = Math.max(maxLength, cellLength)
+        })
+        column.width = Math.min(Math.max(maxLength + 2, 10), 50)
+      })
     }
   }
 })

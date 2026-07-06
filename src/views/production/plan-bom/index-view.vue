@@ -85,6 +85,6 @@ export default {
 
 <style scoped>
 .app-container {
-  padding: 1rem;
+  padding: var(--sp-lg);
 }
 </style>

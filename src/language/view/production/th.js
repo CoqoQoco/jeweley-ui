@@ -399,7 +399,8 @@ export default {
   },
 
   planBom: {
-    searchTitle: 'รายงานวัถุดิบ',
+    searchTitle: 'รายงานวัตถุดิบ',
+    searchDesc: 'รายงานสรุปวัตถุดิบตาม W.O. ที่ผลิตเสร็จ',
     completedDate: 'วันที่ W.O. สำเร็จ',
     placeholderStart: 'เริ่มต้น',
     placeholderEnd: 'สิ้นสุด',
