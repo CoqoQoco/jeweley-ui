@@ -101,7 +101,8 @@ export default {
     firstDesignPath(designImage) {
       if (!designImage) return null
       const first = String(designImage).split(',')[0].trim()
-      return first || null
+      if (!first) return null
+      return first.includes('/') ? first : `MoldPlanDesign/${first}`
     },
     async onMoldSelect(item) {
       const mold = item.value || item

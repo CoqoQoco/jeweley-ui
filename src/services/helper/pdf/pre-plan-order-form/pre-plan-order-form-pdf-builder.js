@@ -1,5 +1,6 @@
 import { formatDate } from '@/services/utils/dayjs.js'
 import { initPdfMake } from '@/services/utils/pdf-make.js'
+import { resolveProductImageBlobPath } from '@/services/helper/pre-plan-helpers.js'
 
 export class PrePlanOrderFormPdfBuilder {
   constructor(prePlan, items) {
@@ -20,8 +21,9 @@ export class PrePlanOrderFormPdfBuilder {
           )
         }
         if (item.productImageBlobPath) {
+          const resolved = resolveProductImageBlobPath(item.productImageBlobPath)
           this.images.product[item.productImageBlobPath] = await getAzureBlobAsBase64(
-            item.productImageBlobPath,
+            resolved,
             'preplan',
           ).catch(() => null)
         }

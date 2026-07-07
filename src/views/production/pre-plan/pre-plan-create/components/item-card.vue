@@ -38,8 +38,7 @@
           <imagePreview
             v-else-if="item.productImageBlobPath"
             class="ml-2"
-            :imageName="item.productImageBlobPath"
-            type="PREPLAN-PRODUCT"
+            :imageName="resolvedProductImagePath"
             :width="80"
             :height="80"
           />
@@ -84,6 +83,8 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+import { resolveProductImageBlobPath } from '@/services/helper/pre-plan-helpers.js'
+
 const imagePreview = defineAsyncComponent(
   () => import('@/components/prime-vue/ImagePreview.vue')
 )
@@ -112,6 +113,9 @@ export default {
       if (!pt) return '-'
       if (typeof pt === 'object' && pt !== null) return pt.description || '-'
       return pt
+    },
+    resolvedProductImagePath() {
+      return resolveProductImageBlobPath(this.item.productImageBlobPath)
     },
   },
 

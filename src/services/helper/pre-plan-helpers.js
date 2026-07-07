@@ -27,6 +27,13 @@ export function cloneItem(item) {
   }
 }
 
+export function resolveProductImageBlobPath(path) {
+  if (!path) return ''
+  if (path.includes('/')) return path
+  if (/-Design\.png$/i.test(path)) return `MoldPlanDesign/${path}`
+  return `PrePlan/Product/${path}`
+}
+
 export function mapPlanMaterialsToPrePlan(planMaterials) {
   if (!Array.isArray(planMaterials)) return []
   return planMaterials.map((m, i) => ({

@@ -32,8 +32,7 @@
               <span class="title-text d-block mb-1">รูปสินค้าที่คาดว่าจะสำเร็จ</span>
               <div v-if="form.productImageBlobPath && !form.productImageFile" class="product-image-from-mold">
                 <ImagePreview
-                  :imageName="form.productImageBlobPath"
-                  type="PREPLAN-PRODUCT"
+                  :imageName="resolvedProductImagePath"
                   :width="120"
                   :height="120"
                 />
@@ -160,7 +159,11 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { usePrePlanStore } from '@/stores/modules/api/production/pre-plan-store.js'
-import { createEmptyItem, cloneItem } from '@/services/helper/pre-plan-helpers.js'
+import {
+  createEmptyItem,
+  cloneItem,
+  resolveProductImageBlobPath,
+} from '@/services/helper/pre-plan-helpers.js'
 import { info } from '@/services/alert/sweetAlerts.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -259,6 +262,12 @@ export default {
         this.form.productImageBlobPath = null
         info('กรุณาอัปโหลดรูปสินค้าใหม่ เนื่องจากแม่พิมพ์ถูกเปลี่ยน', 'แม่พิมพ์ถูกเปลี่ยน')
       }
+    },
+  },
+
+  computed: {
+    resolvedProductImagePath() {
+      return resolveProductImageBlobPath(this.form.productImageBlobPath)
     },
   },
 
