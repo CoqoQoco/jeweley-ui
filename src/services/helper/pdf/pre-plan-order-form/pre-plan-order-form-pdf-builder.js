@@ -190,6 +190,19 @@ export class PrePlanOrderFormPdfBuilder {
       ? this.images.product[item.productImageBlobPath]
       : null
     const materialRows = this.buildMaterialRows(item.materials || [])
+    const goldSummaryRow = [
+      {
+        text: [
+          { text: 'สรุปการใช้ทอง: ', bold: true },
+          { text: this.buildGoldUsageSummary(item.materials || []), bold: true },
+        ],
+        colSpan: 6,
+        fillColor: '#f9f9f9',
+        margin: [3, 2, 3, 2],
+      },
+      {}, {}, {}, {}, {},
+    ]
+    materialRows.push(goldSummaryRow)
     const qtyText = `จำนวนที่สั่ง: ${item.productQty || '-'} ${item.productQtyUnit || ''}`
     const detailText = item.productDetail ? `รายละเอียดสินค้า: ${item.productDetail}` : 'รายละเอียดสินค้า: -'
 
@@ -272,7 +285,8 @@ export class PrePlanOrderFormPdfBuilder {
             dontBreakRows: true,
           },
           layout: {
-            hLineWidth: (i) => (i === 0 || i === 1 ? 0.5 : 0.3),
+            hLineWidth: (i, node) =>
+              i === 0 || i === 1 || i === node.table.body.length - 1 ? 0.5 : 0.3,
             vLineWidth: () => 0.3,
             hLineColor: () => '#aaaaaa',
             vLineColor: () => '#aaaaaa',
@@ -287,15 +301,6 @@ export class PrePlanOrderFormPdfBuilder {
       ],
     }
 
-    const goldUsageCell = {
-      colSpan: 3,
-      margin: [6, 4, 6, 4],
-      text: [
-        { text: 'สรุปการใช้ทอง: ', fontSize: 13, bold: true },
-        { text: this.buildGoldUsageSummary(item.materials || []), fontSize: 13, bold: true },
-      ],
-    }
-
     return {
       stack: [
         {
@@ -305,7 +310,6 @@ export class PrePlanOrderFormPdfBuilder {
             body: [
               [moldImageCell, productImageCell, materialTable],
               [moldDetailQtyCell, {}, {}],
-              [goldUsageCell, {}, {}],
               [bowlCell, {}, productDetailCell],
             ],
             dontBreakRows: false,
