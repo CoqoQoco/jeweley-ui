@@ -81,6 +81,9 @@ description: ตารางโทเค็นทั้งหมด (spacing/rad
 | text รอง | `var(--on-inverse-muted)` | rgba(255,255,255,0.85) |
 | icon/arrow | `var(--on-inverse-dim)` | rgba(255,255,255,0.65) |
 | section label | `var(--on-inverse-label)` | rgba(255,255,255,0.5) |
+| nav active pill | `var(--nav-active-gradient)` | `linear-gradient(135deg, var(--rose-gold-light), var(--rose-gold-dark))` — drawer/nav route active pill (rose-gold, ไม่ใช่ teal อีกต่อไป) |
+| nav active text/icon | `var(--nav-active-on)` | #3d1712 |
+| nav active glow | `var(--nav-active-glow)` | rgba(201, 127, 109, 0.45) |
 
 วิธีสร้าง filled surface ใหม่:
 

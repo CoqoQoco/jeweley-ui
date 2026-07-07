@@ -23,6 +23,10 @@ $on-inverse-muted: rgba(255, 255, 255, 0.85);
 $on-inverse-dim: rgba(255, 255, 255, 0.65);
 $on-inverse-label: rgba(255, 255, 255, 0.5);
 
+// Active accent (rose gold) — nav bar + drawer active state
+$rose-gold-light: #edc2b3;
+$rose-gold-dark: #c97f6d;
+
 //DAD4B5
 //b5dad4
 
@@ -103,6 +107,13 @@ $radius-lg: 12px;
   --on-inverse-muted: rgba(255, 255, 255, 0.85);
   --on-inverse-dim: rgba(255, 255, 255, 0.65);
   --on-inverse-label: rgba(255, 255, 255, 0.5);
+
+  // Active accent (rose gold) — nav bar + drawer active state
+  --rose-gold-light: #edc2b3;
+  --rose-gold-dark: #c97f6d;
+  --nav-active-gradient: linear-gradient(135deg, var(--rose-gold-light), var(--rose-gold-dark));
+  --nav-active-on: #3d1712;
+  --nav-active-glow: rgba(201, 127, 109, 0.45);
 
   // Ticket / generic status palette — solid + tint pairs
   --status-open: var(--base-warning);

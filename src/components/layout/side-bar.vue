@@ -599,20 +599,21 @@ export default {
 /* Active Route Styling */
 .router-link-active {
   > .btn-link {
-    background-color: var(--base-green);
+    background: var(--nav-active-gradient);
     border-radius: var(--radius-md);
-    color: white !important;
+    color: var(--nav-active-on) !important;
     font-weight: 500;
 
     .menu-icon,
     .submenu-icon,
     .menu-label,
     .submenu-text {
-      color: #ffffff;
+      color: var(--nav-active-on);
     }
 
     .menu-counter {
-      background-color: var(--overlay-white-strong);
+      background-color: rgba(61, 23, 18, 0.18);
+      color: var(--nav-active-on);
     }
   }
 }

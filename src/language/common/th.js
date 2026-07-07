@@ -46,6 +46,8 @@ export default {
     showDecimals: 'แสดงทศนิยม (2 ตำแหน่ง)'
   },
   label: {
+    user: 'ผู้ใช้งาน',
+    pendingRole: 'รออนุมัติสิทธิ์',
     noData: 'ไม่พบข้อมูล',
     loading: 'กำลังโหลด...',
     all: 'ทั้งหมด',

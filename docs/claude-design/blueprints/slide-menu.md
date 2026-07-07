@@ -157,3 +157,16 @@ Ref เพิ่มเติมจากผู้ใช้ (dark sidebar: MENU/D
 - **L2 (sub menu)**: เยื้องเข้า + เส้น rail ซ้าย + จางลง — `margin/padding` ตาม `--sp-md`, `border-left: 2px solid var(--overlay-white-solid)`; text `0.85rem` weight 400 สี `var(--on-inverse-dim)`
 - **L3 (children)**: เยื้องลึกกว่า + rail จางกว่า L2 + จางสุด — `border-left: 1px solid var(--overlay-white-hover)`; text `0.8rem` สี `var(--on-inverse-dim)`
 - Active teal pill (`.router-link-active > .btn-link`) ยัง override สีจางของ L2/L3 ได้ปกติ (specificity สูงกว่า)
+
+---
+
+## Active pill: teal → rose-gold + navbar/drawer surface unify
+
+> อัปเดต 2026-07-07 — supersede ทุก reference "teal active pill" ด้านบน (§Spec, §States, §Diff, §Menu hierarchy) ด้วย rose-gold
+
+1. **Active pill สี rose-gold** — เปลี่ยนจาก `var(--base-green)` (teal) เป็น `var(--nav-active-gradient)` (`linear-gradient(135deg, var(--rose-gold-light) #edc2b3, var(--rose-gold-dark) #c97f6d)`); text/icon เปลี่ยนจากขาวเป็น `var(--nav-active-on)` (`#3d1712`, น้ำตาลเข้ม อ่านง่ายบนพื้น rose-gold); เพิ่ม glow `box-shadow: 0 4px 16px var(--nav-active-glow)` (`rgba(201, 127, 109, 0.45)`); ใช้ทั้ง `main-bar.vue` (`.nav-item.active`) และ `side-bar.vue` (`.router-link-active > .btn-link`) ให้ตรงกัน
+2. **Navbar background unify กับ drawer** — `main-bar-container` เปลี่ยนจาก `var(--surface-inverse-gradient-bar)` (แนวนอน) เป็น `@include filled-surface` (default: gradient แนวตั้ง + dot texture) — เป็นผืนเดียวกับ drawer แทนที่จะเป็นแถบแนวนอนแยก
+3. **Token ใหม่**: `$rose-gold-light`/`$rose-gold-dark` (SCSS) + `--rose-gold-light`/`--rose-gold-dark`/`--nav-active-gradient`/`--nav-active-on`/`--nav-active-glow` (CSS custom property) ใน `variable.scss`
+4. **Teal ไม่ถูกถอดออกจากระบบ** — ยังใช้กับ secondary/status/zone อื่น (เช่น `--color-green-bg` summary zone, MultiSelect chip outline) ตามเดิม — เฉพาะ nav active state เท่านั้นที่เปลี่ยน
+
+**ไม่แตะ**: layout/ลำดับเมนู, accordion toggle, permission filtering, counter logic, transition timing

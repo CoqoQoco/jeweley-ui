@@ -63,4 +63,6 @@ export default {
   report: 'แจ้งปัญหา',
   userAccount: 'ข้อมูลบุคคล',
   ticketManage: 'จัดการ Ticket',
+
+  menu: 'เมนู',
 }

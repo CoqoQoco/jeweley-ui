@@ -1,51 +1,62 @@
 <template>
-  <div class="main-bar-container">
+  <div class="main-bar-container" :class="{ 'is-scrolled': scrolled }">
     <div class="main-container">
       <div class="main-left-container">
         <div class="navbar-brand">
           <img src="@/assets/duangkaew-icon.png" alt="DK Logo" class="logo-img" />
           <!-- <span class="brand-text">DK Management</span> -->
         </div>
+        <span class="page-title-inline show-tablet-only">{{ currentPageTitle }}</span>
         <div class="navbar-links">
-          <div class="nav-item" :class="{ active: isActive('menu') }" @click="onOpenSideBar">
-            <i class="bi bi-grid"></i>
-            <span>หัวข้องาน</span>
-          </div>
-          <div
+          <button
             class="nav-item"
+            type="button"
+            :class="{ active: isActive('menu') }"
+            :title="$t('breadcrumb.menu')"
+            @click="onOpenSideBar"
+          >
+            <i class="bi bi-grid"></i>
+            <span class="show-desktop-only">{{ $t('breadcrumb.menu') }}</span>
+          </button>
+          <router-link
+            class="nav-item"
+            :to="{ name: 'dashboard' }"
             :class="{ active: isActive('home') }"
-            @click="navigateTo('home', 'dashboard')"
+            :title="$t('breadcrumb.dashboard')"
           >
             <i class="bi bi-house-door"></i>
-            <span>{{ $t('breadcrumb.dashboard') }}</span>
-          </div>
-          <div
+            <span class="show-desktop-only">{{ $t('breadcrumb.dashboard') }}</span>
+          </router-link>
+          <router-link
             class="nav-item nav-item--badge"
+            :to="{ name: 'ticket-create' }"
             :class="{ active: isActive('report') }"
-            @click="navigateTo('report', 'ticket-create')"
+            :title="$t('breadcrumb.report')"
           >
             <i class="bi bi-megaphone"></i>
-            <span>{{ $t('breadcrumb.report') }}</span>
+            <span class="show-desktop-only">{{ $t('breadcrumb.report') }}</span>
             <span v-if="reportUnreadCount > 0" class="nav-badge">{{ reportUnreadCount }}</span>
-          </div>
-          <div
+          </router-link>
+          <router-link
             v-if="hasTicketPermission"
             class="nav-item nav-item--badge"
+            :to="{ name: 'ticket-manage' }"
             :class="{ active: isActive('ticket') }"
-            @click="navigateTo('ticket', 'ticket-manage')"
+            :title="$t('breadcrumb.ticketManage')"
           >
             <i class="bi bi-card-checklist"></i>
-            <span>{{ $t('breadcrumb.ticketManage') }}</span>
+            <span class="show-desktop-only">{{ $t('breadcrumb.ticketManage') }}</span>
             <span v-if="ticketOpenCount > 0" class="nav-badge">{{ ticketOpenCount }}</span>
-          </div>
-          <div
+          </router-link>
+          <router-link
             class="nav-item"
+            :to="{ name: 'user-account' }"
             :class="{ active: isActive('profile') }"
-            @click="navigateTo('profile', 'user-account')"
+            :title="$t('breadcrumb.userAccount')"
           >
             <i class="bi bi-person"></i>
-            <span>{{ $t('breadcrumb.userAccount') }}</span>
-          </div>
+            <span class="show-desktop-only">{{ $t('breadcrumb.userAccount') }}</span>
+          </router-link>
         </div>
       </div>
       <div class="main-right-container">
@@ -69,8 +80,8 @@
             </div>
             <i v-else class="bi bi-person-circle"></i>
           </div>
-          <div class="user-profile-role">
-            <span class="user-name">{{ userName || 'ผู้ใช้งาน' }}</span>
+          <div class="user-profile-role hide-tablet">
+            <span class="user-name">{{ userName || $t('common.label.user') }}</span>
             <span class="user-role">{{ userRole }}</span>
           </div>
           <div>
@@ -78,7 +89,12 @@
           </div>
         </div>
         <div class="logout-container">
-          <span class="menu-icon bi bi-power" @click="handleLogout"></span>
+          <ButtonGeneric
+            variant="red"
+            icon="bi-power"
+            :title="$t('common.btn.logout')"
+            @click="handleLogout"
+          />
         </div>
       </div>
     </div>
@@ -106,16 +122,19 @@
 </template>
 
 <script>
-import SidebarView from '@/components/layout/side-bar.vue'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useTicketStore } from '@/stores/modules/api/ticket-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { setLocale } from '@/plugins/i18n/config.js'
 import { storage } from '@/services/storage.js'
 
+import SidebarView from '@/components/layout/side-bar.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
 export default {
   components: {
-    SidebarView
+    SidebarView,
+    ButtonGeneric
   },
 
   setup() {
@@ -125,6 +144,21 @@ export default {
   },
 
   computed: {
+    activePage() {
+      const routeMap = {
+        dashboard: 'home',
+        'user-account': 'profile',
+        'ticket-create': 'report',
+        'ticket-manage': 'ticket',
+        'ticket-manage-detail': 'ticket'
+      }
+      return routeMap[this.$route.name] || 'menu'
+    },
+
+    currentPageTitle() {
+      return this.$route.meta?.Displayname?.[this.$i18n.locale] || this.$route.meta?.Displayname?.th || ''
+    },
+
     hasTicketPermission() {
       return this.authStore.hasPermission('ticket:manage')
     },
@@ -150,12 +184,12 @@ export default {
 
       // เช็คว่ามี user และ role หรือไม่
       if (!user || !user.role) {
-        return 'รออนุมัติสิทธิ์'
+        return this.$t('common.label.pendingRole')
       }
 
       // ถ้า role เป็น array เปล่า
       if (Array.isArray(user.role) && user.role.length === 0) {
-        return 'รออนุมัติสิทธิ์'
+        return this.$t('common.label.pendingRole')
       }
 
       // ถ้ามี role เดียว
@@ -171,24 +205,12 @@ export default {
         return highest
       }, null)
 
-      return highestRole ? highestRole.name : 'รออนุมัติสิทธิ์'
+      return highestRole ? highestRole.name : this.$t('common.label.pendingRole')
     }
   },
 
   watch: {
     $route(to, from) {
-      if (to.name === 'dashboard') {
-        this.setActive('home')
-      } else if (to.name === 'user-account') {
-        this.setActive('profile')
-      } else if (to.name === 'ticket-create') {
-        this.setActive('report')
-      } else if (to.name === 'ticket-manage' || to.name === 'ticket-manage-detail') {
-        this.setActive('ticket')
-      } else {
-        this.setActive('menu')
-      }
-
       // refresh badge เมื่อออกจากหน้า ticket-manage
       if (
         this.hasTicketPermission &&
@@ -211,7 +233,7 @@ export default {
   data() {
     return {
       isSideBarVisible: false,
-      activePage: 'home',
+      scrolled: false,
       currentLang: storage.getItem('lang', 'th'),
       ticketPollId: null,
       reportPollId: null
@@ -224,21 +246,16 @@ export default {
       this.currentLang = lang
     },
 
-    navigateTo(activeTab, routeName) {
-      this.setActive(activeTab)
-      this.$router.push({ name: routeName })
-    },
     isActive(page) {
       return this.activePage === page
     },
 
-    setActive(page) {
-      this.activePage = page
+    handleScroll() {
+      this.scrolled = window.scrollY > 0
     },
 
     onOpenSideBar() {
       this.isSideBarVisible = true
-      //this.setActive('menu')
       document.body.style.overflow = 'hidden' // ป้องกันการเลื่อนหน้าเว็บเมื่อ sidebar เปิด
     },
 
@@ -276,27 +293,12 @@ export default {
       clearInterval(this.reportPollId)
     }
 
-    // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
+    // ลบ event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.removeEventListener('keydown', this.handleKeyDown)
+    window.removeEventListener('scroll', this.handleScroll)
   },
 
   mounted() {
-    // ตรวจสอบ route ปัจจุบันและตั้งค่า activePage
-    if (this.$route.name === 'dashboard') {
-      this.setActive('home')
-    } else if (this.$route.name === 'user-account') {
-      this.setActive('profile')
-    } else if (this.$route.name === 'ticket-create') {
-      this.setActive('report')
-    } else if (
-      this.$route.name === 'ticket-manage' ||
-      this.$route.name === 'ticket-manage-detail'
-    ) {
-      this.setActive('ticket')
-    } else {
-      this.setActive('menu')
-    }
-
     // fetch badge + start polling ถ้ามีสิทธิ์
     if (this.hasTicketPermission) {
       this.ticketStore.fetchOpenCount()
@@ -308,6 +310,7 @@ export default {
 
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.addEventListener('keydown', this.handleKeyDown)
+    window.addEventListener('scroll', this.handleScroll, { passive: true })
   },
 
   created() {
@@ -323,14 +326,29 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/mixin.scss';
+@import '@/assets/scss/responsive-style/web';
 
 .main-bar-container {
   border-bottom: 1px solid var(--base-font-color);
-  //background-color: var(--base-color);
-  background: var(--surface-inverse-gradient-bar);
+  @include filled-surface;
   padding: 5px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   position: relative; /* สำคัญสำหรับการจัดวาง sidebar */
+  transition: box-shadow 0.2s ease;
+
+  &.is-scrolled {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.page-title-inline {
+  margin-left: var(--sp-md);
+  color: var(--on-inverse);
+  font-size: var(--fs-base);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .main-container {
@@ -365,11 +383,14 @@ export default {
   display: flex;
   align-items: center;
   padding: 8px 12px;
+  border: none;
   border-radius: 5px;
+  background: transparent;
+  font: inherit;
+  text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: var(--base-font-color);
-  color: white;
+  color: var(--on-inverse);
 
   i {
     margin-right: 8px;
@@ -377,12 +398,19 @@ export default {
   }
 
   &:hover {
-    background-color: rgba(7, 7, 7, 0.05);
+    background-color: var(--overlay-white-hover);
   }
 
   &.active {
-    background-color: var(--base-font-sub-color);
-    color: white;
+    background: var(--nav-active-gradient);
+    color: var(--nav-active-on);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px var(--nav-active-glow);
+
+    i {
+      color: var(--nav-active-on);
+      opacity: 1;
+    }
   }
 }
 
@@ -504,22 +532,16 @@ export default {
 
 .menu-icon {
   font-size: 1.2rem;
-  //margin-right: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
-  //color: var(--base-font-color);
   color: var(--on-inverse);
   transition: color 0.2s ease; // เพิ่ม transition เพื่อให้การเปลี่ยนสีดูนุ่มนวล
   cursor: pointer;
 
   &:hover {
-    color: var(--menu-hover-color, #ff6b6b); // ใช้ตัวแปรสำรองเป็นสีแดงอ่อน
-    // หรือจะใช้แบบนี้
-    // color: rgba(var(--base-font-color-rgb), 0.7); // ถ้ามีตัวแปร RGB components
-    // หรือ
-    // filter: brightness(1.5); // ทำให้สว่างขึ้นโดยใช้ filter
+    color: var(--on-inverse-muted);
   }
 }
 

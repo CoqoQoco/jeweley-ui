@@ -12,6 +12,14 @@ html {
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'ChakraPetch-Regular';
+  src: url('@/assets/fonts/ChakraPetch-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 #app {
   font-family: ChakraPetch-Regular, sans-serif;
   -webkit-font-smoothing: antialiased;

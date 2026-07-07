@@ -46,6 +46,8 @@ export default {
     showDecimals: 'Show decimals (2 places)'
   },
   label: {
+    user: 'User',
+    pendingRole: 'Pending approval',
     noData: 'No data found',
     loading: 'Loading...',
     all: 'All',
