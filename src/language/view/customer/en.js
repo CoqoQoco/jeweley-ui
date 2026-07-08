@@ -45,6 +45,8 @@ export default {
   },
 
   validation: {
+    customerCodeRequired: 'Please enter customer code',
+    nameThRequired: 'Please enter Thai name',
     customerTypeRequired: 'Please select customer type',
     discountRange: 'Discount must be an integer 0–99'
   }

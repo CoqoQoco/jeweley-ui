@@ -45,6 +45,8 @@ export default {
   },
 
   validation: {
+    customerCodeRequired: 'กรุณากรอกรหัสลูกค้า',
+    nameThRequired: 'กรุณากรอกชื่อภาษาไทย',
     customerTypeRequired: 'กรุณาเลือกประเภทลูกค้า',
     discountRange: 'ส่วนลดต้องเป็นจำนวนเต็ม 0–99'
   }

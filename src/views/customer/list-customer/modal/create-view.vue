@@ -10,7 +10,7 @@
             <SectionCardGeneric :title="$t('view.customer.section.main')" class="modal-section">
               <div class="form-row two-col">
                 <FormFieldGeneric :label="$t('view.customer.field.customerCode')" :required="true">
-                  <InputTextGeneric v-model="form.code" :required="true" :disabled="isEdit" />
+                  <InputTextGeneric v-model="form.code" :disabled="isEdit" />
                 </FormFieldGeneric>
                 <FormFieldGeneric :label="$t('view.customer.field.customerType')" :required="true">
                   <DropdownGeneric
@@ -25,7 +25,7 @@
               </div>
               <div class="form-row two-col">
                 <FormFieldGeneric :label="$t('view.customer.field.nameTh')" :required="true">
-                  <InputTextGeneric v-model="form.nameTh" :required="true" />
+                  <InputTextGeneric v-model="form.nameTh" />
                 </FormFieldGeneric>
                 <FormFieldGeneric :label="$t('view.customer.field.nameEn')">
                   <InputTextGeneric v-model="form.nameEn" />
@@ -200,6 +200,14 @@ export default {
     },
 
     validateForm() {
+      if (!this.form.code?.trim()) {
+        warning(this.$t('view.customer.validation.customerCodeRequired'))
+        return false
+      }
+      if (!this.form.nameTh?.trim()) {
+        warning(this.$t('view.customer.validation.nameThRequired'))
+        return false
+      }
       if (!this.form.type) {
         this.val = { isValCustomerType: true }
         warning(this.$t('view.customer.validation.customerTypeRequired'))
