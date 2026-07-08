@@ -275,6 +275,15 @@
             <span class="desc-text-white bi bi-gem mr-2"></span>
             <span class="desc-text-white">วัตถุดิบ (จากการเบิก)</span>
           </div>
+          <div>
+            <button
+              :class="gemMaterialFromWithdraw.length ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary'"
+              @click="exportGemMaterialExcel"
+              :disabled="!gemMaterialFromWithdraw.length"
+            >
+              <span class="bi bi-file-earmark-excel"></span>
+            </button>
+          </div>
         </div>
       </div>
       <div v-if="gemMaterialFromWithdraw.length === 0" class="pl-2 pt-2 desc-text">
@@ -990,6 +999,38 @@ export default {
             type: 'pattern',
             pattern: 'solid',
             fgColor: { argb: '921313' } // สีน้ำเงินเข้ม
+          }
+        }
+      }
+
+      ExcelHelper.exportToExcel(dataExcel, options)
+    },
+
+    exportGemMaterialExcel() {
+      const dataExcel = this.gemMaterialFromWithdraw.map((item) => {
+        return {
+          เลขที่เบิก: item.outboundRunning,
+          ผู้เบิก: item.outboundName,
+          รหัส: item.code,
+          พลอย: item.name,
+          จำนวน: item.qty ? Number(item.qty).toFixed(3) : '0.000',
+          น้ำหนัก: item.weight ? Number(item.weight).toFixed(3) : '0.000',
+          หน่วย: item.unit,
+          ความยาว: item.length ? Number(item.length).toFixed(3) : '0.000',
+          หน่วยความยาว: item.lengthUnit,
+          ราคา: item.price ? Number(item.price).toFixed(2) : '0.000'
+        }
+      })
+
+      const options = {
+        filename: `รายการวัตถุดิบ (แต่ง) แผนผลิตเลขที่ [${this.modelValue.wo}-${this.modelValue.woNumber}].xlsx`,
+        sheetName: `${this.modelValue.wo}-${this.modelValue.woNumber}`,
+        styles: {
+          ...ExcelHelper.defaultStyles,
+          headerFill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '921313' }
           }
         }
       }
