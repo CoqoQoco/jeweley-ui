@@ -16,10 +16,7 @@ export const useBillingNoteApiStore = defineStore('billingNoteApiStore', {
     },
 
     async fetchAvailableInvoices({ customerCode, skipLoading = false }) {
-      return await api.jewelry.get('BillingNote/AvailableInvoices', {
-        params: { customerCode },
-        skipLoading
-      })
+      return await api.jewelry.get('BillingNote/AvailableInvoices', { customerCode }, { skipLoading })
     },
 
     async fetchPreviewProducts({ invoiceRunnings, skipLoading = false }) {
