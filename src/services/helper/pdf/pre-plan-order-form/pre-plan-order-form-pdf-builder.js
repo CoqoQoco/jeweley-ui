@@ -198,7 +198,8 @@ export class PrePlanOrderFormPdfBuilder {
         ],
         colSpan: 6,
         fillColor: '#f9f9f9',
-        margin: [3, 2, 3, 2],
+        fontSize: 15,
+        margin: [3, 4, 3, 4],
       },
       {}, {}, {}, {}, {},
     ]
