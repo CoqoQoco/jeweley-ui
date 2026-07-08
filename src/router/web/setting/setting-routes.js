@@ -58,7 +58,7 @@ const routes = [
             th: 'จัดการบัญชีผู้ใช้'
           },
           minorShow: false,
-          permissions: [PERMISSIONS.USER_DEV]
+          permissions: [PERMISSIONS.USER_EDIT]
         }
       },
       {
