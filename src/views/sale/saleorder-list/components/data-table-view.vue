@@ -6,7 +6,7 @@
       dataKey="soNumber"
       :columns="columns"
       :perPage="take"
-      :scrollHeight="'calc(100vh - 340px)'"
+      :scrollHeight="'calc(100vh - 360px)'"
       :reorderableColumns="true"
       :showColumnSettings="true"
       :defaultSortMeta="[{ field: 'createDate', order: -1 }]"

@@ -6,7 +6,7 @@
       dataKey="invoiceNumber"
       :columns="columns"
       :perPage="take"
-      :scrollHeight="'calc(100vh - 340px)'"
+      :scrollHeight="'calc(100vh - 360px)'"
       class="base-data-table"
       @page="handlePageChange"
       @sort="handleSortChange"

@@ -11,7 +11,7 @@
       :totalRecords="receiptProductionStore.dataListPlan.total"
       :columns="columns"
       :perPage="take"
-      :scrollHeight="'calc(100vh - 340px)'"
+      :scrollHeight="'calc(100vh - 360px)'"
       @page="handlePageChange"
       @sort="handleSortChange"
     >

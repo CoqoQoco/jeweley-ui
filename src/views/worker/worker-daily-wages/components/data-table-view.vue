@@ -17,7 +17,7 @@
       :totalRecords="filteredItems.length"
       :columns="columns"
       :paginator="false"
-      scrollHeight="calc(100vh - 340px)"
+      scrollHeight="calc(100vh - 360px)"
     >
       <template #woTextTemplate="{ data }">
         <span>{{ data.wo }}{{ data.woNumber ? ' - ' + data.woNumber : '' }}</span>

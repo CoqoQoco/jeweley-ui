@@ -5,7 +5,7 @@
       :totalRecords="items.length"
       :columns="columns"
       :paginator="false"
-      scrollHeight="calc(100vh - 340px)"
+      scrollHeight="calc(100vh - 360px)"
     >
       <template #actionTemplate="{ data }">
         <button class="btn btn-sm btn-green" @click="$emit('print', data)" :title="$t('common.btn.export')">

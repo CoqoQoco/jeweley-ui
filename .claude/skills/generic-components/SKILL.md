@@ -384,7 +384,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 | `paginator` | Boolean | `true` | แสดง pagination |
 | `dataKey` | String | `'id'` | unique key ของแต่ละ row |
 | `showGridlines` | Boolean | `true` | แสดงเส้นตาราง |
-| `scrollHeight` | String | `'calc(100vh - 340px)'` | ความสูง scroll |
+| `scrollHeight` | String | `'calc(100vh - 360px)'` | ความสูง scroll |
 | `selectionMode` | Boolean | `false` | เปิด checkbox/radio เลือก row |
 | `selectionType` | String | `'multiple'` | `'single'` หรือ `'multiple'` |
 | `expandable` | Boolean | `false` | เปิด row expand |
