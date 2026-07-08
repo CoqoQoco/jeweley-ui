@@ -17,6 +17,11 @@ const Invoice = () => import('@/views/sale/invoice/index-view.vue')
 const InvoiceDetail = () => import('@/views/sale/invoice-detail/index-view.vue')
 const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
 
+// Billing Note
+const BillingNoteList = () => import('@/views/sale/billing-note/index-view.vue')
+const BillingNoteCreate = () => import('@/views/sale/billing-note/create-view.vue')
+const BillingNoteDetail = () => import('@/views/sale/billing-note/detail-view.vue')
+
 // Cost Stock - Appraisal
 const CostStockEdit = () => import('@/views/sale/cost-stock/web/cost-edit/index-view.vue')
 
@@ -194,6 +199,47 @@ const routes = [
           Displayname: {
             en: 'Invoice Detail',
             th: 'รายละเอียด Invoice'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+
+      // Billing Note Section
+      {
+        path: '/sale/billing-note',
+        name: 'sale-billing-note',
+        component: BillingNoteList,
+        meta: {
+          Displayname: {
+            en: 'Billing Note',
+            th: 'ใบวางบิล'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+      {
+        path: '/sale/billing-note/create',
+        name: 'sale-billing-note-create',
+        component: BillingNoteCreate,
+        meta: {
+          Displayname: {
+            en: 'Create Billing Note',
+            th: 'สร้างใบวางบิล'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/sale/billing-note/:running',
+        name: 'sale-billing-note-detail',
+        component: BillingNoteDetail,
+        meta: {
+          Displayname: {
+            en: 'Billing Note Detail',
+            th: 'รายละเอียดใบวางบิล'
           },
           minorShow: false,
           permissions: [PERMISSIONS.SALE_VIEW]
