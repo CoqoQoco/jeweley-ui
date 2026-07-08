@@ -47,6 +47,7 @@ export default {
     materialCode: 'Code',
     origin: 'Origin',
     locationHeader: 'Storage',
+    locationFilterLabel: 'Warehouse',
     receiver: 'Receiver',
     editTitle: 'Edit Product | Production No.: {stockNumber}',
     printTitle: 'Print Label | Production No.: {stockNumber}',

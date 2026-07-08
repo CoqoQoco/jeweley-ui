@@ -43,6 +43,19 @@
                 placeholder="EX: R08X50XXXL"
               />
             </div>
+
+            <!-- location -->
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.locationFilterLabel') }}</span>
+              <MultiSelectGeneric
+                v-model="form.locationCodes"
+                :options="locationOptions"
+                optionLabel="label"
+                optionValue="value"
+                :placeholder="$t('view.stock.product.locationFilterLabel')"
+                :showClear="true"
+              />
+            </div>
         </div>
 
         <dialogView
@@ -237,6 +250,7 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -255,7 +269,8 @@ export default {
   setup() {
     const productStore = usrStockProductApiStore()
     const masterStore = useMasterApiStore()
-    return { productStore, masterStore }
+    const locationStore = useStockLocationApiStore()
+    return { productStore, masterStore, locationStore }
   },
 
   props: {
@@ -277,6 +292,11 @@ export default {
     },
     masterGoldSize() {
       return this.masterStore.goldSize
+    },
+    locationOptions() {
+      return this.locationStore.all
+        .filter((item) => item.isActive)
+        .map((item) => ({ value: item.code, label: `${item.code} — ${item.nameTh}` }))
     },
     costDetailOptions() {
       return [
@@ -344,8 +364,8 @@ export default {
     }
   },
 
-  created() {
-    this.$nextTick(async () => {})
+  async created() {
+    await this.locationStore.fetchAllForMap()
   }
 }
 </script>

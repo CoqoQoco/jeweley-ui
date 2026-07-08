@@ -26,7 +26,8 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           skip: skip,
           sort: sort,
           search: {
-            ...formValue
+            ...formValue,
+            locationCodes: formValue.locationCodes?.length ? formValue.locationCodes : undefined
           }
         }
 

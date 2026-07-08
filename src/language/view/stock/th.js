@@ -47,6 +47,7 @@ export default {
     materialCode: 'รหัส',
     origin: 'แหล่งผลิต',
     locationHeader: 'จัดเก็บ',
+    locationFilterLabel: 'คลังสินค้า',
     receiver: 'ผู้รับสินค้า',
     editTitle: 'แก้ไขสินค้า | เลขที่ผลิต: {stockNumber}',
     printTitle: 'พิมพ์ป้ายสินค้า | เลขที่ผลิต: {stockNumber}',
