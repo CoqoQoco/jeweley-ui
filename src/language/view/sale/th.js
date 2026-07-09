@@ -1402,7 +1402,15 @@ export const billingNote = {
   validationSelectInvoices: 'กรุณาเลือกใบแจ้งหนี้อย่างน้อย 1 รายการ',
   validationNoProducts: 'กรุณาดึงรายการสินค้าก่อนบันทึก',
   confirmDelete: 'ยืนยันการลบใบวางบิล',
-  deleteSuccess: 'ลบใบวางบิลสำเร็จ'
+  deleteSuccess: 'ลบใบวางบิลสำเร็จ',
+  typeSummaryTitle: 'สรุปแยกประเภทสินค้า',
+  noType: 'ไม่ระบุประเภท',
+  billCountLabel: 'วางบิลทั้งหมด',
+  bills: 'บิล',
+  totalPieces: 'รวมสินค้า',
+  pieces: 'ชิ้น',
+  totalRow: 'รวมทั้งหมด',
+  printNoData: 'ไม่พบข้อมูลใบวางบิลสำหรับพิมพ์'
 }
 
 export default {

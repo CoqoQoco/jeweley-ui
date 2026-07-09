@@ -6,27 +6,21 @@
           variant="outline"
           icon="bi-printer"
           :label="$t('view.sale.billingNote.printMainDoc')"
-          :disabled="true"
-          :title="$t('view.sale.billingNote.printComingSoon')"
-          @click="onPrintNotReady"
+          @click="onPrintMain"
         />
         <ButtonGeneric
           variant="outline"
           icon="bi-list-columns"
           :label="$t('view.sale.billingNote.printByType')"
           class="ml-2"
-          :disabled="true"
-          :title="$t('view.sale.billingNote.printComingSoon')"
-          @click="onPrintNotReady"
+          @click="onPrintByType"
         />
         <ButtonGeneric
           variant="outline"
           icon="bi-upc-scan"
           :label="$t('view.sale.billingNote.printByCode')"
           class="ml-2"
-          :disabled="true"
-          :title="$t('view.sale.billingNote.printComingSoon')"
-          @click="onPrintNotReady"
+          @click="onPrintByCode"
         />
       </template>
     </PageHeaderGeneric>
@@ -103,6 +97,12 @@
         </BaseDataTable>
       </SectionCardGeneric>
 
+      <typeSummarySection
+        :products="data.products"
+        :billCount="data.items.length"
+        class="mt-4"
+      />
+
       <SectionCardGeneric
         :title="$t('view.sale.billingNote.summaryTitle')"
         icon="bi-calculator"
@@ -158,7 +158,8 @@
 import { useBillingNoteApiStore } from '@/stores/modules/api/sale/billing-note-store.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { formatNumber } from '@/services/utils/decimal.js'
-import { info } from '@/services/alert/sweetAlerts.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
+import { BillingNotePdfBuilder } from '@/services/helper/pdf/billing-note/billing-note-pdf-builder.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -167,6 +168,7 @@ import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import typeSummarySection from './components/type-summary-section.vue'
 
 export default {
   name: 'BillingNoteDetailView',
@@ -178,7 +180,8 @@ export default {
     FormFieldGeneric,
     InputTextGeneric,
     TextareaGeneric,
-    BaseDataTable
+    BaseDataTable,
+    typeSummarySection
   },
 
   setup() {
@@ -234,8 +237,25 @@ export default {
       return formatNumber(val, 2)
     },
 
-    onPrintNotReady() {
-      info(this.$t('view.sale.billingNote.printComingSoon'))
+    async onPrintMain() {
+      if (!this.data) return warning(this.$t('view.sale.billingNote.printNoData'))
+      const builder = new BillingNotePdfBuilder(this.data, 'main')
+      await builder.preparePDF()
+      builder.generatePDF().open()
+    },
+
+    async onPrintByType() {
+      if (!this.data) return warning(this.$t('view.sale.billingNote.printNoData'))
+      const builder = new BillingNotePdfBuilder(this.data, 'byType')
+      await builder.preparePDF()
+      builder.generatePDF().open()
+    },
+
+    async onPrintByCode() {
+      if (!this.data) return warning(this.$t('view.sale.billingNote.printNoData'))
+      const builder = new BillingNotePdfBuilder(this.data, 'byCode')
+      await builder.preparePDF()
+      builder.generatePDF().open()
     }
   }
 }

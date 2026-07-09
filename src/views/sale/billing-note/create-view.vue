@@ -39,6 +39,12 @@
       @update:products="products = $event"
     />
 
+    <typeSummarySection
+      :products="products"
+      :billCount="selectedInvoices.length"
+      class="mt-4"
+    />
+
     <summarySection
       v-model:goldResizeQty="form.goldResizeQty"
       v-model:goldResizeAmount="form.goldResizeAmount"
@@ -70,6 +76,7 @@ import customerSelectModal from './modal/customer-select-modal.vue'
 import customerSection from './components/customer-section.vue'
 import invoiceSelectSection from './components/invoice-select-section.vue'
 import productsSection from './components/products-section.vue'
+import typeSummarySection from './components/type-summary-section.vue'
 import summarySection from './components/summary-section.vue'
 
 const interfaceForm = {
@@ -95,6 +102,7 @@ export default {
     customerSection,
     invoiceSelectSection,
     productsSection,
+    typeSummarySection,
     summarySection
   },
 

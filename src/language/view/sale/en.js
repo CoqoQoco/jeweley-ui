@@ -1408,7 +1408,15 @@ export const billingNote = {
   validationSelectInvoices: 'Please select at least one invoice',
   validationNoProducts: 'Please fetch products before saving',
   confirmDelete: 'Confirm deleting billing note',
-  deleteSuccess: 'Billing note deleted successfully'
+  deleteSuccess: 'Billing note deleted successfully',
+  typeSummaryTitle: 'Product Type Summary',
+  noType: 'Unspecified',
+  billCountLabel: 'Total bills',
+  bills: 'bills',
+  totalPieces: 'Total items',
+  pieces: 'pcs',
+  totalRow: 'Total',
+  printNoData: 'No billing note data to print'
 }
 
 export default {
