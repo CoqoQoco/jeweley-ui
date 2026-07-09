@@ -227,7 +227,7 @@ export class PrePlanOrderFormPdfBuilder {
           text: item.moldCode || '-',
           alignment: 'center',
           bold: true,
-          fontSize: 13,
+          fontSize: 15,
           margin: [0, 3, 0, 0],
         },
       ],
@@ -252,7 +252,7 @@ export class PrePlanOrderFormPdfBuilder {
         {
           width: 'auto',
           text: qtyText,
-          fontSize: 13,
+          fontSize: 15,
           bold: true,
           margin: [10, 0, 0, 0],
         },
@@ -263,8 +263,8 @@ export class PrePlanOrderFormPdfBuilder {
       colSpan: 2,
       margin: [6, 4, 6, 4],
       columns: [
-        { width: '*', text: 'WG เบ้าที่: ___', fontSize: 10 },
-        { width: '*', text: 'YG เบ้าที่: ___', fontSize: 10 },
+        { width: '*', text: 'WG เบ้าที่: ___', fontSize: 12 },
+        { width: '*', text: 'YG เบ้าที่: ___', fontSize: 12 },
       ],
     }
 
@@ -281,7 +281,7 @@ export class PrePlanOrderFormPdfBuilder {
         {
           table: {
             headerRows: 1,
-            widths: [35, 45, '*', 55, 35, 35],
+            widths: [40, 50, '*', 60, 40, 40],
             body: materialRows,
             dontBreakRows: true,
           },
@@ -297,7 +297,7 @@ export class PrePlanOrderFormPdfBuilder {
             paddingTop: () => 2,
             paddingBottom: () => 2,
           },
-          fontSize: 10,
+          fontSize: 13,
         },
       ],
     }
@@ -350,7 +350,7 @@ export class PrePlanOrderFormPdfBuilder {
           fillColor: '#f2f2f2',
           bold: true,
           alignment: 'center',
-          fontSize: 10,
+          fontSize: 12,
         },
         title: { fontSize: 9, color: '#666666' },
         desc: { fontSize: 11, bold: true },
