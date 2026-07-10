@@ -1,4 +1,5 @@
 import LayoutMobile from '@/layout/mobile/LayoutMobile.vue'
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 /**
  * Mobile Protected Routes
@@ -134,6 +135,29 @@ const routes = [
           Displayname: { en: 'Quotation Detail', th: 'รายละเอียดใบเสนอราคา' },
           requiresAuth: true,
           permissions: ['mobile:sale']
+        }
+      },
+
+      // ========== Stock Product Check (Mobile Only) ==========
+      {
+        path: 'stock-product-list',
+        name: 'mobile-stock-product-list',
+        component: () => import('@/views/mobile/stock-product/index-view.vue'),
+        meta: {
+          Displayname: { en: 'Stock Product', th: 'ตรวจคลังสินค้า' },
+          classIcon: 'bi bi-box-seam',
+          requiresAuth: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+      {
+        path: 'stock-product-list/:stockNumber',
+        name: 'mobile-stock-product-detail',
+        component: () => import('@/views/mobile/stock-product/detail-view.vue'),
+        meta: {
+          Displayname: { en: 'Stock Detail', th: 'รายละเอียดสินค้า' },
+          requiresAuth: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       },
 

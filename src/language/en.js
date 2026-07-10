@@ -150,7 +150,8 @@ export default {
       quotation: { ...mobileLang.quotation },
       notifications: { ...mobileLang.notifications },
       saleIndex: { ...mobileLang.saleIndex },
-      components: { ...mobileLang.components }
+      components: { ...mobileLang.components },
+      stockProduct: { ...mobileLang.stockProduct }
     },
     ticket: { ...ticketLang },
     graph: { ...graphLang },

@@ -64,12 +64,30 @@ export const dashboard = {
   scanQrLabel: 'สแกน QR',
   quotationLabel: 'ใบเสนอราคา',
   saleOrderLabel: 'ใบสั่งขาย',
+  stockCheckLabel: 'ตรวจคลัง',
   myJobsTitle: 'งานของฉัน',
   viewAllBtn: 'ดูทั้งหมด',
   emptyJobTitle: 'ไม่มีงาน',
   emptyJobSubtitle: 'ยังไม่มีงานในระบบ',
   confirmCancelJob: 'ต้องการยกเลิกงาน "{jobRunning}" ใช่หรือไม่?',
   confirmCancelTitle: 'ยืนยันการยกเลิก'
+}
+
+export const stockProduct = {
+  title: 'ตรวจคลังสินค้า',
+  searchPlaceholder: 'ค้นหาเลขที่ผลิต (รหัสใหม่)',
+  filterBtn: 'ตัวกรอง',
+  filterTitle: 'ตัวกรองการค้นหา',
+  apply: 'ใช้ตัวกรอง',
+  empty: 'ไม่พบสินค้า',
+  loadMore: 'โหลดเพิ่มเติม',
+  tabInfo: 'ข้อมูล',
+  tabBalance: 'คงเหลือ',
+  tabCost: 'ต้นทุน',
+  tabHistory: 'ประวัติ',
+  availableShort: 'ว่าง',
+  selectVersion: 'เลือกเวอร์ชัน',
+  notFoundTitle: 'ไม่พบข้อมูลสินค้า'
 }
 
 export const tasks = {

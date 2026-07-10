@@ -68,6 +68,13 @@
           <div class="action-label">{{ $t('view.mobile.dashboard.saleOrderLabel') }}</div>
         </div>
 
+        <div class="action-card" @click="navigateTo('/mobile/stock-product-list')">
+          <div class="action-icon">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div class="action-label">{{ $t('view.mobile.dashboard.stockCheckLabel') }}</div>
+        </div>
+
       </div>
     </div>
 

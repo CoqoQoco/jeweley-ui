@@ -64,12 +64,30 @@ export const dashboard = {
   scanQrLabel: 'Scan QR',
   quotationLabel: 'Quotation',
   saleOrderLabel: 'Sale Order',
+  stockCheckLabel: 'Stock Check',
   myJobsTitle: 'My Jobs',
   viewAllBtn: 'View All',
   emptyJobTitle: 'No jobs',
   emptyJobSubtitle: 'No jobs in the system yet',
   confirmCancelJob: 'Do you want to cancel job "{jobRunning}"?',
   confirmCancelTitle: 'Confirm Cancel'
+}
+
+export const stockProduct = {
+  title: 'Stock Check',
+  searchPlaceholder: 'Search stock number',
+  filterBtn: 'Filter',
+  filterTitle: 'Search Filters',
+  apply: 'Apply Filter',
+  empty: 'No products found',
+  loadMore: 'Load more',
+  tabInfo: 'Info',
+  tabBalance: 'Balance',
+  tabCost: 'Cost',
+  tabHistory: 'History',
+  availableShort: 'Avail',
+  selectVersion: 'Select version',
+  notFoundTitle: 'Product not found'
 }
 
 export const tasks = {
