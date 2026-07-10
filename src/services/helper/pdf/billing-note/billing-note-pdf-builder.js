@@ -279,13 +279,24 @@ export class BillingNotePdfBuilder {
 
   getResizeAndSummaryRow() {
     const goldQty = Number(this.data.goldResizeQty) || 0
+    const goldPerUnit = Number(this.data.goldResizePerUnit) || 0
     const goldAmount = Number(this.data.goldResizeAmount) || 0
     const silverQty = Number(this.data.silverResizeQty) || 0
+    const silverPerUnit = Number(this.data.silverResizePerUnit) || 0
     const silverAmount = Number(this.data.silverResizeAmount) || 0
+    const totalResize = goldAmount + silverAmount
     const subTotal = Number(this.data.subTotal) || 0
+    const supportPercent = Number(this.data.supportPercent) || 0
+    const supportAmount = Number(this.data.supportAmount) || 0
     const vatPercent = Number(this.data.vatPercent) || 0
     const vatAmount = Number(this.data.vatAmount) || 0
     const grandTotal = Number(this.data.grandTotal) || 0
+
+    const summaryRows = [{ label: 'ยอดก่อน VAT', value: this.formatMoney(subTotal) }]
+    if (this.data.hasSupport && supportPercent > 0) {
+      summaryRows.push({ label: `เงินสนับสนุน ${supportPercent}%`, value: this.formatMoney(supportAmount) })
+    }
+    summaryRows.push({ label: `VAT ${vatPercent}%`, value: this.formatMoney(vatAmount) })
 
     return {
       margin: [0, 10, 0, 0],
@@ -294,14 +305,21 @@ export class BillingNotePdfBuilder {
           width: '50%',
           stack: [
             {
-              text: `ค่าตัดไซด์ทอง: ${goldQty} วง = ${goldAmount > 0 ? this.formatMoney(goldAmount) : '-'}`,
+              text: `ค่าตัดไซด์ทอง: ${goldQty} วง × ${this.formatMoney(goldPerUnit)} = ${this.formatMoney(goldAmount)}`,
               fontSize: 9,
               color: PDF_COLORS.darkGray,
               margin: [0, 0, 0, 4]
             },
             {
-              text: `ค่าตัดไซด์เงิน: ${silverQty} วง = ${silverAmount > 0 ? this.formatMoney(silverAmount) : '-'}`,
+              text: `ค่าตัดไซด์เงิน: ${silverQty} วง × ${this.formatMoney(silverPerUnit)} = ${this.formatMoney(silverAmount)}`,
               fontSize: 9,
+              color: PDF_COLORS.darkGray,
+              margin: [0, 0, 0, 4]
+            },
+            {
+              text: `รวมค่าตัดไซด์ทั้งหมด: ${this.formatMoney(totalResize)}`,
+              fontSize: 9,
+              bold: true,
               color: PDF_COLORS.darkGray
             }
           ]
@@ -310,10 +328,7 @@ export class BillingNotePdfBuilder {
           width: '50%',
           stack: [
             buildSeekSummary({
-              rows: [
-                { label: 'ยอดก่อน VAT', value: this.formatMoney(subTotal) },
-                { label: `VAT ${vatPercent}%`, value: this.formatMoney(vatAmount) }
-              ],
+              rows: summaryRows,
               netPayableLabel: 'ยอดรวมสุทธิ',
               netPayableValue: this.formatMoney(grandTotal)
             })
@@ -333,6 +348,62 @@ export class BillingNotePdfBuilder {
   }
 
   getSeekSignatureTH() {
+    const supportAmount = Number(this.data.supportAmount) || 0
+    const hasSupport = Boolean(this.data.hasSupport) && supportAmount > 0
+    const signColWidth = hasSupport ? 130 : 165
+    const signLineWidth = hasSupport ? 115 : 150
+
+    const signatureColumns = [
+      {
+        width: '*',
+        stack: [
+          { text: 'Duang Kaew Jewelry', fontSize: 8, bold: true, margin: [0, 0, 0, 2] },
+          { text: 'TAX ID: ' + COMPANY_TAX_ID, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
+          { text: COMPANY_INFO.address, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
+          { text: 'โทร: ' + COMPANY_INFO.phone, fontSize: 7, color: PDF_COLORS.darkGray }
+        ]
+      },
+      {
+        width: signColWidth,
+        stack: [
+          { text: ' ', fontSize: 8, margin: [0, 0, 0, 8] },
+          {
+            canvas: [{ type: 'line', x1: 0, y1: 0, x2: signLineWidth, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
+            margin: [0, 0, 0, 4]
+          },
+          { text: 'ผู้วางบิล', fontSize: 8, bold: true, color: PDF_COLORS.darkGray },
+          { text: 'วันที่วางบิล ................', fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 1, 0, 0] }
+        ]
+      },
+      {
+        width: signColWidth,
+        stack: [
+          { text: ' ', fontSize: 8, margin: [0, 0, 0, 8] },
+          {
+            canvas: [{ type: 'line', x1: 0, y1: 0, x2: signLineWidth, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
+            margin: [0, 0, 0, 4]
+          },
+          { text: 'ผู้รับวางบิล', fontSize: 8, bold: true, color: PDF_COLORS.darkGray },
+          { text: 'นัดรับเช็ควันที่ ................', fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 1, 0, 0] }
+        ]
+      }
+    ]
+
+    if (hasSupport) {
+      signatureColumns.push({
+        width: signColWidth,
+        stack: [
+          { text: ' ', fontSize: 8, margin: [0, 0, 0, 8] },
+          {
+            canvas: [{ type: 'line', x1: 0, y1: 0, x2: signLineWidth, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
+            margin: [0, 0, 0, 4]
+          },
+          { text: 'ผู้รับเงินสนับสนุน', fontSize: 8, bold: true, color: PDF_COLORS.darkGray },
+          { text: `จำนวน ${this.formatMoney(supportAmount)} บาท`, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 1, 0, 0] }
+        ]
+      })
+    }
+
     return {
       stack: [
         {
@@ -348,41 +419,7 @@ export class BillingNotePdfBuilder {
           }]
         },
         {
-          columns: [
-            {
-              width: '*',
-              stack: [
-                { text: 'Duang Kaew Jewelry', fontSize: 8, bold: true, margin: [0, 0, 0, 2] },
-                { text: 'TAX ID: ' + COMPANY_TAX_ID, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
-                { text: COMPANY_INFO.address, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
-                { text: 'โทร: ' + COMPANY_INFO.phone, fontSize: 7, color: PDF_COLORS.darkGray }
-              ]
-            },
-            {
-              width: 165,
-              stack: [
-                { text: ' ', fontSize: 8, margin: [0, 0, 0, 18] },
-                {
-                  canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
-                  margin: [0, 0, 0, 4]
-                },
-                { text: 'ผู้วางบิล', fontSize: 8, bold: true, color: PDF_COLORS.darkGray },
-                { text: 'วันที่วางบิล ................', fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 1, 0, 0] }
-              ]
-            },
-            {
-              width: 165,
-              stack: [
-                { text: ' ', fontSize: 8, margin: [0, 0, 0, 18] },
-                {
-                  canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
-                  margin: [0, 0, 0, 4]
-                },
-                { text: 'ผู้รับวางบิล', fontSize: 8, bold: true, color: PDF_COLORS.darkGray },
-                { text: 'นัดรับเช็ควันที่ ................', fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 1, 0, 0] }
-              ]
-            }
-          ]
+          columns: signatureColumns
         }
       ]
     }

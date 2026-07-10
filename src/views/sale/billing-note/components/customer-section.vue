@@ -9,6 +9,7 @@
       <i class="bi bi-person-plus customer-empty-icon"></i>
       <span class="customer-empty-text">{{ $t('view.sale.billingNote.noCustomerSelected') }}</span>
       <ButtonGeneric
+        v-if="!isEdit"
         variant="main"
         icon="bi-search"
         :label="$t('view.sale.billingNote.selectCustomer')"
@@ -39,7 +40,7 @@
         <InputTextGeneric :modelValue="customerTel" :readonly="true" bgInput="bg-input" />
       </FormFieldGeneric>
 
-      <div class="mt-2">
+      <div v-if="!isEdit" class="mt-2">
         <ButtonGeneric
           variant="outline"
           icon="bi-arrow-repeat"
@@ -74,7 +75,8 @@ export default {
     customerName: { type: String, default: '' },
     customerAddress: { type: String, default: '' },
     customerTel: { type: String, default: '' },
-    documentDate: { type: [Date, null], default: null }
+    documentDate: { type: [Date, null], default: null },
+    isEdit: { type: Boolean, default: false }
   },
 
   emits: ['open-select', 'update:documentDate']

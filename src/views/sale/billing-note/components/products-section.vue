@@ -5,7 +5,7 @@
     accent="main"
     headerStyle="legend"
   >
-    <div class="section-toolbar mb-2">
+    <div v-if="!readonly" class="section-toolbar mb-2">
       <ButtonGeneric
         variant="green"
         icon="bi-cloud-download"
@@ -36,35 +36,45 @@
       dataKey="_key"
     >
       <template #invoiceRunningTemplate="{ data, index }">
+        <span v-if="readonly">{{ data.invoiceRunning }}</span>
         <InputTextGeneric
+          v-else
           :modelValue="data.invoiceRunning"
           @update:modelValue="updateField(index, 'invoiceRunning', $event)"
         />
       </template>
 
       <template #productNumberTemplate="{ data, index }">
+        <span v-if="readonly">{{ data.productNumber }}</span>
         <InputTextGeneric
+          v-else
           :modelValue="data.productNumber"
           @update:modelValue="updateField(index, 'productNumber', $event)"
         />
       </template>
 
       <template #productTypeNameTemplate="{ data, index }">
+        <span v-if="readonly">{{ data.productTypeName }}</span>
         <InputTextGeneric
+          v-else
           :modelValue="data.productTypeName"
           @update:modelValue="updateField(index, 'productTypeName', $event)"
         />
       </template>
 
       <template #productionTypeTemplate="{ data, index }">
+        <span v-if="readonly">{{ data.productionType }}</span>
         <InputTextGeneric
+          v-else
           :modelValue="data.productionType"
           @update:modelValue="updateField(index, 'productionType', $event)"
         />
       </template>
 
       <template #qtyTemplate="{ data, index }">
+        <span v-if="readonly" class="text-right d-block">{{ formatNumber(data.qty) }}</span>
         <InputTextGeneric
+          v-else
           type="number"
           :modelValue="data.qty"
           @update:modelValue="updateField(index, 'qty', $event)"
@@ -72,7 +82,9 @@
       </template>
 
       <template #amountTemplate="{ data, index }">
+        <span v-if="readonly" class="text-right d-block">{{ formatNumber(data.amount) }}</span>
         <InputTextGeneric
+          v-else
           type="number"
           step="0.01"
           :modelValue="data.amount"
@@ -80,7 +92,7 @@
         />
       </template>
 
-      <template #actionTemplate="{ index }">
+      <template v-if="!readonly" #actionTemplate="{ index }">
         <div class="text-center">
           <ButtonGeneric
             variant="red"
@@ -95,6 +107,8 @@
 </template>
 
 <script>
+import { formatNumber } from '@/services/utils/decimal.js'
+
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -112,22 +126,28 @@ export default {
 
   props: {
     products: { type: Array, default: () => [] },
-    disabled: { type: Boolean, default: false }
+    disabled: { type: Boolean, default: false },
+    readonly: { type: Boolean, default: false }
   },
 
   emits: ['fetch', 'add-row', 'remove-row', 'update:products'],
 
   computed: {
     columns() {
-      return [
+      const columns = [
         { field: 'invoiceRunning', header: this.$t('view.sale.billingNote.invoiceRunning'), minWidth: '150px', sortable: false, template: 'invoiceRunningTemplate' },
         { field: 'productNumber', header: this.$t('view.sale.billingNote.productNumber'), minWidth: '150px', sortable: false, template: 'productNumberTemplate' },
         { field: 'productTypeName', header: this.$t('view.sale.billingNote.productTypeName'), minWidth: '150px', sortable: false, template: 'productTypeNameTemplate' },
         { field: 'productionType', header: this.$t('view.sale.billingNote.productionType'), minWidth: '150px', sortable: false, template: 'productionTypeTemplate' },
         { field: 'qty', header: this.$t('view.sale.billingNote.qty'), minWidth: '100px', sortable: false, template: 'qtyTemplate' },
-        { field: 'amount', header: this.$t('view.sale.billingNote.amount'), minWidth: '120px', sortable: false, template: 'amountTemplate' },
-        { field: 'action', header: '', width: '60px', sortable: false, template: 'actionTemplate' }
+        { field: 'amount', header: this.$t('view.sale.billingNote.amount'), minWidth: '120px', sortable: false, template: 'amountTemplate' }
       ]
+
+      if (!this.readonly) {
+        columns.push({ field: 'action', header: '', width: '60px', sortable: false, template: 'actionTemplate' })
+      }
+
+      return columns
     }
   },
 
@@ -135,6 +155,10 @@ export default {
     updateField(index, field, value) {
       const updated = this.products.map((p, i) => (i === index ? { ...p, [field]: value } : p))
       this.$emit('update:products', updated)
+    },
+
+    formatNumber(val) {
+      return formatNumber(val, 2)
     }
   }
 }

@@ -16,6 +16,9 @@
           <button class="btn btn-sm btn-green" :title="$t('common.field.action')" @click="onView(data)">
             <i class="bi bi-eye"></i>
           </button>
+          <button class="btn btn-sm btn-main ml-1" :title="$t('common.btn.edit')" @click="onEdit(data)">
+            <i class="bi bi-pencil"></i>
+          </button>
         </div>
       </template>
 
@@ -87,7 +90,7 @@ export default {
 
     columns() {
       return [
-        { field: 'action', header: '', width: '50px', sortable: false },
+        { field: 'action', header: '', width: '90px', sortable: false },
         { field: 'running', header: this.$t('view.sale.billingNote.running'), sortable: true, minWidth: '150px' },
         { field: 'documentDate', header: this.$t('view.sale.billingNote.documentDate'), sortable: true, minWidth: '120px', template: 'documentDateTemplate' },
         { field: 'customerCode', header: this.$t('view.sale.billingNote.customerCode'), sortable: true, minWidth: '120px' },
@@ -112,6 +115,10 @@ export default {
   methods: {
     onView(data) {
       this.$router.push({ name: 'sale-billing-note-detail', params: { running: data.running } })
+    },
+
+    onEdit(data) {
+      this.$router.push({ name: 'sale-billing-note-edit', params: { running: data.running } })
     },
 
     async fetchData() {

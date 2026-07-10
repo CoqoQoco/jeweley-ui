@@ -233,6 +233,19 @@ const routes = [
         }
       },
       {
+        path: '/sale/billing-note/edit/:running',
+        name: 'sale-billing-note-edit',
+        component: BillingNoteCreate,
+        meta: {
+          Displayname: {
+            en: 'Edit Billing Note',
+            th: 'แก้ไขใบวางบิล'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
         path: '/sale/billing-note/:running',
         name: 'sale-billing-note-detail',
         component: BillingNoteDetail,

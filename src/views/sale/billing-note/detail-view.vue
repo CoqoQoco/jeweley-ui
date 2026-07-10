@@ -3,9 +3,16 @@
     <PageHeaderGeneric :title="$t('view.sale.billingNote.detailTitle')" backRoute="sale-billing-note">
       <template #actions>
         <ButtonGeneric
+          variant="main"
+          icon="bi-pencil"
+          :label="$t('common.btn.edit')"
+          @click="onEdit"
+        />
+        <ButtonGeneric
           variant="outline"
           icon="bi-printer"
           :label="$t('view.sale.billingNote.printMainDoc')"
+          class="ml-2"
           @click="onPrintMain"
         />
         <ButtonGeneric
@@ -110,25 +117,43 @@
         headerStyle="legend"
         class="mt-4"
       >
-        <div class="form-row four-col mb-3">
+        <div class="form-row three-col mb-3">
           <FormFieldGeneric :label="$t('view.sale.billingNote.goldResizeQty')">
             <InputTextGeneric :modelValue="data.goldResizeQty" :readonly="true" bgInput="bg-input" />
           </FormFieldGeneric>
-          <FormFieldGeneric :label="$t('view.sale.billingNote.goldResizeAmount')">
+          <FormFieldGeneric :label="$t('view.sale.billingNote.goldResizePerUnit')">
+            <InputTextGeneric :modelValue="formatNumber(data.goldResizePerUnit)" :readonly="true" bgInput="bg-input" />
+          </FormFieldGeneric>
+          <FormFieldGeneric :label="$t('common.field.total')">
             <InputTextGeneric :modelValue="formatNumber(data.goldResizeAmount)" :readonly="true" bgInput="bg-input" />
           </FormFieldGeneric>
+        </div>
+
+        <div class="form-row three-col mb-3">
           <FormFieldGeneric :label="$t('view.sale.billingNote.silverResizeQty')">
             <InputTextGeneric :modelValue="data.silverResizeQty" :readonly="true" bgInput="bg-input" />
           </FormFieldGeneric>
-          <FormFieldGeneric :label="$t('view.sale.billingNote.silverResizeAmount')">
+          <FormFieldGeneric :label="$t('view.sale.billingNote.silverResizePerUnit')">
+            <InputTextGeneric :modelValue="formatNumber(data.silverResizePerUnit)" :readonly="true" bgInput="bg-input" />
+          </FormFieldGeneric>
+          <FormFieldGeneric :label="$t('common.field.total')">
             <InputTextGeneric :modelValue="formatNumber(data.silverResizeAmount)" :readonly="true" bgInput="bg-input" />
           </FormFieldGeneric>
+        </div>
+
+        <div class="total-resize-row mb-3">
+          <span class="total-resize-label">{{ $t('view.sale.billingNote.totalResize') }}</span>
+          <span class="total-resize-value">{{ formatNumber(totalResize) }}</span>
         </div>
 
         <div class="calc-summary">
           <div class="calc-row">
             <span class="calc-label">{{ $t('view.sale.billingNote.subTotal') }}</span>
             <span class="calc-value">{{ formatNumber(data.subTotal) }}</span>
+          </div>
+          <div v-if="data.hasSupport" class="calc-row">
+            <span class="calc-label">{{ $t('view.sale.billingNote.supportAmount') }} {{ Number(data.supportPercent) || 0 }}%</span>
+            <span class="calc-value">{{ formatNumber(data.supportAmount) }}</span>
           </div>
           <div class="calc-row">
             <span class="calc-label">{{ $t('view.sale.billingNote.vatPercent') }}</span>
@@ -149,6 +174,64 @@
             <TextareaGeneric :modelValue="data.remark" :rows="2" :disabled="true" />
           </FormFieldGeneric>
         </div>
+      </SectionCardGeneric>
+
+      <SectionCardGeneric
+        :title="$t('view.sale.billingNote.paymentSummaryTitle')"
+        icon="bi-cash-coin"
+        accent="main"
+        headerStyle="legend"
+        class="mt-4"
+      >
+        <div class="payment-stat-row mb-3">
+          <div class="payment-stat">
+            <span class="payment-stat-label">{{ $t('view.sale.billingNote.billedCount') }}</span>
+            <span class="payment-stat-value">{{ data.items.length }} {{ $t('view.sale.billingNote.billedUnit') }}</span>
+          </div>
+          <div class="payment-stat">
+            <span class="payment-stat-label">{{ $t('view.sale.billingNote.totalBilled') }}</span>
+            <span class="payment-stat-value">{{ formatNumber(data.totalBilled) }}</span>
+          </div>
+          <div class="payment-stat">
+            <span class="payment-stat-label">{{ $t('view.sale.billingNote.totalReceived') }}</span>
+            <span class="payment-stat-value">{{ formatNumber(data.totalReceived) }}</span>
+          </div>
+          <div class="payment-stat">
+            <span class="payment-stat-label">{{ $t('view.sale.billingNote.totalOutstanding') }}</span>
+            <span class="payment-stat-value">{{ formatNumber(data.totalOutstanding) }}</span>
+          </div>
+        </div>
+
+        <div class="payment-status-row mb-3">
+          <span class="payment-status-label">{{ $t('view.sale.billingNote.paymentStatusLabel') }}:</span>
+          <span :class="['status-pill', `status-pill--${paymentStatusInfo(data.paymentStatus).variant}`]">
+            {{ paymentStatusInfo(data.paymentStatus).label }}
+          </span>
+        </div>
+
+        <BaseDataTable
+          :items="data.items"
+          :totalRecords="data.items.length"
+          :columns="paymentColumns"
+          :paginator="false"
+          scrollHeight="280px"
+          dataKey="invoiceRunning"
+        >
+          <template #invoiceGrandTotalTemplate="{ data: row }">
+            <div class="text-right">{{ formatNumber(row.invoiceGrandTotal) }}</div>
+          </template>
+          <template #receivedAmountTemplate="{ data: row }">
+            <div class="text-right">{{ formatNumber(row.receivedAmount) }}</div>
+          </template>
+          <template #outstandingAmountTemplate="{ data: row }">
+            <div class="text-right">{{ formatNumber(row.outstandingAmount) }}</div>
+          </template>
+          <template #paymentStatusTemplate="{ data: row }">
+            <span :class="['status-pill', `status-pill--${paymentStatusInfo(row.paymentStatus).variant}`]">
+              {{ paymentStatusInfo(row.paymentStatus).label }}
+            </span>
+          </template>
+        </BaseDataTable>
       </SectionCardGeneric>
     </template>
   </div>
@@ -213,6 +296,21 @@ export default {
         { field: 'qty', header: this.$t('view.sale.billingNote.qty'), minWidth: '100px', sortable: false, template: 'qtyTemplate' },
         { field: 'amount', header: this.$t('view.sale.billingNote.amount'), minWidth: '120px', sortable: false, template: 'amountTemplate' }
       ]
+    },
+
+    paymentColumns() {
+      return [
+        { field: 'invoiceRunning', header: this.$t('view.sale.billingNote.invoiceRunning'), minWidth: '150px', sortable: false },
+        { field: 'invoiceGrandTotal', header: this.$t('view.sale.billingNote.invoiceGrandTotalCol'), minWidth: '120px', sortable: false, template: 'invoiceGrandTotalTemplate' },
+        { field: 'receivedAmount', header: this.$t('view.sale.billingNote.receivedCol'), minWidth: '120px', sortable: false, template: 'receivedAmountTemplate' },
+        { field: 'outstandingAmount', header: this.$t('view.sale.billingNote.outstandingCol'), minWidth: '120px', sortable: false, template: 'outstandingAmountTemplate' },
+        { field: 'paymentStatus', header: this.$t('view.sale.billingNote.paymentStatusCol'), minWidth: '130px', sortable: false, template: 'paymentStatusTemplate' }
+      ]
+    },
+
+    totalResize() {
+      if (!this.data) return 0
+      return (Number(this.data.goldResizeAmount) || 0) + (Number(this.data.silverResizeAmount) || 0)
     }
   },
 
@@ -229,12 +327,26 @@ export default {
       this.data = res || null
     },
 
+    onEdit() {
+      this.$router.push({ name: 'sale-billing-note-edit', params: { running: this.data.running } })
+    },
+
     formatDate(val) {
       return val ? formatDate(val) : ''
     },
 
     formatNumber(val) {
       return formatNumber(val, 2)
+    },
+
+    paymentStatusInfo(status) {
+      if (status === 'Paid') {
+        return { label: this.$t('view.sale.billingNote.statusPaid'), variant: 'green' }
+      }
+      if (status === 'Partial') {
+        return { label: this.$t('view.sale.billingNote.statusPartial'), variant: 'warning' }
+      }
+      return { label: this.$t('view.sale.billingNote.statusUnpaid'), variant: 'red' }
     },
 
     async onPrintMain() {
@@ -280,17 +392,35 @@ export default {
     }
   }
 
-  &.four-col {
-    grid-template-columns: repeat(4, 1fr);
+  &.three-col {
+    grid-template-columns: repeat(3, 1fr);
 
     @media (max-width: 1024px) {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    @media (max-width: 600px) {
       grid-template-columns: 1fr;
     }
   }
+}
+
+.total-resize-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--base-font-color);
+  border-radius: var(--radius-md);
+  padding: var(--sp-sm) var(--sp-lg);
+  background: var(--color-highlight-bg);
+}
+
+.total-resize-label {
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--base-font-color);
+}
+
+.total-resize-value {
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--base-font-color);
 }
 
 .calc-summary {
@@ -324,6 +454,72 @@ export default {
   .calc-label,
   .calc-value {
     font-size: var(--fs-lg);
+  }
+}
+
+.payment-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-md);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.payment-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-sm) var(--sp-lg);
+  background: var(--color-card-bg);
+}
+
+.payment-stat-label {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+}
+
+.payment-stat-value {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--base-font-color);
+}
+
+.payment-status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.payment-status-label {
+  font-weight: 700;
+  font-size: var(--fs-base);
+  color: var(--base-font-color);
+}
+
+.status-pill {
+  display: inline-block;
+  padding: var(--sp-xs) var(--sp-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+
+  &--green {
+    color: var(--status-resolved);
+    background: var(--status-resolved-bg);
+  }
+
+  &--warning {
+    color: var(--status-open);
+    background: var(--status-open-bg);
+  }
+
+  &--red {
+    color: var(--status-cancelled);
+    background: var(--status-cancelled-bg);
   }
 }
 </style>

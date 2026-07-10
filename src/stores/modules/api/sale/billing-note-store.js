@@ -33,6 +33,13 @@ export const useBillingNoteApiStore = defineStore('billingNoteApiStore', {
       return await api.jewelry.post('BillingNote/Create', param, { skipLoading: false })
     },
 
+    async fetchUpdate({ formValue }) {
+      const param = {
+        ...formValue
+      }
+      return await api.jewelry.post('BillingNote/Update', param, { skipLoading: false })
+    },
+
     async fetchGet({ running }) {
       const param = { running }
       return await api.jewelry.post('BillingNote/Get', param, { skipLoading: false })

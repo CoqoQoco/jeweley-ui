@@ -5,7 +5,7 @@
     accent="main"
     headerStyle="legend"
   >
-    <div class="section-toolbar mb-2">
+    <div v-if="!readonly" class="section-toolbar mb-2">
       <span v-if="invoices.length > 0" class="count-badge">
         {{ selectedInvoices.length }}/{{ invoices.length }}
       </span>
@@ -31,7 +31,7 @@
       :paginator="false"
       scrollHeight="320px"
       dataKey="invoiceRunning"
-      :selectionMode="true"
+      :selectionMode="!readonly"
       selectionType="multiple"
       :itemsSelection="selectedInvoices"
       @update:itemsSelection="$emit('update:selectedInvoices', $event)"
@@ -67,7 +67,8 @@ export default {
     invoices: { type: Array, default: () => [] },
     selectedInvoices: { type: Array, default: () => [] },
     disabled: { type: Boolean, default: false },
-    hasFetched: { type: Boolean, default: false }
+    hasFetched: { type: Boolean, default: false },
+    readonly: { type: Boolean, default: false }
   },
 
   emits: ['fetch', 'update:selectedInvoices'],

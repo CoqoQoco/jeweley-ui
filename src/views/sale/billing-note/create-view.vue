@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
-    <PageHeaderGeneric :title="$t('view.sale.billingNote.createTitle')" backRoute="sale-billing-note" />
+    <PageHeaderGeneric
+      :title="isEditMode ? $t('view.sale.billingNote.editTitle') : $t('view.sale.billingNote.createTitle')"
+      backRoute="sale-billing-note"
+    />
 
     <customerSelectModal
       :showModal="isShowCustomerSearch"
@@ -14,6 +17,7 @@
       :customerAddress="form.customerAddress"
       :customerTel="form.customerTel"
       :documentDate="form.documentDate"
+      :isEdit="isEditMode"
       class="mt-4"
       @open-select="isShowCustomerSearch = true"
       @update:documentDate="form.documentDate = $event"
@@ -24,6 +28,7 @@
       :selectedInvoices="selectedInvoices"
       :disabled="!form.customerCode"
       :hasFetched="hasFetchedInvoices"
+      :readonly="isEditMode"
       class="mt-4"
       @fetch="onFetchInvoices"
       @update:selectedInvoices="selectedInvoices = $event"
@@ -32,6 +37,7 @@
     <productsSection
       :products="products"
       :disabled="selectedInvoices.length === 0"
+      :readonly="isEditMode"
       class="mt-4"
       @fetch="onFetchProducts"
       @add-row="onAddProductRow"
@@ -47,12 +53,18 @@
 
     <summarySection
       v-model:goldResizeQty="form.goldResizeQty"
-      v-model:goldResizeAmount="form.goldResizeAmount"
+      v-model:goldResizePerUnit="form.goldResizePerUnit"
       v-model:silverResizeQty="form.silverResizeQty"
-      v-model:silverResizeAmount="form.silverResizeAmount"
+      v-model:silverResizePerUnit="form.silverResizePerUnit"
       v-model:vatPercent="form.vatPercent"
+      v-model:supportPercent="form.supportPercent"
+      v-model:hasSupport="form.hasSupport"
       v-model:remark="form.remark"
+      :goldResizeAmount="goldResizeAmount"
+      :silverResizeAmount="silverResizeAmount"
+      :totalResize="totalResize"
       :subTotal="subTotal"
+      :supportAmount="supportAmount"
       :vatAmount="vatAmount"
       :grandTotal="grandTotal"
       :canSave="canSave"
@@ -86,10 +98,12 @@ const interfaceForm = {
   customerTel: '',
   documentDate: new Date(),
   goldResizeQty: 0,
-  goldResizeAmount: 0,
+  goldResizePerUnit: 0,
   silverResizeQty: 0,
-  silverResizeAmount: 0,
+  silverResizePerUnit: 0,
   vatPercent: 7,
+  supportPercent: 0,
+  hasSupport: false,
   remark: ''
 }
 
@@ -123,10 +137,32 @@ export default {
   },
 
   computed: {
+    isEditMode() {
+      return !!this.$route.params.running
+    },
+
     subTotal() {
       return roundDecimal(
         this.selectedInvoices.reduce((sum, inv) => sum + (Number(inv.subTotal) || 0), 0)
       )
+    },
+
+    goldResizeAmount() {
+      return roundDecimal((Number(this.form.goldResizeQty) || 0) * (Number(this.form.goldResizePerUnit) || 0))
+    },
+
+    silverResizeAmount() {
+      return roundDecimal((Number(this.form.silverResizeQty) || 0) * (Number(this.form.silverResizePerUnit) || 0))
+    },
+
+    totalResize() {
+      return roundDecimal(this.goldResizeAmount + this.silverResizeAmount)
+    },
+
+    supportAmount() {
+      return this.form.hasSupport
+        ? roundDecimal((this.subTotal * (Number(this.form.supportPercent) || 0)) / 100)
+        : 0
     },
 
     vatAmount() {
@@ -142,7 +178,43 @@ export default {
     }
   },
 
+  async mounted() {
+    if (this.isEditMode) {
+      await this.loadExisting(this.$route.params.running)
+    }
+  },
+
   methods: {
+    async loadExisting(running) {
+      const data = await this.billingNoteStore.fetchGet({ running })
+      if (!data) return
+
+      this.form.customerCode = data.customerCode
+      this.form.customerName = data.customerName
+      this.form.customerAddress = data.customerAddress
+      this.form.customerTel = data.customerTel
+      this.form.documentDate = data.documentDate ? new Date(data.documentDate) : new Date()
+      this.form.goldResizeQty = data.goldResizeQty
+      this.form.goldResizePerUnit = data.goldResizePerUnit
+      this.form.silverResizeQty = data.silverResizeQty
+      this.form.silverResizePerUnit = data.silverResizePerUnit
+      this.form.vatPercent = data.vatPercent
+      this.form.supportPercent = data.supportPercent
+      this.form.hasSupport = data.hasSupport
+      this.form.remark = data.remark || ''
+
+      this.availableInvoices = (data.items || []).map((it) => ({
+        invoiceRunning: it.invoiceRunning,
+        invoiceDate: it.invoiceDate,
+        subTotal: it.amountBeforeVat,
+        customerName: data.customerName
+      }))
+      this.selectedInvoices = [...this.availableInvoices]
+      this.hasFetchedInvoices = true
+
+      this.products = (data.products || []).map((p, idx) => ({ ...p, _key: `p-${idx}` }))
+    },
+
     onSelectCustomer(customerData) {
       this.form.customerCode = customerData.customerCode
       this.form.customerName = customerData.customerName
@@ -207,7 +279,7 @@ export default {
     onSave() {
       confirmThenSubmit(
         `${this.form.customerCode} : ${this.form.customerName}`,
-        this.$t('view.sale.billingNote.confirmSave'),
+        this.isEditMode ? this.$t('view.sale.billingNote.confirmUpdate') : this.$t('view.sale.billingNote.confirmSave'),
         async () => {
           await this.doSave()
         }
@@ -215,14 +287,39 @@ export default {
     },
 
     async doSave() {
+      if (this.isEditMode) {
+        const payload = {
+          running: this.$route.params.running,
+          documentDate: formatISOString(this.form.documentDate),
+          goldResizeQty: Number(this.form.goldResizeQty) || 0,
+          goldResizePerUnit: Number(this.form.goldResizePerUnit) || 0,
+          silverResizeQty: Number(this.form.silverResizeQty) || 0,
+          silverResizePerUnit: Number(this.form.silverResizePerUnit) || 0,
+          supportPercent: Number(this.form.supportPercent) || 0,
+          hasSupport: this.form.hasSupport,
+          vatPercent: Number(this.form.vatPercent) || 0,
+          remark: this.form.remark || null
+        }
+
+        const res = await this.billingNoteStore.fetchUpdate({ formValue: payload })
+
+        if (res && res.running) {
+          success(this.$t('view.sale.billingNote.updateSuccess'))
+          this.$router.push({ name: 'sale-billing-note-detail', params: { running: res.running } })
+        }
+        return
+      }
+
       const payload = {
         customerCode: this.form.customerCode,
         documentDate: formatISOString(this.form.documentDate),
         invoiceRunnings: this.selectedInvoices.map((inv) => inv.invoiceRunning),
         goldResizeQty: Number(this.form.goldResizeQty) || 0,
-        goldResizeAmount: Number(this.form.goldResizeAmount) || 0,
+        goldResizePerUnit: Number(this.form.goldResizePerUnit) || 0,
         silverResizeQty: Number(this.form.silverResizeQty) || 0,
-        silverResizeAmount: Number(this.form.silverResizeAmount) || 0,
+        silverResizePerUnit: Number(this.form.silverResizePerUnit) || 0,
+        supportPercent: Number(this.form.supportPercent) || 0,
+        hasSupport: this.form.hasSupport,
         vatPercent: Number(this.form.vatPercent) || 0,
         remark: this.form.remark || null,
         products: this.products.map((p) => ({
