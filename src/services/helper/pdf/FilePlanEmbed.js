@@ -258,7 +258,15 @@ export class EmbedSlipPdfBuilder {
 
     let moneyTotal = 0
 
-    this.data.values.forEach((item) => {
+    this.data.values
+      .filter((item) => {
+        const weightSend = Number(item.goldWeightSend ?? 0)
+        const weightCheck = Number(item.goldWeightCheck ?? 0)
+        const lossPercent = Number(item.lossPercent ?? 0)
+        // ข้ามแถวที่เป็นศูนย์ทั้งแถว (รายการค่าแรงที่ไม่มีน้ำหนักทอง)
+        return weightSend !== 0 || weightCheck !== 0 || lossPercent !== 0
+      })
+      .forEach((item) => {
       const weightSend = Number(item.goldWeightSend ?? 0)
       const weightCheck = Number(item.goldWeightCheck ?? 0)
       const rawLoss = weightSend - weightCheck
