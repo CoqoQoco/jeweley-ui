@@ -349,34 +349,28 @@ export class ProductCatalogPdfBuilder {
       }
     ]
 
-    // --- Material summary table (goal #2) ---
-    const M = item.materialSummary || summarizeMaterials([])
-    const TH = 'THSarabunNew'
-    const nameCell = (t) => ({ text: t, font: TH, fontSize: 9, color: '#1a1a1a' })
-    const qtyCell = (v) => ({ text: String(v), font: TH, fontSize: 9, color: '#1a1a1a', alignment: 'right' })
-    const unitCell = (t) => ({ text: t, font: TH, fontSize: 9, color: '#666666', margin: [8, 0, 0, 0] })
-
-    leftStack.push({
-      margin: [0, 12, 0, 0],
-      table: {
-        widths: ['*', 'auto', 'auto'],
-        body: [
-          [nameCell('น้ำหนักทอง'), qtyCell(M.goldWeight), unitCell(M.goldWeightUnit)],
-          [nameCell('จำนวนเพชร'), qtyCell(M.diamondPcs), unitCell(M.diamondPcsUnit)],
-          [nameCell('น้ำหนักเพชร'), qtyCell(M.diamondCarat), unitCell(M.diamondCaratUnit)],
-          [nameCell('จำนวนพลอย'), qtyCell(M.gemPcs), unitCell(M.gemPcsUnit)],
-          [nameCell('น้ำหนักพลอย'), qtyCell(M.gemCarat), unitCell(M.gemCaratUnit)]
-        ]
-      },
-      layout: {
-        hLineWidth: () => 0,
-        vLineWidth: () => 0,
-        paddingLeft: () => 8,
-        paddingRight: () => 8,
-        paddingTop: () => 4,
-        paddingBottom: () => 4
-      }
-    })
+    // --- Material summary: 1 row per material (ชื่อวัสดุจริง, AcherusGrotesque, no-wrap) ---
+    const materials = Array.isArray(item.materialSummary) ? item.materialSummary : summarizeMaterials([])
+    if (materials.length) {
+      const nameCell = (t) => ({ text: t, fontSize: 9, color: '#1a1a1a' })
+      const qtyCell = (t) => ({ text: t, fontSize: 9, color: '#1a1a1a', alignment: 'right', noWrap: true })
+      const weightCell = (t) => ({ text: t, fontSize: 9, color: '#1a1a1a', alignment: 'right', noWrap: true, margin: [8, 0, 0, 0] })
+      leftStack.push({
+        margin: [0, 12, 0, 0],
+        table: {
+          widths: ['*', 'auto', 'auto'],
+          body: materials.map((m) => [nameCell(m.name), qtyCell(m.qty), weightCell(m.weight)])
+        },
+        layout: {
+          hLineWidth: () => 0,
+          vLineWidth: () => 0,
+          paddingLeft: () => 8,
+          paddingRight: () => 8,
+          paddingTop: () => 4,
+          paddingBottom: () => 4
+        }
+      })
+    }
 
     const leftCol = {
       width: '30%',
