@@ -123,7 +123,6 @@ import { warning, success } from '@/services/alert/sweetAlerts.js'
 
 import { useCatalogStore } from '@/stores/modules/api/catalog-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
-import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { ProductCatalogPdfBuilder } from '@/services/helper/pdf/product-catalog/product-catalog-pdf-builder.js'
 
 import productPickerModal from './modal/product-picker-modal.vue'
@@ -146,8 +145,7 @@ export default {
   setup() {
     const catalogStore = useCatalogStore()
     const productStore = usrStockProductApiStore()
-    const masterStore = useMasterApiStore()
-    return { catalogStore, productStore, masterStore }
+    return { catalogStore, productStore }
   },
 
   computed: {
@@ -330,63 +328,7 @@ export default {
         return
       }
 
-      if (!this.masterStore.gold || !this.masterStore.gold.length) {
-        await this.masterStore.fetchGold()
-      }
-
-      const goldColorMap = {}
-      if (this.masterStore.gold && this.masterStore.gold.length) {
-        this.masterStore.gold.forEach((g) => {
-          if (g.nameTh && g.nameEn) {
-            goldColorMap[g.nameTh] = g.nameEn.toUpperCase()
-          }
-        })
-      }
-
-      const productNumbers = [...new Set(this.items.map((i) => i.productNumber).filter(Boolean))]
-      const productMaterialMap = {}
-
-      if (productNumbers.length) {
-        const res = await this.productStore.fetchDataSearch({
-          take: productNumbers.length + 10,
-          skip: 0,
-          sort: [],
-          formValue: { productNumbers: productNumbers }
-        })
-
-        const products =
-          res ? res.data || this.productStore.dataSearch?.data || [] : this.productStore.dataSearch?.data || []
-
-        products.forEach((p) => {
-          if (!p.productNumber) return
-
-          const materials = p.materials || []
-
-          const goldWeight = materials
-            .filter((m) => m.type === 'Gold')
-            .reduce((sum, m) => sum + (Number(m.weight) || 0), 0)
-
-          const diamondPcs = materials
-            .filter((m) => m.type === 'Diamond')
-            .reduce((sum, m) => sum + (Number(m.qty) || 0), 0)
-
-          const diamondCarat = materials
-            .filter((m) => m.type === 'Diamond')
-            .reduce((sum, m) => sum + (Number(m.weight) || 0), 0)
-
-          productMaterialMap[p.productNumber] = {
-            goldWeight: goldWeight ? goldWeight.toFixed(2) : '0.00',
-            diamondPcs: Math.round(diamondPcs),
-            diamondCarat: diamondCarat ? diamondCarat.toFixed(2) : '0.00',
-            goldColor: p.productionType || ''
-          }
-        })
-      }
-
-      const builder = new ProductCatalogPdfBuilder(this.catalog, this.items, {
-        goldColorMap,
-        productMaterialMap
-      })
+      const builder = new ProductCatalogPdfBuilder(this.catalog, this.items)
       await builder.preparePDF()
       builder.openPDF()
     },

@@ -8,6 +8,7 @@
 //       the coloured logo may not be visible — provide duangkaew-logo-white.png and swap below.
 
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { summarizeMaterials } from '@/services/utils/material-summary.js'
 
 // Brand colour constants — adjust once confirmed with client
 const CATALOG_MAROON = '#9B2C20'
@@ -81,8 +82,53 @@ export class ProductCatalogPdfBuilder {
           })
         )
         item.catalogImages = results
+        item.catalogImageRatios = await Promise.all(results.map((u) => this.getImageRatio(u)))
       })
     )
+  }
+
+  getImageRatio(dataUrl) {
+    if (!dataUrl) return Promise.resolve(1)
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => resolve(img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1)
+      img.onerror = () => resolve(1)
+      img.src = dataUrl
+    })
+  }
+
+  fitBox(ratio, side) {
+    const ar = ratio || 1
+    return ar >= 1 ? { w: side, h: side / ar } : { w: side * ar, h: side }
+  }
+
+  /**
+   * Fetch productCode + materials for catalog items directly from StockProduct/List
+   * (bypasses the Pinia store to avoid mutating the product list page's search state).
+   */
+  async prepareProductDetails() {
+    const nums = [...new Set((this.items || []).map((i) => i.productNumber).filter(Boolean))]
+    if (!nums.length) return
+
+    const baseUrl = import.meta.env.VITE_JEWELRY_API_URL || 'https://localhost:7001/'
+    const res = await fetch(`${baseUrl}StockProduct/List`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: localStorage.getItem('token-dk') },
+      body: JSON.stringify({ take: nums.length + 10, skip: 0, sort: [], search: { productNumbers: nums } })
+    })
+    if (!res.ok) return
+
+    const json = await res.json().catch(() => null)
+    const byNum = {}
+    ;((json && json.data) || []).forEach((p) => {
+      if (p.productNumber) byNum[p.productNumber] = p
+    })
+
+    this.items.forEach((item) => {
+      const p = byNum[item.productNumber]
+      item.materialSummary = summarizeMaterials(p ? p.materials || [] : [])
+      if (p && p.productCode) item.productCode = p.productCode
+    })
   }
 
   async preparePDF() {
@@ -90,7 +136,7 @@ export class ProductCatalogPdfBuilder {
     const logoPath = new URL('@/assets/duangkaew-logo.png', import.meta.url).href
     this.logoBase64 = await this.loadImageAsBase64(logoPath).catch(() => null)
 
-    await this.prepareImages()
+    await Promise.all([this.prepareImages(), this.prepareProductDetails()])
     return this
   }
 
@@ -212,7 +258,7 @@ export class ProductCatalogPdfBuilder {
 
   getProductPage(item, isLast) {
     const { headerLabel = '' } = this.catalog
-    const code = item.productNumber || ''
+    const code = item.productCode || item.productNumber || ''
     const desc1 = item.descriptionLine1 || ''
     const desc2 = item.descriptionLine2 || ''
     const dim1 = item.dimension1 || ''
@@ -274,36 +320,67 @@ export class ProductCatalogPdfBuilder {
       infoBoxContent.push({ text: desc2, fontSize: 9, color: '#ffffff' })
     }
 
+    const leftStack = [
+      { text: 'PRODUCT', fontSize: 11, bold: true, italics: true, color: '#1a1a1a', margin: [0, 0, 0, 0] },
+      { text: '#' + code, fontSize: 13, bold: true, italics: true, color: '#1a1a1a', margin: [0, 0, 0, 8] },
+      {
+        table: {
+          widths: ['*'],
+          body: [
+            [
+              {
+                stack: infoBoxContent,
+                fillColor: CATALOG_MAROON,
+                color: '#ffffff',
+                margin: [8, 7, 8, 7],
+                border: [false, false, false, false]
+              }
+            ]
+          ]
+        },
+        layout: {
+          hLineWidth: () => 0,
+          vLineWidth: () => 0,
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 0
+        }
+      }
+    ]
+
+    // --- Material summary table (goal #2) ---
+    const M = item.materialSummary || summarizeMaterials([])
+    const TH = 'THSarabunNew'
+    const nameCell = (t) => ({ text: t, font: TH, fontSize: 9, color: '#1a1a1a' })
+    const qtyCell = (v) => ({ text: String(v), font: TH, fontSize: 9, color: '#1a1a1a', alignment: 'right' })
+    const unitCell = (t) => ({ text: t, font: TH, fontSize: 9, color: '#666666', margin: [8, 0, 0, 0] })
+
+    leftStack.push({
+      margin: [0, 12, 0, 0],
+      table: {
+        widths: ['*', 'auto', 'auto'],
+        body: [
+          [nameCell('น้ำหนักทอง'), qtyCell(M.goldWeight), unitCell(M.goldWeightUnit)],
+          [nameCell('จำนวนเพชร'), qtyCell(M.diamondPcs), unitCell(M.diamondPcsUnit)],
+          [nameCell('น้ำหนักเพชร'), qtyCell(M.diamondCarat), unitCell(M.diamondCaratUnit)],
+          [nameCell('จำนวนพลอย'), qtyCell(M.gemPcs), unitCell(M.gemPcsUnit)],
+          [nameCell('น้ำหนักพลอย'), qtyCell(M.gemCarat), unitCell(M.gemCaratUnit)]
+        ]
+      },
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: () => 8,
+        paddingRight: () => 8,
+        paddingTop: () => 4,
+        paddingBottom: () => 4
+      }
+    })
+
     const leftCol = {
       width: '30%',
-      stack: [
-        { text: 'PRODUCT', fontSize: 11, bold: true, italics: true, color: '#1a1a1a', margin: [0, 0, 0, 0] },
-        { text: '#' + code, fontSize: 13, bold: true, italics: true, color: '#1a1a1a', margin: [0, 0, 0, 8] },
-        {
-          table: {
-            widths: ['*'],
-            body: [
-              [
-                {
-                  stack: infoBoxContent,
-                  fillColor: CATALOG_MAROON,
-                  color: '#ffffff',
-                  margin: [8, 7, 8, 7],
-                  border: [false, false, false, false]
-                }
-              ]
-            ]
-          },
-          layout: {
-            hLineWidth: () => 0,
-            vLineWidth: () => 0,
-            paddingLeft: () => 0,
-            paddingRight: () => 0,
-            paddingTop: () => 0,
-            paddingBottom: () => 0
-          }
-        }
-      ],
+      stack: leftStack,
       margin: [0, 0, 16, 0]
     }
 
@@ -315,7 +392,7 @@ export class ProductCatalogPdfBuilder {
     // img1 large left
     const img1Stack = []
     if (img1) {
-      img1Stack.push({ image: img1, width: 230, height: 230 })
+      img1Stack.push({ image: img1, fit: [230, 230] })
     } else {
       img1Stack.push({
         canvas: [{ type: 'rect', x: 0, y: 0, w: 230, h: 230, lineColor: '#dddddd', lineWidth: 0.5 }]
@@ -333,6 +410,9 @@ export class ProductCatalogPdfBuilder {
     const DIMTXT_W = 36
     const VLINE_W = 10
 
+    const ratios = item.catalogImageRatios || [1, 1, 1]
+    const box2 = img2 ? this.fitBox(ratios[1], IMG) : { w: IMG, h: IMG }
+
     const img2ClusterRows = []
 
     if (img2) {
@@ -341,7 +421,7 @@ export class ProductCatalogPdfBuilder {
         columns: [
           { width: DIMTXT_W + VLINE_W, text: '' },
           {
-            width: IMG,
+            width: box2.w,
             stack: [
               dim2
                 ? { text: dim2.toUpperCase(), fontSize: 9, color: '#cf6a5c', alignment: 'center', margin: [0, 0, 0, 1] }
@@ -349,9 +429,9 @@ export class ProductCatalogPdfBuilder {
               dim2
                 ? {
                     canvas: [
-                      { type: 'line', x1: 0, y1: 3, x2: IMG, y2: 3, lineWidth: 0.6, lineColor: '#cf6a5c' },
+                      { type: 'line', x1: 0, y1: 3, x2: box2.w, y2: 3, lineWidth: 0.6, lineColor: '#cf6a5c' },
                       { type: 'line', x1: 0, y1: 0, x2: 0, y2: 6, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } },
-                      { type: 'line', x1: IMG, y1: 0, x2: IMG, y2: 6, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
+                      { type: 'line', x1: box2.w, y1: 0, x2: box2.w, y2: 6, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
                     ],
                     margin: [0, 0, 0, 2]
                   }
@@ -365,19 +445,19 @@ export class ProductCatalogPdfBuilder {
       img2ClusterRows.push({
         columns: [
           dim1
-            ? { width: DIMTXT_W, text: dim1.toUpperCase(), fontSize: 9, color: '#cf6a5c', alignment: 'right', margin: [0, 62, 4, 0] }
+            ? { width: DIMTXT_W, text: dim1.toUpperCase(), fontSize: 9, color: '#cf6a5c', alignment: 'right', margin: [0, Math.max(0, box2.h / 2 - 6), 4, 0] }
             : { width: DIMTXT_W, text: '' },
           dim1
             ? {
                 width: VLINE_W,
                 canvas: [
-                  { type: 'line', x1: 5, y1: 0, x2: 5, y2: IMG, lineWidth: 0.6, lineColor: '#cf6a5c' },
+                  { type: 'line', x1: 5, y1: 0, x2: 5, y2: box2.h, lineWidth: 0.6, lineColor: '#cf6a5c' },
                   { type: 'line', x1: 2, y1: 0, x2: 8, y2: 0, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } },
-                  { type: 'line', x1: 2, y1: IMG, x2: 8, y2: IMG, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
+                  { type: 'line', x1: 2, y1: box2.h, x2: 8, y2: box2.h, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
                 ]
               }
             : { width: VLINE_W, text: '' },
-          { width: IMG, image: img2, height: IMG }
+          { width: box2.w, image: img2, height: box2.h }
         ]
       })
     } else {
@@ -404,7 +484,7 @@ export class ProductCatalogPdfBuilder {
           {
             width: IMG,
             stack: [
-              { image: img3, width: IMG, height: IMG, margin: [0, 8, 0, 0] },
+              { image: img3, fit: [IMG, IMG], margin: [0, 8, 0, 0] },
               dim3
                 ? { text: dim3.toUpperCase(), fontSize: 8, color: '#cf6a5c', alignment: 'center', margin: [0, 2, 0, 0] }
                 : { text: '' }
@@ -440,7 +520,20 @@ export class ProductCatalogPdfBuilder {
       margin: [0, 0, 0, 10]
     }
 
-    // --- Footer social bar ---
+    const pageContent = {
+      stack: [headerBand, divider, bodyRow]
+    }
+
+    if (!isLast) {
+      pageContent.pageBreak = 'after'
+    }
+
+    return pageContent
+  }
+
+  // ---------- footer ----------
+
+  getSocialFooterContent() {
     const socialIcon = (type) => ({ ...this.getSocialIcon(type), margin: [0, 2, 0, 0] })
     let socialColumns
     try {
@@ -485,27 +578,13 @@ export class ProductCatalogPdfBuilder {
       }
     }
 
-    const socialFooter = {
+    return {
+      margin: [40, 6, 40, 0],
       stack: [
-        {
-          canvas: [
-            { type: 'line', x1: 0, y1: 0, x2: CONTENT_W, y2: 0, lineWidth: 0.5, lineColor: '#cccccc' }
-          ],
-          margin: [0, 0, 0, 6]
-        },
+        { canvas: [{ type: 'line', x1: 0, y1: 0, x2: CONTENT_W, y2: 0, lineWidth: 0.5, lineColor: '#cccccc' }], margin: [0, 0, 0, 6] },
         socialColumns
       ]
     }
-
-    const pageContent = {
-      stack: [headerBand, divider, bodyRow, socialFooter]
-    }
-
-    if (!isLast) {
-      pageContent.pageBreak = 'after'
-    }
-
-    return pageContent
   }
 
   // ---------- doc definition ----------
@@ -517,10 +596,13 @@ export class ProductCatalogPdfBuilder {
       this.getProductPage(item, idx === this.items.length - 1)
     )
 
+    const self = this
+
     return {
       pageSize: { width: PAGE_W, height: PAGE_H },
-      pageMargins: [40, 30, 40, 30],
+      pageMargins: [40, 30, 40, 54],
       content: [cover, ...productPages],
+      footer: (currentPage) => (currentPage === 1 ? null : self.getSocialFooterContent()),
       defaultStyle: {
         font: CATALOG_FONT,
         fontSize: 10
