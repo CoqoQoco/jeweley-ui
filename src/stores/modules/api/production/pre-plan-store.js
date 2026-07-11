@@ -63,7 +63,7 @@ export const usePrePlanStore = defineStore('prePlan', {
     },
 
     async getAvailableForPlan(moldCode) {
-      return await api.jewelry.get('ProductionPrePlan/AvailableForPlan', { params: { moldCode } })
+      return await api.jewelry.get('ProductionPrePlan/AvailableForPlan', { moldCode })
     },
 
     async fetchWaitingCount() {
