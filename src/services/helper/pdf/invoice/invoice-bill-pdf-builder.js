@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import {
   PAGE_WIDTH,
   PAGE_HEIGHT,
@@ -312,7 +313,7 @@ export class InvoiceBillPdfBuilder {
       pageMargins: [0, 0, 0, 0],
       content: this.buildContent(),
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 9
       }
     }

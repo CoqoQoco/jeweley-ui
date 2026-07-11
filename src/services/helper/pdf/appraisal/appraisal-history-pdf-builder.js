@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class AppraisalHistoryPdfBuilder {
   constructor(stockData, versionData, options = {}) {
@@ -743,7 +744,7 @@ export class AppraisalHistoryPdfBuilder {
         }
       },
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 12
       },
       styles: {

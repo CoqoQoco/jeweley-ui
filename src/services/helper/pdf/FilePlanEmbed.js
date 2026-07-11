@@ -3,6 +3,7 @@ import { formatDate } from '@/services/utils/dayjs'
 
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 // src/services/pdf/embedSlipPdf.js
 //import dayjs from 'dayjs'
@@ -471,7 +472,7 @@ export class EmbedSlipPdfBuilder {
       ],
 
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 11 // ลดขนาด font ลงเล็กน้อย
       },
 

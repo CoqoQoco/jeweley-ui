@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import JsBarcode from 'jsbarcode'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class GemBarcodePdfBuilder {
   constructor(barcodeData) {
@@ -164,7 +165,7 @@ export class GemBarcodePdfBuilder {
         }
       ],
       defaultStyle: {
-        font: 'AngsanaNew',
+        font: PDF_FONT,
         fontSize: 8
       }
     }

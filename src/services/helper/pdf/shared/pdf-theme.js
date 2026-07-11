@@ -9,7 +9,7 @@ export const PDF_COLORS = {
   muted: '#9e9e9e'
 }
 
-export const PDF_FONT = 'THSarabunNew'
+export const PDF_FONT = 'ChakraPetch'
 
 export const PDF_STYLES = {
   headerCompanyName: {

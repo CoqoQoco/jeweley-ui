@@ -1,5 +1,6 @@
 // src/services/pdf/productionPlanPdf.js
 import { formatDate } from '@/services/utils/dayjs'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import jsbarcode from 'jsbarcode'
 
@@ -324,7 +325,7 @@ export class FilePlanProduction {
       },
 
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 11
       }
     }

@@ -3,7 +3,7 @@ import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { ceilToInteger } from '@/services/utils/decimal.js'
 import { COMPANY_INFO, COMPANY_TAX_ID, COMPANY_BANK } from '@/config/company-info.js'
-import { PDF_COLORS, PDF_STYLES } from '../shared/pdf-theme.js'
+import { PDF_COLORS, PDF_STYLES, PDF_FONT } from '../shared/pdf-theme.js'
 import { formatPrice } from '../shared/pdf-format.js'
 import { loadCompanyLogo, prepareItemImages } from '../shared/pdf-images.js'
 import {
@@ -234,7 +234,7 @@ export class InvoiceSummaryPdfBuilder {
     return {
       pageSize: 'A4',
       pageMargins: [10, 18, 20, 95],
-      defaultStyle: { font: 'Prompt', fontSize: 11 },
+      defaultStyle: { font: PDF_FONT, fontSize: 11 },
       styles: PDF_STYLES,
       footer: function (currentPage, pageCount) {
         const pageText = { text: 'Page ' + currentPage + ' of ' + pageCount, alignment: 'center', fontSize: 7, margin: [0, 6, 0, 0] }

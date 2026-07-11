@@ -221,6 +221,7 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import { initPdfMake } from '@/services/utils/pdf-make.js'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 import api from '@/axios/axios-helper.js'
 import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
@@ -1254,7 +1255,7 @@ export default {
           }
         ],
         defaultStyle: {
-          font: 'THSarabunNew'
+          font: PDF_FONT
         },
         styles: {
           title: {

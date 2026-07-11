@@ -1,6 +1,7 @@
 import { formatDate } from '@/services/utils/dayjs.js'
 import { initPdfMake } from '@/services/utils/pdf-make.js'
 import { resolveProductImageBlobPath } from '@/services/helper/pre-plan-helpers.js'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class PrePlanOrderFormPdfBuilder {
   constructor(prePlan, items) {
@@ -342,7 +343,7 @@ export class PrePlanOrderFormPdfBuilder {
       pageMargins: [15, 15, 15, 15],
       content: contentBlocks,
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 11,
       },
       styles: {

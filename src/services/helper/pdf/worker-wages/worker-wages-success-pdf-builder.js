@@ -1,5 +1,6 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
 
 export class WorkerWagesSuccessPdfBuilder {
@@ -448,7 +449,7 @@ export class WorkerWagesSuccessPdfBuilder {
         ...this.getSlipSummaryContent()
       ],
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 10
       },
       styles: {

@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
 import { COMPANY_INFO, COMPANY_TAX_ID } from '@/config/company-info.js'
-import { PDF_COLORS } from '../shared/pdf-theme.js'
+import { PDF_COLORS, PDF_FONT } from '../shared/pdf-theme.js'
 import { buildSeekSummary } from '../shared/pdf-seek-sections.js'
 import { loadCompanyLogo } from '../shared/pdf-images.js'
 
@@ -446,7 +446,7 @@ export class BillingNotePdfBuilder {
       pageSize: 'A4',
       pageMargins: [20, 20, 20, 90],
       defaultStyle: {
-        font: 'Prompt',
+        font: PDF_FONT,
         fontSize: 11
       },
       content,

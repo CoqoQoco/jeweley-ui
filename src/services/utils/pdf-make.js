@@ -2,10 +2,17 @@ import pdfMake from 'pdfmake/build/pdfmake'
 import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import { acherusVfs } from '@/assets/fonts/acherus-grotesque-font.js'
 import { promptVfs } from '@/assets/fonts/prompt-font.js'
+import { chakraVfs } from '@/assets/fonts/chakra-petch-font.js'
 
 export const initPdfMake = () => {
-  pdfMake.vfs = { ...vfs, ...acherusVfs, ...promptVfs }
+  pdfMake.vfs = { ...vfs, ...acherusVfs, ...promptVfs, ...chakraVfs }
   pdfMake.fonts = {
+    ChakraPetch: {
+      normal: 'ChakraPetch-Regular.ttf',
+      bold: 'ChakraPetch-Bold.ttf',
+      italics: 'ChakraPetch-Regular.ttf',
+      bolditalics: 'ChakraPetch-Bold.ttf'
+    },
     AngsanaNew: {
       normal: "Angsana New Regular.ttf",
       bold: "Angsana New Bold.ttf",

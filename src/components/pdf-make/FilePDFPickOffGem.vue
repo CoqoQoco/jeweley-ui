@@ -10,8 +10,8 @@
 import dayjs from 'dayjs'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
-import pdfMake from 'pdfmake'
-import { vfs } from '@/assets/fonts/pdf-fonts.js'
+import { initPdfMake } from '@/services/utils/pdf-make'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 //import api from '@/axios/axios-helper.js'
 //import jsbarcode from 'jsbarcode'
 
@@ -118,15 +118,7 @@ export default {
     },
 
     async generatePDF() {
-      pdfMake.vfs = vfs // 2. set vfs pdf font
-      pdfMake.fonts = {
-        THSarabunNew: {
-          normal: 'THSarabunNew.ttf',
-          bold: 'THSarabunNew Bold.ttf',
-          italics: 'THSarabunNew Italic.ttf',
-          bolditalics: 'THSarabunNew BoldItalic.ttf'
-        }
-      }
+      const pdfMake = initPdfMake()
 
       const docDefinition = {
         pageSize: 'A4',
@@ -274,7 +266,7 @@ export default {
           }
         ],
         defaultStyle: {
-          font: 'THSarabunNew'
+          font: PDF_FONT
         },
         styles: {
           tableExample: {

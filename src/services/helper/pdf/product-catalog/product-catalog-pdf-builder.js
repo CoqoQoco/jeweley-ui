@@ -1,7 +1,7 @@
 // ProductCatalogPdfBuilder — generates Lookbook PDF matching the brand reference layout.
 //
 // Layout reference: docs/RING 18K เพชรล้วน_260520_204430.pdf
-// Font: AcherusGrotesque (registered in pdf-make.js)
+// Font: PDF_FONT (ChakraPetch, registered in pdf-make.js)
 //
 // TODO: Replace LOGO_ASSET path with a white-on-transparent PNG version for cover page.
 //       Currently using duangkaew-logo.png (coloured). If the cover background is #9B2C20
@@ -9,10 +9,11 @@
 
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { summarizeMaterials } from '@/services/utils/material-summary.js'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 // Brand colour constants — adjust once confirmed with client
 const CATALOG_MAROON = '#9B2C20'
-const CATALOG_FONT = 'AcherusGrotesque'
+const CATALOG_FONT = PDF_FONT
 
 // Page dimensions — landscape 16:9 based on A4 width
 const PAGE_W = 842
@@ -349,7 +350,7 @@ export class ProductCatalogPdfBuilder {
       }
     ]
 
-    // --- Material summary: 1 row per material (ชื่อวัสดุจริง, AcherusGrotesque, no-wrap) ---
+    // --- Material summary: 1 row per material (ชื่อวัสดุจริง, PDF_FONT, no-wrap) ---
     const materials = Array.isArray(item.materialSummary) ? item.materialSummary : summarizeMaterials([])
     if (materials.length) {
       const nameCell = (t) => ({ text: t, fontSize: 9, color: '#1a1a1a' })

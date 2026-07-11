@@ -9,10 +9,10 @@
 
 <script>
 import { formatDate } from '@/services/utils/dayjs'
-import pdfMake from 'pdfmake'
-import { vfs } from '@/assets/fonts/pdf-fonts.js'
 import jsbarcode from 'jsbarcode'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
+import { initPdfMake } from '@/services/utils/pdf-make'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export default {
   props: {
@@ -133,15 +133,7 @@ export default {
     async generatePDF() {
       await this.fetchIamge()
 
-      pdfMake.vfs = vfs // 2. set vfs pdf font
-      pdfMake.fonts = {
-        THSarabunNew: {
-          normal: 'THSarabunNew.ttf',
-          bold: 'THSarabunNew Bold.ttf',
-          italics: 'THSarabunNew Italic.ttf',
-          bolditalics: 'THSarabunNew BoldItalic.ttf'
-        }
-      }
+      const pdfMake = initPdfMake()
 
       const docDefinition = {
         pageSize: 'A4',
@@ -413,8 +405,7 @@ export default {
           // }
         ],
         defaultStyle: {
-          // 4. default style 'KANIT' font to test
-          font: 'THSarabunNew'
+          font: PDF_FONT
         },
         styles: {
           tableExample: {

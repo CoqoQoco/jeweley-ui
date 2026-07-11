@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class BreakdownPdfBuilder {
   constructor({ items, customer, invoiceDate, invoiceNo, currencyUnit, currencyMultiplier, profitPercent }) {
@@ -692,7 +693,7 @@ export class BreakdownPdfBuilder {
         }
       },
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 10
       },
       styles: {

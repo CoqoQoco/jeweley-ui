@@ -1,5 +1,6 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 function fmtW(val) {
   if (val == null) return '0.00'
@@ -417,12 +418,12 @@ export class GoldLossTangPdfBuilder {
         margin: [0, 5, 20, 0]
       }),
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 10
       },
       styles: {
         sectionTitle: {
-          font: 'THSarabunNew',
+          font: PDF_FONT,
           fontSize: 12,
           bold: true
         }

@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class SaleOrderPdfBuilder {
   constructor(soData, options = {}) {
@@ -1066,7 +1067,7 @@ export class SaleOrderPdfBuilder {
         }
       },
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 13
       },
       styles: {

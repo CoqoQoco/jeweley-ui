@@ -1,5 +1,6 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class WorkerWagesTrackingPdfBuilder {
   constructor(worker, dateRange, items, mode) {
@@ -206,7 +207,7 @@ export class WorkerWagesTrackingPdfBuilder {
         this.getTableContent()
       ],
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 10
       },
       styles: {

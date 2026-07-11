@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -1107,7 +1108,7 @@ export class InvoicePdfBuilder {
         }
       },
       defaultStyle: {
-        font: 'THSarabunNew',
+        font: PDF_FONT,
         fontSize: 13
       },
       styles: {
