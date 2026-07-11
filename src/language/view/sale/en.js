@@ -1439,7 +1439,10 @@ export const billingNote = {
   totalPieces: 'Total items',
   pieces: 'pcs',
   totalRow: 'Total',
-  printNoData: 'No billing note data to print'
+  printNoData: 'No billing note data to print',
+  copyOriginal: 'Original',
+  copyCopy: 'Copy',
+  documentType: 'Document Type'
 }
 
 export default {

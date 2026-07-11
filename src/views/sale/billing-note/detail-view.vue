@@ -8,6 +8,14 @@
           :label="$t('common.btn.edit')"
           @click="onEdit"
         />
+        <div class="ml-2 doc-type-dropdown" :title="$t('view.sale.billingNote.documentType')">
+          <DropdownGeneric
+            v-model="copyType"
+            :options="documentTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
         <ButtonGeneric
           variant="outline"
           icon="bi-printer"
@@ -251,6 +259,7 @@ import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import typeSummarySection from './components/type-summary-section.vue'
 
 export default {
@@ -264,6 +273,7 @@ export default {
     InputTextGeneric,
     TextareaGeneric,
     BaseDataTable,
+    DropdownGeneric,
     typeSummarySection
   },
 
@@ -274,11 +284,19 @@ export default {
 
   data() {
     return {
-      data: null
+      data: null,
+      copyType: 'original'
     }
   },
 
   computed: {
+    documentTypeOptions() {
+      return [
+        { value: 'original', label: this.$t('view.sale.billingNote.copyOriginal') },
+        { value: 'copy', label: this.$t('view.sale.billingNote.copyCopy') }
+      ]
+    },
+
     itemColumns() {
       return [
         { field: 'invoiceRunning', header: this.$t('view.sale.billingNote.invoiceRunning'), minWidth: '150px', sortable: false },
@@ -351,21 +369,21 @@ export default {
 
     async onPrintMain() {
       if (!this.data) return warning(this.$t('view.sale.billingNote.printNoData'))
-      const builder = new BillingNotePdfBuilder(this.data, 'main')
+      const builder = new BillingNotePdfBuilder(this.data, 'main', this.copyType)
       await builder.preparePDF()
       builder.generatePDF().open()
     },
 
     async onPrintByType() {
       if (!this.data) return warning(this.$t('view.sale.billingNote.printNoData'))
-      const builder = new BillingNotePdfBuilder(this.data, 'byType')
+      const builder = new BillingNotePdfBuilder(this.data, 'byType', this.copyType)
       await builder.preparePDF()
       builder.generatePDF().open()
     },
 
     async onPrintByCode() {
       if (!this.data) return warning(this.$t('view.sale.billingNote.printNoData'))
-      const builder = new BillingNotePdfBuilder(this.data, 'byCode')
+      const builder = new BillingNotePdfBuilder(this.data, 'byCode', this.copyType)
       await builder.preparePDF()
       builder.generatePDF().open()
     }
@@ -378,6 +396,10 @@ export default {
 
 .app-container {
   padding: var(--sp-lg);
+}
+
+.doc-type-dropdown {
+  min-width: 140px;
 }
 
 .form-row {

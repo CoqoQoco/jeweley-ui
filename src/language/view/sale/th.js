@@ -1433,7 +1433,10 @@ export const billingNote = {
   totalPieces: 'รวมสินค้า',
   pieces: 'ชิ้น',
   totalRow: 'รวมทั้งหมด',
-  printNoData: 'ไม่พบข้อมูลใบวางบิลสำหรับพิมพ์'
+  printNoData: 'ไม่พบข้อมูลใบวางบิลสำหรับพิมพ์',
+  copyOriginal: 'ต้นฉบับ',
+  copyCopy: 'สำเนา',
+  documentType: 'ประเภทเอกสาร'
 }
 
 export default {

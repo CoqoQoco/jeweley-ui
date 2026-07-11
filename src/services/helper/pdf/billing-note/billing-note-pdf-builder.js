@@ -7,9 +7,10 @@ import { buildSeekSummary } from '../shared/pdf-seek-sections.js'
 import { loadCompanyLogo } from '../shared/pdf-images.js'
 
 export class BillingNotePdfBuilder {
-  constructor(data, mode = 'main') {
+  constructor(data, mode = 'main', copyType = 'original') {
     this.data = data || {}
     this.mode = mode
+    this.copyType = copyType
     this.logoBase64 = null
   }
 
@@ -113,11 +114,10 @@ export class BillingNotePdfBuilder {
               ]
             },
             {
-              text: 'ใบวางบิล',
-              fontSize: 24,
-              bold: true,
-              color: PDF_COLORS.primary,
-              alignment: 'right'
+              stack: [
+                { text: 'ใบวางบิล', fontSize: 24, bold: true, color: PDF_COLORS.primary, alignment: 'right' },
+                { text: this.copyType === 'copy' ? 'สำเนา' : 'ต้นฉบับ', fontSize: 11, color: PDF_COLORS.darkGray, alignment: 'right', margin: [0, 2, 0, 0] }
+              ]
             }
           ]
         },
@@ -286,16 +286,11 @@ export class BillingNotePdfBuilder {
     const silverAmount = Number(this.data.silverResizeAmount) || 0
     const totalResize = goldAmount + silverAmount
     const subTotal = Number(this.data.subTotal) || 0
-    const supportPercent = Number(this.data.supportPercent) || 0
-    const supportAmount = Number(this.data.supportAmount) || 0
     const vatPercent = Number(this.data.vatPercent) || 0
     const vatAmount = Number(this.data.vatAmount) || 0
     const grandTotal = Number(this.data.grandTotal) || 0
 
     const summaryRows = [{ label: 'ยอดก่อน VAT', value: this.formatMoney(subTotal) }]
-    if (this.data.hasSupport && supportPercent > 0) {
-      summaryRows.push({ label: `เงินสนับสนุน ${supportPercent}%`, value: this.formatMoney(supportAmount) })
-    }
     summaryRows.push({ label: `VAT ${vatPercent}%`, value: this.formatMoney(vatAmount) })
 
     return {
@@ -350,6 +345,7 @@ export class BillingNotePdfBuilder {
   getSeekSignatureTH() {
     const supportAmount = Number(this.data.supportAmount) || 0
     const hasSupport = Boolean(this.data.hasSupport) && supportAmount > 0
+    const supportPercent = Number(this.data.supportPercent) || 0
     const signColWidth = hasSupport ? 130 : 165
     const signLineWidth = hasSupport ? 115 : 150
 
@@ -366,7 +362,7 @@ export class BillingNotePdfBuilder {
       {
         width: signColWidth,
         stack: [
-          { text: ' ', fontSize: 8, margin: [0, 0, 0, 8] },
+          { text: ' ', fontSize: 8, margin: [0, 0, 0, 28] },
           {
             canvas: [{ type: 'line', x1: 0, y1: 0, x2: signLineWidth, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
             margin: [0, 0, 0, 4]
@@ -378,7 +374,7 @@ export class BillingNotePdfBuilder {
       {
         width: signColWidth,
         stack: [
-          { text: ' ', fontSize: 8, margin: [0, 0, 0, 8] },
+          { text: ' ', fontSize: 8, margin: [0, 0, 0, 28] },
           {
             canvas: [{ type: 'line', x1: 0, y1: 0, x2: signLineWidth, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
             margin: [0, 0, 0, 4]
@@ -393,7 +389,7 @@ export class BillingNotePdfBuilder {
       signatureColumns.push({
         width: signColWidth,
         stack: [
-          { text: ' ', fontSize: 8, margin: [0, 0, 0, 8] },
+          { text: ' ', fontSize: 8, margin: [0, 0, 0, 28] },
           {
             canvas: [{ type: 'line', x1: 0, y1: 0, x2: signLineWidth, y2: 0, lineWidth: 0.8, lineColor: PDF_COLORS.darkGray, dash: { length: 2 } }],
             margin: [0, 0, 0, 4]
@@ -406,6 +402,13 @@ export class BillingNotePdfBuilder {
 
     return {
       stack: [
+        ...(hasSupport ? [{
+          text: `เงินสนับสนุน ${supportPercent}% : ${this.formatMoney(supportAmount)} บาท`,
+          fontSize: 9,
+          bold: true,
+          color: PDF_COLORS.darkGray,
+          margin: [0, 0, 0, 4]
+        }] : []),
         {
           margin: [0, 16, 0, 8],
           canvas: [{
@@ -437,14 +440,13 @@ export class BillingNotePdfBuilder {
       content = [
         this.getSeekHeaderTH(),
         this.getSeekItemsTableTH(),
-        this.getResizeAndSummaryRow(),
-        this.getAmountInWordsBlock()
+        { unbreakable: true, stack: [this.getResizeAndSummaryRow(), this.getAmountInWordsBlock()] }
       ]
     }
 
     return {
       pageSize: 'A4',
-      pageMargins: [20, 20, 20, 90],
+      pageMargins: [20, 20, 20, 130],
       defaultStyle: {
         font: PDF_FONT,
         fontSize: 11
