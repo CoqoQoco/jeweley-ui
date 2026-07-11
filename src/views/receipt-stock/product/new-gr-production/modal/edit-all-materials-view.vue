@@ -484,7 +484,7 @@ export default {
         case 'Diamond':
           display = `${material.qty || ''}${material.type || ''}${material.qtyWeight || ''}${
             material.qtyWeightUnit ? ` ${material.qtyWeightUnit}` : ''
-          }${material.typeCode ? `, ${material.typeCode}` : ''}${
+          }${material.typeCode ? `, ${material.typeCode}` : ''}${material.size ? `, ${material.size}` : ''} ${
             material.region ? `, (${material.region})` : ''
           }`
           break
@@ -499,7 +499,7 @@ export default {
         case 'Gem':
           display = `${material.qty || ''}${material.typeCode || ''}${material.qtyWeight || ''}${
             material.qtyWeightUnit ? ` ${material.qtyWeightUnit}` : ''
-          }${material.region ? `, (${material.region})` : ''}`
+          }${material.size ? `, ${material.size}` : ''}${material.region ? `, (${material.region})` : ''}`
           break
 
         case 'Worker':

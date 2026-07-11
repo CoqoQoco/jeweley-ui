@@ -47,30 +47,7 @@
 
         <div class="form-col-container pl-4 pr-4">
           <div class="filter-container-bg-focus">
-            <barcodeDemo
-              v-if="selectedType === 'original'"
-              :madeIn="barcode.madeIn"
-              :madeInText="barcode.madeInText"
-              :stockNumber="barcode.stockNumber"
-              :mold="barcode.mold"
-              :gold="barcode.gold"
-              :gems="barcode.gems"
-              :size="barcode.size"
-              :goldType="barcode.goldType"
-            />
-            <barcodeVerticalDemo
-              v-else
-              :productNameEn="barcode.productNameEn"
-              :productNumber="barcode.productNumber"
-              :gold="barcode.gold"
-              :size="barcode.size"
-              :stockNumber="barcode.stockNumber"
-              :goldType="barcode.goldType"
-              :price="previewPrice"
-              :gems="barcode.gems"
-              :madeIn="barcode.madeIn"
-              :madeInText="barcode.madeInText"
-            />
+            <barcodePreview :selectedType="selectedType" :barcode="barcode" :price="previewPrice" />
           </div>
         </div>
 
@@ -140,11 +117,8 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-const barcodeDemo = defineAsyncComponent(() =>
-  import('@/components/custom/barcode-demo/barcode-demo-view.vue')
-)
-const barcodeVerticalDemo = defineAsyncComponent(() =>
-  import('@/components/custom/barcode-demo/barcode-vertical-demo-view.vue')
+const barcodePreview = defineAsyncComponent(() =>
+  import('@/components/custom/barcode-demo/barcode-preview.vue')
 )
 
 const interfaceBarcode = {
@@ -166,12 +140,12 @@ const interfaceBarcode = {
 
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
 
 export default {
   components: {
     modal,
-    barcodeDemo,
-    barcodeVerticalDemo
+    barcodePreview
   },
 
   setup() {
@@ -211,39 +185,11 @@ export default {
         this.stock = { ...val }
 
         this.barcode = {
-          madeIn: 'MADE IN THAILAND',
-          madeInText: 'XXXXXXXXXXX',
-          goldType: val.productionTypeSize,
-          mold: val.mold,
-          stockNumber: val.stockNumber,
-          size: val.size,
-          productNameEn: val.productNameEn || '',
-          productNumber: val.productNumber || '',
-          gold: '',
-          gems: [],
+          ...buildBarcodeModel(val),
           price: null,
           originPrice: null,
           tagPriceMultiplier: Number(val.tagPriceMultiplier) || 1,
-          print: 1,
-          isSilver: val.productionTypeSize === 'SILVER' ? true : false
-        }
-
-        // Process materials
-        if (val.materials?.length > 0) {
-          const goldParts = []
-          val.materials.forEach((material) => {
-            switch (material.type) {
-              case 'Gold':
-              case 'Silver':
-                if (material.typeBarcode) goldParts.push(material.typeBarcode)
-                break
-              case 'Gem':
-              case 'Diamond':
-                this.barcode.gems.push(material.typeBarcode)
-                break
-            }
-          })
-          this.barcode.gold = goldParts.join(' ')
+          print: 1
         }
 
         // fetch price แยก API เพื่อไม่ให้ list ช้า

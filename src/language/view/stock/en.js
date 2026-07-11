@@ -114,7 +114,11 @@ export default {
     imageSearchPlaceholder: 'Search by image name...',
     imageCreateDate: 'Create Date',
     unit: 'Unit',
-    remarkPlaceholder: 'Details ...'
+    remarkPlaceholder: 'Details ...',
+    materialGrade: 'Grade',
+    uploadFromDevice: 'Upload from device',
+    selectStorageLocation: 'Select storage location',
+    imageUploadSuccess: 'Image uploaded successfully'
   },
   location: {
     searchTitle: 'Search Storage Location',

@@ -114,7 +114,11 @@ export default {
     imageSearchPlaceholder: 'ค้นหาด้วยชื่อรูปภาพ...',
     imageCreateDate: 'วันที่สร้าง',
     unit: 'หน่วย',
-    remarkPlaceholder: 'รายละเอียด ...'
+    remarkPlaceholder: 'รายละเอียด ...',
+    materialGrade: 'เกรด',
+    uploadFromDevice: 'อัปโหลดจากเครื่อง',
+    selectStorageLocation: 'เลือกคลังจัดเก็บ',
+    imageUploadSuccess: 'อัปโหลดรูปภาพสำเร็จ'
   },
   location: {
     searchTitle: 'ค้นหา Storage Location',

@@ -54,17 +54,7 @@
       <!-- Barcode preview -->
       <div class="form-col-container mt-2">
         <div class="filter-container-bg-focus">
-          <barcodeDemo
-            :madeIn="formBarcode.madeIn"
-            :madeInText="formBarcode.madeInText"
-            :stockNumber="slotProps.stockNumber"
-            :mold="slotProps.data.moldDesign ?? formBarcode.mold"
-            :gold="slotProps.data.barcodeGold"
-            :gems="slotProps.data.barcodeGems"
-            :size="slotProps.data.size"
-            :goldType="formBarcode.goldType"
-            :type="formBarcode.type"
-          />
+          <barcodePreview selectedType="original" :type="formBarcode.type" :barcode="barcodeModel" />
         </div>
       </div>
     </div>
@@ -76,7 +66,7 @@ import ReceiptedStock from './expansion/receipted-stock.vue'
 import StockDetails from './expansion/stock-details.vue'
 import ProductImage from './expansion/product-image.vue'
 import MaterialsSection from './expansion/materials-section.vue'
-import barcodeDemo from '@/components/custom/barcode-demo/barcode-demo-view.vue'
+import barcodePreview from '@/components/custom/barcode-demo/barcode-preview.vue'
 
 export default {
   name: 'ProductExpansion',
@@ -86,7 +76,7 @@ export default {
     StockDetails,
     ProductImage,
     MaterialsSection,
-    barcodeDemo
+    barcodePreview
   },
 
   props: {
@@ -155,7 +145,22 @@ export default {
     'updateTypeBarcode',
     'loadFromBreakdown',
     'editAllMaterials'
-  ]
+  ],
+
+  computed: {
+    barcodeModel() {
+      return {
+        madeIn: this.formBarcode.madeIn,
+        madeInText: this.formBarcode.madeInText,
+        stockNumber: this.slotProps.stockNumber,
+        mold: this.slotProps.data.moldDesign ?? this.formBarcode.mold,
+        gold: this.slotProps.data.barcodeGold,
+        gems: this.slotProps.data.barcodeGems,
+        size: this.slotProps.data.size,
+        goldType: this.formBarcode.goldType
+      }
+    }
+  }
 }
 </script>
 

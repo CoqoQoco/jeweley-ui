@@ -1,22 +1,14 @@
 <template>
   <div>
-    <modal :showModal="isShowModal" @closeModal="closeModal" width="1200px" :isShowActionPart="true">
+    <modal :showModal="isShowModal" @closeModal="closeModal" width="1200px" :isShowActionPart="true" headerVariant="main">
       <template #title>
-        <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.stock.product.editTitle', { stockNumber: stock.stockNumber }) }}</span>
+        <span class="title-text-lg d-block">{{ $t('view.stock.product.editTitle', { stockNumber: stock.stockNumber }) }}</span>
       </template>
       <template #content>
-        <form @submit.prevent="onSubmit" id="stock-update-form" class="form-content">
-          <!-- Image Section -->
-          <div class="section-container">
-            <div class="section-header">
-              <div class="section-title">
-                <i class="bi bi-image-fill"></i>
-                <span>{{ $t('view.stock.product.imageProduct') }}</span>
-              </div>
-            </div>
-
-            <div class="image-upload-container">
-              <!-- SHOW stage: display current image + select button -->
+        <form @submit.prevent="onSubmit" id="stock-update-form">
+          <div class="p-3">
+            <!-- Image Section -->
+            <SectionCardGeneric :title="$t('view.stock.product.imageProduct')" class="modal-section">
               <div v-if="imageStage === 'SHOW'" class="image-preview-box">
                 <div class="image-preview">
                   <imagePreview
@@ -37,34 +29,44 @@
                     class="image-body no-image"
                   />
                 </div>
-                <div class="mt-3">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-main"
+                <div class="mt-3 image-action-group">
+                  <ButtonGeneric
+                    variant="main"
+                    icon="bi-images"
+                    :label="$t('view.stock.product.selectImage')"
                     @click="onSelectImage('SELECT')"
-                  >
-                    <i class="bi bi-images mr-1"></i>
-                    {{ $t('view.stock.product.selectImage') }}
-                  </button>
+                  />
+                  <ButtonGeneric
+                    variant="outline"
+                    icon="bi-cloud-arrow-up"
+                    :label="$t('view.stock.product.uploadFromDevice')"
+                    class="ml-2"
+                    @click="triggerDeviceUpload"
+                  />
                 </div>
+                <input
+                  type="file"
+                  ref="deviceFileInput"
+                  accept=".jpg,.jpeg,image/jpeg"
+                  class="d-none"
+                  @change="onDeviceFileChange"
+                />
               </div>
 
-              <!-- SELECT stage: gallery search + table -->
               <div v-else-if="imageStage === 'SELECT'" class="image-select-stage">
                 <div class="mb-2 d-flex align-items-center">
-                  <input
-                    class="form-control form-control-sm"
+                  <InputTextGeneric
                     v-model="search"
                     :placeholder="$t('view.stock.product.imageSearchPlaceholder')"
                     @keyup.enter="fetchLatestImage"
                   />
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-main ml-2"
+                  <ButtonGeneric
+                    variant="main"
+                    icon="bi-search"
+                    class="ml-2"
+                    :title="$t('common.btn.search')"
                     @click="fetchLatestImage"
-                  >
-                    <i class="bi bi-search"></i>
-                  </button>
+                  />
                 </div>
 
                 <BaseDataTable
@@ -92,209 +94,94 @@
                   </template>
 
                   <template #paginator-buttons>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-main"
-                      @click="onSelectImage('SHOW')"
-                    >
-                      {{ $t('common.btn.cancel') }}
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-main ml-2"
+                    <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" @click="onSelectImage('SHOW')" />
+                    <ButtonGeneric
+                      variant="main"
+                      :label="$t('common.btn.confirm')"
+                      class="ml-2"
                       :disabled="!selectedItems.length"
                       @click="onSelect"
-                    >
-                      {{ $t('common.btn.confirm') }}
-                    </button>
+                    />
                   </template>
                 </BaseDataTable>
               </div>
-            </div>
-          </div>
+            </SectionCardGeneric>
 
-          <!-- Product Information Section -->
-          <div class="section-container">
-            <div class="section-header">
-              <div class="section-title">
-                <i class="bi bi-clipboard2-check-fill"></i>
-                <span>{{ $t('view.stock.product.stockInfo') }}</span>
+            <!-- Product Information Section -->
+            <SectionCardGeneric :title="$t('view.stock.product.stockInfo')" class="modal-section">
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.stock.product.mold')" :required="true" class="full-width">
+                  <InputTextGeneric v-model="stock.mold" :placeholder="$t('view.stock.product.placeholderMold')" :required="true" />
+                </FormFieldGeneric>
               </div>
-            </div>
 
-            <div class="form-grid">
-              <!-- Mold -->
-              <div class="form-group full-width">
-                <label class="form-label">
-                  <i class="bi bi-box mr-1"></i>
-                  {{ $t('view.stock.product.mold') }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  class="form-control"
-                  :class="{ 'has-value': stock.mold }"
-                  type="text"
-                  v-model="stock.mold"
-                  :placeholder="$t('view.stock.product.placeholderMold')"
-                  required
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.stock.product.productNameEn')" :required="true">
+                  <InputTextGeneric v-model="stock.productNameEn" :placeholder="$t('view.stock.product.productNameEn')" :required="true" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.product.productNameTh')" :required="true">
+                  <InputTextGeneric v-model="stock.productNameTh" :placeholder="$t('view.stock.product.productNameTh')" :required="true" />
+                </FormFieldGeneric>
+              </div>
+
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('common.field.quantity')" :required="true">
+                  <InputTextGeneric v-model="stock.qty" type="number" :step="'any'" :min="0" placeholder="0" :required="true" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.product.salePrice')" :required="true">
+                  <InputTextGeneric v-model="stock.productPrice" type="number" :step="'any'" :min="0" placeholder="0.00" :required="true" />
+                </FormFieldGeneric>
+              </div>
+
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.stock.product.size')">
+                  <InputTextGeneric
+                    v-model="stock.size"
+                    :placeholder="$t('view.stock.product.placeholderSize')"
+                    :required="isRequiredSizeField(stock.productType)"
+                  />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.product.earringStemSize')">
+                  <InputTextGeneric v-model="stock.earringStemSize" />
+                </FormFieldGeneric>
+              </div>
+
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.stock.product.productType')">
+                  <DropdownGeneric
+                    v-model="stock.productType"
+                    :options="masterProductType"
+                    optionLabel="description"
+                    optionValue="code"
+                    :showClear="false"
+                    :placeholder="$t('view.stock.product.selectProductType')"
+                  />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.product.storageLocation')">
+                  <DropdownGeneric
+                    v-model="stock.location"
+                    :options="locationOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    :showClear="true"
+                    :placeholder="$t('view.stock.product.selectStorageLocation')"
+                  />
+                </FormFieldGeneric>
+              </div>
+            </SectionCardGeneric>
+
+            <!-- Materials Section -->
+            <SectionCardGeneric :title="$t('view.stock.product.materialsTitle')" class="modal-section">
+              <div class="section-toolbar mb-2">
+                <ButtonGeneric
+                  variant="main"
+                  icon="bi-plus-lg"
+                  :label="$t('view.stock.product.addMaterial')"
+                  @click="addMaterialItem(stock.materials)"
                 />
               </div>
 
-              <!-- Product Name EN -->
-              <div class="form-group">
-                <label class="form-label">
-                  {{ $t('view.stock.product.productNameEn') }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  class="form-control"
-                  :class="{ 'has-value': stock.productNameEn }"
-                  type="text"
-                  v-model="stock.productNameEn"
-                  placeholder="Product Name (English)"
-                  required
-                />
-              </div>
-
-              <!-- Product Name TH -->
-              <div class="form-group">
-                <label class="form-label">
-                  {{ $t('view.stock.product.productNameTh') }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  class="form-control"
-                  :class="{ 'has-value': stock.productNameTh }"
-                  type="text"
-                  v-model="stock.productNameTh"
-                  :placeholder="$t('view.stock.product.productNameTh')"
-                  required
-                />
-              </div>
-
-              <!-- Quantity -->
-              <div class="form-group">
-                <label class="form-label">
-                  <i class="bi bi-boxes mr-1"></i>
-                  {{ $t('common.field.quantity') }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  class="form-control"
-                  :class="{ 'has-value': stock.qty }"
-                  type="number"
-                  step="any"
-                  min="0"
-                  v-model="stock.qty"
-                  placeholder="0"
-                  required
-                />
-              </div>
-
-              <!-- Price -->
-              <div class="form-group">
-                <label class="form-label">
-                  <i class="bi bi-cash mr-1"></i>
-                  {{ $t('view.stock.product.salePrice') }}
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  class="form-control"
-                  :class="{ 'has-value': stock.productPrice }"
-                  type="number"
-                  step="any"
-                  min="0"
-                  v-model="stock.productPrice"
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-
-              <!-- Size -->
-              <div class="form-group">
-                <label class="form-label">
-                  <i class="bi bi-rulers mr-1"></i>
-                  {{ $t('view.stock.product.size') }}
-                </label>
-                <input
-                  class="form-control"
-                  :class="{ 'has-value': stock.size }"
-                  type="text"
-                  v-model="stock.size"
-                  :placeholder="$t('view.stock.product.placeholderSize')"
-                  :required="isRequiredSizeField(stock.productType)"
-                />
-              </div>
-
-              <!-- Earring Stem Size -->
-              <div class="form-group">
-                <label class="form-label">
-                  {{ $t('view.stock.product.earringStemSize') }}
-                </label>
-                <input
-                  class="form-control"
-                  :class="{ 'has-value': stock.earringStemSize }"
-                  type="text"
-                  v-model="stock.earringStemSize"
-                />
-              </div>
-
-              <!-- Product Type -->
-              <div class="form-group">
-                <label class="form-label">
-                  <i class="bi bi-tag mr-1"></i>
-                  {{ $t('view.stock.product.productType') }}
-                </label>
-                <DropdownGeneric
-                  v-model="stock.productType"
-                  :options="masterProductType"
-                  optionLabel="description"
-                  optionValue="code"
-                  :showClear="false"
-                  :placeholder="$t('view.stock.product.selectProductType')"
-                />
-              </div>
-
-              <!-- Location -->
-              <div class="form-group">
-                <label class="form-label">
-                  <i class="bi bi-geo-alt mr-1"></i>
-                  {{ $t('view.stock.product.storageLocation') }}
-                </label>
-                <input
-                  class="form-control"
-                  type="text"
-                  v-model="stock.location"
-                  :placeholder="$t('view.stock.product.storageLocation')"
-                  disabled
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Materials Section -->
-          <div class="section-container">
-            <div class="section-header">
-              <div class="section-title">
-                <i class="bi bi-gem"></i>
-                <span>{{ $t('view.stock.product.materialsTitle') }}</span>
-              </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-main"
-                @click="addMaterialItem(stock.materials)"
-              >
-                <i class="bi bi-plus-lg mr-1"></i>
-                {{ $t('view.stock.product.addMaterial') }}
-              </button>
-            </div>
-
-            <div class="material-table-wrapper">
-              <BaseDataTable
-                :items="stock.materials"
-                :columns="materialColumns"
-                :paginator="false"
-              >
+              <BaseDataTable :items="stock.materials" :columns="materialColumns" :paginator="false">
                 <template #typeTemplate="{ data }">
                   <DropdownGeneric
                     v-model="data.type"
@@ -318,17 +205,6 @@
                       class="w-full"
                     />
                   </div>
-                  <div v-else-if="data.type === 'Diamond'">
-                    <DropdownGeneric
-                      v-model="data.typeCode"
-                      :options="masterDiamondGrade"
-                      optionLabel="description"
-                      optionValue="nameEn"
-                      :placeholder="$t('view.stock.product.selectDiamond')"
-                      :showClear="!!data.typeCode"
-                      class="w-full"
-                    />
-                  </div>
                   <div v-else-if="data.type === 'Gem'">
                     <DropdownGeneric
                       v-model="data.typeCode"
@@ -340,42 +216,44 @@
                       class="w-full"
                     />
                   </div>
+                  <div v-else-if="data.type === 'Diamond'" class="text-muted text-center">
+                    <span>—</span>
+                  </div>
                   <div v-else class="text-muted text-center">
                     <small>{{ $t('view.stock.product.selectTypeFirst') }}</small>
                   </div>
                 </template>
 
-                <template #sizeTemplate="{ data }">
-                  <input
-                    type="text"
-                    v-model="data.size"
-                    class="form-control form-control-sm"
-                    :placeholder="$t('view.stock.product.size')"
+                <template #gradeTemplate="{ data }">
+                  <DropdownGeneric
+                    v-if="data.type === 'Diamond'"
+                    v-model="data.typeCode"
+                    :options="masterDiamondGrade"
+                    optionLabel="description"
+                    optionValue="nameEn"
+                    :placeholder="$t('view.stock.product.selectDiamond')"
+                    :showClear="!!data.typeCode"
+                    class="w-full"
                   />
+                  <span v-else class="text-muted text-center d-block">—</span>
+                </template>
+
+                <template #sizeTemplate="{ data }">
+                  <InputTextGeneric v-model="data.size" :placeholder="$t('view.stock.product.size')" />
                 </template>
 
                 <template #regionTemplate="{ data }">
-                  <input
-                    type="text"
-                    v-model="data.region"
-                    class="form-control form-control-sm"
-                    :placeholder="$t('view.stock.product.origin')"
-                  />
+                  <InputTextGeneric v-model="data.region" :placeholder="$t('view.stock.product.origin')" />
                 </template>
 
                 <template #qtyTemplate="{ data }">
                   <div class="input-pair">
-                    <input
-                      type="number"
-                      v-model="data.qty"
-                      class="form-control form-control-sm"
-                      :placeholder="$t('common.field.quantity')"
-                      min="0"
-                    />
-                    <input
-                      type="text"
+                    <InputTextGeneric type="number" v-model="data.qty" :placeholder="$t('common.field.quantity')" :min="0" />
+                    <DropdownGeneric
                       v-model="data.qtyUnit"
-                      class="form-control form-control-sm"
+                      :options="unitOptions(data.qtyUnit, qtyUnitOptions)"
+                      optionLabel="label"
+                      optionValue="value"
                       :placeholder="$t('view.stock.product.unit')"
                     />
                   </div>
@@ -383,57 +261,43 @@
 
                 <template #weightTemplate="{ data }">
                   <div class="input-pair">
-                    <input
+                    <InputTextGeneric
                       type="number"
                       v-model="data.weight"
-                      class="form-control form-control-sm"
                       :placeholder="$t('common.field.weight')"
-                      min="0"
-                      step="0.01"
+                      :min="0"
+                      :step="0.01"
                     />
-                    <input
-                      type="text"
+                    <DropdownGeneric
                       v-model="data.weightUnit"
-                      class="form-control form-control-sm"
+                      :options="unitOptions(data.weightUnit, weightUnitOptions)"
+                      optionLabel="label"
+                      optionValue="value"
                       :placeholder="$t('view.stock.product.unit')"
                     />
                   </div>
                 </template>
 
                 <template #priceTemplate="{ data }">
-                  <input
-                    type="number"
-                    v-model="data.price"
-                    class="form-control form-control-sm"
-                    :placeholder="$t('common.field.price')"
-                    min="0"
-                    step="0.01"
-                  />
+                  <InputTextGeneric type="number" v-model="data.price" :placeholder="$t('common.field.price')" :min="0" :step="0.01" />
                 </template>
 
                 <template #actionTemplate="{ index }">
-                  <button
-                    type="button"
-                    class="btn btn-red btn-sm"
-                    @click="removeMaterialItem(stock, index)"
+                  <ButtonGeneric
+                    variant="red"
+                    icon="bi-trash"
                     :title="$t('common.btn.delete')"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
+                    @click="removeMaterialItem(stock, index)"
+                  />
                 </template>
               </BaseDataTable>
-            </div>
+            </SectionCardGeneric>
           </div>
-
         </form>
       </template>
       <template #action>
-        <button class="btn btn-sm btn-main" type="submit" form="stock-update-form">
-          <i class="bi bi-save"></i> {{ $t('common.btn.save') }}
-        </button>
-        <button class="btn btn-sm btn-outline-main ml-2" type="button" @click="closeModal">
-          {{ $t('common.btn.cancel') }}
-        </button>
+        <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" type="submit" form="stock-update-form" />
+        <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
   </div>
@@ -441,32 +305,44 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 const BaseDataTable = defineAsyncComponent(() =>
   import('@/components/prime-vue/DataTableWithPaging.vue')
 )
 
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
-
 import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 
 export default {
   components: {
     modal,
     imagePreview,
     BaseDataTable,
-    DropdownGeneric
+    DropdownGeneric,
+    InputTextGeneric,
+    FormFieldGeneric,
+    ButtonGeneric,
+    SectionCardGeneric
   },
 
   setup() {
     const stockProductImageStore = stockProductImageApiStor()
     const productStore = usrStockProductApiStore()
     const masterStore = useMasterApiStore()
-    return { stockProductImageStore, productStore, masterStore }
+    const stockLocationStore = useStockLocationApiStore()
+    return { stockProductImageStore, productStore, masterStore, stockLocationStore }
   },
 
   props: {
@@ -495,10 +371,20 @@ export default {
     masterProductType() {
       return this.masterStore.productType
     },
+    locationOptions() {
+      const options = this.stockLocationStore.all
+        .filter((item) => item.isActive)
+        .map((item) => ({ value: item.code, label: `${item.code} — ${item.nameTh}` }))
+      if (this.stock.location && !options.some((o) => o.value === this.stock.location)) {
+        options.push({ value: this.stock.location, label: this.stock.location })
+      }
+      return options
+    },
     materialColumns() {
       return [
         { field: 'type', header: this.$t('view.stock.product.materialType'), sortable: false, width: '120px' },
         { field: 'typeCode', header: this.$t('view.stock.product.materialCode'), sortable: false, minWidth: '150px' },
+        { field: 'grade', header: this.$t('view.stock.product.materialGrade'), sortable: false, width: '150px' },
         { field: 'size', header: this.$t('view.stock.product.size'), sortable: false, width: '100px' },
         { field: 'region', header: this.$t('view.stock.product.origin'), sortable: false, width: '120px' },
         { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '180px' },
@@ -531,6 +417,8 @@ export default {
         this.isShowModal = val
         if (val) {
           await this.masterStore.fetchProductType()
+          await this.masterStore.fetchDiamondGrade()
+          await this.stockLocationStore.fetchAllForMap()
         }
       },
       immediate: true
@@ -557,7 +445,16 @@ export default {
       latestImage: [],
       latestImageTotalRecords: 0,
       selectedItems: [],
-      selectionType: 'single'
+      selectionType: 'single',
+      qtyUnitOptions: [
+        { value: 'pc', label: 'pc' },
+        { value: 'เม็ด', label: 'เม็ด' },
+        { value: 'ชิ้น', label: 'ชิ้น' }
+      ],
+      weightUnitOptions: [
+        { value: 'g.', label: 'g.' },
+        { value: 'ct.', label: 'ct.' }
+      ]
     }
   },
 
@@ -577,6 +474,13 @@ export default {
 
     isRequiredSizeField(data) {
       return ['G', 'B', 'R'].includes(data)
+    },
+
+    unitOptions(current, base) {
+      if (current && !base.some((opt) => opt.value === current)) {
+        return [...base, { value: current, label: current }]
+      }
+      return base
     },
 
     removeMaterialItem(item, index) {
@@ -650,6 +554,53 @@ export default {
       this.imageStage = 'SHOW'
     },
 
+    triggerDeviceUpload() {
+      this.$refs.deviceFileInput.click()
+    },
+
+    async onDeviceFileChange(e) {
+      const file = e.target.files[0]
+      if (!file) return
+
+      if (!file.type.match(/image\/(jpeg|jpg)/i)) {
+        warning(this.$t('view.stock.product.uploadFormatWarning'))
+        this.$refs.deviceFileInput.value = ''
+        return
+      }
+
+      const compressedFile = await compressOptimalImage(file)
+
+      const form = new FormData()
+      form.append('name', this.stock.stockNumber)
+      form.append('description', '')
+      form.append('image', new File([compressedFile], `${this.stock.stockNumber}.jpg`, { type: 'image/jpeg' }))
+
+      const saveRes = await this.stockProductImageStore.fetchSaveImage({ form })
+      if (!saveRes) {
+        this.$refs.deviceFileInput.value = ''
+        return
+      }
+
+      const res = await this.stockProductImageStore.fetchListImage({
+        take: 1,
+        skip: 0,
+        sort: [{ field: 'createDate', dir: 'desc' }],
+        search: { name: this.stock.stockNumber, year: null },
+        skipLoading: true
+      })
+
+      if (res && res.data && res.data.length > 0) {
+        const item = res.data[0]
+        this.stock.imageName = item.name
+        this.stock.imageYear = item.year
+        this.stock.imagePath = item.namePath
+      }
+
+      success(this.$t('view.stock.product.imageUploadSuccess'))
+      this.imageStage = 'SHOW'
+      this.$refs.deviceFileInput.value = ''
+    },
+
     onSubmit() {
       confirmThenSubmit('', this.$t('view.stock.product.confirmSave'), async () => {
         this.fetchConfirm()
@@ -679,7 +630,7 @@ export default {
       if (item.type === 'Diamond') {
         display = `${item.qty ?? ''}${item.type ?? ''}${item.weight ?? ''}${
           item.weightUnit ? ` ${item.weightUnit}` : ''
-        }${item.typeCode ? `, ${item.typeCode}` : ''}`
+        }${item.typeCode ? `, ${item.typeCode}` : ''}${item.size ? `, ${item.size}` : ''}`
       }
 
       if (item.type === 'Gold' || item.type === 'Silver') {
@@ -691,7 +642,7 @@ export default {
       if (item.type === 'Gem') {
         display = `${item.qty ?? ''}${item.typeCode ?? ''}${item.weight ?? ''}${
           item.weightUnit ? ` ${item.weightUnit}` : ``
-        }`
+        }${item.size ? `, ${item.size}` : ''}`
       }
 
       return display
@@ -704,44 +655,36 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/responsive-style/web';
 
-.card { background: #ffffff !important; }
+.modal-section {
+  margin-bottom: var(--sp-lg);
 
-.form-content {
-  padding: 1.5rem;
-}
-
-.section-container {
-  margin-bottom: 2rem;
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
-.section-header {
-  background: var(--surface-inverse-gradient-bar);
-  padding: var(--sp-lg) var(--sp-2xl);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-
-  i {
-    font-size: 1.3rem;
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 
-// Image Section
-.image-upload-container {
-  padding: 2rem;
+.form-row {
+  margin-bottom: var(--sp-lg);
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-lg);
+  }
+
+  @media (max-width: 1024px) {
+    &.two-col {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.full-width {
+  grid-column: 1 / -1;
 }
 
 .image-preview-box {
@@ -749,29 +692,18 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  border: 2px dashed #ddd;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: var(--base-font-color);
-    background: linear-gradient(145deg, #fff 0%, #f8f9fa 100%);
-  }
+  padding: var(--sp-2xl);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-highlight-bg);
 
   .image-preview {
-    margin-bottom: 1rem;
+    margin-bottom: var(--sp-lg);
   }
 
   .image-body {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-
-    &:hover {
-      transform: scale(1.05);
-    }
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
 
     &.no-image {
       opacity: 0.6;
@@ -779,100 +711,34 @@ export default {
   }
 }
 
+.image-action-group {
+  display: flex;
+  align-items: center;
+}
+
 .image-select-stage {
   width: 100%;
 }
 
-// Form Grid
-.form-grid {
-  padding: 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-
-  .full-width {
-    grid-column: 1 / -1;
-  }
-}
-
-.form-group {
+.section-toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
-.form-label {
-  font-weight: 600;
-  color: var(--base-sub-color);
-  font-size: 0.9rem;
+.input-pair {
   display: flex;
-  align-items: center;
-  margin-bottom: 0;
+  gap: var(--sp-xs);
 
-  i {
-    color: var(--base-font-color);
+  > :first-child {
+    flex: 2;
   }
 
-  .text-danger {
-    color: var(--base-red);
-    margin-left: 0.25rem;
-  }
-}
-
-.form-control {
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  padding: 0.65rem 0.9rem;
-  transition: all 0.2s ease;
-  background: #fff;
-
-  &:focus {
-    border-color: var(--base-font-color);
-    box-shadow: 0 0 0 0.2rem rgba(146, 19, 19, 0.15);
-  }
-
-  &.has-value {
-    background: var(--color-highlight-bg);
-    border-color: var(--base-font-color);
-  }
-
-  &:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
+  > :last-child {
+    flex: 1;
   }
 }
 
 .w-full {
   width: 100%;
-}
-
-// Material Table
-.material-table-wrapper {
-  padding: 1.5rem;
-
-  .input-pair {
-    display: flex;
-    gap: 0.25rem;
-
-    input:first-child {
-      flex: 2;
-    }
-
-    input:last-child {
-      flex: 1;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
 }
 </style>
