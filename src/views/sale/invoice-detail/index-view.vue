@@ -1141,6 +1141,9 @@ export default {
               const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
               const stoneWeight = mats.filter(m => m.type === 'Gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
               const diamondWeight = mats.filter(m => m.type === 'Diamond').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+              const diamondGrade = [...new Set(
+                mats.filter(m => m.type === 'Diamond').map(m => m.typeCode).filter(Boolean)
+              )].join(', ')
               return {
                 stockNumber: i.stockNumberOrigin || i.stockNumber || '',
                 productNumber: i.productNumber || '',
@@ -1151,6 +1154,7 @@ export default {
                 goldWeight: goldWeight || null,
                 stoneWeight: stoneWeight || null,
                 diamondWeight: diamondWeight || null,
+                diamondGrade: diamondGrade || '',
                 earringStemSize: i.earringStemSize || ''
               }
             }),
@@ -1166,7 +1170,7 @@ export default {
             'showCustomerName', 'showCustomerTaxId', 'showCustomerAddress',
             'showItemNo', 'showDescription', 'showStockNumber', 'showProductNumber',
             'showPriceBeforeDiscount', 'showPriceIncludingVat',
-            'showGoldWeight', 'showStoneWeight', 'showDiamondWeight',
+            'showGoldWeight', 'showStoneWeight', 'showDiamondWeight', 'showDiamondGrade',
             'showQty', 'showUnitPrice', 'showAmount', 'showRemark',
             'showSubtotal', 'showVat', 'showTotal', 'showAmountText',
             'unitPriceMode', 'unitVatPercent', 'summaryVatPercent'

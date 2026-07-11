@@ -162,6 +162,13 @@
           </div>
 
           <div class="form-row">
+            <label class="form-label-col">Diamond Grade X</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xDiamondGrade" type="number" step="0.01" />
+            </div>
+          </div>
+
+          <div class="form-row">
             <label class="form-label-col">ตำแหน่ง X — หมายเหตุ (ขนาดแป้นต่างหู)</label>
             <div class="form-input-col single-input">
               <InputTextGeneric v-model="form.xRemark" type="number" step="0.01" />
@@ -332,6 +339,13 @@
           </div>
 
           <div class="form-row">
+            <label class="form-label-col">แสดงเกรดเพชร (Diamond Grade)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showDiamondGrade" />
+            </div>
+          </div>
+
+          <div class="form-row">
             <label class="form-label-col">แสดงจำนวน (Qty)</label>
             <div class="form-input-col">
               <CheckboxGeneric v-model="form.showQty" />
@@ -402,6 +416,13 @@
                 optionLabel="label"
                 optionValue="value"
               />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงราคาทศนิยม 2 ตำแหน่ง</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showDecimals" />
             </div>
           </div>
 
@@ -585,6 +606,7 @@ const DEFAULT_LAYOUT = {
   xGoldWeight: 4.45,
   xStoneWeight: 5.15,
   xDiamondWeight: 5.85,
+  xDiamondGrade: 6.20,
   itemPriceX: 6.75,
   itemAmountX: 8.0,
   stockSecondLineDy: 0.13,
@@ -620,6 +642,7 @@ const DEFAULT_LAYOUT = {
   showGoldWeight: true,
   showStoneWeight: true,
   showDiamondWeight: true,
+  showDiamondGrade: true,
   showQty: true,
   showUnitPrice: true,
   showAmount: true,
@@ -632,6 +655,7 @@ const DEFAULT_LAYOUT = {
   unitPriceMode: 'tag',
   unitVatPercent: 7,
   summaryVatPercent: 7,
+  showDecimals: true,
   // Customer font size (separate from header)
   customerFontSize: 12,
   // Address word-wrap: max characters per line
@@ -681,7 +705,7 @@ export default {
       const result = deepClone(obj)
       const numFields = [
         'itemNoX', 'xStockNumber', 'xProductNumber', 'itemDescX', 'xPriceBeforeDiscount',
-        'xPriceIncludingVat', 'itemQtyX', 'xGoldWeight', 'xStoneWeight', 'xDiamondWeight',
+        'xPriceIncludingVat', 'itemQtyX', 'xGoldWeight', 'xStoneWeight', 'xDiamondWeight', 'xDiamondGrade',
         'itemPriceX', 'itemAmountX', 'xRemark', 'rowHeight', 'maxRowsPerPage',
         'headerFontSize', 'customerFontSize', 'itemFontSize', 'offsetX', 'offsetY', 'stockSecondLineDy',
         'unitVatPercent', 'summaryVatPercent', 'customerAddressMaxChars'

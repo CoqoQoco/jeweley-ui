@@ -96,6 +96,7 @@ function resolveLayout(layout) {
     xGoldWeight: Number(L.xGoldWeight ?? 4.45) || 0,
     xStoneWeight: Number(L.xStoneWeight ?? 5.15) || 0,
     xDiamondWeight: Number(L.xDiamondWeight ?? 5.85) || 0,
+    xDiamondGrade: Number(L.xDiamondGrade ?? 6.20) || 0,
     xPageNumber: Number(L.pageNumber?.x ?? 7.5) || 0,
     yPageNumber: Number(L.pageNumber?.y ?? 2.4) || 0,
     useBuddhistYear: L.useBuddhistYear !== undefined ? L.useBuddhistYear : true,
@@ -125,6 +126,8 @@ function resolveLayout(layout) {
     showGoldWeight: flag(L, 'showGoldWeight'),
     showStoneWeight: flag(L, 'showStoneWeight'),
     showDiamondWeight: flag(L, 'showDiamondWeight'),
+    showDiamondGrade: flag(L, 'showDiamondGrade'),
+    showDecimals: L.showDecimals,   // raw pass-through: undefined = not yet set on settings page
     showQty: flag(L, 'showQty'),
     showUnitPrice: flag(L, 'showUnitPrice'),
     showAmount: flag(L, 'showAmount'),
@@ -161,7 +164,7 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
   const currencyRate = Number(invoice.currencyRate) || 1
   const uv = L.unitVatPercent
   const sv = L.summaryVatPercent
-  const showDecimals = options?.showDecimals ?? true
+  const showDecimals = L.showDecimals !== undefined ? L.showDecimals : (options?.showDecimals ?? true)
   const money = (val) => showDecimals ? n2(val) : n0(val)
 
   const items = invoice.items || []
@@ -257,6 +260,10 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
       const diamondWeight = item.diamondWeight != null ? Number(item.diamondWeight) : 0
       if (L.showDiamondWeight && diamondWeight !== 0) {
         right(n3(diamondWeight), L.xDiamondWeight, y, ifs)
+      }
+
+      if (L.showDiamondGrade && item.diamondGrade) {
+        left(String(item.diamondGrade), L.xDiamondGrade, y, ifs)   // grade is text -> left align
       }
 
       if (L.showQty) right(n0(item.qty), L.xItemQty, y, ifs)

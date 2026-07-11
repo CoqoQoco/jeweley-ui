@@ -95,6 +95,7 @@ export const invoiceDetail = {
   billElemGoldWeight: 'Gold Weight (gms)',
   billElemStoneWeight: 'Stone Weight (cts)',
   billElemDiamondWeight: 'Diamond Weight (cts)',
+  billElemDiamondGrade: 'Diamond Grade',
   billElemQty: 'Qty',
   billElemUnitPrice: 'Unit Price',
   billElemAmount: 'Line Amount',

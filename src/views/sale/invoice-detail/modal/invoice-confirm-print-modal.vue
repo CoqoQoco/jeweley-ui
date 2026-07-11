@@ -289,6 +289,11 @@
                     @update:modelValue="onBillFlagChange"
                   />
                   <CheckboxGeneric
+                    v-model="billElementFlags.showDiamondGrade"
+                    :label="$t('view.sale.invoiceDetail.billElemDiamondGrade')"
+                    @update:modelValue="onBillFlagChange"
+                  />
+                  <CheckboxGeneric
                     v-model="billElementFlags.showQty"
                     :label="$t('view.sale.invoiceDetail.billElemQty')"
                     @update:modelValue="onBillFlagChange"
@@ -532,6 +537,7 @@ export default {
         showGoldWeight: true,
         showStoneWeight: true,
         showDiamondWeight: true,
+        showDiamondGrade: true,
         showQty: true,
         showUnitPrice: true,
         showAmount: true,
@@ -648,6 +654,7 @@ export default {
             showGoldWeight: boolFlag('showGoldWeight'),
             showStoneWeight: boolFlag('showStoneWeight'),
             showDiamondWeight: boolFlag('showDiamondWeight'),
+            showDiamondGrade: boolFlag('showDiamondGrade'),
             showQty: boolFlag('showQty'),
             showUnitPrice: boolFlag('showUnitPrice'),
             showAmount: boolFlag('showAmount'),

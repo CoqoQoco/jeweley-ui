@@ -95,6 +95,7 @@ export const invoiceDetail = {
   billElemGoldWeight: 'น้ำหนักทอง (Gold gms)',
   billElemStoneWeight: 'น้ำหนักพลอย (Stone cts)',
   billElemDiamondWeight: 'น้ำหนักเพชร (Diamond cts)',
+  billElemDiamondGrade: 'เกรดเพชร (Diamond Grade)',
   billElemQty: 'จำนวน (Qty)',
   billElemUnitPrice: 'ราคาต่อหน่วย (Unit Price)',
   billElemAmount: 'ยอดรวมต่อแถว (Amount)',
