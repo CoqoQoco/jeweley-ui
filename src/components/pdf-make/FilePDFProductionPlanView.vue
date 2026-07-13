@@ -114,12 +114,12 @@ export default {
     },
     table(data) {
       return {
-        fontSize: 9,
+        fontSize: 7,
         bold: true,
         margin: [0, 0, 0, 20],
         table: {
           headerRows: 1,
-          widths: [60, '*', '*', 60, 50, '*', '*', '*', '*', '*', '*'],
+          widths: [58, 42, 32, 52, 48, 42, 46, 48, 50, 46, 48],
           body: this.buildTableBody(data)
         }
       }
@@ -148,7 +148,7 @@ export default {
             ],
             margin: [0, 0, 0, 0],
             bold: true,
-            fontSize: 15
+            fontSize: 12
           },
 
           // ------- detail -------
@@ -411,7 +411,7 @@ export default {
             margin: [0, 0, 0, 0]
           },
           title: {
-            fontSize: 10
+            fontSize: 9
             //bold: true
           },
           titleAction: {
@@ -421,7 +421,7 @@ export default {
             decorationStyle: 'solid' // รูปแบบของขีดเส้น (solid, double, dashed, etc.)
           },
           desc: {
-            fontSize: 14,
+            fontSize: 11,
             bold: true
           },
           descAction: {

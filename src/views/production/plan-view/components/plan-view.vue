@@ -166,7 +166,7 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
 import { confirmSubmit, warning } from '@/services/alert/sweetAlerts.js'
-import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
+import { getAzureBlobUrl, getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 
 //import planOverview from './PlanOverview.vue'
 
@@ -286,7 +286,7 @@ export default {
     },
     async generatePDF() {
       const blobPath = `Mold/${this.model.mold}-Mold.png`
-      const urlImage = getAzureBlobUrl(blobPath)
+      const urlImage = await getAzureBlobAsBase64(blobPath, 'mold')
       const pdfBuilder = new FilePlanProduction(this.model, this.modelMat, urlImage)
       pdfBuilder.generatePDF().open()
     },

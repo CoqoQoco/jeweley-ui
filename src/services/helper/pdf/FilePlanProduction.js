@@ -18,7 +18,7 @@ export class FilePlanProduction {
         { text: 'ใบจ่าย-รับคืนงาน', alignment: 'right' }
       ],
       bold: true,
-      fontSize: 15,
+      fontSize: 12,
       margin: [0, 0, 0, 0]
     }
   }
@@ -39,7 +39,7 @@ export class FilePlanProduction {
                   alignment: 'right'
                 }
               ],
-              fontSize: 13,
+              fontSize: 11,
               border: [false, false, false, true]
             }
           ]
@@ -60,15 +60,27 @@ export class FilePlanProduction {
         body: [
           [
             // รูป
-            {
-              rowSpan: 2,
-              image: this.urlImage,
-              width: 65,
-              height: 65,
-              border: [true, true, true, true],
-              alignment: 'center',
-              margin: [0, 0, 0, 0]
-            },
+            this.urlImage
+              ? {
+                  rowSpan: 2,
+                  image: this.urlImage,
+                  width: 65,
+                  height: 65,
+                  border: [true, true, true, true],
+                  alignment: 'center',
+                  margin: [0, 0, 0, 0]
+                }
+              : {
+                  rowSpan: 2,
+                  text: 'ไม่มีรูป',
+                  width: 65,
+                  height: 65,
+                  border: [true, true, true, true],
+                  alignment: 'center',
+                  fontSize: 9,
+                  color: '#999999',
+                  margin: [0, 0, 0, 0]
+                },
 
             // Column 2
             {
@@ -231,25 +243,13 @@ export class FilePlanProduction {
 
   getTableContent(matValue) {
     return {
-      fontSize: 9,
+      fontSize: 7,
       bold: true,
       margin: [0, 0, 0, 20],
       table: {
         headerRows: 1,
         // กำหนดความกว้างคอลัมน์โดยให้คอลัมน์แรกกว้างกว่าที่เหลือ
-        widths: [
-          '*',
-          'auto',
-          'auto',
-          'auto',
-          'auto',
-          'auto',
-          'auto',
-          'auto',
-          'auto',
-          'auto',
-          'auto'
-        ],
+        widths: [58, 42, 32, 52, 48, 42, 46, 48, 50, 46, 48],
         body: this.buildTableBody(matValue),
         dontBreakRows: true
       },
@@ -316,17 +316,17 @@ export class FilePlanProduction {
           margin: [0, 2, 0, 2]
         },
         desc: {
-          fontSize: 14,
+          fontSize: 11,
           bold: true
         },
         title: {
-          fontSize: 10
+          fontSize: 9
         }
       },
 
       defaultStyle: {
         font: PDF_FONT,
-        fontSize: 11
+        fontSize: 10
       }
     }
   }
