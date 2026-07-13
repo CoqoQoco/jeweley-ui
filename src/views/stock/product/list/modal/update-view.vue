@@ -418,6 +418,7 @@ export default {
         if (val) {
           await this.masterStore.fetchProductType()
           await this.masterStore.fetchDiamondGrade()
+          await this.masterStore.fetchGem()
           await this.stockLocationStore.fetchAllForMap()
         }
       },
