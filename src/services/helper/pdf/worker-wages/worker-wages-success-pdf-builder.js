@@ -343,11 +343,11 @@ export class WorkerWagesSuccessPdfBuilder {
     }
 
     return {
-      fontSize: 11,
+      fontSize: 9,
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [60, 60, '*', 60, '*', 50, 50, 50],
+        widths: [54, 66, '*', 50, '*', 42, 52, 52],
         body: this.buildWagesTableBody(),
         layout: { defaultBorder: false }
       }

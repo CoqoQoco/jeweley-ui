@@ -187,11 +187,11 @@ export class WorkerWagesTrackingPdfBuilder {
     }
 
     return {
-      fontSize: 11,
+      fontSize: 9,
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [60, 60, '*', 60, '*', 50, 50],
+        widths: [66, 72, '*', 60, '*', 50, 60],
         body: this.buildWagesTableBody(),
         layout: { defaultBorder: false }
       }
