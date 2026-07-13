@@ -84,6 +84,7 @@
                 v-model.number="form.productQty"
                 placeholder="จำนวน..."
               />
+              <small class="qty-hint">คำนวณอัตโนมัติจากจำนวนทอง/เงินรวม (แก้ไขได้)</small>
             </div>
             <div class="form-field">
               <span class="title-text">หน่วย</span>
@@ -263,11 +264,20 @@ export default {
         info('กรุณาอัปโหลดรูปสินค้าใหม่ เนื่องจากแม่พิมพ์ถูกเปลี่ยน', 'แม่พิมพ์ถูกเปลี่ยน')
       }
     },
+    totalGoldQty(val) {
+      this.form.productQty = val
+    },
   },
 
   computed: {
     resolvedProductImagePath() {
       return resolveProductImageBlobPath(this.form.productImageBlobPath)
+    },
+    totalGoldQty() {
+      return (this.form.materials || []).reduce(
+        (sum, m) => sum + (Number(m.goldQty) || 0),
+        0
+      )
     },
   },
 
@@ -402,6 +412,13 @@ export default {
 
 .form-field {
   width: 100%;
+}
+
+.qty-hint {
+  font-size: 0.78rem;
+  color: #888;
+  display: block;
+  margin-top: 4px;
 }
 
 .mb-2 {
