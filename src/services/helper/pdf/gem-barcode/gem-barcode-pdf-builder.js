@@ -74,93 +74,60 @@ export class GemBarcodePdfBuilder {
               columns: [
                 {
                   text: `${this.stockCode}`,
-                  fontSize: 16,
+                  fontSize: 12,
                   bold: true,
                   width: '*',
                   alignment: 'left'
                 },
                 {
                   text: this.date,
-                  fontSize: 16,
+                  fontSize: 10,
+                  bold: true,
+                  width: 'auto',
+                  alignment: 'right'
+                }
+              ],
+              margin: [0, 0, 0, 1]
+            },
+
+            // Row 2: Barcode Image
+            {
+              image: this.barcodeImage,
+              width: pageWidth - exposedLiner * 2 - 4,
+              height: 18,
+              alignment: 'center',
+              margin: [0, 0, 0, 1]
+            },
+
+            // Row 3: Description (gem name)
+            {
+              text: this.description,
+              fontSize: 9,
+              bold: true,
+              alignment: 'left',
+              margin: [0, 0, 0, 1]
+            },
+
+            // Row 4: Gold type (left) + Price (right)
+            {
+              columns: [
+                {
+                  text: this.goldType,
+                  fontSize: 11,
+                  bold: true,
+                  width: '*',
+                  alignment: 'left'
+                },
+                {
+                  text: this.price,
+                  fontSize: 11,
                   bold: true,
                   width: 'auto',
                   alignment: 'right'
                 }
               ],
               margin: [0, 0, 0, 0]
-            },
-            // {
-            //   text: this.description,
-            //   fontSize: 13,
-            //   bold: true,
-            //   width: '*',
-            //   alignment: 'left'
-            // },
-
-            // Row 2: Barcode Image
-            {
-              image: this.barcodeImage,
-              width:
-                pageWidth /* `exposedLiner` is a variable used to define the margin size in
-              points for the exposed liner on the PDF document. In this case, it
-              is set to 0.05 inches, which is then converted to points (1 inch =
-              72 points) to determine the actual margin size in points. This
-              margin is applied to the left and right sides of the document to
-              ensure proper spacing for the content within the PDF. */ -
-                /* `exposedLiner` is a variable used to define the margin size in
-              points for the exposed liner on the PDF document. In this case, it
-              is set to 0.05 inches, which is then converted to points (1 inch =
-              72 points) to determine the actual margin size in the PDF
-              document. */
-                /* `exposedLiner` is a variable used to define the margin size in
-              points for the exposed liner on the PDF document. In this case, it
-              is set to 0.05 inches, which is then converted to points (1 inch =
-              72 points) to determine the margin size in points. This margin is
-              applied to the left and right sides of the document to ensure
-              proper spacing and alignment of the content within the PDF. */
-                exposedLiner * 2 -
-                4, // Full width minus margins
-              height: 18,
-              alignment: 'center',
-              margin: [0, 0, 0, 0]
-            },
-            {
-              text: this.description,
-              fontSize: 14,
-              bold: true,
-              width: 'auto',
-              alignment: 'left',
-              margin: [0, 0, 0, 0]
-            },
-            {
-              text: this.price,
-              fontSize: 14,
-              bold: true,
-              width: 'auto',
-              alignment: 'left',
-              margin: [0, 0, 0, 0]
             }
-
-            // Row 3: Description
-            // {
-            //   columns: [
-            //     {
-            //       text: this.description,
-            //       fontSize: 15,
-            //       //bold: true,
-            //       width: '*',
-            //       alignment: 'left'
-            //     },
-            //     {
-            //       text: this.price,
-            //       fontSize: 15,
-            //       //bold: true,
-            //       width: 'auto',
-            //       alignment: 'right'
-            //     }
-            //   ],
-            //   margin: [0, 0, 0, 0]
-            // }
           ]
         }
       ],
