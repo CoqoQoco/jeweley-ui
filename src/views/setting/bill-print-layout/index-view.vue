@@ -744,7 +744,8 @@ export default {
             discountPercent: 10,
             goldWeight: 1.22,
             stoneWeight: 0.44,
-            diamondWeight: 0.18
+            diamondWeight: 0.18,
+            earringStemSize: '10 มม.'
           },
           {
             stockNumber: 'NEW00002',
@@ -755,7 +756,8 @@ export default {
             discountPercent: 5,
             goldWeight: 0.85,
             stoneWeight: 0.22,
-            diamondWeight: 0.05
+            diamondWeight: 0.05,
+            earringStemSize: '8 มม.'
           }
         ],
         currencyRate: 1,

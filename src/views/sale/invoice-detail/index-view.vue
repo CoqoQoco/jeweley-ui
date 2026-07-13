@@ -552,6 +552,14 @@ export default {
               item.invoiceItem = confirmedItem.invoiceItem
                  item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
             }
+
+            // earringStemSize มีเฉพาะใน Invoice/Get response (ไม่มีใน stockConfirm)
+            const invConfirmed = invoiceResponse.confirmedItems.find(
+              (ci) => ci.stockNumber === item.stockNumber
+            )
+            if (invConfirmed && invConfirmed.earringStemSize != null) {
+              item.earringStemSize = invConfirmed.earringStemSize
+            }
           })
         }
 
