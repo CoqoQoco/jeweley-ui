@@ -226,6 +226,11 @@ export default {
       if (val) {
         this.val = { isValReceiveDate: false }
       }
+    },
+    isShow(val) {
+      if (val) {
+        this.seedGolds()
+      }
     }
   },
   computed: {
@@ -286,6 +291,22 @@ export default {
         wages: null
       }
       this.matAssign.push(add)
+    },
+    seedGolds() {
+      const golds = [...new Set((this.modelMat || []).map((m) => m.gold).filter(Boolean))]
+      this.tempMatAssign = golds.map((gold) => ({
+        id: ++this.autoId,
+        gold,
+        requestDate: new Date(),
+        goldQTYSend: null,
+        goldWeightSend: null,
+        goldQTYCheck: null,
+        goldWeightCheck: null,
+        worker: null,
+        workerSub: null,
+        wages: null
+      }))
+      this.matAssign = this.tempMatAssign.map((row) => ({ ...row }))
     },
     onclear() {
       this.form = { ...interfaceForm }
@@ -368,7 +389,7 @@ export default {
   },
   created() {
     this.$nextTick(() => {
-      this.matAssign = [...this.modelMat]
+      this.seedGolds()
       this.user = storage.getJSON('user-dk')
       this.form.receiveBy = this.user?.firstName
     })

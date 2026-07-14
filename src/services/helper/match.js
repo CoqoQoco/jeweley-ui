@@ -1,4 +1,13 @@
 const calculateWeightDifference = (weightSend, weightReceived) => {
+  const noCheck =
+    weightReceived === null ||
+    weightReceived === undefined ||
+    weightReceived === '' ||
+    isNaN(Number(weightReceived))
+  if (noCheck) {
+    return { difference: '-', percentage: '-', status: '', style: '' }
+  }
+
   // คำนวณผลต่างของน้ำหนัก
   const difference = weightReceived - weightSend
 
