@@ -164,7 +164,7 @@ export default {
             columns: [
               {
                 text: [
-                  { text: `${status[0].nameTh}\n`, fontSize: 14, bold: true },
+                  { text: `${status[0].nameTh}\n`, fontSize: 11, bold: true },
                   { text: `${formatDate(data.createDate)}`, fontSize: 9 }
                 ],
                 margin: [0, 0, 0, 0]
@@ -193,7 +193,7 @@ export default {
         fontSize: 9
       }
       const styleDesc = {
-        fontSize: 14,
+        fontSize: 11,
         bold: true
       }
       if ([50, 60, 80, 90].includes(data.status)) {
@@ -480,7 +480,7 @@ export default {
             ],
             margin: [0, 0, 0, 0],
             bold: true,
-            fontSize: 15
+            fontSize: 12
           },
 
           // ------- detail -------
@@ -671,7 +671,7 @@ export default {
           },
 
           // ------- product detail ---------
-          { text: 'รายละเอียดสินค้า', bold: true, fontSize: 14 },
+          { text: 'รายละเอียดสินค้า', bold: true, fontSize: 11 },
           {
             style: 'tableExample',
             table: {
@@ -699,14 +699,14 @@ export default {
           },
 
           // ------- mat detail ---------
-          { text: 'ส่วนประกอบงานผลิต', bold: true, fontSize: 14 },
+          { text: 'ส่วนประกอบงานผลิต', bold: true, fontSize: 11 },
           this.table(this.matValue),
 
           // ----------- status -------------- //
           {
             text: `สถานะการดำเนินงานผลิต - ${moment().format('DD/MM/YYYY HH:mm:ss')}`,
             bold: true,
-            fontSize: 14
+            fontSize: 11
           },
           this.tableStatus(this.statusValue, this.statusMasterValue)
           //   { text: 'สถานะการดำเนินงานผลิต', bold: true, fontSize: 15 },
@@ -733,13 +733,13 @@ export default {
             //bold: true
           },
           titleAction: {
-            fontSize: 14,
+            fontSize: 11,
             bold: true,
             decoration: 'underline', // เพิ่มขีดเส้นใต้ข้อความ
             decorationStyle: 'solid' // รูปแบบของขีดเส้น (solid, double, dashed, etc.)
           },
           desc: {
-            fontSize: 14,
+            fontSize: 11,
             bold: true
           },
           descAction: {

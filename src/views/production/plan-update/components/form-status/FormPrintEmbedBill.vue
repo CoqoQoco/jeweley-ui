@@ -219,7 +219,7 @@ export default {
     setTablePriceTitleTextRight(text) {
       return {
         text: text,
-        fontSize: 12,
+        fontSize: 9,
         bold: true,
         alignment: 'right',
         border: [false, false, false, true]
