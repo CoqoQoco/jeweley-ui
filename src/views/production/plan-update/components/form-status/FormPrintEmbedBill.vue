@@ -140,7 +140,7 @@ export default {
     // --- table --- //
     tablePrice(data) {
       return {
-        fontSize: 11,
+        fontSize: 9,
         //bold: true,
         margin: [5, 5, 0, 0],
         table: {
@@ -279,7 +279,7 @@ export default {
                 { text: 'สลิปจ่ายฝัง', alignment: 'right' }
               ],
               bold: true,
-              fontSize: 15,
+              fontSize: 12,
               margin: [0, 0, 0, 0],
               border: [false, false, false, true]
             },
@@ -296,7 +296,7 @@ export default {
                         { text: dayjs().format('DD/MM/YYYY HH:mm:ss'), alignment: 'right' }
                       ],
                       //bold: true,
-                      fontSize: 13,
+                      fontSize: 10,
                       border: [false, false, false, true]
                     }
                   ]
@@ -496,18 +496,19 @@ export default {
             }
           ],
           defaultStyle: {
-            font: PDF_FONT
+            font: PDF_FONT,
+            fontSize: 9
           },
           styles: {
             title: {
-              fontSize: 11
+              fontSize: 9
             },
             desc: {
-              fontSize: 11,
+              fontSize: 9,
               bold: true
             },
             boldText: {
-              //fontSize: 15,
+              fontSize: 9,
               bold: true
             }
           }
