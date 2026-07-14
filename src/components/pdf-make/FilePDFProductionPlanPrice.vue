@@ -124,7 +124,7 @@ export default {
           //     width: 575.28,
           //     height: 'auto'
           //   }
-          pageMargins: [10, 10, 10, 10],
+          pageMargins: [18, 14, 18, 14],
 
           content: [
             // --- header --- //
@@ -134,7 +134,7 @@ export default {
                 { text: 'บัตรต้นทุน', alignment: 'right' }
               ],
               bold: true,
-              fontSize: 15,
+              fontSize: 12,
               margin: [0, 0, 0, 0],
               border: [false, false, false, true]
             },
@@ -151,7 +151,7 @@ export default {
                         { text: this.formatDate(this.price[0].date), alignment: 'right' }
                       ],
                       //bold: true,
-                      fontSize: 13,
+                      fontSize: 11,
                       border: [false, false, false, true]
                     }
                   ]
@@ -297,7 +297,7 @@ export default {
             {
               table: {
                 headerRows: 1,
-                widths: [15, '*', 50, 50, 50, 50, 70, 50], // ปรับขนาดคอลัมน์ให้แคบลง
+                widths: [14, '*', 42, 46, 46, 46, 58, 52], // ปรับขนาดคอลัมน์ให้แคบลง
                 body: [
                   // Header Row (with bottom border)
                   [
@@ -349,7 +349,7 @@ export default {
                         colSpan: 6,
                         alignment: 'right',
                         bold: true,
-                        fontSize: 11
+                        fontSize: 9
                       },
                       {},
                       {},
@@ -487,23 +487,23 @@ export default {
 
           styles: {
             tableHeader: {
-              fontSize: 11, // ลดจาก 12
+              fontSize: 9, // ลดจาก 12
               bold: true,
               alignment: 'center',
               margin: [0, 2, 0, 2] // ลดจาก [0, 4, 0, 4]
             },
             desc: {
-              fontSize: 11, // ลดจาก 12
+              fontSize: 9, // ลดจาก 12
               bold: true
             },
             title: {
-              fontSize: 10
+              fontSize: 8
             }
           },
 
           defaultStyle: {
             font: PDF_FONT,
-            fontSize: 11 // ลดจาก 12
+            fontSize: 9 // ลดจาก 12
           }
         }
 
