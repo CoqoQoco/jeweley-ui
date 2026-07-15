@@ -18,11 +18,11 @@ export class EmbedSlipPdfBuilder {
   getHeaderContent() {
     return {
       columns: [
-        'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
-        { text: 'สลิปจ่ายฝัง', alignment: 'right' }
+        { text: 'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด', width: '*' },
+        { text: 'สลิปจ่ายฝัง', width: 'auto', alignment: 'right' }
       ],
       bold: true,
-      fontSize: 15,
+      fontSize: 11,
       margin: [5, 0, 5, 0],
       border: [false, false, false, true]
     }
@@ -39,7 +39,7 @@ export class EmbedSlipPdfBuilder {
                 `วัตถุดิบ : ${this.data.gold}`,
                 { text: dayjs().format('DD/MM/YYYY HH:mm:ss'), alignment: 'right' }
               ],
-              fontSize: 13,
+              fontSize: 9,
               border: [false, false, false, true]
             }
           ]
@@ -103,11 +103,11 @@ export class EmbedSlipPdfBuilder {
 
   getTablePriceContent() {
     return {
-      fontSize: 11, // ลดขนาด font
+      fontSize: 8, // ลดขนาด font
       margin: [2, 2, 0, 0], // ลด margin
       table: {
         headerRows: 1,
-        widths: ['*', 40, 40, 35, 45, 45, 35], // ลดความกว้างคอลัมน์
+        widths: ['*', 40, 44, 42, 38, 44, 38], // ลดความกว้างคอลัมน์
         body: this.buildTablePriceBody(),
         layout: {
           defaultBorder: false,
@@ -192,7 +192,7 @@ export class EmbedSlipPdfBuilder {
                     {
                       margin: [0, 0, 0, 0],
                       stack: [
-                        { text: 'รหัสสินค้าสินค้า', style: 'title' },
+                        { text: 'รหัสสินค้า', style: 'title' },
                         { text: this.data.product, style: 'desc' }
                       ]
                     },
@@ -284,7 +284,7 @@ export class EmbedSlipPdfBuilder {
         {
           text: fmtSign(-rawLoss),
           alignment: 'right',
-          fontSize: 11,
+          fontSize: 8,
           bold: true,
           //color: signColor(-rawLoss),
           border: [false, false, false, false]
@@ -294,7 +294,7 @@ export class EmbedSlipPdfBuilder {
         {
           text: fmtSign(weightLossActual),
           alignment: 'right',
-          fontSize: 11,
+          fontSize: 8,
           bold: true,
           //color: signColor(weightLossActual),
           border: [false, false, false, false]
@@ -302,7 +302,7 @@ export class EmbedSlipPdfBuilder {
         {
           text: fmtSign(moneyDiff),
           alignment: 'right',
-          fontSize: 11,
+          fontSize: 8,
           bold: true,
           //color: signColor(moneyDiff),
           border: [false, false, false, false]
@@ -338,17 +338,17 @@ export class EmbedSlipPdfBuilder {
       stack: [
         {
           columns: [
-            { text: 'คำนวณ Gold Loss', bold: true, fontSize: 12 },
+            { text: 'คำนวณ Gold Loss', bold: true, fontSize: 10 },
             {
               text: `ราคาทอง: ${goldLossPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} บาท/กรัม`,
               alignment: 'right',
-              fontSize: 11
+              fontSize: 9
             }
           ],
           margin: [0, 0, 0, 3]
         },
         {
-          fontSize: 11,
+          fontSize: 8,
           table: {
             headerRows: 1,
             widths: ['*', 36, 36, 38, 28, 40, 38, 48],
@@ -402,7 +402,7 @@ export class EmbedSlipPdfBuilder {
   setTablePriceTitleTextRight(text) {
     return {
       text,
-      fontSize: 12,
+      fontSize: 8,
       bold: true,
       alignment: 'right',
       border: [false, false, false, true]
@@ -419,7 +419,7 @@ export class EmbedSlipPdfBuilder {
   setTablePriceRowTextRight(text) {
     return {
       text,
-      fontSize: 12,
+      fontSize: 8,
       bold: true,
       alignment: 'right',
       border: [false, false, false, false]
@@ -473,20 +473,20 @@ export class EmbedSlipPdfBuilder {
 
       defaultStyle: {
         font: PDF_FONT,
-        fontSize: 11 // ลดขนาด font ลงเล็กน้อย
+        fontSize: 8 // ลดขนาด font ลงเล็กน้อย
       },
 
       styles: {
         title: {
-          fontSize: 10, // ลดขนาด font ลง
+          fontSize: 8, // ลดขนาด font ลง
           margin: [0, 1, 0, 1] // ลด margin
         },
         desc: {
-          fontSize: 10, // ลดขนาด font ลง
+          fontSize: 8, // ลดขนาด font ลง
           bold: true,
           margin: [0, 1, 0, 1] // ลด margin
         },
-        boldText: { bold: true }
+        boldText: { bold: true, fontSize: 8 }
       }
     }
   }

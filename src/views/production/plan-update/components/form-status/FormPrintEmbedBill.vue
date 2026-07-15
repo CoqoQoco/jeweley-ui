@@ -140,12 +140,12 @@ export default {
     // --- table --- //
     tablePrice(data) {
       return {
-        fontSize: 9,
+        fontSize: 8,
         //bold: true,
         margin: [5, 5, 0, 0],
         table: {
           headerRows: 1,
-          widths: ['*', 40, 40, 40, 50, 50, 40],
+          widths: ['*', 42, 46, 46, 42, 50, 42],
           body: this.buildTablePriceBody(data),
           layout: {
             defaultBorder: false
@@ -219,7 +219,7 @@ export default {
     setTablePriceTitleTextRight(text) {
       return {
         text: text,
-        fontSize: 9,
+        fontSize: 8,
         bold: true,
         alignment: 'right',
         border: [false, false, false, true]
@@ -275,11 +275,11 @@ export default {
             // --- header --- //
             {
               columns: [
-                'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
-                { text: 'สลิปจ่ายฝัง', alignment: 'right' }
+                { text: 'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด', width: '*' },
+                { text: 'สลิปจ่ายฝัง', width: 'auto', alignment: 'right' }
               ],
               bold: true,
-              fontSize: 12,
+              fontSize: 11,
               margin: [0, 0, 0, 0],
               border: [false, false, false, true]
             },
@@ -296,7 +296,7 @@ export default {
                         { text: dayjs().format('DD/MM/YYYY HH:mm:ss'), alignment: 'right' }
                       ],
                       //bold: true,
-                      fontSize: 10,
+                      fontSize: 9,
                       border: [false, false, false, true]
                     }
                   ]
@@ -497,18 +497,18 @@ export default {
           ],
           defaultStyle: {
             font: PDF_FONT,
-            fontSize: 9
+            fontSize: 8
           },
           styles: {
             title: {
-              fontSize: 9
+              fontSize: 8
             },
             desc: {
-              fontSize: 9,
+              fontSize: 8,
               bold: true
             },
             boldText: {
-              fontSize: 9,
+              fontSize: 8,
               bold: true
             }
           }
