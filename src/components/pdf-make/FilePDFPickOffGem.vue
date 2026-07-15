@@ -41,7 +41,7 @@ export default {
 
     tablePickOff(data) {
       return {
-        fontSize: 11,
+        fontSize: 9,
         bold: true,
         margin: [0, 10, 0, 0],
         table: {
@@ -64,7 +64,7 @@ export default {
     setTableTitleTextRight(text) {
       return {
         text: text,
-        fontSize: 12,
+        fontSize: 9,
         bold: true,
         alignment: 'right',
         border: [false, true, false, true]
@@ -129,11 +129,11 @@ export default {
           {
             columns: [
               'บริษัท ดวงเเก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
-              { text: `ใบยืมวัถุดิบ`, alignment: 'right' }
+              { text: `ใบยืมวัตถุดิบ`, alignment: 'right' }
             ],
             margin: [0, 0, 0, 0],
             bold: true,
-            fontSize: 15
+            fontSize: 12
           },
 
           //underline
@@ -148,7 +148,7 @@ export default {
                       { text: dayjs().format('DD/MM/YYYY HH:mm:ss'), alignment: 'right' }
                     ],
                     //bold: true,
-                    fontSize: 13,
+                    fontSize: 10,
                     border: [false, false, false, true]
                   }
                 ]
@@ -266,14 +266,15 @@ export default {
           }
         ],
         defaultStyle: {
-          font: PDF_FONT
+          font: PDF_FONT,
+          fontSize: 9
         },
         styles: {
           tableExample: {
             margin: [0, 0, 0, 0]
           },
           title: {
-            fontSize: 10
+            fontSize: 9
           },
           titleAction: {
             fontSize: 14,
@@ -282,7 +283,7 @@ export default {
             decorationStyle: 'solid' // รูปแบบของขีดเส้น (solid, double, dashed, etc.)
           },
           desc: {
-            fontSize: 14,
+            fontSize: 10,
             bold: true
           },
           descAction: {
