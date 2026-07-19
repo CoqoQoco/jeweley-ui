@@ -24,7 +24,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         env:
           # Jewelry API Configuration (Production Azure)
-          VITE_JEWELRY_API_URL: https://dk-api-c2btgkcka3gjfpf0.southeastasia-01.azurewebsites.net/
+          VITE_JEWELRY_API_URL: https://api.duangkeaw.com/
           # Zebra Printer Service Configuration
           VITE_PRINTER_API_URL: http://localhost:7003/
           # API Timeout (milliseconds) - 100 seconds
