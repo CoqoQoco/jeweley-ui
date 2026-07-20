@@ -97,7 +97,7 @@ export class WorkerWagesTrackingPdfBuilder {
           border: [false, false, false, false]
         },
         { text: `${item.status === 70 ? item.goldQtyCheck : item.goldQtySend ?? ''}`, bold: true, alignment: 'right', border: [false, false, false, false] },
-        { text: `${item.status === 70 ? item.goldWeightCheck : item.goldWeightSend ?? ''}`, bold: true, alignment: 'right', border: [false, false, false, false] }
+        { text: this.fmt2(weight), bold: true, alignment: 'right', border: [false, false, false, false] }
       ]
     })
 
@@ -108,7 +108,7 @@ export class WorkerWagesTrackingPdfBuilder {
       { text: '', bold: true, alignment: 'right', border: [false, true, false, false] },
       { text: 'รวม', bold: true, alignment: 'right', border: [false, true, false, false] },
       { text: `${totalQty}`, bold: true, alignment: 'right', border: [false, true, false, false] },
-      { text: `${totalWeight}`, bold: true, alignment: 'right', border: [false, true, false, false] }
+      { text: this.fmt2(totalWeight), bold: true, alignment: 'right', border: [false, true, false, false] }
     ]
 
     return [headerRow, ...dataRows, footerRow]
