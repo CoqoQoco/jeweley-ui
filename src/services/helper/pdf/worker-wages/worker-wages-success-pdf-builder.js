@@ -181,7 +181,10 @@ export class WorkerWagesSuccessPdfBuilder {
 
   computeTypeSummaries() {
     const map = {}
-    const purityKey = (gold, goldSize) => gold === 'SV' ? 'SILVER' : (goldSize || gold || '')
+    const purityKey = (gold, goldSize) => {
+      if (gold === 'SV') return 'SILVER'
+      return [gold, goldSize].filter((v) => v).join(' - ') || gold || goldSize || ''
+    }
 
     const items = this.slip ? (this.slip.items || this.items) : this.items
     for (const item of items) {
@@ -194,7 +197,7 @@ export class WorkerWagesSuccessPdfBuilder {
     }
 
     const returnItems = (this.slip && this.slip.goldReturnItems) ? this.slip.goldReturnItems : []
-    for (const r of returnItems) {
+    for (const r of returnItems.filter((r) => r.countInCalc !== false)) {
       const key = purityKey(r.gold, r.goldSize)
       if (!map[key]) {
         map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
@@ -271,7 +274,7 @@ export class WorkerWagesSuccessPdfBuilder {
     if (returnItems.length === 0) return null
 
     const headerRow = [
-      { text: 'Gold Size', style: 'tableHeader' },
+      { text: 'ประเภท/Gold Size', style: 'tableHeader' },
       { text: 'น้ำหนัก (g)', style: 'tableHeader', alignment: 'right' },
       { text: 'ราคา/กรัม', style: 'tableHeader', alignment: 'right' },
       { text: 'จำนวนเงิน', style: 'tableHeader', alignment: 'right' }
@@ -282,10 +285,14 @@ export class WorkerWagesSuccessPdfBuilder {
 
     const dataRows = returnItems.map((r) => {
       const amount = r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))
-      totalWeight += r.weight || 0
-      totalAmount += amount
+      const isCounted = r.countInCalc !== false
+      if (isCounted) {
+        totalWeight += r.weight || 0
+        totalAmount += amount
+      }
+      const label = [r.gold, r.goldSize].filter((v) => v).join(' - ') + (isCounted ? '' : ' (ไม่นำมาคิด)')
       return [
-        { text: r.goldSize || '' },
+        { text: label },
         { text: this.fmt2(r.weight), alignment: 'right' },
         { text: this.fmt2(r.pricePerGram), alignment: 'right' },
         { text: this.fmt2(amount), alignment: 'right' }
@@ -357,7 +364,7 @@ export class WorkerWagesSuccessPdfBuilder {
   getSlipSummaryContent() {
     if (this.mode !== 'goldLoss' || !this.slip) return []
 
-    const returnItems = this.slip.goldReturnItems || []
+    const returnItems = (this.slip.goldReturnItems || []).filter((r) => r.countInCalc !== false)
     const totalGoldReturnAmount = returnItems.reduce((sum, r) => sum + (r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))), 0)
     const totalReturnWeight = returnItems.reduce((sum, r) => sum + (r.weight || 0), 0)
     const totalMoneyLoss = this.slip.totalLossAmount != null

@@ -88,6 +88,8 @@ export default {
     colNetWeight: 'สุทธิ (g)',
     colNetAmount: 'สุทธิ (เงิน)',
     returnGoldTypeLabel: 'ประเภททอง',
+    colGoldSize: 'ขนาดทอง',
+    colCountInCalc: 'เข้าคิด',
     returnTitle: 'รับคืนทอง',
     filterGoldTypeLabel: 'ประเภททอง',
     filterGoldTypePlaceholder: 'ทั้งหมด',

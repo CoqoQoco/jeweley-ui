@@ -164,16 +164,16 @@ export default {
         { field: 'statusDescription', header: this.$t('view.worker.workerDailyWages.colStatusDescription'), minWidth: '120px' },
         { field: 'description', header: this.$t('view.worker.workerDailyWages.colDescription'), minWidth: '160px' },
         { field: 'goldQtySend', header: this.$t('view.worker.workerDailyWages.colGoldQtySend'), minWidth: '90px', align: 'right', format: 'number' },
-        { field: 'goldWeightSend', header: this.$t('view.worker.workerDailyWages.colGoldWeightSend'), minWidth: '100px', align: 'right', format: 'decimal3' },
+        { field: 'goldWeightSend', header: this.$t('view.worker.workerDailyWages.colGoldWeightSend'), minWidth: '100px', align: 'right', format: 'decimal2' },
         { field: 'goldQtyCheck', header: this.$t('view.worker.workerDailyWages.colGoldQtyCheck'), minWidth: '90px', align: 'right', format: 'number' },
-        { field: 'goldWeightCheck', header: this.$t('view.worker.workerDailyWages.colGoldWeightCheck'), minWidth: '100px', align: 'right', format: 'decimal3' },
+        { field: 'goldWeightCheck', header: this.$t('view.worker.workerDailyWages.colGoldWeightCheck'), minWidth: '100px', align: 'right', format: 'decimal2' },
         { field: 'wages', header: this.$t('view.worker.workerDailyWages.colWages'), minWidth: '110px', align: 'right', format: 'decimal2' },
         { field: 'totalWages', header: this.$t('view.worker.workerDailyWages.colTotalWages'), minWidth: '110px', align: 'right', format: 'decimal2' }
       ]
     },
     goldLossExtraColumns() {
       return [
-        { field: 'lossPercent', header: this.$t('view.worker.workerDailyWages.colLossPercent'), minWidth: '90px', align: 'right', format: 'number' },
+        { field: 'lossPercent', header: this.$t('view.worker.workerDailyWages.colLossPercent'), minWidth: '90px', align: 'right', format: 'decimal2' },
         { field: 'weightLossAllowed', header: this.$t('view.worker.workerDailyWages.colWeightLossAllowed'), minWidth: '130px', align: 'right', format: 'decimal2' },
         { field: 'weightLossActual', header: this.$t('view.worker.workerDailyWages.colWeightLossActual'), minWidth: '110px', align: 'right' },
         { field: 'goldLossPrice', header: this.$t('view.worker.workerDailyWages.colGoldLossPrice'), minWidth: '110px', align: 'right', format: 'decimal2' }

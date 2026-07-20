@@ -88,6 +88,8 @@ export default {
     colNetWeight: 'Net (g)',
     colNetAmount: 'Net (amt)',
     returnGoldTypeLabel: 'Gold Type',
+    colGoldSize: 'Gold Size',
+    colCountInCalc: 'Count',
     returnTitle: 'Gold Return',
     filterGoldTypeLabel: 'Gold Type',
     filterGoldTypePlaceholder: 'All',

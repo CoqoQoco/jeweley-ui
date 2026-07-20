@@ -48,6 +48,11 @@
                   total: availableItems.length
                 }) }}
               </span>
+              <CheckboxGeneric
+                :modelValue="allSelected"
+                @update:modelValue="onSelectAll"
+                :label="$t('view.worker.goldLossSlipModal.selectAll')"
+              />
             </div>
           </div>
 
@@ -85,15 +90,6 @@
                 <span v-if="moneyOf(data) === 0" class="zero-price-badge">{{ $t('view.worker.goldLossSlipModal.moneyZeroHint') }}</span>
               </span>
             </template>
-            <template #header>
-              <div class="select-all-header">
-                <CheckboxGeneric
-                  :modelValue="allSelected"
-                  @update:modelValue="onSelectAll($event)"
-                  :label="$t('view.worker.goldLossSlipModal.selectAll')"
-                />
-              </div>
-            </template>
           </BaseDataTable>
         </div>
 
@@ -110,21 +106,26 @@
             <table class="return-table w-100">
               <thead>
                 <tr>
-                  <th>Gold Size</th>
+                  <th>{{ $t('view.worker.goldLossSlipModal.returnGoldTypeLabel') }}</th>
+                  <th>{{ $t('view.worker.goldLossSlipModal.colGoldSize') }}</th>
                   <th>{{ $t('common.field.weight') }} (g)</th>
                   <th>{{ $t('view.worker.workerDailyWages.colGoldLossPrice') }}</th>
                   <th class="text-right">{{ $t('common.field.total') }}</th>
+                  <th class="text-center">{{ $t('view.worker.goldLossSlipModal.colCountInCalc') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(row, idx) in goldReturnItems" :key="idx">
+                  <td>
+                    <span class="title-text">{{ row.gold || '-' }}</span>
+                  </td>
                   <td>
                     <span class="title-text">{{ row.goldSize }}</span>
                   </td>
                   <td>
                     <InputTextGeneric
                       type="number"
-                      step="0.001"
+                      step="0.01"
                       :min="0"
                       v-model.number="row.weight"
                     />
@@ -143,6 +144,9 @@
                   </td>
                   <td class="text-right">
                     <span>{{ fmt2(getRowAmount(row)) }}</span>
+                  </td>
+                  <td class="text-center">
+                    <CheckboxGeneric v-model="row.countInCalc" />
                   </td>
                 </tr>
               </tbody>
@@ -392,7 +396,9 @@ export default {
     },
 
     totalReturnWeight() {
-      return this.goldReturnItems.reduce((sum, r) => sum + (r.weight || 0), 0)
+      return this.goldReturnItems
+        .filter((r) => r.countInCalc !== false)
+        .reduce((sum, r) => sum + (r.weight || 0), 0)
     },
 
     netWeightLoss() {
@@ -404,7 +410,9 @@ export default {
     },
 
     totalGoldReturnAmount() {
-      return this.goldReturnItems.reduce((sum, r) => sum + this.getRowAmount(r), 0)
+      return this.goldReturnItems
+        .filter((r) => r.countInCalc !== false)
+        .reduce((sum, r) => sum + this.getRowAmount(r), 0)
     },
 
     netPayAmount() {
@@ -412,7 +420,10 @@ export default {
     },
 
     typeSummaries() {
-      const purityKey = (gold, goldSize) => gold === 'SV' ? 'SILVER' : (goldSize || gold || '')
+      const purityKey = (gold, goldSize) => {
+        if (gold === 'SV') return 'SILVER'
+        return [gold, goldSize].filter((v) => v).join(' - ') || gold || goldSize || ''
+      }
       const map = {}
 
       for (const item of this.selectedItems) {
@@ -424,7 +435,7 @@ export default {
         map[key].totalMoneyLoss += this.moneyOf(item)
       }
 
-      for (const row of this.goldReturnItems) {
+      for (const row of this.goldReturnItems.filter((r) => r.countInCalc !== false)) {
         const key = purityKey(row.gold, row.goldSize)
         if (!map[key]) {
           map[key] = { goldType: key, totalWeightLoss: 0, totalMoneyLoss: 0, returnWeight: 0, returnAmount: 0 }
@@ -564,16 +575,19 @@ export default {
     initReturnRowsFromItems() {
       const groups = new Map()
       for (const it of this.availableItems) {
-        if (it.goldSize && !groups.has(it.goldSize)) {
-          groups.set(it.goldSize, { price: it.goldLossPrice ?? it.wages ?? 0 })
+        if (!it.goldSize) continue
+        const key = `${it.gold || ''}|${it.goldSize}`
+        if (!groups.has(key)) {
+          groups.set(key, { gold: it.gold, goldSize: it.goldSize, price: it.goldLossPrice ?? it.wages ?? 0 })
         }
       }
-      this.goldReturnItems = Array.from(groups.entries()).map(([goldSize, meta]) => ({
-        goldSize,
-        gold: null,
+      this.goldReturnItems = Array.from(groups.values()).map((meta) => ({
+        goldSize: meta.goldSize,
+        gold: meta.gold,
         weight: 0,
         pricePerGram: meta.price,
-        amount: 0
+        amount: 0,
+        countInCalc: true
       }))
     },
 
@@ -591,10 +605,11 @@ export default {
         remark: this.remark,
         goldReturnItems: this.goldReturnItems.map((r) => ({
           goldSize: r.goldSize,
-          gold: null,
+          gold: r.gold,
           weight: r.weight || 0,
           pricePerGram: r.pricePerGram || 0,
-          amount: this.getRowAmount(r)
+          amount: this.getRowAmount(r),
+          countInCalc: r.countInCalc
         })),
         items: this.selectedItems.map((i) => ({
           productionPlanStatusDetailId: i.id,
@@ -700,16 +715,16 @@ export default {
 
 .filter-count-row {
   margin-top: var(--sp-xs);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
 }
 
 .count-label {
   font-size: var(--fs-sm);
   color: var(--base-font-color);
   font-weight: 500;
-}
-
-.select-all-header {
-  padding: var(--sp-xs) var(--sp-sm);
 }
 
 .summary-row {
@@ -778,6 +793,10 @@ export default {
 
   .text-right {
     text-align: right;
+  }
+
+  .text-center {
+    text-align: center;
   }
 }
 
