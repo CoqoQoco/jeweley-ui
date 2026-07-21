@@ -702,6 +702,44 @@ export default {
     totalRecords: 'Total {total} records'
   },
 
+  goldLossMonthly: {
+    searchTitle: 'Monthly Gold Loss Report',
+    searchDesc: 'Select year, month and department to fetch monthly gold loss data for review and save',
+    year: 'Year',
+    month: 'Month',
+    stage: 'Department',
+    btnFetch: 'Fetch Data',
+    savedBadge: 'Saved',
+    colGoldType: 'Gold',
+    colSumGoldWeightSend: 'Total Send Weight',
+    colSumGoldWeightCheck: 'Total Receive Weight',
+    colRawLoss: 'Raw Loss',
+    colLossPercent: 'Loss %',
+    colGoldLossPrice: 'Loss Price',
+    colWeightLossAllowed: 'Allowed Loss Weight',
+    colWeightLossActual: 'Actual Loss Weight',
+    colMoneyDiff: 'Money Diff',
+    totalMoneyDiff: 'Total Money Diff: {amount}',
+    confirmSaveTitle: 'Confirm Save',
+    confirmSaveMessage: 'Gold Loss for {month}/{year}',
+    saveSuccess: 'Saved successfully',
+    warningNoData: 'Please fetch data before saving',
+    months: {
+      jan: 'Jan',
+      feb: 'Feb',
+      mar: 'Mar',
+      apr: 'Apr',
+      may: 'May',
+      jun: 'Jun',
+      jul: 'Jul',
+      aug: 'Aug',
+      sep: 'Sep',
+      oct: 'Oct',
+      nov: 'Nov',
+      dec: 'Dec'
+    }
+  },
+
   wipByStageReport: {
     searchTitle: 'Search Work In Process Report',
     searchDesc: 'Search work in process report by receive date range, department and other conditions',
@@ -757,6 +795,28 @@ export default {
     colCustomer: 'Customer',
     colCreateBy: 'Transferred By',
     colRemark: 'Remark',
+    totalRecords: 'Total {total} records'
+  },
+
+  productionPriceReport: {
+    searchTitle: 'Search Production Valuation Report',
+    searchDesc: 'Search production valuation report by create date range and W.O. text',
+    dateRange: 'Create Date Range',
+    woText: 'W.O. Text',
+    placeholder: {
+      woText: 'W.O. Text'
+    },
+    colCreateDate: 'Create Date',
+    colWoText: 'W.O. Text',
+    colProductNumber: 'Product Code',
+    colProductName: 'Product Name',
+    colMold: 'Mold',
+    colProductType: 'Product Type',
+    colCustomer: 'Customer',
+    colQty: 'Quantity',
+    colTotalPrice: 'Total Price',
+    colPriceItemCount: 'Price Items',
+    colPriceUpdateDate: 'Price Update Date',
     totalRecords: 'Total {total} records'
   }
 }

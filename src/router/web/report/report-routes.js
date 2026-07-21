@@ -8,6 +8,10 @@ const PlanBOMReport = () => import('@/views/production/plan-bom/index-view.vue')
 const GoldCostReport = () => import('@/views/production/report/gold-cost-report/index-view.vue')
 const WipByStageReport = () => import('@/views/production/report/wip-by-stage-report/index-view.vue')
 const TransferReport = () => import('@/views/production/report/transfer-report/index-view.vue')
+const GoldLossMonthlyReport = () =>
+  import('@/views/production/report/gold-loss-monthly-report/index-view.vue')
+const ProductionPriceReport = () =>
+  import('@/views/production/report/production-price-report/index-view.vue')
 
 // ---- stock product reports ----
 const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
@@ -117,6 +121,32 @@ const routes = [
           Displayname: {
             en: 'Job Transfer Report',
             th: 'รายงานการโอนงาน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/report-gold-loss-monthly',
+        name: 'report-gold-loss-monthly',
+        component: GoldLossMonthlyReport,
+        meta: {
+          Displayname: {
+            en: 'Monthly Gold Loss Report',
+            th: 'รายงาน Gold Loss รายเดือน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/report-production-price',
+        name: 'report-production-price',
+        component: ProductionPriceReport,
+        meta: {
+          Displayname: {
+            en: 'Production Valuation Report',
+            th: 'รายงานประเมินราคางานผลิต'
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]

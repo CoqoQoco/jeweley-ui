@@ -702,6 +702,44 @@ export default {
     totalRecords: 'รวม {total} รายการ'
   },
 
+  goldLossMonthly: {
+    searchTitle: 'รายงาน Gold Loss รายเดือน',
+    searchDesc: 'เลือกปี เดือน และแผนก เพื่อดึงข้อมูล Gold Loss รายเดือนสำหรับตรวจสอบและบันทึก',
+    year: 'ปี',
+    month: 'เดือน',
+    stage: 'แผนก',
+    btnFetch: 'ดึงข้อมูล',
+    savedBadge: 'บันทึกแล้ว',
+    colGoldType: 'ทอง',
+    colSumGoldWeightSend: 'นน.จ่ายรวม',
+    colSumGoldWeightCheck: 'นน.รับรวม',
+    colRawLoss: 'loss ดิบ',
+    colLossPercent: '%loss',
+    colGoldLossPrice: 'ราคา loss',
+    colWeightLossAllowed: 'นน.loss ยอมได้',
+    colWeightLossActual: 'นน.loss จริง',
+    colMoneyDiff: 'ส่วนต่างเงิน',
+    totalMoneyDiff: 'รวมส่วนต่างเงิน: {amount}',
+    confirmSaveTitle: 'ยืนยันการบันทึก',
+    confirmSaveMessage: 'Gold Loss เดือน {month}/{year}',
+    saveSuccess: 'บันทึกสำเร็จ',
+    warningNoData: 'กรุณาดึงข้อมูลก่อนบันทึก',
+    months: {
+      jan: 'ม.ค.',
+      feb: 'ก.พ.',
+      mar: 'มี.ค.',
+      apr: 'เม.ย.',
+      may: 'พ.ค.',
+      jun: 'มิ.ย.',
+      jul: 'ก.ค.',
+      aug: 'ส.ค.',
+      sep: 'ก.ย.',
+      oct: 'ต.ค.',
+      nov: 'พ.ย.',
+      dec: 'ธ.ค.'
+    }
+  },
+
   wipByStageReport: {
     searchTitle: 'ค้นหารายงานงานระหว่างผลิต',
     searchDesc: 'ค้นหารายงานงานระหว่างผลิตตามช่วงวันรับงาน แผนก และเงื่อนไขอื่นๆ',
@@ -757,6 +795,28 @@ export default {
     colCustomer: 'ลูกค้า',
     colCreateBy: 'ผู้โอน',
     colRemark: 'หมายเหตุ',
+    totalRecords: 'รวม {total} รายการ'
+  },
+
+  productionPriceReport: {
+    searchTitle: 'ค้นหารายงานประเมินราคางานผลิต',
+    searchDesc: 'ค้นหารายงานประเมินราคางานผลิตตามช่วงวันที่สร้างและเลขที่ใบงาน',
+    dateRange: 'ช่วงวันที่สร้าง',
+    woText: 'เลขที่ใบงาน',
+    placeholder: {
+      woText: 'เลขที่ใบงาน'
+    },
+    colCreateDate: 'วันที่สร้าง',
+    colWoText: 'เลขที่ใบงาน',
+    colProductNumber: 'รหัสสินค้า',
+    colProductName: 'ชื่อสินค้า',
+    colMold: 'แม่พิมพ์',
+    colProductType: 'ประเภทสินค้า',
+    colCustomer: 'ลูกค้า',
+    colQty: 'จำนวน',
+    colTotalPrice: 'ราคารวม',
+    colPriceItemCount: 'รายการราคา',
+    colPriceUpdateDate: 'วันที่ประเมินราคา',
     totalRecords: 'รวม {total} รายการ'
   }
 }
