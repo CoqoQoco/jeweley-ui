@@ -818,5 +818,42 @@ export default {
     colPriceItemCount: 'Price Items',
     colPriceUpdateDate: 'Price Update Date',
     totalRecords: 'Total {total} records'
+  },
+
+  workerWagesByPerson: {
+    searchTitle: 'Search Worker Wages Summary',
+    searchDesc: 'Search worker wages summary by date range and other conditions',
+    dateRange: 'Date Range',
+    searchText: 'Search Worker',
+    placeholder: {
+      searchText: 'Worker Code/Name'
+    },
+    status: 'Department/Status',
+    colWorkerCode: 'Worker Code',
+    colWorkerName: 'Worker Name',
+    colJobCount: 'Job Count',
+    colTotalQty: 'Total Quantity',
+    colTotalWages: 'Total Wages',
+    totalWorkers: 'Total {total} workers'
+  },
+
+  goldLossTangByWorker: {
+    searchTitle: 'Search Gold Loss Tang by Worker Report',
+    searchDesc: 'Search Gold Loss Tang summary by worker, date range and other conditions',
+    dateRange: 'Date Range',
+    workerCode: 'Worker Code/Search',
+    placeholder: {
+      workerCode: 'Worker Code/Name'
+    },
+    colWorkerCode: 'Worker Code',
+    colWorkerName: 'Worker Name',
+    colSlipCount: 'Slip Count',
+    colTotalIssued: 'Total Issued',
+    colTotalReturned: 'Total Returned',
+    colTotalRawLoss: 'Raw Loss',
+    colTotalAllowedLoss: 'Allowed Loss',
+    colTotalDiffLoss: 'Diff Loss',
+    colTotalMoneyDiff: 'Money Diff',
+    totalWorkers: 'Total {total} workers'
   }
 }

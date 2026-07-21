@@ -26,6 +26,10 @@ const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/i
 
 // ---- worker reports ----
 const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
+const WorkerWagesByPersonReport = () =>
+  import('@/views/production/report/worker-wages-by-person-report/index-view.vue')
+const GoldLossTangByWorkerReport = () =>
+  import('@/views/production/report/gold-loss-tang-by-worker-report/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 
@@ -314,6 +318,32 @@ const routes = [
             th: 'รายงานค่าแรงช่าง'
           },
           minorShow: false,
+          permissions: [PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        path: '/report-worker-wages-by-person',
+        name: 'report-worker-wages-by-person',
+        component: WorkerWagesByPersonReport,
+        meta: {
+          Displayname: {
+            en: 'Worker Wages Summary',
+            th: 'รายงานค่าแรงช่างต่อคน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        path: '/report-gold-loss-tang-by-worker',
+        name: 'report-gold-loss-tang-by-worker',
+        component: GoldLossTangByWorkerReport,
+        meta: {
+          Displayname: {
+            en: 'Gold Loss by Worker Report',
+            th: 'รายงาน Gold Loss ช่างแต่งต่อคน'
+          },
+          minorShow: true,
           permissions: [PERMISSIONS.WORKER_VIEW]
         }
       }

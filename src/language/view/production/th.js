@@ -818,5 +818,42 @@ export default {
     colPriceItemCount: 'รายการราคา',
     colPriceUpdateDate: 'วันที่ประเมินราคา',
     totalRecords: 'รวม {total} รายการ'
+  },
+
+  workerWagesByPerson: {
+    searchTitle: 'ค้นหารายงานค่าแรงช่างต่อคน',
+    searchDesc: 'ค้นหาสรุปค่าแรงช่างต่อคนตามช่วงวันที่และเงื่อนไขอื่นๆ',
+    dateRange: 'ช่วงวันที่',
+    searchText: 'ค้นหาช่าง',
+    placeholder: {
+      searchText: 'รหัส/ชื่อช่าง'
+    },
+    status: 'แผนก/สถานะ',
+    colWorkerCode: 'รหัสช่าง',
+    colWorkerName: 'ชื่อช่าง',
+    colJobCount: 'จำนวนงาน',
+    colTotalQty: 'จำนวนรวม',
+    colTotalWages: 'ค่าแรงรวม',
+    totalWorkers: 'รวม {total} คน'
+  },
+
+  goldLossTangByWorker: {
+    searchTitle: 'ค้นหารายงาน Gold Loss ช่างแต่งต่อคน',
+    searchDesc: 'ค้นหาสรุป Gold Loss ช่างแต่งต่อคนตามช่วงวันที่และเงื่อนไขอื่นๆ',
+    dateRange: 'ช่วงวันที่',
+    workerCode: 'รหัส/ค้นหาช่าง',
+    placeholder: {
+      workerCode: 'รหัส/ชื่อช่าง'
+    },
+    colWorkerCode: 'รหัสช่าง',
+    colWorkerName: 'ชื่อช่าง',
+    colSlipCount: 'จำนวนใบ',
+    colTotalIssued: 'ทองจ่ายรวม',
+    colTotalReturned: 'ทองคืนรวม',
+    colTotalRawLoss: 'Loss ดิบ',
+    colTotalAllowedLoss: 'Loss ที่ยอม',
+    colTotalDiffLoss: 'Loss ส่วนต่าง',
+    colTotalMoneyDiff: 'เงินส่วนต่าง',
+    totalWorkers: 'รวม {total} คน'
   }
 }
