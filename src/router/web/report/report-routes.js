@@ -14,6 +14,8 @@ const GoldLossByStageReport = () =>
   import('@/views/production/report/gold-loss-by-stage-report/index-view.vue')
 const ProductionPriceReport = () =>
   import('@/views/production/report/production-price-report/index-view.vue')
+const LeadTimeReport = () =>
+  import('@/views/production/report/lead-time-report/index-view.vue')
 
 // ---- stock product reports ----
 const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
@@ -166,6 +168,19 @@ const routes = [
           Displayname: {
             en: 'Production Valuation Report',
             th: 'รายงานประเมินราคางานผลิต'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/report-lead-time',
+        name: 'report-lead-time',
+        component: LeadTimeReport,
+        meta: {
+          Displayname: {
+            en: 'Production Lead Time Report',
+            th: 'รายงาน Lead-time การผลิต'
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]

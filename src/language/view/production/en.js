@@ -903,5 +903,31 @@ export default {
     colTotalDiffLoss: 'Diff Loss',
     colTotalMoneyDiff: 'Money Diff',
     totalWorkers: 'Total {total} workers'
+  },
+
+  leadTime: {
+    searchTitle: 'Production Lead Time Report',
+    searchDesc: 'Select completed date range and other conditions to view production lead time summary',
+    completedDate: 'Completed Date',
+    groupBy: 'Group By',
+    groupProduct: 'Product Type',
+    groupCustomer: 'Customer Type',
+    productType: 'Product Type',
+    customerType: 'Customer Type',
+    statTotal: 'Total Completed',
+    statAvg: 'Average Lead Time',
+    statMedian: 'Median Lead Time',
+    statInvalid: 'Invalid Records',
+    unitDays: 'days',
+    chartAvg: 'Average Lead Time by Group',
+    colCount: 'Count',
+    colAvg: 'Avg (days)',
+    colMedian: 'Median (days)',
+    colB0_30: '0-30',
+    colB31_90: '31-90',
+    colB91_180: '91-180',
+    colB181_365: '181-365',
+    colBGt365: '>365',
+    totalLabel: 'Total'
   }
 }

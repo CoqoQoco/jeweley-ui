@@ -903,5 +903,31 @@ export default {
     colTotalDiffLoss: 'Loss ส่วนต่าง',
     colTotalMoneyDiff: 'เงินส่วนต่าง',
     totalWorkers: 'รวม {total} คน'
+  },
+
+  leadTime: {
+    searchTitle: 'รายงาน Lead-time การผลิต',
+    searchDesc: 'เลือกช่วงวันที่เสร็จและเงื่อนไขอื่นๆ เพื่อดูสรุป Lead-time การผลิต',
+    completedDate: 'วันที่เสร็จ',
+    groupBy: 'แยกตาม',
+    groupProduct: 'ประเภทสินค้า',
+    groupCustomer: 'ประเภทลูกค้า',
+    productType: 'ประเภทสินค้า',
+    customerType: 'ประเภทลูกค้า',
+    statTotal: 'งานเสร็จรวม',
+    statAvg: 'Lead-time เฉลี่ย',
+    statMedian: 'Lead-time กลาง (Median)',
+    statInvalid: 'ข้อมูลไม่สมบูรณ์',
+    unitDays: 'วัน',
+    chartAvg: 'Lead-time เฉลี่ยแยกตามกลุ่ม',
+    colCount: 'จำนวนงาน',
+    colAvg: 'เฉลี่ย (วัน)',
+    colMedian: 'กลาง (วัน)',
+    colB0_30: '0-30',
+    colB31_90: '31-90',
+    colB91_180: '91-180',
+    colB181_365: '181-365',
+    colBGt365: '>365',
+    totalLabel: 'รวม'
   }
 }
