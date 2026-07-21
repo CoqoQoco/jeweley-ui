@@ -867,6 +867,24 @@ export default {
     totalWorkers: 'Total {total} workers'
   },
 
+  planCompletedAllGold: {
+    searchTitle: 'Completed Production Report (Plating Gold Weight)',
+    searchDesc: 'Search completed jobs by created date range and other conditions',
+    advancedSearch: 'Advanced Search',
+    createDate: 'Job Created Date',
+    statusDate: 'Job Status Date',
+    placeholderStart: 'Start',
+    placeholderEnd: 'End',
+    mold: 'Mold',
+    planTarget: 'Delivery Target',
+    customerCode: 'Customer Code',
+    customerType: 'Customer Type',
+    productType: 'Product Type',
+    productCode: 'Product Code',
+    goldColor: 'Gold/Silver Color',
+    goldType: 'Gold/Silver Type'
+  },
+
   goldLossTangByWorker: {
     searchTitle: 'Search Gold Loss Tang by Worker Report',
     searchDesc: 'Search Gold Loss Tang summary by worker, date range and other conditions',

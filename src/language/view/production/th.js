@@ -867,6 +867,24 @@ export default {
     totalWorkers: 'รวม {total} คน'
   },
 
+  planCompletedAllGold: {
+    searchTitle: 'รายงานใบงานสำเร็จ (น้ำหนักทองชุบ)',
+    searchDesc: 'ค้นหาใบงานสำเร็จตามช่วงวันที่สร้างและเงื่อนไขอื่นๆ',
+    advancedSearch: 'ค้นหาเพิ่มเติม',
+    createDate: 'วันที่สร้างใบงาน',
+    statusDate: 'วันที่สถานะใบงาน',
+    placeholderStart: 'เริ่มต้น',
+    placeholderEnd: 'สิ้นสุด',
+    mold: 'เเม่พิมพ์',
+    planTarget: 'กำหนดส่งงาน',
+    customerCode: 'รหัสลูกค้า',
+    customerType: 'ประเภทลูกค้า',
+    productType: 'ประเภทสินค้า',
+    productCode: 'รหัสสินค้า',
+    goldColor: 'สีของทอง/เงิน',
+    goldType: 'ประเภททอง/เงิน'
+  },
+
   goldLossTangByWorker: {
     searchTitle: 'ค้นหารายงาน Gold Loss ช่างแต่งต่อคน',
     searchDesc: 'ค้นหาสรุป Gold Loss ช่างแต่งต่อคนตามช่วงวันที่และเงื่อนไขอื่นๆ',

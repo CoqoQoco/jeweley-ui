@@ -1,228 +1,169 @@
 <template>
-  <div class="filter-container-searchBar">
-    <form @submit.prevent="onSearch">
+  <SearchBarGeneric
+    :title="$t('view.production.planCompletedAllGold.searchTitle')"
+    :description="$t('view.production.planCompletedAllGold.searchDesc')"
+    @search="onSearch"
+    @clear="onClear"
+  >
+    <template #fields>
       <div>
+        <span class="title-text">{{ $t('view.production.planCompletedAllGold.createDate') }}</span>
+        <DateRangeGeneric
+          :startDate="form.start"
+          :endDate="form.end"
+          :startPlaceholder="$t('view.production.planCompletedAllGold.placeholderStart')"
+          :endPlaceholder="$t('view.production.planCompletedAllGold.placeholderEnd')"
+          @update:startDate="form.start = $event"
+          @update:endDate="form.end = $event"
+        />
+      </div>
+
+      <div>
+        <span class="title-text">W.O.</span>
+        <InputTextGeneric
+          ref="inputText"
+          id="inputText"
+          v-model="form.text"
+          :trim="true"
+          placeholder="EX: 202502211"
+          icon="bi-upc-scan"
+        />
+      </div>
+    </template>
+
+    <template #actions-right>
+      <ButtonGeneric variant="main" icon="bi-search" type="submit" :label="$t('common.btn.search')" />
+      <ButtonGeneric
+        variant="sub-main"
+        icon="bi-zoom-in"
+        class="ml-2"
+        :title="$t('view.production.planCompletedAllGold.advancedSearch')"
+        @click="onShowDialog"
+      />
+      <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
+      <ButtonGeneric
+        variant="green"
+        icon="bi-filetype-csv"
+        class="ml-2"
+        :title="$t('common.btn.export')"
+        :disabled="!planCompletedStore.dataPlanCompleted.total"
+        @click="onExport"
+      />
+    </template>
+  </SearchBarGeneric>
+
+  <dialogView
+    :isShow="isShow.dialog"
+    @closeDialog="closeDialog"
+    @search="dialogSearch"
+    :txtHeader="$t('view.production.planCompletedAllGold.advancedSearch')"
+  >
+    <template #content>
+      <div class="form-col-container">
         <div>
-          <pageTitle title="รายงานใบงานสำเร็จ (น้ำหนักทองชุบ)" :isShowBtnClose="false"> </pageTitle>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.statusDate') }}</span>
+          <DateRangeGeneric
+            :startDate="form.sendStart"
+            :endDate="form.sendEnd"
+            :startPlaceholder="$t('view.production.planCompletedAllGold.placeholderStart')"
+            :endPlaceholder="$t('view.production.planCompletedAllGold.placeholderEnd')"
+            @update:startDate="form.sendStart = $event"
+            @update:endDate="form.sendEnd = $event"
+          />
         </div>
 
-        <div class="form-col-container">
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.mold') }}</span>
+          <InputTextGeneric v-model.trim="form.mold" />
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.planTarget') }}</span>
+          <DropdownGeneric
+            v-model="form.isOverPlan"
+            :options="overPlanOptions"
+            optionLabel="description"
+          />
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.customerCode') }}</span>
+          <InputTextGeneric v-model.trim="form.customerCode" />
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.customerType') }}</span>
           <div>
-            <span class="title-text">วันที่สร้างใบงาน</span>
-            <div class="flex-group">
-              <CalendarGeneric
-                class="w-100"
-                v-model="form.start"
-                :max-date="form.end"
-                :manualInput="true"
-                showIcon
-                placeholder="เริ่มต้น"
-                dateFormat="dd/mm/yy"
-              />
-              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <CalendarGeneric
-                class="w-100"
-                v-model="form.end"
-                :min-date="form.start"
-                showIcon
-                :manualInput="true"
-                placeholder="สิ้นสุด"
-                dateFormat="dd/mm/yy"
-              />
-            </div>
-          </div>
-
-          <div class="form-col-container">
-            <!-- text -->
-            <div>
-              <span class="title-text">W.O.</span>
-              <InputTextGeneric
-                ref="inputText"
-                id="inputText"
-                v-model="form.text"
-                :trim="true"
-                placeholder="EX: 202502211"
-                icon="bi-upc-scan"
-              />
-            </div>
-
-            <div></div>
+            <MultiSelectGeneric
+              v-model="form.customerType"
+              :options="customerType"
+              optionLabel="nameTh"
+              optionValue="code"
+            />
           </div>
         </div>
 
-        <dialogView
-          :isShow="isShow.dialog"
-          @closeDialog="closeDialog"
-          @search="dialogSearch"
-          txtHeader="ค้นหาเพิ่มเติม"
-        >
-          <template #content>
-            <div class="form-col-container">
-              <div>
-                <span class="title-text">วันที่สถานะใบงาน</span>
-                <div class="flex-group">
-                  <CalendarGeneric
-                    class="w-100"
-                    v-model="form.sendStart"
-                    :max-date="form.sendEnd"
-                    showIcon
-                    :manualInput="true"
-                    placeholder="เริ่มต้น"
-                    dateFormat="dd/mm/yy"
-                  />
-                  <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                  <CalendarGeneric
-                    class="w-100"
-                    v-model="form.sendEnd"
-                    :min-date="form.sendStart"
-                    showIcon
-                    :manualInput="true"
-                    placeholder="สิ้นสุด"
-                    dateFormat="dd/mm/yy"
-                  />
-                </div>
-              </div>
-
-              <div class="form-col-container">
-                <!-- modld -->
-                <div>
-                  <span class="title-text">เเม่พิมพ์</span>
-                  <input :class="['form-control bg-input']" type="text" v-model.trim="form.mold" />
-                </div>
-
-                <!-- plan target -->
-                <div>
-                  <span class="title-text">กำหนดส่งงาน</span>
-                  <DropdownGeneric
-                    v-model="form.isOverPlan"
-                    :options="overPlanOptions"
-                    optionLabel="description"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-col-container mt-2">
-              <!-- customer code -->
-              <div>
-                <span class="title-text">รหัสลูกค้า</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.customerCode"
-                />
-              </div>
-
-              <!-- customer type -->
-              <div>
-                <span class="title-text">ประเภทลูกค้า</span>
-                <div>
-                  <MultiSelectGeneric
-                    v-model="form.customerType"
-                    :options="customerType"
-                    optionLabel="nameTh"
-                    optionValue="code"
-                  />
-                </div>
-              </div>
-
-              <!-- product type -->
-              <div>
-                <span class="title-text">ประเภทสินค้า</span>
-                <div>
-                  <MultiSelectGeneric
-                    v-model="form.productType"
-                    :options="productType"
-                    optionLabel="nameTh"
-                    optionValue="code"
-                  />
-                </div>
-              </div>
-
-              <!-- product number -->
-              <div>
-                <span class="title-text">รหัสสินค้า</span>
-                <input
-                  :class="['form-control bg-input']"
-                  type="text"
-                  v-model.trim="form.productNumber"
-                />
-              </div>
-
-              <!-- gold -->
-              <div>
-                <span class="title-text">สีของทอง/เงิน</span>
-                <div>
-                  <MultiSelectGeneric
-                    v-model="form.gold"
-                    :options="gold"
-                    optionLabel="nameTh"
-                    optionValue="nameEn"
-                  />
-                </div>
-              </div>
-
-              <!-- gold size -->
-              <div>
-                <span class="title-text">ประเภททอง/เงิน</span>
-                <div>
-                  <MultiSelectGeneric
-                    v-model="form.goldSize"
-                    :options="goldSize"
-                    optionLabel="nameTh"
-                    optionValue="nameEn"
-                  />
-                </div>
-              </div>
-            </div>
-          </template>
-        </dialogView>
-
-        <div class="btn-submit-container-between">
-          <div></div>
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.productType') }}</span>
           <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
-              <span><i class="bi bi-search"></i></span>
-            </button>
-            <button
-              class="btn btn-sm btn-sub-main mr-2"
-              type="button"
-              title="เพิ่มเติม"
-              @click="onShowDialog"
-            >
-              <span><i class="bi bi-zoom-in"></i></span>
-            </button>
-            <button class="btn btn-sm btn-outline-main mr-2" type="button" @click="onClear" title="ล้าง">
-              <span><i class="bi bi-x-circle"></i></span>
-            </button>
-            <button
-              class="btn btn-sm btn-main"
-              type="button"
-              :disabled="!planCompletedStore.dataPlanCompleted.total > 0"
-              @click="onExport"
-            >
-              <span><i class="bi bi-filetype-csv"></i></span>
-            </button>
+            <MultiSelectGeneric
+              v-model="form.productType"
+              :options="productType"
+              optionLabel="nameTh"
+              optionValue="code"
+            />
+          </div>
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.productCode') }}</span>
+          <InputTextGeneric v-model.trim="form.productNumber" />
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.goldColor') }}</span>
+          <div>
+            <MultiSelectGeneric
+              v-model="form.gold"
+              :options="gold"
+              optionLabel="nameTh"
+              optionValue="nameEn"
+            />
+          </div>
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.production.planCompletedAllGold.goldType') }}</span>
+          <div>
+            <MultiSelectGeneric
+              v-model="form.goldSize"
+              :options="goldSize"
+              optionLabel="nameTh"
+              optionValue="nameEn"
+            />
           </div>
         </div>
       </div>
-    </form>
-  </div>
+    </template>
+  </dialogView>
 </template>
 
 <script>
 import { defineAsyncComponent } from 'vue'
 
+// External
 import { mapState } from 'pinia'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js'
 
-import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
-import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+// Local
+import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 const interfaceIsShow = {
@@ -231,11 +172,12 @@ const interfaceIsShow = {
 
 export default {
   components: {
-    pageTitle,
-    MultiSelectGeneric,
-    CalendarGeneric,
-    DropdownGeneric,
+    SearchBarGeneric,
+    ButtonGeneric,
     InputTextGeneric,
+    DateRangeGeneric,
+    MultiSelectGeneric,
+    DropdownGeneric,
     dialogView
   },
 
@@ -307,6 +249,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.form-col-container {
+  display: grid;
+  gap: var(--sp-md);
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
 </style>
