@@ -22,6 +22,7 @@ import reportProductionLang from './view/report-production/th.js'
 import ticketLang from './view/ticket/th.js'
 import graphLang from './view/graph/th.js'
 import downloadsLang from './view/downloads/th.js'
+import reportLang from './view/report/th.js'
 import * as mobileLang from './view/mobile/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -41,6 +42,7 @@ export default {
       ...productionLang,
       dashboard: {
         title: 'แดชบอร์ดงานผลิต',
+        summaryTab: 'สรุปภาพรวม',
         lastUpdate: 'อัปเดตล่าสุด',
         totalPlans: 'แผนงานทั้งหมด',
         allActivePlans: 'แผนงานที่ยังไม่สำเร็จ 100 %',
@@ -110,6 +112,9 @@ export default {
         exportExcel: 'ส่งออกข้อมูล Excel',
         exporting: 'กำลังส่งออก...',
         excel: 'Excel',
+        exportNoDataMsg: 'ไม่มีข้อมูลสำหรับส่งออก',
+        exportSuccessMsg: 'ส่งออกข้อมูล Excel เรียบร้อยแล้ว',
+        exportErrorMsg: 'ไม่สามารถส่งออกข้อมูล Excel ได้',
         weightUnit: 'กรัม',
         weightUnitShort: 'ก.',
         yearSummaryTitle: 'สรุปข้อมูลรายปี {year} - แยกตามประเภทและขนาดทอง',
@@ -136,7 +141,8 @@ export default {
         colProductCount: 'จำนวนแผนงาน',
         colOrderCount2: 'จำนวนสั่งผลิต',
         colPercent: 'เปอร์เซ็นต์',
-        unitPiece: 'ชิ้น'
+        unitPiece: 'ชิ้น',
+        validationSelectMonth: 'กรุณาเลือกเดือนและปี'
       }
     },
     sale: { ...saleLang },
@@ -156,6 +162,7 @@ export default {
     ticket: { ...ticketLang },
     graph: { ...graphLang },
     downloads: { ...downloadsLang },
+    report: { ...reportLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },
@@ -171,6 +178,7 @@ export default {
       product: { ...stock.product },
       location: { ...stock.location },
       moveLocation: { ...stock.moveLocation },
+      storageMoveReport: { ...stock.storageMoveReport },
       cost: { ...stock.cost },
       gem: {
         ...stock.gem,

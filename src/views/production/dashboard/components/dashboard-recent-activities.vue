@@ -64,7 +64,7 @@
             <div class="activity-actions-cell">
               <router-link
                 :to="`/plan-order-tracking-update/${slotProps.data.rawData?.id || ''}`"
-                class="btn btn-sm btn-outline-primary"
+                class="btn btn-sm btn-green"
                 v-if="slotProps.data.rawData?.id"
               >
                 <i class="bi bi-eye"></i>
@@ -162,14 +162,14 @@ export default {
 
 .dashboard-recent-activities {
   .activities-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--color-card-bg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 
     .activities-header {
-      padding: 20px;
-      border-bottom: 1px solid $base-color;
+      padding: var(--sp-xl);
+      border-bottom: 1px solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -188,7 +188,7 @@ export default {
     }
 
     .activities-body {
-      padding: 20px;
+      padding: var(--sp-xl);
     }
   }
 
@@ -238,8 +238,8 @@ export default {
         margin-left: 5px;
         
         &.status-completed {
-          background: #038387;
-          color: white;
+          background: var(--base-green);
+          color: #ffffff;
         }
         
         &.status-progress {
@@ -258,8 +258,8 @@ export default {
         }
         
         &.status-melt {
-          background: #ff4d4d;
-          color: white;
+          background: var(--base-red);
+          color: #ffffff;
         }
       }
     }

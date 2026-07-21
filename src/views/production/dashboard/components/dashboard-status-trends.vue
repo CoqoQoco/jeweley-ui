@@ -41,14 +41,14 @@ export default {
 
 .dashboard-status-trends {
   .trends-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--color-card-bg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 
     .trends-header {
-      padding: 20px;
-      border-bottom: 1px solid $base-color;
+      padding: var(--sp-xl);
+      border-bottom: 1px solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -61,7 +61,7 @@ export default {
     }
 
     .trends-body {
-      padding: 20px;
+      padding: var(--sp-xl);
 
       .trend-item {
         display: flex;
@@ -86,13 +86,13 @@ export default {
 
           .trend-stats {
             display: flex;
-            gap: 10px;
+            gap: var(--sp-sm);
 
             .count {
               background: $base-font-color;
-              color: white;
-              padding: 2px 8px;
-              border-radius: 12px;
+              color: #ffffff;
+              padding: 2px var(--sp-sm);
+              border-radius: var(--radius-lg);
               font-size: 12px;
               font-weight: bold;
             }
@@ -101,12 +101,6 @@ export default {
               color: $base-sub-color;
               font-size: 12px;
             }
-          }
-        }
-
-        .trend-direction {
-          i {
-            font-size: 20px;
           }
         }
       }

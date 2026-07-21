@@ -237,6 +237,7 @@
 <script>
 import { useProductionDailyApiStore } from '@/stores/modules/api/plan/daily-store-api.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
+import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 
 export default {
   name: 'DashboardScrapWeight',
@@ -333,18 +334,11 @@ export default {
   },
   methods: {
     async loadScrapWeightData() {
+      this.isLoading = true
       try {
-        this.isLoading = true
         // Call the new API endpoint through the store
         const response = await this.dailyApiStore.fetchScrapWeightDashboard()
         this.scrapWeightData = response
-      } catch (error) {
-        console.error('Error loading scrap weight data:', error)
-        this.$swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to load scrap weight data'
-        })
       } finally {
         this.isLoading = false
       }
@@ -362,18 +356,13 @@ export default {
       return percentage.toFixed(1)
     },
     async exportToExcel() {
+      if (!this.scrapWeightData) {
+        warning(this.$t('view.production.dashboard.exportNoDataMsg'))
+        return
+      }
+
+      this.isExporting = true
       try {
-        this.isExporting = true
-
-        if (!this.scrapWeightData) {
-          this.$swal.fire({
-            icon: 'warning',
-            title: 'แจ้งเตือน',
-            text: 'ไม่มีข้อมูลสำหรับส่งออก'
-          })
-          return
-        }
-
         const currentYear = new Date().getFullYear()
         const sheets = []
 
@@ -493,26 +482,13 @@ export default {
         })
 
         const filename = `รายงานน้ำหนักขี้เบ้าทอง_${currentYear}`
-        const success = await ExcelHelper.exportToExcelMultiSheet(sheets, { filename })
+        const exportResult = await ExcelHelper.exportToExcelMultiSheet(sheets, { filename })
 
-        if (success) {
-          this.$swal.fire({
-            icon: 'success',
-            title: 'สำเร็จ',
-            text: 'ส่งออกข้อมูล Excel เรียบร้อยแล้ว',
-            timer: 2000,
-            showConfirmButton: false
-          })
+        if (exportResult) {
+          success(this.$t('view.production.dashboard.exportSuccessMsg'))
         } else {
-          throw new Error('Export failed')
+          error(this.$t('view.production.dashboard.exportErrorMsg'))
         }
-      } catch (error) {
-        console.error('Error exporting Excel:', error)
-        this.$swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถส่งออกข้อมูล Excel ได้'
-        })
       } finally {
         this.isExporting = false
       }
@@ -674,16 +650,15 @@ export default {
 
 .dashboard-scrap-weight {
   .scrap-weight-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--color-card-bg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
     margin-bottom: 20px;
 
     .scrap-weight-header {
-      padding: 20px;
-      border-bottom: 1px solid $base-color;
-      //background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      padding: var(--sp-xl);
+      border-bottom: 1px solid var(--color-border);
 
       h5 {
         color: $base-font-color;
@@ -693,7 +668,7 @@ export default {
     }
 
     .scrap-weight-body {
-      padding: 20px;
+      padding: var(--sp-xl);
 
       .scrap-weight-loading,
       .scrap-weight-empty {

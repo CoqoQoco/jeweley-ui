@@ -671,5 +671,92 @@ export default {
     emptyJobsHint: 'Press Search to display worker jobs',
     countInCalc: 'Count',
     notCounted: 'Not counted'
+  },
+
+  goldCostReport: {
+    searchTitle: 'Search Gold Cost Report',
+    searchDesc: 'Search gold cost (mixing request) report by assign date range and other conditions',
+    dateRange: 'Assign Date Range',
+    bookNo: 'Book No.',
+    no: 'No.',
+    runningNumber: 'Running Number',
+    searchText: 'Search (Assigned By/Received By/Remark)',
+    placeholder: {
+      bookNo: 'Book No.',
+      no: 'No.',
+      runningNumber: 'Running Number',
+      searchText: 'Assigned By/Received By/Remark'
+    },
+    colAssignDate: 'Assign Date',
+    colBookNo: 'Book-No.',
+    colRunningNumber: 'Running Number',
+    colGold: 'Gold',
+    colGoldSizeName: 'Gold %',
+    colGoldReceipt: 'Gold Formula',
+    colMeltWeight: 'Melt Weight',
+    colCastWeight: 'Cast Weight',
+    colMeltWeightLoss: 'Melt Loss',
+    colCastWeightLoss: 'Cast Loss',
+    colAssignBy: 'Assigned By',
+    colReceiveBy: 'Received By',
+    totalRecords: 'Total {total} records'
+  },
+
+  wipByStageReport: {
+    searchTitle: 'Search Work In Process Report',
+    searchDesc: 'Search work in process report by receive date range, department and other conditions',
+    dateRange: 'Receive Date Range',
+    stage: 'Department',
+    gold: 'Gold Type',
+    woText: 'W.O. Text',
+    productNumber: 'Product Code',
+    placeholder: {
+      woText: 'W.O. Text',
+      productNumber: 'Product Code'
+    },
+    colReceiveWorkDate: 'Receive Date',
+    colWoText: 'W.O. Text',
+    colProductNumber: 'Product Code',
+    colProductName: 'Product Name',
+    colMold: 'Mold',
+    colDept: 'Department',
+    colWorker: 'Worker',
+    colGold: 'Gold',
+    colGoldWeightSend: 'Send Weight',
+    colGoldWeightCheck: 'Receive Weight',
+    colTotalWages: 'Wages',
+    colWagesStatus: 'Wages Status',
+    wagesStatusPaid: 'Paid',
+    wagesStatusPending: 'Pending',
+    totalRecords: 'Total {total} records'
+  },
+
+  transferReport: {
+    searchTitle: 'Search Job Transfer Report',
+    searchDesc: 'Search job transfer report by transfer date range, department and other conditions',
+    dateRange: 'Transfer Date Range',
+    transferNumber: 'Transfer No.',
+    woText: 'W.O. Text',
+    statusFormer: 'From Department',
+    statusTarget: 'To Department',
+    productNumber: 'Product Code',
+    placeholder: {
+      transferNumber: 'Transfer No.',
+      woText: 'W.O. Text',
+      productNumber: 'Product Code'
+    },
+    colCreateDate: 'Transfer Date',
+    colTransferNumber: 'Transfer No.',
+    colWoText: 'W.O. Text',
+    colProductNumber: 'Product Code',
+    colProductName: 'Product Name',
+    colMold: 'Mold',
+    colFormerStatus: 'From Department',
+    colTargetStatus: 'To Department',
+    colWorker: 'Received By',
+    colCustomer: 'Customer',
+    colCreateBy: 'Transferred By',
+    colRemark: 'Remark',
+    totalRecords: 'Total {total} records'
   }
 }

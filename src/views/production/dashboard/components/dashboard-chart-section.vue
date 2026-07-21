@@ -1,37 +1,33 @@
 <template>
-  <div class="dashboard-chart-section">
-    <!-- Production Status Chart -->
-    <div class="chart-card-body">
-      <HorizontalBarChart
-        v-if="chartData && chartData.report.length > 0"
-        :data="chartData"
-        :title="$t('view.production.dashboard.productionStatus')"
-        :use-thai-labels="$i18n.locale === 'th'"
-        :height="600"
-        :show-data-labels="true"
-      />
-      <div v-else-if="isLoading" class="chart-loading">
-        <div class="loading-spinner">
-          <i class="bi bi-arrow-repeat"></i>
-        </div>
-        <p>{{ $t('view.production.dashboard.loadingChart') }}</p>
-      </div>
-      <div v-else class="chart-empty">
-        <i class="bi bi-graph-up"></i>
-        <p>{{ $t('view.production.dashboard.noData') }}</p>
-      </div>
-    </div>
-  </div>
+  <SectionCardGeneric
+    :title="$t('view.production.dashboard.productionStatus')"
+    icon="bi-bar-chart"
+    accent="main"
+    headerStyle="legend"
+  >
+    <ChartGeneric
+      type="bar"
+      :series="barSeries"
+      :options="barOptions"
+      :height="barChartHeight"
+      :loading="isLoading"
+    />
+  </SectionCardGeneric>
 </template>
 
 <script>
-import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
+import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 export default {
   name: 'DashboardChartSection',
+
   components: {
-    HorizontalBarChart
+    SectionCardGeneric,
+    ChartGeneric
   },
+
   props: {
     chartData: {
       type: Object,
@@ -41,51 +37,53 @@ export default {
       type: Boolean,
       default: false
     }
-  }
-}
-</script>
+  },
 
-<style lang="scss" scoped>
-@import '@/assets/scss/variable.scss';
+  computed: {
+    reportItems() {
+      return this.chartData?.report || []
+    },
 
-.dashboard-chart-section {
-  .chart-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-  }
+    barSeries() {
+      return [
+        {
+          name: this.$t('view.production.dashboard.count'),
+          data: this.reportItems.map((item) => item.count || 0)
+        }
+      ]
+    },
 
-  .chart-card-body {
-    //padding: 20px;
+    barChartHeight() {
+      const minHeight = 320
+      const perRow = 38
+      return Math.max(minHeight, this.reportItems.length * perRow + 80)
+    },
 
-    .chart-loading,
-    .chart-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 200px;
-      color: $base-sub-color;
-
-      i {
-        font-size: 48px;
-        margin-bottom: 15px;
-      }
-
-      .loading-spinner i {
-        animation: spin 1s linear infinite;
+    barOptions() {
+      return {
+        chart: { type: 'bar', toolbar: { show: false } },
+        plotOptions: {
+          bar: { horizontal: true, borderRadius: 4, barHeight: '60%' }
+        },
+        colors: [CHART_TOKENS.primary],
+        legend: { show: false },
+        xaxis: {
+          categories: this.reportItems.map((item) =>
+            this.$i18n.locale === 'th' ? item.statusNameTH : item.statusNameEN
+          ),
+          labels: { style: { fontSize: '11px' } }
+        },
+        dataLabels: {
+          enabled: true,
+          style: { fontSize: '11px', colors: ['#fff'] }
+        },
+        tooltip: {
+          y: {
+            formatter: (val) => `${val} ${this.$t('view.production.dashboard.count')}`
+          }
+        }
       }
     }
   }
 }
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-</style>
+</script>

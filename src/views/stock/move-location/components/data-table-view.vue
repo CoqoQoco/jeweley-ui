@@ -37,6 +37,17 @@
           {{ data.qtyAvailable > 0 ? $t('view.stock.moveLocation.readyLabel') : $t('view.stock.moveLocation.notReadyLabel') }}
         </span>
       </template>
+
+      <template #actionTemplate="{ data }">
+        <div class="btn-action-container">
+          <ButtonGeneric
+            variant="green"
+            icon="bi-clock-history"
+            :title="$t('view.stock.moveLocation.historyBtn')"
+            @click="$emit('history', data)"
+          />
+        </div>
+      </template>
     </BaseDataTable>
   </div>
 </template>
@@ -44,6 +55,7 @@
 <script>
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
@@ -55,7 +67,8 @@ export default {
 
   components: {
     BaseDataTable,
-    imagePreview
+    imagePreview,
+    ButtonGeneric
   },
 
   setup() {
@@ -74,7 +87,7 @@ export default {
     }
   },
 
-  emits: ['update:selection'],
+  emits: ['update:selection', 'history'],
 
   computed: {
     columns() {
@@ -95,7 +108,8 @@ export default {
         { field: 'productPrice', header: this.$t('common.field.price'), sortable: true, minWidth: '150px', format: 'decimal2' },
         { field: 'createBy', header: this.$t('view.stock.product.receiver'), sortable: true, minWidth: '150px' },
         { field: 'remark', header: this.$t('common.field.remark'), sortable: true, minWidth: '150px' },
-        { field: 'qtyAvailable', header: this.$t('view.stock.moveLocation.readyLabel'), sortable: false, minWidth: '100px', align: 'center' }
+        { field: 'qtyAvailable', header: this.$t('view.stock.moveLocation.readyLabel'), sortable: false, minWidth: '100px', align: 'center' },
+        { field: 'action', header: this.$t('common.field.action'), sortable: false, minWidth: '80px', align: 'center' }
       ]
     }
   },

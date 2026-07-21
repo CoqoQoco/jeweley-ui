@@ -278,7 +278,7 @@ export default {
 
     async loadMonthlyReport() {
       if (!this.selectedMonth) {
-        warning('กรุณาเลือกเดือนและปี', 'คำเตือน')
+        warning(this.$t('view.production.dashboard.validationSelectMonth'))
         return
       }
 
@@ -300,32 +300,18 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .monthly-success-report {
-  background-color: #f8f9fa;
-  min-height: 100vh;
-
-  .selected-period-info {
-    background: #f8f9fa;
-    border-radius: 4px;
-    padding: 10px 15px;
-    border-left: 4px solid $base-font-color;
-
-    small i {
-      margin-right: 5px;
-    }
-  }
-
   .monthly-report-content {
     .report-card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background: var(--color-card-bg);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
       margin-bottom: 20px;
 
       .card-header {
         background: linear-gradient(135deg, $base-font-color, lighten($base-font-color, 10%));
-        color: white;
+        color: #ffffff;
         padding: 15px 20px;
-        border-radius: 8px 8px 0 0;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
         border-bottom: none;
 
         h5 {
@@ -340,23 +326,23 @@ export default {
       }
 
       .card-body {
-        padding: 20px;
+        padding: var(--sp-xl);
 
         .badge {
           font-size: 12px;
-          padding: 4px 8px;
+          padding: 4px var(--sp-sm);
 
           &.badge-success {
-            background-color: #038387;
-            color: white;
+            background-color: var(--base-green);
+            color: #ffffff;
           }
         }
 
         .percentage-badge {
-          background-color: #038387;
-          color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
+          background-color: var(--base-green);
+          color: #ffffff;
+          padding: 4px var(--sp-sm);
+          border-radius: var(--radius-lg);
           font-size: 12px;
           font-weight: 500;
         }
@@ -371,9 +357,9 @@ export default {
 
   // Empty State
   .empty-state {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--color-card-bg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     padding: 60px 20px;
     text-align: center;
 

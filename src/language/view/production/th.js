@@ -671,5 +671,92 @@ export default {
     emptyJobsHint: 'กดค้นหาเพื่อแสดงรายการงานของช่าง',
     countInCalc: 'คิด',
     notCounted: 'ไม่นำมาคิด'
+  },
+
+  goldCostReport: {
+    searchTitle: 'ค้นหารายงานใบเบิกผสมทอง',
+    searchDesc: 'ค้นหารายงานใบเบิกผสมทอง (Gold Cost) ตามช่วงวันที่จ่ายและเงื่อนไขอื่นๆ',
+    dateRange: 'ช่วงวันที่จ่าย',
+    bookNo: 'เล่มที่',
+    no: 'เลขที่',
+    runningNumber: 'RunningNumber',
+    searchText: 'ค้นหา (ผู้จ่าย/ผู้รับ/หมายเหตุ)',
+    placeholder: {
+      bookNo: 'เล่มที่',
+      no: 'เลขที่',
+      runningNumber: 'RunningNumber',
+      searchText: 'ผู้จ่าย/ผู้รับ/หมายเหตุ'
+    },
+    colAssignDate: 'วันที่จ่าย',
+    colBookNo: 'เล่ม-เลขที่',
+    colRunningNumber: 'RunningNumber',
+    colGold: 'ทอง',
+    colGoldSizeName: '%ทอง',
+    colGoldReceipt: 'สูตรผสม',
+    colMeltWeight: 'นน.หลอม',
+    colCastWeight: 'นน.หล่อ',
+    colMeltWeightLoss: 'loss หลอม',
+    colCastWeightLoss: 'loss หล่อ',
+    colAssignBy: 'ผู้จ่าย',
+    colReceiveBy: 'ผู้รับ',
+    totalRecords: 'รวม {total} รายการ'
+  },
+
+  wipByStageReport: {
+    searchTitle: 'ค้นหารายงานงานระหว่างผลิต',
+    searchDesc: 'ค้นหารายงานงานระหว่างผลิตตามช่วงวันรับงาน แผนก และเงื่อนไขอื่นๆ',
+    dateRange: 'ช่วงวันรับงาน',
+    stage: 'แผนก',
+    gold: 'ประเภททอง',
+    woText: 'เลขที่ใบงาน',
+    productNumber: 'รหัสสินค้า',
+    placeholder: {
+      woText: 'เลขที่ใบงาน',
+      productNumber: 'รหัสสินค้า'
+    },
+    colReceiveWorkDate: 'วันที่รับงาน',
+    colWoText: 'เลขที่ใบงาน',
+    colProductNumber: 'รหัสสินค้า',
+    colProductName: 'ชื่อสินค้า',
+    colMold: 'แม่พิมพ์',
+    colDept: 'แผนก',
+    colWorker: 'ช่าง',
+    colGold: 'ทอง',
+    colGoldWeightSend: 'นน.จ่าย',
+    colGoldWeightCheck: 'นน.รับ',
+    colTotalWages: 'ค่าแรง',
+    colWagesStatus: 'สถานะค่าแรง',
+    wagesStatusPaid: 'จ่ายแล้ว',
+    wagesStatusPending: 'ค้าง',
+    totalRecords: 'รวม {total} รายการ'
+  },
+
+  transferReport: {
+    searchTitle: 'ค้นหารายงานการโอนงาน',
+    searchDesc: 'ค้นหารายงานการโอนงานตามช่วงวันที่โอน แผนก และเงื่อนไขอื่นๆ',
+    dateRange: 'ช่วงวันที่โอน',
+    transferNumber: 'เลขที่โอน',
+    woText: 'เลขที่ใบงาน',
+    statusFormer: 'แผนกโอนงาน',
+    statusTarget: 'แผนกรับโอน',
+    productNumber: 'รหัสสินค้า',
+    placeholder: {
+      transferNumber: 'เลขที่โอน',
+      woText: 'เลขที่ใบงาน',
+      productNumber: 'รหัสสินค้า'
+    },
+    colCreateDate: 'วันที่โอน',
+    colTransferNumber: 'เลขที่โอน',
+    colWoText: 'เลขที่ใบงาน',
+    colProductNumber: 'รหัสสินค้า',
+    colProductName: 'ชื่อสินค้า',
+    colMold: 'แม่พิมพ์',
+    colFormerStatus: 'จากแผนก',
+    colTargetStatus: 'ไปแผนก',
+    colWorker: 'ช่างรับ',
+    colCustomer: 'ลูกค้า',
+    colCreateBy: 'ผู้โอน',
+    colRemark: 'หมายเหตุ',
+    totalRecords: 'รวม {total} รายการ'
   }
 }

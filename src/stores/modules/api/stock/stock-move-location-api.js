@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
-import { formatDate } from '@/services/utils/dayjs.js'
+import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', {
   state: () => ({
-    dataSearch: { data: [], total: 0 }
+    dataSearch: { data: [], total: 0 },
+    movementSearch: { data: [], total: 0 }
   }),
 
   actions: {
@@ -29,6 +30,72 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
         stockNumbers,
         targetLocationCode,
         remark: remark || undefined
+      })
+    },
+
+    async fetchMovementSearch({ take = 10, skip = 0, sort = [], formValue = {} } = {}) {
+      const res = await api.jewelry.post('StockMovement/Search', {
+        take,
+        skip,
+        sort,
+        dateFrom: formValue.dateFrom ? formatISOString(formValue.dateFrom) : undefined,
+        dateTo: formValue.dateTo ? formatISOString(formValue.dateTo) : undefined,
+        fromLocation: formValue.fromLocation || undefined,
+        toLocation: formValue.toLocation || undefined,
+        stockNumber: formValue.stockNumber || undefined
+      })
+      if (res) {
+        this.movementSearch = { ...res }
+      } else {
+        this.movementSearch = { data: [], total: 0 }
+      }
+    },
+
+    async fetchMovementSearchExport({ sort = [], formValue = {} } = {}) {
+      const res = await api.jewelry.post('StockMovement/Search', {
+        take: 0,
+        skip: 0,
+        sort,
+        dateFrom: formValue.dateFrom ? formatISOString(formValue.dateFrom) : undefined,
+        dateTo: formValue.dateTo ? formatISOString(formValue.dateTo) : undefined,
+        fromLocation: formValue.fromLocation || undefined,
+        toLocation: formValue.toLocation || undefined,
+        stockNumber: formValue.stockNumber || undefined
+      })
+
+      if (res) {
+        const dataExcel = res.data.map((item) => ({
+          'วันที่-เวลา': formatDateTime(item.movementDate),
+          เลขที่ผลิต: item.stockNumber,
+          รหัสสินค้า: item.productCode,
+          ย้ายจาก: `${item.fromLocation || ''} - ${item.fromLocationName || ''}`,
+          ปลายทาง: `${item.toLocation || ''} - ${item.toLocationName || ''}`,
+          ผู้ย้าย: item.createBy,
+          หมายเหตุ: item.remark
+        }))
+
+        const options = {
+          filename: 'รายงานการย้าย Storage Location.xlsx',
+          sheetName: 'รายงานการย้าย Storage Location',
+          styles: {
+            ...ExcelHelper.defaultStyles,
+            headerFill: {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: '921313' }
+            }
+          }
+        }
+
+        ExcelHelper.exportToExcel(dataExcel, options)
+      }
+    },
+
+    async fetchMovementHistory({ stockNumber }) {
+      return await api.jewelry.post('StockMovement/Search', {
+        take: 0,
+        skip: 0,
+        stockNumber
       })
     },
 

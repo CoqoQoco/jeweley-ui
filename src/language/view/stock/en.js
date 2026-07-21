@@ -229,7 +229,27 @@ export default {
       imgConfirm: 'Confirm move dialog',
       imgSuccess: 'Move success notification',
       imgTemp: 'Create temporary SLOC form'
-    }
+    },
+    historyBtn: 'Move History',
+    historyTitle: 'Storage Location Move History | Production No.: {stockNumber}'
+  },
+  storageMoveReport: {
+    searchTitle: 'Storage Location Move Report',
+    searchDesc: 'Check the history of product moves between Storage Locations',
+    dateRange: 'Date Range',
+    fromLocation: 'From',
+    toLocation: 'To',
+    stockNumber: 'Code/Production No.',
+    placeholder: {
+      stockNumber: 'EX: DK-2502-00X'
+    },
+    colDate: 'Date-Time',
+    colStockNumber: 'Production No.',
+    colProductCode: 'Product Code',
+    colFromLocation: 'From',
+    colToLocation: 'To',
+    colCreateBy: 'Moved By',
+    totalRecords: 'Total {total} records'
   },
   gem: {
     searchTitle: 'Raw Material Stock',

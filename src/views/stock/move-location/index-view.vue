@@ -13,6 +13,7 @@
       v-model:modelForm="search"
       v-model:modelFormExport="formExport"
       @update:selection="onSelectionChange"
+      @history="onHistory"
     />
     <moveLocationView
       :isShow="isShowMove"
@@ -24,6 +25,11 @@
       :isShow="isShowManual"
       @closeModal="isShowManual = false"
     />
+    <historyView
+      :isShow="isShowHistory"
+      :stockNumber="historyStockNumber"
+      @closeModal="isShowHistory = false"
+    />
   </div>
 </template>
 
@@ -32,6 +38,7 @@ import searchView from './components/search-view.vue'
 import dataTableView from './components/data-table-view.vue'
 import moveLocationView from './modal/move-location-view.vue'
 import manualView from './modal/manual-view.vue'
+import historyView from './modal/history-view.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -59,7 +66,8 @@ export default {
     searchView,
     dataTableView,
     moveLocationView,
-    manualView
+    manualView,
+    historyView
   },
 
   setup() {
@@ -74,7 +82,9 @@ export default {
       formExport: { ...interfaceForm },
       selectedItems: [],
       isShowMove: false,
-      isShowManual: false
+      isShowManual: false,
+      isShowHistory: false,
+      historyStockNumber: null
     }
   },
 
@@ -112,6 +122,11 @@ export default {
 
     onExport(data) {
       this.formExport = { ...data }
+    },
+
+    onHistory(data) {
+      this.historyStockNumber = data.stockNumber
+      this.isShowHistory = true
     }
   },
 

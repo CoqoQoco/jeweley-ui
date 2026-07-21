@@ -229,7 +229,27 @@ export default {
       imgConfirm: 'dialog ยืนยันการย้าย',
       imgSuccess: 'แจ้งย้ายสำเร็จ',
       imgTemp: 'ฟอร์มสร้าง SLOC ชั่วคราว'
-    }
+    },
+    historyBtn: 'ประวัติการย้าย',
+    historyTitle: 'ประวัติการย้าย Storage Location | เลขที่ผลิต: {stockNumber}'
+  },
+  storageMoveReport: {
+    searchTitle: 'รายงานการย้าย Storage Location',
+    searchDesc: 'ตรวจสอบประวัติการย้ายสินค้าระหว่าง Storage Location',
+    dateRange: 'ช่วงวันที่',
+    fromLocation: 'ย้ายจาก',
+    toLocation: 'ปลายทาง',
+    stockNumber: 'รหัส/เลขที่ผลิต',
+    placeholder: {
+      stockNumber: 'EX: DK-2502-00X'
+    },
+    colDate: 'วันที่-เวลา',
+    colStockNumber: 'เลขที่ผลิต',
+    colProductCode: 'รหัสสินค้า',
+    colFromLocation: 'ย้ายจาก',
+    colToLocation: 'ปลายทาง',
+    colCreateBy: 'ผู้ย้าย',
+    totalRecords: 'รวม {total} รายการ'
   },
   gem: {
     searchTitle: 'คลังวัตถุดิบ',

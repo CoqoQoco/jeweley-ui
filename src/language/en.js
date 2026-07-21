@@ -22,6 +22,7 @@ import reportProductionLang from './view/report-production/en.js'
 import ticketLang from './view/ticket/en.js'
 import graphLang from './view/graph/en.js'
 import downloadsLang from './view/downloads/en.js'
+import reportLang from './view/report/en.js'
 import * as mobileLang from './view/mobile/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -41,6 +42,7 @@ export default {
       ...productionLang,
       dashboard: {
         title: 'Production Dashboard',
+        summaryTab: 'Overview',
         lastUpdate: 'Last Update',
         totalPlans: 'Total Plans',
         allActivePlans: 'All active plans',
@@ -110,6 +112,9 @@ export default {
         exportExcel: 'Export Excel',
         exporting: 'Exporting...',
         excel: 'Excel',
+        exportNoDataMsg: 'No data to export',
+        exportSuccessMsg: 'Excel exported successfully',
+        exportErrorMsg: 'Unable to export Excel',
         weightUnit: 'Grams',
         weightUnitShort: 'g.',
         yearSummaryTitle: 'Annual Summary {year} - By Type and Gold Size',
@@ -136,7 +141,8 @@ export default {
         colProductCount: 'Plan Count',
         colOrderCount2: 'Production Count',
         colPercent: 'Percent',
-        unitPiece: 'pcs'
+        unitPiece: 'pcs',
+        validationSelectMonth: 'Please select month and year'
       }
     },
     sale: { ...saleLang },
@@ -156,6 +162,7 @@ export default {
     ticket: { ...ticketLang },
     graph: { ...graphLang },
     downloads: { ...downloadsLang },
+    report: { ...reportLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },
@@ -171,6 +178,7 @@ export default {
       product: { ...stock.product },
       location: { ...stock.location },
       moveLocation: { ...stock.moveLocation },
+      storageMoveReport: { ...stock.storageMoveReport },
       cost: { ...stock.cost },
       gem: {
         ...stock.gem,
