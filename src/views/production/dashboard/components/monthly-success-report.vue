@@ -20,15 +20,15 @@
           <div></div>
           <div></div>
           <div class="d-flex align-items-end justify-content-end">
-            <button
+            <ButtonGeneric
+              variant="green"
+              icon="bi-search"
+              :label="$t('common.btn.search')"
+              :loading="isMonthlyLoading"
+              :disabled="!selectedMonth"
+              class="ml-2"
               @click="loadMonthlyReport"
-              class="btn btn-sm btn-green ml-2"
-              :disabled="isMonthlyLoading || !selectedMonth"
-            >
-              <i class="bi bi-search" v-if="!isMonthlyLoading"></i>
-              <i class="bi bi-arrow-clockwise spinning" v-else></i>
-              {{ $t('common.btn.search') }}
-            </button>
+            />
           </div>
         </div>
       </div>
@@ -48,163 +48,30 @@
 
     <!-- Monthly Report Content -->
     <div v-if="monthlyReportData" class="monthly-report-content mt-4">
-      <!-- Plan Finish by Type Section -->
-      <div class="row mb-2">
-        <div class="col-lg-6 col-md-12">
-          <div class="report-card">
-            <div class="card-header">
-              <h5><i class="bi bi-bar-chart"></i> {{ $t('view.production.dashboard.chartTitleGold') }}</h5>
-            </div>
-            <div class="card-body">
-              <HorizontalBarChart
-                :data="typeChartData"
-                title=""
-                :height="300"
-                :datasetFields="[{ key: 'count', label: $t('view.production.dashboard.countLabel'), labelTH: $t('view.production.dashboard.countLabel') }]"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-6 col-md-12">
-          <div class="report-card">
-            <div class="card-header">
-              <h5><i class="bi bi-table"></i> {{ $t('view.production.dashboard.tableDetailGold') }}</h5>
-            </div>
-            <div class="card-body">
-              <!-- eslint-disable vue/no-restricted-syntax -->
-              <!-- summary report layout — paired with chart, no pagination needed -->
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>{{ $t('view.production.dashboard.colGoldType') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colProductCount') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colOrderCount2') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colPercent') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in planFinishByType" :key="item.type">
-                    <td class="font-weight-bold">{{ item.typeName || item.type }}</td>
-                    <td class="text-center">
-                      <span class="badge badge-success">{{ item.count }}</span>
-                    </td>
-                    <td class="text-center">{{ item.totalQty }} {{ $t('view.production.dashboard.unitPiece') }}</td>
-                    <td class="text-center">
-                      <span class="percentage-badge">{{ item.percentage }}%</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <!-- eslint-enable vue/no-restricted-syntax -->
-            </div>
-          </div>
-        </div>
-      </div>
+      <div v-for="section in sections" :key="section.key" class="responsive-grid-2col report-section-row">
+        <SectionCardGeneric :title="section.chartTitle" icon="bi-bar-chart" accent="main" headerStyle="legend">
+          <ChartGeneric
+            type="bar"
+            :series="[{ name: $t('view.production.dashboard.countLabel'), data: section.rows.map((r) => r.count) }]"
+            :options="chartOptions(section)"
+            :height="300"
+            :emptyText="$t('common.label.noData')"
+          />
+        </SectionCardGeneric>
 
-      <!-- Plan Finish by Product Type Section -->
-      <div class="row mb-2">
-        <div class="col-lg-6 col-md-12">
-          <div class="report-card">
-            <div class="card-header">
-              <h5><i class="bi bi-bar-chart"></i> {{ $t('view.production.dashboard.chartTitleProduct') }}</h5>
-            </div>
-            <div class="card-body">
-              <HorizontalBarChart
-                :data="productTypeChartData"
-                title=""
-                :height="300"
-                :datasetFields="[{ key: 'count', label: $t('view.production.dashboard.countLabel'), labelTH: $t('view.production.dashboard.countLabel') }]"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-6 col-md-12">
-          <div class="report-card">
-            <div class="card-header">
-              <h5><i class="bi bi-table"></i> {{ $t('view.production.dashboard.tableDetailProduct') }}</h5>
-            </div>
-            <div class="card-body">
-              <!-- eslint-disable-next-line vue/no-restricted-syntax -->
-              <!-- summary report layout — paired with chart, no pagination needed -->
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>{{ $t('view.production.dashboard.colProductType') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colProductCount') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colOrderCount2') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colPercent') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in planFinishByProductType" :key="item.productType">
-                    <td class="font-weight-bold">{{ item.productTypeName || item.productType }}</td>
-                    <td class="text-center">
-                      <span class="badge badge-success">{{ item.count }}</span>
-                    </td>
-                    <td class="text-center">{{ item.totalQty }} {{ $t('view.production.dashboard.unitPiece') }}</td>
-                    <td class="text-center">
-                      <span class="percentage-badge">{{ item.percentage }}%</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Plan Finish by Customer Type Section -->
-      <div class="row mb-2">
-        <div class="col-lg-6 col-md-12">
-          <div class="report-card">
-            <div class="card-header">
-              <h5><i class="bi bi-bar-chart"></i> {{ $t('view.production.dashboard.chartTitleCustomer') }}</h5>
-            </div>
-            <div class="card-body">
-              <HorizontalBarChart
-                :data="customerTypeChartData"
-                title=""
-                :height="300"
-                :datasetFields="[{ key: 'count', label: $t('view.production.dashboard.countLabel'), labelTH: $t('view.production.dashboard.countLabel') }]"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-6 col-md-12">
-          <div class="report-card">
-            <div class="card-header">
-              <h5><i class="bi bi-table"></i> {{ $t('view.production.dashboard.tableDetailCustomer') }}</h5>
-            </div>
-            <div class="card-body">
-              <!-- eslint-disable-next-line vue/no-restricted-syntax -->
-              <!-- summary report layout — paired with chart, no pagination needed -->
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>{{ $t('view.production.dashboard.colCustomerType') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colProductCount') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colOrderCount2') }}</th>
-                    <th class="text-center">{{ $t('view.production.dashboard.colPercent') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in planFinishByCustomerType" :key="item.customerType">
-                    <td class="font-weight-bold">
-                      {{ item.customerTypeName || item.customerType }}
-                    </td>
-                    <td class="text-center">
-                      <span class="badge badge-success">{{ item.count }}</span>
-                    </td>
-                    <td class="text-center">{{ item.totalQty }} {{ $t('view.production.dashboard.unitPiece') }}</td>
-                    <td class="text-center">
-                      <span class="percentage-badge">{{ item.percentage }}%</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <SectionCardGeneric :title="section.tableTitle" icon="bi-table" accent="main" headerStyle="legend">
+          <BaseDataTable :items="section.rows" :columns="tableColumns(section)" :paginator="false" dataKey="name">
+            <template #countTemplate="{ data }">
+              <span class="badge-count">{{ data.count }}</span>
+            </template>
+            <template #totalQtyTemplate="{ data }">
+              {{ data.totalQty }} {{ $t('view.production.dashboard.unitPiece') }}
+            </template>
+            <template #percentageTemplate="{ data }">
+              <span class="badge-count">{{ data.percentage }}%</span>
+            </template>
+          </BaseDataTable>
+        </SectionCardGeneric>
       </div>
     </div>
 
@@ -220,17 +87,24 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
+
 import { useProductionMonthlyReportApiStore } from '@/stores/modules/api/plan/monthly-report-store-api.js'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
-import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
+import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
-import dayjs from 'dayjs'
 
 export default {
   name: 'MonthlySuccessReport',
   components: {
     CalendarGeneric,
-    HorizontalBarChart
+    ChartGeneric,
+    BaseDataTable,
+    SectionCardGeneric,
+    ButtonGeneric
   },
   setup() {
     const monthlyReportApiStore = useProductionMonthlyReportApiStore()
@@ -257,17 +131,48 @@ export default {
     planFinishByCustomerType() {
       return this.monthlyReportApiStore.getPlanFinishByCustomerType
     },
-    typeChartData() {
-      return this.monthlyReportApiStore.getTypeChartData
-    },
-    productTypeChartData() {
-      return this.monthlyReportApiStore.getProductTypeChartData
-    },
-    customerTypeChartData() {
-      return this.monthlyReportApiStore.getCustomerTypeChartData
-    },
     isMonthlyLoading() {
       return this.monthlyReportApiStore.getIsLoading
+    },
+    sections() {
+      return [
+        {
+          key: 'gold',
+          chartTitle: this.$t('view.production.dashboard.chartTitleGold'),
+          tableTitle: this.$t('view.production.dashboard.tableDetailGold'),
+          nameHeader: this.$t('view.production.dashboard.colGoldType'),
+          rows: this.planFinishByType.map((item) => ({
+            name: item.typeName || item.type,
+            count: item.count,
+            totalQty: item.totalQty,
+            percentage: item.percentage
+          }))
+        },
+        {
+          key: 'product',
+          chartTitle: this.$t('view.production.dashboard.chartTitleProduct'),
+          tableTitle: this.$t('view.production.dashboard.tableDetailProduct'),
+          nameHeader: this.$t('view.production.dashboard.colProductType'),
+          rows: this.planFinishByProductType.map((item) => ({
+            name: item.productTypeName || item.productType,
+            count: item.count,
+            totalQty: item.totalQty,
+            percentage: item.percentage
+          }))
+        },
+        {
+          key: 'customer',
+          chartTitle: this.$t('view.production.dashboard.chartTitleCustomer'),
+          tableTitle: this.$t('view.production.dashboard.tableDetailCustomer'),
+          nameHeader: this.$t('view.production.dashboard.colCustomerType'),
+          rows: this.planFinishByCustomerType.map((item) => ({
+            name: item.customerTypeName || item.customerType,
+            count: item.count,
+            totalQty: item.totalQty,
+            percentage: item.percentage
+          }))
+        }
+      ]
     }
   },
   methods: {
@@ -290,6 +195,22 @@ export default {
     formatMonthYear(date) {
       if (!date) return ''
       return dayjs(date).format('MM/YYYY')
+    },
+
+    tableColumns(section) {
+      return [
+        { field: 'name', header: section.nameHeader, sortable: false },
+        { field: 'count', header: this.$t('view.production.dashboard.colProductCount'), align: 'center', sortable: false },
+        { field: 'totalQty', header: this.$t('view.production.dashboard.colOrderCount2'), align: 'center', sortable: false },
+        { field: 'percentage', header: this.$t('view.production.dashboard.colPercent'), align: 'center', sortable: false }
+      ]
+    },
+
+    chartOptions(section) {
+      return {
+        plotOptions: { bar: { horizontal: true } },
+        xaxis: { categories: section.rows.map((r) => r.name) }
+      }
     }
   }
 }
@@ -298,60 +219,21 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/variable.scss';
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
 
 .monthly-success-report {
   .monthly-report-content {
-    .report-card {
-      background: var(--color-card-bg);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 20px;
+    .report-section-row {
+      margin-bottom: var(--sp-2xl);
+    }
 
-      .card-header {
-        background: linear-gradient(135deg, $base-font-color, lighten($base-font-color, 10%));
-        color: #ffffff;
-        padding: 15px 20px;
-        border-radius: var(--radius-md) var(--radius-md) 0 0;
-        border-bottom: none;
-
-        h5 {
-          margin: 0;
-          font-weight: 600;
-          font-size: 16px;
-
-          i {
-            margin-right: 8px;
-          }
-        }
-      }
-
-      .card-body {
-        padding: var(--sp-xl);
-
-        .badge {
-          font-size: 12px;
-          padding: 4px var(--sp-sm);
-
-          &.badge-success {
-            background-color: var(--base-green);
-            color: #ffffff;
-          }
-        }
-
-        .percentage-badge {
-          background-color: var(--base-green);
-          color: #ffffff;
-          padding: 4px var(--sp-sm);
-          border-radius: var(--radius-lg);
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .font-weight-bold {
-          font-weight: 600;
-          color: $base-font-color;
-        }
-      }
+    :deep(.badge-count) {
+      background-color: var(--base-green);
+      color: #ffffff;
+      padding: var(--sp-xs) var(--sp-sm);
+      border-radius: var(--radius-lg);
+      font-size: var(--fs-sm);
+      font-weight: 500;
     }
   }
 
@@ -378,28 +260,6 @@ export default {
       p {
         color: $base-sub-color;
         margin: 0;
-      }
-    }
-  }
-
-  .spinning {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  // Responsive adjustments
-  @media (max-width: 768px) {
-    .monthly-report-content {
-      .report-card .card-header h5 {
-        font-size: 14px;
       }
     }
   }
