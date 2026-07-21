@@ -13,12 +13,11 @@ const now = new Date()
 
 const interfaceForm = {
   year: now.getFullYear(),
-  month: now.getMonth() + 1,
-  status: 50
+  month: now.getMonth() + 1
 }
 
 export default {
-  name: 'GoldLossMonthlyReportIndexView',
+  name: 'GoldLossByStageReportIndexView',
 
   components: {
     searchView,

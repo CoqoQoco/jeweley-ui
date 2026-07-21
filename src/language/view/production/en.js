@@ -740,6 +740,36 @@ export default {
     }
   },
 
+  goldLossByStage: {
+    searchTitle: 'Gold Loss by Stage Report',
+    searchDesc: 'Select year and month to fetch gold loss data grouped by production stage',
+    year: 'Year',
+    month: 'Month',
+    btnFetch: 'Fetch Data',
+    colGoldStage: 'Stage',
+    colSend: 'Total Send Weight',
+    colCheck: 'Total Receive Weight',
+    colRawLoss: 'Raw Loss',
+    colRawLossPercent: 'Raw Loss %',
+    colJobCount: 'Job Count',
+    chartRawLoss: 'Raw Loss by Stage',
+    totalLabel: 'Total',
+    months: {
+      jan: 'Jan',
+      feb: 'Feb',
+      mar: 'Mar',
+      apr: 'Apr',
+      may: 'May',
+      jun: 'Jun',
+      jul: 'Jul',
+      aug: 'Aug',
+      sep: 'Sep',
+      oct: 'Oct',
+      nov: 'Nov',
+      dec: 'Dec'
+    }
+  },
+
   wipByStageReport: {
     searchTitle: 'Search Work In Process Report',
     searchDesc: 'Search work in process report by receive date range, department and other conditions',

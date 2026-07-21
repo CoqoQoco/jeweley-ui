@@ -10,6 +10,8 @@ const WipByStageReport = () => import('@/views/production/report/wip-by-stage-re
 const TransferReport = () => import('@/views/production/report/transfer-report/index-view.vue')
 const GoldLossMonthlyReport = () =>
   import('@/views/production/report/gold-loss-monthly-report/index-view.vue')
+const GoldLossByStageReport = () =>
+  import('@/views/production/report/gold-loss-by-stage-report/index-view.vue')
 const ProductionPriceReport = () =>
   import('@/views/production/report/production-price-report/index-view.vue')
 
@@ -138,6 +140,19 @@ const routes = [
           Displayname: {
             en: 'Monthly Gold Loss Report',
             th: 'รายงาน Gold Loss รายเดือน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/report-gold-loss-by-stage',
+        name: 'report-gold-loss-by-stage',
+        component: GoldLossByStageReport,
+        meta: {
+          Displayname: {
+            en: 'Gold Loss by Stage Report',
+            th: 'รายงาน Gold Loss แยกตาม Stage'
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]

@@ -1,12 +1,12 @@
 <template>
   <SearchBarGeneric
-    :title="$t('view.production.goldLossMonthly.searchTitle')"
-    :description="$t('view.production.goldLossMonthly.searchDesc')"
+    :title="$t('view.production.goldLossByStage.searchTitle')"
+    :description="$t('view.production.goldLossByStage.searchDesc')"
     @search="onSearch"
   >
     <template #fields>
       <div>
-        <span class="title-text">{{ $t('view.production.goldLossMonthly.year') }}</span>
+        <span class="title-text">{{ $t('view.production.goldLossByStage.year') }}</span>
         <DropdownGeneric
           v-model="form.year"
           :options="yearOptions"
@@ -16,22 +16,12 @@
       </div>
 
       <div>
-        <span class="title-text">{{ $t('view.production.goldLossMonthly.month') }}</span>
+        <span class="title-text">{{ $t('view.production.goldLossByStage.month') }}</span>
         <DropdownGeneric
           v-model="form.month"
           :options="monthOptions"
           optionLabel="label"
           optionValue="value"
-        />
-      </div>
-
-      <div>
-        <span class="title-text">{{ $t('view.production.goldLossMonthly.stage') }}</span>
-        <DropdownGeneric
-          v-model="form.status"
-          :options="masterApiStore.planStatus"
-          optionLabel="nameTh"
-          optionValue="id"
         />
       </div>
     </template>
@@ -41,7 +31,7 @@
         variant="main"
         icon="bi-search"
         type="submit"
-        :label="$t('view.production.goldLossMonthly.btnFetch')"
+        :label="$t('view.production.goldLossByStage.btnFetch')"
       />
       <ButtonGeneric
         variant="green"
@@ -55,8 +45,6 @@
 </template>
 
 <script>
-import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -64,17 +52,12 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 export default {
-  name: 'GoldLossMonthlyReportSearchView',
+  name: 'GoldLossByStageReportSearchView',
 
   components: {
     SearchBarGeneric,
     ButtonGeneric,
     DropdownGeneric
-  },
-
-  setup() {
-    const masterApiStore = useMasterApiStore()
-    return { masterApiStore }
   },
 
   props: {
@@ -111,7 +94,7 @@ export default {
     monthOptions() {
       return MONTH_KEYS.map((key, index) => ({
         value: index + 1,
-        label: this.$t(`view.production.goldLossMonthly.months.${key}`)
+        label: this.$t(`view.production.goldLossByStage.months.${key}`)
       }))
     }
   },
@@ -120,10 +103,6 @@ export default {
     onSearch() {
       this.$emit('search', this.form)
     }
-  },
-
-  created() {
-    this.masterApiStore.fetchPlanStatus()
   }
 }
 </script>

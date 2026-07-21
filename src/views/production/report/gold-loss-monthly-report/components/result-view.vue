@@ -26,6 +26,8 @@
 
 <script>
 import { useGoldLossMonthlyApiStore } from '@/stores/modules/api/production/gold-loss-monthly-api.js'
+import { ExcelHelper } from '@/services/utils/excel-js.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
@@ -90,6 +92,22 @@ export default {
   methods: {
     async fetchData() {
       await this.goldLossMonthlyStore.fetchReport(this.modelForm)
+    },
+
+    async exportExcel() {
+      if (!this.report.rows || this.report.rows.length === 0) {
+        warning('ไม่มีข้อมูลสำหรับส่งออก', 'ไม่พบข้อมูล')
+        return
+      }
+
+      const columns = this.columns.map((col) => ({ header: col.header, key: col.field }))
+      const filename = `รายงาน-gold-loss-รายเดือน-${this.modelForm.year}-${String(this.modelForm.month).padStart(2, '0')}.xlsx`
+
+      await ExcelHelper.exportToExcel(this.report.rows, {
+        filename,
+        sheetName: 'GoldLoss',
+        columns
+      })
     }
   }
 }

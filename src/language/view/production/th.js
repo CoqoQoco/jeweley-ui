@@ -740,6 +740,36 @@ export default {
     }
   },
 
+  goldLossByStage: {
+    searchTitle: 'รายงาน Gold Loss แยกตาม Stage',
+    searchDesc: 'เลือกปีและเดือน เพื่อดึงข้อมูล Gold Loss แยกตามแต่ละ Stage การผลิต',
+    year: 'ปี',
+    month: 'เดือน',
+    btnFetch: 'ดึงข้อมูล',
+    colGoldStage: 'Stage',
+    colSend: 'นน.จ่ายรวม',
+    colCheck: 'นน.รับรวม',
+    colRawLoss: 'loss ดิบ',
+    colRawLossPercent: '%loss ดิบ',
+    colJobCount: 'จำนวนงาน',
+    chartRawLoss: 'loss ดิบ แยกตาม Stage',
+    totalLabel: 'รวม',
+    months: {
+      jan: 'ม.ค.',
+      feb: 'ก.พ.',
+      mar: 'มี.ค.',
+      apr: 'เม.ย.',
+      may: 'พ.ค.',
+      jun: 'มิ.ย.',
+      jul: 'ก.ค.',
+      aug: 'ส.ค.',
+      sep: 'ก.ย.',
+      oct: 'ต.ค.',
+      nov: 'พ.ย.',
+      dec: 'ธ.ค.'
+    }
+  },
+
   wipByStageReport: {
     searchTitle: 'ค้นหารายงานงานระหว่างผลิต',
     searchDesc: 'ค้นหารายงานงานระหว่างผลิตตามช่วงวันรับงาน แผนก และเงื่อนไขอื่นๆ',
