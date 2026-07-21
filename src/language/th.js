@@ -90,6 +90,8 @@ export default {
         monthly: 'รายเดือน',
         monthlyReport: 'รายงานรายเดือน',
         monthlyComingSoon: 'รายงานรายเดือน เร็วๆ นี้',
+        filterDateFrom: 'สร้างตั้งแต่',
+        filterDateTo: 'ถึง',
 
         // recent activities columns
         colType: 'ประเภท',

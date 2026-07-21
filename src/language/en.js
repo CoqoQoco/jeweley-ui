@@ -90,6 +90,8 @@ export default {
         monthly: 'Monthly',
         monthlyReport: 'Monthly Report',
         monthlyComingSoon: 'Monthly Report Coming Soon',
+        filterDateFrom: 'Created from',
+        filterDateTo: 'To',
 
         // recent activities columns
         colType: 'Type',

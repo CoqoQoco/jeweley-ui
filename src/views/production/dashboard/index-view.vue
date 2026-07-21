@@ -7,7 +7,20 @@
         :subtitle="headerSubtitle"
         icon="bi-clipboard-data"
         @refresh="refreshDashboard"
-      />
+      >
+        <template #controls>
+          <DateRangeGeneric
+            v-if="activeTab === 'summary'"
+            :startDate="filter.start"
+            :endDate="filter.end"
+            :startPlaceholder="$t('view.production.dashboard.filterDateFrom')"
+            :endPlaceholder="$t('view.production.dashboard.filterDateTo')"
+            @update:startDate="filter.start = $event"
+            @update:endDate="filter.end = $event"
+            @change="applyFilter"
+          />
+        </template>
+      </DashboardHeaderGeneric>
 
       <!-- Dashboard Report Tabs -->
       <div class="row mb-2">
@@ -106,6 +119,7 @@ import { useProductionDailyApiStore } from '@/stores/modules/api/plan/daily-stor
 import dayjs from 'dayjs'
 
 import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
+import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 
 export default {
   name: 'ProductionDashboardView',
@@ -117,7 +131,8 @@ export default {
     DashboardStatusTrends,
     DashboardScrapWeight,
     MonthlySuccessReport,
-    DashboardHeaderGeneric
+    DashboardHeaderGeneric,
+    DateRangeGeneric
   },
   setup() {
     const dailyApiStore = useProductionDailyApiStore()
@@ -127,7 +142,11 @@ export default {
   },
   data() {
     return {
-      activeTab: 'summary'
+      activeTab: 'summary',
+      filter: {
+        start: null,
+        end: null
+      }
     }
   },
   computed: {
@@ -190,12 +209,17 @@ export default {
   methods: {
     async loadDashboardData() {
       // Load dashboard data using the DailyPlan API
-      await this.dailyApiStore.fetchDailyPlan()
+      await this.dailyApiStore.fetchDailyPlan(false, this.filter)
     },
 
     async refreshDashboard() {
       // Force refresh all dashboard data
-      await this.dailyApiStore.refreshDashboard()
+      await this.dailyApiStore.refreshDashboard(this.filter)
+    },
+
+    async applyFilter() {
+      // Force refetch when the date range filter changes
+      await this.dailyApiStore.fetchDailyPlan(true, this.filter)
     },
 
     formatDateTime(date) {
