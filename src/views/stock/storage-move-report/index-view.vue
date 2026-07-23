@@ -14,7 +14,10 @@ const interfaceForm = {
   dateTo: new Date(),
   fromLocation: null,
   toLocation: null,
-  stockNumber: null
+  stockNumber: null,
+  currentLocation: null,
+  movedBy: null,
+  stockNumberOrigin: null
 }
 
 export default {

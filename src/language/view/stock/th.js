@@ -240,6 +240,8 @@ export default {
     fromLocation: 'ย้ายจาก',
     toLocation: 'ปลายทาง',
     stockNumber: 'รหัส/เลขที่ผลิต',
+    currentLocation: 'จัดเก็บ (คลังปัจจุบัน)',
+    movedBy: 'ผู้ย้าย',
     placeholder: {
       stockNumber: 'EX: DK-2502-00X'
     },

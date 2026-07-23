@@ -51,6 +51,29 @@
           :placeholder="$t('view.stock.storageMoveReport.placeholder.stockNumber')"
         />
       </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.stock.storageMoveReport.currentLocation') }}</span>
+        <DropdownGeneric
+          :modelValue="form.currentLocation"
+          :options="locationOptions"
+          optionLabel="label"
+          optionValue="value"
+          :placeholder="$t('common.label.all')"
+          :showClear="true"
+          @update:modelValue="form.currentLocation = $event"
+        />
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.stock.storageMoveReport.movedBy') }}</span>
+        <InputTextGeneric v-model.trim="form.movedBy" />
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.stock.product.stockNumberOld') }}</span>
+        <InputTextGeneric v-model.trim="form.stockNumberOrigin" />
+      </div>
     </template>
 
     <template #actions-right>

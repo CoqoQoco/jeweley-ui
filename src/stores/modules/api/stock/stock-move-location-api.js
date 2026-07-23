@@ -42,7 +42,10 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
         dateTo: formValue.dateTo ? formatISOString(formValue.dateTo) : undefined,
         fromLocation: formValue.fromLocation || undefined,
         toLocation: formValue.toLocation || undefined,
-        stockNumber: formValue.stockNumber || undefined
+        stockNumber: formValue.stockNumber || undefined,
+        currentLocation: formValue.currentLocation || undefined,
+        movedBy: formValue.movedBy || undefined,
+        stockNumberOrigin: formValue.stockNumberOrigin || undefined
       })
       if (res) {
         this.movementSearch = { ...res }
@@ -60,13 +63,17 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
         dateTo: formValue.dateTo ? formatISOString(formValue.dateTo) : undefined,
         fromLocation: formValue.fromLocation || undefined,
         toLocation: formValue.toLocation || undefined,
-        stockNumber: formValue.stockNumber || undefined
+        stockNumber: formValue.stockNumber || undefined,
+        currentLocation: formValue.currentLocation || undefined,
+        movedBy: formValue.movedBy || undefined,
+        stockNumberOrigin: formValue.stockNumberOrigin || undefined
       })
 
       if (res) {
         const dataExcel = res.data.map((item) => ({
           'วันที่-เวลา': formatDateTime(item.movementDate),
           เลขที่ผลิต: item.stockNumber,
+          'เลขที่ผลิตเก่า': item.stockNumberOrigin,
           รหัสสินค้า: item.productCode,
           ย้ายจาก: `${item.fromLocation || ''} - ${item.fromLocationName || ''}`,
           ปลายทาง: `${item.toLocation || ''} - ${item.toLocationName || ''}`,
@@ -106,7 +113,8 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
           skip: 0,
           sort: sort,
           search: {
-            ...formValue
+            ...formValue,
+            includeLastMovement: true
           }
         }
 
@@ -115,6 +123,7 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
           const dataExcel = res.data.map((item) => ({
             วันรับสินค้า: formatDate(item.receiptDate),
             เลขที่ผลิต: item.stockNumber,
+            'เลขที่ผลิตเก่า': item.stockNumberOrigin,
             รหัสสินค้า: item.productNumber,
             'ชื่อสินค้า EN': item.productNameEn,
             'ชื่อสินค้า TH': item.productNameTh,
@@ -125,6 +134,9 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
             'ประเภททอง/เงิน': item.productionTypeSize,
             'W.O.': `${item.wo}-${item.woNumber}`,
             จัดเก็บ: item.location,
+            'ย้ายมาจากคลัง': item.lastMoveFromLocation ? `${item.lastMoveFromLocation} - ${item.lastMoveFromLocationName || ''}` : '',
+            'วันที่ย้ายล่าสุด': item.lastMoveDate ? formatDateTime(item.lastMoveDate) : '',
+            'ผู้ย้ายล่าสุด': item.lastMoveBy || '',
             ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
             ผู้รับสินค้า: item.createBy,
             หมายเหตุ: item.remark

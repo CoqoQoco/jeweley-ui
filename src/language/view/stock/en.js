@@ -240,6 +240,8 @@ export default {
     fromLocation: 'From',
     toLocation: 'To',
     stockNumber: 'Code/Production No.',
+    currentLocation: 'Current Location',
+    movedBy: 'Moved By',
     placeholder: {
       stockNumber: 'EX: DK-2502-00X'
     },
