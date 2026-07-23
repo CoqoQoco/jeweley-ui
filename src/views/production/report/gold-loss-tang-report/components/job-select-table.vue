@@ -40,26 +40,13 @@
       :columns="columns"
       :paginator="false"
       scrollHeight="320px"
-      dataKey="_key"
+      dataKey="_uid"
+      :selectionMode="true"
+      selectionType="multiple"
+      :itemsSelection="selectedJobs"
+      :disabledItems="disabledJobs"
+      @update:itemsSelection="$emit('update:selectedJobs', $event)"
     >
-      <template #header>
-        <div class="select-all-header">
-          <CheckboxGeneric
-            :modelValue="allSelected"
-            @update:modelValue="onSelectAll($event)"
-            :label="$t('common.label.all')"
-          />
-        </div>
-      </template>
-
-      <template #selectTemplate="{ data }">
-        <CheckboxGeneric
-          :modelValue="!!selectionMap[data._key]"
-          :disabled="!!data.goldLossTangSlipId && data.goldLossTangSlipId !== editingSlipId"
-          @update:modelValue="onRowSelect(data._key, $event)"
-        />
-      </template>
-
       <template #woTemplate="{ data }">
         <span>{{ data.wo }}{{ data.woNumber ? '-' + data.woNumber : '' }}</span>
       </template>
@@ -112,9 +99,9 @@ export default {
       type: Array,
       default: () => []
     },
-    selectionMap: {
-      type: Object,
-      default: () => ({})
+    selectedJobs: {
+      type: Array,
+      default: () => []
     },
     editingSlipId: {
       type: Number,
@@ -122,7 +109,7 @@ export default {
     }
   },
 
-  emits: ['update:selectionMap'],
+  emits: ['update:selectedJobs'],
 
   data() {
     return {
@@ -132,10 +119,6 @@ export default {
   },
 
   computed: {
-    jobsWithKey() {
-      return this.jobs.map((j, idx) => ({ ...j, _key: `job-${idx}` }))
-    },
-
     goldTypeOptions() {
       const seen = new Set()
       const result = []
@@ -150,7 +133,7 @@ export default {
     },
 
     displayedJobs() {
-      return this.jobsWithKey.filter((j) => {
+      return this.jobs.filter((j) => {
         if (this.hideAlreadySlipped && j.goldLossTangSlipId) return false
         if (this.filterGoldTypes.length > 0) {
           const label = [j.gold, j.goldSize].filter(Boolean).join(' ')
@@ -160,21 +143,18 @@ export default {
       })
     },
 
-    selectedCount() {
-      return Object.values(this.selectionMap).filter(Boolean).length
+    disabledJobs() {
+      return this.jobs.filter(
+        (j) => j.goldLossTangSlipId && j.goldLossTangSlipId !== this.editingSlipId
+      )
     },
 
-    allSelected() {
-      const eligible = this.displayedJobs.filter(
-        (j) => !j.goldLossTangSlipId || j.goldLossTangSlipId === this.editingSlipId
-      )
-      if (eligible.length === 0) return false
-      return eligible.every((j) => !!this.selectionMap[j._key])
+    selectedCount() {
+      return this.selectedJobs.length
     },
 
     columns() {
       return [
-        { field: 'select', header: '', minWidth: '50px', width: '50px', sortable: false },
         { field: 'wo', header: this.$t('view.production.goldLossTang.colWo'), minWidth: '120px', sortable: false },
         { field: 'jobDate', header: this.$t('view.production.goldLossTang.colJobDate'), minWidth: '100px', sortable: false },
         { field: 'gold', header: this.$t('view.production.goldLossTang.colGold'), minWidth: '100px', sortable: false },
@@ -194,20 +174,6 @@ export default {
     fmt2(val) {
       if (val == null) return '0.00'
       return Number(val).toFixed(2)
-    },
-
-    onRowSelect(key, val) {
-      this.$emit('update:selectionMap', { ...this.selectionMap, [key]: val })
-    },
-
-    onSelectAll(val) {
-      const map = { ...this.selectionMap }
-      this.displayedJobs.forEach((j) => {
-        if (!j.goldLossTangSlipId || j.goldLossTangSlipId === this.editingSlipId) {
-          map[j._key] = val
-        }
-      })
-      this.$emit('update:selectionMap', map)
     }
   }
 }
@@ -262,10 +228,6 @@ export default {
   font-size: var(--fs-sm);
   font-weight: 600;
   opacity: 0.8;
-}
-
-.select-all-header {
-  padding: var(--sp-xs) var(--sp-sm);
 }
 
 :deep(tr.p-datatable-row-odd),
