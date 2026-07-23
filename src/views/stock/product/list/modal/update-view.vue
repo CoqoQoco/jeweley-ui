@@ -110,7 +110,10 @@
             <!-- Product Information Section -->
             <SectionCardGeneric :title="$t('view.stock.product.stockInfo')" class="modal-section">
               <div class="form-row two-col">
-                <FormFieldGeneric :label="$t('view.stock.product.mold')" :required="true" class="full-width">
+                <FormFieldGeneric :label="$t('view.stock.product.productNumber')" :required="true">
+                  <InputTextGeneric v-model="stock.productNumber" :placeholder="$t('view.stock.product.productNumber')" :required="true" />
+                </FormFieldGeneric>
+                <FormFieldGeneric :label="$t('view.stock.product.mold')" :required="true">
                   <InputTextGeneric v-model="stock.mold" :placeholder="$t('view.stock.product.placeholderMold')" :required="true" />
                 </FormFieldGeneric>
               </div>
