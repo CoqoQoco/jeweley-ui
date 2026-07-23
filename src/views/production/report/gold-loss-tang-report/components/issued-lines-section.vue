@@ -23,8 +23,14 @@
 
         <template v-if="lines.length > 0">
           <div v-for="(line, idx) in lines" :key="idx" class="lines-row lines-row--input">
-            <InputTextGeneric
+            <AutoCompleteGeneric
               :modelValue="line.name"
+              :staticOptions="nameOptions"
+              :useStaticList="true"
+              optionLabel="name"
+              :forceSelection="false"
+              :dropdown="true"
+              :minLength="0"
               :placeholder="$t('view.production.goldLossTang.lineName')"
               @update:modelValue="onUpdate(idx, 'name', $event)"
             />
@@ -80,6 +86,7 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 
 export default {
@@ -89,7 +96,8 @@ export default {
     SectionCardGeneric,
     InputTextGeneric,
     ButtonGeneric,
-    CheckboxGeneric
+    CheckboxGeneric,
+    AutoCompleteGeneric
   },
 
   props: {
@@ -100,6 +108,10 @@ export default {
     baseSum: {
       type: Number,
       default: 0
+    },
+    nameOptions: {
+      type: Array,
+      default: () => []
     }
   },
 
@@ -128,6 +140,9 @@ export default {
     },
 
     onUpdate(idx, field, val) {
+      if (field === 'name' && val && typeof val === 'object') {
+        val = val.name
+      }
       if (field === 'weight') {
         const num = parseFloat(val)
         if (!isNaN(num) && num < 0) {

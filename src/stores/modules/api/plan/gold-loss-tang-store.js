@@ -27,6 +27,10 @@ export const useGoldLossTangStore = defineStore('goldLossTang', {
 
     async updateSlip(payload) {
       return await api.jewelry.post('Worker/UpdateGoldLossTangSlip', payload)
+    },
+
+    async getLineOptions() {
+      return await api.jewelry.post('Worker/GetGoldLossTangLineOptions', {})
     }
   }
 })

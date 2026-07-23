@@ -39,7 +39,7 @@
 
     <JobSelectTable
       :jobs="jobs"
-      v-model:selectionMap="selectionMap"
+      v-model:selectedJobs="selectedJobs"
       :editingSlipId="editingId ? Number(editingId) : null"
       class="mt-4"
     />
@@ -48,10 +48,12 @@
       <IssuedLinesSection
         v-model:lines="issuedLines"
         :baseSum="issuedBaseSum"
+        :nameOptions="issuedNameOptions"
       />
       <ReturnedLinesSection
         v-model:lines="returnedLines"
         :baseSum="returnedBaseSum"
+        :nameOptions="returnedNameOptions"
       />
     </div>
 
@@ -74,6 +76,7 @@ import { formatISOString } from '@/services/utils/dayjs.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 import { GoldLossTangPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-loss-tang-pdf-builder.js'
+import { ISSUED_SEED, RETURNED_SEED, mergeOptions } from './gold-loss-line-options.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -115,10 +118,12 @@ export default {
       goldFilter: [],
 
       jobs: [],
-      selectionMap: {},
+      selectedJobs: [],
 
       issuedLines: [],
       returnedLines: [],
+      issuedNameOptions: [],
+      returnedNameOptions: [],
 
       lossPercent: '',
       pricePerGram: '',
@@ -132,16 +137,11 @@ export default {
     }
   },
 
-  computed: {
-    selectedJobs() {
-      return this.jobs.filter((j, idx) => {
-        const key = `job-${idx}`
-        if (!this.selectionMap[key]) return false
-        if (!j.goldLossTangSlipId) return true
-        return j.goldLossTangSlipId === Number(this.editingId)
-      })
-    },
+  mounted() {
+    this.loadLineOptions()
+  },
 
+  computed: {
     hasSelectedJobs() {
       return this.selectedJobs.length > 0 || this.issuedLines.length > 0 || this.returnedLines.length > 0
     },
@@ -174,6 +174,13 @@ export default {
   },
 
   methods: {
+    async loadLineOptions() {
+      const store = useGoldLossTangStore()
+      const res = await store.getLineOptions()
+      this.issuedNameOptions = mergeOptions(ISSUED_SEED, res?.issued)
+      this.returnedNameOptions = mergeOptions(RETURNED_SEED, res?.returned)
+    },
+
     openSearchModal() {
       this.isShowSearchModal = true
     },
@@ -183,7 +190,7 @@ export default {
         this.jobs.length > 0 ||
         this.issuedLines.length > 0 ||
         this.returnedLines.length > 0 ||
-        Object.values(this.selectionMap).some(Boolean)
+        this.selectedJobs.length > 0
 
       if (hasPendingData) {
         confirmThenSubmit(
@@ -213,15 +220,12 @@ export default {
         goldSize: this.goldFilter.length ? this.goldFilter : undefined
       })
 
-      this.selectionMap = {}
+      this.selectedJobs = []
       this.issuedLines = []
       this.returnedLines = []
 
-      if (res) {
-        this.jobs = Array.isArray(res) ? res : res.data || []
-      } else {
-        this.jobs = []
-      }
+      const rawJobs = res ? (Array.isArray(res) ? res : res.data || []) : []
+      this.jobs = rawJobs.map((j) => ({ ...j, _uid: `${j.productionPlanId}-${j.itemNo}` }))
 
       this.hasSearched = true
     },
@@ -286,17 +290,11 @@ export default {
       }))
 
       const slipItems = slip.items || []
-      const newMap = {}
-      this.jobs.forEach((j, idx) => {
-        const key = `job-${idx}`
-        const match = slipItems.find(
+      this.selectedJobs = this.jobs.filter((j) =>
+        slipItems.some(
           (si) => si.productionPlanId === j.productionPlanId && si.itemNo === j.itemNo
         )
-        if (match) {
-          newMap[key] = true
-        }
-      })
-      this.selectionMap = newMap
+      )
     },
 
     async doSave() {

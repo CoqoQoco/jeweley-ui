@@ -9,6 +9,7 @@
       :forceSelection="forceSelection"
       :minLength="minLength"
       :disabled="disabled"
+      :dropdown="dropdown"
       :class="customClass"
       :style="customStyle"
       @item-select="onItemSelect"
@@ -80,6 +81,10 @@ export default {
       default: 1
     },
     disabled: {
+      type: Boolean,
+      default: false
+    },
+    dropdown: {
       type: Boolean,
       default: false
     },
@@ -208,5 +213,13 @@ export default {
 <style scoped>
 :deep(.p-autocomplete .p-component) {
   margin-top: 0px !important;
+}
+
+:deep(.p-autocomplete) {
+  width: 100%;
+}
+
+:deep(.p-autocomplete-input) {
+  width: 100%;
 }
 </style>
