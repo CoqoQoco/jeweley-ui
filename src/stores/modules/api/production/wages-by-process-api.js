@@ -19,8 +19,8 @@ export const useWagesByProcessApiStore = defineStore('wagesByProcessApi', {
   actions: {
     async fetchReport({ start, end, status } = {}) {
       const res = await api.jewelry.post('Worker/WagesByProcess', {
-        start: formatISOString(start),
-        end: formatISOString(end),
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
         status: status?.length ? status : undefined
       })
       this.reportData = res ? { ...res } : emptyReport()
