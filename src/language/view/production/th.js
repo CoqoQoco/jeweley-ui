@@ -867,6 +867,45 @@ export default {
     totalWorkers: 'รวม {total} คน'
   },
 
+  reportProductionWages: {
+    searchTitle: 'ค้นหารายงานค่าแรงช่าง',
+    searchDesc: 'รายงานค่าแรงช่าง และรายละเอียดต่างๆ',
+    dateRange: 'ช่วงวันที่ส่งงาน',
+    woText: 'W.O.',
+    productNumber: 'รหัสสินค้า',
+    goldType: 'ประเภททอง',
+    goldColor: 'สีทอง',
+    department: 'แผนก',
+    worker: 'ช่าง',
+    mold: 'แม่พิมพ์',
+    placeholder: {
+      woText: 'หมายเลขใบงาน',
+      productNumber: 'รหัสสินค้า',
+      searchWorker: 'ค้นหาช่าง...',
+      mold: 'แม่พิมพ์'
+    },
+    validationDate: 'กรุณาระบุช่วงวันที่',
+    colWo: 'เลขที่ใบงาน',
+    colJobDate: 'วันที่ส่งงาน',
+    colProductNumber: 'รหัสสินค้า',
+    colWorker: 'ช่าง',
+    colDepartment: 'แผนกงาน',
+    colGoldDetail: 'รายละเอียดทอง',
+    colGoldColor: 'สีทอง',
+    colQtySend: 'จำนวนจ่าย',
+    colWeightSend: 'น้ำหนักจ่าย',
+    colQtyCheck: 'จำนวนรับ',
+    colWeightCheck: 'น้ำหนักรับ',
+    colWagesUnit: 'ราคาต่อหน่วย',
+    colTotalWages: 'ราคารวม',
+    totalAll: 'รวมทั้งหมด',
+    qtySend: 'จำนวนจ่าย',
+    weightSend: 'น้ำหนักจ่าย',
+    qtyCheck: 'จำนวนรับ',
+    weightCheck: 'น้ำหนักรับ',
+    price: 'ราคา'
+  },
+
   planCompletedAllGold: {
     searchTitle: 'รายงานใบงานสำเร็จ (น้ำหนักทองชุบ)',
     searchDesc: 'ค้นหาใบงานสำเร็จตามช่วงวันที่สร้างและเงื่อนไขอื่นๆ',
@@ -979,6 +1018,41 @@ export default {
     colLossPct: '%Loss',
     colOver: 'นน.เกิน',
     colOverPct: '%เกิน',
+    totalLabel: 'รวม'
+  },
+
+  wagesByProcess: {
+    searchTitle: 'รายงานค่าแรงช่างแยกตามประเภทงาน',
+    searchDesc: 'เลือกช่วงวันที่และแผนก/ประเภทงาน เพื่อดูสรุปค่าแรงช่างแยกตามประเภทงาน',
+    dateRange: 'ช่วงวันที่',
+    process: 'แผนก/ประเภทงาน',
+    statTotalJobs: 'งานรวม',
+    statTotalWages: 'ค่าแรงรวม',
+    statAvgWages: 'เฉลี่ย/งาน',
+    unitBaht: 'บาท',
+    chartTitle: 'ค่าแรงรวมแยกตามประเภทงาน',
+    colProcess: 'ประเภทงาน',
+    colJobCount: 'จำนวนงาน',
+    colTotalWages: 'ค่าแรงรวม',
+    colAvgWages: 'เฉลี่ย/งาน',
+    totalLabel: 'รวม'
+  },
+
+  wagesMonthlyTrend: {
+    searchTitle: 'รายงานแนวโน้มค่าแรงรายเดือน',
+    searchDesc: 'เลือกช่วงเดือนเพื่อดูแนวโน้มค่าแรงช่างรายเดือน',
+    monthRange: 'ช่วงเดือน',
+    statMonths: 'จำนวนเดือน',
+    statTotalWages: 'ค่าแรงรวม',
+    statAvgWages: 'เฉลี่ย/งาน',
+    statTotalJobs: 'งานรวม',
+    unitBaht: 'บาท',
+    chartTitle: 'แนวโน้มค่าแรงรวมรายเดือน',
+    seriesWages: 'ค่าแรงรวม',
+    colMonth: 'เดือน',
+    colJobCount: 'จำนวนงาน',
+    colTotalWages: 'ค่าแรงรวม',
+    colAvgWages: 'เฉลี่ย/งาน',
     totalLabel: 'รวม'
   }
 }

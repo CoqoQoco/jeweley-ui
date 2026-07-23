@@ -867,6 +867,45 @@ export default {
     totalWorkers: 'Total {total} workers'
   },
 
+  reportProductionWages: {
+    searchTitle: 'Search Worker Wages Report',
+    searchDesc: 'Worker wages report and other details',
+    dateRange: 'Job Date Range',
+    woText: 'W.O.',
+    productNumber: 'Product Code',
+    goldType: 'Gold Type',
+    goldColor: 'Gold Color',
+    department: 'Department',
+    worker: 'Worker',
+    mold: 'Mold',
+    placeholder: {
+      woText: 'Work order number',
+      productNumber: 'Product Code',
+      searchWorker: 'Search worker...',
+      mold: 'Mold'
+    },
+    validationDate: 'Please select date range',
+    colWo: 'Work Order',
+    colJobDate: 'Job Date',
+    colProductNumber: 'Product Code',
+    colWorker: 'Worker',
+    colDepartment: 'Department',
+    colGoldDetail: 'Gold Detail',
+    colGoldColor: 'Gold Color',
+    colQtySend: 'Qty Send',
+    colWeightSend: 'Weight Send',
+    colQtyCheck: 'Qty Received',
+    colWeightCheck: 'Weight Received',
+    colWagesUnit: 'Unit Price',
+    colTotalWages: 'Total Price',
+    totalAll: 'Grand Total',
+    qtySend: 'Qty Send',
+    weightSend: 'Weight Send',
+    qtyCheck: 'Qty Received',
+    weightCheck: 'Weight Received',
+    price: 'Price'
+  },
+
   planCompletedAllGold: {
     searchTitle: 'Completed Production Report (Plating Gold Weight)',
     searchDesc: 'Search completed jobs by created date range and other conditions',
@@ -979,6 +1018,41 @@ export default {
     colLossPct: '%Loss',
     colOver: 'Over Weight',
     colOverPct: '%Over',
+    totalLabel: 'Total'
+  },
+
+  wagesByProcess: {
+    searchTitle: 'Wages by Process Report',
+    searchDesc: 'Select date range and department/process to view worker wages summary by process',
+    dateRange: 'Date Range',
+    process: 'Department/Process',
+    statTotalJobs: 'Total Jobs',
+    statTotalWages: 'Total Wages',
+    statAvgWages: 'Avg/Job',
+    unitBaht: 'THB',
+    chartTitle: 'Total Wages by Process',
+    colProcess: 'Process',
+    colJobCount: 'Job Count',
+    colTotalWages: 'Total Wages',
+    colAvgWages: 'Avg/Job',
+    totalLabel: 'Total'
+  },
+
+  wagesMonthlyTrend: {
+    searchTitle: 'Wages Monthly Trend Report',
+    searchDesc: 'Select a month range to view monthly worker wages trend',
+    monthRange: 'Month Range',
+    statMonths: 'Total Months',
+    statTotalWages: 'Total Wages',
+    statAvgWages: 'Avg/Job',
+    statTotalJobs: 'Total Jobs',
+    unitBaht: 'THB',
+    chartTitle: 'Monthly Total Wages Trend',
+    seriesWages: 'Total Wages',
+    colMonth: 'Month',
+    colJobCount: 'Job Count',
+    colTotalWages: 'Total Wages',
+    colAvgWages: 'Avg/Job',
     totalLabel: 'Total'
   }
 }

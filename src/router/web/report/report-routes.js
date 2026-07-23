@@ -33,11 +33,15 @@ const stockGemDashboard = () => import('@/views/receipt-stock/gem/dashboard/dash
 const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
 
 // ---- worker reports ----
-const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
+const ReportProductionWages = () => import('@/views/report-production-wages/index-view.vue')
 const WorkerWagesByPersonReport = () =>
   import('@/views/production/report/worker-wages-by-person-report/index-view.vue')
 const GoldLossTangByWorkerReport = () =>
   import('@/views/production/report/gold-loss-tang-by-worker-report/index-view.vue')
+const WagesByProcessReport = () =>
+  import('@/views/production/report/wages-by-process-report/index-view.vue')
+const WagesMonthlyTrendReport = () =>
+  import('@/views/production/report/wages-monthly-trend-report/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 
@@ -402,6 +406,32 @@ const routes = [
           Displayname: {
             en: 'Gold Loss by Worker Report',
             th: 'รายงาน Gold Loss ช่างแต่งต่อคน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        path: '/report-worker-wages-by-process',
+        name: 'report-worker-wages-by-process',
+        component: WagesByProcessReport,
+        meta: {
+          Displayname: {
+            en: 'Wages by Process Report',
+            th: 'รายงานค่าแรงแยกตามประเภทงาน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        path: '/report-worker-wages-trend',
+        name: 'report-worker-wages-trend',
+        component: WagesMonthlyTrendReport,
+        meta: {
+          Displayname: {
+            en: 'Wages Monthly Trend Report',
+            th: 'รายงานแนวโน้มค่าแรงรายเดือน'
           },
           minorShow: true,
           permissions: [PERMISSIONS.WORKER_VIEW]
