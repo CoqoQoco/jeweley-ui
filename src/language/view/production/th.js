@@ -929,5 +929,27 @@ export default {
     colB181_365: '181-365',
     colBGt365: '>365',
     totalLabel: 'รวม'
+  },
+
+  castLossTrend: {
+    searchTitle: 'รายงาน Cast Loss Trend รายเดือน',
+    searchDesc: 'เลือกช่วงเดือนเพื่อดูแนวโน้ม Cast Loss รายเดือน',
+    monthRange: 'ช่วงเดือน',
+    statMonths: 'จำนวนเดือน',
+    statAvgLoss: '%Loss เฉลี่ย',
+    statTotalCast: 'น้ำหนักหล่อรวม',
+    statTotalOver: 'น้ำหนักเกินรวม',
+    unitGram: 'g',
+    chartTitle: 'แนวโน้ม %Loss หล่อรายเดือน',
+    seriesLossPct: '%Loss หล่อ',
+    seriesOverPct: '%เกิน',
+    colMonth: 'เดือน',
+    colBookCount: 'จำนวนเล่ม',
+    colCastWeight: 'นน.หล่อรวม',
+    colCastLoss: 'นน.loss หล่อ',
+    colLossPct: '%Loss',
+    colOver: 'นน.เกิน',
+    colOverPct: '%เกิน',
+    totalLabel: 'รวม'
   }
 }

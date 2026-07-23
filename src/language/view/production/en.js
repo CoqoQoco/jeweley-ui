@@ -929,5 +929,27 @@ export default {
     colB181_365: '181-365',
     colBGt365: '>365',
     totalLabel: 'Total'
+  },
+
+  castLossTrend: {
+    searchTitle: 'Cast Loss Trend Report',
+    searchDesc: 'Select a month range to view monthly cast loss trend',
+    monthRange: 'Month Range',
+    statMonths: 'Total Months',
+    statAvgLoss: 'Avg %Loss',
+    statTotalCast: 'Total Cast Weight',
+    statTotalOver: 'Total Over Weight',
+    unitGram: 'g',
+    chartTitle: 'Monthly Cast Loss % Trend',
+    seriesLossPct: '%Loss',
+    seriesOverPct: '%Over',
+    colMonth: 'Month',
+    colBookCount: 'Book Count',
+    colCastWeight: 'Total Cast Weight',
+    colCastLoss: 'Cast Loss Weight',
+    colLossPct: '%Loss',
+    colOver: 'Over Weight',
+    colOverPct: '%Over',
+    totalLabel: 'Total'
   }
 }
