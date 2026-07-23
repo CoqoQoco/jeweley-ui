@@ -31,7 +31,8 @@
               </div>
               <h6 class="step-title">{{ $t(step.titleKey) }}</h6>
               <p class="step-description">{{ $t(step.descKey) }}</p>
-              <div class="step-actions">
+              <span v-if="step.comingSoon" class="step-badge">{{ $t('view.sale.saleDashboard.comingSoon') }}</span>
+              <div v-if="step.actions.length" class="step-actions">
                 <button
                   v-for="action in step.actions"
                   :key="action.labelKey"
@@ -53,83 +54,27 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="row mt-4">
-      <div class="col-md-6">
-        <div class="card-container">
-          <div class="card-header">
-            <h5 class="mb-0">{{ $t('view.sale.saleDashboard.quickActionsTitle') }}</h5>
-          </div>
-          <div class="card-body">
-            <div class="quick-actions">
-              <button class="btn btn-main btn-block mb-2" @click="createNewSaleOrder">
-                <i class="bi bi-plus-circle mr-2"></i>
-                {{ $t('view.sale.saleDashboard.createNewSO') }}
-              </button>
-              <button class="btn btn-green btn-block mb-2" @click="viewProductionOrders">
-                <i class="bi bi-tools mr-2"></i>
-                {{ $t('view.sale.saleDashboard.viewProduction') }}
-              </button>
-              <button class="btn btn-green btn-block mb-2" @click="viewStockReservations">
-                <i class="bi bi-bookmark mr-2"></i>
-                {{ $t('view.sale.saleDashboard.viewReservation') }}
-              </button>
-              <button class="btn btn-outline-main btn-block" @click="viewPaymentStatus">
-                <i class="bi bi-wallet2 mr-2"></i>
-                {{ $t('view.sale.saleDashboard.trackPayment') }}
-              </button>
-            </div>
-          </div>
-        </div>
+    <div class="card-container mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">{{ $t('view.sale.saleDashboard.quickActionsTitle') }}</h5>
       </div>
-
-      <div class="col-md-6">
-        <div class="card-container">
-          <div class="card-header">
-            <h5 class="mb-0">{{ $t('view.sale.saleDashboard.statsTitle') }}</h5>
-          </div>
-          <div class="card-body">
-            <div class="stats-grid">
-              <div class="stat-item stat-item--primary">
-                <div class="stat-icon stat-icon--primary">
-                  <i class="bi bi-cart"></i>
-                </div>
-                <div class="stat-content">
-                  <div class="stat-number">12</div>
-                  <div class="stat-label">{{ $t('view.sale.saleDashboard.pendingSO') }}</div>
-                </div>
-              </div>
-
-              <div class="stat-item stat-item--warning">
-                <div class="stat-icon stat-icon--warning">
-                  <i class="bi bi-tools"></i>
-                </div>
-                <div class="stat-content">
-                  <div class="stat-number">8</div>
-                  <div class="stat-label">{{ $t('view.sale.saleDashboard.inProduction') }}</div>
-                </div>
-              </div>
-
-              <div class="stat-item stat-item--info">
-                <div class="stat-icon stat-icon--info">
-                  <i class="bi bi-bookmark"></i>
-                </div>
-                <div class="stat-content">
-                  <div class="stat-number">15</div>
-                  <div class="stat-label">{{ $t('view.sale.saleDashboard.reservedItems') }}</div>
-                </div>
-              </div>
-
-              <div class="stat-item stat-item--success">
-                <div class="stat-icon stat-icon--success">
-                  <i class="bi bi-truck"></i>
-                </div>
-                <div class="stat-content">
-                  <div class="stat-number">6</div>
-                  <div class="stat-label">{{ $t('view.sale.saleDashboard.readyToDeliver') }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="card-body">
+        <div class="quick-actions">
+          <ButtonGeneric
+            variant="main"
+            block
+            icon="bi-plus-circle"
+            class="mb-2"
+            :label="$t('view.sale.saleDashboard.createNewSO')"
+            @click="createNewSaleOrder"
+          />
+          <ButtonGeneric
+            variant="outline"
+            block
+            icon="bi-wallet2"
+            :label="$t('view.sale.saleDashboard.trackPayment')"
+            @click="viewPaymentStatus"
+          />
         </div>
       </div>
     </div>
@@ -179,8 +124,12 @@
 </template>
 
 <script>
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
 export default {
   name: 'SalesDashboard',
+
+  components: { ButtonGeneric },
 
   computed: {
     salesFlowSteps() {
@@ -216,15 +165,8 @@ export default {
           icon: 'bi bi-tools',
           completed: false,
           current: false,
-          actions: [
-            {
-              labelKey: 'view.sale.saleDashboard.viewStatus',
-              icon: 'bi bi-eye',
-              class: 'btn btn-sm btn-green',
-              handler: this.viewProductionOrders,
-              disabled: false
-            }
-          ]
+          comingSoon: true,
+          actions: []
         },
         {
           id: 'stock-reservation',
@@ -233,15 +175,8 @@ export default {
           icon: 'bi bi-bookmark',
           completed: false,
           current: false,
-          actions: [
-            {
-              labelKey: 'view.sale.saleDashboard.viewStatus',
-              icon: 'bi bi-eye',
-              class: 'btn btn-sm btn-green',
-              handler: this.viewStockReservations,
-              disabled: false
-            }
-          ]
+          comingSoon: true,
+          actions: []
         },
         {
           id: 'delivery',
@@ -250,15 +185,8 @@ export default {
           icon: 'bi bi-truck',
           completed: false,
           current: false,
-          actions: [
-            {
-              labelKey: 'view.sale.saleDashboard.createDeliveryNote',
-              icon: 'bi bi-plus',
-              class: 'btn btn-sm btn-main',
-              handler: this.createDeliveryNote,
-              disabled: false
-            }
-          ]
+          comingSoon: true,
+          actions: []
         },
         {
           id: 'invoice',
@@ -300,23 +228,11 @@ export default {
 
   methods: {
     createNewSaleOrder() {
-      this.$router.push('/sale/sale-order')
+      this.$router.push({ name: 'sale-order' })
     },
 
     viewSaleOrders() {
-      this.$router.push('/sale/sale-order-list')
-    },
-
-    viewProductionOrders() {
-      this.$router.push('/sale/production-order')
-    },
-
-    viewStockReservations() {
-      this.$router.push('/sale/stock-reservation')
-    },
-
-    createDeliveryNote() {
-      this.$router.push('/sale/delivery-note')
+      this.$router.push({ name: 'sale-order-list' })
     },
 
     createInvoice() {
@@ -452,6 +368,17 @@ export default {
   }
 }
 
+.step-badge {
+  display: inline-block;
+  margin-bottom: var(--sp-sm);
+  padding: 2px var(--sp-sm);
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+  background: var(--color-highlight-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
 .step-actions {
   display: flex;
   flex-direction: column;
@@ -478,62 +405,6 @@ export default {
 
   i {
     width: 20px;
-  }
-}
-
-// Stats Grid
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--sp-md);
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  padding: var(--sp-md);
-  background: #f8f9fa;
-  border-radius: var(--radius-sm);
-  border-left: 4px solid transparent;
-
-  &--primary { border-left-color: var(--base-font-color); }
-  &--warning { border-left-color: var(--base-warning); }
-  &--info { border-left-color: var(--base-green); }
-  &--success { border-left-color: var(--base-green); }
-}
-
-.stat-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: var(--sp-md);
-
-  i {
-    font-size: 1.5rem;
-    color: white;
-  }
-
-  &--primary { background: var(--base-font-color); }
-  &--warning { background: var(--base-warning); }
-  &--info { background: var(--base-green); }
-  &--success { background: var(--base-green); }
-}
-
-.stat-content {
-  .stat-number {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #495057;
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: var(--fs-sm);
-    color: #6c757d;
-    margin-top: var(--sp-xs);
   }
 }
 
@@ -615,10 +486,6 @@ export default {
 
   .step-arrow {
     display: none;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
   }
 
   .demo-instructions {

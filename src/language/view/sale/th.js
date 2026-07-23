@@ -1169,11 +1169,6 @@ export const saleDashboard = {
   viewProduction: 'ดูใบสั่งผลิต',
   viewReservation: 'ดูการจองสต็อก',
   trackPayment: 'ติดตามการชำระเงิน',
-  statsTitle: 'สถานะภาพรวม (Demo Data)',
-  pendingSO: 'ใบสั่งขายรอดำเนินการ',
-  inProduction: 'สินค้าอยู่ระหว่างผลิต',
-  reservedItems: 'รายการจองสต็อก',
-  readyToDeliver: 'พร้อมส่งมอบ',
   howToTitle: 'วิธีใช้งาน Sales Flow Demo',
   stepSO: 'ใบสั่งขาย',
   stepSODesc: 'สร้างและยืนยันใบสั่งขายจากใบเสนอราคา',
@@ -1200,43 +1195,15 @@ export const saleDashboard = {
   howTo3Title: 'ดำเนินการตามประเภทสินค้า',
   howTo3Desc: 'สินค้าผลิต → สร้างใบสั่งผลิต | สินค้าคงคลัง → จองสต็อก',
   howTo4Title: 'ส่งมอบและออกใบแจ้งหนี้',
-  howTo4Desc: 'สร้างใบส่งของ → สร้างใบแจ้งหนี้ → ติดตามการชำระเงิน'
+  howTo4Desc: 'สร้างใบส่งของ → สร้างใบแจ้งหนี้ → ติดตามการชำระเงิน',
+  comingSoon: 'เร็วๆ นี้'
 }
 
 export const paymentTracking = {
   title: 'ภาพรวมการชำระเงิน',
   description: 'ติดตามสถานะการชำระเงินและหนี้ค้างชำระ',
-  totalSales: 'ยอดขายรวม',
-  paid: 'ชำระแล้ว',
-  pending: 'รอชำระ',
-  overdue: 'เลยกำหนด',
-  recordPayment: 'บันทึกการรับชำระ',
-  sendReminder: 'ส่งแจ้งเตือนชำระ',
-  createReport: 'สร้างรายงาน',
-  demoNotice: 'หน้านี้เป็น Demo สำหรับแสดงภาพรวมการชำระเงิน',
-  demoNote: 'ในระบบจริงจะแสดงข้อมูลการชำระเงินที่เชื่อมต่อจากใบแจ้งหนี้และ Sale Order',
-  recentPayments: 'การชำระเงินล่าสุด',
-  outstandingInvoices: 'หนี้ค้างชำระ',
-  date: 'วันที่',
-  invoiceNumber: 'เลขที่ใบแจ้งหนี้',
-  customerName: 'ลูกค้า',
-  amount: 'จำนวนเงิน',
-  paymentMethod: 'วิธีการชำระ',
-  status: 'สถานะ',
-  dueDate: 'วันที่ครบกำหนด',
-  overdueDays: 'วันที่เลยกำหนด',
-  action: 'การดำเนินการ',
-  paidBadge: 'ชำระแล้ว',
-  pendingBadge: 'รอชำระ',
-  sendNotification: 'ส่งแจ้งเตือน',
-  follow: 'ติดตาม',
-  fromLastMonth: 'จากเดือนก่อน',
-  ofTotal: 'ของยอดรวม',
-  itemsUnit: 'รายการ',
-  daysUnit: 'วัน',
-  transferMethod: 'โอนเงิน',
-  cashMethod: 'เงินสด',
-  creditMethod: 'เครดิต 30 วัน'
+  emptyTitle: 'ยังไม่มีข้อมูลการชำระเงิน',
+  emptyDescription: 'โมดูลงานขายยังไม่เริ่มใช้งาน — รายงานจะแสดงเมื่อมีการออกใบแจ้งหนี้และรับชำระเงินในระบบ'
 }
 
 export const document = {

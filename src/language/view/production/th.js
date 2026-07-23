@@ -1018,7 +1018,11 @@ export default {
     colLossPct: '%Loss',
     colOver: 'นน.เกิน',
     colOverPct: '%เกิน',
-    totalLabel: 'รวม'
+    totalLabel: 'รวม',
+    seriesForecast: 'ประมาณการ %Loss หล่อ',
+    forecastNextMonthLabel: 'ประมาณการ %Loss หล่อ เดือน {ym}',
+    forecastAssumption: 'อิงแนวโน้ม {months} เดือนล่าสุด — เป็นค่าประมาณการ ไม่ใช่ตัวเลขจริง',
+    forecastNotEnoughData: 'ข้อมูลไม่พอสำหรับประมาณการ (ต้องมีข้อมูลอย่างน้อย 2 เดือน)'
   },
 
   wagesByProcess: {
@@ -1053,6 +1057,10 @@ export default {
     colJobCount: 'จำนวนงาน',
     colTotalWages: 'ค่าแรงรวม',
     colAvgWages: 'เฉลี่ย/งาน',
-    totalLabel: 'รวม'
+    totalLabel: 'รวม',
+    seriesForecast: 'ประมาณการค่าแรงรวม',
+    forecastNextMonthLabel: 'ประมาณการค่าแรงเดือน {ym}',
+    forecastAssumption: 'อิงแนวโน้ม {months} เดือนล่าสุด — เป็นค่าประมาณการ ไม่ใช่ตัวเลขจริง',
+    forecastNotEnoughData: 'ข้อมูลไม่พอสำหรับประมาณการ (ต้องมีข้อมูลอย่างน้อย 2 เดือน)'
   }
 }

@@ -1175,11 +1175,6 @@ export const saleDashboard = {
   viewProduction: 'View Production Orders',
   viewReservation: 'View Stock Reservations',
   trackPayment: 'Track Payments',
-  statsTitle: 'Overview Status (Demo Data)',
-  pendingSO: 'Pending Sale Orders',
-  inProduction: 'Items in Production',
-  reservedItems: 'Reserved Stock Items',
-  readyToDeliver: 'Ready to Deliver',
   howToTitle: 'How to Use Sales Flow Demo',
   stepSO: 'Sale Order',
   stepSODesc: 'Create and confirm sale orders from quotations',
@@ -1206,43 +1201,15 @@ export const saleDashboard = {
   howTo3Title: 'Process by Item Type',
   howTo3Desc: 'Manufactured items → Create production order | Inventory items → Reserve stock',
   howTo4Title: 'Deliver and Invoice',
-  howTo4Desc: 'Create delivery note → Create invoice → Track payment'
+  howTo4Desc: 'Create delivery note → Create invoice → Track payment',
+  comingSoon: 'Coming Soon'
 }
 
 export const paymentTracking = {
   title: 'Payment Overview',
   description: 'Track payment status and outstanding invoices',
-  totalSales: 'Total Sales',
-  paid: 'Paid',
-  pending: 'Pending',
-  overdue: 'Overdue',
-  recordPayment: 'Record Payment',
-  sendReminder: 'Send Payment Reminder',
-  createReport: 'Create Report',
-  demoNotice: 'This page is a Demo for displaying payment overview',
-  demoNote: 'In production, it will show payment data linked from invoices and sale orders',
-  recentPayments: 'Recent Payments',
-  outstandingInvoices: 'Outstanding Invoices',
-  date: 'Date',
-  invoiceNumber: 'Invoice No.',
-  customerName: 'Customer',
-  amount: 'Amount',
-  paymentMethod: 'Payment Method',
-  status: 'Status',
-  dueDate: 'Due Date',
-  overdueDays: 'Days Overdue',
-  action: 'Action',
-  paidBadge: 'Paid',
-  pendingBadge: 'Pending',
-  sendNotification: 'Send Notification',
-  follow: 'Follow Up',
-  fromLastMonth: 'from last month',
-  ofTotal: 'of total',
-  itemsUnit: 'items',
-  daysUnit: 'days',
-  transferMethod: 'Transfer',
-  cashMethod: 'Cash',
-  creditMethod: 'Credit 30 days'
+  emptyTitle: 'No Payment Data Yet',
+  emptyDescription: 'The sales module has not started being used yet — reports will appear once invoices are issued and payments are recorded in the system.'
 }
 
 export const document = {

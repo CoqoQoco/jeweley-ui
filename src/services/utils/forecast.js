@@ -99,3 +99,71 @@ export function calculateMonthlyRunRateForecast(trends = [], options = {}) {
     forecastSeriesData
   }
 }
+
+// projectMonthlySeries — ประมาณการ time-series รายเดือน (เช่น ค่าแรงรวม/เดือน) จาก series หลายจุด
+//
+// วิธีเลือก method:
+//   - จุดข้อมูล >= 3 เดือน → linear trend (least-squares) บน index ของเดือน
+//   - จุดข้อมูล = 2 เดือน  → moving average (เฉลี่ยจากจุดที่มี)
+//   - จุดข้อมูล < 2 เดือน  → hasEnoughData: false (ข้อมูลไม่พอ ห้ามมโนตัวเลข)
+
+const DEFAULT_TREND_MIN_POINTS = 3
+const DEFAULT_MA_WINDOW = 3
+const DEFAULT_FORECAST_MONTHS = 1
+
+function nextYm(ym) {
+  return dayjs(`${ym}-01`).add(1, 'month').format('YYYY-MM')
+}
+
+/**
+ * @param {Array} points - array ของ { ym: 'YYYY-MM', value: number } เรียงจากเก่าไปใหม่
+ * @param {Object} options - { monthsAhead, maWindow }
+ * @returns {Object} { hasEnoughData, method, monthsUsed, projectedPoints: [{ ym, value }] }
+ */
+export function projectMonthlySeries(points = [], options = {}) {
+  const monthsAhead = options.monthsAhead ?? DEFAULT_FORECAST_MONTHS
+  const maWindow = options.maWindow ?? DEFAULT_MA_WINDOW
+
+  const valid = (points || []).filter((p) => p && p.ym && Number.isFinite(p.value))
+
+  if (valid.length < 2) {
+    return { hasEnoughData: false, method: null, monthsUsed: valid.length, projectedPoints: [] }
+  }
+
+  const useTrend = valid.length >= DEFAULT_TREND_MIN_POINTS
+  const method = useTrend ? 'linear-trend' : 'moving-average'
+  const monthsUsed = useTrend ? valid.length : Math.min(maWindow, valid.length)
+
+  const projectedPoints = []
+  let lastYm = valid[valid.length - 1].ym
+
+  if (useTrend) {
+    const n = valid.length
+    const xs = valid.map((_, i) => i)
+    const ys = valid.map((p) => p.value)
+    const sumX = xs.reduce((a, x) => a + x, 0)
+    const sumY = ys.reduce((a, y) => a + y, 0)
+    const sumXY = xs.reduce((a, x, i) => a + x * ys[i], 0)
+    const sumXX = xs.reduce((a, x) => a + x * x, 0)
+    const denom = n * sumXX - sumX * sumX
+    const slope = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : 0
+    const intercept = (sumY - slope * sumX) / n
+
+    for (let i = 1; i <= monthsAhead; i++) {
+      const x = n - 1 + i
+      const value = Math.max(0, roundValue(intercept + slope * x))
+      lastYm = nextYm(lastYm)
+      projectedPoints.push({ ym: lastYm, value })
+    }
+  } else {
+    const window = valid.slice(-monthsUsed)
+    const avg = window.reduce((a, p) => a + p.value, 0) / window.length
+
+    for (let i = 1; i <= monthsAhead; i++) {
+      lastYm = nextYm(lastYm)
+      projectedPoints.push({ ym: lastYm, value: roundValue(Math.max(0, avg)) })
+    }
+  }
+
+  return { hasEnoughData: true, method, monthsUsed, projectedPoints }
+}

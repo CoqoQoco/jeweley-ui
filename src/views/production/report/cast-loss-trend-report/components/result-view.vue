@@ -41,6 +41,25 @@
         :height="320"
         :emptyText="$t('common.label.noData')"
       />
+
+      <template v-if="forecast.hasEnoughData">
+        <div class="forecast-stat-wrap">
+          <StatCardGeneric
+            icon="bi-graph-up-arrow"
+            :value="formatPercentValue(forecast.projectedPoints[0].value)"
+            :label="$t('view.production.castLossTrend.forecastNextMonthLabel', { ym: forecast.projectedPoints[0].ym })"
+            variant="warning"
+          />
+        </div>
+        <p class="forecast-assumption">
+          <i class="bi bi-info-circle"></i>
+          {{ $t('view.production.castLossTrend.forecastAssumption', { months: forecast.monthsUsed }) }}
+        </p>
+      </template>
+      <div v-else class="forecast-empty">
+        <i class="bi bi-info-circle"></i>
+        <span>{{ $t('view.production.castLossTrend.forecastNotEnoughData') }}</span>
+      </div>
     </SectionCardGeneric>
 
     <SectionCardGeneric class="table-card">
@@ -92,6 +111,8 @@
 import { useCastLossTrendApiStore } from '@/stores/modules/api/production/cast-loss-trend-api.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import { projectMonthlySeries } from '@/services/utils/forecast.js'
+import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -137,23 +158,59 @@ export default {
       ]
     },
 
+    forecast() {
+      return projectMonthlySeries(this.report.rows.map((r) => ({ ym: r.ym, value: r.castLossPct })))
+    },
+
     chartSeries() {
+      const actualLossData = this.report.rows.map((r) => r.castLossPct)
+      const actualOverData = this.report.rows.map((r) => r.castOverPct)
+
+      if (!this.forecast.hasEnoughData) {
+        return [
+          {
+            name: this.$t('view.production.castLossTrend.seriesLossPct'),
+            data: actualLossData
+          },
+          {
+            name: this.$t('view.production.castLossTrend.seriesOverPct'),
+            data: actualOverData
+          }
+        ]
+      }
+
+      const projected = this.forecast.projectedPoints
+      const lossPadded = actualLossData.concat(new Array(projected.length).fill(null))
+      const overPadded = actualOverData.concat(new Array(projected.length).fill(null))
+      const forecastData = new Array(actualLossData.length - 1)
+        .fill(null)
+        .concat([actualLossData[actualLossData.length - 1]])
+        .concat(projected.map((p) => p.value))
+
       return [
         {
           name: this.$t('view.production.castLossTrend.seriesLossPct'),
-          data: this.report.rows.map((r) => r.castLossPct)
+          data: lossPadded
         },
         {
           name: this.$t('view.production.castLossTrend.seriesOverPct'),
-          data: this.report.rows.map((r) => r.castOverPct)
+          data: overPadded
+        },
+        {
+          name: this.$t('view.production.castLossTrend.seriesForecast'),
+          data: forecastData
         }
       ]
     },
 
     chartOptions() {
-      return {
+      const categories = this.report.rows
+        .map((r) => r.ym)
+        .concat(this.forecast.hasEnoughData ? this.forecast.projectedPoints.map((p) => p.ym) : [])
+
+      const options = {
         xaxis: {
-          categories: this.report.rows.map((r) => r.ym)
+          categories
         },
         stroke: {
           curve: 'smooth'
@@ -164,6 +221,15 @@ export default {
           }
         }
       }
+
+      if (this.forecast.hasEnoughData) {
+        options.colors = [CHART_TOKENS.primary, CHART_TOKENS.green, CHART_TOKENS.warning]
+        options.stroke.width = [3, 3, 3]
+        options.stroke.dashArray = [0, 0, 6]
+        options.fill = { opacity: [1, 1, 0] }
+      }
+
+      return options
     }
   },
 
@@ -263,5 +329,29 @@ export default {
 .result-footer-item {
   font-weight: 600;
   color: var(--base-font-color);
+}
+
+.forecast-stat-wrap {
+  max-width: 320px;
+  margin-top: var(--sp-lg);
+}
+
+.forecast-assumption {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin: var(--sp-sm) 0 0;
+  color: var(--base-sub-color);
+  font-size: var(--fs-sm);
+  font-style: italic;
+}
+
+.forecast-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+  color: var(--base-sub-color);
+  font-size: var(--fs-sm);
 }
 </style>

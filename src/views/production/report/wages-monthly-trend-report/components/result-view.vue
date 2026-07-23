@@ -41,6 +41,25 @@
         :height="320"
         :emptyText="$t('common.label.noData')"
       />
+
+      <template v-if="forecast.hasEnoughData">
+        <div class="forecast-stat-wrap">
+          <StatCardGeneric
+            icon="bi-graph-up-arrow"
+            :value="formatBahtValue(forecast.projectedPoints[0].value)"
+            :label="$t('view.production.wagesMonthlyTrend.forecastNextMonthLabel', { ym: forecast.projectedPoints[0].ym })"
+            variant="warning"
+          />
+        </div>
+        <p class="forecast-assumption">
+          <i class="bi bi-info-circle"></i>
+          {{ $t('view.production.wagesMonthlyTrend.forecastAssumption', { months: forecast.monthsUsed }) }}
+        </p>
+      </template>
+      <div v-else class="forecast-empty">
+        <i class="bi bi-info-circle"></i>
+        <span>{{ $t('view.production.wagesMonthlyTrend.forecastNotEnoughData') }}</span>
+      </div>
     </SectionCardGeneric>
 
     <SectionCardGeneric class="table-card">
@@ -75,6 +94,8 @@
 import { useWagesMonthlyTrendApiStore } from '@/stores/modules/api/production/wages-monthly-trend-api.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import { projectMonthlySeries } from '@/services/utils/forecast.js'
+import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -117,19 +138,49 @@ export default {
       ]
     },
 
+    forecast() {
+      return projectMonthlySeries(this.report.rows.map((r) => ({ ym: r.ym, value: r.totalWages })))
+    },
+
     chartSeries() {
+      const actualData = this.report.rows.map((r) => r.totalWages)
+
+      if (!this.forecast.hasEnoughData) {
+        return [
+          {
+            name: this.$t('view.production.wagesMonthlyTrend.seriesWages'),
+            data: actualData
+          }
+        ]
+      }
+
+      const projected = this.forecast.projectedPoints
+      const actualPadded = actualData.concat(new Array(projected.length).fill(null))
+      const forecastData = new Array(actualData.length - 1)
+        .fill(null)
+        .concat([actualData[actualData.length - 1]])
+        .concat(projected.map((p) => p.value))
+
       return [
         {
           name: this.$t('view.production.wagesMonthlyTrend.seriesWages'),
-          data: this.report.rows.map((r) => r.totalWages)
+          data: actualPadded
+        },
+        {
+          name: this.$t('view.production.wagesMonthlyTrend.seriesForecast'),
+          data: forecastData
         }
       ]
     },
 
     chartOptions() {
-      return {
+      const categories = this.report.rows
+        .map((r) => r.ym)
+        .concat(this.forecast.hasEnoughData ? this.forecast.projectedPoints.map((p) => p.ym) : [])
+
+      const options = {
         xaxis: {
-          categories: this.report.rows.map((r) => r.ym)
+          categories
         },
         stroke: {
           curve: 'smooth'
@@ -140,6 +191,15 @@ export default {
           }
         }
       }
+
+      if (this.forecast.hasEnoughData) {
+        options.colors = [CHART_TOKENS.primary, CHART_TOKENS.warning]
+        options.stroke.width = [3, 3]
+        options.stroke.dashArray = [0, 6]
+        options.fill = { opacity: [1, 0] }
+      }
+
+      return options
     }
   },
 
@@ -235,5 +295,29 @@ export default {
 .result-footer-item {
   font-weight: 600;
   color: var(--base-font-color);
+}
+
+.forecast-stat-wrap {
+  max-width: 320px;
+  margin-top: var(--sp-lg);
+}
+
+.forecast-assumption {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin: var(--sp-sm) 0 0;
+  color: var(--base-sub-color);
+  font-size: var(--fs-sm);
+  font-style: italic;
+}
+
+.forecast-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+  color: var(--base-sub-color);
+  font-size: var(--fs-sm);
 }
 </style>

@@ -1018,7 +1018,11 @@ export default {
     colLossPct: '%Loss',
     colOver: 'Over Weight',
     colOverPct: '%Over',
-    totalLabel: 'Total'
+    totalLabel: 'Total',
+    seriesForecast: 'Forecasted Cast Loss %',
+    forecastNextMonthLabel: 'Forecasted Cast Loss % for {ym}',
+    forecastAssumption: 'Based on the trend from the last {months} months — this is an estimate, not actual data',
+    forecastNotEnoughData: 'Not enough data for forecast (need at least 2 months)'
   },
 
   wagesByProcess: {
@@ -1053,6 +1057,10 @@ export default {
     colJobCount: 'Job Count',
     colTotalWages: 'Total Wages',
     colAvgWages: 'Avg/Job',
-    totalLabel: 'Total'
+    totalLabel: 'Total',
+    seriesForecast: 'Forecasted Total Wages',
+    forecastNextMonthLabel: 'Forecasted Wages for {ym}',
+    forecastAssumption: 'Based on the trend from the last {months} months — this is an estimate, not actual data',
+    forecastNotEnoughData: 'Not enough data for forecast (need at least 2 months)'
   }
 }
