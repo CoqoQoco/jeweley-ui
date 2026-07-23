@@ -6,6 +6,7 @@ import stockProduct from '../web/stock/product/stock-product-routes.js'
 import sale from '../web/sale/sale-routes.js'
 import settingRoutes from '../web/setting/setting-routes.js'
 import catalog from '../web/catalog/catalog-routes.js'
+import report from '../web/report/report-routes.js'
 import ticketRoutes from '../web/ticket/ticket-routes.js'
 import graphRoutes from '../web/graph/graph-routes.js'
 import downloadsRoutes from '../web/downloads/downloads-routes.js'
@@ -28,8 +29,6 @@ const GoldSizeView = () => import('@/views/master/gold-size/index-view.vue')
 const ProductTypeView = () => import('@/views/master/productType/index-view.vue')
 const ZillView = () => import('@/views/master/zill/index-view.vue')
 const DiamondGrade = () => import('@/views/master/diamond-grade/index-view.vue')
-
-const ReportProductionWages = () => import('@/views/report-production-wages/IndexView.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
@@ -74,6 +73,8 @@ const routes = [
   ...sale,
   // --------- catalog
   ...catalog,
+  // --------- report
+  ...report,
 
   // ------------------ customer -------------------
   {
@@ -160,39 +161,6 @@ const routes = [
           Displayname: {
             en: 'Gold Loss Slips',
             th: 'ประวัติ Gold Loss Slip'
-          },
-          minorShow: false,
-          permissions: [PERMISSIONS.WORKER_VIEW]
-        }
-      }
-    ]
-  },
-
-  // ------------ Report -------------------
-  {
-    path: '/report-production-worker-wages',
-    component: Layout,
-    redirect: '/report-production-worker-wages',
-    name: 'report-production-worker-wages',
-    meta: {
-      Displayname: {
-        en: 'Wages Report',
-        th: 'รายงานช่าง'
-      },
-      classIcon: 'bi bi-file-spreadsheet',
-      majorShow: true,
-      menuSection: 'data',
-      permissions: [PERMISSIONS.WORKER_VIEW]
-    },
-    children: [
-      {
-        path: '/report-production-worker-wages',
-        name: 'report-production-worker-wages',
-        component: ReportProductionWages,
-        meta: {
-          Displayname: {
-            en: 'Wages Report',
-            th: 'รายงานช่าง'
           },
           minorShow: false,
           permissions: [PERMISSIONS.WORKER_VIEW]

@@ -1,6 +1,5 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
-const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
 const List = () => import('@/views/stock/product/list/index-view.vue')
 
 const StockLocationList = () => import('@/views/stock/location/index-view.vue')
@@ -9,7 +8,6 @@ const StockMoveLocation = () => import('@/views/stock/move-location/index-view.v
 const GRProductionList = () =>
   import('@/views/receipt-stock/product/production-receipt-list/index-view.vue')
 const GRProduction = () => import('@/views/receipt-stock/product/new-gr-production/index-view.vue')
-const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-view.vue')
 
 const GROutsourceList = () =>
   import('@/views/receipt-stock/product/outsource-receipt-list/index-view.vue')
@@ -39,23 +37,6 @@ const routes = [
       permissions: [PERMISSIONS.STOCK_PRODUCT]
     },
     children: [
-      // Product Dashboard
-      {
-        path: '/stock-product-dashboard',
-        name: 'stock-product-dashboard',
-        component: ProductDashboard,
-        menuId: 'Dashboard',
-        meta: {
-          Displayname: {
-            en: 'Dashboard',
-            th: 'เเดชบอร์ด'
-          },
-          minorShow: true,
-          menuId: `stock-product-dashboard`,
-          permissions: [PERMISSIONS.STOCK_PRODUCT]
-        }
-      },
-
       // stock product
       {
         path: '/stock-product-list',
@@ -142,20 +123,6 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT_GR_IMAGE_CREATE]
-        }
-      },
-
-      {
-        path: '/goods-receipt-report',
-        name: 'goods-receipt-report',
-        component: ReportGR,
-        meta: {
-          Displayname: {
-            en: 'Report',
-            th: 'รายงานรับสินค้า'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       },
 

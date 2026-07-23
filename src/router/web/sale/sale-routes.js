@@ -15,7 +15,6 @@ const SaleOrder = () => import('@/views/sale/sale-order/index-view.vue')
 const SaleOrderList = () => import('@/views/sale/saleorder-list/index-view.vue')
 const Invoice = () => import('@/views/sale/invoice/index-view.vue')
 const InvoiceDetail = () => import('@/views/sale/invoice-detail/index-view.vue')
-const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
 
 // Billing Note
 const BillingNoteList = () => import('@/views/sale/billing-note/index-view.vue')
@@ -325,21 +324,6 @@ const routes = [
           },
           minorShow: false,
           permissions: [PERMISSIONS.SALE_CREATE]
-        }
-      },
-
-      // Payment Section
-      {
-        path: '/sale/payment-dashboard',
-        name: 'sale-payment-dashboard',
-        component: PaymentDashboard,
-        meta: {
-          Displayname: {
-            en: 'Payment Dashboard',
-            th: 'ภาพรวมการชำระเงิน'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.SALE_VIEW]
         }
       },
 

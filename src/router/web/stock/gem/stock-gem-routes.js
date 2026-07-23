@@ -2,8 +2,6 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
 
 const stockGem = () => import('@/views/stock/gem/IndexView.vue')
-const stockGemDashboard = () => import('@/views/receipt-stock/gem/dashboard/dashboard-view.vue')
-//src\views\receipt-stock\gem\dashboard
 const stockGemTransection = () => import('@/views/receipt-stock/gem/transaction/index-view.vue')
 const stockGemTransactionOnProcess = () => import('@/views/receipt-stock/gem/transaction-on-process/index-view.vue')
 
@@ -37,22 +35,6 @@ const routes = [
       permissions: [PERMISSIONS.STOCK_GEM_VIEW]
     },
     children: [
-      // stock Gem Dashboard
-      {
-        path: '/stock-gem-dashboard',
-        name: 'stock-gem-dashboard',
-        component: stockGemDashboard,
-        menuId: 'DASHBOARD',
-        meta: {
-          Displayname: {
-            en: 'Dashboard',
-            th: 'แดชบอร์ด'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
-        }
-      },
-
       // stock Gem
       {
         path: '/stock-gem-list',

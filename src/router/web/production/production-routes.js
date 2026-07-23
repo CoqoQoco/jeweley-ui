@@ -1,5 +1,4 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
-const ProductionDashboard = () => import('@/views/production/dashboard/index-view.vue')
 const PlanOrder = () => import('@/views/production/plan-create/index-view.vue')
 const PlanGoldOrder = () => import('@/views/production/plan-gold/index-view.vue')
 const PlanGoldTracking = () => import('@/views/production/plan-tracking-gold/index-view.vue')
@@ -14,11 +13,8 @@ const PlanOrderTransferTracking = () =>
 //const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 //const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
-const PlanBOMReport = () => import('@/views/production/plan-bom/index-view.vue')
 const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
 
-//E:\coqo_duangkeaw\Code\jeweley-ui\src\views\production\report\plan-completed-all-gold\index-view.vue
-const reportPlanCompletedWithAllGold = () => import('@/views/production/report/plan-completed-all-gold/index-view.vue')
 const GoldLossTangCreate = () => import('@/views/production/report/gold-loss-tang-report/index-view.vue')
 const GoldLossTangSlipList = () => import('@/views/production/report/gold-loss-tang-report/list/index-view.vue')
 
@@ -27,7 +23,7 @@ const routes = [
   {
     path: '/production',
     component: Layout,
-    redirect: '/production-dashboard',
+    redirect: '/plan-order-tracking',
     name: 'prodution',
     meta: {
       Displayname: {
@@ -40,19 +36,6 @@ const routes = [
       permissions: [PERMISSIONS.PRODUCTION_VIEW]
     },
     children: [
-      {
-        path: '/production-dashboard',
-        name: 'production-dashboard',
-        component: ProductionDashboard,
-        meta: {
-          Displayname: {
-            en: 'Dashboard',
-            th: 'แดชบอร์ด'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.PRODUCTION_VIEW]
-        }
-      },
       {
         path: '/plan-order',
         name: 'plan-order',
@@ -222,41 +205,6 @@ const routes = [
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
-      {
-        path: '/report-plan-completed-with-all-gold',
-        name: 'report-plan-completed-with-all-gold',
-        component: reportPlanCompletedWithAllGold,
-        meta: {
-          Displayname: {
-            en: 'Plan BOM Tracking',
-            th: 'รายงานเผนผลิตสำเร็จ'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.PRODUCTION_VIEW]
-        }
-      /* The `// report` section in the JavaScript code is a commented-out block of code that contains
-      routes for generating production reports. These routes are currently disabled because they are
-      commented out using `//`. This means that the routes for generating production reports are not
-      active in the application at the moment. */
-      },
-      {
-        path: '/plan-bom-report',
-        name: 'plan-bom-report',
-        component: PlanBOMReport,
-        meta: {
-          Displayname: {
-            en: 'Plan BOM Tracking',
-            th: 'รายงานวัถุดิบ'
-          },
-          minorShow: true,
-          permissions: [PERMISSIONS.PRODUCTION_VIEW]
-        }
-      /* The `// report` section in the JavaScript code is a commented-out block of code that contains
-      routes for generating production reports. These routes are currently disabled because they are
-      commented out using `//`. This means that the routes for generating production reports are not
-      active in the application at the moment. */
-      },
-
       // report
       // {
       //   path: '/report-production',
