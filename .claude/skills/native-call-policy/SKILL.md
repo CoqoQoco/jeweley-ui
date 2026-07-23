@@ -20,6 +20,7 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | PrimeVue `<DataTable>` ตรงๆ | `DataTableWithPaging` | `@/components/prime-vue/DataTableWithPaging.vue` |
 | PrimeVue `<Dropdown>` ตรงๆ | `DropdownGeneric` | `@/components/prime-vue/DropdownGeneric.vue` |
 | PrimeVue `<Calendar>` ตรงๆ | `CalendarGeneric` | `@/components/prime-vue/CalendarGeneric.vue` |
+| `CalendarGeneric` ×2 ประกอบมือ (date range) | `DateRangeGeneric` | `@/components/prime-vue/DateRangeGeneric.vue` |
 | PrimeVue `<AutoComplete>` ตรงๆ | `AutoCompleteGeneric` | `@/components/prime-vue/AutoCompleteGeneric.vue` |
 | PrimeVue `<MultiSelect>` ตรงๆ | `MultiSelectGeneric` | `@/components/prime-vue/MultiSelectGeneric.vue` |
 | PrimeVue `<Checkbox>` ตรงๆ | `CheckboxGeneric` | `@/components/prime-vue/CheckboxGeneric.vue` |
