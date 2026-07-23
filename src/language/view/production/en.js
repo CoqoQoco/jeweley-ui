@@ -905,6 +905,35 @@ export default {
     totalWorkers: 'Total {total} workers'
   },
 
+  preplanFunnel: {
+    searchTitle: 'Pre-Plan Funnel Report',
+    searchDesc: 'Select date range and other conditions to view pre-plan order status summary',
+    dateRange: 'Date Range',
+    jobType: 'Job Type',
+    jobLocation: 'Job Location',
+    statTotal: 'Total Pre-Plans',
+    statApprovalRate: 'Approval Rate',
+    statCancelRate: 'Cancel Rate',
+    statAvgApproveLead: 'Avg Approval Lead Time',
+    avgOrderToSubmit: 'Avg time from order to submit',
+    unitDays: 'days',
+    chartTitle: 'Pre-Plan Count by Status',
+    count: 'Count',
+    colStatus: 'Status',
+    colCount: 'Count',
+    colPercent: 'Percent',
+    totalLabel: 'Total',
+    status: {
+      Draft: 'Draft',
+      Submitted: 'Submitted',
+      Approved: 'Approved',
+      PartiallyConsumed: 'Partially Consumed',
+      Consumed: 'Consumed',
+      Rejected: 'Rejected',
+      Cancelled: 'Cancelled'
+    }
+  },
+
   leadTime: {
     searchTitle: 'Production Lead Time Report',
     searchDesc: 'Select completed date range and other conditions to view production lead time summary',

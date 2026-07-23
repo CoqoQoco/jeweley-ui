@@ -18,6 +18,8 @@ const LeadTimeReport = () =>
   import('@/views/production/report/lead-time-report/index-view.vue')
 const CastLossTrendReport = () =>
   import('@/views/production/report/cast-loss-trend-report/index-view.vue')
+const PrePlanFunnelReport = () =>
+  import('@/views/production/report/preplan-funnel-report/index-view.vue')
 
 // ---- stock product reports ----
 const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
@@ -196,6 +198,19 @@ const routes = [
           Displayname: {
             en: 'Cast Loss Trend Report',
             th: 'รายงาน Cast Loss Trend รายเดือน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/report-preplan-funnel',
+        name: 'report-preplan-funnel',
+        component: PrePlanFunnelReport,
+        meta: {
+          Displayname: {
+            en: 'Pre-Plan Funnel Report',
+            th: 'รายงาน Pre-Plan Funnel'
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]

@@ -905,6 +905,35 @@ export default {
     totalWorkers: 'รวม {total} คน'
   },
 
+  preplanFunnel: {
+    searchTitle: 'รายงาน Pre-Plan Funnel',
+    searchDesc: 'เลือกช่วงวันที่และเงื่อนไขอื่นๆ เพื่อดูสรุปสถานะใบสั่งผลิต',
+    dateRange: 'ช่วงวันที่',
+    jobType: 'ประเภทงาน',
+    jobLocation: 'สถานที่',
+    statTotal: 'ใบสั่งผลิตทั้งหมด',
+    statApprovalRate: 'อัตราการอนุมัติ',
+    statCancelRate: 'อัตราการยกเลิก',
+    statAvgApproveLead: 'ระยะเวลาอนุมัติเฉลี่ย',
+    avgOrderToSubmit: 'ระยะเวลาเฉลี่ยจากออกใบสั่งถึงส่งอนุมัติ',
+    unitDays: 'วัน',
+    chartTitle: 'จำนวนใบสั่งผลิตแยกตามสถานะ',
+    count: 'จำนวน',
+    colStatus: 'สถานะ',
+    colCount: 'จำนวน',
+    colPercent: 'สัดส่วน',
+    totalLabel: 'รวม',
+    status: {
+      Draft: 'ร่าง',
+      Submitted: 'ส่งอนุมัติแล้ว',
+      Approved: 'อนุมัติแล้ว',
+      PartiallyConsumed: 'ใช้งานบางส่วน',
+      Consumed: 'ใช้งานครบแล้ว',
+      Rejected: 'ไม่อนุมัติ',
+      Cancelled: 'ยกเลิก'
+    }
+  },
+
   leadTime: {
     searchTitle: 'รายงาน Lead-time การผลิต',
     searchDesc: 'เลือกช่วงวันที่เสร็จและเงื่อนไขอื่นๆ เพื่อดูสรุป Lead-time การผลิต',
