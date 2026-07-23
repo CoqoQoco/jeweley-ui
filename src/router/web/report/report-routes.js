@@ -25,9 +25,14 @@ const PrePlanFunnelReport = () =>
 const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/dashboard-view.vue')
 const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-view.vue')
 const StorageMoveReport = () => import('@/views/stock/storage-move-report/index-view.vue')
+const StockBalanceSummaryReport = () =>
+  import('@/views/receipt-stock/product/balance-summary/index-view.vue')
 
 // ---- stock gem reports ----
 const stockGemDashboard = () => import('@/views/receipt-stock/gem/dashboard/dashboard-view.vue')
+const GemOnhandReport = () => import('@/views/receipt-stock/gem/report/index-view.vue')
+const GemMovementReport = () => import('@/views/receipt-stock/gem/movement-report/index-view.vue')
+const MaterialValuationReport = () => import('@/views/receipt-stock/material-valuation/index-view.vue')
 
 // ---- sale reports ----
 const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
@@ -281,6 +286,19 @@ const routes = [
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
+      },
+      {
+        path: '/stock-balance-summary-report',
+        name: 'stock-balance-summary-report',
+        component: StockBalanceSummaryReport,
+        meta: {
+          Displayname: {
+            en: 'Stock Balance Summary Report',
+            th: 'สรุปยอดคงเหลือคลัง'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
       }
     ]
   },
@@ -312,6 +330,45 @@ const routes = [
           Displayname: {
             en: 'Dashboard',
             th: 'แดชบอร์ด'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
+      {
+        path: '/stock-gem-report',
+        name: 'stock-gem-report',
+        component: GemOnhandReport,
+        meta: {
+          Displayname: {
+            en: 'Gem Stock On-hand Valuation Report',
+            th: 'รายงานพลอย-เพชรคงคลัง (มูลค่า)'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
+      {
+        path: '/stock-gem-movement-report',
+        name: 'stock-gem-movement-report',
+        component: GemMovementReport,
+        meta: {
+          Displayname: {
+            en: 'Gem Receipt-Issue Ledger Report',
+            th: 'รายงานรับ-จ่ายพลอย'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
+      {
+        path: '/material-valuation-report',
+        name: 'material-valuation-report',
+        component: MaterialValuationReport,
+        meta: {
+          Displayname: {
+            en: 'Material Valuation Report',
+            th: 'มูลค่าวัตถุดิบคงคลังแยกชนิด'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_GEM_VIEW]

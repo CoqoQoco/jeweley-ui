@@ -1,28 +1,11 @@
 <template>
   <div class="app-container stock-product-dashboard">
-    <!-- Dashboard Header with Refresh -->
-    <div class="row">
-      <div class="col-12">
-        <div class="dashboard-header">
-          <div class="header-info">
-            <h3>แดชบอร์ดคลังสินค้า</h3>
-            <div class="data-info">
-              <small class="text-muted" v-if="dataAtDate">
-                <i class="bi bi-clock"></i>
-                อัพเดทล่าสุด: {{ formatDateTime(dataAtDate) }}
-              </small>
-            </div>
-          </div>
-          <div class="header-controls">
-            <!-- Refresh Button -->
-            <button @click="refreshDashboard" class="btn btn-outline-main" :disabled="isLoading">
-              <i class="bi bi-arrow-clockwise" :class="{ spinning: isLoading }"></i>
-              รีเฟรช
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <DashboardHeaderGeneric
+      :title="$t('view.stock.product.dashboard.title')"
+      :subtitle="headerSubtitle"
+      icon="bi-box-seam"
+      @refresh="refreshDashboard"
+    />
 
     <!-- Dashboard Report Tabs -->
     <div class="row mb-2">
@@ -35,7 +18,7 @@
               @click="activeTab = 'overview'"
             >
               <i class="bi bi-graph-up"></i>
-              ภาพรวม
+              {{ $t('view.stock.product.dashboard.tabOverview') }}
             </button>
           </li>
           <li class="nav-item">
@@ -45,7 +28,7 @@
               @click="setActiveTab('today')"
             >
               <i class="bi bi-calendar-day"></i>
-              วันนี้
+              {{ $t('view.stock.product.dashboard.tabToday') }}
             </button>
           </li>
           <li class="nav-item">
@@ -55,7 +38,7 @@
               @click="setActiveTab('weekly')"
             >
               <i class="bi bi-calendar-week"></i>
-              รายสัปดาห์
+              {{ $t('view.stock.product.dashboard.tabWeekly') }}
             </button>
           </li>
           <li class="nav-item">
@@ -65,7 +48,7 @@
               @click="setActiveTab('monthly')"
             >
               <i class="bi bi-calendar-month"></i>
-              รายเดือน
+              {{ $t('view.stock.product.dashboard.tabMonthly') }}
             </button>
           </li>
         </ul>
@@ -74,18 +57,10 @@
 
     <!-- Overview Tab -->
     <div v-show="activeTab === 'overview'" class="tab-content">
-      <!-- Dashboard Stats Cards -->
-      <!-- <StockSummaryCards :stock-summary="stockSummary" /> -->
+      <StockSummaryCards :stock-summary="stockSummary" />
 
-      <!-- Category Breakdown Chart -->
-      <CategoryChart
-        :category-chart-data="categoryChartData"
-        :is-loading="isLoading"
-        :dataset-fields="datasetFields"
-        :chart-name="chartName"
-      />
+      <CategoryChart :category-chart-data="categoryChartData" />
 
-      <!-- Last Activities -->
       <div class="row">
         <div class="col-12 mb-4">
           <LastActivitiesTable :last-activities="lastActivities" />
@@ -96,69 +71,33 @@
     <!-- Today Tab -->
     <div v-show="activeTab === 'today'" class="tab-content">
       <div class="row">
-        <!-- Today's Summary Cards -->
-        <!-- <div class="col-12 mb-4">
-          <div class="row">
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card today">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-activity"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ todaySummary.totalTransactions }}</h3>
-                    <p>รายการทั้งหมดวันนี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card today">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-plus-circle"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ todaySummary.newStockItems }}</h3>
-                    <p>สินค้าใหม่วันนี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card today">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-currency-dollar"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ formatCurrency(todaySummary.totalValue) }}</h3>
-                    <p>มูลค่ารวมวันนี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card today">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-exclamation-triangle"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ todaySummary.lowStockAlerts }}</h3>
-                    <p>แจ้งเตือนสต๊อกต่ำ</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="col-12 mb-4">
+          <div class="kpi-grid">
+            <StatCardGeneric
+              icon="bi-activity"
+              :value="formatNumber(todaySummary.totalTransactions)"
+              :label="$t('view.stock.product.dashboard.todayTotalTransactions')"
+            />
+            <StatCardGeneric
+              icon="bi-plus-circle"
+              :value="formatNumber(todaySummary.newStockItems)"
+              :label="$t('view.stock.product.dashboard.todayNewStockItems')"
+              variant="green"
+            />
+            <StatCardGeneric
+              icon="bi-currency-dollar"
+              :value="formatCurrency(todaySummary.totalValue)"
+              :label="$t('view.stock.product.dashboard.todayTotalValue')"
+              variant="warning"
+            />
           </div>
-        </div> -->
+        </div>
 
         <!-- Today's Transactions -->
         <div class="col-12">
           <div class="activities-card">
             <div class="activities-header">
-              <h5>รายการสินค้าวันนี้</h5>
+              <h5>{{ $t('view.stock.product.dashboard.todayTransactionsTitle') }}</h5>
               <div class="activities-count">
                 <span class="badge bg-primary">{{ todayTransactions.length }}</span>
               </div>
@@ -183,15 +122,15 @@
                     </p>
                     <div class="activity-details">
                       <div class="detail-row">
-                        <span class="detail-label">จำนวน:</span>
+                        <span class="detail-label">{{ $t('view.stock.product.dashboard.qtyLabel') }}</span>
                         <span class="detail-value">{{ formatNumber(transaction.qty) }}</span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">ราคา:</span>
+                        <span class="detail-label">{{ $t('view.stock.product.dashboard.priceLabel') }}</span>
                         <span class="detail-value">{{ formatCurrency(transaction.productPrice) }}</span>
                       </div>
                       <div class="detail-row" v-if="transaction.woText">
-                        <span class="detail-label">WO:</span>
+                        <span class="detail-label">{{ $t('view.stock.product.dashboard.woLabel') }}</span>
                         <span class="detail-value">{{ transaction.woText }}</span>
                       </div>
                     </div>
@@ -200,7 +139,7 @@
               </div>
               <div v-else class="activities-empty">
                 <i class="bi bi-clock-history"></i>
-                <p>ไม่มีรายการสินค้าวันนี้</p>
+                <p>{{ $t('view.stock.product.dashboard.noTodayTransactions') }}</p>
               </div>
             </div>
           </div>
@@ -211,69 +150,33 @@
     <!-- Weekly Tab -->
     <div v-show="activeTab === 'weekly'" class="tab-content">
       <div class="row">
-        <!-- Weekly Summary Cards -->
-        <!-- <div class="col-12 mb-4">
-          <div class="row">
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card weekly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-activity"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ weeklySummary.totalTransactions || 0 }}</h3>
-                    <p>รายการทั้งหมดสัปดาห์นี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card weekly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-plus-circle"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ weeklySummary.newStockItems || 0 }}</h3>
-                    <p>สินค้าใหม่สัปดาห์นี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card weekly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-currency-dollar"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ formatCurrency(weeklySummary.totalValue) }}</h3>
-                    <p>มูลค่ารวมสัปดาห์นี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card weekly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-exclamation-triangle"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ weeklySummary.lowStockAlerts || 0 }}</h3>
-                    <p>แจ้งเตือนสต๊อกต่ำ</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="col-12 mb-4">
+          <div class="kpi-grid">
+            <StatCardGeneric
+              icon="bi-activity"
+              :value="formatNumber(weeklySummary.totalTransactions)"
+              :label="$t('view.stock.product.dashboard.weeklyTotalTransactions')"
+            />
+            <StatCardGeneric
+              icon="bi-plus-circle"
+              :value="formatNumber(weeklySummary.newStockItems)"
+              :label="$t('view.stock.product.dashboard.weeklyNewStockItems')"
+              variant="green"
+            />
+            <StatCardGeneric
+              icon="bi-currency-dollar"
+              :value="formatCurrency(weeklySummary.totalValue)"
+              :label="$t('view.stock.product.dashboard.weeklyTotalValue')"
+              variant="warning"
+            />
           </div>
-        </div> -->
+        </div>
 
         <!-- Weekly Analysis -->
         <div class="col-12">
           <div class="activities-card">
             <div class="activities-header">
-              <h5>การเคลื่อนไหวรายวัน ({{ weekNumber }})</h5>
+              <h5>{{ $t('view.stock.product.dashboard.dailyMovementsTitle', { week: weekNumber }) }}</h5>
               <div class="activities-count">
                 <span class="badge bg-success">{{ dailyMovements.length || 0 }}</span>
               </div>
@@ -291,17 +194,17 @@
                   <div class="activity-content">
                     <div class="activity-header">
                       <h6>{{ formatDate(movement.date) }}</h6>
-                      <span class="activity-time">{{ movement.transactionCount }} รายการ</span>
+                      <span class="activity-time">{{ $t('view.stock.product.dashboard.transactionCount', { count: movement.transactionCount }) }}</span>
                     </div>
                     <p class="activity-description">
-                      สินค้าใหม่: {{ movement.newStockCount }} ชิ้น | มูลค่า: {{ formatCurrency(movement.totalValue) }}
+                      {{ $t('view.stock.product.dashboard.dailyMovementDesc', { newCount: movement.newStockCount, value: formatCurrency(movement.totalValue) }) }}
                     </p>
                   </div>
                 </div>
               </div>
               <div v-else class="activities-empty">
                 <i class="bi bi-clock-history"></i>
-                <p>ไม่มีข้อมูลสัปดาห์นี้</p>
+                <p>{{ $t('view.stock.product.dashboard.noWeeklyData') }}</p>
               </div>
             </div>
           </div>
@@ -312,69 +215,39 @@
     <!-- Monthly Tab -->
     <div v-show="activeTab === 'monthly'" class="tab-content">
       <div class="row">
-        <!-- Monthly Summary Cards -->
-        <!-- <div class="col-12 mb-4">
-          <div class="row">
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-activity"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ monthlySummary.totalTransactions || 0 }}</h3>
-                    <p>รายการทั้งหมดเดือนนี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-plus-circle"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ monthlySummary.newStockItems || 0 }}</h3>
-                    <p>สินค้าใหม่เดือนนี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-currency-dollar"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ formatCurrency(monthlySummary.totalValue) }}</h3>
-                    <p>มูลค่ารวมเดือนนี้</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-              <div class="stat-card monthly">
-                <div class="stat-card-body">
-                  <div class="stat-icon">
-                    <i class="bi bi-box-seam"></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ monthlySummary.totalAvailableProducts || 0 }}</h3>
-                    <p>สินค้าพร้อมขาย</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="col-12 mb-4">
+          <div class="kpi-grid">
+            <StatCardGeneric
+              icon="bi-activity"
+              :value="formatNumber(monthlySummary.totalTransactions)"
+              :label="$t('view.stock.product.dashboard.monthlyTotalTransactions')"
+            />
+            <StatCardGeneric
+              icon="bi-plus-circle"
+              :value="formatNumber(monthlySummary.newStockItems)"
+              :label="$t('view.stock.product.dashboard.monthlyNewStockItems')"
+              variant="green"
+            />
+            <StatCardGeneric
+              icon="bi-currency-dollar"
+              :value="formatCurrency(monthlySummary.totalValue)"
+              :label="$t('view.stock.product.dashboard.monthlyTotalValue')"
+              variant="warning"
+            />
+            <StatCardGeneric
+              icon="bi-box-seam"
+              :value="formatNumber(monthlySummary.totalAvailableProducts)"
+              :label="$t('view.stock.product.dashboard.monthlyAvailableProducts')"
+              variant="grey"
+            />
           </div>
-        </div> -->
+        </div>
 
         <!-- Monthly Comparisons -->
         <div class="col-12">
           <div class="activities-card">
             <div class="activities-header">
-              <h5>เปรียบเทียบรายสัปดาห์ ({{ monthName }})</h5>
+              <h5>{{ $t('view.stock.product.dashboard.weeklyComparisonsTitle', { month: monthName }) }}</h5>
               <div class="activities-count">
                 <span class="badge bg-info">{{ weeklyComparisons.length || 0 }}</span>
               </div>
@@ -391,18 +264,18 @@
                   </div>
                   <div class="activity-content">
                     <div class="activity-header">
-                      <h6>สัปดาห์ที่ {{ week.weekNumber }}</h6>
+                      <h6>{{ $t('view.stock.product.dashboard.weekNumberLabel', { week: week.weekNumber }) }}</h6>
                       <span class="activity-time">{{ formatDate(week.weekStartDate) }} - {{ formatDate(week.weekEndDate) }}</span>
                     </div>
                     <p class="activity-description">
-                      รายการ: {{ week.transactionCount }} | สินค้าใหม่: {{ week.newStockCount }} | มูลค่า: {{ formatCurrency(week.totalValue) }}
+                      {{ $t('view.stock.product.dashboard.weeklyComparisonDesc', { count: week.transactionCount, newCount: week.newStockCount, value: formatCurrency(week.totalValue) }) }}
                     </p>
                   </div>
                 </div>
               </div>
               <div v-else class="activities-empty">
                 <i class="bi bi-clock-history"></i>
-                <p>ไม่มีข้อมูลเดือนนี้</p>
+                <p>{{ $t('view.stock.product.dashboard.noMonthlyData') }}</p>
               </div>
             </div>
           </div>
@@ -413,18 +286,26 @@
 </template>
 
 <script>
-import { useStockProductDashboardStore } from '@/stores/modules/api/stock/stock-product-dashboard-store.js'
 import dayjs from 'dayjs'
+
+import { useStockProductDashboardStore } from '@/stores/modules/api/stock/stock-product-dashboard-store.js'
+
+import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
+import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
 
 // Dashboard Components
 import CategoryChart from './components/category-chart.vue'
 import LastActivitiesTable from './components/last-activities-table.vue'
+import StockSummaryCards from './components/stock-summary-cards.vue'
 
 export default {
   name: 'StockProductDashboardView',
   components: {
+    DashboardHeaderGeneric,
+    StatCardGeneric,
     CategoryChart,
-    LastActivitiesTable
+    LastActivitiesTable,
+    StockSummaryCards
   },
   setup() {
     const dashboardStore = useStockProductDashboardStore()
@@ -435,34 +316,28 @@ export default {
   data() {
     return {
       activeTab: 'overview',
-      filters: {},
-      datasetFields: [
-        { key: 'count', label: 'Count', labelTH: 'จำนวน' },
-        // { key: 'totalQuantity', label: 'Total Quantity', labelTH: 'จำนวนรวม' },
-        // { key: 'totalValue', label: 'Total Value', labelTH: 'มูลค่ารวม' },
-        // { key: 'averagePrice', label: 'Average Price', labelTH: 'ราคาเฉลี่ย' }
-      ],
-      chartName: 'stock-product-dashboard'
+      filters: {}
     }
   },
   computed: {
-    // Loading state
-    isLoading() {
-      return this.dashboardStore.getIsLoading
-    },
     dataAtDate() {
       return this.dashboardStore.getLastUpdated
+    },
+    headerSubtitle() {
+      return this.dataAtDate
+        ? `${this.$t('view.stock.product.dashboard.lastUpdate')}: ${this.formatDateTime(this.dataAtDate)}`
+        : ''
     },
 
     // Dashboard data
     stockSummary() {
       return this.dashboardStore.getStockSummary
     },
-    categories() {
-      return this.dashboardStore.getCategories
-    },
     lastActivities() {
       return this.dashboardStore.getLastActivities
+    },
+    categoryChartData() {
+      return this.dashboardStore.getCategoryChartData
     },
 
     // Today's data
@@ -493,11 +368,6 @@ export default {
     },
     monthName() {
       return this.dashboardStore.monthName || ''
-    },
-
-    // Chart data
-    categoryChartData() {
-      return this.dashboardStore.getCategories
     }
   },
   async mounted() {
@@ -562,48 +432,11 @@ export default {
   background-color: #f8f9fa;
   min-height: 100vh;
 
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-
-    .header-info {
-      h3 {
-        color: $base-font-color;
-        font-weight: bold;
-        margin: 0 0 5px 0;
-      }
-
-      .data-info {
-        small {
-          font-size: 12px;
-          i {
-            margin-right: 5px;
-          }
-        }
-      }
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-    }
-
-    .spinning {
-      animation: spin 1s linear infinite;
-    }
-  }
-
   .dashboard-tabs {
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 0 20px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 0 var(--sp-xl);
 
     .nav-link {
       border: none;
@@ -623,89 +456,32 @@ export default {
       }
 
       i {
-        margin-right: 8px;
+        margin-right: var(--sp-sm);
       }
     }
   }
 
-  .stat-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-    border-left: 4px solid $base-color;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    &.today {
-      border-left-color: #6f42c1;
-    }
-    &.weekly {
-      border-left-color: #28a745;
-    }
-    &.monthly {
-      border-left-color: #17a2b8;
-    }
-
-    .stat-card-body {
-      padding: 20px;
-      display: flex;
-      align-items: center;
-
-      .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, $base-font-color, lighten($base-font-color, 20%));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-
-        i {
-          font-size: 24px;
-          color: white;
-        }
-      }
-
-      .stat-content {
-        flex: 1;
-
-        h3 {
-          font-size: 28px;
-          font-weight: bold;
-          color: $base-font-color;
-          margin: 0 0 5px 0;
-        }
-
-        p {
-          color: $base-sub-color;
-          margin: 0;
-          font-size: 14px;
-          font-weight: 600;
-        }
-      }
-    }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--sp-lg);
   }
 
   .activities-card {
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 
     .activities-header {
-      padding: 20px;
-      border-bottom: 1px solid $base-color;
+      padding: var(--sp-xl);
+      border-bottom: 1px solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
 
       h5 {
-        color: $base-font-color;
+        color: var(--base-font-color);
         font-weight: bold;
         margin: 0;
       }
@@ -718,7 +494,7 @@ export default {
     }
 
     .activities-body {
-      padding: 20px;
+      padding: var(--sp-xl);
 
       .activities-empty {
         display: flex;
@@ -730,7 +506,7 @@ export default {
 
         i {
           font-size: 48px;
-          margin-bottom: 15px;
+          margin-bottom: var(--sp-lg);
         }
       }
     }
@@ -740,7 +516,7 @@ export default {
     .activity-item {
       display: flex;
       align-items: flex-start;
-      padding: 15px 0;
+      padding: var(--sp-lg) 0;
       border-bottom: 1px solid #f0f0f0;
 
       &:last-child {
@@ -755,7 +531,7 @@ export default {
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 15px;
+        margin-right: var(--sp-lg);
         flex-shrink: 0;
 
         i {
@@ -770,39 +546,39 @@ export default {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 5px;
+          margin-bottom: var(--sp-xs);
 
           h6 {
-            color: $base-font-color;
+            color: var(--base-font-color);
             font-weight: bold;
             margin: 0;
-            font-size: 14px;
+            font-size: var(--fs-base);
           }
 
           .activity-time {
             color: $base-sub-color;
-            font-size: 11px;
+            font-size: var(--fs-sm);
             white-space: nowrap;
-            margin-left: 10px;
+            margin-left: var(--sp-sm);
           }
         }
 
         .activity-description {
           color: $base-sub-color;
-          margin: 0 0 8px 0;
-          font-size: 12px;
+          margin: 0 0 var(--sp-sm) 0;
+          font-size: var(--fs-sm);
         }
 
         .activity-details {
           background: #f8f9fa;
-          border-radius: 4px;
-          padding: 8px;
+          border-radius: var(--radius-sm);
+          padding: var(--sp-sm);
 
           .detail-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 3px;
-            font-size: 11px;
+            font-size: var(--fs-sm);
 
             &:last-child {
               margin-bottom: 0;
@@ -814,20 +590,11 @@ export default {
             }
 
             .detail-value {
-              color: $base-font-color;
+              color: var(--base-font-color);
             }
           }
         }
       }
-    }
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
     }
   }
 }

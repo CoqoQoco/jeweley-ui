@@ -182,10 +182,15 @@ export default {
       moveLocation: { ...stock.moveLocation },
       storageMoveReport: { ...stock.storageMoveReport },
       cost: { ...stock.cost },
+      gemOnhandReport: { ...stock.gemOnhandReport },
+      gemMovementReport: { ...stock.gemMovementReport },
+      materialValuationReport: { ...stock.materialValuationReport },
+      stockBalanceSummary: { ...stock.stockBalanceSummary },
       gem: {
         ...stock.gem,
         dashboard: {
           title: 'Gem Stock Dashboard',
+          searchDesc: 'Filter dashboard data by group, shape, grade, and date range',
           lastUpdate: 'Last Update',
           filters: 'Filters',
           groupName: 'Gem Group',
@@ -301,7 +306,20 @@ export default {
 
           // Coming soon
           weeklyReportComingSoon: 'Weekly Report Coming Soon',
-          monthlyReportComingSoon: 'Monthly Report Coming Soon'
+          monthlyReportComingSoon: 'Monthly Report Coming Soon',
+
+          // Forecast layer (frontend-only estimate)
+          forecast: {
+            title: 'Forecast Layer (Estimate)',
+            quantityLabel: 'Forecasted Quantity Used by Month End',
+            weightLabel: 'Forecasted Weight Used by Month End (g)',
+            actualSeries: 'Actual Cumulative Usage',
+            forecastSeries: 'Forecasted Cumulative Usage',
+            assumption:
+              'Estimated using daily run-rate based on the first {days} days of this month — an estimate, not actual figures',
+            notEnoughData: 'Not enough data to forecast this month',
+            chartEmpty: 'No usage data recorded this month yet'
+          }
         }
       }
     }

@@ -1,150 +1,132 @@
 <template>
-  <div class="filter-container-searchBar">
-    <form @submit.prevent="onSearch">
+  <SearchBarGeneric
+    :title="$t('view.receiptStock.product.reportGr.title')"
+    :description="$t('view.receiptStock.product.reportGr.searchDesc')"
+    @search="onSearch"
+    @clear="onClear"
+  >
+    <template #fields>
       <div>
-        <div>
-          <pageTitle title="รายงานรับสินค้า" :isShowBtnClose="false"> </pageTitle>
-        </div>
+        <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptDate') }}</span>
+        <DateRangeGeneric
+          :startDate="form.receiptDateStart"
+          :endDate="form.receiptDateEnd"
+          :startPlaceholder="$t('common.label.start')"
+          :endPlaceholder="$t('common.label.end')"
+          @update:startDate="form.receiptDateStart = $event"
+          @update:endDate="form.receiptDateEnd = $event"
+        />
+      </div>
 
-        <div class="form-col-container">
-          <!-- receipt date -->
+      <div>
+        <span class="title-text">{{ $t('view.receiptStock.product.reportGr.stockNumber') }}</span>
+        <InputTextGeneric v-model.trim="form.stockNumber" placeholder="EX: DK-2502-00X" />
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNumber') }}</span>
+        <InputTextGeneric v-model.trim="form.productNumber" placeholder="EX: R08X50XXXL" />
+      </div>
+    </template>
+
+    <template #actions-right>
+      <ButtonGeneric variant="main" icon="bi-search" type="submit" :label="$t('common.btn.search')" />
+      <ButtonGeneric
+        variant="sub-main"
+        icon="bi-zoom-in"
+        class="ml-2"
+        :title="$t('common.btn.advancedSearch')"
+        @click="onShowAdvanced"
+      />
+      <ButtonGeneric
+        variant="dark"
+        icon="bi-x-circle"
+        class="ml-2"
+        :title="$t('common.btn.clear')"
+        @click="onClear"
+      />
+      <ButtonGeneric
+        variant="green"
+        icon="bi-filetype-csv"
+        class="ml-2"
+        :title="$t('common.btn.export')"
+        :disabled="!receiptProductionStore.dataReceiptHistory.total"
+        @click="onExport"
+      />
+    </template>
+  </SearchBarGeneric>
+
+  <modal
+    :showModal="showAdvanced"
+    @closeModal="onCloseAdvanced"
+    width="900px"
+    headerVariant="main"
+    :isShowActionPart="true"
+  >
+    <template #title>
+      <span class="title-text-lg d-block">
+        <i class="bi bi-zoom-in mr-2"></i>{{ $t('common.btn.advancedSearch') }}
+      </span>
+    </template>
+    <template #content>
+      <div class="p-3">
+        <div class="form-row two-col">
           <div>
-            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptDate') }}</span>
-            <div class="flex-group">
-              <CalendarGeneric
-                class="w-100"
-                v-model="form.receiptDateStart"
-                :max-date="form.receiptDateEnd"
-                :showIcon="true"
-                :manualInput="true"
-                :placeholder="$t('common.label.start')"
-                dateFormat="dd/mm/yy"
-              />
-              <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-              <CalendarGeneric
-                class="w-100"
-                v-model="form.receiptDateEnd"
-                :min-date="form.receiptDateStart"
-                :showIcon="true"
-                :manualInput="false"
-                :placeholder="$t('common.label.end')"
-                dateFormat="dd/mm/yy"
-              />
-            </div>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptType') }}</span>
+            <MultiSelectGeneric
+              v-model="form.receiptType"
+              :options="receiptTypeMaster"
+              optionLabel="description"
+              optionValue="value"
+            />
           </div>
 
-          <div class="form-col-container">
-            <!-- stock number -->
-            <div>
-              <span class="title-text">{{ $t('view.receiptStock.product.reportGr.stockNumber') }}</span>
-              <InputTextGeneric v-model.trim="form.stockNumber" placeholder="EX: DK-2502-00X" />
-            </div>
-
-            <!-- product number -->
-            <div>
-              <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNumber') }}</span>
-              <InputTextGeneric v-model.trim="form.productNumber" placeholder="EX: R08X50XXXL" />
-            </div>
-          </div>
-        </div>
-
-        <dialogView
-          :isShow="isShow.dialog"
-          @closeDialog="closeDialog"
-          @search="dialogSearch"
-          txtHeader="ค้นหาเพิ่มเติม"
-        >
-          <template #content>
-            <div class="form-col-container">
-              <!-- receipt type -->
-              <div>
-                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptType') }}</span>
-                <MultiSelectGeneric
-                  v-model="form.receiptType"
-                  :options="receiptTypeMaster"
-                  optionLabel="description"
-                  optionValue="value"
-                />
-              </div>
-
-              <!-- mold -->
-              <div>
-                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.mold') }}</span>
-                <InputTextGeneric v-model.trim="form.mold" placeholder="EX: CN-2400XX" />
-              </div>
-
-              <!-- productNameEn -->
-              <div>
-                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNameEn') }}</span>
-                <InputTextGeneric v-model.trim="form.productNameEn" placeholder="EX: Gold Ring #66" />
-              </div>
-
-              <!-- productNameTh -->
-              <div>
-                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNameTh') }}</span>
-                <InputTextGeneric v-model.trim="form.productNameTh" />
-              </div>
-
-              <!-- woText -->
-              <div>
-                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.wo') }}</span>
-                <InputTextGeneric v-model.trim="form.woText" placeholder="EX: 6802017XX" />
-              </div>
-
-              <!-- size -->
-              <div>
-                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.size') }}</span>
-                <InputTextGeneric v-model.trim="form.size" placeholder="EX: #66" />
-              </div>
-
-              <!-- product type -->
-              <div>
-                <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productType') }}</span>
-                <MultiSelectGeneric
-                  v-model="form.productType"
-                  :options="masterProductType"
-                  optionLabel="description"
-                  optionValue="code"
-                />
-              </div>
-            </div>
-          </template>
-        </dialogView>
-
-        <div class="btn-submit-container-between">
-          <div></div>
           <div>
-            <button class="btn btn-sm btn-main mr-2" type="submit" title="ค้นหา">
-              <span><i class="bi bi-search"></i></span>
-              <!-- <span>ค้นหา</span> -->
-            </button>
-            <button
-              class="btn btn-sm btn-sub-main mr-2"
-              type="button"
-              title="เพิ่มเติม"
-              @click="onShowDialog"
-            >
-              <span><i class="bi bi-zoom-in"></i></span>
-              <!-- <span>ค้นหา</span> -->
-            </button>
-            <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" title="ล้าง">
-              <span><i class="bi bi-x-circle"></i></span>
-              <!-- <span>ล้าง</span> -->
-            </button>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.mold') }}</span>
+            <InputTextGeneric v-model.trim="form.mold" placeholder="EX: CN-2400XX" />
+          </div>
 
-            <button
-              class="btn btn-sm btn-green"
-              type="button"
-              :disabled="!receiptProductionStore.dataReceiptHistory.total > 0"
-              @click="onExport"
-            >
-              <span><i class="bi bi-filetype-csv"></i></span>
-            </button>
+          <div>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNameEn') }}</span>
+            <InputTextGeneric v-model.trim="form.productNameEn" placeholder="EX: Gold Ring #66" />
+          </div>
+
+          <div>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productNameTh') }}</span>
+            <InputTextGeneric v-model.trim="form.productNameTh" />
+          </div>
+
+          <div>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.wo') }}</span>
+            <InputTextGeneric v-model.trim="form.woText" placeholder="EX: 6802017XX" />
+          </div>
+
+          <div>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.size') }}</span>
+            <InputTextGeneric v-model.trim="form.size" placeholder="EX: #66" />
+          </div>
+
+          <div>
+            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.productType') }}</span>
+            <MultiSelectGeneric
+              v-model="form.productType"
+              :options="masterProductType"
+              optionLabel="description"
+              optionValue="code"
+            />
           </div>
         </div>
       </div>
-    </form>
-  </div>
+    </template>
+    <template #action>
+      <ButtonGeneric
+        variant="main"
+        icon="bi-search"
+        :label="$t('common.btn.search')"
+        @click="onAdvancedSearch"
+      />
+    </template>
+  </modal>
 </template>
 
 <script>
@@ -152,23 +134,25 @@ import { defineAsyncComponent } from 'vue'
 
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
-import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+
+import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 
-const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
-const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
+const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-const interfaceIsShow = {
-  dialog: false
-}
 export default {
+  name: 'ReportGrSearchView',
+
   components: {
-    pageTitle,
-    CalendarGeneric,
-    MultiSelectGeneric,
+    SearchBarGeneric,
+    ButtonGeneric,
     InputTextGeneric,
-    dialogView
+    DateRangeGeneric,
+    MultiSelectGeneric,
+    modal
   },
 
   setup() {
@@ -184,12 +168,14 @@ export default {
     }
   },
 
+  emits: ['search', 'clear', 'export'],
+
   computed: {
-    isExportData() {
-      return true
-    },
     masterProductType() {
       return this.masterStore.productType
+    },
+    receiptTypeMaster() {
+      return [{ value: 'production', description: this.$t('view.receiptStock.product.reportGr.receiptTypeProduction') }]
     }
   },
 
@@ -205,42 +191,7 @@ export default {
   data() {
     return {
       form: { ...this.modelForm },
-      isShow: { ...interfaceIsShow },
-      receiptTypeMaster: [
-        { value: 'production', description: 'Production' }
-        // { value: 2, description: 'งานรับสินค้าและส่งสินค้า' }
-      ]
-    }
-  },
-
-  methods: {
-    // ---------------- event
-    onSearch() {
-      //console.log('onSubmit')
-      this.$emit('search', this.form)
-    },
-    onExport() {
-      //console.log('onExport')
-      this.$emit('export', this.form)
-    },
-    dialogSearch() {
-      this.isShow.dialog = false
-      this.$emit('search')
-    },
-    onSubmitExport() {
-      this.$emit('export', true)
-    },
-    onClear() {
-      this.$emit('clear')
-    },
-    onCloseModal() {
-      this.isShow = { ...interfaceIsShow }
-    },
-    onShowDialog() {
-      this.isShow.dialog = true
-    },
-    closeDialog() {
-      this.isShow.dialog = false
+      showAdvanced: false
     }
   },
 
@@ -248,11 +199,39 @@ export default {
     this.$nextTick(async () => {
       await this.masterStore.fetchProductType()
     })
+  },
+
+  methods: {
+    onSearch() {
+      this.$emit('search', this.form)
+    },
+    onExport() {
+      this.$emit('export', this.form)
+    },
+    onClear() {
+      this.$emit('clear')
+    },
+    onShowAdvanced() {
+      this.showAdvanced = true
+    },
+    onCloseAdvanced() {
+      this.showAdvanced = false
+    },
+    onAdvancedSearch() {
+      this.showAdvanced = false
+      this.onSearch()
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/mixin.scss';
+
+.form-row {
+  &.two-col {
+    @include form-row-grid(2);
+  }
+}
 </style>

@@ -90,86 +90,76 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
     },
 
     async fetchConfirmHistory({ take, skip, sort, formValue, skipLoading }) {
-      try {
-        this.dataReceiptHistory = {}
-        //console.log('fetchDataListPlan', formValue)
-        const param = {
-          take,
-          skip,
-          sort,
-          search: {
-            ...formValue
-          }
+      this.dataReceiptHistory = {}
+      //console.log('fetchDataListPlan', formValue)
+      const param = {
+        take,
+        skip,
+        sort,
+        search: {
+          ...formValue
         }
-        const res = await api.jewelry.post('ReceiptProduction/ListHistory', param, {
-          skipLoading: skipLoading
-        })
+      }
+      const res = await api.jewelry.post('ReceiptProduction/ListHistory', param, {
+        skipLoading: skipLoading
+      })
 
-        if (res) {
-          this.dataReceiptHistory = { ...res }
-          this.dataReceiptHistoryTotalRecord = res.total
-        } else {
-          this.dataReceiptHistory = {}
-          this.dataReceiptHistoryTotalRecord = 0
-        }
-      } catch (error) {
-        console.error('Error fetchConfirmHistory:', error)
-        throw error
+      if (res) {
+        this.dataReceiptHistory = { ...res }
+        this.dataReceiptHistoryTotalRecord = res.total
+      } else {
+        this.dataReceiptHistory = {}
+        this.dataReceiptHistoryTotalRecord = 0
       }
     },
     async fetchConfirmHistoryExport({ sort, formValue }) {
-      try {
-        //console.log('fetchDataListPlan', formValue)
-        const param = {
-          take: 0,
-          skip: 0,
-          sort,
-          search: {
-            ...formValue
-          }
+      //console.log('fetchDataListPlan', formValue)
+      const param = {
+        take: 0,
+        skip: 0,
+        sort,
+        search: {
+          ...formValue
         }
-        const res = await api.jewelry.post('ReceiptProduction/ListHistory', param, {
-          skipLoading: false
-        })
+      }
+      const res = await api.jewelry.post('ReceiptProduction/ListHistory', param, {
+        skipLoading: false
+      })
 
-        if (res) {
-          const dataExcel = res.data.map((item) => ({
-            วันรับสินค้า: formatDate(item.receiptDate),
-            เลขที่ผลิต: item.stockNumber,
-            รหัสสินค้า: item.productNumber,
-            'ชื่อสินค้า EN': item.productNameEn,
-            'ชื่อสินค้า TH': item.productNameTh,
-            ประเภทสินค้า: item.productTypeName,
-            ขนาด: item.size,
-            เเม่พิมพ์: item.mold,
-            'สีของทอง/เงิน': item.productionType,
-            'ประเภททอง/เงิน': item.productionTypeSize,
-            'W.O.': `${item.wo}-${item.woNumber}`,
-            จัดเก็บ: item.location,
-            ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
-            ผู้รับสินค้า: item.createBy,
-            หมายเหตุ: item.remark
-          }))
+      if (res) {
+        const dataExcel = res.data.map((item) => ({
+          วันรับสินค้า: formatDate(item.receiptDate),
+          เลขที่ผลิต: item.stockNumber,
+          รหัสสินค้า: item.productNumber,
+          'ชื่อสินค้า EN': item.productNameEn,
+          'ชื่อสินค้า TH': item.productNameTh,
+          ประเภทสินค้า: item.productTypeName,
+          ขนาด: item.size,
+          เเม่พิมพ์: item.mold,
+          'สีของทอง/เงิน': item.productionType,
+          'ประเภททอง/เงิน': item.productionTypeSize,
+          'W.O.': `${item.wo}-${item.woNumber}`,
+          จัดเก็บ: item.location,
+          ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
+          ผู้รับสินค้า: item.createBy,
+          หมายเหตุ: item.remark
+        }))
 
-          const options = {
-            filename: `รายงานรับสินค้า_[${formatDate(new Date())}].xlsx`,
-            sheetName: 'รายงานรับสินค้า',
-            // ลบ columnWidths ออกเพื่อให้ใช้ค่า default width จาก ExcelHelper
-            styles: {
-              ...ExcelHelper.defaultStyles,
-              headerFill: {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: '921313' } // สีน้ำเงินเข้ม
-              }
+        const options = {
+          filename: `รายงานรับสินค้า_[${formatDate(new Date())}].xlsx`,
+          sheetName: 'รายงานรับสินค้า',
+          // ลบ columnWidths ออกเพื่อให้ใช้ค่า default width จาก ExcelHelper
+          styles: {
+            ...ExcelHelper.defaultStyles,
+            headerFill: {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: '921313' } // สีน้ำเงินเข้ม
             }
           }
-
-          ExcelHelper.exportToExcel(dataExcel, options)
         }
-      } catch (error) {
-        console.error('Error fetchConfirmHistory:', error)
-        throw error
+
+        ExcelHelper.exportToExcel(dataExcel, options)
       }
     }
   }

@@ -256,10 +256,12 @@ export default {
     },
     reportGr: {
       title: 'Goods Receipt Report',
+      searchDesc: 'Search and review goods receipt records from production into stock',
       receiptDate: 'Receipt Date',
       stockNumber: 'Stock No.',
       productNumber: 'Product Code',
       receiptType: 'Receipt Type',
+      receiptTypeProduction: 'Production',
       mold: 'Mold',
       productNameEn: 'Product Name EN',
       productNameTh: 'Product Name TH',
@@ -274,7 +276,10 @@ export default {
       colLocation: 'Storage',
       colProductPrice: 'Price',
       colCreateBy: 'Received By',
-      colRemark: 'Remark'
+      colRemark: 'Remark',
+      studLarge: 'Large Stud',
+      studMedium: 'Medium Stud',
+      studSmall: 'Small Stud'
     }
   }
 }

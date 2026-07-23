@@ -1,8 +1,5 @@
 import { defineStore } from 'pinia'
-//import axiosConfig from '@/axios/axios-config.js'
 import axiosHelper from '@/axios/axios-helper.js'
-
-//const { jewelry } = axiosHelper
 
 export const useStockProductDashboardStore = defineStore('stockProductDashboard', {
   state: () => ({
@@ -56,10 +53,7 @@ export const useStockProductDashboardStore = defineStore('stockProductDashboard'
     monthEndDate: null,
     monthName: '',
     year: null,
-    month: null,
-
-    // Loading state
-    isLoading: false
+    month: null
   }),
 
   getters: {
@@ -68,7 +62,27 @@ export const useStockProductDashboardStore = defineStore('stockProductDashboard'
     getCategories: (state) => state.categories,
     getLastActivities: (state) => state.lastActivities,
     getLastUpdated: (state) => state.dataAtDate,
-    getCategoryChartData: (state) => state.categories,
+
+    // Chart data for CategoryChart (ChartGeneric expects { report: [...] })
+    getCategoryChartData: (state) => {
+      const categories = state.categories || []
+      return {
+        report: categories.map((cat) => {
+          const label = `${cat.productTypeName} - ${cat.productionType} ${cat.productionTypeSize}`
+          return {
+            statusNameTH: label,
+            statusNameEN: label,
+            status: cat.productTypeName,
+            description: `${cat.productionType} ${cat.productionTypeSize}`,
+            count: cat.count,
+            totalQuantity: cat.totalQuantity,
+            totalOnProcessQuantity: cat.totalOnProcessQuantity,
+            totalValue: cat.totalValue,
+            averagePrice: cat.averagePrice
+          }
+        })
+      }
+    },
 
     // Today getters
     getTodaySummary: (state) => state.todaySummary,
@@ -80,133 +94,74 @@ export const useStockProductDashboardStore = defineStore('stockProductDashboard'
 
     // Monthly getters
     getMonthlySummary: (state) => state.monthlySummary,
-    getWeeklyComparisons: (state) => state.weeklyComparisons,
-
-    // Loading getter
-    getIsLoading: (state) => state.isLoading
+    getWeeklyComparisons: (state) => state.weeklyComparisons
   },
 
   actions: {
+    // Build request filter shared by Dashboard/Today/Weekly/Monthly endpoints
+    buildFilter(filters = {}) {
+      return {
+        productType: filters.productType || null,
+        productionType: filters.productionType || null,
+        productionTypeSize: filters.productionTypeSize || null,
+        status: filters.status || null,
+        startDate: filters.startDate || null,
+        endDate: filters.endDate || null
+      }
+    },
+
     /**
      * Fetch main dashboard data
      */
     async fetchDashboard(filters = {}) {
-      this.isLoading = true
-      try {
-        const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard', {
-          Dashboard: {
-            productType: filters.productType || null,
-            productionType: filters.productionType || null,
-            productionTypeSize: filters.productionTypeSize || null,
-            status: filters.status || null,
-            startDate: filters.startDate || null,
-            endDate: filters.endDate || null
-          }
-        })
-
-        console.log('API Response:', response)
-
-        if (response) {
-          this.stockSummary = response.summary || this.stockSummary
-          this.categories = response.categories || []
-          this.lastActivities = response.lastActivities || []
-          this.dataAtDate = response.dataAtDate || new Date()
-        }
-      } catch (error) {
-        console.error('Error fetching product dashboard:', error)
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard', {
+        Dashboard: this.buildFilter(filters)
+      })
+      this.stockSummary = response?.summary || this.stockSummary
+      this.categories = response?.categories || []
+      this.lastActivities = response?.lastActivities || []
+      this.dataAtDate = response?.dataAtDate || new Date()
     },
 
     /**
      * Fetch today's report
      */
     async fetchTodayReport(filters = {}) {
-      this.isLoading = true
-      try {
-        const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard/Today', {
-          Dashboard: {
-            productType: filters.productType || null,
-            productionType: filters.productionType || null,
-            productionTypeSize: filters.productionTypeSize || null,
-            status: filters.status || null
-          }
-        })
-
-        if (response) {
-          this.todaySummary = response.summary || this.todaySummary
-          this.todayTransactions = response.transactions || []
-        }
-      } catch (error) {
-        console.error('Error fetching today report:', error)
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard/Today', {
+        Dashboard: this.buildFilter(filters)
+      })
+      this.todaySummary = response?.summary || this.todaySummary
+      this.todayTransactions = response?.transactions || []
     },
 
     /**
      * Fetch weekly report
      */
     async fetchWeeklyReport(filters = {}) {
-      this.isLoading = true
-      try {
-        const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard/Weekly', {
-          Dashboard: {
-            productType: filters.productType || null,
-            productionType: filters.productionType || null,
-            productionTypeSize: filters.productionTypeSize || null,
-            status: filters.status || null
-          }
-        })
-
-        if (response) {
-          this.weeklySummary = response.summary || this.weeklySummary
-          this.dailyMovements = response.dailyMovements || []
-          this.weekStartDate = response.weekStartDate
-          this.weekEndDate = response.weekEndDate
-          this.weekNumber = response.weekNumber
-        }
-      } catch (error) {
-        console.error('Error fetching weekly report:', error)
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard/Weekly', {
+        Dashboard: this.buildFilter(filters)
+      })
+      this.weeklySummary = response?.summary || this.weeklySummary
+      this.dailyMovements = response?.dailyMovements || []
+      this.weekStartDate = response?.weekStartDate
+      this.weekEndDate = response?.weekEndDate
+      this.weekNumber = response?.weekNumber
     },
 
     /**
      * Fetch monthly report
      */
     async fetchMonthlyReport(filters = {}) {
-      this.isLoading = true
-      try {
-        const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard/Monthly', {
-          Dashboard: {
-            productType: filters.productType || null,
-            productionType: filters.productionType || null,
-            productionTypeSize: filters.productionTypeSize || null,
-            status: filters.status || null
-          }
-        })
-
-        if (response) {
-          this.monthlySummary = response.summary || this.monthlySummary
-          this.weeklyComparisons = response.weeklyComparisons || []
-          this.monthStartDate = response.monthStartDate
-          this.monthEndDate = response.monthEndDate
-          this.monthName = response.monthName
-          this.year = response.year
-          this.month = response.month
-        }
-      } catch (error) {
-        console.error('Error fetching monthly report:', error)
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('/StockProduct/Dashboard/Monthly', {
+        Dashboard: this.buildFilter(filters)
+      })
+      this.monthlySummary = response?.summary || this.monthlySummary
+      this.weeklyComparisons = response?.weeklyComparisons || []
+      this.monthStartDate = response?.monthStartDate
+      this.monthEndDate = response?.monthEndDate
+      this.monthName = response?.monthName
+      this.year = response?.year
+      this.month = response?.month
     },
 
     /**

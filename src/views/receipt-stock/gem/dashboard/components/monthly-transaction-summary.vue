@@ -58,30 +58,16 @@
       <div class="row">
         <!-- Quantity Chart -->
         <div class="col-lg-6 col-md-12 mb-3">
-          <div class="chart-body">
-            <HorizontalBarChart
-              :data="quantityChartData"
-              :title="quantityChartTitle"
-              :height="1000"
-              :use-thai-labels="$i18n.locale === 'th'"
-              :show-data-labels="true"
-              :maxBarThickness="2"
-            />
-          </div>
+          <SectionCardGeneric :title="quantityChartTitle" icon="bi-bar-chart" accent="main" headerStyle="legend">
+            <ChartGeneric type="bar" :series="quantitySeries" :options="quantityChartOptions" :height="chartHeight" />
+          </SectionCardGeneric>
         </div>
 
         <!-- Weight Chart -->
         <div class="col-lg-6 col-md-12 mb-3">
-          <div class="chart-body">
-            <HorizontalBarChart
-              :data="weightChartData"
-              :title="weightChartTitle"
-              :height="1000"
-              :use-thai-labels="$i18n.locale === 'th'"
-              :show-data-labels="true"
-              :maxBarThickness="2"
-            />
-          </div>
+          <SectionCardGeneric :title="weightChartTitle" icon="bi-bar-chart" accent="green" headerStyle="legend">
+            <ChartGeneric type="bar" :series="weightSeries" :options="weightChartOptions" :height="chartHeight" />
+          </SectionCardGeneric>
         </div>
       </div>
     </div>
@@ -179,7 +165,9 @@ import { success } from '@/services/alert/sweetAlerts.js'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
-import HorizontalBarChart from '@/components/prime-vue/HorizontalBarChart.vue'
+import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 export default {
   name: 'MonthlyTransactionSummary',
@@ -187,7 +175,8 @@ export default {
     CalendarGeneric,
     DropdownGeneric,
     DataTableWithPaging,
-    HorizontalBarChart
+    ChartGeneric,
+    SectionCardGeneric
   },
   setup() {
     const dashboardStore = useStockGemDashboardStore()
@@ -319,26 +308,58 @@ export default {
       }
     },
 
-    quantityChartData() {
-      if (!this.chartData) return null
+    chartCategories() {
+      if (!this.chartData) return []
+      return this.chartData.report.map((item) =>
+        this.$i18n.locale === 'th' ? item.statusNameTH : item.statusNameEN
+      )
+    },
 
+    quantitySeries() {
+      if (!this.chartData) return []
+      return [
+        {
+          name: this.$t('view.stock.gem.dashboard.quantity'),
+          data: this.chartData.report.map((item) => item.count)
+        }
+      ]
+    },
+
+    weightSeries() {
+      if (!this.chartData) return []
+      return [
+        {
+          name: this.$t('view.stock.gem.dashboard.weight'),
+          data: this.chartData.report.map((item) => item.weight)
+        }
+      ]
+    },
+
+    quantityChartOptions() {
       return {
-        report: this.chartData.report.map((item) => ({
-          ...item,
-          count: item.count
-        }))
+        chart: { type: 'bar', toolbar: { show: false } },
+        plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '60%' } },
+        colors: [CHART_TOKENS.primary],
+        legend: { show: false },
+        xaxis: { categories: this.chartCategories, labels: { style: { fontSize: '11px' } } },
+        dataLabels: { enabled: false }
       }
     },
 
-    weightChartData() {
-      if (!this.chartData) return null
-
+    weightChartOptions() {
       return {
-        report: this.chartData.report.map((item) => ({
-          ...item,
-          count: item.weight
-        }))
+        chart: { type: 'bar', toolbar: { show: false } },
+        plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '60%' } },
+        colors: [CHART_TOKENS.green],
+        legend: { show: false },
+        xaxis: { categories: this.chartCategories, labels: { style: { fontSize: '11px' } } },
+        dataLabels: { enabled: false }
       }
+    },
+
+    chartHeight() {
+      if (!this.chartData) return 400
+      return Math.max(400, this.chartData.report.length * 38 + 100)
     },
 
     quantityChartTitle() {
@@ -439,12 +460,10 @@ export default {
   background-color: #f8f9fa;
   min-height: 100vh;
 
-  .chart-card,
   .data-table-card {
     background: white;
     overflow: hidden;
 
-    .chart-header,
     .table-header {
       padding: 20px;
       border-bottom: 1px solid #e9ecef;
@@ -465,7 +484,6 @@ export default {
       }
     }
 
-    .chart-body,
     .table-body {
       padding: 20px;
     }

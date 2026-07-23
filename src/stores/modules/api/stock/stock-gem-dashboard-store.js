@@ -1,26 +1,21 @@
 import { defineStore } from 'pinia'
 import axiosHelper from '@/axios/axios-helper.js'
-import { formatDate } from '@/services/utils/dayjs.js'
+import { formatDate, formatISOString } from '@/services/utils/dayjs.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
   state: () => ({
-    isLoading: false,
     dashboardData: null,
     todayReport: null,
     weeklyReport: null,
     monthlyReport: null,
     monthlyGemTransactionSummaries: null,
     transactionTypeSummaries: null, // Store for GetTransactionSummariesByType API
-    lastUpdated: null,
-    error: null
+    lastUpdated: null
   }),
 
   getters: {
-    // Loading state
-    getIsLoading: (state) => state.isLoading,
     getLastUpdated: (state) => state.lastUpdated,
-    getError: (state) => state.error,
 
     // Dashboard data getters
     getDashboardData: (state) => state.dashboardData,
@@ -108,166 +103,92 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
   },
 
   actions: {
+    // Build request filter shared by Dashboard/Today/Weekly/Monthly endpoints
+    // groupName/shape/grade มาจาก MultiSelectGeneric (array) แต่ backend DashboardRequest รับค่าเดียว (string?)
+    // จึงส่งเฉพาะค่าแรกที่เลือก
+    buildFilter(filters = {}) {
+      return {
+        startDate: filters.startDate ? formatISOString(filters.startDate) : null,
+        endDate: filters.endDate ? formatISOString(filters.endDate) : null,
+        groupName: filters.groupName?.length ? filters.groupName[0] : null,
+        shape: filters.shape?.length ? filters.shape[0] : null,
+        grade: filters.grade?.length ? filters.grade[0] : null
+      }
+    },
+
     // Fetch main dashboard data
     async fetchDashboard(filters = {}) {
-      this.isLoading = true
-      this.error = null
-
-      try {
-        const requestData = {
-          dashboard: {
-            startDate: filters.startDate || null,
-            endDate: filters.endDate || null,
-            groupName: filters.groupName || null,
-            shape: filters.shape || null,
-            grade: filters.grade || null
-          }
-        }
-
-        const response = await axiosHelper.jewelry.post('StockGem/Dashboard', requestData)
-
-        console.log('Dashboard data response:', response)
-
-        this.dashboardData = { ...response }
-        this.lastUpdated = new Date()
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error)
-        this.error = error.message || 'Failed to fetch dashboard data'
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('StockGem/Dashboard', {
+        dashboard: this.buildFilter(filters)
+      })
+      this.dashboardData = response ? { ...response } : null
+      this.lastUpdated = new Date()
     },
 
     // Fetch today's report
     async fetchTodayReport(filters = {}) {
-      this.isLoading = true
-      this.error = null
-
-      try {
-        const requestData = {
-          dashboard: {
-            groupName: filters.groupName || null,
-            shape: filters.shape || null,
-            grade: filters.grade || null
-          }
-        }
-
-        const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Today', requestData)
-
-        this.todayReport = response
-        this.lastUpdated = new Date()
-      } catch (error) {
-        console.error('Error fetching today report:', error)
-        this.error = error.message || 'Failed to fetch today report'
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Today', {
+        dashboard: this.buildFilter(filters)
+      })
+      this.todayReport = response
+      this.lastUpdated = new Date()
     },
 
     // Fetch weekly report
     async fetchWeeklyReport(filters = {}) {
-      this.isLoading = true
-      this.error = null
-
-      try {
-        const requestData = {
-          dashboard: {
-            groupName: filters.groupName || null,
-            shape: filters.shape || null,
-            grade: filters.grade || null
-          }
-        }
-
-        const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Weekly', requestData)
-
-        this.weeklyReport = response
-        this.lastUpdated = new Date()
-      } catch (error) {
-        console.error('Error fetching weekly report:', error)
-        this.error = error.message || 'Failed to fetch weekly report'
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Weekly', {
+        dashboard: this.buildFilter(filters)
+      })
+      this.weeklyReport = response
+      this.lastUpdated = new Date()
     },
 
     // Fetch monthly report
     async fetchMonthlyReport(filters = {}) {
-      this.isLoading = true
-      this.error = null
-
-      try {
-        const requestData = {
-          dashboard: {
-            groupName: filters.groupName || null,
-            shape: filters.shape || null,
-            grade: filters.grade || null
-          }
-        }
-
-        const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Monthly', requestData)
-
-        this.monthlyReport = response
-        this.lastUpdated = new Date()
-      } catch (error) {
-        console.error('Error fetching monthly report:', error)
-        this.error = error.message || 'Failed to fetch monthly report'
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+      const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Monthly', {
+        dashboard: this.buildFilter(filters)
+      })
+      this.monthlyReport = response
+      this.lastUpdated = new Date()
     },
 
     // Fetch transaction summaries by type (updated API)
     async fetchTransactionSummariesByType(dateRange = {}) {
-      this.isLoading = true
-      this.error = null
+      // Ensure start and end dates are provided
+      const startDate = dateRange.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      const endDate = dateRange.endDate || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
 
-      try {
-        // Ensure start and end dates are provided
-        const startDate = dateRange.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-        const endDate = dateRange.endDate || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
-
-        const requestData = {
-          startDate: typeof startDate === 'string' ? startDate : startDate.toISOString(),
-          endDate: typeof endDate === 'string' ? endDate : endDate.toISOString(),
-          groupName: dateRange.groupName || null,
-          shape: dateRange.shape || null,
-          grade: dateRange.grade || null
-        }
-
-        const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Monthly/GemTransactionSummaries', {
-          dashboard: requestData
-        })
-
-        // Store raw response in the new state property
-        this.transactionTypeSummaries = response || []
-        this.lastUpdated = new Date()
-        
-        return response
-      } catch (error) {
-        console.error('Error fetching transaction summaries by type:', error)
-        this.error = error.message || 'Failed to fetch transaction summaries by type'
-        throw error
-      } finally {
-        this.isLoading = false
+      const requestData = {
+        startDate: typeof startDate === 'string' ? startDate : startDate.toISOString(),
+        endDate: typeof endDate === 'string' ? endDate : endDate.toISOString(),
+        groupName: dateRange.groupName || null,
+        shape: dateRange.shape || null,
+        grade: dateRange.grade || null
       }
+
+      const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Monthly/GemTransactionSummaries', {
+        dashboard: requestData
+      })
+
+      // Store raw response in the new state property
+      this.transactionTypeSummaries = response || []
+      this.lastUpdated = new Date()
+
+      return response
     },
 
     // Transform new API response structure for existing UI compatibility
     transformTransactionTypeResponse(transactionTypes) {
       const transformedData = []
-      
+
       transactionTypes.forEach(transactionType => {
         // For Type 7 (เบิกออกคลัง), group by production type
         if (transactionType.type === 7 && transactionType.gemDetails) {
           const productionGroups = {}
-          
+
           transactionType.gemDetails.forEach(gem => {
             const productionKey = gem.productionType || 'Other'
-            
+
             if (!productionGroups[productionKey]) {
               productionGroups[productionKey] = {
                 groupName: `${transactionType.typeName} - ${gem.productionTypeName || gem.productionType || 'อื่นๆ'}`,
@@ -293,7 +214,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
                 transactionsByType: []
               }
             }
-            
+
             productionGroups[productionKey].totalTransactions += gem.transactionCount
             productionGroups[productionKey].totalQuantityUsed += gem.totalQuantity
             productionGroups[productionKey].totalWeightUsed += gem.totalWeight
@@ -306,7 +227,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
             productionGroups[productionKey].currentQuantity += gem.currentQuantity
             productionGroups[productionKey].currentWeight += gem.currentWeight
           })
-          
+
           Object.values(productionGroups).forEach(group => {
             group.transactionsByType = [{
               type: transactionType.type,
@@ -324,7 +245,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
           const totalWeight = transactionType.gemDetails?.reduce((sum, gem) => sum + gem.totalWeight, 0) || 0
           const currentQuantity = transactionType.gemDetails?.reduce((sum, gem) => sum + gem.currentQuantity, 0) || 0
           const currentWeight = transactionType.gemDetails?.reduce((sum, gem) => sum + gem.currentWeight, 0) || 0
-          
+
           const transformedTransaction = {
             groupName: transactionType.typeName,
             shape: `Type ${transactionType.type}`,
@@ -355,11 +276,11 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
               totalCost: 0
             }]
           }
-          
+
           transformedData.push(transformedTransaction)
         }
       })
-      
+
       return transformedData
     },
 
@@ -372,23 +293,18 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
         shape: filters.shape,
         grade: filters.grade
       }
-      
+
       return await this.fetchTransactionSummariesByType(dateRange)
     },
 
     // Refresh all dashboard data
     async refreshAll(filters = {}) {
-      try {
-        await Promise.all([
-          this.fetchDashboard(filters),
-          this.fetchTodayReport(filters),
-          this.fetchWeeklyReport(filters),
-          this.fetchMonthlyReport(filters)
-        ])
-      } catch (error) {
-        console.error('Error refreshing all dashboard data:', error)
-        throw error
-      }
+      await Promise.all([
+        this.fetchDashboard(filters),
+        this.fetchTodayReport(filters),
+        this.fetchWeeklyReport(filters),
+        this.fetchMonthlyReport(filters)
+      ])
     },
 
     // Clear all data
@@ -400,39 +316,40 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
       this.monthlyGemTransactionSummaries = null
       this.transactionTypeSummaries = null
       this.lastUpdated = null
-      this.error = null
-    },
-
-    // Set loading state
-    setLoading(loading) {
-      this.isLoading = loading
-    },
-
-    // Set error state
-    setError(error) {
-      this.error = error
     },
 
     // Export transaction summaries to Excel
     async exportTransactionSummariesByType({ dateRange, selectedTransactionType, transactionTypeName }) {
-      try {
-        // Fetch the data if not already loaded
-        if (!this.transactionTypeSummaries || this.transactionTypeSummaries.length === 0) {
-          await this.fetchTransactionSummariesByType(dateRange)
+      // Fetch the data if not already loaded
+      if (!this.transactionTypeSummaries || this.transactionTypeSummaries.length === 0) {
+        await this.fetchTransactionSummariesByType(dateRange)
+      }
+
+      const selectedTypeData = this.transactionTypeSummaries.find(
+        (type) => type.type === selectedTransactionType
+      )
+
+      if (!selectedTypeData || !selectedTypeData.gemDetails) {
+        throw new Error('No data available for export')
+      }
+
+      // Map data for Excel export
+      const dataExcel = selectedTypeData.gemDetails.map((item) => {
+        const baseData = {
+          'Group Name': item.groupName,
+          'Transactions': item.transactionCount,
+          'Quantity': item.totalQuantity,
+          'Weight': item.totalWeight,
+          'Current Stock (Qty)': item.currentQuantity,
+          'Current Stock (Weight)': item.currentWeight,
+          'Last Transaction': formatDate(item.lastTransactionDate)
         }
 
-        const selectedTypeData = this.transactionTypeSummaries.find(
-          (type) => type.type === selectedTransactionType
-        )
-
-        if (!selectedTypeData || !selectedTypeData.gemDetails) {
-          throw new Error('No data available for export')
-        }
-
-        // Map data for Excel export
-        const dataExcel = selectedTypeData.gemDetails.map((item) => {
-          const baseData = {
+        // Add production type column for type 7
+        if (selectedTransactionType === 7) {
+          return {
             'Group Name': item.groupName,
+            'Production Type': item.productionTypeName || '-',
             'Transactions': item.transactionCount,
             'Quantity': item.totalQuantity,
             'Weight': item.totalWeight,
@@ -440,57 +357,40 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
             'Current Stock (Weight)': item.currentWeight,
             'Last Transaction': formatDate(item.lastTransactionDate)
           }
-
-          // Add production type column for type 7
-          if (selectedTransactionType === 7) {
-            return {
-              'Group Name': item.groupName,
-              'Production Type': item.productionTypeName || '-',
-              'Transactions': item.transactionCount,
-              'Quantity': item.totalQuantity,
-              'Weight': item.totalWeight,
-              'Current Stock (Qty)': item.currentQuantity,
-              'Current Stock (Weight)': item.currentWeight,
-              'Last Transaction': formatDate(item.lastTransactionDate)
-            }
-          }
-
-          return baseData
-        })
-
-        const startDateObj = typeof dateRange.startDate === 'string' ? new Date(dateRange.startDate) : dateRange.startDate
-        const monthYear = formatDate(startDateObj, 'MM-YYYY')
-        const options = {
-          filename: `gem-transactions-${transactionTypeName}-${monthYear}_[${formatDate(new Date())}].xlsx`,
-          sheetName: transactionTypeName,
-          styles: {
-            ...ExcelHelper.defaultStyles,
-            headerFill: {
-              type: 'pattern',
-              pattern: 'solid',
-              fgColor: { argb: '038387' } // Teal color
-            }
-          },
-          columnWidths: {
-            'Group Name': 25,
-            'Production Type': 20,
-            'Transactions': 15,
-            'Quantity': 15,
-            'Weight': 15,
-            'Current Stock (Qty)': 20,
-            'Current Stock (Weight)': 22,
-            'Last Transaction': 20
-          }
         }
 
-        // Export to Excel
-        ExcelHelper.exportToExcel(dataExcel, options)
-        
-        return true
-      } catch (error) {
-        console.error('Error exporting transaction summaries:', error)
-        throw error
+        return baseData
+      })
+
+      const startDateObj = typeof dateRange.startDate === 'string' ? new Date(dateRange.startDate) : dateRange.startDate
+      const monthYear = formatDate(startDateObj, 'MM-YYYY')
+      const options = {
+        filename: `gem-transactions-${transactionTypeName}-${monthYear}_[${formatDate(new Date())}].xlsx`,
+        sheetName: transactionTypeName,
+        styles: {
+          ...ExcelHelper.defaultStyles,
+          headerFill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '038387' } // Teal color
+          }
+        },
+        columnWidths: {
+          'Group Name': 25,
+          'Production Type': 20,
+          'Transactions': 15,
+          'Quantity': 15,
+          'Weight': 15,
+          'Current Stock (Qty)': 20,
+          'Current Stock (Weight)': 22,
+          'Last Transaction': 20
+        }
       }
+
+      // Export to Excel
+      ExcelHelper.exportToExcel(dataExcel, options)
+
+      return true
     }
   }
 })

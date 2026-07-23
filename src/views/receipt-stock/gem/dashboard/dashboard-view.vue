@@ -1,26 +1,78 @@
 <template>
   <div class="app-container stock-gem-dashboard">
-    <!-- Dashboard Header with Refresh and Filters -->
-    <div class="row">
-      <div class="col-12">
-        <div class="dashboard-header">
-          <div class="header-info">
-            <h3>{{ $t('view.stock.gem.dashboard.title') }}</h3>
-            <div class="data-info">
-              <small class="text-muted" v-if="dataAtDate">
-                <i class="bi bi-clock"></i>
-                {{ $t('view.stock.gem.dashboard.lastUpdate') }}: {{ formatDateTime(dataAtDate) }}
-              </small>
-            </div>
-          </div>
-          <div class="header-controls">
-            <button @click="refreshDashboard" class="btn btn-outline-main" :disabled="isLoading">
-              <i class="bi bi-arrow-clockwise" :class="{ spinning: isLoading }"></i>
-              {{ $t('button.refresh') }}
-            </button>
-          </div>
+    <!-- Filter Bar -->
+    <SearchBarGeneric
+      :title="$t('view.stock.gem.dashboard.title')"
+      :description="$t('view.stock.gem.dashboard.searchDesc')"
+      icon="bi-clipboard-data"
+      @search="onSearchFilter"
+      @clear="onClearFilter"
+    >
+      <template #header-actions>
+        <ButtonGeneric variant="green" icon="bi-arrow-clockwise" :title="$t('common.btn.refresh')" @click="refreshDashboard" />
+      </template>
+
+      <template #fields>
+        <div>
+          <span class="title-text">{{ $t('view.stock.gem.dashboard.groupName') }}</span>
+          <MultiSelectGeneric
+            v-model="filters.groupName"
+            :options="gemOnhandReportStore.groupOptions"
+            optionLabel="value"
+            optionValue="value"
+            :filter="true"
+            :showClear="true"
+          />
         </div>
-      </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.stock.gem.dashboard.shape') }}</span>
+          <MultiSelectGeneric
+            v-model="filters.shape"
+            :options="gemOnhandReportStore.shapeOptions"
+            optionLabel="value"
+            optionValue="value"
+            :filter="true"
+            :showClear="true"
+          />
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.stock.gem.dashboard.grade') }}</span>
+          <MultiSelectGeneric
+            v-model="filters.grade"
+            :options="gemOnhandReportStore.gradeOptions"
+            optionLabel="value"
+            optionValue="value"
+            :filter="true"
+            :showClear="true"
+          />
+        </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.report.common.dateFrom') }} - {{ $t('view.report.common.dateTo') }}</span>
+          <DateRangeGeneric
+            :startDate="filters.startDate"
+            :endDate="filters.endDate"
+            :startPlaceholder="$t('view.report.common.dateFrom')"
+            :endPlaceholder="$t('view.report.common.dateTo')"
+            @update:startDate="filters.startDate = $event"
+            @update:endDate="filters.endDate = $event"
+          />
+        </div>
+      </template>
+
+      <template #actions-right>
+        <ButtonGeneric variant="main" icon="bi-search" type="submit" :label="$t('common.btn.search')" />
+        <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClearFilter" />
+      </template>
+    </SearchBarGeneric>
+
+    <div class="data-info" v-if="dataAtDate">
+      <small class="text-muted">
+        <i class="bi bi-clock"></i>
+        {{ $t('view.stock.gem.dashboard.lastUpdate') }}: {{ formatDateTime(dataAtDate) }}
+      </small>
     </div>
 
     <!-- Dashboard Report Tabs -->
@@ -75,12 +127,9 @@
     <div v-show="activeTab === 'overview'" class="tab-content">
       <StockSummaryCards :stock-summary="stockSummary" />
 
-      <CategoryChart
-        :category-chart-data="categoryChartData"
-        :is-loading="isLoading"
-        :dataset-fields="datasetFields"
-        :chart-name="chartName"
-      />
+      <ForecastPanel :trends="trends" />
+
+      <CategoryChart :category-chart-data="categoryChartData" :dataset-fields="datasetFields" />
 
       <div class="row">
         <div class="col-lg-8 col-md-12 mb-4">
@@ -112,11 +161,19 @@
 </template>
 
 <script>
-import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
 import dayjs from 'dayjs'
+
+import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
+import { useGemOnhandReportApiStore } from '@/stores/modules/api/stock/gem-onhand-report-api.js'
+
+import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 
 // Dashboard Components
 import StockSummaryCards from './components/stock-summary-cards.vue'
+import ForecastPanel from './components/forecast-panel.vue'
 import CategoryChart from './components/category-chart.vue'
 import TopMovementsTable from './components/top-movements-table.vue'
 import LastActivitiesTable from './components/last-activities-table.vue'
@@ -125,11 +182,24 @@ import MonthlyTransactionSummary from './components/monthly-transaction-summary.
 import TodayTab from './components/today-tab.vue'
 import WeeklyTab from './components/weekly-tab.vue'
 
+const interfaceFilters = {
+  groupName: [],
+  shape: [],
+  grade: [],
+  startDate: null,
+  endDate: null
+}
+
 export default {
   name: 'StockGemDashboardView',
 
   components: {
+    SearchBarGeneric,
+    ButtonGeneric,
+    MultiSelectGeneric,
+    DateRangeGeneric,
     StockSummaryCards,
+    ForecastPanel,
     CategoryChart,
     TopMovementsTable,
     LastActivitiesTable,
@@ -139,29 +209,26 @@ export default {
     WeeklyTab
   },
 
+  setup() {
+    const dashboardStore = useStockGemDashboardStore()
+    const gemOnhandReportStore = useGemOnhandReportApiStore()
+    return { dashboardStore, gemOnhandReportStore }
+  },
+
   data() {
     return {
-      dashboardStore: useStockGemDashboardStore(),
       activeTab: 'overview',
-      filters: {
-        groupName: '',
-        shape: '',
-        grade: ''
-      },
+      filters: { ...interfaceFilters },
       datasetFields: [
         { key: 'count', label: 'Count', labelTH: 'จำนวน' },
         { key: 'count2', label: 'On Process Count', labelTH: 'จำนวนที่อยู่ระหว่างดำเนินการ' },
         { key: 'count3', label: 'Total Weight', labelTH: 'น้ำหนักรวม' },
         { key: 'count4', label: 'On Process Weight', labelTH: 'น้ำหนักที่อยู่ระหว่างดำเนินการ' }
-      ],
-      chartName: 'stock-gem-dashboard'
+      ]
     }
   },
 
   computed: {
-    isLoading() {
-      return this.dashboardStore.getIsLoading
-    },
     dataAtDate() {
       return this.dashboardStore.getLastUpdated
     },
@@ -210,14 +277,21 @@ export default {
   },
 
   async mounted() {
-    await this.loadDashboardData()
+    this.gemOnhandReportStore.fetchGroupOptions()
+    this.gemOnhandReportStore.fetchShapeOptions()
+    this.gemOnhandReportStore.fetchGradeOptions()
+    await this.fetchActiveTabData()
   },
 
   methods: {
-    async loadDashboardData() {
+    async fetchActiveTabData() {
       await this.dashboardStore.fetchDashboard(this.filters)
       if (this.activeTab === 'today') {
         await this.dashboardStore.fetchTodayReport(this.filters)
+      } else if (this.activeTab === 'weekly') {
+        await this.dashboardStore.fetchWeeklyReport(this.filters)
+      } else if (this.activeTab === 'monthly') {
+        await this.dashboardStore.fetchMonthlyReport(this.filters)
       }
     },
 
@@ -237,6 +311,15 @@ export default {
       }
     },
 
+    onSearchFilter() {
+      this.fetchActiveTabData()
+    },
+
+    onClearFilter() {
+      this.filters = { ...interfaceFilters }
+      this.fetchActiveTabData()
+    },
+
     async refreshDashboard() {
       await this.dashboardStore.refreshAll(this.filters)
     },
@@ -250,45 +333,20 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/variable.scss';
+@import '@/assets/scss/custom-style/standard-form.scss';
 
 .stock-gem-dashboard {
   background-color: #f8f9fa;
   min-height: 100vh;
 
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: white;
-    padding: var(--sp-xl);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 10px;
+  .data-info {
+    padding: var(--sp-sm) var(--sp-xs);
 
-    .header-info {
-      h3 {
-        color: $base-font-color;
-        font-weight: bold;
-        margin: 0 0 5px 0;
+    small {
+      font-size: var(--fs-sm);
+      i {
+        margin-right: var(--sp-xs);
       }
-
-      .data-info {
-        small {
-          font-size: 12px;
-          i {
-            margin-right: 5px;
-          }
-        }
-      }
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-    }
-
-    .spinning {
-      animation: spin 1s linear infinite;
     }
   }
 
@@ -321,27 +379,7 @@ export default {
     }
   }
 
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
   @media (max-width: 768px) {
-    .dashboard-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 15px;
-
-      .header-controls {
-        width: 100%;
-        justify-content: space-between;
-      }
-    }
-
     .dashboard-tabs {
       padding: 0 10px;
 

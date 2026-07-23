@@ -182,10 +182,15 @@ export default {
       moveLocation: { ...stock.moveLocation },
       storageMoveReport: { ...stock.storageMoveReport },
       cost: { ...stock.cost },
+      gemOnhandReport: { ...stock.gemOnhandReport },
+      gemMovementReport: { ...stock.gemMovementReport },
+      materialValuationReport: { ...stock.materialValuationReport },
+      stockBalanceSummary: { ...stock.stockBalanceSummary },
       gem: {
         ...stock.gem,
         dashboard: {
           title: 'แดชบอร์ดคลังอัญมณี',
+          searchDesc: 'กรองข้อมูลแดชบอร์ดตามกลุ่ม รูปทรง เกรด และช่วงวันที่',
           lastUpdate: 'อัปเดตล่าสุด',
           filters: 'ตัวกรอง',
           groupName: 'กลุ่มอัญมณี',
@@ -301,7 +306,20 @@ export default {
 
           // Coming soon
           weeklyReportComingSoon: 'รายงานรายสัปดาห์ เร็วๆ นี้',
-          monthlyReportComingSoon: 'รายงานรายเดือน เร็วๆ นี้'
+          monthlyReportComingSoon: 'รายงานรายเดือน เร็วๆ นี้',
+
+          // Forecast layer (frontend-only estimate)
+          forecast: {
+            title: 'ชั้นประมาณการ (คาดการณ์)',
+            quantityLabel: 'ประมาณการจำนวนพลอยที่ใช้สิ้นเดือน',
+            weightLabel: 'ประมาณการน้ำหนักที่ใช้สิ้นเดือน (กรัม)',
+            actualSeries: 'ยอดใช้จริงสะสม',
+            forecastSeries: 'ประมาณการยอดใช้สะสม',
+            assumption:
+              'อิงอัตราการใช้เฉลี่ยต่อวัน (Run-rate) จากข้อมูล {days} วันแรกของเดือนนี้ — เป็นค่าประมาณการ ไม่ใช่ตัวเลขจริง',
+            notEnoughData: 'ข้อมูลไม่พอสำหรับประมาณการเดือนนี้',
+            chartEmpty: 'ยังไม่มีข้อมูลการเบิกใช้ในเดือนนี้'
+          }
         }
       }
     }

@@ -256,10 +256,12 @@ export default {
     },
     reportGr: {
       title: 'รายงานรับสินค้า',
+      searchDesc: 'ค้นหาและตรวจสอบรายการรับสินค้าเข้าคลังจากงานผลิต',
       receiptDate: 'วันที่รับสินค้า',
       stockNumber: 'เลขที่ผลิต',
       productNumber: 'รหัสสินค้า',
       receiptType: 'ประเภทงานรับ',
+      receiptTypeProduction: 'งานผลิต',
       mold: 'แม่พิมพ์',
       productNameEn: 'ชื่อสินค้า EN',
       productNameTh: 'ชื่อสินค้า TH',
@@ -274,7 +276,10 @@ export default {
       colLocation: 'จัดเก็บ',
       colProductPrice: 'ราคา',
       colCreateBy: 'ผู้รับสินค้า',
-      colRemark: 'หมายเหตุ'
+      colRemark: 'หมายเหตุ',
+      studLarge: 'แป้นใหญ่',
+      studMedium: 'แป้นกลาง',
+      studSmall: 'แป้นเล็ก'
     }
   }
 }

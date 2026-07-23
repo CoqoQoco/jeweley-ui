@@ -159,6 +159,13 @@ export default {
           minWidth: '150px'
         }
       ]
+    },
+    masterStud() {
+      return [
+        { value: 'lg', description: this.$t('view.receiptStock.product.reportGr.studLarge') },
+        { value: 'md', description: this.$t('view.receiptStock.product.reportGr.studMedium') },
+        { value: 'sm', description: this.$t('view.receiptStock.product.reportGr.studSmall') }
+      ]
     }
   },
 
@@ -170,16 +177,6 @@ export default {
     },
     async modelFormExport() {
       await this.fetchDataExport()
-    }
-  },
-
-  data() {
-    return {
-      masterStud: [
-        { value: 'lg', description: 'แป้นใหญ่' },
-        { value: 'md', description: 'แป้นกลาง' },
-        { value: 'sm', description: 'แป้นเล็ก' }
-      ]
     }
   },
 
