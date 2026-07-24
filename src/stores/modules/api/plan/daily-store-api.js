@@ -49,7 +49,15 @@ export const useProductionDailyApiStore = defineStore('productionDaily', {
     cacheTimestamps: {
       dailyPlan: null
     },
-    
+
+    // Completed Daily Series (run-rate forecast source — frontend calculates the forecast)
+    completedDailySeries: {
+      rows: [],
+      total: 0,
+      daysElapsed: 0,
+      daysInPeriod: 0
+    },
+
     // Error handling
     error: null,
     isLoading: false
@@ -96,7 +104,10 @@ export const useProductionDailyApiStore = defineStore('productionDaily', {
     
     // Cache validation
     isDailyPlanCacheValid: (state) => isCacheValid(state.cacheTimestamps.dailyPlan),
-    
+
+    // Completed Daily Series
+    getCompletedDailySeriesRows: (state) => state.completedDailySeries.rows,
+
     // Error and Loading
     getError: (state) => state.error,
     getIsLoading: (state) => state.isLoading
@@ -578,6 +589,22 @@ export const useProductionDailyApiStore = defineStore('productionDaily', {
       } catch (error) {
         this.handleError(error, 'Failed to fetch scrap weight dashboard data')
       }
+    },
+
+    // Fetch completed plan count per day (current month) — used as run-rate forecast source
+    async fetchCompletedDailySeries() {
+      const res = await api.jewelry.post('Production/Plan/CompletedDailySeries', {})
+
+      if (res) {
+        this.completedDailySeries = {
+          rows: res.rows || [],
+          total: res.total || 0,
+          daysElapsed: res.daysElapsed || 0,
+          daysInPeriod: res.daysInPeriod || 0
+        }
+      }
+
+      return res
     }
   }
 })

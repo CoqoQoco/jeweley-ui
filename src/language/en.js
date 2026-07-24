@@ -144,7 +144,18 @@ export default {
         colOrderCount2: 'Production Count',
         colPercent: 'Percent',
         unitPiece: 'pcs',
-        validationSelectMonth: 'Please select month and year'
+        validationSelectMonth: 'Please select month and year',
+
+        // Forecast layer (frontend-only estimate — run-rate)
+        forecast: {
+          title: 'Monthly Completion Forecast (Run-rate)',
+          quantityLabel: 'Forecasted completions by month end ({month})',
+          actualSeries: 'Actual Cumulative Completions',
+          forecastSeries: 'Forecasted Cumulative Completions',
+          assumption: 'Based on run-rate from {days} days of data this month — an estimate, not actual figures',
+          notEnoughData: 'Not enough data to forecast this month',
+          chartEmpty: 'No completion data recorded this month yet'
+        }
       }
     },
     sale: { ...saleLang },

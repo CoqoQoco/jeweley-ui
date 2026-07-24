@@ -144,7 +144,18 @@ export default {
         colOrderCount2: 'จำนวนสั่งผลิต',
         colPercent: 'เปอร์เซ็นต์',
         unitPiece: 'ชิ้น',
-        validationSelectMonth: 'กรุณาเลือกเดือนและปี'
+        validationSelectMonth: 'กรุณาเลือกเดือนและปี',
+
+        // Forecast layer (frontend-only estimate — run-rate)
+        forecast: {
+          title: 'ชั้นประมาณการยอดงานเสร็จสิ้นเดือน',
+          quantityLabel: 'ประมาณการยอดงานเสร็จสิ้นเดือน ({month})',
+          actualSeries: 'ยอดเสร็จจริงสะสม',
+          forecastSeries: 'ประมาณการยอดเสร็จสะสม',
+          assumption: 'อิง run-rate จากข้อมูล {days} วันของเดือนนี้ — เป็นค่าประมาณการ ไม่ใช่ตัวเลขจริง',
+          notEnoughData: 'ข้อมูลไม่พอสำหรับประมาณการ',
+          chartEmpty: 'ยังไม่มีข้อมูลงานเสร็จเดือนนี้'
+        }
       }
     },
     sale: { ...saleLang },

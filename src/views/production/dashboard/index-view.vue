@@ -61,6 +61,9 @@
           :summary="summary"
         />
 
+        <!-- Completed Daily Forecast Panel (run-rate) -->
+        <CompletedForecastPanel :rows="completedDailySeriesRows" />
+
         <!-- Charts and Summary Section -->
         <div class="row mb-2">
           <!-- Dashboard Chart Section Component -->
@@ -111,6 +114,7 @@ import DashboardSummaryTables from './components/dashboard-summary-tables.vue'
 import DashboardRecentActivities from './components/dashboard-recent-activities.vue'
 import DashboardStatusTrends from './components/dashboard-status-trends.vue'
 import DashboardScrapWeight from './components/dashboard-scrap-weight.vue'
+import CompletedForecastPanel from './components/completed-forecast-panel.vue'
 
 // Import components
 import MonthlySuccessReport from './components/monthly-success-report.vue'
@@ -130,6 +134,7 @@ export default {
     DashboardRecentActivities,
     DashboardStatusTrends,
     DashboardScrapWeight,
+    CompletedForecastPanel,
     MonthlySuccessReport,
     DashboardHeaderGeneric,
     DateRangeGeneric
@@ -193,6 +198,11 @@ export default {
       return this.dailyApiStore.getStatusReport
     },
 
+    // Completed Daily Series (run-rate forecast source)
+    completedDailySeriesRows() {
+      return this.dailyApiStore.getCompletedDailySeriesRows
+    },
+
     // Recent Activities from API Store
     recentActivities() {
       return this.dailyApiStore.getFormattedRecentActivities(10)
@@ -210,11 +220,13 @@ export default {
     async loadDashboardData() {
       // Load dashboard data using the DailyPlan API
       await this.dailyApiStore.fetchDailyPlan(false, this.filter)
+      await this.dailyApiStore.fetchCompletedDailySeries()
     },
 
     async refreshDashboard() {
       // Force refresh all dashboard data
       await this.dailyApiStore.refreshDashboard(this.filter)
+      await this.dailyApiStore.fetchCompletedDailySeries()
     },
 
     async applyFilter() {
