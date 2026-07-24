@@ -1413,6 +1413,25 @@ export const billingNote = {
   documentType: 'Document Type'
 }
 
+export const pipelineDashboard = {
+  title: 'Sales Pipeline',
+  description: 'Sales pipeline overview from quotations, sale orders, and invoices',
+  searchTitle: 'Search Sales Pipeline',
+  searchDesc: 'Filter sales pipeline overview by date range (empty = all)',
+  dateRange: 'Date Range',
+  statTotalQuotationValue: 'Total Quotation Value',
+  statQuotationCount: 'Quotation Count',
+  statActiveCustomers: 'Customers',
+  statConversionRate: 'Conversion Rate',
+  funnelTitle: 'Sales Funnel',
+  funnelQuotation: 'Quotation',
+  funnelSaleOrder: 'Sale Order',
+  funnelInvoice: 'Invoice',
+  monthlyTitle: 'Monthly Quotation Value',
+  topCustomersTitle: 'Top Customers by Quotation Value',
+  caveat: 'Focused on pipeline from quotations — invoice/payment data is still accumulating. Revenue/AR reports will be complete as more data is recorded.'
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -1428,5 +1447,6 @@ export default {
   paymentTracking,
   document,
   saleDashboard,
-  billingNote
+  billingNote,
+  pipelineDashboard
 }

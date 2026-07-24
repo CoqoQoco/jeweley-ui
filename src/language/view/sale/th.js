@@ -1407,6 +1407,25 @@ export const billingNote = {
   documentType: 'ประเภทเอกสาร'
 }
 
+export const pipelineDashboard = {
+  title: 'ภาพรวมงานขาย',
+  description: 'สรุปภาพรวม pipeline งานขายจากใบเสนอราคา ใบสั่งขาย และใบแจ้งหนี้',
+  searchTitle: 'ค้นหาภาพรวมงานขาย',
+  searchDesc: 'กรองข้อมูลภาพรวมงานขายตามช่วงวันที่ (ไม่ระบุ = ทั้งหมด)',
+  dateRange: 'ช่วงวันที่',
+  statTotalQuotationValue: 'มูลค่าเสนอราคารวม',
+  statQuotationCount: 'จำนวนใบเสนอราคา',
+  statActiveCustomers: 'ลูกค้า',
+  statConversionRate: 'อัตราแปลง',
+  funnelTitle: 'Sales Funnel',
+  funnelQuotation: 'ใบเสนอราคา',
+  funnelSaleOrder: 'ใบสั่งขาย',
+  funnelInvoice: 'ใบแจ้งหนี้',
+  monthlyTitle: 'มูลค่าเสนอราคารายเดือน',
+  topCustomersTitle: 'ลูกค้าที่มีมูลค่าเสนอราคาสูงสุด',
+  caveat: 'เน้น pipeline จากใบเสนอราคา — ยอด invoice/payment ยังสะสมไม่ครบ รายงานรายได้/ลูกหนี้จะสมบูรณ์เมื่อมีข้อมูลมากขึ้น'
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -1422,5 +1441,6 @@ export default {
   paymentTracking,
   document,
   saleDashboard,
-  billingNote
+  billingNote,
+  pipelineDashboard
 }
