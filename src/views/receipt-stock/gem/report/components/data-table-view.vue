@@ -158,6 +158,10 @@ export default {
         formValue: this.modelForm
       })
     }
+  },
+
+  mounted() {
+    this.fetchData()
   }
 }
 </script>
