@@ -40,7 +40,7 @@ export class WorkerWagesSuccessPdfBuilder {
           { text: modeTitle, alignment: 'right' }
         ],
         bold: true,
-        fontSize: 15,
+        fontSize: 12,
         margin: [0, 0, 0, 0]
       },
       {
@@ -51,7 +51,7 @@ export class WorkerWagesSuccessPdfBuilder {
             alignment: 'right'
           }
         ],
-        fontSize: 14,
+        fontSize: 10,
         margin: [0, 0, 0, 0]
       },
       ...(docNoText ? [{
@@ -59,7 +59,7 @@ export class WorkerWagesSuccessPdfBuilder {
           '',
           { text: docNoText, alignment: 'right', bold: true }
         ],
-        fontSize: 13,
+        fontSize: 10,
         margin: [0, 0, 0, 0]
       }] : []),
       {
@@ -72,7 +72,7 @@ export class WorkerWagesSuccessPdfBuilder {
       },
       {
         columns: [this.mode === 'goldLoss' ? 'ใบสรุปงาน Gold Loss' : 'สถานะสำเร็จ'],
-        fontSize: 15,
+        fontSize: 12,
         margin: [0, 15, 0, 0]
       }
     ]
@@ -249,9 +249,9 @@ export class WorkerWagesSuccessPdfBuilder {
     return {
       margin: [0, 8, 0, 0],
       stack: [
-        { text: 'สรุปแยกตามประเภททอง', bold: true, fontSize: 12, margin: [0, 0, 0, 4] },
+        { text: 'สรุปแยกตามประเภททอง', bold: true, fontSize: 10, margin: [0, 0, 0, 4] },
         {
-          fontSize: 11,
+          fontSize: 8.5,
           table: {
             headerRows: 1,
             widths: ['*', 60, 65, 55, 65, 55, 65],
@@ -309,9 +309,9 @@ export class WorkerWagesSuccessPdfBuilder {
     return {
       margin: [0, 8, 0, 0],
       stack: [
-        { text: 'รับคืนทอง', bold: true, fontSize: 12, margin: [0, 0, 0, 4] },
+        { text: 'รับคืนทอง', bold: true, fontSize: 10, margin: [0, 0, 0, 4] },
         {
-          fontSize: 11,
+          fontSize: 8.5,
           table: {
             headerRows: 1,
             widths: ['*', 70, 80, 80],
@@ -332,7 +332,7 @@ export class WorkerWagesSuccessPdfBuilder {
   getTableContent() {
     if (this.mode === 'goldLoss') {
       return {
-        fontSize: 10,
+        fontSize: 8.5,
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
@@ -350,7 +350,7 @@ export class WorkerWagesSuccessPdfBuilder {
     }
 
     return {
-      fontSize: 9,
+      fontSize: 8.5,
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
@@ -414,7 +414,7 @@ export class WorkerWagesSuccessPdfBuilder {
           { text: 'รวมเงิน loss', alignment: 'right', width: '*' },
           { text: `: ${this.fmt2(totalMoneyLoss)} บาท`, width: 140, alignment: 'right' }
         ],
-        fontSize: 12,
+        fontSize: 10,
         margin: [0, 2, 0, 0]
       },
       {
@@ -422,7 +422,7 @@ export class WorkerWagesSuccessPdfBuilder {
           { text: '(+) รับคืนทอง (เงิน)', alignment: 'right', width: '*' },
           { text: `: + ${this.fmt2(totalGoldReturnAmount)} บาท`, width: 140, alignment: 'right' }
         ],
-        fontSize: 12,
+        fontSize: 10,
         margin: [0, 2, 0, 0]
       },
       {
@@ -430,7 +430,7 @@ export class WorkerWagesSuccessPdfBuilder {
           { text: 'ยอดสุทธิจ่ายช่าง', alignment: 'right', bold: true, width: '*' },
           { text: `: ${this.fmtSign2(netPayAmount)} บาท`, bold: true, color: netPayAmount < 0 ? '#ff4d4d' : '#038387', width: 140, alignment: 'right' }
         ],
-        fontSize: 13,
+        fontSize: 11,
         margin: [0, 2, 0, 4]
       },
       {
@@ -438,7 +438,7 @@ export class WorkerWagesSuccessPdfBuilder {
           { text: 'น้ำหนัก loss สุทธิ', alignment: 'right', bold: true, width: '*' },
           { text: `: ${this.fmtSign2(netWeightLoss)} กรัม`, bold: true, width: 140, alignment: 'right' }
         ],
-        fontSize: 12,
+        fontSize: 10,
         margin: [0, 2, 0, 0]
       }
     )
@@ -457,10 +457,10 @@ export class WorkerWagesSuccessPdfBuilder {
       ],
       defaultStyle: {
         font: PDF_FONT,
-        fontSize: 10
+        fontSize: 9
       },
       styles: {
-        tableHeader: { color: '#ffffff', bold: true, fontSize: 10 }
+        tableHeader: { color: '#ffffff', bold: true, fontSize: 8.5 }
       }
     }
   }

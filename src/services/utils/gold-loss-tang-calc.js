@@ -1,8 +1,9 @@
 /**
  * gold-loss-tang-calc.js
  * Pure functions for Gold Loss ช่างแต่ง (stage 50) aggregate slip calculation.
- * Rounding: Math.round(x * 1e4) / 1e4  === MidpointRounding.ToPositiveInfinity for 4dp
- *           Math.round(x * 1e2) / 1e2  === MidpointRounding.ToPositiveInfinity for 2dp
+ * Rounding: Math.round(x * 1e4) / 1e4  = round half up to 4dp (ties toward +Infinity)
+ *           Math.round(x * 1e2) / 1e2  = round half up to 2dp (ties toward +Infinity)
+ * NOTE: backend (GoldLossTangSlipService) ต้องปัดแบบเดียวกัน (half-up) ให้ค่าตรงกัน
  *
  * allowedLoss uses jobReturnedSum (job returned only, excludes extra returned lines)
  * net = returnedTotal - issuedTotal  (negative when returned < issued)

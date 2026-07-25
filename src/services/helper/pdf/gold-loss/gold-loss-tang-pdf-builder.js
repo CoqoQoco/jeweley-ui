@@ -55,7 +55,7 @@ export class GoldLossTangPdfBuilder {
         { text: 'ใบสรุปค่าเสียทองช่างแต่ง (Gold Loss Tang)', alignment: 'right' }
       ],
       bold: true,
-      fontSize: 15,
+      fontSize: 12,
       margin: [0, 0, 0, 0]
     }
   }
@@ -78,7 +78,7 @@ export class GoldLossTangPdfBuilder {
                     leftText,
                     { text: rightText, alignment: 'right' }
                   ],
-                  fontSize: 13
+                  fontSize: 10
                 }
               ],
               border: [false, false, false, true]
@@ -130,14 +130,14 @@ export class GoldLossTangPdfBuilder {
 
     const cell = (text) => ({
       text,
-      fontSize: 10,
+      fontSize: 8.5,
       margin: [4, 3, 4, 3],
       border: [true, true, true, true]
     })
 
     const cellR = (text) => ({
       text,
-      fontSize: 10,
+      fontSize: 8.5,
       alignment: 'right',
       margin: [4, 3, 4, 3],
       border: [true, true, true, true]
@@ -170,10 +170,10 @@ export class GoldLossTangPdfBuilder {
     }
 
     const footerRow = [
-      { text: 'รวมเบิก', bold: true, fontSize: 10, margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' },
-      { text: fmtW(s.issuedTotal), bold: true, fontSize: 10, alignment: 'right', margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' },
-      { text: 'รวมคืน', bold: true, fontSize: 10, margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' },
-      { text: fmtW(s.returnedTotal), bold: true, fontSize: 10, alignment: 'right', margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' }
+      { text: 'รวมเบิก', bold: true, fontSize: 8.5, margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' },
+      { text: fmtW(s.issuedTotal), bold: true, fontSize: 8.5, alignment: 'right', margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' },
+      { text: 'รวมคืน', bold: true, fontSize: 8.5, margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' },
+      { text: fmtW(s.returnedTotal), bold: true, fontSize: 8.5, alignment: 'right', margin: [4, 3, 4, 3], border: [true, true, true, true], fillColor: '#f5f5f5' }
     ]
 
     return {
@@ -200,7 +200,7 @@ export class GoldLossTangPdfBuilder {
 
     const cell = (text, opts = {}) => ({
       text,
-      fontSize: 10,
+      fontSize: 8.5,
       margin: [4, 3, 4, 3],
       border: [true, true, true, true],
       ...opts
@@ -245,7 +245,7 @@ export class GoldLossTangPdfBuilder {
       {
         text: 'สรุป & คำนวณ',
         bold: true,
-        fontSize: 12,
+        fontSize: 10,
         margin: [0, 0, 0, 3]
       },
       {
@@ -265,7 +265,7 @@ export class GoldLossTangPdfBuilder {
     if (s.remark) {
       stack.push({
         text: `หมายเหตุ: ${s.remark}`,
-        fontSize: 10,
+        fontSize: 8.5,
         margin: [0, 4, 0, 0]
       })
     }
@@ -296,7 +296,7 @@ export class GoldLossTangPdfBuilder {
             text: 'ไม่มีใบงาน',
             colSpan: 6,
             alignment: 'center',
-            fontSize: 10,
+            fontSize: 8.5,
             margin: [0, 8, 0, 8],
             border: [true, false, true, true]
           },
@@ -312,12 +312,12 @@ export class GoldLossTangPdfBuilder {
         totalCheck += Number(item.goldWeightCheck || 0)
         const rowFill = idx % 2 === 1 ? '#f5f5f5' : null
         return [
-          { text: String(idx + 1), alignment: 'center', fontSize: 10, fillColor: rowFill, margin: [2, 4, 2, 4] },
-          { text: (item.wo || '') + (item.woNumber ? '-' + item.woNumber : ''), fontSize: 10, fillColor: rowFill, margin: [2, 4, 2, 4] },
-          { text: fmtDate(item.jobDate), fontSize: 10, fillColor: rowFill, margin: [2, 4, 2, 4] },
-          { text: [item.gold, item.goldSize].filter(Boolean).join(' '), fontSize: 10, fillColor: rowFill, margin: [2, 4, 2, 4] },
-          { text: fmtW(item.goldWeightSend), alignment: 'right', fontSize: 10, fillColor: rowFill, margin: [2, 4, 2, 4] },
-          { text: fmtW(item.goldWeightCheck), alignment: 'right', fontSize: 10, fillColor: rowFill, margin: [2, 4, 2, 4] }
+          { text: String(idx + 1), alignment: 'center', fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
+          { text: (item.wo || '') + (item.woNumber ? '-' + item.woNumber : ''), fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
+          { text: fmtDate(item.jobDate), fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
+          { text: [item.gold, item.goldSize].filter(Boolean).join(' '), fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
+          { text: fmtW(item.goldWeightSend), alignment: 'right', fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
+          { text: fmtW(item.goldWeightCheck), alignment: 'right', fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] }
         ]
       })
 
@@ -325,9 +325,9 @@ export class GoldLossTangPdfBuilder {
         { text: '', border: [true, true, false, true] },
         { text: '', border: [false, true, false, true] },
         { text: '', border: [false, true, false, true] },
-        { text: 'รวม', bold: true, fontSize: 10, alignment: 'right', border: [false, true, false, true], margin: [2, 4, 2, 4] },
-        { text: fmtW(totalSend), bold: true, fontSize: 10, alignment: 'right', border: [false, true, false, true], margin: [2, 4, 2, 4] },
-        { text: fmtW(totalCheck), bold: true, fontSize: 10, alignment: 'right', border: [false, true, true, true], margin: [2, 4, 2, 4] }
+        { text: 'รวม', bold: true, fontSize: 8.5, alignment: 'right', border: [false, true, false, true], margin: [2, 4, 2, 4] },
+        { text: fmtW(totalSend), bold: true, fontSize: 8.5, alignment: 'right', border: [false, true, false, true], margin: [2, 4, 2, 4] },
+        { text: fmtW(totalCheck), bold: true, fontSize: 8.5, alignment: 'right', border: [false, true, true, true], margin: [2, 4, 2, 4] }
       ])
     }
 
@@ -336,7 +336,7 @@ export class GoldLossTangPdfBuilder {
         {
           text: 'รายละเอียดใบงาน (WO)',
           bold: true,
-          fontSize: 13,
+          fontSize: 10,
           margin: [0, 0, 0, 6]
         },
         {
@@ -374,7 +374,7 @@ export class GoldLossTangPdfBuilder {
               stack: [
                 { text: '______________________', margin: [0, 0, 0, 2] },
                 { text: 'ผู้จัดทำ' },
-                { text: 'วันที่ ......../......../........', fontSize: 9, margin: [0, 2, 0, 0] }
+                { text: 'วันที่ ......../......../........', fontSize: 8, margin: [0, 2, 0, 0] }
               ]
             },
             { width: 30, text: '' },
@@ -384,7 +384,7 @@ export class GoldLossTangPdfBuilder {
               stack: [
                 { text: '______________________', margin: [0, 0, 0, 2] },
                 { text: 'ผู้อนุมัติ' },
-                { text: 'วันที่ ......../......../........', fontSize: 9, margin: [0, 2, 0, 0] }
+                { text: 'วันที่ ......../......../........', fontSize: 8, margin: [0, 2, 0, 0] }
               ]
             }
           ]
@@ -419,12 +419,12 @@ export class GoldLossTangPdfBuilder {
       }),
       defaultStyle: {
         font: PDF_FONT,
-        fontSize: 10
+        fontSize: 9
       },
       styles: {
         sectionTitle: {
           font: PDF_FONT,
-          fontSize: 12,
+          fontSize: 10,
           bold: true
         }
       }

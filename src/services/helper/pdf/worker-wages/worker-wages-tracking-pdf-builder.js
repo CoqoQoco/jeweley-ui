@@ -35,7 +35,7 @@ export class WorkerWagesTrackingPdfBuilder {
           { text: modeTitle, alignment: 'right' }
         ],
         bold: true,
-        fontSize: 15,
+        fontSize: 12,
         margin: [0, 0, 0, 0]
       },
       {
@@ -46,7 +46,7 @@ export class WorkerWagesTrackingPdfBuilder {
             alignment: 'right'
           }
         ],
-        fontSize: 14,
+        fontSize: 10,
         margin: [0, 0, 0, 0]
       },
       {
@@ -59,7 +59,7 @@ export class WorkerWagesTrackingPdfBuilder {
       },
       {
         columns: [this.mode === 'goldLoss' ? 'ใบสรุปติดตามงาน Gold Loss' : 'ติดตามสถานะงาน'],
-        fontSize: 15,
+        fontSize: 12,
         margin: [0, 15, 0, 0]
       }
     ]
@@ -169,7 +169,7 @@ export class WorkerWagesTrackingPdfBuilder {
   getTableContent() {
     if (this.mode === 'goldLoss') {
       return {
-        fontSize: 11,
+        fontSize: 8.5,
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
@@ -187,7 +187,7 @@ export class WorkerWagesTrackingPdfBuilder {
     }
 
     return {
-      fontSize: 9,
+      fontSize: 8.5,
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
@@ -208,10 +208,10 @@ export class WorkerWagesTrackingPdfBuilder {
       ],
       defaultStyle: {
         font: PDF_FONT,
-        fontSize: 10
+        fontSize: 9
       },
       styles: {
-        tableHeader: { color: '#ffffff', bold: true, fontSize: 10 }
+        tableHeader: { color: '#ffffff', bold: true, fontSize: 8.5 }
       }
     }
   }
