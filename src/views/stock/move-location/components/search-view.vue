@@ -37,14 +37,13 @@
 
           <div>
             <span class="title-text">{{ $t('view.stock.product.locationHeader') }}</span>
-            <DropdownGeneric
-              :modelValue="form.location"
+            <MultiSelectGeneric
+              v-model="form.locationCodes"
               :options="locationOptions"
               optionLabel="label"
               optionValue="value"
               :placeholder="$t('common.label.all')"
               :showClear="true"
-              @update:modelValue="form.location = $event"
             />
           </div>
         </div>
@@ -197,6 +196,41 @@
                   />
                 </div>
               </div>
+
+              <!-- last move from location -->
+              <div>
+                <span class="title-text">{{ $t('view.stock.moveLocation.lastMoveFromLocation') }}</span>
+                <MultiSelectGeneric
+                  v-model="form.lastMoveFromLocations"
+                  :options="locationOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :placeholder="$t('common.label.all')"
+                  :showClear="true"
+                />
+              </div>
+
+              <!-- last move by -->
+              <div>
+                <span class="title-text">{{ $t('view.stock.moveLocation.lastMoveBy') }}</span>
+                <InputTextGeneric
+                  v-model.trim="form.lastMoveBy"
+                  :placeholder="$t('view.stock.moveLocation.placeholder.lastMoveBy')"
+                />
+              </div>
+
+              <!-- last move date range -->
+              <div>
+                <span class="title-text">{{ $t('view.stock.moveLocation.lastMoveDate') }}</span>
+                <DateRangeGeneric
+                  :startDate="form.lastMoveDateFrom"
+                  :endDate="form.lastMoveDateTo"
+                  :startPlaceholder="$t('common.label.start')"
+                  :endPlaceholder="$t('common.label.end')"
+                  @update:startDate="form.lastMoveDateFrom = $event"
+                  @update:endDate="form.lastMoveDateTo = $event"
+                />
+              </div>
             </div>
           </template>
         </dialogView>
@@ -253,6 +287,8 @@
 import { defineAsyncComponent } from 'vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
@@ -263,7 +299,7 @@ const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/Dia
 const interfaceForm = {
   stockNumber: null,
   productNumber: null,
-  location: null,
+  locationCodes: [],
   stockNumberOrigin: null,
   mold: null,
   productNameEn: null,
@@ -274,7 +310,11 @@ const interfaceForm = {
   gold: null,
   goldSize: null,
   hasCostDetail: null,
-  pieceStatus: null
+  pieceStatus: null,
+  lastMoveFromLocations: [],
+  lastMoveBy: null,
+  lastMoveDateFrom: null,
+  lastMoveDateTo: null
 }
 
 export default {
@@ -284,6 +324,8 @@ export default {
     pageTitle,
     MultiSelectGeneric,
     DropdownGeneric,
+    InputTextGeneric,
+    DateRangeGeneric,
     dialogView
   },
 

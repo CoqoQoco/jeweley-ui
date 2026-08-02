@@ -45,7 +45,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 const interfaceForm = {
   stockNumber: null,
   productNumber: null,
-  location: null,
+  locationCodes: [],
   stockNumberOrigin: null,
   mold: null,
   productNameEn: null,
@@ -56,7 +56,11 @@ const interfaceForm = {
   gold: null,
   goldSize: null,
   hasCostDetail: null,
-  pieceStatus: null
+  pieceStatus: null,
+  lastMoveFromLocations: [],
+  lastMoveBy: null,
+  lastMoveDateFrom: null,
+  lastMoveDateTo: null
 }
 
 export default {

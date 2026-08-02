@@ -16,7 +16,11 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
         take,
         skip,
         sort,
-        search: { ...formValue }
+        search: {
+          ...formValue,
+          lastMoveDateFrom: formValue.lastMoveDateFrom ? formatISOString(formValue.lastMoveDateFrom) : undefined,
+          lastMoveDateTo: formValue.lastMoveDateTo ? formatISOString(formValue.lastMoveDateTo) : undefined
+        }
       })
       if (res) {
         this.dataSearch = { ...res }
@@ -114,7 +118,9 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
           sort: sort,
           search: {
             ...formValue,
-            includeLastMovement: true
+            includeLastMovement: true,
+            lastMoveDateFrom: formValue.lastMoveDateFrom ? formatISOString(formValue.lastMoveDateFrom) : undefined,
+            lastMoveDateTo: formValue.lastMoveDateTo ? formatISOString(formValue.lastMoveDateTo) : undefined
           }
         }
 

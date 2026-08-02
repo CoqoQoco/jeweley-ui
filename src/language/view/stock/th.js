@@ -265,6 +265,9 @@ export default {
     stepB3Title: 'ยืนยันการย้ายเข้า SLOC ชั่วคราว',
     stepB3Desc: 'กดปุ่ม "ยืนยันการย้าย" เพื่อดำเนินการ — ดูขั้นตอนที่ 3-4 ของส่วน ก) สำหรับรายละเอียดเพิ่มเติม',
     productionLabel: 'Production',
+    lastMoveFromLocation: 'ย้ายมาจากคลัง',
+    lastMoveBy: 'ผู้ย้ายล่าสุด',
+    lastMoveDate: 'ช่วงวันที่ย้ายล่าสุด',
     placeholder: {
       newStockNumber: 'STK-2024-001',
       oldStockNumber: 'EX: A0211XX',
@@ -275,7 +278,8 @@ export default {
       wo: 'EX: 6802017XX',
       size: 'EX: #66',
       tempSlocCode: 'TEMP-001',
-      tempSlocName: 'Booth B'
+      tempSlocName: 'Booth B',
+      lastMoveBy: 'EX: KANNIKAR'
     },
     manual: {
       imgList: 'หน้าแสดงรายการสินค้า',
