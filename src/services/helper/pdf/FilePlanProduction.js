@@ -204,7 +204,7 @@ export class FilePlanProduction {
       'เปอร์เซ็นทอง',
       'จำนวน',
       'ประเภทพลอย',
-      'รูปร่าง/ขนาด พลอย',
+      'รูปร่าง/ขนาดพลอย',
       'จำนวนพลอย',
       'น้ำหนักพลอย',
       'จำนวนเพชร/CZ',
@@ -244,12 +244,11 @@ export class FilePlanProduction {
   getTableContent(matValue) {
     return {
       fontSize: 7,
-      bold: true,
       margin: [0, 0, 0, 20],
       table: {
         headerRows: 1,
         // กำหนดความกว้างคอลัมน์โดยให้คอลัมน์แรกกว้างกว่าที่เหลือ
-        widths: [58, 42, 32, 52, 48, 42, 46, 48, 50, 46, 48],
+        widths: [56, 46, 30, 50, 60, 40, 48, 52, 56, 50, 54],
         body: this.buildTableBody(matValue),
         dontBreakRows: true
       },
@@ -266,10 +265,10 @@ export class FilePlanProduction {
           return 'black'
         },
         paddingLeft: function (i) {
-          return 4
+          return 2
         },
         paddingRight: function (i) {
-          return 4
+          return 2
         },
         paddingTop: function (i) {
           return 3
@@ -316,8 +315,7 @@ export class FilePlanProduction {
           margin: [0, 2, 0, 2]
         },
         desc: {
-          fontSize: 11,
-          bold: true
+          fontSize: 11
         },
         title: {
           fontSize: 9

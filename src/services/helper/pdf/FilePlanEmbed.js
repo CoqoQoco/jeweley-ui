@@ -285,7 +285,6 @@ export class EmbedSlipPdfBuilder {
           text: fmtSign(-rawLoss),
           alignment: 'right',
           fontSize: 8,
-          bold: true,
           //color: signColor(-rawLoss),
           border: [false, false, false, false]
         },
@@ -295,7 +294,6 @@ export class EmbedSlipPdfBuilder {
           text: fmtSign(weightLossActual),
           alignment: 'right',
           fontSize: 8,
-          bold: true,
           //color: signColor(weightLossActual),
           border: [false, false, false, false]
         },
@@ -303,7 +301,6 @@ export class EmbedSlipPdfBuilder {
           text: fmtSign(moneyDiff),
           alignment: 'right',
           fontSize: 8,
-          bold: true,
           //color: signColor(moneyDiff),
           border: [false, false, false, false]
         }
@@ -394,7 +391,6 @@ export class EmbedSlipPdfBuilder {
   setTablePriceTitle(text) {
     return {
       text,
-      bold: true,
       border: [false, false, false, true]
     }
   }
@@ -403,7 +399,6 @@ export class EmbedSlipPdfBuilder {
     return {
       text,
       fontSize: 8,
-      bold: true,
       alignment: 'right',
       border: [false, false, false, true]
     }
@@ -420,7 +415,6 @@ export class EmbedSlipPdfBuilder {
     return {
       text,
       fontSize: 8,
-      bold: true,
       alignment: 'right',
       border: [false, false, false, false]
     }
@@ -483,7 +477,6 @@ export class EmbedSlipPdfBuilder {
         },
         desc: {
           fontSize: 8, // ลดขนาด font ลง
-          bold: true,
           margin: [0, 1, 0, 1] // ลด margin
         },
         boldText: { bold: true, fontSize: 8 }
