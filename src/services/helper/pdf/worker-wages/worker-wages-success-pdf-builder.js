@@ -183,7 +183,8 @@ export class WorkerWagesSuccessPdfBuilder {
     const map = {}
     const purityKey = (gold, goldSize) => {
       if (gold === 'SV') return 'SILVER'
-      return [gold, goldSize].filter((v) => v).join(' - ') || gold || goldSize || ''
+      if (goldSize && String(goldSize).toLowerCase() === 'silver') return 'SILVER'
+      return goldSize || gold || ''
     }
 
     const items = this.slip ? (this.slip.items || this.items) : this.items
@@ -273,29 +274,47 @@ export class WorkerWagesSuccessPdfBuilder {
     const returnItems = (this.slip && this.slip.goldReturnItems) ? this.slip.goldReturnItems : []
     if (returnItems.length === 0) return null
 
+    const purityKey = (gold, goldSize) => {
+      if (gold === 'SV') return 'SILVER'
+      if (goldSize && String(goldSize).toLowerCase() === 'silver') return 'SILVER'
+      return goldSize || gold || ''
+    }
+
     const headerRow = [
-      { text: 'ประเภท/Gold Size', style: 'tableHeader' },
+      { text: 'Gold Size', style: 'tableHeader' },
       { text: 'น้ำหนัก (g)', style: 'tableHeader', alignment: 'right' },
       { text: 'ราคา/กรัม', style: 'tableHeader', alignment: 'right' },
       { text: 'จำนวนเงิน', style: 'tableHeader', alignment: 'right' }
     ]
 
+    const groupMap = {}
+    for (const r of returnItems) {
+      const isCounted = r.countInCalc !== false
+      const purityLabel = purityKey(r.gold, r.goldSize)
+      const key = `${purityLabel}|${isCounted}`
+      const amount = r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))
+      if (!groupMap[key]) {
+        groupMap[key] = { purityLabel, isCounted, weight: 0, amount: 0, pricePerGram: r.pricePerGram }
+      }
+      groupMap[key].weight += r.weight || 0
+      groupMap[key].amount += amount
+    }
+    const groupedRows = Object.values(groupMap)
+
     let totalWeight = 0
     let totalAmount = 0
 
-    const dataRows = returnItems.map((r) => {
-      const amount = r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))
-      const isCounted = r.countInCalc !== false
-      if (isCounted) {
-        totalWeight += r.weight || 0
-        totalAmount += amount
+    const dataRows = groupedRows.map((g) => {
+      if (g.isCounted) {
+        totalWeight += g.weight
+        totalAmount += g.amount
       }
-      const label = [r.gold, r.goldSize].filter((v) => v).join(' - ') + (isCounted ? '' : ' (ไม่นำมาคิด)')
+      const label = g.purityLabel + (g.isCounted ? '' : ' (ไม่นำมาคิด)')
       return [
         { text: label },
-        { text: this.fmt2(r.weight), alignment: 'right' },
-        { text: this.fmt2(r.pricePerGram), alignment: 'right' },
-        { text: this.fmt2(amount), alignment: 'right' }
+        { text: this.fmt2(g.weight), alignment: 'right' },
+        { text: this.fmt2(g.pricePerGram), alignment: 'right' },
+        { text: this.fmt2(g.amount), alignment: 'right' }
       ]
     })
 

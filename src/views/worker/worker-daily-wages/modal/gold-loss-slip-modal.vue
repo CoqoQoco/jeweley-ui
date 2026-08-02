@@ -106,7 +106,6 @@
             <table class="return-table w-100">
               <thead>
                 <tr>
-                  <th>{{ $t('view.worker.goldLossSlipModal.returnGoldTypeLabel') }}</th>
                   <th>{{ $t('view.worker.goldLossSlipModal.colGoldSize') }}</th>
                   <th>{{ $t('common.field.weight') }} (g)</th>
                   <th>{{ $t('view.worker.workerDailyWages.colGoldLossPrice') }}</th>
@@ -116,9 +115,6 @@
               </thead>
               <tbody>
                 <tr v-for="(row, idx) in goldReturnItems" :key="idx">
-                  <td>
-                    <span class="title-text">{{ row.gold || '-' }}</span>
-                  </td>
                   <td>
                     <span class="title-text">{{ row.goldSize }}</span>
                   </td>
@@ -422,7 +418,8 @@ export default {
     typeSummaries() {
       const purityKey = (gold, goldSize) => {
         if (gold === 'SV') return 'SILVER'
-        return [gold, goldSize].filter((v) => v).join(' - ') || gold || goldSize || ''
+        if (goldSize && String(goldSize).toLowerCase() === 'silver') return 'SILVER'
+        return goldSize || gold || ''
       }
       const map = {}
 
@@ -576,14 +573,13 @@ export default {
       const groups = new Map()
       for (const it of this.availableItems) {
         if (!it.goldSize) continue
-        const key = `${it.gold || ''}|${it.goldSize}`
+        const key = it.goldSize
         if (!groups.has(key)) {
-          groups.set(key, { gold: it.gold, goldSize: it.goldSize, price: it.goldLossPrice ?? it.wages ?? 0 })
+          groups.set(key, { goldSize: it.goldSize, price: it.goldLossPrice ?? it.wages ?? 0 })
         }
       }
       this.goldReturnItems = Array.from(groups.values()).map((meta) => ({
         goldSize: meta.goldSize,
-        gold: meta.gold,
         weight: 0,
         pricePerGram: meta.price,
         amount: 0,
@@ -605,7 +601,6 @@ export default {
         remark: this.remark,
         goldReturnItems: this.goldReturnItems.map((r) => ({
           goldSize: r.goldSize,
-          gold: r.gold,
           weight: r.weight || 0,
           pricePerGram: r.pricePerGram || 0,
           amount: this.getRowAmount(r),
