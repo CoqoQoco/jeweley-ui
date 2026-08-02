@@ -420,7 +420,7 @@ export default {
   }
 
   &.main-menu-active {
-    background-color: var(--overlay-white-hover);
+    background-color: var(--overlay-white-chip);
   }
 }
 
@@ -472,14 +472,16 @@ export default {
 
 .menu-arrow {
   font-size: 0.7rem;
-  color: var(--on-inverse-dim);
+  color: var(--on-inverse-muted);
 }
 
 /* Submenu Styling */
 .submenu-container {
   margin: var(--sp-xs) 0 var(--sp-xs) var(--sp-md);
-  padding-left: var(--sp-md);
-  border-left: 2px solid var(--overlay-white-solid);
+  padding: var(--sp-xs) var(--sp-xs) var(--sp-xs) var(--sp-md);
+  border-left: 2px solid var(--overlay-white-strong);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background-color: var(--overlay-dark-recess);
 }
 
 .submenu-item {
@@ -497,7 +499,7 @@ export default {
   }
 
   &.sub-menu-active {
-    background-color: var(--overlay-white-subtle);
+    background-color: var(--overlay-white-hover);
   }
 }
 
@@ -513,14 +515,14 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--sp-sm);
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: var(--on-inverse-dim);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--on-inverse);
 }
 
 .submenu-icon {
   font-size: 0.8rem;
-  color: var(--on-inverse-dim);
+  color: var(--on-inverse-muted);
   margin-right: var(--sp-xs);
 }
 
@@ -528,7 +530,7 @@ export default {
 .children-container {
   padding-left: var(--sp-md);
   margin-left: var(--sp-sm);
-  border-left: 1px solid var(--overlay-white-hover);
+  border-left: 1px solid var(--overlay-white-solid);
   margin-bottom: var(--sp-xs);
 }
 
@@ -552,8 +554,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--on-inverse-dim);
+  font-size: 0.85rem;
+  color: var(--on-inverse);
 }
 
 .children-counter {
@@ -563,7 +565,8 @@ export default {
 /* Section Label + Divider */
 .menu-section-label {
   padding: var(--sp-md) var(--sp-md) var(--sp-xs);
-  color: var(--on-inverse-label);
+  color: var(--on-inverse-muted);
+  font-weight: 600;
   font-size: var(--fs-sm);
   letter-spacing: 0.05em;
   text-transform: uppercase;

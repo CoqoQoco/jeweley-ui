@@ -17,6 +17,9 @@ $overlay-white-chip: rgba(255, 255, 255, 0.12);
 $overlay-white-solid: rgba(255, 255, 255, 0.15);
 $overlay-white-strong: rgba(255, 255, 255, 0.25);
 
+// Overlay-dark — เว้าพื้น filled surface ให้ลึกลง (recess zone เช่น sub-menu drawer)
+$overlay-dark-recess: rgba(0, 0, 0, 0.2);
+
 // Text tiers บน filled surface
 $on-inverse: #ffffff;
 $on-inverse-muted: rgba(255, 255, 255, 0.85);
@@ -101,6 +104,9 @@ $radius-lg: 12px;
   --overlay-white-chip: rgba(255, 255, 255, 0.12);
   --overlay-white-solid: rgba(255, 255, 255, 0.15);
   --overlay-white-strong: rgba(255, 255, 255, 0.25);
+
+  // Overlay-dark — เว้าพื้น filled surface ให้ลึกลง (recess zone เช่น sub-menu drawer)
+  --overlay-dark-recess: rgba(0, 0, 0, 0.2);
 
   // Text tiers บน filled surface
   --on-inverse: #ffffff;

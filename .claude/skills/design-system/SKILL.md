@@ -77,6 +77,7 @@ description: ตารางโทเค็นทั้งหมด (spacing/rad
 | overlay chip | `var(--overlay-white-chip)` | rgba(255,255,255,0.12) — chip/pill พื้น |
 | overlay solid | `var(--overlay-white-solid)` | rgba(255,255,255,0.15) — icon box/border/active |
 | overlay strong | `var(--overlay-white-strong)` | rgba(255,255,255,0.25) — active counter/scrollbar |
+| overlay dark recess | `var(--overlay-dark-recess)` | rgba(0,0,0,0.2) — เว้าพื้นให้ลึกลง (sub-menu zone ใน drawer) |
 | text หลัก | `var(--on-inverse)` | #ffffff |
 | text รอง | `var(--on-inverse-muted)` | rgba(255,255,255,0.85) |
 | icon/arrow | `var(--on-inverse-dim)` | rgba(255,255,255,0.65) |

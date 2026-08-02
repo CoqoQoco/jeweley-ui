@@ -170,3 +170,52 @@ Ref เพิ่มเติมจากผู้ใช้ (dark sidebar: MENU/D
 4. **Teal ไม่ถูกถอดออกจากระบบ** — ยังใช้กับ secondary/status/zone อื่น (เช่น `--color-green-bg` summary zone, MultiSelect chip outline) ตามเดิม — เฉพาะ nav active state เท่านั้นที่เปลี่ยน
 
 **ไม่แตะ**: layout/ลำดับเมนู, accordion toggle, permission filtering, counter logic, transition timing
+
+---
+
+## Contrast pass rev 2 — L2/L3 ขาวเต็ม + ยกหัวข้อกลุ่ม
+
+> อัปเดต 2026-08-02 — supersede §Menu hierarchy (L1/L2/L3) ด้านบน ที่ระบุ L2/L3 = --on-inverse-dim (.65)
+
+ผู้ใช้แจ้งว่า sub-menu จางอ่านยาก — สาเหตุคือเอาความจางมาแทนลำดับชั้น (L1 ขาวเต็ม, L2+L3 ตกไป .65 พร้อมกัน) และหัวข้อกลุ่มที่ .5 มี contrast 3.2:1 ไม่ผ่าน WCAG AA
+
+**Spec — 9 จุดที่เปลี่ยน**
+
+| ส่วน | เดิม | rev 2 |
+|---|---|---|
+| `.menu-arrow` | `color: var(--on-inverse-dim)` | `color: var(--on-inverse-muted)` |
+| `.submenu-container` (rail) | `border-left: 2px solid var(--overlay-white-solid)` | `border-left: 2px solid var(--overlay-white-strong)` |
+| `.sub-menu-wrapper.sub-menu-active` | `background-color: var(--overlay-white-subtle)` | `background-color: var(--overlay-white-hover)` |
+| `.main-menu-wrapper.main-menu-active` | `background-color: var(--overlay-white-hover)` | `background-color: var(--overlay-white-chip)` |
+| `.submenu-text` | `font-size: 0.85rem; font-weight: 400; color: var(--on-inverse-dim)` | `font-size: 0.9rem; font-weight: 500; color: var(--on-inverse)` |
+| `.submenu-icon` | `color: var(--on-inverse-dim)` | `color: var(--on-inverse-muted)` |
+| `.children-container` (rail) | `border-left: 1px solid var(--overlay-white-hover)` | `border-left: 1px solid var(--overlay-white-solid)` |
+| `.btn-children-menu` | `font-size: 0.8rem; color: var(--on-inverse-dim)` | `font-size: 0.85rem; color: var(--on-inverse)` |
+| `.menu-section-label` | `color: var(--on-inverse-label)` | `color: var(--on-inverse-muted); font-weight: 600` |
+
+**4-tier hierarchy ใหม่**
+
+| ระดับ | สี | weight | ขนาด | rail |
+|---|---|---|---|---|
+| L1 (main menu) | ขาว 100% | 600 | 0.95rem | ไม่มี |
+| L2 (sub menu) | ขาว 100% | 500 | 0.9rem | 2px, alpha .25 |
+| L3 (children) | ขาว 100% | 400 | 0.85rem | 1px, alpha .15 |
+| section label | ขาว 85% | 600 | 12px | - |
+
+หลักการใหม่ — ลำดับชั้นสื่อด้วย **ขนาด · น้ำหนัก · ระยะเยื้อง · เส้น rail** ไม่ใช่ความจางของสี
+
+**Contrast** (วัดที่ `#921313` ขอบบน gradient = worst case): L2/L3 4.5:1 → 9.1:1 · section label 3.2:1 → 6.9:1
+
+**ไม่แตะ**: active pill rose-gold, counter, logout, accordion toggle, permission filtering, layout, ลำดับเมนู, width 320px, transition, และไม่แตะ `variable.scss`
+
+---
+
+### rev 2.1 — dark recess ใต้โซน sub-menu
+
+> อัปเดต 2026-08-02 — ต่อยอดจาก Contrast pass rev 2 ด้านบน
+
+ตัวอักษรขาว 100% คือเพดานฝั่ง text แล้ว ผู้ใช้ยังต้องการความเข้มขึ้น → เพิ่มพื้นเว้าเข้ม `--overlay-dark-recess` (rgba(0,0,0,.2)) ที่ `.submenu-container` + radius ขวา + padding แนวตั้ง คง rail ซ้ายไว้ → contrast ขาวบนพื้นโซน sub-menu จาก 9.1:1 → **11.2:1** และได้ผลพลอยได้คือ sub-menu อ่านเป็นแผงเดียวชัดขึ้น
+
+Token `--overlay-dark-recess` เป็น token ใหม่ (additive) ใน `variable.scss` — ไม่แก้ค่า token เดิมใดๆ
+
+**ไม่แตะ**: filled-surface mixin, `--surface-inverse*`, top bar, page-title, modal — ผิวกลางของระบบไม่เปลี่ยน
