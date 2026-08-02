@@ -580,6 +580,8 @@ export default {
     filterGoldType: 'ประเภททอง',
     hideAlreadySlipped: 'ซ่อนงานที่ลงใบแล้ว',
     alreadySlipped: 'ลงแล้ว',
+    lockedTooltip: 'งานนี้อยู่ในใบ {doc} แล้ว เลือกซ้ำไม่ได้',
+    hiddenSlippedCount: 'ซ่อนอยู่ {count} งาน',
     colWo: 'W.O.',
     colJobDate: 'วันที่',
     colGold: 'ทอง',

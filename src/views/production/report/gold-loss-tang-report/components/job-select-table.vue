@@ -7,7 +7,7 @@
   >
     <div class="job-table-header mb-2">
       <span class="count-badge-wrap">
-        <span v-if="jobs.length > 0" class="count-badge">{{ selectedCount }}/{{ jobs.length }}</span>
+        <span v-if="jobs.length > 0" class="count-badge">{{ selectedCount }}/{{ displayedJobs.length }}</span>
       </span>
       <div v-if="jobs.length > 0" class="filter-row">
         <MultiSelectGeneric
@@ -25,6 +25,9 @@
           :label="$t('view.production.goldLossTang.hideAlreadySlipped')"
           class="ml-2"
         />
+        <span v-if="hiddenSlippedCount > 0" class="hidden-count-text">
+          {{ $t('view.production.goldLossTang.hiddenSlippedCount', { count: hiddenSlippedCount }) }}
+        </span>
       </div>
     </div>
 
@@ -45,6 +48,7 @@
       selectionType="multiple"
       :itemsSelection="selectedJobs"
       :disabledItems="disabledJobs"
+      :rowClass="rowClass"
       @update:itemsSelection="$emit('update:selectedJobs', $event)"
     >
       <template #woTemplate="{ data }">
@@ -68,7 +72,12 @@
       </template>
 
       <template #statusTemplate="{ data }">
-        <span v-if="data.goldLossTangSlipId" class="slipped-badge">
+        <span
+          v-if="data.goldLossTangSlipId"
+          class="slipped-badge"
+          :title="$t('view.production.goldLossTang.lockedTooltip', { doc: data.goldLossTangSlipDocumentNo || '-' })"
+        >
+          <i class="bi bi-lock-fill"></i>
           {{ data.goldLossTangSlipDocumentNo || $t('view.production.goldLossTang.alreadySlipped') }}
         </span>
         <span v-else class="text-muted">-</span>
@@ -114,7 +123,7 @@ export default {
   data() {
     return {
       filterGoldTypes: [],
-      hideAlreadySlipped: false
+      hideAlreadySlipped: true
     }
   },
 
@@ -134,7 +143,7 @@ export default {
 
     displayedJobs() {
       return this.jobs.filter((j) => {
-        if (this.hideAlreadySlipped && j.goldLossTangSlipId) return false
+        if (this.hideAlreadySlipped && j.goldLossTangSlipId && j.goldLossTangSlipId !== this.editingSlipId) return false
         if (this.filterGoldTypes.length > 0) {
           const label = [j.gold, j.goldSize].filter(Boolean).join(' ')
           if (!this.filterGoldTypes.includes(label)) return false
@@ -151,6 +160,18 @@ export default {
 
     selectedCount() {
       return this.selectedJobs.length
+    },
+
+    hiddenSlippedCount() {
+      if (!this.hideAlreadySlipped) return 0
+      return this.jobs.filter((j) => {
+        if (!(j.goldLossTangSlipId && j.goldLossTangSlipId !== this.editingSlipId)) return false
+        if (this.filterGoldTypes.length > 0) {
+          const label = [j.gold, j.goldSize].filter(Boolean).join(' ')
+          if (!this.filterGoldTypes.includes(label)) return false
+        }
+        return true
+      }).length
     },
 
     columns() {
@@ -174,6 +195,12 @@ export default {
     fmt2(val) {
       if (val == null) return '0.00'
       return Number(val).toFixed(2)
+    },
+
+    rowClass(data) {
+      return data.goldLossTangSlipId && data.goldLossTangSlipId !== this.editingSlipId
+        ? 'row-slipped'
+        : null
     }
   }
 }
@@ -219,7 +246,9 @@ export default {
 }
 
 .slipped-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
   background: var(--color-highlight-bg);
   color: var(--base-font-color);
   border: 1px solid var(--base-font-color);
@@ -230,11 +259,15 @@ export default {
   opacity: 0.8;
 }
 
-:deep(tr.p-datatable-row-odd),
-:deep(tr.p-datatable-row-even) {
-  &[data-slipped='true'] {
-    opacity: 0.5;
-  }
+.hidden-count-text {
+  color: var(--base-font-color);
+  opacity: 0.7;
+  font-size: var(--fs-sm);
+}
+
+:deep(tr.row-slipped) {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .empty-jobs-state {

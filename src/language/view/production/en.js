@@ -580,6 +580,8 @@ export default {
     filterGoldType: 'Gold Type',
     hideAlreadySlipped: 'Hide already slipped jobs',
     alreadySlipped: 'Slipped',
+    lockedTooltip: 'Already included in slip {doc}',
+    hiddenSlippedCount: '{count} hidden',
     colWo: 'W.O.',
     colJobDate: 'Date',
     colGold: 'Gold',

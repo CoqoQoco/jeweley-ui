@@ -36,6 +36,7 @@
       @update:selection="$emit('update:itemsSelection', $event)"
       v-model:expandedRows="expandedRows"
       :dataKey="dataKey"
+      :rowClass="rowClass"
       class="p-datatable-sm"
       scrollable
       :scrollHeight="scrollHeight"
@@ -289,6 +290,10 @@ export default {
     dataKey: {
       type: String,
       default: 'id'
+    },
+    rowClass: {
+      type: Function,
+      default: null
     },
     showGridlines: {
       type: Boolean,
