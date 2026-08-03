@@ -505,7 +505,7 @@ export default {
 
   .production-type-badge {
     .badge {
-      background-color: #6f42c1 !important;
+      background-color: var(--base-font-color) !important;
     }
   }
 

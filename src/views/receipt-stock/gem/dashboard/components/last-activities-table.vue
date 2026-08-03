@@ -1,12 +1,11 @@
 <template>
-  <div class="summary-card mt-3">
-    <div class="summary-header">
-      <h5>{{ $t('view.stock.gem.dashboard.lastActivities') }}</h5>
-      <div class="activities-count">
-        <!-- <span class="badge bg-primary">{{ lastActivities.length }}</span> -->
-      </div>
-    </div>
-    <div class="summary-body">
+  <div class="mt-3 last-activities-table">
+    <SectionCardGeneric
+      :title="$t('view.stock.gem.dashboard.lastActivities')"
+      icon="bi-clock-history"
+      accent="main"
+      headerStyle="legend"
+    >
       <div v-if="lastActivities.length > 0" class="activity-table-container">
         <BaseDataTable
           :items="activityTableDataFormatted.data"
@@ -30,7 +29,7 @@
             <div class="d-flex align-items-center">
               <span><i class="me-1" :class="getTransactionIcon(rowData.type)"></i></span>
               <span class="ml-1">{{
-                rowData.qty ? Number(rowData.qty).toFixed(2).toLocaleString() : '0.000'
+                rowData.qty ? Number(rowData.qty).toFixed(2) : '0.000'
               }}</span>
             </div>
           </template>
@@ -39,7 +38,7 @@
             <div class="d-flex align-items-center">
               <span><i class="me-1" :class="getTransactionIcon(rowData.type)"></i></span>
               <span class="ml-1">{{
-                rowData.qtyWeight ? Number(rowData.qtyWeight).toFixed(3).toLocaleString() : '0.000'
+                rowData.qtyWeight ? Number(rowData.qtyWeight).toFixed(3) : '0.000'
               }}</span>
             </div>
           </template>
@@ -69,27 +68,24 @@
           <template #runningTemplate="{ data: rowData }">
             <span class="running-number">{{ rowData.running }}</span>
           </template>
-
-          <template #jobOrPoTemplate="{ data: rowData }">
-            <span v-if="rowData.jobOrPo" class="job-po">{{ rowData.jobOrPo }}</span>
-            <span v-else class="text-muted">-</span>
-          </template>
         </BaseDataTable>
       </div>
       <div v-else class="activities-empty">
         <i class="bi bi-clock-history"></i>
         <p>{{ $t('view.stock.gem.dashboard.noActivities') }}</p>
       </div>
-    </div>
+    </SectionCardGeneric>
   </div>
 </template>
 
 <script>
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {
   name: 'LastActivitiesTable',
   components: {
+    SectionCardGeneric,
     BaseDataTable
   },
   props: {
@@ -147,13 +143,6 @@ export default {
           minWidth: '120px',
           template: 'runningTemplate'
         },
-        // {
-        //   field: 'jobOrPo',
-        //   header: 'Job/PO',
-        //   sortable: false,
-        //   minWidth: '100px',
-        //   template: 'jobOrPoTemplate'
-        // },
         {
           field: 'status',
           header: 'Status',
@@ -221,9 +210,6 @@ export default {
           case 'running':
             column.header = this.$t('view.stock.gem.dashboard.running')
             break
-          case 'jobOrPo':
-            column.header = this.$t('view.stock.gem.dashboard.jobOrPo')
-            break
           case 'status':
             column.header = this.$t('view.stock.gem.dashboard.status')
             break
@@ -290,85 +276,51 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/variable.scss';
 
-.summary-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+.last-activities-table {
+  .activity-table-container {
+    // Custom styling for BaseDataTable
+    :deep(.base-datatable) {
+      .p-datatable {
+        .p-datatable-tbody {
+          tr {
+            td {
+              padding: 8px 12px;
+              font-size: 12px;
 
-  .summary-header {
-    padding: 20px;
-    border-bottom: 1px solid $base-color;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    h5 {
-      color: $base-font-color;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .activities-count {
-      .badge {
-        font-size: 12px;
-      }
-    }
-  }
-
-  .summary-body {
-    padding: 20px;
-
-    .activity-table-container {
-      // Custom styling for BaseDataTable
-      :deep(.base-datatable) {
-        .p-datatable {
-          .p-datatable-tbody {
-            tr {
-              td {
-                padding: 8px 12px;
-                font-size: 12px;
-
-                .gem-info {
-                  .gem-code {
-                    font-weight: 600;
-                    color: $base-font-color;
-                    font-size: 13px;
-                  }
-                }
-
-                .running-number {
-                  font-family: monospace;
-                  font-size: 11px;
-                  background: #e9ecef;
-                  padding: 2px 6px;
-                  border-radius: 3px;
-                }
-
-                .job-po {
-                  font-size: 11px;
-                  color: $base-sub-color;
-                }
-
-                .status-badge {
-                  font-size: 10px;
-                  padding: 3px 8px;
-                  border-radius: 12px;
+              .gem-info {
+                .gem-code {
                   font-weight: 600;
-                  text-transform: uppercase;
+                  color: $base-font-color;
+                  font-size: 13px;
+                }
+              }
+
+              .running-number {
+                font-family: monospace;
+                font-size: 11px;
+                background: #e9ecef;
+                padding: 2px 6px;
+                border-radius: var(--radius-sm);
+              }
+
+              .status-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+                border-radius: var(--radius-lg);
+                font-weight: 600;
+                text-transform: uppercase;
+              }
+
+              .user-info {
+                .create-by {
+                  font-weight: 500;
+                  color: $base-font-color;
+                  font-size: 11px;
                 }
 
-                .user-info {
-                  .create-by {
-                    font-weight: 500;
-                    color: $base-font-color;
-                    font-size: 11px;
-                  }
-
-                  small {
-                    font-size: 10px;
-                    line-height: 1.2;
-                  }
+                small {
+                  font-size: 10px;
+                  line-height: 1.2;
                 }
               }
             }
@@ -376,19 +328,19 @@ export default {
         }
       }
     }
+  }
 
-    .activities-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 200px;
-      color: $base-sub-color;
+  .activities-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: $base-sub-color;
 
-      i {
-        font-size: 48px;
-        margin-bottom: 15px;
-      }
+    i {
+      font-size: 48px;
+      margin-bottom: 15px;
     }
   }
 }

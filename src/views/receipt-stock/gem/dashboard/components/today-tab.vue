@@ -2,59 +2,30 @@
   <div class="row">
     <!-- Today's Summary Cards -->
     <div class="col-12 mb-4">
-      <div class="row">
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card today">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-activity"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ todaySummary.totalTransactions }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.todayTransactions') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card today">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-currency-exchange"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ todaySummary.priceChanges }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.priceChanges') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card today">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-plus-circle"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ todaySummary.newStockItems }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.newItems') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-          <div class="stat-card today">
-            <div class="stat-card-body">
-              <div class="stat-icon">
-                <i class="bi bi-exclamation-triangle"></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ todaySummary.lowStockAlerts }}</h3>
-                <p>{{ $t('view.stock.gem.dashboard.lowStockAlerts') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="kpi-grid">
+        <StatCardGeneric
+          icon="bi-activity"
+          :value="todaySummary.totalTransactions"
+          :label="$t('view.stock.gem.dashboard.todayTransactions')"
+        />
+        <StatCardGeneric
+          icon="bi-currency-exchange"
+          :value="todaySummary.priceChanges"
+          :label="$t('view.stock.gem.dashboard.priceChanges')"
+          variant="warning"
+        />
+        <StatCardGeneric
+          icon="bi-plus-circle"
+          :value="todaySummary.newStockItems"
+          :label="$t('view.stock.gem.dashboard.newItems')"
+          variant="green"
+        />
+        <StatCardGeneric
+          icon="bi-exclamation-triangle"
+          :value="todaySummary.lowStockAlerts"
+          :label="$t('view.stock.gem.dashboard.lowStockAlerts')"
+          variant="grey"
+        />
       </div>
     </div>
 
@@ -63,8 +34,16 @@
       <div class="activities-card">
         <div class="activities-header">
           <h5>{{ $t('view.stock.gem.dashboard.todayTransactions') }}</h5>
-          <div class="activities-count">
+          <div class="activities-header-actions">
             <span class="badge bg-primary">{{ todayTransactions.length }}</span>
+            <ButtonGeneric
+              variant="green"
+              icon="bi-file-earmark-excel"
+              :title="$t('common.btn.export')"
+              class="ml-2"
+              :disabled="!todayTransactions.length"
+              @click="exportToExcel"
+            />
           </div>
         </div>
         <div class="activities-body">
@@ -112,8 +91,20 @@
 <script>
 import dayjs from 'dayjs'
 
+import { ExcelHelper } from '@/services/utils/excel-js.js'
+import { formatDate } from '@/services/utils/dayjs.js'
+import { success } from '@/services/alert/sweetAlerts.js'
+
+import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
 export default {
   name: 'TodayTab',
+
+  components: {
+    StatCardGeneric,
+    ButtonGeneric
+  },
 
   props: {
     todaySummary: {
@@ -163,6 +154,27 @@ export default {
 
     formatDateTime(date) {
       return dayjs(date).format('DD/MM/YYYY HH:mm')
+    },
+
+    exportToExcel() {
+      if (!this.todayTransactions.length) return
+
+      const dataExcel = this.todayTransactions.map((item) => ({
+        [this.$t('view.stock.gem.dashboard.gemCode')]: item.code,
+        [this.$t('view.stock.gem.dashboard.groupName')]: item.groupName,
+        [this.$t('view.stock.gem.dashboard.type')]: item.typeName,
+        [this.$t('view.stock.gem.dashboard.quantity')]: item.qty,
+        [this.$t('view.stock.gem.dashboard.status')]: item.status,
+        [this.$t('view.stock.gem.dashboard.jobOrPo')]: item.jobOrPo || '-',
+        [this.$t('view.stock.gem.dashboard.createDate')]: this.formatDateTime(item.createDate)
+      }))
+
+      ExcelHelper.exportToExcel(dataExcel, {
+        filename: `gem-today-transactions_[${formatDate(new Date())}].xlsx`,
+        sheetName: 'Today Transactions'
+      })
+
+      success(this.$t('alert.exportSuccess'), this.$t('alert.success'))
     }
   }
 }
@@ -171,61 +183,10 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/variable.scss';
 
-.stat-card {
-  background: white;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease;
-  border-left: 4px solid $base-color;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-  }
-
-  &.today {
-    border-left-color: #6f42c1;
-  }
-
-  .stat-card-body {
-    padding: var(--sp-xl);
-    display: flex;
-    align-items: center;
-
-    .stat-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, $base-font-color, lighten($base-font-color, 20%));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 15px;
-
-      i {
-        font-size: 24px;
-        color: white;
-      }
-    }
-
-    .stat-content {
-      flex: 1;
-
-      h3 {
-        font-size: 28px;
-        font-weight: bold;
-        color: $base-font-color;
-        margin: 0 0 5px 0;
-      }
-
-      p {
-        color: $base-sub-color;
-        margin: 0 0 3px 0;
-        font-size: 14px;
-        font-weight: 600;
-      }
-    }
-  }
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-lg);
 }
 
 .activities-card {
@@ -247,7 +208,10 @@ export default {
       margin: 0;
     }
 
-    .activities-count {
+    .activities-header-actions {
+      display: flex;
+      align-items: center;
+
       .badge {
         font-size: 12px;
       }

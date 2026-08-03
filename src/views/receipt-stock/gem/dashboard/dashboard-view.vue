@@ -8,10 +8,6 @@
       @search="onSearchFilter"
       @clear="onClearFilter"
     >
-      <template #header-actions>
-        <ButtonGeneric variant="green" icon="bi-arrow-clockwise" :title="$t('common.btn.refresh')" @click="refreshDashboard" />
-      </template>
-
       <template #fields>
         <div>
           <span class="title-text">{{ $t('view.stock.gem.dashboard.groupName') }}</span>
@@ -68,12 +64,12 @@
       </template>
     </SearchBarGeneric>
 
-    <div class="data-info" v-if="dataAtDate">
-      <small class="text-muted">
-        <i class="bi bi-clock"></i>
-        {{ $t('view.stock.gem.dashboard.lastUpdate') }}: {{ formatDateTime(dataAtDate) }}
-      </small>
-    </div>
+    <DashboardHeaderGeneric
+      :title="$t('view.stock.gem.dashboard.lastUpdate')"
+      :subtitle="dataAtDate ? formatDateTime(dataAtDate) : ''"
+      icon="bi-clock"
+      @refresh="refreshDashboard"
+    />
 
     <!-- Dashboard Report Tabs -->
     <div class="row mb-2">
@@ -129,7 +125,24 @@
 
       <ForecastPanel :trends="trends" />
 
-      <CategoryChart :category-chart-data="categoryChartData" :dataset-fields="datasetFields" />
+      <AgingPanel :aging="aging" :loading="isPageLoading" />
+
+      <div class="category-groupby-control">
+        <span class="title-text">{{ $t('view.stock.gem.dashboard.categoryGroupBy') }}</span>
+        <DropdownGeneric
+          :modelValue="filters.groupBy"
+          :options="groupByOptions"
+          optionLabel="label"
+          optionValue="value"
+          @update:modelValue="onGroupByChange"
+        />
+      </div>
+
+      <CategoryChart
+        :category-chart-data="categoryChartData"
+        :dataset-fields="datasetFields"
+        :isLoading="isPageLoading"
+      />
 
       <div class="row">
         <div class="col-lg-8 col-md-12 mb-4">
@@ -155,6 +168,15 @@
 
     <!-- Monthly Tab -->
     <div v-show="activeTab === 'monthly'" class="tab-content">
+      <MonthlyReportOverview
+        :summary="monthlySummary"
+        :weekly-comparisons="monthlyWeeklyComparisons"
+        :top-performers="monthlyTopPerformers"
+        :inventory-analysis="monthlyInventoryAnalysis"
+        :supplier-analysis="monthlySupplierAnalysis"
+        :price-analysis="monthlyPriceAnalysis"
+        :loading="isPageLoading"
+      />
       <MonthlyTransactionSummary />
     </div>
   </div>
@@ -165,19 +187,24 @@ import dayjs from 'dayjs'
 
 import { useStockGemDashboardStore } from '@/stores/modules/api/stock/stock-gem-dashboard-store.js'
 import { useGemOnhandReportApiStore } from '@/stores/modules/api/stock/gem-onhand-report-api.js'
+import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 // Dashboard Components
 import StockSummaryCards from './components/stock-summary-cards.vue'
 import ForecastPanel from './components/forecast-panel.vue'
+import AgingPanel from './components/aging-panel.vue'
 import CategoryChart from './components/category-chart.vue'
 import TopMovementsTable from './components/top-movements-table.vue'
 import LastActivitiesTable from './components/last-activities-table.vue'
 import PriceAlertsPanel from './components/price-alerts-panel.vue'
+import MonthlyReportOverview from './components/monthly-report-overview.vue'
 import MonthlyTransactionSummary from './components/monthly-transaction-summary.vue'
 import TodayTab from './components/today-tab.vue'
 import WeeklyTab from './components/weekly-tab.vue'
@@ -187,7 +214,8 @@ const interfaceFilters = {
   shape: [],
   grade: [],
   startDate: null,
-  endDate: null
+  endDate: null,
+  groupBy: 'group'
 }
 
 export default {
@@ -196,14 +224,18 @@ export default {
   components: {
     SearchBarGeneric,
     ButtonGeneric,
+    DashboardHeaderGeneric,
     MultiSelectGeneric,
     DateRangeGeneric,
+    DropdownGeneric,
     StockSummaryCards,
     ForecastPanel,
+    AgingPanel,
     CategoryChart,
     TopMovementsTable,
     LastActivitiesTable,
     PriceAlertsPanel,
+    MonthlyReportOverview,
     MonthlyTransactionSummary,
     TodayTab,
     WeeklyTab
@@ -212,7 +244,8 @@ export default {
   setup() {
     const dashboardStore = useStockGemDashboardStore()
     const gemOnhandReportStore = useGemOnhandReportApiStore()
-    return { dashboardStore, gemOnhandReportStore }
+    const loadingStore = useLoadingStore()
+    return { dashboardStore, gemOnhandReportStore, loadingStore }
   },
 
   data() {
@@ -241,6 +274,12 @@ export default {
     trends() {
       return this.dashboardStore.getTrends
     },
+    aging() {
+      return this.dashboardStore.getAging || {}
+    },
+    isPageLoading() {
+      return this.loadingStore.isLoading
+    },
     topMovements() {
       return this.dashboardStore.getTopMovements
     },
@@ -265,14 +304,30 @@ export default {
     monthlySummary() {
       return this.dashboardStore.getMonthlySummary
     },
-    monthlyMovements() {
+    monthlyWeeklyComparisons() {
       return this.dashboardStore.getWeeklyComparisons
     },
-    monthlyGemTransactionSummaries() {
-      return this.dashboardStore.getMonthlyGemTransactionSummaries
+    monthlyTopPerformers() {
+      return this.dashboardStore.getMonthlyTopPerformers
+    },
+    monthlyInventoryAnalysis() {
+      return this.dashboardStore.getMonthlyInventoryAnalysis
+    },
+    monthlySupplierAnalysis() {
+      return this.dashboardStore.getMonthlySupplierAnalysis
+    },
+    monthlyPriceAnalysis() {
+      return this.dashboardStore.getMonthlyPriceAnalysis
     },
     categoryChartData() {
       return this.dashboardStore.getCategoryChartData
+    },
+    groupByOptions() {
+      return [
+        { value: 'group', label: this.$t('view.stock.gem.dashboard.groupName') },
+        { value: 'shape', label: this.$t('view.stock.gem.dashboard.shape') },
+        { value: 'grade', label: this.$t('view.stock.gem.dashboard.grade') }
+      ]
     }
   },
 
@@ -286,6 +341,7 @@ export default {
   methods: {
     async fetchActiveTabData() {
       await this.dashboardStore.fetchDashboard(this.filters)
+      await this.dashboardStore.fetchAging(this.filters)
       if (this.activeTab === 'today') {
         await this.dashboardStore.fetchTodayReport(this.filters)
       } else if (this.activeTab === 'weekly') {
@@ -324,6 +380,11 @@ export default {
       await this.dashboardStore.refreshAll(this.filters)
     },
 
+    onGroupByChange(value) {
+      this.filters.groupBy = value
+      this.dashboardStore.fetchDashboard(this.filters)
+    },
+
     formatDateTime(date) {
       return dayjs(date).format('DD/MM/YYYY HH:mm')
     }
@@ -336,17 +397,18 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .stock-gem-dashboard {
-  background-color: #f8f9fa;
   min-height: 100vh;
 
-  .data-info {
-    padding: var(--sp-sm) var(--sp-xs);
+  .category-groupby-control {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    margin-bottom: var(--sp-md);
+    max-width: 320px;
 
-    small {
-      font-size: var(--fs-sm);
-      i {
-        margin-right: var(--sp-xs);
-      }
+    .title-text {
+      white-space: nowrap;
+      margin-bottom: 0;
     }
   }
 

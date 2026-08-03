@@ -11,6 +11,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     monthlyReport: null,
     monthlyGemTransactionSummaries: null,
     transactionTypeSummaries: null, // Store for GetTransactionSummariesByType API
+    agingReport: null,
     lastUpdated: null
   }),
 
@@ -54,6 +55,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     getMonthlySupplierAnalysis: (state) => state.monthlyReport?.supplierAnalysis || [],
     getMonthlyGemTransactionSummaries: (state) => state.monthlyGemTransactionSummaries || [],
     getTransactionTypeSummaries: (state) => state.transactionTypeSummaries || [],
+    getAging: (state) => state.agingReport,
 
     // Computed summary stats for dashboard cards
     getTotalGemTypes: (state) => state.dashboardData?.summary?.totalGemTypes || 0,
@@ -78,27 +80,6 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
           count4: cat.totalOnProcessQuantityWeight // แท่งที่ 4
         }))
       }
-    },
-
-    getTrendChartData: (state) => {
-      const trends = state.dashboardData?.trends || []
-      return {
-        labels: trends.map((trend) => trend.date),
-        datasets: [
-          {
-            label: 'Quantity In',
-            data: trends.map((trend) => trend.totalQuantityIn),
-            backgroundColor: '#038387',
-            borderColor: '#038387'
-          },
-          {
-            label: 'Quantity Out',
-            data: trends.map((trend) => trend.totalQuantityOut),
-            backgroundColor: '#ff4d4d',
-            borderColor: '#ff4d4d'
-          }
-        ]
-      }
     }
   },
 
@@ -106,13 +87,15 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     // Build request filter shared by Dashboard/Today/Weekly/Monthly endpoints
     // groupName/shape/grade มาจาก MultiSelectGeneric (array) แต่ backend DashboardRequest รับค่าเดียว (string?)
     // จึงส่งเฉพาะค่าแรกที่เลือก
+    // groupBy — มิติของ category chart: 'group' | 'shape' | 'grade' (default 'group' = พฤติกรรมเดิม)
     buildFilter(filters = {}) {
       return {
         startDate: filters.startDate ? formatISOString(filters.startDate) : null,
         endDate: filters.endDate ? formatISOString(filters.endDate) : null,
         groupName: filters.groupName?.length ? filters.groupName[0] : null,
         shape: filters.shape?.length ? filters.shape[0] : null,
-        grade: filters.grade?.length ? filters.grade[0] : null
+        grade: filters.grade?.length ? filters.grade[0] : null,
+        groupBy: filters.groupBy || 'group'
       }
     },
 
@@ -149,6 +132,15 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
         dashboard: this.buildFilter(filters)
       })
       this.monthlyReport = response
+      this.lastUpdated = new Date()
+    },
+
+    // Fetch aging report
+    async fetchAging(filters = {}) {
+      const response = await axiosHelper.jewelry.post('StockGem/Dashboard/Aging', {
+        dashboard: this.buildFilter(filters)
+      })
+      this.agingReport = response
       this.lastUpdated = new Date()
     },
 
@@ -301,6 +293,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
     async refreshAll(filters = {}) {
       await Promise.all([
         this.fetchDashboard(filters),
+        this.fetchAging(filters),
         this.fetchTodayReport(filters),
         this.fetchWeeklyReport(filters),
         this.fetchMonthlyReport(filters)
@@ -315,6 +308,7 @@ export const useStockGemDashboardStore = defineStore('stockGemDashboard', {
       this.monthlyReport = null
       this.monthlyGemTransactionSummaries = null
       this.transactionTypeSummaries = null
+      this.agingReport = null
       this.lastUpdated = null
     },
 

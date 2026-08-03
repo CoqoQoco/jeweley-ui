@@ -236,6 +236,7 @@ export default {
 
           // Charts and tables
           categoryBreakdown: 'Category Breakdown',
+          categoryGroupBy: 'Group By',
           topMovements: 'Top Movements',
           priceAlerts: 'Price Alerts',
           gemCode: 'Gem Code',
@@ -315,10 +316,6 @@ export default {
           noPriceChanges: 'No price changes',
           noTodayTransactions: 'No transactions today',
 
-          // Coming soon
-          weeklyReportComingSoon: 'Weekly Report Coming Soon',
-          monthlyReportComingSoon: 'Monthly Report Coming Soon',
-
           // Forecast layer (frontend-only estimate)
           forecast: {
             title: 'Forecast Layer (Estimate)',
@@ -327,9 +324,109 @@ export default {
             actualSeries: 'Actual Cumulative Usage',
             forecastSeries: 'Forecasted Cumulative Usage',
             assumption:
-              'Estimated using daily run-rate based on the first {days} days of this month — an estimate, not actual figures',
+              'Estimated using the average daily actual usage run-rate (issued + withdrawn, excluding returned loans) based on the first {days} days of this month — an estimate, not actual figures',
             notEnoughData: 'Not enough data to forecast this month',
             chartEmpty: 'No usage data recorded this month yet'
+          },
+
+          // Aging layer (stock aging report)
+          aging: {
+            title: 'Gem Stock Aging',
+            deadValue: 'Value Stuck Over 1 Year',
+            deadCodes: 'Stuck Item Codes',
+            chartEmpty: 'No stock aging data yet',
+            valueLabel: 'Value (THB)',
+            bucket: {
+              d0_30: '0-30 days',
+              d31_90: '31-90 days',
+              d91_180: '91-180 days',
+              d181_365: '181-365 days',
+              over365: 'Over 1 year',
+              never: 'Never moved'
+            }
+          },
+
+          // Monthly report overview (backend-computed sections)
+          // named monthlyReport to avoid colliding with the `monthly` tab label key above
+          monthlyReport: {
+            summary: {
+              title: 'Monthly Summary',
+              totalTransactions: 'Total Transactions',
+              totalQuantityIn: 'Total Quantity In',
+              totalQuantityOut: 'Total Quantity Out',
+              netValueChange: 'Net Value Change',
+              monthOverMonthGrowth: 'Month-over-Month Growth',
+              inventoryTurnoverRatio: 'Inventory Turnover Ratio'
+            },
+            weeklyComparison: {
+              title: 'Weekly Comparison in Month',
+              weekLabel: 'Week {n}',
+              quantityIn: 'Quantity In',
+              quantityOut: 'Quantity Out',
+              chartEmpty: 'No weekly data for this month yet'
+            },
+            topPerformers: {
+              title: 'Top Moving Gems',
+              performanceType: 'Performance Type',
+              totalValue: 'Total Value',
+              noData: 'No top performer data for this month',
+              type: {
+                highestVolume: 'Highest Volume',
+                highestValue: 'Highest Value',
+                mostActive: 'Most Active',
+                fastestMoving: 'Fastest Moving'
+              }
+            },
+            inventoryAnalysis: {
+              title: 'Monthly Inventory Analysis',
+              itemCount: 'Item Count',
+              averagePricePerUnit: 'Average Price per Unit',
+              inventoryDays: 'Inventory Days',
+              inventoryStatus: 'Inventory Status',
+              monthOverMonthChange: 'Change from Last Month (%)',
+              noData: 'No inventory analysis data for this month',
+              status: {
+                overstock: 'Overstock',
+                optimal: 'Optimal',
+                understock: 'Understock'
+              }
+            },
+            supplierAnalysis: {
+              title: 'Monthly Supplier Analysis',
+              supplierName: 'Supplier Name',
+              totalCost: 'Total Cost',
+              averageCostPerUnit: 'Average Cost per Unit',
+              gemTypes: 'Gem Types',
+              preferredGemCategory: 'Preferred Gem Category',
+              deliveryCount: 'Delivery Count',
+              reliabilityRating: 'Reliability Rating',
+              noData: 'No supplier data for this month',
+              noDataScope: 'This data covers only newly received gems (Type 1: New Stock In)',
+              rating: {
+                excellent: 'Excellent',
+                good: 'Good',
+                average: 'Average',
+                poor: 'Poor'
+              }
+            },
+            priceAnalysis: {
+              title: 'Monthly Price Analysis',
+              priceChangeCount: 'Price Change Count',
+              averagePriceStart: 'Average Price (Start)',
+              averagePriceEnd: 'Average Price (End)',
+              priceVolatility: 'Price Volatility',
+              maxPriceIncrease: 'Max Price Increase',
+              maxPriceDecrease: 'Max Price Decrease',
+              priceTrend: 'Price Trend',
+              mostRecentPriceChange: 'Most Recent Price Change',
+              noData: 'No price analysis data for this month',
+              trend: {
+                increasing: 'Increasing',
+                decreasing: 'Decreasing',
+                stable: 'Stable',
+                volatile: 'Volatile'
+              }
+            }
           }
         }
       }

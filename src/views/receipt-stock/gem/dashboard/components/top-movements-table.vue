@@ -1,153 +1,122 @@
 <template>
-  <div class="summary-card">
-    <div class="summary-header">
-      <h5>{{ $t('view.stock.gem.dashboard.topMovements') }}</h5>
-    </div>
-    <div class="summary-body">
-      <div v-if="topMovements && topMovements.length > 0" class="summary-table">
-        <div class="table-header">
-          <div class="col">{{ $t('view.stock.gem.dashboard.gemCode') }}</div>
-          <div class="col">{{ $t('view.stock.gem.dashboard.category') }}</div>
-          <div class="col">{{ $t('view.stock.gem.dashboard.transactions') }}</div>
-          <div class="col">{{ $t('view.stock.gem.dashboard.quantity') }}</div>
-          <div class="col">{{ $t('view.stock.gem.dashboard.weight') }}</div>
-        </div>
-        <div v-for="movement in topMovements" :key="movement.code" class="table-row">
-          <div class="col">{{ movement.code }}</div>
-          <div class="col">{{ movement.groupName }} - {{ movement.shape }}</div>
-          <div class="col">{{ movement.transactionCount }}</div>
-          <div class="col">{{ formatNumber(movement.totalQuantityMoved) }}</div>
-          <div class="col">{{ formatNumber(movement.totalQuantityWeightMoved, 3) }}</div>
-        </div>
+  <div class="top-movements-table">
+    <SectionCardGeneric
+      :title="$t('view.stock.gem.dashboard.topMovements')"
+      icon="bi-arrow-left-right"
+      accent="main"
+      headerStyle="legend"
+    >
+      <div class="table-toolbar">
+        <ButtonGeneric
+          variant="green"
+          icon="bi-file-earmark-excel"
+          :title="$t('common.btn.export')"
+          :disabled="!topMovements.length"
+          @click="exportToExcel"
+        />
       </div>
-      <div v-else class="summary-empty">
+
+      <div v-if="topMovements && topMovements.length > 0">
+        <BaseDataTable
+          :items="topMovements"
+          :columns="columns"
+          :totalRecords="topMovements.length"
+          :paginator="false"
+          dataKey="code"
+          scrollHeight="400px"
+        >
+          <template #categoryTemplate="{ data }">
+            {{ data.groupName }} - {{ data.shape }}
+          </template>
+        </BaseDataTable>
+      </div>
+      <div v-else class="table-empty">
         <i class="bi bi-activity"></i>
         <p>{{ $t('view.stock.gem.dashboard.noMovements') }}</p>
       </div>
-    </div>
+    </SectionCardGeneric>
   </div>
 </template>
 
 <script>
+import { ExcelHelper } from '@/services/utils/excel-js.js'
+import { formatDate } from '@/services/utils/dayjs.js'
+import { success } from '@/services/alert/sweetAlerts.js'
+
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+
 export default {
   name: 'TopMovementsTable',
+
+  components: {
+    SectionCardGeneric,
+    ButtonGeneric,
+    BaseDataTable
+  },
+
   props: {
     topMovements: {
       type: Array,
       default: () => []
     }
   },
+
+  computed: {
+    columns() {
+      return [
+        { field: 'code', header: this.$t('view.stock.gem.dashboard.gemCode'), minWidth: '120px', sortable: false },
+        { field: 'category', header: this.$t('view.stock.gem.dashboard.category'), minWidth: '160px', sortable: false },
+        { field: 'transactionCount', header: this.$t('view.stock.gem.dashboard.transactions'), minWidth: '100px', align: 'right', format: 'decimal0', sortable: false },
+        { field: 'totalQuantityMoved', header: this.$t('view.stock.gem.dashboard.quantity'), minWidth: '110px', align: 'right', format: 'decimal0', sortable: false },
+        { field: 'totalQuantityWeightMoved', header: this.$t('view.stock.gem.dashboard.weight'), minWidth: '110px', align: 'right', format: 'decimal3', sortable: false }
+      ]
+    }
+  },
+
   methods: {
-    formatNumber(value, decimals = 0) {
-      if (!value && value !== 0) return '0' + (decimals > 0 ? '.'.padEnd(decimals + 1, '0') : '')
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-      }).format(value)
+    exportToExcel() {
+      if (!this.topMovements.length) return
+
+      const dataExcel = this.topMovements.map((item) => ({
+        [this.$t('view.stock.gem.dashboard.gemCode')]: item.code,
+        [this.$t('view.stock.gem.dashboard.category')]: `${item.groupName} - ${item.shape}`,
+        [this.$t('view.stock.gem.dashboard.transactions')]: item.transactionCount,
+        [this.$t('view.stock.gem.dashboard.quantity')]: item.totalQuantityMoved,
+        [this.$t('view.stock.gem.dashboard.weight')]: item.totalQuantityWeightMoved
+      }))
+
+      ExcelHelper.exportToExcel(dataExcel, {
+        filename: `gem-top-movements_[${formatDate(new Date())}].xlsx`,
+        sheetName: 'Top Movements'
+      })
+
+      success(this.$t('alert.exportSuccess'), this.$t('alert.success'))
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/variable.scss';
-
-.summary-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-
-  .summary-header {
-    padding: 20px;
-    border-bottom: 1px solid $base-color;
+.top-movements-table {
+  .table-toolbar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    margin-bottom: var(--sp-md);
+  }
+
+  .table-empty {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--base-sub-color);
 
-    h5 {
-      color: $base-font-color;
-      font-weight: bold;
-      margin: 0;
-    }
-  }
-
-  .summary-body {
-    padding: 20px;
-
-    .summary-table {
-      .table-header {
-        display: flex;
-        background: #f8f9fa;
-        border-radius: 6px;
-        font-weight: 600;
-        color: $base-font-color;
-        font-size: 13px;
-        padding: 12px 0;
-        margin-bottom: 10px;
-
-        .col {
-          flex: 1;
-          padding: 0 15px;
-          text-align: left;
-        }
-      }
-
-      .table-row {
-        display: flex;
-        padding: 10px 0;
-        border-bottom: 1px solid #e9ecef;
-        font-size: 13px;
-        color: $base-sub-color;
-
-        &:hover {
-          background: #f8f9fa;
-          border-radius: 4px;
-        }
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .col {
-          flex: 1;
-          padding: 0 15px;
-          display: flex;
-          align-items: center;
-
-          &:first-child {
-            font-weight: 600;
-            color: $base-font-color;
-          }
-        }
-      }
-    }
-
-    .summary-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 200px;
-      color: $base-sub-color;
-
-      i {
-        font-size: 48px;
-        margin-bottom: 15px;
-      }
-    }
-  }
-}
-
-// Responsive adjustments
-@media (max-width: 768px) {
-  .summary-table {
-    .table-header,
-    .table-row {
-      .col {
-        padding: 0 10px;
-        font-size: 12px;
-      }
+    i {
+      font-size: 48px;
+      margin-bottom: var(--sp-lg);
     }
   }
 }

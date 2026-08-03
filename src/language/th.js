@@ -236,6 +236,7 @@ export default {
 
           // Charts and tables
           categoryBreakdown: 'แบ่งตามหมวดหมู่',
+          categoryGroupBy: 'จัดกลุ่มตาม',
           topMovements: 'การเคลื่อนไหวสูงสุด',
           priceAlerts: 'การแจ้งเตือนราคา',
           gemCode: 'รหัสอัญมณี',
@@ -315,10 +316,6 @@ export default {
           noPriceChanges: 'ไม่มีการเปลี่ยนแปลงราคา',
           noTodayTransactions: 'ไม่มีธุรกรรมวันนี้',
 
-          // Coming soon
-          weeklyReportComingSoon: 'รายงานรายสัปดาห์ เร็วๆ นี้',
-          monthlyReportComingSoon: 'รายงานรายเดือน เร็วๆ นี้',
-
           // Forecast layer (frontend-only estimate)
           forecast: {
             title: 'ชั้นประมาณการ (คาดการณ์)',
@@ -327,9 +324,110 @@ export default {
             actualSeries: 'ยอดใช้จริงสะสม',
             forecastSeries: 'ประมาณการยอดใช้สะสม',
             assumption:
-              'อิงอัตราการใช้เฉลี่ยต่อวัน (Run-rate) จากข้อมูล {days} วันแรกของเดือนนี้ — เป็นค่าประมาณการ ไม่ใช่ตัวเลขจริง',
+              'อิงอัตราการใช้จริงเฉลี่ยต่อวัน (Run-rate จากยอดจ่ายออก+เบิกใช้ ไม่รวมยืมออกที่คืนกลับ) จากข้อมูล {days} วันแรกของเดือนนี้ — เป็นค่าประมาณการ ไม่ใช่ตัวเลขจริง',
             notEnoughData: 'ข้อมูลไม่พอสำหรับประมาณการเดือนนี้',
             chartEmpty: 'ยังไม่มีข้อมูลการเบิกใช้ในเดือนนี้'
+          },
+
+          // Aging layer (stock aging report)
+          aging: {
+            title: 'อายุสต๊อกพลอย (Aging)',
+            deadValue: 'มูลค่าจมเกิน 1 ปี',
+            deadCodes: 'จำนวนรหัสที่ค้าง',
+            chartEmpty: 'ยังไม่มีข้อมูลอายุสต๊อก',
+            valueLabel: 'มูลค่า (บาท)',
+            bucket: {
+              d0_30: '0-30 วัน',
+              d31_90: '31-90 วัน',
+              d91_180: '91-180 วัน',
+              d181_365: '181-365 วัน',
+              over365: 'เกิน 1 ปี',
+              never: 'ไม่เคยเคลื่อนไหว'
+            }
+          },
+
+          // Monthly report overview (backend-computed sections)
+          // ชื่อ monthlyReport เพื่อไม่ชนกับ key `monthly` (tab label) ที่มีอยู่แล้วในบล็อกนี้
+          monthlyReport: {
+            summary: {
+              title: 'สรุปภาพรวมรายเดือน',
+              totalTransactions: 'ธุรกรรมทั้งหมด',
+              totalQuantityIn: 'จำนวนรับเข้า',
+              totalQuantityOut: 'จำนวนจ่ายออก',
+              netValueChange: 'มูลค่าสุทธิที่เปลี่ยนแปลง',
+              monthOverMonthGrowth: 'อัตราการเติบโตเทียบเดือนก่อน',
+              inventoryTurnoverRatio: 'อัตราหมุนเวียนสินค้าคงคลัง'
+            },
+            weeklyComparison: {
+              title: 'เปรียบเทียบรายสัปดาห์ในเดือน',
+              weekLabel: 'สัปดาห์ {n}',
+              quantityIn: 'จำนวนรับเข้า',
+              quantityOut: 'จำนวนจ่ายออก',
+              chartEmpty: 'ยังไม่มีข้อมูลรายสัปดาห์ในเดือนนี้'
+            },
+            topPerformers: {
+              title: 'อันดับพลอยเคลื่อนไหวสูงสุด',
+              performanceType: 'ประเภทผลงาน',
+              totalValue: 'มูลค่ารวม',
+              noData: 'ไม่มีข้อมูลอันดับพลอยเคลื่อนไหวในเดือนนี้',
+              type: {
+                highestVolume: 'ปริมาณสูงสุด',
+                highestValue: 'มูลค่าสูงสุด',
+                mostActive: 'เคลื่อนไหวบ่อยสุด',
+                fastestMoving: 'หมุนเวียนเร็วสุด'
+              }
+            },
+            inventoryAnalysis: {
+              title: 'วิเคราะห์คลังสินค้ารายเดือน',
+              itemCount: 'จำนวนรายการ',
+              averagePricePerUnit: 'ราคาเฉลี่ยต่อหน่วย',
+              inventoryDays: 'จำนวนวันสต็อกคงเหลือ',
+              inventoryStatus: 'สถานะสต็อก',
+              monthOverMonthChange: 'เปลี่ยนแปลงจากเดือนก่อน (%)',
+              noData: 'ไม่มีข้อมูลวิเคราะห์คลังในเดือนนี้',
+              status: {
+                overstock: 'สต็อกเกิน',
+                optimal: 'เหมาะสม',
+                understock: 'สต็อกต่ำ'
+              }
+            },
+            supplierAnalysis: {
+              title: 'วิเคราะห์ซัพพลายเออร์รายเดือน',
+              supplierName: 'ชื่อซัพพลายเออร์',
+              totalCost: 'ต้นทุนรวม',
+              averageCostPerUnit: 'ต้นทุนเฉลี่ยต่อหน่วย',
+              gemTypes: 'ประเภทพลอย',
+              preferredGemCategory: 'หมวดพลอยหลัก',
+              deliveryCount: 'จำนวนครั้งที่ส่งของ',
+              reliabilityRating: 'คะแนนความน่าเชื่อถือ',
+              noData: 'ยังไม่มีข้อมูลซัพพลายเออร์ในเดือนนี้',
+              noDataScope:
+                'ข้อมูลนี้แสดงเฉพาะพลอยที่รับเข้าใหม่ (ประเภทรับเข้าคลัง [พลอยใหม่]) เท่านั้น',
+              rating: {
+                excellent: 'ดีเยี่ยม',
+                good: 'ดี',
+                average: 'ปานกลาง',
+                poor: 'ต้องปรับปรุง'
+              }
+            },
+            priceAnalysis: {
+              title: 'วิเคราะห์ราคารายเดือน',
+              priceChangeCount: 'จำนวนครั้งที่ราคาเปลี่ยน',
+              averagePriceStart: 'ราคาเฉลี่ยต้นเดือน',
+              averagePriceEnd: 'ราคาเฉลี่ยปลายเดือน',
+              priceVolatility: 'ความผันผวนราคา',
+              maxPriceIncrease: 'ราคาที่เพิ่มขึ้นสูงสุด',
+              maxPriceDecrease: 'ราคาที่ลดลงสูงสุด',
+              priceTrend: 'แนวโน้มราคา',
+              mostRecentPriceChange: 'เปลี่ยนราคาล่าสุดเมื่อ',
+              noData: 'ไม่มีข้อมูลวิเคราะห์ราคาในเดือนนี้',
+              trend: {
+                increasing: 'เพิ่มขึ้น',
+                decreasing: 'ลดลง',
+                stable: 'คงที่',
+                volatile: 'ผันผวน'
+              }
+            }
           }
         }
       }

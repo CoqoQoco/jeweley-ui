@@ -3,8 +3,10 @@
 // ใช้กับ trend data รายวัน (เช่น dashboardStore.getTrends) เพื่อประมาณการยอดสิ้นเดือน
 // ด้วยวิธี run-rate: ยอดสะสมของเดือนนี้ ÷ จำนวนวันที่ผ่านมา x จำนวนวันทั้งเดือน
 //
+// อิงยอด "ใช้จริง" (consumed = type 4 จ่ายออก + type 7 เบิกใช้ ไม่รวม type 5 ยืมออกที่คืนกลับเกือบหมด)
 // trends item ที่ต้องการ (field name ตาม TransactionTrend):
-//   date, totalQuantityOut, totalQuantityWeightOut
+//   date, totalQuantityConsumed, totalQuantityWeightConsumed
+//   (fallback ไปที่ totalQuantityOut / totalQuantityWeightOut ถ้า backend ยังไม่ส่ง field ใหม่มา)
 
 import dayjs from 'dayjs'
 
@@ -15,7 +17,7 @@ function roundValue(value) {
 }
 
 /**
- * @param {Array} trends - array ของ { date, totalQuantityOut, totalQuantityWeightOut, ... }
+ * @param {Array} trends - array ของ { date, totalQuantityConsumed, totalQuantityWeightConsumed, ... }
  * @param {Object} options - { minDaysElapsed, referenceDate }
  * @returns {Object} forecast result — { hasEnoughData: false, ... } เมื่อข้อมูลไม่พอ
  */
@@ -44,42 +46,43 @@ export function calculateMonthlyRunRateForecast(trends = [], options = {}) {
   const dailyMap = new Map()
   currentMonthTrends.forEach((t) => {
     const day = dayjs(t.date).date()
-    const prev = dailyMap.get(day) || { qty: 0, weight: 0 }
+    const prev = dailyMap.get(day) || { consumedQty: 0, consumedWeight: 0 }
     dailyMap.set(day, {
-      qty: prev.qty + (t.totalQuantityOut || 0),
-      weight: prev.weight + (t.totalQuantityWeightOut || 0)
+      consumedQty: prev.consumedQty + (t.totalQuantityConsumed ?? t.totalQuantityOut ?? 0),
+      consumedWeight:
+        prev.consumedWeight + (t.totalQuantityWeightConsumed ?? t.totalQuantityWeightOut ?? 0)
     })
   })
 
-  let actualQuantityOut = 0
-  let actualWeightOut = 0
+  let actualQuantityConsumed = 0
+  let actualWeightConsumed = 0
   for (let day = 1; day <= daysElapsed; day++) {
     const entry = dailyMap.get(day)
-    actualQuantityOut += entry?.qty || 0
-    actualWeightOut += entry?.weight || 0
+    actualQuantityConsumed += entry?.consumedQty || 0
+    actualWeightConsumed += entry?.consumedWeight || 0
   }
 
-  const dailyAvgQuantityOut = actualQuantityOut / daysElapsed
-  const dailyAvgWeightOut = actualWeightOut / daysElapsed
-  const forecastQuantityOut = dailyAvgQuantityOut * daysInMonth
-  const forecastWeightOut = dailyAvgWeightOut * daysInMonth
+  const dailyAvgQuantityConsumed = actualQuantityConsumed / daysElapsed
+  const dailyAvgWeightConsumed = actualWeightConsumed / daysElapsed
+  const forecastQuantityConsumed = dailyAvgQuantityConsumed * daysInMonth
+  const forecastWeightConsumed = dailyAvgWeightConsumed * daysInMonth
 
   const categories = []
   const actualSeriesData = []
   const forecastSeriesData = []
-  let runningQty = 0
+  let runningConsumedQty = 0
 
   for (let day = 1; day <= daysInMonth; day++) {
     categories.push(referenceDate.date(day).format('DD/MM'))
 
     if (day <= daysElapsed) {
       const entry = dailyMap.get(day)
-      runningQty += entry?.qty || 0
-      actualSeriesData.push(roundValue(runningQty))
-      forecastSeriesData.push(day === daysElapsed ? roundValue(runningQty) : null)
+      runningConsumedQty += entry?.consumedQty || 0
+      actualSeriesData.push(roundValue(runningConsumedQty))
+      forecastSeriesData.push(day === daysElapsed ? roundValue(runningConsumedQty) : null)
     } else {
       actualSeriesData.push(null)
-      forecastSeriesData.push(roundValue(dailyAvgQuantityOut * day))
+      forecastSeriesData.push(roundValue(dailyAvgQuantityConsumed * day))
     }
   }
 
@@ -88,12 +91,14 @@ export function calculateMonthlyRunRateForecast(trends = [], options = {}) {
     daysElapsed,
     daysInMonth,
     minDaysElapsed,
-    actualQuantityOut,
-    actualWeightOut,
-    dailyAvgQuantityOut,
-    dailyAvgWeightOut,
-    forecastQuantityOut,
-    forecastWeightOut,
+    // หมายเหตุ: ชื่อ key ด้านล่างคงเดิม (Out) เพราะ forecast-panel.vue ผูก key เหล่านี้ไว้ตรงๆ
+    // ความหมายจริงคือ "ยอดใช้จริง (consumed)" ตาม comment หัวไฟล์ — ไม่ใช่ยอดจ่ายออกรวมทุกประเภทอีกต่อไป
+    actualQuantityOut: actualQuantityConsumed,
+    actualWeightOut: actualWeightConsumed,
+    dailyAvgQuantityOut: dailyAvgQuantityConsumed,
+    dailyAvgWeightOut: dailyAvgWeightConsumed,
+    forecastQuantityOut: forecastQuantityConsumed,
+    forecastWeightOut: forecastWeightConsumed,
     categories,
     actualSeriesData,
     forecastSeriesData

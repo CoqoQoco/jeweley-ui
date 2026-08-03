@@ -1,9 +1,11 @@
 <template>
-  <div class="trends-card">
-    <div class="trends-header">
-      <h5>{{ $t('view.stock.gem.dashboard.priceAlerts') }}</h5>
-    </div>
-    <div class="trends-body">
+  <div class="price-alerts-panel">
+    <SectionCardGeneric
+      :title="$t('view.stock.gem.dashboard.priceAlerts')"
+      icon="bi-currency-exchange"
+      accent="main"
+      headerStyle="legend"
+    >
       <div v-if="priceAlerts && priceAlerts.length > 0">
         <div v-for="alert in priceAlerts" :key="alert.code" class="trend-item">
           <div class="trend-info">
@@ -27,13 +29,20 @@
         <i class="bi bi-currency-exchange"></i>
         <p>{{ $t('view.stock.gem.dashboard.noPriceChanges') }}</p>
       </div>
-    </div>
+    </SectionCardGeneric>
   </div>
 </template>
 
 <script>
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+
 export default {
   name: 'PriceAlertsPanel',
+
+  components: {
+    SectionCardGeneric
+  },
+
   props: {
     priceAlerts: {
       type: Array,
@@ -53,127 +62,92 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/variable.scss';
-
-.trends-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-
-  .trends-header {
-    padding: 20px;
-    border-bottom: 1px solid $base-color;
-
-    h5 {
-      color: $base-font-color;
-      font-weight: bold;
-      margin: 0;
-    }
-  }
-
-  .trends-body {
-    padding: 20px;
-
-    .trend-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 0;
-      border-bottom: 1px solid #e9ecef;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .trend-info {
-        flex: 1;
-
-        h6 {
-          color: $base-font-color;
-          font-weight: 600;
-          margin: 0 0 5px 0;
-          font-size: 14px;
-        }
-
-        small {
-          color: $base-sub-color;
-          font-size: 12px;
-        }
-
-        .trend-stats {
-          margin-top: 8px;
-          display: flex;
-          align-items: center;
-          font-size: 12px;
-
-          .price-old {
-            color: $base-sub-color;
-            text-decoration: line-through;
-          }
-
-          .price-new {
-            color: $base-font-color;
-            font-weight: 600;
-          }
-
-          i {
-            color: $base-sub-color;
-          }
-        }
-      }
-
-      .trend-direction {
-        .percentage-badge {
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
-
-          &.increase {
-            background: #d1f2eb;
-            color: #27ae60;
-          }
-
-          &.decrease {
-            background: #fadbd8;
-            color: #e74c3c;
-          }
-
-          &.stable {
-            background: #e8f4fd;
-            color: #3498db;
-          }
-        }
-      }
-    }
-
-    .trends-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 200px;
-      color: $base-sub-color;
-
-      i {
-        font-size: 48px;
-        margin-bottom: 15px;
-      }
-    }
-  }
-}
-
-// Responsive adjustments
-@media (max-width: 768px) {
+.price-alerts-panel {
   .trend-item {
-    flex-direction: column;
-    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--sp-lg) 0;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .trend-info {
+      flex: 1;
+
+      h6 {
+        color: var(--base-font-color);
+        font-weight: 600;
+        margin: 0 0 var(--sp-xs) 0;
+        font-size: var(--fs-base);
+      }
+
+      small {
+        color: var(--base-sub-color);
+        font-size: var(--fs-sm);
+      }
+
+      .trend-stats {
+        margin-top: var(--sp-sm);
+        display: flex;
+        align-items: center;
+        font-size: var(--fs-sm);
+
+        .price-old {
+          color: var(--base-sub-color);
+          text-decoration: line-through;
+        }
+
+        .price-new {
+          color: var(--base-font-color);
+          font-weight: 600;
+        }
+
+        i {
+          color: var(--base-sub-color);
+        }
+      }
+    }
 
     .trend-direction {
-      margin-top: 10px;
-      align-self: flex-end;
+      .percentage-badge {
+        padding: var(--sp-xs) var(--sp-sm);
+        border-radius: var(--radius-lg);
+        font-size: var(--fs-sm);
+        font-weight: 600;
+        text-transform: uppercase;
+
+        &.increase {
+          background: var(--color-green-bg);
+          color: var(--base-green);
+        }
+
+        &.decrease {
+          background: var(--status-cancelled-bg);
+          color: var(--base-red);
+        }
+
+        &.stable {
+          background: var(--status-closed-bg);
+          color: var(--base-sub-color);
+        }
+      }
+    }
+  }
+
+  .trends-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--base-sub-color);
+
+    i {
+      font-size: 48px;
+      margin-bottom: var(--sp-lg);
     }
   }
 }
