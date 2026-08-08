@@ -75,6 +75,19 @@ const routes = [
         }
       },
       {
+        path: '/setting/company-info',
+        name: 'company-info',
+        component: () => import('@/views/setting/company-info/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'Company Info',
+            th: 'ตั้งค่าข้อมูลบริษัท'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.USER_DEV]
+        }
+      },
+      {
         path: '/setting/vat-print-layout',
         name: 'vat-print-layout',
         component: () => import('@/views/setting/vat-print-layout/index-view.vue'),

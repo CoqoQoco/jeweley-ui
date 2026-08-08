@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { ceilToInteger } from '@/services/utils/decimal.js'
-import { COMPANY_INFO, COMPANY_TAX_ID, COMPANY_BANK } from '@/config/company-info.js'
+import { COMPANY_INFO, COMPANY_TAX_ID, COMPANY_BANK, loadCompanyInfo } from '@/config/company-info.js'
 import { PDF_COLORS, PDF_STYLES, PDF_FONT } from '../shared/pdf-theme.js'
 import { formatPrice } from '../shared/pdf-format.js'
 import { loadCompanyLogo, prepareItemImages } from '../shared/pdf-images.js'
@@ -39,6 +39,7 @@ export class InvoiceSummaryPdfBuilder {
     this.invoiceDate = invoiceDate || dayjs()
     this.invoiceNo = invoiceNo || this._generateInvoiceNumber()
     this.logoBase64 = null
+    this.company = null
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyRate = Number(currencyRate) || 1
 
@@ -90,6 +91,7 @@ export class InvoiceSummaryPdfBuilder {
 
   async preparePDF() {
     this.logoBase64 = await loadCompanyLogo()
+    this.company = await loadCompanyInfo()
     await prepareItemImages(this.data)
   }
 
@@ -189,18 +191,18 @@ export class InvoiceSummaryPdfBuilder {
 
     // Build a FRESH signature object per call — pdfmake mutates nodes during layout.
     const makeSignature = () => buildSeekSignature({
-      companyName: COMPANY_INFO.name,
-      companyTaxId: COMPANY_TAX_ID,
-      companyAddress: COMPANY_INFO.address,
-      companyPhone: COMPANY_INFO.phone
+      companyName: self.company?.info?.name || COMPANY_INFO.name,
+      companyTaxId: self.company?.taxId || COMPANY_TAX_ID,
+      companyAddress: self.company?.info?.address || COMPANY_INFO.address,
+      companyPhone: self.company?.info?.phone || COMPANY_INFO.phone
     })
 
     // Build a FRESH header object per page — pdfmake mutates content nodes during
     // layout, so reusing one reference across pages renders later pages incompletely.
     const makeHeader = () => buildSeekHeader({
       logoBase64: self.logoBase64,
-      companyName: COMPANY_INFO.name,
-      companyTaxId: COMPANY_TAX_ID,
+      companyName: self.company?.info?.name || COMPANY_INFO.name,
+      companyTaxId: self.company?.taxId || COMPANY_TAX_ID,
       title: 'INVOICE',
       meta: [
         { label: 'Date of Issue:', value: dayjs(self.invoiceDate).locale('en').format('MMM DD, YYYY') },
@@ -271,7 +273,7 @@ export class InvoiceSummaryPdfBuilder {
               netPayableLabel: self.showCifLabel ? 'Net Payable (C.I.F)' : 'Net Payable',
               netPayableValue: self._fmt(self.netPayable)
             })
-            const pay = buildPaymentOptions({ bank: COMPANY_BANK })
+            const pay = buildPaymentOptions({ bank: self.company?.bank || COMPANY_BANK })
             blocks.push({
               columns: [
                 { width: '52%', stack: pay ? [pay] : [{ text: '' }] },

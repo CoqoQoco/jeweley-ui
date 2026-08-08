@@ -1,4 +1,29 @@
 export default {
+  companyInfo: {
+    pageTitle: 'ตั้งค่าข้อมูลบริษัท',
+    pageDescription: 'ข้อมูลนี้ใช้บนหัวเอกสาร PDF ทุกใบ (ใบขายวัตถุดิบ · ใบแจ้งหนี้ มาตรฐาน 2 · ใบวางบิล)',
+    sectionCompany: 'ข้อมูลบริษัท',
+    sectionBank: 'บัญชีธนาคาร',
+    companyName: 'ชื่อบริษัท',
+    taxId: 'เลขประจำตัวผู้เสียภาษี',
+    address: 'ที่อยู่',
+    phone: 'โทรศัพท์',
+    fax: 'แฟกซ์',
+    email: 'อีเมล',
+    bankName: 'ธนาคาร',
+    accountName: 'ชื่อบัญชี',
+    accountNumber: 'เลขที่บัญชี',
+    swift: 'SWIFT',
+    branch: 'สาขา',
+    accountNumberHint: 'เว้น "เลขที่บัญชี" ว่างไว้ = ไม่พิมพ์กล่อง Payment Options ลงเอกสาร',
+    validation: {
+      companyNameRequired: 'กรุณากรอกชื่อบริษัท',
+      taxIdRequired: 'กรุณากรอกเลขประจำตัวผู้เสียภาษี',
+      addressRequired: 'กรุณากรอกที่อยู่'
+    },
+    saveSuccess: 'บันทึกข้อมูลบริษัทสำเร็จ',
+    confirmSaveTitle: 'ยืนยันการบันทึกข้อมูลบริษัท'
+  },
   account: {
     cancelAccount: 'ยกเลิกบัญชี',
     register: 'ลงทะเบียนบัญชี',

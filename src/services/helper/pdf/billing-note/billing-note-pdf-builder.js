@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
-import { COMPANY_INFO, COMPANY_TAX_ID } from '@/config/company-info.js'
+import { COMPANY_INFO, COMPANY_TAX_ID, loadCompanyInfo } from '@/config/company-info.js'
 import { PDF_COLORS, PDF_FONT } from '../shared/pdf-theme.js'
 import { buildSeekSummary } from '../shared/pdf-seek-sections.js'
 import { loadCompanyLogo } from '../shared/pdf-images.js'
@@ -12,10 +12,12 @@ export class BillingNotePdfBuilder {
     this.mode = mode
     this.copyType = copyType
     this.logoBase64 = null
+    this.company = null
   }
 
   async preparePDF() {
     this.logoBase64 = await loadCompanyLogo()
+    this.company = await loadCompanyInfo()
   }
 
   formatMoney(value) {
@@ -108,7 +110,7 @@ export class BillingNotePdfBuilder {
                   margin: [0, 2, 0, 0],
                   stack: [
                     { text: 'Duang Kaew Jewelry', fontSize: 15, bold: true, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 2] },
-                    { text: 'TAX ID: ' + COMPANY_TAX_ID, fontSize: 9, color: PDF_COLORS.darkGray }
+                    { text: 'TAX ID: ' + (this.company?.taxId || COMPANY_TAX_ID), fontSize: 9, color: PDF_COLORS.darkGray }
                   ]
                 }
               ]
@@ -354,9 +356,9 @@ export class BillingNotePdfBuilder {
         width: '*',
         stack: [
           { text: 'Duang Kaew Jewelry', fontSize: 8, bold: true, margin: [0, 0, 0, 2] },
-          { text: 'TAX ID: ' + COMPANY_TAX_ID, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
-          { text: COMPANY_INFO.address, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
-          { text: 'โทร: ' + COMPANY_INFO.phone, fontSize: 7, color: PDF_COLORS.darkGray }
+          { text: 'TAX ID: ' + (this.company?.taxId || COMPANY_TAX_ID), fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
+          { text: this.company?.info?.address || COMPANY_INFO.address, fontSize: 7, color: PDF_COLORS.darkGray, margin: [0, 0, 0, 1] },
+          { text: 'โทร: ' + (this.company?.info?.phone || COMPANY_INFO.phone), fontSize: 7, color: PDF_COLORS.darkGray }
         ]
       },
       {
