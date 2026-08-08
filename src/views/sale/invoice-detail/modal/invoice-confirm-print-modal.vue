@@ -156,16 +156,46 @@
               <label class="form-label">
                 <i class="bi bi-printer mr-1"></i>{{ $t('view.sale.invoiceDetail.printer') }}
               </label>
-              <DropdownGeneric
-                v-model="selectedPrinter"
-                :options="printerOptions"
-                optionLabel="label"
-                optionValue="name"
-                :placeholder="$t('view.sale.invoiceDetail.selectPrinter')"
-                :showClear="true"
-              />
-              <small v-if="printerOptions.length === 0" class="form-text text-muted">
-                {{ $t('view.sale.invoiceDetail.noPrinterFound') }}
+              <div class="printer-select-row">
+                <AutoCompleteGeneric
+                  :modelValue="selectedPrinter"
+                  :staticOptions="printerOptions"
+                  :useStaticList="true"
+                  optionLabel="label"
+                  :placeholder="$t('view.sale.invoiceDetail.selectPrinter')"
+                  :forceSelection="false"
+                  customClass="printer-ac"
+                  @update:modelValue="onPrinterChange"
+                />
+                <ButtonGeneric
+                  variant="outline"
+                  icon="bi-arrow-clockwise"
+                  :label="$t('common.printer.reload')"
+                  @click="loadPrinters"
+                />
+              </div>
+
+              <div v-if="printerStatus === 'unreachable'" class="printer-status-box">
+                <div class="printer-status-title">{{ $t('common.printer.statusUnreachableTitle') }}</div>
+                <ul class="printer-status-list">
+                  <li>{{ $t('common.printer.statusUnreachableStep1') }}</li>
+                  <li>
+                    {{ $t('common.printer.statusUnreachableStep2Prefix') }}
+                    <a :href="printerHealthUrl" target="_blank" rel="noopener">{{ printerHealthUrl }}</a>
+                    {{ $t('common.printer.statusUnreachableStep2Suffix') }}
+                  </li>
+                  <li>{{ $t('common.printer.statusUnreachableStep3') }}</li>
+                </ul>
+              </div>
+              <small v-else-if="printerStatus === 'blocked'" class="form-text text-muted printer-status-msg">
+                {{ $t('common.printer.statusBlocked') }}
+              </small>
+              <small v-else-if="printerStatus === 'empty'" class="form-text text-muted printer-status-msg">
+                {{ $t('common.printer.statusEmpty') }}
+              </small>
+
+              <small v-if="printerSavedNotFoundMessage" class="form-text text-warning printer-status-msg">
+                {{ printerSavedNotFoundMessage }}
               </small>
             </div>
 
@@ -460,14 +490,19 @@ import { isForeignCurrency } from '@/services/utils/decimal.js'
 import dayjs from 'dayjs'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
 import DrawerGeneric from '@/components/generic/DrawerGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
-import { getPrinterList } from '@/services/api/printer-config-service.js'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-config-service.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+
+const VAT_PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
+const BILL_PRINTER_STORAGE_KEY = 'print-bridge-printer-bill'
 
 export default {
   name: 'InvoiceConfirmPrintModal',
@@ -476,9 +511,11 @@ export default {
     DrawerGeneric,
     CalendarGeneric,
     DropdownGeneric,
+    AutoCompleteGeneric,
     CheckboxGeneric,
     RadioGroupGeneric,
-    InputTextGeneric
+    InputTextGeneric,
+    ButtonGeneric
   },
 
   props: {
@@ -520,6 +557,7 @@ export default {
       continuousOffset: { x: 0, y: 0 },
       billOffset: { x: 0, y: 0 },
       printerOptions: [],
+      printerStatus: null,
       selectedPrinter: null,
       defaultBillPrinter: null,
       defaultVatPrinter: null,
@@ -582,6 +620,16 @@ export default {
         { value: 'addVat', label: this.$t('view.sale.invoiceDetail.priceModeAddVat') },
         { value: 'subVat', label: this.$t('view.sale.invoiceDetail.priceModeSubVat') }
       ]
+    },
+
+    printerHealthUrl() {
+      return `${PRINT_BRIDGE_BASE_URL}/health`
+    },
+
+    printerSavedNotFoundMessage() {
+      if (this.printerStatus !== 'ok' || !this.selectedPrinter) return ''
+      const found = this.printerOptions.some((p) => p.name === this.selectedPrinter)
+      return found ? '' : this.$t('common.printer.savedNotFound', { name: this.selectedPrinter })
     },
 
     previewWatchSnapshot() {
@@ -701,11 +749,11 @@ export default {
       this.showHistory = savedShowHistory === 'true'
     }
 
-    this.printerOptions = await getPrinterList()
+    await this.loadPrinters()
 
     const [billLayout, vatLayout] = await Promise.all([getBillLayout(), getVatLayout()])
-    this.defaultBillPrinter = billLayout?.printerName || null
-    this.defaultVatPrinter = vatLayout?.printerName || null
+    this.defaultBillPrinter = storage.getItem(BILL_PRINTER_STORAGE_KEY) || billLayout?.printerName || null
+    this.defaultVatPrinter = storage.getItem(VAT_PRINTER_STORAGE_KEY) || vatLayout?.printerName || null
 
     if (this.paperSize === 'bill') {
       this.selectedPrinter = this.defaultBillPrinter
@@ -721,6 +769,16 @@ export default {
   },
 
   methods: {
+    async loadPrinters() {
+      const result = await fetchPrinterList()
+      this.printerStatus = result.status
+      this.printerOptions = result.printers
+    },
+
+    onPrinterChange(value) {
+      this.selectedPrinter = typeof value === 'object' && value !== null ? value.name : value
+    },
+
     scheduleAutoPreview() {
       if (this.autoPreviewTimer) {
         clearTimeout(this.autoPreviewTimer)
@@ -911,6 +969,47 @@ export default {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.875rem;
+}
+
+.printer-select-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+
+  :deep(.printer-ac) {
+    flex: 1;
+  }
+}
+
+.printer-status-box {
+  margin-top: var(--sp-xs);
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--base-red);
+  border-radius: var(--radius-sm);
+  background: #fff5f5;
+}
+
+.printer-status-title {
+  font-weight: 700;
+  color: var(--base-red);
+  margin-bottom: var(--sp-xs);
+  font-size: var(--fs-sm);
+}
+
+.printer-status-list {
+  margin: 0;
+  padding-left: var(--sp-lg);
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+
+  a {
+    color: var(--base-green);
+  }
+}
+
+.printer-status-msg {
+  display: block;
+  margin-top: var(--sp-xs);
 }
 
 .bill-element-group {

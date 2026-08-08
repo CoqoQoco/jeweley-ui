@@ -71,5 +71,17 @@ export default {
   },
   alert: {
     invalidData: 'ข้อมูลไม่ถูกต้อง'
+  },
+  printer: {
+    reload: 'โหลดรายชื่อใหม่',
+    selectPlaceholder: 'เลือกหรือพิมพ์ชื่อเครื่องพิมพ์',
+    statusUnreachableTitle: 'เชื่อมต่อโปรแกรมพิมพ์ไม่ได้',
+    statusUnreachableStep1: 'เปิดโปรแกรม JewelryPrintBridge.exe ค้างไว้หรือยัง',
+    statusUnreachableStep2Prefix: 'ทดสอบเปิด',
+    statusUnreachableStep2Suffix: 'ต้องขึ้นคำว่า ok',
+    statusUnreachableStep3: 'โปรแกรมต้องเป็นเวอร์ชัน v1.1 ขึ้นไป',
+    statusBlocked: 'โปรแกรมพิมพ์ทำงานอยู่ แต่ปฏิเสธคำขอจากเว็บนี้ — กรุณาอัปเดตโปรแกรมเป็นเวอร์ชัน v1.1 ขึ้นไป (เมนูดาวน์โหลดโปรแกรม)',
+    statusEmpty: 'โปรแกรมพิมพ์ทำงานอยู่ แต่ไม่พบเครื่องพิมพ์ที่ติดตั้งใน Windows — ตรวจที่ Devices and Printers',
+    savedNotFound: 'เครื่องพิมพ์ที่บันทึกไว้ "{name}" ไม่มีในเครื่องนี้ — กรุณาเลือกใหม่'
   }
 }

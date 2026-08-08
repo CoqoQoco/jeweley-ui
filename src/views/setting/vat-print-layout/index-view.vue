@@ -226,19 +226,49 @@
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row printer-form-row">
             <label class="form-label-col">Printer Name</label>
             <div class="form-input-col">
-              <DropdownGeneric
-                v-model="form.printerName"
-                :options="printerOptions"
-                optionLabel="label"
-                optionValue="name"
-                placeholder="เลือกเครื่องพิมพ์"
-                :showClear="true"
-              />
-              <small v-if="printerOptions.length === 0" class="text-muted">
-                ไม่พบรายชื่อเครื่องพิมพ์ — ตรวจสอบว่า bridge รันอยู่และ config มี Printers
+              <div class="printer-select-row">
+                <AutoCompleteGeneric
+                  :modelValue="form.printerName"
+                  :staticOptions="printerOptions"
+                  :useStaticList="true"
+                  optionLabel="label"
+                  :placeholder="$t('common.printer.selectPlaceholder')"
+                  :forceSelection="false"
+                  customClass="printer-ac"
+                  @update:modelValue="onPrinterChange"
+                />
+                <ButtonGeneric
+                  variant="outline"
+                  icon="bi-arrow-clockwise"
+                  :label="$t('common.printer.reload')"
+                  @click="loadPrinters"
+                />
+              </div>
+
+              <div v-if="printerStatus === 'unreachable'" class="printer-status-box">
+                <div class="printer-status-title">{{ $t('common.printer.statusUnreachableTitle') }}</div>
+                <ul class="printer-status-list">
+                  <li>{{ $t('common.printer.statusUnreachableStep1') }}</li>
+                  <li>
+                    {{ $t('common.printer.statusUnreachableStep2Prefix') }}
+                    <a :href="printerHealthUrl" target="_blank" rel="noopener">{{ printerHealthUrl }}</a>
+                    {{ $t('common.printer.statusUnreachableStep2Suffix') }}
+                  </li>
+                  <li>{{ $t('common.printer.statusUnreachableStep3') }}</li>
+                </ul>
+              </div>
+              <small v-else-if="printerStatus === 'blocked'" class="text-muted printer-status-msg">
+                {{ $t('common.printer.statusBlocked') }}
+              </small>
+              <small v-else-if="printerStatus === 'empty'" class="text-muted printer-status-msg">
+                {{ $t('common.printer.statusEmpty') }}
+              </small>
+
+              <small v-if="printerSavedNotFoundMessage" class="text-warning printer-status-msg">
+                {{ printerSavedNotFoundMessage }}
               </small>
             </div>
           </div>
@@ -268,8 +298,12 @@
 import { getVatLayout, saveVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { printVat } from '@/services/api/print-bridge-service.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
-import { getPrinterList } from '@/services/api/printer-config-service.js'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import { storage } from '@/services/storage.js'
+import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-config-service.js'
+
+const PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
 
 const DEFAULT_LAYOUT = {
   invoiceNo: { x: 6.0, y: 1.8 },
@@ -291,7 +325,7 @@ const DEFAULT_LAYOUT = {
   maxRowsPerPage: 25,
   headerFontSize: 12,
   itemFontSize: 10,
-  printerName: 'EPSON LQ-310 ESC/P2',
+  printerName: '',
   offsetX: 0,
   offsetY: 0
 }
@@ -303,12 +337,25 @@ function deepClone(obj) {
 export default {
   name: 'VatPrintLayoutView',
 
-  components: { DropdownGeneric },
+  components: { AutoCompleteGeneric, ButtonGeneric },
 
   data() {
     return {
       form: deepClone(DEFAULT_LAYOUT),
-      printerOptions: []
+      printerOptions: [],
+      printerStatus: null
+    }
+  },
+
+  computed: {
+    printerHealthUrl() {
+      return `${PRINT_BRIDGE_BASE_URL}/health`
+    },
+
+    printerSavedNotFoundMessage() {
+      if (this.printerStatus !== 'ok' || !this.form.printerName) return ''
+      const found = this.printerOptions.some((p) => p.name === this.form.printerName)
+      return found ? '' : this.$t('common.printer.savedNotFound', { name: this.form.printerName })
     }
   },
 
@@ -321,12 +368,35 @@ export default {
         if (saved[key]) this.form[key] = { ...DEFAULT_LAYOUT[key], ...saved[key] }
       })
     }
-    this.printerOptions = await getPrinterList()
+
+    const storedPrinter = storage.getItem(PRINTER_STORAGE_KEY)
+    if (storedPrinter) {
+      this.form.printerName = storedPrinter
+    }
+
+    await this.loadPrinters()
   },
 
   methods: {
+    async loadPrinters() {
+      const result = await fetchPrinterList()
+      this.printerStatus = result.status
+      this.printerOptions = result.printers
+    },
+
+    onPrinterChange(value) {
+      this.form.printerName = typeof value === 'object' && value !== null ? value.name : value
+    },
+
     async onSave() {
-      await saveVatLayout(this.form)
+      if (this.form.printerName) {
+        storage.setItem(PRINTER_STORAGE_KEY, this.form.printerName)
+      } else {
+        storage.removeItem(PRINTER_STORAGE_KEY)
+      }
+      const payload = { ...this.form }
+      delete payload.printerName
+      await saveVatLayout(payload)
       success('บันทึกค่า Layout สำเร็จ', 'VAT Print Layout')
     },
 
@@ -395,6 +465,10 @@ export default {
   gap: 12px;
   margin-bottom: 8px;
 
+  &.printer-form-row {
+    align-items: flex-start;
+  }
+
   .form-label-col {
     flex: 0 0 220px;
     margin-bottom: 0;
@@ -456,5 +530,46 @@ export default {
       max-width: 100%;
     }
   }
+}
+
+.printer-select-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+
+  :deep(.printer-ac) {
+    flex: 1;
+  }
+}
+
+.printer-status-box {
+  margin-top: var(--sp-xs);
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--base-red);
+  border-radius: var(--radius-sm);
+  background: #fff5f5;
+}
+
+.printer-status-title {
+  font-weight: 700;
+  color: var(--base-red);
+  margin-bottom: var(--sp-xs);
+  font-size: var(--fs-sm);
+}
+
+.printer-status-list {
+  margin: 0;
+  padding-left: var(--sp-lg);
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+
+  a {
+    color: var(--base-green);
+  }
+}
+
+.printer-status-msg {
+  display: block;
+  margin-top: var(--sp-xs);
 }
 </style>

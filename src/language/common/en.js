@@ -71,5 +71,17 @@ export default {
   },
   alert: {
     invalidData: 'Invalid Data'
+  },
+  printer: {
+    reload: 'Reload printer list',
+    selectPlaceholder: 'Select or type printer name',
+    statusUnreachableTitle: 'Cannot connect to print bridge',
+    statusUnreachableStep1: 'Is JewelryPrintBridge.exe running?',
+    statusUnreachableStep2Prefix: 'Try opening',
+    statusUnreachableStep2Suffix: 'it should show "ok"',
+    statusUnreachableStep3: 'The bridge program must be version v1.1 or later',
+    statusBlocked: 'Print bridge is running but rejected the request from this site — please update the bridge to v1.1 or later (see Downloads menu)',
+    statusEmpty: 'Print bridge is running but no printers were found on Windows — check Devices and Printers',
+    savedNotFound: 'Saved printer "{name}" was not found on this device — please select again'
   }
 }
