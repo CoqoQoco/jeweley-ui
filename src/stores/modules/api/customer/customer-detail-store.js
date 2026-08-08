@@ -34,7 +34,8 @@ export const useCustomerDetailApiStore = defineStore('customerDetailApiStore', {
         email: formValue.email,
         contactName: formValue.contact,
         remark: formValue.remark,
-        discount: formValue.discount
+        discount: formValue.discount,
+        taxId: formValue.taxId
       }
       return await api.jewelry.post('Customer/UpdateCustomer', params)
     },
@@ -51,7 +52,8 @@ export const useCustomerDetailApiStore = defineStore('customerDetailApiStore', {
         email: formValue.email,
         contactName: formValue.contact,
         remark: formValue.remark,
-        discount: formValue.discount
+        discount: formValue.discount,
+        taxId: formValue.taxId
       }
       return await api.jewelry.post('Customer/CreateCustomer', params)
     }

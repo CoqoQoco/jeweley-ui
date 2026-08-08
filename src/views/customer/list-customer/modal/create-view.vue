@@ -39,6 +39,12 @@
                   <TextareaGeneric v-model="form.remark" />
                 </FormFieldGeneric>
               </div>
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.customer.field.taxId')">
+                  <InputTextGeneric v-model.trim="form.taxId" />
+                </FormFieldGeneric>
+                <div></div>
+              </div>
             </SectionCardGeneric>
 
             <SectionCardGeneric :title="$t('view.customer.section.contact')" class="modal-section">
@@ -105,7 +111,8 @@ const interfaceForm = {
   contact: null,
   email: null,
   remark: null,
-  discount: 0
+  discount: 0,
+  taxId: null
 }
 
 const interfaceIsValid = {
@@ -168,6 +175,7 @@ export default {
         this.form.contact = this.editData.contactName
         this.form.remark = this.editData.remark
         this.form.discount = this.editData.discount ?? 0
+        this.form.taxId = this.editData.taxId
         this.form.type = this.masterCustomer.find((t) => t.code === this.editData.typeCode) || null
       }
     }
@@ -237,7 +245,8 @@ export default {
         email: this.form.email,
         contact: this.form.contact,
         remark: this.form.remark,
-        discount: this.form.discount
+        discount: this.form.discount,
+        taxId: this.form.taxId
       }
 
       let res

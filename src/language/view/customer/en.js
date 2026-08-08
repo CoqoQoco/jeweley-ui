@@ -15,6 +15,7 @@ export default {
     tel2: 'Phone 2',
     email: 'E-mail',
     contact: 'Contact Person',
+    taxId: 'Tax ID',
     productionPlanCount: 'Production Orders',
     saleCount: 'Sales',
     discount: 'Discount (%)'
