@@ -182,6 +182,18 @@ data() {
 
 ---
 
-**Created**: 2025-01-03
-**Last Updated**: 2025-01-03
-**Version**: 1.0
+## กระดาษต่อเนื่อง — Preview (bill / vat-bridge)
+
+ปุ่ม "ดูตัวอย่าง" แสดงทุก `paperSize` แล้ว (เดิมมีเฉพาะ `a4`) โดย `paperSize` ที่เป็น `bill` หรือ `vat-bridge` จะไม่เปิด `InvoicePdfPreviewModal` (pdfmake) แต่เปิด `continuous-print-preview-panel.vue` แทน ซึ่ง render ผลลัพธ์ที่จะพิมพ์จริงผ่าน GDI bridge ด้วย `print-model-preview.vue` (คำนวณตำแหน่ง x/y/fontSize จากนิ้ว → px ตาม contract เดียวกับ `GdiGenericPrinter.cs`)
+
+โมเดลที่ใช้ preview ถูกสร้างผ่าน `buildContinuousPrintModel()` (`src/services/helper/print/continuous-print-payload.js`) — ฟังก์ชันเดียวกับที่ `handleConfirmPrint` ใน `index-view.vue` เรียกตอนพิมพ์จริง จึงรับประกันว่า preview ตรงกับผลพิมพ์จริงเสมอ
+
+### Prop ใหม่: isPreviewOpen
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| isPreviewOpen | Boolean | false | true เมื่อ preview panel (A4 หรือ continuous) กำลังเปิดอยู่ |
+
+เมื่อ `isPreviewOpen = true` modal จะ watch field ที่กระทบ layout กระดาษต่อเนื่อง (`paperSize`, `continuousOffset.x/.y`, `billOffset.x/.y`, `billElementFlags`, `printData.showDecimals`, `selectedPrinter`, `printData.invoiceNumber`, `printData.invoiceDate`) แบบ debounce 250ms แล้ว re-emit `preview-print` อัตโนมัติ — ทำให้ปรับ offset/flag แล้วเห็นผลใน preview ทันทีโดยไม่ต้องกดปุ่ม "ดูตัวอย่าง" ซ้ำ เมื่อ `isPreviewOpen = false` จะไม่ re-emit
+
+เมื่อสลับ `paperSize` ขณะ preview เปิดอยู่ index-view.vue จะสลับ panel ให้ตรงกับกระดาษที่เลือกอัตโนมัติ (ต่อเนื่อง ↔ A4) โดยปิด panel เดิมก่อนเปิดอันใหม่เสมอ ไม่มีทางเปิดซ้อนกันสองอัน

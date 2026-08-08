@@ -435,7 +435,7 @@
     </template>
 
     <template #action>
-      <button v-if="paperSize === 'a4'" class="btn btn-main mr-2" type="button" @click="onPreviewPDF">
+      <button class="btn btn-main mr-2" type="button" @click="onPreviewPDF">
         <i class="bi bi-eye mr-1"></i>
         {{ $t('view.sale.invoiceDetail.previewBtn') }}
       </button>
@@ -489,6 +489,10 @@ export default {
     invoiceData: {
       type: Object,
       default: () => ({})
+    },
+    isPreviewOpen: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -551,7 +555,8 @@ export default {
         unitPriceMode: 'tag',
         unitVatPercent: 7,
         summaryVatPercent: 7
-      }
+      },
+      autoPreviewTimer: null
     }
   },
 
@@ -577,6 +582,21 @@ export default {
         { value: 'addVat', label: this.$t('view.sale.invoiceDetail.priceModeAddVat') },
         { value: 'subVat', label: this.$t('view.sale.invoiceDetail.priceModeSubVat') }
       ]
+    },
+
+    previewWatchSnapshot() {
+      return {
+        paperSize: this.paperSize,
+        offsetX: this.continuousOffset.x,
+        offsetY: this.continuousOffset.y,
+        billOffsetX: this.billOffset.x,
+        billOffsetY: this.billOffset.y,
+        billFlags: { ...this.billElementFlags },
+        showDecimals: this.printData.showDecimals,
+        selectedPrinter: this.selectedPrinter,
+        invoiceNumber: this.printData.invoiceNumber,
+        invoiceDate: this.printData.invoiceDate
+      }
     }
   },
 
@@ -589,6 +609,9 @@ export default {
         }
       },
       immediate: true
+    },
+    previewWatchSnapshot() {
+      this.scheduleAutoPreview()
     },
     paperSize(newVal) {
       if (newVal === 'bill') {
@@ -691,7 +714,25 @@ export default {
     }
   },
 
+  beforeUnmount() {
+    if (this.autoPreviewTimer) {
+      clearTimeout(this.autoPreviewTimer)
+    }
+  },
+
   methods: {
+    scheduleAutoPreview() {
+      if (this.autoPreviewTimer) {
+        clearTimeout(this.autoPreviewTimer)
+      }
+      if (!this.isPreviewOpen) return
+
+      this.autoPreviewTimer = setTimeout(() => {
+        if (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim() || !this.printData.invoiceDate) return
+        this.$emit('preview-print', this.buildPrintData())
+      }, 250)
+    },
+
     async fetchPrintLogs() {
       if (!this.invoiceData || !this.invoiceData.invoiceNumber) return
       const res = await this.invoiceStore.fetchPrintLogList({ invoiceNumber: this.invoiceData.invoiceNumber })
@@ -767,6 +808,10 @@ export default {
     },
 
     closeModal() {
+      if (this.autoPreviewTimer) {
+        clearTimeout(this.autoPreviewTimer)
+        this.autoPreviewTimer = null
+      }
       this.$emit('close-modal')
     },
 

@@ -315,6 +315,7 @@
       <InvoiceConfirmPrintModal
         :isShowModal="showConfirmPrintModal"
         :invoiceData="invoiceData"
+        :isPreviewOpen="isShowPreviewModal || isShowContinuousPreview"
         @close-modal="showConfirmPrintModal = false"
         @confirm-print="handleConfirmPrint"
         @preview-print="handlePreviewPrint"
@@ -326,6 +327,16 @@
         :previewUrl="previewUrl"
         @close-modal="closePreviewModal"
         @download="handlePreviewDownload"
+      />
+
+      <!-- Continuous Paper Print Preview Panel -->
+      <ContinuousPrintPreviewPanel
+        :isShowModal="isShowContinuousPreview"
+        :model="continuousPreviewModel"
+        :paperLabel="continuousPaperLabel"
+        :offsetLabel="continuousOffsetLabel"
+        @close-modal="closeContinuousPreview"
+        @print-now="handleContinuousPrintNow"
       />
 
       <!-- Delivery Note Confirm Print Modal -->
@@ -363,6 +374,7 @@
 import InvoiceVersionModal from './modal/invoice-version-modal.vue'
 import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
 import InvoicePdfPreviewModal from './modal/invoice-pdf-preview-modal.vue'
+import ContinuousPrintPreviewPanel from './modal/continuous-print-preview-panel.vue'
 import DeliveryConfirmPrintModal from './modal/delivery-confirm-print-modal.vue'
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
@@ -387,6 +399,7 @@ export default {
     InvoiceVersionModal,
     InvoiceConfirmPrintModal,
     InvoicePdfPreviewModal,
+    ContinuousPrintPreviewPanel,
     DeliveryConfirmPrintModal,
     ExcelExportConfirmModal,
     PaymentRecordModal,
@@ -412,6 +425,8 @@ export default {
       showPaymentModal: false,
       isShowPreviewModal: false,
       previewUrl: '',
+      isShowContinuousPreview: false,
+      continuousPreviewModel: null,
       lastPreviewPrintData: null,
       paidAmount: 0,
       versionList: [],
@@ -457,6 +472,21 @@ export default {
     },
     roundingAdjustment() {
       return this.grandTotalRounded - this.grandTotalRaw
+    },
+
+    continuousPaperLabel() {
+      if (!this.lastPreviewPrintData) return ''
+      return this.lastPreviewPrintData.paperSize === 'vat-bridge'
+        ? this.$t('view.sale.invoiceDetail.paperTax')
+        : this.$t('view.sale.invoiceDetail.paperBill')
+    },
+
+    continuousOffsetLabel() {
+      if (!this.lastPreviewPrintData) return ''
+      const offset = this.lastPreviewPrintData.paperSize === 'vat-bridge'
+        ? this.lastPreviewPrintData.continuousOffset
+        : this.lastPreviewPrintData.billOffset
+      return this.$t('view.sale.invoiceDetail.previewOffsetLabel', { x: offset?.x || 0, y: offset?.y || 0 })
     }
   },
 
@@ -1087,112 +1117,25 @@ export default {
           itemsPerPage: Number(printData.itemsPerPage) || 10
         }
 
-        if (printData.paperSize === 'vat-bridge') {
+        if (printData.paperSize === 'vat-bridge' || printData.paperSize === 'bill') {
           const { printGeneric } = await import('@/services/api/print-bridge-service.js')
-          const { getVatLayout } = await import('@/services/helper/print/vat-layout-store.js')
-          const { buildVatPrintModel } = await import('@/services/helper/print/vat-print-model-builder.js')
-          const layout = await getVatLayout()
-          const offsetMm = printData.continuousOffset || { x: 0, y: 0 }
-          const mergedLayout = layout
-            ? { ...layout, offsetX: (layout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (layout.offsetY ?? 0) + (offsetMm.y || 0) }
-            : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
-          const vatInvoice = {
+          const { buildContinuousPrintModel } = await import('@/services/helper/print/continuous-print-payload.js')
+          const { model, logPayload } = await buildContinuousPrintModel(printData.paperSize, {
+            invoiceData: this.invoiceData,
+            invoiceItems: this.invoiceItems,
+            printData,
             invoiceNo: options.invoiceNo,
-            invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
-            customer: {
-              name: this.invoiceData.customerName || '',
-              address: this.invoiceData.customerAddress || '',
-              taxId: this.invoiceData.customerTaxId || ''
-            },
-            customerTaxId: this.invoiceData.customerTaxId || '',
-            items: (this.invoiceItems || []).map(i => ({
-              productNameEN: i.productNameEN || i.description || i.productNumber || '',
-              qty: Number(i.qty) || 0,
-              appraisalPrice: Number(i.appraisalPrice) || 0,
-              discountPercent: Number(i.discountPercent) || 0
-            })),
-            currencyRate: Number(this.invoiceData.currencyRate) || 1,
-            specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
-            specialAddition: Number(this.invoiceData.specialAddition) || 0,
-            freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
-            vatPercent: Number(this.invoiceData.vatPercent) || 0
-          }
-          const vatModel = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
-          await printGeneric(vatModel)
-          success(this.$t('view.sale.invoiceDetail.success.printVat'), 'Bridge GDI')
-          this.invoiceStore.createPrintLog({
-            invoiceNumber: printData.invoiceNumber,
-            paperType: 'vat',
-            data: JSON.stringify({ flags: null, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate })
+            invoiceDate: options.invoiceDate
           })
-          return
-        } else if (printData.paperSize === 'bill') {
-          const { printGeneric } = await import('@/services/api/print-bridge-service.js')
-          const { getBillLayout } = await import('@/services/helper/print/bill-layout-store.js')
-          const { buildBillPrintModel } = await import('@/services/helper/print/bill-print-model-builder.js')
-          const billLayout = await getBillLayout()
-          const offsetMm = printData.billOffset || { x: 0, y: 0 }
-          const mergedBillLayout = billLayout
-            ? { ...billLayout, offsetX: (billLayout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (billLayout.offsetY ?? 0) + (offsetMm.y || 0) }
-            : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
-          const billInvoice = {
-            invoiceNo: options.invoiceNo,
-            invoiceDate: dayjs(options.invoiceDate).format('YYYY-MM-DD'),
-            customer: {
-              name: this.invoiceData.customerName || '',
-              address: this.invoiceData.customerAddress || '',
-              taxId: this.invoiceData.customerTaxId || ''
-            },
-            customerTaxId: this.invoiceData.customerTaxId || '',
-            items: (this.invoiceItems || []).map(i => {
-              const mats = Array.isArray(i.materials) ? i.materials : []
-              const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-              const stoneWeight = mats.filter(m => m.type === 'Gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-              const diamondWeight = mats.filter(m => m.type === 'Diamond').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-              const diamondGrade = [...new Set(
-                mats.filter(m => m.type === 'Diamond').map(m => m.typeCode).filter(Boolean)
-              )].join(', ')
-              return {
-                stockNumber: i.stockNumberOrigin || i.stockNumber || '',
-                productNumber: i.productNumber || '',
-                productNameEN: i.productNameEN || i.description || i.productNumber || '',
-                qty: Number(i.qty) || 0,
-                appraisalPrice: Number(i.appraisalPrice) || 0,
-                discountPercent: Number(i.discountPercent) || 0,
-                goldWeight: goldWeight || null,
-                stoneWeight: stoneWeight || null,
-                diamondWeight: diamondWeight || null,
-                diamondGrade: diamondGrade || '',
-                earringStemSize: i.earringStemSize || ''
-              }
-            }),
-            currencyRate: Number(this.invoiceData.currencyRate) || 1,
-            specialDiscount: Number(this.invoiceData.specialDiscount) || 0,
-            specialAddition: Number(this.invoiceData.specialAddition) || 0,
-            freightAndInsurance: Number(this.invoiceData.freightAndInsurance) || 0,
-            vatPercent: Number(this.invoiceData.vatPercent) || 0
-          }
-          const layoutPayload = mergedBillLayout ? { ...mergedBillLayout } : {}
-          const BILL_FLAG_KEYS = [
-            'showInvoiceNo', 'showDate', 'showPageNumber',
-            'showCustomerName', 'showCustomerTaxId', 'showCustomerAddress',
-            'showItemNo', 'showDescription', 'showStockNumber', 'showProductNumber',
-            'showPriceBeforeDiscount', 'showPriceIncludingVat',
-            'showGoldWeight', 'showStoneWeight', 'showDiamondWeight', 'showDiamondGrade',
-            'showQty', 'showUnitPrice', 'showAmount', 'showRemark',
-            'showSubtotal', 'showVat', 'showTotal', 'showAmountText',
-            'unitPriceMode', 'unitVatPercent', 'summaryVatPercent'
-          ]
-          for (const key of BILL_FLAG_KEYS) {
-            if (printData[key] !== undefined) layoutPayload[key] = printData[key]
-          }
-          const billModel = buildBillPrintModel(billInvoice, layoutPayload, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
-          await printGeneric(billModel)
-          success(this.$t('view.sale.invoiceDetail.success.printBill'), 'Bridge GDI')
+          await printGeneric(model)
+          const successKey = printData.paperSize === 'vat-bridge'
+            ? 'view.sale.invoiceDetail.success.printVat'
+            : 'view.sale.invoiceDetail.success.printBill'
+          success(this.$t(successKey), 'Bridge GDI')
           this.invoiceStore.createPrintLog({
             invoiceNumber: printData.invoiceNumber,
-            paperType: 'bill',
-            data: JSON.stringify({ unitPriceMode: printData.unitPriceMode, unitVatPercent: printData.unitVatPercent, summaryVatPercent: printData.summaryVatPercent, flags: Object.fromEntries(Object.entries(printData).filter(([k]) => k.startsWith('show'))), billOffset: printData.billOffset, continuousOffset: null, printerName: printData.printerName, template: printData.invoiceTemplate })
+            paperType: printData.paperSize === 'vat-bridge' ? 'vat' : 'bill',
+            data: JSON.stringify(logPayload)
           })
           return
         } else {
@@ -1213,6 +1156,28 @@ export default {
     },
     async handlePreviewPrint(printData) {
       if (!printData || !printData.invoiceNumber) return
+
+      if (printData.paperSize !== 'a4') {
+        if (this.isShowPreviewModal) {
+          this.closePreviewModal()
+        }
+
+        const continuousDate = dayjs(printData.invoiceDate)
+        const { buildContinuousPrintModel } = await import('@/services/helper/print/continuous-print-payload.js')
+        const { model } = await buildContinuousPrintModel(printData.paperSize, {
+          invoiceData: this.invoiceData,
+          invoiceItems: this.invoiceItems,
+          printData,
+          invoiceNo: printData.invoiceNumber,
+          invoiceDate: continuousDate
+        })
+        this.continuousPreviewModel = model
+        this.lastPreviewPrintData = printData
+        this.isShowContinuousPreview = true
+        return
+      }
+
+      this.closeContinuousPreview()
 
       const formattedDate = dayjs(printData.invoiceDate)
 
@@ -1281,6 +1246,16 @@ export default {
     handlePreviewDownload() {
       this.handleConfirmPrint(this.lastPreviewPrintData)
       this.closePreviewModal()
+    },
+
+    closeContinuousPreview() {
+      this.isShowContinuousPreview = false
+      this.continuousPreviewModel = null
+    },
+
+    async handleContinuousPrintNow() {
+      await this.handleConfirmPrint(this.lastPreviewPrintData)
+      this.closeContinuousPreview()
     },
 
     async generateVersionPDF(versionData, options = { open: false, download: true }) {
