@@ -72,6 +72,8 @@
               <li class="step-desc">{{ $t('view.downloads.manual.trouble1') }}</li>
               <li class="step-desc">{{ $t('view.downloads.manual.trouble2') }}</li>
               <li class="step-desc">{{ $t('view.downloads.manual.trouble3') }}</li>
+              <li class="step-desc">{{ $t('view.downloads.manual.trouble4') }}</li>
+              <li class="step-desc">{{ $t('view.downloads.manual.trouble5') }}</li>
             </ul>
           </div>
         </div>

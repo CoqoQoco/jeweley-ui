@@ -237,6 +237,7 @@
                   optionLabel="label"
                   :placeholder="$t('common.printer.selectPlaceholder')"
                   :forceSelection="false"
+                  :dropdown="true"
                   customClass="printer-ac"
                   @update:modelValue="onPrinterChange"
                 />
@@ -245,6 +246,12 @@
                   icon="bi-arrow-clockwise"
                   :label="$t('common.printer.reload')"
                   @click="loadPrinters"
+                />
+                <ButtonGeneric
+                  variant="outline"
+                  icon="bi-x-lg"
+                  :title="$t('common.printer.clear')"
+                  @click="onClearPrinter"
                 />
               </div>
 
@@ -265,6 +272,10 @@
               </small>
               <small v-else-if="printerStatus === 'empty'" class="text-muted printer-status-msg">
                 {{ $t('common.printer.statusEmpty') }}
+              </small>
+
+              <small v-if="printerOptions.length === 0" class="text-muted printer-status-msg">
+                {{ $t('common.printer.manualHint') }}
               </small>
 
               <small v-if="printerSavedNotFoundMessage" class="text-warning printer-status-msg">
@@ -386,6 +397,10 @@ export default {
 
     onPrinterChange(value) {
       this.form.printerName = typeof value === 'object' && value !== null ? value.name : value
+    },
+
+    onClearPrinter() {
+      this.form.printerName = ''
     },
 
     async onSave() {
@@ -535,10 +550,12 @@ export default {
 .printer-select-row {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: var(--sp-sm);
 
   :deep(.printer-ac) {
     flex: 1;
+    min-width: 200px;
   }
 }
 
