@@ -62,7 +62,9 @@ export default {
         { value: 4, label: this.$t('view.stock.gemMovementReport.type4') },
         { value: 5, label: this.$t('view.stock.gemMovementReport.type5') },
         { value: 6, label: this.$t('view.stock.gemMovementReport.type6') },
-        { value: 7, label: this.$t('view.stock.gemMovementReport.type7') }
+        { value: 7, label: this.$t('view.stock.gemMovementReport.type7') },
+        { value: 8, label: this.$t('view.stock.gemMovementReport.type8') },
+        { value: 9, label: this.$t('view.stock.gemMovementReport.type9') }
       ]
     },
 

@@ -1426,6 +1426,166 @@ export const pipelineDashboard = {
   caveat: 'เน้น pipeline จากใบเสนอราคา — ยอด invoice/payment ยังสะสมไม่ครบ รายงานรายได้/ลูกหนี้จะสมบูรณ์เมื่อมีข้อมูลมากขึ้น'
 }
 
+export const materialSale = {
+  title: 'ขายวัตถุดิบ',
+  pageDescription: 'ออกใบขายวัตถุดิบ (พลอย) จากคลังให้ลูกค้าภายนอก พร้อมยืนยันตัดสต็อกและพิมพ์ PDF',
+  searchTitle: 'ค้นหาใบขายวัตถุดิบ',
+  searchDesc: 'ค้นหาใบขายวัตถุดิบตามเลขที่ ลูกค้า สถานะ และช่วงวันที่เอกสาร',
+  createBtn: 'สร้างใบขายวัตถุดิบ',
+  documentNo: 'เลขที่ใบขาย',
+  customerName: 'ลูกค้า',
+  status: 'สถานะ',
+  dateRange: 'ช่วงวันที่เอกสาร',
+  placeholder: {
+    documentNo: 'ระบุเลขที่ใบขาย',
+    customerName: 'ระบุชื่อลูกค้า'
+  },
+  colNo: '#',
+  colDocumentNo: 'เลขที่ใบขาย',
+  colDocumentDate: 'วันที่',
+  colCustomerName: 'ลูกค้า',
+  colItemCount: 'จำนวนรายการ',
+  colTotalWeight: 'น้ำหนักรวม (ct)',
+  colGrandTotal: 'ยอดรวม',
+  colStatus: 'สถานะ',
+  colAction: 'จัดการ',
+  statusDraft: 'ร่าง',
+  statusConfirmed: 'ยืนยันแล้ว',
+  statusCancelled: 'ยกเลิก',
+  noData: 'ไม่พบข้อมูลใบขายวัตถุดิบ',
+
+  createTitle: 'สร้างใบขายวัตถุดิบ',
+  editTitle: 'แก้ไขใบขายวัตถุดิบ',
+  detailTitle: 'รายละเอียดใบขายวัตถุดิบ',
+  pageTitle: 'ใบสั่งขาย (วัตถุดิบ)',
+  itemsBadge: '{count} รายการ',
+  deleteBtn: 'ลบใบขาย',
+
+  section: {
+    gemSearch: 'ค้นหาเพิ่มวัตถุดิบ'
+  },
+
+  sectionDocument: 'ข้อมูลเอกสาร',
+  sectionCustomer: 'ข้อมูลลูกค้า',
+  sectionItems: 'รายการขาย',
+  sectionRemark: 'หมายเหตุ',
+
+  documentNoLabel: 'เลขที่ใบขาย',
+  documentDateLabel: 'วันที่เอกสาร',
+  generateDocumentNo: 'สร้างเลขที่ใหม่',
+
+  customerCodeLabel: 'รหัสลูกค้า',
+  customerNameLabel: 'ชื่อลูกค้า',
+  customerAddressLabel: 'ที่อยู่ลูกค้า',
+  customerTelLabel: 'เบอร์โทรลูกค้า',
+  customerEmailLabel: 'อีเมลลูกค้า',
+  customerTaxIdLabel: 'เลขประจำตัวผู้เสียภาษี',
+  selectCustomer: 'ค้นหาลูกค้า',
+  changeCustomer: 'เปลี่ยนลูกค้า',
+  noCustomerSelected: 'ยังไม่ได้เลือกลูกค้า',
+
+  pickGemBtn: 'เลือกพลอยจากคลัง',
+  colItemNo: '#',
+  colGemCode: 'รหัสพลอย',
+  colDescription: 'รายการขาย',
+  colQtyPiece: 'จำนวนเม็ด',
+  colPriceInclVat: 'ราคารวม Vat',
+  colQtyWeight: 'น้ำหนัก (ct)',
+  colPriceExclVat: 'ราคาก่อน Vat',
+  colAmount: 'จำนวนเงิน',
+  stockPriceHint: 'ราคาคลัง {price}/ct',
+  remainQtyHint: 'คงเหลือ {qty} เม็ด',
+  remainWeightHint: 'คงเหลือ {weight} ct',
+  noItems: 'ยังไม่มีรายการขาย — กด "เลือกพลอยจากคลัง" เพื่อเพิ่มรายการ',
+
+  subTotal: 'ยอดรวมก่อน VAT',
+  vatLabel: 'VAT {percent}%',
+  grandTotal: 'ยอดรวมสุทธิ',
+  remark: 'หมายเหตุ',
+
+  saveDraft: 'บันทึกร่าง',
+  confirmAndCut: 'ยืนยัน + ตัดสต็อก',
+  printPdf: 'พิมพ์ PDF',
+  cancelDoc: 'ยกเลิกใบ',
+  cancelReasonLabel: 'เหตุผลการยกเลิก',
+  cancelReasonPlaceholder: 'ระบุเหตุผลการยกเลิกใบขายนี้...',
+  cancelReasonDisplay: 'เหตุผลที่ยกเลิก',
+  cancelReasonRequired: 'กรุณาระบุเหตุผลการยกเลิก',
+  cancelReasonTitle: 'ยืนยันการยกเลิกใบขาย',
+
+  confirmSaveTitle: 'ยืนยันการบันทึกร่าง',
+  confirmConfirmTitle: 'ยืนยันการขายและตัดสต็อก',
+  confirmConfirmMsg: 'ระบบจะตัดสต็อกพลอยตามรายการในใบขายนี้ ไม่สามารถแก้ไขได้อีกหลังยืนยัน',
+  confirmDeleteTitle: 'ยืนยันการลบใบขายวัตถุดิบ',
+
+  saveSuccess: 'บันทึกใบขายวัตถุดิบสำเร็จ',
+  updateSuccess: 'แก้ไขใบขายวัตถุดิบสำเร็จ',
+  confirmSuccess: 'ยืนยันการขายและตัดสต็อกสำเร็จ',
+  cancelSuccess: 'ยกเลิกใบขายวัตถุดิบสำเร็จ',
+  deleteSuccess: 'ลบใบขายวัตถุดิบสำเร็จ',
+  generateDocumentNoSuccess: 'สร้างเลขที่ใบขายใหม่แล้ว',
+
+  validation: {
+    documentDateRequired: 'กรุณาระบุวันที่เอกสาร',
+    customerRequired: 'กรุณาเลือกลูกค้าก่อนบันทึก',
+    itemsRequired: 'กรุณาเลือกรายการพลอยอย่างน้อย 1 รายการ',
+    exceedStock: 'รายการ {code} กรอกเกินจำนวน/น้ำหนักคงเหลือในคลัง'
+  },
+
+  gemPicker: {
+    title: 'เลือกพลอยจากคลัง',
+    code: 'รหัสพลอย',
+    text: 'ค้นหา',
+    placeholderText: 'ค้นหารหัส/ชื่อพลอย',
+    groupName: 'กลุ่ม',
+    shape: 'รูปทรง',
+    size: 'ขนาด',
+    grade: 'เกรด',
+    colCode: 'รหัสพลอย',
+    colGroupName: 'กลุ่ม',
+    colShape: 'รูปทรง',
+    colSize: 'ขนาด',
+    colGrade: 'เกรด',
+    colRemainQty: 'คงเหลือ (เม็ด)',
+    colRemainWeight: 'คงเหลือ (ct)',
+    colPrice: 'ราคาคลัง/ct',
+    addSelected: 'เพิ่มรายการที่เลือก',
+    noSelection: 'กรุณาเลือกพลอยอย่างน้อย 1 รายการ',
+    duplicateSkipped: 'ข้ามรหัส {codes} เนื่องจากมีอยู่ในรายการแล้ว',
+    addedCount: 'เพิ่มรายการพลอย {count} รายการแล้ว'
+  },
+
+  customerSearchModal: {
+    title: 'ค้นหาลูกค้า',
+    placeholderText: 'ค้นหารหัส/ชื่อลูกค้า',
+    colCode: 'รหัสลูกค้า',
+    colNameTh: 'ชื่อ (ไทย)',
+    colNameEn: 'ชื่อ (อังกฤษ)',
+    colAddress: 'ที่อยู่',
+    colTel: 'เบอร์โทร',
+    colTaxId: 'เลขผู้เสียภาษี',
+    noResult: 'ไม่พบข้อมูลลูกค้า'
+  },
+
+  pdf: {
+    title: 'ใบขายวัตถุดิบ',
+    titleEn: 'MATERIAL SALE INVOICE',
+    colNo: 'ลำดับ',
+    colDescription: 'รายการ',
+    colQtyPiece: 'จำนวนเม็ด',
+    colPriceInclVat: 'ราคารวม Vat',
+    colQtyWeight: 'น้ำหนัก (กะรัต)',
+    colPriceExclVat: 'ราคาก่อน Vat',
+    colAmount: 'จำนวนเงิน',
+    subTotal: 'รวมก่อน VAT',
+    vat: 'VAT',
+    total: 'รวมสุทธิ',
+    signReceiver: 'ผู้รับ',
+    signSender: 'ผู้ส่ง',
+    signDate: 'วันที่'
+  }
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -1442,5 +1602,6 @@ export default {
   document,
   saleDashboard,
   billingNote,
-  pipelineDashboard
+  pipelineDashboard,
+  materialSale
 }

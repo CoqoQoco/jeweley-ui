@@ -1432,6 +1432,166 @@ export const pipelineDashboard = {
   caveat: 'Focused on pipeline from quotations — invoice/payment data is still accumulating. Revenue/AR reports will be complete as more data is recorded.'
 }
 
+export const materialSale = {
+  title: 'Material Sale',
+  pageDescription: 'Issue a material (gem) sale invoice from stock to an external customer, confirm to cut stock and print PDF',
+  searchTitle: 'Search Material Sale',
+  searchDesc: 'Search material sale invoices by document no., customer, status and document date range',
+  createBtn: 'Create Material Sale',
+  documentNo: 'Document No.',
+  customerName: 'Customer',
+  status: 'Status',
+  dateRange: 'Document Date Range',
+  placeholder: {
+    documentNo: 'Enter document no.',
+    customerName: 'Enter customer name'
+  },
+  colNo: '#',
+  colDocumentNo: 'Document No.',
+  colDocumentDate: 'Date',
+  colCustomerName: 'Customer',
+  colItemCount: 'Item Count',
+  colTotalWeight: 'Total Weight (ct)',
+  colGrandTotal: 'Grand Total',
+  colStatus: 'Status',
+  colAction: 'Action',
+  statusDraft: 'Draft',
+  statusConfirmed: 'Confirmed',
+  statusCancelled: 'Cancelled',
+  noData: 'No material sale documents found',
+
+  createTitle: 'Create Material Sale',
+  editTitle: 'Edit Material Sale',
+  detailTitle: 'Material Sale Detail',
+  pageTitle: 'Sale Order (Material)',
+  itemsBadge: '{count} item(s)',
+  deleteBtn: 'Delete Document',
+
+  section: {
+    gemSearch: 'Search & Add Material'
+  },
+
+  sectionDocument: 'Document Info',
+  sectionCustomer: 'Customer Info',
+  sectionItems: 'Sale Items',
+  sectionRemark: 'Remark',
+
+  documentNoLabel: 'Document No.',
+  documentDateLabel: 'Document Date',
+  generateDocumentNo: 'Generate New No.',
+
+  customerCodeLabel: 'Customer Code',
+  customerNameLabel: 'Customer Name',
+  customerAddressLabel: 'Customer Address',
+  customerTelLabel: 'Customer Tel',
+  customerEmailLabel: 'Customer Email',
+  customerTaxIdLabel: 'Tax ID',
+  selectCustomer: 'Search Customer',
+  changeCustomer: 'Change Customer',
+  noCustomerSelected: 'No customer selected',
+
+  pickGemBtn: 'Select Gems from Stock',
+  colItemNo: '#',
+  colGemCode: 'Gem Code',
+  colDescription: 'Description',
+  colQtyPiece: 'Qty (pcs)',
+  colPriceInclVat: 'Price Incl. VAT',
+  colQtyWeight: 'Weight (ct)',
+  colPriceExclVat: 'Price Excl. VAT',
+  colAmount: 'Amount',
+  stockPriceHint: 'Stock price {price}/ct',
+  remainQtyHint: 'Remaining {qty} pcs',
+  remainWeightHint: 'Remaining {weight} ct',
+  noItems: 'No sale items yet — click "Select Gems from Stock" to add items',
+
+  subTotal: 'Subtotal (before VAT)',
+  vatLabel: 'VAT {percent}%',
+  grandTotal: 'Grand Total',
+  remark: 'Remark',
+
+  saveDraft: 'Save Draft',
+  confirmAndCut: 'Confirm + Cut Stock',
+  printPdf: 'Print PDF',
+  cancelDoc: 'Cancel Document',
+  cancelReasonLabel: 'Cancel Reason',
+  cancelReasonPlaceholder: 'Enter the reason for cancelling this document...',
+  cancelReasonDisplay: 'Cancel Reason',
+  cancelReasonRequired: 'Please enter the cancel reason',
+  cancelReasonTitle: 'Confirm Cancel Document',
+
+  confirmSaveTitle: 'Confirm Save Draft',
+  confirmConfirmTitle: 'Confirm Sale and Cut Stock',
+  confirmConfirmMsg: 'The system will deduct gem stock according to this document. It cannot be edited after confirming.',
+  confirmDeleteTitle: 'Confirm Delete Material Sale',
+
+  saveSuccess: 'Material sale saved successfully',
+  updateSuccess: 'Material sale updated successfully',
+  confirmSuccess: 'Confirmed sale and cut stock successfully',
+  cancelSuccess: 'Material sale cancelled successfully',
+  deleteSuccess: 'Material sale deleted successfully',
+  generateDocumentNoSuccess: 'New document number generated',
+
+  validation: {
+    documentDateRequired: 'Please specify the document date',
+    customerRequired: 'Please select a customer before saving',
+    itemsRequired: 'Please select at least 1 gem item',
+    exceedStock: 'Item {code} entered exceeds remaining stock quantity/weight'
+  },
+
+  gemPicker: {
+    title: 'Select Gems from Stock',
+    code: 'Gem Code',
+    text: 'Search',
+    placeholderText: 'Search code/name',
+    groupName: 'Group',
+    shape: 'Shape',
+    size: 'Size',
+    grade: 'Grade',
+    colCode: 'Gem Code',
+    colGroupName: 'Group',
+    colShape: 'Shape',
+    colSize: 'Size',
+    colGrade: 'Grade',
+    colRemainQty: 'Remaining (pcs)',
+    colRemainWeight: 'Remaining (ct)',
+    colPrice: 'Stock Price/ct',
+    addSelected: 'Add Selected Items',
+    noSelection: 'Please select at least 1 gem',
+    duplicateSkipped: 'Skipped code {codes} — already in the list',
+    addedCount: 'Added {count} gem item(s)'
+  },
+
+  customerSearchModal: {
+    title: 'Search Customer',
+    placeholderText: 'Search code/name',
+    colCode: 'Customer Code',
+    colNameTh: 'Name (TH)',
+    colNameEn: 'Name (EN)',
+    colAddress: 'Address',
+    colTel: 'Tel',
+    colTaxId: 'Tax ID',
+    noResult: 'No customer found'
+  },
+
+  pdf: {
+    title: 'MATERIAL SALE INVOICE',
+    titleEn: 'MATERIAL SALE INVOICE',
+    colNo: 'No.',
+    colDescription: 'Description',
+    colQtyPiece: 'Qty (pcs)',
+    colPriceInclVat: 'Price Incl. VAT',
+    colQtyWeight: 'Weight (ct)',
+    colPriceExclVat: 'Price Excl. VAT',
+    colAmount: 'Amount',
+    subTotal: 'Subtotal',
+    vat: 'VAT',
+    total: 'Total',
+    signReceiver: 'Receiver',
+    signSender: 'Sender',
+    signDate: 'Date'
+  }
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -1448,5 +1608,6 @@ export default {
   document,
   saleDashboard,
   billingNote,
-  pipelineDashboard
+  pipelineDashboard,
+  materialSale
 }

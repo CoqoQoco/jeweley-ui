@@ -16,6 +16,10 @@ const SaleOrderList = () => import('@/views/sale/saleorder-list/index-view.vue')
 const Invoice = () => import('@/views/sale/invoice/index-view.vue')
 const InvoiceDetail = () => import('@/views/sale/invoice-detail/index-view.vue')
 
+// Material Sale
+const MaterialSaleList = () => import('@/views/sale/material-sale/index-view.vue')
+const MaterialSaleCreate = () => import('@/views/sale/material-sale/create-view.vue')
+
 // Billing Note
 const BillingNoteList = () => import('@/views/sale/billing-note/index-view.vue')
 const BillingNoteCreate = () => import('@/views/sale/billing-note/create-view.vue')
@@ -110,8 +114,8 @@ const routes = [
         component: SaleOrderList,
         meta: {
           Displayname: {
-            en: 'Sale Order',
-            th: 'ใบสั่งขาย'
+            en: 'Sale Order (Product)',
+            th: 'ใบสั่งขาย (สินค้า)'
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]
@@ -123,11 +127,52 @@ const routes = [
         component: SaleOrder,
         meta: {
           Displayname: {
-            en: 'Sale Order',
-            th: 'ใบสั่งขาย'
+            en: 'Sale Order (Product)',
+            th: 'ใบสั่งขาย (สินค้า)'
           },
           minorShow: false,
           permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+
+      // Material Sale Section
+      {
+        path: '/sale/material-sale',
+        name: 'sale-material-sale',
+        component: MaterialSaleList,
+        meta: {
+          Displayname: {
+            en: 'Sale Order (Material)',
+            th: 'ใบสั่งขาย (วัตถุดิบ)'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+      {
+        path: '/sale/material-sale/create',
+        name: 'sale-material-sale-create',
+        component: MaterialSaleCreate,
+        meta: {
+          Displayname: {
+            en: 'Create Material Sale',
+            th: 'สร้างใบขายวัตถุดิบ'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/sale/material-sale/:running',
+        name: 'sale-material-sale-detail',
+        component: MaterialSaleCreate,
+        meta: {
+          Displayname: {
+            en: 'Material Sale Detail',
+            th: 'รายละเอียดใบขายวัตถุดิบ'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_VIEW]
         }
       },
 
