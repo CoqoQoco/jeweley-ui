@@ -16,6 +16,14 @@
     slot content
   [/SectionCardGeneric]
 
+  ตัวอย่างการใช้งาน (filled style — แถบสีแดงเต็มความกว้าง + icon box, reuse page-title.vue filled mode):
+  [SectionCardGeneric title="รายการขาย" description="คำอธิบายสั้นๆ" icon="bi-gem" headerStyle="filled"]
+    [template #header-actions]
+      [span]3 รายการ[/span]
+    [/template]
+    slot content
+  [/SectionCardGeneric]
+
   ตัวอย่างการใช้งาน (ไม่มี title):
   [SectionCardGeneric]
     [BaseDataTable :items="items" :columns="columns" /]
@@ -23,21 +31,41 @@
 
   Props:
     title       — section title (optional)
-    icon        — Bootstrap icon class เช่น 'bi-box-arrow-up' (legend mode เท่านั้น)
-    accent      — 'main' | 'green' (สีของ legend text+icon, default 'main')
-    headerStyle — 'underline' | 'legend' (default 'underline' = ใช้ pageTitle เดิม)
+    description — section description (optional, filled mode เท่านั้น)
+    icon        — Bootstrap icon class เช่น 'bi-box-arrow-up' (legend / filled mode เท่านั้น)
+    accent      — 'main' | 'green' (สีของ legend text+icon, default 'main' — legend mode เท่านั้น)
+    headerStyle — 'underline' | 'legend' | 'filled' (default 'underline' = ใช้ pageTitle เดิม)
+
+  Slots:
+    default         — เนื้อหาหลักของ card
+    #header-actions — ปุ่ม/badge มุมขวาบนใน filled header (filled mode เท่านั้น — forward ไป pageTitle rightSlot)
 -->
 <template>
-  <div :class="['section-card', { 'section-card--legend': isLegendMode }]">
-    <pageTitle v-if="title && !isLegendMode" :title="title" :isShowBtnClose="false" />
+  <div :class="['section-card', { 'section-card--legend': isLegendMode, 'section-card--filled': isFilledMode }]">
+    <pageTitle
+      v-if="isFilledMode"
+      :title="title"
+      :description="description"
+      :icon="icon"
+      :filled="true"
+      :isShowBtnClose="false"
+      :isShowRightSlot="!!$slots['header-actions']"
+    >
+      <template #rightSlot><slot name="header-actions" /></template>
+    </pageTitle>
+    <pageTitle v-else-if="title && !isLegendMode" :title="title" :isShowBtnClose="false" />
     <span
-      v-if="title && isLegendMode"
+      v-else-if="title && isLegendMode"
       :class="['section-legend', `section-legend--${accent}`]"
     >
       <i v-if="icon" :class="['bi', icon]"></i>
       {{ title }}
     </span>
-    <slot />
+
+    <div v-if="isFilledMode" class="section-card-body">
+      <slot />
+    </div>
+    <slot v-else />
   </div>
 </template>
 
@@ -58,6 +86,10 @@ export default {
       type: String,
       default: ''
     },
+    description: {
+      type: String,
+      default: ''
+    },
     icon: {
       type: String,
       default: ''
@@ -70,13 +102,17 @@ export default {
     headerStyle: {
       type: String,
       default: 'underline',
-      validator: (v) => ['underline', 'legend'].includes(v)
+      validator: (v) => ['underline', 'legend', 'filled'].includes(v)
     }
   },
 
   computed: {
     isLegendMode() {
       return this.headerStyle === 'legend'
+    },
+
+    isFilledMode() {
+      return this.headerStyle === 'filled'
     }
   }
 }
@@ -127,5 +163,14 @@ export default {
 .section-card--legend {
   position: relative;
   margin-top: var(--sp-2xl); /* clearance for the legend chip that straddles the top border */
+}
+
+.section-card--filled {
+  padding: 0;
+  overflow: hidden; /* clip filled header's top radius to the card's own radius */
+}
+
+.section-card-body {
+  padding: var(--sp-xl);
 }
 </style>

@@ -21,7 +21,7 @@ description: Generic wrapper components ทั้งหมด — ตรวจ�
 | `FormFieldGeneric` | `FormFieldGeneric.vue` | label + required marker + error msg + slot; props: `label`, `required`, `error` |
 | `PageHeaderGeneric` | `PageHeaderGeneric.vue` | back btn วงกลม + title + border-bottom; props: `title`, `backRoute`; slot: `#actions` (ปุ่มฝั่งขวา เช่นหน้า detail/edit — ถ้าไม่ส่ง layout เหมือนเดิม); emits: `back` |
 | `SearchBarGeneric` | `SearchBarGeneric.vue` | search bar 4-section (pageTitle + fields + actions); props: `title`, `description`, `icon`; slots: `#header-actions` (ปุ่มมุมขวาบน filled header — หลายปุ่ม, width เท่ากัน grid 1fr, default btn-green; ปุ่มมี label ได้), `#fields`, `#actions-left`, `#actions-right`; emits: `search`, `clear` |
-| `SectionCardGeneric` | `SectionCardGeneric.vue` | card: card-base mixin + optional pageTitle; props: `title`; slot: default |
+| `SectionCardGeneric` | `SectionCardGeneric.vue` | card: card-base mixin + optional pageTitle; props: `title`, `description`(filled mode), `icon`, `accent`('main'\|'green', legend mode), `headerStyle`('underline'\|'legend'\|'filled', default 'underline'); slots: default, `#header-actions` (filled mode เท่านั้น — forward ไป pageTitle rightSlot) |
 | `StatCardGeneric` | `StatCardGeneric.vue` | KPI tile (icon circle + value + label) — สกัดจาก ticket-dashboard `.kpi-card`; props: `icon`(required), `value`, `label`, `variant`('main'\|'warning'\|'green'\|'grey', default 'main'); consumer wrap หลายใบใน CSS grid เอง |
 | `DashboardHeaderGeneric` | `DashboardHeaderGeneric.vue` | dashboard header: icon + title/subtitle + ปุ่ม refresh; props: `title`, `subtitle`, `icon`('bi-clipboard-data'), `showRefresh`(true); slot: `#controls` (วางก่อนปุ่ม refresh เช่น DropdownGeneric period); emits: `refresh` |
 
