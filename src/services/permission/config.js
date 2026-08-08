@@ -61,6 +61,9 @@ export const PERMISSIONS = {
   // Ticket Management
   TICKET_MANAGE: 'ticket:manage',
 
+  // Setting
+  SETTING_PRINT_LAYOUT: 'setting:print-layout',
+
   // ========== Mobile-Specific Features ==========
   // Mobile Dashboard (ทุกคนเข้าได้)
   MOBILE_DASHBOARD: 'mobile:dashboard',
@@ -132,6 +135,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.CATALOG_VIEW,
 
     PERMISSIONS.TICKET_MANAGE,
+    PERMISSIONS.SETTING_PRINT_LAYOUT,
 
     // Mobile Features (Dev มีสิทธิ์ทั้งหมด)
     PERMISSIONS.MOBILE_DASHBOARD,

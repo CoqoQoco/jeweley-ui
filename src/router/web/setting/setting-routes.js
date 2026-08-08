@@ -97,7 +97,7 @@ const routes = [
             th: 'ตั้งค่ารูปแบบพิมพ์ VAT'
           },
           minorShow: true,
-          permissions: [PERMISSIONS.USER_DEV]
+          permissions: [PERMISSIONS.USER_DEV, PERMISSIONS.SETTING_PRINT_LAYOUT]
         }
       },
       {
@@ -110,7 +110,7 @@ const routes = [
             th: 'ตั้งค่ารูปแบบพิมพ์ Bill'
           },
           minorShow: true,
-          permissions: [PERMISSIONS.USER_DEV]
+          permissions: [PERMISSIONS.USER_DEV, PERMISSIONS.SETTING_PRINT_LAYOUT]
         }
       },
     ]
