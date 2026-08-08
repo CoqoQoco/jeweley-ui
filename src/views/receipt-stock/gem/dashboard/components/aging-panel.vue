@@ -8,10 +8,10 @@
     >
       <div class="aging-stat-grid">
         <StatCardGeneric
-          class="aging-stat-money"
+          class="aging-stat-count"
           icon="bi-exclamation-triangle"
-          :value="formatCurrency(aging.deadStockValue)"
-          :label="$t('view.stock.gem.dashboard.aging.deadValue')"
+          :value="formatNumber(aging.deadStockCodes)"
+          :label="$t('view.stock.gem.dashboard.aging.deadCodesOverYear')"
           variant="warning"
         />
         <StatCardGeneric
@@ -78,8 +78,8 @@ export default {
     chartSeries() {
       return [
         {
-          name: this.$t('view.stock.gem.dashboard.aging.valueLabel'),
-          data: this.sortedBuckets.map((bucket) => bucket.totalValue || 0)
+          name: this.$t('view.stock.gem.dashboard.aging.countLabel'),
+          data: this.sortedBuckets.map((bucket) => bucket.gemCodes || 0)
         }
       ]
     },
@@ -102,17 +102,17 @@ export default {
           categories: buckets.map((bucket) => this.bucketLabel(bucket.bucketKey)),
           labels: {
             style: { fontSize: '11px' },
-            formatter: (val) => this.formatCurrency(val)
+            formatter: (val) => this.formatNumber(val)
           }
         },
         dataLabels: {
           enabled: true,
-          formatter: (val) => this.formatCurrency(val),
+          formatter: (val) => this.formatNumber(val),
           style: { fontSize: '11px' }
         },
         tooltip: {
           y: {
-            formatter: (val) => this.formatCurrency(val)
+            formatter: (val) => this.formatNumber(val)
           }
         }
       }
@@ -131,14 +131,6 @@ export default {
     formatNumber(value) {
       if (!value && value !== 0) return '0'
       return new Intl.NumberFormat('en-US').format(value)
-    },
-
-    formatCurrency(value) {
-      if (!value && value !== 0) return '0.00'
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(value)
     }
   }
 }
@@ -157,7 +149,7 @@ export default {
     }
   }
 
-  .aging-stat-money :deep(.stat-value) {
+  .aging-stat-count :deep(.stat-value) {
     text-align: right;
   }
 }

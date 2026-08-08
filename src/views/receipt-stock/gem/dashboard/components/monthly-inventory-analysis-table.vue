@@ -99,16 +99,6 @@ export default {
           sortable: false
         },
         {
-          field: 'averagePricePerUnit',
-          header: this.$t(
-            'view.stock.gem.dashboard.monthlyReport.inventoryAnalysis.averagePricePerUnit'
-          ),
-          minWidth: '130px',
-          align: 'right',
-          format: 'decimal2',
-          sortable: false
-        },
-        {
           field: 'inventoryDays',
           header: this.$t('view.stock.gem.dashboard.monthlyReport.inventoryAnalysis.inventoryDays'),
           minWidth: '100px',

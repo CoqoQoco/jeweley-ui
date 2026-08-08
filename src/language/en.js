@@ -159,6 +159,9 @@ export default {
       }
     },
     sale: { ...saleLang },
+    setting: {
+      companyInfo: { ...settingLang.companyInfo }
+    },
     mobile: {
       sale: { ...mobileLang.sale },
       costVersion: { ...mobileLang.costVersion },
@@ -195,6 +198,7 @@ export default {
       cost: { ...stock.cost },
       gemOnhandReport: { ...stock.gemOnhandReport },
       gemMovementReport: { ...stock.gemMovementReport },
+      gemMovementAnalysis: { ...stock.gemMovementAnalysis },
       materialValuationReport: { ...stock.materialValuationReport },
       stockBalanceSummary: { ...stock.stockBalanceSummary },
       gem: {
@@ -246,7 +250,6 @@ export default {
 
           // Today report
           todayTransactions: "Today's Transactions",
-          priceChanges: 'Price Changes',
           newItems: 'New Items',
           lowStockAlerts: 'Low Stock Alerts',
           quantity: 'Quantity',
@@ -262,6 +265,17 @@ export default {
           // Last activities
           lastActivities: 'Last Activities',
           noActivities: 'No activities',
+
+          // Stock alert panel
+          stockAlert: {
+            title: 'Raw Material Stock Alerts',
+            viewAll: 'View All',
+            outLabel: 'Out of Stock',
+            criticalLabel: 'Critical (<7 days)',
+            lowLabel: 'Low (<30 days)',
+            colLevel: 'Level',
+            noAlerts: 'No raw materials need attention'
+          },
 
           // Weekly report
           weeklyTransactions: 'Weekly Transactions',
@@ -332,10 +346,10 @@ export default {
           // Aging layer (stock aging report)
           aging: {
             title: 'Gem Stock Aging',
-            deadValue: 'Value Stuck Over 1 Year',
+            deadCodesOverYear: 'Items Stuck Over 1 Year',
             deadCodes: 'Stuck Item Codes',
             chartEmpty: 'No stock aging data yet',
-            valueLabel: 'Value (THB)',
+            countLabel: 'Item Count',
             bucket: {
               d0_30: '0-30 days',
               d31_90: '31-90 days',
@@ -354,7 +368,6 @@ export default {
               totalTransactions: 'Total Transactions',
               totalQuantityIn: 'Total Quantity In',
               totalQuantityOut: 'Total Quantity Out',
-              netValueChange: 'Net Value Change',
               monthOverMonthGrowth: 'Month-over-Month Growth',
               inventoryTurnoverRatio: 'Inventory Turnover Ratio'
             },
@@ -368,7 +381,6 @@ export default {
             topPerformers: {
               title: 'Top Moving Gems',
               performanceType: 'Performance Type',
-              totalValue: 'Total Value',
               noData: 'No top performer data for this month',
               type: {
                 highestVolume: 'Highest Volume',
@@ -380,7 +392,6 @@ export default {
             inventoryAnalysis: {
               title: 'Monthly Inventory Analysis',
               itemCount: 'Item Count',
-              averagePricePerUnit: 'Average Price per Unit',
               inventoryDays: 'Inventory Days',
               inventoryStatus: 'Inventory Status',
               monthOverMonthChange: 'Change from Last Month (%)',
@@ -394,8 +405,6 @@ export default {
             supplierAnalysis: {
               title: 'Monthly Supplier Analysis',
               supplierName: 'Supplier Name',
-              totalCost: 'Total Cost',
-              averageCostPerUnit: 'Average Cost per Unit',
               gemTypes: 'Gem Types',
               preferredGemCategory: 'Preferred Gem Category',
               deliveryCount: 'Delivery Count',

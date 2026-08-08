@@ -9,12 +9,6 @@
           :label="$t('view.stock.gem.dashboard.todayTransactions')"
         />
         <StatCardGeneric
-          icon="bi-currency-exchange"
-          :value="todaySummary.priceChanges"
-          :label="$t('view.stock.gem.dashboard.priceChanges')"
-          variant="warning"
-        />
-        <StatCardGeneric
           icon="bi-plus-circle"
           :value="todaySummary.newStockItems"
           :label="$t('view.stock.gem.dashboard.newItems')"
@@ -111,7 +105,6 @@ export default {
       type: Object,
       default: () => ({
         totalTransactions: 0,
-        priceChanges: 0,
         newStockItems: 0,
         lowStockAlerts: 0
       })

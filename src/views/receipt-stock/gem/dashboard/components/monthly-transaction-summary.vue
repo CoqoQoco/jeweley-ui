@@ -28,14 +28,14 @@
 
           <div></div>
           <div class="d-flex align-items-end justify-content-end">
-            <button
-              @click="loadTransactionData"
-              class="btn btn-sm btn-green ml-2"
+            <ButtonGeneric
+              variant="green"
+              icon="bi-search"
+              :label="$t('common.btn.search')"
+              class="ml-2"
               :disabled="!selectedMonth"
-            >
-              <i class="bi bi-search"></i>
-              {{ $t('button.search') }}
-            </button>
+              @click="loadTransactionData"
+            />
           </div>
         </div>
       </div>
@@ -73,86 +73,87 @@
     </div>
 
     <!-- Data Table -->
-    <div class="filter-container data-table-card mt-2">
-      <div class="table-header">
-        <h5>{{ $t('view.stock.gem.dashboard.transactionDetails') }}</h5>
-        <div class="table-controls">
-          <button
-            @click="exportToExcel"
-            class="btn btn-sm btn-green"
-            :disabled="!tableData.length"
-          >
-            <span><i class="bi bi-filetype-csv"></i></span>
-          </button>
-        </div>
+    <SectionCardGeneric
+      :title="$t('view.stock.gem.dashboard.transactionDetails')"
+      icon="bi-table"
+      accent="main"
+      headerStyle="legend"
+      class="mt-2"
+    >
+      <div class="panel-toolbar">
+        <ButtonGeneric
+          variant="green"
+          icon="bi-filetype-csv"
+          :title="$t('common.btn.export')"
+          :disabled="!tableData.length"
+          @click="exportToExcel"
+        />
       </div>
 
-      <div class="table-body">
-        <DataTableWithPaging
-          v-if="tableData.length > 0"
-          :items="tableData"
-          :columns="tableColumns"
-          :totalRecords="tableData.length"
-          :paginator="false"
-          :showGridlines="true"
-          dataKey="id"
-          :emptyMessage="$t('common.label.noData')"
-          scrollHeight="500px"
-        >
-          <template #transactionCountTemplate="{ data }">
-            <div class="text-end">
-              {{ formatNumber(data.transactionCount) }}
-            </div>
-          </template>
+      <DataTableWithPaging
+        v-if="tableData.length > 0"
+        :items="tableData"
+        :columns="tableColumns"
+        :totalRecords="tableData.length"
+        :paginator="false"
+        :showGridlines="true"
+        dataKey="id"
+        :emptyMessage="$t('common.label.noData')"
+        scrollHeight="500px"
+      >
+        <template #transactionCountTemplate="{ data }">
+          <div class="text-end">
+            {{ formatNumber(data.transactionCount) }}
+          </div>
+        </template>
 
-          <template #totalQuantityTemplate="{ data }">
-            <div class="text-end">
-              {{ formatNumber(data.totalQuantity) }}
-            </div>
-          </template>
+        <template #totalQuantityTemplate="{ data }">
+          <div class="text-end">
+            {{ formatNumber(data.totalQuantity) }}
+          </div>
+        </template>
 
-          <template #totalWeightTemplate="{ data }">
-            <div class="text-end">
-              {{ formatNumber(data.totalWeight, 3) }}
-            </div>
-          </template>
+        <template #totalWeightTemplate="{ data }">
+          <div class="text-end">
+            {{ formatNumber(data.totalWeight, 3) }}
+          </div>
+        </template>
 
-          <template #currentStockTemplate="{ data }">
-            <div class="text-end">
-              <div class="current-qty">{{ formatNumber(data.currentQuantity) }}</div>
-              <div class="current-weight">
-                <small class="text-muted">{{ formatNumber(data.currentWeight, 3) }}</small>
-              </div>
+        <template #currentStockTemplate="{ data }">
+          <div class="text-end">
+            <div class="current-qty">{{ formatNumber(data.currentQuantity) }}</div>
+            <div class="current-weight">
+              <small class="text-muted">{{ formatNumber(data.currentWeight, 3) }}</small>
             </div>
-          </template>
+          </div>
+        </template>
 
-          <template #productionTypeNameTemplate="{ data }">
-            <div class="production-type-badge" v-if="data.productionTypeName">
-              <span class="">{{
-                data.productionTypeName === 'Silver'
-                  ? data.productionTypeName
-                  : `${data.productionType} ${data.productionTypeName}`
-              }}</span>
-            </div>
-            <span v-else class="text-muted">-</span>
-          </template>
+        <template #productionTypeNameTemplate="{ data }">
+          <div class="production-type-badge" v-if="data.productionTypeName">
+            <span class="">{{
+              data.productionTypeName === 'Silver'
+                ? data.productionTypeName
+                : `${data.productionType} ${data.productionTypeName}`
+            }}</span>
+          </div>
+          <span v-else class="text-muted">-</span>
+        </template>
 
-          <template #lastTransactionDateTemplate="{ data }">
-            <div class="text-center">
-              {{ formatDateTime(data.lastTransactionDate) }}
-            </div>
-          </template>
-        </DataTableWithPaging>
+        <template #lastTransactionDateTemplate="{ data }">
+          <div class="text-center">
+            {{ formatDateTime(data.lastTransactionDate) }}
+          </div>
+        </template>
+      </DataTableWithPaging>
 
-        <div v-else class="empty-state">
-          <i class="bi bi-calendar-x"></i>
-          <p>{{ $t('view.stock.gem.dashboard.noTransactionData') }}</p>
-          <small v-if="!selectedMonth">{{
-            $t('view.stock.gem.dashboard.selectMonthToView')
-          }}</small>
-        </div>
+      <div v-else class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <p>{{ $t('view.stock.gem.dashboard.noTransactionData') }}</p>
+        <small v-if="!selectedMonth">{{
+          $t('view.stock.gem.dashboard.selectMonthToView')
+        }}</small>
       </div>
-    </div>
+    </SectionCardGeneric>
   </div>
 </template>
 
@@ -167,6 +168,7 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 export default {
@@ -176,7 +178,8 @@ export default {
     DropdownGeneric,
     DataTableWithPaging,
     ChartGeneric,
-    SectionCardGeneric
+    SectionCardGeneric,
+    ButtonGeneric
   },
   setup() {
     const dashboardStore = useStockGemDashboardStore()
@@ -188,19 +191,22 @@ export default {
     return {
       selectedMonth: new Date(),
       selectedTransactionType: null,
-      transactionTypeSummaries: [],
-      transactionTypeOptions: [
-        { label: 'รับเข้าคลัง [พลอยใหม่]', value: 1 },
-        { label: 'รับเข้าคลัง [พลอยนอกสต๊อก]', value: 2 },
-        { label: 'รับเข้าคลัง [พลอยคืน]', value: 3 },
-        { label: 'จ่ายออกคลัง', value: 4 },
-        { label: 'ยืมออกคลัง', value: 5 },
-        { label: 'คืนเข้าคลัง', value: 6 },
-        { label: 'เบิกออกคลัง', value: 7 }
-      ]
+      transactionTypeSummaries: []
     }
   },
   computed: {
+    transactionTypeOptions() {
+      return [
+        { label: this.$t('view.stock.gem.typeNewGem'), value: 1 },
+        { label: this.$t('view.stock.gem.typeOutStock'), value: 2 },
+        { label: this.$t('view.stock.gem.typeReturn'), value: 3 },
+        { label: this.$t('view.stock.gem.typeIssue'), value: 4 },
+        { label: this.$t('view.stock.gem.typeBorrow'), value: 5 },
+        { label: this.$t('view.stock.gem.typeReturnIn'), value: 6 },
+        { label: this.$t('view.stock.gem.typeWithdraw'), value: 7 }
+      ]
+    },
+
     tableData() {
       if (!this.selectedTransactionType || !this.transactionTypeSummaries.length) {
         return []
@@ -226,7 +232,7 @@ export default {
       const baseColumns = [
         {
           field: 'groupName',
-          header: 'Group Name',
+          header: this.$t('view.stock.gem.dashboard.groupName'),
           sortable: false,
           minWidth: '150px'
         },
@@ -460,33 +466,10 @@ export default {
   background-color: #f8f9fa;
   min-height: 100vh;
 
-  .data-table-card {
-    background: white;
-    overflow: hidden;
-
-    .table-header {
-      padding: 20px;
-      border-bottom: 1px solid #e9ecef;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      h5 {
-        color: var(--base-font-color);
-        font-weight: bold;
-        margin: 0;
-      }
-
-      .table-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-    }
-
-    .table-body {
-      padding: 20px;
-    }
+  .panel-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--sp-md);
   }
 
   .empty-state {

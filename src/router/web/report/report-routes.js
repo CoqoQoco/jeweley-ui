@@ -30,6 +30,8 @@ const StockBalanceSummaryReport = () =>
 
 // ---- stock gem reports ----
 const stockGemDashboard = () => import('@/views/receipt-stock/gem/dashboard/dashboard-view.vue')
+const GemMovementAnalysisReport = () =>
+  import('@/views/receipt-stock/gem/movement-analysis-report/index-view.vue')
 const GemOnhandReport = () => import('@/views/receipt-stock/gem/report/index-view.vue')
 const GemMovementReport = () => import('@/views/receipt-stock/gem/movement-report/index-view.vue')
 const MaterialValuationReport = () => import('@/views/receipt-stock/material-valuation/index-view.vue')
@@ -337,13 +339,26 @@ const routes = [
         }
       },
       {
+        path: '/stock-gem-movement-analysis',
+        name: 'stock-gem-movement-analysis',
+        component: GemMovementAnalysisReport,
+        meta: {
+          Displayname: {
+            en: 'Material Movement Report',
+            th: 'รายงานการเคลื่อนไหววัตถุดิบ'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
+      {
         path: '/stock-gem-report',
         name: 'stock-gem-report',
         component: GemOnhandReport,
         meta: {
           Displayname: {
-            en: 'Gem Stock On-hand Valuation Report',
-            th: 'รายงานพลอย-เพชรคงคลัง (มูลค่า)'
+            en: 'Gem Stock On-hand Report',
+            th: 'รายงานพลอย-เพชรคงคลัง'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_GEM_VIEW]
@@ -371,7 +386,7 @@ const routes = [
             en: 'Material Valuation Report',
             th: 'มูลค่าวัตถุดิบคงคลังแยกชนิด'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.STOCK_GEM_VIEW]
         }
       }

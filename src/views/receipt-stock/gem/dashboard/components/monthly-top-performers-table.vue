@@ -112,14 +112,6 @@ export default {
           align: 'right',
           format: 'decimal3',
           sortable: false
-        },
-        {
-          field: 'totalValue',
-          header: this.$t('view.stock.gem.dashboard.monthlyReport.topPerformers.totalValue'),
-          minWidth: '120px',
-          align: 'right',
-          format: 'decimal2',
-          sortable: false
         }
       ]
     }

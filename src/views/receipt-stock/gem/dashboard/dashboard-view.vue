@@ -123,6 +123,8 @@
     <div v-show="activeTab === 'overview'" class="tab-content">
       <StockSummaryCards :stock-summary="stockSummary" />
 
+      <StockAlertPanel :form-value="filters" />
+
       <ForecastPanel :trends="trends" />
 
       <AgingPanel :aging="aging" :loading="isPageLoading" />
@@ -144,16 +146,8 @@
         :isLoading="isPageLoading"
       />
 
-      <div class="row">
-        <div class="col-lg-8 col-md-12 mb-4">
-          <TopMovementsTable :top-movements="topMovements" />
-          <LastActivitiesTable :last-activities="lastActivities" />
-        </div>
-
-        <div class="col-lg-4 col-md-12 mb-4">
-          <PriceAlertsPanel :price-alerts="priceAlerts" />
-        </div>
-      </div>
+      <TopMovementsTable :top-movements="topMovements" />
+      <LastActivitiesTable :last-activities="lastActivities" />
     </div>
 
     <!-- Today Tab -->
@@ -174,7 +168,6 @@
         :top-performers="monthlyTopPerformers"
         :inventory-analysis="monthlyInventoryAnalysis"
         :supplier-analysis="monthlySupplierAnalysis"
-        :price-analysis="monthlyPriceAnalysis"
         :loading="isPageLoading"
       />
       <MonthlyTransactionSummary />
@@ -198,12 +191,12 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 // Dashboard Components
 import StockSummaryCards from './components/stock-summary-cards.vue'
+import StockAlertPanel from './components/stock-alert-panel.vue'
 import ForecastPanel from './components/forecast-panel.vue'
 import AgingPanel from './components/aging-panel.vue'
 import CategoryChart from './components/category-chart.vue'
 import TopMovementsTable from './components/top-movements-table.vue'
 import LastActivitiesTable from './components/last-activities-table.vue'
-import PriceAlertsPanel from './components/price-alerts-panel.vue'
 import MonthlyReportOverview from './components/monthly-report-overview.vue'
 import MonthlyTransactionSummary from './components/monthly-transaction-summary.vue'
 import TodayTab from './components/today-tab.vue'
@@ -229,12 +222,12 @@ export default {
     DateRangeGeneric,
     DropdownGeneric,
     StockSummaryCards,
+    StockAlertPanel,
     ForecastPanel,
     AgingPanel,
     CategoryChart,
     TopMovementsTable,
     LastActivitiesTable,
-    PriceAlertsPanel,
     MonthlyReportOverview,
     MonthlyTransactionSummary,
     TodayTab,
@@ -283,9 +276,6 @@ export default {
     topMovements() {
       return this.dashboardStore.getTopMovements
     },
-    priceAlerts() {
-      return this.dashboardStore.getPriceAlerts
-    },
     lastActivities() {
       return this.dashboardStore.getLastActivities
     },
@@ -315,9 +305,6 @@ export default {
     },
     monthlySupplierAnalysis() {
       return this.dashboardStore.getMonthlySupplierAnalysis
-    },
-    monthlyPriceAnalysis() {
-      return this.dashboardStore.getMonthlyPriceAnalysis
     },
     categoryChartData() {
       return this.dashboardStore.getCategoryChartData

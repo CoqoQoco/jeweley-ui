@@ -97,32 +97,36 @@ export default {
   data() {
     return {
       activityTableTake: 10,
-      activityTableSkip: 0,
-      activityColumns: [
+      activityTableSkip: 0
+    }
+  },
+  computed: {
+    activityColumns() {
+      return [
         {
           field: 'createDate',
-          header: 'Create Date',
+          header: this.$t('view.stock.gem.dashboard.createDate'),
           sortable: false,
           minWidth: '140px',
           format: 'datetime'
         },
         {
           field: 'code',
-          header: 'Gem Code',
+          header: this.$t('view.stock.gem.dashboard.gemCode'),
           sortable: false,
           minWidth: '150px',
           template: 'codeTemplate'
         },
         {
           field: 'type',
-          header: 'Type',
+          header: this.$t('view.stock.gem.dashboard.type'),
           sortable: false,
           minWidth: '80px',
           template: 'typeTemplate'
         },
         {
           field: 'qty',
-          header: 'Quantity',
+          header: this.$t('view.stock.gem.dashboard.quantity'),
           sortable: false,
           minWidth: '100px',
           format: 'decimal2',
@@ -130,7 +134,7 @@ export default {
         },
         {
           field: 'qtyWeight',
-          header: 'Weight',
+          header: this.$t('view.stock.gem.dashboard.weight'),
           sortable: false,
           minWidth: '100px',
           format: 'decimal3',
@@ -138,29 +142,28 @@ export default {
         },
         {
           field: 'running',
-          header: 'Running No.',
+          header: this.$t('view.stock.gem.dashboard.running'),
           sortable: false,
           minWidth: '120px',
           template: 'runningTemplate'
         },
         {
           field: 'status',
-          header: 'Status',
+          header: this.$t('view.stock.gem.dashboard.status'),
           sortable: false,
           minWidth: '80px',
           template: 'statusTemplate'
         },
         {
           field: 'createBy',
-          header: 'Created By',
+          header: this.$t('view.stock.gem.dashboard.createBy'),
           sortable: false,
           minWidth: '100px',
           template: 'createByTemplate'
         }
       ]
-    }
-  },
-  computed: {
+    },
+
     // Activity table data formatted for BaseDataTable
     activityTableDataFormatted() {
       const activities = this.lastActivities || []
@@ -187,39 +190,7 @@ export default {
       }
     }
   },
-  mounted() {
-    // Update column headers with translations
-    this.updateColumnHeaders()
-  },
   methods: {
-    updateColumnHeaders() {
-      this.activityColumns.forEach((column) => {
-        switch (column.field) {
-          case 'createDate':
-            column.header = this.$t('view.stock.gem.dashboard.createDate')
-            break
-          case 'code':
-            column.header = this.$t('view.stock.gem.dashboard.gemCode')
-            break
-          case 'type':
-            column.header = this.$t('view.stock.gem.dashboard.type')
-            break
-          case 'qty':
-            column.header = this.$t('view.stock.gem.dashboard.quantity')
-            break
-          case 'running':
-            column.header = this.$t('view.stock.gem.dashboard.running')
-            break
-          case 'status':
-            column.header = this.$t('view.stock.gem.dashboard.status')
-            break
-          case 'createBy':
-            column.header = this.$t('view.stock.gem.dashboard.createBy')
-            break
-        }
-      })
-    },
-
     // Activity table handlers
     handleActivityPageChange(e) {
       this.activityTableSkip = e.first

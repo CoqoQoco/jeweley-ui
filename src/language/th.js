@@ -159,6 +159,9 @@ export default {
       }
     },
     sale: { ...saleLang },
+    setting: {
+      companyInfo: { ...settingLang.companyInfo }
+    },
     mobile: {
       sale: { ...mobileLang.sale },
       costVersion: { ...mobileLang.costVersion },
@@ -195,6 +198,7 @@ export default {
       cost: { ...stock.cost },
       gemOnhandReport: { ...stock.gemOnhandReport },
       gemMovementReport: { ...stock.gemMovementReport },
+      gemMovementAnalysis: { ...stock.gemMovementAnalysis },
       materialValuationReport: { ...stock.materialValuationReport },
       stockBalanceSummary: { ...stock.stockBalanceSummary },
       gem: {
@@ -246,7 +250,6 @@ export default {
 
           // Today report
           todayTransactions: 'ธุรกรรมวันนี้',
-          priceChanges: 'การเปลี่ยนแปลงราคา',
           newItems: 'รายการใหม่',
           lowStockAlerts: 'แจ้งเตือนสต็อกต่ำ',
           quantity: 'จำนวน',
@@ -262,6 +265,17 @@ export default {
           // Last activities
           lastActivities: 'กิจกรรมล่าสุด',
           noActivities: 'ไม่มีกิจกรรม',
+
+          // Stock alert panel
+          stockAlert: {
+            title: 'แจ้งเตือนสต๊อกวัตถุดิบ',
+            viewAll: 'ดูทั้งหมด',
+            outLabel: 'หมดแล้ว',
+            criticalLabel: 'วิกฤต (<7 วัน)',
+            lowLabel: 'ใกล้หมด (<30 วัน)',
+            colLevel: 'ระดับ',
+            noAlerts: 'ไม่มีวัตถุดิบที่ต้องแจ้งเตือน'
+          },
 
           // Weekly report
           weeklyTransactions: 'ธุรกรรมรายสัปดาห์',
@@ -332,10 +346,10 @@ export default {
           // Aging layer (stock aging report)
           aging: {
             title: 'อายุสต๊อกพลอย (Aging)',
-            deadValue: 'มูลค่าจมเกิน 1 ปี',
+            deadCodesOverYear: 'จำนวนรายการจมเกิน 1 ปี',
             deadCodes: 'จำนวนรหัสที่ค้าง',
             chartEmpty: 'ยังไม่มีข้อมูลอายุสต๊อก',
-            valueLabel: 'มูลค่า (บาท)',
+            countLabel: 'จำนวนรายการ (รหัส)',
             bucket: {
               d0_30: '0-30 วัน',
               d31_90: '31-90 วัน',
@@ -354,7 +368,6 @@ export default {
               totalTransactions: 'ธุรกรรมทั้งหมด',
               totalQuantityIn: 'จำนวนรับเข้า',
               totalQuantityOut: 'จำนวนจ่ายออก',
-              netValueChange: 'มูลค่าสุทธิที่เปลี่ยนแปลง',
               monthOverMonthGrowth: 'อัตราการเติบโตเทียบเดือนก่อน',
               inventoryTurnoverRatio: 'อัตราหมุนเวียนสินค้าคงคลัง'
             },
@@ -368,7 +381,6 @@ export default {
             topPerformers: {
               title: 'อันดับพลอยเคลื่อนไหวสูงสุด',
               performanceType: 'ประเภทผลงาน',
-              totalValue: 'มูลค่ารวม',
               noData: 'ไม่มีข้อมูลอันดับพลอยเคลื่อนไหวในเดือนนี้',
               type: {
                 highestVolume: 'ปริมาณสูงสุด',
@@ -380,7 +392,6 @@ export default {
             inventoryAnalysis: {
               title: 'วิเคราะห์คลังสินค้ารายเดือน',
               itemCount: 'จำนวนรายการ',
-              averagePricePerUnit: 'ราคาเฉลี่ยต่อหน่วย',
               inventoryDays: 'จำนวนวันสต็อกคงเหลือ',
               inventoryStatus: 'สถานะสต็อก',
               monthOverMonthChange: 'เปลี่ยนแปลงจากเดือนก่อน (%)',
@@ -394,8 +405,6 @@ export default {
             supplierAnalysis: {
               title: 'วิเคราะห์ซัพพลายเออร์รายเดือน',
               supplierName: 'ชื่อซัพพลายเออร์',
-              totalCost: 'ต้นทุนรวม',
-              averageCostPerUnit: 'ต้นทุนเฉลี่ยต่อหน่วย',
               gemTypes: 'ประเภทพลอย',
               preferredGemCategory: 'หมวดพลอยหลัก',
               deliveryCount: 'จำนวนครั้งที่ส่งของ',

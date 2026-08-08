@@ -419,13 +419,14 @@ export default {
     colQuantity: 'คงเหลือ (จำนวน)',
     colQuantityWeight: 'คงเหลือ (น้ำหนัก ct)',
     colQuantityOnProcess: 'กำลังผลิต',
+    colLastMovementDate: 'เคลื่อนไหวล่าสุด',
+    colDaysSinceLastMovement: 'ไม่ขยับ (วัน)',
     colPrice: 'ราคา/หน่วย',
     colRegion: 'แหล่งผลิต',
     totalRecords: 'รวม {total} รายการ',
     summaryTotalCount: 'จำนวนรายการทั้งหมด',
     summaryTotalQuantity: 'รวมจำนวนคงเหลือ',
-    summaryTotalWeight: 'รวมน้ำหนักคงเหลือ (ct)',
-    summaryTotalValueApprox: 'มูลค่าโดยประมาณ (บาท)'
+    summaryTotalWeight: 'รวมน้ำหนักคงเหลือ (ct)'
   },
   gemMovementReport: {
     searchTitle: 'รายงานรับ-จ่ายพลอย',
@@ -450,6 +451,8 @@ export default {
     type5: 'ยืมออกคลัง',
     type6: 'คืนเข้าคลัง',
     type7: 'เบิกออกคลัง',
+    type8: 'ขายออก [ขายวัตถุดิบ]',
+    type9: 'คืนเข้าคลัง [ยกเลิกการขาย]',
     colRequestDate: 'วันที่รับ/เบิก',
     colType: 'ประเภท',
     colName: 'พลอย',
@@ -467,6 +470,41 @@ export default {
     colOperatorBy: 'ผู้ปฏิบัติงาน',
     colReturnDate: 'วันที่คืน',
     totalRecords: 'รวม {total} รายการ'
+  },
+  gemMovementAnalysis: {
+    searchTitle: 'รายงานการเคลื่อนไหววัตถุดิบ',
+    searchDesc: 'ดูว่าพลอยตัวไหนใช้บ่อย ตัวไหนค้างสต๊อก ตัวไหนใกล้หมด',
+    dateRange: 'ช่วงวันที่',
+    groupName: 'ชนิดพลอย',
+    shape: 'รูปทรง',
+    grade: 'เกรด',
+    placeholder: {
+      code: 'ระบุรหัส'
+    },
+    unitCode: 'รหัส',
+    summaryLowOut: 'ใกล้หมด/หมด',
+    colCategory: 'ชนิด/รูปทรง/เกรด',
+    colQuantity: 'คงเหลือ',
+    colQuantityWeight: 'น้ำหนัก',
+    colTransactionCount: 'ครั้ง',
+    colIn: 'รับเข้า',
+    colOut: 'จ่ายออก',
+    colAvgDaily: 'จ่าย/วัน',
+    colDaysOfSupply: 'วันคงเหลือ',
+    colLastMovement: 'ล่าสุด',
+    colDaysSinceLastMovement: 'ไม่ขยับ',
+    totalRecords: 'รวม {total} รายการ',
+    statusType: {
+      fast: 'เคลื่อนไหวบ่อย',
+      slow: 'เคลื่อนไหวช้า',
+      dead: 'ไม่เคลื่อนไหว'
+    },
+    alertLevel: {
+      out: 'หมดแล้ว',
+      critical: 'วิกฤต',
+      low: 'ใกล้หมด',
+      ok: 'ปกติ'
+    }
   },
   materialValuationReport: {
     searchTitle: 'รายงานมูลค่าวัตถุดิบคงคลังแยกชนิด',

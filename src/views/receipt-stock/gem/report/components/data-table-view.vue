@@ -113,6 +113,21 @@ export default {
           format: 'number'
         },
         {
+          field: 'lastMovementDate',
+          header: this.$t('view.stock.gemOnhandReport.colLastMovementDate'),
+          sortable: true,
+          minWidth: '130px',
+          format: 'date'
+        },
+        {
+          field: 'daysSinceLastMovement',
+          header: this.$t('view.stock.gemOnhandReport.colDaysSinceLastMovement'),
+          sortable: true,
+          minWidth: '110px',
+          align: 'right',
+          format: 'number'
+        },
+        {
           field: 'price',
           header: this.$t('view.stock.gemOnhandReport.colPrice'),
           sortable: true,

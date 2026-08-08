@@ -17,12 +17,6 @@
       :label="$t('view.stock.gemOnhandReport.summaryTotalWeight')"
       variant="warning"
     />
-    <StatCardGeneric
-      icon="bi-cash-stack"
-      :value="formatDecimal(gemOnhandReportStore.summary.totalValue)"
-      :label="$t('view.stock.gemOnhandReport.summaryTotalValueApprox')"
-      variant="grey"
-    />
   </div>
 </template>
 
@@ -77,7 +71,7 @@ export default {
 <style lang="scss" scoped>
 .gem-onhand-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-lg);
   margin: var(--sp-lg) 0;
 }

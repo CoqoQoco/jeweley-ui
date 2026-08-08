@@ -5,7 +5,6 @@
     <MonthlyTopPerformersTable :top-performers="topPerformers" />
     <MonthlyInventoryAnalysisTable :inventory-analysis="inventoryAnalysis" />
     <MonthlySupplierAnalysisTable :supplier-analysis="supplierAnalysis" />
-    <MonthlyPriceAnalysisTable :price-analysis="priceAnalysis" />
   </div>
 </template>
 
@@ -15,7 +14,6 @@ import MonthlyWeeklyComparisonChart from './monthly-weekly-comparison-chart.vue'
 import MonthlyTopPerformersTable from './monthly-top-performers-table.vue'
 import MonthlyInventoryAnalysisTable from './monthly-inventory-analysis-table.vue'
 import MonthlySupplierAnalysisTable from './monthly-supplier-analysis-table.vue'
-import MonthlyPriceAnalysisTable from './monthly-price-analysis-table.vue'
 
 export default {
   name: 'MonthlyReportOverview',
@@ -25,8 +23,7 @@ export default {
     MonthlyWeeklyComparisonChart,
     MonthlyTopPerformersTable,
     MonthlyInventoryAnalysisTable,
-    MonthlySupplierAnalysisTable,
-    MonthlyPriceAnalysisTable
+    MonthlySupplierAnalysisTable
   },
 
   props: {
@@ -47,10 +44,6 @@ export default {
       default: () => []
     },
     supplierAnalysis: {
-      type: Array,
-      default: () => []
-    },
-    priceAnalysis: {
       type: Array,
       default: () => []
     },

@@ -25,11 +25,6 @@
           variant="warning"
         />
         <StatCardGeneric
-          icon="bi-cash-stack"
-          :value="formatCurrency(summary.netValueChange)"
-          :label="$t('view.stock.gem.dashboard.monthlyReport.summary.netValueChange')"
-        />
-        <StatCardGeneric
           icon="bi-graph-up-arrow"
           :value="formatPercent(summary.monthOverMonthGrowth)"
           :label="$t('view.stock.gem.dashboard.monthlyReport.summary.monthOverMonthGrowth')"
@@ -71,14 +66,6 @@ export default {
       return new Intl.NumberFormat('en-US', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
-      }).format(value)
-    },
-
-    formatCurrency(value) {
-      if (!value && value !== 0) return '0.00'
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
       }).format(value)
     },
 

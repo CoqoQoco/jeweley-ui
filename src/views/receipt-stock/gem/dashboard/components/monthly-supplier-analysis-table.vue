@@ -104,22 +104,6 @@ export default {
           sortable: false
         },
         {
-          field: 'totalCost',
-          header: this.$t('view.stock.gem.dashboard.monthlyReport.supplierAnalysis.totalCost'),
-          minWidth: '120px',
-          align: 'right',
-          format: 'decimal2',
-          sortable: false
-        },
-        {
-          field: 'averageCostPerUnit',
-          header: this.$t('view.stock.gem.dashboard.monthlyReport.supplierAnalysis.averageCostPerUnit'),
-          minWidth: '140px',
-          align: 'right',
-          format: 'decimal2',
-          sortable: false
-        },
-        {
           field: 'gemTypes',
           header: this.$t('view.stock.gem.dashboard.monthlyReport.supplierAnalysis.gemTypes'),
           minWidth: '160px',

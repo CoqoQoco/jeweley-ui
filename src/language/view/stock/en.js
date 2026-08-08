@@ -419,13 +419,14 @@ export default {
     colQuantity: 'On-hand (Qty)',
     colQuantityWeight: 'On-hand (Weight ct)',
     colQuantityOnProcess: 'In Process',
+    colLastMovementDate: 'Last Movement',
+    colDaysSinceLastMovement: 'Idle (Days)',
     colPrice: 'Price/Unit',
     colRegion: 'Origin',
     totalRecords: 'Total {total} records',
     summaryTotalCount: 'Total Items',
     summaryTotalQuantity: 'Total On-hand Qty',
-    summaryTotalWeight: 'Total On-hand Weight (ct)',
-    summaryTotalValueApprox: 'Approximate Value (THB)'
+    summaryTotalWeight: 'Total On-hand Weight (ct)'
   },
   gemMovementReport: {
     searchTitle: 'Gem Receipt-Issue Ledger Report',
@@ -450,6 +451,8 @@ export default {
     type5: 'Pick-off (Borrow Out)',
     type6: 'Pick-return (Return In)',
     type7: 'Pick-outbound (Requisition)',
+    type8: 'Sold Out [Material Sale]',
+    type9: 'Return In [Sale Cancelled]',
     colRequestDate: 'Request/Issue Date',
     colType: 'Type',
     colName: 'Gem',
@@ -467,6 +470,41 @@ export default {
     colOperatorBy: 'Operator',
     colReturnDate: 'Return Date',
     totalRecords: 'Total {total} records'
+  },
+  gemMovementAnalysis: {
+    searchTitle: 'Material Movement Report',
+    searchDesc: 'See which gems move fast, which are stuck, and which are running low',
+    dateRange: 'Date Range',
+    groupName: 'Gem Type',
+    shape: 'Shape',
+    grade: 'Grade',
+    placeholder: {
+      code: 'Enter code'
+    },
+    unitCode: 'codes',
+    summaryLowOut: 'Low/Out of Stock',
+    colCategory: 'Type/Shape/Grade',
+    colQuantity: 'On Hand',
+    colQuantityWeight: 'Weight',
+    colTransactionCount: 'Tx Count',
+    colIn: 'In',
+    colOut: 'Out',
+    colAvgDaily: 'Avg/Day',
+    colDaysOfSupply: 'Days Left',
+    colLastMovement: 'Last Move',
+    colDaysSinceLastMovement: 'Idle Days',
+    totalRecords: 'Total {total} records',
+    statusType: {
+      fast: 'Fast Moving',
+      slow: 'Slow Moving',
+      dead: 'Not Moving'
+    },
+    alertLevel: {
+      out: 'Out of Stock',
+      critical: 'Critical',
+      low: 'Low Stock',
+      ok: 'Normal'
+    }
   },
   materialValuationReport: {
     searchTitle: 'Material Valuation Report',
