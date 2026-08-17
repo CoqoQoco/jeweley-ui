@@ -86,16 +86,22 @@ export class WorkerWagesSuccessPdfBuilder {
       { text: 'แผนก', bold: true, border: [false, true, false, true] },
       { text: 'รายละเอียด', bold: true, border: [false, true, false, true] },
       { text: 'จำนวน', bold: true, alignment: 'right', border: [false, true, false, true] },
+      { text: 'น้ำหนักจ่าย', bold: true, alignment: 'right', border: [false, true, false, true] },
+      { text: 'น้ำหนักรับ', bold: true, alignment: 'right', border: [false, true, false, true] },
       { text: 'ราคา/หน่วย', bold: true, alignment: 'right', border: [false, true, false, true] },
       { text: 'จำนวนเงิน', bold: true, alignment: 'right', border: [false, true, false, true] }
     ]
 
     let totalQty = 0
     let totalWages = 0
+    let totalWeightSend = 0
+    let totalWeightCheck = 0
 
     const dataRows = this.items.map((item) => {
       totalQty += item.goldQtyCheck || 0
       totalWages += item.totalWages || 0
+      totalWeightSend += item.goldWeightSend || 0
+      totalWeightCheck += item.goldWeightCheck || 0
       return [
         { text: this.formatDate(item.jobDate), bold: true, border: [false, false, false, false] },
         { text: `${item.wo || ''}${item.woNumber ? ' - ' + item.woNumber : ''}`, bold: true, border: [false, false, false, false] },
@@ -107,6 +113,8 @@ export class WorkerWagesSuccessPdfBuilder {
           border: [false, false, false, false]
         },
         { text: `${item.goldQtyCheck ?? ''}`, bold: true, alignment: 'right', border: [false, false, false, false] },
+        { text: this.fmt2(item.goldWeightSend), bold: true, alignment: 'right', border: [false, false, false, false] },
+        { text: this.fmt2(item.goldWeightCheck), bold: true, alignment: 'right', border: [false, false, false, false] },
         { text: item.wages ? Number(item.wages).toFixed(2) : '0.00', bold: true, alignment: 'right', border: [false, false, false, false] },
         { text: item.totalWages ? Number(item.totalWages).toFixed(2) : '0.00', bold: true, alignment: 'right', border: [false, false, false, false] }
       ]
@@ -119,6 +127,8 @@ export class WorkerWagesSuccessPdfBuilder {
       { text: '', bold: true, alignment: 'right', border: [false, true, false, false] },
       { text: 'รวม', bold: true, alignment: 'right', border: [false, true, false, false] },
       { text: `${totalQty}`, bold: true, alignment: 'right', border: [false, true, false, false] },
+      { text: this.fmt2(totalWeightSend), bold: true, alignment: 'right', border: [false, true, false, false] },
+      { text: this.fmt2(totalWeightCheck), bold: true, alignment: 'right', border: [false, true, false, false] },
       { text: '', bold: true, alignment: 'right', border: [false, true, false, false] },
       { text: Number(totalWages).toFixed(2), bold: true, alignment: 'right', border: [false, true, false, false] }
     ]
@@ -373,7 +383,7 @@ export class WorkerWagesSuccessPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [54, 66, '*', 50, '*', 42, 52, 52],
+        widths: [50, 60, '*', 34, '*', 32, 46, 46, 44, 48],
         body: this.buildWagesTableBody(),
         layout: { defaultBorder: false }
       }
