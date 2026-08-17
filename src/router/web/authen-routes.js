@@ -29,6 +29,7 @@ const GoldSizeView = () => import('@/views/master/gold-size/index-view.vue')
 const ProductTypeView = () => import('@/views/master/productType/index-view.vue')
 const ZillView = () => import('@/views/master/zill/index-view.vue')
 const DiamondGrade = () => import('@/views/master/diamond-grade/index-view.vue')
+const CastingMaterial = () => import('@/views/master/casting-material/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
@@ -260,6 +261,19 @@ const routes = [
           Displayname: {
             en: 'Diamond Grade',
             th: 'ข้อมูลเกรดเพรช'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
+        }
+      },
+      {
+        path: '/master-casting-material',
+        name: 'master-casting-material',
+        component: CastingMaterial,
+        meta: {
+          Displayname: {
+            en: 'Casting Material',
+            th: 'ข้อมูลวัตถุดิบงานแต่ง'
           },
           minorShow: true,
           permissions: [PERMISSIONS.MASTER_VIEW]

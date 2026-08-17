@@ -1,4 +1,27 @@
 export default {
+  castingMaterial: {
+    searchTitle: 'Casting Material Data',
+    searchDesc: 'Keywords used to identify materials issued to casting work — matched against material group name or shape in stock',
+    createTitle: 'Add Casting Material',
+    updateTitle: 'Edit Casting Material',
+    createBtn: 'Add Casting Material',
+    field: {
+      code: 'Matching Keyword',
+      nameTh: 'Material Name (TH)',
+      nameEn: 'Material Name (EN)',
+      description: 'Description'
+    },
+    placeholder: {
+      search: 'EX: Chain, Spring, Base, CHAIN......',
+      code: 'EX: Chain, Spring, Base, CHAIN',
+      nameTh: 'EX: Chain (TH)',
+      nameEn: 'EX: Chain'
+    },
+    confirm: {
+      create: 'Confirm Add Casting Material',
+      update: 'Confirm Edit Casting Material'
+    }
+  },
   diamondGrade: {
     searchTitle: 'Diamond Grade Data',
     createTitle: 'Add Diamond Grade',

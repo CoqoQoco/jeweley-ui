@@ -1,4 +1,27 @@
 export default {
+  castingMaterial: {
+    searchTitle: 'ข้อมูลวัตถุดิบงานแต่ง',
+    searchDesc: 'คำที่ใช้แยกวัตถุดิบที่เบิกแล้วเข้างานแต่ง — ระบบจับคู่กับชื่อกลุ่มหรือ shape ของวัตถุดิบในคลัง',
+    createTitle: 'เพิ่มวัตถุดิบงานแต่ง',
+    updateTitle: 'แก้ไขวัตถุดิบงานแต่ง',
+    createBtn: 'เพิ่มวัตถุดิบงานแต่ง',
+    field: {
+      code: 'คำที่ใช้จับคู่ (keyword)',
+      nameTh: 'ชื่อวัตถุดิบ (ไทย)',
+      nameEn: 'ชื่อวัตถุดิบ (อังกฤษ)',
+      description: 'คำอธิบาย'
+    },
+    placeholder: {
+      search: 'EX: สร้อย, สปริง, แป้น, CHAIN......',
+      code: 'EX: สร้อย, สปริง, แป้น, CHAIN',
+      nameTh: 'EX: สร้อยคอ',
+      nameEn: 'EX: Chain'
+    },
+    confirm: {
+      create: 'ยืนยันเพิ่มวัตถุดิบงานแต่ง',
+      update: 'ยืนยันแก้ไขวัตถุดิบงานแต่ง'
+    }
+  },
   diamondGrade: {
     searchTitle: 'ข้อมูลเกรดเพชร',
     createTitle: 'เพิ่มเกรดเพชร',
