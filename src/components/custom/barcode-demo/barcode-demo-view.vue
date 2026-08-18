@@ -13,14 +13,14 @@
       <div class="main-box">
         <div class="box-col-container">
           <div class="left-box">
-            <div class="mold-box">{{ type === 'gem' ? null : mold }}</div>
+            <div class="mold-box"></div>
             <div class="d-flex justify-content-between">
               <div class="barcode-wrapper">
                 <svg ref="barcodeElement"></svg>
               </div>
               <div class="goldType-box">{{ goldType }}</div>
             </div>
-            <div class="mold-box">{{ stockNumber }}</div>
+            <div class="mold-box">{{ stockNumberLine }}</div>
             <div class="d-flex justify-content-start">
               <div class="gold-box">{{ gold }}</div>
               <div class="gold-box ml-1">{{ size }}</div>
@@ -63,10 +63,6 @@ export default {
       type: String,
       default: 'XX-XXXX-XXX'
     },
-    mold: {
-      type: String,
-      default: 'Mold'
-    },
     gold: {
       type: String,
       default: 'X.XX g. Gold'
@@ -87,6 +83,10 @@ export default {
       type: String,
       default: 'gem'
     },
+    salePrice: {
+      type: Number,
+      default: null
+    },
     barcodeOptions: {
       type: Object,
       default: () => ({
@@ -106,6 +106,18 @@ export default {
         this.generateBarcode(newVal)
       },
       immediate: true
+    }
+  },
+
+  computed: {
+    stockNumberLine() {
+      const priceText =
+        this.salePrice != null && this.salePrice > 0
+          ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+              this.salePrice
+            )
+          : ''
+      return [this.stockNumber, priceText].filter(Boolean).join(' - ')
     }
   },
 

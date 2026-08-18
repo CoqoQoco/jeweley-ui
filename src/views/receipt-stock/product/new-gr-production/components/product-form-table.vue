@@ -77,6 +77,7 @@
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
         :breakdownData="data.breakDown || []"
+        :locationOptions="locationOptions"
         @selectImage="onSelectImage"
         @addMaterial="addMaterialItem"
         @removeMaterial="removeMaterialItem"
@@ -187,6 +188,10 @@ export default {
     data: {
       type: Object,
       default: () => ({})
+    },
+    locationOptions: {
+      type: Array,
+      default: () => []
     }
   },
 

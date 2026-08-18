@@ -111,7 +111,6 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
-import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
@@ -123,8 +122,7 @@ export default {
 
   setup() {
     const zebraPrinter = zebraPrinterApi()
-    const productStore = usrStockProductApiStore()
-    return { zebraPrinter, productStore }
+    return { zebraPrinter }
   },
 
   props: {
@@ -278,19 +276,6 @@ export default {
     },
 
     async onPrintBarcode() {
-      // fetch price ทุก item แบบ parallel
-      const priceMap = {}
-      await Promise.all(
-        this.selectedItems.map(async (item) => {
-          const costRes = await this.productStore.fetchGetStockCostDetail(item.stockNumber)
-          if (costRes?.length > 0) {
-            priceMap[item.stockNumber] = costRes
-              .filter((x) => x.nameGroup !== 'Gold')
-              .reduce((sum, x) => sum + (x.totalPrice ?? 0), 0)
-          }
-        })
-      )
-
       const zplData = this.selectedItems.map((item) => {
         const barcodeData = {
           madeIn: 'MADE IN THAILAND',
@@ -303,7 +288,8 @@ export default {
           productNameEn: item.productNameEn || '',
           gold: '',
           gems: [],
-          price: priceMap[item.stockNumber] ?? null,
+          price: item.productPrice ?? null,
+          salePrice: item.productPrice ?? null,
           isSilver: item.productionTypeSize === 'SILVER' ? true : false,
           barcodeType: this.selectedType
         }

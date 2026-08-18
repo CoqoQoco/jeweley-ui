@@ -96,7 +96,7 @@
               <div v-else-if="materialData.type === 'Diamond'">
                 <DropdownGeneric
                   :modelValue="materialData.typeCode"
-                  :options="masterDiamondGrade"
+                  :options="diamondGradeOptions(materialData.typeCode)"
                   optionLabel="description"
                   optionValue="nameEn"
                   :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
@@ -144,10 +144,14 @@
                   :step="0.01"
                   @blur="updateMaterialBarcode(materialData)"
                 />
-                <InputTextGeneric
-                  v-model="materialData.qtyUnit"
+                <DropdownGeneric
+                  :modelValue="materialData.qtyUnit"
+                  :options="unitOptions(materialData.qtyUnit, qtyUnitOptions)"
+                  optionLabel="label"
+                  optionValue="value"
                   :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
                   class="mt-1 unit-input"
+                  @update:modelValue="val => { materialData.qtyUnit = val; updateMaterialBarcode(materialData) }"
                 />
               </div>
             </template>
@@ -163,10 +167,14 @@
                   :step="0.01"
                   @blur="updateMaterialBarcode(materialData)"
                 />
-                <InputTextGeneric
-                  v-model="materialData.qtyWeightUnit"
+                <DropdownGeneric
+                  :modelValue="materialData.qtyWeightUnit"
+                  :options="unitOptions(materialData.qtyWeightUnit, weightUnitOptions)"
+                  optionLabel="label"
+                  optionValue="value"
                   :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
                   class="mt-1 unit-input"
+                  @update:modelValue="val => { materialData.qtyWeightUnit = val; updateMaterialBarcode(materialData) }"
                 />
               </div>
             </template>
@@ -390,7 +398,16 @@ export default {
   data() {
     return {
       editableMaterials: [],
-      originalMaterials: []
+      originalMaterials: [],
+      qtyUnitOptions: [
+        { value: 'pc', label: 'pc' },
+        { value: 'เม็ด', label: 'เม็ด' },
+        { value: 'ชิ้น', label: 'ชิ้น' }
+      ],
+      weightUnitOptions: [
+        { value: 'g.', label: 'g.' },
+        { value: 'ct.', label: 'ct.' }
+      ]
     }
   },
 
@@ -473,6 +490,20 @@ export default {
 
     updateMaterialBarcode(material) {
       material.typeBarcode = this.generateBarcode(material)
+    },
+
+    unitOptions(current, base) {
+      if (current && !base.some((opt) => opt.value === current)) {
+        return [...base, { value: current, label: current }]
+      }
+      return base
+    },
+
+    diamondGradeOptions(current) {
+      if (current && !this.masterDiamondGrade.some((opt) => opt.nameEn === current)) {
+        return [...this.masterDiamondGrade, { nameEn: current, description: current }]
+      }
+      return this.masterDiamondGrade
     },
 
     generateBarcode(material) {

@@ -217,7 +217,10 @@ export default {
       unitLabel: 'หน่วย',
       gramLabel: 'กรัม',
       breakdownRef: 'วัสดุจาก Breakdown (อ้างอิง)',
-      workerLabel: 'ค่าแรง'
+      workerLabel: 'ค่าแรง',
+      selectLocation: 'เลือกคลัง',
+      diamondGradeHint: 'เพชรที่ต้องการใส่เกรด ให้เลือกประเภทเป็น Diamond แล้วช่องรหัส/เกรดจะเป็นเกรดเพชร',
+      saveDraftProductionSuccess: 'บันทึกร่างเรียบร้อยแล้ว'
     },
     productionReceiptList: {
       title: 'รับสินค้างานผลิต',

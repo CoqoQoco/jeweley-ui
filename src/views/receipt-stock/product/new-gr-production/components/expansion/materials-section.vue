@@ -10,6 +10,7 @@
           <small class="pl-4"
             >{{ $t('view.receiptStock.product.grProduction.materialDescriptionBreakdown') }}</small
           >
+          <small class="pl-4 d-block">{{ $t('view.receiptStock.product.grProduction.diamondGradeHint') }}</small>
         </div>
         <!-- Control buttons -->
         <div class="d-flex justify-content-start mt-2 gap-2">
@@ -40,7 +41,7 @@
               optionValue="value"
               class="w-full"
               :class="materialData.type === true ? `p-invalid` : ``"
-              @update:modelValue="materialData.type = $event; emitUpdateTypeBarcode(materialData)"
+              @update:modelValue="val => onTypeChange(val, materialData)"
             />
           </div>
         </template>
@@ -86,7 +87,7 @@
             <div v-else-if="materialData.type === 'Diamond'">
               <DropdownGeneric
                 :modelValue="materialData.typeCode"
-                :options="masterDiamondGrade"
+                :options="diamondGradeOptions(materialData.typeCode)"
                 optionLabel="description"
                 optionValue="nameEn"
                 class="w-full"
@@ -148,11 +149,14 @@
                 :bgInput="getBgColor(false, materialData.qty)"
                 @blur="emitUpdateTypeBarcode(materialData)"
               />
-              <InputTextGeneric
-                v-model="materialData.qtyUnit"
+              <DropdownGeneric
+                :modelValue="materialData.qtyUnit"
+                :options="unitOptions(materialData.qtyUnit, qtyUnitOptions)"
+                optionLabel="label"
+                optionValue="value"
                 class="unit-input"
-                :bgInput="getBgColor(false, materialData.qtyUnit)"
-                @blur="emitUpdateTypeBarcode(materialData)"
+                :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
+                @update:modelValue="val => { materialData.qtyUnit = val; emitUpdateTypeBarcode(materialData) }"
               />
             </div>
           </div>
@@ -185,11 +189,14 @@
                 :bgInput="getBgColor(false, materialData.qtyWeight)"
                 @blur="emitUpdateTypeBarcode(materialData)"
               />
-              <InputTextGeneric
-                v-model="materialData.qtyWeightUnit"
+              <DropdownGeneric
+                :modelValue="materialData.qtyWeightUnit"
+                :options="unitOptions(materialData.qtyWeightUnit, weightUnitOptions)"
+                optionLabel="label"
+                optionValue="value"
                 class="unit-input"
-                :bgInput="getBgColor(false, materialData.qtyWeightUnit)"
-                @blur="emitUpdateTypeBarcode(materialData)"
+                :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
+                @update:modelValue="val => { materialData.qtyWeightUnit = val; emitUpdateTypeBarcode(materialData) }"
               />
             </div>
           </div>
@@ -323,7 +330,16 @@ export default {
 
   data() {
     return {
-      gemSuggestions: []
+      gemSuggestions: [],
+      qtyUnitOptions: [
+        { value: 'pc', label: 'pc' },
+        { value: 'เม็ด', label: 'เม็ด' },
+        { value: 'ชิ้น', label: 'ชิ้น' }
+      ],
+      weightUnitOptions: [
+        { value: 'g.', label: 'g.' },
+        { value: 'ct.', label: 'ct.' }
+      ]
     }
   },
 
@@ -359,12 +375,55 @@ export default {
     onSelectGem(value, materialData) {
       if (value && typeof value === 'object') {
         materialData.typeName = value.name || value.code
-        materialData.region = value.region || materialData.region
+
+        if (!materialData.region) {
+          materialData.region = value.region || materialData.region
+        }
+
+        if (!materialData.size) {
+          const sizeParts = [value.size, value.shape].filter(Boolean)
+          if (sizeParts.length > 0) {
+            materialData.size = sizeParts.join(' ')
+          }
+        }
+
+        if (materialData.type === 'Diamond' && !materialData.typeCode) {
+          materialData.typeCode = value.grade || materialData.typeCode
+        }
       } else if (typeof value === 'string') {
         materialData.typeName = value
       }
       this.emitUpdateTypeBarcode(materialData)
     },
+
+    onTypeChange(newType, materialData) {
+      const group = (type) => {
+        if (type === 'Gold' || type === 'Silver') return 'Gold'
+        return type
+      }
+
+      if (group(materialData.type) !== group(newType)) {
+        materialData.typeCode = ''
+      }
+
+      materialData.type = newType
+      this.emitUpdateTypeBarcode(materialData)
+    },
+
+    unitOptions(current, base) {
+      if (current && !base.some((opt) => opt.value === current)) {
+        return [...base, { value: current, label: current }]
+      }
+      return base
+    },
+
+    diamondGradeOptions(current) {
+      if (current && !this.masterDiamondGrade.some((opt) => opt.nameEn === current)) {
+        return [...this.masterDiamondGrade, { nameEn: current, description: current }]
+      }
+      return this.masterDiamondGrade
+    },
+
     calculateTotalPrice(material) {
       if (!material) return 0
 
@@ -437,11 +496,13 @@ export default {
   }
 
   .unit-input {
-    flex: 0 0 50px;
+    flex: 0 0 70px;
 
-    :deep(.form-control) {
+    :deep(.p-inputtext) {
       text-align: center;
       font-size: var(--fs-sm);
+      padding-left: var(--sp-xs);
+      padding-right: var(--sp-xs);
     }
   }
 }

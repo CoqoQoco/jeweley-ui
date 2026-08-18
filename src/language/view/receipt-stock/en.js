@@ -217,7 +217,10 @@ export default {
       unitLabel: 'unit',
       gramLabel: 'grams',
       breakdownRef: 'Materials from Breakdown (reference)',
-      workerLabel: 'Labor Cost'
+      workerLabel: 'Labor Cost',
+      selectLocation: 'Select Location',
+      diamondGradeHint: 'To assign a diamond grade, select type as Diamond — the Code/Grade field will show the diamond grade',
+      saveDraftProductionSuccess: 'Draft saved successfully'
     },
     productionReceiptList: {
       title: 'Receive Production Goods',

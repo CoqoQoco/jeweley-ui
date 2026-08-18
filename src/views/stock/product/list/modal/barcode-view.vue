@@ -132,6 +132,7 @@ const interfaceBarcode = {
   gold: '',
   gems: [],
   price: null,
+  salePrice: null,
   originPrice: null,
   tagPriceMultiplier: 1,
   print: 1,

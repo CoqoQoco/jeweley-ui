@@ -104,14 +104,18 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       let zpl = '^XA^LL200^MD25^LT40^XZ'
       zpl += '^XA'
 
-      // ส่วนหัว (Model)
-      zpl += formValue.isSilver ? `^FO252,15^A0N,20,18^FD${formValue.mold || ''}^FS` : null
-
       // บาร์โค้ด
       zpl += `^FO248,35^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
 
-      // stock number
-      zpl += `^FO248,65^A0N,20,18^FD${formValue.stockNumber || ''}^FS`
+      // เลขที่ผลิต - ราคาขาย (เมื่อมีค่า)
+      const salePriceText =
+        formValue.salePrice != null && formValue.salePrice > 0
+          ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+              formValue.salePrice
+            )
+          : ''
+      const stockNumberLine = [formValue.stockNumber, salePriceText].filter(Boolean).join(' - ')
+      zpl += `^FO248,65^A0N,20,18^FD${stockNumberLine}^FS`
 
       // gold and size
       zpl += `^FO250,090^A0N,14,16,B^FD${formValue.gold || ''} ${formValue.size || ''}^FS`

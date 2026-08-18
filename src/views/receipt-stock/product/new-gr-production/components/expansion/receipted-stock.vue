@@ -6,7 +6,6 @@
           :madeIn="formBarcode.madeIn"
           :madeInText="formBarcode.madeInText"
           :stockNumber="slotProps.stockNumber"
-          :mold="slotProps.data.moldDesign ?? formBarcode.mold"
           :gold="slotProps.data.barcodeGold"
           :gems="slotProps.data.barcodeGems"
           :size="slotProps.data.size"

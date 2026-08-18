@@ -82,12 +82,13 @@
                 <div v-else-if="materialData.type === 'Diamond'">
                   <DropdownGeneric
                     :modelValue="materialData.typeCode"
-                    :options="masterDiamondGrade"
+                    :options="diamondGradeOptions(materialData.typeCode)"
                     optionLabel="description"
                     optionValue="nameEn"
                     class="w-full"
                     :placeholder="$t('view.receiptStock.product.grProduction.colMaterialCode')"
                     :showClear="true"
+                    @update:modelValue="materialData.typeCode = $event; updateMaterialBarcode(materialData)"
                   />
                 </div>
                 <div v-else-if="materialData.type === 'Gem'">
@@ -121,10 +122,14 @@
                     min="0"
                     step="0.01"
                   />
-                  <InputTextGeneric
-                    v-model="materialData.qtyUnit"
-                    :bgInput="getBgColor(false, materialData.qtyUnit)"
+                  <DropdownGeneric
+                    :modelValue="materialData.qtyUnit"
+                    :options="unitOptions(materialData.qtyUnit, qtyUnitOptions)"
+                    optionLabel="label"
+                    optionValue="value"
+                    :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
                     class="unit-input"
+                    @update:modelValue="materialData.qtyUnit = $event; updateMaterialBarcode(materialData)"
                   />
                 </div>
               </template>
@@ -153,10 +158,14 @@
                     min="0"
                     step="0.01"
                   />
-                  <InputTextGeneric
-                    v-model="materialData.qtyWeightUnit"
-                    :bgInput="getBgColor(false, materialData.qtyWeightUnit)"
+                  <DropdownGeneric
+                    :modelValue="materialData.qtyWeightUnit"
+                    :options="unitOptions(materialData.qtyWeightUnit, weightUnitOptions)"
+                    optionLabel="label"
+                    optionValue="value"
+                    :placeholder="$t('view.receiptStock.product.grProduction.unitLabel')"
                     class="unit-input"
+                    @update:modelValue="materialData.qtyWeightUnit = $event; updateMaterialBarcode(materialData)"
                   />
                 </div>
               </template>
@@ -440,7 +449,16 @@ export default {
       originalBreakdown: [],
       applyType: 'all',
       selectedStockNumbers: [],
-      selectedStockItems: []
+      selectedStockItems: [],
+      qtyUnitOptions: [
+        { value: 'pc', label: 'pc' },
+        { value: 'เม็ด', label: 'เม็ด' },
+        { value: 'ชิ้น', label: 'ชิ้น' }
+      ],
+      weightUnitOptions: [
+        { value: 'g.', label: 'g.' },
+        { value: 'ct.', label: 'ct.' }
+      ]
     }
   },
 
@@ -678,6 +696,20 @@ export default {
       void materialData
     },
 
+    unitOptions(current, base) {
+      if (current && !base.some((opt) => opt.value === current)) {
+        return [...base, { value: current, label: current }]
+      }
+      return base
+    },
+
+    diamondGradeOptions(current) {
+      if (current && !this.masterDiamondGrade.some((opt) => opt.nameEn === current)) {
+        return [...this.masterDiamondGrade, { nameEn: current, description: current }]
+      }
+      return this.masterDiamondGrade
+    },
+
     updateStockSelection(newSelection) {
       this.selectedStockItems = newSelection
       this.selectedStockNumbers = newSelection.map((item) => item.stockReceiptNumber)
@@ -777,11 +809,13 @@ export default {
   gap: 2px;
 
   .unit-input {
-    flex: 0 0 45px;
+    flex: 0 0 70px;
 
-    :deep(.form-control) {
+    :deep(.p-inputtext) {
       text-align: center;
       font-size: var(--fs-sm);
+      padding-left: var(--sp-xs);
+      padding-right: var(--sp-xs);
     }
   }
 }

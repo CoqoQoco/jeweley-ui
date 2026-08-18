@@ -15,6 +15,7 @@
           :requiredStud="requiredStud"
           :getBgColor="getBgColor"
           :isRequiredField="isRequiredField"
+          :locationOptions="locationOptions"
           @selectImage="$emit('selectImage', $event)"
         />
 
@@ -133,6 +134,10 @@ export default {
       required: true
     },
     breakdownData: {
+      type: Array,
+      default: () => []
+    },
+    locationOptions: {
       type: Array,
       default: () => []
     }

@@ -28,6 +28,7 @@ export function buildBarcodeModel(stock) {
     mold: stock?.mold,
     size: stock?.size,
     productNameEn: stock?.productNameEn || '',
-    productNumber: stock?.productNumber || ''
+    productNumber: stock?.productNumber || '',
+    salePrice: stock?.productPrice ?? null
   }
 }

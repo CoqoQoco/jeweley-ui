@@ -92,15 +92,14 @@
         <div>
           <span class="title-text">{{ $t('view.receiptStock.product.grProduction.location') }}</span>
         </div>
-        <input
-          type="text"
-          class="form-control form-control-sm"
-          v-model="slotProps.data.location"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          disabled
+        <DropdownGeneric
+          :modelValue="slotProps.data.location"
+          :options="locationOptions"
+          optionLabel="label"
+          optionValue="value"
+          :showClear="false"
+          :placeholder="$t('view.receiptStock.product.grProduction.selectLocation')"
+          @update:modelValue="val => { slotProps.data.location = val }"
         />
       </div>
     </div>
@@ -147,6 +146,10 @@ export default {
     requiredStud: {
       type: Boolean,
       required: true
+    },
+    locationOptions: {
+      type: Array,
+      default: () => []
     },
     getBgColor: {
       type: Function,

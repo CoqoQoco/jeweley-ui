@@ -14,6 +14,7 @@
           :materialColumns="materialColumns"
           :formBarcode="formBarcode"
           :type="type"
+          :locationOptions="locationOptions"
           :masterStud="masterStud"
           :masterMaterialType="masterMaterialType"
           :masterGold="masterGold"
@@ -85,6 +86,7 @@
 import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/receipt-production-api.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 
 import headerView from './components/production-header-view.vue'
@@ -126,7 +128,8 @@ export default {
   setup() {
     const receiptProductionStore = useReceiptProductionApiStore()
     const masterStore = useMasterApiStore()
-    return { receiptProductionStore, masterStore }
+    const stockLocationStore = useStockLocationApiStore()
+    return { receiptProductionStore, masterStore, stockLocationStore }
   },
 
   computed: {
@@ -138,6 +141,18 @@ export default {
     },
     masterDiamondGrade() {
       return this.masterStore.diamondGrade
+    },
+    locationOptions() {
+      const options = this.stockLocationStore.all
+        .filter((item) => item.isActive)
+        .map((item) => ({ value: item.code, label: `${item.code} — ${item.nameTh}` }))
+      const usedLocations = new Set(this.form.map((item) => item.location).filter(Boolean))
+      usedLocations.forEach((loc) => {
+        if (!options.some((o) => o.value === loc)) {
+          options.push({ value: loc, label: loc })
+        }
+      })
+      return options
     },
     requiredStud() {
       const res = this.data.productType === 'ES'
@@ -391,11 +406,17 @@ export default {
     addMaterialItem(data) {
       data.push({
         type: '',
+        typeName: '',
+        typeCode: '',
+        typeBarcode: '',
         qty: 1,
         qtyUnit: 'pc',
-        weight: null,
-        weightUnit: 'ct.',
-        description: ''
+        qtyPrice: 0,
+        qtyWeight: null,
+        qtyWeightUnit: 'ct.',
+        qtyWeightPrice: 0,
+        size: '',
+        region: ''
       })
     },
 
@@ -647,11 +668,27 @@ export default {
         return false
       }
 
+      const stocksWithMaterials = confirm.map((item) => ({
+        ...item,
+        materials: (item.materials || []).map((m) => {
+          const totalPrice =
+            (Number(m.qty) || 0) * (Number(m.qtyPrice) || 0) +
+            (Number(m.qtyWeight) || 0) * (Number(m.qtyWeightPrice) || 0)
+
+          return {
+            ...m,
+            weight: Number(m.qtyWeight) || null,
+            weightUnit: m.qtyWeightUnit,
+            price: totalPrice || null
+          }
+        })
+      }))
+
       const formValue = {
         wo: this.data.wo,
         woNumber: this.data.woNumber,
         receiptNumber: this.data.receiptNumber,
-        Stocks: [...confirm]
+        Stocks: stocksWithMaterials
       }
 
       swAlert.confirmSubmit('', this.$t('view.receiptStock.product.grProduction.confirmSave'), async () => {
@@ -686,7 +723,7 @@ export default {
         productNameEN: item.productNameEN?.trim() || this.data.productName || '',
         moldDesign: item.moldDesign?.trim() || this.data.mold || '',
         location: item.location?.trim() || 'MAIN',
-        price: 0,
+        price: item.price ?? 0,
         barcodeGold: '',
         barcodeGems: [],
         materials: (item.materials || []).map((m) => ({
@@ -709,24 +746,23 @@ export default {
     },
 
     async fetchDraft() {
-      try {
-        this.isOnDraft = true
+      this.isOnDraft = true
 
+      try {
         const formValue = {
           receiptNumber: this.data.receiptNumber,
-          stocks: [...this.form]
+          stocks: [...this.form],
+          breakDown: this.data.breakDown
         }
-        console.log('fetchDraft', formValue)
 
         const res = await this.receiptProductionStore.fetchCreateDraft({
           formValue: formValue
         })
 
         if (res) {
-          this.isOnDraft = false
+          swAlert.success(this.$t('view.receiptStock.product.grProduction.saveDraftProductionSuccess'))
         }
-      } catch (error) {
-        console.log(error)
+      } finally {
         this.isOnDraft = false
       }
     },
@@ -919,6 +955,7 @@ export default {
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGem()
       await this.masterStore.fetchDiamondGrade()
+      await this.stockLocationStore.fetchAllForMap()
     })
   }
 }

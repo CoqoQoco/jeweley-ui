@@ -5,11 +5,11 @@
     :madeIn="barcode.madeIn"
     :madeInText="barcode.madeInText"
     :stockNumber="barcode.stockNumber"
-    :mold="barcode.mold"
     :gold="barcode.gold"
     :gems="barcode.gems"
     :size="barcode.size"
     :goldType="barcode.goldType"
+    :salePrice="barcode.salePrice"
   />
   <barcodeVerticalDemo
     v-else
