@@ -32,6 +32,10 @@ const CostStockEdit = () => import('@/views/sale/cost-stock/web/cost-edit/index-
 const SaleDocument = () => import('@/views/sale/document/index-view.vue')
 const SaleDocumentCatalogBuilder = () => import('@/views/sale/document/catalog-builder/index-view.vue')
 
+// Export Shipment
+const ExportShipmentList = () => import('@/views/sale/export-shipment/index-view.vue')
+const ExportShipmentBuilder = () => import('@/views/sale/export-shipment/builder-view.vue')
+
 const routes = [
   {
     path: '/sale',
@@ -338,6 +342,47 @@ const routes = [
           Displayname: {
             en: 'Edit Catalog',
             th: 'แก้ไขเอกสาร Lookbook'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+
+      // Export Shipment Section
+      {
+        path: '/sale/export-shipment',
+        name: 'sale-export-shipment',
+        component: ExportShipmentList,
+        meta: {
+          Displayname: {
+            en: 'Export Shipment',
+            th: 'เอกสารส่งออก-งานแฟร์'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+      {
+        path: '/sale/export-shipment/create',
+        name: 'sale-export-shipment-create',
+        component: ExportShipmentBuilder,
+        meta: {
+          Displayname: {
+            en: 'Create Export Shipment',
+            th: 'สร้างเอกสารส่งออก'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.SALE_CREATE]
+        }
+      },
+      {
+        path: '/sale/export-shipment/:running',
+        name: 'sale-export-shipment-edit',
+        component: ExportShipmentBuilder,
+        meta: {
+          Displayname: {
+            en: 'Export Shipment Detail',
+            th: 'รายละเอียดเอกสารส่งออก'
           },
           minorShow: false,
           permissions: [PERMISSIONS.SALE_VIEW]

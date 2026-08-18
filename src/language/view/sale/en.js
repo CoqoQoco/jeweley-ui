@@ -1599,6 +1599,125 @@ export const materialSale = {
   }
 }
 
+export const exportShipment = {
+  title: 'Export Shipment',
+  description: 'Issue shipment documents for sending goods to an overseas jewelry fair from finished-goods stock',
+  searchTitle: 'Search Export Shipment',
+  searchDesc: 'Search by keyword or document date range',
+  createBtn: 'Create Export Shipment',
+  keyword: 'Keyword',
+  placeholderKeyword: 'Document no. / consignee / event name',
+  dateRange: 'Document Date Range',
+  colDocumentNumber: 'System No.',
+  colCustomNumber: 'Invoice No.',
+  colDocumentDate: 'Date',
+  colConsigneeName: 'Consignee',
+  colEventName: 'Event',
+  colStatus: 'Status',
+  colAction: 'Action',
+  noData: 'No export shipment documents found',
+  confirmDeleteTitle: 'Confirm Delete Export Shipment',
+  deleteSuccess: 'Export shipment deleted successfully',
+
+  createTitle: 'Create Export Shipment',
+  editTitle: 'Edit Export Shipment',
+
+  sectionDocument: 'Document Info',
+  sectionItems: 'Product Items',
+
+  documentNumberLabel: 'System No.',
+  customNumberLabel: 'Document No. (Invoice No.)',
+  documentDateLabel: 'Document Date',
+  consigneeNameLabel: 'Consignee Name (Consigned To)',
+  consigneeAddressLabel: 'Consignee Address',
+  eventNameLabel: 'Event Name',
+  boothNoLabel: 'Booth No.',
+  attnNameLabel: 'Attn Name',
+  attnPassportLabel: 'Passport No.',
+  attnTelLabel: 'Attn Tel',
+  incotermLabel: 'Incoterm',
+  originCountryLabel: 'Origin Country',
+  currencyLabel: 'Currency',
+  exchangeRateLabel: 'Exchange Rate',
+  pricePercentLabel: '% of Declared Tag Price',
+  parcelCountLabel: 'Parcel Count',
+  statusLabel: 'Status',
+
+  itemsBadge: '{count} item(s)',
+  addFromStock: 'Add from Stock',
+  recalcAll: 'Recalculate All Prices',
+  deleteSelected: 'Delete Selected ({count})',
+  noItems: 'No product items yet — click "Add from Stock" to select items',
+  saveFirst: 'Please save the document first before adding items',
+  notSavedTitle: 'Document not saved yet',
+
+  colItemNo: 'ITEM NO.',
+  colStockNo: 'STOCK NO.',
+  colDescription: 'DESCRIPTION',
+  colNetWeight: 'Net Wt.(g)',
+  colGoldWeight: 'Gold (g)',
+  colStoneWeight: 'Stone (ct)',
+  colDiamondWeight: 'Diamond (ct)',
+  colQty: 'QTY',
+  colUnitPrice: 'UNIT PRICE',
+  colAmount: 'AMOUNT',
+  colParcelNo: 'Parcel No.',
+
+  totalNetWeight: 'Total Net Weight (g)',
+  totalGoldWeight: 'Total Gold (g)',
+  totalStoneWeight: 'Total Stone (ct)',
+  totalDiamondWeight: 'Total Diamond (ct)',
+  grandTotalAmount: 'Grand Total',
+
+  save: 'Save',
+  printInvoice: 'Print Invoice',
+  printSummary: 'Print Summary',
+  printPackingList: 'Print Packing List',
+  printPhotoSheet: 'Print Photo Sheet',
+  photoLoadingProgress: 'Loading photos {loaded}/{total}',
+
+  validation: {
+    customNumberRequired: 'Please specify the document no.',
+    documentDateRequired: 'Please specify the document date',
+    consigneeNameRequired: 'Please specify the consignee name',
+    exchangeRateRequired: 'Please specify the exchange rate',
+    itemsRequiredForPdf: 'Please add at least 1 product item before printing'
+  },
+
+  confirmSaveTitle: 'Confirm Save Export Shipment',
+  confirmRecalcTitle: 'Confirm Recalculate All Prices',
+  confirmRecalcMsg: 'This will overwrite UNIT PRICE on every row using the current exchange rate and %',
+  confirmRemoveTitle: 'Confirm Delete Items',
+  confirmRemoveMsg: 'Delete the selected {count} item(s)?',
+
+  saveSuccess: 'Export shipment saved successfully',
+  removeSuccess: 'Item(s) deleted successfully',
+  recalcSuccess: 'Prices recalculated successfully',
+  addAllSuccess: 'Added {count} item(s) successfully',
+  addSelectedSuccess: 'Selected item(s) added successfully',
+
+  stockPicker: {
+    title: 'Add Items from Stock',
+    stockNumber: 'Stock Number',
+    productNumber: 'Product Number',
+    productNameEn: 'Product Name (EN)',
+    productNameTh: 'Product Name (TH)',
+    productType: 'Product Type',
+    goldColor: 'Gold Color',
+    karat: 'Gold Karat',
+    location: 'Location',
+    receiptNumber: 'Receipt No.',
+    keyword: 'General Keyword',
+    keywordHint: 'Used only for "Add All by Filter" mode',
+    foundCount: 'Found {count} item(s)',
+    addAllByFilter: 'Add All by Filter',
+    addSelected: 'Add Selected Items',
+    noSelection: 'Please select at least 1 item',
+    confirmAddAllTitle: 'Confirm Add All Items by Filter',
+    confirmAddAllMsg: 'Found {count} item(s) matching the filter. Add all of them to this document?'
+  }
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -1616,5 +1735,6 @@ export default {
   saleDashboard,
   billingNote,
   pipelineDashboard,
-  materialSale
+  materialSale,
+  exportShipment
 }

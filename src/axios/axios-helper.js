@@ -276,6 +276,30 @@ const postData = async (url, data, optionsConfig = {}) => {
   return res.data
 }
 
+// PUT method for Jewelry API
+const putData = async (url, data, optionsConfig = {}) => {
+  const token = getTokenInfo()
+  const { skipLoading = false, ...restOptions } = optionsConfig
+
+  if (!skipLoading) {
+    loadingManager.showLoading()
+  }
+
+  const source = createCancelToken()
+
+  const res = await axiosInstance.put(url, data, {
+    ...restOptions,
+    headers: {
+      Authorization: token,
+      ...restOptions?.headers
+    },
+    cancelToken: source.token,
+    skipLoading
+  })
+
+  return res.data
+}
+
 // GET method for Printer API
 const fetchPrinterData = async (url, params, optionsConfig = {}) => {
   const { skipLoading = false, skipError = false, apiKey = null, ...restOptions } = optionsConfig
@@ -561,7 +585,8 @@ export default {
   // ส่วนอื่นๆ ยังคงเหมือนเดิม
   jewelry: {
     get: async (url, params, optionsConfig) => await fetchData(`${url}`, params, optionsConfig),
-    post: async (url, params, optionsConfig) => await postData(`${url}`, params, optionsConfig)
+    post: async (url, params, optionsConfig) => await postData(`${url}`, params, optionsConfig),
+    put: async (url, params, optionsConfig) => await putData(`${url}`, params, optionsConfig)
   },
   zebraPrinter: zebraPrinter
 }

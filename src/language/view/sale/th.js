@@ -1593,6 +1593,125 @@ export const materialSale = {
   }
 }
 
+export const exportShipment = {
+  title: 'เอกสารส่งออก-งานแฟร์',
+  description: 'ออกเอกสารนำส่งสินค้าไปงานแฟร์ต่างประเทศจากคลังสินค้าสำเร็จรูป',
+  searchTitle: 'ค้นหาเอกสารส่งออก',
+  searchDesc: 'ค้นหาด้วยคำค้นหรือช่วงวันที่เอกสาร',
+  createBtn: 'สร้างเอกสารส่งออก',
+  keyword: 'คำค้นหา',
+  placeholderKeyword: 'เลขที่เอกสาร / ผู้รับ / ชื่องาน',
+  dateRange: 'ช่วงวันที่เอกสาร',
+  colDocumentNumber: 'เลขที่ระบบ',
+  colCustomNumber: 'Invoice No.',
+  colDocumentDate: 'วันที่',
+  colConsigneeName: 'ผู้รับ',
+  colEventName: 'ชื่องาน',
+  colStatus: 'สถานะ',
+  colAction: 'จัดการ',
+  noData: 'ไม่พบเอกสารส่งออก',
+  confirmDeleteTitle: 'ยืนยันการลบเอกสารส่งออก',
+  deleteSuccess: 'ลบเอกสารส่งออกสำเร็จ',
+
+  createTitle: 'สร้างเอกสารส่งออก',
+  editTitle: 'แก้ไขเอกสารส่งออก',
+
+  sectionDocument: 'ข้อมูลเอกสาร',
+  sectionItems: 'รายการสินค้า',
+
+  documentNumberLabel: 'เลขที่ระบบ',
+  customNumberLabel: 'เลขที่บนเอกสาร (Invoice No.)',
+  documentDateLabel: 'วันที่เอกสาร',
+  consigneeNameLabel: 'ชื่อผู้รับ (Consigned To)',
+  consigneeAddressLabel: 'ที่อยู่ผู้รับ',
+  eventNameLabel: 'ชื่องาน (Event)',
+  boothNoLabel: 'เลขที่บูธ (Booth No.)',
+  attnNameLabel: 'ชื่อผู้ถือของ (Attn)',
+  attnPassportLabel: 'เลขพาสปอร์ต',
+  attnTelLabel: 'เบอร์โทรผู้ถือของ',
+  incotermLabel: 'เงื่อนไขการส่งมอบ (Incoterm)',
+  originCountryLabel: 'ประเทศแหล่งกำเนิด (Origin)',
+  currencyLabel: 'สกุลเงิน',
+  exchangeRateLabel: 'อัตราแลกเปลี่ยน',
+  pricePercentLabel: '% ของราคาป้ายที่สำแดง',
+  parcelCountLabel: 'จำนวนพัสดุ',
+  statusLabel: 'สถานะเอกสาร',
+
+  itemsBadge: '{count} รายการ',
+  addFromStock: 'เพิ่มจากคลัง',
+  recalcAll: 'คำนวณราคาใหม่ทั้งคอลัมน์',
+  deleteSelected: 'ลบที่เลือก ({count})',
+  noItems: 'ยังไม่มีรายการสินค้า — กด "เพิ่มจากคลัง" เพื่อเลือกสินค้า',
+  saveFirst: 'กรุณาบันทึกข้อมูลเอกสารก่อน จึงจะเพิ่มสินค้าได้',
+  notSavedTitle: 'ยังไม่ได้บันทึกเอกสาร',
+
+  colItemNo: 'ITEM NO.',
+  colStockNo: 'STOCK NO.',
+  colDescription: 'DESCRIPTION',
+  colNetWeight: 'Net Wt.(g)',
+  colGoldWeight: 'Gold (g)',
+  colStoneWeight: 'Stone (ct)',
+  colDiamondWeight: 'Diamond (ct)',
+  colQty: 'QTY',
+  colUnitPrice: 'UNIT PRICE',
+  colAmount: 'AMOUNT',
+  colParcelNo: 'พัสดุที่',
+
+  totalNetWeight: 'น้ำหนักสุทธิรวม (g)',
+  totalGoldWeight: 'ทองรวม (g)',
+  totalStoneWeight: 'พลอยรวม (ct)',
+  totalDiamondWeight: 'เพชรรวม (ct)',
+  grandTotalAmount: 'ยอดรวมสุทธิ',
+
+  save: 'บันทึก',
+  printInvoice: 'พิมพ์ Invoice',
+  printSummary: 'พิมพ์ Summary',
+  printPackingList: 'พิมพ์ Packing List',
+  printPhotoSheet: 'พิมพ์ Photo Sheet',
+  photoLoadingProgress: 'กำลังโหลดรูป {loaded}/{total}',
+
+  validation: {
+    customNumberRequired: 'กรุณาระบุเลขที่บนเอกสาร',
+    documentDateRequired: 'กรุณาระบุวันที่เอกสาร',
+    consigneeNameRequired: 'กรุณาระบุชื่อผู้รับ',
+    exchangeRateRequired: 'กรุณาระบุอัตราแลกเปลี่ยน',
+    itemsRequiredForPdf: 'กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการก่อนพิมพ์เอกสาร'
+  },
+
+  confirmSaveTitle: 'ยืนยันการบันทึกเอกสารส่งออก',
+  confirmRecalcTitle: 'ยืนยันคำนวณราคาใหม่ทั้งคอลัมน์',
+  confirmRecalcMsg: 'ระบบจะเขียนทับ UNIT PRICE ทุกแถวด้วยอัตราแลกเปลี่ยนและ % ปัจจุบัน',
+  confirmRemoveTitle: 'ยืนยันการลบรายการสินค้า',
+  confirmRemoveMsg: 'ต้องการลบรายการที่เลือก {count} รายการ ใช่หรือไม่',
+
+  saveSuccess: 'บันทึกเอกสารส่งออกสำเร็จ',
+  removeSuccess: 'ลบรายการสินค้าสำเร็จ',
+  recalcSuccess: 'คำนวณราคาใหม่สำเร็จ',
+  addAllSuccess: 'เพิ่มสินค้าสำเร็จ {count} รายการ',
+  addSelectedSuccess: 'เพิ่มสินค้าที่เลือกสำเร็จ',
+
+  stockPicker: {
+    title: 'เพิ่มสินค้าจากคลัง',
+    stockNumber: 'Stock Number',
+    productNumber: 'Product Number',
+    productNameEn: 'ชื่อสินค้า (EN)',
+    productNameTh: 'ชื่อสินค้า (TH)',
+    productType: 'ประเภทสินค้า',
+    goldColor: 'สีทอง',
+    karat: 'ชนิดทอง (กะรัต)',
+    location: 'คลัง',
+    receiptNumber: 'เลขที่ใบรับสินค้า',
+    keyword: 'คำค้นหาทั่วไป',
+    keywordHint: 'ใช้เฉพาะโหมด "เพิ่มทั้งหมดตามเงื่อนไข"',
+    foundCount: 'พบ {count} รายการ',
+    addAllByFilter: 'เพิ่มทั้งหมดตามเงื่อนไขที่ค้น',
+    addSelected: 'เพิ่มรายการที่เลือก',
+    noSelection: 'กรุณาเลือกสินค้าอย่างน้อย 1 รายการ',
+    confirmAddAllTitle: 'ยืนยันเพิ่มสินค้าทั้งหมดตามเงื่อนไข',
+    confirmAddAllMsg: 'พบสินค้า {count} รายการตามเงื่อนไขที่ค้น ต้องการเพิ่มทั้งหมดเข้าเอกสารนี้ใช่หรือไม่'
+  }
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -1610,5 +1729,6 @@ export default {
   saleDashboard,
   billingNote,
   pipelineDashboard,
-  materialSale
+  materialSale,
+  exportShipment
 }
