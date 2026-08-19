@@ -365,7 +365,7 @@ export class WorkerWagesSuccessPdfBuilder {
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: [46, 52, '*', 36, '*', 28, 26, 50, 40, 46, 48],
+          widths: [46, 53, 74, 30, '*', 26, 24, 40, 42, 39, 41],
           body: this.buildGoldLossTableBody()
         },
         layout: {
@@ -373,7 +373,9 @@ export class WorkerWagesSuccessPdfBuilder {
           vLineWidth: () => 0.5,
           hLineColor: () => '#cccccc',
           vLineColor: () => '#cccccc',
-          fillColor: (rowIndex) => rowIndex === 0 ? '#921313' : null
+          fillColor: (rowIndex) => rowIndex === 0 ? '#921313' : null,
+          paddingLeft: () => 2,
+          paddingRight: () => 2
         }
       }
     }
@@ -383,9 +385,14 @@ export class WorkerWagesSuccessPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [50, 60, '*', 34, '*', 32, 46, 46, 44, 48],
-        body: this.buildWagesTableBody(),
-        layout: { defaultBorder: false }
+        widths: [49, 55, 77, 32, '*', 26, 42, 37, 45, 46],
+        body: this.buildWagesTableBody()
+      },
+      layout: {
+        defaultBorder: false,
+        paddingLeft: () => 2,
+        paddingRight: () => 2,
+        vLineWidth: () => 0
       }
     }
   }
