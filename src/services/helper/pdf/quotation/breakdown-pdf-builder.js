@@ -12,6 +12,7 @@ export class BreakdownPdfBuilder {
     this.currencyMultiplier = Number(currencyMultiplier) || 1
     this.profitPercent = Number(profitPercent) || 15
     this.goldPerOz = customer.goldPerOz || 0
+    this.goldSpotPrice = customer.goldSpotPrice || 0
     this.logoBase64 = null
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
@@ -174,7 +175,7 @@ export class BreakdownPdfBuilder {
                           width: '45%'
                         },
                         {
-                          text: this.goldPerOz ? `$${this.formatPrice(this.goldPerOz)} /Oz.` : '-',
+                          text: this.goldSpotPrice ? `$${this.formatPrice(this.goldSpotPrice)} /Oz.` : '-',
                           fontSize: 12,
                           bold: true,
                           color: '#8B0000',
@@ -277,8 +278,8 @@ export class BreakdownPdfBuilder {
                 },
                 { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 10, color: '#393939' },
                 {
-                  text: this.goldPerOz
-                    ? `Gold Price: US$  ${this.formatPrice(this.goldPerOz)} /Oz.`
+                  text: this.goldSpotPrice
+                    ? `Gold Price: US$  ${this.formatPrice(this.goldSpotPrice)} /Oz.`
                     : '',
                   fontSize: 10,
                   color: '#393939',

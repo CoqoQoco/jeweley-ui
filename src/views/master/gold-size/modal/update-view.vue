@@ -159,6 +159,7 @@ export default {
       })
 
       if (res) {
+        this.masterStore.clearCache('goldSize')
         this.onClear()
         this.$emit('fetch')
       }

@@ -32,6 +32,10 @@
         <div class="mb-3" style="font-size: 0.85rem; color: #666">
           สูตร: (Gold Price + Premium) / 31.104 × Gold% × (1 + Markup%)
         </div>
+        <div class="mb-3" style="font-size: 0.85rem; color: #666">
+          หมายเหตุ: Gold Price ที่กรอก = ราคาทองบริสุทธิ์ 100% ต่อ Oz. — ตัวเลขในตารางเป็นราคาทองผสมตามกะรัต
+          (คูณ Gold% และ Markup แล้ว) จึงต่ำกว่าค่าที่กรอกเสมอ
+        </div>
 
         <!-- Results table -->
         <table class="table table-bordered table-sm">
@@ -40,7 +44,7 @@
               <th class="text-center">Karat</th>
               <th class="text-center">Gold %</th>
               <th class="text-center">ราคา/กรัม (US$)</th>
-              <th class="text-center">ราคา/Oz (US$)</th>
+              <th class="text-center">ราคาทอง Kt นี้/Oz (US$)</th>
               <th class="text-center" style="width: 80px"></th>
             </tr>
           </thead>
@@ -159,7 +163,10 @@ export default {
         name: item.name,
         goldPercent: item.goldPercent,
         pricePerGram: item.pricePerGram,
-        pricePerOz: item.pricePerOz
+        pricePerOz: item.pricePerOz,
+        goldSpotPrice: this.goldPrice,
+        goldPremium: this.premium,
+        goldMarkup: this.markup
       })
     },
 

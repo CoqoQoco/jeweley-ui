@@ -350,7 +350,9 @@
 
     <GoldCalculatorModal
       :isShow="isShow.goldCalculator"
-      :defaultGoldPrice="customer.goldPerOz"
+      :defaultGoldPrice="customer.goldSpotPrice || 0"
+      :defaultPremium="customer.goldPremium ?? 1.5"
+      :defaultMarkup="customer.goldMarkup ?? 10"
       @closeModal="isShow.goldCalculator = false"
       @select="onGoldCalculated"
     />
@@ -393,6 +395,9 @@ const interfaceForm = {
   name: null,
   invoiceNumber: null,
   goldPerOz: 0,
+  goldSpotPrice: 0,
+  goldPremium: 1.5,
+  goldMarkup: 10,
   quotationItems: [],
   currencyMultiplier: 33.0,
   currencyUnit: 'US$',
@@ -460,9 +465,9 @@ export default {
       return gram.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     },
     goldPerOzDisplay() {
-      const gram = Number(this.customer.goldPerOz) || 0
-      const oz = gram * 31.104
-      return oz.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      const spot = Number(this.customer.goldSpotPrice) || 0
+      if (!spot) return '-'
+      return spot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     },
     sumGoldWeight() {
       let sum = 0
@@ -987,6 +992,9 @@ export default {
         specialAddition: this.customer.specialAddition || 0,
         vat: this.customer.vatPercent || 0,
         goldPerOz: this.customer.goldPerOz || 0,
+        goldSpotPrice: this.customer.goldSpotPrice || 0,
+        goldPremium: this.customer.goldPremium || 0,
+        goldMarkup: this.customer.goldMarkup || 0,
         subTotal: Number(this.sumTotalConvertedPrice) || 0,
         grandTotalRaw: this.grandTotalRaw,
 
@@ -1033,7 +1041,10 @@ export default {
           specialDiscount: res.specialDiscount || 0,
           specialAddition: res.specialAddition || 0,
           vatPercent: res.vat || 0,
-          goldPerOz: res.goldPerOz || 0
+          goldPerOz: res.goldPerOz || 0,
+          goldSpotPrice: res.goldSpotPrice || 0,
+          goldPremium: res.goldPremium ?? 1.5,
+          goldMarkup: res.goldMarkup ?? 10
         }
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
       }
@@ -1109,8 +1120,11 @@ export default {
     },
 
     onGoldCalculated(data) {
-      // data = { code, name, goldPercent, pricePerGram, pricePerOz }
+      // data = { code, name, goldPercent, pricePerGram, pricePerOz, goldSpotPrice, goldPremium, goldMarkup }
       this.customer.goldPerOz = data.pricePerGram
+      this.customer.goldSpotPrice = data.goldSpotPrice
+      this.customer.goldPremium = data.goldPremium
+      this.customer.goldMarkup = data.goldMarkup
       this.isShow.goldCalculator = false
     },
 
