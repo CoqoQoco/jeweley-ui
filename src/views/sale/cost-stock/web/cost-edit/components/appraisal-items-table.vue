@@ -128,18 +128,29 @@
             </template>
           </Column>
 
-          <Column field="qtyWeightPrice" style="width: 110px">
+          <Column field="qtyWeightPrice" style="width: 160px">
             <template #body="slotProps">
-              <input
-                style="background-color: #b5dad4"
-                v-model="slotProps.data.qtyWeightPrice"
-                type="number"
-                class="form-control text-right"
-                step="any"
-                min="0"
-                required
-                @blur="onBlurPrice(slotProps.data, 'qtyWeightPrice')"
-              />
+              <div class="qty-weight-price-cell">
+                <input
+                  style="background-color: #b5dad4"
+                  v-model="slotProps.data.qtyWeightPrice"
+                  type="number"
+                  class="form-control text-right"
+                  step="any"
+                  min="0"
+                  required
+                  @blur="onBlurPrice(slotProps.data, 'qtyWeightPrice')"
+                />
+                <button
+                  v-if="slotProps.data.nameGroup === 'Gold'"
+                  type="button"
+                  class="btn btn-sm btn-main"
+                  :title="$t('view.sale.costStock.calcGoldPerGram')"
+                  @click="$emit('open-gold-calculator', slotProps.data)"
+                >
+                  <i class="bi bi-calculator"></i>
+                </button>
+              </div>
             </template>
           </Column>
 
@@ -419,7 +430,8 @@ export default {
     'update:currencyRate',
     'save-as-origin',
     'preview-pdf',
-    'cancel'
+    'cancel',
+    'open-gold-calculator'
   ],
 
   setup() {
@@ -692,6 +704,21 @@ input {
 
   @media (max-width: 1024px) {
     font-size: 14px;
+  }
+}
+
+.qty-weight-price-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+
+  input {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .btn {
+    flex-shrink: 0;
   }
 }
 

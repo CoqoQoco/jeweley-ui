@@ -105,6 +105,14 @@
                   class="input-bg input-narrow text-right"
                 />
               </div>
+              <div class="">
+                <span class="title-text">{{ $t('view.sale.quotation.goldPerGmsThb') }}</span>
+                <InputTextGeneric
+                  :modelValue="goldPerGramThbDisplay"
+                  :readonly="true"
+                  class="input-bg input-narrow text-right"
+                />
+              </div>
             </div>
           </div>
 
@@ -353,6 +361,7 @@
       :defaultGoldPrice="customer.goldSpotPrice || 0"
       :defaultPremium="customer.goldPremium ?? 1.5"
       :defaultMarkup="customer.goldMarkup ?? 10"
+      :defaultCurrencyRate="customer.currencyMultiplier || 0"
       @closeModal="isShow.goldCalculator = false"
       @select="onGoldCalculated"
     />
@@ -468,6 +477,12 @@ export default {
       const spot = Number(this.customer.goldSpotPrice) || 0
       if (!spot) return '-'
       return spot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
+    goldPerGramThbDisplay() {
+      const rate = Number(this.customer.currencyMultiplier) || 0
+      if (!rate) return '-'
+      const thb = (Number(this.customer.goldPerOz) || 0) * rate
+      return thb.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     },
     sumGoldWeight() {
       let sum = 0

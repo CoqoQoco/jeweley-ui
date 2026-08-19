@@ -28,9 +28,17 @@
         @save-as-origin="onSaveAsOriginCost"
         @preview-pdf="onPreviewPDF"
         @cancel="onCancel"
+        @open-gold-calculator="onOpenGoldCalculator"
       />
 
     </form>
+
+    <GoldCalculatorModal
+      :isShow="showGoldCalculator"
+      :defaultCurrencyRate="goldCalculatorRate"
+      @closeModal="showGoldCalculator = false"
+      @select="onGoldCalculatorSelect"
+    />
 
     <!-- Customer Search Modal -->
     <CustomerSearchModal
@@ -63,6 +71,7 @@ import CustomerCreateModal from '@/views/sale/quotation/modal/customer-create-mo
 import PlanCostModal from './plan-cost-modal.vue'
 import AppraisalStockInfo from './appraisal-stock-info.vue'
 import AppraisalItemsTable from './appraisal-items-table.vue'
+import GoldCalculatorModal from '@/components/modal/gold-calculator-modal.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
@@ -77,7 +86,8 @@ export default {
     CustomerCreateModal,
     PlanCostModal,
     AppraisalStockInfo,
-    AppraisalItemsTable
+    AppraisalItemsTable,
+    GoldCalculatorModal
   },
 
   props: {
@@ -107,6 +117,12 @@ export default {
 
     planProductQty() {
       return Number(this.localStock.planQty) || 1
+    },
+
+    goldCalculatorRate() {
+      const unit = (this.currencyUnit || '').trim().toUpperCase()
+      if (unit !== 'US$' && unit !== 'USD') return 0
+      return Number(this.currencyRate) || 0
     }
   },
 
@@ -184,6 +200,8 @@ export default {
       exportingPreviewPDF: false,
       showPlanCostModal: false,
       customInfoItems: [],
+      showGoldCalculator: false,
+      goldCalculatorTargetRow: null,
 
       groupOrderRunning: {
         Gold: 1,
@@ -356,6 +374,27 @@ export default {
     onCloseCustomerModal() {
       this.showCustomerSearch = false
       this.showCustomerCreate = false
+    },
+
+    onOpenGoldCalculator(row) {
+      this.goldCalculatorTargetRow = row
+      this.showGoldCalculator = true
+    },
+
+    onGoldCalculatorSelect(data) {
+      const pricePerGramThb = Number(data.pricePerGramThb) || 0
+      const targetRow = this.goldCalculatorTargetRow
+
+      if (targetRow && pricePerGramThb) {
+        targetRow.qtyWeightPrice = pricePerGramThb
+        targetRow.totalPrice = (
+          (Number(targetRow.qty) || 0) * (Number(targetRow.qtyPrice) || 0) +
+          (Number(targetRow.qtyWeight) || 0) * pricePerGramThb
+        ).toFixed(2)
+      }
+
+      this.showGoldCalculator = false
+      this.goldCalculatorTargetRow = null
     },
 
   },

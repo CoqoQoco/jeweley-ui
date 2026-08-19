@@ -285,6 +285,7 @@ export const quotation = {
   markup: 'Markup',
   discountPercent: 'Discount (%)',
   goldPerGms: 'Gold (US$/gms)',
+  goldPerGmsThb: 'Gold (฿/gms)',
   goldPerOz: 'Gold (US$/Oz.)',
   // Column headers (weight)
   goldWeight: 'Gold (gms)',
@@ -843,6 +844,7 @@ export const costStock = {
   planCost: 'ต้นทุนจากแผนผลิต (อ้างอิง)',
   viewPlanCost: 'ดูต้นทุนจากแผนผลิต',
   checkGoldPrice: 'ตรวจสอบราคาทองวันนี้',
+  calcGoldPerGram: 'คำนวณราคาทอง/กรัม',
   appraisalNo: 'ใบตีราคา',
   duplicateAppraisal: 'ตีราคาใหม่จากรายการนี้',
   totalPrice: 'ราคารวม',

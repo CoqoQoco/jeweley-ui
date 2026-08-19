@@ -8,7 +8,7 @@
         <span class="title-text-lg">คำนวณราคาทอง/กรัม</span>
         <!-- Input fields -->
         <div class="row mb-2">
-          <div class="col-4">
+          <div class="col-3">
             <span class="title-text">Gold Price (US$/Oz.)</span>
             <input
               class="form-control"
@@ -18,13 +18,23 @@
               min="0"
             />
           </div>
-          <div class="col-4">
+          <div class="col-3">
             <span class="title-text">Premium</span>
             <input class="form-control" type="number" v-model.number="premium" step="any" />
           </div>
-          <div class="col-4">
+          <div class="col-3">
             <span class="title-text">Markup %</span>
             <input class="form-control" type="number" v-model.number="markup" step="any" min="0" />
+          </div>
+          <div class="col-3">
+            <span class="title-text">Rate (บาท/US$)</span>
+            <input
+              class="form-control"
+              type="number"
+              v-model.number="currencyRate"
+              step="any"
+              min="0"
+            />
           </div>
         </div>
 
@@ -34,7 +44,7 @@
         </div>
         <div class="mb-3" style="font-size: 0.85rem; color: #666">
           หมายเหตุ: Gold Price ที่กรอก = ราคาทองบริสุทธิ์ 100% ต่อ Oz. — ตัวเลขในตารางเป็นราคาทองผสมตามกะรัต
-          (คูณ Gold% และ Markup แล้ว) จึงต่ำกว่าค่าที่กรอกเสมอ
+          (คูณ Gold% และ Markup แล้ว) จึงต่ำกว่าค่าที่กรอกเสมอ · ราคาบาท = ราคา US$ × Rate
         </div>
 
         <!-- Results table -->
@@ -45,6 +55,8 @@
               <th class="text-center">Gold %</th>
               <th class="text-center">ราคา/กรัม (US$)</th>
               <th class="text-center">ราคาทอง Kt นี้/Oz (US$)</th>
+              <th v-if="hasCurrencyRate" class="text-center">ราคา/กรัม (฿)</th>
+              <th v-if="hasCurrencyRate" class="text-center">ราคา/Oz (฿)</th>
               <th class="text-center" style="width: 80px"></th>
             </tr>
           </thead>
@@ -54,6 +66,8 @@
               <td class="text-center">{{ item.goldPercent.toFixed(2) }}%</td>
               <td class="text-right">{{ formatPrice(item.pricePerGram) }}</td>
               <td class="text-right">{{ formatPrice(item.pricePerOz) }}</td>
+              <td v-if="hasCurrencyRate" class="text-right">{{ formatPrice(item.pricePerGramThb) }}</td>
+              <td v-if="hasCurrencyRate" class="text-right">{{ formatPrice(item.pricePerOzThb) }}</td>
               <td class="text-center">
                 <button class="btn btn-sm btn-green" @click="onSelect(item)">
                   <i class="bi bi-check-lg"></i>
@@ -61,7 +75,7 @@
               </td>
             </tr>
             <tr v-if="calculatedPrices.length === 0">
-              <td colspan="5" class="text-center text-muted">ไม่พบข้อมูลประเภททอง</td>
+              <td :colspan="hasCurrencyRate ? 7 : 5" class="text-center text-muted">ไม่พบข้อมูลประเภททอง</td>
             </tr>
           </tbody>
         </table>
@@ -97,6 +111,10 @@ export default {
     defaultMarkup: {
       type: Number,
       default: 10
+    },
+    defaultCurrencyRate: {
+      type: Number,
+      default: 0
     }
   },
 
@@ -107,13 +125,18 @@ export default {
       goldPrice: this.defaultGoldPrice,
       premium: this.defaultPremium,
       markup: this.defaultMarkup,
+      currencyRate: this.defaultCurrencyRate,
       goldTypes: [],
       masterStore: null
     }
   },
 
   computed: {
+    hasCurrencyRate() {
+      return (Number(this.currencyRate) || 0) > 0
+    },
     calculatedPrices() {
+      const rate = Number(this.currencyRate) || 0
       return this.goldTypes
         .filter((g) => g.goldPercent > 0)
         .map((g) => {
@@ -127,7 +150,9 @@ export default {
             name: g.nameEn || g.nameTh,
             goldPercent: g.goldPercent,
             pricePerGram,
-            pricePerOz
+            pricePerOz,
+            pricePerGramThb: pricePerGram * rate,
+            pricePerOzThb: pricePerOz * rate
           }
         })
     }
@@ -139,6 +164,7 @@ export default {
         this.goldPrice = this.defaultGoldPrice
         this.premium = this.defaultPremium
         this.markup = this.defaultMarkup
+        this.currencyRate = this.defaultCurrencyRate
         this.loadGoldTypes()
       }
     }
@@ -164,9 +190,12 @@ export default {
         goldPercent: item.goldPercent,
         pricePerGram: item.pricePerGram,
         pricePerOz: item.pricePerOz,
+        pricePerGramThb: item.pricePerGramThb,
+        pricePerOzThb: item.pricePerOzThb,
         goldSpotPrice: this.goldPrice,
         goldPremium: this.premium,
-        goldMarkup: this.markup
+        goldMarkup: this.markup,
+        currencyRate: this.currencyRate
       })
     },
 
