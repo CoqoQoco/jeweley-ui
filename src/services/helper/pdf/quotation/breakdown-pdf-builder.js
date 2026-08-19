@@ -332,8 +332,7 @@ export class BreakdownPdfBuilder {
         style: 'summaryLabelColored',
         alignment: 'center'
       },
-      { text: `Total (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' },
-      { text: 'Profit', style: 'summaryLabelColored', alignment: 'center' }
+      { text: `Total (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' }
     ]
 
     const body = [tableHeader]
@@ -369,7 +368,7 @@ export class BreakdownPdfBuilder {
         gemList.length +
         etcList.length +
         (workList.length ? 1 : 0) +
-        (embedList.length ? 1 : 0)
+        embedList.length
       let currentRow = 0
       goldList.forEach((gold, idx) => {
         body.push([
@@ -412,12 +411,6 @@ export class BreakdownPdfBuilder {
               ((gold.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              ((gold.totalPrice || 0) / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
-            ),
-            alignment: 'right'
           }
         ])
         currentRow++
@@ -456,12 +449,6 @@ export class BreakdownPdfBuilder {
               ((gem.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              ((gem.totalPrice || 0) / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
-            ),
-            alignment: 'right'
           }
         ])
         currentRow++
@@ -485,44 +472,41 @@ export class BreakdownPdfBuilder {
           {
             text: this.formatPrice((sumWork / (this.currencyMultiplier || 1)) * (item.qty || 1)),
             alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              (sumWork / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
-            ),
-            alignment: 'right'
           }
         ])
         currentRow++
       }
 
-      if (embedList.length) {
-        const sumEmbed = embedList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0)
+      embedList.forEach((embed, idx) => {
         body.push([
           {},
           {},
           {},
           {},
-          { text: 'Setting', alignment: 'center' },
-          { text: '-', alignment: 'left' },
-          { text: '1', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: this.formatPrice(sumEmbed / (this.currencyMultiplier || 1)), alignment: 'right' },
+          idx === 0 ? { text: 'Setting', alignment: 'center', rowSpan: embedList.length } : {},
+          { text: embed.nameDescription || '-', alignment: 'left' },
+          { text: embed.qty ? this.formatPrice(embed.qty) : '', alignment: 'center' },
           {
-            text: this.formatPrice((sumEmbed / (this.currencyMultiplier || 1)) * (item.qty || 1)),
+            text: embed.qtyPrice
+              ? this.formatPrice(embed.qtyPrice / (this.currencyMultiplier || 1))
+              : '',
+            alignment: 'center'
+          },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          {
+            text: this.formatPrice((embed.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
           },
           {
             text: this.formatPrice(
-              (sumEmbed / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
+              ((embed.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
             ),
             alignment: 'right'
           }
         ])
         currentRow++
-      }
+      })
       etcList.forEach((etc, idx) => {
         body.push([
           {},
@@ -545,12 +529,6 @@ export class BreakdownPdfBuilder {
           {
             text: this.formatPrice(
               ((etc.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
-            ),
-            alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              ((etc.totalPrice || 0) / (this.currencyMultiplier || 1)) * (this.profitPercent / 100)
             ),
             alignment: 'right'
           }
@@ -591,7 +569,7 @@ export class BreakdownPdfBuilder {
 
       body.push([
         {
-          text: `Total of ${item.productNumber} `,
+          text: `Sub Total of ${item.productNumber} `,
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           colSpan: 11
@@ -611,7 +589,49 @@ export class BreakdownPdfBuilder {
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           bold: true
+        }
+      ])
+      body.push([
+        {
+          text: `Profit (${this.profitPercent}%) `,
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          colSpan: 11
         },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {
+          text: this.formatPrice(profitAmount),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          bold: true
+        }
+      ])
+      body.push([
+        {
+          text: `Total of ${item.productNumber} `,
+          style: 'totalSummaryLabelColored',
+          alignment: 'right',
+          colSpan: 11
+        },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
         {
           text: this.formatPrice(totalWithProfit),
           style: 'totalSummaryLabelColored',
@@ -631,7 +651,7 @@ export class BreakdownPdfBuilder {
           margin: [0, 10, 0, 0],
           table: {
             headerRows: 1,
-            widths: [20, 60, 50, 45, 40, '*', 40, 40, 40, 40, 55, 55, 55],
+            widths: [20, 60, 50, 45, 40, '*', 40, 40, 40, 40, 55, 55],
             body
           },
           layout: {
