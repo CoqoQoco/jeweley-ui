@@ -474,7 +474,7 @@ export default {
       return gram.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     },
     goldPerOzDisplay() {
-      const spot = Number(this.customer.goldSpotPrice) || 0
+      const spot = Number(this.customer.goldSpotPrice) || Number(this.customer.goldPerOz) || 0
       if (!spot) return '-'
       return spot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     },

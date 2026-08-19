@@ -286,7 +286,7 @@ export const quotation = {
   discountPercent: 'Discount (%)',
   goldPerGms: 'Gold (US$/gms)',
   goldPerGmsThb: 'Gold (฿/gms)',
-  goldPerOz: 'Gold (US$/Oz.)',
+  goldPerOz: 'Gold Spot (US$/Oz.)',
   // Column headers (weight)
   goldWeight: 'Gold (gms)',
   diamondWeight: 'Diamond (cts)',
