@@ -267,8 +267,13 @@ export const quotation = {
   validation: {
     noItems: 'ไม่มีสินค้าสำหรับสร้าง Excel'
   },
+  error: {
+    exportBreakdownExcel: 'ไม่สามารถ Export Breakdown Excel ได้',
+    exportBreakdownExcelTitle: 'เกิดข้อผิดพลาด'
+  },
   success: {
     exportExcel: 'Export Excel สำเร็จ',
+    exportBreakdownExcel: 'Export Breakdown Excel สำเร็จ',
     mergeSuccess: 'รวม Quotation สำเร็จ',
     mergeNewNumber: 'เลขที่ใหม่: {number}'
   },
@@ -300,6 +305,7 @@ export const quotation = {
   quotationBtn: 'Quotation',
   previewBtn: 'Preview',
   breakdownBtn: 'Breakdown',
+  breakdownExcelBtn: 'Breakdown Excel',
   profitPercent: 'Profit %',
   excelBtn: 'Excel',
   cifLabel: 'C.I.F',

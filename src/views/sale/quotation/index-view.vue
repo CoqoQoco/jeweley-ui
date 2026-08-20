@@ -1,19 +1,25 @@
 <template>
   <div class="app-container">
     <search
-      v-model:modelForm="form"
       v-model:quotation="formQuotation"
-      @search="onSearchFilter"
       @searchQuotation="onSearchQuotation"
-      @clear="onClearFilter"
     ></search>
-    <quotation v-model:modelForm="search" v-model:modelQuotation="quotation"></quotation>
+    <quotation v-model:modelForm="search" v-model:modelQuotation="quotation">
+      <template #productSearch>
+        <product-search
+          v-model:modelForm="form"
+          @search="onSearchFilter"
+          @clear="onClearFilter"
+        />
+      </template>
+    </quotation>
   </div>
 </template>
 
 <script>
 import search from './components/search-view.vue'
 import quotation from './components/quotation-view.vue'
+import productSearch from './components/product-search-view.vue'
 
 const interfaceForm = {
   stockNumber: null,
@@ -38,7 +44,8 @@ export default {
   name: 'QuotationIndexView',
   components: {
     search,
-    quotation
+    quotation,
+    productSearch
   },
 
   data() {

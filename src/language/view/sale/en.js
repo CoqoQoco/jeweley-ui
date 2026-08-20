@@ -267,8 +267,13 @@ export const quotation = {
   validation: {
     noItems: 'No items to create Excel'
   },
+  error: {
+    exportBreakdownExcel: 'Cannot export Breakdown Excel',
+    exportBreakdownExcelTitle: 'Error'
+  },
   success: {
     exportExcel: 'Excel exported successfully',
+    exportBreakdownExcel: 'Breakdown Excel exported successfully',
     mergeSuccess: 'Quotation merge successful',
     mergeNewNumber: 'New number: {number}'
   },
@@ -300,6 +305,7 @@ export const quotation = {
   quotationBtn: 'Quotation',
   previewBtn: 'Preview',
   breakdownBtn: 'Breakdown',
+  breakdownExcelBtn: 'Breakdown Excel',
   profitPercent: 'Profit %',
   excelBtn: 'Excel',
   cifLabel: 'C.I.F',

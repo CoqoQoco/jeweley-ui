@@ -194,6 +194,8 @@
         </div>
       </div>
 
+      <slot name="productSearch" />
+
       <!-- Item Source Actions -->
       <div class="filter-container mt-2">
         <div class="d-flex align-items-center gap-2">
@@ -275,6 +277,11 @@
                 :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
                 <i class="bi bi-file-earmark-excel mr-1"></i>
                 <span>{{ $t('view.sale.quotation.excelBtn') }}</span>
+              </button>
+              <button class="btn btn-sm btn-green" type="button" @click="exportBreakdownExcel"
+                :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
+                <i class="bi bi-file-earmark-excel mr-1"></i>
+                <span>{{ $t('view.sale.quotation.breakdownExcelBtn') }}</span>
               </button>
             </div>
 
@@ -387,10 +394,11 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { InvoiceExcelBuilder } from '@/services/helper/excel/invoice/invoice-excel-builder.js'
+import { BreakdownExcelBuilder } from '@/services/helper/excel/quotation/breakdown-excel-builder.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 import { ceilToInteger, isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
-import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
 import dayjs from 'dayjs'
 
@@ -1185,6 +1193,31 @@ export default {
       )
       await builder.downloadExcel()
       success(this.$t('view.sale.quotation.success.exportExcel'), `Quotation: ${documentNumber}`)
+    },
+
+    async exportBreakdownExcel() {
+      if (!this.customer.quotationItems || this.customer.quotationItems.length === 0) {
+        warning(this.$t('view.sale.quotation.validation.noItems'), this.$t('common.label.incompleteData'))
+        return
+      }
+      try {
+        const builder = new BreakdownExcelBuilder({
+          items: this.customer.quotationItems,
+          customer: this.customer,
+          invoiceDate: this.customer.quotationDate,
+          invoiceNo: this.customer.invoiceNumber,
+          currencyUnit: this.customer.currencyUnit,
+          currencyMultiplier: this.customer.currencyMultiplier,
+          profitPercent: this.customer.profitPercent || 15
+        })
+        await builder.downloadExcel()
+        success(this.$t('view.sale.quotation.success.exportBreakdownExcel'))
+      } catch (err) {
+        error(
+          err.message || this.$t('view.sale.quotation.error.exportBreakdownExcel'),
+          this.$t('view.sale.quotation.error.exportBreakdownExcelTitle')
+        )
+      }
     },
 
     getRowClass(data, index) {
