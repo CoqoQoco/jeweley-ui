@@ -34,7 +34,7 @@
         </div>
       </div>
     </div>
-    <div class="card-body p-0">
+    <div class="card-body p-0" @focusin="onRowFocusIn">
       <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
         :value="stockItemsWithGrouping"
@@ -49,6 +49,8 @@
         :groupRowsBy="'groupKey'"
         :sortField="'sortOrder'"
         :sortOrder="1"
+        :rowClass="getRowClass"
+        @row-click="onRowClick"
       >
         <ColumnGroup type="header">
           <Row>
@@ -831,6 +833,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { formatDecimal, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
   name: 'StockItemsTable',
@@ -842,6 +845,8 @@ export default {
     Row,
     imagePreview
   },
+
+  mixins: [activeRowHighlight],
 
   props: {
     stockItems: {
@@ -888,6 +893,10 @@ export default {
   },
 
   computed: {
+    activeRowItems() {
+      return this.stockItemsWithGrouping
+    },
+
     isTotalFrozenRight() {
       return this.frozenCols['total'] === 'right'
     },
@@ -1149,6 +1158,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/custom-style/active-row.scss';
 
 /* Quotation table styles */
 .input-bg {

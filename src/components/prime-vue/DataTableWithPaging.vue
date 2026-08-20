@@ -58,6 +58,7 @@
       :reorderableColumns="reorderableColumns"
       v-model:multiSortMeta="internalSortMeta"
       @column-reorder="$emit('column-reorder', $event)"
+      @row-click="$emit('row-click', $event)"
       v-bind="$attrs"
     >
       <!-- Expander Column -->
@@ -376,7 +377,8 @@ export default {
     'update:modelValue', // สำหรับ v-model ของ expanded rows
     'row-expand', // เมื่อ row ถูก expand
     'row-collapse', // เมื่อ row ถูก collapse
-    'column-reorder'
+    'column-reorder',
+    'row-click'
   ],
 
   computed: {
@@ -808,6 +810,37 @@ export default {
 
       &.p-highlight:hover > td.p-frozen-column {
         background-color: #bbdefb !important;
+      }
+    }
+
+    // Active row (แถวที่คลิกล่าสุด) — ดู useActiveRowHighlight.js
+    .p-datatable-tbody > tr {
+      &.row-active {
+        background-color: var(--row-active-bg) !important;
+
+        &:hover {
+          background-color: var(--row-active-bg-hover) !important;
+        }
+
+        &:nth-child(even) {
+          background-color: var(--row-active-bg) !important;
+        }
+
+        > td:first-child {
+          box-shadow: inset 3px 0 0 0 var(--row-active-accent);
+        }
+
+        > td.p-frozen-column {
+          background-color: var(--row-active-bg) !important;
+        }
+
+        &:nth-child(even) > td.p-frozen-column {
+          background-color: var(--row-active-bg) !important;
+        }
+
+        &:hover > td.p-frozen-column {
+          background-color: var(--row-active-bg-hover) !important;
+        }
       }
     }
 

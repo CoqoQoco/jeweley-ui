@@ -8,8 +8,10 @@
       :perPage="take"
       :scrollHeight="'calc(100vh - 360px)'"
       class="base-data-table"
+      :rowClass="getRowClass"
       @page="handlePageChange"
       @sort="handleSortChange"
+      @row-click="onRowClick"
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
@@ -45,6 +47,7 @@
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 // Local components
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -56,7 +59,7 @@ export default {
     BaseDataTable
   },
 
-  mixins: [dataTablePaging],
+  mixins: [dataTablePaging, activeRowHighlight],
 
   props: {
     modelForm: {
@@ -69,6 +72,13 @@ export default {
   setup() {
     const invoiceStore = useInvoiceApiStore()
     return { invoiceStore }
+  },
+
+  data() {
+    return {
+      activeRowIdField: 'invoiceNumber',
+      activeRowStorage: 'active-row-invoice-list-dk'
+    }
   },
 
   computed: {
@@ -147,6 +157,7 @@ export default {
 
   methods: {
     onView(data) {
+      this.setActiveRow(data)
       this.$router.push({
         path: '/invoice-detail',
         query: { invoiceNumber: data.invoiceNumber }
@@ -170,6 +181,7 @@ export default {
         sort: this.sort,
         formValue: this.form
       })
+      this.scrollToActiveRow()
     },
 
     formatDateTime(date) {

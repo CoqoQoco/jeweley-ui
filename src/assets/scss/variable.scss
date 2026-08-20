@@ -92,6 +92,11 @@ $radius-lg: 12px;
   --color-highlight-bg: #fdf2f2;
   --color-green-bg: #e6f4f4;
 
+  // Active row (แถวที่คลิกล่าสุด) — ใช้ร่วมกันทุกตาราง เปลี่ยนค่าตรงนี้ที่เดียวมีผลทุกหน้า
+  --row-active-bg: #e3f2fd;
+  --row-active-bg-hover: #bbdefb;
+  --row-active-accent: #1976d2;
+
   // Filled / inverse surface (maroon) — top bar / drawer / filled header / modal headerVariant="main"
   --surface-inverse: var(--base-font-color);
   --surface-inverse-gradient: linear-gradient(180deg, var(--base-font-color), var(--base-font-sub-color));

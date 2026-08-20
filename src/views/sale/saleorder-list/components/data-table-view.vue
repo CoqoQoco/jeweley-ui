@@ -11,8 +11,10 @@
       :showColumnSettings="true"
       :defaultSortMeta="[{ field: 'createDate', order: -1 }]"
       class="base-data-table"
+      :rowClass="getRowClass"
       @page="handlePageChange"
       @sort="handleSortChange"
+      @row-click="onRowClick"
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
@@ -82,6 +84,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
   name: 'SaleOrderListDataTableView',
@@ -90,7 +93,7 @@ export default {
     BaseDataTable
   },
 
-  mixins: [dataTablePaging],
+  mixins: [dataTablePaging, activeRowHighlight],
 
   props: {
     modelForm: {
@@ -106,7 +109,10 @@ export default {
   },
 
   data() {
-    return {}
+    return {
+      activeRowIdField: 'soNumber',
+      activeRowStorage: 'active-row-saleorder-list-dk'
+    }
   },
 
   computed: {
@@ -142,6 +148,7 @@ export default {
   methods: {
     // Action handlers
     onEdit(data) {
+      this.setActiveRow(data)
       // Navigate to edit sale order
       this.$router.push({
         path: '/sale-order',
@@ -150,6 +157,7 @@ export default {
     },
 
     onView(data) {
+      this.setActiveRow(data)
       // Navigate to view sale order
       this.$router.push({
         path: '/sale-order',
@@ -181,6 +189,7 @@ export default {
         sort: this.sort,
         formValue: this.form
       })
+      this.scrollToActiveRow()
     },
 
     // Format helpers

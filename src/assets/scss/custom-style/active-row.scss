@@ -1,0 +1,29 @@
+// active-row — ไฮไลต์แถวที่ถูกคลิกล่าสุด (ดู useActiveRowHighlight.js)
+//
+// ทำไม selector ด้านล่างซ้ำ .row-active สองครั้ง (tr.row-active.row-active) — ห้ามลบตัวซ้ำออก:
+// component ลูก (เช่น quotation-items-table) render มาพร้อม scope id ของตัวเอง "และ" scope id
+// ของ parent component (Vue stamp scope id ของ parent ลงบน root element ของ child ด้วย) ทำให้
+// stylesheet ของ parent (เช่น quotation-view.vue ที่ import data-table-dub.scss เหมือนกัน) มี
+// selectorที่ match แถวเดียวกันนี้พอดี ที่ specificity (0,5,1):
+//   .base-datatable[data-v-<parent-scope>] .p-datatable .p-datatable-tbody > tr:nth-child(even)
+// selector ปกติของไฟล์นี้ (ซ้ำ .row-active แค่ครั้งเดียว) ก็อยู่ที่ (0,5,1) เท่ากัน — เมื่อ specificity
+// เท่ากันและทั้งคู่มี !important ผลจะตัดสินด้วยลำดับ stylesheet ใน document แทน ซึ่ง parent stylesheet
+// ถูก inject "หลัง" child เสมอ ทำให้ striped grey ของ parent ชนะทุกครั้งบน even row (ยืนยันแล้วใน browser)
+// การใส่ .row-active ซ้ำ (tr.row-active.row-active) ดัน specificity ของไฟล์นี้ขึ้นเป็น (0,6,1) ซึ่งชนะ
+// (0,5,1) ของ parent เสมอไม่ว่าจะโหลดก่อนหรือหลัง — ไม่ใช่เรื่อง @import order อีกต่อไป
+
+:deep(.p-datatable .p-datatable-tbody > tr.row-active.row-active),
+:deep(.p-datatable .p-datatable-tbody > tr.row-active.row-active:nth-child(even)),
+:deep(.p-datatable .p-datatable-tbody > tr.row-active.row-active:nth-child(odd)),
+:deep(.p-datatable .p-datatable-tbody > tr.row-active.row-active.p-row-odd) {
+  background-color: var(--row-active-bg) !important;
+}
+
+:deep(.p-datatable .p-datatable-tbody > tr.row-active.row-active:hover) {
+  background-color: var(--row-active-bg-hover) !important;
+}
+
+// เส้นเน้นซ้าย ให้หาแถวเจอง่ายเมื่อ scroll ตารางแนวนอน (ใช้ box-shadow ไม่ใช่ border เพื่อไม่ดันความกว้างคอลัมน์)
+:deep(.p-datatable .p-datatable-tbody > tr.row-active.row-active > td:first-child) {
+  box-shadow: inset 3px 0 0 0 var(--row-active-accent);
+}

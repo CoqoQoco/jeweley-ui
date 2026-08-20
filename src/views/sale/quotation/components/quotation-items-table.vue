@@ -1,5 +1,5 @@
 <template>
-  <div class="base-datatable mt-2">
+  <div class="base-datatable mt-2" @focusin="onRowFocusIn">
     <DataTable
       :value="customer.quotationItems"
       rowGroupMode="subheader"
@@ -7,6 +7,7 @@
       stripedRows
       showGridlines
       :rowClass="getRowClass"
+      @row-click="onRowClick"
     >
       <ColumnGroup type="header">
         <Row>
@@ -603,6 +604,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 
 import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 
@@ -616,6 +618,8 @@ export default {
     Row,
     imagePreview
   },
+
+  mixins: [activeRowHighlight],
 
   props: {
     customer: {
@@ -660,6 +664,12 @@ export default {
     }
   },
 
+  computed: {
+    activeRowItems() {
+      return this.customer.quotationItems
+    }
+  },
+
   methods: {
     formatPrice(price) {
       return formatDocCurrency(price, this.customer.currencyUnit, 'th-TH')
@@ -669,10 +679,6 @@ export default {
       return isForeignCurrency(this.customer.currencyUnit)
         ? String(Math.floor(Number(value) || 0))
         : (Number(value) || 0).toFixed(2)
-    },
-
-    getRowClass(data, index) {
-      return ''
     }
   }
 }
@@ -681,6 +687,7 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 @import '@/assets/scss/overide-prime-vue/data-table-dub.scss';
+@import '@/assets/scss/custom-style/active-row.scss';
 
 .input-bg {
   background-color: #b5dad4 !important;

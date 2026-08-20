@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    <div class="card-body p-0">
+    <div class="card-body p-0" @focusin="onRowFocusIn">
       <DataTable
         :value="invoiceItems"
         class="p-datatable-sm"
@@ -38,6 +38,8 @@
         stripedRows
         responsiveLayout="scroll"
         showGridlines
+        :rowClass="getRowClass"
+        @row-click="onRowClick"
       >
         <ColumnGroup type="header">
           <Row>
@@ -673,6 +675,7 @@ import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import dayjs from 'dayjs'
 import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
   name: 'InvoiceItemsTable',
@@ -684,6 +687,8 @@ export default {
     Row,
     imagePreview
   },
+
+  mixins: [activeRowHighlight],
 
   data() {
     return {
@@ -728,6 +733,10 @@ export default {
   },
 
   computed: {
+    activeRowItems() {
+      return this.invoiceItems
+    },
+
     isTotalFrozenRight() {
       return this.frozenCols['total'] === 'right'
     },
@@ -940,6 +949,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/custom-style/active-row.scss';
 
 .card-container {
   background: var(--color-card-bg);

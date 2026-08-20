@@ -26,8 +26,10 @@
       :selectionMode="true"
       selectionType="multiple"
       v-model:itemsSelection="selectedQuotations"
+      :rowClass="getRowClass"
       @page="handlePageChange"
       @sort="handleSortChange"
+      @row-click="onRowClick"
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
@@ -99,6 +101,7 @@
 import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 
@@ -112,7 +115,7 @@ export default {
     mergeModal
   },
 
-  mixins: [dataTablePaging],
+  mixins: [dataTablePaging, activeRowHighlight],
 
   props: {
     modelForm: {
@@ -131,7 +134,9 @@ export default {
     return {
       selectedQuotations: [],
       showMergeModal: false,
-      mergeQuotationsData: []
+      mergeQuotationsData: [],
+      activeRowIdField: 'number',
+      activeRowStorage: 'active-row-quotation-list-dk'
     }
   },
 
@@ -169,6 +174,7 @@ export default {
   methods: {
     // Action handlers
     onEdit(data) {
+      this.setActiveRow(data)
       // Navigate to edit quotation
       this.$router.push({
         path: '/sale-quotation',
@@ -177,6 +183,7 @@ export default {
     },
 
     onView(data) {
+      this.setActiveRow(data)
       // Navigate to view quotation
       this.$router.push({
         path: '/sale-quotation',
@@ -192,6 +199,7 @@ export default {
         sort: this.sort,
         formValue: this.form
       })
+      this.scrollToActiveRow()
     },
 
     // Merge quotation methods

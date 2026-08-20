@@ -6,7 +6,7 @@
         <span class="badge badge-warning">{{ copyItems.length }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
       </div>
     </div>
-    <div class="card-body p-0">
+    <div class="card-body p-0" @focusin="onRowFocusIn">
       <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
         :value="copyItems"
@@ -17,6 +17,8 @@
         stripedRows
         responsiveLayout="scroll"
         showGridlines
+        :rowClass="getRowClass"
+        @row-click="onRowClick"
       >
         <ColumnGroup type="header">
           <Row>
@@ -422,6 +424,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
   name: 'CopyItemsTable',
@@ -433,6 +436,8 @@ export default {
     Row,
     imagePreview
   },
+
+  mixins: [activeRowHighlight],
 
   props: {
     copyItems: {
@@ -448,6 +453,10 @@ export default {
   emits: ['delete-item', 'edit-item', 'blur-price', 'blur-qty', 'blur-description', 'image-loaded'],
 
   computed: {
+    activeRowItems() {
+      return this.copyItems
+    },
+
     copyItemsTotalAmount() {
       return this.getSumTotalConvertedPrice(this.copyItems) + (this.formSaleOrder.copyFreight || 0)
     }
@@ -601,6 +610,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/custom-style/active-row.scss';
 
 /* Quotation table styles */
 .input-bg {
