@@ -823,9 +823,9 @@ export class InvoiceExcelBuilder {
     const conditions = [
       'Price is F.O.B. Bangkok not included freight and insurance',
       'Production time within 5-7 weeks',
-      '40% payment of tt, 60% before the shipment.',
+      '50% payment of tt, 50% before the shipment.',
       'Gold weight, Diamond weight and Stones weight are approximately, the actual weight will be known after production is completed',
-      'Minimun order 10 pcs per design / Minimun purchase US$ 5,000',
+      'Minimun order 6 pcs per design / Minimun purchase US$ 5,000',
       'The price quotation is current gold price market at www.kitco.com (please confirm within 2 days)'
     ]
 

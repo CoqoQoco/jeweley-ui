@@ -306,7 +306,7 @@ export class InvoicePdfBuilder {
                     // Company Address
                     {
                       text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                      fontSize: 14,
+                      fontSize: 12,
                       bold: true,
                       color: '#8B0000',
                       margin: [0, 0, 0, 0]
@@ -492,7 +492,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50], // 10 columns
+        widths: [17, 43, 59, 49, 57, 66, '*', 21, 51, 58], // 10 columns
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -501,7 +501,13 @@ export class InvoicePdfBuilder {
         },
         vLineWidth: function () {
           return 0.5
-        } // border left/right
+        }, // border left/right
+        paddingLeft: function () {
+          return 3
+        },
+        paddingRight: function () {
+          return 3
+        }
       }
     }
   }
@@ -512,7 +518,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50], // 10 columns
+        widths: [17, 43, 59, 49, 57, 66, '*', 21, 51, 58], // 10 columns
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -521,7 +527,13 @@ export class InvoicePdfBuilder {
         },
         vLineWidth: function () {
           return 0.5
-        } // border left/right
+        }, // border left/right
+        paddingLeft: function () {
+          return 3
+        },
+        paddingRight: function () {
+          return 3
+        }
       }
     }
   }
@@ -565,6 +577,14 @@ export class InvoicePdfBuilder {
 
       sumQty += qty
       sumAmount += amount
+
+      if (item.materials && Array.isArray(item.materials)) {
+        item.materials.forEach((m) => {
+          if (m.type === 'Gold') sumGold += Number(m.weight) || 0
+          if (m.type === 'Diamond') sumDiamond += Number(m.weight) || 0
+          if (m.type === 'Gem') sumGem += Number(m.weight) || 0
+        })
+      }
 
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
@@ -876,20 +896,20 @@ export class InvoicePdfBuilder {
               ? m.typeCode || ''
               : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
           alignment: 'left',
-          fontSize: 10,
+          fontSize: 8,
           margin: [0, 0, 0, 0]
         },
         {
           text: m.weight ? Number(m.weight).toFixed(2) : Number(0).toFixed(2),
           alignment: 'right',
-          fontSize: 10,
+          fontSize: 8,
           margin: [0, 0, 0, 0]
         }
       ])
     if (!rows.length) return ''
     return {
       table: {
-        widths: ['*', 15],
+        widths: ['*', 'auto'],
         body: rows
       },
       layout: {
@@ -1016,7 +1036,7 @@ export class InvoicePdfBuilder {
     return {
       text: text,
       bold: true,
-      fontSize: 10,
+      fontSize: 8,
       alignment: 'center',
       fillColor: '#8B0000',
       color: 'white',
@@ -1027,7 +1047,7 @@ export class InvoicePdfBuilder {
   setTableCell(text) {
     return {
       text: text || '',
-      fontSize: 11,
+      fontSize: 9,
       margin: [2, 5, 2, 5]
     }
   }
@@ -1079,7 +1099,7 @@ export class InvoicePdfBuilder {
   setTableCellRight(text) {
     return {
       text: text || '',
-      fontSize: 10,
+      fontSize: 9,
       alignment: 'right',
       margin: [2, 5, 2, 5]
     }

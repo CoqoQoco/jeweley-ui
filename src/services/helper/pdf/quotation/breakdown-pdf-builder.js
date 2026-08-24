@@ -774,9 +774,9 @@ export class BreakdownPdfBuilder {
           stack: [
             { text: 'Price is F.O.B. Bangkok not inclued freight and insurance', style: 'conditionText' },
             { text: 'Production time within 5-7 weeks', style: 'conditionText' },
-            { text: '40% payment of tt, 60% before the shipment.', style: 'conditionText' },
+            { text: '50% payment of tt, 50% before the shipment.', style: 'conditionText' },
             { text: 'Gold weight, Diamond weight and Stones weight are approximately, the actual weight will be known after production is completed', style: 'conditionText' },
-            { text: 'Minimun order 10 pcs per design / Minimun purchase US$ 5,000', style: 'conditionText' },
+            { text: 'Minimun order 6 pcs per design / Minimun purchase US$ 5,000', style: 'conditionText' },
             { text: 'The price quotation is current gold price market at www.kitco.com (please confirm within 2 days)', style: 'conditionText' }
           ]
         }

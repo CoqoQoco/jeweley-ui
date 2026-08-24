@@ -365,7 +365,7 @@ export class WorkerWagesSuccessPdfBuilder {
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: [46, 53, 74, 30, '*', 26, 24, 40, 42, 39, 41],
+          widths: [52, 53, 76, 30, '*', 26, 24, 36, 38, 39, 41],
           body: this.buildGoldLossTableBody()
         },
         layout: {
