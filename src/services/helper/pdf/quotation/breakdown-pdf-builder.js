@@ -3,7 +3,18 @@ import 'dayjs/locale/en'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class BreakdownPdfBuilder {
-  constructor({ items, customer, invoiceDate, invoiceNo, currencyUnit, currencyMultiplier, profitPercent }) {
+  constructor({
+    items,
+    customer,
+    invoiceDate,
+    invoiceNo,
+    currencyUnit,
+    currencyMultiplier,
+    profitPercent,
+    goldLossPercent,
+    settingDiamondRate,
+    settingStoneRate
+  }) {
     this.data = items || []
     this.customer = customer || {}
     this.invoiceDate = invoiceDate || dayjs().format('YYYY-MM-DD')
@@ -11,6 +22,9 @@ export class BreakdownPdfBuilder {
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyMultiplier = Number(currencyMultiplier) || 1
     this.profitPercent = Number(profitPercent) || 15
+    this.goldLossPercent = Number(goldLossPercent ?? 12)
+    this.settingDiamondRate = Number(settingDiamondRate ?? 15)
+    this.settingStoneRate = Number(settingStoneRate ?? 25)
     this.goldPerOz = customer.goldPerOz || 0
     // fallback ไป goldPerOz รองรับใบเสนอราคาเก่าที่ยังไม่ได้บันทึกราคา spot
     this.goldSpotPrice = customer.goldSpotPrice || customer.goldPerOz || 0
@@ -320,20 +334,24 @@ export class BreakdownPdfBuilder {
     const tableHeader = [
       { text: 'No.', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Image', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'QTY.', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Style/Product', style: 'summaryLabelColored', alignment: 'center' },
-      { text: 'Shape', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Type', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Description', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Qty', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Price/Qty', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Weight', style: 'summaryLabelColored', alignment: 'center' },
+      {
+        text: `Net Weight with Gold Loss ${this.goldLossPercent}%`,
+        style: 'summaryLabelColored',
+        alignment: 'center'
+      },
       { text: 'Price/Weight', style: 'summaryLabelColored', alignment: 'center' },
       {
         text: `Price/Unit (${this.currencyUnit})`,
         style: 'summaryLabelColored',
         alignment: 'center'
-      },
-      { text: `Total (${this.currencyUnit})`, style: 'summaryLabelColored', alignment: 'center' }
+      }
     ]
 
     const body = [tableHeader]
@@ -341,7 +359,6 @@ export class BreakdownPdfBuilder {
 
     console.log('Generating breakdown PDF with data:', this.data)
     ;(this.data || []).forEach((item) => {
-      const planQty = Number(item.planQty || item.qty || 1)
       const priceTransactions = Array.isArray(item.priceTransactions) ? item.priceTransactions : []
       const goldList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'gold')
       const gemList = priceTransactions.filter((t) => (t.nameGroup || '').toLowerCase() === 'gem')
@@ -364,18 +381,40 @@ export class BreakdownPdfBuilder {
       const embedList = priceTransactions.filter(
         (t) => (t.nameGroup || '').toLowerCase() === 'embed'
       )
+
+      const materials = Array.isArray(item.materials) ? item.materials : []
+      const diamondCount = materials
+        .filter((m) => m.type === 'Diamond')
+        .reduce((sum, m) => sum + (Number(m.qty) || 0), 0)
+      const stoneCount = materials
+        .filter((m) => m.type === 'Gem')
+        .reduce((sum, m) => sum + (Number(m.qty) || 0), 0)
+      const useNewSettingRows = materials.length > 0 && (diamondCount > 0 || stoneCount > 0)
+      const settingRowCount = useNewSettingRows
+        ? (diamondCount > 0 ? 1 : 0) + (stoneCount > 0 ? 1 : 0)
+        : embedList.length
+
       const totalRows =
         goldList.length +
         gemList.length +
         etcList.length +
         (workList.length ? 1 : 0) +
-        embedList.length
+        settingRowCount
       let currentRow = 0
       goldList.forEach((gold, idx) => {
+        const qtyWeight = Number(gold.qtyWeight) || 0
+        const goldLossWeight = qtyWeight * (1 + this.goldLossPercent / 100)
+        const priceUnit =
+          ((Number(gold.qty) || 0) * (Number(gold.qtyPrice) || 0) +
+            goldLossWeight * (Number(gold.qtyWeightPrice) || 0)) /
+          (this.currencyMultiplier || 1)
         body.push([
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
           currentRow === 0
             ? { ...this.setImageCell(item.imageBase64), rowSpan: totalRows }
+            : {},
+          currentRow === 0
+            ? { text: this.formatQty(item.qty || 1), alignment: 'center', rowSpan: totalRows }
             : {},
           currentRow === 0
             ? {
@@ -384,12 +423,9 @@ export class BreakdownPdfBuilder {
                 rowSpan: totalRows
               }
             : {},
-          currentRow === 0
-            ? { text: this.getShape(item), alignment: 'center', rowSpan: totalRows }
-            : {},
           { text: 'Gold', alignment: 'center', rowSpan: idx === 0 ? goldList.length : undefined },
           { text: gold.nameDescription || '-', alignment: 'left' },
-          { text: gold.qty ? this.formatPrice(gold.qty) : '', alignment: 'center' },
+          { text: '', alignment: 'center' },
           {
             text: gold.qtyPrice
               ? this.formatPrice(gold.qtyPrice / (this.currencyMultiplier || 1))
@@ -397,6 +433,7 @@ export class BreakdownPdfBuilder {
             alignment: 'center'
           },
           { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
+          { text: gold.qtyWeight ? this.formatPrice(goldLossWeight) : '', alignment: 'center' },
           {
             text: gold.qtyWeightPrice
               ? this.formatPrice(gold.qtyWeightPrice / (this.currencyMultiplier || 1))
@@ -404,13 +441,7 @@ export class BreakdownPdfBuilder {
             alignment: 'center'
           },
           {
-            text: this.formatPrice((gold.totalPrice || 0) / (this.currencyMultiplier || 1)),
-            alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              ((gold.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
-            ),
+            text: this.formatPrice(priceUnit),
             alignment: 'right'
           }
         ])
@@ -427,7 +458,7 @@ export class BreakdownPdfBuilder {
             ? { text: 'Diamond / C. Stone', alignment: 'center', rowSpan: gemList.length }
             : {},
           { text: gem.nameDescription || '-', alignment: 'left' },
-          { text: gem.qty ? this.formatPrice(gem.qty) : '', alignment: 'center' },
+          { text: gem.qty ? this.formatQty(gem.qty) : '', alignment: 'center' },
           {
             text: gem.qtyPrice
               ? this.formatPrice(gem.qtyPrice / (this.currencyMultiplier || 1))
@@ -435,6 +466,7 @@ export class BreakdownPdfBuilder {
             alignment: 'center'
           },
           { text: gem.qtyWeight ? this.formatPrice(gem.qtyWeight) : '', alignment: 'center' },
+          { text: '', alignment: 'center' },
           {
             text: gem.qtyWeightPrice
               ? this.formatPrice(gem.qtyWeightPrice / (this.currencyMultiplier || 1))
@@ -443,12 +475,6 @@ export class BreakdownPdfBuilder {
           },
           {
             text: this.formatPrice((gem.totalPrice || 0) / (this.currencyMultiplier || 1)),
-            alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              ((gem.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
-            ),
             alignment: 'right'
           }
         ])
@@ -465,49 +491,86 @@ export class BreakdownPdfBuilder {
           {},
           { text: 'Labor', alignment: 'center' },
           { text: '-', alignment: 'left' },
-          { text: '1', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.formatPrice(sumWork / (this.currencyMultiplier || 1)), alignment: 'right' },
-          {
-            text: this.formatPrice((sumWork / (this.currencyMultiplier || 1)) * (item.qty || 1)),
-            alignment: 'right'
-          }
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: this.formatPrice(sumWork / (this.currencyMultiplier || 1)), alignment: 'right' }
         ])
         currentRow++
       }
 
-      embedList.forEach((embed, idx) => {
-        body.push([
-          {},
-          {},
-          {},
-          {},
-          idx === 0 ? { text: 'Setting', alignment: 'center', rowSpan: embedList.length } : {},
-          { text: embed.nameDescription || '-', alignment: 'left' },
-          { text: embed.qty ? this.formatPrice(embed.qty) : '', alignment: 'center' },
-          {
-            text: embed.qtyPrice
-              ? this.formatPrice(embed.qtyPrice / (this.currencyMultiplier || 1))
-              : '',
-            alignment: 'center'
-          },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          {
-            text: this.formatPrice((embed.totalPrice || 0) / (this.currencyMultiplier || 1)),
-            alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              ((embed.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
-            ),
-            alignment: 'right'
-          }
-        ])
-        currentRow++
-      })
+      let diamondTotal = 0
+      let stoneTotal = 0
+      if (useNewSettingRows) {
+        const diamondPriceQty = this.settingDiamondRate / (this.currencyMultiplier || 1)
+        diamondTotal = (diamondCount * this.settingDiamondRate) / (this.currencyMultiplier || 1)
+        const stonePriceQty = this.settingStoneRate / (this.currencyMultiplier || 1)
+        stoneTotal = (stoneCount * this.settingStoneRate) / (this.currencyMultiplier || 1)
+
+        if (diamondCount > 0) {
+          body.push([
+            {},
+            {},
+            {},
+            {},
+            { text: 'Setting-Diamonds', alignment: 'center' },
+            { text: '-', alignment: 'left' },
+            { text: this.formatQty(diamondCount), alignment: 'center' },
+            { text: this.formatPrice(diamondPriceQty), alignment: 'center' },
+            { text: '', alignment: 'center' },
+            { text: '', alignment: 'center' },
+            { text: '', alignment: 'center' },
+            { text: this.formatPrice(diamondTotal), alignment: 'right' }
+          ])
+          currentRow++
+        }
+        if (stoneCount > 0) {
+          body.push([
+            {},
+            {},
+            {},
+            {},
+            { text: 'Setting-Stones', alignment: 'center' },
+            { text: '-', alignment: 'left' },
+            { text: this.formatQty(stoneCount), alignment: 'center' },
+            { text: this.formatPrice(stonePriceQty), alignment: 'center' },
+            { text: '', alignment: 'center' },
+            { text: '', alignment: 'center' },
+            { text: '', alignment: 'center' },
+            { text: this.formatPrice(stoneTotal), alignment: 'right' }
+          ])
+          currentRow++
+        }
+      } else {
+        embedList.forEach((embed, idx) => {
+          body.push([
+            {},
+            {},
+            {},
+            {},
+            idx === 0 ? { text: 'Setting', alignment: 'center', rowSpan: embedList.length } : {},
+            { text: embed.nameDescription || '-', alignment: 'left' },
+            { text: embed.qty ? this.formatQty(embed.qty) : '', alignment: 'center' },
+            {
+              text: embed.qtyPrice
+                ? this.formatPrice(embed.qtyPrice / (this.currencyMultiplier || 1))
+                : '',
+              alignment: 'center'
+            },
+            { text: '', alignment: 'center' },
+            { text: '', alignment: 'center' },
+            { text: '', alignment: 'center' },
+            {
+              text: this.formatPrice((embed.totalPrice || 0) / (this.currencyMultiplier || 1)),
+              alignment: 'right'
+            }
+          ])
+          currentRow++
+        })
+      }
+
       etcList.forEach((etc, idx) => {
         body.push([
           {},
@@ -516,9 +579,10 @@ export class BreakdownPdfBuilder {
           {},
           idx === 0 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : {},
           { text: etc.nameDescription || '-', alignment: 'left' },
-          { text: etc.qty ? this.formatPrice(etc.qty) : '', alignment: 'center' },
+          { text: etc.qty ? this.formatQty(etc.qty) : '', alignment: 'center' },
           { text: etc.qtyPrice ? this.formatPrice(etc.qtyPrice) : '', alignment: 'center' },
           { text: etc.qtyWeight ? this.formatPrice(etc.qtyWeight) : '', alignment: 'center' },
+          { text: '', alignment: 'center' },
           {
             text: etc.qtyWeightPrice ? this.formatPrice(etc.qtyWeightPrice) : '',
             alignment: 'center'
@@ -526,23 +590,21 @@ export class BreakdownPdfBuilder {
           {
             text: this.formatPrice((etc.totalPrice || 0) / (this.currencyMultiplier || 1)),
             alignment: 'right'
-          },
-          {
-            text: this.formatPrice(
-              ((etc.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1)
-            ),
-            alignment: 'right'
           }
         ])
         currentRow++
       })
 
       // รวมราคาทั้งหมดแบบถูกต้อง (แต่ละรายการต้อง / currencyMultiplier * item.qty)
-      const totalGold = goldList.reduce(
-        (sum, t) =>
-          sum + (Number(t.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1),
-        0
-      )
+      const totalGold = goldList.reduce((sum, t) => {
+        const qtyWeight = Number(t.qtyWeight) || 0
+        const goldLossWeight = qtyWeight * (1 + this.goldLossPercent / 100)
+        const priceUnit =
+          ((Number(t.qty) || 0) * (Number(t.qtyPrice) || 0) +
+            goldLossWeight * (Number(t.qtyWeightPrice) || 0)) /
+          (this.currencyMultiplier || 1)
+        return sum + priceUnit * (item.qty || 1)
+      }, 0)
       const totalGem = gemList.reduce(
         (sum, t) =>
           sum + (Number(t.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1),
@@ -558,11 +620,13 @@ export class BreakdownPdfBuilder {
             (this.currencyMultiplier || 1)) *
           (item.qty || 1)
         : 0
-      const totalEmbed = embedList.length
-        ? (embedList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) /
-            (this.currencyMultiplier || 1)) *
-          (item.qty || 1)
-        : 0
+      const totalEmbed = useNewSettingRows
+        ? (diamondTotal + stoneTotal) * (item.qty || 1)
+        : embedList.length
+          ? (embedList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) /
+              (this.currencyMultiplier || 1)) *
+            (item.qty || 1)
+          : 0
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
       const profitAmount = totalItemPrice * (this.profitPercent / 100)
@@ -652,7 +716,7 @@ export class BreakdownPdfBuilder {
           margin: [0, 10, 0, 0],
           table: {
             headerRows: 1,
-            widths: [20, 60, 50, 45, 40, '*', 40, 40, 40, 40, 55, 55],
+            widths: [20, 60, 30, 50, 40, '*', 40, 40, 40, 45, 40, 55],
             body
           },
           layout: {
@@ -759,18 +823,18 @@ export class BreakdownPdfBuilder {
     }
   }
 
-  getShape(item) {
-    if (!item.materials) return ''
-    const gems = item.materials.filter(m => m.type === 'Diamond' || m.type === 'Gem')
-    return gems.map(g => g.shape || g.typeCode || '').filter(Boolean).join(', ')
-  }
-
   formatPrice(price) {
     if (typeof price !== 'number' || isNaN(price)) return '0.00'
     return price.toLocaleString('th-TH', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })
+  }
+
+  formatQty(qty) {
+    const num = Number(qty)
+    if (isNaN(num)) return '0'
+    return Math.round(num).toLocaleString('th-TH')
   }
 
   roundNoDecimal(num) {

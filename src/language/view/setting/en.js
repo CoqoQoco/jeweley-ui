@@ -24,6 +24,18 @@ export default {
     saveSuccess: 'Company information saved successfully',
     confirmSaveTitle: 'Confirm save company information'
   },
+  breakdown: {
+    pageTitle: 'Break Down Setting',
+    pageDescription: 'Configure the Gold Loss (%) and diamond/stone setting rates used to calculate the Breakdown document',
+    sectionTitle: 'Break Down Parameters',
+    goldLossPercent: 'Gold Loss (%)',
+    settingDiamondRate: 'Diamond Setting Rate (THB/pcs)',
+    settingStoneRate: 'Stone Setting Rate (THB/pcs)',
+    validation: {
+      invalidNumber: 'Please enter a non-negative number'
+    },
+    saveSuccess: 'Break Down settings saved successfully'
+  },
   account: {
     cancelAccount: 'Cancel Account',
     register: 'Register Account',

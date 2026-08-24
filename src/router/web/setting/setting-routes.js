@@ -113,6 +113,19 @@ const routes = [
           permissions: [PERMISSIONS.USER_DEV, PERMISSIONS.SETTING_PRINT_LAYOUT]
         }
       },
+      {
+        path: '/setting/breakdown',
+        name: 'breakdown-setting',
+        component: () => import('@/views/setting/breakdown/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'Break Down Setting',
+            th: 'ตั้งค่า Break Down'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.USER_DEV, PERMISSIONS.SETTING_PRINT_LAYOUT]
+        }
+      },
     ]
   }
 ]

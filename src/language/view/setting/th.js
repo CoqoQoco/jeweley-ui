@@ -24,6 +24,18 @@ export default {
     saveSuccess: 'บันทึกข้อมูลบริษัทสำเร็จ',
     confirmSaveTitle: 'ยืนยันการบันทึกข้อมูลบริษัท'
   },
+  breakdown: {
+    pageTitle: 'ตั้งค่า Break Down',
+    pageDescription: 'กำหนดค่า Gold Loss (%) และค่าฝังเพชร/พลอย ที่ใช้คำนวณในใบ Breakdown',
+    sectionTitle: 'ค่าพารามิเตอร์ Break Down',
+    goldLossPercent: 'Gold Loss (%)',
+    settingDiamondRate: 'ค่าฝังเพชร (บาท/เม็ด)',
+    settingStoneRate: 'ค่าฝังพลอย (บาท/เม็ด)',
+    validation: {
+      invalidNumber: 'กรุณากรอกตัวเลขที่ไม่ติดลบ'
+    },
+    saveSuccess: 'บันทึกค่า Break Down สำเร็จ'
+  },
   account: {
     cancelAccount: 'ยกเลิกบัญชี',
     register: 'ลงทะเบียนบัญชี',

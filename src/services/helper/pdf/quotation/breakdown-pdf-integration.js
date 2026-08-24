@@ -1,6 +1,7 @@
 // src/services/helper/pdf/quotation/breakdown-pdf-integration.js
 
 import { BreakdownPdfBuilder } from '@/services/helper/pdf/quotation/breakdown-pdf-builder.js'
+import { getBreakdownSetting } from '@/services/helper/breakdown-setting-store.js'
 
 /**
  * Generate Breakdown PDF for quotation items.
@@ -24,6 +25,7 @@ export function generateBreakdownPdf({
 }) {
   return new Promise(async (resolve, reject) => {
     try {
+      const breakdownSetting = await getBreakdownSetting()
       const builder = new BreakdownPdfBuilder({
         items,
         customer,
@@ -31,7 +33,10 @@ export function generateBreakdownPdf({
         invoiceNo: customer.invoiceNumber,
         currencyUnit: customer.currencyUnit,
         currencyMultiplier: customer.currencyMultiplier,
-        profitPercent
+        profitPercent,
+        goldLossPercent: breakdownSetting.goldLossPercent,
+        settingDiamondRate: breakdownSetting.settingDiamondRate,
+        settingStoneRate: breakdownSetting.settingStoneRate
       })
       await builder.preparePDF()
       const pdf = await builder.generatePDF()
