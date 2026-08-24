@@ -12,14 +12,32 @@ function stdBorder() {
 }
 
 export class BreakdownExcelBuilder {
-  constructor({ items, customer, invoiceDate, invoiceNo, currencyUnit, currencyMultiplier, profitPercent }) {
+  constructor({
+    items,
+    customer,
+    invoiceDate,
+    invoiceNo,
+    currencyUnit,
+    currencyMultiplier,
+    profitPercent,
+    goldLossPercent,
+    settingDiamondRate,
+    settingStoneRate
+  }) {
     this.data = items || []
     this.customer = customer || {}
     this.invoiceDate = invoiceDate || dayjs().format('YYYY-MM-DD')
     this.invoiceNo = invoiceNo
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyMultiplier = Number(currencyMultiplier) || 1
-    this.profitPercent = Number(profitPercent) || 15
+    const profitPercentNum = Number(profitPercent)
+    this.profitPercent =
+      profitPercent === undefined || profitPercent === null || profitPercent === '' || !Number.isFinite(profitPercentNum)
+        ? 15
+        : profitPercentNum
+    this.goldLossPercent = Number(goldLossPercent ?? 12)
+    this.settingDiamondRate = Number(settingDiamondRate ?? 15)
+    this.settingStoneRate = Number(settingStoneRate ?? 25)
     // fallback ไป goldPerOz รองรับใบเสนอราคาเก่าที่ยังไม่ได้บันทึกราคา spot
     this.goldSpotPrice = this.customer.goldSpotPrice || this.customer.goldPerOz || 0
     this.logoBase64 = null
@@ -134,7 +152,7 @@ export class BreakdownExcelBuilder {
     companyNameCell.alignment = { vertical: 'middle', horizontal: 'left' }
     companyNameCell.fill = grayFill
 
-    worksheet.mergeCells(`F${row}:L${row}`)
+    worksheet.mergeCells(`F${row}:M${row}`)
     const titleCell = worksheet.getCell(`F${row}`)
     titleCell.value = 'BREAKDOWN'
     titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FF393939' } }
@@ -160,7 +178,7 @@ export class BreakdownExcelBuilder {
     noLabelCell.alignment = { vertical: 'middle', horizontal: 'right' }
     noLabelCell.fill = grayFill
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     const noValueCell = worksheet.getCell(`G${row}`)
     noValueCell.value = this.invoiceNo || ''
     noValueCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF8B0000' } }
@@ -180,7 +198,7 @@ export class BreakdownExcelBuilder {
     dateLabelCell.alignment = { vertical: 'middle', horizontal: 'right' }
     dateLabelCell.fill = grayFill
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     const dateValueCell = worksheet.getCell(`G${row}`)
     dateValueCell.value = dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY')
     dateValueCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF8B0000' } }
@@ -200,7 +218,7 @@ export class BreakdownExcelBuilder {
     goldLabelCell.alignment = { vertical: 'middle', horizontal: 'right' }
     goldLabelCell.fill = grayFill
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     const goldValueCell = worksheet.getCell(`G${row}`)
     goldValueCell.value = this.goldSpotPrice ? `$${this.formatPrice(this.goldSpotPrice)} /Oz.` : '-'
     goldValueCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF8B0000' } }
@@ -222,7 +240,7 @@ export class BreakdownExcelBuilder {
     worksheet.getCell(`A${row}`).value = 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.'
     worksheet.getCell(`A${row}`).font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF8B0000' } }
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     worksheet.getCell(`G${row}`).value = `Consigned To: ${this.customer.name || ''}`
     worksheet.getCell(`G${row}`).font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF8B0000' } }
 
@@ -232,7 +250,7 @@ export class BreakdownExcelBuilder {
     worksheet.getCell(`A${row}`).value = this.companyInfo.address || ''
     worksheet.getCell(`A${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     worksheet.getCell(`G${row}`).value = `Address: ${this.customer.address || ''}`
     worksheet.getCell(`G${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
@@ -242,7 +260,7 @@ export class BreakdownExcelBuilder {
     worksheet.getCell(`A${row}`).value = `TEL: ${this.companyInfo.phone || ''}`
     worksheet.getCell(`A${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     worksheet.getCell(`G${row}`).value = `TEl: ${this.customer.tel || ''}`
     worksheet.getCell(`G${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
@@ -252,7 +270,7 @@ export class BreakdownExcelBuilder {
     worksheet.getCell(`A${row}`).value = `FAX: ${this.companyInfo.fax || ''}`
     worksheet.getCell(`A${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     worksheet.getCell(`G${row}`).value = `E-mail: ${this.customer.email || ''}`
     worksheet.getCell(`G${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
@@ -262,7 +280,7 @@ export class BreakdownExcelBuilder {
     worksheet.getCell(`A${row}`).value = `E-Mail: ${this.companyInfo.email || ''}`
     worksheet.getCell(`A${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
-    worksheet.mergeCells(`G${row}:L${row}`)
+    worksheet.mergeCells(`G${row}:M${row}`)
     worksheet.getCell(`G${row}`).value = this.goldSpotPrice
       ? `Gold Spot: US$ ${this.formatPrice(this.goldSpotPrice)} /Oz.`
       : ''
@@ -284,18 +302,19 @@ export class BreakdownExcelBuilder {
     const headers = [
       'No.',
       'Image',
+      'QTY.',
       'Style/Product',
-      'Shape',
       'Type',
       'Description',
-      'Qty',
+      'Qty Stone',
       'Price/Qty',
       'Weight',
+      `Net Weight with Gold Loss ${this.goldLossPercent}%`,
       'Price/Weight',
       `Price/Unit (${this.currencyUnit})`,
       `Total (${this.currencyUnit})`
     ]
-    const colLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+    const colLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']
 
     headers.forEach((header, idx) => {
       const cell = worksheet.getCell(`${colLetters[idx]}${row}`)
@@ -329,7 +348,7 @@ export class BreakdownExcelBuilder {
       const itemStartRow = row
 
       goldList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true, rawPrice: false })
+        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true, isGold: true })
         row++
       })
       if (goldList.length) {
@@ -338,24 +357,25 @@ export class BreakdownExcelBuilder {
 
       const gemStartRow = row
       gemList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true, rawPrice: false })
+        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true })
         row++
       })
       if (gemList.length) {
         this.mergeTypeCell(worksheet, gemStartRow, gemStartRow + gemList.length - 1, 'Diamond / C. Stone')
       }
 
-      if (workList.length) {
-        const laborRow = row
-        const sumWork = workList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0)
-        this.writeLaborRow(worksheet, row, sumWork, { multiplier, itemQty })
-        this.mergeTypeCell(worksheet, laborRow, laborRow, 'Labor')
+      const laborStartRow = row
+      workList.forEach((t) => {
+        this.writeLaborRow(worksheet, row, t, { multiplier, itemQty })
         row++
+      })
+      if (workList.length) {
+        this.mergeTypeCell(worksheet, laborStartRow, laborStartRow + workList.length - 1, 'Labor')
       }
 
       const embedStartRow = row
       embedList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: false, rawPrice: false })
+        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: false })
         row++
       })
       if (embedList.length) {
@@ -364,7 +384,7 @@ export class BreakdownExcelBuilder {
 
       const etcStartRow = row
       etcList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true, rawPrice: true })
+        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true })
         row++
       })
       if (etcList.length) {
@@ -376,15 +396,15 @@ export class BreakdownExcelBuilder {
       if (itemEndRow >= itemStartRow) {
         this.mergeAndSetCell(worksheet, 'A', itemStartRow, itemEndRow, itemIdx + 1, 'center')
         this.mergeImageCell(worksheet, itemStartRow, itemEndRow)
+        this.mergeAndSetCell(worksheet, 'C', itemStartRow, itemEndRow, itemQty, 'center')
         this.mergeAndSetCell(
           worksheet,
-          'C',
+          'D',
           itemStartRow,
           itemEndRow,
           item.productNumber || item.stockNumberOrigin || item.stockNumber || '',
           'center'
         )
-        this.mergeAndSetCell(worksheet, 'D', itemStartRow, itemEndRow, this.getShape(item), 'center')
 
         worksheet.getRow(itemStartRow).height = Math.max(worksheet.getRow(itemStartRow).height || 0, 58)
 
@@ -426,7 +446,7 @@ export class BreakdownExcelBuilder {
 
   // === ROW BUILDING HELPERS ===
 
-  writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight = true, rawPrice = false }) {
+  writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight = true, isGold = false }) {
     const descCell = worksheet.getCell(`F${row}`)
     descCell.value = t.nameDescription || '-'
     descCell.font = { name: 'Arial', size: 9 }
@@ -434,42 +454,43 @@ export class BreakdownExcelBuilder {
     descCell.border = stdBorder()
 
     this.setConditionalNumber(worksheet, `G${row}`, t.qty, 1)
-    this.setConditionalNumber(worksheet, `H${row}`, t.qtyPrice, rawPrice ? 1 : multiplier)
+    this.setConditionalNumber(worksheet, `H${row}`, t.qtyPrice, multiplier)
 
     if (includeWeight) {
       this.setConditionalNumber(worksheet, `I${row}`, t.qtyWeight, 1)
-      this.setConditionalNumber(worksheet, `J${row}`, t.qtyWeightPrice, rawPrice ? 1 : multiplier)
+      if (isGold) {
+        this.setGoldLossWeightCell(worksheet, `J${row}`, t.qtyWeight)
+      } else {
+        this.setBlankCell(worksheet, `J${row}`)
+      }
+      this.setConditionalNumber(worksheet, `K${row}`, t.qtyWeightPrice, multiplier)
     } else {
       this.setBlankCell(worksheet, `I${row}`)
       this.setBlankCell(worksheet, `J${row}`)
+      this.setBlankCell(worksheet, `K${row}`)
     }
 
     const priceUnit = (Number(t.totalPrice) || 0) / (multiplier || 1)
-    this.setAlwaysNumber(worksheet, `K${row}`, priceUnit)
-    this.setAlwaysNumber(worksheet, `L${row}`, priceUnit * (itemQty || 1))
+    this.setAlwaysNumber(worksheet, `L${row}`, priceUnit)
+    this.setAlwaysNumber(worksheet, `M${row}`, priceUnit * (itemQty || 1))
   }
 
-  writeLaborRow(worksheet, row, sumWork, { multiplier, itemQty }) {
+  writeLaborRow(worksheet, row, t, { multiplier, itemQty }) {
     const descCell = worksheet.getCell(`F${row}`)
-    descCell.value = '-'
+    descCell.value = t.nameDescription || '-'
     descCell.font = { name: 'Arial', size: 9 }
-    descCell.alignment = { vertical: 'middle', horizontal: 'left' }
+    descCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
     descCell.border = stdBorder()
 
-    const qtyCell = worksheet.getCell(`G${row}`)
-    qtyCell.value = 1
-    qtyCell.numFmt = '#,##0.00'
-    qtyCell.font = { name: 'Arial', size: 9 }
-    qtyCell.alignment = { vertical: 'middle', horizontal: 'center' }
-    qtyCell.border = stdBorder()
-
+    this.setBlankCell(worksheet, `G${row}`)
     this.setBlankCell(worksheet, `H${row}`)
     this.setBlankCell(worksheet, `I${row}`)
     this.setBlankCell(worksheet, `J${row}`)
+    this.setBlankCell(worksheet, `K${row}`)
 
-    const priceUnit = sumWork / (multiplier || 1)
-    this.setAlwaysNumber(worksheet, `K${row}`, priceUnit)
-    this.setAlwaysNumber(worksheet, `L${row}`, priceUnit * (itemQty || 1))
+    const priceUnit = (Number(t.totalPrice) || 0) / (multiplier || 1)
+    this.setAlwaysNumber(worksheet, `L${row}`, priceUnit)
+    this.setAlwaysNumber(worksheet, `M${row}`, priceUnit * (itemQty || 1))
   }
 
   setConditionalNumber(worksheet, ref, rawValue, divisor) {
@@ -477,6 +498,20 @@ export class BreakdownExcelBuilder {
     const num = Number(rawValue)
     if (rawValue && num) {
       cell.value = num / (divisor || 1)
+      cell.numFmt = '#,##0.00'
+    } else {
+      cell.value = null
+    }
+    cell.font = { name: 'Arial', size: 9 }
+    cell.alignment = { vertical: 'middle', horizontal: 'center' }
+    cell.border = stdBorder()
+  }
+
+  setGoldLossWeightCell(worksheet, ref, qtyWeight) {
+    const cell = worksheet.getCell(ref)
+    const num = Number(qtyWeight)
+    if (qtyWeight && num) {
+      cell.value = num * (1 + this.goldLossPercent / 100)
       cell.numFmt = '#,##0.00'
     } else {
       cell.value = null
@@ -539,7 +574,7 @@ export class BreakdownExcelBuilder {
   }
 
   writeSummaryRow(worksheet, row, label, value) {
-    worksheet.mergeCells(`A${row}:K${row}`)
+    worksheet.mergeCells(`A${row}:L${row}`)
     const labelCell = worksheet.getCell(`A${row}`)
     labelCell.value = label
     labelCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF8B0000' } }
@@ -547,7 +582,7 @@ export class BreakdownExcelBuilder {
     labelCell.alignment = { vertical: 'middle', horizontal: 'right' }
     labelCell.border = stdBorder()
 
-    const valueCell = worksheet.getCell(`L${row}`)
+    const valueCell = worksheet.getCell(`M${row}`)
     valueCell.value = Number(value) || 0
     valueCell.numFmt = '#,##0.00'
     valueCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF8B0000' } }
@@ -568,14 +603,14 @@ export class BreakdownExcelBuilder {
     worksheet.getCell(`A${row}`).value = 'ORIGIN THAILAND'
     worksheet.getCell(`A${row}`).font = { name: 'Arial', size: 10, color: { argb: 'FF393939' } }
 
-    worksheet.mergeCells(`I${row}:L${row}`)
+    worksheet.mergeCells(`I${row}:M${row}`)
     worksheet.getCell(`I${row}`).value = '______________________________'
     worksheet.getCell(`I${row}`).font = { name: 'Arial', size: 10, color: { argb: 'FF393939' } }
     worksheet.getCell(`I${row}`).alignment = { horizontal: 'center' }
 
     row++
 
-    worksheet.mergeCells(`I${row}:L${row}`)
+    worksheet.mergeCells(`I${row}:M${row}`)
     worksheet.getCell(`I${row}`).value = '(Authorized Signature and Company Stamp)'
     worksheet.getCell(`I${row}`).font = { name: 'Arial', size: 8, color: { argb: 'FF393939' } }
     worksheet.getCell(`I${row}`).alignment = { horizontal: 'center' }
@@ -592,7 +627,7 @@ export class BreakdownExcelBuilder {
     ]
 
     conditions.forEach((text) => {
-      worksheet.mergeCells(`A${row}:L${row}`)
+      worksheet.mergeCells(`A${row}:M${row}`)
       const cell = worksheet.getCell(`A${row}`)
       cell.value = text
       cell.font = { name: 'Arial', size: 8, color: { argb: 'FF666666' } }
@@ -606,16 +641,17 @@ export class BreakdownExcelBuilder {
     const columnWidths = {
       A: 6, // No.
       B: 10, // Image
-      C: 18, // Style/Product
-      D: 16, // Shape
+      C: 8, // QTY.
+      D: 18, // Style/Product
       E: 12, // Type
       F: 24, // Description
-      G: 8, // Qty
+      G: 10, // Qty Stone
       H: 12, // Price/Qty
       I: 10, // Weight
-      J: 12, // Price/Weight
-      K: 14, // Price/Unit
-      L: 14 // Total
+      J: 16, // Net Weight with Gold Loss
+      K: 12, // Price/Weight
+      L: 14, // Price/Unit
+      M: 14 // Total
     }
     Object.keys(columnWidths).forEach((col) => {
       worksheet.getColumn(col).width = columnWidths[col]
@@ -623,15 +659,6 @@ export class BreakdownExcelBuilder {
   }
 
   // === HELPERS ===
-
-  getShape(item) {
-    if (!item.materials) return ''
-    const gems = item.materials.filter((m) => m.type === 'Diamond' || m.type === 'Gem')
-    return gems
-      .map((g) => g.shape || g.typeCode || '')
-      .filter(Boolean)
-      .join(', ')
-  }
 
   formatPrice(price) {
     if (typeof price !== 'number' || isNaN(price)) return '0.00'

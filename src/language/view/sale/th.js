@@ -902,7 +902,9 @@ export const costStock = {
     mold: 'ค่าเเม่พิมพ์',
     laser: 'ค่ายิงเลเซอร์',
     baseWork: 'ค่าเเรงทำแป้น',
-    gemSort: 'ค่าคัดพลอย'
+    gemSort: 'ค่าคัดพลอย',
+    laserHallMark: 'Laser Hall Mark',
+    rhodium: 'Rhodium'
   },
   embedJobs: {
     gem: 'งานฝังพลอย',

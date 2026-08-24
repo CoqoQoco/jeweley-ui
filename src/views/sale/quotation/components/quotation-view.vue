@@ -395,6 +395,7 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { InvoiceExcelBuilder } from '@/services/helper/excel/invoice/invoice-excel-builder.js'
 import { BreakdownExcelBuilder } from '@/services/helper/excel/quotation/breakdown-excel-builder.js'
+import { getBreakdownSetting } from '@/services/helper/breakdown-setting-store.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 import { ceilToInteger, isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
@@ -840,7 +841,7 @@ export default {
         invoiceDate: this.customer.quotationDate,
         filename,
         openInNewTab: false,
-        profitPercent: this.customer.profitPercent || 15
+        profitPercent: this.customer.profitPercent ?? 15
       })
     },
     previewBreakdown() {
@@ -852,7 +853,7 @@ export default {
         filename: `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
         openInNewTab: true,
         targetWindow: win1,
-        profitPercent: this.customer.profitPercent || 15
+        profitPercent: this.customer.profitPercent ?? 15
       })
     },
     onEditStock(item, index) {
@@ -1201,6 +1202,7 @@ export default {
         return
       }
       try {
+        const breakdownSetting = await getBreakdownSetting()
         const builder = new BreakdownExcelBuilder({
           items: this.customer.quotationItems,
           customer: this.customer,
@@ -1208,7 +1210,10 @@ export default {
           invoiceNo: this.customer.invoiceNumber,
           currencyUnit: this.customer.currencyUnit,
           currencyMultiplier: this.customer.currencyMultiplier,
-          profitPercent: this.customer.profitPercent || 15
+          profitPercent: this.customer.profitPercent ?? 15,
+          goldLossPercent: breakdownSetting.goldLossPercent,
+          settingDiamondRate: breakdownSetting.settingDiamondRate,
+          settingStoneRate: breakdownSetting.settingStoneRate
         })
         await builder.downloadExcel()
         success(this.$t('view.sale.quotation.success.exportBreakdownExcel'))

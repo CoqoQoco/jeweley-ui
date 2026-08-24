@@ -908,7 +908,9 @@ export const costStock = {
     mold: 'Mold Fee',
     laser: 'Laser',
     baseWork: 'Base Work',
-    gemSort: 'Gem Sorting'
+    gemSort: 'Gem Sorting',
+    laserHallMark: 'Laser Hall Mark',
+    rhodium: 'Rhodium'
   },
   embedJobs: {
     gem: 'Gem Setting',

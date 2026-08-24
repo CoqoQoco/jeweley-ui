@@ -474,7 +474,9 @@ export default {
         { code: 'WORKER02', name: this.$t('view.sale.costStock.workerJobs.mold') },
         { code: 'WORKER03', name: this.$t('view.sale.costStock.workerJobs.laser') },
         { code: 'WORKER04', name: this.$t('view.sale.costStock.workerJobs.baseWork') },
-        { code: 'WORKER05', name: this.$t('view.sale.costStock.workerJobs.gemSort') }
+        { code: 'WORKER05', name: this.$t('view.sale.costStock.workerJobs.gemSort') },
+        { code: 'WORKER06', name: this.$t('view.sale.costStock.workerJobs.laserHallMark') },
+        { code: 'WORKER07', name: this.$t('view.sale.costStock.workerJobs.rhodium') }
       ]
     },
 

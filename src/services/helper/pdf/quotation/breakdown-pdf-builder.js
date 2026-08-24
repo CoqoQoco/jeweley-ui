@@ -21,7 +21,9 @@ export class BreakdownPdfBuilder {
     this.invoiceNo = invoiceNo
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyMultiplier = Number(currencyMultiplier) || 1
-    this.profitPercent = Number(profitPercent) || 15
+    const hasProfitPercent = profitPercent !== undefined && profitPercent !== null && profitPercent !== ''
+    const parsedProfitPercent = hasProfitPercent ? Number(profitPercent) : NaN
+    this.profitPercent = Number.isFinite(parsedProfitPercent) ? parsedProfitPercent : 15
     this.goldLossPercent = Number(goldLossPercent ?? 12)
     this.settingDiamondRate = Number(settingDiamondRate ?? 15)
     this.settingStoneRate = Number(settingStoneRate ?? 25)
@@ -338,7 +340,7 @@ export class BreakdownPdfBuilder {
       { text: 'Style/Product', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Type', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Description', style: 'summaryLabelColored', alignment: 'center' },
-      { text: 'Qty', style: 'summaryLabelColored', alignment: 'center' },
+      { text: 'Qty Stone', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Price/Qty', style: 'summaryLabelColored', alignment: 'center' },
       { text: 'Weight', style: 'summaryLabelColored', alignment: 'center' },
       {
@@ -398,7 +400,7 @@ export class BreakdownPdfBuilder {
         goldList.length +
         gemList.length +
         etcList.length +
-        (workList.length ? 1 : 0) +
+        workList.length +
         settingRowCount
       let currentRow = 0
       goldList.forEach((gold, idx) => {
@@ -481,25 +483,26 @@ export class BreakdownPdfBuilder {
         currentRow++
       })
 
-      if (workList.length) {
-        const sumWork = workList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0)
-
+      workList.forEach((work, idx) => {
         body.push([
           {},
           {},
           {},
           {},
-          { text: 'Labor', alignment: 'center' },
-          { text: '-', alignment: 'left' },
+          idx === 0 ? { text: 'Labor', alignment: 'center', rowSpan: workList.length } : {},
+          { text: work.nameDescription || '-', alignment: 'left' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: this.formatPrice(sumWork / (this.currencyMultiplier || 1)), alignment: 'right' }
+          {
+            text: this.formatPrice((work.totalPrice || 0) / (this.currencyMultiplier || 1)),
+            alignment: 'right'
+          }
         ])
         currentRow++
-      }
+      })
 
       let diamondTotal = 0
       let stoneTotal = 0
@@ -580,11 +583,18 @@ export class BreakdownPdfBuilder {
           idx === 0 ? { text: 'Etc', alignment: 'center', rowSpan: etcList.length } : {},
           { text: etc.nameDescription || '-', alignment: 'left' },
           { text: etc.qty ? this.formatQty(etc.qty) : '', alignment: 'center' },
-          { text: etc.qtyPrice ? this.formatPrice(etc.qtyPrice) : '', alignment: 'center' },
+          {
+            text: etc.qtyPrice
+              ? this.formatPrice(etc.qtyPrice / (this.currencyMultiplier || 1))
+              : '',
+            alignment: 'center'
+          },
           { text: etc.qtyWeight ? this.formatPrice(etc.qtyWeight) : '', alignment: 'center' },
           { text: '', alignment: 'center' },
           {
-            text: etc.qtyWeightPrice ? this.formatPrice(etc.qtyWeightPrice) : '',
+            text: etc.qtyWeightPrice
+              ? this.formatPrice(etc.qtyWeightPrice / (this.currencyMultiplier || 1))
+              : '',
             alignment: 'center'
           },
           {
