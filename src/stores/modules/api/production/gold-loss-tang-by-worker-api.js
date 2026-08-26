@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
-import { formatISOString } from '@/services/utils/dayjs.js'
+import { formatISOString, formatYearMonth } from '@/services/utils/dayjs.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 
 export const useGoldLossTangByWorkerApiStore = defineStore('goldLossTangByWorkerApi', {
@@ -13,7 +13,8 @@ export const useGoldLossTangByWorkerApiStore = defineStore('goldLossTangByWorker
       return {
         requestDateStart: formatISOString(formValue.requestDateStart),
         requestDateEnd: formatISOString(formValue.requestDateEnd),
-        workerCode: formValue.workerCode || undefined
+        workerCode: formValue.workerCode || undefined,
+        groupByMonth: formValue.groupByMonth || undefined
       }
     },
 
@@ -29,6 +30,7 @@ export const useGoldLossTangByWorkerApiStore = defineStore('goldLossTangByWorker
       } else {
         this.dataSearch = { data: [], total: 0 }
       }
+      return res
     },
 
     async fetchReportExport({ sort = [], formValue = {} } = {}) {
@@ -43,6 +45,7 @@ export const useGoldLossTangByWorkerApiStore = defineStore('goldLossTangByWorker
         const dataExcel = res.data.map((item) => ({
           รหัสช่าง: item.workerCode,
           ชื่อช่าง: item.workerName,
+          ...(formValue.groupByMonth ? { เดือน: formatYearMonth(item.year, item.month) } : {}),
           จำนวนใบ: item.slipCount,
           ทองจ่ายรวม: item.totalIssued,
           ทองคืนรวม: item.totalReturned,

@@ -963,6 +963,16 @@ export const costStock = {
   goldListPlate: 'น้ำหนักแป้น',
   goldListGoldLoss: 'Gold Loss',
   goldListAlloy: 'Alloy',
+  alloyCalculator: {
+    title: 'Calculate Alloy',
+    mainGoldWeight: 'Main Gold Weight (g)',
+    karat: 'Karat',
+    selectKarat: 'Select karat',
+    goldColor: 'Gold Color',
+    colorFallbackNote: '* Gold color not found in this item\'s materials — using YG/WG rate as default (you can still edit the values in the table afterward)',
+    mainGoldNotFound: 'Main gold row not found in the table. Please add/fill the main gold weight before calculating Alloy',
+    karatRequired: 'Please select a karat before confirming'
+  },
   success: {
     save: 'Data saved successfully',
     saveMessage: 'Product price saved',

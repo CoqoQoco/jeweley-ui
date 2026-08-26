@@ -14,6 +14,7 @@ export const useWorkerWagesByPersonApiStore = defineStore('workerWagesByPersonAp
         createStart: formatISOString(formValue.createStart),
         createEnd: formatISOString(formValue.createEnd),
         text: formValue.text || undefined,
+        workerCode: formValue.workerCode || undefined,
         status: formValue.status?.length ? formValue.status : undefined
       }
     },

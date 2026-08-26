@@ -13,6 +13,7 @@ const interfaceForm = {
   createStart: new Date(new Date().setDate(new Date().getDate() - 30)),
   createEnd: new Date(),
   text: null,
+  workerCode: null,
   status: []
 }
 

@@ -29,6 +29,7 @@
         @preview-pdf="onPreviewPDF"
         @cancel="onCancel"
         @open-gold-calculator="onOpenGoldCalculator"
+        @open-alloy-calculator="onOpenAlloyCalculator"
       />
 
     </form>
@@ -38,6 +39,23 @@
       :defaultCurrencyRate="goldCalculatorRate"
       @closeModal="showGoldCalculator = false"
       @select="onGoldCalculatorSelect"
+    />
+
+    <AlloyCalculatorModal
+      :isShow="showAlloyCalculator"
+      :goldWeight="alloyMainGoldWeight"
+      :defaultKarat="alloyDefaultKarat"
+      :goldColorTypeCode="alloyGoldColorTypeCode"
+      :goldColorFallback="alloyGoldColorFallback"
+      :goldLossPercent="breakdownSetting.goldLossPercent"
+      :alloyFactor18K="breakdownSetting.alloyFactor18K"
+      :alloyFactor14K="breakdownSetting.alloyFactor14K"
+      :alloyFactor9K="breakdownSetting.alloyFactor9K"
+      :alloyRateYgWgUsd="breakdownSetting.alloyRateYgWgUsd"
+      :alloyRatePgUsd="breakdownSetting.alloyRatePgUsd"
+      :currencyRate="goldCalculatorRate"
+      @closeModal="showAlloyCalculator = false"
+      @select="onAlloyCalculatorSelect"
     />
 
     <!-- Customer Search Modal -->
@@ -72,11 +90,14 @@ import PlanCostModal from './plan-cost-modal.vue'
 import AppraisalStockInfo from './appraisal-stock-info.vue'
 import AppraisalItemsTable from './appraisal-items-table.vue'
 import GoldCalculatorModal from '@/components/modal/gold-calculator-modal.vue'
+import AlloyCalculatorModal from '@/components/modal/alloy-calculator-modal.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
+import { getBreakdownSetting, BREAKDOWN_SETTING_DEFAULT } from '@/services/helper/breakdown-setting-store.js'
 
 export default {
   name: 'AppraisalFormView',
@@ -87,7 +108,8 @@ export default {
     PlanCostModal,
     AppraisalStockInfo,
     AppraisalItemsTable,
-    GoldCalculatorModal
+    GoldCalculatorModal,
+    AlloyCalculatorModal
   },
 
   props: {
@@ -202,6 +224,14 @@ export default {
       customInfoItems: [],
       showGoldCalculator: false,
       goldCalculatorTargetRow: null,
+
+      showAlloyCalculator: false,
+      alloyCalculatorTargetRow: null,
+      alloyMainGoldWeight: 0,
+      alloyDefaultKarat: '',
+      alloyGoldColorTypeCode: '',
+      alloyGoldColorFallback: false,
+      breakdownSetting: { ...BREAKDOWN_SETTING_DEFAULT },
 
       groupOrderRunning: {
         Gold: 1,
@@ -387,21 +417,74 @@ export default {
 
       if (targetRow && pricePerGramThb) {
         targetRow.qtyWeightPrice = pricePerGramThb
-        targetRow.totalPrice = (
-          (Number(targetRow.qty) || 0) * (Number(targetRow.qtyPrice) || 0) +
-          (Number(targetRow.qtyWeight) || 0) * pricePerGramThb
-        ).toFixed(2)
+        targetRow.totalPrice = this.calcTotalPrice(targetRow)
       }
 
       this.showGoldCalculator = false
       this.goldCalculatorTargetRow = null
     },
 
+    // สูตรเดียวกับ onBlurPrice() ใน appraisal-items-table.vue — ใช้ร่วมกันทุกจุดที่ set ราคาแทนผู้ใช้
+    calcTotalPrice(item) {
+      return (
+        (Number(item.qty) || 0) * (Number(item.qtyPrice) || 0) +
+        (Number(item.qtyWeight) || 0) * (Number(item.qtyWeightPrice) || 0)
+      ).toFixed(2)
+    },
+
+    onOpenAlloyCalculator(rowData) {
+      const excludedDescriptions = ['Alloy', 'Gold Loss', 'น้ำหนักแป้น', 'RINGP']
+      const mainGoldRow = this.tranItems.find(
+        (item) => item.nameGroup === 'Gold' && !excludedDescriptions.includes(item.nameDescription)
+      )
+
+      if (!mainGoldRow || !(Number(mainGoldRow.qtyWeight) > 0)) {
+        warning(this.$t('view.sale.costStock.alloyCalculator.mainGoldNotFound'))
+        return
+      }
+
+      this.alloyMainGoldWeight = Number(mainGoldRow.qtyWeight) || 0
+      this.alloyDefaultKarat = this.parseKaratFromStockNumber()
+      this.alloyGoldColorFallback = false
+      this.alloyGoldColorTypeCode = this.detectGoldColorTypeCode()
+
+      this.alloyCalculatorTargetRow = rowData
+      this.showAlloyCalculator = true
+    },
+
+    parseKaratFromStockNumber() {
+      const stockNumber = this.localStock.stockNumber || this.localStock.stockNumberOrigin || ''
+      const match = /^DK-(\d+K)-/.exec(stockNumber)
+      return match ? match[1] : ''
+    },
+
+    detectGoldColorTypeCode() {
+      const materials = Array.isArray(this.localStock.materials) ? this.localStock.materials : []
+      const goldMaterial = materials.find((m) => m.type === 'Gold' && m.typeCode)
+      if (goldMaterial && goldMaterial.typeCode) {
+        return goldMaterial.typeCode.toUpperCase()
+      }
+      this.alloyGoldColorFallback = true
+      return 'YG'
+    },
+
+    onAlloyCalculatorSelect(data) {
+      const targetRow = this.alloyCalculatorTargetRow
+      if (targetRow) {
+        targetRow.qtyWeight = Number(data.qtyWeight) || 0
+        targetRow.qtyWeightPrice = Number(data.qtyWeightPrice) || 0
+        targetRow.totalPrice = this.calcTotalPrice(targetRow)
+      }
+
+      this.showAlloyCalculator = false
+      this.alloyCalculatorTargetRow = null
+    }
   },
 
   async created() {
     // Load master gold data
     await this.masterStore.fetchGold()
+    this.breakdownSetting = await getBreakdownSetting()
   }
 }
 </script>

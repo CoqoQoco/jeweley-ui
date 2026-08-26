@@ -100,6 +100,7 @@
           icon="bi-send"
           :label="$t('view.ticket.btn.submit')"
           class="ml-2"
+          :disabled="isSubmitting"
           @click="onSubmit"
         />
       </div>
@@ -165,7 +166,8 @@ export default {
       activeTab: 'report',
       form: initForm(),
       topicOptions: [],
-      isShowManual: false
+      isShowManual: false,
+      isSubmitting: false
     }
   },
 
@@ -219,26 +221,32 @@ export default {
     },
 
     onSubmit() {
+      if (this.isSubmitting) return
       if (!this.validate()) return
 
       confirmThenSubmit(
         this.form.title,
         this.$t('view.ticket.confirm.submit'),
         async () => {
-          const formData = new FormData()
-          formData.append('type', this.form.type)
-          formData.append('topicRoute', this.form.topicRoute)
-          formData.append('topicName', this.form.topicName || '')
-          formData.append('title', this.form.title)
-          formData.append('description', this.form.description)
-          this.form.images.forEach((file) => {
-            formData.append('images', file)
-          })
+          this.isSubmitting = true
+          try {
+            const formData = new FormData()
+            formData.append('type', this.form.type)
+            formData.append('topicRoute', this.form.topicRoute)
+            formData.append('topicName', this.form.topicName || '')
+            formData.append('title', this.form.title)
+            formData.append('description', this.form.description)
+            this.form.images.forEach((file) => {
+              formData.append('images', file)
+            })
 
-          const res = await this.ticketStore.createTicket(formData)
-          if (res) {
-            success(this.$t('view.ticket.success.submit'))
-            this.form = initForm()
+            const res = await this.ticketStore.createTicket(formData)
+            if (res) {
+              success(this.$t('view.ticket.success.submit'))
+              this.form = initForm()
+            }
+          } finally {
+            this.isSubmitting = false
           }
         }
       )

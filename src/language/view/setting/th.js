@@ -31,6 +31,12 @@ export default {
     goldLossPercent: 'Gold Loss (%)',
     settingDiamondRate: 'ค่าฝังเพชร (บาท/เม็ด)',
     settingStoneRate: 'ค่าฝังพลอย (บาท/เม็ด)',
+    alloySectionTitle: 'ค่าพารามิเตอร์คำนวณ Alloy',
+    alloyFactor18K: 'ตัวคูณ Alloy 18K',
+    alloyFactor14K: 'ตัวคูณ Alloy 14K',
+    alloyFactor9K: 'ตัวคูณ Alloy 9K',
+    alloyRateYgWgUsd: 'ค่า Alloy สีทอง YG/WG (USD/กรัม)',
+    alloyRatePgUsd: 'ค่า Alloy สีทอง PG (USD/กรัม)',
     validation: {
       invalidNumber: 'กรุณากรอกตัวเลขที่ไม่ติดลบ'
     },

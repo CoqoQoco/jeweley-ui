@@ -568,6 +568,7 @@ export default {
 
   goldLossTang: {
     title: 'Gold Loss Tang (Decorate)',
+    monthlySummaryTitle: 'Gold Loss Monthly Summary by Worker',
     searchTitle: 'Search Gold Loss Tang Jobs',
     searchDesc: 'Select worker and date range to search and create Gold Loss Tang slip',
     fieldWorker: 'Worker (Decorate)',
@@ -857,8 +858,10 @@ export default {
     searchDesc: 'Search worker wages summary by date range and other conditions',
     dateRange: 'Date Range',
     searchText: 'Search Worker',
+    worker: 'Worker',
     placeholder: {
-      searchText: 'Worker Code/Name'
+      searchText: 'Worker Code/Name',
+      worker: 'Select worker'
     },
     status: 'Department/Status',
     colWorkerCode: 'Worker Code',
@@ -932,10 +935,12 @@ export default {
     dateRange: 'Date Range',
     workerCode: 'Worker Code/Search',
     placeholder: {
-      workerCode: 'Worker Code/Name'
+      workerCode: 'Select worker'
     },
+    groupByMonth: 'Group by Month',
     colWorkerCode: 'Worker Code',
     colWorkerName: 'Worker Name',
+    colMonth: 'Month',
     colSlipCount: 'Slip Count',
     colTotalIssued: 'Total Issued',
     colTotalReturned: 'Total Returned',

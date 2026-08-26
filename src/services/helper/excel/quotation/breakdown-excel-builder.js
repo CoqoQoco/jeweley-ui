@@ -347,8 +347,18 @@ export class BreakdownExcelBuilder {
       const itemQty = item.qty || 1
       const itemStartRow = row
 
+      // เก็บ price/unit ที่ "ปัดแล้ว" (ค่าเดียวกับที่พิมพ์ในคอลัมน์ L) ไว้ใช้รวม Sub Total
+      // เพื่อไม่ให้คำนวณจาก t.totalPrice ซ้ำอีกครั้งแบบไม่ปัด
+      const goldPriceUnits = []
+      const gemPriceUnits = []
+      const workPriceUnits = []
+      const embedPriceUnits = []
+      const etcPriceUnits = []
+
       goldList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true, isGold: true })
+        goldPriceUnits.push(
+          this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true, isGold: true })
+        )
         row++
       })
       if (goldList.length) {
@@ -357,7 +367,9 @@ export class BreakdownExcelBuilder {
 
       const gemStartRow = row
       gemList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true })
+        gemPriceUnits.push(
+          this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true })
+        )
         row++
       })
       if (gemList.length) {
@@ -366,7 +378,7 @@ export class BreakdownExcelBuilder {
 
       const laborStartRow = row
       workList.forEach((t) => {
-        this.writeLaborRow(worksheet, row, t, { multiplier, itemQty })
+        workPriceUnits.push(this.writeLaborRow(worksheet, row, t, { multiplier, itemQty }))
         row++
       })
       if (workList.length) {
@@ -375,7 +387,9 @@ export class BreakdownExcelBuilder {
 
       const embedStartRow = row
       embedList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: false })
+        embedPriceUnits.push(
+          this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: false })
+        )
         row++
       })
       if (embedList.length) {
@@ -384,7 +398,9 @@ export class BreakdownExcelBuilder {
 
       const etcStartRow = row
       etcList.forEach((t) => {
-        this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true })
+        etcPriceUnits.push(
+          this.writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight: true })
+        )
         row++
       })
       if (etcList.length) {
@@ -413,23 +429,14 @@ export class BreakdownExcelBuilder {
         }
       }
 
-      const totalGold = goldList.reduce(
-        (sum, t) => sum + (Number(t.totalPrice || 0) / multiplier) * itemQty,
-        0
-      )
-      const totalGem = gemList.reduce(
-        (sum, t) => sum + (Number(t.totalPrice || 0) / multiplier) * itemQty,
-        0
-      )
-      const totalEtc = etcList.reduce(
-        (sum, t) => sum + (Number(t.totalPrice || 0) / multiplier) * itemQty,
-        0
-      )
-      const totalWork = workList.length
-        ? (workList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) / multiplier) * itemQty
+      const totalGold = goldPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
+      const totalGem = gemPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
+      const totalEtc = etcPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
+      const totalWork = workPriceUnits.length
+        ? workPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
         : 0
-      const totalEmbed = embedList.length
-        ? (embedList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) / multiplier) * itemQty
+      const totalEmbed = embedPriceUnits.length
+        ? embedPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
         : 0
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
@@ -470,9 +477,11 @@ export class BreakdownExcelBuilder {
       this.setBlankCell(worksheet, `K${row}`)
     }
 
-    const priceUnit = (Number(t.totalPrice) || 0) / (multiplier || 1)
+    const priceUnitRaw = (Number(t.totalPrice) || 0) / (multiplier || 1)
+    const priceUnit = this.roundPrice2(priceUnitRaw)
     this.setAlwaysNumber(worksheet, `L${row}`, priceUnit)
     this.setAlwaysNumber(worksheet, `M${row}`, priceUnit * (itemQty || 1))
+    return priceUnit
   }
 
   writeLaborRow(worksheet, row, t, { multiplier, itemQty }) {
@@ -488,9 +497,11 @@ export class BreakdownExcelBuilder {
     this.setBlankCell(worksheet, `J${row}`)
     this.setBlankCell(worksheet, `K${row}`)
 
-    const priceUnit = (Number(t.totalPrice) || 0) / (multiplier || 1)
+    const priceUnitRaw = (Number(t.totalPrice) || 0) / (multiplier || 1)
+    const priceUnit = this.roundPrice2(priceUnitRaw)
     this.setAlwaysNumber(worksheet, `L${row}`, priceUnit)
     this.setAlwaysNumber(worksheet, `M${row}`, priceUnit * (itemQty || 1))
+    return priceUnit
   }
 
   setConditionalNumber(worksheet, ref, rawValue, divisor) {
@@ -666,6 +677,14 @@ export class BreakdownExcelBuilder {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })
+  }
+
+  // ปัดเป็นเลขจริง 2 ตำแหน่ง (ไม่ใช่แค่ numFmt แสดงผล) — ใช้ค่านี้ทั้งคอลัมน์ Price/Unit, Total
+  // และตอนรวม Sub Total เพื่อไม่ให้ยอดรวมเพี้ยนจากทศนิยมเต็มที่ไม่ได้ปัด
+  roundPrice2(num) {
+    const n = Number(num)
+    if (!Number.isFinite(n)) return 0
+    return Math.round((n + Number.EPSILON) * 100) / 100
   }
 
   // === DOWNLOAD ===

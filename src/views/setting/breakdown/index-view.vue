@@ -27,6 +27,35 @@
       </div>
     </SectionCardGeneric>
 
+    <SectionCardGeneric
+      class="mt-4"
+      :title="$t('view.setting.breakdown.alloySectionTitle')"
+      icon="bi-droplet-half"
+      headerStyle="filled"
+    >
+      <div class="form-row two-col">
+        <FormFieldGeneric :label="$t('view.setting.breakdown.alloyFactor18K')" :required="true">
+          <InputTextGeneric type="number" step="0.0001" :min="0" v-model.number="form.alloyFactor18K" />
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.setting.breakdown.alloyFactor14K')" :required="true">
+          <InputTextGeneric type="number" step="0.0001" :min="0" v-model.number="form.alloyFactor14K" />
+        </FormFieldGeneric>
+      </div>
+      <div class="form-row two-col">
+        <FormFieldGeneric :label="$t('view.setting.breakdown.alloyFactor9K')" :required="true">
+          <InputTextGeneric type="number" step="0.0001" :min="0" v-model.number="form.alloyFactor9K" />
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.setting.breakdown.alloyRateYgWgUsd')" :required="true">
+          <InputTextGeneric type="number" step="0.01" :min="0" v-model.number="form.alloyRateYgWgUsd" />
+        </FormFieldGeneric>
+      </div>
+      <div class="form-row">
+        <FormFieldGeneric :label="$t('view.setting.breakdown.alloyRatePgUsd')" :required="true">
+          <InputTextGeneric type="number" step="0.01" :min="0" v-model.number="form.alloyRatePgUsd" />
+        </FormFieldGeneric>
+      </div>
+    </SectionCardGeneric>
+
     <div class="action-bar">
       <div></div>
       <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" @click="onSave" />
@@ -71,7 +100,16 @@ export default {
 
   methods: {
     validateForm() {
-      const fields = ['goldLossPercent', 'settingDiamondRate', 'settingStoneRate']
+      const fields = [
+        'goldLossPercent',
+        'settingDiamondRate',
+        'settingStoneRate',
+        'alloyFactor18K',
+        'alloyFactor14K',
+        'alloyFactor9K',
+        'alloyRateYgWgUsd',
+        'alloyRatePgUsd'
+      ]
       for (const key of fields) {
         const val = Number(this.form[key])
         if (this.form[key] === '' || this.form[key] === null || isNaN(val) || val < 0) {
@@ -88,7 +126,12 @@ export default {
       const payload = {
         goldLossPercent: Number(this.form.goldLossPercent),
         settingDiamondRate: Number(this.form.settingDiamondRate),
-        settingStoneRate: Number(this.form.settingStoneRate)
+        settingStoneRate: Number(this.form.settingStoneRate),
+        alloyFactor18K: Number(this.form.alloyFactor18K),
+        alloyFactor14K: Number(this.form.alloyFactor14K),
+        alloyFactor9K: Number(this.form.alloyFactor9K),
+        alloyRateYgWgUsd: Number(this.form.alloyRateYgWgUsd),
+        alloyRatePgUsd: Number(this.form.alloyRatePgUsd)
       }
       await saveBreakdownSetting(payload)
       success(this.$t('view.setting.breakdown.saveSuccess'))

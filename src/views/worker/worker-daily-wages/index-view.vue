@@ -16,6 +16,7 @@
       <dataTableView
         :items="dataWages.items || []"
         :wageTypeFilter="form.wageTypeFilter"
+        @filtered-items="onFilteredItemsChange"
       />
       <goldLossSlipModal
         :isShow="isShowSlipModal"
@@ -36,7 +37,6 @@ import { formatISOString } from '@/services/utils/dayjs'
 import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 
-import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
 import { WorkerWagesSuccessPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-success-pdf-builder.js'
 import { WorkerWagesTrackingPdfBuilder } from '@/services/helper/pdf/worker-wages/worker-wages-tracking-pdf-builder.js'
 
@@ -72,6 +72,7 @@ export default {
         items: []
       },
       form: { ...interfaceForm },
+      visibleWageItems: [],
       isShowSlipModal: false,
       notFound: false,
       notFoundMessage: ''
@@ -80,13 +81,7 @@ export default {
 
   computed: {
     goldLossUnslippedItems() {
-      const items = this.dataWages.items || []
-      return items
-        .filter((r) => r.isGoldLoss && !r.workerGoldLossSlipId)
-        .map((row) => {
-          const m = calculateGoldLossMetrics(row.goldWeightSend, row.goldWeightCheck, row.lossPercent, row.goldLossPrice)
-          return { ...row, weightLossAllowed: m.weightLossAllowed, weightLossActual: m.weightLossActual, totalWages: m.moneyDiff }
-        })
+      return this.visibleWageItems.filter((r) => r.isGoldLoss && !r.workerGoldLossSlipId)
     }
   },
 
@@ -112,23 +107,25 @@ export default {
       }
     },
 
+    onFilteredItemsChange(items) {
+      this.visibleWageItems = items
+    },
+
     onPrintSuccess() {
       if (this.form.wageTypeFilter === 'goldLoss') {
         this.isShowSlipModal = true
         return
       }
-      const items = (this.dataWages?.items || []).filter((r) => !r.isGoldLoss)
-      new WorkerWagesSuccessPdfBuilder(this.data, this.form, items, this.form.wageTypeFilter)
+      new WorkerWagesSuccessPdfBuilder(this.data, this.form, this.visibleWageItems, this.form.wageTypeFilter)
         .generatePDF().open()
     },
 
     onPrintTracking() {
       if (this.form.wageTypeFilter === 'goldLoss') {
-        warning('ในโหมด Gold Loss กรุณาใช้ปุ่ม \'พิมพ์สลิปสถานะสำเร็จ\'', 'แจ้งเตือน')
+        warning(this.$t('view.worker.workerDailyWages.warningGoldLossPrintMode'))
         return
       }
-      const items = (this.dataWages?.items || []).filter((r) => !r.isGoldLoss)
-      new WorkerWagesTrackingPdfBuilder(this.data, this.form, items, this.form.wageTypeFilter)
+      new WorkerWagesTrackingPdfBuilder(this.data, this.form, this.visibleWageItems, this.form.wageTypeFilter)
         .generatePDF().open()
     },
 

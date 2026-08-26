@@ -27,6 +27,19 @@
       </div>
 
       <div>
+        <span class="title-text">{{ $t('view.production.workerWagesByPerson.worker') }}</span>
+        <DropdownGeneric
+          v-model="form.workerCode"
+          :options="workers"
+          optionLabel="label"
+          optionValue="code"
+          :filter="true"
+          :showClear="true"
+          :placeholder="$t('view.production.workerWagesByPerson.placeholder.worker')"
+        />
+      </div>
+
+      <div>
         <span class="title-text">{{ $t('view.production.workerWagesByPerson.status') }}</span>
         <MultiSelectGeneric
           v-model="form.status"
@@ -55,6 +68,7 @@
 </template>
 
 <script>
+import api from '@/axios/axios-helper.js'
 import { useWorkerWagesByPersonApiStore } from '@/stores/modules/api/production/worker-wages-by-person-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -63,6 +77,7 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 export default {
   name: 'WorkerWagesByPersonReportSearchView',
@@ -72,7 +87,8 @@ export default {
     ButtonGeneric,
     InputTextGeneric,
     DateRangeGeneric,
-    MultiSelectGeneric
+    MultiSelectGeneric,
+    DropdownGeneric
   },
 
   setup() {
@@ -101,7 +117,8 @@ export default {
 
   data() {
     return {
-      form: { ...this.modelForm }
+      form: { ...this.modelForm },
+      workers: []
     }
   },
 
@@ -114,11 +131,27 @@ export default {
     },
     onExport() {
       this.$emit('export', this.form)
+    },
+    async loadWorkers() {
+      const res = await api.jewelry.post('Worker/Search', {
+        take: 0,
+        skip: 0,
+        sort: [],
+        search: { active: 1 }
+      })
+      if (res && res.data) {
+        this.workers = res.data.map((w) => {
+          const code = w.code || w.workerCode || ''
+          const name = w.nameTh || w.name || w.workerName || ''
+          return { code, name, label: `${code} - ${name}` }
+        })
+      }
     }
   },
 
   created() {
     this.masterApiStore.fetchPlanStatus()
+    this.loadWorkers()
   }
 }
 </script>

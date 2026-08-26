@@ -3,7 +3,6 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-import { resolve, dirname } from 'node:path'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 
 function removeConsolePlugin(removeConsole = true) {
@@ -28,7 +27,7 @@ export default defineConfig(() => {
     plugins: [
       vue(),
       VueI18nPlugin({
-        include: resolve(dirname(fileURLToPath(import.meta.url)), './path/to/src/locales/**')
+        runtimeOnly: false
       }),
       removeConsolePlugin(removeConsole)
     ],

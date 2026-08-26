@@ -16,8 +16,13 @@
 
           <div>
             <span class="title-text">{{ $t('view.production.goldLossTang.fieldWorker') }}</span>
-            <InputTextGeneric
+            <DropdownGeneric
               :modelValue="workerCode"
+              :options="workers"
+              optionLabel="label"
+              optionValue="code"
+              :filter="true"
+              :showClear="true"
               :placeholder="$t('view.production.goldLossTang.placeholderWorker')"
               @update:modelValue="$emit('update:workerCode', $event)"
             />
@@ -91,11 +96,13 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+import api from '@/axios/axios-helper.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 const CalendarGeneric = defineAsyncComponent(() => import('@/components/prime-vue/CalendarGeneric.vue'))
+const DropdownGeneric = defineAsyncComponent(() => import('@/components/prime-vue/DropdownGeneric.vue'))
 
 export default {
   name: 'GoldLossTangListSearchView',
@@ -104,7 +111,8 @@ export default {
     pageTitle,
     InputTextGeneric,
     ButtonGeneric,
-    CalendarGeneric
+    CalendarGeneric,
+    DropdownGeneric
   },
 
   props: {
@@ -128,13 +136,37 @@ export default {
 
   emits: ['update:documentNo', 'update:workerCode', 'update:dateStart', 'update:dateEnd', 'search', 'clear', 'export', 'create'],
 
+  data() {
+    return {
+      workers: []
+    }
+  },
+
   methods: {
     onSearch() {
       this.$emit('search')
     },
     onClear() {
       this.$emit('clear')
+    },
+    async loadWorkers() {
+      const res = await api.jewelry.post('Worker/Search', {
+        take: 0,
+        skip: 0,
+        search: { type: 50, active: 1 }
+      })
+      if (res && res.data) {
+        this.workers = res.data.map((w) => {
+          const code = w.code || w.workerCode || ''
+          const name = w.nameTh || w.name || w.workerName || ''
+          return { code, name, label: `${code} - ${name}` }
+        })
+      }
     }
+  },
+
+  created() {
+    this.loadWorkers()
   }
 }
 </script>

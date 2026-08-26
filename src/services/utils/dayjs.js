@@ -33,11 +33,19 @@ const formatOnlyTime = (date) => {
   return dayjs(date).format('HH:mm')
 }
 
+// รับ year/month แบบเลขจริง (ไม่ผ่าน Date/dayjs) เพื่อไม่ให้โดนแปลง timezone ซ้ำ
+// ใช้กับ response ที่ backend แยกส่ง year/month มาเป็น int ต่างหาก (ไม่ใช่ ISO date)
+const formatYearMonth = (year, month) => {
+  if (!year || !month) return '-'
+  return `${String(month).padStart(2, '0')}/${year}`
+}
+
 export {
   formatDate,
   formatDateTime,
   formatISOString,
   formatDateShortYear,
   formatExcelReport,
-  formatOnlyTime
+  formatOnlyTime,
+  formatYearMonth
 }

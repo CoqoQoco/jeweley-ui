@@ -18,6 +18,7 @@
       @view="onView"
       @edit="onEdit"
     />
+    <monthly-summary-view :search="monthlySummarySearch" />
     <detail-modal-view
       :isShow="isShowDetail"
       :slipId="detailSlipId"
@@ -37,6 +38,7 @@ import { GoldLossTangPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-los
 
 import listSearchView from './components/search-view.vue'
 import listDataTableView from './components/data-table-view.vue'
+import monthlySummaryView from './components/monthly-summary-view.vue'
 import detailModalView from './modal/detail-view.vue'
 
 export default {
@@ -45,6 +47,7 @@ export default {
   components: {
     listSearchView,
     listDataTableView,
+    monthlySummaryView,
     detailModalView
   },
 
@@ -58,7 +61,12 @@ export default {
       },
       slipList: [],
       isShowDetail: false,
-      detailSlipId: null
+      detailSlipId: null,
+      monthlySummarySearch: {
+        workerCode: '',
+        dateStart: null,
+        dateEnd: null
+      }
     }
   },
 
@@ -76,6 +84,11 @@ export default {
         requestDateEnd: this.form.dateEnd ? formatISOString(this.form.dateEnd) : undefined
       })
       this.slipList = Array.isArray(res) ? res : res?.data || []
+      this.monthlySummarySearch = {
+        workerCode: this.form.workerCode,
+        dateStart: this.form.dateStart,
+        dateEnd: this.form.dateEnd
+      }
     },
 
     onClear() {

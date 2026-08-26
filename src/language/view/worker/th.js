@@ -54,7 +54,8 @@ export default {
     footerTotal: 'จำนวน {count} รายการ',
     slipLabel: 'ลง slip {docNo}',
     filterGoldTypeLabel: 'ประเภททอง',
-    filterGoldTypePlaceholder: 'ทั้งหมด'
+    filterGoldTypePlaceholder: 'ทั้งหมด',
+    warningGoldLossPrintMode: 'ในโหมด Gold Loss กรุณาใช้ปุ่ม "พิมพ์สลิปสถานะสำเร็จ"'
   },
   goldLossSlipList: {
     searchTitle: 'ประวัติ Gold Loss Slip',

@@ -568,6 +568,7 @@ export default {
 
   goldLossTang: {
     title: 'Gold Loss ช่างแต่ง',
+    monthlySummaryTitle: 'สรุป Gold Loss รายเดือนต่อคน',
     searchTitle: 'ค้นหางาน Gold Loss ช่างแต่ง',
     searchDesc: 'เลือกช่างแต่งและช่วงเวลา เพื่อค้นหาและสร้างใบงาน Gold Loss ช่างแต่ง',
     fieldWorker: 'ช่าง (ช่างแต่ง)',
@@ -857,8 +858,10 @@ export default {
     searchDesc: 'ค้นหาสรุปค่าแรงช่างต่อคนตามช่วงวันที่และเงื่อนไขอื่นๆ',
     dateRange: 'ช่วงวันที่',
     searchText: 'ค้นหาช่าง',
+    worker: 'ช่าง',
     placeholder: {
-      searchText: 'รหัส/ชื่อช่าง'
+      searchText: 'รหัส/ชื่อช่าง',
+      worker: 'เลือกช่าง'
     },
     status: 'แผนก/สถานะ',
     colWorkerCode: 'รหัสช่าง',
@@ -932,10 +935,12 @@ export default {
     dateRange: 'ช่วงวันที่',
     workerCode: 'รหัส/ค้นหาช่าง',
     placeholder: {
-      workerCode: 'รหัส/ชื่อช่าง'
+      workerCode: 'เลือกช่าง'
     },
+    groupByMonth: 'แยกรายเดือน',
     colWorkerCode: 'รหัสช่าง',
     colWorkerName: 'ชื่อช่าง',
+    colMonth: 'เดือน',
     colSlipCount: 'จำนวนใบ',
     colTotalIssued: 'ทองจ่ายรวม',
     colTotalReturned: 'ทองคืนรวม',

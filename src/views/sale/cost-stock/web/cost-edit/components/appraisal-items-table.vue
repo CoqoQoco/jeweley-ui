@@ -431,7 +431,8 @@ export default {
     'save-as-origin',
     'preview-pdf',
     'cancel',
-    'open-gold-calculator'
+    'open-gold-calculator',
+    'open-alloy-calculator'
   ],
 
   setup() {
@@ -684,6 +685,9 @@ export default {
         }
         if (rowData.nameGroup === 'Gem' && selected.price) {
           rowData.qtyWeightPrice = selected.price
+        }
+        if (rowData.nameGroup === 'Gold' && selected.code === 'Alloy') {
+          this.$emit('open-alloy-calculator', rowData)
         }
       }
     }

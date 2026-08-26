@@ -20,11 +20,23 @@
 
       <div>
         <span class="title-text">{{ $t('view.production.goldLossTangByWorker.workerCode') }}</span>
-        <InputTextGeneric
-          v-model.trim="form.workerCode"
+        <DropdownGeneric
+          v-model="form.workerCode"
+          :options="workers"
+          optionLabel="label"
+          optionValue="code"
+          :filter="true"
+          :showClear="true"
           :placeholder="$t('view.production.goldLossTangByWorker.placeholder.workerCode')"
         />
       </div>
+    </template>
+
+    <template #actions-left>
+      <CheckboxGeneric
+        v-model="form.groupByMonth"
+        :label="$t('view.production.goldLossTangByWorker.groupByMonth')"
+      />
     </template>
 
     <template #actions-right>
@@ -43,12 +55,14 @@
 </template>
 
 <script>
+import api from '@/axios/axios-helper.js'
 import { useGoldLossTangByWorkerApiStore } from '@/stores/modules/api/production/gold-loss-tang-by-worker-api.js'
 
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
-import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 export default {
   name: 'GoldLossTangByWorkerReportSearchView',
@@ -56,8 +70,9 @@ export default {
   components: {
     SearchBarGeneric,
     ButtonGeneric,
-    InputTextGeneric,
-    DateRangeGeneric
+    DateRangeGeneric,
+    DropdownGeneric,
+    CheckboxGeneric
   },
 
   setup() {
@@ -85,7 +100,8 @@ export default {
 
   data() {
     return {
-      form: { ...this.modelForm }
+      form: { ...this.modelForm },
+      workers: []
     }
   },
 
@@ -98,7 +114,25 @@ export default {
     },
     onExport() {
       this.$emit('export', this.form)
+    },
+    async loadWorkers() {
+      const res = await api.jewelry.post('Worker/Search', {
+        take: 0,
+        skip: 0,
+        search: { type: 50, active: 1 }
+      })
+      if (res && res.data) {
+        this.workers = res.data.map((w) => {
+          const code = w.code || w.workerCode || ''
+          const name = w.nameTh || w.name || w.workerName || ''
+          return { code, name, label: `${code} - ${name}` }
+        })
+      }
     }
+  },
+
+  created() {
+    this.loadWorkers()
   }
 }
 </script>

@@ -31,6 +31,12 @@ export default {
     goldLossPercent: 'Gold Loss (%)',
     settingDiamondRate: 'Diamond Setting Rate (THB/pcs)',
     settingStoneRate: 'Stone Setting Rate (THB/pcs)',
+    alloySectionTitle: 'Alloy Calculation Parameters',
+    alloyFactor18K: 'Alloy Factor 18K',
+    alloyFactor14K: 'Alloy Factor 14K',
+    alloyFactor9K: 'Alloy Factor 9K',
+    alloyRateYgWgUsd: 'Alloy Rate YG/WG (USD/g)',
+    alloyRatePgUsd: 'Alloy Rate PG (USD/g)',
     validation: {
       invalidNumber: 'Please enter a non-negative number'
     },

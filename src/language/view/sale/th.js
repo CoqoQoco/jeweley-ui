@@ -957,6 +957,16 @@ export const costStock = {
   goldListPlate: 'น้ำหนักแป้น',
   goldListGoldLoss: 'Gold Loss',
   goldListAlloy: 'Alloy',
+  alloyCalculator: {
+    title: 'คำนวณ Alloy',
+    mainGoldWeight: 'น้ำหนักทองหลัก (กรัม)',
+    karat: 'กะรัต',
+    selectKarat: 'เลือกกะรัต',
+    goldColor: 'สีทอง',
+    colorFallbackNote: '* ไม่พบข้อมูลสีทองจากวัตถุดิบสินค้านี้ ใช้อัตรา YG/WG เป็นค่าเริ่มต้น (แก้ไขค่าที่ได้ในตารางได้ภายหลัง)',
+    mainGoldNotFound: 'ไม่พบรายการทองหลักในตาราง กรุณาเพิ่ม/กรอกน้ำหนักทองหลักก่อนคำนวณ Alloy',
+    karatRequired: 'กรุณาเลือกกะรัตก่อนยืนยัน'
+  },
   success: {
     save: 'บันทึกข้อมูลสำเร็จ',
     saveMessage: 'บันทึกราคาสินค้าเรียบร้อย',

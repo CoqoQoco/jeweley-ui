@@ -12,7 +12,8 @@ import dataTableView from './components/data-table-view.vue'
 const interfaceForm = {
   requestDateStart: new Date(new Date().setDate(new Date().getDate() - 30)),
   requestDateEnd: new Date(),
-  workerCode: null
+  workerCode: null,
+  groupByMonth: false
 }
 
 export default {

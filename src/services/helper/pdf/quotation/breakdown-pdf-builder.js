@@ -403,13 +403,23 @@ export class BreakdownPdfBuilder {
         workList.length +
         settingRowCount
       let currentRow = 0
+      // เก็บ price/unit ที่ "ปัดแล้ว" (ค่าเดียวกับที่พิมพ์ในแต่ละแถว) ไว้ใช้รวมยอด Sub Total
+      // เพื่อไม่ให้คำนวณซ้ำ 2 ที่ (คำนวณครั้งเดียว ใช้ร่วมกันทั้ง render แถวและรวมยอด)
+      const goldPriceUnits = []
+      const gemPriceUnits = []
+      const workPriceUnits = []
+      const embedPriceUnits = []
+      const etcPriceUnits = []
+
       goldList.forEach((gold, idx) => {
         const qtyWeight = Number(gold.qtyWeight) || 0
         const goldLossWeight = qtyWeight * (1 + this.goldLossPercent / 100)
-        const priceUnit =
+        const priceUnitRaw =
           ((Number(gold.qty) || 0) * (Number(gold.qtyPrice) || 0) +
             goldLossWeight * (Number(gold.qtyWeightPrice) || 0)) /
           (this.currencyMultiplier || 1)
+        const priceUnit = this.roundPrice2(priceUnitRaw)
+        goldPriceUnits.push(priceUnit)
         body.push([
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
           currentRow === 0
@@ -451,6 +461,9 @@ export class BreakdownPdfBuilder {
       })
 
       gemList.forEach((gem, idx) => {
+        const priceUnitRaw = (gem.totalPrice || 0) / (this.currencyMultiplier || 1)
+        const priceUnit = this.roundPrice2(priceUnitRaw)
+        gemPriceUnits.push(priceUnit)
         body.push([
           {},
           {},
@@ -476,7 +489,7 @@ export class BreakdownPdfBuilder {
             alignment: 'center'
           },
           {
-            text: this.formatPrice((gem.totalPrice || 0) / (this.currencyMultiplier || 1)),
+            text: this.formatPrice(priceUnit),
             alignment: 'right'
           }
         ])
@@ -484,6 +497,9 @@ export class BreakdownPdfBuilder {
       })
 
       workList.forEach((work, idx) => {
+        const priceUnitRaw = (work.totalPrice || 0) / (this.currencyMultiplier || 1)
+        const priceUnit = this.roundPrice2(priceUnitRaw)
+        workPriceUnits.push(priceUnit)
         body.push([
           {},
           {},
@@ -497,20 +513,22 @@ export class BreakdownPdfBuilder {
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           {
-            text: this.formatPrice((work.totalPrice || 0) / (this.currencyMultiplier || 1)),
+            text: this.formatPrice(priceUnit),
             alignment: 'right'
           }
         ])
         currentRow++
       })
 
-      let diamondTotal = 0
-      let stoneTotal = 0
+      let diamondPriceUnit = 0
+      let stonePriceUnit = 0
       if (useNewSettingRows) {
         const diamondPriceQty = this.settingDiamondRate / (this.currencyMultiplier || 1)
-        diamondTotal = (diamondCount * this.settingDiamondRate) / (this.currencyMultiplier || 1)
+        const diamondTotalRaw = (diamondCount * this.settingDiamondRate) / (this.currencyMultiplier || 1)
+        diamondPriceUnit = this.roundPrice2(diamondTotalRaw)
         const stonePriceQty = this.settingStoneRate / (this.currencyMultiplier || 1)
-        stoneTotal = (stoneCount * this.settingStoneRate) / (this.currencyMultiplier || 1)
+        const stoneTotalRaw = (stoneCount * this.settingStoneRate) / (this.currencyMultiplier || 1)
+        stonePriceUnit = this.roundPrice2(stoneTotalRaw)
 
         if (diamondCount > 0) {
           body.push([
@@ -525,7 +543,7 @@ export class BreakdownPdfBuilder {
             { text: '', alignment: 'center' },
             { text: '', alignment: 'center' },
             { text: '', alignment: 'center' },
-            { text: this.formatPrice(diamondTotal), alignment: 'right' }
+            { text: this.formatPrice(diamondPriceUnit), alignment: 'right' }
           ])
           currentRow++
         }
@@ -542,12 +560,15 @@ export class BreakdownPdfBuilder {
             { text: '', alignment: 'center' },
             { text: '', alignment: 'center' },
             { text: '', alignment: 'center' },
-            { text: this.formatPrice(stoneTotal), alignment: 'right' }
+            { text: this.formatPrice(stonePriceUnit), alignment: 'right' }
           ])
           currentRow++
         }
       } else {
         embedList.forEach((embed, idx) => {
+          const priceUnitRaw = (embed.totalPrice || 0) / (this.currencyMultiplier || 1)
+          const priceUnit = this.roundPrice2(priceUnitRaw)
+          embedPriceUnits.push(priceUnit)
           body.push([
             {},
             {},
@@ -566,7 +587,7 @@ export class BreakdownPdfBuilder {
             { text: '', alignment: 'center' },
             { text: '', alignment: 'center' },
             {
-              text: this.formatPrice((embed.totalPrice || 0) / (this.currencyMultiplier || 1)),
+              text: this.formatPrice(priceUnit),
               alignment: 'right'
             }
           ])
@@ -575,6 +596,9 @@ export class BreakdownPdfBuilder {
       }
 
       etcList.forEach((etc, idx) => {
+        const priceUnitRaw = (etc.totalPrice || 0) / (this.currencyMultiplier || 1)
+        const priceUnit = this.roundPrice2(priceUnitRaw)
+        etcPriceUnits.push(priceUnit)
         body.push([
           {},
           {},
@@ -598,44 +622,24 @@ export class BreakdownPdfBuilder {
             alignment: 'center'
           },
           {
-            text: this.formatPrice((etc.totalPrice || 0) / (this.currencyMultiplier || 1)),
+            text: this.formatPrice(priceUnit),
             alignment: 'right'
           }
         ])
         currentRow++
       })
 
-      // รวมราคาทั้งหมดแบบถูกต้อง (แต่ละรายการต้อง / currencyMultiplier * item.qty)
-      const totalGold = goldList.reduce((sum, t) => {
-        const qtyWeight = Number(t.qtyWeight) || 0
-        const goldLossWeight = qtyWeight * (1 + this.goldLossPercent / 100)
-        const priceUnit =
-          ((Number(t.qty) || 0) * (Number(t.qtyPrice) || 0) +
-            goldLossWeight * (Number(t.qtyWeightPrice) || 0)) /
-          (this.currencyMultiplier || 1)
-        return sum + priceUnit * (item.qty || 1)
-      }, 0)
-      const totalGem = gemList.reduce(
-        (sum, t) =>
-          sum + (Number(t.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1),
-        0
-      )
-      const totalEtc = etcList.reduce(
-        (sum, t) =>
-          sum + (Number(t.totalPrice || 0) / (this.currencyMultiplier || 1)) * (item.qty || 1),
-        0
-      )
-      const totalWork = workList.length
-        ? (workList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) /
-            (this.currencyMultiplier || 1)) *
-          (item.qty || 1)
+      // รวมยอดจาก price/unit ที่ "ปัดแล้ว" ตัวเดียวกับที่พิมพ์ในแต่ละแถว (ห้ามคำนวณจาก raw ซ้ำ)
+      const totalGold = goldPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
+      const totalGem = gemPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
+      const totalEtc = etcPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
+      const totalWork = workPriceUnits.length
+        ? workPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
         : 0
       const totalEmbed = useNewSettingRows
-        ? (diamondTotal + stoneTotal) * (item.qty || 1)
-        : embedList.length
-          ? (embedList.reduce((sum, t) => sum + Number(t.totalPrice || 0), 0) /
-              (this.currencyMultiplier || 1)) *
-            (item.qty || 1)
+        ? (diamondPriceUnit + stonePriceUnit) * (item.qty || 1)
+        : embedPriceUnits.length
+          ? embedPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
           : 0
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
@@ -726,7 +730,7 @@ export class BreakdownPdfBuilder {
           margin: [0, 10, 0, 0],
           table: {
             headerRows: 1,
-            widths: [20, 60, 30, 50, 40, '*', 40, 40, 40, 45, 40, 55],
+            widths: [20, 60, 30, 50, 90, '*', 40, 40, 40, 45, 40, 55],
             body
           },
           layout: {
@@ -845,6 +849,14 @@ export class BreakdownPdfBuilder {
     const num = Number(qty)
     if (isNaN(num)) return '0'
     return Math.round(num).toLocaleString('th-TH')
+  }
+
+  // ปัดเป็นเลขจริง 2 ตำแหน่ง (ไม่ใช่ string) — ใช้ค่านี้ทั้งตอน render แถวและตอนรวมยอด
+  // เพื่อให้ยอดรวมตรงกับตัวเลขที่พิมพ์ในแต่ละแถวเป๊ะ
+  roundPrice2(num) {
+    const n = Number(num)
+    if (!Number.isFinite(n)) return 0
+    return Math.round((n + Number.EPSILON) * 100) / 100
   }
 
   roundNoDecimal(num) {

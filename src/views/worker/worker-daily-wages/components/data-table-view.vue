@@ -138,6 +138,8 @@ export default {
     }
   },
 
+  emits: ['filtered-items'],
+
   data() {
     return {
       selectedGoldTypes: []
@@ -150,6 +152,12 @@ export default {
     },
     items() {
       this.selectedGoldTypes = []
+    },
+    filteredItems: {
+      handler(val) {
+        this.$emit('filtered-items', val)
+      },
+      immediate: true
     }
   },
 

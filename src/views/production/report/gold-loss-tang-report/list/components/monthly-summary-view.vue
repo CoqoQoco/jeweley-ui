@@ -1,38 +1,37 @@
 <template>
-  <div class="mt-2">
+  <SectionCardGeneric
+    :title="$t('view.production.goldLossTang.monthlySummaryTitle')"
+    icon="bi-calendar3"
+    accent="main"
+    headerStyle="legend"
+    class="monthly-summary-card"
+  >
     <BaseDataTable
-      :items="goldLossTangByWorkerStore.dataSearch.data"
-      :totalRecords="goldLossTangByWorkerStore.dataSearch.total"
+      :items="rows"
       :columns="columns"
-      :perPage="take"
-      dataKey="workerCode"
-      @page="handlePageChange"
-      @sort="handleSortChange"
+      :paginator="false"
+      dataKey="_rowKey"
+      scrollHeight="400px"
     >
       <template #monthTemplate="{ data }">
         {{ formatMonth(data) }}
       </template>
-
-      <template #footer>
-        <div>{{ $t('view.production.goldLossTangByWorker.totalWorkers', { total: goldLossTangByWorkerStore.dataSearch.total }) }}</div>
-      </template>
     </BaseDataTable>
-  </div>
+  </SectionCardGeneric>
 </template>
 
 <script>
-import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { useGoldLossTangByWorkerApiStore } from '@/stores/modules/api/production/gold-loss-tang-by-worker-api.js'
 import { formatYearMonth } from '@/services/utils/dayjs.js'
 
-import { useGoldLossTangByWorkerApiStore } from '@/stores/modules/api/production/gold-loss-tang-by-worker-api.js'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {
-  name: 'GoldLossTangByWorkerReportDataTableView',
-
-  mixins: [dataTablePaging],
+  name: 'GoldLossTangMonthlySummaryView',
 
   components: {
+    SectionCardGeneric,
     BaseDataTable
   },
 
@@ -42,54 +41,50 @@ export default {
   },
 
   props: {
-    modelForm: {
-      type: Object,
-      default: () => ({})
-    },
-    modelFormExport: {
+    search: {
       type: Object,
       default: () => ({})
     }
   },
 
+  data() {
+    return {
+      rows: []
+    }
+  },
+
   computed: {
     columns() {
-      const cols = [
+      return [
         {
           field: 'workerCode',
           header: this.$t('view.production.goldLossTangByWorker.colWorkerCode'),
-          sortable: true,
+          sortable: false,
           minWidth: '140px'
         },
         {
           field: 'workerName',
           header: this.$t('view.production.goldLossTangByWorker.colWorkerName'),
-          sortable: true,
+          sortable: false,
           minWidth: '180px'
-        }
-      ]
-
-      if (this.modelForm.groupByMonth) {
-        cols.push({
+        },
+        {
           field: 'month',
           header: this.$t('view.production.goldLossTangByWorker.colMonth'),
           sortable: false,
           minWidth: '110px'
-        })
-      }
-
-      cols.push(
+        },
         {
           field: 'slipCount',
           header: this.$t('view.production.goldLossTangByWorker.colSlipCount'),
-          sortable: true,
+          sortable: false,
           minWidth: '110px',
           align: 'right'
         },
         {
           field: 'totalIssued',
           header: this.$t('view.production.goldLossTangByWorker.colTotalIssued'),
-          sortable: true,
+          sortable: false,
           minWidth: '130px',
           align: 'right',
           format: 'decimal2'
@@ -97,7 +92,7 @@ export default {
         {
           field: 'totalReturned',
           header: this.$t('view.production.goldLossTangByWorker.colTotalReturned'),
-          sortable: true,
+          sortable: false,
           minWidth: '130px',
           align: 'right',
           format: 'decimal2'
@@ -105,7 +100,7 @@ export default {
         {
           field: 'totalRawLoss',
           header: this.$t('view.production.goldLossTangByWorker.colTotalRawLoss'),
-          sortable: true,
+          sortable: false,
           minWidth: '130px',
           align: 'right',
           format: 'decimal2'
@@ -113,7 +108,7 @@ export default {
         {
           field: 'totalAllowedLoss',
           header: this.$t('view.production.goldLossTangByWorker.colTotalAllowedLoss'),
-          sortable: true,
+          sortable: false,
           minWidth: '130px',
           align: 'right',
           format: 'decimal2'
@@ -121,7 +116,7 @@ export default {
         {
           field: 'totalDiffLoss',
           header: this.$t('view.production.goldLossTangByWorker.colTotalDiffLoss'),
-          sortable: true,
+          sortable: false,
           minWidth: '130px',
           align: 'right',
           format: 'decimal2'
@@ -129,26 +124,22 @@ export default {
         {
           field: 'totalMoneyDiff',
           header: this.$t('view.production.goldLossTangByWorker.colTotalMoneyDiff'),
-          sortable: true,
+          sortable: false,
           minWidth: '140px',
           align: 'right',
           format: 'decimal2'
         }
-      )
-
-      return cols
+      ]
     }
   },
 
   watch: {
-    async modelForm() {
-      this.resetPaging()
-    },
-    async modelFormExport() {
-      await this.goldLossTangByWorkerStore.fetchReportExport({
-        sort: this.sort,
-        formValue: this.modelFormExport
-      })
+    search: {
+      handler() {
+        this.fetchData()
+      },
+      deep: true,
+      immediate: true
     }
   },
 
@@ -157,18 +148,30 @@ export default {
       return formatYearMonth(data.year, data.month)
     },
 
+    // เรียก action ของ store ที่ report 4.2 ใช้ร่วมกัน (Pinia singleton) แต่ไม่อ่าน
+    // goldLossTangByWorkerStore.dataSearch ตรงๆ — เก็บผลลัพธ์ไว้ใน local state (rows)
+    // ของ component นี้แทน เพื่อไม่ให้ state ชนกับหน้ารายงาน gold-loss-tang-by-worker-report
     async fetchData() {
-      await this.goldLossTangByWorkerStore.fetchReport({
-        take: this.take,
-        skip: this.skip,
-        sort: this.sort,
-        formValue: this.modelForm
+      const res = await this.goldLossTangByWorkerStore.fetchReport({
+        take: 0,
+        skip: 0,
+        sort: [],
+        formValue: { ...this.search, groupByMonth: true }
       })
+      const data = res && Array.isArray(res.data) ? res.data : []
+      this.rows = data.map((item, index) => ({
+        ...item,
+        _rowKey: `${item.workerCode}-${item.year}-${item.month}-${index}`
+      }))
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-data-table';
+@import '@/assets/scss/responsive-style/web';
+
+.monthly-summary-card {
+  margin-top: var(--sp-lg);
+}
 </style>

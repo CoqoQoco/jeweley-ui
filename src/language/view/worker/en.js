@@ -54,7 +54,8 @@ export default {
     footerTotal: '{count} items',
     slipLabel: 'Enter slip {docNo}',
     filterGoldTypeLabel: 'Gold Type',
-    filterGoldTypePlaceholder: 'All'
+    filterGoldTypePlaceholder: 'All',
+    warningGoldLossPrintMode: 'In Gold Loss mode, please use the "Print Success Slip" button'
   },
   goldLossSlipList: {
     searchTitle: 'Gold Loss Slip History',
