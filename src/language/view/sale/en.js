@@ -310,7 +310,12 @@ export const quotation = {
   excelBtn: 'Excel',
   cifLabel: 'C.I.F',
   saveQuotation: 'Save Quotation',
-  currencyRateLabel: 'Currency Rate'
+  currencyRateLabel: 'Currency Rate',
+  breakdownSection: 'Break Down',
+  goldLossPercent: 'Gold Loss (%)',
+  breakdownComplete: 'Complete',
+  breakdownIncomplete: '{count} field(s) missing',
+  breakdownIncompleteWarning: 'Please complete the Break Down fields before generating the document: {fields}'
 }
 
 export const quotationList = {
@@ -1673,6 +1678,7 @@ export const exportShipment = {
 
   colItemNo: 'ITEM NO.',
   colStockNo: 'STOCK NO.',
+  colStockNoOrigin: 'Stock No. (Old)',
   colDescription: 'DESCRIPTION',
   colNetWeight: 'Net Wt.(g)',
   colGoldWeight: 'Gold (g)',
@@ -1695,6 +1701,9 @@ export const exportShipment = {
   printPackingList: 'Print Packing List',
   printPhotoSheet: 'Print Photo Sheet',
   photoLoadingProgress: 'Loading photos {loaded}/{total}',
+  excelInvoice: 'Excel Invoice',
+  excelSummary: 'Excel Summary',
+  excelPackingList: 'Excel Packing List',
 
   validation: {
     customNumberRequired: 'Please specify the document no.',
@@ -1716,9 +1725,17 @@ export const exportShipment = {
   addAllSuccess: 'Added {count} item(s) successfully',
   addSelectedSuccess: 'Selected item(s) added successfully',
 
+  mergeSummary: {
+    selectedCount: 'Selected {count} document(s)',
+    btnPdf: 'Merge Summary (PDF)',
+    btnExcel: 'Merge Summary (Excel)',
+    currencyMismatch: 'Selected documents have different currencies. Please select documents using the same currency.'
+  },
+
   stockPicker: {
     title: 'Add Items from Stock',
-    stockNumber: 'Stock Number',
+    stockNumber: 'Stock No. (New)',
+    stockNumberOrigin: 'Stock No. (Old)',
     productNumber: 'Product Number',
     productNameEn: 'Product Name (EN)',
     productNameTh: 'Product Name (TH)',

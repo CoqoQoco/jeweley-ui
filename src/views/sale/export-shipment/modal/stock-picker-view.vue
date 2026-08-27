@@ -9,6 +9,9 @@
           <FormFieldGeneric :label="$t('view.sale.exportShipment.stockPicker.stockNumber')">
             <InputTextGeneric v-model.trim="form.stockNumber" @keyup.enter="onSearch" />
           </FormFieldGeneric>
+          <FormFieldGeneric :label="$t('view.sale.exportShipment.stockPicker.stockNumberOrigin')">
+            <InputTextGeneric v-model.trim="form.stockNumberOrigin" @keyup.enter="onSearch" />
+          </FormFieldGeneric>
           <FormFieldGeneric :label="$t('view.sale.exportShipment.stockPicker.productNumber')">
             <InputTextGeneric v-model.trim="form.productNumber" @keyup.enter="onSearch" />
           </FormFieldGeneric>
@@ -104,6 +107,7 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 
 const interfaceForm = {
   stockNumber: null,
+  stockNumberOrigin: null,
   productNumber: null,
   productNameEn: null,
   productNameTh: null,
@@ -176,6 +180,7 @@ export default {
     columns() {
       return [
         { field: 'stockNumber', header: this.$t('view.sale.exportShipment.stockPicker.stockNumber'), minWidth: '130px' },
+        { field: 'stockNumberOrigin', header: this.$t('view.sale.exportShipment.stockPicker.stockNumberOrigin'), minWidth: '120px' },
         { field: 'productNumber', header: this.$t('view.sale.exportShipment.stockPicker.productNumber'), minWidth: '130px' },
         { field: 'productNameEn', header: this.$t('view.sale.exportShipment.stockPicker.productNameEn'), minWidth: '160px' },
         { field: 'productTypeName', header: this.$t('view.sale.exportShipment.stockPicker.productType'), minWidth: '110px' },
@@ -215,13 +220,17 @@ export default {
         sort: [],
         search: {
           stockNumber: this.form.stockNumber || null,
+          stockNumberOrigin: this.form.stockNumberOrigin || null,
           productNumber: this.form.productNumber || null,
           productNameEn: this.form.productNameEn || null,
           productNameTh: this.form.productNameTh || null,
           productType: this.form.productType?.length ? this.form.productType : null,
           gold: this.form.gold?.length ? this.form.gold : null,
           goldSize: this.form.goldSize?.length ? this.form.goldSize : null,
-          locationCodes: this.form.locationCodes?.length ? this.form.locationCodes : null
+          locationCodes: this.form.locationCodes?.length ? this.form.locationCodes : null,
+          receiptNumber: this.form.receiptNumber || null,
+          keyword: this.form.keyword || null,
+          pieceStatus: 'IN_STOCK'
         }
       }
       const res = await api.jewelry.post('StockProduct/List', param)
@@ -273,7 +282,8 @@ export default {
             productionType: this.form.gold?.length ? this.form.gold : [],
             productionTypeSize: this.form.goldSize?.length ? this.form.goldSize : [],
             receiptNumber: this.form.receiptNumber || null,
-            keyword: this.form.keyword || null
+            keyword: this.form.keyword || null,
+            stockNumberOrigin: this.form.stockNumberOrigin || null
           }
           const res = await this.exportShipmentStore.addItems({ running: this.running, stockNumbers: [], filter })
           if (res) {

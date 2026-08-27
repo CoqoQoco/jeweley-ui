@@ -5,7 +5,7 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { paginate } from '@/services/helper/pdf/shared/pdf-sections.js'
-import { buildDocHeader } from './export-shipment-shared.js'
+import { buildDocHeader, buildConsigneeBlock } from './export-shipment-shared.js'
 
 const BATCH_SIZE = 15
 const COLS = 3
@@ -92,8 +92,7 @@ export class ExportPhotoSheetPdfBuilder {
               ],
               alignment: 'center'
             },
-        { text: item.stockNumber || '', bold: true, fontSize: 8, alignment: 'center', margin: [0, 4, 0, 0] },
-        { text: item.description || '', fontSize: 7, alignment: 'center' },
+        { text: `No. ${item.itemNo ?? ''}`, bold: true, fontSize: 8, alignment: 'center', margin: [0, 4, 0, 0] },
         { text: `QTY: ${item.qty ?? ''}`, fontSize: 7, alignment: 'center' }
       ]
     }
@@ -117,7 +116,10 @@ export class ExportPhotoSheetPdfBuilder {
       pageMargins: [40, 130, 40, 40],
       defaultStyle: { font: PDF_FONT, fontSize: 9 },
       header: (currentPage) => buildDocHeader('PHOTO SHEET', currentPage),
-      content: paginate(this.items, PER_PAGE, (pageItems) => this.buildPageContent(pageItems))
+      content: [
+        buildConsigneeBlock(this.header, 'INVOICE NO'),
+        ...paginate(this.items, PER_PAGE, (pageItems) => this.buildPageContent(pageItems))
+      ]
     }
   }
 

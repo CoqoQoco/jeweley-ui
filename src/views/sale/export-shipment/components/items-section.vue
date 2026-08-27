@@ -188,6 +188,7 @@ export default {
       const columns = [
         { field: 'itemNo', header: this.$t('view.sale.exportShipment.colItemNo'), width: '70px', sortable: false },
         { field: 'stockNumber', header: this.$t('view.sale.exportShipment.colStockNo'), minWidth: '110px', sortable: false },
+        { field: 'stockNumberOrigin', header: this.$t('view.sale.exportShipment.colStockNoOrigin'), minWidth: '120px', sortable: false },
         { field: 'description', header: this.$t('view.sale.exportShipment.colDescription'), minWidth: '200px', sortable: false },
         { field: 'netWeight', header: this.$t('view.sale.exportShipment.colNetWeight'), minWidth: '90px', sortable: false },
         { field: 'goldWeight', header: this.$t('view.sale.exportShipment.colGoldWeight'), minWidth: '90px', sortable: false },

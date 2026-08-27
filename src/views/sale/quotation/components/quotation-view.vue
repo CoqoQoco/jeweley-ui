@@ -81,7 +81,34 @@
                   </template>
                 </InputWithButton>
               </div>
-              <div class="">
+            </div>
+          </div>
+
+          <!-- Break Down Section -->
+          <SectionCardGeneric
+            class="mt-3"
+            :title="$t('view.sale.quotation.breakdownSection')"
+            icon="bi-gem"
+            headerStyle="filled"
+          >
+            <template #header-actions>
+              <span :class="['breakdown-status-badge', breakdownComplete ? 'is-complete' : 'is-incomplete']">
+                {{ breakdownComplete
+                  ? $t('view.sale.quotation.breakdownComplete')
+                  : $t('view.sale.quotation.breakdownIncomplete', { count: breakdownMissingCount }) }}
+              </span>
+            </template>
+
+            <div class="form-col-container">
+              <div>
+                <span class="title-text">{{ $t('view.sale.quotation.goldPerOz') }}</span>
+                <InputTextGeneric
+                  :modelValue="goldPerOzDisplay"
+                  :readonly="true"
+                  class="input-bg input-narrow text-right"
+                />
+              </div>
+              <div>
                 <span class="title-text">{{ $t('view.sale.quotation.goldPerGms') }}</span>
                 <InputWithButton
                   :modelValue="goldPerGramDisplay"
@@ -97,15 +124,7 @@
                   </template>
                 </InputWithButton>
               </div>
-              <div class="">
-                <span class="title-text">{{ $t('view.sale.quotation.goldPerOz') }}</span>
-                <InputTextGeneric
-                  :modelValue="goldPerOzDisplay"
-                  :readonly="true"
-                  class="input-bg input-narrow text-right"
-                />
-              </div>
-              <div class="">
+              <div>
                 <span class="title-text">{{ $t('view.sale.quotation.goldPerGmsThb') }}</span>
                 <InputTextGeneric
                   :modelValue="goldPerGramThbDisplay"
@@ -113,8 +132,28 @@
                   class="input-bg input-narrow text-right"
                 />
               </div>
+              <div>
+                <span class="title-text">{{ $t('view.sale.quotation.profitPercent') }}</span>
+                <InputTextGeneric
+                  v-model.number="customer.profitPercent"
+                  type="number"
+                  :min="0"
+                  :max="100"
+                  class="input-narrow"
+                />
+              </div>
+              <div>
+                <span class="title-text">{{ $t('view.sale.quotation.goldLossPercent') }}</span>
+                <InputTextGeneric
+                  v-model.number="customer.goldLossPercent"
+                  type="number"
+                  step="0.01"
+                  :min="0"
+                  class="input-narrow"
+                />
+              </div>
             </div>
-          </div>
+          </SectionCardGeneric>
 
           <!-- Customer Details Section -->
           <div class="customer-details-section mt-3">
@@ -259,16 +298,6 @@
                 <i class="bi bi-eye mr-1"></i>
                 <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
               </button>
-              <div class="profit-group ml-2">
-                <span class="title-text mr-2 profit-label">{{ $t('view.sale.quotation.profitPercent') }}</span>
-                <InputTextGeneric
-                  v-model.number="customer.profitPercent"
-                  type="number"
-                  :min="0"
-                  :max="100"
-                  class="input-narrow"
-                />
-              </div>
             </div>
 
             <!-- Export Group -->
@@ -379,6 +408,7 @@
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import QuotationItemsTable from './quotation-items-table.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 import InputWithButton from '@/components/input/input-with-button.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
@@ -425,7 +455,8 @@ const interfaceForm = {
   specialAddition: 0,
   vatPercent: 0,
   customerCode: null,
-  profitPercent: 15
+  profitPercent: 15,
+  goldLossPercent: null
 }
 const interfaceShow = {
   isEditStock: false,
@@ -442,6 +473,7 @@ export default {
   components: {
     CalendarGeneric,
     InputTextGeneric,
+    SectionCardGeneric,
     QuotationItemsTable,
     editStockView,
     ConfirmCreatePdfView,
@@ -635,6 +667,27 @@ export default {
     },
     masterDiamondGrade() {
       return this.masterStore.diamondGrade
+    },
+    breakdownFieldsMeta() {
+      return [
+        { key: 'goldSpotPrice', label: this.$t('view.sale.quotation.goldPerOz') },
+        { key: 'goldPerOz', label: this.$t('view.sale.quotation.goldPerGms') },
+        { key: 'currencyMultiplier', label: this.$t('view.sale.quotation.rate') },
+        { key: 'profitPercent', label: this.$t('view.sale.quotation.profitPercent') },
+        { key: 'goldLossPercent', label: this.$t('view.sale.quotation.goldLossPercent') }
+      ]
+    },
+    breakdownMissingFields() {
+      return this.breakdownFieldsMeta.filter((field) => {
+        const value = this.customer[field.key]
+        return value === null || value === undefined || value === '' || Number(value) === 0
+      })
+    },
+    breakdownMissingCount() {
+      return this.breakdownMissingFields.length
+    },
+    breakdownComplete() {
+      return this.breakdownMissingCount === 0
     }
   },
 
@@ -834,6 +887,7 @@ export default {
     },
 
     printBreakdown() {
+      if (!this.validateBreakdownComplete()) return
       const filename = `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
       generateBreakdownPdf({
         items: this.customer.quotationItems,
@@ -841,10 +895,12 @@ export default {
         invoiceDate: this.customer.quotationDate,
         filename,
         openInNewTab: false,
-        profitPercent: this.customer.profitPercent ?? 15
+        profitPercent: this.customer.profitPercent ?? 15,
+        goldLossPercent: this.customer.goldLossPercent
       })
     },
     previewBreakdown() {
+      if (!this.validateBreakdownComplete()) return
       const win1 = window.open('', '_blank')
       generateBreakdownPdf({
         items: this.customer.quotationItems,
@@ -853,7 +909,8 @@ export default {
         filename: `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
         openInNewTab: true,
         targetWindow: win1,
-        profitPercent: this.customer.profitPercent ?? 15
+        profitPercent: this.customer.profitPercent ?? 15,
+        goldLossPercent: this.customer.goldLossPercent
       })
     },
     onEditStock(item, index) {
@@ -1019,6 +1076,8 @@ export default {
         goldSpotPrice: this.customer.goldSpotPrice || 0,
         goldPremium: this.customer.goldPremium || 0,
         goldMarkup: this.customer.goldMarkup || 0,
+        profitPercent: this.customer.profitPercent ?? null,
+        goldLossPercent: this.customer.goldLossPercent ?? null,
         subTotal: Number(this.sumTotalConvertedPrice) || 0,
         grandTotalRaw: this.grandTotalRaw,
 
@@ -1041,6 +1100,10 @@ export default {
       const res = await this.quotationStore.fetchGet({ formValue })
 
       if (res) {
+        const needsGoldLossFallback =
+          res.goldLossPercent === null || res.goldLossPercent === undefined || res.goldLossPercent === ''
+        const breakdownSetting = needsGoldLossFallback ? await getBreakdownSetting() : null
+
         this.customer = {
           ...this.customer,
           ...res,
@@ -1068,7 +1131,9 @@ export default {
           goldPerOz: res.goldPerOz || 0,
           goldSpotPrice: res.goldSpotPrice || 0,
           goldPremium: res.goldPremium ?? 1.5,
-          goldMarkup: res.goldMarkup ?? 10
+          goldMarkup: res.goldMarkup ?? 10,
+          profitPercent: res.profitPercent ?? 15,
+          goldLossPercent: needsGoldLossFallback ? (breakdownSetting?.goldLossPercent ?? 12) : res.goldLossPercent
         }
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
       }
@@ -1201,6 +1266,7 @@ export default {
         warning(this.$t('view.sale.quotation.validation.noItems'), this.$t('common.label.incompleteData'))
         return
       }
+      if (!this.validateBreakdownComplete()) return
       try {
         const breakdownSetting = await getBreakdownSetting()
         const builder = new BreakdownExcelBuilder({
@@ -1211,7 +1277,7 @@ export default {
           currencyUnit: this.customer.currencyUnit,
           currencyMultiplier: this.customer.currencyMultiplier,
           profitPercent: this.customer.profitPercent ?? 15,
-          goldLossPercent: breakdownSetting.goldLossPercent,
+          goldLossPercent: this.customer.goldLossPercent ?? breakdownSetting.goldLossPercent,
           settingDiamondRate: breakdownSetting.settingDiamondRate,
           settingStoneRate: breakdownSetting.settingStoneRate
         })
@@ -1231,6 +1297,16 @@ export default {
         return 'editing-row'
       }
       return ''
+    },
+
+    validateBreakdownComplete() {
+      if (this.breakdownComplete) return true
+      const fields = this.breakdownMissingFields.map((field) => field.label).join(', ')
+      warning(
+        this.$t('view.sale.quotation.breakdownIncompleteWarning', { fields }),
+        this.$t('common.label.incompleteData')
+      )
+      return false
     }
   },
 
@@ -1240,6 +1316,15 @@ export default {
       await this.masterStore.fetchGem()
       await this.masterStore.fetchDiamondGrade()
     })
+  },
+
+  async mounted() {
+    if (this.customer.goldLossPercent === null || this.customer.goldLossPercent === undefined || this.customer.goldLossPercent === '') {
+      const breakdownSetting = await getBreakdownSetting()
+      if (this.customer.goldLossPercent === null || this.customer.goldLossPercent === undefined || this.customer.goldLossPercent === '') {
+        this.customer.goldLossPercent = breakdownSetting.goldLossPercent
+      }
+    }
   }
 }
 </script>
@@ -1431,13 +1516,24 @@ export default {
   width: 80px;
 }
 
-.profit-group {
-  display: flex;
+.breakdown-status-badge {
+  display: inline-flex;
   align-items: center;
-}
-
-.profit-label {
+  padding: var(--sp-xs) var(--sp-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 700;
   white-space: nowrap;
+
+  &.is-complete {
+    background: var(--overlay-white-chip);
+    color: var(--on-inverse);
+  }
+
+  &.is-incomplete {
+    background: var(--base-warning);
+    color: var(--base-font-color);
+  }
 }
 
 .cif-toggle {

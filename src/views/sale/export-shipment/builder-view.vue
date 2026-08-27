@@ -34,6 +34,9 @@
         <ButtonGeneric variant="outline" icon="bi-printer" :label="$t('view.sale.exportShipment.printSummary')" class="ml-2" @click="onPrintSummary" />
         <ButtonGeneric variant="outline" icon="bi-printer" :label="$t('view.sale.exportShipment.printPackingList')" class="ml-2" @click="onPrintPackingList" />
         <ButtonGeneric variant="outline" icon="bi-printer" :label="$t('view.sale.exportShipment.printPhotoSheet')" class="ml-2" @click="onPrintPhotoSheet" />
+        <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('view.sale.exportShipment.excelInvoice')" class="ml-2" @click="onExportInvoiceExcel" />
+        <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('view.sale.exportShipment.excelSummary')" class="ml-2" @click="onExportSummaryExcel" />
+        <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('view.sale.exportShipment.excelPackingList')" class="ml-2" @click="onExportPackingListExcel" />
         <ButtonGeneric variant="outline" :label="$t('common.btn.back')" class="ml-2" @click="$router.push({ name: 'sale-export-shipment' })" />
       </div>
     </div>
@@ -56,6 +59,9 @@ import { ExportInvoicePdfBuilder } from '@/services/helper/pdf/export-shipment/e
 import { ExportSummaryPdfBuilder } from '@/services/helper/pdf/export-shipment/export-summary-pdf-builder.js'
 import { ExportPackingListPdfBuilder } from '@/services/helper/pdf/export-shipment/export-packing-list-pdf-builder.js'
 import { ExportPhotoSheetPdfBuilder } from '@/services/helper/pdf/export-shipment/export-photo-sheet-pdf-builder.js'
+import { ExportInvoiceExcelBuilder } from '@/services/helper/excel/export-shipment/export-invoice-excel-builder.js'
+import { ExportSummaryExcelBuilder } from '@/services/helper/excel/export-shipment/export-summary-excel-builder.js'
+import { ExportPackingListExcelBuilder } from '@/services/helper/excel/export-shipment/export-packing-list-excel-builder.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -207,6 +213,7 @@ export default {
           itemNo: it.itemNo ?? idx + 1,
           sortOrder: idx,
           stockNumber: it.stockNumber,
+          stockNumberOrigin: it.stockNumberOrigin || null,
           productCode: it.productCode,
           productNumber: it.productNumber,
           description: it.description,
@@ -330,6 +337,27 @@ export default {
       })
       this.photoProgress = null
       builder.openPDF()
+    },
+
+    async onExportInvoiceExcel() {
+      if (!this.validatePdf()) return
+      const builder = new ExportInvoiceExcelBuilder(this.form, this.items)
+      await builder.prepare()
+      await builder.downloadExcel()
+    },
+
+    async onExportSummaryExcel() {
+      if (!this.validatePdf()) return
+      const builder = new ExportSummaryExcelBuilder(this.form, this.items)
+      await builder.prepare()
+      await builder.downloadExcel()
+    },
+
+    async onExportPackingListExcel() {
+      if (!this.validatePdf()) return
+      const builder = new ExportPackingListExcelBuilder(this.form, this.items)
+      await builder.prepare()
+      await builder.downloadExcel()
     }
   }
 }

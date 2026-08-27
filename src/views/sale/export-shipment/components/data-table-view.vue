@@ -7,6 +7,10 @@
       :perPage="take"
       dataKey="running"
       :emptyMessage="$t('view.sale.exportShipment.noData')"
+      :selectionMode="true"
+      selectionType="multiple"
+      :itemsSelection="selectedItems"
+      @update:itemsSelection="$emit('update:selectedItems', $event)"
       @page="$emit('page', $event)"
       @sort="$emit('sort', $event)"
     >
@@ -54,10 +58,14 @@ export default {
     skip: {
       type: Number,
       default: 0
+    },
+    selectedItems: {
+      type: Array,
+      default: () => []
     }
   },
 
-  emits: ['page', 'sort', 'edit', 'delete'],
+  emits: ['page', 'sort', 'edit', 'delete', 'update:selectedItems'],
 
   computed: {
     columns() {

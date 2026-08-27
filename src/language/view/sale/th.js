@@ -310,7 +310,12 @@ export const quotation = {
   excelBtn: 'Excel',
   cifLabel: 'C.I.F',
   saveQuotation: 'Save Quotation',
-  currencyRateLabel: 'Currency Rate'
+  currencyRateLabel: 'Currency Rate',
+  breakdownSection: 'Break Down',
+  goldLossPercent: 'Gold Loss (%)',
+  breakdownComplete: 'ครบแล้ว',
+  breakdownIncomplete: 'ยังไม่ได้กรอก {count} ช่อง',
+  breakdownIncompleteWarning: 'กรุณากรอกข้อมูล Break Down ให้ครบก่อนออกเอกสาร: {fields}'
 }
 
 export const quotationList = {
@@ -1667,6 +1672,7 @@ export const exportShipment = {
 
   colItemNo: 'ITEM NO.',
   colStockNo: 'STOCK NO.',
+  colStockNoOrigin: 'เลขที่ผลิต (เก่า)',
   colDescription: 'DESCRIPTION',
   colNetWeight: 'Net Wt.(g)',
   colGoldWeight: 'Gold (g)',
@@ -1689,6 +1695,9 @@ export const exportShipment = {
   printPackingList: 'พิมพ์ Packing List',
   printPhotoSheet: 'พิมพ์ Photo Sheet',
   photoLoadingProgress: 'กำลังโหลดรูป {loaded}/{total}',
+  excelInvoice: 'Excel Invoice',
+  excelSummary: 'Excel Summary',
+  excelPackingList: 'Excel Packing List',
 
   validation: {
     customNumberRequired: 'กรุณาระบุเลขที่บนเอกสาร',
@@ -1710,9 +1719,17 @@ export const exportShipment = {
   addAllSuccess: 'เพิ่มสินค้าสำเร็จ {count} รายการ',
   addSelectedSuccess: 'เพิ่มสินค้าที่เลือกสำเร็จ',
 
+  mergeSummary: {
+    selectedCount: 'เลือก {count} ใบ',
+    btnPdf: 'รวม Summary (PDF)',
+    btnExcel: 'รวม Summary (Excel)',
+    currencyMismatch: 'ใบที่เลือกมีสกุลเงินไม่ตรงกัน กรุณาเลือกใบที่ใช้สกุลเงินเดียวกัน'
+  },
+
   stockPicker: {
     title: 'เพิ่มสินค้าจากคลัง',
-    stockNumber: 'Stock Number',
+    stockNumber: 'เลขที่ผลิต (ใหม่)',
+    stockNumberOrigin: 'เลขที่ผลิต (เก่า)',
     productNumber: 'Product Number',
     productNameEn: 'ชื่อสินค้า (EN)',
     productNameTh: 'ชื่อสินค้า (TH)',

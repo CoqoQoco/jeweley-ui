@@ -21,7 +21,8 @@ export function generateBreakdownPdf({
   filename = 'breakdown.pdf',
   openInNewTab = false,
   targetWindow = null,
-  profitPercent = 15
+  profitPercent = 15,
+  goldLossPercent
 }) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -34,7 +35,7 @@ export function generateBreakdownPdf({
         currencyUnit: customer.currencyUnit,
         currencyMultiplier: customer.currencyMultiplier,
         profitPercent,
-        goldLossPercent: breakdownSetting.goldLossPercent,
+        goldLossPercent: goldLossPercent ?? breakdownSetting.goldLossPercent,
         settingDiamondRate: breakdownSetting.settingDiamondRate,
         settingStoneRate: breakdownSetting.settingStoneRate
       })
