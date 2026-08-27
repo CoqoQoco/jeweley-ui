@@ -948,7 +948,9 @@ export default {
     colTotalAllowedLoss: 'Allowed Loss',
     colTotalDiffLoss: 'Diff Loss',
     colTotalMoneyDiff: 'Money Diff',
-    totalWorkers: 'Total {total} workers'
+    totalWorkers: 'Total {total} workers',
+    printMonthly: 'Print Monthly Summary',
+    noDataPrint: 'No data available to print'
   },
 
   preplanFunnel: {

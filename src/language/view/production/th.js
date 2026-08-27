@@ -948,7 +948,9 @@ export default {
     colTotalAllowedLoss: 'Loss ที่ยอม',
     colTotalDiffLoss: 'Loss ส่วนต่าง',
     colTotalMoneyDiff: 'เงินส่วนต่าง',
-    totalWorkers: 'รวม {total} คน'
+    totalWorkers: 'รวม {total} คน',
+    printMonthly: 'พิมพ์ใบสรุปรายเดือน',
+    noDataPrint: 'ไม่มีข้อมูลสำหรับพิมพ์ใบสรุป'
   },
 
   preplanFunnel: {

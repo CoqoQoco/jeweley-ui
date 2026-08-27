@@ -16,28 +16,43 @@
       <template #monthTemplate="{ data }">
         {{ formatMonth(data) }}
       </template>
+      <template #actionTemplate="{ data }">
+        <ButtonGeneric
+          variant="green"
+          icon="bi-printer"
+          :title="$t('view.production.goldLossTangByWorker.printMonthly')"
+          @click="onPrintMonthly(data)"
+        />
+      </template>
     </BaseDataTable>
   </SectionCardGeneric>
 </template>
 
 <script>
+import dayjs from 'dayjs'
 import { useGoldLossTangByWorkerApiStore } from '@/stores/modules/api/production/gold-loss-tang-by-worker-api.js'
+import { useGoldLossTangMonthlyApiStore } from '@/stores/modules/api/production/gold-loss-tang-monthly-api.js'
 import { formatYearMonth } from '@/services/utils/dayjs.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
+import { GoldLossTangMonthlyPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-loss-tang-monthly-pdf-builder.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 export default {
   name: 'GoldLossTangMonthlySummaryView',
 
   components: {
     SectionCardGeneric,
-    BaseDataTable
+    BaseDataTable,
+    ButtonGeneric
   },
 
   setup() {
     const goldLossTangByWorkerStore = useGoldLossTangByWorkerApiStore()
-    return { goldLossTangByWorkerStore }
+    const goldLossTangMonthlyStore = useGoldLossTangMonthlyApiStore()
+    return { goldLossTangByWorkerStore, goldLossTangMonthlyStore }
   },
 
   props: {
@@ -128,6 +143,12 @@ export default {
           minWidth: '140px',
           align: 'right',
           format: 'decimal2'
+        },
+        {
+          field: 'action',
+          header: '',
+          sortable: false,
+          minWidth: '80px'
         }
       ]
     }
@@ -156,13 +177,33 @@ export default {
         take: 0,
         skip: 0,
         sort: [],
-        formValue: { ...this.search, groupByMonth: true }
+        formValue: {
+          workerCode: this.search.workerCode,
+          requestDateStart: this.search.dateStart,
+          requestDateEnd: this.search.dateEnd,
+          groupByMonth: true
+        }
       })
       const data = res && Array.isArray(res.data) ? res.data : []
       this.rows = data.map((item, index) => ({
         ...item,
         _rowKey: `${item.workerCode}-${item.year}-${item.month}-${index}`
       }))
+    },
+
+    async onPrintMonthly(row) {
+      const monthStart = dayjs().year(row.year).month(row.month - 1).startOf('month')
+      const monthEnd = dayjs().year(row.year).month(row.month - 1).endOf('month')
+      const res = await this.goldLossTangMonthlyStore.fetchMonthly({
+        workerCode: row.workerCode,
+        requestDateStart: monthStart.toDate(),
+        requestDateEnd: monthEnd.toDate()
+      })
+      if (!res || !res.slipCount) {
+        warning(this.$t('view.production.goldLossTangByWorker.noDataPrint'))
+        return
+      }
+      new GoldLossTangMonthlyPdfBuilder(res).generatePDF().open()
     }
   }
 }

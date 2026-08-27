@@ -11,8 +11,8 @@ export const useGoldLossTangByWorkerApiStore = defineStore('goldLossTangByWorker
   actions: {
     buildSearch(formValue = {}) {
       return {
-        requestDateStart: formatISOString(formValue.requestDateStart),
-        requestDateEnd: formatISOString(formValue.requestDateEnd),
+        requestDateStart: formValue.requestDateStart ? formatISOString(formValue.requestDateStart) : null,
+        requestDateEnd: formValue.requestDateEnd ? formatISOString(formValue.requestDateEnd) : null,
         workerCode: formValue.workerCode || undefined,
         groupByMonth: formValue.groupByMonth || undefined
       }
