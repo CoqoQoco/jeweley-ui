@@ -143,6 +143,11 @@ const configureInterceptors = (instance) => {
 
       const authStore = useAuthStore()
 
+      // skipError = opt-in flag (default false) กัน swAlert.error() ขึ้น blocking modal
+      // ใช้กับ widget/non-critical call ที่ต้องการ degrade แบบ silent เงียบๆ (เช่น home dashboard)
+      // ไม่ครอบคลุม case 401 — token หมดอายุต้อง logout+redirect เสมอไม่ว่า skipError จะเป็นอะไร
+      const skipError = !!error.config?.skipError
+
       // Handle different error cases
       switch (status) {
         case 401:
@@ -166,11 +171,13 @@ const configureInterceptors = (instance) => {
           }
           break
         case 400:
-          if (msg) {
-            swAlert.error(msg, null, () => {}, stacktrace)
-          } else if (errorSystem) {
-            const messages = Object.values(errorSystem)
-            swAlert.error(messages, null, () => {}, stacktrace)
+          if (!skipError) {
+            if (msg) {
+              swAlert.error(msg, null, () => {}, stacktrace)
+            } else if (errorSystem) {
+              const messages = Object.values(errorSystem)
+              swAlert.error(messages, null, () => {}, stacktrace)
+            }
           }
           break
 
@@ -178,20 +185,24 @@ const configureInterceptors = (instance) => {
         case 404:
         case 500:
         case 504:
-          if (msg || errorSystem) {
-            swAlert.error(msg || JSON.stringify(errorSystem), null, () => {}, stacktrace)
-          } else {
-            swAlert.error('กรุณาติดผู้พัฒนา', `ERROR : ${status}`, () => {}, stacktrace)
+          if (!skipError) {
+            if (msg || errorSystem) {
+              swAlert.error(msg || JSON.stringify(errorSystem), null, () => {}, stacktrace)
+            } else {
+              swAlert.error('กรุณาติดผู้พัฒนา', `ERROR : ${status}`, () => {}, stacktrace)
+            }
           }
           break
 
         default:
-          swAlert.error(
-            'เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง',
-            `Error Code: ${status || 'Unknown'}`,
-            () => {},
-            stacktrace
-          )
+          if (!skipError) {
+            swAlert.error(
+              'เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง',
+              `Error Code: ${status || 'Unknown'}`,
+              () => {},
+              stacktrace
+            )
+          }
       }
 
       error.handledByAxios = true

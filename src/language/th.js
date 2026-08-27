@@ -188,7 +188,80 @@ export default {
       messageBox3: 'กล่องข้อความที่ 3',
       messageBox4: 'กล่องข้อความที่ 4',
       welcomeDesc: 'ยินดีต้อนรับสู่เครื่องมือบริหารเเละจัดการ ผลิต/จัดเก็บ/ขาย/บริการ สินค้า',
-      companyFooter: '@บริษัท ดวงแก้วจิวเวลรี่ แมนูแฟคเจอเรอร์'
+      companyFooter: '@บริษัท ดวงแก้วจิวเวลรี่ แมนูแฟคเจอเรอร์',
+      home: {
+        greeting: {
+          hello: 'สวัสดีครับ คุณ{name}'
+        },
+        quickActions: {
+          title: 'ทางลัด',
+          createPrePlan: 'สร้างใบสั่งผลิต',
+          createCustomer: 'เพิ่มลูกค้าใหม่',
+          goodsReceipt: 'รับสินค้าเข้าคลัง',
+          createQuotation: 'สร้างใบเสนอราคา',
+          stockSearch: 'ค้นหาสินค้าคงคลัง',
+          createTicket: 'แจ้งปัญหา/ขอฟีเจอร์'
+        },
+        myJobs: {
+          title: 'งานของฉัน',
+          empty: 'ไม่มีงานที่ต้องทำในขณะนี้ครับ'
+        },
+        actionCards: {
+          title: 'สรุปงานสำคัญ',
+          pendingApproval: 'รออนุมัติ',
+          myPrePlan: 'ใบสั่งผลิตของฉัน',
+          planTotal: 'แผนผลิตทั้งหมด',
+          planProcess: 'กำลังผลิต',
+          planCompletedYesterday: 'เสร็จเมื่อวาน',
+          planOverdue: 'เกินกำหนด',
+          pendingGR: 'รับเข้าคลังวันนี้',
+          ticketOpen: 'Ticket เปิดค้าง',
+          myTicket: 'Ticket ของฉัน (ยังไม่อ่าน)',
+          scrapWeightMonth: 'เศษทองเดือนนี้ (กรัม)'
+        },
+        wipByStage: {
+          title: 'งานระหว่างผลิตแยกตามแผนก',
+          unit: 'รายการ'
+        },
+        completedTrend: {
+          title: 'แนวโน้มงานผลิตสำเร็จ',
+          notEnoughData: 'ข้อมูลยังไม่พอสำหรับประมาณการครับ',
+          forecastLabel: 'ประมาณการสิ้นเดือน',
+          actual: 'ยอดจริง',
+          forecast: 'ประมาณการ',
+          assumption: 'คำนวณจากอัตราเฉลี่ย {days} วันที่ผ่านมา'
+        },
+        stockSummary: {
+          title: 'ภาพรวมคลัง',
+          gemTitle: 'พลอย/เพชร',
+          productTitle: 'สินค้าสำเร็จ',
+          totalQuantity: 'จำนวนคงเหลือ',
+          totalValue: 'มูลค่ารวม',
+          lowStock: 'สินค้าใกล้หมด',
+          onProcess: 'ระหว่างผลิต'
+        },
+        recentActivities: {
+          title: 'กิจกรรมล่าสุด',
+          empty: 'ยังไม่มีกิจกรรมครับ'
+        },
+        customerProductionStatus: {
+          title: 'สถานะงานผลิตของลูกค้า',
+          onlyMine: 'ลูกค้าของฉัน',
+          all: 'ทั้งหมด',
+          empty: 'ไม่พบข้อมูลครับ',
+          inProduction: 'กำลังผลิต',
+          completed: 'เสร็จแล้ว',
+          overdue: 'เกินกำหนด'
+        },
+        favoriteReports: {
+          title: 'รายงานที่ใช้บ่อย',
+          wip: 'รายงานงานระหว่างผลิต',
+          goldCost: 'รายงานใบเบิกผสมทอง',
+          leadTime: 'รายงาน Lead-time การผลิต',
+          wages: 'รายงานค่าแรงช่าง',
+          wagesByPerson: 'รายงานค่าแรงช่างต่อคน'
+        }
+      }
     },
     stock: {
       product: { ...stock.product },

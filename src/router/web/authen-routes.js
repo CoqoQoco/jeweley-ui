@@ -14,7 +14,7 @@ import downloadsRoutes from '../web/downloads/downloads-routes.js'
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
 
-const Dashboard = () => import('@/views/dashboard/WelcomePage.vue')
+const Dashboard = () => import('@/views/dashboard/home/index-view.vue')
 const Customer = () => import('@/views/customer/list-customer/index-view.vue')
 
 //worker

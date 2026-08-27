@@ -188,7 +188,80 @@ export default {
       messageBox3: 'Message Box 3',
       messageBox4: 'Message Box 4',
       welcomeDesc: 'Welcome to the Jewelry Production / Storage / Sales / Service Management System',
-      companyFooter: '@Duangkaew Jewelry Manufacturer'
+      companyFooter: '@Duangkaew Jewelry Manufacturer',
+      home: {
+        greeting: {
+          hello: 'Hello, {name}'
+        },
+        quickActions: {
+          title: 'Quick Actions',
+          createPrePlan: 'New Production Order',
+          createCustomer: 'Add New Customer',
+          goodsReceipt: 'Goods Receipt',
+          createQuotation: 'New Quotation',
+          stockSearch: 'Search Stock',
+          createTicket: 'Report Issue / Request'
+        },
+        myJobs: {
+          title: 'My Jobs',
+          empty: 'No pending jobs right now'
+        },
+        actionCards: {
+          title: 'Key Summary',
+          pendingApproval: 'Pending Approval',
+          myPrePlan: 'My Production Orders',
+          planTotal: 'Total Plans',
+          planProcess: 'In Process',
+          planCompletedYesterday: 'Completed Yesterday',
+          planOverdue: 'Overdue',
+          pendingGR: 'Received Today',
+          ticketOpen: 'Open Tickets',
+          myTicket: 'My Tickets (Unread)',
+          scrapWeightMonth: 'Scrap Gold This Month (g)'
+        },
+        wipByStage: {
+          title: 'Work In Process by Department',
+          unit: 'items'
+        },
+        completedTrend: {
+          title: 'Completed Production Trend',
+          notEnoughData: 'Not enough data to forecast yet',
+          forecastLabel: 'Month-end Forecast',
+          actual: 'Actual',
+          forecast: 'Forecast',
+          assumption: 'Calculated from the average of the last {days} days'
+        },
+        stockSummary: {
+          title: 'Stock Overview',
+          gemTitle: 'Gems / Diamonds',
+          productTitle: 'Finished Products',
+          totalQuantity: 'Quantity On-hand',
+          totalValue: 'Total Value',
+          lowStock: 'Low Stock',
+          onProcess: 'In Process'
+        },
+        recentActivities: {
+          title: 'Recent Activities',
+          empty: 'No recent activities'
+        },
+        customerProductionStatus: {
+          title: 'Customer Production Status',
+          onlyMine: 'My Customers',
+          all: 'All',
+          empty: 'No data found',
+          inProduction: 'In Production',
+          completed: 'Completed',
+          overdue: 'Overdue'
+        },
+        favoriteReports: {
+          title: 'Favorite Reports',
+          wip: 'Work In Process Report',
+          goldCost: 'Gold Cost Report',
+          leadTime: 'Production Lead Time Report',
+          wages: 'Wages Report',
+          wagesByPerson: 'Worker Wages Summary'
+        }
+      }
     },
     stock: {
       product: { ...stock.product },
