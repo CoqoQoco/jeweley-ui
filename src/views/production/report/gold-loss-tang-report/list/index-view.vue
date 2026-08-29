@@ -12,7 +12,10 @@
     />
     <list-data-table-view
       :items="slipList"
-      class="mt-3"
+      :totalRecords="slipTotal"
+      :perPage="take"
+      @page="handlePageChange"
+      @sort="handleSortChange"
       @print="onPrint"
       @cancel="onCancel"
       @view="onView"
@@ -35,6 +38,7 @@ import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { GoldLossTangPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-loss-tang-pdf-builder.js'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import listSearchView from './components/search-view.vue'
 import listDataTableView from './components/data-table-view.vue'
@@ -51,6 +55,8 @@ export default {
     detailModalView
   },
 
+  mixins: [dataTablePaging],
+
   data() {
     return {
       form: {
@@ -60,6 +66,7 @@ export default {
         dateEnd: null
       },
       slipList: [],
+      slipTotal: 0,
       isShowDetail: false,
       detailSlipId: null,
       monthlySummarySearch: {
@@ -71,24 +78,38 @@ export default {
   },
 
   created() {
-    this.onSearch()
+    this.fetchData()
   },
 
   methods: {
-    async onSearch() {
-      const store = useGoldLossTangStore()
-      const res = await store.listSlips({
-        documentNo: this.form.documentNo || undefined,
+    buildSearch() {
+      return {
         workerCode: this.form.workerCode || undefined,
+        documentNo: this.form.documentNo || undefined,
         requestDateStart: this.form.dateStart ? formatISOString(this.form.dateStart) : undefined,
         requestDateEnd: this.form.dateEnd ? formatISOString(this.form.dateEnd) : undefined
+      }
+    },
+
+    async fetchData() {
+      const store = useGoldLossTangStore()
+      const res = await store.listSlips({
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
+        search: this.buildSearch()
       })
-      this.slipList = Array.isArray(res) ? res : res?.data || []
+      this.slipList = res?.data || []
+      this.slipTotal = res?.total || 0
       this.monthlySummarySearch = {
         workerCode: this.form.workerCode,
         dateStart: this.form.dateStart,
         dateEnd: this.form.dateEnd
       }
+    },
+
+    onSearch() {
+      this.resetPaging()
     },
 
     onClear() {
@@ -100,12 +121,21 @@ export default {
     },
 
     async onExport() {
-      if (this.slipList.length === 0) {
+      const store = useGoldLossTangStore()
+      const res = await store.listSlips({
+        take: 0,
+        skip: 0,
+        sort: this.sort,
+        search: this.buildSearch()
+      })
+      const exportList = res?.data || []
+
+      if (exportList.length === 0) {
         warning(this.$t('view.production.goldLossTang.noDataExport'))
         return
       }
 
-      const rows = this.slipList.map((x) => ({
+      const rows = exportList.map((x) => ({
         documentNo: x.documentNo,
         workerCode: x.workerCode,
         workerName: x.workerName,
@@ -168,14 +198,18 @@ export default {
       if (res) {
         const data = res.data || res
         confirmSubmit(
-          'ต้องการแนบรายละเอียดใบงาน (WO) ท้ายเอกสารหรือไม่?',
-          'พิมพ์เอกสาร',
+          this.$t('view.production.goldLossTang.printAttachWoQuestion'),
+          this.$t('view.production.goldLossTang.printTitle'),
           (choice) => {
             const includeJobs = choice.isConfirmed
             const builder = new GoldLossTangPdfBuilder(data, { includeJobs })
             builder.generatePDF().open()
           },
-          { confirmText: 'แนบรายละเอียด WO', denyText: 'เฉพาะสรุป', cancelText: 'ยกเลิก' },
+          {
+            confirmText: this.$t('view.production.goldLossTang.printWithWo'),
+            denyText: this.$t('view.production.goldLossTang.printSummaryOnly'),
+            cancelText: this.$t('common.btn.cancel')
+          },
           'question'
         )
       }

@@ -9,25 +9,33 @@
       <span class="count-badge-wrap">
         <span v-if="jobs.length > 0" class="count-badge">{{ selectedCount }}/{{ displayedJobs.length }}</span>
       </span>
-      <div v-if="jobs.length > 0" class="filter-row">
-        <MultiSelectGeneric
-          v-model="filterGoldTypes"
-          :options="goldTypeOptions"
-          optionLabel="label"
-          optionValue="value"
-          :placeholder="$t('view.production.goldLossTang.filterGoldType')"
-          :filter="true"
-          :showClear="true"
-          class="gold-filter-ms"
+      <div class="header-right-group">
+        <div v-if="jobs.length > 0" class="filter-row">
+          <MultiSelectGeneric
+            v-model="filterGoldTypes"
+            :options="goldTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            :placeholder="$t('view.production.goldLossTang.filterGoldType')"
+            :filter="true"
+            :showClear="true"
+            class="gold-filter-ms"
+          />
+          <CheckboxGeneric
+            v-model="hideAlreadySlipped"
+            :label="$t('view.production.goldLossTang.hideAlreadySlipped')"
+            class="ml-2"
+          />
+          <span v-if="hiddenSlippedCount > 0" class="hidden-count-text">
+            {{ $t('view.production.goldLossTang.hiddenSlippedCount', { count: hiddenSlippedCount }) }}
+          </span>
+        </div>
+        <ButtonGeneric
+          variant="main"
+          icon="bi-plus-circle"
+          :label="$t('view.production.goldLossTang.addManualJob')"
+          @click="openAddManualJob"
         />
-        <CheckboxGeneric
-          v-model="hideAlreadySlipped"
-          :label="$t('view.production.goldLossTang.hideAlreadySlipped')"
-          class="ml-2"
-        />
-        <span v-if="hiddenSlippedCount > 0" class="hidden-count-text">
-          {{ $t('view.production.goldLossTang.hiddenSlippedCount', { count: hiddenSlippedCount }) }}
-        </span>
       </div>
     </div>
 
@@ -72,8 +80,26 @@
       </template>
 
       <template #statusTemplate="{ data }">
+        <div v-if="data._manual" class="manual-actions">
+          <span class="manual-badge">
+            <i class="bi bi-pencil-square"></i>
+            {{ $t('view.production.goldLossTang.manualJobBadge') }}
+          </span>
+          <ButtonGeneric
+            variant="outline"
+            icon="bi-pencil"
+            class="manual-icon-btn"
+            @click="openEditManualJob(data)"
+          />
+          <ButtonGeneric
+            variant="red"
+            icon="bi-trash"
+            class="manual-icon-btn"
+            @click="onManualJobDelete(data)"
+          />
+        </div>
         <span
-          v-if="data.goldLossTangSlipId"
+          v-else-if="data.goldLossTangSlipId"
           class="slipped-badge"
           :title="$t('view.production.goldLossTang.lockedTooltip', { doc: data.goldLossTangSlipDocumentNo || '-' })"
         >
@@ -83,24 +109,37 @@
         <span v-else class="text-muted">-</span>
       </template>
     </BaseDataTable>
+
+    <ManualJobModal
+      :isShow="isShowManualModal"
+      :editingRow="editingManualRow"
+      @closeModal="isShowManualModal = false"
+      @save="onManualJobSave"
+    />
   </SectionCardGeneric>
 </template>
 
 <script>
 import dayjs from 'dayjs'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import ManualJobModal from '../modal/manual-job-modal.vue'
 
 export default {
   name: 'GoldLossTangJobSelectTable',
 
   components: {
     SectionCardGeneric,
+    ButtonGeneric,
     BaseDataTable,
     MultiSelectGeneric,
-    CheckboxGeneric
+    CheckboxGeneric,
+    ManualJobModal
   },
 
   props: {
@@ -118,12 +157,14 @@ export default {
     }
   },
 
-  emits: ['update:selectedJobs'],
+  emits: ['update:selectedJobs', 'add-manual-job', 'update-manual-job', 'remove-manual-job'],
 
   data() {
     return {
       filterGoldTypes: [],
-      hideAlreadySlipped: true
+      hideAlreadySlipped: true,
+      isShowManualModal: false,
+      editingManualRow: null
     }
   },
 
@@ -143,6 +184,7 @@ export default {
 
     displayedJobs() {
       return this.jobs.filter((j) => {
+        if (j._manual) return true
         if (this.hideAlreadySlipped && j.goldLossTangSlipId && j.goldLossTangSlipId !== this.editingSlipId) return false
         if (this.filterGoldTypes.length > 0) {
           const label = [j.gold, j.goldSize].filter(Boolean).join(' ')
@@ -154,7 +196,7 @@ export default {
 
     disabledJobs() {
       return this.jobs.filter(
-        (j) => j.goldLossTangSlipId && j.goldLossTangSlipId !== this.editingSlipId
+        (j) => !j._manual && j.goldLossTangSlipId && j.goldLossTangSlipId !== this.editingSlipId
       )
     },
 
@@ -181,7 +223,7 @@ export default {
         { field: 'gold', header: this.$t('view.production.goldLossTang.colGold'), minWidth: '100px', sortable: false },
         { field: 'goldWeightSend', header: this.$t('view.production.goldLossTang.colGoldWeightSend'), minWidth: '100px', align: 'right', sortable: false },
         { field: 'goldWeightCheck', header: this.$t('view.production.goldLossTang.colGoldWeightCheck'), minWidth: '100px', align: 'right', sortable: false },
-        { field: 'status', header: this.$t('view.production.goldLossTang.colStatus'), minWidth: '140px', sortable: false }
+        { field: 'status', header: this.$t('view.production.goldLossTang.colStatus'), minWidth: '190px', sortable: false }
       ]
     }
   },
@@ -201,6 +243,37 @@ export default {
       return data.goldLossTangSlipId && data.goldLossTangSlipId !== this.editingSlipId
         ? 'row-slipped'
         : null
+    },
+
+    openAddManualJob() {
+      this.editingManualRow = null
+      this.isShowManualModal = true
+    },
+
+    openEditManualJob(row) {
+      this.editingManualRow = row
+      this.isShowManualModal = true
+    },
+
+    onManualJobSave(formData) {
+      if (this.editingManualRow) {
+        this.$emit('update-manual-job', { ...formData, _uid: this.editingManualRow._uid })
+      } else {
+        this.$emit('add-manual-job', formData)
+      }
+      this.isShowManualModal = false
+      this.editingManualRow = null
+    },
+
+    onManualJobDelete(row) {
+      const label = `${row.wo || ''}${row.woNumber ? '-' + row.woNumber : ''}`
+      confirmThenSubmit(
+        label,
+        this.$t('view.production.goldLossTang.manualJobDeleteConfirm'),
+        () => {
+          this.$emit('remove-manual-job', row._uid)
+        }
+      )
     }
   }
 }
@@ -221,6 +294,13 @@ export default {
 .count-badge-wrap {
   display: flex;
   align-items: center;
+}
+
+.header-right-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
 }
 
 .filter-row {
@@ -263,6 +343,30 @@ export default {
   color: var(--base-font-color);
   opacity: 0.7;
   font-size: var(--fs-sm);
+}
+
+.manual-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+}
+
+.manual-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  background: var(--color-highlight-bg);
+  color: var(--base-green);
+  border: 1px solid var(--base-green);
+  border-radius: var(--radius-sm);
+  padding: 1px var(--sp-xs);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.manual-icon-btn {
+  padding: 0.15rem 0.4rem !important;
 }
 
 :deep(tr.row-slipped) {

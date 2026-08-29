@@ -38,10 +38,13 @@
     />
 
     <JobSelectTable
-      :jobs="jobs"
+      :jobs="allJobs"
       v-model:selectedJobs="selectedJobs"
       :editingSlipId="editingId ? Number(editingId) : null"
       class="mt-4"
+      @add-manual-job="onAddManualJob"
+      @update-manual-job="onUpdateManualJob"
+      @remove-manual-job="onRemoveManualJob"
     />
 
     <div class="form-row two-col mt-4">
@@ -119,6 +122,8 @@ export default {
 
       jobs: [],
       selectedJobs: [],
+      manualJobs: [],
+      manualJobSeq: 0,
 
       issuedLines: [],
       returnedLines: [],
@@ -142,6 +147,10 @@ export default {
   },
 
   computed: {
+    allJobs() {
+      return [...this.jobs, ...this.manualJobs]
+    },
+
     hasSelectedJobs() {
       return this.selectedJobs.length > 0 || this.issuedLines.length > 0 || this.returnedLines.length > 0
     },
@@ -220,7 +229,10 @@ export default {
         goldSize: this.goldFilter.length ? this.goldFilter : undefined
       })
 
-      this.selectedJobs = []
+      const selectedManualUids = new Set(
+        this.selectedJobs.filter((j) => j._manual).map((j) => j._uid)
+      )
+      this.selectedJobs = this.manualJobs.filter((j) => selectedManualUids.has(j._uid))
       this.issuedLines = []
       this.returnedLines = []
 
@@ -230,9 +242,48 @@ export default {
       this.hasSearched = true
     },
 
+    onAddManualJob(formData) {
+      const uid = `manual-${this.manualJobSeq++}`
+      const row = { ...formData, _uid: uid, _manual: true, productionPlanId: null, itemNo: null }
+      this.manualJobs = [...this.manualJobs, row]
+      this.selectedJobs = [...this.selectedJobs, row]
+    },
+
+    onUpdateManualJob(formData) {
+      const { _uid } = formData
+      this.manualJobs = this.manualJobs.map((j) => (j._uid === _uid ? { ...j, ...formData } : j))
+      this.selectedJobs = this.selectedJobs.map((j) => (j._uid === _uid ? { ...j, ...formData } : j))
+    },
+
+    onRemoveManualJob(uid) {
+      this.manualJobs = this.manualJobs.filter((j) => j._uid !== uid)
+      this.selectedJobs = this.selectedJobs.filter((j) => j._uid !== uid)
+    },
+
+    validateManualJobs() {
+      const manualSelected = this.selectedJobs.filter((j) => j._manual)
+      for (let i = 0; i < manualSelected.length; i++) {
+        const j = manualSelected[i]
+        const sendNum = parseFloat(j.goldWeightSend)
+        const checkNum = parseFloat(j.goldWeightCheck)
+        const hasValidWeights =
+          j.goldWeightSend !== '' && j.goldWeightSend != null && !isNaN(sendNum) && sendNum >= 0 &&
+          j.goldWeightCheck !== '' && j.goldWeightCheck != null && !isNaN(checkNum) && checkNum >= 0
+
+        if (!j.wo || !j.jobDate || !j.gold || !j.goldSize || !hasValidWeights) {
+          warning(this.$t('view.production.goldLossTang.validationManualJobIncompleteRow', { n: i + 1 }))
+          return false
+        }
+      }
+      return true
+    },
+
     onSave() {
       if (this.selectedJobs.length === 0 && this.issuedLines.length === 0) {
         warning(this.$t('view.production.goldLossTang.validationSelectJobs'))
+        return
+      }
+      if (!this.validateManualJobs()) {
         return
       }
       if (!this.lossPercent) {
@@ -290,20 +341,58 @@ export default {
       }))
 
       const slipItems = slip.items || []
-      this.selectedJobs = this.jobs.filter((j) =>
-        slipItems.some(
+      const normalItems = slipItems.filter((si) => si.productionPlanId != null)
+      const manualItems = slipItems.filter((si) => si.productionPlanId == null)
+
+      this.manualJobs = manualItems.map((si, i) => ({
+        _uid: `manual-edit-${i}`,
+        _manual: true,
+        productionPlanId: null,
+        itemNo: null,
+        wo: si.wo || '',
+        woNumber: si.woNumber != null ? si.woNumber : null,
+        productNumber: si.productNumber || null,
+        gold: si.gold || '',
+        goldSize: si.goldSize || '',
+        jobDate: si.jobDate ? new Date(si.jobDate) : null,
+        goldWeightSend: si.goldWeightSend != null ? Number(si.goldWeightSend) : 0,
+        goldWeightCheck: si.goldWeightCheck != null ? Number(si.goldWeightCheck) : 0,
+        goldQtyCheck: si.goldQtyCheck != null ? Number(si.goldQtyCheck) : null
+      }))
+
+      const matchedNormal = this.jobs.filter((j) =>
+        normalItems.some(
           (si) => si.productionPlanId === j.productionPlanId && si.itemNo === j.itemNo
         )
       )
+      this.selectedJobs = [...matchedNormal, ...this.manualJobs]
     },
 
     async doSave() {
       const store = useGoldLossTangStore()
 
-      const jobItems = this.selectedJobs.map((j) => ({
-        productionPlanId: j.productionPlanId,
-        itemNo: j.itemNo
-      }))
+      const jobItems = this.selectedJobs
+        .filter((j) => !j._manual)
+        .map((j) => ({
+          productionPlanId: j.productionPlanId,
+          itemNo: j.itemNo
+        }))
+
+      const manualItems = this.selectedJobs
+        .filter((j) => j._manual)
+        .map((j) => ({
+          productionPlanId: null,
+          itemNo: null,
+          wo: j.wo,
+          woNumber: j.woNumber,
+          productNumber: j.productNumber,
+          gold: j.gold,
+          goldSize: j.goldSize,
+          jobDate: j.jobDate ? formatISOString(j.jobDate) : null,
+          goldWeightSend: parseFloat(j.goldWeightSend) || 0,
+          goldWeightCheck: parseFloat(j.goldWeightCheck) || 0,
+          goldQtyCheck: j.goldQtyCheck != null ? parseFloat(j.goldQtyCheck) : null
+        }))
 
       const issuedLinePayload = this.issuedLines
         .filter((l) => l.name || l.weight)
@@ -321,7 +410,7 @@ export default {
         lossPercent: parseFloat(this.lossPercent),
         pricePerGram: parseFloat(this.pricePerGram),
         remark: this.remark,
-        items: jobItems,
+        items: [...jobItems, ...manualItems],
         issuedLines: issuedLinePayload,
         returnedLines: returnedLinePayload
       }

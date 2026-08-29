@@ -13,8 +13,8 @@ export const useGoldLossTangStore = defineStore('goldLossTang', {
       return await api.jewelry.post('Worker/CreateGoldLossTangSlip', payload)
     },
 
-    async listSlips(params) {
-      return await api.jewelry.post('Worker/ListGoldLossTangSlip', params)
+    async listSlips({ take = 10, skip = 0, sort = [], search = {} } = {}) {
+      return await api.jewelry.post('Worker/ListGoldLossTangSlip', { take, skip, sort, search })
     },
 
     async getSlip(id) {

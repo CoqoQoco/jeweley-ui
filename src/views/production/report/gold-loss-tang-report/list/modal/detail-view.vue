@@ -46,6 +46,9 @@
           >
             <template #woTemplate="{ data }">
               <span>{{ data.wo }}{{ data.woNumber ? '-' + data.woNumber : '' }}</span>
+              <span v-if="data.productionPlanId == null" class="manual-badge">
+                {{ $t('view.production.goldLossTang.manualJobBadge') }}
+              </span>
             </template>
             <template #jobDateTemplate="{ data }">
               <span>{{ formatDate(data.jobDate) }}</span>
@@ -371,5 +374,19 @@ export default {
 
 .loss-negative {
   color: var(--base-red);
+}
+
+.manual-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  background: var(--color-highlight-bg);
+  color: var(--base-green);
+  border: 1px solid var(--base-green);
+  border-radius: var(--radius-sm);
+  padding: 1px var(--sp-xs);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  margin-left: var(--sp-xs);
 }
 </style>

@@ -4,14 +4,16 @@
     icon="bi-calendar3"
     accent="main"
     headerStyle="legend"
-    class="monthly-summary-card"
   >
     <BaseDataTable
       :items="rows"
       :columns="columns"
-      :paginator="false"
+      :paginator="true"
+      :totalRecords="total"
+      :perPage="take"
       dataKey="_rowKey"
-      scrollHeight="400px"
+      @page="handlePageChange"
+      @sort="handleSortChange"
     >
       <template #monthTemplate="{ data }">
         {{ formatMonth(data) }}
@@ -35,6 +37,7 @@ import { useGoldLossTangMonthlyApiStore } from '@/stores/modules/api/production/
 import { formatYearMonth } from '@/services/utils/dayjs.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { GoldLossTangMonthlyPdfBuilder } from '@/services/helper/pdf/gold-loss/gold-loss-tang-monthly-pdf-builder.js'
+import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -48,6 +51,8 @@ export default {
     BaseDataTable,
     ButtonGeneric
   },
+
+  mixins: [dataTablePaging],
 
   setup() {
     const goldLossTangByWorkerStore = useGoldLossTangByWorkerApiStore()
@@ -64,7 +69,8 @@ export default {
 
   data() {
     return {
-      rows: []
+      rows: [],
+      total: 0
     }
   },
 
@@ -157,7 +163,7 @@ export default {
   watch: {
     search: {
       handler() {
-        this.fetchData()
+        this.resetPaging()
       },
       deep: true,
       immediate: true
@@ -174,9 +180,9 @@ export default {
     // ของ component นี้แทน เพื่อไม่ให้ state ชนกับหน้ารายงาน gold-loss-tang-by-worker-report
     async fetchData() {
       const res = await this.goldLossTangByWorkerStore.fetchReport({
-        take: 0,
-        skip: 0,
-        sort: [],
+        take: this.take,
+        skip: this.skip,
+        sort: this.sort,
         formValue: {
           workerCode: this.search.workerCode,
           requestDateStart: this.search.dateStart,
@@ -189,6 +195,7 @@ export default {
         ...item,
         _rowKey: `${item.workerCode}-${item.year}-${item.month}-${index}`
       }))
+      this.total = res?.total || 0
     },
 
     async onPrintMonthly(row) {
@@ -208,11 +215,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-@import '@/assets/scss/responsive-style/web';
-
-.monthly-summary-card {
-  margin-top: var(--sp-lg);
-}
-</style>

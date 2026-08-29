@@ -313,7 +313,7 @@ export class GoldLossTangPdfBuilder {
         const rowFill = idx % 2 === 1 ? '#f5f5f5' : null
         return [
           { text: String(idx + 1), alignment: 'center', fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
-          { text: (item.wo || '') + (item.woNumber ? '-' + item.woNumber : ''), fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
+          { text: (item.wo || '') + (item.woNumber ? '-' + item.woNumber : '') + (item.productionPlanId == null ? ' (เพิ่มเอง)' : ''), fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
           { text: fmtDate(item.jobDate), fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
           { text: [item.gold, item.goldSize].filter(Boolean).join(' '), fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
           { text: fmtW(item.goldWeightSend), alignment: 'right', fontSize: 8.5, fillColor: rowFill, margin: [2, 4, 2, 4] },
