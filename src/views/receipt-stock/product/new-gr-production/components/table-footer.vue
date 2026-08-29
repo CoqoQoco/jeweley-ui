@@ -8,6 +8,10 @@
           <span class="bi bi-hammer mr-1"></span>
           <span>{{ $t('view.receiptStock.product.grProduction.adjustBreakdownBtn') }}</span>
         </button>
+        <button class="btn btn-sm btn-green ml-2" type="button" @click="$emit('selectImageBulk')">
+          <span class="bi bi-images mr-1"></span>
+          <span>{{ $t('view.receiptStock.product.grProduction.setProductImageBulk') }}</span>
+        </button>
       </div>
       <div>
         <button class="btn btn-sm btn-green" type="button" @click="$emit('fetchDraft')">
@@ -44,7 +48,7 @@ export default {
     }
   },
 
-  emits: ['fetchDraft', 'submit', 'adjustBreakdown']
+  emits: ['fetchDraft', 'submit', 'adjustBreakdown', 'selectImageBulk']
 }
 </script>
 

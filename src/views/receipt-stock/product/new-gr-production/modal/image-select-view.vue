@@ -5,8 +5,13 @@
         <div>
           <div class="title-text-lg-bg">
             <span><i class="bi bi-image mr-2"></i></span>
-            <span>เลือกรูปสินค้า | เลขที่ตั้งรับ :</span>
-            <span class="ml-2">{{ stock.stockReceiptNumber }}</span>
+            <template v-if="bulkMode">
+              <span>{{ $t('view.receiptStock.product.grProduction.imageModalTitleBulk') }}</span>
+            </template>
+            <template v-else>
+              <span>{{ $t('view.receiptStock.product.grProduction.imageModalTitle') }}</span>
+              <span class="ml-2">{{ stock.stockReceiptNumber }}</span>
+            </template>
           </div>
           
           <div>
@@ -22,7 +27,7 @@
                     autocapitalize="off"
                     spellcheck="false"
                     v-model="search.name"
-                    placeholder="ค้นหาด้วยชื่อรูปภาพ"
+                    :placeholder="$t('view.receiptStock.product.grProduction.searchImagePlaceholder')"
                     required
                   />
                   <div class="input-group-append mr-1">
@@ -65,21 +70,30 @@
                   </div>
                 </div>
               </template>
-
-              <!-- Custom Footer/Paginator Buttons -->
-              <template #paginator-buttons>
-                <button
-                  :class="['btn btn-sm', !selectedItems.length > 0 ? 'btn-secondary' : 'btn-main']"
-                  type="button"
-                  :disabled="!selectedItems.length > 0"
-                  title="ปรับปรุง"
-                  @click="onSelect"
-                >
-                  <span><i class="bi bi-pencil-square"></i></span>
-                  <span class="ml-2">ปรับปรุง</span>
-                </button>
-              </template>
             </BaseDataTable>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <div class="image-scope-row">
+              <span class="scope-label">{{ $t('view.receiptStock.product.grProduction.imageScopeTitle') }}</span>
+              <RadioGroupGeneric
+                v-model="scope"
+                :options="scopeOptions"
+                optionLabel="label"
+                optionValue="value"
+                :inline="true"
+              />
+            </div>
+            <button
+              :class="['btn btn-sm', !selectedItems.length > 0 ? 'btn-secondary' : 'btn-main']"
+              type="button"
+              :disabled="!selectedItems.length > 0"
+              :title="$t('view.receiptStock.product.grProduction.updateImageBtn')"
+              @click="onSelect"
+            >
+              <span><i class="bi bi-pencil-square"></i></span>
+              <span class="ml-2">{{ $t('view.receiptStock.product.grProduction.updateImageBtn') }}</span>
+            </button>
           </div>
         </div>
       </template>
@@ -93,6 +107,7 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
 
 import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.js'
 
@@ -104,7 +119,8 @@ export default {
   components: {
     modal,
     BaseDataTable,
-    imagePreview
+    imagePreview,
+    RadioGroupGeneric
   },
 
   setup() {
@@ -122,16 +138,86 @@ export default {
       type: Object,
       required: true,
       default: () => ({})
+    },
+    bulkMode: {
+      type: Boolean,
+      default: false
+    },
+    selectedCount: {
+      type: Number,
+      default: 0
+    },
+    pendingCount: {
+      type: Number,
+      default: 0
+    },
+    defaultSearch: {
+      type: String,
+      default: ''
     }
   },
 
-  computed: {},
+  computed: {
+    scopeOptions() {
+      const options = []
+      if (!this.bulkMode) {
+        options.push({
+          value: 'single',
+          label: this.$t('view.receiptStock.product.grProduction.imageScopeSingle')
+        })
+      }
+      if (this.selectedCount > 0) {
+        options.push({
+          value: 'selected',
+          label: this.$t('view.receiptStock.product.grProduction.imageScopeSelected', { count: this.selectedCount })
+        })
+      }
+      options.push({
+        value: 'all',
+        label: this.$t('view.receiptStock.product.grProduction.imageScopeAll', { count: this.pendingCount })
+      })
+      return options
+    },
+    columns() {
+      return [
+        {
+          field: 'image',
+          header: '',
+          width: '50px',
+          sortable: false,
+          align: 'center'
+        },
+        {
+          field: 'name',
+          header: this.$t('view.receiptStock.product.grProduction.colImageName'),
+          sortable: false,
+          minWidth: '150px'
+        },
+        {
+          field: 'createDate',
+          header: this.$t('view.receiptStock.product.grProduction.colImageCreateDate'),
+          sortable: false,
+          format: 'datetime',
+          minWidth: '150px'
+        },
+        {
+          field: 'remark',
+          header: this.$t('view.receiptStock.product.grProduction.colImageRemark'),
+          sortable: false,
+          minWidth: '150px'
+        }
+      ]
+    }
+  },
 
   watch: {
     isShow: {
       async handler(val) {
         this.isShowModal = val
-        await this.fetchLatestImage()
+        if (val === true) {
+          this.scope = this.bulkMode ? (this.selectedCount > 0 ? 'selected' : 'all') : 'single'
+          await this.openWithDefaultSearch()
+        }
       },
       immediate: true
     },
@@ -153,40 +239,13 @@ export default {
       },
 
       type: 'STOCK-PRODUCT',
+      scope: 'single',
 
       latestImage: [],
       latestImageTotalRecords: 0,
       selectedItems: [],
       selectionType: 'single',
 
-      columns: [
-        {
-          field: 'image',
-          header: '',
-          width: '50px',
-          sortable: false,
-          align: 'center'
-        },
-        {
-          field: 'name',
-          header: 'ชื่อ',
-          sortable: false,
-          minWidth: '150px'
-        },
-        {
-          field: 'createDate',
-          header: 'วันที่สร้าง',
-          sortable: false,
-          format: 'datetime',
-          minWidth: '150px'
-        },
-        {
-          field: 'remark',
-          header: 'รายละเอียด',
-          sortable: false,
-          minWidth: '150px'
-        }
-      ],
       tableHeight: '800px',
       take: 10,
       skip: 0,
@@ -199,6 +258,7 @@ export default {
       this.search = { ...interfaceSearch }
       this.selectedItems = []
       this.latestImage = []
+      this.scope = 'single'
     },
     closeModal() {
       this.onClear()
@@ -218,8 +278,21 @@ export default {
     onSelect() {
       //console.log('selectedItems:', this.selectedItems[0])
       //console.log('stock:', this.stock)
-      this.$emit('select', this.selectedItems[0], this.stock)
-      this.onClear
+      this.$emit('select', this.selectedItems[0], this.stock, this.scope)
+      this.onClear()
+    },
+
+    async openWithDefaultSearch() {
+      if (this.defaultSearch) {
+        this.search.name = this.defaultSearch
+        await this.fetchLatestImage()
+        if (this.latestImageTotalRecords === 0) {
+          this.search.name = null
+          await this.fetchLatestImage()
+        }
+      } else {
+        await this.fetchLatestImage()
+      }
     },
 
     updateSelection(newSelection) {
@@ -278,5 +351,18 @@ export default {
   height: 35px;
   padding: 6px 12px;
   margin-top: 5px !important;
+}
+
+.image-scope-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+}
+
+.scope-label {
+  font-weight: 600;
+  color: var(--base-font-color);
+  white-space: nowrap;
 }
 </style>

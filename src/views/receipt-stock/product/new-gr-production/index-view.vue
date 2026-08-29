@@ -33,6 +33,7 @@
           @fetchDraft="fetchDraft"
           @submit="onSubmit"
           @adjustBreakdown="onAdjustBreakdown"
+          @selectImageBulk="onSelectImageBulk"
         />
       </form>
     </div>
@@ -40,6 +41,10 @@
     <modalSelectImage
       :isShow="isShow.imageSelect"
       :modelStock="stockUpdate"
+      :bulkMode="imageBulkMode"
+      :selectedCount="selectableSelectedCount"
+      :pendingCount="pendingStockCount"
+      :defaultSearch="data.mold || ''"
       @select="updateImage"
       @closeModal="closeModal"
     />
@@ -159,6 +164,12 @@ export default {
       console.log('requiredStud', res)
       return res
     },
+    selectableSelectedCount() {
+      return this.selectedItems.filter((x) => !x.isReceipt).length
+    },
+    pendingStockCount() {
+      return this.form.filter((x) => !x.isReceipt).length
+    },
     columns() {
       return [
         {
@@ -166,6 +177,13 @@ export default {
           header: this.$t('view.receiptStock.product.grProduction.colNo'),
           sortable: false,
           width: '50px'
+        },
+        {
+          field: 'image',
+          header: this.$t('view.receiptStock.product.grProduction.colImage'),
+          sortable: false,
+          width: '70px',
+          align: 'center'
         },
         {
           field: 'stockReceiptNumber',
@@ -289,6 +307,7 @@ export default {
 
       isShow: { ...interfaceIsShow },
       stockUpdate: {},
+      imageBulkMode: false,
       type: 'STOCK-PRODUCT',
 
       param: {},
@@ -431,11 +450,31 @@ export default {
 
     closeModal() {
       this.searchProductNameType = 'EN'
+      this.imageBulkMode = false
       this.isShow = { ...interfaceIsShow }
     },
 
     onSelectImage(e) {
       this.stockUpdate = { ...e }
+      this.imageBulkMode = false
+      this.isShow.imageSelect = true
+    },
+
+    onSelectImageBulk() {
+      const targets = this.form.filter((x) => !x.isReceipt)
+      if (this.selectedItems.filter((x) => !x.isReceipt).length === 0 && targets.length === 0) {
+        swAlert.warning(
+          this.$t('view.receiptStock.product.grProduction.selectProductFirst'),
+          this.$t('view.receiptStock.product.grProduction.selectImageFirstDesc'),
+          () => {
+            console.log('No items available for bulk image select')
+          }
+        )
+        return
+      }
+
+      this.stockUpdate = {}
+      this.imageBulkMode = true
       this.isShow.imageSelect = true
     },
 
@@ -445,10 +484,52 @@ export default {
       this.isShow.searchProductName = true
     },
 
-    updateImage(image, stock) {
+    updateImage(image, stock, scope = 'single') {
+      let targets = []
+      if (scope === 'single') {
+        targets = this.form.filter((f) => f.stockReceiptNumber === stock.stockReceiptNumber)
+      } else if (scope === 'selected') {
+        targets = this.form.filter(
+          (f) =>
+            !f.isReceipt &&
+            this.selectedItems.some((s) => s.stockReceiptNumber === f.stockReceiptNumber)
+        )
+      } else if (scope === 'all') {
+        targets = this.form.filter((f) => !f.isReceipt)
+      }
+      targets = targets.filter((t) => !t.isReceipt)
+
       this.isShow.imageSelect = false
-      const stockArray = [{ ...stock }]
-      this.updateStock(null, image, stockArray)
+      this.imageBulkMode = false
+
+      const overwriteCount = targets.filter(
+        (t) => t.imagePath && t.imagePath !== image.path
+      ).length
+
+      if (scope !== 'single' && overwriteCount > 0) {
+        swAlert.confirmSubmit(
+          '',
+          this.$t('view.receiptStock.product.grProduction.confirmOverwriteImage', { count: overwriteCount }),
+          () => this.applyImageToStocks(targets, image)
+        )
+      } else {
+        this.applyImageToStocks(targets, image)
+      }
+    },
+
+    applyImageToStocks(targets, image) {
+      targets.forEach((item) => {
+        item.imageName = image.name
+        item.imageYear = image.year
+        item.imagePath = image.path
+      })
+
+      if (targets.length > 1) {
+        swAlert.success(
+          this.$t('view.receiptStock.product.grProduction.applyImageSuccess'),
+          this.$t('view.receiptStock.product.grProduction.applyImageSuccessDesc', { count: targets.length })
+        )
+      }
     },
 
     updateProductName(name, stock, mode, all) {
@@ -512,32 +593,6 @@ export default {
             }
 
             console.log('updateStock form index update', this.form[indexForm])
-          }
-
-          if (this.selectedItems.length > 0) {
-            const indexSelect = this.selectedItems.findIndex(
-              (x) => x.stockReceiptNumber === item.stockReceiptNumber
-            )
-            if (indexSelect > -1) {
-              if (image) {
-                this.selectedItems[indexForm].imageName = image.name
-                this.selectedItems[indexForm].imageYear = image.year
-                this.selectedItems[indexForm].imagePath = image.path
-              }
-
-              if (data) {
-                if (data.text) {
-                  if (data.mode === 'EN') {
-                    this.selectedItems[indexForm].productNameEN = data.text
-                  }
-                  if (data.mode === 'TH') {
-                    this.selectedItems[indexForm].productNameTH = data.text
-                  }
-                }
-              }
-
-              console.log('updateStock selectedItems index update', this.selectedItems[indexSelect])
-            }
           }
         })
       }

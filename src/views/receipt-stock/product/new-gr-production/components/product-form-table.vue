@@ -20,6 +20,29 @@
       </div>
     </template>
 
+    <!-- Image -->
+    <template #imageTemplate="{ data }">
+      <div
+        class="image-column-cell"
+        :class="{ 'is-clickable': !data.isReceipt }"
+        v-on="!data.isReceipt ? { click: (e) => onImageCellClick(e, data) } : {}"
+      >
+        <imagePreview
+          v-if="data.imagePath"
+          :imageName="data.imagePath"
+          :path="data.imagePath"
+          :type="type"
+          :width="40"
+          :height="40"
+          :preview="false"
+        />
+        <div v-else class="image-column-placeholder">
+          <i class="bi bi-image"></i>
+          <span>{{ $t('view.receiptStock.product.grProduction.noImage') }}</span>
+        </div>
+      </div>
+    </template>
+
     <!-- Product Number -->
     <template #productNumberTemplate="{ data }">
       <ProductNumberField
@@ -95,12 +118,15 @@
         @fetchDraft="fetchDraft"
         @submit="$emit('submit')"
         @adjustBreakdown="$emit('adjustBreakdown')"
+        @selectImageBulk="$emit('selectImageBulk')"
       />
     </template>
   </BaseDataTable>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
+
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ProductNumberField from './fields/product-number-field.vue'
 import MoldDesignField from './fields/mold-design-field.vue'
@@ -108,11 +134,14 @@ import ProductNameField from './fields/product-name-field.vue'
 import ProductExpansion from './product-expansion.vue'
 import TableFooter from './table-footer.vue'
 
+const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
+
 export default {
   name: 'ProductFormTable',
 
   components: {
     BaseDataTable,
+    imagePreview,
     ProductNumberField,
     MoldDesignField,
     ProductNameField,
@@ -199,6 +228,7 @@ export default {
     'update:selectedItems',
     'searchProductName',
     'selectImage',
+    'selectImageBulk',
     'addMaterial',
     'removeMaterial',
     'updateTypeBarcode',
@@ -252,6 +282,11 @@ export default {
     },
 
     onSelectImage(data) {
+      this.$emit('selectImage', data)
+    },
+
+    onImageCellClick(event, data) {
+      event.stopPropagation()
       this.$emit('selectImage', data)
     },
 
@@ -315,6 +350,34 @@ export default {
         }
       }
     }
+  }
+}
+
+.image-column-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.is-clickable {
+    cursor: pointer;
+  }
+}
+
+.image-column-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs);
+  color: var(--base-sub-color);
+
+  i {
+    font-size: var(--fs-lg);
+  }
+
+  span {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-sm);
   }
 }
 </style>
