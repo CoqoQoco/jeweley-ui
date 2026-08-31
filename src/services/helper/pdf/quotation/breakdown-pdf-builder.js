@@ -412,13 +412,16 @@ export class BreakdownPdfBuilder {
       const etcPriceUnits = []
 
       goldList.forEach((gold, idx) => {
+        // ปัด 2 ตำแหน่งให้เท่ากับ "ค่าที่พิมพ์บนเอกสาร" ก่อนคูณจริง (self-consistent)
+        // ลูกค้ากดเครื่องคิดเลขจากตัวเลขบนกระดาษ (Net Weight × Price/Weight) ต้องได้ Price/Unit ตรงกันเป๊ะ
+        const applyGL = this.shouldApplyGoldLoss(gold)
         const qtyWeight = Number(gold.qtyWeight) || 0
-        const goldLossWeight = qtyWeight * (1 + this.goldLossPercent / 100)
-        const priceUnitRaw =
-          ((Number(gold.qty) || 0) * (Number(gold.qtyPrice) || 0) +
-            goldLossWeight * (Number(gold.qtyWeightPrice) || 0)) /
-          (this.currencyMultiplier || 1)
-        const priceUnit = this.roundPrice2(priceUnitRaw)
+        const rawEffectiveWeight = applyGL ? qtyWeight * (1 + this.goldLossPercent / 100) : qtyWeight
+        const effectiveWeight = this.roundPrice2(rawEffectiveWeight)
+        const displayWeight = this.roundPrice2(qtyWeight)
+        const weightPrice = this.roundPrice2((Number(gold.qtyWeightPrice) || 0) / (this.currencyMultiplier || 1))
+        const unitPrice = this.roundPrice2((Number(gold.qtyPrice) || 0) / (this.currencyMultiplier || 1))
+        const priceUnit = this.roundPrice2((Number(gold.qty) || 0) * unitPrice + effectiveWeight * weightPrice)
         goldPriceUnits.push(priceUnit)
         body.push([
           currentRow === 0 ? { text: rowIndex, alignment: 'center', rowSpan: totalRows } : {},
@@ -439,17 +442,13 @@ export class BreakdownPdfBuilder {
           { text: gold.nameDescription || '-', alignment: 'left' },
           { text: '', alignment: 'center' },
           {
-            text: gold.qtyPrice
-              ? this.formatPrice(gold.qtyPrice / (this.currencyMultiplier || 1))
-              : '',
+            text: gold.qtyPrice ? this.formatPrice(unitPrice) : '',
             alignment: 'center'
           },
-          { text: gold.qtyWeight ? this.formatPrice(gold.qtyWeight) : '', alignment: 'center' },
-          { text: gold.qtyWeight ? this.formatPrice(goldLossWeight) : '', alignment: 'center' },
+          { text: gold.qtyWeight ? this.formatPrice(displayWeight) : '', alignment: 'center' },
+          { text: applyGL && effectiveWeight ? this.formatPrice(effectiveWeight) : '', alignment: 'center' },
           {
-            text: gold.qtyWeightPrice
-              ? this.formatPrice(gold.qtyWeightPrice / (this.currencyMultiplier || 1))
-              : '',
+            text: gold.qtyWeightPrice ? this.formatPrice(weightPrice) : '',
             alignment: 'center'
           },
           {
@@ -507,11 +506,21 @@ export class BreakdownPdfBuilder {
           {},
           idx === 0 ? { text: 'Labor', alignment: 'center', rowSpan: workList.length } : {},
           { text: work.nameDescription || '-', alignment: 'left' },
+          { text: work.qty ? this.formatQty(work.qty) : '', alignment: 'center' },
+          {
+            text: work.qtyPrice
+              ? this.formatPrice(work.qtyPrice / (this.currencyMultiplier || 1))
+              : '',
+            alignment: 'center'
+          },
+          { text: work.qtyWeight ? this.formatPrice(work.qtyWeight) : '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
+          {
+            text: work.qtyWeightPrice
+              ? this.formatPrice(work.qtyWeightPrice / (this.currencyMultiplier || 1))
+              : '',
+            alignment: 'center'
+          },
           {
             text: this.formatPrice(priceUnit),
             alignment: 'right'
@@ -630,16 +639,16 @@ export class BreakdownPdfBuilder {
       })
 
       // รวมยอดจาก price/unit ที่ "ปัดแล้ว" ตัวเดียวกับที่พิมพ์ในแต่ละแถว (ห้ามคำนวณจาก raw ซ้ำ)
-      const totalGold = goldPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
-      const totalGem = gemPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
-      const totalEtc = etcPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
+      const totalGold = goldPriceUnits.reduce((sum, p) => sum + p, 0)
+      const totalGem = gemPriceUnits.reduce((sum, p) => sum + p, 0)
+      const totalEtc = etcPriceUnits.reduce((sum, p) => sum + p, 0)
       const totalWork = workPriceUnits.length
-        ? workPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
+        ? workPriceUnits.reduce((sum, p) => sum + p, 0)
         : 0
       const totalEmbed = useNewSettingRows
-        ? (diamondPriceUnit + stonePriceUnit) * (item.qty || 1)
+        ? diamondPriceUnit + stonePriceUnit
         : embedPriceUnits.length
-          ? embedPriceUnits.reduce((sum, p) => sum + p, 0) * (item.qty || 1)
+          ? embedPriceUnits.reduce((sum, p) => sum + p, 0)
           : 0
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
@@ -718,6 +727,32 @@ export class BreakdownPdfBuilder {
           bold: true
         }
       ])
+      if ((item.qty || 1) > 1) {
+        body.push([
+          {
+            text: `QTY ${item.qty} pcs × ${this.formatPrice(totalWithProfit)}`,
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            colSpan: 11
+          },
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {
+            text: this.formatPrice(totalWithProfit * (item.qty || 1)),
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            bold: true
+          }
+        ])
+      }
       rowIndex++
     })
     return {
@@ -862,6 +897,11 @@ export class BreakdownPdfBuilder {
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
     return Math.round(num).toFixed(2)
+  }
+
+  // fallback: ข้อมูลเก่าที่ยังไม่มี applyGoldLoss ให้คิด gold loss เหมือนเดิม (ทุกแถวกลุ่ม Gold)
+  shouldApplyGoldLoss(t) {
+    return t.applyGoldLoss ?? (String(t.nameGroup || '').toLowerCase() === 'gold')
   }
 
   async generatePDF() {

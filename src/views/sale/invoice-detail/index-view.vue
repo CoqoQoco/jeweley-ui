@@ -1113,6 +1113,7 @@ export default {
           open: false,
           showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
           hideCompanyHeader: printData.hideCompanyHeader || false,
+          hideRounding: printData.hideRounding || false,
           showDecimals: printData.showDecimals,
           itemsPerPage: Number(printData.itemsPerPage) || 10
         }
@@ -1223,6 +1224,7 @@ export default {
         preview: true,
         showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
         hideCompanyHeader: printData.hideCompanyHeader || false,
+        hideRounding: printData.hideRounding || false,
         showDecimals: printData.showDecimals,
         itemsPerPage: Number(printData.itemsPerPage) || 10
       }

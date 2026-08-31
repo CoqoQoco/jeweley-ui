@@ -61,6 +61,7 @@ export const invoiceDetail = {
   selectDate: 'เลือกวันที่',
   showCifLabel: 'แสดงป้าย C.I.F',
   hideCompanyHeader: 'พิมพ์แบบไม่มีหัวบริษัท',
+  hideRounding: 'ไม่แสดงช่อง ROUNDING',
   itemsPerPage: 'จำนวนรายการต่อหน้า',
   itemsPerPageHint: 'ลดจำนวนลงหากกล่องลายเซ็นตกหน้ากระดาษ',
   template: 'รูปแบบใบแจ้งหนี้',
@@ -892,7 +893,9 @@ export const costStock = {
   jobDetail: 'รายละเอียดงาน',
   pricePerQty: 'ราคา/จำนวน',
   pricePerWeight: 'ราคา/น้ำหนัก',
+  applyGoldLoss: 'คิด Gold Loss',
   costPrefix: 'ต้นทุน',
+  historyBadge: 'เคยใช้',
   totalCostTHB: 'ต้นทุนรวมทั้งหมด (THB)',
   costPerPiece: 'ต้นทุนต่อชิ้น (÷ {qty} ชิ้น)',
   group: {

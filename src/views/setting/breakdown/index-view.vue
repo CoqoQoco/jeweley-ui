@@ -60,6 +60,33 @@
       <div></div>
       <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" @click="onSave" />
     </div>
+
+    <SectionCardGeneric
+      class="mt-4"
+      :title="$t('view.setting.breakdown.termHistory.sectionTitle')"
+      icon="bi-clock-history"
+      accent="main"
+      headerStyle="legend"
+    >
+      <div v-for="group in termHistoryGroups" :key="group.key" class="term-group">
+        <span class="term-group-title">{{ group.label }}</span>
+        <div class="term-chip-list">
+          <span v-for="term in termHistory[group.key] || []" :key="term" class="term-chip">
+            <span class="term-chip-text">{{ term }}</span>
+            <ButtonGeneric
+              variant="red"
+              icon="bi-x"
+              :title="$t('common.btn.delete')"
+              class="term-chip-delete"
+              @click="onDeleteTerm(group.key, term)"
+            />
+          </span>
+          <span v-if="!(termHistory[group.key] || []).length" class="term-empty">
+            {{ $t('common.label.noData') }}
+          </span>
+        </div>
+      </div>
+    </SectionCardGeneric>
   </div>
 </template>
 
@@ -67,7 +94,9 @@
 // External dependencies
 import { defineAsyncComponent } from 'vue'
 import { getBreakdownSetting, saveBreakdownSetting, BREAKDOWN_SETTING_DEFAULT } from '@/services/helper/breakdown-setting-store.js'
+import { getTermHistory, saveTermHistory } from '@/services/helper/breakdown-term-history-store.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 
 // Local components
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -90,15 +119,44 @@ export default {
 
   data() {
     return {
-      form: { ...BREAKDOWN_SETTING_DEFAULT }
+      form: { ...BREAKDOWN_SETTING_DEFAULT },
+      termHistory: {}
+    }
+  },
+
+  computed: {
+    termHistoryGroups() {
+      return [
+        { key: 'Gold', label: this.$t('view.sale.costStock.group.gold') },
+        { key: 'Worker', label: this.$t('view.sale.costStock.group.worker') },
+        { key: 'Embed', label: this.$t('view.sale.costStock.group.embed') },
+        { key: 'ETC', label: this.$t('view.sale.costStock.group.etc') }
+      ]
     }
   },
 
   async mounted() {
     this.form = await getBreakdownSetting()
+    this.termHistory = await getTermHistory()
   },
 
   methods: {
+    onDeleteTerm(nameGroup, term) {
+      confirmThenSubmit(
+        term,
+        this.$t('view.setting.breakdown.termHistory.confirmDeleteTitle'),
+        async () => {
+          const updated = {
+            ...this.termHistory,
+            [nameGroup]: (this.termHistory[nameGroup] || []).filter((t) => t !== term)
+          }
+          await saveTermHistory(updated)
+          this.termHistory = updated
+          success(this.$t('view.setting.breakdown.termHistory.deleteSuccess'))
+        }
+      )
+    },
+
     validateForm() {
       const fields = [
         'goldLossPercent',
@@ -167,5 +225,52 @@ export default {
   border-top: 1px solid var(--color-border);
   padding-top: var(--sp-lg);
   margin-top: var(--sp-lg);
+}
+
+.term-group {
+  margin-bottom: var(--sp-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.term-group-title {
+  display: block;
+  font-weight: 600;
+  color: var(--base-font-color);
+  margin-bottom: var(--sp-sm);
+}
+
+.term-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.term-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  padding: var(--sp-xs) var(--sp-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-card-bg);
+}
+
+.term-chip-text {
+  font-size: var(--fs-base);
+  color: var(--base-font-color);
+}
+
+.term-chip-delete {
+  padding: 0 var(--sp-xs) !important;
+  line-height: 1;
+}
+
+.term-empty {
+  color: var(--color-border);
+  font-size: var(--fs-sm);
 }
 </style>

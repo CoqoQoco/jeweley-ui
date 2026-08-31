@@ -353,6 +353,7 @@ export default {
         moldCode: it.moldCode || null,
         moldDetail: it.moldDetail || null,
         productImageBlobPath: it.productImagePath || null,
+        productType: findByCode(ms.productTypes, it.productType),
         productQty: it.productQty || null,
         productQtyUnit: it.productQtyUnit || null,
         productDetail: it.productDetail || null,

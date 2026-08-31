@@ -46,6 +46,7 @@ export class InvoicePdfBuilder {
     this.itemsPerPage = Number(itemsPerPage) || 10
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
     this.hideCompanyHeader = saleOrderData?.hideCompanyHeader || false
+    this.hideRounding = saleOrderData?.hideRounding || false
 
     // Calculate totals with new fields
     this.subtotal = this.calculateSubtotal()
@@ -182,7 +183,7 @@ export class InvoicePdfBuilder {
                       text: 'The first step is always the hardest',
                       fontSize: 12,
                       color: '#8B0000',
-                      margin: [25, -10, 0, 0]
+                      margin: [25, -2, 0, 0]
                     }
                   ]
                 }
@@ -218,7 +219,7 @@ export class InvoicePdfBuilder {
                           fontSize: 9,
                           color: '#393939',
                           alignment: 'right',
-                          width: '45%'
+                          width: '30%'
                         },
                         {
                           text: this.invoiceNo || '',
@@ -226,7 +227,7 @@ export class InvoicePdfBuilder {
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
-                          width: '55%',
+                          width: '70%',
                           margin: [5, 0, 0, 0]
                         }
                       ]
@@ -238,7 +239,7 @@ export class InvoicePdfBuilder {
                           fontSize: 9,
                           color: '#393939',
                           alignment: 'right',
-                          width: '45%'
+                          width: '30%'
                         },
                         {
                           text: dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY'),
@@ -246,7 +247,7 @@ export class InvoicePdfBuilder {
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
-                          width: '55%',
+                          width: '70%',
                           margin: [5, 0, 0, 0]
                         }
                       ]
@@ -258,7 +259,7 @@ export class InvoicePdfBuilder {
                           fontSize: 9,
                           color: '#393939',
                           alignment: 'right',
-                          width: '45%'
+                          width: '30%'
                         },
                         {
                           text: this.saleOrderData.soNumber || this.saleOrderData.number || '',
@@ -266,7 +267,7 @@ export class InvoicePdfBuilder {
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
-                          width: '55%',
+                          width: '70%',
                           margin: [5, 0, 0, 0]
                         }
                       ]
@@ -459,6 +460,7 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
+        dontBreakRows: true,
         widths: [15, 45, '*', '*', '*', '*', '*', 20, 55, 50], // 10 columns
         body: [
           [
@@ -492,7 +494,8 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [17, 43, 59, 49, 57, 66, '*', 21, 51, 58], // 10 columns
+        dontBreakRows: true,
+        widths: [15, 43, 100, 49, 50, 58, '*', 20, 48, 55], // 10 columns
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -507,6 +510,12 @@ export class InvoicePdfBuilder {
         },
         paddingRight: function () {
           return 3
+        },
+        paddingTop: function () {
+          return 0
+        },
+        paddingBottom: function () {
+          return 0
         }
       }
     }
@@ -518,7 +527,8 @@ export class InvoicePdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [17, 43, 59, 49, 57, 66, '*', 21, 51, 58], // 10 columns
+        dontBreakRows: true,
+        widths: [15, 43, 100, 49, 50, 58, '*', 20, 48, 55], // 10 columns
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -533,6 +543,12 @@ export class InvoicePdfBuilder {
         },
         paddingRight: function () {
           return 3
+        },
+        paddingTop: function () {
+          return 0
+        },
+        paddingBottom: function () {
+          return 0
         }
       }
     }
@@ -753,7 +769,7 @@ export class InvoicePdfBuilder {
     }
 
     // ROUNDING row (only when adjustment > 0)
-    if (this.roundingAdjustment > 0) {
+    if (this.roundingAdjustment > 0 && !this.hideRounding) {
       body.push([
         {
           text: '',
@@ -896,13 +912,13 @@ export class InvoicePdfBuilder {
               ? m.typeCode || ''
               : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
           alignment: 'left',
-          fontSize: 8,
+          fontSize: 7,
           margin: [0, 0, 0, 0]
         },
         {
           text: m.weight ? Number(m.weight).toFixed(2) : Number(0).toFixed(2),
           alignment: 'right',
-          fontSize: 8,
+          fontSize: 7,
           margin: [0, 0, 0, 0]
         }
       ])
@@ -932,7 +948,7 @@ export class InvoicePdfBuilder {
           return 0
         }
       },
-      margin: [5, 5, 0, 0]
+      margin: [5, 2, 0, 0]
     }
   }
 
@@ -1048,7 +1064,7 @@ export class InvoicePdfBuilder {
     return {
       text: text || '',
       fontSize: 9,
-      margin: [2, 5, 2, 5]
+      margin: [2, 3, 2, 3]
     }
   }
 
@@ -1101,7 +1117,7 @@ export class InvoicePdfBuilder {
       text: text || '',
       fontSize: 9,
       alignment: 'right',
-      margin: [2, 5, 2, 5]
+      margin: [2, 3, 2, 3]
     }
   }
 

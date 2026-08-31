@@ -1009,7 +1009,8 @@ export default {
           qtyPrice: t.qtyPrice,
           qtyWeight: t.qtyWeight,
           qtyWeightPrice: t.qtyWeightPrice,
-          totalPrice: t.totalPrice
+          totalPrice: t.totalPrice,
+          applyGoldLoss: t.applyGoldLoss
         }))
 
         // 4. Add item to quotation

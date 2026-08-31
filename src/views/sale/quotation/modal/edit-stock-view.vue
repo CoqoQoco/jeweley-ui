@@ -696,19 +696,24 @@ export default {
         // ใช้ข้อมูล priceTransactions เสมอถ้ามี ต้องหารด้วย planQty เพื่อทำเป็นข้อมูลต่อชิ้น
         if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
           const planQty = 1
-          this.tranItems = this.stock.priceTransactions.map((item) => ({
-            // ต้องหารด้วย planQty ทุกรายการ เพื่อทำเป็นข้อมูลต่อชิ้น
-            nameGroup: item.nameGroup || (item.type === 'Diamond' ? 'Gem' : item.type) || 'ETC',
-            nameDescription:
-              item.nameDescription || item.typeCode || item.description || item.type || '',
-            qty: Number(item.qty) || Number(0).toFixed(2),
-            qtyPrice: Number(item.qtyPrice) || Number(0).toFixed(2),
-            qtyWeight: Number(item.qtyWeight) || Number(0).toFixed(2),
-            qtyWeightPrice: Number(item.qtyWeightPrice) || Number(0).toFixed(2),
-            totalPrice: Number(item.totalPrice).toFixed(2) || Number(0).toFixed(2),
+          this.tranItems = this.stock.priceTransactions.map((item) => {
+            const nameGroup = item.nameGroup || (item.type === 'Diamond' ? 'Gem' : item.type) || 'ETC'
+            return {
+              // ต้องหารด้วย planQty ทุกรายการ เพื่อทำเป็นข้อมูลต่อชิ้น
+              nameGroup,
+              nameDescription:
+                item.nameDescription || item.typeCode || item.description || item.type || '',
+              qty: Number(item.qty) || Number(0).toFixed(2),
+              qtyPrice: Number(item.qtyPrice) || Number(0).toFixed(2),
+              qtyWeight: Number(item.qtyWeight) || Number(0).toFixed(2),
+              qtyWeightPrice: Number(item.qtyWeightPrice) || Number(0).toFixed(2),
+              totalPrice: Number(item.totalPrice).toFixed(2) || Number(0).toFixed(2),
+              // pass-through เท่านั้น (ไม่มี UI ในหน้านี้) — fallback ตามกติกาเดียวกับหน้าตีราคา
+              applyGoldLoss: typeof item.applyGoldLoss === 'boolean' ? item.applyGoldLoss : nameGroup === 'Gold',
 
-            isAdd: true
-          }))
+              isAdd: true
+            }
+          })
         } else if (this.stock.materials && this.stock.materials.length > 0) {
           this.tranItems = this.stock.materials.map((mat) => ({
             nameGroup: mat.type === 'Diamond' ? 'Gem' : mat.type,

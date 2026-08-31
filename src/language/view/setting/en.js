@@ -40,7 +40,12 @@ export default {
     validation: {
       invalidNumber: 'Please enter a non-negative number'
     },
-    saveSuccess: 'Break Down settings saved successfully'
+    saveSuccess: 'Break Down settings saved successfully',
+    termHistory: {
+      sectionTitle: 'Break Down Term History',
+      confirmDeleteTitle: 'Confirm delete this term from history?',
+      deleteSuccess: 'Term removed from history successfully'
+    }
   },
   account: {
     cancelAccount: 'Cancel Account',

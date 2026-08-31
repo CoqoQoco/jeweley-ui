@@ -40,7 +40,12 @@ export class InvoiceExcelIntegration {
         currencyRate,
         invoiceNo,
         10, // itemsPerPage (not used in Excel, but kept for consistency)
-        { documentTitle: 'INVOICE', consignedLabel: 'Invoice To', showConditions: false }
+        {
+          documentTitle: 'INVOICE',
+          consignedLabel: 'Invoice To',
+          showConditions: false,
+          hideRounding: options.hideRounding || false
+        }
       )
 
       // Generate and download Excel

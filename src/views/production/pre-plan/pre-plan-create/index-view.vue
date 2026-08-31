@@ -289,6 +289,15 @@ export default {
         this.masterStore.jobTypes.find((j) => j.code === this.form.jobType)?.description ||
         this.form.jobType ||
         ''
+      const findByCode = (list, code) => {
+        if (code == null || typeof code === 'object') return code
+        return (list || []).find((x) => x.code === code) || code
+      }
+      const ms = this.masterStore
+      const items = this.items.map((it) => ({
+        ...it,
+        productType: findByCode(ms.productTypes, it.productType),
+      }))
       const builder = new PrePlanOrderFormPdfBuilder(
         {
           documentNo: this.form.documentNo || this.prePlanId || 'DRAFT',
@@ -303,7 +312,7 @@ export default {
           salesBy: this.form.salesBy || '',
           approvedBy: this.form.approvedBy || '',
         },
-        this.items,
+        items,
       )
       await builder.prepareImages()
       builder.generatePDF().open()

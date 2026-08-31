@@ -23,10 +23,11 @@
             <Row>
               <Column :header="$t('view.sale.costStock.jobDetail')" :colspan="3" />
               <Column :header="$t('common.field.quantity')" />
-              <Column :header="$t('view.sale.costStock.pricePerQty')" />
+              <Column :header="`${$t('view.sale.costStock.pricePerQty')} (${displayCurrency})`" />
               <Column :header="$t('common.field.weight')" />
-              <Column :header="$t('view.sale.costStock.pricePerWeight')" />
-              <Column :header="$t('view.sale.costStock.totalPrice')" />
+              <Column :header="`${$t('view.sale.costStock.pricePerWeight')} (${displayCurrency})`" />
+              <Column :header="$t('view.sale.costStock.applyGoldLoss')" />
+              <Column :header="`${$t('view.sale.costStock.totalPrice')} (${displayCurrency})`" />
             </Row>
           </ColumnGroup>
 
@@ -66,8 +67,11 @@
                 @item-select="onItemSelect($event, slotProps.data)"
               >
                 <template #option="{ option }">
-                  <div class="flex align-options-center">
-                    <div>{{ getOptionDisplay(option, slotProps.data.nameGroup) }}</div>
+                  <div class="flex align-options-center option-row">
+                    <span>{{ getOptionDisplay(option, slotProps.data.nameGroup) }}</span>
+                    <span v-if="option.__fromHistory" class="history-badge">
+                      {{ $t('view.sale.costStock.historyBadge') }}
+                    </span>
                   </div>
                 </template>
               </AutoCompleteGeneric>
@@ -154,6 +158,17 @@
             </template>
           </Column>
 
+          <Column field="applyGoldLoss" style="width: 90px">
+            <template #body="slotProps">
+              <CheckboxGeneric
+                v-if="slotProps.data.nameGroup === 'Gold'"
+                v-model="slotProps.data.applyGoldLoss"
+                :binary="true"
+              />
+              <span v-else class="apply-gold-loss-na">–</span>
+            </template>
+          </Column>
+
           <Column field="totalPrice" style="width: 150px">
             <template #body="slotProps">
               <input
@@ -187,39 +202,39 @@
 
           <ColumnGroup type="footer">
             <Row>
-              <Column :colspan="7">
+              <Column :colspan="8">
                 <template #footer>
                   <div class="text-right type-container">
-                    <span>{{ $t('view.sale.costStock.totalCostTHB') }}</span>
-                  </div>
-                </template>
-              </Column>
-              <Column :colspan="1">
-                <template #footer>
-                  <div class="text-right type-container">
-                    <span>{{ caltotalPrice(priceItems) }}</span>
-                  </div>
-                </template>
-              </Column>
-            </Row>
-            <Row v-if="hasCurrencyConversion">
-              <Column :colspan="7">
-                <template #footer>
-                  <div class="text-right type-container currency-summary-row">
                     <span>{{ $t('view.sale.costStock.totalCostCurrency', { currency: displayCurrency }) }}</span>
                   </div>
                 </template>
               </Column>
               <Column :colspan="1">
                 <template #footer>
-                  <div class="text-right type-container currency-summary-row">
+                  <div class="text-right type-container">
                     <span>{{ displayTotalCost }}</span>
                   </div>
                 </template>
               </Column>
             </Row>
+            <Row v-if="hasCurrencyConversion">
+              <Column :colspan="8">
+                <template #footer>
+                  <div class="text-right type-container tag-reference-text">
+                    <span>{{ $t('view.sale.costStock.totalCostCurrency', { currency: 'THB' }) }}</span>
+                  </div>
+                </template>
+              </Column>
+              <Column :colspan="1">
+                <template #footer>
+                  <div class="text-right type-container tag-reference-text">
+                    <span>{{ totalCostThbReference }}</span>
+                  </div>
+                </template>
+              </Column>
+            </Row>
             <Row>
-              <Column :colspan="5">
+              <Column :colspan="6">
                 <template #footer>
                   <div class="text-right type-container">
                     <span>{{ $t('view.sale.costStock.appraisalPrice', { currency: displayCurrency }) }}</span>
@@ -250,7 +265,7 @@
               </Column>
             </Row>
             <Row v-if="hasCurrencyConversion">
-              <Column :colspan="7">
+              <Column :colspan="8">
                 <template #footer>
                   <div class="text-right type-container tag-reference-text">
                     <span>{{ $t('view.sale.costStock.appraisalPrice', { currency: 'THB' }) }}</span>
@@ -316,14 +331,13 @@
         </div>
         <div>
           <span class="title-text">{{ $t('view.sale.costStock.currencyRate') }}</span>
-          <input
-            class="form-control form-control-sm"
+          <InputTextGeneric
             type="number"
-            :value="formAppraisal.currencyRate"
-            min="0"
-            step="0.01"
+            :modelValue="formAppraisal.currencyRate"
+            :min="0"
+            :step="0.01"
             :placeholder="$t('view.sale.costStock.placeholder.currencyRate')"
-            @input="$emit('update:currencyRate', Number($event.target.value) || null)"
+            @blur="onCurrencyRateBlur"
           />
         </div>
         <div></div>
@@ -388,8 +402,12 @@ import Row from 'primevue/row'
 
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { getTermHistory } from '@/services/helper/breakdown-term-history-store.js'
+
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 export default {
   name: 'AppraisalItemsTable',
@@ -400,7 +418,9 @@ export default {
     ColumnGroup,
     Row,
     AutoCompleteGeneric,
-    DropdownGeneric
+    DropdownGeneric,
+    CheckboxGeneric,
+    InputTextGeneric
   },
 
   props: {
@@ -442,8 +462,13 @@ export default {
 
   data() {
     return {
-      localMasterValue: 'ETC'
+      localMasterValue: 'ETC',
+      termHistory: {}
     }
+  },
+
+  async mounted() {
+    this.termHistory = await getTermHistory()
   },
 
   computed: {
@@ -519,21 +544,26 @@ export default {
       return this.hasCurrencyConversion ? this.formAppraisal.currencyUnit : 'THB'
     },
 
-    tagPrice() {
-      const total = this.priceItems.reduce((sum, item) => sum + Number(item.totalPrice), 0)
-      return (total * (Number(this.formAppraisal.tagPriceMultiplier) || 0)).toFixed(2)
-    },
-
+    // priceItems.totalPrice ถูกเก็บเป็น "หน่วยที่แสดง" อยู่แล้ว (แปลงครั้งเดียวตอน load ที่ appraisal-form-view.vue)
+    // จึงรวมตรงๆ ได้เลย ไม่ต้องหารด้วย currencyRate ซ้ำ
     displayTotalCost() {
-      const total = this.priceItems.reduce((sum, item) => sum + Number(item.totalPrice), 0)
-      if (!this.hasCurrencyConversion) return total.toFixed(2)
-      return (total / this.formAppraisal.currencyRate).toFixed(2)
+      return this.caltotalPrice(this.priceItems)
     },
 
     displayTagPrice() {
-      const tagPriceNum = Number(this.tagPrice) || 0
-      if (!this.hasCurrencyConversion) return tagPriceNum.toFixed(2)
-      return (tagPriceNum / this.formAppraisal.currencyRate).toFixed(2)
+      const total = Number(this.displayTotalCost) || 0
+      return (total * (Number(this.formAppraisal.tagPriceMultiplier) || 0)).toFixed(2)
+    },
+
+    // ค่าอ้างอิงเป็นบาท — แสดงเฉพาะตอน hasCurrencyConversion (คูณกลับด้วย rate เพื่อ preview เท่านั้น ไม่กระทบ state ที่เก็บ)
+    totalCostThbReference() {
+      if (!this.hasCurrencyConversion) return this.displayTotalCost
+      return (Number(this.displayTotalCost) * Number(this.formAppraisal.currencyRate)).toFixed(2)
+    },
+
+    tagPrice() {
+      if (!this.hasCurrencyConversion) return this.displayTagPrice
+      return (Number(this.displayTagPrice) * Number(this.formAppraisal.currencyRate)).toFixed(2)
     }
   },
 
@@ -616,7 +646,7 @@ export default {
       }
     },
 
-    getStaticOptions(nameGroup) {
+    getMasterList(nameGroup) {
       switch (nameGroup) {
         case 'Gold':
           return this.masterGoldList
@@ -629,6 +659,30 @@ export default {
         default:
           return []
       }
+    },
+
+    // history entry ต้องมีทั้ง code+name เท่ากับตัวคำเอง — ให้ตรงกับ getOptionLabel() ไม่ว่า group นั้นจะใช้ field ไหน
+    getHistoryOptions(nameGroup) {
+      const terms = this.termHistory?.[nameGroup]
+      if (!Array.isArray(terms) || !terms.length) return []
+      return terms.map((term) => ({ code: term, name: term, __fromHistory: true }))
+    },
+
+    // รวม master + history เฉพาะ group ที่ใช้ static list (Gold/Worker/Embed/ETC) — ห้ามแตะ Gem
+    // dedupe จาก label field ของ group นั้น กันคำซ้ำกับ master
+    getStaticOptions(nameGroup) {
+      const masterList = this.getMasterList(nameGroup)
+      if (nameGroup === 'Gem') return masterList
+
+      const labelField = this.getOptionLabel(nameGroup)
+      const masterLabels = new Set(
+        masterList.map((item) => String(item[labelField] || '').trim().toLowerCase())
+      )
+      const historyOptions = this.getHistoryOptions(nameGroup).filter(
+        (item) => !masterLabels.has(String(item[labelField] || '').trim().toLowerCase())
+      )
+
+      return [...masterList, ...historyOptions]
     },
 
     getPlaceholder(nameGroup) {
@@ -687,9 +741,29 @@ export default {
           rowData.qtyWeightPrice = selected.price
         }
         if (rowData.nameGroup === 'Gold' && selected.code === 'Alloy') {
+          // Alloy calculator รวม gold loss เข้าไปในน้ำหนักที่คำนวณให้แล้ว — ปิด flag กันคูณ gold loss ซ้ำตอน Break Down
+          rowData.applyGoldLoss = false
           this.$emit('open-alloy-calculator', rowData)
         }
       }
+    },
+
+    onCurrencyRateBlur(event) {
+      const val = Number(event.target.value)
+      this.$emit('update:currencyRate', val > 0 ? val : null)
+    },
+
+    // เรียกผ่าน $refs จาก appraisal-form-view.vue — ใช้ตัดสินว่า nameDescription เป็นคำที่ผู้ใช้พิมพ์เอง
+    // (ไม่มีอยู่ใน master list ของ group นั้น) เพื่อเก็บเข้า term history ตอนบันทึกสำเร็จ
+    isCustomTerm(nameGroup, nameDescription) {
+      if (nameGroup === 'Gem') return false
+      const term = String(nameDescription || '').trim().toLowerCase()
+      if (!term) return false
+      const labelField = this.getOptionLabel(nameGroup)
+      const masterList = this.getMasterList(nameGroup)
+      return !masterList.some(
+        (item) => String(item[labelField] || '').trim().toLowerCase() === term
+      )
     }
   }
 }
@@ -711,6 +785,29 @@ input {
   @media (max-width: 1024px) {
     font-size: 14px;
   }
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  width: 100%;
+}
+
+.history-badge {
+  padding: var(--sp-xs) var(--sp-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  background: var(--color-highlight-bg);
+  color: var(--base-font-color);
+  white-space: nowrap;
+}
+
+.apply-gold-loss-na {
+  display: block;
+  text-align: center;
+  color: var(--color-border);
 }
 
 .qty-weight-price-cell {
@@ -801,11 +898,6 @@ input {
   @media (max-width: 1024px) {
     font-size: 14px;
   }
-}
-
-.currency-summary-row {
-  color: #1565c0;
-  font-weight: 600;
 }
 
 .tag-reference-text {

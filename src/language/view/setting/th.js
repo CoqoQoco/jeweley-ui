@@ -40,7 +40,12 @@ export default {
     validation: {
       invalidNumber: 'กรุณากรอกตัวเลขที่ไม่ติดลบ'
     },
-    saveSuccess: 'บันทึกค่า Break Down สำเร็จ'
+    saveSuccess: 'บันทึกค่า Break Down สำเร็จ',
+    termHistory: {
+      sectionTitle: 'คำที่เคยใช้ใน Break Down (ประวัติการพิมพ์)',
+      confirmDeleteTitle: 'ยืนยันการลบคำนี้ออกจากประวัติ?',
+      deleteSuccess: 'ลบคำออกจากประวัติสำเร็จ'
+    }
   },
   account: {
     cancelAccount: 'ยกเลิกบัญชี',

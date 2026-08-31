@@ -61,6 +61,7 @@ export const invoiceDetail = {
   selectDate: 'Select Date',
   showCifLabel: 'Show C.I.F Label',
   hideCompanyHeader: 'Print without company header',
+  hideRounding: 'Hide ROUNDING row',
   itemsPerPage: 'Items per page',
   itemsPerPageHint: 'Reduce if the signature box overflows the page',
   template: 'Invoice template',
@@ -898,7 +899,9 @@ export const costStock = {
   jobDetail: 'Job Detail',
   pricePerQty: 'Price/Qty',
   pricePerWeight: 'Price/Weight',
+  applyGoldLoss: 'Apply Gold Loss',
   costPrefix: 'Cost: ',
+  historyBadge: 'Recently used',
   totalCostTHB: 'Total Cost (THB)',
   costPerPiece: 'Cost per piece (÷ {qty} pcs)',
   group: {

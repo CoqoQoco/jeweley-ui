@@ -220,6 +220,13 @@ export class PrePlanOrderFormPdfBuilder {
           canvas: [{ type: 'rect', x: 0, y: 0, w: 70, h: 70, lineWidth: 0.5, lineColor: '#cccccc' }],
         }
 
+    const productTypeLabel = (() => {
+      const v = item.productType
+      if (v == null || v === '') return null
+      if (typeof v === 'object') return v.description || v.code || null
+      return String(v)
+    })()
+
     const moldImageCell = {
       margin: [4, 4, 4, 4],
       stack: [
@@ -231,7 +238,16 @@ export class PrePlanOrderFormPdfBuilder {
           fontSize: 15,
           margin: [0, 3, 0, 0],
         },
-      ],
+        productTypeLabel
+          ? {
+              text: productTypeLabel,
+              alignment: 'center',
+              bold: true,
+              fontSize: 11,
+              margin: [0, 2, 0, 0],
+            }
+          : null,
+      ].filter(Boolean),
     }
 
     const productImageCell = {

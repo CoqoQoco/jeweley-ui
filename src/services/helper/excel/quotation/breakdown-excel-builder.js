@@ -429,14 +429,14 @@ export class BreakdownExcelBuilder {
         }
       }
 
-      const totalGold = goldPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
-      const totalGem = gemPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
-      const totalEtc = etcPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
+      const totalGold = goldPriceUnits.reduce((sum, p) => sum + p, 0)
+      const totalGem = gemPriceUnits.reduce((sum, p) => sum + p, 0)
+      const totalEtc = etcPriceUnits.reduce((sum, p) => sum + p, 0)
       const totalWork = workPriceUnits.length
-        ? workPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
+        ? workPriceUnits.reduce((sum, p) => sum + p, 0)
         : 0
       const totalEmbed = embedPriceUnits.length
-        ? embedPriceUnits.reduce((sum, p) => sum + p, 0) * itemQty
+        ? embedPriceUnits.reduce((sum, p) => sum + p, 0)
         : 0
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
@@ -446,6 +446,15 @@ export class BreakdownExcelBuilder {
       row = this.writeSummaryRow(worksheet, row, `Sub Total of ${item.productNumber} `, totalItemPrice)
       row = this.writeSummaryRow(worksheet, row, `Profit (${this.profitPercent}%) `, profitAmount)
       row = this.writeSummaryRow(worksheet, row, `Total of ${item.productNumber} `, totalWithProfit)
+
+      if (itemQty > 1) {
+        row = this.writeSummaryRow(
+          worksheet,
+          row,
+          `QTY ${itemQty} pcs × ${this.formatPrice(totalWithProfit)}`,
+          totalWithProfit * itemQty
+        )
+      }
     })
 
     return { nextRow: row, itemImageData }
@@ -453,7 +462,7 @@ export class BreakdownExcelBuilder {
 
   // === ROW BUILDING HELPERS ===
 
-  writeStandardRow(worksheet, row, t, { multiplier, itemQty, includeWeight = true, isGold = false }) {
+  writeStandardRow(worksheet, row, t, { multiplier, includeWeight = true, isGold = false }) {
     const descCell = worksheet.getCell(`F${row}`)
     descCell.value = t.nameDescription || '-'
     descCell.font = { name: 'Arial', size: 9 }
@@ -461,15 +470,33 @@ export class BreakdownExcelBuilder {
     descCell.border = stdBorder()
 
     this.setConditionalNumber(worksheet, `G${row}`, t.qty, 1)
+
+    if (isGold) {
+      // ปัด 2 ตำแหน่งให้เท่ากับ "ค่าที่พิมพ์บนเอกสาร" ก่อนคูณจริง (self-consistent)
+      // ลูกค้ากดเครื่องคิดเลขจากตัวเลขบนกระดาษ (Net Weight × Price/Weight) ต้องได้ Price/Unit ตรงกันเป๊ะ
+      const applyGL = this.shouldApplyGoldLoss(t)
+      const qtyWeight = Number(t.qtyWeight) || 0
+      const rawEffectiveWeight = applyGL ? qtyWeight * (1 + this.goldLossPercent / 100) : qtyWeight
+      const effectiveWeight = this.roundPrice2(rawEffectiveWeight)
+      const weightPrice = this.roundPrice2((Number(t.qtyWeightPrice) || 0) / (multiplier || 1))
+      const unitPrice = this.roundPrice2((Number(t.qtyPrice) || 0) / (multiplier || 1))
+
+      this.setRoundedOrBlankNumber(worksheet, `H${row}`, t.qtyPrice, unitPrice)
+      this.setRoundedOrBlankNumber(worksheet, `I${row}`, t.qtyWeight, this.roundPrice2(qtyWeight))
+      this.setGoldLossWeightCell(worksheet, `J${row}`, effectiveWeight, applyGL)
+      this.setRoundedOrBlankNumber(worksheet, `K${row}`, t.qtyWeightPrice, weightPrice)
+
+      const priceUnit = this.roundPrice2((Number(t.qty) || 0) * unitPrice + effectiveWeight * weightPrice)
+      this.setAlwaysNumber(worksheet, `L${row}`, priceUnit)
+      this.setAlwaysNumber(worksheet, `M${row}`, priceUnit)
+      return priceUnit
+    }
+
     this.setConditionalNumber(worksheet, `H${row}`, t.qtyPrice, multiplier)
 
     if (includeWeight) {
       this.setConditionalNumber(worksheet, `I${row}`, t.qtyWeight, 1)
-      if (isGold) {
-        this.setGoldLossWeightCell(worksheet, `J${row}`, t.qtyWeight)
-      } else {
-        this.setBlankCell(worksheet, `J${row}`)
-      }
+      this.setBlankCell(worksheet, `J${row}`)
       this.setConditionalNumber(worksheet, `K${row}`, t.qtyWeightPrice, multiplier)
     } else {
       this.setBlankCell(worksheet, `I${row}`)
@@ -480,27 +507,27 @@ export class BreakdownExcelBuilder {
     const priceUnitRaw = (Number(t.totalPrice) || 0) / (multiplier || 1)
     const priceUnit = this.roundPrice2(priceUnitRaw)
     this.setAlwaysNumber(worksheet, `L${row}`, priceUnit)
-    this.setAlwaysNumber(worksheet, `M${row}`, priceUnit * (itemQty || 1))
+    this.setAlwaysNumber(worksheet, `M${row}`, priceUnit)
     return priceUnit
   }
 
-  writeLaborRow(worksheet, row, t, { multiplier, itemQty }) {
+  writeLaborRow(worksheet, row, t, { multiplier }) {
     const descCell = worksheet.getCell(`F${row}`)
     descCell.value = t.nameDescription || '-'
     descCell.font = { name: 'Arial', size: 9 }
     descCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
     descCell.border = stdBorder()
 
-    this.setBlankCell(worksheet, `G${row}`)
-    this.setBlankCell(worksheet, `H${row}`)
-    this.setBlankCell(worksheet, `I${row}`)
+    this.setConditionalNumber(worksheet, `G${row}`, t.qty, 1)
+    this.setConditionalNumber(worksheet, `H${row}`, t.qtyPrice, multiplier)
+    this.setConditionalNumber(worksheet, `I${row}`, t.qtyWeight, 1)
     this.setBlankCell(worksheet, `J${row}`)
-    this.setBlankCell(worksheet, `K${row}`)
+    this.setConditionalNumber(worksheet, `K${row}`, t.qtyWeightPrice, multiplier)
 
     const priceUnitRaw = (Number(t.totalPrice) || 0) / (multiplier || 1)
     const priceUnit = this.roundPrice2(priceUnitRaw)
     this.setAlwaysNumber(worksheet, `L${row}`, priceUnit)
-    this.setAlwaysNumber(worksheet, `M${row}`, priceUnit * (itemQty || 1))
+    this.setAlwaysNumber(worksheet, `M${row}`, priceUnit)
     return priceUnit
   }
 
@@ -518,11 +545,13 @@ export class BreakdownExcelBuilder {
     cell.border = stdBorder()
   }
 
-  setGoldLossWeightCell(worksheet, ref, qtyWeight) {
+  // เหมือน setConditionalNumber แต่รับค่าที่ปัด 2 ตำแหน่งมาแล้วจากภายนอก (ใช้กับแถว Gold
+  // เพื่อให้ตัวเลขใน cell ตรงกับตัวเลขที่ใช้คูณจริงใน Price/Unit — กัน "cell ≠ ค่าที่คูณ")
+  setRoundedOrBlankNumber(worksheet, ref, rawValueForBlankCheck, roundedValue) {
     const cell = worksheet.getCell(ref)
-    const num = Number(qtyWeight)
-    if (qtyWeight && num) {
-      cell.value = num * (1 + this.goldLossPercent / 100)
+    const num = Number(rawValueForBlankCheck)
+    if (rawValueForBlankCheck && num) {
+      cell.value = roundedValue
       cell.numFmt = '#,##0.00'
     } else {
       cell.value = null
@@ -530,6 +559,24 @@ export class BreakdownExcelBuilder {
     cell.font = { name: 'Arial', size: 9 }
     cell.alignment = { vertical: 'middle', horizontal: 'center' }
     cell.border = stdBorder()
+  }
+
+  setGoldLossWeightCell(worksheet, ref, effectiveWeight, applyGL) {
+    const cell = worksheet.getCell(ref)
+    if (applyGL && effectiveWeight) {
+      cell.value = effectiveWeight
+      cell.numFmt = '#,##0.00'
+    } else {
+      cell.value = null
+    }
+    cell.font = { name: 'Arial', size: 9 }
+    cell.alignment = { vertical: 'middle', horizontal: 'center' }
+    cell.border = stdBorder()
+  }
+
+  // fallback: ข้อมูลเก่าที่ยังไม่มี applyGoldLoss ให้คิด gold loss เหมือนเดิม (ทุกแถวกลุ่ม Gold)
+  shouldApplyGoldLoss(t) {
+    return t.applyGoldLoss ?? (String(t.nameGroup || '').toLowerCase() === 'gold')
   }
 
   setAlwaysNumber(worksheet, ref, value) {

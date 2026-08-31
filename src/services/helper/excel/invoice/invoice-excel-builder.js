@@ -51,6 +51,7 @@ export class InvoiceExcelBuilder {
     this.consignedLabel = options.consignedLabel || 'Consigned To'
     this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
     this.showConditions = options.showConditions !== undefined ? options.showConditions : true
+    this.hideRounding = options.hideRounding || false
 
     // Assets (loaded async in prepare())
     this.logoBase64 = null
@@ -632,7 +633,7 @@ export class InvoiceExcelBuilder {
     }
 
     // ROUNDING row (only when adjustment > 0)
-    if (this.roundingAdjustment > 0) {
+    if (this.roundingAdjustment > 0 && !this.hideRounding) {
       this.addSummaryRow(
         worksheet,
         row,
