@@ -72,6 +72,32 @@ const routes = [
         }
       },
 
+      // 🆕 POS (Mobile Only) — หน้าจอเดียวจบ สำหรับขายที่บูธงานแฟร์
+      {
+        path: 'pos',
+        name: 'mobile-pos',
+        component: () => import('@/views/mobile/pos/index-view.vue'),
+        meta: {
+          Displayname: { en: 'POS', th: 'POS' },
+          classIcon: 'bi bi-cart-fill',
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+
+      // 🆕 POS Help (Mobile Only) — คู่มือใช้งาน POS แบบเนื้อหาในแอป ไม่ยิง API เปิดดูได้แม้เน็ตหลุด
+      {
+        path: 'pos/help',
+        name: 'mobile-pos-help',
+        component: () => import('@/views/mobile/pos/help/index-view.vue'),
+        meta: {
+          Displayname: { en: 'POS Help', th: 'คู่มือใช้งาน POS' },
+          classIcon: 'bi bi-question-circle',
+          requiresAuth: true,
+          permissions: ['mobile:sale']
+        }
+      },
+
       // 🆕 Sale Order (Mobile)
       {
         path: 'sale',

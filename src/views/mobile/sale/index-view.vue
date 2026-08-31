@@ -22,6 +22,18 @@
       </div>
     </div>
 
+    <!-- Search + Scope Filter -->
+    <div class="mobile-container mobile-mt-1">
+      <list-filter-bar
+        v-model:searchValue="searchValue"
+        v-model:searchField="searchField"
+        :scope="scope"
+        @search="onSearch"
+        @clear="onClearSearch"
+        @update:scope="onChangeScope"
+      />
+    </div>
+
     <!-- SO Tab Content -->
     <div v-if="activeTab === 'so'" class="mobile-container mobile-mt-1">
       <div v-if="soList.length > 0" class="card-list">
@@ -46,6 +58,10 @@
               <div class="card-date">
                 <i class="bi bi-calendar3"></i>
                 <span>{{ formatDate(so.createDate) }}</span>
+              </div>
+              <div v-if="scope === 'all' && so.createBy" class="card-created-by">
+                <i class="bi bi-person-badge"></i>
+                <span>{{ so.createBy }}</span>
               </div>
             </div>
           </div>
@@ -97,6 +113,10 @@
                 <i class="bi bi-box-seam"></i>
                 <span>{{ inv.itemCount }} {{ $t('view.mobile.saleIndex.itemsUnit') }}</span>
               </div>
+              <div v-if="scope === 'all' && inv.createBy" class="card-created-by">
+                <i class="bi bi-person-badge"></i>
+                <span>{{ inv.createBy }}</span>
+              </div>
             </div>
             <div v-if="inv.totalAmount" class="card-total">
               <span class="total-label">{{ $t('view.mobile.saleIndex.totalLabel') }}</span>
@@ -133,13 +153,20 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
+
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
-import dayjs from 'dayjs'
+import { storage } from '@/services/storage.js'
+import listFilterBar from './components/list-filter-bar.vue'
+
+const SCOPE_STORAGE_KEY = 'mobile-sale-scope'
 
 export default {
   name: 'MobileSaleIndexView',
+
+  components: { listFilterBar },
 
   setup() {
     const saleOrderStore = usrSaleOrderApiStore()
@@ -153,22 +180,57 @@ export default {
       activeTab: 'so',
       pageSize: 20,
 
+      // Search & scope
+      searchValue: '',
+      searchField: 'number',
+      scope: 'mine',
+
       // SO
       soList: [],
       soPage: 0,
       soHasMore: false,
+      soNeedsReload: false,
 
       // Invoice
       invoiceList: [],
       invoicePage: 0,
-      invoiceHasMore: false
+      invoiceHasMore: false,
+      invoiceNeedsReload: false
     }
   },
 
   computed: {
     currentUsername() {
       return this.authStore.getUser?.username || ''
+    },
+
+    soSearchFormValue() {
+      const formValue = { createBy: this.scope === 'mine' ? this.currentUsername : null }
+      if (this.searchValue) {
+        if (this.searchField === 'number') {
+          formValue.soNumber = this.searchValue
+        } else {
+          formValue.customerName = this.searchValue
+        }
+      }
+      return formValue
+    },
+
+    invoiceSearchFormValue() {
+      const formValue = { createBy: this.scope === 'mine' ? this.currentUsername : null }
+      if (this.searchValue) {
+        if (this.searchField === 'number') {
+          formValue.invoiceNumber = this.searchValue
+        } else {
+          formValue.customerName = this.searchValue
+        }
+      }
+      return formValue
     }
+  },
+
+  created() {
+    this.scope = this.loadSavedScope()
   },
 
   mounted() {
@@ -180,11 +242,58 @@ export default {
       if (this.activeTab === tab) return
       this.activeTab = tab
 
-      if (tab === 'so' && this.soList.length === 0) {
+      if (tab === 'so' && (this.soList.length === 0 || this.soNeedsReload)) {
+        this.soNeedsReload = false
         this.loadSoList()
       }
-      if (tab === 'invoice' && this.invoiceList.length === 0) {
+      if (tab === 'invoice' && (this.invoiceList.length === 0 || this.invoiceNeedsReload)) {
+        this.invoiceNeedsReload = false
         this.loadInvoiceList()
+      }
+    },
+
+    // ========== Search & Scope ==========
+    onSearch() {
+      this.applyFilterChange()
+    },
+
+    onClearSearch() {
+      this.searchValue = ''
+      this.applyFilterChange()
+    },
+
+    onChangeScope(scope) {
+      if (this.scope === scope) return
+      this.scope = scope
+      this.saveScope(scope)
+      this.applyFilterChange()
+    },
+
+    applyFilterChange() {
+      if (this.activeTab === 'so') {
+        this.soPage = 0
+        this.loadSoList()
+        this.invoiceNeedsReload = true
+      } else {
+        this.invoicePage = 0
+        this.loadInvoiceList()
+        this.soNeedsReload = true
+      }
+    },
+
+    loadSavedScope() {
+      try {
+        return storage.getItem(SCOPE_STORAGE_KEY) === 'all' ? 'all' : 'mine'
+      } catch (e) {
+        return 'mine'
+      }
+    },
+
+    saveScope(scope) {
+      try {
+        storage.setItem(SCOPE_STORAGE_KEY, scope)
+      } catch (e) {
+        // localStorage อาจใช้งานไม่ได้ในบาง browser mode — ข้ามการบันทึก
       }
     },
 
@@ -197,7 +306,7 @@ export default {
         take: this.pageSize,
         skip: 0,
         sort: [{ field: 'createDate', dir: 'desc' }],
-        formValue: { createBy: this.currentUsername }
+        formValue: this.soSearchFormValue
       })
 
       if (result && result.data) {
@@ -213,7 +322,7 @@ export default {
         take: this.pageSize,
         skip: this.soPage * this.pageSize,
         sort: [{ field: 'createDate', dir: 'desc' }],
-        formValue: { createBy: this.currentUsername }
+        formValue: this.soSearchFormValue
       })
 
       if (result && result.data) {
@@ -238,7 +347,7 @@ export default {
         take: this.pageSize,
         skip: 0,
         sort: [{ field: 'createDate', dir: 'desc' }],
-        formValue: { createBy: this.currentUsername }
+        formValue: this.invoiceSearchFormValue
       })
 
       if (result && result.data) {
@@ -254,7 +363,7 @@ export default {
         take: this.pageSize,
         skip: this.invoicePage * this.pageSize,
         sort: [{ field: 'createDate', dir: 'desc' }],
-        formValue: { createBy: this.currentUsername }
+        formValue: this.invoiceSearchFormValue
       })
 
       if (result && result.data) {
@@ -402,9 +511,12 @@ export default {
     .card-info-row {
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
 
       .card-date,
-      .card-items-count {
+      .card-items-count,
+      .card-created-by {
         display: flex;
         align-items: center;
         gap: 4px;

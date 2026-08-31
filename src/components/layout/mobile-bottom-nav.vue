@@ -4,7 +4,7 @@
       v-for="item in navItems"
       :key="item.name"
       class="nav-item"
-      :class="{ active: isActive(item.name) }"
+      :class="{ active: isActive(item) }"
       @click="navigateTo(item)"
     >
       <div class="nav-icon">
@@ -41,7 +41,7 @@ export default {
       const allItems = [
         {
           name: 'mobile-dashboard',
-          label: 'หน้าแรก',
+          label: this.$t('view.mobile.nav.home'),
           icon: 'bi bi-house-door-fill',
           path: '/mobile/dashboard',
           permission: 'mobile:dashboard',
@@ -49,15 +49,31 @@ export default {
         },
         {
           name: 'mobile-scan',
-          label: 'สแกน',
+          label: this.$t('view.mobile.nav.scan'),
           icon: 'bi bi-qr-code-scan',
           path: '/mobile/scan',
           permission: 'mobile:scan',
           badge: null
         },
         {
+          name: 'mobile-pos',
+          label: this.$t('view.mobile.nav.pos'),
+          icon: 'bi bi-cart-fill',
+          path: '/mobile/pos',
+          permission: 'mobile:sale',
+          badge: null
+        },
+        {
+          name: 'mobile-sale',
+          label: this.$t('view.mobile.nav.sale'),
+          icon: 'bi bi-receipt',
+          path: '/mobile/sale',
+          permission: 'mobile:sale',
+          badge: null
+        },
+        {
           name: 'mobile-tasks',
-          label: 'งาน',
+          label: this.$t('view.mobile.nav.tasks'),
           icon: 'bi bi-list-task',
           path: '/mobile/tasks',
           permission: 'mobile:tasks',
@@ -65,7 +81,7 @@ export default {
         },
         {
           name: 'mobile-profile',
-          label: 'โปรไฟล์',
+          label: this.$t('view.mobile.nav.profile'),
           icon: 'bi bi-person-fill',
           path: '/mobile/profile',
           permission: 'mobile:profile',
@@ -98,9 +114,15 @@ export default {
 
     /**
      * Check if route is active
+     * ใช้ path prefix แทน exact route name เพื่อให้ nested route
+     * (เช่น mobile-sale-create, mobile-sale-detail, mobile-invoice-detail) ยัง highlight ปุ่ม "ขาย" อยู่
+     * ยกเว้น "หน้าแรก" ที่ต้อง match แบบ exact กันชนกับปุ่มอื่น
      */
-    isActive(routeName) {
-      return this.$route.name === routeName
+    isActive(item) {
+      if (item.path === '/mobile/dashboard') {
+        return this.$route.path === item.path
+      }
+      return this.$route.path.startsWith(item.path)
     },
 
     /**
@@ -110,14 +132,14 @@ export default {
       return [
         {
           name: 'mobile-dashboard',
-          label: 'หน้าแรก',
+          label: this.$t('view.mobile.nav.home'),
           icon: 'bi bi-house-door-fill',
           path: '/mobile/dashboard',
           badge: null
         },
         {
           name: 'mobile-profile',
-          label: 'โปรไฟล์',
+          label: this.$t('view.mobile.nav.profile'),
           icon: 'bi bi-person-fill',
           path: '/mobile/profile',
           badge: null

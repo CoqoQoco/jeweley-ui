@@ -55,7 +55,17 @@ export const useCustomerDetailApiStore = defineStore('customerDetailApiStore', {
         discount: formValue.discount,
         taxId: formValue.taxId
       }
+      // autoCode — ใช้ตอนสร้างลูกค้าอัตโนมัติ (เช่น POS) ให้ backend ออกรหัสเองแบบ atomic + retry
+      // เป็น optional field ไม่กระทบ caller เดิมที่ไม่ได้ส่ง formValue.autoCode
+      if (formValue.autoCode) {
+        params.autoCode = true
+        params.codePrefix = formValue.codePrefix
+      }
       return await api.jewelry.post('Customer/CreateCustomer', params)
+    },
+
+    async fetchNextCode({ prefix, skipLoading }) {
+      return await api.jewelry.get('Customer/NextCode', { prefix }, { skipLoading: skipLoading })
     }
   }
 })

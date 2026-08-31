@@ -163,7 +163,9 @@ export default {
       companyInfo: { ...settingLang.companyInfo }
     },
     mobile: {
+      nav: { ...mobileLang.nav },
       sale: { ...mobileLang.sale },
+      pos: { ...mobileLang.pos },
       costVersion: { ...mobileLang.costVersion },
       scan: { ...mobileLang.scan },
       dashboard: { ...mobileLang.dashboard },
@@ -173,7 +175,9 @@ export default {
       notifications: { ...mobileLang.notifications },
       saleIndex: { ...mobileLang.saleIndex },
       components: { ...mobileLang.components },
-      stockProduct: { ...mobileLang.stockProduct }
+      stockProduct: { ...mobileLang.stockProduct },
+      receipt: { ...mobileLang.receipt },
+      posHelp: { ...mobileLang.posHelp }
     },
     ticket: { ...ticketLang },
     graph: { ...graphLang },

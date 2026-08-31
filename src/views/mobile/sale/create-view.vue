@@ -1,18 +1,5 @@
 <template>
   <div class="mobile-sale-create-view">
-    <!-- Header -->
-    <!-- <div class="sale-header">
-      <div class="mobile-container">
-        <button class="mobile-btn-icon" @click="$router.back()">
-          <i class="bi bi-arrow-left"></i>
-        </button>
-        <div class="header-content">
-          <h2 class="mobile-title">สร้างใบสั่งขาย</h2>
-          <p class="header-subtitle">Create Sale Order</p>
-        </div>
-      </div>
-    </div> -->
-
     <div class="mobile-container mobile-mt-1">
       <!-- Quotation Reference Banner -->
       <div v-if="refQuotation" class="quotation-ref-banner">
@@ -112,7 +99,7 @@
                 :staticOptions="CURRENCY_UNITS"
                 :useStaticList="true"
                 optionLabel="code"
-                placeholder="เช่น US$, EUR"
+                :placeholder="$t('view.mobile.sale.currencyUnitPlaceholder')"
                 :forceSelection="false"
                 customClass="currency-ac"
                 @update:modelValue="onCurrencyChange"
@@ -219,6 +206,9 @@ import SoSummary from './components/so-summary.vue'
 import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
+import { storage } from '@/services/storage.js'
+
+const CURRENCY_STORAGE_KEY = 'mobile-sale-currency'
 
 export default {
   name: 'MobileSaleCreateView',
@@ -243,7 +233,7 @@ export default {
   data() {
     return {
       CURRENCY_UNITS,
-      addItemTab: 'appraisal',
+      addItemTab: 'scan',
       scanInput: '',
       searchField: 'stockNumber',
       searchFieldOptions: [
@@ -251,8 +241,9 @@ export default {
         { value: 'stockNumberOrigin', label: this.$t('view.mobile.sale.fieldOldCode'), icon: 'bi bi-tag' }
       ],
       items: [],
-      currencyUnit: 'US$',
-      currencyRate: 33.0,
+      currencyUnit: 'THB',
+      currencyRate: 1,
+      skipCurrencySave: false,
       // markup: 3.5,     // ยังไม่ได้ใช้ตอนนี้
       // goldPerOz: 2000, // ยังไม่ได้ใช้ตอนนี้
       customer: {
@@ -273,6 +264,10 @@ export default {
     }
   },
 
+  created() {
+    this.loadSavedCurrency()
+  },
+
   async mounted() {
     const fromQuotation = this.$route.query.fromQuotation
     if (fromQuotation) {
@@ -288,7 +283,35 @@ export default {
     }
   },
 
+  watch: {
+    currencyRate() {
+      if (this.skipCurrencySave) return
+      this.saveCurrency()
+    }
+  },
+
   methods: {
+    // จำสกุลเงิน/อัตราแลกเปลี่ยนล่าสุดที่ใช้ ไว้เป็นค่า default ครั้งถัดไป
+    loadSavedCurrency() {
+      try {
+        const saved = storage.getJSON(CURRENCY_STORAGE_KEY)
+        if (saved && saved.unit) {
+          this.currencyUnit = saved.unit
+          this.currencyRate = Number(saved.rate) || 1
+        }
+      } catch (e) {
+        // localStorage อาจใช้งานไม่ได้ในบาง browser mode — ใช้ค่า default ต่อไป
+      }
+    },
+
+    saveCurrency() {
+      try {
+        storage.setJSON(CURRENCY_STORAGE_KEY, { unit: this.currencyUnit, rate: this.currencyRate })
+      } catch (e) {
+        // localStorage อาจใช้งานไม่ได้ในบาง browser mode — ข้ามการบันทึก
+      }
+    },
+
     async loadFromQuotation(quotationNumber) {
       const response = await this.quotationStore.fetchGet({
         formValue: { number: quotationNumber }
@@ -297,11 +320,14 @@ export default {
 
       this.refQuotation = quotationNumber
 
-      // Currency
+      // Currency — ค่าจากใบเสนอราคาต้องชนะเสมอ ไม่ให้ localStorage (mobile-sale-currency) ทับ
+      this.skipCurrencySave = true
       this.currencyUnit = response.currency || 'US$'
       this.currencyRate = response.currencyRate || 33.0
       // this.markup = response.markUp || 3.5       // ยังไม่ได้ใช้ตอนนี้
       // this.goldPerOz = response.goldPerOz || 2000 // ยังไม่ได้ใช้ตอนนี้
+      await this.$nextTick()
+      this.skipCurrencySave = false
 
       // Financial fields
       this.quotationFinancials = {
@@ -345,6 +371,7 @@ export default {
       } else if (value && typeof value === 'object') {
         this.currencyUnit = value.code || ''
       }
+      this.saveCurrency()
     },
 
     addItem(item) {
@@ -528,7 +555,10 @@ export default {
       if (result) {
         const soNumber = result.soNumber || result
         const statusLabel = status === 'Draft' ? this.$t('view.mobile.sale.statusLabelDraft') : this.$t('view.mobile.sale.statusLabelCreate')
-        success(`เลขที่: ${soNumber}`, `${statusLabel}สำเร็จ`)
+        success(
+          this.$t('view.mobile.sale.successCreateSoMessage', { soNumber }),
+          this.$t('view.mobile.sale.successCreateSoTitle', { label: statusLabel })
+        )
         return soNumber
       }
       return null

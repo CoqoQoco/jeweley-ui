@@ -1,3 +1,124 @@
+export const nav = {
+  home: 'หน้าแรก',
+  scan: 'สแกน',
+  sale: 'ขาย',
+  pos: 'POS',
+  tasks: 'งาน',
+  profile: 'โปรไฟล์'
+}
+
+export const pos = {
+  // header — โหมดงาน / สกุลเงิน / สลับบิล
+  workModeLabel: 'โหมดงาน',
+  workModeDomestic: 'ในประเทศ',
+  workModeInternational: 'ต่างประเทศ',
+  currencyLabel: 'สกุลเงิน',
+  rateLabel: 'อัตราแลกเปลี่ยน',
+  vatPercentLabel: 'อัตราภาษีมูลค่าเพิ่ม (%)',
+  billLabel: 'บิล {n}',
+  newCartBtn: 'บิลใหม่',
+  removeCartBtn: 'ลบบิลนี้',
+  confirmRemoveCartTitle: 'ยืนยันลบบิล',
+  confirmRemoveCartMsg: 'ต้องการลบบิลนี้และรายการทั้งหมดในบิลใช่หรือไม่?',
+  helpBtn: 'คู่มือการใช้งาน',
+
+  // scan bar
+  scanCameraBtn: 'สแกนกล้อง',
+  fieldNewCode: 'รหัสสินค้าใหม่',
+  fieldOldCode: 'รหัสสินค้าเก่า',
+  scanPlaceholderNew: 'กรอกรหัสสินค้าใหม่ (Stock Number)',
+  scanPlaceholderOld: 'กรอกรหัสสินค้าเก่า (Origin)',
+  warnEnterCode: 'กรุณากรอกรหัสสินค้า',
+  errorProductNotFound: 'ไม่พบข้อมูลสินค้า',
+  errorCheckCode: 'กรุณาตรวจสอบรหัสสินค้า',
+  warnDuplicateItem: 'สินค้าชิ้นนี้อยู่ในตะกร้าแล้ว',
+  successAddProduct: 'เพิ่มสินค้าเข้าตะกร้าแล้ว',
+
+  // cart
+  cartTitle: 'รายการในตะกร้า',
+  cartEmptyTitle: 'ตะกร้าว่าง',
+  cartEmptySubtitle: 'สแกนหรือค้นหาสินค้าเพื่อเริ่มขาย',
+  itemFieldPrice: 'ราคา',
+  itemFieldQty: 'จำนวน',
+  itemFieldDiscount: 'ส่วนลด (%)',
+  itemTotalLabel: 'รวม',
+  removeItemBtn: 'ลบสินค้า',
+
+  // customer chip
+  customerTitle: 'ลูกค้า',
+  customerWalkin: 'หน้าร้าน',
+  addCustomerBtn: '+ ชื่อ/เบอร์',
+  changeCustomerBtn: 'เปลี่ยน',
+  customerFormTitle: 'ข้อมูลลูกค้า',
+  fieldCustomerName: 'ชื่อลูกค้า',
+  fieldCustomerTel: 'เบอร์โทร',
+  placeholderCustomerName: 'กรอกชื่อลูกค้า',
+  placeholderCustomerTel: 'กรอกเบอร์โทร',
+  warnEnterNameOrTel: 'กรุณากรอกชื่อหรือเบอร์โทร',
+  warnEnterNameForNewCustomer: 'กรุณากรอกชื่อลูกค้าสำหรับสร้างลูกค้าใหม่',
+  successFoundCustomer: 'พบข้อมูลลูกค้าเดิม',
+  successCreateCustomer: 'สร้างลูกค้าใหม่สำเร็จ',
+
+  // summary + checkout
+  summaryItemCount: 'จำนวนสินค้า',
+  summaryItemUnit: 'ชิ้น',
+  summaryTotalLabel: 'ยอดรวม',
+  summaryVatLabel: 'ภาษีมูลค่าเพิ่ม ({percent}%)',
+  summaryEquivalent: 'เทียบเท่า',
+  summaryBahtUnit: 'บาท',
+  checkoutBtn: 'รับเงิน {amount} {unit}',
+  checkoutBtnEmpty: 'รับเงิน',
+
+  // checkout sheet — รับชำระเงิน
+  checkoutSheetTitle: 'รับชำระเงิน',
+  amountToCollect: 'ยอดที่ต้องรับ',
+  paymentMethodCash: 'เงินสด',
+  paymentMethodTransfer: 'โอนเงิน',
+  paymentMethodCheque: 'เช็ค',
+  paymentMethodCreditCard: 'บัตรเครดิต',
+  paymentMethodCredit: 'เครดิต (กำหนดวัน)',
+  cashQuickExact: 'พอดี',
+  cashAmountLabel: 'จำนวนเงินที่รับ (เงินสด)',
+  changeAmountLabel: 'เงินทอน',
+  paymentAmountLabel: 'จำนวนเงิน',
+  bankLabel: 'ธนาคาร',
+  bankPlaceholder: 'เลือกธนาคาร',
+  branchLabel: 'สาขา',
+  branchPlaceholder: 'กรอกสาขา',
+  referenceNumberLabel: 'เลขที่อ้างอิง',
+  referenceNumberPlaceholder: 'กรอกเลขที่อ้างอิง (ถ้ามี)',
+  paymentDayLabel: 'จำนวนวันเครดิต',
+  addPaymentBtn: 'เพิ่มรายการชำระ',
+  paymentListTitle: 'รายการที่รับแล้ว',
+  removePaymentBtn: 'ลบรายการ',
+  summaryPaid: 'ยอดที่รับแล้ว',
+  summaryRemaining: 'ยอดคงเหลือ',
+  confirmPaymentBtn: 'ยืนยันรับเงิน',
+  warnPaymentAmountRequired: 'กรุณากรอกจำนวนเงิน',
+  warnBankRequired: 'กรุณาเลือกธนาคาร',
+  warnBranchRequired: 'กรุณากรอกสาขา',
+  confirmUnderpaidTitle: 'ยืนยันบันทึกค้างชำระ',
+  confirmUnderpaidMsg: 'ยอดคงเหลือ {amount} {unit} จะถูกบันทึกเป็นค้างชำระ ต้องการดำเนินการต่อหรือไม่?',
+
+  // pending — เน็ตหลุดตอนส่งบิล
+  pendingBannerTitle: 'บิลนี้ส่งไม่สำเร็จ (เน็ตขัดข้อง)',
+  pendingBannerMsg: 'ยังไม่เกิดบิลซ้ำแน่นอน กด "ส่งอีกครั้ง" ได้เลย',
+  resendBtn: 'ส่งอีกครั้ง',
+  editCartInsteadBtn: 'แก้ไขรายการแทน',
+
+  // done view — ทำรายการสำเร็จ
+  doneTitle: 'ทำรายการสำเร็จ',
+  doneInvoiceLabel: 'เลขที่ Invoice',
+  doneSoLabel: 'เลขที่ใบสั่งขาย',
+  doneGrandTotal: 'ยอดรวม',
+  donePaid: 'ยอดที่รับแล้ว',
+  doneRemaining: 'ยอดค้างชำระ',
+  shareReceiptBtn: 'แชร์ใบเสร็จ',
+  printReceiptBtn: 'พิมพ์ใบเสร็จ',
+  sellMoreBtn: 'ขายต่อ',
+  shareUnavailableMsg: 'อุปกรณ์นี้แชร์ไฟล์โดยตรงไม่ได้ ระบบดาวน์โหลดไฟล์ใบเสร็จให้แทน'
+}
+
 export const scan = {
   selectTypeTitle: 'เลือกประเภทที่ต้องการสแกน',
   searchBy: 'ค้นหาด้วย',
@@ -173,7 +294,17 @@ export const saleIndex = {
   createSoBtn: 'สร้างใบสั่งขาย',
   totalLabel: 'ยอดรวม',
   bahtUnit: 'บาท',
-  itemsUnit: 'รายการ'
+  itemsUnit: 'รายการ',
+
+  // list-filter-bar
+  searchFieldNumber: 'เลขที่บิล',
+  searchFieldCustomer: 'ชื่อลูกค้า',
+  searchPlaceholderNumber: 'ค้นหาด้วยเลขที่บิล',
+  searchPlaceholderCustomer: 'ค้นหาด้วยชื่อลูกค้า',
+  searchBtn: 'ค้นหา',
+  clearBtn: 'ล้างค่า',
+  scopeMine: 'ของฉัน',
+  scopeAll: 'ทั้งบูธ'
 }
 
 export const costVersion = {
@@ -439,6 +570,9 @@ export const sale = {
   warnSelectCurrency: 'กรุณาระบุสกุลเงิน',
   statusLabelDraft: 'บันทึกร่าง',
   statusLabelCreate: 'สร้างใบสั่งขาย',
+  currencyUnitPlaceholder: 'เช่น US$, EUR',
+  successCreateSoMessage: 'เลขที่: {soNumber}',
+  successCreateSoTitle: '{label}สำเร็จ',
 
   // detail-view info
   soInfoTitle: 'ข้อมูลใบสั่งขาย',
@@ -498,4 +632,165 @@ export const sale = {
   // detail-view status labels
   statusDraft: 'ร่าง',
   statusInvoiced: 'ออก Invoice แล้ว'
+}
+
+export const receipt = {
+  shopName: 'Duang Kaew Jewelry',
+  customer: 'ลูกค้า',
+  noItems: 'ไม่มีรายการสินค้า',
+  discount: 'ส่วนลด',
+  subtotal: 'ยอดรวม',
+  specialDiscount: 'ส่วนลดพิเศษ',
+  specialAddition: 'ส่วนเพิ่มพิเศษ',
+  freight: 'ค่าขนส่ง',
+  vat: 'ภาษีมูลค่าเพิ่ม',
+  grandTotal: 'รวมสุทธิ',
+  paidBy: 'ชำระโดย',
+  paid: 'รับเงิน',
+  remaining: 'คงเหลือ',
+  thankYou: 'ขอบคุณครับ'
+}
+
+// posHelp — คู่มือใช้งาน POS ในแอป (เนื้อหา static ล้วน อ่านได้แม้เน็ตหลุด)
+// โครงสร้าง: quickStart (การ์ดสรุป 4 ขั้นตอน แสดงตลอด) + topics[] (accordion ยุบไว้ทั้งหมด)
+export const posHelp = {
+  pageTitle: 'คู่มือใช้งาน POS',
+
+  quickStart: {
+    title: 'ขาย 1 บิลใน 4 ขั้น',
+    steps: [
+      {
+        title: 'สแกนสินค้า',
+        desc: 'ยิงกล้องที่ป้าย หรือพิมพ์รหัสแล้วกด Enter เข้าตะกร้าทันที'
+      },
+      {
+        title: 'ใส่ชื่อ/เบอร์ลูกค้า',
+        desc: 'ข้ามได้ ระบบใช้ลูกค้า "หน้าร้าน" ให้อัตโนมัติ'
+      },
+      {
+        title: 'กด "รับเงิน"',
+        desc: 'เลือกวิธีจ่าย แล้วกด "ยืนยันรับเงิน"'
+      },
+      {
+        title: 'ยื่นใบเสร็จแล้วขายต่อ',
+        desc: '"แชร์ใบเสร็จ" ส่ง LINE/อีเมล หรือ "พิมพ์ใบเสร็จ"'
+      }
+    ]
+  },
+
+  topics: [
+    {
+      icon: 'bi-gear-fill',
+      title: 'เตรียมก่อนเปิดบูธ',
+      intro: 'ตั้งครั้งเดียวใช้ทั้งงาน กดที่แถบตั้งค่าด้านบนหน้า POS',
+      table: {
+        headers: ['ช่อง', 'ตั้งเป็นอะไร', 'มีผลกับอะไร'],
+        rows: [
+          ['โหมดงาน', 'ในประเทศ / ต่างประเทศ', 'สกุลเงินตั้งต้น + ประเภทลูกค้าที่ระบบสร้างให้'],
+          ['สกุลเงิน', 'THB สำหรับงานในไทย', 'สกุลที่แสดงบนจอ ใบเสร็จ และที่ใช้เก็บเงิน'],
+          ['อัตราแลกเปลี่ยน', 'งานในไทยใส่ 1', 'ใช้แปลงราคาป้าย (บาท) เป็นสกุลที่ขาย'],
+          ['อัตราภาษี (%)', 'ปกติ 0 · งานที่ออก VAT ใส่ 7', 'บวก VAT เข้ายอดที่เก็บเงินและใบเสร็จ']
+        ]
+      },
+      warning:
+        'อย่าเปลี่ยนกลางคัน ถ้าต้องเปลี่ยนให้ปิดบิลที่ค้างอยู่ให้หมดก่อน ไม่งั้นบิลที่เปิดค้างจะคิดคนละเรต'
+    },
+    {
+      icon: 'bi-upc-scan',
+      title: 'เพิ่มสินค้าเข้าตะกร้า',
+      list: [
+        { label: 'สแกนกล้อง', desc: 'กด "สแกนกล้อง" แล้วยิงที่ป้าย' },
+        {
+          label: 'พิมพ์รหัส',
+          desc: 'พิมพ์แล้วกด Enter สลับได้ระหว่าง "รหัสสินค้าใหม่" กับ "รหัสสินค้าเก่า"'
+        },
+        {
+          label: 'แก้ในบรรทัดสินค้าได้',
+          desc: 'ราคา (ตกลงราคาต่างจากป้าย) / จำนวน / ส่วนลด (%) เฉพาะชิ้นนั้น'
+        }
+      ],
+      tip: 'สแกนซ้ำชิ้นเดิมจะเตือน "สินค้าชิ้นนี้อยู่ในตะกร้าแล้ว" เพราะสินค้าแต่ละชิ้นมีชิ้นเดียว ถ้าลูกค้าเอาหลายชิ้นให้แก้ที่ช่อง "จำนวน"'
+    },
+    {
+      icon: 'bi-person-fill',
+      title: 'ลูกค้า',
+      list: [
+        { desc: 'ค่าเริ่มต้น "หน้าร้าน" ขายได้เลยไม่ต้องกรอก' },
+        {
+          desc: 'กด "+ ชื่อ/เบอร์" ใส่เบอร์ → เคยซื้อแล้ว = ผูกลูกค้าเดิม ขึ้น "พบข้อมูลลูกค้าเดิม" / ลูกค้าใหม่ = ระบบสร้างให้ ออกรหัสเอง'
+        }
+      ],
+      tip: 'ควรขอเบอร์ทุกครั้ง ครั้งหน้าระบบจำได้ทันที และยอดซื้อรวมอยู่ที่ชื่อเดียว'
+    },
+    {
+      icon: 'bi-receipt-cutoff',
+      title: 'พักบิล ขายหลายคิวพร้อมกัน',
+      list: [{ desc: '"บิลใหม่" เปิดตะกร้าอีกใบ / กดชื่อบิล (บิล 1, บิล 2) เพื่อสลับ / "ลบบิลนี้"' }],
+      tip: 'ตะกร้าไม่หาย ปิดแอป จอดับ แบตหมด เปิดใหม่ก็ยังอยู่ครบ'
+    },
+    {
+      icon: 'bi-credit-card-fill',
+      title: 'รับเงิน',
+      list: [
+        { desc: 'ยอดที่ต้องเก็บแสดงบนปุ่ม เช่น "รับเงิน 19,300 THB"' },
+        {
+          desc: 'วิธีจ่าย: เงินสด (กด "พอดี" หรือใส่เงินที่รับมา ระบบคิดเงินทอน) / โอนเงิน (ต้องเลือกธนาคาร) / เช็ค (ต้องเลือกธนาคารและกรอกสาขา) / บัตรเครดิต / เครดิต (ใส่จำนวนวัน)'
+        },
+        { desc: 'แบ่งจ่ายหลายวิธี: กด "เพิ่มรายการชำระ" ทีละวิธี ระบบไล่ยอดคงเหลือให้เห็นตลอด' },
+        { desc: 'เก็บไม่ครบ: ระบบถามยืนยันแล้วบันทึกส่วนที่เหลือเป็น "ค้างชำระ"' }
+      ],
+      warning: 'กด "ยืนยันรับเงิน" แล้วคือของจริง: ออกบิลจริง ตัดสต็อกจริง บันทึกเงินจริงทันที ไม่ใช่การทดลอง'
+    },
+    {
+      icon: 'bi-printer-fill',
+      title: 'ใบเสร็จ',
+      intro: 'หลังขึ้น "ทำรายการสำเร็จ"',
+      list: [
+        { desc: '"แชร์ใบเสร็จ" → เด้งช่องแชร์ของเครื่อง ส่งเข้า LINE / อีเมล / AirDrop / แอปเครื่องพิมพ์' },
+        { desc: '"พิมพ์ใบเสร็จ" → ส่งเข้าเครื่องพิมพ์ที่เชื่อมกับมือถือ (ใบกว้าง 80 มม.)' },
+        { desc: '"ขายต่อ" → เคลียร์ตะกร้าเริ่มบิลใหม่' }
+      ],
+      tip: 'บางเครื่องแชร์ไฟล์ตรงไม่ได้ ระบบจะดาวน์โหลดไฟล์ให้แทนแล้วขึ้นข้อความบอก เปิดจากรายการดาวน์โหลดแล้วส่งต่อเองได้'
+    },
+    {
+      icon: 'bi-exclamation-triangle-fill',
+      title: 'เมื่อมีปัญหา',
+      table: {
+        headers: ['ระบบขึ้นว่า', 'แปลว่า', 'ทำอย่างไร'],
+        rows: [
+          [
+            'บิลนี้ส่งไม่สำเร็จ (เน็ตขัดข้อง)',
+            'ส่งบิลไม่ถึงระบบเพราะสัญญาณหลุด',
+            'กด "ส่งอีกครั้ง" ได้เลย ไม่เกิดบิลซ้ำแน่นอน ถ้าอยากกลับไปแก้รายการกด "แก้ไขรายการแทน"'
+          ],
+          [
+            'สินค้า … ถูกขายไปแล้วในบิล …',
+            'เพื่อนในบูธขายชิ้นนี้ไปก่อนแล้ว',
+            'เอาออกจากตะกร้า ให้ลูกค้าเลือกชิ้นอื่น (ข้อความบอกด้วยว่าใครขาย)'
+          ],
+          [
+            'ไม่พบข้อมูลสินค้า',
+            'รหัสไม่ตรง หรือค้นผิดประเภทรหัส',
+            'สลับ "รหัสสินค้าใหม่" ↔ "รหัสสินค้าเก่า" แล้วลองใหม่'
+          ],
+          [
+            'สินค้าชิ้นนี้อยู่ในตะกร้าแล้ว',
+            'สแกนซ้ำชิ้นเดิม',
+            'ถ้าต้องการหลายชิ้นให้เพิ่มที่ช่อง "จำนวน"'
+          ]
+        ]
+      },
+      note: 'ยกเลิกบิลที่ออกไปแล้ว ทำในเมนู "ขาย" ไม่ใช่ในหน้า POS — เปิดบิลนั้นแล้วยกเลิก Invoice ระบบจะคืนสินค้ากลับเข้าคลังให้'
+    },
+    {
+      icon: 'bi-check2-square',
+      title: 'กฎ 4 ข้อของหน้าบูธ',
+      rules: [
+        'ตั้งค่ารอบงานให้ถูกก่อนขายบิลแรก (สกุลเงิน เรต VAT)',
+        'ขอเบอร์ลูกค้าทุกครั้งที่ทำได้',
+        'เน็ตหลุดไม่ต้องตกใจ ตะกร้าไม่หาย กดส่งซ้ำได้ไม่เกิดบิลซ้ำ',
+        'อย่ากดยืนยันรับเงินเล่น ทุกครั้งคือบิลจริงและตัดสต็อกจริง'
+      ]
+    }
+  ]
 }

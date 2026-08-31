@@ -1,3 +1,124 @@
+export const nav = {
+  home: 'Home',
+  scan: 'Scan',
+  sale: 'Sale',
+  pos: 'POS',
+  tasks: 'Tasks',
+  profile: 'Profile'
+}
+
+export const pos = {
+  // header — work mode / currency / bill switcher
+  workModeLabel: 'Work Mode',
+  workModeDomestic: 'Domestic',
+  workModeInternational: 'International',
+  currencyLabel: 'Currency',
+  rateLabel: 'Exchange Rate',
+  vatPercentLabel: 'VAT Rate (%)',
+  billLabel: 'Bill {n}',
+  newCartBtn: 'New Bill',
+  removeCartBtn: 'Remove Bill',
+  confirmRemoveCartTitle: 'Confirm Remove Bill',
+  confirmRemoveCartMsg: 'Remove this bill and all its items?',
+  helpBtn: 'User Guide',
+
+  // scan bar
+  scanCameraBtn: 'Scan Camera',
+  fieldNewCode: 'New Code',
+  fieldOldCode: 'Old Code',
+  scanPlaceholderNew: 'Enter new stock number',
+  scanPlaceholderOld: 'Enter old stock number (origin)',
+  warnEnterCode: 'Please enter a product code',
+  errorProductNotFound: 'Product not found',
+  errorCheckCode: 'Please check the product code',
+  warnDuplicateItem: 'This item is already in the cart',
+  successAddProduct: 'Added to cart',
+
+  // cart
+  cartTitle: 'Cart Items',
+  cartEmptyTitle: 'Cart is empty',
+  cartEmptySubtitle: 'Scan or search a product to start selling',
+  itemFieldPrice: 'Price',
+  itemFieldQty: 'Qty',
+  itemFieldDiscount: 'Discount (%)',
+  itemTotalLabel: 'Total',
+  removeItemBtn: 'Remove item',
+
+  // customer chip
+  customerTitle: 'Customer',
+  customerWalkin: 'Walk-in',
+  addCustomerBtn: '+ Name/Phone',
+  changeCustomerBtn: 'Change',
+  customerFormTitle: 'Customer Info',
+  fieldCustomerName: 'Customer Name',
+  fieldCustomerTel: 'Phone Number',
+  placeholderCustomerName: 'Enter customer name',
+  placeholderCustomerTel: 'Enter phone number',
+  warnEnterNameOrTel: 'Please enter a name or phone number',
+  warnEnterNameForNewCustomer: 'Please enter a name to create a new customer',
+  successFoundCustomer: 'Found existing customer',
+  successCreateCustomer: 'New customer created',
+
+  // summary + checkout
+  summaryItemCount: 'Items',
+  summaryItemUnit: 'pcs',
+  summaryTotalLabel: 'Total',
+  summaryVatLabel: 'VAT ({percent}%)',
+  summaryEquivalent: 'Equivalent',
+  summaryBahtUnit: 'THB',
+  checkoutBtn: 'Charge {amount} {unit}',
+  checkoutBtnEmpty: 'Charge',
+
+  // checkout sheet — payment collection
+  checkoutSheetTitle: 'Collect Payment',
+  amountToCollect: 'Amount Due',
+  paymentMethodCash: 'Cash',
+  paymentMethodTransfer: 'Bank Transfer',
+  paymentMethodCheque: 'Cheque',
+  paymentMethodCreditCard: 'Credit Card',
+  paymentMethodCredit: 'Credit (Term)',
+  cashQuickExact: 'Exact',
+  cashAmountLabel: 'Cash Received',
+  changeAmountLabel: 'Change',
+  paymentAmountLabel: 'Amount',
+  bankLabel: 'Bank',
+  bankPlaceholder: 'Select bank',
+  branchLabel: 'Branch',
+  branchPlaceholder: 'Enter branch',
+  referenceNumberLabel: 'Reference No.',
+  referenceNumberPlaceholder: 'Enter reference number (optional)',
+  paymentDayLabel: 'Credit Days',
+  addPaymentBtn: 'Add Payment',
+  paymentListTitle: 'Payments Received',
+  removePaymentBtn: 'Remove',
+  summaryPaid: 'Paid',
+  summaryRemaining: 'Remaining',
+  confirmPaymentBtn: 'Confirm Payment',
+  warnPaymentAmountRequired: 'Please enter an amount',
+  warnBankRequired: 'Please select a bank',
+  warnBranchRequired: 'Please enter a branch',
+  confirmUnderpaidTitle: 'Confirm Outstanding Balance',
+  confirmUnderpaidMsg: 'The remaining {amount} {unit} will be recorded as outstanding. Continue?',
+
+  // pending — network failure during checkout
+  pendingBannerTitle: 'Bill not sent (network issue)',
+  pendingBannerMsg: 'No duplicate bill will be created — tap "Resend" to try again',
+  resendBtn: 'Resend',
+  editCartInsteadBtn: 'Edit Cart Instead',
+
+  // done view — checkout complete
+  doneTitle: 'Sale Complete',
+  doneInvoiceLabel: 'Invoice No.',
+  doneSoLabel: 'Sale Order No.',
+  doneGrandTotal: 'Grand Total',
+  donePaid: 'Paid',
+  doneRemaining: 'Outstanding',
+  shareReceiptBtn: 'Share Receipt',
+  printReceiptBtn: 'Print Receipt',
+  sellMoreBtn: 'Sell More',
+  shareUnavailableMsg: 'This device cannot share files directly — the receipt will be downloaded instead'
+}
+
 export const scan = {
   selectTypeTitle: 'Select scan type',
   searchBy: 'Search by',
@@ -173,7 +294,17 @@ export const saleIndex = {
   createSoBtn: 'Create Sale Order',
   totalLabel: 'Total',
   bahtUnit: 'Baht',
-  itemsUnit: 'items'
+  itemsUnit: 'items',
+
+  // list-filter-bar
+  searchFieldNumber: 'Bill Number',
+  searchFieldCustomer: 'Customer Name',
+  searchPlaceholderNumber: 'Search by bill number',
+  searchPlaceholderCustomer: 'Search by customer name',
+  searchBtn: 'Search',
+  clearBtn: 'Clear',
+  scopeMine: 'Mine',
+  scopeAll: 'All Booth'
 }
 
 export const costVersion = {
@@ -439,6 +570,9 @@ export const sale = {
   warnSelectCurrency: 'Please specify the currency',
   statusLabelDraft: 'Save Draft',
   statusLabelCreate: 'Create Sale Order',
+  currencyUnitPlaceholder: 'e.g. US$, EUR',
+  successCreateSoMessage: 'No.: {soNumber}',
+  successCreateSoTitle: '{label} successfully',
 
   // detail-view info
   soInfoTitle: 'Sale Order Info',
@@ -498,4 +632,172 @@ export const sale = {
   // detail-view status labels
   statusDraft: 'Draft',
   statusInvoiced: 'Invoiced'
+}
+
+export const receipt = {
+  shopName: 'Duang Kaew Jewelry',
+  customer: 'Customer',
+  noItems: 'No items',
+  discount: 'Discount',
+  subtotal: 'Subtotal',
+  specialDiscount: 'Special Discount',
+  specialAddition: 'Special Addition',
+  freight: 'Freight',
+  vat: 'VAT',
+  grandTotal: 'Grand Total',
+  paidBy: 'Paid By',
+  paid: 'Paid',
+  remaining: 'Remaining',
+  thankYou: 'Thank you'
+}
+
+// posHelp — in-app POS user guide (fully static content, works offline)
+// Structure: quickStart (always-visible 4-step summary card) + topics[] (accordion, collapsed by default)
+export const posHelp = {
+  pageTitle: 'POS User Guide',
+
+  quickStart: {
+    title: 'Sell One Bill in 4 Steps',
+    steps: [
+      {
+        title: 'Scan the product',
+        desc: 'Scan the tag with the camera, or type the code and press Enter to add it to the cart instantly'
+      },
+      {
+        title: 'Enter customer name/phone',
+        desc: 'Optional — the system uses "Walk-in" automatically if skipped'
+      },
+      {
+        title: 'Tap "Charge"',
+        desc: 'Choose a payment method, then tap "Confirm Payment"'
+      },
+      {
+        title: 'Hand over the receipt and sell the next one',
+        desc: '"Share Receipt" sends it via LINE/email, or "Print Receipt" to print it'
+      }
+    ]
+  },
+
+  topics: [
+    {
+      icon: 'bi-gear-fill',
+      title: 'Set Up Before Opening the Booth',
+      intro: 'Set once and use for the whole event — tap the settings bar at the top of the POS page',
+      table: {
+        headers: ['Field', 'Set To', 'Affects'],
+        rows: [
+          ['Work Mode', 'Domestic / International', 'Default currency + the customer type the system creates'],
+          [
+            'Currency',
+            'THB for events in Thailand',
+            'The currency shown on screen, on the receipt, and used to collect payment'
+          ],
+          ['Exchange Rate', 'Enter 1 for events in Thailand', 'Used to convert the tag price (Baht) into the selling currency'],
+          ['VAT Rate (%)', 'Normally 0 · enter 7 for events issuing VAT', 'Adds VAT to the amount collected and the receipt']
+        ]
+      },
+      warning:
+        "Don't change these mid-event. If you must change them, close out all open bills first — otherwise open bills will be calculated at a different rate."
+    },
+    {
+      icon: 'bi-upc-scan',
+      title: 'Add Products to the Cart',
+      list: [
+        { label: 'Scan Camera', desc: 'Tap "Scan Camera" and scan the tag' },
+        {
+          label: 'Type the code',
+          desc: 'Type it and press Enter — you can switch between "New Code" and "Old Code"'
+        },
+        {
+          label: 'Edit on the item line',
+          desc: 'Price (if agreeing on a price different from the tag), Qty, or Discount (%) — for that item only'
+        }
+      ],
+      tip: 'Scanning the same item again shows "This item is already in the cart" because every item is unique. If the customer wants more than one, adjust the "Qty" field instead.'
+    },
+    {
+      icon: 'bi-person-fill',
+      title: 'Customer',
+      list: [
+        { desc: 'Defaults to "Walk-in" — you can sell right away without filling anything in' },
+        {
+          desc: 'Tap "+ Name/Phone" and enter a phone number → if they\'ve bought before, it links to the existing customer and shows "Found existing customer"; a new customer is created automatically with its own code'
+        }
+      ],
+      tip: "Ask for a phone number every time — the system will recognize the customer instantly next time, and their total purchases stay under one name."
+    },
+    {
+      icon: 'bi-receipt-cutoff',
+      title: 'Hold Bills — Sell Multiple Queues at Once',
+      list: [
+        { desc: '"New Bill" opens another cart / tap a bill name (Bill 1, Bill 2) to switch / "Remove Bill" to delete it' }
+      ],
+      tip: 'Carts are never lost — closing the app, screen off, or a dead battery — reopen and everything is still there.'
+    },
+    {
+      icon: 'bi-credit-card-fill',
+      title: 'Collect Payment',
+      list: [
+        { desc: 'The amount to collect is shown on the button, e.g. "Charge 19,300 THB"' },
+        {
+          desc: 'Payment methods: Cash (tap "Exact" or enter the cash received — the system calculates change) / Bank Transfer (bank required) / Cheque (bank and branch required) / Credit Card / Credit (Term) (enter number of days)'
+        },
+        { desc: 'Split across multiple methods: tap "Add Payment" for each method — the remaining balance always stays visible' },
+        { desc: 'Underpaid: the system asks for confirmation, then records the remaining balance as outstanding' }
+      ],
+      warning:
+        'Tapping "Confirm Payment" is final: it issues a real bill, deducts real stock, and records real payment immediately — this is not a test.'
+    },
+    {
+      icon: 'bi-printer-fill',
+      title: 'Receipt',
+      intro: 'After "Sale Complete" appears',
+      list: [
+        { desc: '"Share Receipt" → opens the device share sheet — send via LINE / email / AirDrop / a printer app' },
+        { desc: '"Print Receipt" → sends it to a printer connected to the phone (80mm paper)' },
+        { desc: '"Sell More" → clears the cart and starts a new bill' }
+      ],
+      tip: "Some devices can't share files directly — the system downloads the receipt file instead and shows a message. Open it from your downloads to share it manually."
+    },
+    {
+      icon: 'bi-exclamation-triangle-fill',
+      title: 'When Something Goes Wrong',
+      table: {
+        headers: ['System Shows', 'Meaning', 'What To Do'],
+        rows: [
+          [
+            'Bill not sent (network issue)',
+            'The bill did not reach the system because the connection dropped',
+            'Tap "Resend" — no duplicate bill will ever be created. To go back and edit the items instead, tap "Edit Cart Instead"'
+          ],
+          [
+            'Product … was already sold in bill …',
+            'A teammate at the booth already sold this item',
+            'Remove it from the cart and let the customer pick another item (the message also shows who sold it)'
+          ],
+          [
+            'Product not found',
+            "The code doesn't match, or you searched with the wrong code type",
+            'Switch between "New Code" ↔ "Old Code" and try again'
+          ],
+          [
+            'This item is already in the cart',
+            'The same item was scanned twice',
+            'If more than one is needed, increase the "Qty" field instead'
+          ]
+        ]
+      },
+      note: 'To cancel a bill that has already been issued, do it in the "Sale" menu — not on the POS page. Open that bill and cancel the Invoice; the system will return the item to stock automatically.'
+    },
+    {
+      icon: 'bi-check2-square',
+      title: '4 Rules for the Booth',
+      rules: [
+        'Set up the event correctly before the first sale (currency, VAT rate)',
+        "Ask for the customer's phone number whenever possible",
+        "Don't panic if the network drops — the cart is never lost, and resending never creates a duplicate bill",
+        "Don't tap Confirm Payment for fun — every tap creates a real bill and deducts real stock"
+      ]
+    }
+  ]
 }
