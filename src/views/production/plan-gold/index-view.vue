@@ -1,633 +1,54 @@
 <template>
   <div class="app-container">
-    <div class="filter-container-search">
-      <pageTitle
-        :title="$t('view.production.planGold.pageTitle')"
-        :description="$t('view.production.planGold.pageDesc')"
-        :isShowBtnClose="false"
-        :isShowRightSlot="false"
-      >
-        <template #rightSlot>
-          <div></div>
-        </template>
-      </pageTitle>
+    <PageHeaderGeneric :title="$t('view.production.planGold.pageTitle')" backRoute="plan-gold-tracking" />
 
-      <form @submit.prevent="onSubmit" class="p-2">
-        <div class="mt-2">
-          <div class="title-text-lg-bg">
-            <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>{{ $t('view.production.planGold.sectionGoldInfo') }}</span>
-          </div>
-          <div class="border-container p-4">
-            <div class="form-col-container">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldBookNo') }}</span>
-                  <span class="txt-required"> *</span>
-                </span>
-                <input type="text" class="form-control" v-model="form.bookNo" required />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldNo') }}</span>
-                  <span class="txt-required"> *</span>
-                </span>
-                <input type="text" class="form-control" v-model="form.no" required />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldAssignDate') }}</span>
-                  <span class="txt-required"> *</span>
-                </span>
-                <CalendarGeneric
-                  class="w-100"
-                  :class="val.isValAssignDate === true ? `p-invalid` : ``"
-                  v-model="form.assignDate"
-                  dateFormat="dd/mm/yy"
-                  showIcon
-                  showButtonBar
-                />
-              </div>
-            </div>
-            <div class="form-col-container mt-1">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldGoldType') }}</span>
-                  <span class="txt-required"> *</span>
-                </span>
-                <DropdownGeneric
-                  v-model="form.gold"
-                  :options="masterGold"
-                  optionLabel="description"
-                  :class="val.isValGold === true ? `p-invalid` : ``"
-                  :showClear="form.gold?.code ? true : false"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldGoldPercent') }}</span>
-                  <span class="txt-required"> *</span>
-                </span>
-                <DropdownGeneric
-                  v-model="form.goldSize"
-                  :options="masterGoldSize"
-                  optionLabel="description"
-                  :class="val.isValGoldSize === true ? `p-invalid` : ``"
-                  :showClear="form.goldSize?.code ? true : false"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldGoldReceipt') }}</span>
-                  <span class="txt-required"> *</span>
-                </span>
-                <input type="text" class="form-control" v-model="form.goldReceipt" required />
-              </div>
-            </div>
-            <div class="form-col-container mt-1">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldAssignBy') }}</span>
-                </span>
-                <input type="text" class="form-control" v-model="form.assignBy" />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldReceiveBy') }}</span>
-                </span>
-                <input type="text" class="form-control" v-model="form.receiveBy" />
-              </div>
+    <form @submit.prevent="onSubmit">
+      <GoldInfoSection
+        v-model="form"
+        :errors="errors"
+        :masterGold="masterGold"
+        :masterGoldSize="masterGoldSize"
+        mode="create"
+      />
+      <MeltSection v-model="form" />
+      <CastSection v-model="form" />
 
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldCost') }}</span>
-                  <span class="txt-required"> *</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.cost"
-                  required
-                />
-              </div>
-            </div>
-            <div class="mt-1">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldRemark') }}</span>
-                </span>
-                <textarea class="form-control" v-model="form.remark"></textarea>
-              </div>
-            </div>
-          </div>
+      <div class="btn-submit-container-between mt-4">
+        <div></div>
+        <div>
+          <ButtonGeneric
+            variant="outline"
+            type="button"
+            icon="bi-x-circle"
+            :label="$t('common.btn.clear')"
+            @click="onClearForm"
+          />
+          <ButtonGeneric
+            variant="main"
+            type="submit"
+            icon="bi-calendar-check"
+            :label="$t('view.production.planGold.btnCreate')"
+            class="ml-2"
+          />
         </div>
-
-        <!-- ทองหลอม -->
-        <div class="mt-4">
-          <div class="title-text-lg-bg">
-            <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>{{ $t('view.production.planGold.sectionMeltInfo') }}</span>
-          </div>
-          <div class="border-container p-4">
-            <div class="form-col-container">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldMeltDate') }}</span>
-                  <!-- <span class="txt-required"> *</span> -->
-                </span>
-                <CalendarGeneric
-                  class="w-100"
-                  :class="val.isValMeltDate === true ? `p-invalid` : ``"
-                  v-model="form.meltDate"
-                  dateFormat="dd/mm/yy"
-                  showIcon
-                  showButtonBar
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldMeltWeight') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.meltWeight"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldReturnMeltWeight') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.returnMeltWeight"
-                />
-              </div>
-              <div></div>
-            </div>
-            <div class="form-col-container mt-1">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldWeightLoss') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.meltWeightLoss"
-                  :disabled="form.meltWeightOver > 0"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldWeightOver') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.meltWeightOver"
-                  :disabled="form.meltWeightLoss > 0"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldZill') }}</span>
-                  <small></small>
-                </span>
-                <AutoComplete
-                  v-model="form.zill"
-                  :suggestions="zillItemSearch"
-                  @complete="onSearchZill"
-                  :placeholder="$t('view.production.planGold.placeholderZill')"
-                  forceSelection
-                  @item-select="onSearchZill"
-                  :min-length="3"
-                  :disabled="!form.gold || !form.goldSize"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldZillQty') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.zillQty"
-                  :disabled="!form.gold || !form.goldSize || !form.zill"
-                />
-              </div>
-            </div>
-
-            <!-- ขี้เบ้า -->
-            <div class="mt-3 filter-container-bg">
-              <div class="form-col-container">
-                <div>
-                  <span class="title-text-white">
-                    <span>{{ $t('view.production.planGold.fieldReturnScrap') }}</span>
-                  </span>
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    class="form-control"
-                    v-model="form.returnMeltScrapWeight"
-                  />
-                </div>
-                <div>
-                  <span class="title-text-white">
-                    <span>{{ $t('view.production.planGold.fieldReturnScrapDate') }}</span>
-                  </span>
-                  <CalendarGeneric
-                    class="w-100"
-                    v-model="form.returnMeltScrapWeightDate"
-                    dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
-                  />
-                </div>
-                <div></div>
-                <div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ทองหล่อ -->
-        <div class="mt-4">
-          <div class="title-text-lg-bg">
-            <span class="mr-2"><i class="bi bi-journal-text"></i></span>
-            <span>{{ $t('view.production.planGold.sectionCastInfo') }}</span>
-          </div>
-          <div class="border-container p-4">
-            <div class="form-col-container">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldCastDate') }}</span>
-                  <!-- <span class="txt-required"> *</span> -->
-                </span>
-                <CalendarGeneric
-                  class="w-100"
-                  :class="val.isValCastDate === true ? `p-invalid` : ``"
-                  v-model="form.castDate"
-                  dateFormat="dd/mm/yy"
-                  showIcon
-                  showButtonBar
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldCastWeight') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.castWeight"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldGemWeight') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.gemWeight"
-                  disabled
-                />
-              </div>
-              <div></div>
-            </div>
-            <div class="form-col-container mt-1">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldReturnCastWeight') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.returnCastWeight"
-                />
-              </div>
-
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldReturnMold') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.returnCastMoldWeight"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldReturnBodyBroken') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.returnCastBodyBrokenWeight"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldReturnBodyTotal') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  disabled
-                  :value="onSumBodyReturn()"
-                />
-              </div>
-            </div>
-            <div class="form-col-container mt-1">
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldReturnPowder') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.returnCastPowderWeight"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldWeightLoss') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.castWeightLoss"
-                  :disabled="form.castWeightOver > 0"
-                />
-              </div>
-              <div>
-                <span class="title-text">
-                  <span>{{ $t('view.production.planGold.fieldWeightOver') }}</span>
-                </span>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  class="form-control"
-                  v-model="form.castWeightOver"
-                  :disabled="form.castWeightLoss > 0"
-                />
-              </div>
-              <div></div>
-            </div>
-
-            <!-- ขี้เบ้า -->
-            <div class="mt-3 filter-container-bg">
-              <div class="form-col-container">
-                <div>
-                  <span class="title-text-white">
-                    <span>{{ $t('view.production.planGold.fieldReturnScrap') }}</span>
-                  </span>
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    class="form-control"
-                    v-model="form.returnCastScrapWeight"
-                  />
-                </div>
-                <div>
-                  <span class="title-text-white">
-                    <span>{{ $t('view.production.planGold.fieldReturnScrapDate') }}</span>
-                  </span>
-                  <CalendarGeneric
-                    class="w-100"
-                    v-model="form.returnCastScrapWeightDate"
-                    dateFormat="dd/mm/yy"
-                    showIcon
-                    showButtonBar
-                  />
-                </div>
-                <div></div>
-                <div></div>
-              </div>
-            </div>
-
-            <div class="title-text-lg mt-4 mt-2">
-              <span class="mr-2"><i class="bi bi-gem"></i></span>
-              <span>{{ $t('view.production.planGold.subHeaderReturnBody') }}</span>
-            </div>
-
-            <div class="form-col-container mt-1">
-              <DataTable
-                class="p-datatable-sm"
-                showGridlines
-                dataKey="id"
-                v-model:editingRows="editingRows"
-                :value="form.items"
-                editMode="row"
-                scrollable
-                resizableColumns
-                @row-edit-save="onRowEditSave"
-                :pt="{
-                  table: { style: 'min-width: 50rem' },
-                  column: {
-                    bodycell: ({ state }) => ({
-                      style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                    })
-                  }
-                }"
-              >
-                <ColumnGroup type="header">
-                  <Row>
-                    <Column header=""></Column>
-                    <Column :header="$t('view.production.planGold.colWoBody')"></Column>
-                    <Column :header="$t('view.production.planGold.colReturnQty')"></Column>
-                    <Column :header="$t('view.production.planGold.colReturnWeight')"></Column>
-                    <Column :header="$t('view.production.planGold.colRemark')"></Column>
-                    <Column header=""></Column>
-                  </Row>
-                </ColumnGroup>
-                <Column style="width: 30px">
-                  <template #body="prop">
-                    <div
-                      class="btn btn-sm btn-danger text-center w-100"
-                      @click="onDelItem(prop.data)"
-                    >
-                      <i class="bi bi-trash-fill"></i>
-                    </div>
-                  </template>
-                </Column>
-                <Column field="productionPlan" style="min-width: 150px">
-                  <template #editor="{ data, field }">
-                    <!-- <input
-                        type="text"
-                        :class="data[field] ? `` : `bg-warning`"
-                        class="form-control"
-                        v-model="data[field]"
-                      /> -->
-                    <AutoComplete
-                      v-model="data[field]"
-                      :suggestions="productItemSearch"
-                      @complete="onSearchProductionPlanId"
-                      :placeholder="$t('view.production.planGold.placeholderWoBody')"
-                      :class="data[field] ? `` : `p-invalid`"
-                      optionLabel="woText"
-                      forceSelection
-                    >
-                      <template #option="slotProps">
-                        <div class="flex align-options-center">
-                          <div>{{ `${slotProps.option.wo}-${slotProps.option.woNumber}` }}</div>
-                        </div>
-                      </template>
-                    </AutoComplete>
-                  </template>
-                  <template #body="slotProps">
-                    <div v-if="slotProps.data.productionPlan">
-                      {{
-                        `${slotProps.data.productionPlan.wo}-${slotProps.data.productionPlan.woNumber}`
-                      }}
-                    </div>
-                    <div v-else>{{ $t('view.production.planGold.promptSpecifyWo') }}</div>
-                    <!-- <input type="text" class="form-control" v-model="form.bookNo" required /> -->
-                  </template>
-                </Column>
-                <Column field="returnQTY" :header="$t('view.production.planGold.colReturnQty')" style="width: 30px">
-                  <template #editor="{ data, field }">
-                    <input
-                      type="number"
-                      min="1"
-                      step="any"
-                      class="form-control text-right"
-                      v-model="data[field]"
-                    />
-                  </template>
-                  <template #body="slotProps">
-                    <div class="text-right">
-                      {{ `${slotProps.data.returnQTY ?? `0`}` }}
-                    </div>
-                  </template>
-                </Column>
-                <Column field="returnWeight" :header="$t('view.production.planGold.colReturnWeight')" style="width: 30px">
-                  <template #editor="{ data, field }">
-                    <input
-                      type="number"
-                      min="1"
-                      step="any"
-                      class="form-control text-right"
-                      v-model="data[field]"
-                    />
-                  </template>
-                  <template #body="slotProps">
-                    <div class="text-right">
-                      {{ `${slotProps.data.returnWeight ?? `0`}` }}
-                    </div>
-                  </template>
-                </Column>
-                <Column field="remark" :header="$t('view.production.planGold.colRemark')" style="min-width: 150px">
-                  <template #editor="{ data, field }">
-                    <input
-                      type="text"
-                      :class="data[field] ? `` : ``"
-                      class="form-control"
-                      v-model="data[field]"
-                    />
-                  </template>
-                </Column>
-                <Column :rowEditor="true" bodyStyle="text-align:center"> </Column>
-                <ColumnGroup type="footer">
-                  <Row>
-                    <Column
-                      :footer="$t('view.production.planGold.footerReturnWeight')"
-                      footerStyle="text-align:right"
-                      :colspan="3"
-                    />
-                    <Column :footer="onSumBodyReturn()" footerStyle="text-align:right" />
-                    <Column :colspan="2">
-                      <template #footer>
-                        <div class="d-flex justify-content-end">
-                          <!-- <div>
-                            ทั้งหมด {{ this.form.items ? this.form.items.length : `0` }} รายการ
-                          </div> -->
-                          <div @click="addItems">
-                            <i class="bi bi-plus-square-fill"></i>
-                          </div>
-                        </div>
-                      </template>
-                    </Column>
-                  </Row>
-                </ColumnGroup>
-                <!-- <template #footer>
-                  <div class="d-flex justify-content-between">
-                    <div>ทั้งหมด {{ this.form.items ? this.form.items.length : `0` }} รายการ</div>
-                    <div @click="addItems">
-                      <i class="bi bi-plus-square-fill"></i>
-                    </div>
-                  </div>
-                </template> -->
-              </DataTable>
-            </div>
-          </div>
-        </div>
-
-        <!-- btn-submit -->
-        <div class="submit-container mt-2">
-          <button class="btn btn-sm btn-main mr-2" type="submit">
-            <span class="bi bi-calendar-check mr-2"></span>
-            <span>{{ $t('view.production.planGold.btnCreate') }}</span>
-          </button>
-        </div>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
 </template>
 
 <script>
-import pageTitle from '@/components/custom/page-title.vue'
-
-// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
-import DataTable from 'primevue/datatable'
-// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
-import Column from 'primevue/column'
-// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
-import Row from 'primevue/row'
-// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row"+ColumnGroup exception
-import ColumnGroup from 'primevue/columngroup'
-// eslint-disable-next-line no-restricted-imports -- AutoComplete inside DataTable editor exception
-import AutoComplete from 'primevue/autocomplete'
-
-import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
-import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
-
+// External dependencies
 import api from '@/axios/axios-helper.js'
-import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatISOString } from '@/services/utils/dayjs'
+import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { formatISOString } from '@/services/utils/dayjs'
+
+// Local components
+import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import GoldInfoSection from './components/gold-info-section.vue'
+import MeltSection from './components/melt-section.vue'
+import CastSection from './components/cast-section.vue'
 
 const interfaceForm = {
   bookNo: null,
@@ -641,7 +62,7 @@ const interfaceForm = {
   returnMeltWeight: null,
 
   returnMeltScrapWeight: null,
-  returnMeltScrapWeightDate: new Date(),
+  returnMeltScrapWeightDate: null,
 
   meltWeightLoss: null,
   meltWeightOver: null,
@@ -650,10 +71,9 @@ const interfaceForm = {
   returnCastWeight: null,
   returnCastMoldWeight: null,
   returnCastBodyBrokenWeight: null,
-  //returnCastBodyWeight: null,
 
   returnCastScrapWeight: null,
-  returnCastScrapWeightDate: new Date(),
+  returnCastScrapWeightDate: null,
 
   returnCastPowderWeight: null,
   castWeightLoss: null,
@@ -666,72 +86,81 @@ const interfaceForm = {
   items: [],
   cost: 0
 }
-const interfaceIsValid = {
-  isValAssignDate: false,
-  isValMeltDate: false,
-  isValCastDate: false,
-  isValGold: false,
-  isValGoldSize: false
+
+const interfaceErrors = {
+  assignDate: '',
+  gold: '',
+  goldSize: ''
 }
+
 export default {
+  name: 'PlanGoldCreateView',
+
   components: {
-    pageTitle,
-    CalendarGeneric,
-    DropdownGeneric,
-    DataTable,
-    Column,
-    Row,
-    ColumnGroup,
-    AutoComplete
+    PageHeaderGeneric,
+    ButtonGeneric,
+    GoldInfoSection,
+    MeltSection,
+    CastSection
   },
+
   data() {
     return {
-      autoId: 0,
-
-      // ------ form ------ //
       form: {
-        ...interfaceForm
+        ...interfaceForm,
+        items: []
       },
-      val: {
-        ...interfaceIsValid
+      errors: {
+        ...interfaceErrors
       },
+      initialFormSnapshot: '',
 
-      // ------ master ------ //
       masterGold: [],
-      masterGoldSize: [],
-
-      // ----- table -------- //
-      editingRows: [],
-      productItemSearch: [],
-
-      // ----- zill ---------//
-      zillItemSearch: []
+      masterGoldSize: []
     }
   },
+
+  computed: {
+    isFormDirty() {
+      return JSON.stringify(this.form) !== this.initialFormSnapshot
+    }
+  },
+
   methods: {
     validateForm() {
+      const errors = { ...interfaceErrors }
+      const messages = []
+
       if (!this.form.assignDate) {
-        this.val = {
-          isValAssignDate: true
-        }
-        return false
+        errors.assignDate = this.$t('view.production.planGold.errorAssignDateRequired')
+        messages.push(errors.assignDate)
       }
-      // if (!this.form.meltDate) {
-      //   this.val = {
-      //     isValMeltDate: true
-      //   }
-      //   return false
-      // }
       if (!this.form.gold) {
-        this.val = {
-          isValGold: true
-        }
-        return false
+        errors.gold = this.$t('view.production.planGold.errorGoldRequired')
+        messages.push(errors.gold)
       }
       if (!this.form.goldSize) {
-        this.val = {
-          isValGoldSize: true
-        }
+        errors.goldSize = this.$t('view.production.planGold.errorGoldSizeRequired')
+        messages.push(errors.goldSize)
+      }
+
+      const missingWoRows = (this.form.items || [])
+        .map((item, index) => (!item.productionPlan ? index + 1 : null))
+        .filter((rowNo) => rowNo !== null)
+
+      if (missingWoRows.length > 0) {
+        messages.push(
+          this.$t('view.production.planGold.errorMissingWoRows', { rows: missingWoRows.join(', ') })
+        )
+      }
+
+      this.errors = errors
+
+      if (messages.length > 0) {
+        warning(
+          messages.map((m) => `• ${m}`).join('<br/>'),
+          this.$t('view.production.planGold.validationTitle')
+        )
         return false
       }
 
@@ -739,7 +168,7 @@ export default {
     },
     onSubmit() {
       if (this.validateForm()) {
-        confirmSubmit(
+        confirmThenSubmit(
           `${this.$t('view.production.planGold.labelNo')}${this.form.no} | ${this.$t('view.production.planGold.labelBookNo')}${this.form.bookNo}`,
           this.$t('view.production.planGold.confirmCreate'),
           async () => {
@@ -748,115 +177,58 @@ export default {
         )
       }
     },
-
-    // ----------- Grid -------------------//
-    onRowEditSave(event) {
-      let { newData, index } = event
-      // if (!newData.productionPlanId) {
-      //   console.log("can't be null")
-      // }
-      this.form.items[index] = newData
+    onClearForm() {
+      confirmThenSubmit(
+        this.$t('view.production.planGold.clearFormConfirm'),
+        this.$t('view.production.planGold.clearFormTitle'),
+        () => {
+          this.resetForm()
+        }
+      )
     },
-    addItems() {
-      const add = {
-        id: ++this.autoId,
-        productionPlanId: null,
-        returnWeight: 0,
-        returnQTY: 0
+    resetForm() {
+      this.form = {
+        ...interfaceForm,
+        items: []
       }
-      this.form.items.push(add)
-    },
-    onDelItem(item) {
-      const index = this.form.items.indexOf(item)
-      this.form.items.splice(index, 1)
-    },
-    onSumBodyReturn() {
-      let sum = 0
-      if (this.form.items) {
-        this.form.items.forEach((x) => {
-          sum += x.returnWeight
-        })
-      }
-      return sum
-    },
-
-    // ------ helper ----- //
-    formatDate(date) {
-      return date ? formatDate(date) : ''
+      this.errors = { ...interfaceErrors }
+      this.initialFormSnapshot = JSON.stringify(this.form)
     },
 
     async submit() {
-      this.form.items = this.form.items.map((x) => {
-        return {
+      const items = this.form.items
+        .filter((x) => x.productionPlan)
+        .map((x) => ({
           ...x,
           id: x.productionPlan.id,
-          productionPlanId: x.productionPlan
-            ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
-            : null
-        }
-      })
+          productionPlanId: `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
+        }))
 
       const params = {
         ...this.form,
+        items,
         goldCode: this.form.gold.code,
         goldSizeCode: this.form.goldSize.code,
         assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
         meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
         castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null,
 
-        returnMeltScrapWeightDate: this.form.returnMeltScrapWeightDate
-          ? formatISOString(this.form.returnMeltScrapWeightDate)
-          : null,
-        returnCastScrapWeightDate: this.form.returnCastScrapWeightDate
-          ? formatISOString(this.form.returnCastScrapWeightDate)
-          : null
+        returnMeltScrapWeightDate:
+          this.form.returnMeltScrapWeight && this.form.returnMeltScrapWeightDate
+            ? formatISOString(this.form.returnMeltScrapWeightDate)
+            : null,
+        returnCastScrapWeightDate:
+          this.form.returnCastScrapWeight && this.form.returnCastScrapWeightDate
+            ? formatISOString(this.form.returnCastScrapWeightDate)
+            : null
       }
 
       const res = await api.jewelry.post('ProductionPlanCost/CreateGoldCost', params)
       if (res) {
         success(null, null, () => {
-          this.form = {
-            ...interfaceForm
-          }
-          this.form.items = []
-          this.val = {
-            ...interfaceIsValid
-          }
+          this.resetForm()
           this.$router.push('/plan-gold-tracking')
         })
-      }
-    },
-    async onSearchProductionPlanId(e) {
-      const params = {
-        take: 0,
-        skip: 0,
-        search: {
-          text: e.query ?? null
-        }
-      }
-      const res = await api.jewelry.post(
-        'ProductionPlan/ProductionPlanSearchByProductionPlanId',
-        params
-      )
-      if (res) {
-        this.productItemSearch = [...res.data]
-      }
-    },
-    async onSearchZill(e) {
-      const param = {
-        take: 0,
-        skip: 0,
-        sort: [],
-        search: {
-          type: 'ZILL',
-          text: e.query ?? null,
-          goldCode: this.form.gold.code,
-          goldSizeCode: this.form.goldSize.code
-        }
-      }
-      const res = await api.jewelry.post('Master/ListMaster', param)
-      if (res) {
-        this.zillItemSearch = res.data.map((x) => `${x.code}`)
       }
     },
     async fetchMasterGold() {
@@ -872,14 +244,32 @@ export default {
       }
     }
   },
+
   created() {
-    this.$nextTick(() => {
-      this.fetchMasterGold()
-      this.fetchMasterGoldSize()
-    })
+    this.initialFormSnapshot = JSON.stringify(this.form)
+    this.fetchMasterGold()
+    this.fetchMasterGoldSize()
+  },
+
+  beforeRouteLeave(to, from, next) {
+    if (!this.isFormDirty) {
+      next()
+      return
+    }
+    confirmThenSubmit(
+      this.$t('view.production.planGold.leaveWarning'),
+      this.$t('view.production.planGold.leaveTitle'),
+      () => next()
+    )
   }
 }
 </script>
+
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/custom-style/standard-search-bar';
+@import '@/assets/scss/responsive-style/web';
+
+.app-container {
+  padding: var(--sp-lg);
+}
 </style>

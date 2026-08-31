@@ -2,6 +2,8 @@
   <div @keydown.enter.prevent="handleEnterKey">
     <AutoComplete
       v-model="localValue"
+      :inputId="inputId"
+      :aria-label="ariaLabel"
       :suggestions="displaySuggestions"
       @complete="onSearch"
       :placeholder="placeholder"
@@ -39,6 +41,14 @@ export default {
   props: {
     modelValue: {
       type: [Object, String],
+      default: null
+    },
+    inputId: {
+      type: String,
+      default: null
+    },
+    ariaLabel: {
+      type: String,
       default: null
     },
     // API mode props
@@ -103,6 +113,11 @@ export default {
     suggestions: {
       type: Array,
       default: () => []
+    },
+    // API mode paging — default 0 keeps existing behavior (no paging = returns all matches)
+    take: {
+      type: Number,
+      default: 0
     }
   },
 
@@ -160,7 +175,7 @@ export default {
       // API mode
       try {
         const params = {
-          take: 0,
+          take: this.take,
           skip: 0,
           search: {
             [this.searchField]: event.query ?? null,

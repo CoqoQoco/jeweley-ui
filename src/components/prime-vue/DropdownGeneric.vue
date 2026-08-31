@@ -1,6 +1,7 @@
 <template>
   <Dropdown
     v-model="localValue"
+    :inputId="inputId"
     :options="options"
     :optionLabel="optionLabel"
     :optionValue="optionValue"
@@ -8,6 +9,7 @@
     :showClear="showClear"
     :disabled="disabled"
     :filter="filter"
+    :ariaLabel="ariaLabel"
     :class="customClass"
     :style="customStyle"
     @change="onChange"
@@ -30,6 +32,14 @@ export default {
 
   props: {
     modelValue: {
+      default: null
+    },
+    inputId: {
+      type: String,
+      default: null
+    },
+    ariaLabel: {
+      type: String,
       default: null
     },
     options: {

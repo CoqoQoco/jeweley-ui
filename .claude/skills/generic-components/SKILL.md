@@ -18,7 +18,7 @@ description: Generic wrapper components ทั้งหมด — ตรวจ�
 | `InputTextGeneric` | `InputTextGeneric.vue` | wrap `<input class="form-control">` — padding sync กับ DropdownGeneric; props: `modelValue`, `type`, `placeholder`, `disabled`, `readonly`, `required`, `trim`, `bgInput`, `step`(null), `min`(null), `max`(null), `maxlength`(null), `icon`('')(Bootstrap icon class เช่น `'bi-telephone-fill'` — leading icon ฝังในช่อง), `iconPosition`('left'); emits: `update:modelValue`, `blur`, `focus` |
 | `TextareaGeneric` | `TextareaGeneric.vue` | wrap `<textarea class="form-control">` — resize: vertical; props: `modelValue`, `rows`(3), `placeholder`, `disabled`, `required`, `maxlength`; emits: `update:modelValue` |
 | `ButtonGeneric` | `ButtonGeneric.vue` | wrap `<button class="btn btn-sm btn-*">` — variant map: main/outline/green/red/dark/sub-main; props: `variant`, `icon`, `label`, `type`, `disabled`, `loading`, `block`; emits: `click` |
-| `FormFieldGeneric` | `FormFieldGeneric.vue` | label + required marker + error msg + slot; props: `label`, `required`, `error` |
+| `FormFieldGeneric` | `FormFieldGeneric.vue` | label + required marker + error msg + slot; props: `label`, `required`, `error`, `inputId`(''  — เมื่อส่งมา render `<label :for="inputId">` แทน `<span>`, ต้องส่ง `id` ตรงกันให้ input ลูกเอง) |
 | `PageHeaderGeneric` | `PageHeaderGeneric.vue` | back btn วงกลม + title + border-bottom; props: `title`, `backRoute`; slot: `#actions` (ปุ่มฝั่งขวา เช่นหน้า detail/edit — ถ้าไม่ส่ง layout เหมือนเดิม); emits: `back` |
 | `SearchBarGeneric` | `SearchBarGeneric.vue` | search bar 4-section (pageTitle + fields + actions); props: `title`, `description`, `icon`; slots: `#header-actions` (ปุ่มมุมขวาบน filled header — หลายปุ่ม, width เท่ากัน grid 1fr, default btn-green; ปุ่มมี label ได้), `#fields`, `#actions-left`, `#actions-right`; emits: `search`, `clear` |
 | `SectionCardGeneric` | `SectionCardGeneric.vue` | card: card-base mixin + optional pageTitle; props: `title`, `description`(filled mode), `icon`, `accent`('main'\|'green', legend mode), `headerStyle`('underline'\|'legend'\|'filled', default 'underline'); slots: default, `#header-actions` (filled mode เท่านั้น — forward ไป pageTitle rightSlot) |
@@ -30,10 +30,10 @@ description: Generic wrapper components ทั้งหมด — ตรวจ�
 | Component | ไฟล์ | หน้าที่ |
 |---|---|---|
 | `ChartGeneric` | `ChartGeneric.vue` | wrap global `<apexchart>` — merge default options (`chart.toolbar.show:false`, `colors:CHART_PALETTE`, `dataLabels.enabled:false`, `legend.position:'bottom'`) กับ props.options ด้วย lodash merge (props ชนะ) + built-in loading/empty state; props: `type`('donut'\|'bar'\|'area'\|'line'\|'pie', default 'donut'), `series`(required), `options`({}), `height`(320), `loading`(false), `emptyText`(''); slot: `#empty` |
-| `CalendarGeneric` | `CalendarGeneric.vue` | Date picker พร้อม mobile-friendly styling |
+| `CalendarGeneric` | `CalendarGeneric.vue` | Date picker พร้อม mobile-friendly styling; props เพิ่ม `inputId`(null — forward ไป PrimeVue Calendar prop `inputId` ตรงๆ, ใส่ id ให้ `<input>` จริงข้างในแทน wrapper `<span class="p-calendar">` — ใช้คู่กับ `FormFieldGeneric :inputId`) |
 | `DateRangeGeneric` | `DateRangeGeneric.vue` | ช่วงวันที่เริ่มต้น-สิ้นสุด (CalendarGeneric ×2 + `.flex-group`) พร้อม validate start ≤ end + จำกัด maxRangeDays; props: `startDate`, `endDate`, `startPlaceholder`, `endPlaceholder`, `disabled`(false), `showButtonBar`(true), `maxRangeDays`(0=ไม่จำกัด); emits: `update:startDate`, `update:endDate`, `change` |
-| `AutoCompleteGeneric` | `AutoCompleteGeneric.vue` | Autocomplete รองรับ API mode + static list |
-| `DropdownGeneric` | `DropdownGeneric.vue` | Dropdown select รองรับ options list + showClear |
+| `AutoCompleteGeneric` | `AutoCompleteGeneric.vue` | Autocomplete รองรับ API mode + static list; props เพิ่ม `inputId`(null — forward ไป PrimeVue AutoComplete prop `inputId` ตรงๆ, ใส่ id ให้ `<input>` จริงข้างในแทน wrapper) |
+| `DropdownGeneric` | `DropdownGeneric.vue` | Dropdown select รองรับ options list + showClear; props เพิ่ม `inputId`(null — forward ไป PrimeVue Dropdown prop `inputId`, PrimeVue ใส่ id นี้ที่ `<span role="combobox">` ไม่ใช่ `<input>` จริง — **ห้ามคู่กับ `FormFieldGeneric :inputId`** เพราะ `<label for>` ชี้ `<span>` ไม่ได้ตามสเปค HTML ให้ปล่อย `FormFieldGeneric` ไม่มี `inputId` แล้วใช้ `ariaLabel` แทน), `ariaLabel`(null — forward ไป PrimeVue Dropdown prop `ariaLabel` → `aria-label` บน `<span role="combobox">`) |
 | `MultiSelectGeneric` | `MultiSelectGeneric.vue` | Multi-select พร้อม chip display + filter; props: `modelValue`, `options`, `optionLabel`('label'), `optionValue`(null), `placeholder`, `showClear`, `filter`(true), `disabled`; emits: `update:modelValue` |
 | `CheckboxGeneric` | `CheckboxGeneric.vue` | Checkbox รองรับ binary (default) และ array mode; props: `modelValue`, `value`, `binary`(true), `label`, `disabled`; emits: `update:modelValue` |
 | `RadioGroupGeneric` | `RadioGroupGeneric.vue` | Radio button group options-based; props: `modelValue`, `options`(array), `optionLabel`('label'), `optionValue`(null=whole option), `inline`(false=stacked/true=row), `disabled`; emits: `update:modelValue` |
@@ -72,6 +72,14 @@ description: Generic wrapper components ทั้งหมด — ตรวจ�
 ```
 
 **หมายเหตุ**: v-model รับ `Date` object — ใช้ `formatISOString(date)` จาก `src/services/utils/dayjs.js` แปลงเป็น ISO string สำหรับ API
+
+**a11y — label ต้องชี้ `<input>` จริง**: PrimeVue Calendar render เป็น `<span class="p-calendar"><input .../></span>` — ถ้าใส่ `id` ที่ตัว `CalendarGeneric`/`Calendar` ตรงๆ, id จะไปตกที่ `<span>` wrapper ไม่ใช่ `<input>` ทำให้ `<label for>` ชี้ผิดที่ (Chrome a11y warning) → ใช้ `inputId` แทน `id` เสมอเมื่อคู่กับ `FormFieldGeneric`:
+
+```vue
+<FormFieldGeneric :label="$t('common.field.date')" inputId="my-date">
+  <CalendarGeneric inputId="my-date" v-model="form.date" />
+</FormFieldGeneric>
+```
 
 ---
 
@@ -128,6 +136,9 @@ Props สำคัญ:
 - `useStaticList: true` — กรองจาก `staticOptions` ไม่ call API
 - `optionLabel` — field ที่ใช้กรองและแสดงใน input
 - `forceSelection: false` — รับ free-text ได้
+- `take` — จำนวนแถวที่ paging (API mode เท่านั้น, default `0` = ไม่ paging คืนทุกแถวที่ match — ระวังเวลาใช้กับ endpoint ที่มีข้อมูลเยอะ ให้ส่ง `:take="20"` เพื่อจำกัดผลลัพธ์)
+- `inputId` — a11y: forward ไป PrimeVue AutoComplete prop `inputId` ตรงๆ ใส่ id ให้ `<input>` จริงข้างใน (แทน wrapper) — ใช้คู่กับ `FormFieldGeneric :inputId` แทนการใส่ `id` ตรงๆ
+- `ariaLabel` — a11y: forward ไป PrimeVue AutoComplete prop `ariaLabel` (→ `aria-label` บน `<input>` จริง) — ใช้แทน `<label for>` เมื่อไม่มี label แสดงผล เช่น input ซ้ำหลายแถวใน DataTable cell (`:aria-label="$t('...')"`)
 
 Handler เมื่อเลือก (emit เป็น full object):
 ```javascript
@@ -173,6 +184,18 @@ Props สำคัญ:
 - `showClear` — แสดงปุ่มล้างค่า (default: `false`)
 
 **กฎ**: ใช้สำหรับ field ที่เลือกได้ค่าเดียวโดยธรรมชาติ (เช่น เลือกสาขา, สกุลเงิน) — **ห้ามใช้ใน filter ของหน้า list** → ใช้ `MultiSelectGeneric` แทน (Core Principle #11)
+
+**a11y — Dropdown ไม่มี `<input>` จริง ห้ามใช้ `FormFieldGeneric :inputId`**: ต่างจาก Calendar/AutoComplete — PrimeVue Dropdown เอา prop `inputId` ไปใส่ที่ `<span role="combobox" tabindex="0">` (ไม่ใช่ `<input>`) `<label for>` ชี้ `<span>` ไม่ได้ตามสเปค HTML → browser ทิ้ง association ทันที (Chrome: `Incorrect use of <label for=...>`) ให้ทำแบบนี้แทน:
+
+```vue
+<FormFieldGeneric :label="$t('common.field.type')" :required="true">
+  <DropdownGeneric inputId="my-type" :ariaLabel="$t('common.field.type')" v-model="form.type" :options="typeOptions" />
+</FormFieldGeneric>
+```
+
+- **ไม่ส่ง `inputId` ให้ `FormFieldGeneric`** (ปล่อยให้ render เป็น `<span class="title-text">` แทน `<label for>`)
+- ส่ง `ariaLabel` ให้ `DropdownGeneric` แทน — ได้ `aria-label` บน `<span role="combobox">` ตรงๆ เป็น accessible name
+- `inputId` บน `DropdownGeneric` เก็บไว้ได้ตามปกติ (ใส่ id ให้ element เฉยๆ ไม่ผูก label แล้ว)
 
 Import:
 ```javascript

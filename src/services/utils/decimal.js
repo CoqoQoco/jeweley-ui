@@ -183,6 +183,18 @@ const ceilToInteger = (value) => {
 }
 
 /**
+ * Cast a form input event value to a nullable Number.
+ * Keeps '' / null / undefined as null instead of coercing to 0 — needed for
+ * optional decimal? fields where 0 ("measured as zero") and null ("not recorded")
+ * carry different meaning to the backend.
+ * @param {string|number|null|undefined} value - Raw value from @update:modelValue
+ * @returns {number|null} Parsed number, or null when the input is empty
+ */
+const toNullableNumber = (value) => {
+  return value === '' || value === null || value === undefined ? null : Number(value)
+}
+
+/**
  * Check if a currency unit is foreign (not THB)
  * @param {string} unit - Currency unit code
  * @returns {boolean} true if foreign currency
@@ -229,6 +241,7 @@ export {
   divideDecimal,
   parseDecimal,
   ceilToInteger,
+  toNullableNumber,
   isForeignCurrency,
   formatDocCurrency,
   formatMoney

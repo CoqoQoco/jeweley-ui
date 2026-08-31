@@ -1,6 +1,7 @@
 <template>
   <Calendar
     v-model="localValue"
+    :inputId="inputId"
     :dateFormat="dateFormat"
     :placeholder="placeholder"
     :showIcon="showIcon"
@@ -31,6 +32,10 @@ export default {
   props: {
     modelValue: {
       type: [Date, String],
+      default: null
+    },
+    inputId: {
+      type: String,
       default: null
     },
     dateFormat: {

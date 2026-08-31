@@ -11,14 +11,24 @@
     <DropdownGeneric v-model="form.type" :options="typeOptions" />
   </FormFieldGeneric>
 
+  ตัวอย่างผูก label กับ input (a11y — <label for>):
+  <FormFieldGeneric label="ชื่อ" inputId="customer-name">
+    <InputTextGeneric id="customer-name" v-model="form.name" />
+  </FormFieldGeneric>
+
   Props:
     label    — label text (i18n caller ส่ง $t(...) มา)
     required — shows red asterisk after label
     error    — error message string (shows below slot)
+    inputId  — optional; เมื่อส่งมา render <label :for="inputId"> แทน <span> (ต้องส่ง id ตรงกันให้ input ลูกด้วย)
 -->
 <template>
   <div class="form-field">
-    <span class="title-text">
+    <label v-if="inputId" :for="inputId" class="title-text">
+      {{ label }}
+      <span v-if="required" class="text-danger">*</span>
+    </label>
+    <span v-else class="title-text">
       {{ label }}
       <span v-if="required" class="text-danger">*</span>
     </span>
@@ -41,6 +51,10 @@ export default {
       default: false
     },
     error: {
+      type: String,
+      default: ''
+    },
+    inputId: {
       type: String,
       default: ''
     }
