@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
 
 export class BreakdownPdfBuilder {
   constructor({
@@ -391,10 +392,21 @@ export class BreakdownPdfBuilder {
       const stoneCount = materials
         .filter((m) => m.type === 'Gem')
         .reduce((sum, m) => sum + (Number(m.qty) || 0), 0)
-      const useNewSettingRows = materials.length > 0 && (diamondCount > 0 || stoneCount > 0)
-      const settingRowCount = useNewSettingRows
-        ? (diamondCount > 0 ? 1 : 0) + (stoneCount > 0 ? 1 : 0)
-        : embedList.length
+
+      // จับคู่แถว Embed ที่ผู้ใช้กรอกจริงเข้ากลุ่ม Diamond/Stone ตาม keyword ในคำอธิบาย — ใช้ค่าที่ผู้ใช้กรอกก่อนเสมอ
+      // แถวที่ไม่เข้ากลุ่มไหนเลย ยังต้องแสดงเป็นแถว Setting ธรรมดา (ห้ามหายไปเงียบๆ)
+      const diamondPattern = /diamond|เพชร/i
+      const stonePattern = /stone|gem|พลอย/i
+      const diamondEmbedRow = embedList.find((e) => diamondPattern.test(e.nameDescription || ''))
+      const stoneEmbedRow = embedList.find(
+        (e) => e !== diamondEmbedRow && stonePattern.test(e.nameDescription || '')
+      )
+      const otherEmbedList = embedList.filter((e) => e !== diamondEmbedRow && e !== stoneEmbedRow)
+
+      const hasDiamondSettingRow = !!diamondEmbedRow || diamondCount > 0
+      const hasStoneSettingRow = !!stoneEmbedRow || stoneCount > 0
+      const settingRowCount =
+        (hasDiamondSettingRow ? 1 : 0) + (hasStoneSettingRow ? 1 : 0) + otherEmbedList.length
 
       const totalRows =
         goldList.length +
@@ -531,78 +543,95 @@ export class BreakdownPdfBuilder {
 
       let diamondPriceUnit = 0
       let stonePriceUnit = 0
-      if (useNewSettingRows) {
-        const diamondPriceQty = this.settingDiamondRate / (this.currencyMultiplier || 1)
-        const diamondTotalRaw = (diamondCount * this.settingDiamondRate) / (this.currencyMultiplier || 1)
-        diamondPriceUnit = this.roundPrice2(diamondTotalRaw)
-        const stonePriceQty = this.settingStoneRate / (this.currencyMultiplier || 1)
-        const stoneTotalRaw = (stoneCount * this.settingStoneRate) / (this.currencyMultiplier || 1)
-        stonePriceUnit = this.roundPrice2(stoneTotalRaw)
 
-        if (diamondCount > 0) {
-          body.push([
-            {},
-            {},
-            {},
-            {},
-            { text: 'Setting-Diamonds', alignment: 'center' },
-            { text: '-', alignment: 'left' },
-            { text: this.formatQty(diamondCount), alignment: 'center' },
-            { text: this.formatPrice(diamondPriceQty), alignment: 'center' },
-            { text: '', alignment: 'center' },
-            { text: '', alignment: 'center' },
-            { text: '', alignment: 'center' },
-            { text: this.formatPrice(diamondPriceUnit), alignment: 'right' }
-          ])
-          currentRow++
+      if (hasDiamondSettingRow) {
+        let diamondQty
+        let diamondPriceQty
+        if (diamondEmbedRow) {
+          diamondQty = Number(diamondEmbedRow.qty) || 0
+          diamondPriceQty = this.roundPrice2(
+            (Number(diamondEmbedRow.qtyPrice) || 0) / (this.currencyMultiplier || 1)
+          )
+        } else {
+          diamondQty = diamondCount
+          diamondPriceQty = this.roundPrice2(this.settingDiamondRate / (this.currencyMultiplier || 1))
         }
-        if (stoneCount > 0) {
-          body.push([
-            {},
-            {},
-            {},
-            {},
-            { text: 'Setting-Stones', alignment: 'center' },
-            { text: '-', alignment: 'left' },
-            { text: this.formatQty(stoneCount), alignment: 'center' },
-            { text: this.formatPrice(stonePriceQty), alignment: 'center' },
-            { text: '', alignment: 'center' },
-            { text: '', alignment: 'center' },
-            { text: '', alignment: 'center' },
-            { text: this.formatPrice(stonePriceUnit), alignment: 'right' }
-          ])
-          currentRow++
-        }
-      } else {
-        embedList.forEach((embed, idx) => {
-          const priceUnitRaw = (embed.totalPrice || 0) / (this.currencyMultiplier || 1)
-          const priceUnit = this.roundPrice2(priceUnitRaw)
-          embedPriceUnits.push(priceUnit)
-          body.push([
-            {},
-            {},
-            {},
-            {},
-            idx === 0 ? { text: 'Setting', alignment: 'center', rowSpan: embedList.length } : {},
-            { text: embed.nameDescription || '-', alignment: 'left' },
-            { text: embed.qty ? this.formatQty(embed.qty) : '', alignment: 'center' },
-            {
-              text: embed.qtyPrice
-                ? this.formatPrice(embed.qtyPrice / (this.currencyMultiplier || 1))
-                : '',
-              alignment: 'center'
-            },
-            { text: '', alignment: 'center' },
-            { text: '', alignment: 'center' },
-            { text: '', alignment: 'center' },
-            {
-              text: this.formatPrice(priceUnit),
-              alignment: 'right'
-            }
-          ])
-          currentRow++
-        })
+        diamondPriceUnit = this.roundPrice2(diamondQty * diamondPriceQty)
+        body.push([
+          {},
+          {},
+          {},
+          {},
+          { text: 'Setting-Diamonds', alignment: 'center' },
+          { text: '-', alignment: 'left' },
+          { text: this.formatQty(diamondQty), alignment: 'center' },
+          { text: this.formatPrice(diamondPriceQty), alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: this.formatPrice(diamondPriceUnit), alignment: 'right' }
+        ])
+        currentRow++
       }
+
+      if (hasStoneSettingRow) {
+        let stoneQty
+        let stonePriceQty
+        if (stoneEmbedRow) {
+          stoneQty = Number(stoneEmbedRow.qty) || 0
+          stonePriceQty = this.roundPrice2(
+            (Number(stoneEmbedRow.qtyPrice) || 0) / (this.currencyMultiplier || 1)
+          )
+        } else {
+          stoneQty = stoneCount
+          stonePriceQty = this.roundPrice2(this.settingStoneRate / (this.currencyMultiplier || 1))
+        }
+        stonePriceUnit = this.roundPrice2(stoneQty * stonePriceQty)
+        body.push([
+          {},
+          {},
+          {},
+          {},
+          { text: 'Setting-Stones', alignment: 'center' },
+          { text: '-', alignment: 'left' },
+          { text: this.formatQty(stoneQty), alignment: 'center' },
+          { text: this.formatPrice(stonePriceQty), alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: this.formatPrice(stonePriceUnit), alignment: 'right' }
+        ])
+        currentRow++
+      }
+
+      otherEmbedList.forEach((embed, idx) => {
+        const priceUnitRaw = (embed.totalPrice || 0) / (this.currencyMultiplier || 1)
+        const priceUnit = this.roundPrice2(priceUnitRaw)
+        embedPriceUnits.push(priceUnit)
+        body.push([
+          {},
+          {},
+          {},
+          {},
+          idx === 0 ? { text: 'Setting', alignment: 'center', rowSpan: otherEmbedList.length } : {},
+          { text: embed.nameDescription || '-', alignment: 'left' },
+          { text: embed.qty ? this.formatQty(embed.qty) : '', alignment: 'center' },
+          {
+            text: embed.qtyPrice
+              ? this.formatPrice(embed.qtyPrice / (this.currencyMultiplier || 1))
+              : '',
+            alignment: 'center'
+          },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          {
+            text: this.formatPrice(priceUnit),
+            alignment: 'right'
+          }
+        ])
+        currentRow++
+      })
 
       etcList.forEach((etc, idx) => {
         const priceUnitRaw = (etc.totalPrice || 0) / (this.currencyMultiplier || 1)
@@ -645,11 +674,8 @@ export class BreakdownPdfBuilder {
       const totalWork = workPriceUnits.length
         ? workPriceUnits.reduce((sum, p) => sum + p, 0)
         : 0
-      const totalEmbed = useNewSettingRows
-        ? diamondPriceUnit + stonePriceUnit
-        : embedPriceUnits.length
-          ? embedPriceUnits.reduce((sum, p) => sum + p, 0)
-          : 0
+      const totalEmbed =
+        diamondPriceUnit + stonePriceUnit + embedPriceUnits.reduce((sum, p) => sum + p, 0)
 
       const totalItemPrice = totalGold + totalGem + totalEtc + totalWork + totalEmbed
       const profitAmount = totalItemPrice * (this.profitPercent / 100)
@@ -681,7 +707,7 @@ export class BreakdownPdfBuilder {
       ])
       body.push([
         {
-          text: `Profit (${this.profitPercent}%) `,
+          text: `Service Fee (${this.profitPercent}%) `,
           style: 'totalSummaryLabelColored',
           alignment: 'right',
           colSpan: 11
@@ -899,8 +925,11 @@ export class BreakdownPdfBuilder {
     return Math.round(num).toFixed(2)
   }
 
+  // alloy-ish (Alloy/Aolly/Aloy) ไม่ต้องคิด Gold Loss ซ้ำ — น้ำหนัก alloy รวม (1+goldLoss) ไว้แล้วตั้งแต่ alloy-calculator
+  // เช็คก่อน fallback เสมอ เพื่อแก้ใบเสนอราคาเก่าที่บันทึก applyGoldLoss:true ผิดไว้แล้วโดยไม่ต้องให้ผู้ใช้ save ใหม่
   // fallback: ข้อมูลเก่าที่ยังไม่มี applyGoldLoss ให้คิด gold loss เหมือนเดิม (ทุกแถวกลุ่ม Gold)
   shouldApplyGoldLoss(t) {
+    if (isAlloyDescription(t.nameDescription)) return false
     return t.applyGoldLoss ?? (String(t.nameGroup || '').toLowerCase() === 'gold')
   }
 

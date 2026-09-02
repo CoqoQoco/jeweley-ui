@@ -363,10 +363,11 @@
                 <Row>
                   <Column :header="$t('view.sale.costStock.jobDetail')" :colspan="3" />
                   <Column :header="$t('common.field.quantity')" />
-                  <Column :header="$t('view.sale.costStock.pricePerQty')" />
+                  <Column :header="`${$t('view.sale.costStock.pricePerQty')} (${displayCurrency})`" />
                   <Column :header="$t('common.field.weight')" />
-                  <Column :header="$t('view.sale.costStock.pricePerWeight')" />
-                  <Column :header="$t('view.sale.costStock.totalPrice')" />
+                  <Column :header="`${$t('view.sale.costStock.pricePerWeight')} (${displayCurrency})`" />
+                  <Column :header="$t('view.sale.costStock.applyGoldLoss')" />
+                  <Column :header="`${$t('view.sale.costStock.totalPrice')} (${displayCurrency})`" />
                 </Row>
               </ColumnGroup>
               <Column field="nameGroup" />
@@ -390,12 +391,15 @@
               <Column field="nameDescription">
                 <template #body="slotProps">
                   <div v-if="slotProps.data.isAdd">
-                    <input
-                      type="text"
-                      style="background-color: #b5dad4"
-                      class="form-control"
+                    <AutoCompleteGeneric
                       v-model="slotProps.data.nameDescription"
-                      required
+                      :useStaticList="true"
+                      :staticOptions="getHistoryOptions(slotProps.data.nameGroup)"
+                      optionLabel="name"
+                      :forceSelection="false"
+                      :minLength="1"
+                      customStyle="background-color: #b5dad4; width: 100%"
+                      @item-select="onDescriptionSelect($event, slotProps.data)"
                     />
                   </div>
                   <div v-else>
@@ -467,6 +471,18 @@
                   />
                 </template>
               </Column>
+              <Column field="applyGoldLoss" style="width: 90px">
+                <template #body="slotProps">
+                  <CheckboxGeneric
+                    v-if="slotProps.data.nameGroup === 'Gold'"
+                    v-model="slotProps.data.applyGoldLoss"
+                    :binary="true"
+                    :disabled="isAlloyLike(slotProps.data.nameDescription)"
+                    :title="isAlloyLike(slotProps.data.nameDescription) ? $t('view.sale.costStock.alloyGoldLossTooltip') : ''"
+                  />
+                  <span v-else class="apply-gold-loss-na">—</span>
+                </template>
+              </Column>
               <Column field="totalPrice" style="width: 150px">
                 <template #body="slotProps">
                   <input
@@ -497,7 +513,7 @@
               </template>
               <ColumnGroup type="footer">
                 <Row>
-                  <Column :colspan="7">
+                  <Column :colspan="8">
                     <template #footer>
                       <div class="text-right type-container">
                         <span>{{ $t('view.sale.costStock.totalCostAll') }}</span>
@@ -516,7 +532,7 @@
             </DataTable>
             <!-- ต้นทุนต่อชิ้น -->
             <div class="d-flex align-items-center mt-3">
-              <span class="mr-2 type-container">{{ $t('view.sale.costStock.costPerPieceLabel') }}:</span>
+              <span class="mr-2 type-container">{{ $t('view.sale.costStock.costPerPieceLabel') }} ({{ displayCurrency }}):</span>
               <span class="font-weight-bold mr-3 type-container">{{
                 costPerPiece.toFixed(2)
               }}</span>
@@ -577,6 +593,8 @@ const BaseDataTable = defineAsyncComponent(() =>
 )
 
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 // eslint-disable-next-line no-restricted-imports
 import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
@@ -592,6 +610,8 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
+import { getTermHistory } from '@/services/helper/breakdown-term-history-store.js'
+import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
 
 export default {
   components: {
@@ -599,6 +619,8 @@ export default {
     imagePreview,
     BaseDataTable,
     DropdownGeneric,
+    AutoCompleteGeneric,
+    CheckboxGeneric,
     DataTable,
     Column,
     ColumnGroup,
@@ -626,6 +648,14 @@ export default {
     uploadMode: {
       type: Boolean,
       default: false
+    },
+    currencyUnit: {
+      type: String,
+      default: ''
+    },
+    currencyRate: {
+      type: Number,
+      default: null
     }
   },
 
@@ -640,8 +670,20 @@ export default {
       return this.masterStore.diamondGrade
     },
     costPerPiece() {
-      // tranItems เป็นราคาต่อชิ้นอยู่แล้ว ไม่ต้องหารซ้ำ
+      // tranItems เป็นราคาต่อชิ้นอยู่แล้ว ไม่ต้องหารซ้ำ (หน่วยที่แสดง — แปลงกลับเป็นบาทตอน onSave เท่านั้น)
       return Number(this.caltotalPrice(this.tranItems))
+    },
+    // เงื่อนไขเดียวกับ hasCurrencyConversion ใน appraisal-items-table.vue — ให้ modal นี้กับหน้าตีราคาตัดสินใจตรงกัน
+    hasValidCurrencyRate() {
+      const rate = Number(this.currencyRate)
+      return !!(this.currencyUnit && rate > 0 && rate !== 1)
+    },
+    // rate ที่ใช้แปลงหน่วยจริง — เป็น 1 เมื่อไม่ได้ใช้สกุลเงินต่างประเทศ (กันหารด้วย 0)
+    conversionRate() {
+      return this.hasValidCurrencyRate ? Number(this.currencyRate) : 1
+    },
+    displayCurrency() {
+      return this.hasValidCurrencyRate ? this.currencyUnit : 'THB'
     },
     masterMaterialType() {
       return [
@@ -691,46 +733,79 @@ export default {
     modelStock: {
       handler(val) {
         if (!val) return
+        // กันไม่ให้ watcher ของ conversionRate rebase ซ้ำระหว่างกำลัง load ข้อมูลชุดใหม่
+        this.suppressRateRebase = true
         this.stock = { ...val }
+        const rate = this.conversionRate
 
-        // ใช้ข้อมูล priceTransactions เสมอถ้ามี ต้องหารด้วย planQty เพื่อทำเป็นข้อมูลต่อชิ้น
+        // ใช้ข้อมูล priceTransactions เสมอถ้ามี — เก็บเป็นบาทใน DB เสมอ แปลงเป็น "หน่วยที่แสดง" ครั้งเดียวตรงนี้
         if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
-          const planQty = 1
           this.tranItems = this.stock.priceTransactions.map((item) => {
             const nameGroup = item.nameGroup || (item.type === 'Diamond' ? 'Gem' : item.type) || 'ETC'
+            const qty = Number(item.qty) || 0
+            const qtyWeight = Number(item.qtyWeight) || 0
+            const qtyPrice = this.toDisplay(item.qtyPrice, rate)
+            const qtyWeightPrice = this.toDisplay(item.qtyWeightPrice, rate)
             return {
-              // ต้องหารด้วย planQty ทุกรายการ เพื่อทำเป็นข้อมูลต่อชิ้น
               nameGroup,
               nameDescription:
                 item.nameDescription || item.typeCode || item.description || item.type || '',
-              qty: Number(item.qty) || Number(0).toFixed(2),
-              qtyPrice: Number(item.qtyPrice) || Number(0).toFixed(2),
-              qtyWeight: Number(item.qtyWeight) || Number(0).toFixed(2),
-              qtyWeightPrice: Number(item.qtyWeightPrice) || Number(0).toFixed(2),
-              totalPrice: Number(item.totalPrice).toFixed(2) || Number(0).toFixed(2),
-              // pass-through เท่านั้น (ไม่มี UI ในหน้านี้) — fallback ตามกติกาเดียวกับหน้าตีราคา
+              qty,
+              qtyPrice,
+              qtyWeight,
+              qtyWeightPrice,
+              totalPrice: this.round2(qty * qtyPrice + qtyWeight * qtyWeightPrice).toFixed(2),
+              // pass-through เท่านั้น (ไม่มี UI แก้ตรงๆ นอกจาก checkbox ในตาราง) — fallback ตามกติกาเดียวกับหน้าตีราคา
               applyGoldLoss: typeof item.applyGoldLoss === 'boolean' ? item.applyGoldLoss : nameGroup === 'Gold',
-
               isAdd: true
             }
           })
         } else if (this.stock.materials && this.stock.materials.length > 0) {
-          this.tranItems = this.stock.materials.map((mat) => ({
-            nameGroup: mat.type === 'Diamond' ? 'Gem' : mat.type,
-            //nameGroup: mat.type,
-            nameDescription: mat.typeCode || mat.description || mat.type || '',
-            qty: mat.qty || 0,
-            qtyPrice: mat.price || 0,
-            qtyWeight: mat.weight || 0,
-            qtyWeightPrice: 0,
-            totalPrice: ((mat.qty || 0) * (mat.price || 0) + (mat.weight || 0) * 0).toFixed(2),
-            isAdd: true
-          }))
+          this.tranItems = this.stock.materials.map((mat) => {
+            const nameGroup = mat.type === 'Diamond' ? 'Gem' : mat.type
+            const qty = mat.qty || 0
+            const qtyPrice = this.toDisplay(mat.price || 0, rate)
+            return {
+              nameGroup,
+              nameDescription: mat.typeCode || mat.description || mat.type || '',
+              qty,
+              qtyPrice,
+              qtyWeight: mat.weight || 0,
+              qtyWeightPrice: 0,
+              totalPrice: this.round2(qty * qtyPrice).toFixed(2),
+              applyGoldLoss: nameGroup === 'Gold',
+              isAdd: true
+            }
+          })
         } else {
           this.tranItems = []
         }
+
+        this.$nextTick(() => {
+          this.suppressRateRebase = false
+        })
       },
       immediate: true
+    },
+
+    // ผู้ใช้เปลี่ยน currencyUnit/currencyRate ของใบเสนอราคากลางคัน (ไม่ใช่ตอน load stock ใหม่) — rebase ค่าที่แสดง
+    // จาก rate เดิมกลับเป็นบาทแล้วแปลงไป rate ใหม่ ให้ค่าที่เก็บจริง (บาท) ไม่เพี้ยน
+    conversionRate(newRate, oldRate) {
+      if (this.suppressRateRebase) return
+      this.rebaseCurrencyValues(oldRate, newRate)
+    },
+
+    // alloy-ish (Aolly/Aloy/Alloy) ต้องไม่คิด Gold Loss ซ้ำ — บังคับปิด flag ทันทีที่คำอธิบายตรงเงื่อนไข
+    // ไม่ว่าจะแก้จากแถวที่มีอยู่แล้วหรือพิมพ์คำอธิบายใหม่
+    tranItems: {
+      deep: true,
+      handler(items) {
+        items.forEach((item) => {
+          if (item.nameGroup === 'Gold' && item.applyGoldLoss && isAlloyDescription(item.nameDescription)) {
+            item.applyGoldLoss = false
+          }
+        })
+      }
     }
   },
 
@@ -753,7 +828,6 @@ export default {
       selectedItems: [],
       selectionType: 'single',
 
-      isShowPriceModal: false, // ไม่ใช้ modal แล้ว แต่คงไว้ไม่กระทบ logic เดิม
       tranItems: [],
       masterValue: 'ETC',
       groupOrderRunning: {
@@ -763,38 +837,13 @@ export default {
         Gem: 4,
         ETC: 5
       },
-      useCostPerPiece: false
+      useCostPerPiece: false,
+      suppressRateRebase: false,
+      termHistory: {}
     }
   },
-  mounted() {
-    // ใช้ข้อมูล priceTransactions เสมอถ้ามี
-    if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
-      this.tranItems = this.stock.priceTransactions.map((item) => ({
-        ...item,
-        qty: item.qty ?? 0,
-        qtyPrice: item.qtyPrice ?? 0,
-        qtyWeight: item.qtyWeight ?? 0,
-        qtyWeightPrice: item.qtyWeightPrice ?? 0,
-        totalPrice: (
-          (Number(item.qty) || 0) * (Number(item.qtyPrice) || 0) +
-          (Number(item.qtyWeight) || 0) * (Number(item.qtyWeightPrice) || 0)
-        ).toFixed(2),
-        isAdd: !!item.isAdd
-      }))
-    } else if (this.stock.materials && this.stock.materials.length > 0) {
-      this.tranItems = this.stock.materials.map((mat) => ({
-        nameGroup: mat.type,
-        nameDescription: mat.typeCode || mat.description || '',
-        qty: mat.qty || 0,
-        qtyPrice: mat.price || 0,
-        qtyWeight: mat.weight || 0,
-        qtyWeightPrice: 0,
-        totalPrice: ((mat.qty || 0) * (mat.price || 0) + (mat.weight || 0) * 0).toFixed(2),
-        isAdd: true
-      }))
-    } else {
-      this.tranItems = []
-    }
+  async mounted() {
+    this.termHistory = await getTermHistory()
   },
 
   methods: {
@@ -809,13 +858,25 @@ export default {
       this.onClear()
     },
     onSave() {
-      // อัปเดต priceTransactions ก่อนส่งข้อมูลกลับ parent
-      this.stock.priceTransactions = [...this.tranItems]
+      // tranItems เก็บเป็น "หน่วยที่แสดง" (อาจเป็นสกุลต่างประเทศ) — แปลงกลับเป็นบาทที่จุดนี้จุดเดียวก่อนออกจาก component
+      const rate = this.conversionRate
+      this.stock.priceTransactions = this.tranItems.map((item) => {
+        const qty = Number(item.qty) || 0
+        const qtyWeight = Number(item.qtyWeight) || 0
+        const qtyPrice = this.toThb(item.qtyPrice, rate)
+        const qtyWeightPrice = this.toThb(item.qtyWeightPrice, rate)
+        return {
+          ...item,
+          qtyPrice,
+          qtyWeightPrice,
+          totalPrice: this.round2(qty * qtyPrice + qtyWeight * qtyWeightPrice).toFixed(2)
+        }
+      })
       // ถ้าเลือกใช้ต้นทุนต่อชิ้นเป็นราคาพิเศษ
       if (this.useCostPerPiece) {
-        // ส่ง appraisalPrice = costPerPiece * markup กลับไปด้วย
+        // costPerPiece เป็นหน่วยที่แสดง — แปลงเป็นบาทก่อนคูณ markup (appraisalPrice ต้องเป็นบาทเสมอ)
         const markup = this.$parent?.customer?.markup || 1
-        this.stock.appraisalPrice = Number((this.costPerPiece * markup).toFixed(2))
+        this.stock.appraisalPrice = Number((this.toThb(this.costPerPiece, rate) * markup).toFixed(2))
       }
       // ส่งข้อมูลกลับ parent - ใช้ deep copy เพื่อป้องกัน reference issues
       this.$emit('closeModal', { action: 'save', data: JSON.parse(JSON.stringify(this.stock)) })
@@ -952,43 +1013,6 @@ export default {
       return display
     },
 
-    openPriceModal() {
-      this.tranItems = this.prepareTranItemsFromStock()
-      this.isShowPriceModal = true
-    },
-    closePriceModal() {
-      this.isShowPriceModal = false
-    },
-    onSubmitPrice() {
-      // อัปเดต stock.materials จาก tranItems
-      this.updateStockWithTranItems(this.tranItems)
-      // แจ้งเตือนหรือแสดงผลลัพธ์ตามต้องการ
-    },
-    syncMaterialsToTranItems() {
-      this.tranItems = this.prepareTranItemsFromStock()
-    },
-    prepareTranItemsFromStock() {
-      // แปลง stock.materials ไปเป็น tranItems (mapping ตามที่ต้องการ)
-      return (this.stock.materials || []).map((mat) => ({
-        nameDescription: mat.description || '',
-        qty: mat.qty || 0,
-        qtyPrice: mat.price || 0,
-        qtyWeight: mat.weight || 0,
-        qtyWeightPrice: 0,
-        totalPrice: ((mat.qty || 0) * (mat.price || 0) + (mat.weight || 0) * 0).toFixed(2),
-        isAdd: true
-      }))
-    },
-    updateStockWithTranItems(tranItems) {
-      // อัปเดต stock.materials จาก tranItems ที่ประเมินแล้ว
-      this.stock.materials = tranItems.map((item) => ({
-        description: item.nameDescription,
-        qty: item.qty,
-        price: item.qtyPrice,
-        weight: item.qtyWeight
-        // เพิ่ม field อื่น ๆ ตามต้องการ
-      }))
-    },
     onBluePrice(item, fieldName) {
       // คำนวณราคารวมใหม่เมื่อเปลี่ยนค่า (ใช้ค่าต่อชิ้น ไม่ต้องหาร planQty ซ้ำ)
       item[fieldName] = item[fieldName] ? Number(item[fieldName]) : 0
@@ -1001,19 +1025,75 @@ export default {
       this.tranItems.splice(index, 1)
     },
     addTranItem() {
+      const nameGroup = this.masterValue ?? 'ETC'
       this.tranItems.push({
-        nameGroup: this.masterValue ?? 'ETC',
+        nameGroup,
         nameDescription: '',
         qty: 0,
         qtyPrice: 0,
         qtyWeight: 0,
         qtyWeightPrice: 0,
         totalPrice: '0.00',
+        applyGoldLoss: nameGroup === 'Gold',
         isAdd: true
       })
       this.tranItems = this.tranItems.sort(
         (a, b) => this.groupOrderRunning[a.nameGroup] - this.groupOrderRunning[b.nameGroup]
       )
+    },
+    // ปัดเลขเป็นทศนิยม 2 ตำแหน่งแบบ standard (ใช้ก่อนแปลงหน่วยเงินทุกจุด กันสะสม floating point error)
+    round2(num) {
+      const n = Number(num)
+      if (!Number.isFinite(n)) return 0
+      return Math.round((n + Number.EPSILON) * 100) / 100
+    },
+    // บาท (DB) -> หน่วยที่แสดง (rate=1 เมื่อไม่ได้ใช้สกุลเงินต่างประเทศ)
+    toDisplay(thbValue, rate) {
+      return this.round2((Number(thbValue) || 0) / (Number(rate) || 1))
+    },
+    // หน่วยที่แสดง -> บาท (DB)
+    toThb(displayValue, rate) {
+      return this.round2((Number(displayValue) || 0) * (Number(rate) || 1))
+    },
+    // rebase ค่าที่แสดงทั้งหมดจาก rate เดิม (oldRate) ไป rate ใหม่ (newRate) โดยอิงบาทเป็นค่ากลาง
+    // เรียกเฉพาะตอน conversionRate เปลี่ยนจริง (ไม่ใช่ทุก keystroke) กันตัวเลขเพี้ยนสะสม
+    rebaseCurrencyValues(oldRate, newRate) {
+      const from = Number(oldRate) || 1
+      const to = Number(newRate) || 1
+      if (from === to || !this.tranItems.length) return
+      this.tranItems = this.tranItems.map((item) => {
+        const qtyPriceThb = this.toThb(item.qtyPrice, from)
+        const qtyWeightPriceThb = this.toThb(item.qtyWeightPrice, from)
+        const qtyPrice = this.toDisplay(qtyPriceThb, to)
+        const qtyWeightPrice = this.toDisplay(qtyWeightPriceThb, to)
+        const qty = Number(item.qty) || 0
+        const qtyWeight = Number(item.qtyWeight) || 0
+        return {
+          ...item,
+          qtyPrice,
+          qtyWeightPrice,
+          totalPrice: this.round2(qty * qtyPrice + qtyWeight * qtyWeightPrice).toFixed(2)
+        }
+      })
+    },
+    // alloy-ish (Alloy/Aolly/Aloy) — ใช้คุม disabled + tooltip ของ checkbox คิด Gold Loss ในตาราง
+    isAlloyLike(description) {
+      return isAlloyDescription(description)
+    },
+    // suggestion คำที่เคยพิมพ์ (term history) ต่อ nameGroup — กันผู้ใช้พิมพ์ผิดซ้ำ เช่น "Aolly"
+    getHistoryOptions(nameGroup) {
+      const terms = this.termHistory?.[nameGroup]
+      if (!Array.isArray(terms) || !terms.length) return []
+      return terms.map((term) => ({ code: term, name: term }))
+    },
+    // AutoCompleteGeneric ส่ง event.value เป็น "object ที่เลือกทั้งก้อน" ({code,name}) เสมอเมื่อมี optionLabel
+    // (ไม่ใช่ string) — v-model เพียวๆ จะเขียน object ทับ nameDescription ตรงนี้ต้อง coerce กลับเป็น string
+    // เท่านั้น กันหลุด object เข้าไปใน priceTransactions ที่บันทึกจริง (และกัน isAlloyDescription เจอ object)
+    onDescriptionSelect(event, rowData) {
+      const selected = event?.value
+      rowData.nameDescription = (selected && typeof selected === 'object'
+        ? selected.name ?? selected.code
+        : selected) ?? ''
     },
     getGroupName(id) {
       const map = {
@@ -1103,6 +1183,12 @@ input {
 .text-ref {
   color: gray;
   font-size: small;
+}
+
+.apply-gold-loss-na {
+  display: block;
+  text-align: center;
+  color: var(--color-border);
 }
 
 .form-col-fix-2-container {

@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import ExcelJS from 'exceljs'
+import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
 
 function stdBorder() {
   return {
@@ -20,9 +21,7 @@ export class BreakdownExcelBuilder {
     currencyUnit,
     currencyMultiplier,
     profitPercent,
-    goldLossPercent,
-    settingDiamondRate,
-    settingStoneRate
+    goldLossPercent
   }) {
     this.data = items || []
     this.customer = customer || {}
@@ -36,8 +35,6 @@ export class BreakdownExcelBuilder {
         ? 15
         : profitPercentNum
     this.goldLossPercent = Number(goldLossPercent ?? 12)
-    this.settingDiamondRate = Number(settingDiamondRate ?? 15)
-    this.settingStoneRate = Number(settingStoneRate ?? 25)
     // fallback ไป goldPerOz รองรับใบเสนอราคาเก่าที่ยังไม่ได้บันทึกราคา spot
     this.goldSpotPrice = this.customer.goldSpotPrice || this.customer.goldPerOz || 0
     this.logoBase64 = null
@@ -444,7 +441,7 @@ export class BreakdownExcelBuilder {
       const totalWithProfit = totalItemPrice + profitAmount
 
       row = this.writeSummaryRow(worksheet, row, `Sub Total of ${item.productNumber} `, totalItemPrice)
-      row = this.writeSummaryRow(worksheet, row, `Profit (${this.profitPercent}%) `, profitAmount)
+      row = this.writeSummaryRow(worksheet, row, `Service Fee (${this.profitPercent}%) `, profitAmount)
       row = this.writeSummaryRow(worksheet, row, `Total of ${item.productNumber} `, totalWithProfit)
 
       if (itemQty > 1) {
@@ -574,8 +571,11 @@ export class BreakdownExcelBuilder {
     cell.border = stdBorder()
   }
 
+  // alloy-ish (Alloy/Aolly/Aloy) ไม่ต้องคิด Gold Loss ซ้ำ — น้ำหนัก alloy รวม (1+goldLoss) ไว้แล้วตั้งแต่ alloy-calculator
+  // เช็คก่อน fallback เสมอ เพื่อแก้ใบเสนอราคาเก่าที่บันทึก applyGoldLoss:true ผิดไว้แล้วโดยไม่ต้องให้ผู้ใช้ save ใหม่
   // fallback: ข้อมูลเก่าที่ยังไม่มี applyGoldLoss ให้คิด gold loss เหมือนเดิม (ทุกแถวกลุ่ม Gold)
   shouldApplyGoldLoss(t) {
+    if (isAlloyDescription(t.nameDescription)) return false
     return t.applyGoldLoss ?? (String(t.nameGroup || '').toLowerCase() === 'gold')
   }
 

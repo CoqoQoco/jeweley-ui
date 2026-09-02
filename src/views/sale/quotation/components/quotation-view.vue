@@ -341,6 +341,8 @@
     <edit-stock-view
       :isShow="isShow.isEditStock"
       :modelStock="modelEditStock"
+      :currencyUnit="customer.currencyUnit"
+      :currencyRate="customer.currencyMultiplier"
       @closeModal="onCloseEditStockModal"
     />
 
@@ -1278,9 +1280,7 @@ export default {
           currencyUnit: this.customer.currencyUnit,
           currencyMultiplier: this.customer.currencyMultiplier,
           profitPercent: this.customer.profitPercent ?? 15,
-          goldLossPercent: this.customer.goldLossPercent ?? breakdownSetting.goldLossPercent,
-          settingDiamondRate: breakdownSetting.settingDiamondRate,
-          settingStoneRate: breakdownSetting.settingStoneRate
+          goldLossPercent: this.customer.goldLossPercent ?? breakdownSetting.goldLossPercent
         })
         await builder.downloadExcel()
         success(this.$t('view.sale.quotation.success.exportBreakdownExcel'))
