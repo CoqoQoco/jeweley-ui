@@ -17,7 +17,7 @@
         variant="outline"
         icon="bi-camera"
         :title="$t('view.mobile.pos.scanCameraBtn')"
-        @click="showCamera = !showCamera"
+        @click="showFullscreenScan = true"
       />
     </div>
 
@@ -40,9 +40,11 @@
       </button>
     </div>
 
-    <div v-if="showCamera" class="scan-camera-wrapper">
-      <QrScanner @scan="handleScan" />
-    </div>
+    <PosScanFullscreen
+      :visible="showFullscreenScan"
+      :searchField="searchField"
+      @close="showFullscreenScan = false"
+    />
   </div>
 </template>
 
@@ -53,7 +55,7 @@ import { warning, error, success } from '@/services/alert/sweetAlerts.js'
 
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
-import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
+import PosScanFullscreen from './pos-scan-fullscreen.vue'
 
 export default {
   name: 'PosScanBar',
@@ -61,7 +63,7 @@ export default {
   components: {
     InputTextGeneric,
     ButtonGeneric,
-    QrScanner
+    PosScanFullscreen
   },
 
   setup() {
@@ -74,7 +76,7 @@ export default {
     return {
       scanInput: '',
       searchField: 'stockNumber',
-      showCamera: false
+      showFullscreenScan: false
     }
   },
 
@@ -87,12 +89,6 @@ export default {
   },
 
   methods: {
-    async handleScan(decodedText) {
-      if (!decodedText) return
-      this.scanInput = decodedText
-      await this.searchAndAddProduct(decodedText)
-    },
-
     async handleManualSearch() {
       if (!this.scanInput) {
         warning(this.$t('view.mobile.pos.warnEnterCode'))
@@ -139,7 +135,6 @@ export default {
       }
 
       this.scanInput = ''
-      this.showCamera = false
       success(this.$t('view.mobile.pos.successAddProduct'), response.stockNumber)
     }
   }
@@ -194,11 +189,5 @@ export default {
     color: var(--base-font-color);
     font-weight: 600;
   }
-}
-
-.scan-camera-wrapper {
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
 }
 </style>

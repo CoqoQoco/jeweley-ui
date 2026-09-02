@@ -1,45 +1,40 @@
 <template>
   <div class="pos-header">
     <div class="pos-header-row">
-      <div class="pos-header-left">
-        <span class="pos-brand">POS</span>
-        <button type="button" class="currency-chip" @click="toggleSettings">
-          <i class="bi bi-cash-coin"></i>
-          {{ settings.currency }} @ {{ settings.rate }}
-          <i class="bi bi-gear-fill"></i>
-        </button>
-        <ButtonGeneric
-          variant="outline"
-          icon="bi-question-circle"
-          class="help-btn"
-          :title="$t('view.mobile.pos.helpBtn')"
-          @click="onOpenHelp"
-        />
-      </div>
+      <button type="button" class="currency-chip" @click="toggleSettings">
+        {{ settings.currency }} @ {{ settings.rate }}
+      </button>
 
-      <div class="pos-header-right">
-        <span class="cart-count-badge">{{ posCartStore.cartCount }}</span>
-        <DropdownGeneric
-          :modelValue="posCartStore.activeCartId"
-          :options="cartOptions"
-          optionLabel="label"
-          optionValue="value"
-          customClass="bill-dropdown"
-          @update:modelValue="switchCart"
-        />
-        <ButtonGeneric
-          variant="dark"
-          icon="bi-trash"
-          :title="$t('view.mobile.pos.removeCartBtn')"
-          @click="onRemoveActiveCart"
-        />
-        <ButtonGeneric
-          variant="main"
-          icon="bi-plus-lg"
-          :title="$t('view.mobile.pos.newCartBtn')"
-          @click="onNewCart"
-        />
-      </div>
+      <DropdownGeneric
+        :modelValue="posCartStore.activeCartId"
+        :options="cartOptions"
+        optionLabel="label"
+        optionValue="value"
+        customClass="bill-dropdown"
+        @update:modelValue="switchCart"
+      />
+
+      <ButtonGeneric
+        variant="main"
+        icon="bi-plus-lg"
+        class="pos-icon-btn"
+        :title="$t('view.mobile.pos.newCartBtn')"
+        @click="onNewCart"
+      />
+      <ButtonGeneric
+        variant="outline"
+        icon="bi-question-circle"
+        class="pos-icon-btn"
+        :title="$t('view.mobile.pos.helpBtn')"
+        @click="onOpenHelp"
+      />
+      <ButtonGeneric
+        variant="outline"
+        icon="bi-trash"
+        class="pos-icon-btn"
+        :title="$t('view.mobile.pos.removeCartBtn')"
+        @click="onRemoveActiveCart"
+      />
     </div>
 
     <div v-if="showSettings" class="pos-settings-panel">
@@ -102,6 +97,13 @@
           @update:modelValue="onVatPercentInput"
         />
       </div>
+
+      <div class="settings-divider"></div>
+      <button type="button" class="settings-link-row" @click="onGoToSaleHistory">
+        <i class="bi bi-receipt-cutoff"></i>
+        <span>{{ $t('view.mobile.pos.pastBillsLabel') }}</span>
+        <i class="bi bi-chevron-right"></i>
+      </button>
     </div>
   </div>
 </template>
@@ -150,8 +152,13 @@ export default {
 
   computed: {
     cartOptions() {
+      const total = this.posCartStore.cartCount
       return this.posCartStore.carts.map((cart, idx) => ({
-        label: `${this.$t('view.mobile.pos.billLabel', { n: idx + 1 })} (${this.posCartStore.cartItemCount(cart.id)})`,
+        label: this.$t('view.mobile.pos.billLabel', {
+          n: idx + 1,
+          total,
+          count: this.posCartStore.cartItemCount(cart.id)
+        }),
         value: cart.id
       }))
     }
@@ -239,6 +246,10 @@ export default {
 
     onOpenHelp() {
       this.$router.push({ name: 'mobile-pos-help' })
+    },
+
+    onGoToSaleHistory() {
+      this.$router.push('/mobile/sale')
     }
   }
 }
@@ -248,50 +259,40 @@ export default {
 @import '@/assets/scss/responsive-style/mobile';
 
 .pos-header {
+  --pos-control-h: 44px;
+
   background: var(--color-card-bg);
   border-bottom: 1px solid var(--color-border);
   padding: var(--sp-sm) var(--sp-md);
   padding-top: calc(var(--sp-sm) + env(safe-area-inset-top, 0px));
 }
 
+// แถวเดียว ห้ามตกบรรทัด — chip + dropdown ยืดหยุ่นแบ่งพื้นที่ที่เหลือเท่ากัน (flex-basis 0)
+// ปุ่มไอคอน 3 ตัวคงที่ 44px เท่ากับ token --pos-control-h
 .pos-header-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-sm);
-  flex-wrap: wrap;
-}
-
-.pos-header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-sm);
-}
-
-.pos-brand {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--base-font-color);
-}
-
-.help-btn {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  border-radius: var(--radius-md);
+  align-items: stretch;
+  gap: var(--sp-xs);
+  flex-wrap: nowrap;
 }
 
 .currency-chip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--pos-control-h);
+  padding: 0 var(--sp-sm);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-highlight-bg);
   color: var(--base-font-color);
   font-size: 0.8rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
 
   &:active {
@@ -299,33 +300,43 @@ export default {
   }
 }
 
-.pos-header-right {
+:deep(.bill-dropdown) {
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--pos-control-h);
   display: flex;
   align-items: center;
-  gap: var(--sp-xs);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 
-  :deep(.bill-dropdown) {
-    width: 130px;
+  .p-dropdown-label,
+  .p-inputtext {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--sp-sm);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    .p-inputtext {
-      padding: 8px 10px;
-      font-size: 0.8rem;
-    }
+  .p-dropdown-trigger {
+    width: 26px;
+    flex-shrink: 0;
   }
 }
 
-.cart-count-badge {
+.pos-icon-btn {
+  flex: 0 0 var(--pos-control-h);
+  width: var(--pos-control-h);
+  height: var(--pos-control-h);
+  min-width: var(--pos-control-h);
+  padding: 0 !important;
+  border-radius: var(--radius-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 4px;
-  border-radius: 10px;
-  background: var(--base-font-color);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
 }
 
 .pos-settings-panel {
@@ -397,6 +408,44 @@ export default {
     background: rgba(146, 19, 19, 0.05);
     color: var(--base-font-color);
     font-weight: 600;
+  }
+}
+
+.settings-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--sp-xs) 0;
+}
+
+.settings-link-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  width: 100%;
+  min-height: var(--pos-control-h);
+  padding: var(--sp-sm) var(--sp-xs);
+  border: none;
+  background: transparent;
+  color: var(--base-font-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+
+  i:first-child {
+    font-size: 1rem;
+  }
+
+  span {
+    flex: 1;
+  }
+
+  i:last-child {
+    color: #999;
+  }
+
+  &:active {
+    background: var(--color-highlight-bg);
   }
 }
 </style>

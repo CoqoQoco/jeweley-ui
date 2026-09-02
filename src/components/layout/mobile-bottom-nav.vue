@@ -64,14 +64,6 @@ export default {
           badge: null
         },
         {
-          name: 'mobile-sale',
-          label: this.$t('view.mobile.nav.sale'),
-          icon: 'bi bi-receipt',
-          path: '/mobile/sale',
-          permission: 'mobile:sale',
-          badge: null
-        },
-        {
           name: 'mobile-tasks',
           label: this.$t('view.mobile.nav.tasks'),
           icon: 'bi bi-list-task',
@@ -114,9 +106,10 @@ export default {
 
     /**
      * Check if route is active
-     * ใช้ path prefix แทน exact route name เพื่อให้ nested route
-     * (เช่น mobile-sale-create, mobile-sale-detail, mobile-invoice-detail) ยัง highlight ปุ่ม "ขาย" อยู่
+     * ใช้ path prefix แทน exact route name เพื่อให้ nested route ของแต่ละเมนู
+     * (เช่น mobile-pos-help ใต้ /mobile/pos) ยัง highlight ปุ่มเดิมอยู่
      * ยกเว้น "หน้าแรก" ที่ต้อง match แบบ exact กันชนกับปุ่มอื่น
+     * หมายเหตุ: /mobile/sale/* ไม่อยู่ในเมนูล่างแล้ว (เข้าผ่านแผงตั้งค่า POS / ลิงก์หน้าจบบิล) จึงไม่มีปุ่มไหน highlight ให้
      */
     isActive(item) {
       if (item.path === '/mobile/dashboard') {

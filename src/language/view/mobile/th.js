@@ -1,8 +1,7 @@
 export const nav = {
   home: 'หน้าแรก',
   scan: 'สแกน',
-  sale: 'ขาย',
-  pos: 'POS',
+  pos: 'ขาย',
   tasks: 'งาน',
   profile: 'โปรไฟล์'
 }
@@ -15,12 +14,13 @@ export const pos = {
   currencyLabel: 'สกุลเงิน',
   rateLabel: 'อัตราแลกเปลี่ยน',
   vatPercentLabel: 'อัตราภาษีมูลค่าเพิ่ม (%)',
-  billLabel: 'บิล {n}',
+  billLabel: 'บิล {n}/{total} ({count})',
   newCartBtn: 'บิลใหม่',
   removeCartBtn: 'ลบบิลนี้',
   confirmRemoveCartTitle: 'ยืนยันลบบิล',
   confirmRemoveCartMsg: 'ต้องการลบบิลนี้และรายการทั้งหมดในบิลใช่หรือไม่?',
   helpBtn: 'คู่มือการใช้งาน',
+  pastBillsLabel: 'บิลย้อนหลัง / ยกเลิกบิล',
 
   // scan bar
   scanCameraBtn: 'สแกนกล้อง',
@@ -33,6 +33,19 @@ export const pos = {
   errorCheckCode: 'กรุณาตรวจสอบรหัสสินค้า',
   warnDuplicateItem: 'สินค้าชิ้นนี้อยู่ในตะกร้าแล้ว',
   successAddProduct: 'เพิ่มสินค้าเข้าตะกร้าแล้ว',
+
+  // scan bar — กล้องเต็มจอ
+  scanFullscreenTitle: 'สแกนรหัสสินค้า',
+  scanFullscreenHint: 'เล็งไปที่ป้ายรหัสสินค้า',
+  torchBtn: 'ไฟฉาย',
+  scanDoneBtn: 'เสร็จสิ้น',
+  scanTypeInsteadBtn: 'พิมพ์รหัสแทน',
+  scanCartCountLabel: 'ในตะกร้า {count} ชิ้น',
+  scanCameraErrorTitle: 'เปิดกล้องไม่ได้',
+  scanCameraErrorPermission: 'กรุณาอนุญาตให้เว็บใช้กล้องในตั้งค่าเบราว์เซอร์',
+  scanCameraErrorNotFound: 'ไม่พบกล้องบนอุปกรณ์นี้',
+  scanCameraErrorNotSupported: 'เบราว์เซอร์นี้ไม่รองรับการใช้กล้อง กรุณาใช้ผ่าน HTTPS',
+  scanCameraErrorGeneric: 'เปิดกล้องไม่ได้ กรุณาลองใหม่อีกครั้ง',
 
   // cart
   cartTitle: 'รายการในตะกร้า',
@@ -47,7 +60,7 @@ export const pos = {
   // customer chip
   customerTitle: 'ลูกค้า',
   customerWalkin: 'หน้าร้าน',
-  addCustomerBtn: '+ ชื่อ/เบอร์',
+  addCustomerBtn: 'ชื่อ/เบอร์',
   changeCustomerBtn: 'เปลี่ยน',
   customerFormTitle: 'ข้อมูลลูกค้า',
   fieldCustomerName: 'ชื่อลูกค้า',
@@ -116,6 +129,7 @@ export const pos = {
   shareReceiptBtn: 'แชร์ใบเสร็จ',
   printReceiptBtn: 'พิมพ์ใบเสร็จ',
   sellMoreBtn: 'ขายต่อ',
+  viewAllBillsBtn: 'ดูบิลทั้งหมด',
   shareUnavailableMsg: 'อุปกรณ์นี้แชร์ไฟล์โดยตรงไม่ได้ ระบบดาวน์โหลดไฟล์ใบเสร็จให้แทน'
 }
 
@@ -717,7 +731,7 @@ export const posHelp = {
       list: [
         { desc: 'ค่าเริ่มต้น "หน้าร้าน" ขายได้เลยไม่ต้องกรอก' },
         {
-          desc: 'กด "+ ชื่อ/เบอร์" ใส่เบอร์ → เคยซื้อแล้ว = ผูกลูกค้าเดิม ขึ้น "พบข้อมูลลูกค้าเดิม" / ลูกค้าใหม่ = ระบบสร้างให้ ออกรหัสเอง'
+          desc: 'กด "ชื่อ/เบอร์" ใส่เบอร์ → เคยซื้อแล้ว = ผูกลูกค้าเดิม ขึ้น "พบข้อมูลลูกค้าเดิม" / ลูกค้าใหม่ = ระบบสร้างให้ ออกรหัสเอง'
         }
       ],
       tip: 'ควรขอเบอร์ทุกครั้ง ครั้งหน้าระบบจำได้ทันที และยอดซื้อรวมอยู่ที่ชื่อเดียว'
@@ -780,7 +794,7 @@ export const posHelp = {
           ]
         ]
       },
-      note: 'ยกเลิกบิลที่ออกไปแล้ว ทำในเมนู "ขาย" ไม่ใช่ในหน้า POS — เปิดบิลนั้นแล้วยกเลิก Invoice ระบบจะคืนสินค้ากลับเข้าคลังให้'
+      note: 'ยกเลิกบิลที่ออกไปแล้วทำในหน้า POS ไม่ได้ ต้องกดปุ่มตั้งค่า (⚙) ด้านบนหน้าขาย → "บิลย้อนหลัง / ยกเลิกบิล" หรือกด "ดูบิลทั้งหมด" ที่หน้าจบบิลหลังขายเสร็จ — เปิดบิลนั้นแล้วยกเลิก Invoice ระบบจะคืนสินค้ากลับเข้าคลังให้'
     },
     {
       icon: 'bi-check2-square',

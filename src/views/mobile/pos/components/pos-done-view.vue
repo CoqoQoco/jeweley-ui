@@ -54,6 +54,11 @@
             @click="onSellMore"
           />
         </div>
+
+        <button type="button" class="view-all-link" @click="onViewAllBills">
+          {{ $t('view.mobile.pos.viewAllBillsBtn') }}
+          <i class="bi bi-chevron-right"></i>
+        </button>
       </div>
     </div>
   </Teleport>
@@ -144,6 +149,10 @@ export default {
 
     onSellMore() {
       this.$emit('sell-more')
+    },
+
+    onViewAllBills() {
+      this.$router.push('/mobile/sale')
     },
 
     formatCurrency(value) {
@@ -241,5 +250,19 @@ export default {
     min-height: 52px;
     font-size: 1.05rem;
   }
+}
+
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xs);
+  padding: var(--sp-sm);
+  border: none;
+  background: transparent;
+  color: var(--base-font-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
 }
 </style>

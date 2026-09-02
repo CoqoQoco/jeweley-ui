@@ -1,8 +1,7 @@
 export const nav = {
   home: 'Home',
   scan: 'Scan',
-  sale: 'Sale',
-  pos: 'POS',
+  pos: 'Sell',
   tasks: 'Tasks',
   profile: 'Profile'
 }
@@ -15,12 +14,13 @@ export const pos = {
   currencyLabel: 'Currency',
   rateLabel: 'Exchange Rate',
   vatPercentLabel: 'VAT Rate (%)',
-  billLabel: 'Bill {n}',
+  billLabel: 'Bill {n}/{total} ({count})',
   newCartBtn: 'New Bill',
   removeCartBtn: 'Remove Bill',
   confirmRemoveCartTitle: 'Confirm Remove Bill',
   confirmRemoveCartMsg: 'Remove this bill and all its items?',
   helpBtn: 'User Guide',
+  pastBillsLabel: 'Past Bills / Cancel Bill',
 
   // scan bar
   scanCameraBtn: 'Scan Camera',
@@ -33,6 +33,19 @@ export const pos = {
   errorCheckCode: 'Please check the product code',
   warnDuplicateItem: 'This item is already in the cart',
   successAddProduct: 'Added to cart',
+
+  // scan bar — fullscreen camera
+  scanFullscreenTitle: 'Scan Product Code',
+  scanFullscreenHint: 'Point at the product code label',
+  torchBtn: 'Torch',
+  scanDoneBtn: 'Done',
+  scanTypeInsteadBtn: 'Enter code instead',
+  scanCartCountLabel: 'Cart: {count} item(s)',
+  scanCameraErrorTitle: 'Unable to open camera',
+  scanCameraErrorPermission: 'Please allow camera access in your browser settings',
+  scanCameraErrorNotFound: 'No camera found on this device',
+  scanCameraErrorNotSupported: 'This browser does not support camera access — please use HTTPS',
+  scanCameraErrorGeneric: 'Unable to open camera — please try again',
 
   // cart
   cartTitle: 'Cart Items',
@@ -47,7 +60,7 @@ export const pos = {
   // customer chip
   customerTitle: 'Customer',
   customerWalkin: 'Walk-in',
-  addCustomerBtn: '+ Name/Phone',
+  addCustomerBtn: 'Name/Phone',
   changeCustomerBtn: 'Change',
   customerFormTitle: 'Customer Info',
   fieldCustomerName: 'Customer Name',
@@ -116,6 +129,7 @@ export const pos = {
   shareReceiptBtn: 'Share Receipt',
   printReceiptBtn: 'Print Receipt',
   sellMoreBtn: 'Sell More',
+  viewAllBillsBtn: 'View All Bills',
   shareUnavailableMsg: 'This device cannot share files directly — the receipt will be downloaded instead'
 }
 
@@ -721,7 +735,7 @@ export const posHelp = {
       list: [
         { desc: 'Defaults to "Walk-in" — you can sell right away without filling anything in' },
         {
-          desc: 'Tap "+ Name/Phone" and enter a phone number → if they\'ve bought before, it links to the existing customer and shows "Found existing customer"; a new customer is created automatically with its own code'
+          desc: 'Tap "Name/Phone" and enter a phone number → if they\'ve bought before, it links to the existing customer and shows "Found existing customer"; a new customer is created automatically with its own code'
         }
       ],
       tip: "Ask for a phone number every time — the system will recognize the customer instantly next time, and their total purchases stay under one name."
@@ -787,7 +801,7 @@ export const posHelp = {
           ]
         ]
       },
-      note: 'To cancel a bill that has already been issued, do it in the "Sale" menu — not on the POS page. Open that bill and cancel the Invoice; the system will return the item to stock automatically.'
+      note: 'You cannot cancel an issued bill from the POS page. Tap the settings button (⚙) at the top of the Sell page → "Past Bills / Cancel Bill", or tap "View All Bills" on the completion screen after a sale — open that bill and cancel the Invoice; the system will return the item to stock automatically.'
     },
     {
       icon: 'bi-check2-square',
