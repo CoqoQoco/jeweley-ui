@@ -119,6 +119,10 @@ export const pos = {
   resendBtn: 'Resend',
   editCartInsteadBtn: 'Edit Cart Instead',
 
+  // duplicate key guard — first submit (not "Resend") but backend says this bill was already recorded (should not happen)
+  errorDuplicateBillTitle: 'This bill was already recorded',
+  errorDuplicateBillMsg: 'This bill was already recorded. Please start a new bill and try again.',
+
   // done view — checkout complete
   doneTitle: 'Sale Complete',
   doneInvoiceLabel: 'Invoice No.',

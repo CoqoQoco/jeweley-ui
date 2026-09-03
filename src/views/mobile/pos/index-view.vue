@@ -109,6 +109,7 @@
 <script>
 import { usePosCartStore } from '@/stores/modules/pos/pos-cart-store.js'
 import { usePosApiStore } from '@/stores/modules/api/pos/pos-api-store.js'
+import { error } from '@/services/alert/sweetAlerts.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -279,7 +280,7 @@ export default {
     async onResendCheckout() {
       const pending = this.activeCart?.pendingCheckout
       if (!pending) return
-      await this.submitCheckout(pending)
+      await this.submitCheckout(pending, { isResend: true })
     },
 
     // ยกเลิกสถานะ "รอส่ง" โดยไม่ยิง API — ให้ผู้ใช้กลับไปแก้ไขรายการ/ยอดชำระได้เอง แล้วค่อยกด "รับเงิน" ใหม่
@@ -350,9 +351,24 @@ export default {
     // ทนเน็ตหลุด: fail แบบไม่มี response (network/timeout) = มาร์กบิลเป็น "รอส่ง" ให้กดส่งซ้ำได้ด้วย idempotencyKey เดิม
     // (idempotencyKey เดิมกันบิลซ้ำที่ backend อยู่แล้ว) — fail แบบมี response (validate ไม่ผ่าน) แปลว่ายังไม่สร้างบิล
     // ปล่อยให้ sheet เปิดค้างไว้ให้แก้ไขแล้วลองใหม่ได้เลย ไม่ต้องมาร์ก pending
-    async submitCheckout(context) {
+    // isResend=true = มาจาก "ส่งอีกครั้ง" (onResendCheckout) ด้วย idempotencyKey เดิมที่ตั้งใจไว้ — isDuplicate:true ตรงนี้ถือว่าสำเร็จตามปกติ
+    async submitCheckout(context, { isResend = false } = {}) {
       try {
         const res = await this.posApiStore.checkout(context.payload)
+
+        // ยิงครั้งแรก (ไม่ใช่ resend) แต่ backend บอกว่า key นี้ถูกใช้ไปแล้ว = สถานการณ์ที่ไม่ควรเกิด
+        // (ตะกร้าถือ idempotencyKey ที่ backend บันทึกบิลไปแล้วก่อนหน้านี้) ห้ามพาไปหน้าจบบิลด้วยข้อมูลบิลเก่า
+        if (res?.isDuplicate && !isResend) {
+          this.posCartStore.clearCartPending(context.cartId)
+          this.posCartStore.clearActiveCart()
+          this.showCheckoutSheet = false
+          error(
+            this.$t('view.mobile.pos.errorDuplicateBillMsg'),
+            this.$t('view.mobile.pos.errorDuplicateBillTitle')
+          )
+          return
+        }
+
         this.posCartStore.clearCartPending(context.cartId)
         this.checkoutResult = {
           ...res,
@@ -366,6 +382,9 @@ export default {
           freightAndInsurance: context.payload.FreightAndInsurance,
           vatPercent: context.payload.Vat
         }
+        // เคลียร์ตะกร้าทันทีตอนปิดบิลสำเร็จ (ไม่รอกด "ขายต่อ") ได้ idempotencyKey ใหม่ทันที
+        // กันเคส: ออกจากหน้าไปโดยไม่กด "ขายต่อ" แล้วกลับมาใส่สินค้าชุดใหม่ในตะกร้าเดิมที่ยังถือ key เก่าอยู่
+        this.posCartStore.clearActiveCart()
         this.showCheckoutSheet = false
         this.showDoneView = true
       } catch (err) {
@@ -377,7 +396,6 @@ export default {
     },
 
     onSellMore() {
-      this.posCartStore.clearActiveCart()
       this.showDoneView = false
       this.checkoutResult = null
     },

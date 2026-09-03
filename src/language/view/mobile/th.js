@@ -119,6 +119,10 @@ export const pos = {
   resendBtn: 'ส่งอีกครั้ง',
   editCartInsteadBtn: 'แก้ไขรายการแทน',
 
+  // duplicate key guard — ยิงครั้งแรก (ไม่ใช่ "ส่งอีกครั้ง") แต่ backend บอกว่าบิลนี้ถูกบันทึกไปแล้ว (ไม่ควรเกิด)
+  errorDuplicateBillTitle: 'บิลนี้ถูกบันทึกไปแล้ว',
+  errorDuplicateBillMsg: 'บิลนี้ถูกบันทึกไปแล้ว กรุณาเปิดบิลใหม่แล้วทำรายการอีกครั้ง',
+
   // done view — ทำรายการสำเร็จ
   doneTitle: 'ทำรายการสำเร็จ',
   doneInvoiceLabel: 'เลขที่ Invoice',
