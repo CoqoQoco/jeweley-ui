@@ -23,6 +23,7 @@ import ticketLang from './view/ticket/en.js'
 import graphLang from './view/graph/en.js'
 import downloadsLang from './view/downloads/en.js'
 import reportLang from './view/report/en.js'
+import printStationLang from './view/print-station/en.js'
 import * as mobileLang from './view/mobile/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -183,6 +184,7 @@ export default {
     graph: { ...graphLang },
     downloads: { ...downloadsLang },
     report: { ...reportLang },
+    printStation: { ...printStationLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },
@@ -278,6 +280,7 @@ export default {
       gemMovementAnalysis: { ...stock.gemMovementAnalysis },
       materialValuationReport: { ...stock.materialValuationReport },
       stockBalanceSummary: { ...stock.stockBalanceSummary },
+      gold: { ...stock.gold },
       gem: {
         ...stock.gem,
         dashboard: {

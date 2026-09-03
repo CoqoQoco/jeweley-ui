@@ -35,21 +35,24 @@ html {
   }
 }
 
+// Global override: ยก #modal-container (teleport target ของ ModalView) ให้อยู่เหนือ overlay เต็มจอทุกตัวของแอป
+// ต้นเหตุ: default z-index 1000 ต่ำกว่า overlay เต็มจอของหน้า POS:
+//   - pos-scan-fullscreen.vue   z-index: 1000
+//   - pos-checkout-sheet.vue    z-index: 1100
+//   - pos-done-view.vue         z-index: 1200  ← สูงสุด
+// ผลคือ ModalView (เช่น preview ใบเสร็จที่เปิดจาก pos-done-view) ถูกสร้างจริงใน DOM แต่จมอยู่ใต้ overlay มองไม่เห็น
+// ตั้งเป็น 1300 ให้อยู่เหนือ overlay ทุกตัวในแอปแน่นอน (รวม pos-done-view ที่ 1200) แต่ยังต่ำกว่า swal2/loading ด้านล่าง
 #modal-container {
   position: relative;
-  z-index: 1000;
+  z-index: 1300;
 }
 
-// Global override: ยก SweetAlert2 (.swal2-container) ให้อยู่เหนือ overlay เต็มจอทุกตัวของแอป
-// ต้นเหตุ: swal2 default z-index = 1060 (ค่า default ของ library, ไม่เคย override ที่ไหนมาก่อน)
-//   ต่ำกว่า overlay เต็มจอของหน้า POS:
-//     - pos-scan-fullscreen.vue   z-index: 1000
-//     - pos-checkout-sheet.vue    z-index: 1100
-//     - pos-done-view.vue         z-index: 1200  ← สูงสุด
+// Global override: ยก SweetAlert2 (.swal2-container) ให้อยู่เหนือ overlay เต็มจอทุกตัวของแอป (รวม #modal-container ด้านบน)
+// ต้นเหตุ: swal2 default z-index = 1060 (ค่า default ของ library, ไม่เคย override ที่ไหนมาก่อน) — ต่ำกว่า overlay เต็มจอของหน้า POS ด้านบน
 //   ผลคือ dialog ยืนยัน (confirmSubmit) ที่หน้ารับชำระเงิน POS ถูกสร้างจริงใน DOM แต่จมอยู่ใต้ overlay มองไม่เห็น
-// ตั้งเป็น 9000 เพื่อให้อยู่เหนือ overlay ทุกตัวในแอปแน่นอน (รวม pos-done-view ที่ 1200)
+// ตั้งเป็น 9000 เพื่อให้อยู่เหนือ overlay ทุกตัวในแอปแน่นอน (รวม pos-done-view ที่ 1200 และ #modal-container ที่ 1300)
 // แต่ยังต่ำกว่า loading-overlay.vue (z-index: 9999) เพื่อให้ global loading spinner ยังคงบังทุกอย่างได้เสมอ
-// ⚠️ ห้ามลดค่านี้ต่ำกว่า 1200 (จะกลับไปโดน pos-done-view บังซ้ำ) และห้ามเพิ่มเกิน 9999 (จะทับ loading overlay)
+// ⚠️ ห้ามลดค่านี้ต่ำกว่า 1300 (จะกลับไปโดน #modal-container/pos-done-view บังซ้ำ) และห้ามเพิ่มเกิน 9999 (จะทับ loading overlay)
 .swal2-container {
   z-index: 9000;
 }

@@ -137,7 +137,16 @@ export const pos = {
   sellMoreBtn: 'Sell More',
   viewAllBillsBtn: 'View All Bills',
   shareUnavailableMsg: 'This device cannot share files directly — the receipt will be downloaded instead',
-  printUnavailableMsg: 'Could not print the receipt. Please make sure RawBT is installed, or use the Share Receipt button instead'
+  printUnavailableMsg: 'Could not print the receipt. Please make sure RawBT is installed, or use the Share Receipt button instead',
+
+  // print queue — send receipt to the booth printer queue (for iOS which cannot use Web Bluetooth)
+  viewReceiptBtn: 'View Receipt',
+  sendToPrintBtn: 'Send to Print',
+  receiptPreviewTitle: 'Receipt Preview',
+  printQueueEnqueueErrorMsg: 'Failed to send to print queue. Please try again.',
+  printQueueStatusPending: 'Sent to queue — printing at booth...',
+  printQueueStatusPrinted: 'Printed',
+  printQueueStatusFailed: 'Print failed'
 }
 
 export const scan = {

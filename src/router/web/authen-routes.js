@@ -10,6 +10,7 @@ import report from '../web/report/report-routes.js'
 import ticketRoutes from '../web/ticket/ticket-routes.js'
 import graphRoutes from '../web/graph/graph-routes.js'
 import downloadsRoutes from '../web/downloads/downloads-routes.js'
+import printRoutes from '../web/print/print-routes.js'
 
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 //import Layout from '@/layout/web/LayoutDashboard.vue'
@@ -292,6 +293,9 @@ const routes = [
   ...graphRoutes,
 
   // ----- Downloads -----
-  ...downloadsRoutes
+  ...downloadsRoutes,
+
+  // ----- Print Station -----
+  ...printRoutes
 ]
 export default routes

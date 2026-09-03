@@ -1,0 +1,23 @@
+export default {
+  pageTitle: 'เครื่องพิมพ์กลาง',
+  pageSubtitle: 'เปิดหน้านี้ค้างไว้ที่คอมที่ต่อเครื่องพิมพ์บูธ',
+  bridgeConnected: 'Bridge เชื่อมต่อ',
+  bridgeDisconnected: 'Bridge ไม่เชื่อมต่อ',
+  bridgeHintMsg: 'เชื่อมต่อเครื่องพิมพ์ไม่ได้ กรุณาเปิดโปรแกรม DK Print Bridge ที่เครื่องนี้',
+  printerLabel: 'เครื่องพิมพ์',
+  printerPlaceholder: 'เลือกเครื่องพิมพ์',
+  autoPrintLabel: 'พิมพ์อัตโนมัติ',
+  queueTitle: 'คิววันนี้ ({count})',
+  colInvoice: 'เลขที่ใบเสร็จ',
+  colCreateBy: 'พนักงาน',
+  colTime: 'เวลา',
+  statusPending: 'รอพิมพ์',
+  statusPrinting: 'กำลังพิมพ์',
+  statusPrinted: 'พิมพ์แล้ว',
+  statusFailed: 'พิมพ์ไม่สำเร็จ',
+  printNowBtn: 'พิมพ์',
+  reprintBtn: 'พิมพ์ซ้ำ',
+  retryBtn: 'ลองใหม่',
+  printFailedGeneric: 'พิมพ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+  emptyQueueMsg: 'ยังไม่มีงานพิมพ์วันนี้'
+}

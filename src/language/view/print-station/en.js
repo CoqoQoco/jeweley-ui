@@ -1,0 +1,23 @@
+export default {
+  pageTitle: 'Print Station',
+  pageSubtitle: 'Keep this page open on the booth computer connected to the printer',
+  bridgeConnected: 'Bridge connected',
+  bridgeDisconnected: 'Bridge disconnected',
+  bridgeHintMsg: 'Cannot connect to the printer. Please open the DK Print Bridge app on this computer.',
+  printerLabel: 'Printer',
+  printerPlaceholder: 'Select printer',
+  autoPrintLabel: 'Auto print',
+  queueTitle: "Today's queue ({count})",
+  colInvoice: 'Invoice No.',
+  colCreateBy: 'Staff',
+  colTime: 'Time',
+  statusPending: 'Pending',
+  statusPrinting: 'Printing',
+  statusPrinted: 'Printed',
+  statusFailed: 'Failed',
+  printNowBtn: 'Print',
+  reprintBtn: 'Reprint',
+  retryBtn: 'Retry',
+  printFailedGeneric: 'Print failed. Please try again.',
+  emptyQueueMsg: 'No print jobs today'
+}

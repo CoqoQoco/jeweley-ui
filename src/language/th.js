@@ -23,6 +23,7 @@ import ticketLang from './view/ticket/th.js'
 import graphLang from './view/graph/th.js'
 import downloadsLang from './view/downloads/th.js'
 import reportLang from './view/report/th.js'
+import printStationLang from './view/print-station/th.js'
 import * as mobileLang from './view/mobile/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -183,6 +184,7 @@ export default {
     graph: { ...graphLang },
     downloads: { ...downloadsLang },
     report: { ...reportLang },
+    printStation: { ...printStationLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },
@@ -278,6 +280,7 @@ export default {
       gemMovementAnalysis: { ...stock.gemMovementAnalysis },
       materialValuationReport: { ...stock.materialValuationReport },
       stockBalanceSummary: { ...stock.stockBalanceSummary },
+      gold: { ...stock.gold },
       gem: {
         ...stock.gem,
         dashboard: {

@@ -137,7 +137,16 @@ export const pos = {
   sellMoreBtn: 'ขายต่อ',
   viewAllBillsBtn: 'ดูบิลทั้งหมด',
   shareUnavailableMsg: 'อุปกรณ์นี้แชร์ไฟล์โดยตรงไม่ได้ ระบบดาวน์โหลดไฟล์ใบเสร็จให้แทน',
-  printUnavailableMsg: 'พิมพ์ใบเสร็จไม่สำเร็จ กรุณาตรวจสอบว่าติดตั้งแอป RawBT แล้ว หรือใช้ปุ่มแชร์ใบเสร็จแทน'
+  printUnavailableMsg: 'พิมพ์ใบเสร็จไม่สำเร็จ กรุณาตรวจสอบว่าติดตั้งแอป RawBT แล้ว หรือใช้ปุ่มแชร์ใบเสร็จแทน',
+
+  // print queue — ส่งใบเสร็จเข้าคิวพิมพ์ที่บูธ (สำหรับ iOS ที่สั่งเครื่องพิมพ์ Bluetooth จากหน้าเว็บไม่ได้)
+  viewReceiptBtn: 'ดูใบเสร็จ',
+  sendToPrintBtn: 'ส่งพิมพ์',
+  receiptPreviewTitle: 'ตัวอย่างใบเสร็จ',
+  printQueueEnqueueErrorMsg: 'ส่งเข้าคิวพิมพ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+  printQueueStatusPending: 'ส่งเข้าคิวแล้ว — กำลังพิมพ์ที่บูธ...',
+  printQueueStatusPrinted: 'พิมพ์แล้ว',
+  printQueueStatusFailed: 'พิมพ์ไม่สำเร็จ'
 }
 
 export const scan = {

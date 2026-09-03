@@ -19,6 +19,11 @@ const ITEM_COL1 = 18
 const ITEM_COL2 = 15
 const ITEM_COL3 = 14
 
+// ป้ายวิธีชำระเงินบนใบเสร็จ — แม็ปจากโค้ดตัวเลขของ PAYMENT_METHODS ใน pos-checkout-sheet.vue
+// ห้ามใช้ paymentName จาก i18n เพราะเป็นภาษาไทย แล้วโดน toAsciiOnly() กรองทิ้งจนเหลือสตริงว่าง
+// (เจอจริงตอน E2E 2026-09-03) และใบเสร็จต้องเป็นอังกฤษเสมอ ไม่ผูกกับภาษาที่ผู้ใช้เลือกบนจอ
+const PAYMENT_LABELS = { 1: 'Cash', 2: 'Transfer', 3: 'Cheque', 4: 'Credit Card', 5: 'Credit' }
+
 function toNumber(value) {
   const num = Number(value)
   return Number.isFinite(num) ? num : 0
@@ -117,6 +122,17 @@ function toAsciiOnly(text) {
     if (ch === '\n' || (code >= 0x20 && code <= 0x7e)) out += ch
   }
   return out
+}
+
+function isAsciiOnly(text) {
+  return /^[\x20-\x7e]*$/.test(String(text || ''))
+}
+
+// ป้ายวิธีชำระเงินต่อแถว: ใช้โค้ดตัวเลข (p.payment) แม็ปเป็นอังกฤษก่อนเสมอ
+// fallback ไป paymentName เฉพาะเมื่อเป็น ASCII ล้วน แล้วสุดท้าย fallback 'Payment' — ห้ามปล่อยว่างเด็ดขาด
+function paymentLabel(p) {
+  const label = PAYMENT_LABELS[p?.payment] || (isAsciiOnly(p?.paymentName) ? p.paymentName : '') || 'Payment'
+  return p?.bankCode ? `${label} (${p.bankCode})` : label
 }
 
 export class ReceiptTextBuilder {
@@ -229,8 +245,7 @@ export class ReceiptTextBuilder {
     const lines = []
 
     this.payments.forEach((p) => {
-      const name = p?.bankName ? `${p.paymentName || '-'} (${p.bankName})` : p?.paymentName || '-'
-      lines.push(lineLR(name, formatMoney(p?.amount)))
+      lines.push(lineLR(paymentLabel(p), formatMoney(p?.amount)))
     })
 
     // จ่ายไม่ครบ (remainingAmount จาก backend > 0) แสดง Outstanding — ห้ามคำนวณทับ remainingAmount
