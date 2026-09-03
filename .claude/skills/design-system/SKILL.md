@@ -193,6 +193,7 @@ button.btn-custom {
 | `btn-green` | `variant="green"` | `$base-green` (#038387) | view/search — ดูรายละเอียด, ค้นหา |
 | `btn-red` | `variant="red"` | `$base-red` (#ff4d4d) | destructive — ลบ |
 | `btn-dark` | `variant="dark"` | `$base-sub-color` (#393939) | clear/neutral — ล้าง, ยกเลิกอ่อน |
+| `btn-plain` | `variant="plain"` | `var(--base-font-color)`, ไม่มีพื้น/กรอบ | ไอคอนกดได้แบบไม่มีกรอบ เช่นในเซลล์ตาราง |
 
 ### ตัวอย่าง native button (migration)
 

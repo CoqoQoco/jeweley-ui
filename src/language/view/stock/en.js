@@ -397,6 +397,25 @@ export default {
     pricePerWeight: 'Price per Weight',
     pricePerQty: 'Price per Qty'
   },
+  gold: {
+    searchTitle: 'Stock Gold',
+    searchDesc: 'Check gold balance by type and percentage',
+    fieldGoldType: 'Gold Type',
+    fieldGoldPercent: 'Gold Percent',
+    listTableTitle: 'Gold Balance by Type',
+    colGoldCode: 'Type Code',
+    colGoldName: 'Gold Type',
+    colGoldSizeName: 'Percent',
+    colGoldPercent: 'Percent (%)',
+    colWeight: 'Remaining Weight (g)',
+    colWeightOnProcess: 'On-process Weight (g)',
+    colUpdateDate: 'Last Updated',
+    statTotalTypes: 'Gold Types',
+    statTotalWeight: 'Total Remaining Weight (g)',
+    statTotalOnProcess: 'Total On-process Weight (g)',
+    summaryTitle: 'Balance Summary by Gold Type',
+    noDataExport: 'No data to export'
+  },
   cost: {
     title: 'Product Appraisal',
     searchDesc: 'Check stock quantity, price, and details of raw materials',

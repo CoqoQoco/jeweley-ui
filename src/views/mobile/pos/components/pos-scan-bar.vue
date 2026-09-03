@@ -4,7 +4,7 @@
       <InputTextGeneric
         v-model.trim="scanInput"
         icon="bi-upc-scan"
-        :placeholder="scanPlaceholder"
+        :placeholder="$t('view.mobile.pos.scanPlaceholder')"
         @keyup.enter="handleManualSearch"
       />
       <ButtonGeneric
@@ -21,30 +21,7 @@
       />
     </div>
 
-    <div class="scan-field-toggle">
-      <button
-        type="button"
-        class="field-btn"
-        :class="{ active: searchField === 'stockNumber' }"
-        @click="searchField = 'stockNumber'"
-      >
-        {{ $t('view.mobile.pos.fieldNewCode') }}
-      </button>
-      <button
-        type="button"
-        class="field-btn"
-        :class="{ active: searchField === 'stockNumberOrigin' }"
-        @click="searchField = 'stockNumberOrigin'"
-      >
-        {{ $t('view.mobile.pos.fieldOldCode') }}
-      </button>
-    </div>
-
-    <PosScanFullscreen
-      :visible="showFullscreenScan"
-      :searchField="searchField"
-      @close="showFullscreenScan = false"
-    />
+    <PosScanFullscreen :visible="showFullscreenScan" @close="showFullscreenScan = false" />
   </div>
 </template>
 
@@ -75,16 +52,7 @@ export default {
   data() {
     return {
       scanInput: '',
-      searchField: 'stockNumber',
       showFullscreenScan: false
-    }
-  },
-
-  computed: {
-    scanPlaceholder() {
-      return this.searchField === 'stockNumber'
-        ? this.$t('view.mobile.pos.scanPlaceholderNew')
-        : this.$t('view.mobile.pos.scanPlaceholderOld')
     }
   },
 
@@ -97,14 +65,46 @@ export default {
       await this.searchAndAddProduct(this.scanInput)
     },
 
+    // ลองรหัสเก่า (stockNumberOrigin) ก่อนเสมอ — user สแกนป้ายรหัสเก่าเป็นหลักที่หน้างาน
+    // ไม่เจอค่อยลองรหัสใหม่ (stockNumber) อัตโนมัติ — ผู้ใช้ไม่ต้องเลือกเอง
+    async findProduct(searchValue) {
+      const byOriginCode = await this.productStore.fetchDataGet({
+        formValue: { stockNumberOrigin: searchValue },
+        skipError: true
+      })
+      if (byOriginCode) return byOriginCode
+
+      return await this.productStore.fetchDataGet({
+        formValue: { stockNumber: searchValue },
+        skipError: true
+      })
+    },
+
+    // fetchDataGet ดัก error ไว้เองและคืน undefined ทั้งกรณี "ไม่พบ" และกรณีเน็ตพัง แยกจาก return value ไม่ได้
+    // ใช้ navigator.onLine เป็นสัญญาณเดียวที่เช็คได้จากฝั่ง client เพื่อไม่ให้ผู้ใช้เข้าใจผิดว่าสินค้าไม่มีทั้งที่เน็ตหลุด
+    statusWarnKey(status) {
+      if (status === 'SOLD') return 'view.mobile.pos.warnSoldItem'
+      if (status === 'RESERVED') return 'view.mobile.pos.warnReservedItem'
+      return 'view.mobile.pos.warnUnavailableItem'
+    },
+
     // ค้นเจอ → เพิ่มเข้าตะกร้าทันที ไม่ต้องมีขั้นยืนยัน (จุดที่ต้องเร็วที่สุด)
     async searchAndAddProduct(searchValue) {
-      const response = await this.productStore.fetchDataGet({
-        formValue: { [this.searchField]: searchValue }
-      })
+      const response = await this.findProduct(searchValue)
 
       if (!response) {
-        error(this.$t('view.mobile.pos.errorProductNotFound'), this.$t('view.mobile.pos.errorCheckCode'))
+        if (!navigator.onLine) {
+          error(this.$t('view.mobile.pos.errorNetworkIssue'), this.$t('view.mobile.pos.errorNetworkTitle'))
+        } else {
+          error(this.$t('view.mobile.pos.errorProductNotFound'), this.$t('view.mobile.pos.errorCheckCode'))
+        }
+        return
+      }
+
+      // status อาจไม่มีมาใน response (backend ยังไม่ deploy) — ทำงานเหมือนเดิม (ใส่ตะกร้าได้) ในกรณีนั้น
+      if (response.status && response.status !== 'IN_STOCK') {
+        warning(this.$t(this.statusWarnKey(response.status)))
+        this.scanInput = ''
         return
       }
 
@@ -114,6 +114,7 @@ export default {
 
       const result = this.posCartStore.addItem({
         stockNumber: response.stockNumber,
+        stockNumberOrigin: response.stockNumberOrigin || '',
         productNumber: response.productNumber || '',
         description: response.productNameTh || response.productNameEn || '',
         costPrice: costPrice,
@@ -158,36 +159,6 @@ export default {
 
   > :first-child {
     flex: 1;
-  }
-}
-
-.scan-field-toggle {
-  display: flex;
-  gap: var(--sp-sm);
-}
-
-.field-btn {
-  flex: 1;
-  padding: 8px 12px;
-  min-height: 44px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--color-border);
-  background: var(--color-card-bg);
-  color: #666;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  &.active {
-    border-color: var(--base-font-color);
-    background: rgba(146, 19, 19, 0.05);
-    color: var(--base-font-color);
-    font-weight: 600;
   }
 }
 </style>

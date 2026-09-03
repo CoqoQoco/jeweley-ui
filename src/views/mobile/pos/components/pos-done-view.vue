@@ -66,7 +66,9 @@
 
 <script>
 import { generateReceiptBlob } from '@/services/helper/pdf/receipt/receipt-80mm-builder.js'
-import { canShareFiles, shareReceipt, printReceipt } from '@/services/helper/pdf/receipt/receipt-share.js'
+import { canShareFiles, shareReceipt } from '@/services/helper/pdf/receipt/receipt-share.js'
+import { buildReceiptText } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
+import { printReceiptText } from '@/services/helper/pdf/receipt/receipt-rawbt.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -112,6 +114,7 @@ export default {
         customer: { name: r.customer?.name || '' },
         items: (r.items || []).map((item) => ({
           stockNumber: item.stockNumber,
+          stockNumberOrigin: item.stockNumberOrigin,
           description: item.description,
           appraisalPrice: item.appraisalPrice ?? item.price,
           discountPercent: item.discountPercent,
@@ -142,9 +145,14 @@ export default {
       }
     },
 
+    // ปุ่มพิมพ์ใช้เส้นทางข้อความล้วน (ไม่ใช่ PDF/ภาพ) เพราะเครื่องพิมพ์หน้างานพ่นกระดาษมั่วเมื่อเจอ raster —
+    // receiptData เดียวกับที่ onShare ใช้ (data shape เดียวกับ receipt-80mm-builder.js)
     async onPrint() {
-      const blob = await generateReceiptBlob(this.receiptData)
-      await printReceipt(blob)
+      const text = buildReceiptText(this.receiptData)
+      const result = await printReceiptText(text)
+      if (!result.success) {
+        warning(this.$t('view.mobile.pos.printUnavailableMsg'))
+      }
     },
 
     onSellMore() {

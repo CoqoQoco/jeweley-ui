@@ -41,7 +41,9 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.error('Error fetching stock product data:', error)
       }
     },
-    async fetchDataGet({ formValue }) {
+    // skipError: true — ใช้เมื่อ caller แสดงข้อความเองแล้ว (เช่นจอสแกนที่ห้ามมี dialog บัง)
+    // default false เพื่อไม่เปลี่ยนพฤติกรรม caller เดิมที่พึ่งพา alert กลางจาก axios-helper.js
+    async fetchDataGet({ formValue, skipError = false }) {
       try {
         //console.log('formValue', formValue)
         this.dataSearch = {}
@@ -50,7 +52,8 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         }
 
         return await api.jewelry.post('StockProduct/Get', param, {
-          skipLoading: true
+          skipLoading: true,
+          skipError
         })
       } catch (error) {
         console.error('Error get stock product data:', error)

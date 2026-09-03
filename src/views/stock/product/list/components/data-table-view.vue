@@ -52,6 +52,20 @@
         </div>
       </template>
 
+      <template #stockNumberTemplate="{ data }">
+        <div class="stock-number-cell">
+          <span>{{ data.stockNumber }}</span>
+          <BarcodeButtonGeneric :value="data.stockNumber" />
+        </div>
+      </template>
+
+      <template #stockNumberOriginTemplate="{ data }">
+        <div class="stock-number-cell">
+          <span>{{ data.stockNumberOrigin }}</span>
+          <BarcodeButtonGeneric :value="data.stockNumberOrigin" />
+        </div>
+      </template>
+
       <template #expansion="slotProps">
         <div>
           <dataExpand :modelForm="slotProps"></dataExpand>
@@ -71,6 +85,7 @@
 <script>
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import BarcodeButtonGeneric from '@/components/generic/BarcodeButtonGeneric.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
@@ -92,6 +107,7 @@ export default {
   components: {
     BaseDataTable,
     imagePreview,
+    BarcodeButtonGeneric,
     dataExpand,
     barcode,
     update
@@ -142,13 +158,13 @@ export default {
           field: 'stockNumber',
           header: this.$t('view.stock.product.stockNumberNew'),
           sortable: true,
-          minWidth: '150px'
+          minWidth: '180px'
         },
         {
           field: 'stockNumberOrigin',
           header: this.$t('view.stock.product.stockNumberOld'),
           sortable: true,
-          minWidth: '150px'
+          minWidth: '180px'
         },
         {
           field: 'productNumber',
@@ -336,5 +352,12 @@ export default {
   :deep(.p-datatable) {
     z-index: 0 !important;
   }
+}
+
+.stock-number-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
 }
 </style>

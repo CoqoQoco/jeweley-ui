@@ -397,6 +397,25 @@ export default {
     pricePerWeight: 'ราคาต่อนำหนัก',
     pricePerQty: 'ราคาต่อจำนวน'
   },
+  gold: {
+    searchTitle: 'ตรวจคลังทอง',
+    searchDesc: 'ตรวจสอบยอดคงเหลือทองแยกตามประเภทและเปอร์เซ็นต์',
+    fieldGoldType: 'ประเภททอง',
+    fieldGoldPercent: 'เปอร์เซ็นต์ทอง',
+    listTableTitle: 'รายการคงเหลือทองแยกตามประเภท',
+    colGoldCode: 'รหัสประเภท',
+    colGoldName: 'ประเภททอง',
+    colGoldSizeName: 'เปอร์เซ็นต์',
+    colGoldPercent: 'เปอร์เซ็นต์ (%)',
+    colWeight: 'น้ำหนักคงเหลือ (ก.)',
+    colWeightOnProcess: 'น้ำหนักเบิกออก (ก.)',
+    colUpdateDate: 'วันที่อัปเดตล่าสุด',
+    statTotalTypes: 'จำนวนประเภททอง',
+    statTotalWeight: 'น้ำหนักคงเหลือรวม (ก.)',
+    statTotalOnProcess: 'น้ำหนักเบิกออกรวม (ก.)',
+    summaryTitle: 'สรุปยอดคงเหลือแยกตามประเภททอง',
+    noDataExport: 'ไม่มีข้อมูลสำหรับส่งออก'
+  },
   cost: {
     title: 'ประเมินราคาสินค้า',
     searchDesc: 'ตรวจสอบจำนวนคงคลัง ราคา รายละเอียดต่างๆ ของวัถุดิบ',

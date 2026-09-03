@@ -40,6 +40,20 @@ html {
   z-index: 1000;
 }
 
+// Global override: ยก SweetAlert2 (.swal2-container) ให้อยู่เหนือ overlay เต็มจอทุกตัวของแอป
+// ต้นเหตุ: swal2 default z-index = 1060 (ค่า default ของ library, ไม่เคย override ที่ไหนมาก่อน)
+//   ต่ำกว่า overlay เต็มจอของหน้า POS:
+//     - pos-scan-fullscreen.vue   z-index: 1000
+//     - pos-checkout-sheet.vue    z-index: 1100
+//     - pos-done-view.vue         z-index: 1200  ← สูงสุด
+//   ผลคือ dialog ยืนยัน (confirmSubmit) ที่หน้ารับชำระเงิน POS ถูกสร้างจริงใน DOM แต่จมอยู่ใต้ overlay มองไม่เห็น
+// ตั้งเป็น 9000 เพื่อให้อยู่เหนือ overlay ทุกตัวในแอปแน่นอน (รวม pos-done-view ที่ 1200)
+// แต่ยังต่ำกว่า loading-overlay.vue (z-index: 9999) เพื่อให้ global loading spinner ยังคงบังทุกอย่างได้เสมอ
+// ⚠️ ห้ามลดค่านี้ต่ำกว่า 1200 (จะกลับไปโดน pos-done-view บังซ้ำ) และห้ามเพิ่มเกิน 9999 (จะทับ loading overlay)
+.swal2-container {
+  z-index: 9000;
+}
+
 .app-container {
   padding: 10px 10px 10px 10px;
 }
@@ -106,6 +120,30 @@ button.btn-red {
 
 button.btn-dark {
   @include button-variant($base-sub-color);
+}
+
+// btn-plain — ปุ่มไอคอนเปล่า ไม่มีกรอบ/พื้น ใช้ในเซลล์ตาราง (เช่น ปุ่มเปิด barcode ท้ายเลขสต็อก)
+button.btn-plain {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--base-font-color);
+  padding: var(--sp-xs);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-highlight-bg);
+    border-radius: var(--radius-sm);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--base-font-color);
+    outline-offset: 2px;
+  }
 }
 
 input {

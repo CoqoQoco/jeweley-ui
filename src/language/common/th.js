@@ -21,7 +21,10 @@ export default {
     download: 'ดาวน์โหลด',
     upload: 'Upload',
     copy: 'คัดลอก',
-    logout: 'ออกจากระบบ'
+    logout: 'ออกจากระบบ',
+    print: 'พิมพ์',
+    downloadPng: 'ดาวน์โหลด PNG',
+    genBarcode: 'สร้างบาร์โค้ด'
   },
   field: {
     code: 'รหัส',
@@ -58,7 +61,9 @@ export default {
     advancedSearch: 'ค้นหาเพิ่มเติม',
     searchPlaceholder: 'พิมพ์บางอย่างเพื่อค้นหา',
     incompleteData: 'ข้อมูลไม่ครบถ้วน',
-    confirmDelete: 'ยืนยันการลบ'
+    confirmDelete: 'ยืนยันการลบ',
+    barcode: 'บาร์โค้ด',
+    barcodeInvalid: 'สร้างบาร์โค้ดจากรหัสนี้ไม่ได้'
   },
   table: {
     showing: 'แสดงข้อมูล',

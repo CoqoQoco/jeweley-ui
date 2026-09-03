@@ -9,6 +9,24 @@ const PAGE_MARGINS = [8, 10, 8, 10]
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGINS[0] - PAGE_MARGINS[2]
 const RECEIPT_FONT = 'THSarabunNew'
 
+// pageSize.height:'auto' ทำให้ pdfmake ตั้งความสูงหน้าเป็น Infinity ภายใน (ดูคอมเมนต์ fixPageSize
+// ใน node_modules/pdfmake) — เครื่องพิมพ์ความร้อนบางรุ่น (เช่น HPRT HM-A300E ผ่าน RawBT) เดินกระดาษ
+// ตามความสูงหน้าที่ MediaBox รายงานจริง ไม่ใช่ตามเนื้อหา จึงต้องคำนวณความสูงจากเนื้อหาเองเป็นตัวเลข
+// LINE_HEIGHT_FACTOR วัดจริงด้วย harness (pdfmake + font THSarabunNew.ttf จริง) ได้ค่าคงที่ ~1.301
+// ทุก fontSize ที่ใช้ในใบเสร็จนี้ (7/8/9/10/12/15, ทั้ง regular และ bold ให้ค่าเท่ากัน)
+const LINE_HEIGHT_FACTOR = 1.301
+// จำนวนตัวอักษรโดยประมาณต่อบรรทัดของชื่อสินค้า (fontSize 9 bold) ภายใน CONTENT_WIDTH — วัดจริงพบว่า
+// รับได้ 35-65 ตัวอักษร/บรรทัดแล้วแต่ตัวอักษร ใช้ค่าต่ำกว่าจริงเพื่อเผื่อเกินดีกว่าขาด (คำนวณจำนวนบรรทัดที่ตัด)
+const DESC_CHARS_PER_LINE = 28
+// ระยะที่ divider() แต่ละเส้นกินไป (margin บน 4 + ล่าง 4, ตัวเส้นเองสูง 0) — วัดจริงตรงกับค่านี้เป๊ะ
+const DIVIDER_HEIGHT = 8
+// เผื่อเกิน เพื่อกันพลาดจากการปัดเศษ/ความคลาดเคลื่อนของการประมาณความยาวบรรทัดที่ตัดคำ
+const SAFETY_BUFFER = 10
+
+function lineHeight(fontSize) {
+  return fontSize * LINE_HEIGHT_FACTOR
+}
+
 function t(key, params) {
   return i18n.global.t(`view.mobile.receipt.${key}`, params)
 }
@@ -232,9 +250,79 @@ export class Receipt80mmBuilder {
     return { text: t('thankYou'), fontSize: 10, bold: true, alignment: 'center', margin: [0, 6, 0, 0] }
   }
 
+  // ประเมินความสูงหน้าเป็นตัวเลข (pt) จากเนื้อหาจริงที่จะ render — สูตรอิงตาม margin/fontSize
+  // ที่ประกาศไว้ตรงๆ ใน getXxxContent() ด้านบน ทุกจุด ต้องแก้คู่กันถ้าแก้ layout เนื้อหา
+  estimateHeaderHeight() {
+    let height = lineHeight(15) + 2 + lineHeight(8) // shopName (margin bottom 2) + subParts
+    if (this.customer.name) {
+      height += 2 + lineHeight(8) // customer line: margin top 2
+    }
+    return height
+  }
+
+  estimateItemsHeight() {
+    if (!this.items.length) {
+      return lineHeight(9) + 8 // noItems text, margin [0,4,0,4]
+    }
+    return this.items.reduce((sum, item) => {
+      const description = item?.description || item?.stockNumber || '-'
+      const wrappedLines = Math.max(1, Math.ceil(description.length / DESC_CHARS_PER_LINE))
+      let itemHeight = 2 + lineHeight(9) * wrappedLines // description: margin top 2
+      itemHeight += lineHeight(8) // stockNumber/price/qty/total row
+      if (toNumber(item?.discountPercent) > 0) {
+        itemHeight += lineHeight(7) + 2 // discount line: margin bottom 2
+      }
+      return sum + itemHeight
+    }, 0)
+  }
+
+  estimateSummaryHeight() {
+    let rowCount = 1 // subtotal เสมอ
+    if (this.specialDiscount > 0) rowCount++
+    if (this.specialAddition > 0) rowCount++
+    if (this.freightAndInsurance > 0) rowCount++
+    if (this.vatPercent > 0) rowCount++
+    return rowCount * (2 + lineHeight(9)) + (4 + lineHeight(12)) // แถวปกติ (margin [0,1,0,1]) + grandTotal (margin [0,2,0,2])
+  }
+
+  estimatePaymentHeight() {
+    let height = 0
+    if (this.payments.length) {
+      height += 3 + lineHeight(9) // "ชำระโดย:" margin [0,2,0,1]
+      height += this.payments.length * (2 + lineHeight(8)) // แต่ละ payment margin [0,1,0,1]
+    }
+    height += 2 + lineHeight(9) // paid row
+    if (this.remainingAmount > 0) {
+      height += 2 + lineHeight(9) // remaining row
+    }
+    return height
+  }
+
+  estimateFooterHeight() {
+    return 6 + lineHeight(10) // margin top 6
+  }
+
+  estimateReceiptHeight() {
+    const height =
+      PAGE_MARGINS[1] +
+      PAGE_MARGINS[3] +
+      this.estimateHeaderHeight() +
+      DIVIDER_HEIGHT +
+      this.estimateItemsHeight() +
+      DIVIDER_HEIGHT +
+      this.estimateSummaryHeight() +
+      DIVIDER_HEIGHT +
+      this.estimatePaymentHeight() +
+      DIVIDER_HEIGHT +
+      this.estimateFooterHeight() +
+      SAFETY_BUFFER
+
+    return Math.ceil(height)
+  }
+
   getDocDefinition() {
     return {
-      pageSize: { width: PAGE_WIDTH, height: 'auto' },
+      pageSize: { width: PAGE_WIDTH, height: this.estimateReceiptHeight() },
       pageMargins: PAGE_MARGINS,
       content: [
         this.getHeaderContent(),

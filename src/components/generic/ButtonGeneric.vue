@@ -7,6 +7,7 @@
     red        → btn-red
     dark       → btn-dark
     sub-main   → btn-sub-main
+    plain      → btn-plain
 
   ตัวอย่างการใช้งาน:
   <ButtonGeneric variant="main" icon="bi-save" label="บันทึก" @click="onSave" />
@@ -16,9 +17,10 @@
   <ButtonGeneric variant="main" :block="true">
     <i class="bi bi-plus"></i> เพิ่มรายการ
   </ButtonGeneric>
+  <ButtonGeneric variant="plain" icon="bi-upc" :title="..." @click="..." /> — ไอคอนเปล่า ไม่มีกรอบ ใช้ในตาราง
 
   Props:
-    variant  — 'main' | 'outline' | 'green' | 'red' | 'dark' | 'sub-main' (default: 'main')
+    variant  — 'main' | 'outline' | 'green' | 'red' | 'dark' | 'sub-main' | 'plain' (default: 'main')
     icon     — bootstrap icon class เช่น 'bi-save' (render <i class="bi {icon}">)
     label    — text label (i18n caller ส่ง $t(...) มา)
     type     — 'button' | 'submit' | 'reset' (default: 'button')
@@ -51,7 +53,8 @@ const VARIANT_MAP = {
   green: 'btn-green',
   red: 'btn-red',
   dark: 'btn-dark',
-  'sub-main': 'btn-sub-main'
+  'sub-main': 'btn-sub-main',
+  plain: 'btn-plain'
 }
 
 export default {

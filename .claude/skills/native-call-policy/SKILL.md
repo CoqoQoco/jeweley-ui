@@ -33,6 +33,8 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | search bar 4-section เอง | `SearchBarGeneric` | `@/components/generic/SearchBarGeneric.vue` |
 | section card เอง | `SectionCardGeneric` | `@/components/generic/SectionCardGeneric.vue` |
 | `<div class="input-group">` + icon addon manual | `InputTextGeneric :icon` | `@/components/generic/InputTextGeneric.vue` |
+| `<svg>` + JsBarcode เขียนเอง | `BarcodeGeneric` (หรือ `BarcodeButtonGeneric` สำหรับปุ่ม+modal) | `@/components/generic/BarcodeGeneric.vue` |
+| `<i class="bi ...">` ผูก `@click` เอง (ไอคอนกดได้) | `ButtonGeneric variant="plain"` | `@/components/generic/ButtonGeneric.vue` — เหตุผล: `<i>` ไม่ focusable กด Tab/Enter ไม่ได้ |
 
 ---
 

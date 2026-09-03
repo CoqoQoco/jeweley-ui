@@ -24,14 +24,16 @@ export const pos = {
 
   // scan bar
   scanCameraBtn: 'Scan Camera',
-  fieldNewCode: 'New Code',
-  fieldOldCode: 'Old Code',
-  scanPlaceholderNew: 'Enter new stock number',
-  scanPlaceholderOld: 'Enter old stock number (origin)',
+  scanPlaceholder: 'Enter or scan the product code (new or old)',
   warnEnterCode: 'Please enter a product code',
   errorProductNotFound: 'Product not found',
   errorCheckCode: 'Please check the product code',
+  errorNetworkIssue: 'Network issue — please check your internet connection and try again',
+  errorNetworkTitle: 'Unable to connect to network',
   warnDuplicateItem: 'This item is already in the cart',
+  warnSoldItem: 'This item has already been sold',
+  warnReservedItem: 'This item is reserved on another bill',
+  warnUnavailableItem: 'This item cannot be sold right now',
   successAddProduct: 'Added to cart',
 
   // scan bar — fullscreen camera
@@ -134,7 +136,8 @@ export const pos = {
   printReceiptBtn: 'Print Receipt',
   sellMoreBtn: 'Sell More',
   viewAllBillsBtn: 'View All Bills',
-  shareUnavailableMsg: 'This device cannot share files directly — the receipt will be downloaded instead'
+  shareUnavailableMsg: 'This device cannot share files directly — the receipt will be downloaded instead',
+  printUnavailableMsg: 'Could not print the receipt. Please make sure RawBT is installed, or use the Share Receipt button instead'
 }
 
 export const scan = {
@@ -724,7 +727,7 @@ export const posHelp = {
         { label: 'Scan Camera', desc: 'Tap "Scan Camera" and scan the tag' },
         {
           label: 'Type the code',
-          desc: 'Type it and press Enter — you can switch between "New Code" and "Old Code"'
+          desc: 'Type either the new or old stock code and press Enter — the system searches both automatically'
         },
         {
           label: 'Edit on the item line',
@@ -795,8 +798,13 @@ export const posHelp = {
           ],
           [
             'Product not found',
-            "The code doesn't match, or you searched with the wrong code type",
-            'Switch between "New Code" ↔ "Old Code" and try again'
+            "The code doesn't match either the new or old stock code",
+            'Double-check the code on the tag and try again'
+          ],
+          [
+            'This item has already been sold / is reserved on another bill',
+            'The system checks the product status instantly when scanned',
+            'Remove it from the cart and let the customer pick another item'
           ],
           [
             'This item is already in the cart',

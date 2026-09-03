@@ -108,10 +108,6 @@ export default {
     visible: {
       type: Boolean,
       default: false
-    },
-    searchField: {
-      type: String,
-      default: 'stockNumber'
     }
   },
 
@@ -322,16 +318,48 @@ export default {
       this.searchAndAddProduct(decodedText)
     },
 
+    // ลองรหัสเก่า (stockNumberOrigin) ก่อนเสมอ — user สแกนป้ายรหัสเก่าเป็นหลักที่หน้างาน
+    // ไม่เจอค่อยลองรหัสใหม่ (stockNumber) อัตโนมัติ — ผู้ใช้ไม่ต้องเลือกเอง
+    async findProduct(searchValue) {
+      const byOriginCode = await this.productStore.fetchDataGet({
+        formValue: { stockNumberOrigin: searchValue },
+        skipError: true
+      })
+      if (byOriginCode) return byOriginCode
+
+      return await this.productStore.fetchDataGet({
+        formValue: { stockNumber: searchValue },
+        skipError: true
+      })
+    },
+
+    // fetchDataGet ดัก error ไว้เองและคืน undefined ทั้งกรณี "ไม่พบ" และกรณีเน็ตพัง แยกจาก return value ไม่ได้
+    // ใช้ navigator.onLine เป็นสัญญาณเดียวที่เช็คได้จากฝั่ง client เพื่อไม่ให้ผู้ใช้เข้าใจผิดว่าสินค้าไม่มีทั้งที่เน็ตหลุด
+    statusWarnKey(status) {
+      if (status === 'SOLD') return 'view.mobile.pos.warnSoldItem'
+      if (status === 'RESERVED') return 'view.mobile.pos.warnReservedItem'
+      return 'view.mobile.pos.warnUnavailableItem'
+    },
+
     // ผลลัพธ์เดียวกับ pos-scan-bar.vue (ค้นสินค้า + เพิ่มตะกร้า) แต่แจ้งผลด้วย toast แทน sweetAlerts
     // เพื่อไม่ให้มี dialog บล็อกจอกล้องระหว่างสแกนต่อเนื่อง
     async searchAndAddProduct(searchValue) {
       this.isSearching = true
-      const response = await this.productStore.fetchDataGet({
-        formValue: { [this.searchField]: searchValue }
-      })
+      const response = await this.findProduct(searchValue)
 
       if (!response) {
-        this.showToast('error', this.$t('view.mobile.pos.errorProductNotFound'))
+        if (!navigator.onLine) {
+          this.showToast('error', this.$t('view.mobile.pos.errorNetworkIssue'))
+        } else {
+          this.showToast('error', this.$t('view.mobile.pos.errorProductNotFound'))
+        }
+        this.isSearching = false
+        return
+      }
+
+      // status อาจไม่มีมาใน response (backend ยังไม่ deploy) — ทำงานเหมือนเดิม (ใส่ตะกร้าได้) ในกรณีนั้น
+      if (response.status && response.status !== 'IN_STOCK') {
+        this.showToast('warning', this.$t(this.statusWarnKey(response.status)))
         this.isSearching = false
         return
       }
@@ -342,6 +370,7 @@ export default {
 
       const result = this.posCartStore.addItem({
         stockNumber: response.stockNumber,
+        stockNumberOrigin: response.stockNumberOrigin || '',
         productNumber: response.productNumber || '',
         description: response.productNameTh || response.productNameEn || '',
         costPrice: costPrice,
@@ -573,7 +602,9 @@ export default {
   color: var(--on-inverse);
   font-size: var(--fs-base);
   font-weight: 600;
-  white-space: nowrap;
+  max-width: calc(100vw - var(--sp-xl) * 2);
+  text-align: center;
+  line-height: var(--lh-sm);
   box-shadow: var(--shadow-md);
 
   &.success {

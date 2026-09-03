@@ -21,7 +21,10 @@ export default {
     download: 'Download',
     upload: 'Upload',
     copy: 'Copy',
-    logout: 'Logout'
+    logout: 'Logout',
+    print: 'Print',
+    downloadPng: 'Download PNG',
+    genBarcode: 'Generate barcode'
   },
   field: {
     code: 'Code',
@@ -58,7 +61,9 @@ export default {
     advancedSearch: 'Advanced Search',
     searchPlaceholder: 'Type something to search',
     incompleteData: 'Incomplete data',
-    confirmDelete: 'Confirm Delete'
+    confirmDelete: 'Confirm Delete',
+    barcode: 'Barcode',
+    barcodeInvalid: 'Cannot generate a barcode from this code'
   },
   table: {
     showing: 'Showing',
