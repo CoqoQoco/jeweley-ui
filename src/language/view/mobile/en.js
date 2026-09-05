@@ -146,7 +146,10 @@ export const pos = {
   printQueueEnqueueErrorMsg: 'Failed to send to print queue. Please try again.',
   printQueueStatusPending: 'Sent to queue — printing at booth...',
   printQueueStatusPrinted: 'Printed',
-  printQueueStatusFailed: 'Print failed'
+  printQueueStatusFailed: 'Print failed',
+
+  // receipt-print-action — view/reprint receipt from the bill list page
+  receiptLoadErrorMsg: 'Unable to load receipt data. Please try again.'
 }
 
 export const scan = {

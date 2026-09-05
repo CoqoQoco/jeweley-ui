@@ -146,7 +146,10 @@ export const pos = {
   printQueueEnqueueErrorMsg: 'ส่งเข้าคิวพิมพ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
   printQueueStatusPending: 'ส่งเข้าคิวแล้ว — กำลังพิมพ์ที่บูธ...',
   printQueueStatusPrinted: 'พิมพ์แล้ว',
-  printQueueStatusFailed: 'พิมพ์ไม่สำเร็จ'
+  printQueueStatusFailed: 'พิมพ์ไม่สำเร็จ',
+
+  // receipt-print-action — ดูใบเสร็จ/ส่งพิมพ์ซ้ำจากหน้ารายการบิล
+  receiptLoadErrorMsg: 'ไม่สามารถโหลดข้อมูลใบเสร็จได้ กรุณาลองใหม่อีกครั้ง'
 }
 
 export const scan = {

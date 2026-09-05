@@ -39,25 +39,7 @@
             :block="true"
             @click="onShare"
           />
-          <ButtonGeneric
-            variant="green"
-            icon="bi-eye"
-            :label="$t('view.mobile.pos.viewReceiptBtn')"
-            :block="true"
-            @click="onViewReceipt"
-          />
-          <ButtonGeneric
-            variant="main"
-            icon="bi-printer"
-            :label="$t('view.mobile.pos.sendToPrintBtn')"
-            :block="true"
-            :loading="isSendingToPrint"
-            @click="onSendToPrint"
-          />
-          <div v-if="printQueueStatus" class="print-queue-status" :class="printQueueStatusClass">
-            <i :class="['bi', printQueueStatusIcon]"></i>
-            <span>{{ printQueueStatusText }}</span>
-          </div>
+          <ReceiptPrintAction :receipt-data="receiptData" />
           <ButtonGeneric
             variant="outline"
             icon="bi-printer"
@@ -80,57 +62,25 @@
         </button>
       </div>
     </div>
-
-    <ModalView
-      :showModal="showReceiptModal"
-      width="380px"
-      :clickToClose="true"
-      :isShowActionPart="true"
-      headerVariant="main"
-      @closeModal="onCloseReceiptModal"
-    >
-      <template #title>
-        <span class="title-text-lg d-block">{{ $t('view.mobile.pos.receiptPreviewTitle') }}</span>
-      </template>
-      <template #content>
-        <pre class="receipt-preview-text">{{ receiptText }}</pre>
-      </template>
-      <template #action>
-        <ButtonGeneric
-          variant="main"
-          icon="bi-printer"
-          :label="$t('view.mobile.pos.sendToPrintBtn')"
-          :loading="isSendingToPrint"
-          @click="onSendToPrint"
-        />
-      </template>
-    </ModalView>
   </Teleport>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
 import { generateReceiptBlob } from '@/services/helper/pdf/receipt/receipt-80mm-builder.js'
 import { canShareFiles, shareReceipt } from '@/services/helper/pdf/receipt/receipt-share.js'
 import { buildReceiptText } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
 import { printReceiptText } from '@/services/helper/pdf/receipt/receipt-rawbt.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
-import { usePrintJobApiStore } from '@/stores/modules/api/print/print-job-store.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
-
-const ModalView = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
-
-// poll ทุก 3 วิ สูงสุด 60 วิ (กันวนไม่รู้จบถ้า station ไม่ได้เปิดรับงาน)
-const POLL_INTERVAL_MS = 3000
-const POLL_TIMEOUT_MS = 60000
+import ReceiptPrintAction from '@/components/receipt/receipt-print-action.vue'
 
 export default {
   name: 'PosDoneView',
 
   components: {
     ButtonGeneric,
-    ModalView
+    ReceiptPrintAction
   },
 
   props: {
@@ -147,21 +97,6 @@ export default {
   },
 
   emits: ['sell-more'],
-
-  setup() {
-    const printJobStore = usePrintJobApiStore()
-    return { printJobStore }
-  },
-
-  data() {
-    return {
-      showReceiptModal: false,
-      isSendingToPrint: false,
-      printQueueStatus: null, // null | 'PENDING' | 'PRINTING' | 'PRINTED' | 'FAILED'
-      pollIntervalId: null,
-      pollElapsedMs: 0
-    }
-  },
 
   computed: {
     currencyUnit() {
@@ -204,45 +139,7 @@ export default {
         paidAmount: r.paidAmount,
         remainingAmount: r.remainingAmount
       }
-    },
-
-    // ใช้ทั้ง modal preview (<pre> monospace) และ payload ที่ส่งเข้าคิวพิมพ์ — ต้องเป็นข้อความชุดเดียวกับที่จะพิมพ์จริงเป๊ะ
-    receiptText() {
-      return buildReceiptText(this.receiptData)
-    },
-
-    printQueueStatusText() {
-      if (this.printQueueStatus === 'PRINTED') return this.$t('view.mobile.pos.printQueueStatusPrinted')
-      if (this.printQueueStatus === 'FAILED') return this.$t('view.mobile.pos.printQueueStatusFailed')
-      return this.$t('view.mobile.pos.printQueueStatusPending')
-    },
-
-    printQueueStatusClass() {
-      if (this.printQueueStatus === 'PRINTED') return 'is-success'
-      if (this.printQueueStatus === 'FAILED') return 'is-error'
-      return 'is-pending'
-    },
-
-    printQueueStatusIcon() {
-      if (this.printQueueStatus === 'PRINTED') return 'bi-check-circle-fill'
-      if (this.printQueueStatus === 'FAILED') return 'bi-x-circle-fill'
-      return 'bi-hourglass-split'
     }
-  },
-
-  watch: {
-    // ปิดหน้าจบบิล (visible=false) — หยุด poll + เคลียร์สถานะคิว/modal กันโผล่ค้างตอนเปิดบิลใหม่
-    visible(newValue) {
-      if (!newValue) {
-        this.stopPolling()
-        this.showReceiptModal = false
-        this.printQueueStatus = null
-      }
-    }
-  },
-
-  beforeUnmount() {
-    this.stopPolling()
   },
 
   methods: {
@@ -263,74 +160,6 @@ export default {
       const result = await printReceiptText(text)
       if (!result.success) {
         warning(this.$t('view.mobile.pos.printUnavailableMsg'))
-      }
-    },
-
-    onViewReceipt() {
-      this.showReceiptModal = true
-    },
-
-    onCloseReceiptModal() {
-      this.showReceiptModal = false
-    },
-
-    // เน็ตหลุด/ล้มเหลว — ห้ามขึ้นสำเร็จลอยๆ: printQueueStatus ตั้งเฉพาะ path สำเร็จเท่านั้น
-    // (fetchEnqueue skipError:true ที่ store แล้ว โชว์ warning ข้อความ context เฉพาะแทน axios auto-alert)
-    // finally เคลียร์ isSendingToPrint ทุก path (สำเร็จ/ล้มเหลว) ให้กดปุ่มใหม่ได้ทันที
-    async onSendToPrint() {
-      this.isSendingToPrint = true
-      try {
-        await this.printJobStore.fetchEnqueue({
-          invoiceNumber: this.result?.invoiceNumber,
-          payload: this.receiptText
-        })
-        this.printQueueStatus = 'PENDING'
-        this.showReceiptModal = false
-        this.startPolling()
-      } catch {
-        warning(this.$t('view.mobile.pos.printQueueEnqueueErrorMsg'))
-      } finally {
-        this.isSendingToPrint = false
-      }
-    },
-
-    startPolling() {
-      this.stopPolling()
-      this.pollElapsedMs = 0
-      this.pollIntervalId = setInterval(() => {
-        this.pollElapsedMs += POLL_INTERVAL_MS
-        if (this.pollElapsedMs >= POLL_TIMEOUT_MS) {
-          this.stopPolling()
-          return
-        }
-        this.pollStatus()
-      }, POLL_INTERVAL_MS)
-    },
-
-    stopPolling() {
-      if (this.pollIntervalId) {
-        clearInterval(this.pollIntervalId)
-        this.pollIntervalId = null
-      }
-    },
-
-    // poll สถานะพื้นหลัง — non-critical (แค่ badge บนหน้าจบบิล) กันเน็ตหลุดชั่วคราวทำให้ error กระพริบรัวทุก 3 วิ
-    async pollStatus() {
-      try {
-        const res = await this.printJobStore.fetchList({
-          take: 1,
-          search: { invoiceNumber: this.result?.invoiceNumber },
-          skipLoading: true,
-          skipError: true
-        })
-        const job = res?.data?.[0]
-        if (!job?.status) return
-        this.printQueueStatus = job.status
-        if (job.status === 'PRINTED' || job.status === 'FAILED') {
-          this.stopPolling()
-        }
-      } catch {
-        // เน็ตหลุดระหว่าง poll พื้นหลัง — ปล่อยให้ tick ถัดไปลองใหม่ ไม่ต้องขึ้น error ซ้ำ
       }
     },
 
@@ -454,45 +283,4 @@ export default {
   cursor: pointer;
 }
 
-.print-queue-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-xs);
-  padding: var(--sp-sm);
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  font-weight: 600;
-
-  &.is-pending {
-    background: var(--color-highlight-bg);
-    color: var(--base-font-color);
-  }
-
-  &.is-success {
-    background: var(--color-green-bg);
-    color: var(--base-green);
-  }
-
-  &.is-error {
-    background: var(--status-cancelled-bg);
-    color: var(--base-red);
-  }
-}
-
-// ใบเสร็จเป็น ASCII จัดคอลัมน์ด้วย space กว้าง 47 ตัวอักษร (ดู receipt-text-builder.js) — ต้อง monospace
-// เป๊ะเพื่อให้คอลัมน์ตรงกับที่จะพิมพ์จริง, overflow-x เผื่อจอแคบกว่า 47 ตัวอักษรที่ font-size นี้
-.receipt-preview-text {
-  width: 100%;
-  margin: 0;
-  padding: var(--sp-md);
-  font-family: 'Courier New', Courier, monospace;
-  font-size: var(--fs-sm);
-  line-height: var(--lh-sm);
-  white-space: pre;
-  overflow-x: auto;
-  background: var(--color-highlight-bg);
-  border-radius: var(--radius-md);
-  color: #333;
-}
 </style>

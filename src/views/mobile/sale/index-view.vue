@@ -122,6 +122,7 @@
               <span class="total-label">{{ $t('view.mobile.saleIndex.totalLabel') }}</span>
               <span class="total-value">{{ formatCurrency(inv.totalAmount) }} {{ $t('view.mobile.saleIndex.bahtUnit') }}</span>
             </div>
+            <ReceiptPrintAction :invoice-number="inv.invoiceNumber" :compact="true" />
           </div>
         </div>
 
@@ -160,13 +161,14 @@ import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { storage } from '@/services/storage.js'
 import listFilterBar from './components/list-filter-bar.vue'
+import ReceiptPrintAction from '@/components/receipt/receipt-print-action.vue'
 
 const SCOPE_STORAGE_KEY = 'mobile-sale-scope'
 
 export default {
   name: 'MobileSaleIndexView',
 
-  components: { listFilterBar },
+  components: { listFilterBar, ReceiptPrintAction },
 
   setup() {
     const saleOrderStore = usrSaleOrderApiStore()
