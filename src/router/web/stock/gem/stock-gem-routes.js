@@ -16,6 +16,8 @@ const stockGemPickReturnAndOutboundCreate = () =>
     '@/views/receipt-stock/gem/pick-return-and-outbound/components/create/PickReturnAndOutbound.vue'
   )
 
+import stockGoldChildren from '../gold/stock-gold-routes.js'
+
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
   {
@@ -32,7 +34,7 @@ const routes = [
       classIcon: 'bi bi-gem',
       majorShow: true,
       btsubLineShow: true,
-      permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+      permissions: [PERMISSIONS.STOCK_GEM_VIEW, PERMISSIONS.STOCK_GOLD_VIEW]
     },
     children: [
       // stock Gem
@@ -44,7 +46,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Stock Gem',
-            th: 'ตรวจคลัง'
+            th: 'ตรวจคลังพลอย'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_GEM_VIEW]
@@ -60,7 +62,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Transection',
-            th: 'รายการเคลื่อนไหว'
+            th: 'รายการเคลื่อนไหวพลอย'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_GEM_VIEW]
@@ -159,6 +161,9 @@ const routes = [
         }
       },
       // pick-outbound
+
+      // ------- stock gold -------
+      ...stockGoldChildren
     ]
   }
 ]

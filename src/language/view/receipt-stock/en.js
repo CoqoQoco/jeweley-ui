@@ -113,6 +113,65 @@ export default {
       successPickOutbound: 'Gem Outbound No.'
     }
   },
+  gold: {
+    transaction: {
+      title: 'Gold Transection',
+      description: 'Track gold in/out movement linked to gold mixing slips',
+      listTableTitle: 'Gold Transection List',
+      fieldDateRange: 'Transaction Date Range',
+      fieldGoldType: 'Gold Type',
+      fieldGoldPercent: 'Gold Percent',
+      fieldType: 'Transaction Type',
+      fieldRefDocNo: 'Reference No.',
+      colRequestDate: 'Transaction Date',
+      colRunning: 'Running No.',
+      colGoldType: 'Gold Type',
+      colGoldPercent: 'Percent',
+      colType: 'Transaction Type',
+      colWeight: 'Weight (g)',
+      colPrevWeight: 'Balance Before (g)',
+      colRemainWeight: 'Balance After (g)',
+      colRefDocNo: 'Gold Mixing Slip No.',
+      colWo: 'W.O.',
+      colRefRunning: 'Source Reference',
+      statusReversed: 'Reversed',
+      typeOptions: {
+        type1: 'Inbound [Purchase/New]',
+        type2: 'Opening Balance',
+        type3: 'Return to Stock [From Gold Mixing Slip]',
+        type4: 'Outbound [Gold Mixing Slip]',
+        type5: 'Adjustment Increase',
+        type6: 'Adjustment Decrease',
+        type7: 'Reversal Increase [Edit]',
+        type8: 'Reversal Decrease [Edit]'
+      }
+    },
+    inbound: {
+      title: 'Gold Inbound',
+      sectionTitle: 'Record Gold Transaction',
+      fieldMode: 'Transaction Type',
+      modeInbound: 'Inbound [Purchase/New]',
+      modeOpeningBalance: 'Opening Balance',
+      modeAdjust: 'Adjustment',
+      fieldAdjustDirection: 'Adjustment Direction',
+      adjustIncrease: 'Adjustment Increase',
+      adjustDecrease: 'Adjustment Decrease',
+      fieldGoldType: 'Gold Type',
+      fieldGoldPercent: 'Gold Percent',
+      fieldWeight: 'Weight (g)',
+      fieldRequestDate: 'Transaction Date',
+      fieldRemark: 'Remark',
+      unitGram: 'g',
+      confirmTitle: 'Confirm Gold Transaction',
+      successMsg: 'Gold transaction saved successfully',
+      resultRunning: 'Running No.',
+      resultRemainWeight: 'Balance After Transaction',
+      errorGoldRequired: 'Please select gold type',
+      errorGoldSizeRequired: 'Please select gold percent',
+      errorWeightRequired: 'Please enter weight',
+      errorRemarkRequiredAdjust: 'Please enter a remark for adjustment'
+    }
+  },
   product: {
     grProduction: {
       salePrice: 'Sale Price',

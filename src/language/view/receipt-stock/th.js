@@ -113,6 +113,65 @@ export default {
       successPickOutbound: 'เลขที่ใบเบิกวัตถุดิบ'
     }
   },
+  gold: {
+    transaction: {
+      title: 'รายการเคลื่อนไหวทอง',
+      description: 'ตรวจรายการเคลื่อนไหวรับ/จ่ายทอง ผูกกับใบเบิกผสมทอง',
+      listTableTitle: 'รายการเคลื่อนไหวทอง',
+      fieldDateRange: 'ช่วงวันที่ทำรายการ',
+      fieldGoldType: 'ประเภททอง',
+      fieldGoldPercent: 'เปอร์เซ็นต์ทอง',
+      fieldType: 'ชนิดรายการ',
+      fieldRefDocNo: 'เลขที่อ้างอิง',
+      colRequestDate: 'วันทำรายการ',
+      colRunning: 'เลขที่รายการ',
+      colGoldType: 'ประเภททอง',
+      colGoldPercent: 'เปอร์เซ็นต์',
+      colType: 'ชนิดรายการ',
+      colWeight: 'น้ำหนัก (ก.)',
+      colPrevWeight: 'คงเหลือก่อนรายการ (ก.)',
+      colRemainWeight: 'คงเหลือหลังรายการ (ก.)',
+      colRefDocNo: 'เลขที่ใบเบิกผสมทอง',
+      colWo: 'W.O.',
+      colRefRunning: 'อ้างอิงรายการต้นทาง',
+      statusReversed: 'ยกเลิกแล้ว',
+      typeOptions: {
+        type1: 'รับเข้าคลัง [ซื้อ/รับใหม่]',
+        type2: 'ตั้งยอดยกมา',
+        type3: 'คืนเข้าคลัง [จากใบเบิกผสมทอง]',
+        type4: 'เบิกออกคลัง [ใบเบิกผสมทอง]',
+        type5: 'ปรับยอดเพิ่ม',
+        type6: 'ปรับยอดลด',
+        type7: 'กลับรายการเพิ่ม [แก้ไขรายการ]',
+        type8: 'กลับรายการลด [แก้ไขรายการ]'
+      }
+    },
+    inbound: {
+      title: 'รับทองเข้าคลัง',
+      sectionTitle: 'บันทึกรายการทอง',
+      fieldMode: 'ประเภทรายการ',
+      modeInbound: 'รับเข้าคลัง [ซื้อ/รับใหม่]',
+      modeOpeningBalance: 'ตั้งยอดยกมา',
+      modeAdjust: 'ปรับยอด',
+      fieldAdjustDirection: 'ทิศทางการปรับยอด',
+      adjustIncrease: 'ปรับยอดเพิ่ม',
+      adjustDecrease: 'ปรับยอดลด',
+      fieldGoldType: 'ประเภททอง',
+      fieldGoldPercent: 'เปอร์เซ็นต์ทอง',
+      fieldWeight: 'น้ำหนัก (กรัม)',
+      fieldRequestDate: 'วันที่ทำรายการ',
+      fieldRemark: 'หมายเหตุ',
+      unitGram: 'กรัม',
+      confirmTitle: 'ยืนยันบันทึกรายการทอง',
+      successMsg: 'บันทึกรายการทองสำเร็จ',
+      resultRunning: 'เลขที่รายการ',
+      resultRemainWeight: 'ยอดคงเหลือหลังทำรายการ',
+      errorGoldRequired: 'กรุณาเลือกประเภททอง',
+      errorGoldSizeRequired: 'กรุณาเลือกเปอร์เซ็นต์ทอง',
+      errorWeightRequired: 'กรุณากรอกน้ำหนัก',
+      errorRemarkRequiredAdjust: 'กรุณากรอกหมายเหตุสำหรับการปรับยอด'
+    }
+  },
   product: {
     grProduction: {
       salePrice: 'ราคาขาย',
