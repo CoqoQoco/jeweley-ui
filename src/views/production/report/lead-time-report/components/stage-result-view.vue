@@ -27,13 +27,64 @@
       />
     </div>
 
+    <template v-if="hasBreakdown">
+      <SectionCardGeneric
+        :title="breakdownChartTitle"
+        icon="bi-bar-chart-line"
+        accent="main"
+        headerStyle="legend"
+        class="chart-card"
+      >
+        <ChartGeneric
+          type="bar"
+          :series="breakdownChartSeries"
+          :options="breakdownChartOptions"
+          :height="breakdownChartHeight"
+          :emptyText="$t('common.label.noData')"
+        />
+
+        <p v-if="hasLowVolumeGroups" class="work-days-caveat">
+          <i class="bi bi-info-circle"></i>
+          {{ lowVolumeCaveatText }}
+        </p>
+      </SectionCardGeneric>
+
+      <SectionCardGeneric
+        :title="breakdownTableTitle"
+        icon="bi-grid-3x3"
+        accent="main"
+        headerStyle="legend"
+        class="table-card"
+      >
+        <BaseDataTable
+          :items="breakdownMatrixRows"
+          :columns="breakdownMatrixColumns"
+          :paginator="false"
+          dataKey="groupCode"
+          :rowClass="breakdownRowClass"
+        >
+          <template #planCountTemplate="{ data }">
+            <span class="plan-count-cell" :class="{ 'plan-count-cell--low': isLowVolume(data.planCount) }">
+              <i v-if="isLowVolume(data.planCount)" class="bi bi-exclamation-triangle-fill"></i>
+              {{ formatNumberValue(data.planCount) }}
+            </span>
+          </template>
+        </BaseDataTable>
+      </SectionCardGeneric>
+    </template>
+
     <SectionCardGeneric
-      :title="$t('view.production.leadTime.stage.chartShareTitle')"
+      :title="$t('view.production.leadTime.stage.chartAvgTitle')"
       icon="bi-diagram-3"
       accent="main"
       headerStyle="legend"
       class="chart-card"
     >
+      <p class="chart-summary-line">
+        <i class="bi bi-lightbulb-fill"></i>
+        {{ summaryLineText }}
+      </p>
+
       <ChartGeneric
         type="bar"
         :series="chartSeries"
@@ -50,22 +101,26 @@
       headerStyle="legend"
       class="table-card"
     >
-      <p class="work-days-caveat">
+      <div class="table-toolbar">
+        <CheckboxGeneric v-model="showDetail" :label="$t('view.production.leadTime.stage.toggleDetailLabel')" />
+      </div>
+
+      <p v-if="showDetail" class="work-days-caveat">
         <i class="bi bi-info-circle"></i>
         {{ $t('view.production.leadTime.stage.workDaysCaveat') }}
       </p>
 
       <BaseDataTable :items="sortedRows" :columns="columns" :paginator="false" dataKey="statusCode">
+        <template #avgDaysTemplate="{ data }">
+          <span class="avg-days-highlight">{{ formatDecimal1(data.avgDays) }}</span>
+        </template>
+
         <template #medianDaysTemplate="{ data }">
           <span class="metric-highlight">{{ formatDecimal1(data.medianDays) }}</span>
         </template>
 
         <template #p90DaysTemplate="{ data }">
           <span class="metric-highlight">{{ formatDecimal1(data.p90Days) }}</span>
-        </template>
-
-        <template #avgDaysTemplate="{ data }">
-          <span class="metric-muted">{{ formatDecimal1(data.avgDays) }}</span>
         </template>
 
         <template #shareOfTotalPercentTemplate="{ data }">
@@ -130,6 +185,7 @@ import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 export default {
   name: 'LeadTimeStageResultView',
@@ -138,7 +194,8 @@ export default {
     StatCardGeneric,
     SectionCardGeneric,
     ChartGeneric,
-    BaseDataTable
+    BaseDataTable,
+    CheckboxGeneric
   },
 
   setup() {
@@ -153,6 +210,13 @@ export default {
     }
   },
 
+  data() {
+    return {
+      showDetail: false,
+      lowVolumeThreshold: 10
+    }
+  },
+
   computed: {
     report() {
       return this.stageLeadTimeStore.reportData
@@ -160,7 +224,7 @@ export default {
 
     sortedRows() {
       return [...(this.report.rows || [])].sort(
-        (a, b) => (b.shareOfTotalPercent || 0) - (a.shareOfTotalPercent || 0)
+        (a, b) => (b.avgDays || 0) - (a.avgDays || 0)
       )
     },
 
@@ -168,11 +232,15 @@ export default {
       return Math.max(240, this.sortedRows.length * 40 + 80)
     },
 
+    unitDaysLabel() {
+      return this.$t('view.production.leadTime.unitDays')
+    },
+
     chartSeries() {
       return [
         {
-          name: this.$t('view.production.leadTime.stage.chartShareSeries'),
-          data: this.sortedRows.map((r) => Number((r.shareOfTotalPercent || 0).toFixed(1)))
+          name: this.$t('view.production.leadTime.stage.chartAvgSeries'),
+          data: this.sortedRows.map((r) => Number((r.avgDays || 0).toFixed(1)))
         }
       ]
     },
@@ -183,20 +251,167 @@ export default {
         colors: [CHART_TOKENS.primary],
         xaxis: {
           categories: this.sortedRows.map((r) => r.statusName),
-          labels: { formatter: (val) => `${val}%` }
+          labels: { formatter: (val) => `${val} ${this.unitDaysLabel}` }
         },
-        dataLabels: { enabled: true, formatter: (val) => `${val}%`, style: { fontSize: '11px', colors: ['#fff'] } },
-        tooltip: { y: { formatter: (val) => `${val}%` } }
+        dataLabels: {
+          enabled: true,
+          formatter: (val) => `${val} ${this.unitDaysLabel}`,
+          style: { fontSize: '11px', colors: ['#fff'] }
+        },
+        tooltip: { y: { formatter: (val) => `${val} ${this.unitDaysLabel}` } }
       }
     },
 
-    columns() {
+    summaryLineText() {
+      return this.$t('view.production.leadTime.stage.summaryLine', {
+        avgTotalLeadDays: this.formatDecimal1(this.report.summary.avgTotalLeadDays),
+        bottleneckStatusName: this.report.summary.bottleneckStatusName || '-'
+      })
+    },
+
+    hasBreakdown() {
+      return !!this.report.groupBy && this.report.groupBy !== 'none'
+    },
+
+    breakdownDimensionLabel() {
+      const map = {
+        productType: this.$t('view.production.leadTime.productType'),
+        customerType: this.$t('view.production.leadTime.customerType'),
+        gold: this.$t('view.production.leadTime.stage.groupByOptionGold'),
+        goldSize: this.$t('view.production.leadTime.stage.groupByOptionGoldSize')
+      }
+      return map[this.report.groupBy] || ''
+    },
+
+    breakdownChartTitle() {
+      return this.$t('view.production.leadTime.stage.breakdownChartTitle', { dimension: this.breakdownDimensionLabel })
+    },
+
+    breakdownTableTitle() {
+      return this.$t('view.production.leadTime.stage.breakdownTableTitle', { dimension: this.breakdownDimensionLabel })
+    },
+
+    breakdownSortedRows() {
+      return [...(this.report.breakdown || [])].sort(
+        (a, b) => (b.avgTotalDays || 0) - (a.avgTotalDays || 0)
+      )
+    },
+
+    hasLowVolumeGroups() {
+      return this.breakdownSortedRows.some((r) => this.isLowVolume(r.planCount))
+    },
+
+    lowVolumeCaveatText() {
+      return this.$t('view.production.leadTime.stage.lowVolumeCaveat', { threshold: this.lowVolumeThreshold })
+    },
+
+    breakdownChartHeight() {
+      return Math.max(240, this.breakdownSortedRows.length * 40 + 80)
+    },
+
+    breakdownChartSeries() {
       return [
+        {
+          name: this.$t('view.production.leadTime.stage.breakdownChartSeries'),
+          data: this.breakdownSortedRows.map((r) => Number((r.avgTotalDays || 0).toFixed(1)))
+        }
+      ]
+    },
+
+    breakdownChartOptions() {
+      const rows = this.breakdownSortedRows
+      return {
+        plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '60%', distributed: true } },
+        colors: rows.map((r) => (this.isLowVolume(r.planCount) ? CHART_TOKENS.sub : CHART_TOKENS.primary)),
+        legend: { show: false },
+        xaxis: {
+          categories: rows.map((r) => r.groupName),
+          labels: { formatter: (val) => `${val} ${this.unitDaysLabel}` }
+        },
+        dataLabels: {
+          enabled: true,
+          formatter: (val) => `${val} ${this.unitDaysLabel}`,
+          style: { fontSize: '11px', colors: ['#fff'] }
+        },
+        tooltip: {
+          y: {
+            formatter: (val, opts) => {
+              const row = rows[opts?.dataPointIndex]
+              const count = row ? row.planCount || 0 : 0
+              return `${val} ${this.unitDaysLabel} (${this.$t('view.production.leadTime.stage.colPlanCount')}: ${count})`
+            }
+          }
+        }
+      }
+    },
+
+    breakdownDeptColumns() {
+      const map = new Map()
+      ;(this.report.breakdown || []).forEach((g) => {
+        ;(g.stages || []).forEach((s) => {
+          if (!map.has(s.statusCode)) {
+            map.set(s.statusCode, { statusCode: s.statusCode, statusName: s.statusName })
+          }
+        })
+      })
+      return [...map.values()].sort((a, b) =>
+        String(a.statusCode).localeCompare(String(b.statusCode), undefined, { numeric: true })
+      )
+    },
+
+    breakdownMatrixColumns() {
+      const cols = [
+        { field: 'groupName', header: this.breakdownDimensionLabel, sortable: false, minWidth: '160px' },
+        { field: 'planCount', header: this.$t('view.production.leadTime.stage.colPlanCount'), sortable: false, minWidth: '130px', align: 'right' },
+        { field: 'avgTotalDays', header: this.$t('view.production.leadTime.stage.colAvgTotalDays'), sortable: false, minWidth: '170px', align: 'right', format: 'decimal1' }
+      ]
+
+      this.breakdownDeptColumns.forEach((dept) => {
+        cols.push({
+          field: `dept_${dept.statusCode}`,
+          header: dept.statusName,
+          sortable: false,
+          minWidth: '130px',
+          align: 'right',
+          format: 'decimal1'
+        })
+      })
+
+      return cols
+    },
+
+    breakdownMatrixRows() {
+      return (this.report.breakdown || []).map((g) => {
+        const row = {
+          groupCode: g.groupCode,
+          groupName: g.groupName,
+          planCount: g.planCount,
+          avgTotalDays: g.avgTotalDays
+        }
+
+        ;(g.stages || []).forEach((s) => {
+          row[`dept_${s.statusCode}`] = s.avgDays
+        })
+
+        return row
+      })
+    },
+
+    columns() {
+      const baseColumns = [
         { field: 'statusName', header: this.$t('view.production.leadTime.stage.colDept'), sortable: false, minWidth: '160px' },
-        { field: 'visitCount', header: this.$t('view.production.leadTime.stage.colVisitCount'), sortable: false, minWidth: '110px', align: 'right', format: 'number' },
+        { field: 'avgDays', header: this.$t('view.production.leadTime.stage.colAvgDays'), sortable: false, minWidth: '140px', align: 'right' },
+        { field: 'visitCount', header: this.$t('view.production.leadTime.stage.colVisitCount'), sortable: false, minWidth: '140px', align: 'right', format: 'number' }
+      ]
+
+      if (!this.showDetail) {
+        return baseColumns
+      }
+
+      return [
+        ...baseColumns,
         { field: 'medianDays', header: this.$t('view.production.leadTime.stage.colMedianDays'), sortable: false, minWidth: '120px', align: 'right' },
         { field: 'p90Days', header: this.$t('view.production.leadTime.stage.colP90Days'), sortable: false, minWidth: '110px', align: 'right' },
-        { field: 'avgDays', header: this.$t('view.production.leadTime.stage.colAvgDays'), sortable: false, minWidth: '110px', align: 'right' },
         { field: 'shareOfTotalPercent', header: this.$t('view.production.leadTime.stage.colShare'), sortable: false, minWidth: '130px', align: 'right' },
         { field: 'medianWorkDays', header: this.$t('view.production.leadTime.stage.colMedianWorkDays'), sortable: false, minWidth: '190px', align: 'right' }
       ]
@@ -245,11 +460,23 @@ export default {
       return (pct ?? 100) < 70
     },
 
+    isLowVolume(planCount) {
+      return (planCount || 0) < this.lowVolumeThreshold
+    },
+
+    breakdownRowClass(data) {
+      return this.isLowVolume(data.planCount) ? 'row-low-volume' : null
+    },
+
     formatDecimal1(value) {
       return new Intl.NumberFormat('th-TH', {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
       }).format(value || 0)
+    },
+
+    formatNumberValue(value) {
+      return new Intl.NumberFormat('th-TH').format(value || 0)
     },
 
     formatDaysValue(value) {
@@ -262,47 +489,56 @@ export default {
         return
       }
 
-      await ExcelHelper.exportToExcelMultiSheet(
-        [
-          {
-            data: this.sortedRows,
-            sheetName: this.$t('view.production.leadTime.stage.sheetMain'),
-            columns: [
-              { header: this.$t('view.production.leadTime.stage.colDept'), key: 'statusName' },
-              { header: this.$t('view.production.leadTime.stage.colVisitCount'), key: 'visitCount' },
-              { header: this.$t('view.production.leadTime.stage.colMedianDays'), key: 'medianDays' },
-              { header: this.$t('view.production.leadTime.stage.colP90Days'), key: 'p90Days' },
-              { header: this.$t('view.production.leadTime.stage.colAvgDays'), key: 'avgDays' },
-              { header: this.$t('view.production.leadTime.stage.colShare'), key: 'shareOfTotalPercent' },
-              { header: this.$t('view.production.leadTime.stage.colMedianWorkDays'), key: 'medianWorkDays' },
-              { header: this.$t('view.production.leadTime.stage.colReliability'), key: 'workDataReliabilityPercent' }
-            ]
-          },
-          {
-            data: this.report.wipRows,
-            sheetName: this.$t('view.production.leadTime.stage.sheetWip'),
-            columns: [
-              { header: this.$t('view.production.leadTime.stage.colDept'), key: 'statusName' },
-              { header: this.$t('view.production.leadTime.stage.colWipCount'), key: 'wipCount' },
-              { header: this.$t('view.production.leadTime.stage.colAvgAgeDays'), key: 'avgAgeDays' },
-              { header: this.$t('view.production.leadTime.stage.colMaxAgeDays'), key: 'maxAgeDays' }
-            ]
-          },
-          {
-            data: this.report.topStuckJobs,
-            sheetName: this.$t('view.production.leadTime.stage.sheetTopStuck'),
-            columns: [
-              { header: this.$t('view.production.leadTime.stage.colWoText'), key: 'woText' },
-              { header: this.$t('view.production.leadTime.stage.colProductName'), key: 'productName' },
-              { header: this.$t('view.production.leadTime.stage.colCustomerName'), key: 'customerName' },
-              { header: this.$t('view.production.leadTime.stage.colDept'), key: 'statusName' },
-              { header: this.$t('view.production.leadTime.stage.colAgeDays'), key: 'ageDays' },
-              { header: this.$t('view.production.leadTime.stage.colRequestDate'), key: 'requestDate' }
-            ]
-          }
-        ],
-        { filename: `${this.$t('view.production.leadTime.stage.excelFileName')}.xlsx` }
-      )
+      const sheets = [
+        {
+          data: this.sortedRows,
+          sheetName: this.$t('view.production.leadTime.stage.sheetMain'),
+          columns: [
+            { header: this.$t('view.production.leadTime.stage.colDept'), key: 'statusName' },
+            { header: this.$t('view.production.leadTime.stage.colVisitCount'), key: 'visitCount' },
+            { header: this.$t('view.production.leadTime.stage.colMedianDays'), key: 'medianDays' },
+            { header: this.$t('view.production.leadTime.stage.colP90Days'), key: 'p90Days' },
+            { header: this.$t('view.production.leadTime.stage.colAvgDays'), key: 'avgDays' },
+            { header: this.$t('view.production.leadTime.stage.colShare'), key: 'shareOfTotalPercent' },
+            { header: this.$t('view.production.leadTime.stage.colMedianWorkDays'), key: 'medianWorkDays' },
+            { header: this.$t('view.production.leadTime.stage.colReliability'), key: 'workDataReliabilityPercent' }
+          ]
+        },
+        {
+          data: this.report.wipRows,
+          sheetName: this.$t('view.production.leadTime.stage.sheetWip'),
+          columns: [
+            { header: this.$t('view.production.leadTime.stage.colDept'), key: 'statusName' },
+            { header: this.$t('view.production.leadTime.stage.colWipCount'), key: 'wipCount' },
+            { header: this.$t('view.production.leadTime.stage.colAvgAgeDays'), key: 'avgAgeDays' },
+            { header: this.$t('view.production.leadTime.stage.colMaxAgeDays'), key: 'maxAgeDays' }
+          ]
+        },
+        {
+          data: this.report.topStuckJobs,
+          sheetName: this.$t('view.production.leadTime.stage.sheetTopStuck'),
+          columns: [
+            { header: this.$t('view.production.leadTime.stage.colWoText'), key: 'woText' },
+            { header: this.$t('view.production.leadTime.stage.colProductName'), key: 'productName' },
+            { header: this.$t('view.production.leadTime.stage.colCustomerName'), key: 'customerName' },
+            { header: this.$t('view.production.leadTime.stage.colDept'), key: 'statusName' },
+            { header: this.$t('view.production.leadTime.stage.colAgeDays'), key: 'ageDays' },
+            { header: this.$t('view.production.leadTime.stage.colRequestDate'), key: 'requestDate' }
+          ]
+        }
+      ]
+
+      if (this.hasBreakdown && this.breakdownMatrixRows.length > 0) {
+        sheets.push({
+          data: this.breakdownMatrixRows,
+          sheetName: this.$t('view.production.leadTime.stage.sheetBreakdown', { dimension: this.breakdownDimensionLabel }),
+          columns: this.breakdownMatrixColumns.map((col) => ({ header: col.header, key: col.field }))
+        })
+      }
+
+      await ExcelHelper.exportToExcelMultiSheet(sheets, {
+        filename: `${this.$t('view.production.leadTime.stage.excelFileName')}.xlsx`
+      })
     }
   }
 }
@@ -325,6 +561,31 @@ export default {
 .chart-card,
 .table-card {
   margin-bottom: var(--sp-lg);
+}
+
+.chart-summary-line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin: 0 0 var(--sp-lg);
+  padding: var(--sp-sm) var(--sp-md);
+  background: var(--color-highlight-bg);
+  border-radius: var(--radius-sm);
+  color: var(--base-font-color);
+  font-size: var(--fs-base);
+  font-weight: 600;
+
+  i {
+    color: var(--base-font-color);
+    font-size: var(--fs-lg);
+    flex-shrink: 0;
+  }
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--sp-md);
 }
 
 .work-days-caveat {
@@ -351,8 +612,10 @@ export default {
   color: var(--base-font-color);
 }
 
-.metric-muted {
-  color: var(--base-sub-color);
+.avg-days-highlight {
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--base-font-color);
 }
 
 .share-value {
@@ -386,5 +649,23 @@ export default {
     color: var(--base-warning);
     font-weight: 600;
   }
+}
+
+.plan-count-cell {
+  font-weight: 600;
+}
+
+.plan-count-cell--low {
+  color: var(--base-warning);
+  font-weight: 700;
+
+  i {
+    margin-right: 2px;
+  }
+}
+
+:deep(.row-low-volume) {
+  opacity: 0.6;
+  font-style: italic;
 }
 </style>

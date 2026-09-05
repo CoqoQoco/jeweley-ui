@@ -50,6 +50,7 @@ const interfaceForm = {
 const interfaceStageForm = {
   completedStart: null,
   completedEnd: null,
+  groupBy: 'none',
   productType: [],
   customerType: [],
   gold: [],

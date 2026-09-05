@@ -19,6 +19,16 @@
       </div>
 
       <div>
+        <span class="title-text">{{ $t('view.production.leadTime.groupBy') }}</span>
+        <DropdownGeneric
+          v-model="form.groupBy"
+          :options="groupByOptions"
+          optionLabel="label"
+          optionValue="value"
+        />
+      </div>
+
+      <div>
         <span class="title-text">{{ $t('view.production.leadTime.productType') }}</span>
         <MultiSelectGeneric
           v-model="form.productType"
@@ -113,6 +123,7 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 export default {
   name: 'LeadTimeStageSearchView',
@@ -122,7 +133,8 @@ export default {
     ButtonGeneric,
     InputTextGeneric,
     DateRangeGeneric,
-    MultiSelectGeneric
+    MultiSelectGeneric,
+    DropdownGeneric
   },
 
   setup() {
@@ -151,6 +163,18 @@ export default {
   data() {
     return {
       form: { ...this.modelForm }
+    }
+  },
+
+  computed: {
+    groupByOptions() {
+      return [
+        { value: 'none', label: this.$t('view.production.leadTime.stage.groupByOptionNone') },
+        { value: 'productType', label: this.$t('view.production.leadTime.productType') },
+        { value: 'customerType', label: this.$t('view.production.leadTime.customerType') },
+        { value: 'gold', label: this.$t('view.production.leadTime.stage.groupByOptionGold') },
+        { value: 'goldSize', label: this.$t('view.production.leadTime.stage.groupByOptionGoldSize') }
+      ]
     }
   },
 

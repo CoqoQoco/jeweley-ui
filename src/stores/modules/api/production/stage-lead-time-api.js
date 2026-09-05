@@ -6,6 +6,8 @@ const emptyReport = () => ({
   rows: [],
   wipRows: [],
   topStuckJobs: [],
+  groupBy: '',
+  breakdown: [],
   summary: {
     completedPlanCount: 0,
     avgTotalLeadDays: 0,
@@ -32,7 +34,8 @@ export const useStageLeadTimeApiStore = defineStore('stageLeadTimeApi', {
       customerCode,
       mold,
       productNumber,
-      text
+      text,
+      groupBy
     } = {}) {
       const res = await api.jewelry.post('Production/Plan/StageLeadTimeReport', {
         search: {
@@ -45,7 +48,8 @@ export const useStageLeadTimeApiStore = defineStore('stageLeadTimeApi', {
           customerCode: customerCode || null,
           mold: mold || null,
           productNumber: productNumber || null,
-          text: text || null
+          text: text || null,
+          groupBy: groupBy || 'none'
         }
       })
       this.reportData = res ? { ...emptyReport(), ...res } : emptyReport()
