@@ -136,6 +136,7 @@
 <script>
 import { usePrintJobApiStore } from '@/stores/modules/api/print/print-job-store.js'
 import { printRaw, printImage, getPrinters, checkBridgeHealth } from '@/services/api/print-bridge-service.js'
+import { toAsciiOnly } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
 import { storage } from '@/services/storage.js'
 import { formatOnlyTime, formatISOString } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
@@ -375,7 +376,8 @@ export default {
         if (this.logoPrint) {
           await printImage({ printerName, text: job.payload, logo: true })
         } else {
-          await printRaw({ printerName, text: job.payload })
+          // โหมดข้อความส่งไบต์ดิบเข้าเครื่องพิมพ์ ต้องกรองตัวนอก ASCII ทิ้งก่อน (ชื่อลูกค้าไทยจะหายไปเฉพาะโหมดนี้)
+          await printRaw({ printerName, text: toAsciiOnly(job.payload) })
         }
         return { success: true, errorMessage: null }
       } catch (err) {

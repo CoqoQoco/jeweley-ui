@@ -71,6 +71,7 @@ import { canShareFiles, shareReceipt } from '@/services/helper/pdf/receipt/recei
 import { buildReceiptText } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
 import { printReceiptText } from '@/services/helper/pdf/receipt/receipt-rawbt.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ReceiptPrintAction from '@/components/receipt/receipt-print-action.vue'
@@ -81,6 +82,11 @@ export default {
   components: {
     ButtonGeneric,
     ReceiptPrintAction
+  },
+
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
   },
 
   props: {
@@ -115,6 +121,7 @@ export default {
         soNumber: r.soNumber,
         date: new Date().toISOString(),
         customer: { name: r.customer?.name || '' },
+        seller: this.authStore.getUser?.username || '',
         items: (r.items || []).map((item) => ({
           stockNumber: item.stockNumber,
           stockNumberOrigin: item.stockNumberOrigin,

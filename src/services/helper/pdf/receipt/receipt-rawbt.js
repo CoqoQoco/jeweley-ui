@@ -1,6 +1,8 @@
 // สั่งพิมพ์ข้อความล้วน (จาก receipt-text-builder.js) ผ่าน RawBT โดยตรงด้วย Android intent URL
 // สเปก: https://rawbt.ru/intents.html — เลี่ยงเส้นทางภาพ/PDF ทั้งหมดเพราะเครื่องพิมพ์ HPRT HM-A300E
 // พ่นกระดาษมั่วเมื่อได้รับคำสั่ง raster (แต่โหมดข้อความทำงานปกติ)
+import { toAsciiOnly } from './receipt-text-builder.js'
+
 const RAWBT_PACKAGE = 'ru.a402d.rawbtprinter'
 
 // รอ RawBT พาโฟกัสออกจากหน้าเว็บ (visibilitychange -> hidden) ก่อนถือว่าเปิดสำเร็จ
@@ -13,8 +15,9 @@ function isAndroid() {
 }
 
 // encodeURIComponent เข้ารหัสอักขระพิเศษของ intent URL ให้ปลอดภัยอยู่แล้ว (# & % space ฯลฯ)
+// กรอง ASCII ที่นี่ (จุดเดียว) — โหมดข้อความส่งไบต์ดิบเข้าเครื่องพิมพ์ ตัวนอก ASCII ทำให้พ่นกระดาษมั่ว
 export function buildRawBtIntentUrl(text) {
-  const encoded = encodeURIComponent(text)
+  const encoded = encodeURIComponent(toAsciiOnly(text))
   return `intent:${encoded}#Intent;scheme=rawbt;package=${RAWBT_PACKAGE};end;`
 }
 
