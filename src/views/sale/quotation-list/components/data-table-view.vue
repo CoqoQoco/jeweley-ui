@@ -22,6 +22,7 @@
       :columns="columns"
       :perPage="take"
       :scrollHeight="'calc(100vh - 380px)'"
+      :defaultSortMeta="[{ field: 'createDate', order: -1 }]"
       class="base-data-table"
       :selectionMode="true"
       selectionType="multiple"
@@ -233,10 +234,6 @@ export default {
     formatDate(date) {
       return date ? formatDate(date) : ''
     }
-  },
-
-  async mounted() {
-    await this.fetchData()
   }
 }
 </script>

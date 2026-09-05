@@ -157,6 +157,12 @@ export default {
         )
       }
 
+      list.sort((a, b) => {
+        const ta = a.createDate ? new Date(a.createDate).getTime() : 0
+        const tb = b.createDate ? new Date(b.createDate).getTime() : 0
+        return tb - ta
+      })
+
       return list
     }
   },

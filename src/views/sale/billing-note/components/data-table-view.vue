@@ -7,6 +7,7 @@
       :columns="columns"
       :perPage="take"
       :scrollHeight="'calc(100vh - 360px)'"
+      :defaultSortMeta="[{ field: 'createDate', order: -1 }]"
       class="base-data-table"
       @page="handlePageChange"
       @sort="handleSortChange"
@@ -141,10 +142,6 @@ export default {
     formatNumber(val) {
       return formatNumber(val, 2)
     }
-  },
-
-  async mounted() {
-    await this.fetchData()
   }
 }
 </script>
