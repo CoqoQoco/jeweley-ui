@@ -47,7 +47,8 @@ export default {
     action: 'การดำเนินการ',
     phone: 'เบอร์โทร',
     email: 'อีเมล',
-    showDecimals: 'แสดงทศนิยม (2 ตำแหน่ง)'
+    showDecimals: 'แสดงทศนิยม (2 ตำแหน่ง)',
+    seller: 'พนักงานขาย'
   },
   label: {
     user: 'ผู้ใช้งาน',

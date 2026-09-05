@@ -82,6 +82,17 @@
             </div>
 
             <div class="form-group mb-3">
+              <label class="form-label">
+                <i class="bi bi-person-badge mr-1"></i>{{ $t('common.field.seller') }}
+              </label>
+              <InputTextGeneric
+                v-model="printData.sellerName"
+                type="text"
+                :placeholder="$t('common.field.seller')"
+              />
+            </div>
+
+            <div class="form-group mb-3">
               <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label mb-0">
                   <i class="bi bi-file-earmark mr-1"></i>{{ $t('view.sale.invoiceDetail.paperSize') }}
@@ -548,6 +559,10 @@ export default {
     isPreviewOpen: {
       type: Boolean,
       default: false
+    },
+    sellerName: {
+      type: String,
+      default: ''
     }
   },
 
@@ -565,6 +580,7 @@ export default {
       printData: {
         invoiceNumber: '',
         invoiceDate: '',
+        sellerName: '',
         showCifLabel: true,
         hideCompanyHeader: false,
         hideRounding: false,
@@ -662,7 +678,8 @@ export default {
         showDecimals: this.printData.showDecimals,
         selectedPrinter: this.selectedPrinter,
         invoiceNumber: this.printData.invoiceNumber,
-        invoiceDate: this.printData.invoiceDate
+        invoiceDate: this.printData.invoiceDate,
+        sellerName: this.printData.sellerName
       }
     }
   },
@@ -867,6 +884,7 @@ export default {
       this.printData = {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
         invoiceDate: new Date(),
+        sellerName: this.sellerName || '',
         showCifLabel: true,
         hideCompanyHeader: false,
         hideRounding: false,
@@ -911,6 +929,7 @@ export default {
         ...this.invoiceData,
         invoiceNumber: this.printData.invoiceNumber.trim(),
         invoiceDate: normalizedDate,
+        sellerName: this.printData.sellerName ? this.printData.sellerName.trim() : '',
         showCifLabel: this.paperSize === 'a4' ? this.printData.showCifLabel : false,
         hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
         hideRounding: this.paperSize === 'a4' ? this.printData.hideRounding : false,

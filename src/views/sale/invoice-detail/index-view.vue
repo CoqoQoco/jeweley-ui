@@ -316,6 +316,7 @@
         :isShowModal="showConfirmPrintModal"
         :invoiceData="invoiceData"
         :isPreviewOpen="isShowPreviewModal || isShowContinuousPreview"
+        :sellerName="sellerName"
         @close-modal="showConfirmPrintModal = false"
         @confirm-print="handleConfirmPrint"
         @preview-print="handlePreviewPrint"
@@ -383,6 +384,7 @@ import InvoiceItemsTable from './components/invoice-items-table.vue'
 import PaymentSection from './components/payment-section.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { error, success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
@@ -415,6 +417,8 @@ export default {
       loadError: null,
       invoiceStore: useInvoiceApiStore(),
       saleOrderStore: usrSaleOrderApiStore(),
+      authStore: useAuthStore(),
+      sellerName: '',
       fromRoute: null, // Store the route we came from
       formSaleOrder: {},
       type: 'STOCK-PRODUCT',
@@ -493,6 +497,7 @@ export default {
   async mounted() {
     // Store the route we came from for navigation after delete
     this.fromRoute = this.$route.query.from || null
+    this.sellerName = this.getDefaultSellerName()
 
     // Get invoice number from route query
     const invoiceNumber = this.$route.query.invoiceNumber
@@ -506,6 +511,12 @@ export default {
   },
 
   methods: {
+    getDefaultSellerName() {
+      const u = this.authStore.getUser
+      const full = [u?.firstName, u?.lastName].filter(Boolean).join(' ').trim()
+      return full || u?.username || ''
+    },
+
     async loadInvoiceData(invoiceNumber) {
       // Load Invoice data - same structure as Sale Order
       const invoiceResponse = await this.invoiceStore.fetchGet({
@@ -1068,6 +1079,8 @@ export default {
         return
       }
 
+      this.sellerName = printData.sellerName || this.sellerName
+
       {
         const formattedDate = dayjs(printData.invoiceDate)
 
@@ -1143,7 +1156,7 @@ export default {
           if (printData.invoiceTemplate === 'summary') {
             await invoiceSummaryPdfService.generateInvoiceSummaryPDF(pdfData, options)
           } else {
-            await invoicePdfService.generateInvoicePDF(pdfData, options)
+            await invoicePdfService.generateInvoicePDF(pdfData, { ...options, sellerName: this.sellerName })
           }
         }
         success(this.$t('view.sale.invoiceDetail.success.createPDF'), 'Invoice PDF')
@@ -1157,6 +1170,8 @@ export default {
     },
     async handlePreviewPrint(printData) {
       if (!printData || !printData.invoiceNumber) return
+
+      this.sellerName = printData.sellerName || this.sellerName
 
       if (printData.paperSize !== 'a4') {
         if (this.isShowPreviewModal) {
@@ -1231,7 +1246,7 @@ export default {
 
       const res = printData.invoiceTemplate === 'summary'
         ? await invoiceSummaryPdfService.generateInvoiceSummaryPDF(pdfData, options)
-        : await invoicePdfService.generateInvoicePDF(pdfData, options)
+        : await invoicePdfService.generateInvoicePDF(pdfData, { ...options, sellerName: this.sellerName })
       this.previewUrl = res.previewUrl
       this.lastPreviewPrintData = printData
       this.isShowPreviewModal = true
@@ -1293,6 +1308,7 @@ export default {
         const pdfOptions = {
           invoiceNo: `${this.invoiceData.invoiceNumber}-V${versionData.versionNumber}`,
           invoiceDate: dayjs(this.invoiceData.createDate).format('DD/MM/YYYY'),
+          sellerName: this.sellerName,
           download: options.download,
           open: options.open
         }

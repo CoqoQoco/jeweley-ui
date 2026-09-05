@@ -47,6 +47,7 @@ export class InvoicePdfBuilder {
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
     this.hideCompanyHeader = saleOrderData?.hideCompanyHeader || false
     this.hideRounding = saleOrderData?.hideRounding || false
+    this.sellerName = saleOrderData?.sellerName || ''
 
     // Calculate totals with new fields
     this.subtotal = this.calculateSubtotal()
@@ -166,7 +167,7 @@ export class InvoicePdfBuilder {
                     }
                   : {
                       text: 'LOGO',
-                      fontSize: 14,
+                      fontSize: 11,
                       color: 'white',
                       margin: [15, 20, 10, 0]
                     },
@@ -174,14 +175,14 @@ export class InvoicePdfBuilder {
                   stack: [
                     {
                       text: 'Duang Kaew Jewelry',
-                      fontSize: 30,
+                      fontSize: 22,
                       bold: true,
                       color: '#8B0000',
                       margin: [25, 5, 0, 0]
                     },
                     {
                       text: 'The first step is always the hardest',
-                      fontSize: 12,
+                      fontSize: 10,
                       color: '#8B0000',
                       margin: [25, -2, 0, 0]
                     }
@@ -207,7 +208,7 @@ export class InvoicePdfBuilder {
                   stack: [
                     {
                       text: 'INVOICE',
-                      fontSize: 20,
+                      fontSize: 16,
                       color: '#393939',
                       alignment: 'center',
                       margin: [0, 10, 0, 0]
@@ -216,14 +217,14 @@ export class InvoicePdfBuilder {
                       columns: [
                         {
                           text: 'No.:',
-                          fontSize: 9,
+                          fontSize: 8,
                           color: '#393939',
                           alignment: 'right',
                           width: '30%'
                         },
                         {
                           text: this.invoiceNo || '',
-                          fontSize: 12,
+                          fontSize: 10,
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
@@ -236,14 +237,14 @@ export class InvoicePdfBuilder {
                       columns: [
                         {
                           text: 'Date:',
-                          fontSize: 9,
+                          fontSize: 8,
                           color: '#393939',
                           alignment: 'right',
                           width: '30%'
                         },
                         {
                           text: dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY'),
-                          fontSize: 12,
+                          fontSize: 10,
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
@@ -256,14 +257,14 @@ export class InvoicePdfBuilder {
                       columns: [
                         {
                           text: 'SO#:',
-                          fontSize: 9,
+                          fontSize: 8,
                           color: '#393939',
                           alignment: 'right',
                           width: '30%'
                         },
                         {
                           text: this.saleOrderData.soNumber || this.saleOrderData.number || '',
-                          fontSize: 12,
+                          fontSize: 10,
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
@@ -307,32 +308,32 @@ export class InvoicePdfBuilder {
                     // Company Address
                     {
                       text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                      fontSize: 12,
+                      fontSize: 11,
                       bold: true,
                       color: '#8B0000',
                       margin: [0, 0, 0, 0]
                     },
                     {
                       text: 'Address: ' + (this.companyInfo.address || ''),
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 0, 0, 0]
                     },
                     {
                       text: 'TEL: ' + (this.companyInfo.phone || ''),
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 0, 0, 0]
                     },
                     {
                       text: 'FAX: ' + (this.companyInfo.fax || ''),
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 0, 0, 0]
                     },
                     {
                       text: 'E-Mail: ' + (this.companyInfo.email || ''),
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 0, 0, 0]
                     }
@@ -343,32 +344,32 @@ export class InvoicePdfBuilder {
               stack: [
                 {
                   text: `Invoice To: ${this.customer.name || ''}`,
-                  fontSize: 14,
+                  fontSize: 11,
                   bold: true,
                   color: '#8B0000',
                   margin: [0, 0, 0, 0]
                 },
                 {
                   text: 'Address: ' + (this.customer.address || ''),
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
                 {
                   text: 'TEL: ' + (this.customer.phone || ''),
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
                 {
                   text: 'E-mail: ' + (this.customer.email || ''),
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939'
                 },
                 {
                   //text: `Currency: ${this.currencyUnit} (Rate: ${this.currencyRate})`,
                   text: "",
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939',
                   margin: [0, 5, 0, 0]
                 }
@@ -461,7 +462,7 @@ export class InvoicePdfBuilder {
       table: {
         headerRows: 1,
         dontBreakRows: true,
-        widths: [15, 45, '*', '*', '*', '*', '*', 20, 55, 50], // 10 columns
+        widths: [15, 45, '*', '*', '*', '*', '*', 20, 62, 72], // 10 columns
         body: [
           [
             this.setTableHeader('No.'),
@@ -495,7 +496,7 @@ export class InvoicePdfBuilder {
       table: {
         headerRows: 1,
         dontBreakRows: true,
-        widths: [15, 43, 100, 49, 50, 58, '*', 20, 48, 55], // 10 columns
+        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72], // 10 columns
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -506,10 +507,10 @@ export class InvoicePdfBuilder {
           return 0.5
         }, // border left/right
         paddingLeft: function () {
-          return 3
+          return 2
         },
         paddingRight: function () {
-          return 3
+          return 2
         },
         paddingTop: function () {
           return 0
@@ -528,7 +529,7 @@ export class InvoicePdfBuilder {
       table: {
         headerRows: 1,
         dontBreakRows: true,
-        widths: [15, 43, 100, 49, 50, 58, '*', 20, 48, 55], // 10 columns
+        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72], // 10 columns
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -539,10 +540,10 @@ export class InvoicePdfBuilder {
           return 0.5
         }, // border left/right
         paddingLeft: function () {
-          return 3
+          return 2
         },
         paddingRight: function () {
-          return 3
+          return 2
         },
         paddingTop: function () {
           return 0
@@ -833,7 +834,10 @@ export class InvoicePdfBuilder {
     // const netWeightText = `${
     //   net ? net.toFixed(2) : (0).toFixed(2)
     // } NET WEIGHT OF MERCHANDISES (gms.)`
-    
+    const sellerText = this.sellerName && String(this.sellerName).trim()
+      ? `Seller: ${String(this.sellerName).trim()}`
+      : ''
+
     return [
       {
         columns: [
@@ -861,8 +865,8 @@ export class InvoicePdfBuilder {
               },
               {
                 columns: [
-                  { text: netWeightText, width: '50%', style: 'weightText' },
-                  { text: '', width: '50%', style: 'madeInText' }
+                  { text: netWeightText, width: '70%', style: 'weightText' },
+                  { text: sellerText, width: '30%', style: 'parcelText', alignment: 'center' }
                 ]
               },
               {
@@ -1052,7 +1056,7 @@ export class InvoicePdfBuilder {
     return {
       text: text,
       bold: true,
-      fontSize: 8,
+      fontSize: 7.5,
       alignment: 'center',
       fillColor: '#8B0000',
       color: 'white',
@@ -1063,7 +1067,7 @@ export class InvoicePdfBuilder {
   setTableCell(text) {
     return {
       text: text || '',
-      fontSize: 9,
+      fontSize: 8,
       margin: [2, 3, 2, 3]
     }
   }
@@ -1115,7 +1119,7 @@ export class InvoicePdfBuilder {
   setTableCellRight(text) {
     return {
       text: text || '',
-      fontSize: 9,
+      fontSize: 8,
       alignment: 'right',
       margin: [2, 3, 2, 3]
     }
@@ -1175,13 +1179,13 @@ export class InvoicePdfBuilder {
           bold: true
         },
         summaryLabelColored: {
-          fontSize: 12,
+          fontSize: 10,
           bold: true,
           color: 'white',
           fillColor: '#8B0000'
         },
         totalSummaryLabelColored: {
-          fontSize: 12,
+          fontSize: 10,
           bold: true,
           color: '#8B0000',
           fillColor: '#e0e0e0'

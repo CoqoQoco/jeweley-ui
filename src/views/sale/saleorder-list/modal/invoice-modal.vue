@@ -50,6 +50,10 @@
                   step="0.01"
                 />
               </div>
+              <div>
+                <span class="title-text">{{ $t('common.field.seller') }}</span>
+                <InputTextGeneric v-model="invoiceForm.sellerName" />
+              </div>
             </div>
           </div>
         </div>
@@ -169,8 +173,10 @@ import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -180,7 +186,8 @@ export default {
   components: {
     modal,
     DataTable,
-    Column
+    Column,
+    InputTextGeneric
   },
 
   props: {
@@ -202,7 +209,8 @@ export default {
       selectedItems: [],
       invoiceForm: {
         currencyUnit: 'THB',
-        currencyRate: 1.00
+        currencyRate: 1.00,
+        sellerName: ''
       }
     }
   },
@@ -230,8 +238,11 @@ export default {
   watch: {
     isShowModal: {
       handler(newVal) {
-        if (newVal && this.saleOrderData.soNumber) {
-          this.loadSaleOrderData()
+        if (newVal) {
+          this.invoiceForm.sellerName = this.getDefaultSellerName()
+          if (this.saleOrderData.soNumber) {
+            this.loadSaleOrderData()
+          }
         }
       },
       immediate: true
@@ -250,6 +261,13 @@ export default {
   },
 
   methods: {
+    getDefaultSellerName() {
+      const authStore = useAuthStore()
+      const u = authStore.getUser
+      const full = [u?.firstName, u?.lastName].filter(Boolean).join(' ').trim()
+      return full || u?.username || ''
+    },
+
     async loadSaleOrderData() {
       const saleOrderStore = usrSaleOrderApiStore()
       const response = await saleOrderStore.fetchGet({
@@ -327,7 +345,8 @@ export default {
 
       await invoicePdfService.generateInvoicePDF(invoiceData, {
         download: true,
-        open: false
+        open: false,
+        sellerName: this.invoiceForm.sellerName
       })
 
       success(this.$t('view.sale.saleOrder.success.createInvoicePdf'))

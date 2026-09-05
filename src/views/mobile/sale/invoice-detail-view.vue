@@ -162,6 +162,10 @@
             <label class="form-label">{{ $t('view.mobile.sale.invoicePrintDate') }}</label>
             <InputTextGeneric v-model="printInvoiceDate" type="date" />
           </div>
+          <div class="mobile-form-group">
+            <label class="form-label">{{ $t('common.field.seller') }}</label>
+            <InputTextGeneric v-model="printSellerName" />
+          </div>
           <div class="print-form-actions">
             <button
               class="mobile-btn mobile-btn-primary"
@@ -222,6 +226,7 @@
 <script>
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
@@ -240,7 +245,8 @@ export default {
   setup() {
     const invoiceStore = useInvoiceApiStore()
     const saleOrderStore = usrSaleOrderApiStore()
-    return { invoiceStore, saleOrderStore }
+    const authStore = useAuthStore()
+    return { invoiceStore, saleOrderStore, authStore }
   },
 
   data() {
@@ -252,6 +258,7 @@ export default {
       showPrintForm: false,
       printInvoiceNumber: '',
       printInvoiceDate: '',
+      printSellerName: '',
       exportingPDF: false,
       // Cancel
       cancelling: false
@@ -385,9 +392,16 @@ export default {
     },
 
     // ==================== Print ====================
+    getDefaultSellerName() {
+      const u = this.authStore.getUser
+      const full = [u?.firstName, u?.lastName].filter(Boolean).join(' ').trim()
+      return full || u?.username || ''
+    },
+
     openPrintForm() {
       this.printInvoiceNumber = this.invoiceData.invoiceNumber || ''
       this.printInvoiceDate = dayjs().format('YYYY-MM-DD')
+      this.printSellerName = this.getDefaultSellerName()
       this.showPrintForm = true
     },
 
@@ -420,6 +434,7 @@ export default {
         const options = {
           invoiceNo: this.printInvoiceNumber,
           invoiceDate: dayjs(this.printInvoiceDate),
+          sellerName: this.printSellerName,
           download: true
         }
 

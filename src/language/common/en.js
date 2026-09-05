@@ -47,7 +47,8 @@ export default {
     action: 'Action',
     phone: 'Phone',
     email: 'Email',
-    showDecimals: 'Show decimals (2 places)'
+    showDecimals: 'Show decimals (2 places)',
+    seller: 'Seller'
   },
   label: {
     user: 'User',
