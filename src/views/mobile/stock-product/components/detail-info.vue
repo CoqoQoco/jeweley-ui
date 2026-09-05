@@ -26,20 +26,20 @@
       </div>
       <div class="card-body">
         <div class="info-row">
-          <span class="info-label">{{ $t('view.stock.product.stockNumberNew') }}</span>
-          <span class="info-value highlight">{{ item.stockNumber || '-' }}</span>
+          <span class="info-label">{{ primaryCodeLabel }}</span>
+          <span class="info-value highlight">{{ primaryCode }}</span>
         </div>
-        <div class="info-row">
-          <span class="info-label">{{ $t('view.stock.product.stockNumberOld') }}</span>
-          <span class="info-value">{{ item.stockNumberOrigin || '-' }}</span>
+        <div v-if="item.mold" class="info-row">
+          <span class="info-label">{{ $t('view.stock.product.mold') }}</span>
+          <span class="info-value highlight">{{ item.mold }}</span>
+        </div>
+        <div v-if="secondaryCode" class="info-row">
+          <span class="info-label">{{ $t('view.stock.product.stockNumberNew') }}</span>
+          <span class="info-value">{{ secondaryCode }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">{{ $t('view.stock.product.productNumber') }}</span>
           <span class="info-value">{{ item.productNumber || '-' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">{{ $t('view.stock.product.mold') }}</span>
-          <span class="info-value">{{ item.mold || '-' }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">{{ $t('view.stock.product.productNameEn') }}</span>
@@ -140,6 +140,23 @@ export default {
   },
 
   computed: {
+    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
+    primaryCode() {
+      return this.item.stockNumberOrigin || this.item.stockNumber || '-'
+    },
+
+    // ไม่มีรหัสเก่า → รหัสใหม่ถูกยกเป็นตัวเด่นแล้ว เปลี่ยน label ให้ตรงกับค่าที่โชว์จริง
+    primaryCodeLabel() {
+      return this.item.stockNumberOrigin
+        ? this.$t('view.stock.product.stockNumberOld')
+        : this.$t('view.stock.product.stockNumberNew')
+    },
+
+    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    secondaryCode() {
+      return this.item.stockNumberOrigin ? this.item.stockNumber || '' : ''
+    },
+
     materials() {
       return this.item?.materials || []
     },

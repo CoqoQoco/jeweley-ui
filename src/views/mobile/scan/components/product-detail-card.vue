@@ -23,12 +23,16 @@
       <!-- Stock Numbers -->
       <div class="info-group">
         <div class="info-row">
-          <span class="info-label">{{ $t('view.mobile.scan.productNewCode') }}</span>
-          <span class="info-value highlight">{{ product.stockNumber || '-' }}</span>
+          <span class="info-label">{{ primaryCodeLabel }}</span>
+          <span class="info-value highlight">{{ primaryCode }}</span>
         </div>
-        <div v-if="product.stockNumberOrigin" class="info-row">
-          <span class="info-label">{{ $t('view.mobile.scan.productOldCode') }}</span>
-          <span class="info-value">{{ product.stockNumberOrigin }}</span>
+        <div v-if="product.mold" class="info-row">
+          <span class="info-label">{{ $t('view.mobile.scan.productMold') }}</span>
+          <span class="info-value highlight">{{ product.mold }}</span>
+        </div>
+        <div v-if="secondaryCode" class="info-row">
+          <span class="info-label">{{ $t('view.mobile.scan.productNewCode') }}</span>
+          <span class="info-value">{{ secondaryCode }}</span>
         </div>
       </div>
 
@@ -37,10 +41,6 @@
         <div class="info-row">
           <span class="info-label">{{ $t('view.mobile.scan.productCode') }}</span>
           <span class="info-value">{{ product.productNumber || '-' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">{{ $t('view.mobile.scan.productMold') }}</span>
-          <span class="info-value">{{ product.mold || '-' }}</span>
         </div>
         <div v-if="product.productNameEn" class="info-row">
           <span class="info-label">{{ $t('view.mobile.scan.productNameEn') }}</span>
@@ -239,6 +239,23 @@ export default {
   },
 
   computed: {
+    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
+    primaryCode() {
+      return this.product.stockNumberOrigin || this.product.stockNumber || '-'
+    },
+
+    // ไม่มีรหัสเก่า → รหัสใหม่ถูกยกเป็นตัวเด่นแล้ว เปลี่ยน label ให้ตรงกับค่าที่โชว์จริง
+    primaryCodeLabel() {
+      return this.product.stockNumberOrigin
+        ? this.$t('view.mobile.scan.productOldCode')
+        : this.$t('view.mobile.scan.productNewCode')
+    },
+
+    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    secondaryCode() {
+      return this.product.stockNumberOrigin ? this.product.stockNumber || '' : ''
+    },
+
     hasMaterials() {
       return (
         (this.product.goldTotal && this.product.goldTotal > 0) ||

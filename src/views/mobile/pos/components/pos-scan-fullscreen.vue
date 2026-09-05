@@ -372,6 +372,7 @@ export default {
         stockNumber: response.stockNumber,
         stockNumberOrigin: response.stockNumberOrigin || '',
         productNumber: response.productNumber || '',
+        mold: response.mold || '',
         description: response.productNameTh || response.productNameEn || '',
         costPrice: costPrice,
         price: tagPrice,

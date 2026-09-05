@@ -2,7 +2,9 @@
   <div class="pos-cart-line">
     <div class="line-header">
       <div class="line-info">
-        <span class="line-stock-number">{{ item.stockNumber }}</span>
+        <span class="line-stock-number">{{ primaryCode }}</span>
+        <span v-if="item.mold" class="line-mold">{{ item.mold }}</span>
+        <span v-if="secondaryCode" class="line-new-code">{{ secondaryCode }}</span>
         <span class="line-name">{{ item.description || '-' }}</span>
       </div>
       <ButtonGeneric
@@ -85,6 +87,16 @@ export default {
   emits: ['update', 'remove'],
 
   computed: {
+    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
+    primaryCode() {
+      return this.item.stockNumberOrigin || this.item.stockNumber
+    },
+
+    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    secondaryCode() {
+      return this.item.stockNumberOrigin ? this.item.stockNumber : ''
+    },
+
     lineTotal() {
       const price = Number(this.item.price) || 0
       const qty = Number(this.item.qty) || 1
@@ -142,6 +154,17 @@ export default {
     font-weight: 600;
     color: var(--base-font-color);
     font-size: 0.9rem;
+  }
+
+  .line-mold {
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  // ไฟล์นี้ไม่มีสไตล์ "จาง" ให้ reuse ตรงๆ — ใช้ fs-sm + opacity ตาม fallback rule
+  .line-new-code {
+    font-size: var(--fs-sm);
+    opacity: 0.6;
   }
 
   .line-name {
