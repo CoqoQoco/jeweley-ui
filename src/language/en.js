@@ -89,10 +89,25 @@ export default {
         viewDetails: 'View Details',
         daily: 'Daily',
         monthly: 'Monthly',
+        capacityTab: 'Production Capacity',
         monthlyReport: 'Monthly Report',
         monthlyComingSoon: 'Monthly Report Coming Soon',
         filterDateFrom: 'Created from',
         filterDateTo: 'To',
+        loadError: 'Unable to load dashboard data. Please try again.',
+
+        // shared filter bar (both tabs)
+        filterTitle: 'Filters',
+        filterDesc: 'Filter dashboard data by the criteria you need.',
+        filterText: 'Search (WO / Mold / Product Code / Customer Code)',
+        filterMold: 'Mold',
+        filterProductNumber: 'Product Code',
+        filterGold: 'Gold Type',
+        filterGoldSize: 'Gold Size',
+        filterCustomerCode: 'Customer Code',
+        filterDateRange: 'Date Range',
+        filterOverPlanOnly: 'Overdue only',
+        selectYear: 'Select year',
 
         // recent activities columns
         colType: 'Type',
@@ -149,13 +164,45 @@ export default {
 
         // Forecast layer (frontend-only estimate — run-rate)
         forecast: {
-          title: 'Monthly Completion Forecast (Run-rate)',
-          quantityLabel: 'Forecasted completions by month end ({month})',
-          actualSeries: 'Actual Cumulative Completions',
-          forecastSeries: 'Forecasted Cumulative Completions',
+          title: 'Monthly Completion Forecast (Estimate — Not Actual Data)',
+          quantityLabel: 'Estimated completions by month end ({month})',
+          actualSeries: 'Actual Cumulative Completions (To Date)',
+          forecastSeries: 'Forecasted Cumulative Completions (Projected)',
           assumption: 'Based on run-rate from {days} days of data this month — an estimate, not actual figures',
           notEnoughData: 'Not enough data to forecast this month',
           chartEmpty: 'No completion data recorded this month yet'
+        },
+
+        // Capacity report tab
+        capacity: {
+          controlsTitle: 'Capacity Report Filters',
+          bucketLabel: 'View',
+          bucketWeek: 'Week',
+          bucketMonth: 'Month',
+          dateRangeLabel: 'Reporting Period',
+          groupByLabel: 'Group By',
+          groupNone: 'All',
+          groupGold: 'Gold Type',
+          groupGoldSize: 'Gold Size',
+          groupProductType: 'Product Type',
+          groupCustomerType: 'Customer Type',
+          statTotalPlans: 'Total Plans',
+          statTotalPieces: 'Total Pieces',
+          statAvgPlans: 'Avg Plans per Period',
+          statAvgPieces: 'Avg Pieces per Period',
+          statBestBucket: 'Highest Output Period',
+          statBestBucketSub: 'Plans',
+          chartTitle: 'Production Capacity Over Time',
+          planCountSeries: 'Plan Count',
+          pieceCountSeries: 'Piece Count',
+          tableTitle: 'Capacity Detail by Period',
+          colBucket: 'Period',
+          colPlanCount: 'Plan Count',
+          colPieceCount: 'Piece Count',
+          exportFilename: 'Production-Capacity-Report',
+          avgNote: 'Note: Averages are calculated from fully completed periods only — the most recent, still in-progress period is excluded.',
+          partialBucketBadge: 'In progress',
+          partialBucketSuffix: '(In progress)'
         }
       }
     },

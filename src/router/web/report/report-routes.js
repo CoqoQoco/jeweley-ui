@@ -46,6 +46,8 @@ const WorkerWagesByPersonReport = () =>
   import('@/views/production/report/worker-wages-by-person-report/index-view.vue')
 const GoldLossTangByWorkerReport = () =>
   import('@/views/production/report/gold-loss-tang-by-worker-report/index-view.vue')
+const GoldLossByWorkerReport = () =>
+  import('@/views/production/report/gold-loss-by-worker-report/index-view.vue')
 const WagesByProcessReport = () =>
   import('@/views/production/report/wages-by-process-report/index-view.vue')
 const WagesMonthlyTrendReport = () =>
@@ -492,6 +494,19 @@ const routes = [
           Displayname: {
             en: 'Gold Loss by Worker Report',
             th: 'รายงาน Gold Loss ช่างแต่งต่อคน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        path: '/report-gold-loss-by-worker',
+        name: 'report-gold-loss-by-worker',
+        component: GoldLossByWorkerReport,
+        meta: {
+          Displayname: {
+            en: 'Gold Loss by Worker (All Stages)',
+            th: 'รายงานส่วนต่างทองต่อช่าง (ทุกแผนก)'
           },
           minorShow: true,
           permissions: [PERMISSIONS.WORKER_VIEW]

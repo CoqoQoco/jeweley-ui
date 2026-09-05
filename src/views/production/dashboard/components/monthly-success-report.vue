@@ -112,9 +112,27 @@ export default {
       monthlyReportApiStore
     }
   },
+  props: {
+    sharedFilter: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   data() {
     return {
       selectedMonth: new Date() // Current month for the month picker
+    }
+  },
+  watch: {
+    sharedFilter: {
+      handler() {
+        // Re-run the search when the shared filter bar changes, but only if a
+        // report has already been loaded — otherwise leave the empty state as-is.
+        if (this.monthlyReportData) {
+          this.loadMonthlyReport()
+        }
+      },
+      deep: true
     }
   },
   computed: {
@@ -188,7 +206,8 @@ export default {
       }
 
       await this.monthlyReportApiStore.fetchMonthlyReport(true, {
-        selectedMonth: this.selectedMonth
+        selectedMonth: this.selectedMonth,
+        ...this.sharedFilter
       })
     },
 

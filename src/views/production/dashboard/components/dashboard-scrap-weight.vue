@@ -2,7 +2,7 @@
   <div class="dashboard-scrap-weight">
     <div class="scrap-weight-card">
       <div class="scrap-weight-header">
-        <h5>{{ $t('view.production.dashboard.scrapWeightTitle', { year: new Date().getFullYear() }) }}</h5>
+        <h5>{{ $t('view.production.dashboard.scrapWeightTitle', { year: selectedYear }) }}</h5>
       </div>
       <div class="scrap-weight-body">
         <!-- Loading State -->
@@ -56,6 +56,17 @@
               </button>
             </div>
 
+            <!-- Year Selector -->
+            <div class="year-select">
+              <DropdownGeneric
+                v-model="selectedYear"
+                :options="yearOptions"
+                optionLabel="label"
+                optionValue="value"
+                :ariaLabel="$t('view.production.dashboard.selectYear')"
+              />
+            </div>
+
             <!-- Export Controls -->
             <div class="export-controls">
               <button
@@ -83,7 +94,7 @@
                   <div class="month-header">
                     <h6>{{ monthData.monthName }}</h6>
                     <small class="month-number"
-                      >{{ monthData.month }}/{{ new Date().getFullYear() }}</small
+                      >{{ monthData.month }}/{{ selectedYear }}</small
                     >
                   </div>
                   <div class="month-content">
@@ -123,13 +134,6 @@
 
           <!-- Yearly Category Display -->
           <div v-else-if="viewMode === 'yearly'" class="yearly-category-container">
-            <!-- <div class="yearly-header">
-              <h6>สรุปข้อมูลรายปี {{ new Date().getFullYear() }} - แยกตามประเภทและขนาดทอง</h6>
-              <small class="yearly-subtitle">{{
-                activeDataset === 'melt' ? 'ขี้เบ้าหลอม' : 'ขี้เบ้าหล่อ'
-              }}</small>
-            </div> -->
-
             <div class="row">
               <div
                 v-for="(category, index) in currentYearlyCategoryData"
@@ -142,9 +146,7 @@
                       <h6 class="gold-name">{{ category.goldName }}</h6>
                       <small class="gold-size">{{ category.goldSizeName }}</small>
                     </div>
-                    <div class="category-rank">
-                      <!-- <span class="rank-number">#{{ index + 1 }}</span> -->
-                    </div>
+                    <div class="category-rank"></div>
                   </div>
 
                   <div class="category-content">
@@ -156,20 +158,6 @@
                     </div>
 
                     <div class="category-stats">
-                      <!-- <div class="stat-item">
-                        <i class="bi bi-calendar-check"></i>
-                        <span class="stat-label">เดือนที่มีข้อมูล</span>
-                        <span class="stat-value">{{ category.monthsWithData }}/12</span>
-                      </div>
-
-                      <div class="stat-item">
-                        <i class="bi bi-graph-up"></i>
-                        <span class="stat-label">เฉลี่ยต่อเดือน</span>
-                        <span class="stat-value"
-                          >{{ formatWeight(category.averageMonthlyWeight) }} ก.</span
-                        >
-                      </div> -->
-
                       <div class="stat-item">
                         <i class="bi bi-percent"></i>
                         <span class="stat-label">{{ $t('view.production.dashboard.ofTotal') }}</span>
@@ -239,8 +227,13 @@ import { useProductionDailyApiStore } from '@/stores/modules/api/plan/daily-stor
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+
 export default {
   name: 'DashboardScrapWeight',
+  components: {
+    DropdownGeneric
+  },
   setup() {
     const dailyApiStore = useProductionDailyApiStore()
     return {
@@ -252,11 +245,17 @@ export default {
       activeDataset: 'melt',
       viewMode: 'monthly', // 'monthly' or 'yearly'
       scrapWeightData: null,
+      selectedYear: new Date().getFullYear(),
+      availableYears: [],
       isLoading: false,
       isExporting: false
     }
   },
   computed: {
+    yearOptions() {
+      const years = this.availableYears.length ? this.availableYears : [new Date().getFullYear()]
+      return years.map((y) => ({ label: String(y), value: y }))
+    },
     currentDataset() {
       if (!this.scrapWeightData) return []
       return this.activeDataset === 'melt'
@@ -267,7 +266,8 @@ export default {
       if (!this.scrapWeightData) return []
 
       // Calculate yearly summary directly in computed property
-      const currentYear = new Date().getFullYear()
+      const currentYear = this.selectedYear
+      const notSpecified = this.$t('common.label.notSpecified')
       const dataToProcess =
         this.activeDataset === 'melt'
           ? this.scrapWeightData.meltScrapData || []
@@ -279,7 +279,7 @@ export default {
       dataToProcess.forEach((monthData) => {
         if (monthData.goldCategories && monthData.goldCategories.length > 0) {
           monthData.goldCategories.forEach((category) => {
-            const key = `${category.goldName || 'ไม่ระบุ'}_${category.goldSizeName || 'ไม่ระบุ'}`
+            const key = `${category.goldName || notSpecified}_${category.goldSizeName || notSpecified}`
 
             if (categoryMap.has(key)) {
               const existing = categoryMap.get(key)
@@ -287,8 +287,8 @@ export default {
               existing.monthsWithData += 1
             } else {
               categoryMap.set(key, {
-                goldName: category.goldName || 'ไม่ระบุ',
-                goldSizeName: category.goldSizeName || 'ไม่ระบุ',
+                goldName: category.goldName || notSpecified,
+                goldSizeName: category.goldSizeName || notSpecified,
                 totalYearlyWeight: parseFloat(category.weight || 0),
                 monthsWithData: 1
               })
@@ -329,6 +329,11 @@ export default {
       return this.activeDataset === 'melt' ? this.totalMeltWeight : this.totalCastWeight
     }
   },
+  watch: {
+    selectedYear() {
+      this.loadScrapWeightData()
+    }
+  },
   mounted() {
     this.loadScrapWeightData()
   },
@@ -337,8 +342,9 @@ export default {
       this.isLoading = true
       try {
         // Call the new API endpoint through the store
-        const response = await this.dailyApiStore.fetchScrapWeightDashboard()
+        const response = await this.dailyApiStore.fetchScrapWeightDashboard(this.selectedYear)
         this.scrapWeightData = response
+        this.availableYears = response?.availableYears || []
       } finally {
         this.isLoading = false
       }
@@ -363,7 +369,7 @@ export default {
 
       this.isExporting = true
       try {
-        const currentYear = new Date().getFullYear()
+        const currentYear = this.selectedYear
         const sheets = []
 
         // Create Melt Scrap Data Sheet
@@ -495,7 +501,7 @@ export default {
     },
     prepareMeltExportData(meltData) {
       const exportData = []
-      const currentYear = new Date().getFullYear()
+      const currentYear = this.selectedYear
 
       meltData.forEach((monthData) => {
         if (monthData.goldCategories && monthData.goldCategories.length > 0) {
@@ -525,7 +531,7 @@ export default {
     },
     prepareCastExportData(castData) {
       const exportData = []
-      const currentYear = new Date().getFullYear()
+      const currentYear = this.selectedYear
 
       castData.forEach((monthData) => {
         if (monthData.goldCategories && monthData.goldCategories.length > 0) {
@@ -554,7 +560,7 @@ export default {
       return exportData
     },
     prepareYearlyCategorySummary() {
-      const currentYear = new Date().getFullYear()
+      const currentYear = this.selectedYear
       const meltSummary = this.aggregateYearlyDataByCategory(
         this.scrapWeightData?.meltScrapData || []
       )
@@ -620,7 +626,7 @@ export default {
       )
     },
     prepareSummaryExportData() {
-      const currentYear = new Date().getFullYear()
+      const currentYear = this.selectedYear
       return [
         {
           type: 'ขี้เบ้าหลอมรวมทั้งปี',
@@ -760,6 +766,11 @@ export default {
                 font-size: 14px;
               }
             }
+          }
+
+          .year-select {
+            width: 110px;
+            flex-shrink: 0;
           }
 
           .export-controls {
@@ -1138,6 +1149,10 @@ export default {
               flex: 1;
               text-align: center;
             }
+          }
+
+          .year-select {
+            width: 100%;
           }
 
           .export-controls {

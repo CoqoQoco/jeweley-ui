@@ -11,10 +11,11 @@
   </div>
 
   Props:
-    icon    — Bootstrap icon class เช่น 'bi-card-list'
-    value   — ค่าตัวเลข/ข้อความหลัก
-    label   — คำอธิบาย (i18n caller ส่ง $t(...) มา)
-    variant — 'main' | 'warning' | 'green' | 'grey' (default 'main') — สีวงกลม icon
+    icon     — Bootstrap icon class เช่น 'bi-card-list'
+    value    — ค่าตัวเลข/ข้อความหลัก
+    label    — คำอธิบาย (i18n caller ส่ง $t(...) มา)
+    subLabel — ข้อความเสริมเล็กๆ ใต้ label (optional เช่น เศษส่วนตรวจสอบได้ '12/50')
+    variant  — 'main' | 'warning' | 'green' | 'grey' (default 'main') — สีวงกลม icon
 -->
 <template>
   <div class="stat-card">
@@ -24,6 +25,7 @@
     <div class="stat-content">
       <div class="stat-value">{{ value }}</div>
       <div class="stat-label">{{ label }}</div>
+      <div v-if="subLabel" class="stat-sub-label">{{ subLabel }}</div>
     </div>
   </div>
 </template>
@@ -42,6 +44,10 @@ export default {
       default: 0
     },
     label: {
+      type: String,
+      default: ''
+    },
+    subLabel: {
       type: String,
       default: ''
     },
@@ -112,5 +118,12 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.stat-sub-label {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+  opacity: 0.75;
+  margin-top: 2px;
 }
 </style>

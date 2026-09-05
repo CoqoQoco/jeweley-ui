@@ -160,15 +160,15 @@ export const useProductionDailyApiStore = defineStore('productionDaily', {
           createEnd: form.createEnd ? formatISOString(form.createEnd) : null,
           text: form.text || null,
           woText: form.woText || null,
-          status: form.status || null,
+          status: form.status?.length ? form.status : null,
           isOverPlan: form.isOverPlan || 0,
-          customerType: form.customerType || null,
+          customerType: form.customerType?.length ? form.customerType : null,
           customerCode: form.customerCode || null,
-          gold: form.gold || null,
-          goldSize: form.goldSize || null,
+          gold: form.gold?.length ? form.gold : null,
+          goldSize: form.goldSize?.length ? form.goldSize : null,
           mold: form.mold || null,
           productNumber: form.productNumber || null,
-          productType: form.productType || null
+          productType: form.productType?.length ? form.productType : null
         }
       }
     },
@@ -226,287 +226,11 @@ export const useProductionDailyApiStore = defineStore('productionDaily', {
         this.setLoading(false)
         return this.dailyPlanData
       } catch (error) {
-        // If API fails, return mock data for development
-        console.warn('Daily Plan API failed, using mock data:', error)
-        this.setupMockData()
-        this.updateCacheTimestamp('dailyPlan')
+        this.resetDashboardData()
+        this.error = error
         this.setLoading(false)
         return this.dailyPlanData
       }
-    },
-
-    // Setup mock data for development
-    setupMockData() {
-      this.dailyPlanData = {
-        dataAtDate: new Date().toISOString(),
-        planCountTotal: 61,
-        planCountProcess: 35,
-        planCountCompletedOnYesterday: 17,
-        planCountOverdue: 9,
-        report: [
-          {
-            status: 10,
-            statusNameTH: "ออกแบบ",
-            statusNameEN: "Designed",
-            description: null,
-            reference: null,
-            count: 8
-          },
-          {
-            status: 49,
-            statusNameTH: "รอแต่ง",
-            statusNameEN: "WaitCasting",
-            description: null,
-            reference: null,
-            count: 7
-          },
-          {
-            status: 50,
-            statusNameTH: "แต่ง",
-            statusNameEN: "Casting",
-            description: "ช่างแต่ง",
-            reference: null,
-            count: 8
-          },
-          {
-            status: 59,
-            statusNameTH: "รอขัดดิบ",
-            statusNameEN: "WaitScrubb",
-            description: "",
-            reference: null,
-            count: 0
-          },
-          {
-            status: 60,
-            statusNameTH: "ขัดดิบ",
-            statusNameEN: "Scrubb",
-            description: "ช่างขัดดิบ",
-            reference: null,
-            count: 2
-          },
-          {
-            status: 69,
-            statusNameTH: "รอคัดพลอย",
-            statusNameEN: "WaitGems",
-            description: "",
-            reference: null,
-            count: 0
-          },
-          {
-            status: 70,
-            statusNameTH: "คัดพลอย",
-            statusNameEN: "Gems",
-            description: "ช่างคัดพลอย",
-            reference: null,
-            count: 6
-          },
-          {
-            status: 79,
-            statusNameTH: "รอฝัง",
-            statusNameEN: "WaitEmbedd",
-            description: "",
-            reference: null,
-            count: 0
-          },
-          {
-            status: 80,
-            statusNameTH: "ฝัง",
-            statusNameEN: "Embedd",
-            description: "ช่างฝัง",
-            reference: null,
-            count: 1
-          },
-          {
-            status: 89,
-            statusNameTH: "รอขัดชุบ",
-            statusNameEN: "WaitPlated",
-            description: null,
-            reference: null,
-            count: 1
-          },
-          {
-            status: 90,
-            statusNameTH: "ขัดชุบ",
-            statusNameEN: "Plated",
-            description: "ช่างชุบ",
-            reference: null,
-            count: 0
-          },
-          {
-            status: 94,
-            statusNameTH: "รอบัตรต้นทุน",
-            statusNameEN: "WaitPrice",
-            description: "",
-            reference: null,
-            count: 9
-          },
-          {
-            status: 95,
-            statusNameTH: "บัตรต้นทุน",
-            statusNameEN: "Price",
-            description: null,
-            reference: null,
-            count: 2
-          },
-          {
-            status: 100,
-            statusNameTH: "สำเร็จ",
-            statusNameEN: "Completed",
-            description: null,
-            reference: "สำเร็จ | ตรวจ CVD",
-            count: 17
-          }
-        ],
-        recentActivity: [
-          {
-            id: 1,
-            wo: "P",
-            woNumber: 1001,
-            woText: "P-1001",
-            createDate: new Date().toISOString(),
-            createBy: "Admin",
-            updateDate: new Date().toISOString(),
-            updateBy: "Admin",
-            requestDate: new Date().toISOString(),
-            mold: "MD001",
-            moldSub: "A",
-            productRunning: "PR001",
-            productName: "แหวนทอง",
-            productType: "RING",
-            productTypeName: "แหวน",
-            productNumber: "RG001",
-            productDetail: "แหวนทองคำขาว",
-            productQty: 1,
-            productQtyUnit: "ชิ้น",
-            customerNumber: "C001",
-            customerName: "ลูกค้า A",
-            customerType: "VIP",
-            customerTypeName: "วีไอพี",
-            isActive: true,
-            status: 50,
-            statusName: "กำลังแต่ง",
-            remark: null,
-            gold: "18K",
-            goldSize: "2.5"
-          },
-          {
-            id: 2,
-            wo: "P",
-            woNumber: 1002,
-            woText: "P-1002",
-            createDate: new Date(Date.now() - 3600000).toISOString(),
-            createBy: "Worker1",
-            updateDate: new Date(Date.now() - 3600000).toISOString(),
-            updateBy: "Worker1",
-            requestDate: new Date(Date.now() - 3600000).toISOString(),
-            mold: "MD002",
-            moldSub: "B",
-            productRunning: "PR002",
-            productName: "สร้อยคอ",
-            productType: "NECKLACE",
-            productTypeName: "สร้อยคอ",
-            productNumber: "NC001",
-            productDetail: "สร้อยคอทองคำ",
-            productQty: 1,
-            productQtyUnit: "ชิ้น",
-            customerNumber: "C002",
-            customerName: "ลูกค้า B",
-            customerType: "NORMAL",
-            customerTypeName: "ทั่วไป",
-            isActive: true,
-            status: 100,
-            statusName: "เสร็จสิ้น",
-            remark: null,
-            gold: "24K",
-            goldSize: "3.0"
-          }
-        ],
-        summary: {
-          totalActiveProjects: 44,
-          completedToday: 17,
-          overduePlans: 9,
-          pendingApproval: 8,
-          percentageCompleted: 27.9,
-          statusTrends: [
-            {
-              status: 50,
-              statusName: "กำลังแต่ง",
-              count: 8,
-              percentage: 13.1,
-              trendDirection: "up"
-            },
-            {
-              status: 70,
-              statusName: "คัดพลอย",
-              count: 6,
-              percentage: 9.8,
-              trendDirection: "stable"
-            },
-            {
-              status: 100,
-              statusName: "เสร็จสิ้น",
-              count: 17,
-              percentage: 27.9,
-              trendDirection: "up"
-            }
-          ],
-          productTypeSummary: [
-            {
-              productType: "RING",
-              productTypeName: "แหวน",
-              count: 25,
-              totalQty: 25,
-              totalWeight: 125.5
-            },
-            {
-              productType: "NECKLACE",
-              productTypeName: "สร้อยคอ",
-              count: 18,
-              totalQty: 18,
-              totalWeight: 180.2
-            },
-            {
-              productType: "EARRING",
-              productTypeName: "ต่างหู",
-              count: 12,
-              totalQty: 24,
-              totalWeight: 60.8
-            }
-          ],
-          customerTypeSummary: [
-            {
-              customerType: "VIP",
-              customerTypeName: "วีไอพี",
-              count: 15,
-              totalQty: 15
-            },
-            {
-              customerType: "NORMAL",
-              customerTypeName: "ทั่วไป",
-              count: 40,
-              totalQty: 40
-            },
-            {
-              customerType: "WHOLESALE",
-              customerTypeName: "ขายส่ง",
-              count: 6,
-              totalQty: 12
-            }
-          ]
-        }
-      }
-      
-      // Update all state from mock data
-      this.dataAtDate = this.dailyPlanData.dataAtDate
-      this.dashboardStats = {
-        planCountTotal: this.dailyPlanData.planCountTotal,
-        planCountProcess: this.dailyPlanData.planCountProcess,
-        planCountCompletedOnYesterday: this.dailyPlanData.planCountCompletedOnYesterday,
-        planCountOverdue: this.dailyPlanData.planCountOverdue
-      }
-      this.statusReport = { report: this.dailyPlanData.report }
-      this.recentActivities = this.dailyPlanData.recentActivity
-      this.summary = this.dailyPlanData.summary
     },
 
     // Refresh dashboard data with filters
@@ -580,31 +304,67 @@ export const useProductionDailyApiStore = defineStore('productionDaily', {
     },
 
     // Fetch scrap weight dashboard data
-    async fetchScrapWeightDashboard() {
+    async fetchScrapWeightDashboard(year = null) {
       try {
         this.setLoading(true)
-        const response = await api.jewelry.get('ProductionPlanCost/ScrapWeightDashboard')
+        const response = await api.jewelry.get(
+          'ProductionPlanCost/ScrapWeightDashboard',
+          year ? { year } : null
+        )
         this.setLoading(false)
         return response
       } catch (error) {
-        this.handleError(error, 'Failed to fetch scrap weight dashboard data')
+        // Swallow — do not rethrow (handleError rethrows and would break the
+        // refreshDashboard() await chain). Caller renders its own empty state.
+        console.error('Failed to fetch scrap weight dashboard data', error)
+        this.setLoading(false)
+        return null
       }
     },
 
     // Fetch completed plan count per day (current month) — used as run-rate forecast source
-    async fetchCompletedDailySeries() {
-      const res = await api.jewelry.post('Production/Plan/CompletedDailySeries', {})
-
-      if (res) {
-        this.completedDailySeries = {
-          rows: res.rows || [],
-          total: res.total || 0,
-          daysElapsed: res.daysElapsed || 0,
-          daysInPeriod: res.daysInPeriod || 0
+    // Accepts the shared filter set (everything except status/isOverPlan/start/end) —
+    // start/end are intentionally never sent; the backend always defaults to the current month.
+    async fetchCompletedDailySeries(form = {}) {
+      try {
+        const param = {
+          search: {
+            text: form.text || null,
+            mold: form.mold || null,
+            productNumber: form.productNumber || null,
+            gold: form.gold?.length ? form.gold : null,
+            goldSize: form.goldSize?.length ? form.goldSize : null,
+            productType: form.productType?.length ? form.productType : null,
+            customerType: form.customerType?.length ? form.customerType : null,
+            customerCode: form.customerCode || null
+          }
         }
-      }
 
-      return res
+        const res = await api.jewelry.post('Production/Plan/CompletedDailySeries', param)
+
+        if (res) {
+          this.completedDailySeries = {
+            rows: res.rows || [],
+            total: res.total || 0,
+            daysElapsed: res.daysElapsed || 0,
+            daysInPeriod: res.daysInPeriod || 0
+          }
+        }
+
+        return res
+      } catch (error) {
+        // Swallow — the dashboard-level error band (from fetchDailyPlan) is
+        // already the user-facing signal; the forecast panel renders its own
+        // "not enough data" empty state when rows is empty.
+        console.error('Failed to fetch completed daily series', error)
+        this.completedDailySeries = {
+          rows: [],
+          total: 0,
+          daysElapsed: 0,
+          daysInPeriod: 0
+        }
+        return null
+      }
     }
   }
 })

@@ -35,6 +35,7 @@
         icon="bi-percent"
         :value="completionRateValue"
         :label="$t('view.production.dashboard.completionRate')"
+        :subLabel="completionFractionLabel"
         variant="main"
       />
     </div>
@@ -78,6 +79,14 @@ export default {
     completionRateValue() {
       const rate = Number(this.summary?.percentageCompleted || 0)
       return `${rate.toFixed(2)}%`
+    },
+    completionFractionLabel() {
+      const completed = this.summary?.completedCount
+      const total = this.summary?.totalPlanCount
+      if (completed === undefined || completed === null || total === undefined || total === null) {
+        return ''
+      }
+      return `${completed}/${total}`
     }
   }
 }

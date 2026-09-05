@@ -89,10 +89,25 @@ export default {
         viewDetails: 'ดูรายละเอียด',
         daily: 'รายวัน',
         monthly: 'รายเดือน',
+        capacityTab: 'กำลังการผลิต',
         monthlyReport: 'รายงานรายเดือน',
         monthlyComingSoon: 'รายงานรายเดือน เร็วๆ นี้',
         filterDateFrom: 'สร้างตั้งแต่',
         filterDateTo: 'ถึง',
+        loadError: 'ไม่สามารถโหลดข้อมูลแดชบอร์ดได้ครับ กรุณาลองใหม่อีกครั้ง',
+
+        // shared filter bar (both tabs)
+        filterTitle: 'ตัวกรองข้อมูล',
+        filterDesc: 'กรองข้อมูลแดชบอร์ดตามเงื่อนไขที่ต้องการครับ',
+        filterText: 'ค้นหา (WO / แม่พิมพ์ / รหัสสินค้า / รหัสลูกค้า)',
+        filterMold: 'แม่พิมพ์',
+        filterProductNumber: 'รหัสสินค้า',
+        filterGold: 'ชนิดทอง',
+        filterGoldSize: 'ขนาดทอง',
+        filterCustomerCode: 'รหัสลูกค้า',
+        filterDateRange: 'ช่วงวันที่',
+        filterOverPlanOnly: 'เฉพาะงานเกินกำหนด',
+        selectYear: 'เลือกปี',
 
         // recent activities columns
         colType: 'ประเภท',
@@ -149,13 +164,45 @@ export default {
 
         // Forecast layer (frontend-only estimate — run-rate)
         forecast: {
-          title: 'ชั้นประมาณการยอดงานเสร็จสิ้นเดือน',
-          quantityLabel: 'ประมาณการยอดงานเสร็จสิ้นเดือน ({month})',
-          actualSeries: 'ยอดเสร็จจริงสะสม',
-          forecastSeries: 'ประมาณการยอดเสร็จสะสม',
+          title: 'ประมาณการยอดงานเสร็จสิ้นเดือน (ค่าประมาณการ ไม่ใช่ข้อมูลจริง)',
+          quantityLabel: 'ยอดงานเสร็จสิ้นเดือนโดยประมาณ ({month})',
+          actualSeries: 'ยอดเสร็จจริงสะสม (ถึงวันนี้)',
+          forecastSeries: 'ประมาณการยอดเสร็จสะสม (คาดการณ์)',
           assumption: 'อิง run-rate จากข้อมูล {days} วันของเดือนนี้ — เป็นค่าประมาณการ ไม่ใช่ตัวเลขจริง',
           notEnoughData: 'ข้อมูลไม่พอสำหรับประมาณการ',
           chartEmpty: 'ยังไม่มีข้อมูลงานเสร็จเดือนนี้'
+        },
+
+        // Capacity report tab
+        capacity: {
+          controlsTitle: 'ตัวกรองรายงานกำลังการผลิต',
+          bucketLabel: 'มุมมอง',
+          bucketWeek: 'สัปดาห์',
+          bucketMonth: 'เดือน',
+          dateRangeLabel: 'ช่วงเวลารายงาน',
+          groupByLabel: 'แยกตาม',
+          groupNone: 'รวมทั้งหมด',
+          groupGold: 'ชนิดทอง',
+          groupGoldSize: 'ขนาดทอง',
+          groupProductType: 'ประเภทสินค้า',
+          groupCustomerType: 'ประเภทลูกค้า',
+          statTotalPlans: 'จำนวนแผนทั้งหมด',
+          statTotalPieces: 'จำนวนชิ้นทั้งหมด',
+          statAvgPlans: 'แผนเฉลี่ยต่อช่วง',
+          statAvgPieces: 'ชิ้นเฉลี่ยต่อช่วง',
+          statBestBucket: 'ช่วงที่ผลิตมากที่สุด',
+          statBestBucketSub: 'จำนวนแผน',
+          chartTitle: 'กำลังการผลิตตามช่วงเวลา',
+          planCountSeries: 'จำนวนแผน',
+          pieceCountSeries: 'จำนวนชิ้น',
+          tableTitle: 'รายละเอียดกำลังการผลิตรายช่วง',
+          colBucket: 'ช่วงเวลา',
+          colPlanCount: 'จำนวนแผน',
+          colPieceCount: 'จำนวนชิ้น',
+          exportFilename: 'รายงาน-กำลังการผลิต',
+          avgNote: 'หมายเหตุ: ค่าเฉลี่ยคำนวณจากช่วงที่ครบรอบสมบูรณ์เท่านั้น ไม่รวมช่วงล่าสุดที่ยังไม่จบครับ',
+          partialBucketBadge: 'ยังไม่จบ',
+          partialBucketSuffix: '(ยังไม่จบ)'
         }
       }
     },

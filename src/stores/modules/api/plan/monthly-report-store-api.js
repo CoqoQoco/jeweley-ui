@@ -131,7 +131,15 @@ export const useProductionMonthlyReportApiStore = defineStore('productionMonthly
       return {
         search: {
           startDate: startDate ? formatISOString(startDate) : null,
-          endDate: endDate ? formatISOString(endDate) : null
+          endDate: endDate ? formatISOString(endDate) : null,
+          text: form.text || null,
+          mold: form.mold || null,
+          productNumber: form.productNumber || null,
+          gold: form.gold?.length ? form.gold : null,
+          goldSize: form.goldSize?.length ? form.goldSize : null,
+          productType: form.productType?.length ? form.productType : null,
+          customerType: form.customerType?.length ? form.customerType : null,
+          customerCode: form.customerCode || null
         }
       }
     },
