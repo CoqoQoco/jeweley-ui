@@ -60,7 +60,13 @@ app.use(i18n)
 app.use(VueApexCharts)
 app.use(VueSweetalert2)
 app.use(VueAwesomePaginate)
-app.use(PrimeVue)
+// PrimeVue ต่อ overlay panel (Dropdown/Calendar/MultiSelect/AutoComplete) ไว้ที่ <body>
+// ค่า default overlay = 1000 ซึ่งต่ำกว่า overlay ทุกตัวในแอป (POS 1100-1200, #modal-container 1300)
+// panel จึงจมอยู่ข้างใต้จนกดเลือกไม่ได้ — ตั้ง 1400 ให้อยู่เหนือทุกตัว
+// แต่ยังต่ำกว่า swal2 (9000) และ loading overlay (9999) ซึ่งต้องบัง panel ได้ตามเดิม
+app.use(PrimeVue, {
+  zIndex: { modal: 1400, overlay: 1400, menu: 1400, tooltip: 1400 }
+})
 
 // Make BootstrapVue available throughout your project
 //App.use(BootstrapVue)
