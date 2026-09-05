@@ -77,6 +77,7 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     // วันที่บิลจริง (พิมพ์ซ้ำบิลเก่า) — ไม่ใช่ new Date() แบบ POS
     date: invoiceResponse.createDate,
     customer: { name: invoiceResponse.customerName || '' },
+    seller: invoiceResponse.createBy || '',
     items,
     payments,
     currencyUnit: soResponse.currencyUnit || invoiceResponse.currencyUnit || 'THB',

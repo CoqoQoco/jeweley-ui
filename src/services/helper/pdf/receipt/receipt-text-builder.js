@@ -13,9 +13,8 @@ const WIDTH = 47
 const SUMMARY_LABEL_W = 11
 const SUMMARY_VALUE_W = 12
 
-// คอลัมน์บรรทัดรายละเอียดสินค้า: "  " + รหัสสินค้า (18) + ราคา x จำนวน (15) + ยอดรวม (14) = 47
-// ลด ITEM_COL3 (ยอดรวมขวาสุด) เพราะยอดเงินจริงของธุรกิจนี้ไม่เกิน 12-13 ตัวอักษร
-const ITEM_COL1 = 18
+// คอลัมน์บรรทัดรายละเอียดสินค้า: ราคา x จำนวน (อย่างน้อย 15) + ยอดรวม (อย่างน้อย 14) ชิดขวาจบคอลัมน์ 47
+// คอลัมน์รหัสสินค้าด้านซ้ายกินพื้นที่ที่เหลือ — ยอมให้รหัสสั้นลง ดีกว่ายอมให้ตัวเงินถูกตัดหางเมื่อยอดถึงหลักล้าน
 const ITEM_COL2 = 15
 const ITEM_COL3 = 14
 
@@ -72,15 +71,25 @@ function lineLR(label, value) {
 // บรรทัดสรุปแบบเยื้องขวา (Subtotal/TOTAL/Outstanding/...) — indent คงที่ทุกแถวเพื่อให้ value ชนคอลัมน์เดียวกัน
 function summaryLine(label, value) {
   const labelCol = Math.max(SUMMARY_LABEL_W, label.length)
-  const valueCol = Math.max(SUMMARY_VALUE_W, value.length)
+  // +1 บังคับช่องว่างคั่นป้ายกับตัวเลขอย่างน้อย 1 ตัวเสมอ กันป้าย+ค่าชนกันพอดีความกว้าง (เช่น 'TOTAL (THB)' 11 ตัว + ยอด 12 ตัว)
+  const valueCol = Math.max(SUMMARY_VALUE_W, value.length + 1)
   const indent = Math.max(0, WIDTH - labelCol - valueCol)
   return clampLine(' '.repeat(indent) + padRight(label, labelCol) + padLeft(value, valueCol))
 }
 
+// ตัวเงินได้ความกว้างที่ต้องการก่อนเสมอ — คอลัมน์รหัสสินค้าค่อยยืดหยุ่นรับส่วนที่เหลือ
+// กันยอดเงินยาว (หลักล้านขึ้นไป) ถูก clampLine() ตัดหางทิ้งเมื่อคอลัมน์รหัสสินค้าตายตัวดันบรรทัดล้น
 function itemDetailLine(stockNumber, unitPrice, qty, total) {
-  const left = padRight('  ' + (stockNumber || ''), ITEM_COL1).slice(0, ITEM_COL1)
-  const mid = padLeft(`${formatMoney(unitPrice)} x${qty}`, ITEM_COL2)
-  const right = padLeft(formatMoney(total), ITEM_COL3)
+  const midRaw = `${formatMoney(unitPrice)} x${qty}`
+  const rightRaw = formatMoney(total)
+
+  // +1 บังคับให้มีช่องว่างคั่นอย่างน้อย 1 ตัวเสมอ กันตัวเลข 2 ก้อนติดกันเมื่อยอดยาว
+  const mid = padLeft(midRaw, Math.max(ITEM_COL2, midRaw.length + 1))
+  const right = padLeft(rightRaw, Math.max(ITEM_COL3, rightRaw.length + 1))
+
+  const leftW = Math.max(0, WIDTH - mid.length - right.length)
+  const left = padRight('  ' + (stockNumber || ''), leftW).slice(0, leftW)
+
   return clampLine(left + mid + right)
 }
 
@@ -113,9 +122,10 @@ function wrapText(text, width = WIDTH) {
   return lines
 }
 
-// กรอง ASCII แบบเด็ดขาด — เหลือเฉพาะ \x20-\x7E และ \n เท่านั้น กันเครื่องพิมพ์พ่นกระดาษมั่วจากอักขระนอกช่วงนี้
-// ห้ามข้ามขั้นตอนนี้เด็ดขาด แม้ข้อมูลปัจจุบันจะเป็น ASCII ล้วนอยู่แล้วก็ตาม (กันของใหม่ที่อาจหลุดเข้ามาในอนาคต)
-function toAsciiOnly(text) {
+// กรองเหลือ ASCII (\x20-\x7E และ \n) — เรียกที่ "ทางออกฝั่ง ESC/POS" เท่านั้น ไม่เรียกตอน build()
+// เพราะ payload ที่เก็บในคิวต้องคงตัวอักษรไทย (เช่นชื่อลูกค้า) ไว้ให้โหมดพิมพ์เป็นภาพวาดออกมาได้
+// โหมดข้อความส่งไบต์ดิบเข้าเครื่องพิมพ์ ตัวนอกช่วงนี้ทำให้พ่นกระดาษมั่ว จึงต้องกรองก่อนส่งเสมอ
+export function toAsciiOnly(text) {
   let out = ''
   for (const ch of String(text)) {
     const code = ch.charCodeAt(0)
@@ -140,6 +150,10 @@ export class ReceiptTextBuilder {
     this.data = data && typeof data === 'object' ? data : {}
     this.items = Array.isArray(this.data.items) ? this.data.items : []
     this.payments = Array.isArray(this.data.payments) ? this.data.payments : []
+
+    // จำกัดความยาวชื่อกันบรรทัดล้น — ตัวไทยไม่ใช่ monospace ฝั่งวาดภาพจะย่อฟอนต์ให้พอดีเองอีกชั้น
+    this.customerName = String(this.data.customer?.name || '').trim().slice(0, 30)
+    this.seller = String(this.data.seller || '').trim().slice(0, 30)
 
     this.currencyUnit = this.data.currencyUnit || 'THB'
     this.currencyRate = toNumber(this.data.currencyRate) || 1
@@ -184,13 +198,24 @@ export class ReceiptTextBuilder {
   }
 
   buildHeaderLines() {
-    const lines = [center('Duang Kaew Jewelry'), center('The first step is always the hardest')]
+    // ไม่พิมพ์ชื่อร้านเป็นข้อความ เพราะโลโก้ด้านบนมีชื่อร้านอยู่แล้ว (โหมดพิมพ์เป็นภาพ)
+    // บรรทัดว่างคั่นให้หัวใบแยกเป็นก้อนแบรนด์ (โลโก้+สโลแกน) กับก้อนข้อมูลบิล (RECEIPT+เลขที่+ลูกค้า+ผู้ขาย)
+    const lines = [
+      center('The first step is always the hardest'),
+      '',
+      center('RECEIPT')
+    ]
 
+    // เลขที่บิล/วันที่ ชิดซ้ายให้อยู่กลุ่มเดียวกับ Customer/Seller อ่านเป็นบล็อกข้อมูลบิลก้อนเดียว
     const billNumber = this.data.invoiceNumber || this.data.soNumber
     const parts = []
     if (billNumber) parts.push(billNumber)
     parts.push(formatDateTime(this.data.date))
-    lines.push(center(parts.join('   ')))
+    lines.push(clampLine(parts.join('   ')))
+
+    // ป้ายกว้าง 11 ตัวอักษรเท่ากันทั้งคู่ ('Customer : ' / 'Seller   : ') ค่าจึงเริ่มคอลัมน์เดียวกัน
+    if (this.customerName) lines.push(clampLine(`Customer : ${this.customerName}`))
+    if (this.seller) lines.push(clampLine(`Seller   : ${this.seller}`))
 
     return lines
   }
@@ -248,6 +273,12 @@ export class ReceiptTextBuilder {
       lines.push(lineLR(paymentLabel(p), formatMoney(p?.amount)))
     })
 
+    // จ่ายเกินยอด = มีเงินทอน (คนละกรณีกับ Outstanding ที่จ่ายไม่ครบ จึงเกิดพร้อมกันไม่ได้)
+    const change = this.paidAmount - this.grandTotal
+    if (change > 0) {
+      lines.push(lineLR('Change', formatMoney(change)))
+    }
+
     // จ่ายไม่ครบ (remainingAmount จาก backend > 0) แสดง Outstanding — ห้ามคำนวณทับ remainingAmount
     if (this.remainingAmount > 0) {
       lines.push(summaryLine('Outstanding', formatMoney(this.remainingAmount)))
@@ -266,6 +297,7 @@ export class ReceiptTextBuilder {
     const lines = [
       ...this.buildHeaderLines(),
       divider,
+      '',                          // เว้นให้รายการแรกไม่ติดเส้นคั่น
       ...this.buildItemLines(),
       divider,
       ...this.buildSummaryLines(),
@@ -274,7 +306,7 @@ export class ReceiptTextBuilder {
       divider,
       ...this.buildFooterLines()
     ]
-    return toAsciiOnly(lines.join('\n'))
+    return lines.join('\n')
   }
 }
 
