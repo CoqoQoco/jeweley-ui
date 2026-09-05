@@ -123,6 +123,13 @@
 
             <div v-if="paperSize === 'a4'" class="form-group mb-3">
               <CheckboxGeneric
+                v-model="printData.showSeller"
+                :label="$t('view.sale.invoiceDetail.showSeller')"
+              />
+            </div>
+
+            <div v-if="paperSize === 'a4'" class="form-group mb-3">
+              <CheckboxGeneric
                 v-model="printData.hideCompanyHeader"
                 :label="$t('view.sale.invoiceDetail.hideCompanyHeader')"
               />
@@ -582,6 +589,7 @@ export default {
         invoiceDate: '',
         sellerName: '',
         showCifLabel: true,
+        showSeller: true,
         hideCompanyHeader: false,
         hideRounding: false,
         showDecimals: true,
@@ -886,6 +894,7 @@ export default {
         invoiceDate: new Date(),
         sellerName: this.sellerName || '',
         showCifLabel: true,
+        showSeller: true,
         hideCompanyHeader: false,
         hideRounding: false,
         showDecimals,
@@ -931,6 +940,7 @@ export default {
         invoiceDate: normalizedDate,
         sellerName: this.printData.sellerName ? this.printData.sellerName.trim() : '',
         showCifLabel: this.paperSize === 'a4' ? this.printData.showCifLabel : false,
+        showSeller: this.paperSize === 'a4' ? this.printData.showSeller : false,
         hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
         hideRounding: this.paperSize === 'a4' ? this.printData.hideRounding : false,
         showDecimals: this.printData.showDecimals,

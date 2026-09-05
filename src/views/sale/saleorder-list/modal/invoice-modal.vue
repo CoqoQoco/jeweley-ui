@@ -54,6 +54,12 @@
                 <span class="title-text">{{ $t('common.field.seller') }}</span>
                 <InputTextGeneric v-model="invoiceForm.sellerName" />
               </div>
+              <div class="d-flex align-items-end">
+                <CheckboxGeneric
+                  v-model="invoiceForm.showSeller"
+                  :label="$t('view.sale.saleOrder.showSeller')"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -177,6 +183,7 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -187,7 +194,8 @@ export default {
     modal,
     DataTable,
     Column,
-    InputTextGeneric
+    InputTextGeneric,
+    CheckboxGeneric
   },
 
   props: {
@@ -210,7 +218,8 @@ export default {
       invoiceForm: {
         currencyUnit: 'THB',
         currencyRate: 1.00,
-        sellerName: ''
+        sellerName: '',
+        showSeller: true
       }
     }
   },
@@ -346,7 +355,8 @@ export default {
       await invoicePdfService.generateInvoicePDF(invoiceData, {
         download: true,
         open: false,
-        sellerName: this.invoiceForm.sellerName
+        sellerName: this.invoiceForm.sellerName,
+        showSeller: this.invoiceForm.showSeller
       })
 
       success(this.$t('view.sale.saleOrder.success.createInvoicePdf'))

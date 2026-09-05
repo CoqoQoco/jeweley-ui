@@ -166,6 +166,12 @@
             <label class="form-label">{{ $t('common.field.seller') }}</label>
             <InputTextGeneric v-model="printSellerName" />
           </div>
+          <div class="mobile-form-group">
+            <CheckboxGeneric
+              v-model="printShowSeller"
+              :label="$t('view.mobile.sale.invoiceShowSeller')"
+            />
+          </div>
           <div class="print-form-actions">
             <button
               class="mobile-btn mobile-btn-primary"
@@ -234,13 +240,15 @@ import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import dayjs from 'dayjs'
 import SoItemCard from './components/so-item-card.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 export default {
   name: 'MobileInvoiceDetailView',
 
   components: {
     SoItemCard,
-    InputTextGeneric
+    InputTextGeneric,
+    CheckboxGeneric
   },
 
   setup() {
@@ -260,6 +268,7 @@ export default {
       printInvoiceNumber: '',
       printInvoiceDate: '',
       printSellerName: '',
+      printShowSeller: true,
       exportingPDF: false,
       // Cancel
       cancelling: false
@@ -346,6 +355,7 @@ export default {
       this.printInvoiceNumber = this.invoiceData.invoiceNumber || ''
       this.printInvoiceDate = dayjs().format('YYYY-MM-DD')
       this.printSellerName = this.getDefaultSellerName()
+      this.printShowSeller = true
       this.showPrintForm = true
     },
 
@@ -358,6 +368,7 @@ export default {
           invoiceNo: this.printInvoiceNumber,
           invoiceDate: dayjs(this.printInvoiceDate),
           sellerName: this.printSellerName,
+          showSeller: this.printShowSeller,
           download: true
         }
 

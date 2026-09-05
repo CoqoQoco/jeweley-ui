@@ -1156,7 +1156,11 @@ export default {
           if (printData.invoiceTemplate === 'summary') {
             await invoiceSummaryPdfService.generateInvoiceSummaryPDF(pdfData, options)
           } else {
-            await invoicePdfService.generateInvoicePDF(pdfData, { ...options, sellerName: this.sellerName })
+            await invoicePdfService.generateInvoicePDF(pdfData, {
+              ...options,
+              sellerName: this.sellerName,
+              showSeller: printData.showSeller !== undefined ? printData.showSeller : true
+            })
           }
         }
         success(this.$t('view.sale.invoiceDetail.success.createPDF'), 'Invoice PDF')
@@ -1246,7 +1250,11 @@ export default {
 
       const res = printData.invoiceTemplate === 'summary'
         ? await invoiceSummaryPdfService.generateInvoiceSummaryPDF(pdfData, options)
-        : await invoicePdfService.generateInvoicePDF(pdfData, { ...options, sellerName: this.sellerName })
+        : await invoicePdfService.generateInvoicePDF(pdfData, {
+            ...options,
+            sellerName: this.sellerName,
+            showSeller: printData.showSeller !== undefined ? printData.showSeller : true
+          })
       this.previewUrl = res.previewUrl
       this.lastPreviewPrintData = printData
       this.isShowPreviewModal = true
@@ -1309,6 +1317,7 @@ export default {
           invoiceNo: `${this.invoiceData.invoiceNumber}-V${versionData.versionNumber}`,
           invoiceDate: dayjs(this.invoiceData.createDate).format('DD/MM/YYYY'),
           sellerName: this.sellerName,
+          showSeller: true,
           download: options.download,
           open: options.open
         }

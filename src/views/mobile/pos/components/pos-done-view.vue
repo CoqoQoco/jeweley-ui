@@ -224,6 +224,7 @@ export default {
           invoiceNo: invoiceNumber,
           invoiceDate: dayjs(context.invoiceData.createDate),
           sellerName: this.getSellerName(),
+          showSeller: true,
           download: true
         }
 

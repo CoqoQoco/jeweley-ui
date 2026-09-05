@@ -3,6 +3,7 @@ import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -19,13 +20,7 @@ export class InvoicePdfBuilder {
     this.customer = customer || {}
     this.saleOrderData = saleOrderData || {}
     this.invoiceDate = invoiceDate || dayjs()
-    this.companyInfo = {
-      name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '200/16 Rama 6 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
-      phone: '(+662) 6196601-4',
-      fax: ' (+662) 2710834',
-      email: 'info@dkbkk.com'
-    }
+    this.companyInfo = { ...COMPANY_INFO }
     this.invoiceNo = invoiceNo || this.generateInvoiceNumber()
     this.logoBase64 = null
     this.currencyUnit = currencyUnit || 'THB'
@@ -45,6 +40,7 @@ export class InvoicePdfBuilder {
     this.discount = Number(saleOrderData.discount) || 0
     this.itemsPerPage = Number(itemsPerPage) || 10
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
+    this.showSeller = saleOrderData?.showSeller !== undefined ? saleOrderData.showSeller : true
     this.hideCompanyHeader = saleOrderData?.hideCompanyHeader || false
     this.hideRounding = saleOrderData?.hideRounding || false
     this.sellerName = saleOrderData?.sellerName || ''
@@ -87,6 +83,9 @@ export class InvoicePdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+
+    const company = await loadCompanyInfo()
+    this.companyInfo = { ...COMPANY_INFO, ...(company?.info || {}) }
 
     // Pre-load all product images from Azure Blob Storage
     await this.prepareImages()
@@ -307,7 +306,7 @@ export class InvoicePdfBuilder {
                   stack: [
                     // Company Address
                     {
-                      text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
+                      text: 'Form: ' + (this.companyInfo.name || ''),
                       fontSize: 11,
                       bold: true,
                       color: '#8B0000',
@@ -834,7 +833,7 @@ export class InvoicePdfBuilder {
     // const netWeightText = `${
     //   net ? net.toFixed(2) : (0).toFixed(2)
     // } NET WEIGHT OF MERCHANDISES (gms.)`
-    const sellerText = this.sellerName && String(this.sellerName).trim()
+    const sellerText = this.showSeller && this.sellerName && String(this.sellerName).trim()
       ? `Seller: ${String(this.sellerName).trim()}`
       : ''
 
@@ -886,6 +885,7 @@ export class InvoicePdfBuilder {
                   {
                     text: '(Authorized Signature and Company Stamp)',
                     style: 'parcelText',
+                    fontSize: 7.5,
                     alignment: 'center',
                     width: '30%'
                   }
@@ -1179,13 +1179,13 @@ export class InvoicePdfBuilder {
           bold: true
         },
         summaryLabelColored: {
-          fontSize: 10,
+          fontSize: 7.5,
           bold: true,
           color: 'white',
           fillColor: '#8B0000'
         },
         totalSummaryLabelColored: {
-          fontSize: 10,
+          fontSize: 7.5,
           bold: true,
           color: '#8B0000',
           fillColor: '#e0e0e0'

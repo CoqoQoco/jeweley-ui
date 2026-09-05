@@ -560,6 +560,7 @@ export const sale = {
   invoicePrintNote: 'Changes only affect the printed document. Original data is not modified.',
   invoicePrintNumber: 'Invoice Number',
   invoicePrintDate: 'Invoice Date',
+  invoiceShowSeller: 'Show Seller Name',
   invoicePrintBtn: 'Print Document',
   invoiceGeneratingBtn: 'Generating PDF...',
   invoicePrintInvoiceBtn: 'Print Invoice',
