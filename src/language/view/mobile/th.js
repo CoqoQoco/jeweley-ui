@@ -134,6 +134,8 @@ export const pos = {
   doneRemaining: 'ยอดค้างชำระ',
   shareReceiptBtn: 'แชร์ใบเสร็จ',
   printReceiptBtn: 'พิมพ์ใบเสร็จ',
+  printA4InvoiceBtn: 'ใบกำกับสินค้า A4',
+  printA4InvoiceErrorMsg: 'ดึงข้อมูลใบกำกับสินค้าไม่สำเร็จ',
   sellMoreBtn: 'ขายต่อ',
   viewAllBillsBtn: 'ดูบิลทั้งหมด',
   shareUnavailableMsg: 'อุปกรณ์นี้แชร์ไฟล์โดยตรงไม่ได้ ระบบดาวน์โหลดไฟล์ใบเสร็จให้แทน',

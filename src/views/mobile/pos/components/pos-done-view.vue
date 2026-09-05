@@ -48,6 +48,15 @@
             @click="onPrint"
           />
           <ButtonGeneric
+            variant="outline"
+            icon="bi-file-earmark-text"
+            :label="$t('view.mobile.pos.printA4InvoiceBtn')"
+            :block="true"
+            :loading="generatingA4Pdf"
+            :disabled="generatingA4Pdf"
+            @click="onPrintA4Invoice"
+          />
+          <ButtonGeneric
             variant="green"
             icon="bi-arrow-repeat"
             :label="$t('view.mobile.pos.sellMoreBtn')"
@@ -66,12 +75,17 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
 import { generateReceiptBlob } from '@/services/helper/pdf/receipt/receipt-80mm-builder.js'
 import { canShareFiles, shareReceipt } from '@/services/helper/pdf/receipt/receipt-share.js'
 import { buildReceiptText } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
 import { printReceiptText } from '@/services/helper/pdf/receipt/receipt-rawbt.js'
+import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/build-invoice-pdf-data.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ReceiptPrintAction from '@/components/receipt/receipt-print-action.vue'
@@ -86,7 +100,9 @@ export default {
 
   setup() {
     const authStore = useAuthStore()
-    return { authStore }
+    const invoiceStore = useInvoiceApiStore()
+    const saleOrderStore = usrSaleOrderApiStore()
+    return { authStore, invoiceStore, saleOrderStore }
   },
 
   props: {
@@ -103,6 +119,12 @@ export default {
   },
 
   emits: ['sell-more'],
+
+  data() {
+    return {
+      generatingA4Pdf: false
+    }
+  },
 
   computed: {
     currencyUnit() {
@@ -168,6 +190,53 @@ export default {
       if (!result.success) {
         warning(this.$t('view.mobile.pos.printUnavailableMsg'))
       }
+    },
+
+    // ใบกำกับสินค้า A4 — ใช้ helper กลางเดียวกับ views/mobile/sale/invoice-detail-view.vue
+    async onPrintA4Invoice() {
+      const invoiceNumber = this.result?.invoiceNumber
+      if (!invoiceNumber) {
+        warning(this.$t('view.mobile.pos.printA4InvoiceErrorMsg'))
+        return
+      }
+
+      this.generatingA4Pdf = true
+      try {
+        const context = await loadInvoiceContext(invoiceNumber, {
+          invoiceStore: this.invoiceStore,
+          saleOrderStore: this.saleOrderStore
+        })
+
+        if (!context) {
+          warning(this.$t('view.mobile.pos.printA4InvoiceErrorMsg'))
+          return
+        }
+
+        // context.invoiceItems ว่าง = ดึงรายการสินค้าไม่สำเร็จ (SO data parse ไม่ได้) —
+        // กันไว้ก่อนไม่ให้ยิง generateInvoicePDF() ซึ่งจะโยน error ดิบ (ไม่พบข้อมูลสินค้า) ให้ผู้ใช้เห็น
+        if (!context.invoiceItems?.length) {
+          warning(this.$t('view.mobile.pos.printA4InvoiceErrorMsg'))
+          return
+        }
+
+        const pdfData = toInvoicePdfData(context)
+        const options = {
+          invoiceNo: invoiceNumber,
+          invoiceDate: dayjs(context.invoiceData.createDate),
+          sellerName: this.getSellerName(),
+          download: true
+        }
+
+        await invoicePdfService.generateInvoicePDF(pdfData, options)
+      } finally {
+        this.generatingA4Pdf = false
+      }
+    },
+
+    getSellerName() {
+      const u = this.authStore.getUser
+      const full = [u?.firstName, u?.lastName].filter(Boolean).join(' ').trim()
+      return full || u?.username || ''
     },
 
     onSellMore() {

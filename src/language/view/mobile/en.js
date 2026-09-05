@@ -134,6 +134,8 @@ export const pos = {
   doneRemaining: 'Outstanding',
   shareReceiptBtn: 'Share Receipt',
   printReceiptBtn: 'Print Receipt',
+  printA4InvoiceBtn: 'Tax Invoice (A4)',
+  printA4InvoiceErrorMsg: 'Failed to load tax invoice data',
   sellMoreBtn: 'Sell More',
   viewAllBillsBtn: 'View All Bills',
   shareUnavailableMsg: 'This device cannot share files directly — the receipt will be downloaded instead',

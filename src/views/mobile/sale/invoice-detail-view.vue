@@ -228,6 +228,7 @@ import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
+import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/build-invoice-pdf-data.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import dayjs from 'dayjs'
@@ -322,73 +323,16 @@ export default {
       this.invoiceData = null
       this.invoiceItems = []
 
-      // 1. Get Invoice data
-      const invoiceResponse = await this.invoiceStore.fetchGet({
-        formValue: { invoiceNumber: this.invoiceNumber }
+      const context = await loadInvoiceContext(this.invoiceNumber, {
+        invoiceStore: this.invoiceStore,
+        saleOrderStore: this.saleOrderStore
       })
 
-      if (!invoiceResponse) return
+      if (!context) return
 
-      // 2. Get Sale Order data (for items + stockConfirm)
-      const soResponse = await this.saleOrderStore.fetchGet({
-        formValue: { soNumber: invoiceResponse.soNumber }
-      })
-
-      if (!soResponse) return
-
-      this.soData = soResponse
-
-      // Set invoice data
-      this.invoiceData = {
-        ...invoiceResponse,
-        vatPercent: invoiceResponse.vat || 0,
-        // Currency from SO
-        currencyUnit: soResponse.currencyUnit || invoiceResponse.currencyUnit || 'THB',
-        currencyRate: soResponse.currencyRate || invoiceResponse.currencyRate || 1
-      }
-
-      // 3. Parse SO data → items
-      let parsedData = null
-      if (soResponse.data && typeof soResponse.data === 'string') {
-        try {
-          parsedData = JSON.parse(soResponse.data)
-        } catch (e) {
-          // parse fail → parsedData remains null
-        }
-      } else if (soResponse.data && typeof soResponse.data === 'object') {
-        parsedData = soResponse.data
-      }
-
-      if (!parsedData) return
-
-      let stockItems = []
-      if (parsedData.stockItems || parsedData.copyItems) {
-        stockItems = parsedData.stockItems || []
-      } else if (Array.isArray(parsedData.allItems)) {
-        stockItems = parsedData.allItems.filter((item) => item.stockNumber != null)
-      } else if (Array.isArray(parsedData)) {
-        stockItems = parsedData.filter((item) => item.stockNumber != null)
-      }
-
-      // 4. Filter: only items that are in confirmedItems
-      const confirmedItems = invoiceResponse.confirmedItems || []
-      this.invoiceItems = stockItems.filter((item) => {
-        return confirmedItems.some((ci) => ci.stockNumber === item.stockNumber)
-      })
-
-      // 5. Map stockConfirm → set id, appraisalPrice, qty, discountPercent, isConfirm, isInvoice
-      const stockConfirm = soResponse.stockConfirm || []
-      this.invoiceItems.forEach((item) => {
-        const confirmed = stockConfirm.find((c) => c.stockNumber === item.stockNumber)
-        if (confirmed) {
-          item.id = confirmed.id
-          item.appraisalPrice = confirmed.priceOrigin
-          item.qty = confirmed.qty
-          item.discountPercent = confirmed.discount
-          item.isConfirm = true
-          item.isInvoice = true
-        }
-      })
+      this.invoiceData = context.invoiceData
+      this.soData = context.soData
+      this.invoiceItems = context.invoiceItems
     },
 
     // ==================== Print ====================
@@ -408,28 +352,7 @@ export default {
     async generatePDF() {
       this.exportingPDF = true
       try {
-        const pdfData = {
-          saleOrder: {
-            soNumber: this.invoiceData.soNumber,
-            date: this.invoiceData.createDate,
-            specialDiscount: this.invoiceData.specialDiscount || 0,
-            specialAddition: this.invoiceData.specialAddition || 0,
-            freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
-            vatPercent: this.invoiceData.vatPercent || 0
-          },
-          customer: {
-            name: this.invoiceData.customerName,
-            address: this.invoiceData.customerAddress,
-            tel: this.invoiceData.customerTel,
-            email: this.invoiceData.customerEmail,
-            phone: this.invoiceData.customerTel
-          },
-          currency: {
-            unit: this.invoiceData.currencyUnit || 'THB',
-            rate: this.invoiceData.currencyRate || 1
-          },
-          items: this.invoiceItems
-        }
+        const pdfData = toInvoicePdfData({ invoiceData: this.invoiceData, invoiceItems: this.invoiceItems })
 
         const options = {
           invoiceNo: this.printInvoiceNumber,
