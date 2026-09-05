@@ -872,10 +872,12 @@ export class InvoicePdfBuilder {
                 columns: [
                   { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
                   {
+                    // เว้นที่ให้เซ็นชื่อเหนือเส้น (เดิมได้พื้นที่จากแถวว่าง พอมี Seller มาแทนที่จึงต้องเว้นเอง)
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '30%',
+                    margin: [0, 20, 0, 0]
                   }
                 ]
               },
