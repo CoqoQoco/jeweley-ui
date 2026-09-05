@@ -41,7 +41,6 @@
             <ButtonGeneric
               variant="red"
               icon="bi-trash"
-              class="ml-2"
               :title="$t('common.btn.delete')"
               @click="onRemoveItem(rowData)"
             />

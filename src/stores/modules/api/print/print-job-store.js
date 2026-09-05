@@ -37,7 +37,8 @@ export const usePrintJobApiStore = defineStore('printJob', {
             dateTo: search.dateTo || null,
             invoiceNumber: search.invoiceNumber || null,
             createBy: search.createBy || null,
-            status: search.status || null
+            status: search.status || null,
+            includeDeleted: search.includeDeleted || false
           }
         }
         return await api.jewelry.post('Print/List', param, { skipLoading, skipError })
@@ -73,6 +74,16 @@ export const usePrintJobApiStore = defineStore('printJob', {
         return await api.jewelry.post('Print/Retry', param, { skipLoading: true })
       } catch (error) {
         console.error('Error retrying print job:', error)
+        throw error
+      }
+    },
+
+    async fetchDelete({ id }) {
+      try {
+        const param = { id }
+        return await api.jewelry.post('Print/Delete', param, { skipLoading: true })
+      } catch (error) {
+        console.error('Error deleting print job:', error)
         throw error
       }
     }

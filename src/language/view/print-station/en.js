@@ -7,6 +7,7 @@ export default {
   printerLabel: 'Printer',
   printerPlaceholder: 'Select printer',
   autoPrintLabel: 'Auto print',
+  logoPrintLabel: 'Print with logo',
   queueTitle: "Today's queue ({count})",
   colInvoice: 'Invoice No.',
   colCreateBy: 'Staff',
@@ -19,5 +20,17 @@ export default {
   reprintBtn: 'Reprint',
   retryBtn: 'Retry',
   printFailedGeneric: 'Print failed. Please try again.',
-  emptyQueueMsg: 'No print jobs today'
+  printImageFailedGeneric: 'Failed to print receipt with logo — check that DK Print Bridge is version 1.4 or newer',
+  emptyQueueMsg: 'No print jobs today',
+  deleteBtn: 'Delete',
+  confirmDeleteTitle: 'Confirm delete print job',
+  deleteSuccessMsg: 'Print job deleted successfully',
+  historyTitle: 'Print History',
+  historyDesc: 'Search and review past print jobs',
+  statusDeleted: 'Deleted',
+  showDeletedLabel: 'Show deleted items',
+  dateRange: 'Date range',
+  colPrintedDate: 'Printed Date',
+  emptyHistoryMsg: 'No print history matches your search',
+  historyBtn: 'Print History'
 }

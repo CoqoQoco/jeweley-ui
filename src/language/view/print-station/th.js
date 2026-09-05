@@ -7,6 +7,7 @@ export default {
   printerLabel: 'เครื่องพิมพ์',
   printerPlaceholder: 'เลือกเครื่องพิมพ์',
   autoPrintLabel: 'พิมพ์อัตโนมัติ',
+  logoPrintLabel: 'พิมพ์แบบมีโลโก้',
   queueTitle: 'คิววันนี้ ({count})',
   colInvoice: 'เลขที่ใบเสร็จ',
   colCreateBy: 'พนักงาน',
@@ -19,5 +20,17 @@ export default {
   reprintBtn: 'พิมพ์ซ้ำ',
   retryBtn: 'ลองใหม่',
   printFailedGeneric: 'พิมพ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
-  emptyQueueMsg: 'ยังไม่มีงานพิมพ์วันนี้'
+  printImageFailedGeneric: 'พิมพ์ใบเสร็จแบบมีโลโก้ไม่สำเร็จ — ตรวจว่า DK Print Bridge เป็นเวอร์ชัน 1.4 ขึ้นไป',
+  emptyQueueMsg: 'ยังไม่มีงานพิมพ์วันนี้',
+  deleteBtn: 'ลบ',
+  confirmDeleteTitle: 'ยืนยันการลบงานพิมพ์',
+  deleteSuccessMsg: 'ลบงานพิมพ์สำเร็จ',
+  historyTitle: 'ประวัติการพิมพ์',
+  historyDesc: 'ค้นหาและตรวจสอบงานพิมพ์ย้อนหลัง',
+  statusDeleted: 'ลบแล้ว',
+  showDeletedLabel: 'แสดงรายการที่ลบแล้ว',
+  dateRange: 'ช่วงวันที่',
+  colPrintedDate: 'วันที่พิมพ์',
+  emptyHistoryMsg: 'ไม่พบประวัติการพิมพ์ตามเงื่อนไขที่ค้นหา',
+  historyBtn: 'ประวัติการพิมพ์'
 }

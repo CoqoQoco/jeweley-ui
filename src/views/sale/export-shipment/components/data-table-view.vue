@@ -21,7 +21,7 @@
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
           <ButtonGeneric variant="green" icon="bi-pencil" :title="$t('common.btn.edit')" @click="$emit('edit', data)" />
-          <ButtonGeneric variant="red" icon="bi-trash" class="ml-2" :title="$t('common.btn.delete')" @click="$emit('delete', data)" />
+          <ButtonGeneric variant="red" icon="bi-trash" :title="$t('common.btn.delete')" @click="$emit('delete', data)" />
         </div>
       </template>
     </BaseDataTable>

@@ -39,7 +39,6 @@
             v-if="data.status === 10"
             variant="main"
             icon="bi-pencil"
-            class="ml-2"
             :title="$t('common.btn.edit')"
             @click="$emit('edit', data)"
           />
@@ -47,7 +46,6 @@
             v-if="data.status === 10"
             variant="red"
             icon="bi-trash"
-            class="ml-2"
             :title="$t('common.btn.delete')"
             @click="$emit('delete', data)"
           />

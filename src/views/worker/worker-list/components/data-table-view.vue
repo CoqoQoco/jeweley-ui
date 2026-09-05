@@ -10,7 +10,7 @@
     >
       <template #actionsTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn-main mr-2" :title="$t('view.worker.workerList.btnEdit')" @click="onUpdate(data)">
+          <button class="btn btn-sm btn-main" :title="$t('view.worker.workerList.btnEdit')" @click="onUpdate(data)">
             <i class="bi bi-database-fill-gear"></i>
           </button>
           <button class="btn btn-sm btn-main" :title="$t('view.worker.workerList.btnWages')" @click="onGoWages(data)">

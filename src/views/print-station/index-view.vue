@@ -7,14 +7,23 @@
       :showRefresh="false"
     >
       <template #controls>
-        <span class="ps-bridge-status" :class="bridgeConnected ? 'is-online' : 'is-offline'">
-          <i class="bi bi-circle-fill"></i>
-          {{
-            bridgeConnected
-              ? $t('view.printStation.bridgeConnected')
-              : $t('view.printStation.bridgeDisconnected')
-          }}
-        </span>
+        <div class="ps-header-controls">
+          <span class="ps-bridge-status" :class="bridgeConnected ? 'is-online' : 'is-offline'">
+            <i class="bi bi-circle-fill"></i>
+            {{
+              bridgeConnected
+                ? $t('view.printStation.bridgeConnected')
+                : $t('view.printStation.bridgeDisconnected')
+            }}
+          </span>
+          <ButtonGeneric
+            variant="main"
+            icon="bi-clock-history"
+            :label="$t('view.printStation.historyBtn')"
+            :title="$t('view.printStation.historyBtn')"
+            @click="isShowHistory = true"
+          />
+        </div>
       </template>
     </DashboardHeaderGeneric>
 
@@ -24,9 +33,12 @@
     </div>
 
     <SectionCardGeneric class="ps-settings-card">
-      <div class="ps-settings-row responsive-flex-row">
-        <div class="ps-printer-field">
-          <FormFieldGeneric :label="$t('view.printStation.printerLabel')">
+      <FormFieldGeneric :label="$t('view.printStation.printerLabel')">
+        <!-- DropdownGeneric and CheckboxGeneric are direct flex siblings here, so
+             `align-items: center` (below) centers the checkbox against the dropdown's
+             real rendered height — no guessed px needed. -->
+        <div class="ps-settings-controls-row responsive-flex-row">
+          <div class="ps-printer-field">
             <DropdownGeneric
               :modelValue="selectedPrinter"
               :options="printerOptions"
@@ -36,16 +48,19 @@
               :placeholder="$t('view.printStation.printerPlaceholder')"
               @update:modelValue="onPrinterChange"
             />
-          </FormFieldGeneric>
-        </div>
-        <div class="ps-autoprint-field">
+          </div>
           <CheckboxGeneric
             :modelValue="autoPrint"
             :label="$t('view.printStation.autoPrintLabel')"
             @update:modelValue="onAutoPrintChange"
           />
+          <CheckboxGeneric
+            :modelValue="logoPrint"
+            :label="$t('view.printStation.logoPrintLabel')"
+            @update:modelValue="onLogoPrintChange"
+          />
         </div>
-      </div>
+      </FormFieldGeneric>
     </SectionCardGeneric>
 
     <SectionCardGeneric
@@ -100,20 +115,32 @@
                 :disabled="retryingId === data.id"
                 @click="onRetry(data)"
               />
+              <ButtonGeneric
+                variant="red"
+                icon="bi-trash"
+                :title="$t('view.printStation.deleteBtn')"
+                :loading="deletingId === data.id"
+                :disabled="deletingId === data.id"
+                @click="onDelete(data)"
+              />
             </div>
           </template>
         </BaseDataTable>
       </div>
     </SectionCardGeneric>
+
+    <PrintHistoryModal :isShow="isShowHistory" @closeModal="isShowHistory = false" />
   </div>
 </template>
 
 <script>
 import { usePrintJobApiStore } from '@/stores/modules/api/print/print-job-store.js'
-import { printRaw, getPrinters, checkBridgeHealth } from '@/services/api/print-bridge-service.js'
+import { printRaw, printImage, getPrinters, checkBridgeHealth } from '@/services/api/print-bridge-service.js'
 import { storage } from '@/services/storage.js'
 import { formatOnlyTime, formatISOString } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { success } from '@/services/alert/sweetAlerts.js'
 import dayjs from 'dayjs'
 
 import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
@@ -123,11 +150,13 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import PrintHistoryModal from './components/print-history-modal.vue'
 
 // localStorage key ต่อเครื่อง — ค่าตั้ง (auto-print / เครื่องพิมพ์ที่เลือก / stationId) ต้องคงที่ต่อเครื่อง ไม่ใช่ต่อผู้ใช้
 const STATION_ID_STORAGE_KEY = 'print-station-id'
 const AUTO_PRINT_STORAGE_KEY = 'print-station-auto-print'
 const PRINTER_STORAGE_KEY = 'print-station-printer'
+const LOGO_PRINT_STORAGE_KEY = 'print-station-logo-print'
 
 const POLL_INTERVAL_MS = 2000
 const HEALTH_CHECK_INTERVAL_MS = 2000
@@ -149,7 +178,8 @@ export default {
     ButtonGeneric,
     DropdownGeneric,
     CheckboxGeneric,
-    BaseDataTable
+    BaseDataTable,
+    PrintHistoryModal
   },
 
   mixins: [dataTablePaging],
@@ -167,9 +197,12 @@ export default {
       selectedPrinter: '',
       printerOptions: [],
       autoPrint: false,
+      logoPrint: false,
       bridgeConnected: false,
       isClaiming: false,
       retryingId: null,
+      deletingId: null,
+      isShowHistory: false,
       pollTimerId: null,
       healthTimerId: null,
       wakeLockSentinel: null
@@ -179,19 +212,37 @@ export default {
   computed: {
     columns() {
       return [
-        { field: 'invoiceNumber', header: this.$t('view.printStation.colInvoice'), minWidth: '160px' },
-        { field: 'createBy', header: this.$t('view.printStation.colCreateBy'), minWidth: '120px' },
-        { field: 'createDate', header: this.$t('view.printStation.colTime'), minWidth: '100px' },
-        {
-          field: 'status',
-          header: this.$t('common.field.status'),
-          minWidth: '150px',
-          sortable: false
-        },
         {
           field: 'action',
           header: this.$t('common.field.action'),
-          minWidth: '140px',
+          width: '100px',
+          minWidth: '100px',
+          align: 'center',
+          sortable: false
+        },
+        {
+          field: 'invoiceNumber',
+          header: this.$t('view.printStation.colInvoice'),
+          width: '30%',
+          minWidth: '160px'
+        },
+        {
+          field: 'createBy',
+          header: this.$t('view.printStation.colCreateBy'),
+          width: '25%',
+          minWidth: '120px'
+        },
+        {
+          field: 'createDate',
+          header: this.$t('view.printStation.colTime'),
+          width: '15%',
+          minWidth: '90px'
+        },
+        {
+          field: 'status',
+          header: this.$t('common.field.status'),
+          width: '20%',
+          minWidth: '130px',
           sortable: false
         }
       ]
@@ -202,6 +253,7 @@ export default {
     this.initStationId()
     this.autoPrint = storage.getItem(AUTO_PRINT_STORAGE_KEY, 'false') === 'true'
     this.selectedPrinter = storage.getItem(PRINTER_STORAGE_KEY, '')
+    this.logoPrint = storage.getItem(LOGO_PRINT_STORAGE_KEY, 'false') === 'true'
 
     this.loadPrinters()
     this.fetchData()
@@ -290,6 +342,11 @@ export default {
       storage.setItem(AUTO_PRINT_STORAGE_KEY, value)
     },
 
+    onLogoPrintChange(value) {
+      this.logoPrint = value
+      storage.setItem(LOGO_PRINT_STORAGE_KEY, value)
+    },
+
     // guard เดียวกันนี้คุมทั้ง auto-print (poll tick) และปุ่มพิมพ์เอง — กัน claim ซ้อนกัน
     async claimAndPrint() {
       if (this.isClaiming) return
@@ -309,16 +366,23 @@ export default {
       }
     },
 
-    // printRaw เป็น fetch ตรง ไม่ผ่าน axios — ต้อง catch เอง (จุดที่ได้รับอนุญาตให้ try-catch)
+    // printRaw/printImage เป็น fetch ตรง ไม่ผ่าน axios — ต้อง catch เอง (จุดที่ได้รับอนุญาตให้ try-catch)
+    // logoPrint เปิด = โหมดภาพ (CPCL, มีโลโก้) · ปิด = โหมดข้อความเดิม
+    // ห้าม fallback จากโหมดภาพไปโหมดข้อความเงียบ ๆ — ผู้ใช้ต้องรู้ว่าได้ใบไม่มีโลโก้
     async executePrint(job) {
+      const printerName = this.selectedPrinter || undefined
       try {
-        await printRaw({ printerName: this.selectedPrinter || undefined, text: job.payload })
+        if (this.logoPrint) {
+          await printImage({ printerName, text: job.payload, logo: true })
+        } else {
+          await printRaw({ printerName, text: job.payload })
+        }
         return { success: true, errorMessage: null }
       } catch (err) {
-        return {
-          success: false,
-          errorMessage: err?.message || this.$t('view.printStation.printFailedGeneric')
-        }
+        const fallbackMsg = this.logoPrint
+          ? this.$t('view.printStation.printImageFailedGeneric')
+          : this.$t('view.printStation.printFailedGeneric')
+        return { success: false, errorMessage: err?.message || fallbackMsg }
       }
     },
 
@@ -339,6 +403,23 @@ export default {
       return status === 'PRINTED'
         ? this.$t('view.printStation.reprintBtn')
         : this.$t('view.printStation.retryBtn')
+    },
+
+    onDelete(job) {
+      confirmThenSubmit(
+        `${job.invoiceNumber} — ${this.formatTime(job.createDate)}`,
+        this.$t('view.printStation.confirmDeleteTitle'),
+        async () => {
+          this.deletingId = job.id
+          try {
+            await this.printJobStore.fetchDelete({ id: job.id })
+            success(this.$t('view.printStation.deleteSuccessMsg'))
+            await this.fetchData()
+          } finally {
+            this.deletingId = null
+          }
+        }
+      )
     },
 
     statusLabel(status) {
@@ -395,6 +476,13 @@ export default {
   padding: var(--sp-xl);
 }
 
+.ps-header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  flex-wrap: wrap;
+}
+
 .ps-bridge-status {
   display: inline-flex;
   align-items: center;
@@ -432,18 +520,16 @@ export default {
   margin-bottom: var(--sp-lg);
 }
 
-.ps-settings-row {
-  align-items: flex-end;
+// Dropdown and checkbox are direct flex siblings here, so the browser centers the
+// (shorter) checkbox against the (taller) dropdown's real rendered height on its own.
+.ps-settings-controls-row {
+  align-items: center;
 }
 
 .ps-printer-field {
   max-width: 280px;
   min-width: 220px;
   flex: 1;
-}
-
-.ps-autoprint-field {
-  padding-bottom: var(--sp-sm);
 }
 
 .ps-status-badge {

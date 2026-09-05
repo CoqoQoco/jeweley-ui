@@ -19,14 +19,12 @@
           <ButtonGeneric
             variant="main"
             icon="bi-pencil-square"
-            class="ml-2"
             :title="$t('common.btn.edit')"
             @click="onUpdate(rowData)"
           />
           <ButtonGeneric
             variant="red"
             icon="bi-trash"
-            class="ml-2"
             :title="$t('common.btn.delete')"
             @click="onDelete(rowData)"
           />

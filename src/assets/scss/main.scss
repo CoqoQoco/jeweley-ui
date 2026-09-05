@@ -149,6 +149,14 @@ button.btn-plain {
   }
 }
 
+// btn-action-container — กลุ่มปุ่ม action ในเซลล์ตาราง (ใช้ gap แทน ml-2/mr-2 ต่อปุ่ม)
+.btn-action-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
 input {
   margin-top: 5px !important;
 
