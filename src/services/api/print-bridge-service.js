@@ -54,6 +54,20 @@ export async function printRaw(payload) {
   return data
 }
 
+// ภาพ+โลโก้ (CPCL) — ใช้ text ชุดเดียวกับ printRaw แต่ bridge วาดเป็นภาพทั้งใบก่อนส่งพิมพ์
+export async function printImage(payload) {
+  const res = await fetch(`${BRIDGE_BASE}/print/image`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || `Print failed (HTTP ${res.status})`)
+  }
+  return data
+}
+
 export async function getPrinters() {
   const res = await fetch(`${BRIDGE_BASE}/printers`)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
