@@ -103,7 +103,7 @@ export class WorkerWagesSuccessPdfBuilder {
       totalWeightSend += item.goldWeightSend || 0
       totalWeightCheck += item.goldWeightCheck || 0
       return [
-        { text: this.formatDate(item.jobDate), bold: true, border: [false, false, false, false] },
+        { text: this.formatDate(item.jobDate), bold: true, border: [false, false, false, false], noWrap: true },
         { text: `${item.wo || ''}${item.woNumber ? ' - ' + item.woNumber : ''}`, bold: true, border: [false, false, false, false] },
         { text: `${item.productNumber || ''}`, bold: true, border: [false, false, false, false] },
         { text: `${item.statusName || ''}`, bold: true, border: [false, false, false, false] },
@@ -165,7 +165,7 @@ export class WorkerWagesSuccessPdfBuilder {
       totalMoneyDiff += moneyDiff
 
       return [
-        { text: this.formatDate(item.jobDate) },
+        { text: this.formatDate(item.jobDate), noWrap: true },
         { text: `${item.wo || ''}${item.woNumber ? ' - ' + item.woNumber : ''}` },
         { text: `${item.productNumber || ''}` },
         { text: `${item.statusName || ''}` },
@@ -365,7 +365,8 @@ export class WorkerWagesSuccessPdfBuilder {
         margin: [0, 0, 0, 0],
         table: {
           headerRows: 1,
-          widths: [52, 53, 76, 30, '*', 26, 24, 36, 38, 39, 41],
+          // ฟอนต์ ChakraPetch เลขกว้างไม่เท่ากัน — 58 เผื่อพอสำหรับ DD/MM/YYYY ที่กว้างที่สุดเท่าที่เป็นไปได้ ทั้ง bold และปกติ
+          widths: [58, 53, 76, 30, '*', 26, 24, 36, 38, 39, 41],
           body: this.buildGoldLossTableBody()
         },
         layout: {
@@ -385,7 +386,8 @@ export class WorkerWagesSuccessPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [49, 55, 77, 32, '*', 26, 42, 37, 45, 46],
+        // ฟอนต์ ChakraPetch เลขกว้างไม่เท่ากัน — 58 เผื่อพอสำหรับ DD/MM/YYYY ที่กว้างที่สุดเท่าที่เป็นไปได้ ทั้ง bold และปกติ
+        widths: [58, 55, 77, 32, '*', 26, 42, 37, 45, 46],
         body: this.buildWagesTableBody()
       },
       layout: {
