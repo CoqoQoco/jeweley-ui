@@ -238,7 +238,7 @@
                   :placeholder="$t('common.printer.selectPlaceholder')"
                   :forceSelection="false"
                   :dropdown="true"
-                  customClass="printer-ac"
+                  class="printer-ac"
                   @update:modelValue="onPrinterChange"
                 />
                 <ButtonGeneric
@@ -553,8 +553,8 @@ export default {
   flex-wrap: wrap;
   gap: var(--sp-sm);
 
-  :deep(.printer-ac) {
-    flex: 1;
+  .printer-ac {
+    flex: 1 1 200px;
     min-width: 200px;
   }
 }

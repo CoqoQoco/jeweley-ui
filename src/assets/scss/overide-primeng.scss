@@ -112,9 +112,41 @@
   .p-autocomplete-loader {
     margin-top: -0.1rem !important;
   }
-  .p-component {
+
+  // ⚠️ ห้ามเปลี่ยน selector นี้กลับไปเป็น `.p-component`
+  // ปุ่ม ▼ (dropdown mode) ของ PrimeVue render เป็น
+  // <Button class="p-button p-component p-autocomplete-dropdown"> — ถ้าจับด้วย `.p-component`
+  // ปุ่มจะโดน width: 100% ไปด้วย → บวมเป็นแท่งใหญ่แย่งพื้นที่กับช่องกรอก
+  // `.p-inputtext` ครอบเฉพาะช่องกรอก: single = .p-autocomplete-input,
+  // multiple = .p-autocomplete-multiple-container (มี .p-inputtext ทั้งคู่ แต่ Button ไม่มี)
+  .p-inputtext {
     height: 35px !important;
     width: 100% !important;
+  }
+
+  // ปุ่ม ▼ — ให้กว้างพอดีไอคอนและกลืนไปกับช่องกรอก (ไม่ใช้สี primary ของธีม indigo)
+  .p-autocomplete-dropdown {
+    flex: 0 0 auto !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 35px !important;
+    padding: 0 !important;
+    background-color: var(--color-border) !important;
+    border-color: var(--color-border) !important;
+    color: var(--base-sub-color) !important;
+    box-shadow: none !important;
+
+    &:enabled:hover {
+      background-color: darken($base-color, 6%) !important;
+      border-color: darken($base-color, 6%) !important;
+      color: var(--base-font-color) !important;
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: 0 none !important;
+      box-shadow: none !important;
+    }
   }
 }
 .p-autocomplete-panel {
