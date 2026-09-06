@@ -907,6 +907,8 @@ export const costStock = {
   historyBadge: 'Recently used',
   totalCostTHB: 'Total Cost (THB)',
   costPerPiece: 'Cost per piece (÷ {qty} pcs)',
+  pullSections: 'Sections to pull',
+  pullSectionsHint: 'Tick only the sections you want copied into the quotation',
   group: {
     gold: 'Gold Items',
     material: 'Material Items',

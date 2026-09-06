@@ -901,6 +901,8 @@ export const costStock = {
   historyBadge: 'เคยใช้',
   totalCostTHB: 'ต้นทุนรวมทั้งหมด (THB)',
   costPerPiece: 'ต้นทุนต่อชิ้น (÷ {qty} ชิ้น)',
+  pullSections: 'เลือกหัวข้อที่จะดึง',
+  pullSectionsHint: 'ติ๊กเฉพาะหัวข้อที่ต้องการดึงมาที่ใบเสนอราคา',
   group: {
     gold: 'รายการทอง',
     material: 'รายการวัถุดิบ',

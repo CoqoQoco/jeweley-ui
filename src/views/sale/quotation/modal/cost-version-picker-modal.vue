@@ -50,6 +50,22 @@
           </form>
         </div>
 
+        <!-- Pull Group Selector -->
+        <div class="pull-groups-container mb-3">
+          <span class="title-text d-block mb-2">{{ $t('view.sale.costStock.pullSections') }}</span>
+          <div class="pull-groups-row">
+            <CheckboxGeneric
+              v-for="opt in pullGroupOptions"
+              :key="opt.code"
+              v-model="pullGroups"
+              :value="opt.code"
+              :binary="false"
+              :label="opt.name"
+            />
+          </div>
+          <div class="responsive-text-note mb-0 mt-2">{{ $t('view.sale.costStock.pullSectionsHint') }}</div>
+        </div>
+
         <!-- Cost Version Table -->
         <div class="cost-version-table-container" style="max-height: 500px; overflow-y: auto">
           <BaseDataTable
@@ -65,6 +81,7 @@
               <div class="text-center">
                 <button
                   class="btn btn-sm btn-green"
+                  :disabled="pullGroups.length === 0"
                   @click="onSelectItem(data)"
                   :title="$t('common.btn.select')"
                 >
@@ -109,6 +126,7 @@
 import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import dayjs from 'dayjs'
@@ -121,13 +139,15 @@ export default {
   components: {
     modal,
     BaseDataTable,
-    InputTextGeneric
+    InputTextGeneric,
+    CheckboxGeneric
   },
 
   props: {
     showModal: { type: Boolean, default: false }
   },
 
+  // itemSelected: (version, pullGroups) — pullGroups = array ของ group code ที่ติ๊กไว้ตอนกด "เลือก"
   emits: ['closeModal', 'itemSelected'],
 
   setup() {
@@ -146,11 +166,22 @@ export default {
       data: { data: [], total: 0 },
       take: 20,
       skip: 0,
-      sort: [{ field: 'createDate', dir: 'desc' }]
+      sort: [{ field: 'createDate', dir: 'desc' }],
+      pullGroups: ['Gold', 'Gem']
     }
   },
 
   computed: {
+    pullGroupOptions() {
+      return [
+        { code: 'Gold', name: this.$t('view.sale.costStock.group.gold') },
+        { code: 'Gem', name: this.$t('view.sale.costStock.group.material') },
+        { code: 'Worker', name: this.$t('view.sale.costStock.group.worker') },
+        { code: 'Embed', name: this.$t('view.sale.costStock.group.embed') },
+        { code: 'ETC', name: this.$t('view.sale.costStock.group.etc') }
+      ]
+    },
+
     columns() {
       return [
         {
@@ -225,7 +256,7 @@ export default {
     },
 
     onSelectItem(version) {
-      this.$emit('itemSelected', version)
+      this.$emit('itemSelected', version, [...this.pullGroups])
       this.isShowModal = false
     },
 
@@ -237,6 +268,7 @@ export default {
       this.searchForm = { stockNumber: '', running: '', createBy: '' }
       this.skip = 0
       this.sort = [{ field: 'createDate', dir: 'desc' }]
+      this.pullGroups = ['Gold', 'Gem']
     },
 
     handlePageChange(e) {
@@ -287,6 +319,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+@import '@/assets/scss/responsive-style/web';
 
 .title-text-lg {
   font-size: 1.2rem;
@@ -294,6 +327,19 @@ export default {
   color: var(--base-font-color);
   display: flex;
   align-items: center;
+}
+
+.pull-groups-container {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  background-color: var(--color-highlight-bg);
+}
+
+.pull-groups-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
 }
 
 .cost-version-table-container {

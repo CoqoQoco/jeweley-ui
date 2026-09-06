@@ -394,13 +394,23 @@
                     <AutoCompleteGeneric
                       v-model="slotProps.data.nameDescription"
                       :useStaticList="true"
-                      :staticOptions="getHistoryOptions(slotProps.data.nameGroup)"
+                      :staticOptions="getDescriptionOptions(slotProps.data.nameGroup)"
                       optionLabel="name"
                       :forceSelection="false"
+                      :dropdown="true"
                       :minLength="1"
                       customStyle="background-color: #b5dad4; width: 100%"
                       @item-select="onDescriptionSelect($event, slotProps.data)"
-                    />
+                    >
+                      <template #option="{ option }">
+                        <div class="flex align-options-center option-row">
+                          <span>{{ option.name }}</span>
+                          <span v-if="option.__fromHistory" class="history-badge">
+                            {{ $t('view.sale.costStock.historyBadge') }}
+                          </span>
+                        </div>
+                      </template>
+                    </AutoCompleteGeneric>
                   </div>
                   <div v-else>
                     <span>{{ slotProps.data.nameDescription }}</span>
@@ -612,6 +622,7 @@ import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 import { getTermHistory } from '@/services/helper/breakdown-term-history-store.js'
 import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
+import { getBreakdownTermOptions } from '@/services/helper/breakdown-item-presets.js'
 
 export default {
   components: {
@@ -1080,11 +1091,9 @@ export default {
     isAlloyLike(description) {
       return isAlloyDescription(description)
     },
-    // suggestion คำที่เคยพิมพ์ (term history) ต่อ nameGroup — กันผู้ใช้พิมพ์ผิดซ้ำ เช่น "Aolly"
-    getHistoryOptions(nameGroup) {
-      const terms = this.termHistory?.[nameGroup]
-      if (!Array.isArray(terms) || !terms.length) return []
-      return terms.map((term) => ({ code: term, name: term }))
+    // preset (คำคงที่ที่ต้องพิมพ์ลง PDF ลูกค้า) + คำที่เคยพิมพ์ (term history) ต่อ nameGroup — กันผู้ใช้พิมพ์ผิดซ้ำ เช่น "Aolly"
+    getDescriptionOptions(nameGroup) {
+      return getBreakdownTermOptions(nameGroup, this.termHistory)
     },
     // AutoCompleteGeneric ส่ง event.value เป็น "object ที่เลือกทั้งก้อน" ({code,name}) เสมอเมื่อมี optionLabel
     // (ไม่ใช่ string) — v-model เพียวๆ จะเขียน object ทับ nameDescription ตรงนี้ต้อง coerce กลับเป็น string
@@ -1183,6 +1192,23 @@ input {
 .text-ref {
   color: gray;
   font-size: small;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  width: 100%;
+}
+
+.history-badge {
+  padding: var(--sp-xs) var(--sp-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  background: var(--color-highlight-bg);
+  color: var(--base-font-color);
+  white-space: nowrap;
 }
 
 .apply-gold-loss-na {

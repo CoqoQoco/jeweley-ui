@@ -675,14 +675,16 @@ export default {
         { key: 'goldSpotPrice', label: this.$t('view.sale.quotation.goldPerOz') },
         { key: 'goldPerOz', label: this.$t('view.sale.quotation.goldPerGms') },
         { key: 'currencyMultiplier', label: this.$t('view.sale.quotation.rate') },
-        { key: 'profitPercent', label: this.$t('view.sale.quotation.profitPercent') },
-        { key: 'goldLossPercent', label: this.$t('view.sale.quotation.goldLossPercent') }
+        // 0 = ไม่คิดค่าบริการ / ไม่คิด gold loss — เป็นค่าที่ถูกต้อง ไม่ใช่ "ยังไม่ได้กรอก"
+        { key: 'profitPercent', label: this.$t('view.sale.quotation.profitPercent'), allowZero: true },
+        { key: 'goldLossPercent', label: this.$t('view.sale.quotation.goldLossPercent'), allowZero: true }
       ]
     },
     breakdownMissingFields() {
       return this.breakdownFieldsMeta.filter((field) => {
         const value = this.customer[field.key]
-        return value === null || value === undefined || value === '' || Number(value) === 0
+        if (value === null || value === undefined || value === '') return true
+        return field.allowZero ? false : Number(value) === 0
       })
     },
     breakdownMissingCount() {
@@ -987,8 +989,10 @@ export default {
       this.isShow.costVersionPicker = true
     },
 
-    async onCostVersionItemSelected(version) {
+    async onCostVersionItemSelected(version, groups) {
       this.isShow.costVersionPicker = false
+
+      const allowedGroups = Array.isArray(groups) ? groups : ['Gold', 'Gem']
 
       // 1. Fetch stock product data (materials, imagePath, etc.)
       const data = await this.productStore.fetchDataGet({
@@ -997,23 +1001,26 @@ export default {
 
       if (data) {
         // 2. Calculate appraisal price from cost version
+        // ราคาตั้งขาย/ประเมินต้องรวมต้นทุนเต็ม (ไม่กรองตาม group ที่เลือกดึง) — การเลือกหัวข้อมีผลแค่รายการที่ถูกคัดลอกไปแสดงในใบเสนอราคาเท่านั้น
         const costTotal = (version.prictransection || []).reduce(
           (sum, t) => sum + (t.totalPrice || 0),
           0
         )
         const appraisalPrice = costTotal * (version.tagPriceMultiplier || 1)
 
-        // 3. Map prictransection → priceTransactions format
-        const priceTransactions = (version.prictransection || []).map((t) => ({
-          nameGroup: t.nameGroup,
-          nameDescription: t.nameDescription,
-          qty: t.qty,
-          qtyPrice: t.qtyPrice,
-          qtyWeight: t.qtyWeight,
-          qtyWeightPrice: t.qtyWeightPrice,
-          totalPrice: t.totalPrice,
-          applyGoldLoss: t.applyGoldLoss
-        }))
+        // 3. Map prictransection → priceTransactions format (กรองเฉพาะ group ที่เลือกดึงมาก่อน)
+        const priceTransactions = (version.prictransection || [])
+          .filter((t) => allowedGroups.includes(t.nameGroup || 'ETC'))
+          .map((t) => ({
+            nameGroup: t.nameGroup,
+            nameDescription: t.nameDescription,
+            qty: t.qty,
+            qtyPrice: t.qtyPrice,
+            qtyWeight: t.qtyWeight,
+            qtyWeightPrice: t.qtyWeightPrice,
+            totalPrice: t.totalPrice,
+            applyGoldLoss: t.applyGoldLoss
+          }))
 
         // 4. Add item to quotation
         const item = {
