@@ -38,6 +38,22 @@
             {{ $t('view.sale.invoiceDetail.printDelivery') }}
           </button>
           <button
+            class="btn btn-green btn-sm btn-header-action mr-2"
+            :disabled="!invoiceItems || invoiceItems.length === 0"
+            @click="printSummary"
+          >
+            <i class="bi bi-file-earmark-pdf mr-1"></i>
+            {{ $t('view.sale.invoiceDetail.printSummary') }}
+          </button>
+          <button
+            class="btn btn-green btn-sm btn-header-action mr-2"
+            :disabled="!invoiceItems || invoiceItems.length === 0"
+            @click="exportSummaryExcel"
+          >
+            <i class="bi bi-file-earmark-excel mr-1"></i>
+            {{ $t('view.sale.invoiceDetail.exportSummaryExcel') }}
+          </button>
+          <button
             class="btn btn-red btn-sm btn-header-action mr-2"
             @click="confirmReverseInvoice"
           >
@@ -120,7 +136,7 @@
                       <button
                         class="btn btn-sm btn-outline-main"
                         @click.stop="printVersion(version)"
-                        title="พิมพ์ PDF"
+                        :title="$t('view.sale.invoiceDetail.printVersionTooltip')"
                       >
                         <i class="bi bi-printer"></i>
                       </button>
@@ -385,12 +401,16 @@ import PaymentSection from './components/payment-section.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { error, success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { invoiceSummaryPdfService } from '@/services/helper/pdf/invoice-summary/invoice-summary-integration.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
+import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-summary-pdf-builder.js'
+import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
+import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
 import dayjs from 'dayjs'
 import { ceilToInteger, formatDocCurrency } from '@/services/utils/decimal.js'
 
@@ -418,6 +438,7 @@ export default {
       invoiceStore: useInvoiceApiStore(),
       saleOrderStore: usrSaleOrderApiStore(),
       authStore: useAuthStore(),
+      masterStore: useMasterApiStore(),
       sellerName: '',
       fromRoute: null, // Store the route we came from
       formSaleOrder: {},
@@ -937,6 +958,50 @@ export default {
     async exportInvoiceExcel() {
       // Open confirm excel modal instead of direct export
       this.showConfirmExcelModal = true
+    },
+
+    // ใบสรุปตามประเภทสินค้า — ชื่อประเภทต้องเป็นภาษาอังกฤษจาก master (productTypeName เป็นภาษาไทย)
+    async loadProductTypeLabels() {
+      try {
+        await this.masterStore.fetchProductType()
+      } catch {
+        // ดึง master ไม่สำเร็จ — ออกเอกสารต่อได้โดยใช้ค่า fallback เดิม
+        return {}
+      }
+      return buildProductTypeLabelMap(this.masterStore.productType)
+    },
+
+    // ตัวหารสกุลเงินของหน้านี้คือ currencyRate
+    buildSummaryOptions(productTypeLabels) {
+      return {
+        items: this.invoiceItems,
+        customer: {
+          name: this.invoiceData.customerName,
+          address: this.invoiceData.customerAddress,
+          tel: this.invoiceData.customerTel,
+          email: this.invoiceData.customerEmail,
+          phone: this.invoiceData.customerTel,
+          taxId: this.invoiceData.customerTaxId
+        },
+        documentDate: this.invoiceData.invoiceDate || this.invoiceData.createDate,
+        documentTitle: this.$t('view.sale.invoiceDetail.summaryTitle'),
+        documentNumber: this.invoiceData.invoiceNumber,
+        currencyUnit: this.invoiceData.currencyUnit,
+        divisor: this.invoiceData.currencyRate || 1,
+        productTypeLabels
+      }
+    },
+    async printSummary() {
+      const productTypeLabels = await this.loadProductTypeLabels()
+      const builder = new SaleSummaryPdfBuilder(this.buildSummaryOptions(productTypeLabels))
+      await builder.downloadPDF()
+      success(this.$t('view.sale.invoiceDetail.success.summaryPdf'), 'Summary PDF')
+    },
+    async exportSummaryExcel() {
+      const productTypeLabels = await this.loadProductTypeLabels()
+      const builder = new SaleSummaryExcelBuilder(this.buildSummaryOptions(productTypeLabels))
+      await builder.downloadExcel()
+      success(this.$t('view.sale.invoiceDetail.success.summaryExcel'), 'Summary Excel')
     },
     async handleConfirmExcelExport({ documentNumber, documentDate }) {
       const excelData = {

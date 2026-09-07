@@ -298,6 +298,11 @@
                 <i class="bi bi-eye mr-1"></i>
                 <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
               </button>
+              <button class="btn btn-sm btn-green" type="button" @click="printSummary"
+                :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
+                <i class="bi bi-file-earmark-pdf mr-1"></i>
+                <span>{{ $t('view.sale.quotation.summaryBtn') }}</span>
+              </button>
             </div>
 
             <!-- Export Group -->
@@ -311,6 +316,11 @@
                 :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
                 <i class="bi bi-file-earmark-excel mr-1"></i>
                 <span>{{ $t('view.sale.quotation.breakdownExcelBtn') }}</span>
+              </button>
+              <button class="btn btn-sm btn-green" type="button" @click="exportSummaryExcel"
+                :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
+                <i class="bi bi-file-earmark-excel mr-1"></i>
+                <span>{{ $t('view.sale.quotation.summaryExcelBtn') }}</span>
               </button>
             </div>
 
@@ -427,6 +437,9 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { InvoiceExcelBuilder } from '@/services/helper/excel/invoice/invoice-excel-builder.js'
 import { BreakdownExcelBuilder } from '@/services/helper/excel/quotation/breakdown-excel-builder.js'
+import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-summary-pdf-builder.js'
+import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
+import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
 import { getBreakdownSetting } from '@/services/helper/breakdown-setting-store.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
@@ -716,7 +729,7 @@ export default {
       isShow: { ...interfaceShow, isEditStock: false },
       modelEditStock: {},
       editStockIndex: null,
-      _copyUploadTarget: null,
+      copyUploadTarget: null,
       showItemsPerPageModal: false,
       itemsPerPageInput: 10,
       pdfShowCifLabel: true,
@@ -917,6 +930,40 @@ export default {
         goldLossPercent: this.customer.goldLossPercent
       })
     },
+
+    // ใบสรุปตามประเภทสินค้า — ชื่อประเภทต้องเป็นภาษาอังกฤษจาก master (productTypeName เป็นภาษาไทย)
+    async loadProductTypeLabels() {
+      try {
+        await this.masterStore.fetchProductType()
+      } catch {
+        // ดึง master ไม่สำเร็จ — ออกเอกสารต่อได้โดยใช้ค่า fallback เดิม
+        return {}
+      }
+      return buildProductTypeLabelMap(this.masterStore.productType)
+    },
+
+    // ตัวหารสกุลเงินของหน้านี้คือ currencyMultiplier
+    buildSummaryOptions(productTypeLabels) {
+      return {
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        documentDate: this.customer.quotationDate,
+        documentTitle: this.$t('view.sale.quotation.summaryTitle'),
+        documentNumber: this.customer.invoiceNumber,
+        currencyUnit: this.customer.currencyUnit,
+        divisor: this.customer.currencyMultiplier || 1,
+        productTypeLabels
+      }
+    },
+    async printSummary() {
+      if (!this.customer.quotationItems || this.customer.quotationItems.length === 0) {
+        warning(this.$t('view.sale.quotation.validation.noItems'), this.$t('common.label.incompleteData'))
+        return
+      }
+      const productTypeLabels = await this.loadProductTypeLabels()
+      const builder = new SaleSummaryPdfBuilder(this.buildSummaryOptions(productTypeLabels))
+      await builder.downloadPDF()
+    },
     onEditStock(item, index) {
       this.modelEditStock = JSON.parse(JSON.stringify(item))
       this.editStockIndex = index
@@ -968,19 +1015,19 @@ export default {
     },
 
     onUploadCopyImage(item) {
-      this._copyUploadTarget = item
+      this.copyUploadTarget = item
       this.$refs.copyImageInput.value = ''
       this.$refs.copyImageInput.click()
     },
 
     onCopyImageChange(event) {
       const file = event.target.files[0]
-      if (!file || !this._copyUploadTarget) return
+      if (!file || !this.copyUploadTarget) return
 
       const reader = new FileReader()
       reader.onload = (e) => {
-        this._copyUploadTarget.imageBase64 = e.target.result
-        this._copyUploadTarget = null
+        this.copyUploadTarget.imageBase64 = e.target.result
+        this.copyUploadTarget = null
       }
       reader.readAsDataURL(file)
     },
@@ -1297,6 +1344,17 @@ export default {
           this.$t('view.sale.quotation.error.exportBreakdownExcelTitle')
         )
       }
+    },
+
+    async exportSummaryExcel() {
+      if (!this.customer.quotationItems || this.customer.quotationItems.length === 0) {
+        warning(this.$t('view.sale.quotation.validation.noItems'), this.$t('common.label.incompleteData'))
+        return
+      }
+      const productTypeLabels = await this.loadProductTypeLabels()
+      const builder = new SaleSummaryExcelBuilder(this.buildSummaryOptions(productTypeLabels))
+      await builder.downloadExcel()
+      success(this.$t('view.sale.quotation.success.exportSummaryExcel'))
     },
 
     getRowClass(data, index) {
