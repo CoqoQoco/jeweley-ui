@@ -145,6 +145,8 @@ export const pos = {
   viewReceiptBtn: 'View Receipt',
   sendToPrintBtn: 'Send to Print',
   receiptPreviewTitle: 'Receipt Preview',
+  receiptActualSizeBtn: 'Actual Size',
+  receiptZoomBtn: 'Zoom',
   printQueueEnqueueErrorMsg: 'Failed to send to print queue. Please try again.',
   printQueueStatusPending: 'Sent to queue — printing at booth...',
   printQueueStatusPrinted: 'Printed',

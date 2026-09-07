@@ -145,6 +145,8 @@ export const pos = {
   viewReceiptBtn: 'ดูใบเสร็จ',
   sendToPrintBtn: 'ส่งพิมพ์',
   receiptPreviewTitle: 'ตัวอย่างใบเสร็จ',
+  receiptActualSizeBtn: 'ขนาดจริง',
+  receiptZoomBtn: 'ขยาย',
   printQueueEnqueueErrorMsg: 'ส่งเข้าคิวพิมพ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
   printQueueStatusPending: 'ส่งเข้าคิวแล้ว — กำลังพิมพ์ที่บูธ...',
   printQueueStatusPrinted: 'พิมพ์แล้ว',

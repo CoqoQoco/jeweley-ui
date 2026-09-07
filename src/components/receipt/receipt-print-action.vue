@@ -37,7 +37,36 @@
         <span class="title-text-lg d-block" @click.stop>{{ $t('view.mobile.pos.receiptPreviewTitle') }}</span>
       </template>
       <template #content>
-        <pre class="receipt-preview-text" @click.stop>{{ receiptText }}</pre>
+        <div class="receipt-preview-wrap" @click.stop>
+          <div v-if="!canvasRenderFailed" class="receipt-preview-toolbar">
+            <ButtonGeneric
+              :variant="isZoomed ? 'outline' : 'main'"
+              :label="$t('view.mobile.pos.receiptActualSizeBtn')"
+              @click="setZoomMode(false)"
+            />
+            <ButtonGeneric
+              :variant="isZoomed ? 'main' : 'outline'"
+              :label="$t('view.mobile.pos.receiptZoomBtn')"
+              @click="setZoomMode(true)"
+            />
+          </div>
+
+          <!-- wrapper เลื่อนแนวนอนแทนการหดกระดาษ — ต้องแยกจาก toolbar ไม่งั้น toolbar เลื่อนตามไปด้วย -->
+          <div v-if="!canvasRenderFailed" class="receipt-preview-scroll">
+            <div
+              class="receipt-preview-paper"
+              :class="{ 'is-zoomed': isZoomed }"
+              :style="{ '--receipt-width-mm': receiptWidthMmVar }"
+            >
+              <div v-if="isRenderingCanvasPreview" class="receipt-preview-loading">
+                <i class="bi bi-arrow-repeat spin"></i>
+              </div>
+              <div ref="canvasHost" class="receipt-canvas-host"></div>
+            </div>
+          </div>
+
+          <pre v-else class="receipt-preview-text">{{ receiptText }}</pre>
+        </div>
       </template>
       <template #action>
         <ButtonGeneric
@@ -56,6 +85,7 @@
 import { defineAsyncComponent } from 'vue'
 import { buildReceiptText } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
 import { buildReceiptFromInvoice } from '@/services/helper/receipt/build-receipt-from-invoice.js'
+import { renderReceiptCanvas, RECEIPT_WIDTH_MM } from '@/services/helper/receipt/receipt-image-preview.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { usePrintJobApiStore } from '@/stores/modules/api/print/print-job-store.js'
 
@@ -105,7 +135,12 @@ export default {
       printQueueStatus: null, // null | 'PENDING' | 'PRINTING' | 'PRINTED' | 'FAILED'
       pollIntervalId: null,
       pollElapsedMs: 0,
-      resolvedReceiptData: null // ผลลัพธ์จาก buildReceiptFromInvoice (โหมด invoiceNumber เท่านั้น)
+      resolvedReceiptData: null, // ผลลัพธ์จาก buildReceiptFromInvoice (โหมด invoiceNumber เท่านั้น)
+
+      isZoomed: false, // default = ขนาดจริง (canvas 73.152mm) — true = ขยายเต็มจอ
+      isRenderingCanvasPreview: false,
+      // canvas วาดพัง (โลโก้/browser ไม่รองรับ) → ตกกลับไปแสดง <pre> ข้อความเดิม กันไม่ให้ modal พัง
+      canvasRenderFailed: false
     }
   },
 
@@ -121,6 +156,11 @@ export default {
     receiptText() {
       if (!this.effectiveReceiptData) return ''
       return buildReceiptText(this.effectiveReceiptData)
+    },
+
+    // ผูก CSS var จาก RECEIPT_WIDTH_MM (73.152mm) ให้ preview กว้าง "เท่าตัวจริง" — ห้าม hardcode ค่า mm ซ้ำ
+    receiptWidthMmVar() {
+      return `${RECEIPT_WIDTH_MM}mm`
     },
 
     printQueueStatusText() {
@@ -142,11 +182,45 @@ export default {
     }
   },
 
+  watch: {
+    // render canvas ตอนเปิด modal เท่านั้น — เปิดซ้ำ (data เดิม) ก็ต้อง re-render เพราะ canvasHost เพิ่งถูก mount ใหม่
+    showReceiptModal(value) {
+      if (value) this.$nextTick(() => this.renderCanvasPreview())
+    },
+
+    // ข้อมูลใบเสร็จเปลี่ยนระหว่างเปิด modal อยู่ (เช่น resolvedReceiptData เพิ่งโหลดเสร็จ) — re-render ให้ตรงของใหม่
+    receiptText() {
+      if (this.showReceiptModal) this.$nextTick(() => this.renderCanvasPreview())
+    }
+  },
+
   beforeUnmount() {
     this.stopPolling()
   },
 
   methods: {
+    setZoomMode(zoomed) {
+      this.isZoomed = zoomed
+    },
+
+    // วาดใบเสร็จเป็น canvas ลง canvasHost — พังกรณีไหนก็ตาม (โลโก้โหลดไม่ได้, browser ไม่รองรับ)
+    // ให้ตกกลับไปแสดง <pre> ข้อความเดิมแทน ห้ามทำให้ modal พัง (ดู receipt-image-preview.js)
+    async renderCanvasPreview() {
+      this.canvasRenderFailed = false
+      this.isRenderingCanvasPreview = true
+      try {
+        const canvas = await renderReceiptCanvas(this.receiptText)
+        const host = this.$refs.canvasHost
+        if (!host) return // modal ปิดไปแล้วก่อน render เสร็จ (race)
+        host.innerHTML = ''
+        host.appendChild(canvas)
+      } catch {
+        this.canvasRenderFailed = true
+      } finally {
+        this.isRenderingCanvasPreview = false
+      }
+    },
+
     // โหลดข้อมูลตอนกดปุ่มเท่านั้น (lazy) — โหมด invoiceNumber ยิง API 2 ครั้ง (Invoice/Get + SaleOrder/Get)
     // ห้ามเรียกตอน render มิเช่นนั้นหน้ารายการบิลจะยิง 2×จำนวนการ์ดทันทีที่เปิดหน้า
     async ensureReceiptData() {
@@ -298,8 +372,89 @@ export default {
   }
 }
 
-// ใบเสร็จเป็น ASCII จัดคอลัมน์ด้วย space กว้าง 47 ตัวอักษร (ดู receipt-text-builder.js) — ต้อง monospace
-// เป๊ะเพื่อให้คอลัมน์ตรงกับที่จะพิมพ์จริง, overflow-x เผื่อจอแคบกว่า 47 ตัวอักษรที่ font-size นี้
+.receipt-preview-wrap {
+  display: flex;
+  flex-direction: column;
+  // ห้ามใช้ align-items:center ตรงนี้ — ดูคอมเมนต์ที่ .receipt-preview-scroll ว่าทำไม
+  align-items: stretch;
+  gap: var(--sp-sm);
+  background: var(--color-highlight-bg);
+  padding: var(--sp-md);
+  border-radius: var(--radius-md);
+}
+
+.receipt-preview-toolbar {
+  display: flex;
+  gap: var(--sp-xs);
+  align-self: flex-end;
+}
+
+// ครอบกระดาษแล้วเลื่อนแนวนอนแทนการหดกระดาษเมื่อจอแคบกว่าความกว้างจริง (73.152mm)
+// ต้องไม่ใช้ justify-content/align-items:center ตรงนี้ — บั๊กคลาสสิกของ flexbox คือเมื่อ content ล้น
+// การ center ด้วย flex align จะซ่อน overflow ฝั่งซ้ายจน scroll ไปไม่ถึง จึงปล่อยเป็น block ธรรมดา
+// แล้วให้กระดาษ margin:0 auto เอง (auto margin จะยุบเป็น 0 เองเมื่อ content กว้างเกิน container
+// ทำให้ชนขอบซ้ายพอดีและเลื่อนไปเห็นขอบขวาได้ครบ)
+.receipt-preview-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+// กล่องกระดาษ — โหมดขนาดจริง (default) ต้องกว้างตาม --receipt-width-mm เสมอ ห้ามหดแม้จอแคบกว่านี้
+// (เดิมมี max-width:100% ทำให้กระดาษหดเงียบๆ บนจอแคบ ผู้ใช้เข้าใจผิดว่ายังเป็นขนาดจริงอยู่) ให้เลื่อนแนวนอนแทน
+.receipt-preview-paper {
+  position: relative;
+  // ต้องบังคับ content-box ตรงนี้ (โปรเจกต์ reset เป็น border-box ทั้งหมด) เพราะ border 1px จะถูกนับรวมใน
+  // width แล้วแย่งพื้นที่พิมพ์จริงไปข้างละ 1px (276.48px เหลือ 274.88px = เล็กกว่าของจริง 0.42mm)
+  // canvas/host ข้างในใช้ width:100% ของกล่องนี้ — content-box จึงทำให้พื้นที่ 100% นั้น = --receipt-width-mm
+  // เป๊ะ ส่วนเส้นขอบ 1px บวกออกไปนอกความกว้างแทน ห้ามเปลี่ยนกลับเป็น border-box มิเช่นนั้น canvas จะแคบกว่าตัวจริงอีก
+  box-sizing: content-box;
+  width: var(--receipt-width-mm);
+  margin: 0 auto;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+
+  // โหมดขยาย — แสดง canvas ที่ความกว้างธรรมชาติ 576px (ตรงพิกเซลจริงของภาพ คมสุด ไม่ยืด/หดทับความละเอียด)
+  // 576 ต้องตรงกับ WIDTH_DOTS ใน receipt-image-preview.js เสมอ — ถ้าแก้ที่นั่นต้องตามแก้ที่นี่ด้วย
+  &.is-zoomed {
+    width: 576px;
+  }
+}
+
+.receipt-canvas-host {
+  width: 100%;
+  line-height: 0; // canvas เป็น inline element มี baseline gap ใต้ภาพ ต้องปิดด้วย line-height:0
+
+  :deep(canvas) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.receipt-preview-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-card-bg);
+  font-size: 1.5rem;
+  color: var(--base-font-color);
+
+  .spin {
+    display: inline-block;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+// fallback เมื่อ canvas วาดพัง — ใบเสร็จเป็น ASCII จัดคอลัมน์ด้วย space กว้าง 47 ตัวอักษร (ดู receipt-text-builder.js)
+// ต้อง monospace เป๊ะเพื่อให้คอลัมน์ตรงกับที่จะพิมพ์จริง, overflow-x เผื่อจอแคบกว่า 47 ตัวอักษรที่ font-size นี้
 .receipt-preview-text {
   width: 100%;
   margin: 0;
