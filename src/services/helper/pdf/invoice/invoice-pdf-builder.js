@@ -44,6 +44,7 @@ export class InvoicePdfBuilder {
     this.hideCompanyHeader = saleOrderData?.hideCompanyHeader || false
     this.hideRounding = saleOrderData?.hideRounding || false
     this.sellerName = saleOrderData?.sellerName || ''
+    this.supportName = saleOrderData?.supportName || ''
 
     // Calculate totals with new fields
     this.subtotal = this.calculateSubtotal()
@@ -836,6 +837,9 @@ export class InvoicePdfBuilder {
     const sellerText = this.showSeller && this.sellerName && String(this.sellerName).trim()
       ? `Seller: ${String(this.sellerName).trim()}`
       : ''
+    const supportText = this.supportName && String(this.supportName).trim()
+      ? `Support: ${String(this.supportName).trim()}`
+      : ''
 
     return [
       {
@@ -870,14 +874,21 @@ export class InvoicePdfBuilder {
               },
               {
                 columns: [
+                  { text: '', width: '70%' },
+                  { text: supportText, width: '30%', style: 'parcelText', alignment: 'center' }
+                ]
+              },
+              {
+                columns: [
                   { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
                   {
-                    // เว้นที่ให้เซ็นชื่อเหนือเส้น (เดิมได้พื้นที่จากแถวว่าง พอมี Seller มาแทนที่จึงต้องเว้นเอง)
+                    // เว้นที่ให้เซ็นชื่อเหนือเส้น — เดิม margin=20 ชดเชยตอน Seller แทนที่แถวว่าง (แถวเดียว)
+                    // ตอนนี้มีแถว Support คั่นเพิ่มมาอีกบรรทัดแล้ว จึงลดเหลือ 8 กันเส้นเซ็นชื่อขยับลงไปไกลเกิน
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
                     width: '30%',
-                    margin: [0, 20, 0, 0]
+                    margin: [0, 8, 0, 0]
                   }
                 ]
               },

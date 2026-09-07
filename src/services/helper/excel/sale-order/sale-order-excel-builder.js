@@ -334,6 +334,24 @@ export class SaleOrderExcelBuilder {
     worksheet.getCell(`F${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
 
     row++
+
+    // SALE
+    worksheet.mergeCells(`F${row}:J${row}`)
+    worksheet.getCell(`F${row}`).value = this.soData.salePerson
+      ? `SALE: ${this.soData.salePerson}`
+      : ''
+    worksheet.getCell(`F${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
+
+    row++
+
+    // SUPPORT
+    worksheet.mergeCells(`F${row}:J${row}`)
+    worksheet.getCell(`F${row}`).value = this.soData.saleSupport
+      ? `SUPPORT: ${this.soData.saleSupport}`
+      : ''
+    worksheet.getCell(`F${row}`).font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
+
+    row++
     row++ // Empty row
 
     return row

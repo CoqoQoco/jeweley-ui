@@ -77,7 +77,41 @@
             />
           </div>
 
-          <div></div>
+          <!-- Sale Person -->
+          <div>
+            <span class="title-text">{{ $t('view.sale.saleOrder.salePerson') }}</span>
+            <AutoCompleteGeneric
+              v-model="formSaleOrder.salePerson"
+              :useStaticList="true"
+              :staticOptions="saleUserOptions"
+              optionLabel="name"
+              :forceSelection="false"
+              :dropdown="true"
+              :minLength="1"
+              :placeholder="$t('view.sale.saleOrder.selectSalePersonPlaceholder')"
+              class="w-100"
+              :disabled="isViewMode"
+              @item-select="onSalePersonSelect"
+            />
+          </div>
+
+          <!-- Sale Support -->
+          <div>
+            <span class="title-text">{{ $t('view.sale.saleOrder.saleSupport') }}</span>
+            <AutoCompleteGeneric
+              v-model="formSaleOrder.saleSupport"
+              :useStaticList="true"
+              :staticOptions="saleUserOptions"
+              optionLabel="name"
+              :forceSelection="false"
+              :dropdown="true"
+              :minLength="1"
+              :placeholder="$t('view.sale.saleOrder.selectSalePersonPlaceholder')"
+              class="w-100"
+              :disabled="isViewMode"
+              @item-select="onSaleSupportSelect"
+            />
+          </div>
         </div>
 
         <div class="form-col-container mt-2">
@@ -570,9 +604,12 @@ import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order
 import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
 import StockItemsTable from './stock-items-table.vue'
 import CopyItemsTable from './copy-items-table.vue'
 import OrderSummarySection from './order-summary-section.vue'
+
+const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
 
 export default {
   name: 'SaleOrderView',
@@ -598,7 +635,8 @@ export default {
   setup() {
     const productStore = usrStockProductApiStore()
     const saleOrderStore = usrSaleOrderApiStore()
-    return { saleOrderStore, productStore }
+    const userApiStore = useUserApiStore()
+    return { saleOrderStore, productStore, userApiStore }
   },
 
   emits: ['update:modelForm', 'update:modelQuotation', 'update:modelSaleOrder'],
@@ -643,6 +681,7 @@ export default {
       },
       stockItems: [],
       copyItems: [],
+      saleUserOptions: [],
       type: 'STOCK-PRODUCT',
       isLoadingData: false,
       customerLocallyEdited: false,
@@ -677,6 +716,8 @@ export default {
         priority: 'normal',
         totalAmount: 0,
         remark: '',
+        salePerson: '',
+        saleSupport: '',
         customerRemark: '',
         currencyUnit: 'US$',
         currencyRate: 33.0,
@@ -958,11 +999,51 @@ export default {
   mounted() {
     const saved = storage.getItem('sale-order-print-show-decimals')
     this.pdfShowDecimals = saved !== null ? saved === 'true' : !isForeignCurrency(this.formSaleOrder.currencyUnit)
+    this.loadSaleUserOptions()
   },
 
   methods: {
     onPdfShowDecimalsChange(val) {
       storage.setItem('sale-order-print-show-decimals', String(val))
+    },
+
+    // โหลดรายชื่อพนักงานที่มี role Sale ไว้ให้เลือกในช่องผู้ขาย/ผู้ช่วยขาย (พิมพ์ชื่อเองก็ได้ ไม่บังคับเลือกจากลิสต์)
+    async loadSaleUserOptions() {
+      try {
+        const res = await this.userApiStore.fetchDataList({
+          take: 200,
+          skip: 0,
+          sort: null,
+          form: { roleId: SALE_ROLE_ID, isActive: true }
+        })
+        const list = res?.data || []
+        this.saleUserOptions = list
+          .map((u) => {
+            const firstName = (u.firstName || '').trim()
+            const lastName = (u.lastName || '').trim()
+            const fullName = `${firstName} ${lastName}`.trim()
+            return { code: u.username, name: fullName || u.username }
+          })
+          .sort((a, b) => a.name.localeCompare(b.name))
+      } catch {
+        this.saleUserOptions = []
+      }
+    },
+
+    // AutoCompleteGeneric ส่ง event.value เป็น object {code,name} ทั้งก้อนเมื่อเลือกจากลิสต์ ต้อง coerce กลับเป็น string
+    // กันหลุด object เข้าไปใน formSaleOrder.salePerson ที่บันทึกและพิมพ์จริง
+    onSalePersonSelect(event) {
+      const selected = event?.value
+      this.formSaleOrder.salePerson = (selected && typeof selected === 'object'
+        ? selected.name ?? selected.code
+        : selected) ?? ''
+    },
+
+    onSaleSupportSelect(event) {
+      const selected = event?.value
+      this.formSaleOrder.saleSupport = (selected && typeof selected === 'object'
+        ? selected.name ?? selected.code
+        : selected) ?? ''
     },
 
     // ============================================
@@ -990,6 +1071,8 @@ export default {
         markup: saleOrderData.markup || 3.5,
         goldPerOz: saleOrderData.goldPerOz || 2000,
         number: null,
+        salePerson: '',
+        saleSupport: '',
         specialDiscount: saleOrderData.specialDiscount || 0,
         specialAddition: saleOrderData.specialAddition || 0,
         vatPercent: saleOrderData.vatPercent || 0
@@ -1027,6 +1110,8 @@ export default {
         depositRequired: saleOrderData.depositRequired || false,
         priority: saleOrderData.priority || 'normal',
         remark: saleOrderData.remark || '',
+        salePerson: saleOrderData.salePerson || '',
+        saleSupport: saleOrderData.saleSupport || '',
         customerRemark: saleOrderData.customer?.remark || '',
 
         customerCode: this.customerLocallyEdited ? this.formSaleOrder.customerCode : (saleOrderData.customer?.code || ''),
@@ -1121,6 +1206,8 @@ export default {
           specialAddition: response.specialAddition || 0,
           vatPercent: response.vat || 0,
           remark: response.remark || null,
+          salePerson: response.salePerson || null,
+          saleSupport: response.saleSupport || null,
           items: response.data
             ? (() => {
                 try {
@@ -1466,6 +1553,8 @@ export default {
         specialAddition: this.formSaleOrder.specialAddition || 0,
         vat: this.formSaleOrder.vatPercent || 0,
         remark: this.formSaleOrder.remark || '',
+        salePerson: (this.formSaleOrder.salePerson || '').trim() || null,
+        saleSupport: (this.formSaleOrder.saleSupport || '').trim() || null,
         subTotal: Number(this.getSumTotalConvertedPrice(this.stockItems)) || 0,
         grandTotalRaw: this.grandTotalRaw,
         data: JSON.stringify({
@@ -1507,6 +1596,8 @@ export default {
         customerTel: this.formSaleOrder.customerPhone,
         customerEmail: this.formSaleOrder.customerEmail,
         remark: this.formSaleOrder.remark,
+        salePerson: this.formSaleOrder.salePerson,
+        saleSupport: this.formSaleOrder.saleSupport,
         specialDiscount: this.formSaleOrder.specialDiscount || 0,
         specialAddition: this.formSaleOrder.specialAddition || 0,
         freight: this.formSaleOrder.freight || 0,
@@ -1540,6 +1631,8 @@ export default {
         customerTel: this.formSaleOrder.customerPhone,
         customerEmail: this.formSaleOrder.customerEmail,
         remark: this.formSaleOrder.remark,
+        salePerson: this.formSaleOrder.salePerson,
+        saleSupport: this.formSaleOrder.saleSupport,
         specialDiscount: this.formSaleOrder.specialDiscount || 0,
         specialAddition: this.formSaleOrder.specialAddition || 0,
         freight: this.formSaleOrder.freight || 0,
@@ -1572,6 +1665,8 @@ export default {
         customerTel: this.formSaleOrder.customerPhone,
         customerEmail: this.formSaleOrder.customerEmail,
         remark: this.formSaleOrder.remark,
+        salePerson: this.formSaleOrder.salePerson,
+        saleSupport: this.formSaleOrder.saleSupport,
         specialDiscount: this.formSaleOrder.specialDiscount || 0,
         specialAddition: this.formSaleOrder.specialAddition || 0,
         freight: this.formSaleOrder.freight || 0,
@@ -1633,7 +1728,9 @@ export default {
         depositRequired: false,
         priority: 'normal',
         totalAmount: 0,
-        remark: ''
+        remark: '',
+        salePerson: '',
+        saleSupport: ''
       }
     },
 

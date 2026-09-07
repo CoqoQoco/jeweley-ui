@@ -529,7 +529,12 @@ export default {
           ...invoiceResponse,
           vatPercent: invoiceResponse.vat || 0
         }
-        
+
+        // default ช่อง Seller = ผู้ขายที่บันทึกไว้กับ invoice ถ้ามี ไม่งั้น fallback เป็น user ที่ login (ผู้ใช้ยังแก้เองในกล่องพิมพ์ได้ตามเดิม)
+        if (this.invoiceData.salePerson) {
+          this.sellerName = this.invoiceData.salePerson
+        }
+
 
         this.formSaleOrder = {
           number: saleOrderData.number || '',
@@ -942,6 +947,8 @@ export default {
           paymentTerms: this.invoiceData.paymentName,
           depositPercent: this.invoiceData.depositPercent,
           remark: this.invoiceData.remark,
+          salePerson: this.invoiceData.salePerson,
+          saleSupport: this.invoiceData.saleSupport,
           specialDiscount: this.invoiceData.specialDiscount || 0,
           specialAddition: this.invoiceData.specialAddition || 0,
           freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
@@ -985,7 +992,9 @@ export default {
             expectedDeliveryDate: this.invoiceData.deliveryDate,
             paymentTerms: this.invoiceData.paymentName,
             depositPercent: this.invoiceData.depositPercent,
-            remark: this.invoiceData.remark
+            remark: this.invoiceData.remark,
+            salePerson: this.invoiceData.salePerson,
+            saleSupport: this.invoiceData.saleSupport
           },
           customer: {
             name: this.invoiceData.customerName,
@@ -1093,6 +1102,8 @@ export default {
             paymentTerms: this.invoiceData.paymentName,
             depositPercent: this.invoiceData.depositPercent,
             remark: this.invoiceData.remark,
+            salePerson: this.invoiceData.salePerson,
+            saleSupport: this.invoiceData.saleSupport,
             specialDiscount: this.invoiceData.specialDiscount || 0,
             specialAddition: this.invoiceData.specialAddition || 0,
             freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
@@ -1159,6 +1170,7 @@ export default {
             await invoicePdfService.generateInvoicePDF(pdfData, {
               ...options,
               sellerName: this.sellerName,
+              supportName: this.invoiceData?.saleSupport || '',
               showSeller: printData.showSeller !== undefined ? printData.showSeller : true
             })
           }
@@ -1209,6 +1221,8 @@ export default {
           paymentTerms: this.invoiceData.paymentName,
           depositPercent: this.invoiceData.depositPercent,
           remark: this.invoiceData.remark,
+          salePerson: this.invoiceData.salePerson,
+          saleSupport: this.invoiceData.saleSupport,
           specialDiscount: this.invoiceData.specialDiscount || 0,
           specialAddition: this.invoiceData.specialAddition || 0,
           freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
@@ -1253,6 +1267,7 @@ export default {
         : await invoicePdfService.generateInvoicePDF(pdfData, {
             ...options,
             sellerName: this.sellerName,
+            supportName: this.invoiceData?.saleSupport || '',
             showSeller: printData.showSeller !== undefined ? printData.showSeller : true
           })
       this.previewUrl = res.previewUrl

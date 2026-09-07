@@ -83,7 +83,9 @@ export function toInvoicePdfData({ invoiceData, invoiceItems }) {
       specialDiscount: invoiceData.specialDiscount || 0,
       specialAddition: invoiceData.specialAddition || 0,
       freightAndInsurance: invoiceData.freightAndInsurance || 0,
-      vatPercent: invoiceData.vatPercent || 0
+      vatPercent: invoiceData.vatPercent || 0,
+      salePerson: invoiceData.salePerson || null,
+      saleSupport: invoiceData.saleSupport || null
     },
     customer: {
       name: invoiceData.customerName,

@@ -317,13 +317,22 @@ export class SaleOrderPdfBuilder {
                       margin: [0, 5, 0, 0]
                     }
                   : null,
-                {
-                  //text: `Currency: ${this.currencyUnit} (Rate: ${this.currencyRate})`,
-                    text: "",
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 5, 0, 0]
-                }
+                this.soData.salePerson
+                  ? {
+                      text: 'SALE: ' + this.soData.salePerson,
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 5, 0, 0]
+                    }
+                  : null,
+                this.soData.saleSupport
+                  ? {
+                      text: 'SUPPORT: ' + this.soData.saleSupport,
+                      fontSize: 10,
+                      color: '#393939',
+                      margin: [0, 5, 0, 0]
+                    }
+                  : null
               ].filter(Boolean)
             }
           ]

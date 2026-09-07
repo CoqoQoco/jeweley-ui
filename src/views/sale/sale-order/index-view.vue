@@ -130,6 +130,8 @@ export default {
         discount: saleOrderData.discount || 0,
         freight: 0,
         remark: saleOrderData.remark || null,
+        salePerson: saleOrderData.salePerson || null,
+        saleSupport: saleOrderData.saleSupport || null,
         items: parsedItems,
         confirmedItems: saleOrderData.stockConfirm || [],
         currencyUnit: saleOrderData.currencyUnit || 'US$',

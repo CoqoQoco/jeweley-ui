@@ -26,7 +26,8 @@ export const useUserApiStore = defineStore('userStore', {
         search: {
           username: from.username ?? null,
           isActive: from.isActive ?? null,
-          isNew: from.isNew ?? null
+          isNew: from.isNew ?? null,
+          roleId: from.roleId ?? null
         }
       }
     },
