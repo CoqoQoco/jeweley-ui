@@ -99,6 +99,20 @@ export const useInvoiceApiStore = defineStore('invoice', {
         throw error
       }
     },
+    async fetchCancelWithSaleOrder({ invoiceNumber }) {
+      try {
+        return await api.jewelry.post(
+          'Invoice/CancelWithSaleOrder',
+          { invoiceNumber },
+          {
+            skipLoading: false
+          }
+        )
+      } catch (error) {
+        console.error('Error cancelling invoice with sale order:', error)
+        throw error
+      }
+    },
     async fetchGenerateNumber() {
       try {
         return await api.jewelry.get('Invoice/GenerateInvoiceNumber', {

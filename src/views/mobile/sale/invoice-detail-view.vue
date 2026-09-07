@@ -262,7 +262,6 @@ export default {
     return {
       invoiceData: null,
       invoiceItems: [],
-      soData: null,
       // Print form
       showPrintForm: false,
       printInvoiceNumber: '',
@@ -287,6 +286,21 @@ export default {
 
     displayCurrency() {
       return this.invoiceData?.currencyUnit || 'THB'
+    },
+
+    // Invoice/Get คืน payments[] มาด้วย — ยกเลิกใบแจ้งหนี้จะยกเลิกรายการรับชำระเหล่านี้ไปด้วย (transaction เดียวฝั่ง server)
+    paymentCount() {
+      return Array.isArray(this.invoiceData?.payments) ? this.invoiceData.payments.length : 0
+    },
+
+    hasPayments() {
+      return this.paymentCount > 0
+    },
+
+    // payment.amount อยู่ในสกุลเดียวกับ invoice (backend เซ็ต CurrencyUnit = invoice.CurrencyUnit)
+    paymentTotalAmount() {
+      if (!Array.isArray(this.invoiceData?.payments)) return 0
+      return this.invoiceData.payments.reduce((sum, p) => sum + (Number(p?.amount) || 0), 0)
     },
 
     currencyRate() {
@@ -340,7 +354,6 @@ export default {
       if (!context) return
 
       this.invoiceData = context.invoiceData
-      this.soData = context.soData
       this.invoiceItems = context.invoiceItems
     },
 
@@ -384,54 +397,64 @@ export default {
 
     // ==================== Cancel Invoice ====================
     handleCancelInvoice() {
+      const confirmLines = [
+        this.$t('view.mobile.sale.invoiceCancelConfirmMsg', {
+          invoiceNumber: this.invoiceNumber,
+          soNumber: this.invoiceData.soNumber
+        }),
+        this.$t('view.mobile.sale.invoiceCancelConfirmItemsMsg', { count: this.invoiceItems.length })
+      ]
+
+      if (this.hasPayments) {
+        confirmLines.push(
+          this.$t('view.mobile.sale.invoiceCancelConfirmPaymentWarningMsg', {
+            count: this.paymentCount,
+            amount: this.formatCurrency(this.paymentTotalAmount),
+            currency: this.displayCurrency
+          })
+        )
+      }
+
+      confirmLines.push(this.$t('view.mobile.sale.invoiceCancelConfirmIrreversibleMsg'))
+
+      const confirmMessage = confirmLines.join('<br/>')
+
       confirmThenSubmit(
-        this.$t('view.mobile.sale.invoiceCancelConfirmMsg'),
+        confirmMessage,
         this.$t('view.mobile.sale.invoiceCancelConfirmTitle'),
         async () => {
           this.cancelling = true
 
-          // Step 1: Delete Invoice
-          const deleteResult = await this.invoiceStore.fetchDelete({
-            formValue: { invoiceNumber: this.invoiceNumber }
-          })
-          if (!deleteResult) {
-            this.cancelling = false
-            return
-          }
-
-          // เก็บ soNumber ก่อน (ป้องกัน this.invoiceData เปลี่ยนค่า)
-          const soNumber = this.invoiceData.soNumber
-
-          // Step 2: Unconfirm stock items
-          // try-catch เพราะ invoice ถูกลบแล้ว — ต้อง navigate ออกไม่ว่า unconfirm จะสำเร็จหรือไม่
+          // ยกเลิกใบแจ้งหนี้ + ใบสั่งขาย + รายการรับชำระเงิน ใน transaction เดียวฝั่ง server
+          // error ทุกกรณี axios-helper แสดง popup ให้แล้ว และค้างอยู่หน้าเดิม (ไม่ navigate)
           try {
-            const stockConfirm = this.soData?.stockConfirm || []
-            const itemsToUnconfirm = stockConfirm.filter(c =>
-              c.invoice === this.invoiceNumber && c.isConfirm
-            )
-
-            if (itemsToUnconfirm.length > 0) {
-              await this.saleOrderStore.unconfirmStockItems({
-                soNumber: soNumber,
-                stockItems: itemsToUnconfirm.map(item => ({
-                  id: item.id,
-                  stockNumber: item.stockNumber
-                }))
-              })
-            }
-          } catch (err) {
-            // non-critical — invoice already deleted, continue to navigate
-          }
-
-          // Step 3: Navigate — ใน success callback เพื่อให้ user กดตกลงก่อนค่อย navigate
-          this.cancelling = false
-          success(this.$t('view.mobile.sale.invoiceCancelSuccessMsg'), this.$t('view.mobile.sale.invoiceCancelSuccessTitle'), () => {
-            this.$router.push({
-              name: 'mobile-sale-detail',
-              params: { soNumber }
+            const res = await this.invoiceStore.fetchCancelWithSaleOrder({
+              invoiceNumber: this.invoiceNumber
             })
-          })
-        }
+            if (!res) return
+
+            // field ใหม่จาก backend — fallback เป็นจำนวนที่หน้าจอนับไว้ ถ้า response ไม่มีมา
+            const cancelledPaymentCount = Number(res.cancelledPaymentCount ?? this.paymentCount) || 0
+            const successMessage = cancelledPaymentCount > 0
+              ? this.$t('view.mobile.sale.invoiceCancelSuccessWithPaymentMsg', { count: cancelledPaymentCount })
+              : this.$t('view.mobile.sale.invoiceCancelSuccessMsg')
+
+            // navigate ใน success callback เพื่อให้ user กดตกลงก่อนค่อยเปลี่ยนหน้า
+            success(
+              successMessage,
+              this.$t('view.mobile.sale.invoiceCancelSuccessTitle'),
+              () => {
+                this.$router.push({
+                  name: 'mobile-sale-detail',
+                  params: { soNumber: res.soNumber }
+                })
+              }
+            )
+          } finally {
+            this.cancelling = false
+          }
+        },
+        { confirmText: this.$t('view.mobile.sale.invoiceCancelConfirmBtn') }
       )
     },
 

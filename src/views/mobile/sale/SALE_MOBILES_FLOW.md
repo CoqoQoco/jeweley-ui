@@ -440,7 +440,6 @@ formValue = {
 |----------|------|---------|-------------|
 | `invoiceData` | object | `null` | ข้อมูล Invoice จาก API |
 | `invoiceItems` | array | `[]` | items ใน Invoice |
-| `soData` | object | `null` | ข้อมูล SO ที่เกี่ยวข้อง |
 | `showPrintForm` | boolean | `false` | แสดง form กำหนดเลขที่ print |
 | `printInvoiceNumber` | string | `''` | เลข Invoice สำหรับ print |
 | `printInvoiceDate` | string | `''` | วันที่ สำหรับ print |
@@ -474,27 +473,38 @@ grandTotal                     = totalBeforeVat + vatAmount
 | ปุ่ม | Action |
 |------|--------|
 | พิมพ์ Invoice | เปิด form กำหนดเลข + วันที่ → generate PDF |
-| ยกเลิก Invoice + Confirm | `handleCancelInvoice()` — confirm dialog → delete invoice → unconfirm stock → navigate ไป SO detail |
+| ยกเลิกใบแจ้งหนี้ + ใบสั่งขาย | `handleCancelInvoice()` — confirm dialog → `Invoice/CancelWithSaleOrder` → navigate ไป SO detail<br>ใช้ได้เสมอ (disabled เฉพาะตอน `cancelling`) — ใบที่มีรายการรับชำระเงินก็ยกเลิกได้ รายการรับชำระจะถูกยกเลิกไปด้วย |
 | ย้อนกลับ | `$router.back()` |
 
 ### Cancel Invoice Logic (`handleCancelInvoice()`)
 
 ```
-1. confirmSubmit() — ถามยืนยัน
-2. Invoice/Delete — soft-delete invoice (ลบ invoice link จาก SO products)
-3. SaleOrder/UnconfirmStockItems — คืน stock (try-catch: ถ้า fail ก็ navigate ออกเพราะ invoice ลบแล้ว)
-4. success() พร้อม callback → Navigate ไป SO detail หลัง user กดตกลง
+1. confirmSubmit() — ถามยืนยัน (บอกชัดว่ายกเลิกทั้ง invoice + SO และสินค้าคืนเข้าคลัง)
+   → ถ้ามี payments[] เพิ่มบรรทัดเตือน: จำนวนรายการรับชำระ + ยอดรวม (สกุลเดียวกับ invoice) จะถูกยกเลิกไปด้วย
+2. Invoice/CancelWithSaleOrder — call เดียว ส่งแค่ { invoiceNumber }
+   → server ยกเลิก invoice + inactive SO ใน transaction เดียว (atomic)
+   → ถ้าใบนั้นมีรายการรับชำระเงิน server ยกเลิก (soft delete) ให้ในทรานแซกชันเดียวกัน แล้วคืน `cancelledPaymentCount`
+3. success() พร้อม callback → Navigate ไป SO detail หลัง user กดตกลง (soNumber จาก response)
+   → ข้อความ success สลับตาม `cancelledPaymentCount` (> 0 = บอกจำนวนรายการรับชำระที่ถูกยกเลิกด้วย)
 ```
 
 **สำคัญ**:
-- Step 3 ครอบ try-catch เพราะ invoice ถูกลบแล้ว (step 2) → ต้อง navigate ออกเสมอไม่ว่า unconfirm จะสำเร็จหรือไม่
+- ส่งแค่ `invoiceNumber` — server อ่าน soNumber จาก invoice header เอง แล้วคืนกลับมาใน response
+- ไม่มี step คืน stock แยกฝั่ง frontend — การ inactive SO ฝั่ง server ปลด reserve ให้ทุก piece อยู่แล้ว
+- ไม่ swallow error: `try/finally` reset `cancelling` เท่านั้น ถ้า call fail จะไม่ navigate และ axios-helper แสดง popup ข้อความจาก server ให้เอง
+- **ไม่ block ใบที่มีรายการรับชำระเงินแล้ว** — ใบที่ออกจาก POS มี payments เสมอ การยกเลิกจะยกเลิกรายการรับชำระให้ด้วย จึงเตือนใน confirm dialog แทนการ disable ปุ่ม
+- `paymentTotalAmount` รวมจาก `payments[].amount` — ทุกแถวเป็นสกุลเดียวกับ invoice (backend เซ็ต `CurrencyUnit = invoice.CurrencyUnit` ตอนบันทึกรับชำระ) จึงรวมกันตรง ๆ ได้
+- อ่าน `cancelledPaymentCount` แบบ defensive (`res.cancelledPaymentCount ?? paymentCount`) — ถ้า field หายหน้าจอยังทำงานปกติ
 - `$router.push()` อยู่ใน callback ของ `success()` เพื่อรอ user กดตกลงก่อนค่อย navigate (ป้องกัน iOS Safari navigation issues ขณะ SweetAlert เปิดอยู่)
 
-**Backend Behavior**:
-| API | สิ่งที่เกิดขึ้น |
-|-----|--------------|
-| `Invoice/Delete` | set `IsDelete=true`, clear Invoice/InvoiceItem/DkInvoiceNumber จาก TbtSaleOrderProduct → items กลับเป็น confirmed (ไม่มี invoice) |
-| `SaleOrder/UnconfirmStockItems` | ลบ TbtSaleOrderProduct records, คืน QtySale → items กลับเป็น unconfirmed |
+**Backend Behavior** (`Invoice/CancelWithSaleOrder` — transaction เดียว):
+| ขั้นตอน | สิ่งที่เกิดขึ้น |
+|--------|--------------|
+| ยกเลิก invoice | stock pieces `SOLD → RESERVED`, movement `RETURN` |
+| Inactive SO | stock pieces `RESERVED → IN_STOCK`, movement `UNRESERVE`, SO status = `Inactive` |
+| ยกเลิกรายการรับชำระ | payment rows ของ invoice ถูก soft delete → คืนจำนวนที่ยกเลิกใน `cancelledPaymentCount` |
+
+**Error 400 ที่เจอได้**: invoice ถูกยกเลิกไปแล้ว / SO มีสินค้าที่ออก Invoice ใบอื่นแล้ว
 
 ### API Calls
 
@@ -503,8 +513,7 @@ grandTotal                     = totalBeforeVat + vatAmount
 | โหลด Invoice | `Invoice/Get` (by invoiceNumber) |
 | โหลด SO (สำหรับ items) | `SaleOrder/Get` (by soNumber) |
 | Print PDF | invoicePdfService (frontend only) |
-| ยกเลิก Invoice | `Invoice/Delete` (soft-delete) |
-| คืน stock | `SaleOrder/UnconfirmStockItems` |
+| ยกเลิก Invoice + SO | `Invoice/CancelWithSaleOrder` (atomic: cancel invoice + inactive SO + ยกเลิกรายการรับชำระ) |
 
 ### ความแตกต่างจาก Web (invoice-detail/index-view.vue)
 
@@ -512,7 +521,7 @@ grandTotal                     = totalBeforeVat + vatAmount
 |---------|-----|--------|
 | Invoice Versions | มี (สร้าง version ใหม่ด้วย rate ใหม่) | **ไม่มี** |
 | Payment Records | มี (บันทึก/ดู/ลบ การชำระเงิน) | **ไม่มี** |
-| Cancel/Delete Invoice | มี | **มี** (ยกเลิก Invoice + Unconfirm Stock) |
+| Cancel/Delete Invoice | มี (ยกเลิกเฉพาะ Invoice) | **มี** (ยกเลิก Invoice + SO ในคำสั่งเดียว) |
 | Delivery Note PDF | มี | **ไม่มี** |
 | Export Excel | มี | **ไม่มี** |
 | Print customization | Modal | Inline form |
@@ -633,7 +642,7 @@ Invoice Detail (Mobile ดู):
 | Confirm/Unconfirm Stock แยก | Low | Mobile auto-confirm ตอนสร้าง Invoice |
 | Invoice Versions | Low | Phase 2 |
 | Payment Records (บันทึกชำระเงิน) | Medium | Phase 2 |
-| ~~Cancel/Delete Invoice~~ | ~~Low~~ | **Implemented** — ยกเลิก Invoice + Unconfirm Stock |
+| ~~Cancel/Delete Invoice~~ | ~~Low~~ | **Implemented** — ยกเลิก Invoice + SO (`Invoice/CancelWithSaleOrder`) |
 | Delivery Note PDF | Low | Phase 2 |
 | Export Excel | Low | Phase 2 |
 | แสดง SO Date (soDate) ใน detail | Low | มีข้อมูลแต่ไม่แสดง |
@@ -749,3 +758,5 @@ onCurrencyChange(value) {
 *Updated: 2026-02-23 — Section 13: สลับ CurrencyUnitSelect → AutoCompleteGeneric (static list mode)*
 *Updated: 2026-03-06 — detail-view: pdfShowCifLabel inline toggle สำหรับ Print PDF (เหมือน sale-order-view.vue)*
 *Updated: 2026-03-06 — detail-view: เพิ่ม "ลบใบสั่งขาย" button (SaleOrder/Inactive + auto-unconfirm) — ยังไม่ implement*
+*Updated: 2026-09-07 — invoice-detail-view: ยกเลิกใบแจ้งหนี้เปลี่ยนเป็น `Invoice/CancelWithSaleOrder` call เดียว (ยกเลิก invoice + inactive SO atomic), ตัด step `SaleOrder/UnconfirmStockItems`, block ปุ่มเมื่อมีรายการรับชำระเงิน*
+*Updated: 2026-09-07 — invoice-detail-view: เลิก block ปุ่มยกเลิกเมื่อมีรายการรับชำระเงิน (ใบจาก POS มีเสมอ) — backend ยกเลิก payment rows ให้ในทรานแซกชันเดียว, confirm dialog เตือนจำนวน + ยอดรวม, success message บอกจำนวนตาม `cancelledPaymentCount`*
