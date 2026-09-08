@@ -166,11 +166,35 @@ export default {
         warning(this.$t('view.announcement.alert.required'))
         return false
       }
-      if (this.form.publishEnd && new Date(this.form.publishEnd) < new Date(this.form.publishStart)) {
-        warning(this.$t('view.announcement.alert.endBeforeStart'))
-        return false
+      if (this.form.publishEnd) {
+        const startDay = new Date(this.form.publishStart)
+        startDay.setHours(0, 0, 0, 0)
+        const endDay = new Date(this.form.publishEnd)
+        endDay.setHours(0, 0, 0, 0)
+        if (endDay < startDay) {
+          warning(this.$t('view.announcement.alert.endBeforeStart'))
+          return false
+        }
       }
       return true
+    },
+
+    // ถ้าเลือกวันเริ่มเป็นวันนี้ ให้ส่งเวลาปัจจุบันเพื่อให้ประกาศแสดงผลทันที ถ้าเป็นวันอื่นให้ปัดเป็นต้นวัน (00:00:00.000)
+    toStartOfDayIso(date) {
+      const now = new Date()
+      const start = new Date(date)
+      if (start.toDateString() === now.toDateString()) {
+        return now.toISOString()
+      }
+      start.setHours(0, 0, 0, 0)
+      return start.toISOString()
+    },
+
+    // วันสิ้นสุดต้องนับรวมทั้งวันที่เลือก (23:59:59.999) ไม่งั้นประกาศจะหมดอายุตั้งแต่ต้นวันนั้น
+    toEndOfDayIso(date) {
+      const end = new Date(date)
+      end.setHours(23, 59, 59, 999)
+      return end.toISOString()
     },
 
     onCancel() {
@@ -185,9 +209,9 @@ export default {
         formData.append('title', this.form.title)
         formData.append('body', this.form.body)
         formData.append('isPinned', this.form.isPinned)
-        formData.append('publishStart', new Date(this.form.publishStart).toISOString())
+        formData.append('publishStart', this.toStartOfDayIso(this.form.publishStart))
         if (this.form.publishEnd) {
-          formData.append('publishEnd', new Date(this.form.publishEnd).toISOString())
+          formData.append('publishEnd', this.toEndOfDayIso(this.form.publishEnd))
         }
         formData.append('isPublished', this.form.isPublished)
         if (this.form.image) {
