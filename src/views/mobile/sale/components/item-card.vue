@@ -2,7 +2,8 @@
   <div class="item-card">
     <div class="item-card-header">
       <div class="item-info">
-        <span class="item-stock-number">{{ item.stockNumber }}</span>
+        <span class="item-stock-number">{{ primaryCode }}</span>
+        <span v-if="secondaryCode" class="item-new-code">{{ secondaryCode }}</span>
         <span class="item-source-badge" :class="item.source">
           {{ item.source === 'appraisal' ? $t('view.mobile.sale.itemSourceAppraisal') : item.source === 'quotation' ? $t('view.mobile.sale.itemSourceQuotation') : $t('view.mobile.sale.itemSourceScan') }}
         </span>
@@ -94,6 +95,17 @@ export default {
   emits: ['update', 'remove'],
 
   computed: {
+    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
+    // item จาก scan/appraisal/quotation ในหน้านี้ยังไม่ส่ง stockNumberOrigin มา จึง fallback เป็นรหัสใหม่เหมือนเดิมไปก่อน
+    primaryCode() {
+      return this.item.stockNumberOrigin || this.item.stockNumber
+    },
+
+    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    secondaryCode() {
+      return this.item.stockNumberOrigin ? this.item.stockNumber : ''
+    },
+
     calculatedTotal() {
       const price = Number(this.item.appraisalPrice) || Number(this.item.price) || 0
       const qty = Number(this.item.qty) || 1
@@ -160,6 +172,12 @@ export default {
       font-weight: 600;
       color: var(--base-font-color);
       font-size: 0.9rem;
+    }
+
+    // ไฟล์นี้ไม่มีสไตล์ "จาง" ให้ reuse ตรงๆ — ใช้ fs-sm + opacity ตาม fallback rule (เหมือน pos-cart-line.vue)
+    .item-new-code {
+      font-size: var(--fs-sm);
+      opacity: 0.6;
     }
 
     .item-source-badge {

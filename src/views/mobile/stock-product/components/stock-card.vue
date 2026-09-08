@@ -15,12 +15,12 @@
 
     <div class="stock-card-content">
       <div class="stock-card-header">
-        <span class="stock-number">{{ item.stockNumber }}</span>
+        <span class="stock-number">{{ primaryCode }}</span>
         <i class="bi bi-chevron-right"></i>
       </div>
       <div v-if="item.mold" class="stock-mold">{{ item.mold }}</div>
-      <div v-if="item.stockNumberOrigin" class="stock-number-old">
-        {{ $t('view.stock.product.stockNumberOld') }}: {{ item.stockNumberOrigin }}
+      <div v-if="secondaryCode" class="stock-number-sub">
+        {{ $t('view.stock.product.stockNumberNew') }}: {{ secondaryCode }}
       </div>
       <div class="product-name">{{ item.productNameTh || item.productNameEn || '-' }}</div>
       <div class="stock-card-meta">
@@ -61,6 +61,15 @@ export default {
   emits: ['click'],
 
   computed: {
+    // เลขหลัก = เลขเก่า (stockNumberOrigin) เมื่อมี ไม่งั้น fallback เป็นเลขใหม่ (stockNumber)
+    primaryCode() {
+      return this.item.stockNumberOrigin || this.item.stockNumber
+    },
+    // เลขรอง = เลขใหม่ โชว์เฉพาะตอนมีเลขเก่า
+    secondaryCode() {
+      return this.item.stockNumberOrigin ? this.item.stockNumber : ''
+    },
+
     // ยอดของ "ล็อตนี้" (piece เดียว) — ไม่ใช่ยอดรวม SKU
     pieceQty() {
       return getPieceQty(this.item)
@@ -146,7 +155,7 @@ export default {
 }
 
 // reuse ขนาด/สีเดียวกับ .meta-item ด้านล่าง — ให้ดูจางกว่ารหัสหลัก
-.stock-number-old {
+.stock-number-sub {
   font-size: 0.75rem;
   color: #666;
   margin-top: 2px;

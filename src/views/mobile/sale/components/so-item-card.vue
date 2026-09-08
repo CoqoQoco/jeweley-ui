@@ -2,7 +2,8 @@
   <div class="so-item-card">
     <div class="item-card-header">
       <div class="item-info">
-        <span class="item-stock-number">{{ item.stockNumber || item.productNumber || '-' }}</span>
+        <span class="item-stock-number">{{ primaryCode }}</span>
+        <span v-if="secondaryCode" class="item-new-code">{{ secondaryCode }}</span>
         <span
           v-if="confirmStatus"
           class="item-status-badge"
@@ -57,6 +58,16 @@ export default {
   },
 
   computed: {
+    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่ ไม่มีอีกค่อยใช้รหัสสินค้าแทน
+    primaryCode() {
+      return this.item.stockNumberOrigin || this.item.stockNumber || this.item.productNumber || '-'
+    },
+
+    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    secondaryCode() {
+      return this.item.stockNumberOrigin ? this.item.stockNumber : ''
+    },
+
     // ราคาจริง: ใช้ appraisalPrice (ราคาตีราคา) ถ้ามี ไม่งั้นใช้ price
     displayPrice() {
       return Number(this.item.appraisalPrice) || Number(this.item.price) || 0
@@ -139,6 +150,12 @@ export default {
       font-weight: 600;
       color: var(--base-font-color);
       font-size: 0.9rem;
+    }
+
+    // ไฟล์นี้ไม่มีสไตล์ "จาง" ให้ reuse ตรงๆ — ใช้ fs-sm + opacity ตาม fallback rule (เหมือน pos-cart-line.vue)
+    .item-new-code {
+      font-size: var(--fs-sm);
+      opacity: 0.6;
     }
 
     .item-status-badge {

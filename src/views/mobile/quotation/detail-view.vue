@@ -88,7 +88,8 @@
           <div v-for="(item, index) in items" :key="index" class="item-card">
             <div class="item-header">
               <span class="item-index">#{{ index + 1 }}</span>
-              <span class="item-name">{{ item.productNumber || item.stockNumber || '-' }}</span>
+              <span class="item-name">{{ primaryItemCode(item) }}</span>
+              <span v-if="secondaryItemCode(item)" class="item-new-code">{{ secondaryItemCode(item) }}</span>
             </div>
             <div v-if="item.description" class="item-description">{{ item.description }}</div>
             <div class="item-details">
@@ -282,6 +283,16 @@ export default {
       const qty = Number(item.qty || 1)
       const discount = Number(item.discountPercent || 0)
       return price * qty * (1 - discount / 100)
+    },
+
+    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่ ไม่มีอีกค่อยใช้รหัสสินค้าแทน
+    primaryItemCode(item) {
+      return item.stockNumberOrigin || item.stockNumber || item.productNumber || '-'
+    },
+
+    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    secondaryItemCode(item) {
+      return item.stockNumberOrigin ? item.stockNumber : ''
     },
 
     async handleExportPDF() {
@@ -506,6 +517,12 @@ export default {
         font-size: 0.9rem;
         font-weight: 600;
         color: #333;
+      }
+
+      // ไฟล์นี้ไม่มีสไตล์ "จาง" ให้ reuse ตรงๆ — ใช้ fs-sm + opacity ตาม fallback rule (เหมือน pos-cart-line.vue)
+      .item-new-code {
+        font-size: var(--fs-sm);
+        opacity: 0.6;
       }
     }
 

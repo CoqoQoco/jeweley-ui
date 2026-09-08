@@ -3,7 +3,7 @@
     <template v-if="item">
       <div class="mobile-container mobile-mt-2">
         <div class="detail-stock-caption-row">
-          <div class="detail-stock-caption">{{ stockNumber }}</div>
+          <div class="detail-stock-caption">{{ displayCode }}</div>
           <ButtonGeneric
             variant="plain"
             icon="bi-qr-code"
@@ -98,6 +98,12 @@ export default {
   computed: {
     stockNumber() {
       return this.$route.params.stockNumber
+    },
+    // สิ่งที่ตาเห็นบนหัวจอ: เลขเก่าเมื่อโหลดข้อมูลแล้วมี ไม่งั้น fallback เป็นเลขจาก route
+    // (ห้ามใช้แทน stockNumber ด้านบน — ตัวนั้นยังใช้ยิง API และส่งต่อเป็น prop)
+    displayCode() {
+      if (!this.item) return this.stockNumber
+      return this.item.stockNumberOrigin || this.item.stockNumber
     },
     tabs() {
       return [

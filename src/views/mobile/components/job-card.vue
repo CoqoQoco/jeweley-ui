@@ -18,10 +18,10 @@
       <div class="job-card__title">{{ jobTypeName }}</div>
       <div class="job-card__running">{{ job.jobRunning }}</div>
 
-      <!-- Appraisal Info: stockNumber / stockNumberOrigin -->
+      <!-- Appraisal Info: รหัสหลัก = รหัสเก่า (ถ้ามี) ตามด้วยรหัสใหม่ -->
       <div v-if="isAppraisalJob && hasStockInfo" class="job-card__appraisal-info">
         <i class="bi bi-tag"></i>
-        <span> {{ stockNumber }}{{ stockNumberOrigin ? ' / ' + stockNumberOrigin : '' }}</span>
+        <span> {{ primaryStockCode }}{{ secondaryStockCode ? ' / ' + secondaryStockCode : '' }}</span>
       </div>
 
       <!-- Meta: status + date -->
@@ -107,6 +107,16 @@ export default {
 
     hasStockInfo() {
       return !!(this.stockNumber || this.stockNumberOrigin)
+    },
+
+    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
+    primaryStockCode() {
+      return this.stockNumberOrigin || this.stockNumber
+    },
+
+    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    secondaryStockCode() {
+      return this.stockNumberOrigin ? this.stockNumber : ''
     },
 
     jobTypeName() {

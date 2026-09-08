@@ -56,7 +56,8 @@
           />
           <div class="item-content">
             <div class="item-main">
-              <span class="item-number">{{ item.stockNumber }}</span>
+              <span class="item-number">{{ item.stockNumberOrigin || item.stockNumber }}</span>
+              <span v-if="item.stockNumberOrigin" class="item-new-code">{{ item.stockNumber }}</span>
               <span v-if="item.description" class="item-desc">{{ item.description }}</span>
             </div>
             <div class="item-price-info">
@@ -625,6 +626,12 @@ export default {
       font-weight: 600;
       color: var(--base-font-color);
       font-size: 0.9rem;
+    }
+
+    // ไฟล์นี้ไม่มีสไตล์ "จาง" ให้ reuse ตรงๆ — ใช้ fs-sm + opacity ตาม fallback rule (เหมือน pos-cart-line.vue)
+    .item-new-code {
+      font-size: var(--fs-sm);
+      opacity: 0.6;
     }
 
     .item-desc {
