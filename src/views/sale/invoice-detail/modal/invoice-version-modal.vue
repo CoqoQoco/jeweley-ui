@@ -484,10 +484,6 @@ export default {
 @import '@/assets/scss/custom-style/standard-form';
 @import '@/assets/scss/custom-style/standard-data-table';
 
-.invoice-version-container {
-  //padding: 1rem;
-}
-
 // Hide number input spinners (arrows)
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
