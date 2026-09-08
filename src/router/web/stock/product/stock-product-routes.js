@@ -17,6 +17,8 @@ const StockImage = () => import('@/views/stock/product/image/IndexView.vue')
 
 const Barcode = () => import('@/views/receipt-stock/product/test-barcode/index-view.vue')
 
+const ShowcaseScan = () => import('@/views/showcase-scan/index-view.vue')
+
 import { PERMISSIONS } from '@/services/permission/config.js'
 
 const routes = [
@@ -162,6 +164,20 @@ const routes = [
           Displayname: {
             en: 'Move Storage Location',
             th: 'ย้าย Storage Location'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
+      {
+        path: '/showcase-scan',
+        name: 'showcase-scan',
+        component: ShowcaseScan,
+        meta: {
+          Displayname: {
+            en: 'Customer Showcase',
+            th: 'จอโชว์ลูกค้า'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT]

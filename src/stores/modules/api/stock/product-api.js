@@ -218,6 +218,11 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.error('Error fetching cost version by plan running:', error)
         throw error
       }
+    },
+
+    // สร้างลิงก์หน้าสาธารณะ (/p/:token) สำหรับโชว์สินค้าให้ลูกค้าดู — endpoint นี้ต้อง login (ใช้ instance ปกติ)
+    async fetchPublicLink(stockNumber) {
+      return await api.jewelry.post('StockProduct/PublicLink', { stockNumber })
     }
   }
 })

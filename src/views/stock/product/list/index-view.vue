@@ -11,6 +11,7 @@
       v-model:modelFormExport="formExport"
       @view-cost="handleViewCost"
       @view-history="handleViewHistory"
+      @show-share="handleShowShare"
     ></dataTable>
 
     <!-- Cost Detail Modal -->
@@ -26,6 +27,12 @@
       :stockNumber="selectedStockNumber"
       :stockData="selectedStockData"
     ></costHistoryModal>
+
+    <!-- Public Share Dialog -->
+    <productShareDialog
+      v-model:visible="shareVisible"
+      :stockNumber="selectedStockNumber"
+    ></productShareDialog>
   </div>
 </template>
 
@@ -34,6 +41,7 @@ import search from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'
 import costDetailModal from './components/cost-detail-modal.vue'
 import costHistoryModal from './components/cost-history-modal.vue'
+import productShareDialog from '@/components/public/product-share-dialog.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -68,7 +76,8 @@ export default {
     search,
     dataTable,
     costDetailModal,
-    costHistoryModal
+    costHistoryModal,
+    productShareDialog
   },
 
   setup() {
@@ -97,6 +106,7 @@ export default {
       search: {},
       costDetailVisible: false,
       costHistoryVisible: false,
+      shareVisible: false,
       selectedStockNumber: '',
       selectedStockData: {}
     }
@@ -128,6 +138,14 @@ export default {
         this.selectedStockNumber = data.stockNumber
         this.selectedStockData = data
         this.costHistoryVisible = true
+      }
+    },
+
+    handleShowShare(data) {
+      if (data && data.stockNumber) {
+        this.selectedStockNumber = data.stockNumber
+        this.selectedStockData = data
+        this.shareVisible = true
       }
     }
   },

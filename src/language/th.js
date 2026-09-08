@@ -24,6 +24,7 @@ import graphLang from './view/graph/th.js'
 import downloadsLang from './view/downloads/th.js'
 import reportLang from './view/report/th.js'
 import printStationLang from './view/print-station/th.js'
+import publicLang from './view/public/th.js'
 import * as mobileLang from './view/mobile/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -39,6 +40,7 @@ export default {
     customer: { ...customer },
     master: { ...master },
     receiptStock: { ...receiptStock },
+    public: { ...publicLang },
     production: {
       ...productionLang,
       dashboard: {

@@ -31,6 +31,7 @@
     "pdfmake": "^0.2.7",
     "pinia": "^2.1.4",
     "primevue": "^3.52.0",
+    "qrcode": "^1.5.4",
     "qz-tray": "^2.2.5",
     "vue": "^3.3.4",
     "vue-awesome-paginate": "^1.1.46",

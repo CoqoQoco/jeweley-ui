@@ -6,12 +6,19 @@ import { PermissionService } from '@/services/permission/permission.js'
 // Web routes (Desktop/Tablet)
 import authenRoutes from './web/authen-routes.js'
 import landingRoutes from './web/landing-route.js'
+import publicRoutes from './web/public-routes.js'
 
 // Mobile routes
 import mobileAuthenRoutes from './mobile/authen-routes.js'
 import mobileLandingRoutes from './mobile/landing-route.js'
 
-const routes = [...landingRoutes, ...authenRoutes, ...mobileLandingRoutes, ...mobileAuthenRoutes]
+const routes = [
+  ...landingRoutes,
+  ...authenRoutes,
+  ...mobileLandingRoutes,
+  ...mobileAuthenRoutes,
+  ...publicRoutes
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,6 +54,12 @@ const checkRoutePermission = (user, route) => {
 
 // Navigation guard with device detection
 router.beforeEach(async (to, from, next) => {
+  // === 0. Public Page Bypass ===
+  // หน้าสาธารณะ (/p/:token) ต้องเปิดได้ทั้งลูกค้าที่ไม่ได้ login และ staff ที่ login ค้างไว้ บนอุปกรณ์ใดก็ได้
+  // จึงต้องข้าม device-redirect (มือถือ → /mobile/*), auth guard, และ "login แล้วเด้งไป dashboard" ทั้งหมดด้านล่าง
+  const isPublicPage = to.matched.some((route) => route.meta?.publicPage)
+  if (isPublicPage) return next()
+
   const authStore = useAuthStore()
   const deviceStore = useDeviceStore()
   const { isAuthenticated, user } = authStore

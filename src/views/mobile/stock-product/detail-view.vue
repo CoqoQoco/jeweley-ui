@@ -2,8 +2,18 @@
   <div class="mobile-stock-detail-view">
     <template v-if="item">
       <div class="mobile-container mobile-mt-2">
-        <div class="detail-stock-caption">{{ stockNumber }}</div>
+        <div class="detail-stock-caption-row">
+          <div class="detail-stock-caption">{{ stockNumber }}</div>
+          <ButtonGeneric
+            variant="plain"
+            icon="bi-qr-code"
+            :title="$t('view.public.share.buttonTitle')"
+            @click="shareVisible = true"
+          />
+        </div>
       </div>
+
+      <productShareDialog v-model:visible="shareVisible" :stockNumber="stockNumber" />
 
       <div class="mobile-container mobile-mt-1">
         <div class="segmented-tabs">
@@ -48,6 +58,9 @@ import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balanc
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import productShareDialog from '@/components/public/product-share-dialog.vue'
+
 import detailInfo from './components/detail-info.vue'
 import detailBalance from './components/detail-balance.vue'
 import detailCost from './components/detail-cost.vue'
@@ -57,6 +70,8 @@ export default {
   name: 'MobileStockProductDetail',
 
   components: {
+    ButtonGeneric,
+    productShareDialog,
     detailInfo,
     detailBalance,
     detailCost,
@@ -75,7 +90,8 @@ export default {
     return {
       item: null,
       activeTab: 'info',
-      visitedTabs: { info: true, balance: false, cost: false, history: false }
+      visitedTabs: { info: true, balance: false, cost: false, history: false },
+      shareVisible: false
     }
   },
 
@@ -161,6 +177,13 @@ export default {
   min-height: 100vh;
   background: #f5f5f5;
   padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+}
+
+.detail-stock-caption-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
 }
 
 .detail-stock-caption {

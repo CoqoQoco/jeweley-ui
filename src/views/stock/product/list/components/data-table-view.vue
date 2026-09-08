@@ -29,6 +29,13 @@
           >
             <i class="bi bi-clock-history"></i>
           </button>
+          <button
+            class="btn btn-sm btn-outline-main"
+            :title="$t('view.public.share.buttonTitle')"
+            @click="onShowShare(data)"
+          >
+            <i class="bi bi-qr-code"></i>
+          </button>
         </div>
       </template>
 
@@ -289,6 +296,9 @@ export default {
     },
     onViewHistory(val) {
       this.$emit('view-history', val)
+    },
+    onShowShare(val) {
+      this.$emit('show-share', val)
     },
 
     async fetchData() {

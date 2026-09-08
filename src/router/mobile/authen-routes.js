@@ -186,6 +186,17 @@ const routes = [
           permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       },
+      {
+        path: 'showcase-scan',
+        name: 'mobile-showcase-scan',
+        component: () => import('@/views/showcase-scan/index-view.vue'),
+        meta: {
+          Displayname: { en: 'Customer Showcase', th: 'จอโชว์ลูกค้า' },
+          classIcon: 'bi bi-qr-code',
+          requiresAuth: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
 
       // ========== Shared Features (มีทั้ง Web & Mobile) ==========
       // แต่ UI/UX ต่างกัน - Mobile เน้น touch-friendly, quick actions
