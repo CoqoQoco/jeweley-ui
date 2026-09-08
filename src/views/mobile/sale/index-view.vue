@@ -1,25 +1,8 @@
 <template>
   <div class="mobile-sale-view">
-    <!-- Main Tabs: SO | Invoice -->
-    <div class="mobile-container mobile-mt-1">
-      <div class="main-tabs">
-        <button
-          class="main-tab"
-          :class="{ active: activeTab === 'so' }"
-          @click="changeTab('so')"
-        >
-          <i class="bi bi-receipt"></i>
-          Sale Order
-        </button>
-        <button
-          class="main-tab"
-          :class="{ active: activeTab === 'invoice' }"
-          @click="changeTab('invoice')"
-        >
-          <i class="bi bi-file-earmark-text"></i>
-          Invoice
-        </button>
-      </div>
+    <!-- Page Title -->
+    <div class="mobile-container mobile-mt-2">
+      <h2 class="mobile-title">{{ $t('view.mobile.saleIndex.pageTitle') }}</h2>
     </div>
 
     <!-- Search + Scope Filter -->
@@ -34,58 +17,8 @@
       />
     </div>
 
-    <!-- SO Tab Content -->
-    <div v-if="activeTab === 'so'" class="mobile-container mobile-mt-1">
-      <div v-if="soList.length > 0" class="card-list">
-        <div
-          v-for="so in soList"
-          :key="so.soNumber"
-          class="list-card"
-          @click="viewSoDetail(so)"
-        >
-          <div class="list-card-header">
-            <span class="card-number">{{ so.soNumber }}</span>
-            <span class="card-status-badge" :style="{ background: getStatusColor(so.statusName) }">
-              {{ so.statusName || '-' }}
-            </span>
-          </div>
-          <div class="list-card-body">
-            <div class="card-customer">
-              <i class="bi bi-person"></i>
-              <span>{{ so.customerName || $t('view.mobile.saleIndex.unknownCustomer') }}</span>
-            </div>
-            <div class="card-info-row">
-              <div class="card-date">
-                <i class="bi bi-calendar3"></i>
-                <span>{{ formatDate(so.createDate) }}</span>
-              </div>
-              <div v-if="scope === 'all' && so.createBy" class="card-created-by">
-                <i class="bi bi-person-badge"></i>
-                <span>{{ so.createBy }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button
-          v-if="soHasMore"
-          class="mobile-btn mobile-btn-outline mobile-mt-2"
-          @click="loadMoreSo"
-        >
-          <i class="bi bi-arrow-down-circle"></i>
-          {{ $t('view.mobile.saleIndex.loadMoreBtn') }}
-        </button>
-      </div>
-
-      <div v-else class="mobile-empty-state">
-        <i class="bi bi-receipt"></i>
-        <div class="empty-title">{{ $t('view.mobile.saleIndex.soEmptyTitle') }}</div>
-        <div class="empty-subtitle">{{ $t('view.mobile.saleIndex.soEmptySubtitle') }}</div>
-      </div>
-    </div>
-
-    <!-- Invoice Tab Content -->
-    <div v-if="activeTab === 'invoice'" class="mobile-container mobile-mt-1">
+    <!-- Invoice List -->
+    <div class="mobile-container mobile-mt-1">
       <div v-if="invoiceList.length > 0" class="card-list">
         <div
           v-for="inv in invoiceList"
@@ -95,9 +28,18 @@
         >
           <div class="list-card-header">
             <span class="card-number">{{ inv.invoiceNumber }}</span>
-            <span class="card-status-badge" :style="{ background: getStatusColor(inv.statusName) }">
-              {{ inv.statusName || '-' }}
-            </span>
+            <div class="card-status-group">
+              <span class="card-status-badge" :style="{ background: getStatusColor(inv.statusName) }">
+                {{ inv.statusName || '-' }}
+              </span>
+              <span
+                v-if="invoicePaymentStatus(inv)"
+                class="mobile-badge"
+                :class="paymentStatusBadgeClass(invoicePaymentStatus(inv))"
+              >
+                {{ paymentStatusLabel(invoicePaymentStatus(inv)) }}
+              </span>
+            </div>
           </div>
           <div class="list-card-body">
             <div class="card-customer">
@@ -142,24 +84,16 @@
         <div class="empty-subtitle">{{ $t('view.mobile.saleIndex.invoiceEmptySubtitle') }}</div>
       </div>
     </div>
-
-    <!-- Sticky Create Button (SO tab only) -->
-    <div v-if="activeTab === 'so'" class="sticky-bottom-btn">
-      <button class="mobile-btn mobile-btn-primary" @click="$router.push('/mobile/sale/create')">
-        <i class="bi bi-plus-circle"></i>
-        {{ $t('view.mobile.saleIndex.createSoBtn') }}
-      </button>
-    </div>
   </div>
 </template>
 
 <script>
 import dayjs from 'dayjs'
 
-import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { storage } from '@/services/storage.js'
+import { getPaymentStatus } from '@/services/utils/payment-status.js'
 import listFilterBar from './components/list-filter-bar.vue'
 import ReceiptPrintAction from '@/components/receipt/receipt-print-action.vue'
 
@@ -171,15 +105,13 @@ export default {
   components: { listFilterBar, ReceiptPrintAction },
 
   setup() {
-    const saleOrderStore = usrSaleOrderApiStore()
     const invoiceStore = useInvoiceApiStore()
     const authStore = useAuthStore()
-    return { saleOrderStore, invoiceStore, authStore }
+    return { invoiceStore, authStore }
   },
 
   data() {
     return {
-      activeTab: 'so',
       pageSize: 20,
 
       // Search & scope
@@ -187,35 +119,16 @@ export default {
       searchField: 'number',
       scope: 'mine',
 
-      // SO
-      soList: [],
-      soPage: 0,
-      soHasMore: false,
-      soNeedsReload: false,
-
       // Invoice
       invoiceList: [],
       invoicePage: 0,
-      invoiceHasMore: false,
-      invoiceNeedsReload: false
+      invoiceHasMore: false
     }
   },
 
   computed: {
     currentUsername() {
       return this.authStore.getUser?.username || ''
-    },
-
-    soSearchFormValue() {
-      const formValue = { createBy: this.scope === 'mine' ? this.currentUsername : null }
-      if (this.searchValue) {
-        if (this.searchField === 'number') {
-          formValue.soNumber = this.searchValue
-        } else {
-          formValue.customerName = this.searchValue
-        }
-      }
-      return formValue
     },
 
     invoiceSearchFormValue() {
@@ -236,24 +149,10 @@ export default {
   },
 
   mounted() {
-    this.loadSoList()
+    this.loadInvoiceList()
   },
 
   methods: {
-    changeTab(tab) {
-      if (this.activeTab === tab) return
-      this.activeTab = tab
-
-      if (tab === 'so' && (this.soList.length === 0 || this.soNeedsReload)) {
-        this.soNeedsReload = false
-        this.loadSoList()
-      }
-      if (tab === 'invoice' && (this.invoiceList.length === 0 || this.invoiceNeedsReload)) {
-        this.invoiceNeedsReload = false
-        this.loadInvoiceList()
-      }
-    },
-
     // ========== Search & Scope ==========
     onSearch() {
       this.applyFilterChange()
@@ -272,15 +171,8 @@ export default {
     },
 
     applyFilterChange() {
-      if (this.activeTab === 'so') {
-        this.soPage = 0
-        this.loadSoList()
-        this.invoiceNeedsReload = true
-      } else {
-        this.invoicePage = 0
-        this.loadInvoiceList()
-        this.soNeedsReload = true
-      }
+      this.invoicePage = 0
+      this.loadInvoiceList()
     },
 
     loadSavedScope() {
@@ -297,47 +189,6 @@ export default {
       } catch (e) {
         // localStorage อาจใช้งานไม่ได้ในบาง browser mode — ข้ามการบันทึก
       }
-    },
-
-    // ========== SO ==========
-    async loadSoList() {
-      this.soPage = 0
-      this.soList = []
-
-      const result = await this.saleOrderStore.fetchList({
-        take: this.pageSize,
-        skip: 0,
-        sort: [{ field: 'createDate', dir: 'desc' }],
-        formValue: this.soSearchFormValue
-      })
-
-      if (result && result.data) {
-        this.soList = result.data
-        this.soHasMore = result.data.length >= this.pageSize
-      }
-    },
-
-    async loadMoreSo() {
-      this.soPage++
-
-      const result = await this.saleOrderStore.fetchList({
-        take: this.pageSize,
-        skip: this.soPage * this.pageSize,
-        sort: [{ field: 'createDate', dir: 'desc' }],
-        formValue: this.soSearchFormValue
-      })
-
-      if (result && result.data) {
-        this.soList.push(...result.data)
-        this.soHasMore = result.data.length >= this.pageSize
-      }
-    },
-
-    viewSoDetail(so) {
-      this.$router.push({
-        name: 'mobile-sale-detail',
-        params: { soNumber: so.soNumber }
-      })
     },
 
     // ========== Invoice ==========
@@ -381,6 +232,30 @@ export default {
       })
     },
 
+    // ========== Payment status badge (ถัดจาก statusName เดิม — คนละเรื่องกัน) ==========
+    // guard: grandTotalRounded เป็น null/undefined (ใบเก่าจำนวนมาก) → คืน null ห้ามเดาว่าค้างชำระ
+    invoicePaymentStatus(inv) {
+      return getPaymentStatus(inv.grandTotalRounded, inv.deposit, inv.paidAmount)
+    },
+
+    paymentStatusLabel(status) {
+      const map = {
+        paid: this.$t('view.mobile.sale.invoiceStatusPaidLabel'),
+        partial: this.$t('view.mobile.sale.invoiceStatusPartialLabel'),
+        unpaid: this.$t('view.mobile.sale.invoiceStatusUnpaidLabel')
+      }
+      return map[status] || ''
+    },
+
+    paymentStatusBadgeClass(status) {
+      const map = {
+        paid: 'mobile-badge-success',
+        partial: 'mobile-badge-warning',
+        unpaid: 'mobile-badge-danger'
+      }
+      return map[status] || 'mobile-badge-secondary'
+    },
+
     // ========== Shared ==========
     getStatusColor(statusName) {
       const name = (statusName || '').toLowerCase()
@@ -413,45 +288,7 @@ export default {
 .mobile-sale-view {
   min-height: 100vh;
   background: #f5f5f5;
-  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
-}
-
-.main-tabs {
-  display: flex;
-  gap: 0;
-  background: var(--color-card-bg);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-
-  .main-tab {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 12px 16px;
-    border: none;
-    background: var(--color-card-bg);
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    i {
-      font-size: 1rem;
-    }
-
-    &.active {
-      background: var(--base-font-color);
-      color: white;
-    }
-
-    &:active {
-      opacity: 0.9;
-    }
-  }
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 .card-list {
@@ -491,6 +328,13 @@ export default {
       font-size: 0.75rem;
       color: white;
       font-weight: 500;
+    }
+
+    .card-status-group {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-xs);
+      flex-shrink: 0;
     }
   }
 
@@ -549,27 +393,6 @@ export default {
         font-weight: 700;
         color: var(--base-font-color);
       }
-    }
-  }
-}
-
-.sticky-bottom-btn {
-  position: fixed;
-  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-  left: 0;
-  right: 0;
-  padding: 0px 10px 16px 10px;
-  z-index: 99;
-
-  .mobile-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-
-    i {
-      font-size: 1.2rem;
     }
   }
 }

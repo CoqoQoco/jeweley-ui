@@ -104,7 +104,7 @@ const routes = [
         name: 'mobile-sale',
         component: () => import('@/views/mobile/sale/index-view.vue'),
         meta: {
-          Displayname: { en: 'Sale Order', th: 'ใบสั่งขาย' },
+          Displayname: { en: 'Invoice', th: 'ใบแจ้งหนี้' },
           classIcon: 'bi bi-receipt',
           requiresAuth: true,
           permissions: ['mobile:sale']

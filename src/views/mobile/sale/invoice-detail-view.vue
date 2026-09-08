@@ -107,18 +107,25 @@
         <div class="summary-divider"></div>
         <div class="summary-row total">
           <span class="summary-label">{{ $t('view.mobile.sale.invoiceGrandTotalLabel') }}</span>
-          <span class="summary-value">{{ formatCurrency(grandTotal) }} {{ displayCurrency }}</span>
+          <span class="summary-value">{{ formatCurrency(effectiveGrandTotal) }} {{ displayCurrency }}</span>
         </div>
       </div>
 
       <!-- Payment Info -->
-      <div v-if="invoiceData.paymentName" class="info-card mobile-mt-2">
+      <div class="info-card mobile-mt-2">
         <div class="card-header">
           <i class="bi bi-credit-card"></i>
           {{ $t('view.mobile.sale.invoicePaymentTitle') }}
+          <span
+            v-if="paymentStatusLabel"
+            class="mobile-badge payment-status-badge"
+            :class="paymentStatusBadgeClass"
+          >
+            {{ paymentStatusLabel }}
+          </span>
         </div>
         <div class="card-body">
-          <div class="info-row">
+          <div v-if="invoiceData.payment !== 0" class="info-row">
             <span class="info-label">{{ $t('view.mobile.sale.invoicePaymentMethodLabel') }}</span>
             <span class="info-value">{{ invoiceData.paymentName }}</span>
           </div>
@@ -129,6 +136,26 @@
           <div v-if="invoiceData.deposit" class="info-row">
             <span class="info-label">{{ $t('view.mobile.sale.invoiceDepositLabel') }}</span>
             <span class="info-value">{{ formatCurrency(invoiceData.deposit) }} {{ displayCurrency }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ $t('view.mobile.sale.invoicePaidAmountLabel') }}</span>
+            <span class="info-value">{{ formatCurrency(paymentTotalAmount) }} {{ displayCurrency }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ $t('view.mobile.sale.invoiceOutstandingLabel') }}</span>
+            <span class="info-value">{{ formatCurrency(outstandingAmountDisplay) }} {{ displayCurrency }}</span>
+          </div>
+          <div v-if="hasPayments" class="payment-records">
+            <div class="payment-records-title">{{ $t('view.mobile.sale.invoicePaymentRecordsTitle') }}</div>
+            <div
+              v-for="(payment, index) in invoiceData.payments"
+              :key="payment.running || index"
+              class="payment-record-row"
+            >
+              <span class="payment-record-date">{{ formatDate(payment.paymentDate) }}</span>
+              <span class="payment-record-method">{{ payment.paymentMethod || '-' }}</span>
+              <span class="payment-record-amount">{{ formatCurrency(payment.amount) }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -237,6 +264,7 @@ import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-int
 import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/build-invoice-pdf-data.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { getPaymentStatus } from '@/services/utils/payment-status.js'
 import dayjs from 'dayjs'
 import SoItemCard from './components/so-item-card.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -334,6 +362,47 @@ export default {
 
     grandTotal() {
       return this.totalBeforeVat + this.vatAmount
+    },
+
+    // grandTotal (ด้านบน) คือยอดดิบก่อนปัด — backend เก็บ grandTotalRounded = CeilMoney(raw)
+    // ซึ่งเป็นยอดที่ปัดขึ้นเป็นจำนวนเต็มและเป็นยอดที่เก็บเงินจริงจากลูกค้า (เหมือน web + badge หน้าลิสต์)
+    // ต้องใช้ตัวนี้คิดสถานะ/ยอดคงเหลือ ไม่งั้นหน้า detail จะไม่ตรงกับหน้าลิสต์และ web
+    // fallback เป็น grandTotal ดิบเมื่อ API ไม่ส่งมา (ใบเก่าจำนวนมากมี grand_total_rounded = null จริงใน DB)
+    // เช็ค null/undefined ตรง ๆ ห้ามใช้ || เพราะ 0 เป็นค่าที่ถูกต้อง
+    effectiveGrandTotal() {
+      const rounded = this.invoiceData?.grandTotalRounded
+      return rounded === null || rounded === undefined ? this.grandTotal : Number(rounded)
+    },
+
+    outstandingAmount() {
+      return this.effectiveGrandTotal - Number(this.invoiceData?.deposit || 0) - this.paymentTotalAmount
+    },
+
+    // ยอดคงเหลือติดลบไม่มีความหมาย (จ่ายเกิน) — clamp ให้ 0 เฉพาะตอนแสดงผล
+    outstandingAmountDisplay() {
+      return Math.max(0, this.outstandingAmount)
+    },
+
+    paymentStatus() {
+      return getPaymentStatus(this.effectiveGrandTotal, this.invoiceData?.deposit, this.paymentTotalAmount)
+    },
+
+    paymentStatusLabel() {
+      const map = {
+        paid: this.$t('view.mobile.sale.invoiceStatusPaidLabel'),
+        partial: this.$t('view.mobile.sale.invoiceStatusPartialLabel'),
+        unpaid: this.$t('view.mobile.sale.invoiceStatusUnpaidLabel')
+      }
+      return map[this.paymentStatus] || ''
+    },
+
+    paymentStatusBadgeClass() {
+      const map = {
+        paid: 'mobile-badge-success',
+        partial: 'mobile-badge-warning',
+        unpaid: 'mobile-badge-danger'
+      }
+      return map[this.paymentStatus] || 'mobile-badge-secondary'
     }
   },
 
@@ -531,6 +600,10 @@ export default {
     color: white;
     font-weight: 500;
   }
+
+  .payment-status-badge {
+    margin-left: auto;
+  }
 }
 
 .card-body {
@@ -579,6 +652,42 @@ export default {
   font-size: 0.9rem;
   color: #333;
   line-height: 1.5;
+}
+
+// ==================== Payment Records ====================
+.payment-records {
+  margin-top: var(--sp-md);
+  padding-top: var(--sp-md);
+  border-top: 1px dashed var(--color-border);
+}
+
+.payment-records-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--base-font-color);
+  margin-bottom: var(--sp-sm);
+}
+
+.payment-record-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-size: 0.8rem;
+  color: #666;
+  padding: 4px 0;
+
+  .payment-record-method {
+    flex: 1;
+    text-align: center;
+    color: #333;
+  }
+
+  .payment-record-amount {
+    font-weight: 600;
+    color: var(--base-font-color);
+    flex-shrink: 0;
+  }
 }
 
 // ==================== Items Section ====================

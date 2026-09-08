@@ -65,7 +65,7 @@
           <div class="action-icon">
             <i class="bi bi-receipt"></i>
           </div>
-          <div class="action-label">{{ $t('view.mobile.dashboard.saleOrderLabel') }}</div>
+          <div class="action-label">{{ $t('view.mobile.dashboard.invoiceLabel') }}</div>
         </div>
 
         <div class="action-card" @click="navigateTo('/mobile/stock-product-list')">
