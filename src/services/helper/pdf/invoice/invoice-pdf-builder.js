@@ -4,6 +4,7 @@ import { initPdfMake } from '@/services/utils/pdf-make'
 import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -608,11 +609,7 @@ export class InvoicePdfBuilder {
         item.imageBase64 || item.imageBlobPath
           ? this.setTabImageCell(item.imageBase64, item.imageBlobPath)
           : this.setTableCell(''),
-        this.setTableCell(
-          item.stockNumber && item.productNumber
-            ? `${item.stockNumber}/${item.productNumber}`
-            : item.stockNumber || item.productNumber || ''
-        ),
+        this.setTableCell(formatItemStyleCode(item)),
         this.setTableCell(this.getDescription(item)),
         this.buildMaterialTable(item.materials, 'Gold'),
         this.buildMaterialTable(item.materials, 'Diamond'),

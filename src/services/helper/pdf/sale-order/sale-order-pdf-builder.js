@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 
 export class SaleOrderPdfBuilder {
   constructor(soData, options = {}) {
@@ -145,7 +146,7 @@ export class SaleOrderPdfBuilder {
                             }
                           : {
                               text: 'LOGO',
-                              fontSize: 14,
+                              fontSize: 11,
                               color: 'white',
                               margin: [15, 20, 10, 0]
                             },
@@ -153,16 +154,16 @@ export class SaleOrderPdfBuilder {
                           stack: [
                             {
                               text: 'Duang Kaew Jewelry',
-                              fontSize: 30,
+                              fontSize: 22,
                               bold: true,
                               color: '#8B0000',
                               margin: [25, 5, 0, 0]
                             },
                             {
                               text: 'The first step is always the hardest',
-                              fontSize: 12,
+                              fontSize: 10,
                               color: '#8B0000',
-                              margin: [25, -10, 0, 0]
+                              margin: [25, -2, 0, 0]
                             }
                           ]
                         }
@@ -174,7 +175,7 @@ export class SaleOrderPdfBuilder {
                   stack: [
                     {
                       text: 'SALE ORDER',
-                      fontSize: 20,
+                      fontSize: 16,
                       color: '#393939',
                       alignment: 'center',
                       margin: [0, 10, 0, 0]
@@ -183,18 +184,18 @@ export class SaleOrderPdfBuilder {
                       columns: [
                         {
                           text: 'SO No.:',
-                          fontSize: 9,
+                          fontSize: 8,
                           color: '#393939',
                           alignment: 'right',
-                          width: '45%'
+                          width: '30%'
                         },
                         {
                           text: this.soData.soNumber || '',
-                          fontSize: 12,
+                          fontSize: 10,
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
-                          width: '55%',
+                          width: '70%',
                           margin: [5, 0, 0, 0]
                         }
                       ]
@@ -203,18 +204,18 @@ export class SaleOrderPdfBuilder {
                       columns: [
                         {
                           text: 'Date:',
-                          fontSize: 9,
+                          fontSize: 8,
                           color: '#393939',
                           alignment: 'right',
-                          width: '45%'
+                          width: '30%'
                         },
                         {
                           text: dayjs(this.soData.createDate).locale('en').format('MMMM DD, YYYY'),
-                          fontSize: 12,
+                          fontSize: 10,
                           bold: true,
                           color: '#8B0000',
                           alignment: 'left',
-                          width: '55%',
+                          width: '70%',
                           margin: [5, 0, 0, 0]
                         }
                       ]
@@ -252,32 +253,32 @@ export class SaleOrderPdfBuilder {
               stack: [
                 {
                   text: 'From: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                  fontSize: 14,
+                  fontSize: 11,
                   bold: true,
                   color: '#8B0000',
                   margin: [0, 0, 0, 0]
                 },
                 {
                   text: 'Address: ' + (this.companyInfo.address || ''),
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
                 {
                   text: 'TEL: ' + (this.companyInfo.phone || ''),
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
                 {
                   text: 'FAX: ' + (this.companyInfo.fax || ''),
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 },
                 {
                   text: 'E-Mail: ' + (this.companyInfo.email || ''),
-                  fontSize: 10,
+                  fontSize: 9,
                   color: '#393939',
                   margin: [0, 0, 0, 0]
                 }
@@ -288,7 +289,7 @@ export class SaleOrderPdfBuilder {
               stack: [
                 {
                   text: `Customer: ${this.soData.customerName || ''}`,
-                  fontSize: 14,
+                  fontSize: 11,
                   bold: true,
                   color: '#8B0000',
                   margin: [0, 0, 0, 0]
@@ -296,7 +297,7 @@ export class SaleOrderPdfBuilder {
                 this.soData.customerAddress
                   ? {
                       text: 'Address: ' + this.soData.customerAddress,
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 0, 0, 0]
                     }
@@ -304,7 +305,7 @@ export class SaleOrderPdfBuilder {
                 this.soData.customerTel
                   ? {
                       text: 'TEL: ' + this.soData.customerTel,
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 0, 0, 0]
                     }
@@ -312,7 +313,7 @@ export class SaleOrderPdfBuilder {
                 this.soData.remark
                   ? {
                       text: 'Remark: ' + this.soData.remark,
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 5, 0, 0]
                     }
@@ -320,7 +321,7 @@ export class SaleOrderPdfBuilder {
                 this.soData.salePerson
                   ? {
                       text: 'SALE: ' + this.soData.salePerson,
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 5, 0, 0]
                     }
@@ -328,7 +329,7 @@ export class SaleOrderPdfBuilder {
                 this.soData.saleSupport
                   ? {
                       text: 'SUPPORT: ' + this.soData.saleSupport,
-                      fontSize: 10,
+                      fontSize: 9,
                       color: '#393939',
                       margin: [0, 5, 0, 0]
                     }
@@ -403,7 +404,7 @@ export class SaleOrderPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 45, '*', '*', '*', '*', '*', 20, 55, 50],
+        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
         body: [
           [
             this.setTableHeader('No.'),
@@ -425,6 +426,12 @@ export class SaleOrderPdfBuilder {
         },
         vLineWidth: function () {
           return 0
+        },
+        paddingLeft: function () {
+          return 2
+        },
+        paddingRight: function () {
+          return 2
         }
       }
     }
@@ -435,7 +442,7 @@ export class SaleOrderPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50],
+        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -444,6 +451,18 @@ export class SaleOrderPdfBuilder {
         },
         vLineWidth: function () {
           return 0.5
+        },
+        paddingLeft: function () {
+          return 2
+        },
+        paddingRight: function () {
+          return 2
+        },
+        paddingTop: function () {
+          return 0
+        },
+        paddingBottom: function () {
+          return 0
         }
       }
     }
@@ -454,7 +473,7 @@ export class SaleOrderPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50],
+        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -463,6 +482,18 @@ export class SaleOrderPdfBuilder {
         },
         vLineWidth: function () {
           return 0.5
+        },
+        paddingLeft: function () {
+          return 2
+        },
+        paddingRight: function () {
+          return 2
+        },
+        paddingTop: function () {
+          return 0
+        },
+        paddingBottom: function () {
+          return 0
         }
       }
     }
@@ -511,11 +542,7 @@ export class SaleOrderPdfBuilder {
         item.imageBase64 || item.imageBlobPath || item.imagePath
           ? this.setTabImageCell(item.imageBase64, item.imageBlobPath || item.imagePath)
           : this.setTableCell(''),
-        this.setTableCell(
-          item.stockNumber && item.productNumber
-            ? `${item.stockNumber}/${item.productNumber}`
-            : item.stockNumber || item.productNumber || ''
-        ),
+        this.setTableCell(formatItemStyleCode(item)),
         this.setTableCell(this.getDescription(item)),
         this.buildMaterialTable(item.materials, 'Gold'),
         this.buildMaterialTable(item.materials, 'Diamond'),
@@ -854,20 +881,20 @@ export class SaleOrderPdfBuilder {
               ? m.typeCode || ''
               : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
           alignment: 'left',
-          fontSize: 10,
+          fontSize: 7,
           margin: [0, 0, 0, 0]
         },
         {
           text: m.weight ? Number(m.weight).toFixed(2) : Number(0).toFixed(2),
           alignment: 'right',
-          fontSize: 10,
+          fontSize: 7,
           margin: [0, 0, 0, 0]
         }
       ])
     if (!rows.length) return ''
     return {
       table: {
-        widths: ['*', 15],
+        widths: ['*', 'auto'],
         body: rows
       },
       layout: {
@@ -890,7 +917,7 @@ export class SaleOrderPdfBuilder {
           return 0
         }
       },
-      margin: [5, 5, 0, 0]
+      margin: [5, 2, 0, 0]
     }
   }
 
@@ -994,19 +1021,19 @@ export class SaleOrderPdfBuilder {
     return {
       text: text,
       bold: true,
-      fontSize: 10,
+      fontSize: 7.5,
       alignment: 'center',
       fillColor: '#8B0000',
       color: 'white',
-      margin: [2, 5, 2, 5]
+      margin: [2, 3, 2, 3]
     }
   }
 
   setTableCell(text) {
     return {
       text: text || '',
-      fontSize: 11,
-      margin: [2, 5, 2, 5]
+      fontSize: 8,
+      margin: [2, 3, 2, 3]
     }
   }
 
@@ -1038,7 +1065,7 @@ export class SaleOrderPdfBuilder {
         fontSize: 8,
         color: '#999999',
         alignment: 'center',
-        margin: [2, 5, 2, 5]
+        margin: [2, 3, 2, 3]
       }
     }
   }
@@ -1046,9 +1073,9 @@ export class SaleOrderPdfBuilder {
   setTableCellRight(text) {
     return {
       text: text || '',
-      fontSize: 10,
+      fontSize: 8,
       alignment: 'right',
-      margin: [2, 5, 2, 5]
+      margin: [2, 3, 2, 3]
     }
   }
 
@@ -1101,13 +1128,13 @@ export class SaleOrderPdfBuilder {
           bold: true
         },
         summaryLabelColored: {
-          fontSize: 12,
+          fontSize: 10,
           bold: true,
           color: 'white',
           fillColor: '#8B0000'
         },
         totalSummaryLabelColored: {
-          fontSize: 12,
+          fontSize: 10,
           bold: true,
           color: '#8B0000',
           fillColor: '#e0e0e0'
