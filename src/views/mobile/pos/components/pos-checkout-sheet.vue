@@ -115,8 +115,10 @@
               </div>
             </template>
 
+            <div class="entry-hint">{{ $t('view.mobile.pos.entryHint') }}</div>
+
             <ButtonGeneric
-              variant="main"
+              variant="outline"
               icon="bi-plus-circle"
               :label="$t('view.mobile.pos.addPaymentBtn')"
               :block="true"
@@ -166,7 +168,7 @@
           <ButtonGeneric
             variant="main"
             icon="bi-check-circle"
-            :label="$t('view.mobile.pos.confirmPaymentBtn')"
+            :label="confirmLabel"
             :block="true"
             @click="onConfirm"
           />
@@ -266,6 +268,30 @@ export default {
     changeAmount() {
       const tendered = Number(this.entry.tenderedCash) || 0
       return Math.max(tendered - this.remaining, 0)
+    },
+
+    draftAmount() {
+      if (!this.selectedMethod) return 0
+      if (this.selectedMethod === 'cash') return this.appliedCashAmount
+      return Number(this.entry.amount) || 0
+    },
+
+    hasDraftEntry() {
+      return !!this.selectedMethod && this.draftAmount > 0
+    },
+
+    projectedPaid() {
+      return this.paidTotal + (this.hasDraftEntry ? this.draftAmount : 0)
+    },
+
+    confirmLabel() {
+      if (this.projectedPaid > 0) {
+        return this.$t('view.mobile.pos.confirmPaymentBtnWithAmount', {
+          amount: this.formatCurrency(this.projectedPaid),
+          unit: this.currencyUnit
+        })
+      }
+      return this.$t('view.mobile.pos.confirmPaymentBtn')
     }
   },
 
@@ -288,6 +314,12 @@ export default {
 
   methods: {
     selectMethod(key) {
+      if (key === this.selectedMethod) {
+        this.selectedMethod = null
+        this.entry = emptyEntry()
+        return
+      }
+
       this.selectedMethod = key
       this.entry = emptyEntry()
       if (key !== 'cash' && this.remaining > 0) {
@@ -299,9 +331,9 @@ export default {
       this.entry.tenderedCash = value === 'exact' ? String(this.remaining.toFixed(2)) : String(value)
     },
 
-    addPayment() {
+    buildPaymentFromEntry() {
       const method = PAYMENT_METHODS.find((m) => m.key === this.selectedMethod)
-      if (!method) return
+      if (!method) return { error: 'view.mobile.pos.warnPaymentAmountRequired' }
 
       let amount = 0
       let bankCode = null
@@ -313,22 +345,19 @@ export default {
       if (method.key === 'cash') {
         amount = this.appliedCashAmount
         if (!amount || amount <= 0) {
-          warning(this.$t('view.mobile.pos.warnPaymentAmountRequired'))
-          return
+          return { error: 'view.mobile.pos.warnPaymentAmountRequired' }
         }
       } else {
         amount = Number(this.entry.amount) || 0
         if (!amount || amount <= 0) {
-          warning(this.$t('view.mobile.pos.warnPaymentAmountRequired'))
-          return
+          return { error: 'view.mobile.pos.warnPaymentAmountRequired' }
         }
         referenceNumber = this.entry.referenceNumber || null
       }
 
       if (method.key === 'transfer' || method.key === 'cheque') {
         if (!this.entry.bankCode) {
-          warning(this.$t('view.mobile.pos.warnBankRequired'))
-          return
+          return { error: 'view.mobile.pos.warnBankRequired' }
         }
         bankCode = this.entry.bankCode
         const bank = this.bankList.find((b) => b.code === bankCode)
@@ -337,8 +366,7 @@ export default {
 
       if (method.key === 'cheque') {
         if (!this.entry.bankBranch) {
-          warning(this.$t('view.mobile.pos.warnBranchRequired'))
-          return
+          return { error: 'view.mobile.pos.warnBranchRequired' }
         }
         bankBranch = this.entry.bankBranch
       }
@@ -347,19 +375,30 @@ export default {
         paymentDay = this.entry.paymentDay ? Number(this.entry.paymentDay) : null
       }
 
-      this.payments.push({
-        key: `${method.code}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        payment: method.code,
-        paymentName: this.$t(`view.mobile.pos.${method.labelKey}`),
-        amount,
-        bankCode,
-        bankName,
-        bankBranch,
-        referenceNumber,
-        paymentDay,
-        remark: null
-      })
+      return {
+        payment: {
+          key: `${method.code}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          payment: method.code,
+          paymentName: this.$t(`view.mobile.pos.${method.labelKey}`),
+          amount,
+          bankCode,
+          bankName,
+          bankBranch,
+          referenceNumber,
+          paymentDay,
+          remark: null
+        }
+      }
+    },
 
+    addPayment() {
+      const result = this.buildPaymentFromEntry()
+      if (result.error || !result.payment) {
+        warning(this.$t(result.error || 'view.mobile.pos.warnPaymentAmountRequired'))
+        return
+      }
+
+      this.payments.push(result.payment)
       this.selectedMethod = null
       this.entry = emptyEntry()
     },
@@ -369,6 +408,41 @@ export default {
     },
 
     onConfirm() {
+      if (this.selectedMethod) {
+        if (!this.hasDraftEntry) {
+          warning(this.$t('view.mobile.pos.warnPaymentAmountRequired'))
+          return
+        }
+
+        if (this.remaining > 0) {
+          const result = this.buildPaymentFromEntry()
+          if (result.error || !result.payment) {
+            warning(this.$t(result.error || 'view.mobile.pos.warnPaymentAmountRequired'))
+            return
+          }
+          this.payments.push(result.payment)
+        }
+
+        this.selectedMethod = null
+        this.entry = emptyEntry()
+      }
+
+      if (this.payments.length === 0) {
+        confirmThenSubmit(
+          this.$t('view.mobile.pos.confirmNoPaymentMsg', {
+            amount: this.formatCurrency(this.totalToCollect),
+            unit: this.currencyUnit
+          }),
+          this.$t('view.mobile.pos.confirmNoPaymentTitle'),
+          () => this.emitConfirm(),
+          {
+            confirmText: this.$t('view.mobile.pos.confirmNoPaymentBtn'),
+            cancelText: this.$t('view.mobile.pos.confirmNoPaymentCancelBtn')
+          }
+        )
+        return
+      }
+
       if (this.remaining > 0) {
         confirmThenSubmit(
           this.$t('view.mobile.pos.confirmUnderpaidMsg', {
@@ -380,6 +454,7 @@ export default {
         )
         return
       }
+
       this.emitConfirm()
     },
 
@@ -575,6 +650,12 @@ export default {
     color: #666;
     margin-bottom: 4px;
   }
+}
+
+.entry-hint {
+  font-size: 0.75rem;
+  color: #999;
+  text-align: center;
 }
 
 .change-banner {

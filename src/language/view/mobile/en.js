@@ -74,6 +74,12 @@ export const pos = {
   successFoundCustomer: 'Found existing customer',
   successCreateCustomer: 'New customer created',
 
+  // customer chip — suggest matching customers while typing
+  suggestListTitle: 'Matching customers — tap to select',
+  confirmCreateDespiteMatchTitle: 'Create New Customer?',
+  confirmCreateDespiteMatchMsg: '{count} existing customer(s) have a similar name/phone. Create a new one anyway?',
+  confirmCreateDespiteMatchBtn: 'Create New',
+
   // summary + checkout
   summaryItemCount: 'Items',
   summaryItemUnit: 'pcs',
@@ -114,6 +120,14 @@ export const pos = {
   warnBranchRequired: 'Please enter a branch',
   confirmUnderpaidTitle: 'Confirm Outstanding Balance',
   confirmUnderpaidMsg: 'The remaining {amount} {unit} will be recorded as outstanding. Continue?',
+
+  // checkout sheet — confirm payment directly without adding a payment line first
+  confirmPaymentBtnWithAmount: 'Confirm Payment {amount} {unit}',
+  entryHint: 'Tap "Confirm Payment" directly — use "Add Payment" only for split payments',
+  confirmNoPaymentTitle: 'No Payment Recorded',
+  confirmNoPaymentMsg: 'This bill will be saved as fully outstanding ({amount} {unit}). Continue?',
+  confirmNoPaymentBtn: 'Save as Outstanding',
+  confirmNoPaymentCancelBtn: 'Back to Payment',
 
   // pending — network failure during checkout
   pendingBannerTitle: 'Bill not sent (network issue)',
@@ -765,6 +779,9 @@ export const posHelp = {
         { desc: 'Defaults to "Walk-in" — you can sell right away without filling anything in' },
         {
           desc: 'Tap "Name/Phone" and enter a phone number → if they\'ve bought before, it links to the existing customer and shows "Found existing customer"; a new customer is created automatically with its own code'
+        },
+        {
+          desc: 'Type a name or phone (≥ 6 digits) — matching customers appear below the field, tap to select'
         }
       ],
       tip: "Ask for a phone number every time — the system will recognize the customer instantly next time, and their total purchases stay under one name."
@@ -785,6 +802,7 @@ export const posHelp = {
         {
           desc: 'Payment methods: Cash (tap "Exact" or enter the cash received — the system calculates change) / Bank Transfer (bank required) / Cheque (bank and branch required) / Credit Card / Credit (Term) (enter number of days)'
         },
+        { desc: 'Single method: choose a method, enter the amount, then tap "Confirm Payment" directly (no need to tap "Add Payment")' },
         { desc: 'Split across multiple methods: tap "Add Payment" for each method — the remaining balance always stays visible' },
         { desc: 'Underpaid: the system asks for confirmation, then records the remaining balance as outstanding' }
       ],
