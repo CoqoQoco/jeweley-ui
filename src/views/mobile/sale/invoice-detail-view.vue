@@ -218,14 +218,17 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons mobile-mt-3">
-        <button
-          v-if="!showPrintForm"
-          class="mobile-btn mobile-btn-primary"
-          @click="openPrintForm"
-        >
-          <i class="bi bi-printer"></i>
-          {{ $t('view.mobile.sale.invoicePrintInvoiceBtn') }}
-        </button>
+        <div class="print-buttons-group">
+          <button
+            v-if="!showPrintForm"
+            class="mobile-btn mobile-btn-primary"
+            @click="openPrintForm"
+          >
+            <i class="bi bi-printer"></i>
+            {{ $t('view.mobile.sale.invoicePrintInvoiceBtn') }}
+          </button>
+          <ReceiptPrintAction :invoice-number="invoiceNumber" />
+        </div>
         <button
           class="mobile-btn mobile-btn-danger"
           @click="handleCancelInvoice"
@@ -269,6 +272,7 @@ import dayjs from 'dayjs'
 import SoItemCard from './components/so-item-card.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import ReceiptPrintAction from '@/components/receipt/receipt-print-action.vue'
 
 export default {
   name: 'MobileInvoiceDetailView',
@@ -276,7 +280,8 @@ export default {
   components: {
     SoItemCard,
     InputTextGeneric,
-    CheckboxGeneric
+    CheckboxGeneric,
+    ReceiptPrintAction
   },
 
   setup() {
@@ -831,6 +836,13 @@ export default {
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
+
+  // กลุ่มปุ่มพิมพ์ (พิมพ์ Invoice + พิมพ์สลิป) แยกจากปุ่มยกเลิก/ย้อนกลับ ไม่ให้ปนกัน
+  .print-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+  }
 
   .mobile-btn {
     display: flex;
