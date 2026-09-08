@@ -5,9 +5,7 @@
     accent="main"
     headerStyle="legend"
   >
-    <!-- SectionCardGeneric ไม่รองรับ slot #header-actions ในโหมด legend (มีเฉพาะโหมด filled)
-         ปุ่มจัดการจึงย้ายมาไว้เป็นแถว toolbar บนสุดของเนื้อหาแทน -->
-    <div v-if="canManage" class="feed-toolbar">
+    <div v-if="canManage && items.length" class="feed-toolbar">
       <ButtonGeneric
         variant="outline"
         icon="bi-gear"
@@ -26,9 +24,23 @@
       />
     </div>
     <div v-else class="empty-state">
-      <i class="bi bi-megaphone"></i>
-      <span>{{ $t('view.announcement.feed.empty') }}</span>
-      <span class="empty-hint">{{ $t('view.announcement.feed.emptyHint') }}</span>
+      <div class="empty-state__icon"><i class="bi bi-megaphone"></i></div>
+      <span class="empty-state__title">{{ $t('view.announcement.feed.emptyTitle') }}</span>
+      <span class="empty-state__hint">{{
+        canManage ? $t('view.announcement.feed.emptyHintManager') : $t('view.announcement.feed.emptyHint')
+      }}</span>
+      <ButtonGeneric
+        v-if="canManage"
+        variant="main"
+        icon="bi-plus-lg"
+        :label="$t('view.announcement.feed.createFirst')"
+        @click="$router.push('/announcement/create')"
+      />
+      <div v-if="canManage" class="empty-state__tips">
+        <span><i class="bi bi-pin-angle"></i>{{ $t('view.announcement.feed.tipPin') }}</span>
+        <span><i class="bi bi-calendar-event"></i>{{ $t('view.announcement.feed.tipSchedule') }}</span>
+        <span><i class="bi bi-image"></i>{{ $t('view.announcement.feed.tipImage') }}</span>
+      </div>
     </div>
 
     <div v-if="items.length < total" class="load-more-row">
@@ -55,6 +67,8 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import announcementCard from '@/views/announcement/components/announcement-card.vue'
 import announcementDetailModal from '@/views/announcement/modal/announcement-detail-modal.vue'
 
+// SectionCardGeneric ไม่รองรับ slot #header-actions ในโหมด legend (มีเฉพาะโหมด filled)
+// ปุ่มจัดการจึงย้ายมาไว้เป็นแถว toolbar บนสุดของเนื้อหาแทน (ดู .feed-toolbar ใน template)
 export default {
   name: 'AnnouncementFeed',
 
@@ -122,16 +136,55 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-sm);
-  padding: var(--sp-xl) 0;
-  color: var(--base-sub-color);
+  justify-content: center;
+  gap: var(--sp-md);
+  min-height: calc(var(--sp-2xl) * 11);
+  padding: var(--sp-2xl) var(--sp-lg);
+  text-align: center;
+}
+
+.empty-state__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--sp-2xl) * 3);
+  height: calc(var(--sp-2xl) * 3);
+  border-radius: 50%;
+  background: var(--color-highlight-bg);
 
   i {
-    font-size: 28px;
+    font-size: calc(var(--fs-xl) * 1.6);
+    color: var(--base-font-color);
   }
+}
 
-  .empty-hint {
+.empty-state__title {
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--base-font-color);
+}
+
+.empty-state__hint {
+  font-size: var(--fs-base);
+  color: var(--base-sub-color);
+}
+
+.empty-state__tips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-lg);
+  width: 100%;
+  margin-top: var(--sp-lg);
+  padding-top: var(--sp-lg);
+  border-top: 1px solid var(--color-border);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-xs);
     font-size: var(--fs-sm);
+    color: var(--base-sub-color);
   }
 }
 </style>

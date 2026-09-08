@@ -43,8 +43,19 @@ export default {
       return this.permissionService.hasPermission(PERMISSIONS.ANNOUNCEMENT_MANAGE)
     },
 
+    quickActionsFlags() {
+      return {
+        canCreatePrePlan: this.permissionService.hasPermission(PERMISSIONS.PRE_PLAN_CREATE),
+        canCreateCustomer: this.permissionService.hasPermission(PERMISSIONS.CUSTOMER_CREATE),
+        canCreateGR: this.permissionService.hasPermission(PERMISSIONS.STOCK_PRODUCT_GR_PRODUCTION_CREATE),
+        canCreateQuotation: this.permissionService.hasPermission(PERMISSIONS.SALE_CREATE),
+        canSearchStockProduct: this.permissionService.hasPermission(PERMISSIONS.STOCK_PRODUCT)
+      }
+    },
+
     widgetProps() {
       return {
+        'quick-actions': { flags: this.quickActionsFlags },
         'announcement-feed': {
           items: this.homeDashboardStore.announcementFeed.data,
           total: this.homeDashboardStore.announcementFeed.total,

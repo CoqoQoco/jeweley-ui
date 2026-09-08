@@ -4,8 +4,11 @@
 // permissions: [] = ทุก role เห็น (gate ภายใน widget เองถ้าจำเป็น เช่น action-cards, quick-actions)
 //
 // 2026-09-08: เพิ่ม widget ประกาศข่าว (announcement-feed) ต่อจาก greeting-bar — ทุก role อ่านได้
-// (permissions: []), ปุ่มจัดการภายใน widget เองกรองด้วย ANNOUNCEMENT_MANAGE — ไฟล์ widget อื่น
-// (quick-actions, action-cards, my-jobs, wip-by-stage, completed-trend, recent-activities,
+// (permissions: []), ปุ่มจัดการภายใน widget เองกรองด้วย ANNOUNCEMENT_MANAGE
+//
+// 2026-09-08: เอา quick-actions กลับมาแสดงบนหน้าแรก (ระหว่าง greeting-bar กับ announcement-feed)
+// เพราะเป็น pure navigation ล้วน (ไม่มี API เรียก) — ไฟล์ widget อื่นที่ยัง parked อยู่
+// (action-cards, my-jobs, wip-by-stage, completed-trend, recent-activities,
 // stock-summary, customer-production-status, favorite-reports) ยังอยู่ครบใน home/components/
 // เผื่อเอากลับมาใช้
 //
@@ -17,9 +20,11 @@
 //    (.claude/hooks/remind-on-change.sh เตือนให้อัตโนมัติเมื่อแตะไฟล์กลุ่มนี้)
 
 import GreetingBar from './components/greeting-bar.vue'
+import QuickActions from './components/quick-actions.vue'
 import AnnouncementFeed from './components/announcement-feed.vue'
 
 export const DASHBOARD_WIDGETS = [
   { key: 'greeting-bar', component: GreetingBar, permissions: [], order: 0 },
+  { key: 'quick-actions', component: QuickActions, permissions: [], order: 5 },
   { key: 'announcement-feed', component: AnnouncementFeed, permissions: [], order: 10 }
 ]

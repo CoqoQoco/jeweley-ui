@@ -10,7 +10,7 @@
 |---|---|
 | **Component / Archetype** | `src/views/announcement/components/announcement-card.vue` + feed widget `src/views/dashboard/home/components/announcement-feed.vue` |
 | **สถานะ** | ✅ approved |
-| **วันที่ (อัปเดตล่าสุด)** | 2026-09-08 |
+| **วันที่ (อัปเดตล่าสุด)** | 2026-09-08 (empty state แบบเต็มกล่อง + CTA เฉพาะผู้มีสิทธิ์) |
 | **Ref ที่ใช้** | mirror ของหน้า Ticket (`docs/design-system.md` baseline) + `recent-activities.vue` (empty state pattern) |
 | **Claude Design** | ไม่มี frame แยก — สืบทอด token/มาตรฐานจาก design-system.md ตรงๆ |
 | **ทางเลือกที่เลือก** | plan approved 2026-09-08 (feed บนหน้าแรก + management page /announcement) |
@@ -36,12 +36,28 @@
 │                              [ ⬇ โหลดเพิ่ม (เหลืออีก 3) ]                     │
 └────────────────────────────────────────────────────────────────────────────────┘
 
-Empty state:
-┌────────────────────────────────────────┐
-│              (bi-megaphone, 28px)       │
-│              ยังไม่มีประกาศ              │
-│      เมื่อมีข่าวใหม่จะแสดงที่นี่ครับ      │
-└────────────────────────────────────────┘
+Empty state (canManage=false — viewer):
+┌──────────────────────────────────────────────────┐
+│                    ╭──────╮                        │
+│                    │  📣  │  ← icon circle 72px     │
+│                    ╰──────╯                        │
+│                  ยังไม่มีประกาศ                     │
+│     เมื่อมีข่าวสารจากบริษัท จะแสดงที่นี่เป็นที่แรกครับ │
+└──────────────────────────────────────────────────┘
+
+Empty state (canManage=true — manager, full-box CTA):
+┌──────────────────────────────────────────────────┐
+│                    ╭──────╮                        │
+│                    │  📣  │                         │
+│                    ╰──────╯                        │
+│                  ยังไม่มีประกาศ                     │
+│  เริ่มต้นด้วยการสร้างประกาศแรกให้ทุกคนเห็นบนหน้าแรกครับ │
+│                [ + สร้างประกาศแรก ]                 │
+│  ─────────────────────────────────────────────────  │  ← border-top
+│  ✓ ปักหมุดเรื่องสำคัญไว้บนสุด                        │
+│  ✓ ตั้งเวลาแสดงล่วงหน้าและวันหมดอายุ                 │
+│  ✓ แนบรูปประกอบได้ 1 รูป                            │
+└──────────────────────────────────────────────────┘
 
 Detail modal (headerVariant="main"):
 ╔══════════════════════════════════════════════════════╗
@@ -71,9 +87,14 @@ Detail modal (headerVariant="main"):
 | body text (compact) | clamp | `-webkit-line-clamp: 3` |
 | body text (full) | white-space | `pre-line` |
 | feed list gap | gap | `var(--sp-md)` |
-| empty state | padding / icon size / color | `var(--sp-xl) 0` / `28px` / `var(--base-sub-color)` |
+| empty state | padding / min-height / gap | `var(--sp-2xl) var(--sp-lg)` / `calc(var(--sp-2xl) * 11)` / `var(--sp-md)` |
+| empty state icon circle | size / radius / bg / icon color / icon size | `calc(var(--sp-2xl) * 3)` (72px) / `50%` / `var(--color-highlight-bg)` / `var(--base-font-color)` / `calc(var(--fs-xl) * 1.6)` |
+| empty state title | font-weight / font-size | `700` / `var(--fs-lg)` |
+| empty state hint | font-size / color | `var(--fs-base)` / `var(--base-sub-color)` |
+| empty state tips row | border-top / margin-top / padding-top / gap | `1px solid var(--color-border)` / `var(--sp-lg)` / `var(--sp-lg)` / `var(--sp-lg)` |
+| empty state tip item | gap / font-size / color | `var(--sp-xs)` / `var(--fs-sm)` / `var(--base-sub-color)` |
 | load-more row | margin-top | `var(--sp-md)` |
-| manage toolbar row | margin-bottom | `var(--sp-md)` (จัด right-align ในเนื้อหา ไม่ใช่ header — ดู Diff) |
+| manage toolbar row | margin-bottom | `var(--sp-md)` (จัด right-align ในเนื้อหา ไม่ใช่ header — ดู Diff; ซ่อนทั้งแถวเมื่อ list ว่างกันมี 2 CTA ซ้อนกับปุ่มใน empty state) |
 
 ---
 
@@ -88,7 +109,8 @@ Detail modal (headerVariant="main"):
 | pinned | แสดง pinned tag ก่อน title |
 | มีรูป | แสดง thumbnail 88px (การ์ด) หรือรูปเต็มความกว้าง (modal) |
 | ไม่มีรูป | ไม่ render thumbnail — text เต็มความกว้าง |
-| empty (feed ไม่มีประกาศ) | icon `bi-megaphone` + ข้อความ empty + emptyHint |
+| empty + canManage=false (viewer) | icon circle `bi-megaphone` + emptyTitle + emptyHint — ไม่มี CTA/tips |
+| empty + canManage=true (manager) | icon circle + emptyTitle + emptyHintManager + ปุ่ม `createFirst` (`btn-main`) + tips row 3 รายการ (ปักหมุด/ตั้งเวลา/แนบรูป) — manage toolbar (`.feed-toolbar`) ไม่ render ซ้ำ (กันมี 2 CTA) |
 | load-more | ปุ่ม outline แสดงเฉพาะ `items.length < total` |
 
 ---
@@ -99,6 +121,7 @@ Detail modal (headerVariant="main"):
 - **thumbnail ใช้ `<img>` ตรง ไม่ใช่ `ImagePreview`**: `ImagePreview.vue` ส่ง prop `style` (border/radius/object-fit) เข้า root `<span>` ของ PrimeVue `Image` ไม่ใช่ตัว `<img>` จริง (ดู `primevue/image/Image.vue` — แยก prop `style` root vs `imageStyle` img) จึงบังคับ `object-fit: cover` ระดับ 88px square ผ่าน `ImagePreview` ไม่ได้ ใช้ raw `<img>` แทนตาม native-call-policy (state เหตุผลใน comment ของโค้ด) — ส่วน detail modal ยังใช้ `ImagePreview` ตามแผน (full-width, contain, override responsive ด้วย `:deep(.p-image img)`)
 - **manage toolbar ไม่ได้อยู่ใน `#header-actions`**: `SectionCardGeneric` รองรับ slot `#header-actions` เฉพาะ `headerStyle="filled"` เท่านั้น (ไม่รองรับ `legend`) — ปุ่ม "จัดการประกาศ" จึงย้ายมาเป็นแถว toolbar right-align บนสุดของ default slot แทน
 - status badge (หน้า `/announcement` list) reuse token `--status-open/-resolved/-closed/-cancelled` เดิมจากโมดูล Ticket (scheduled=open, visible=resolved, hidden=closed, expired=cancelled) แทนการเพิ่ม token ใหม่ใน `variable.scss`
+- **empty state (2026-09-08 follow-up)**: เปลี่ยนจาก icon 28px + ข้อความสั้น เป็น empty state เต็มกล่อง (icon circle 72px + title + hint + CTA เฉพาะผู้มีสิทธิ์ + tips 3 ข้อ) กันการ์ดดูโหว่บนหน้าแรก; hint แยก 2 ข้อความตามสิทธิ์ (`emptyHint` viewer / `emptyHintManager` manager); manage toolbar (`.feed-toolbar`) เปลี่ยนเป็น render เฉพาะเมื่อ `canManage && items.length` กันมี 2 ปุ่มจัดการซ้อนกับปุ่ม `createFirst` ใน empty state
 
 ---
 

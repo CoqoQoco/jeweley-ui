@@ -1,8 +1,13 @@
 export default {
   feed: {
     title: 'Announcements',
-    empty: 'No announcements yet',
-    emptyHint: 'New announcements will show up here',
+    emptyTitle: 'No announcements yet',
+    emptyHint: 'Company news will show up here first.',
+    emptyHintManager: 'Create the first announcement so everyone sees it on the home page.',
+    createFirst: 'Create first announcement',
+    tipPin: 'Pin important news to the top',
+    tipSchedule: 'Schedule start and expiry dates',
+    tipImage: 'Attach one image',
     loadMore: 'Load more ({remaining} left)',
     manage: 'Manage Announcements',
     readMore: 'Read more',

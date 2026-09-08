@@ -33,14 +33,14 @@ const ITEMS = [
 ]
 
 describe('AnnouncementFeed', () => {
-  it('a) renders empty state when items=[]', () => {
+  it('renders empty state when items=[]', () => {
     const wrapper = createWrapper({ items: [], total: 0 })
 
     expect(wrapper.find('.empty-state').exists()).toBe(true)
     expect(wrapper.find('.announcement-feed-list').exists()).toBe(false)
   })
 
-  it('b) renders one card per item and keeps given order', () => {
+  it('renders one card per item and keeps given order', () => {
     const wrapper = createWrapper({ items: ITEMS, total: ITEMS.length })
 
     const cards = wrapper.findAll('.announcement-card')
@@ -49,15 +49,30 @@ describe('AnnouncementFeed', () => {
     expect(cards[1].find('.announcement-card__title').text()).toBe('ประกาศ B')
   })
 
-  it('c) manage button hidden when canManage=false and visible when true', () => {
-    const wrapperHidden = createWrapper({ canManage: false })
-    expect(wrapperHidden.find('.feed-toolbar').exists()).toBe(false)
+  it('a) empty + canManage=false: shows emptyTitle, no createFirst button, no tips', () => {
+    const wrapper = createWrapper({ items: [], total: 0, canManage: false })
 
-    const wrapperVisible = createWrapper({ canManage: true })
-    expect(wrapperVisible.find('.feed-toolbar').exists()).toBe(true)
+    expect(wrapper.find('.empty-state__title').text()).toBe('view.announcement.feed.emptyTitle')
+    expect(wrapper.text()).not.toContain('view.announcement.feed.createFirst')
+    expect(wrapper.find('.empty-state__tips').exists()).toBe(false)
+    expect(wrapper.find('.feed-toolbar').exists()).toBe(false)
   })
 
-  it('d) load-more button visible only when items.length < total and emits load-more', async () => {
+  it('b) empty + canManage=true: shows createFirst button and 3 tips, manage toolbar NOT rendered', () => {
+    const wrapper = createWrapper({ items: [], total: 0, canManage: true })
+
+    expect(wrapper.text()).toContain('view.announcement.feed.createFirst')
+    expect(wrapper.find('.empty-state__tips').findAll('span').length).toBe(3)
+    expect(wrapper.find('.feed-toolbar').exists()).toBe(false)
+  })
+
+  it('c) non-empty + canManage=true: manage toolbar button rendered', () => {
+    const wrapper = createWrapper({ items: ITEMS, total: ITEMS.length, canManage: true })
+
+    expect(wrapper.find('.feed-toolbar').exists()).toBe(true)
+  })
+
+  it('load-more button visible only when items.length < total and emits load-more', async () => {
     const wrapperFull = createWrapper({ items: ITEMS, total: ITEMS.length })
     expect(wrapperFull.find('.load-more-row').exists()).toBe(false)
 
@@ -68,7 +83,7 @@ describe('AnnouncementFeed', () => {
     expect(wrapperMore.emitted('load-more')).toBeTruthy()
   })
 
-  it('e) clicking a card opens the detail modal (modal receives showModal=true)', async () => {
+  it('clicking a card opens the detail modal (modal receives showModal=true)', async () => {
     const wrapper = createWrapper({ items: ITEMS, total: ITEMS.length })
 
     expect(wrapper.find('.detail-modal-stub').attributes('data-show-modal')).toBe('false')

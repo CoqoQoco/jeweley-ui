@@ -16,9 +16,7 @@
     </div>
 
     <div class="announcement-card__body">
-      <!-- ImagePreview บังคับ object-fit: contain ที่ wrapper <span> ไม่ใช่ตัว <img> จริง
-           (ดู primevue/image/Image.vue — prop style ผูกกับ root, ไม่ใช่ imageStyle)
-           ทำ thumbnail สี่เหลี่ยม object-fit:cover ผ่าน ImagePreview ไม่ได้ ใช้ <img> ตรงแทน -->
+      <!-- see script comment: thumbnail ใช้ raw <img> แทน ImagePreview -->
       <img
         v-if="item.imageUrl"
         :src="item.imageUrl"
@@ -43,6 +41,9 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
+// ImagePreview บังคับ object-fit: contain ที่ wrapper <span> ไม่ใช่ตัว <img> จริง
+// (ดู primevue/image/Image.vue — prop style ผูกกับ root, ไม่ใช่ imageStyle)
+// ทำ thumbnail สี่เหลี่ยม object-fit:cover ผ่าน ImagePreview ไม่ได้ ใช้ <img> ตรงแทน
 export default {
   name: 'AnnouncementCard',
 
