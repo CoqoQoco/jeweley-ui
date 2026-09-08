@@ -1,5 +1,5 @@
 <template>
-  <DashboardHeaderGeneric :title="greetingText" :subtitle="currentDateText" icon="bi-brightness-high" @refresh="$emit('refresh')" />
+  <DashboardHeaderGeneric :title="greetingText" :subtitle="currentDateText" icon="bi-brightness-high" :show-refresh="false" />
 </template>
 
 <script>
@@ -20,8 +20,6 @@ export default {
     const authStore = useAuthStore()
     return { authStore }
   },
-
-  emits: ['refresh'],
 
   computed: {
     userName() {

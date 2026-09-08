@@ -3,6 +3,11 @@
 //
 // permissions: [] = ทุก role เห็น (gate ภายใน widget เองถ้าจำเป็น เช่น action-cards, quick-actions)
 //
+// 2026-09-08: ถอด widget ข้อมูลออกชั่วคราว เหลือแค่ greeting-bar ตามคำสั่ง — ไฟล์ widget อื่น
+// (quick-actions, action-cards, my-jobs, wip-by-stage, completed-trend, recent-activities,
+// stock-summary, customer-production-status, favorite-reports) ยังอยู่ครบใน home/components/
+// เผื่อเอากลับมาใช้ หน้านี้จะถูกเปลี่ยนเป็นหน้าประกาศข่าว (announcement) ต่อไป
+//
 // ⚠️ เพิ่ม/แก้ widget = ต้องแก้ครบ 3 จุด ไม่งั้น widget โผล่แต่ไม่มีข้อมูล
 //    หรือยิง API ทั้งที่ผู้ใช้ไม่มีสิทธิ์:
 //      1) ไฟล์นี้                          — key + permissions + order
@@ -10,38 +15,6 @@
 //      3) home-dashboard-store.js          — fetch ต้องอยู่หลัง if (flags.…)
 //    (.claude/hooks/remind-on-change.sh เตือนให้อัตโนมัติเมื่อแตะไฟล์กลุ่มนี้)
 
-import { PERMISSIONS } from '@/services/permission/config.js'
-
 import GreetingBar from './components/greeting-bar.vue'
-import QuickActions from './components/quick-actions.vue'
-import ActionCards from './components/action-cards.vue'
-import MyJobs from './components/my-jobs.vue'
-import WipByStage from './components/wip-by-stage.vue'
-import CompletedTrend from './components/completed-trend.vue'
-import RecentActivities from './components/recent-activities.vue'
-import StockSummary from './components/stock-summary.vue'
-import CustomerProductionStatus from './components/customer-production-status.vue'
-import FavoriteReports from './components/favorite-reports.vue'
 
-export const DASHBOARD_WIDGETS = [
-  { key: 'greeting-bar', component: GreetingBar, permissions: [], order: 0 },
-  { key: 'quick-actions', component: QuickActions, permissions: [], order: 10 },
-  { key: 'action-cards', component: ActionCards, permissions: [], order: 20 },
-  { key: 'my-jobs', component: MyJobs, permissions: [], order: 30 },
-  { key: 'wip-by-stage', component: WipByStage, permissions: [PERMISSIONS.PRODUCTION_VIEW], order: 40 },
-  { key: 'completed-trend', component: CompletedTrend, permissions: [PERMISSIONS.PRODUCTION_VIEW], order: 50 },
-  { key: 'recent-activities', component: RecentActivities, permissions: [PERMISSIONS.PRODUCTION_VIEW], order: 60 },
-  {
-    key: 'stock-summary',
-    component: StockSummary,
-    permissions: [PERMISSIONS.STOCK_GEM_VIEW, PERMISSIONS.STOCK_PRODUCT],
-    order: 70
-  },
-  {
-    key: 'customer-production-status',
-    component: CustomerProductionStatus,
-    permissions: [PERMISSIONS.SALE_VIEW],
-    order: 80
-  },
-  { key: 'favorite-reports', component: FavoriteReports, permissions: [PERMISSIONS.REPORT_VIEW], order: 90 }
-]
+export const DASHBOARD_WIDGETS = [{ key: 'greeting-bar', component: GreetingBar, permissions: [], order: 0 }]
