@@ -65,6 +65,9 @@ export const PERMISSIONS = {
   // Ticket Management
   TICKET_MANAGE: 'ticket:manage',
 
+  // Announcement
+  ANNOUNCEMENT_MANAGE: 'announcement:manage',
+
   // Setting
   SETTING_PRINT_LAYOUT: 'setting:print-layout',
 
@@ -142,6 +145,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.CATALOG_VIEW,
 
     PERMISSIONS.TICKET_MANAGE,
+    PERMISSIONS.ANNOUNCEMENT_MANAGE,
     PERMISSIONS.SETTING_PRINT_LAYOUT,
 
     // Mobile Features (Dev มีสิทธิ์ทั้งหมด)
@@ -192,6 +196,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MASTER_VIEW,
 
     PERMISSIONS.CATALOG_VIEW,
+
+    PERMISSIONS.ANNOUNCEMENT_MANAGE,
 
     // Mobile Features (Admin มีสิทธิ์ทั้งหมด)
     PERMISSIONS.MOBILE_DASHBOARD,

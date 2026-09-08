@@ -8,6 +8,7 @@ import settingRoutes from '../web/setting/setting-routes.js'
 import catalog from '../web/catalog/catalog-routes.js'
 import report from '../web/report/report-routes.js'
 import ticketRoutes from '../web/ticket/ticket-routes.js'
+import announcementRoutes from '../web/announcement/announcement-routes.js'
 import graphRoutes from '../web/graph/graph-routes.js'
 import downloadsRoutes from '../web/downloads/downloads-routes.js'
 import printRoutes from '../web/print/print-routes.js'
@@ -288,6 +289,9 @@ const routes = [
 
   // ----- Ticket -----
   ...ticketRoutes,
+
+  // ----- Announcement -----
+  ...announcementRoutes,
 
   // ----- Graph (dev) -----
   ...graphRoutes,

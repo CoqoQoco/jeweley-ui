@@ -20,6 +20,7 @@ import productionCostLang from './view/production-cost/th.js'
 import settingLang from './view/setting/th.js'
 import reportProductionLang from './view/report-production/th.js'
 import ticketLang from './view/ticket/th.js'
+import announcementLang from './view/announcement/th.js'
 import graphLang from './view/graph/th.js'
 import downloadsLang from './view/downloads/th.js'
 import reportLang from './view/report/th.js'
@@ -230,6 +231,7 @@ export default {
       posHelp: { ...mobileLang.posHelp }
     },
     ticket: { ...ticketLang },
+    announcement: { ...announcementLang },
     graph: { ...graphLang },
     downloads: { ...downloadsLang },
     report: { ...reportLang },

@@ -35,7 +35,8 @@ export const useHomeDashboardStore = defineStore('homeDashboard', {
     ticketOpenCount: 0,
     ticketMyUnreadCount: 0,
     ticketMyList: emptyListResult(),
-    customerProductionStatus: emptyListResult()
+    customerProductionStatus: emptyListResult(),
+    announcementFeed: emptyListResult()
   }),
 
   actions: {
@@ -181,10 +182,35 @@ export const useHomeDashboardStore = defineStore('homeDashboard', {
       this.customerProductionStatus = res ? { data: res.data || [], total: res.total || 0 } : emptyListResult()
     },
 
+    // Announcement feed — ทุกคนอ่านได้ (ไม่มี permission check) endpoint แยกจาก manage
+    // skip > 0 = โหลดเพิ่ม (append) — skip = 0 = โหลดรอบแรก/รีเฟรช (replace)
+    async fetchAnnouncementFeed(skip = 0) {
+      const res = await api.jewelry
+        .post('Announcement/Feed', { take: 5, skip }, { skipLoading: true, skipError: true })
+        .catch(() => null)
+
+      if (skip > 0) {
+        this.announcementFeed = res
+          ? { data: [...this.announcementFeed.data, ...(res.data || [])], total: res.total || 0 }
+          : this.announcementFeed
+      } else {
+        this.announcementFeed = res ? { data: res.data || [], total: res.total || 0 } : emptyListResult()
+      }
+    },
+
     // Orchestrator — เรียกเฉพาะ endpoint ของ widget ที่ผ่าน permission filter แล้วเท่านั้น
     // (flags มาจาก PermissionService ที่ index-view.vue คำนวณไว้)
+    // fetchMyJobs/fetchTicketMyUnreadCount/fetchTicketMyList อยู่หลัง flags.showMyJobs/showMyTickets
+    // เพราะ my-jobs/action-cards widget ถูกถอดออกจาก dashboard-registry.js ชั่วคราว (parked ใน home/components/)
+    // — เมื่อเอา widget กลับมาใช้ ต้องให้ index-view.vue set flag เหล่านี้ตาม PermissionService ก่อน
     async loadDashboard(flags = {}) {
-      const tasks = [this.fetchMyJobs(), this.fetchTicketMyUnreadCount(), this.fetchTicketMyList()]
+      const tasks = [this.fetchAnnouncementFeed(0)]
+
+      if (flags.showMyJobs) tasks.push(this.fetchMyJobs())
+      if (flags.showMyTickets) {
+        tasks.push(this.fetchTicketMyUnreadCount())
+        tasks.push(this.fetchTicketMyList())
+      }
 
       if (flags.canApprovePrePlan) tasks.push(this.fetchPrePlanWaitingCount())
       if (flags.canViewPrePlan) tasks.push(this.fetchPrePlanMyCount())
