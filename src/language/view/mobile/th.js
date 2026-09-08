@@ -468,7 +468,7 @@ export const sale = {
   placeholderAddress: 'ที่อยู่ติดต่อ',
   fieldTel: 'เบอร์โทรศัพท์',
   placeholderTel: 'เบอร์โทรติดต่อ',
-  placeholderEmail: 'email@example.com',
+  placeholderEmail: "email{'@'}example.com",
   fieldContactName: 'บุคคลติดต่อ',
   placeholderContactName: 'ชื่อบุคคลติดต่อ',
   placeholderRemark: 'หมายเหตุ (ถ้ามี)',

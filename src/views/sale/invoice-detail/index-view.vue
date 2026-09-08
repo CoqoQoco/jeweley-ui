@@ -60,11 +60,6 @@
         :invoiceItems="invoiceItems"
         :invoiceData="invoiceData"
         :formSaleOrder="formSaleOrder"
-        :totalAfterDiscountAndAddition="totalAfterDiscountAndAddition"
-        :totalBeforeVat="totalBeforeVat"
-        :vatAmount="vatAmount"
-        :grandTotalRounded="grandTotalRounded"
-        :roundingAdjustment="roundingAdjustment"
         class="mb-3"
       />
 
@@ -125,152 +120,26 @@
         </div>
         <!-- Payment and Financial Summary (9/12) -->
         <div class="">
-          <div class="card-container mb-3">
-            <div class="card-header">
-              <h6 class="mb-0">
-                <i class="bi bi-credit-card mr-2"></i>{{ $t('view.sale.invoiceDetail.paymentAndSummary') }}
-              </h6>
-              <button class="btn btn-sm btn-green" @click="showPaymentModal = true">
-                <i class="bi bi-cash-coin mr-1"></i>
-                {{ $t('view.sale.invoiceDetail.recordPayment') }}
-              </button>
-            </div>
-            <div class="card-body">
-              <!-- Payment Information Section -->
-              <div class="info-section mb-4">
-                <h6 class="section-title mb-3">
-                  <i class="bi bi-wallet2 mr-2"></i>{{ $t('view.sale.invoiceDetail.paymentInfo') }}
-                </h6>
-                <div class="row">
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.invoiceDetail.paymentMethod') }}</label>
-                      <p class="info-value">
-                        <i class="bi bi-cash-stack mr-2"></i>{{ invoiceData.paymentName || '-' }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.invoiceDetail.paymentTerm') }}</label>
-                      <p class="info-value">
-                        <i class="bi bi-calendar-event mr-2"></i
-                        >{{ invoiceData.paymentDay || 0 }} {{ $t('view.sale.invoiceDetail.dayUnit') }}
-                        <span v-if="invoiceData.paymentDay > 0" class="text-muted ml-2"
-                          >({{ calculateDueDate() }})</span
-                        >
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.saleOrder.depositPrice') }}</label>
-                      <p class="info-value font-weight-bold text-success">
-                        {{ formatPriceWithCurrency(invoiceData.deposit || 0) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.saleOrder.remainingBalance') }}</label>
-                      <p class="info-value font-weight-bold text-danger">
-                        {{ formatPriceWithCurrency(grandTotalRounded - (invoiceData.deposit || 0)) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <payment-section
+            :invoiceData="invoiceData"
+            :paidAmount="paidAmount"
+            :grandTotalRounded="grandTotalRounded"
+            class="mb-3"
+            @record-payment="showPaymentModal = true"
+            @delete-payment="confirmDeletePayment"
+          />
 
-              <!-- Financial Summary Section -->
-              <div class="info-section">
-                <h6 class="section-title mb-3"><i class="bi bi-calculator mr-2"></i>{{ $t('view.sale.invoiceDetail.financialSummary') }}</h6>
-                <div class="row">
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.invoiceDetail.currencyLabel') }}</label>
-                      <p class="info-value">
-                        {{ invoiceData.currencyUnit || 'THB' }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.saleOrder.currencyRate') }}</label>
-                      <p class="info-value">{{ formatNumber(invoiceData.currencyRate) }}</p>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.invoiceDetail.specialDiscount') }}</label>
-                      <p class="info-value text-danger">
-                        -{{ formatNumber(invoiceData.specialDiscount || 0) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.invoiceDetail.specialSurcharge') }}</label>
-                      <p class="info-value text-success">
-                        +{{ formatNumber(invoiceData.specialAddition || 0) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div class="row mt-3">
-                  <div class="col-md-4">
-                    <div class="info-item">
-                      <label class="info-label">Freight & Insurance</label>
-                      <p class="info-value">
-                        {{ formatNumber(invoiceData.freightAndInsurance || 0) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.saleOrder.adjustedTotal') }}</label>
-                      <p class="info-value font-weight-bold">
-                        {{ formatNumber(totalAfterDiscountAndAddition) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="info-item">
-                      <label class="info-label">{{ $t('view.sale.saleOrder.beforeVatTotal') }}</label>
-                      <p class="info-value font-weight-bold">
-                        {{ formatNumber(totalBeforeVat) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div class="row mt-3">
-                  <div class="col-md-4">
-                    <div class="info-item">
-                      <label class="info-label">VAT (%)</label>
-                      <p class="info-value">
-                        {{ invoiceData.vatPercent || 0 }}%
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="info-item">
-                      <label class="info-label">VAT Amount</label>
-                      <p class="info-value">
-                        {{ formatNumber(vatAmount) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="info-item highlight-total">
-                      <label class="info-label">{{ $t('view.sale.quotation.payableTotal') }}</label>
-                      <p class="info-value font-weight-bold text-primary">
-                        <i class="bi bi-receipt mr-2"></i>{{ formatPriceWithCurrency(grandTotalRounded) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <money-summary-card
+            :invoiceData="invoiceData"
+            :subTotal="totalSelectedAmount"
+            :totalAfterDiscountAndAddition="totalAfterDiscountAndAddition"
+            :totalBeforeVat="totalBeforeVat"
+            :vatAmount="vatAmount"
+            :grandTotalRaw="grandTotalRaw"
+            :grandTotalRounded="grandTotalRounded"
+            class="mb-3"
+          />
+
           <!-- Remark -->
           <div v-if="invoiceData.remark" class="card-container mb-3">
             <div class="card-header">
@@ -280,16 +149,6 @@
               <p class="mb-0">{{ invoiceData.remark }}</p>
             </div>
           </div>
-
-          <!-- Payment History Section -->
-          <payment-section
-            :invoiceData="invoiceData"
-            :paidAmount="paidAmount"
-            :grandTotalRounded="grandTotalRounded"
-            class="mb-3"
-            @delete-payment="confirmDeletePayment"
-          />
-
         </div>
       </div>
 
@@ -386,6 +245,7 @@ import PaymentRecordModal from './modal/payment-record-modal.vue'
 import InvoiceInfoCard from './components/invoice-info-card.vue'
 import InvoiceItemsTable from './components/invoice-items-table.vue'
 import PaymentSection from './components/payment-section.vue'
+import MoneySummaryCard from './components/money-summary-card.vue'
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ActionMenuGeneric from '@/components/generic/ActionMenuGeneric.vue'
@@ -421,6 +281,7 @@ export default {
     InvoiceInfoCard,
     InvoiceItemsTable,
     PaymentSection,
+    MoneySummaryCard,
     PageHeaderGeneric,
     ButtonGeneric,
     ActionMenuGeneric
@@ -494,9 +355,6 @@ export default {
     },
     grandTotalRounded() {
       return ceilToInteger(this.grandTotalRaw)
-    },
-    roundingAdjustment() {
-      return this.grandTotalRounded - this.grandTotalRaw
     },
 
     remainingBalance() {
@@ -830,19 +688,6 @@ export default {
     formatNumber(value) {
       if (!value && value !== 0) return '0.00'
       return formatDocCurrency(value, this.invoiceData?.currencyUnit, 'en-US')
-    },
-    formatPriceWithCurrency(price) {
-      const currency = this.invoiceData?.currencyUnit || 'THB'
-      return `${this.formatNumber(price)} ${currency}`
-    },
-    calculateDueDate() {
-      if (!this.invoiceData?.paymentDay || this.invoiceData.paymentDay <= 0) return '-'
-      const createDate = this.invoiceData.createDate
-        ? new Date(this.invoiceData.createDate)
-        : new Date()
-      const dueDate = new Date(createDate)
-      dueDate.setDate(dueDate.getDate() + this.invoiceData.paymentDay)
-      return this.formatDate(dueDate)
     },
     getStatusBadgeClass(status) {
       const statusMap = {
@@ -1750,61 +1595,6 @@ export default {
   margin-right: 5px;
 }
 
-// Info section styles
-.info-section {
-  position: relative;
-  padding: 0.5rem 0;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .section-title {
-    color: var(--base-font-color);
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-
-    i {
-      color: var(--base-font-color);
-      font-size: 0.85rem;
-    }
-  }
-}
-
-.info-item {
-  margin-bottom: 0.25rem;
-
-  .info-label {
-    font-size: 0.7rem;
-    color: #6c757d;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    margin-bottom: 0.15rem;
-    display: block;
-  }
-
-  .info-value {
-    font-size: var(--fs-sm);
-    color: var(--base-font-color);
-    margin-bottom: 0;
-    padding: 0.35rem 0.5rem;
-    background-color: var(--color-highlight-bg);
-    border-radius: var(--radius-sm);
-    min-height: 30px;
-    display: flex;
-    align-items: center;
-
-    i {
-      color: var(--base-font-color);
-      font-size: 0.8rem;
-    }
-  }
-}
-
 // Invoice Version List styles
 .version-list {
   max-height: calc(100vh - 300px);
@@ -1852,9 +1642,13 @@ export default {
   display: grid;
   grid-template-columns: 1fr 4fr;
   gap: var(--sp-sm);
-}
 
-.remaining-amount {
-  font-size: var(--fs-lg);
+  > * {
+    min-width: 0;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

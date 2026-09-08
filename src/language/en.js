@@ -245,7 +245,7 @@ export default {
       messageBox3: 'Message Box 3',
       messageBox4: 'Message Box 4',
       welcomeDesc: 'Welcome to the Jewelry Production / Storage / Sales / Service Management System',
-      companyFooter: '@Duangkaew Jewelry Manufacturer',
+      companyFooter: "{'@'}Duangkaew Jewelry Manufacturer",
       home: {
         greeting: {
           hello: 'Hello, {name}'
