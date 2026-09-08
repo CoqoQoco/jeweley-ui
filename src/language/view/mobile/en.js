@@ -30,10 +30,9 @@ export const pos = {
   errorCheckCode: 'Please check the product code',
   errorNetworkIssue: 'Network issue — please check your internet connection and try again',
   errorNetworkTitle: 'Unable to connect to network',
-  warnDuplicateItem: 'This item is already in the cart',
-  warnSoldItem: 'This item has already been sold',
-  warnReservedItem: 'This item is reserved on another bill',
   warnUnavailableItem: 'This item cannot be sold right now',
+  qtyExceedAvailable: 'Qty exceeds available stock',
+  remainingQty: '{qty} available',
   successAddProduct: 'Added to cart',
 
   // scan bar — fullscreen camera
@@ -235,7 +234,7 @@ export const dashboard = {
   quickActionsTitle: 'Topics',
   scanQrLabel: 'Scan QR',
   quotationLabel: 'Quotation',
-  saleOrderLabel: 'Sale Order',
+  invoiceLabel: 'Invoice',
   stockCheckLabel: 'Stock Check',
   myJobsTitle: 'My Jobs',
   viewAllBtn: 'View All',
@@ -257,7 +256,11 @@ export const stockProduct = {
   tabBalance: 'Balance',
   tabCost: 'Cost',
   tabHistory: 'History',
-  availableShort: 'Avail',
+  qtyOnHand: 'On Hand',
+  qtyReserved: 'Reserved',
+  availableShort: 'Available',
+  lotBadge: 'This Lot',
+  skuTotalLabel: 'SKU Total',
   selectVersion: 'Select version',
   notFoundTitle: 'Product not found'
 }
@@ -334,8 +337,7 @@ export const notifications = {
 }
 
 export const saleIndex = {
-  tabSo: 'Sale Order',
-  tabInvoice: 'Invoice',
+  pageTitle: 'Invoice',
   unknownCustomer: 'Unknown Customer',
   loadMoreBtn: 'Load More',
   soEmptyTitle: 'No Sale Orders',
@@ -490,6 +492,7 @@ export const sale = {
   itemFieldDiscount: 'Discount %',
   itemTotalLabel: 'Total',
   itemTotalUnit: 'Baht',
+  qtyExceedAvailable: 'Qty exceeds available stock',
   itemSourceAppraisal: 'Appraisal',
   itemSourceQuotation: 'Quotation',
   itemSourceScan: 'Scan',
@@ -571,6 +574,12 @@ export const sale = {
   invoicePaymentDayLabel: 'Term:',
   invoicePaymentDayUnit: 'days',
   invoiceDepositLabel: 'Deposit:',
+  invoicePaidAmountLabel: 'Paid Amount:',
+  invoiceOutstandingLabel: 'Outstanding:',
+  invoicePaymentRecordsTitle: 'Payment Records',
+  invoiceStatusPaidLabel: 'Paid',
+  invoiceStatusPartialLabel: 'Partially Paid',
+  invoiceStatusUnpaidLabel: 'Unpaid',
   invoiceRemarkTitle: 'Remark',
   invoicePrintSettingsTitle: 'Print Settings',
   invoicePrintNote: 'Changes only affect the printed document. Original data is not modified.',

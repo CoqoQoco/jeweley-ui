@@ -19,6 +19,7 @@ export default {
     materialPinkGold: 'Pink Gold',
     availableYes: 'Available',
     availableNo: 'Sold',
+    availableCount: '{qty} pieces left',
     trustMadeInThailand: 'Made in Thailand',
     trustHandcrafted: 'Handcrafted by Duangkaew artisans',
     footerText: 'Duangkaew Jewelry · www.dkbangkok.com',

@@ -34,7 +34,7 @@
           <span class="info-value highlight">{{ item.mold }}</span>
         </div>
         <div v-if="secondaryCode" class="info-row">
-          <span class="info-label">{{ $t('view.stock.product.stockNumberNew') }}</span>
+          <span class="info-label">{{ $t('view.stock.product.stockNumberOld') }}</span>
           <span class="info-value">{{ secondaryCode }}</span>
         </div>
         <div class="info-row">
@@ -140,21 +140,18 @@ export default {
   },
 
   computed: {
-    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
+    // เลขหลัก = เลขใหม่เสมอ (stockNumber)
     primaryCode() {
-      return this.item.stockNumberOrigin || this.item.stockNumber || '-'
+      return this.item.stockNumber || '-'
     },
 
-    // ไม่มีรหัสเก่า → รหัสใหม่ถูกยกเป็นตัวเด่นแล้ว เปลี่ยน label ให้ตรงกับค่าที่โชว์จริง
     primaryCodeLabel() {
-      return this.item.stockNumberOrigin
-        ? this.$t('view.stock.product.stockNumberOld')
-        : this.$t('view.stock.product.stockNumberNew')
+      return this.$t('view.stock.product.stockNumberNew')
     },
 
-    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
+    // เลขรอง = เลขเก่า โชว์เฉพาะตอนมีจริง
     secondaryCode() {
-      return this.item.stockNumberOrigin ? this.item.stockNumber || '' : ''
+      return this.item.stockNumberOrigin || ''
     },
 
     materials() {

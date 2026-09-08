@@ -73,6 +73,19 @@
         </div>
       </template>
 
+      <!-- ยอดของ "ล็อตนี้" (piece เดียว) — ยอดรวม SKU ทั้งหมดดูได้ที่แถบขยาย -->
+      <template #pieceQtyTemplate="{ data }">
+        <span>{{ formatDecimal(getPieceQty(data), 2) }}</span>
+      </template>
+
+      <template #pieceQtyReservedTemplate="{ data }">
+        <span>{{ formatDecimal(getPieceQtyReserved(data), 2) }}</span>
+      </template>
+
+      <template #pieceQtyAvailableTemplate="{ data }">
+        <span>{{ formatDecimal(getPieceQtyAvailable(data), 2) }}</span>
+      </template>
+
       <template #expansion="slotProps">
         <div>
           <dataExpand :modelForm="slotProps"></dataExpand>
@@ -94,6 +107,8 @@ import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import BarcodeButtonGeneric from '@/components/generic/BarcodeButtonGeneric.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { formatDecimal } from '@/services/utils/decimal.js'
+import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
@@ -234,6 +249,30 @@ export default {
           minWidth: '150px'
         },
         {
+          field: 'qty',
+          header: this.$t('view.stock.product.qtyOnHand'),
+          sortable: false,
+          minWidth: '100px',
+          align: 'right',
+          bodyTemplate: 'pieceQtyTemplate'
+        },
+        {
+          field: 'qtyReserved',
+          header: this.$t('view.stock.product.qtyReserved'),
+          sortable: false,
+          minWidth: '100px',
+          align: 'right',
+          bodyTemplate: 'pieceQtyReservedTemplate'
+        },
+        {
+          field: 'qtyAvailable',
+          header: this.$t('view.stock.product.qtyAvailable'),
+          sortable: false,
+          minWidth: '100px',
+          align: 'right',
+          bodyTemplate: 'pieceQtyAvailableTemplate'
+        },
+        {
           field: 'productPrice',
           header: this.$t('common.field.price'),
           sortable: true,
@@ -275,6 +314,11 @@ export default {
   },
 
   methods: {
+    formatDecimal,
+    getPieceQty,
+    getPieceQtyReserved,
+    getPieceQtyAvailable,
+
     onCloseModal(action) {
       this.isShow = { ...interfaceShow }
       this.modelStock = {}
@@ -330,9 +374,11 @@ export default {
       const map = await this.balanceStore.fetchByStockNumbers(stockNumbers)
       for (const item of items) {
         const b = map[item.stockNumber]
-        item.qtyOnHand = b?.qtyOnHand ?? null
-        item.qtyReserved = b?.qtyReserved ?? null
-        item.qtyAvailable = b?.qtyAvailable ?? null
+        // ยอดนี้เป็นยอดรวมทั้ง SKU (ทุกล็อต ทุกคลัง) — ห้ามเขียนทับ item.qty/qtyReserved/qtyAvailable
+        // ของ piece เอง (มาจาก StockProduct/List อยู่แล้ว) ใช้ prefix sku ชัดเจน
+        item.skuQtyOnHand = b?.qtyOnHand ?? null
+        item.skuQtyReserved = b?.qtyReserved ?? null
+        item.skuQtyAvailable = b?.qtyAvailable ?? null
         if (b?.rows) {
           item.slocBalances = b.rows.map((row) => ({
             ...row,

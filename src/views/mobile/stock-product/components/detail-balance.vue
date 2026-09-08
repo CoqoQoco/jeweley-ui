@@ -2,8 +2,24 @@
   <div class="detail-balance">
     <div class="info-card">
       <div class="card-header">
+        <i class="bi bi-box-seam"></i>
+        <span>{{ $t('view.mobile.stockProduct.lotBadge') }}</span>
+      </div>
+      <div class="card-body">
+        <div class="balance-row">
+          <div class="balance-values">
+            <span>{{ $t('view.stock.product.qtyOnHand') }}: {{ formatDecimal(pieceQty, 2) }}</span>
+            <span>{{ $t('view.stock.product.qtyReserved') }}: {{ formatDecimal(pieceQtyReserved, 2) }}</span>
+            <span>{{ $t('view.stock.product.qtyAvailable') }}: {{ formatDecimal(pieceQtyAvailable, 2) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card mobile-mt-2">
+      <div class="card-header">
         <i class="bi bi-diagram-3"></i>
-        <span>{{ $t('view.stock.product.slocBalanceTitle') }}</span>
+        <span>{{ $t('view.mobile.stockProduct.skuTotalLabel') }} — {{ $t('view.stock.product.slocBalanceTitle') }}</span>
       </div>
       <div class="card-body">
         <div v-if="rows.length" class="balance-list">
@@ -35,6 +51,7 @@
 
 <script>
 import { formatDecimal } from '@/services/utils/decimal.js'
+import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 export default {
   name: 'DetailBalance',
@@ -47,6 +64,15 @@ export default {
   },
 
   computed: {
+    pieceQty() {
+      return getPieceQty(this.item)
+    },
+    pieceQtyReserved() {
+      return getPieceQtyReserved(this.item)
+    },
+    pieceQtyAvailable() {
+      return getPieceQtyAvailable(this.item)
+    },
     rows() {
       return this.item?.slocBalances || []
     },

@@ -441,8 +441,9 @@
                 type="number"
                 class="form-control text-right bg-input input-bg"
                 min="0"
+                :max="qtyMaxFor(slotProps.data)"
                 step="1"
-                @blur="$emit('blur-qty', { item: slotProps.data, stockNumber: slotProps.data.stockNumber, field: 'qty', event: $event })"
+                @blur="onQtyBlur(slotProps.data, $event)"
                 style="background-color: #b5dad4; width: 100%"
               />
               <span v-else class="confirmed-text text-right">
@@ -833,6 +834,8 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { formatDecimal, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
@@ -971,6 +974,21 @@ export default {
   },
 
   methods: {
+    // silver lot: qty ต่อบรรทัดห้ามเกิน qtyAvailable ของ piece (ทองยัง max 1 เหมือนเดิม)
+    qtyMaxFor(item) {
+      return getPieceQtyAvailable(item)
+    },
+
+    onQtyBlur(item, event) {
+      const max = this.qtyMaxFor(item)
+      const qty = Number(item.qty) || 0
+      if (max > 0 && qty > max) {
+        item.qty = max
+        warning(this.$t('view.sale.saleOrder.qtyExceedAvailable', { available: max }))
+      }
+      this.$emit('blur-qty', { item, stockNumber: item.stockNumber, field: 'qty', event })
+    },
+
     isFrozenLeft(field) {
       return this.frozenCols[field] === 'left'
     },

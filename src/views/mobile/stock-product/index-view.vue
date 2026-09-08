@@ -135,9 +135,11 @@ export default {
       const map = await this.balanceStore.fetchByStockNumbers(stockNumbers)
       for (const item of items) {
         const b = map[item.stockNumber]
-        item.qtyOnHand = b?.qtyOnHand ?? null
-        item.qtyReserved = b?.qtyReserved ?? null
-        item.qtyAvailable = b?.qtyAvailable ?? null
+        // ยอดนี้เป็นยอดรวมทั้ง SKU (ทุกล็อต ทุกคลัง) — ห้ามเขียนทับ item.qty/qtyReserved/qtyAvailable
+        // ของ piece เอง (มาจาก StockProduct/List อยู่แล้ว) ใช้ prefix sku ชัดเจน
+        item.skuQtyOnHand = b?.qtyOnHand ?? null
+        item.skuQtyReserved = b?.qtyReserved ?? null
+        item.skuQtyAvailable = b?.qtyAvailable ?? null
         if (b?.rows) {
           item.slocBalances = b.rows.map((row) => ({
             ...row,

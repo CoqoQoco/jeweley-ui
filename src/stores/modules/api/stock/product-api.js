@@ -10,6 +10,7 @@ import { formatDecimal } from '@/services/utils/decimal.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 //import { CsvHelper } from '@/services/utils/export-excel.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
+import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 export const usrStockProductApiStore = defineStore('stockProduct', {
   state: () => ({
@@ -87,6 +88,9 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
             'ประเภททอง/เงิน': item.productionTypeSize,
             'W.O.': `${item.wo}-${item.woNumber}`,
             จัดเก็บ: item.location,
+            คงเหลือ: formatDecimal(getPieceQty(item), 2),
+            จอง: formatDecimal(getPieceQtyReserved(item), 2),
+            พร้อมขาย: formatDecimal(getPieceQtyAvailable(item), 2),
             ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
             ผู้รับสินค้า: item.createBy,
             หมายเหตุ: item.remark

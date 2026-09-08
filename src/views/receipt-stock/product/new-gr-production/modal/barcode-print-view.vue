@@ -4,7 +4,7 @@
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span><i class="bi bi-calendar-check-fill mr-2"></i></span>
-          <span>บันทึกสินค้าสำเร็จ | เลือกสินค้าเพื่อพิมพ์ Barcode</span>
+          <span>{{ $t('view.receiptStock.product.grProduction.barcodePrintTitle') }}</span>
         </div>
 
         <!-- Tab เลือกแบบ -->
@@ -14,13 +14,13 @@
               :class="['tab-btn', selectedType === 'original' ? 'tab-btn-active' : '']"
               @click="selectedType = 'original'"
             >
-              <i class="bi bi-file-earmark-text mr-1"></i> แบบที่ 1
+              <i class="bi bi-file-earmark-text mr-1"></i> {{ $t('view.receiptStock.product.grProduction.barcodeTypeOriginal') }}
             </button>
             <button
               :class="['tab-btn', selectedType === 'cost-no-gold' ? 'tab-btn-active' : '']"
               @click="selectedType = 'cost-no-gold'"
             >
-              <i class="bi bi-file-earmark mr-1"></i> แบบที่ 2
+              <i class="bi bi-file-earmark mr-1"></i> {{ $t('view.receiptStock.product.grProduction.barcodeTypeCostNoGold') }}
             </button>
           </div>
         </div>
@@ -41,14 +41,14 @@
               <div class="title-text">
                 <span class="bi bi-exclamation-circle mr-1"></span>
                 <span>
-                  โปรดตรวจสอบสถานะโปรเเกรมพิมพ์บาร์โค้ด เเละเครื่องพิมพ์ก่อนการใช้งานทุกครั้ง
+                  {{ $t('view.stock.product.printerWarning') }}
                 </span>
               </div>
               <div class="d-flex justify-content-between items-center">
                 <!-- status -->
                 <div class="vertical-center-container">
                   <span class="title-text">
-                    จำนวนรายการที่เลือก: {{ checkItemSelectedLength() }}
+                    {{ $t('view.receiptStock.product.grProduction.selectedCountFooter', { count: checkItemSelectedLength() }) }}
                   </span>
                   <span class="title-text ml-2 mr-2">|</span>
 
@@ -174,43 +174,43 @@ export default {
       selectedItems: [],
       itemsToPreSelect: [],
       selectionType: 'single',
-      columns: [
+      columns: []
+    }
+  },
+
+  computed: {
+    columns() {
+      return [
         {
           field: 'stockNumber',
-          header: 'เลขที่ผลิต',
+          header: this.$t('view.receiptStock.product.grProduction.colStockNumber'),
           sortable: false,
           minWidth: '150px'
         },
         {
           field: 'productNumber',
-          header: 'รหัสสินค้า',
+          header: this.$t('view.receiptStock.product.grProduction.colProductNumber'),
           sortable: false,
           minWidth: '150px'
         },
         {
           field: 'productNameEn',
-          header: 'ชื่อสินค้า EN',
+          header: this.$t('view.receiptStock.product.grProduction.colProductNameEn'),
           sortable: false,
           minWidth: '150px'
         },
         {
           field: 'productNameTh',
-          header: 'ชื่อสินค้า TH',
+          header: this.$t('view.receiptStock.product.grProduction.colProductNameTh'),
           sortable: false,
           minWidth: '150px'
         },
         {
           field: 'receiptNumber',
-          header: 'เลขที่ตั้งรับ',
+          header: this.$t('view.receiptStock.product.grProduction.colStockReceiptNumber'),
           sortable: false,
           minWidth: '150px'
         }
-        // {
-        //   field: 'receiptNumber',
-        //   header: 'เลขที่ตั้งรับ',
-        //   sortable: false,
-        //   minWidth: '150px'
-        // }
       ]
     }
   },
@@ -243,17 +243,9 @@ export default {
     },
 
     getPrinterServiceStatus(check) {
-      let name = 'เครื่องพิมพ์'
-
-      if (check === 'error') {
-        return `${name}ไม่พร้อมใช้งาน`
-      }
-
-      if (check === 'success') {
-        return `${name}พร้อมใช้งาน`
-      }
-
-      return `กำลังตรวจสอบสถานะ${name}...`
+      if (check === 'error') return this.$t('view.stock.product.printerError')
+      if (check === 'success') return this.$t('view.stock.product.printerReady')
+      return this.$t('view.stock.product.printerChecking')
     },
 
     async checkPrinterStatus() {

@@ -1192,7 +1192,7 @@ export default {
             netPrice: String(this.getConvertedPrice(item)),
             priceDiscount: this.getDiscountedPrice(item),
             priceAfterCurrencyRate: this.getConvertedPrice(item),
-            qty: item.qty || 1
+            qty: item.qty
           }))
       }
 

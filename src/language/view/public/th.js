@@ -19,6 +19,7 @@ export default {
     materialPinkGold: 'ทองชมพู',
     availableYes: 'พร้อมจำหน่าย',
     availableNo: 'จำหน่ายแล้ว',
+    availableCount: 'เหลือ {qty} ชิ้น',
     trustMadeInThailand: 'ผลิตในประเทศไทย',
     trustHandcrafted: 'งานฝีมือโดยช่างของดวงแก้ว',
     footerText: 'ดวงแก้ว จิวเวลรี่ · www.dkbangkok.com',

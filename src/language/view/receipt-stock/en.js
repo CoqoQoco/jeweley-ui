@@ -297,7 +297,11 @@ export default {
       updateImageBtn: 'Update',
       colImageName: 'Name',
       colImageCreateDate: 'Created Date',
-      colImageRemark: 'Remark'
+      colImageRemark: 'Remark',
+      barcodePrintTitle: 'Product saved | Select products to print barcode',
+      barcodeTypeOriginal: 'Type 1',
+      barcodeTypeCostNoGold: 'Type 2',
+      lotBadge: 'Lot of {count}'
     },
     productionReceiptList: {
       title: 'Receive Production Goods',

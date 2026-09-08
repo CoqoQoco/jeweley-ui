@@ -147,15 +147,28 @@ export const usePosCartStore = defineStore('posCart', {
       this.persist()
     },
 
-    // กันเพิ่มสินค้าชิ้นเดิมซ้ำในบิลเดียวกัน — ตรรกะเดียวกับ create-view.vue (ของชิ้นเดียว)
-    // คืนค่า { success:false, reason:'duplicate' } ให้ผู้เรียก (component) แสดง warning() เอง
+    // silver lot: สแกนเลขเดิมซ้ำในบิลเดียวกัน → เพิ่ม qty +1 แทนการกันซ้ำแบบเดิม (ทองยัง qtyAvailable 1 เสมอ
+    // จึงสแกนซ้ำครั้งที่ 2 จะโดนปฏิเสธเหมือนพฤติกรรมเดิม) คืนค่า { success:false, reason:'exceed-available' }
+    // ให้ผู้เรียก (component) แสดง warning() เอง
     addItem(item, cartId) {
       const cart = cartId ? this.getCartById(cartId) : this.activeCart
       if (!cart) return { success: false, reason: 'no-cart' }
-      if (item.stockNumber && cart.items.some((i) => i.stockNumber === item.stockNumber)) {
-        return { success: false, reason: 'duplicate' }
+
+      const qtyAvailable = Number(item.qtyAvailable ?? item.qty ?? 1)
+      const existing = item.stockNumber ? cart.items.find((i) => i.stockNumber === item.stockNumber) : null
+
+      if (existing) {
+        const currentQty = Number(existing.qty) || 0
+        if (currentQty >= qtyAvailable) {
+          return { success: false, reason: 'exceed-available' }
+        }
+        existing.qty = currentQty + 1
+        existing.qtyAvailable = qtyAvailable
+        this.persist()
+        return { success: true }
       }
-      cart.items.push({ ...item })
+
+      cart.items.push({ ...item, qtyAvailable })
       this.persist()
       return { success: true }
     },

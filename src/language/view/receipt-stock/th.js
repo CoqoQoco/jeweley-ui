@@ -297,7 +297,11 @@ export default {
       updateImageBtn: 'ปรับปรุง',
       colImageName: 'ชื่อ',
       colImageCreateDate: 'วันที่สร้าง',
-      colImageRemark: 'รายละเอียด'
+      colImageRemark: 'รายละเอียด',
+      barcodePrintTitle: 'บันทึกสินค้าสำเร็จ | เลือกสินค้าเพื่อพิมพ์ Barcode',
+      barcodeTypeOriginal: 'แบบที่ 1',
+      barcodeTypeCostNoGold: 'แบบที่ 2',
+      lotBadge: 'ล็อต {count} ชิ้น'
     },
     productionReceiptList: {
       title: 'รับสินค้างานผลิต',

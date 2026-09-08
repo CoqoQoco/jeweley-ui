@@ -30,10 +30,9 @@ export const pos = {
   errorCheckCode: 'กรุณาตรวจสอบรหัสสินค้า',
   errorNetworkIssue: 'เครือข่ายมีปัญหา กรุณาตรวจสอบสัญญาณอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง',
   errorNetworkTitle: 'เชื่อมต่อเครือข่ายไม่ได้',
-  warnDuplicateItem: 'สินค้าชิ้นนี้อยู่ในตะกร้าแล้ว',
-  warnSoldItem: 'สินค้าชิ้นนี้ถูกขายไปแล้ว',
-  warnReservedItem: 'สินค้าชิ้นนี้ถูกจองไว้ในบิลอื่นแล้ว',
   warnUnavailableItem: 'สินค้าชิ้นนี้ไม่สามารถขายได้ในขณะนี้',
+  qtyExceedAvailable: 'จำนวนเกินกว่าที่พร้อมขาย',
+  remainingQty: 'เหลือพร้อมขาย {qty}',
   successAddProduct: 'เพิ่มสินค้าเข้าตะกร้าแล้ว',
 
   // scan bar — กล้องเต็มจอ
@@ -235,7 +234,7 @@ export const dashboard = {
   quickActionsTitle: 'หัวข้องาน',
   scanQrLabel: 'สแกน QR',
   quotationLabel: 'ใบเสนอราคา',
-  saleOrderLabel: 'ใบสั่งขาย',
+  invoiceLabel: 'ใบแจ้งหนี้',
   stockCheckLabel: 'ตรวจคลัง',
   myJobsTitle: 'งานของฉัน',
   viewAllBtn: 'ดูทั้งหมด',
@@ -257,7 +256,11 @@ export const stockProduct = {
   tabBalance: 'คงเหลือ',
   tabCost: 'ต้นทุน',
   tabHistory: 'ประวัติ',
-  availableShort: 'ว่าง',
+  qtyOnHand: 'คงเหลือ',
+  qtyReserved: 'จอง',
+  availableShort: 'พร้อมขาย',
+  lotBadge: 'ล็อตนี้',
+  skuTotalLabel: 'ยอดรวม SKU',
   selectVersion: 'เลือกเวอร์ชัน',
   notFoundTitle: 'ไม่พบข้อมูลสินค้า'
 }
@@ -334,8 +337,7 @@ export const notifications = {
 }
 
 export const saleIndex = {
-  tabSo: 'Sale Order',
-  tabInvoice: 'Invoice',
+  pageTitle: 'ใบแจ้งหนี้',
   unknownCustomer: 'ไม่ระบุลูกค้า',
   loadMoreBtn: 'โหลดเพิ่มเติม',
   soEmptyTitle: 'ไม่มีใบสั่งขาย',
@@ -490,6 +492,7 @@ export const sale = {
   itemFieldDiscount: 'ส่วนลด %',
   itemTotalLabel: 'รวม',
   itemTotalUnit: 'บาท',
+  qtyExceedAvailable: 'จำนวนเกินกว่าที่พร้อมขาย',
   itemSourceAppraisal: 'ตีราคา',
   itemSourceQuotation: 'ใบเสนอราคา',
   itemSourceScan: 'สแกน',
@@ -571,6 +574,12 @@ export const sale = {
   invoicePaymentDayLabel: 'ระยะเวลา:',
   invoicePaymentDayUnit: 'วัน',
   invoiceDepositLabel: 'มัดจำ:',
+  invoicePaidAmountLabel: 'ยอดที่ชำระแล้ว:',
+  invoiceOutstandingLabel: 'ยอดคงเหลือ:',
+  invoicePaymentRecordsTitle: 'รายการรับชำระ',
+  invoiceStatusPaidLabel: 'ชำระครบ',
+  invoiceStatusPartialLabel: 'ชำระบางส่วน',
+  invoiceStatusUnpaidLabel: 'ค้างชำระ',
   invoiceRemarkTitle: 'หมายเหตุ',
   invoicePrintSettingsTitle: 'ตั้งค่าการพิมพ์',
   invoicePrintNote: 'การเปลี่ยนแปลงมีผลเฉพาะเอกสารที่พิมพ์ ข้อมูลต้นฉบับไม่เปลี่ยน',

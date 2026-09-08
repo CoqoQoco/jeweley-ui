@@ -38,8 +38,9 @@
         <InputTextGeneric
           type="number"
           :modelValue="String(item.qty || '')"
-          @update:modelValue="updateField('qty', $event)"
+          @update:modelValue="onQtyInput"
           :min="1"
+          :max="qtyMax"
           :step="1"
         />
       </div>
@@ -65,6 +66,8 @@
 
 <script>
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import { warning } from '@/services/alert/sweetAlerts.js'
+import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 export default {
   name: 'ItemCard',
@@ -96,6 +99,10 @@ export default {
       const qty = Number(this.item.qty) || 1
       const discountPercent = Number(this.item.discountPercent) || 0
       return price * qty * (1 - discountPercent / 100)
+    },
+
+    qtyMax() {
+      return getPieceQtyAvailable(this.item)
     }
   },
 
@@ -104,6 +111,17 @@ export default {
       const numValue = Number(value) || 0
       const updatedItem = { ...this.item, [field]: numValue }
       this.$emit('update', this.index, updatedItem)
+    },
+
+    // silver lot: qty ห้ามเกิน qtyAvailable ของ piece (ทองยัง max 1 เหมือนเดิม)
+    onQtyInput(value) {
+      const max = this.qtyMax
+      let numValue = Number(value) || 0
+      if (max > 0 && numValue > max) {
+        numValue = max
+        warning(this.$t('view.mobile.sale.qtyExceedAvailable'))
+      }
+      this.updateField('qty', numValue)
     },
 
     formatCurrency(value) {

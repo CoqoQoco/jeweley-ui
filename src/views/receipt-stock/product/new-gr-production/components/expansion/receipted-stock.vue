@@ -2,6 +2,9 @@
   <div class="form-col-fix-2-container">
     <div class="form-col-container">
       <div class="filter-container-bg-focus">
+        <span v-if="lotCount > 1" class="lot-badge">
+          {{ $t('view.receiptStock.product.grProduction.lotBadge', { count: lotCount }) }}
+        </span>
         <barcodeDemo
           :madeIn="formBarcode.madeIn"
           :madeInText="formBarcode.madeInText"
@@ -70,6 +73,10 @@ export default {
     type: {
       type: String,
       required: true
+    },
+    lotCount: {
+      type: Number,
+      default: 0
     }
   }
 }
@@ -107,5 +114,16 @@ export default {
 
 .image-body {
   border: 1px solid var(--base-color);
+}
+
+.lot-badge {
+  display: inline-block;
+  margin-bottom: var(--sp-xs);
+  padding: 2px var(--sp-sm);
+  border-radius: var(--radius-sm);
+  background-color: var(--base-warning);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  font-weight: 700;
 }
 </style>

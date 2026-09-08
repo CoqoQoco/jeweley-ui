@@ -42,6 +42,9 @@
       :class="isAvailable ? 'is-available' : 'is-unavailable'"
     >
       {{ isAvailable ? $t('view.public.showcase.availableYes') : $t('view.public.showcase.availableNo') }}
+      <span v-if="isAvailable && availableQty > 1">
+        · {{ $t('view.public.showcase.availableCount', { qty: availableQty }) }}
+      </span>
     </div>
   </div>
 </template>
@@ -91,6 +94,10 @@ export default {
     },
     isAvailable: {
       type: Boolean,
+      default: null
+    },
+    availableQty: {
+      type: Number,
       default: null
     }
   },

@@ -101,6 +101,7 @@
         :isRequiredField="isRequiredField"
         :breakdownData="data.breakDown || []"
         :locationOptions="locationOptions"
+        :lotCount="lotCountFor(slotProps.data.stockNumber)"
         @selectImage="onSelectImage"
         @addMaterial="addMaterialItem"
         @removeMaterial="removeMaterialItem"
@@ -242,6 +243,12 @@ export default {
   methods: {
     updateSelection(newSelection) {
       this.$emit('update:selectedItems', newSelection)
+    },
+
+    // silver lot: แผนเงินหลัง confirm จะโชว์เลขเดียวกันหลายแถว receipted — นับจำนวนแถวที่แชร์เลขเดียวกัน
+    lotCountFor(stockNumber) {
+      if (!stockNumber) return 0
+      return this.form.filter((item) => item.isReceipt && item.stockNumber === stockNumber).length
     },
 
     getBgColor(isReceipt, data) {

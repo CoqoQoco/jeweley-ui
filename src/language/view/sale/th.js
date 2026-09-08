@@ -461,6 +461,7 @@ export const saleOrder = {
   noDetail: 'ไม่มีรายละเอียด',
   statusConfirmed: 'ยืนยันแล้ว',
   statusPending: 'รอยืนยัน',
+  qtyExceedAvailable: 'จำนวนเกินกว่าที่พร้อมขาย (เหลือ {available})',
   summaryTitle: 'สรุปข้อมูล',
   itemList: 'รายการสินค้า',
   selectedItems: 'รายการที่เลือก',

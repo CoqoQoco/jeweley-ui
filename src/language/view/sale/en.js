@@ -461,6 +461,7 @@ export const saleOrder = {
   noDetail: 'No detail',
   statusConfirmed: 'Confirmed',
   statusPending: 'Pending',
+  qtyExceedAvailable: 'Qty exceeds available stock ({available} left)',
   summaryTitle: 'Summary',
   itemList: 'Item List',
   selectedItems: 'Selected Items',

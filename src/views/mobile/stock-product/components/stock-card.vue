@@ -15,11 +15,13 @@
 
     <div class="stock-card-content">
       <div class="stock-card-header">
-        <span class="stock-number">{{ primaryCode }}</span>
+        <span class="stock-number">{{ item.stockNumber }}</span>
         <i class="bi bi-chevron-right"></i>
       </div>
       <div v-if="item.mold" class="stock-mold">{{ item.mold }}</div>
-      <div v-if="secondaryCode" class="stock-number-new">{{ secondaryCode }}</div>
+      <div v-if="item.stockNumberOrigin" class="stock-number-old">
+        {{ $t('view.stock.product.stockNumberOld') }}: {{ item.stockNumberOrigin }}
+      </div>
       <div class="product-name">{{ item.productNameTh || item.productNameEn || '-' }}</div>
       <div class="stock-card-meta">
         <span v-if="item.location" class="meta-item">
@@ -28,7 +30,9 @@
         </span>
         <span class="meta-item">
           <i class="bi bi-box-seam"></i>
-          {{ $t('view.mobile.stockProduct.availableShort') }} {{ formatDecimal(item.qtyAvailable, 0) }}
+          {{ $t('view.mobile.stockProduct.qtyOnHand') }} {{ formatDecimal(pieceQty, 0) }}
+          · {{ $t('view.mobile.stockProduct.qtyReserved') }} {{ formatDecimal(pieceQtyReserved, 0) }}
+          · {{ $t('view.mobile.stockProduct.availableShort') }} {{ formatDecimal(pieceQtyAvailable, 0) }}
         </span>
       </div>
       <div class="stock-card-price">{{ formatDecimal(item.productPrice, 2) }} ฿</div>
@@ -38,6 +42,7 @@
 
 <script>
 import { formatDecimal } from '@/services/utils/decimal.js'
+import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 import ImagePreview from '@/components/prime-vue/ImagePreview.vue'
 
@@ -56,14 +61,15 @@ export default {
   emits: ['click'],
 
   computed: {
-    // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
-    primaryCode() {
-      return this.item.stockNumberOrigin || this.item.stockNumber
+    // ยอดของ "ล็อตนี้" (piece เดียว) — ไม่ใช่ยอดรวม SKU
+    pieceQty() {
+      return getPieceQty(this.item)
     },
-
-    // โชว์รหัสใหม่ซ้ำเฉพาะตอนมีรหัสเก่าอยู่แล้ว (ไม่งั้นรหัสใหม่ถูกยกเป็นตัวเด่นไปแล้ว)
-    secondaryCode() {
-      return this.item.stockNumberOrigin ? this.item.stockNumber : ''
+    pieceQtyReserved() {
+      return getPieceQtyReserved(this.item)
+    },
+    pieceQtyAvailable() {
+      return getPieceQtyAvailable(this.item)
     }
   },
 
@@ -140,7 +146,7 @@ export default {
 }
 
 // reuse ขนาด/สีเดียวกับ .meta-item ด้านล่าง — ให้ดูจางกว่ารหัสหลัก
-.stock-number-new {
+.stock-number-old {
   font-size: 0.75rem;
   color: #666;
   margin-top: 2px;

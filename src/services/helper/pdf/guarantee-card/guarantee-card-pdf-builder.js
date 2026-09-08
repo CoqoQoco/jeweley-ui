@@ -108,7 +108,7 @@ export class GuaranteeCardPdfBuilder {
 
     pushRow('Code', card.code)
     pushRow('Goods Specify', card.goodsSpecify)
-    pushRow('Gold Weight', card.goldWeight)
+    pushRow('Gold Weight', card.goldWeight ? `${card.goldWeight} g.` : '')
     ;(card.gemRows || []).forEach((g) => {
       if (!g || !g.name || g.weight === '' || g.weight === null || g.weight === undefined) return
       pushRow(`${g.name} Weight`, `${g.weight} cts.`)

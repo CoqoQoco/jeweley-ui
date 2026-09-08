@@ -29,6 +29,7 @@
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usePosCartStore } from '@/stores/modules/pos/pos-cart-store.js'
 import { warning, error, success } from '@/services/alert/sweetAlerts.js'
+import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -80,14 +81,6 @@ export default {
       })
     },
 
-    // fetchDataGet ดัก error ไว้เองและคืน undefined ทั้งกรณี "ไม่พบ" และกรณีเน็ตพัง แยกจาก return value ไม่ได้
-    // ใช้ navigator.onLine เป็นสัญญาณเดียวที่เช็คได้จากฝั่ง client เพื่อไม่ให้ผู้ใช้เข้าใจผิดว่าสินค้าไม่มีทั้งที่เน็ตหลุด
-    statusWarnKey(status) {
-      if (status === 'SOLD') return 'view.mobile.pos.warnSoldItem'
-      if (status === 'RESERVED') return 'view.mobile.pos.warnReservedItem'
-      return 'view.mobile.pos.warnUnavailableItem'
-    },
-
     // ค้นเจอ → เพิ่มเข้าตะกร้าทันที ไม่ต้องมีขั้นยืนยัน (จุดที่ต้องเร็วที่สุด)
     async searchAndAddProduct(searchValue) {
       const response = await this.findProduct(searchValue)
@@ -101,9 +94,10 @@ export default {
         return
       }
 
-      // status อาจไม่มีมาใน response (backend ยังไม่ deploy) — ทำงานเหมือนเดิม (ใส่ตะกร้าได้) ในกรณีนั้น
-      if (response.status && response.status !== 'IN_STOCK') {
-        warning(this.$t(this.statusWarnKey(response.status)))
+      // silver lot: gate ด้วย qtyAvailable ของ piece เอง (ไม่ใช้ status) — qtyAvailable <= 0 = ขายไม่ได้แล้ว
+      const qtyAvailable = getPieceQtyAvailable(response)
+      if (qtyAvailable <= 0) {
+        warning(this.$t('view.mobile.pos.warnUnavailableItem'))
         this.scanInput = ''
         return
       }
@@ -124,13 +118,14 @@ export default {
         tagPriceMultiplier: tagPriceMultiplier,
         discountPercent: 0,
         qty: 1,
+        qtyAvailable: qtyAvailable,
         materials: response.materials || [],
         imagePath: response.imagePath || ''
       })
 
       if (!result.success) {
-        if (result.reason === 'duplicate') {
-          warning(this.$t('view.mobile.pos.warnDuplicateItem'))
+        if (result.reason === 'exceed-available') {
+          warning(this.$t('view.mobile.pos.qtyExceedAvailable'))
         }
         this.scanInput = ''
         return

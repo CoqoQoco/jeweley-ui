@@ -95,7 +95,7 @@
                   type="number"
                   v-model="barcode.print"
                   min="1"
-                  max="30"
+                  :max="maxPrintCount"
                   @input="validateInput"
                 />
               </div>
@@ -142,6 +142,7 @@ const interfaceBarcode = {
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
+import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 
 export default {
   components: {
@@ -190,7 +191,7 @@ export default {
           price: null,
           originPrice: null,
           tagPriceMultiplier: Number(val.tagPriceMultiplier) || 1,
-          print: 1
+          print: getPieceQty(val)
         }
 
         // fetch price แยก API เพื่อไม่ให้ list ช้า
@@ -220,6 +221,11 @@ export default {
         case 'tag-no-gold':     return noGold ? noGold * multiplier : null
         default:                return null
       }
+    },
+
+    // ล็อตเงินมี qty ได้มากกว่า 30 — max ต้องไม่ต่ำกว่าจำนวนของล็อตนี้
+    maxPrintCount() {
+      return Math.max(30, getPieceQty(this.stock))
     }
   },
 
@@ -256,8 +262,8 @@ export default {
     validateInput() {
       if (this.barcode.print < 1) {
         this.barcode.print = 1
-      } else if (this.barcode.print > 30) {
-        this.barcode.print = 30
+      } else if (this.barcode.print > this.maxPrintCount) {
+        this.barcode.print = this.maxPrintCount
       }
       this.barcode.print = Math.floor(this.barcode.print)
     },

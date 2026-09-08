@@ -33,9 +33,7 @@
       </template>
 
       <template #qtyAvailableTemplate="{ data }">
-        <span :class="data.qtyAvailable > 0 ? 'badge-ready' : 'badge-not-ready'">
-          {{ data.qtyAvailable > 0 ? $t('view.stock.moveLocation.readyLabel') : $t('view.stock.moveLocation.notReadyLabel') }}
-        </span>
+        <span>{{ formatDecimal(getPieceQtyAvailable(data), 2) }}</span>
       </template>
 
       <template #actionTemplate="{ data }">
@@ -57,6 +55,8 @@ import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { formatDecimal } from '@/services/utils/decimal.js'
+import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
 
@@ -108,7 +108,7 @@ export default {
         { field: 'productPrice', header: this.$t('common.field.price'), sortable: true, minWidth: '150px', format: 'decimal2' },
         { field: 'createBy', header: this.$t('view.stock.product.receiver'), sortable: true, minWidth: '150px' },
         { field: 'remark', header: this.$t('common.field.remark'), sortable: true, minWidth: '150px' },
-        { field: 'qtyAvailable', header: this.$t('view.stock.moveLocation.readyLabel'), sortable: false, minWidth: '100px', align: 'center' },
+        { field: 'qtyAvailable', header: this.$t('view.stock.product.qtyAvailable'), sortable: false, minWidth: '100px', align: 'center' },
         { field: 'action', header: this.$t('common.field.action'), sortable: false, minWidth: '80px', align: 'center' }
       ]
     }
@@ -135,6 +135,9 @@ export default {
   },
 
   methods: {
+    formatDecimal,
+    getPieceQtyAvailable,
+
     onSelectionChange(selected) {
       this.selectedItems = selected
       this.$emit('update:selection', selected)
@@ -154,22 +157,4 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
-
-%badge-base {
-  padding: 2px var(--sp-sm);
-  border-radius: var(--radius-lg);
-  font-size: var(--fs-sm);
-}
-
-.badge-ready {
-  @extend %badge-base;
-  background: #d4edda;
-  color: #155724;
-}
-
-.badge-not-ready {
-  @extend %badge-base;
-  background: #f8d7da;
-  color: #721c24;
-}
 </style>

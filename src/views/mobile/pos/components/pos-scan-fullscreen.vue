@@ -71,6 +71,7 @@
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usePosCartStore } from '@/stores/modules/pos/pos-cart-store.js'
+import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
@@ -333,14 +334,6 @@ export default {
       })
     },
 
-    // fetchDataGet ดัก error ไว้เองและคืน undefined ทั้งกรณี "ไม่พบ" และกรณีเน็ตพัง แยกจาก return value ไม่ได้
-    // ใช้ navigator.onLine เป็นสัญญาณเดียวที่เช็คได้จากฝั่ง client เพื่อไม่ให้ผู้ใช้เข้าใจผิดว่าสินค้าไม่มีทั้งที่เน็ตหลุด
-    statusWarnKey(status) {
-      if (status === 'SOLD') return 'view.mobile.pos.warnSoldItem'
-      if (status === 'RESERVED') return 'view.mobile.pos.warnReservedItem'
-      return 'view.mobile.pos.warnUnavailableItem'
-    },
-
     // ผลลัพธ์เดียวกับ pos-scan-bar.vue (ค้นสินค้า + เพิ่มตะกร้า) แต่แจ้งผลด้วย toast แทน sweetAlerts
     // เพื่อไม่ให้มี dialog บล็อกจอกล้องระหว่างสแกนต่อเนื่อง
     async searchAndAddProduct(searchValue) {
@@ -357,9 +350,10 @@ export default {
         return
       }
 
-      // status อาจไม่มีมาใน response (backend ยังไม่ deploy) — ทำงานเหมือนเดิม (ใส่ตะกร้าได้) ในกรณีนั้น
-      if (response.status && response.status !== 'IN_STOCK') {
-        this.showToast('warning', this.$t(this.statusWarnKey(response.status)))
+      // silver lot: gate ด้วย qtyAvailable ของ piece เอง (ไม่ใช้ status) — qtyAvailable <= 0 = ขายไม่ได้แล้ว
+      const qtyAvailable = getPieceQtyAvailable(response)
+      if (qtyAvailable <= 0) {
+        this.showToast('warning', this.$t('view.mobile.pos.warnUnavailableItem'))
         this.isSearching = false
         return
       }
@@ -380,13 +374,14 @@ export default {
         tagPriceMultiplier: tagPriceMultiplier,
         discountPercent: 0,
         qty: 1,
+        qtyAvailable: qtyAvailable,
         materials: response.materials || [],
         imagePath: response.imagePath || ''
       })
 
       if (!result.success) {
-        if (result.reason === 'duplicate') {
-          this.showToast('warning', this.$t('view.mobile.pos.warnDuplicateItem'))
+        if (result.reason === 'exceed-available') {
+          this.showToast('warning', this.$t('view.mobile.pos.qtyExceedAvailable'))
         }
         this.isSearching = false
         return

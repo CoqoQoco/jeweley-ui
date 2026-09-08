@@ -2,7 +2,7 @@
   <div class="p-2">
     <!-- Stock already receipt -->
     <div v-if="slotProps.data.isReceipt">
-      <ReceiptedStock :slotProps="slotProps" :formBarcode="formBarcode" :type="type" />
+      <ReceiptedStock :slotProps="slotProps" :formBarcode="formBarcode" :type="type" :lotCount="lotCount" />
     </div>
 
     <!-- Stock on receipt -->
@@ -92,6 +92,10 @@ export default {
     type: {
       type: String,
       required: true
+    },
+    lotCount: {
+      type: Number,
+      default: 0
     },
     masterStud: {
       type: Array,

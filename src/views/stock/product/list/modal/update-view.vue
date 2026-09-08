@@ -129,7 +129,8 @@
 
               <div class="form-row two-col">
                 <FormFieldGeneric :label="$t('common.field.quantity')" :required="true">
-                  <InputTextGeneric v-model="stock.qty" type="number" :step="'any'" :min="0" placeholder="0" :required="true" />
+                  <InputTextGeneric v-model="stock.qty" type="number" :step="'any'" :min="0" placeholder="0" :required="true" :readonly="true" />
+                  <small class="qty-readonly-hint">{{ $t('view.stock.product.qtyReadonlyHint') }}</small>
                 </FormFieldGeneric>
                 <FormFieldGeneric :label="$t('view.stock.product.salePrice')" :required="true">
                   <InputTextGeneric v-model="stock.productPrice" type="number" :step="'any'" :min="0" placeholder="0.00" :required="true" />
@@ -744,5 +745,12 @@ export default {
 
 .w-full {
   width: 100%;
+}
+
+.qty-readonly-hint {
+  display: block;
+  margin-top: var(--sp-xs);
+  color: var(--base-sub-color);
+  font-size: var(--fs-sm);
 }
 </style>

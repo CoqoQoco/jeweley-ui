@@ -35,6 +35,7 @@
         :earringStemSize="product.earringStemSize"
         :gems="product.gems"
         :isAvailable="product.isAvailable"
+        :availableQty="product.availableQty"
       />
 
       <div class="showcase-divider"></div>
