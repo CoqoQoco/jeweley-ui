@@ -1288,7 +1288,15 @@ export const document = {
   descLine2: 'Description Line 2',
   imageLabel: 'Image',
   selectImage: 'Select Image',
-  tagSize: 'Tag Size',
+  imageLoading: 'Loading image',
+  addImage: 'Add Image',
+  productSize: 'Product Size',
+  dimensionHeight: 'Height',
+  dimensionWidth: 'Width',
+  imageCaption: 'Caption',
+  imageHint: 'Printed as dimension lines around the image in the PDF',
+  moveImageLeft: 'Move Image Left',
+  moveImageRight: 'Move Image Right',
   moveUp: 'Move Up',
   moveDown: 'Move Down',
   removeItem: 'Remove',
@@ -1336,7 +1344,8 @@ export const document = {
   validation: {
     headerRequired: 'Please enter header label',
     monthYearRequired: 'Please select month and year',
-    pdfRequired: 'Please select a PDF file'
+    pdfRequired: 'Please select a PDF file',
+    itemWithoutImage: 'Some items have no image yet — the PDF will print an empty box for them'
   },
   confirm: {
     delete: 'Do you want to delete document "{fileName}"?',

@@ -1282,7 +1282,15 @@ export const document = {
   descLine2: 'คำอธิบาย บรรทัด 2',
   imageLabel: 'รูปที่',
   selectImage: 'เลือกรูป',
-  tagSize: 'ป้ายขนาด',
+  imageLoading: 'กำลังโหลดรูป',
+  addImage: 'เพิ่มรูป',
+  productSize: 'ขนาดสินค้า',
+  dimensionHeight: 'ความสูง',
+  dimensionWidth: 'ความกว้าง',
+  imageCaption: 'คำบรรยาย',
+  imageHint: 'พิมพ์เป็นเส้นบอกขนาดรอบรูปในไฟล์ PDF ครับ',
+  moveImageLeft: 'เลื่อนรูปไปทางซ้าย',
+  moveImageRight: 'เลื่อนรูปไปทางขวา',
   moveUp: 'เลื่อนขึ้น',
   moveDown: 'เลื่อนลง',
   removeItem: 'ลบ',
@@ -1330,7 +1338,8 @@ export const document = {
   validation: {
     headerRequired: 'กรุณากรอกหัวเรื่อง (Header Label)',
     monthYearRequired: 'กรุณาเลือกเดือนและปี',
-    pdfRequired: 'กรุณาเลือกไฟล์ PDF'
+    pdfRequired: 'กรุณาเลือกไฟล์ PDF',
+    itemWithoutImage: 'มีรายการสินค้าที่ยังไม่มีรูปเลยครับ ระบบจะพิมพ์เป็นกรอบว่างในไฟล์ PDF'
   },
   confirm: {
     delete: 'คุณต้องการลบเอกสาร "{fileName}" หรือไม่?',

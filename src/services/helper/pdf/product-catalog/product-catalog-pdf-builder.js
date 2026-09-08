@@ -20,6 +20,10 @@ const PAGE_W = 842
 const PAGE_H = 474
 const CONTENT_W = 762 // PAGE_W - 40 (left margin) - 40 (right margin)
 
+// Dimension-line layout constants (right column, all image-count layouts)
+const DIMTXT_W = 36 // width reserved for the dimension label text beside the vertical measure line
+const VLINE_W = 10 // width of the vertical measure line column
+
 export class ProductCatalogPdfBuilder {
   constructor(catalog, items) {
     this.catalog = catalog || {}
@@ -45,8 +49,10 @@ export class ProductCatalogPdfBuilder {
 
   /**
    * Load catalog item images from SaleDocumentCatalog/GetImage endpoint.
-   * Each item must have imageBlobPaths: string[] (up to 3 entries).
-   * Populated into item.catalogImages: string[] (base64 dataURL or null).
+   * Each item may have imageBlobPaths: string[] (1-3 entries, continuous — no gaps)
+   * or a legacy item.images: [{ sortOrder, blobPath }] array (e.g. views/catalog callers).
+   * Populated into item.catalogImages: string[] (base64 dataURL), length matches the
+   * number of real images (0-3) — no padding.
    */
   async prepareImages() {
     if (!this.items || !this.items.length) return
@@ -56,18 +62,15 @@ export class ProductCatalogPdfBuilder {
     await Promise.all(
       this.items.map(async (item) => {
         let blobPaths = item.imageBlobPaths
-        if (!blobPaths || !blobPaths.some(Boolean)) {
-          const slots = [null, null, null]
-          ;(item.images || []).forEach((img) => {
-            const i = img.sortOrder ?? 0
-            if (i >= 0 && i < 3) slots[i] = img.blobPath
-          })
-          blobPaths = slots
+        if (!blobPaths || !blobPaths.length) {
+          blobPaths = [...(item.images || [])]
+            .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+            .map((img) => img.blobPath)
         }
+        blobPaths = blobPaths.filter(Boolean)
+
         const results = await Promise.all(
-          [0, 1, 2].map(async (idx) => {
-            const blobPath = blobPaths[idx]
-            if (!blobPath) return null
+          blobPaths.map(async (blobPath) => {
             const url = `${baseUrl}SaleDocumentCatalog/GetImage?blobPath=${encodeURIComponent(blobPath)}`
             const res = await fetch(url, {
               headers: { Authorization: localStorage.getItem('token-dk') }
@@ -265,7 +268,8 @@ export class ProductCatalogPdfBuilder {
     const dim1 = item.dimension1 || ''
     const dim2 = item.dimension2 || ''
     const dim3 = item.dimension3 || ''
-    const catalogImages = item.catalogImages || [null, null, null]
+    const catalogImages = item.catalogImages || []
+    const ratios = item.catalogImageRatios || []
 
     // --- Header band: 3 columns ---
     const headerBand = {
@@ -379,33 +383,176 @@ export class ProductCatalogPdfBuilder {
       margin: [0, 0, 16, 0]
     }
 
-    // --- Right column (~70%): img1 (large) + img2/img3 cluster with dimension lines ---
+    // --- Right column (~70%): layout adapts to number of real images (0 / 1 / 2 / 3) ---
+    const rightCol = this.buildImagesRightColumn(catalogImages, ratios, dim1, dim2, dim3)
+
+    const bodyRow = {
+      columns: [leftCol, rightCol],
+      margin: [0, 0, 0, 10]
+    }
+
+    const pageContent = {
+      stack: [headerBand, divider, bodyRow]
+    }
+
+    if (!isLast) {
+      pageContent.pageBreak = 'after'
+    }
+
+    return pageContent
+  }
+
+  // ---------- right column layouts (adaptive by image count) ----------
+
+  emptyImageBox(size) {
+    return { canvas: [{ type: 'rect', x: 0, y: 0, w: size, h: size, lineColor: '#dddddd', lineWidth: 0.5 }] }
+  }
+
+  buildImagesRightColumn(catalogImages, ratios, dim1, dim2, dim3) {
+    const count = catalogImages.length
+
+    if (count >= 3) {
+      return this.buildThreeImageRightColumn(catalogImages, ratios, dim1, dim2, dim3)
+    }
+    if (count === 2) {
+      return this.buildTwoImageRightColumn(catalogImages, ratios, dim1, dim2, dim3)
+    }
+    if (count === 1) {
+      return this.buildOneImageRightColumn(catalogImages, ratios, dim1, dim2)
+    }
+    return this.buildEmptyRightColumn()
+  }
+
+  // Shared builder for a single image + its dimension-line cluster (used by the 1-image
+  // and 2-image layouts). Row A = horizontal measure line (dim2) above the image,
+  // Row B = image + vertical measure line (dim1) on the left, Row C (optional) = caption below.
+  buildDimensionCluster({ image, ratio, size, dim1, dim2, caption }) {
+    const box = this.fitBox(ratio || 1, size)
+    const rows = []
+
+    rows.push({
+      columns: [
+        { width: DIMTXT_W + VLINE_W, text: '' },
+        {
+          width: box.w,
+          stack: [
+            dim2
+              ? { text: dim2.toUpperCase(), fontSize: 9, color: '#cf6a5c', alignment: 'center', margin: [0, 0, 0, 1] }
+              : { text: '' },
+            dim2
+              ? {
+                  canvas: [
+                    { type: 'line', x1: 0, y1: 3, x2: box.w, y2: 3, lineWidth: 0.6, lineColor: '#cf6a5c' },
+                    { type: 'line', x1: 0, y1: 0, x2: 0, y2: 6, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } },
+                    { type: 'line', x1: box.w, y1: 0, x2: box.w, y2: 6, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
+                  ],
+                  margin: [0, 0, 0, 2]
+                }
+              : { text: '' }
+          ]
+        }
+      ]
+    })
+
+    rows.push({
+      columns: [
+        dim1
+          ? { width: DIMTXT_W, text: dim1.toUpperCase(), fontSize: 9, color: '#cf6a5c', alignment: 'right', margin: [0, Math.max(0, box.h / 2 - 6), 4, 0] }
+          : { width: DIMTXT_W, text: '' },
+        dim1
+          ? {
+              width: VLINE_W,
+              canvas: [
+                { type: 'line', x1: 5, y1: 0, x2: 5, y2: box.h, lineWidth: 0.6, lineColor: '#cf6a5c' },
+                { type: 'line', x1: 2, y1: 0, x2: 8, y2: 0, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } },
+                { type: 'line', x1: 2, y1: box.h, x2: 8, y2: box.h, lineWidth: 0.6, lineColor: '#cf6a5c', dash: { length: 2 } }
+              ]
+            }
+          : { width: VLINE_W, text: '' },
+        image ? { width: box.w, image, height: box.h } : { width: box.w, ...this.emptyImageBox(box.w) }
+      ]
+    })
+
+    if (caption) {
+      rows.push({
+        columns: [
+          { width: DIMTXT_W + VLINE_W, text: '' },
+          { width: box.w, text: caption.toUpperCase(), fontSize: 8, color: '#cf6a5c', alignment: 'center', margin: [0, 2, 0, 0] }
+        ]
+      })
+    }
+
+    return { rows, box, headerH: dim2 ? 12 : 0, captionH: caption ? 10 : 0 }
+  }
+
+  // A·1 — single image (290pt), horizontally centred in the right column,
+  // dimension lines attached directly to this image, no caption.
+  buildOneImageRightColumn(catalogImages, ratios, dim1, dim2) {
+    const cluster = this.buildDimensionCluster({
+      image: catalogImages[0],
+      ratio: ratios[0],
+      size: 290,
+      dim1,
+      dim2,
+      caption: null
+    })
+
+    return {
+      width: '70%',
+      columns: [
+        { width: '*', text: '' },
+        { width: 'auto', stack: cluster.rows },
+        { width: '*', text: '' }
+      ]
+    }
+  }
+
+  // A·2 — main image (260pt, plain) + second image (175pt, dimension-lined + caption),
+  // arranged horizontally and vertically centred against each other.
+  buildTwoImageRightColumn(catalogImages, ratios, dim1, dim2, dim3) {
+    const MAIN = 260
+    const box1 = this.fitBox(ratios[0] || 1, MAIN)
+    const cluster = this.buildDimensionCluster({
+      image: catalogImages[1],
+      ratio: ratios[1],
+      size: 175,
+      dim1,
+      dim2,
+      caption: dim3
+    })
+
+    const clusterH = cluster.headerH + cluster.box.h + cluster.captionH
+    const mainOffset = Math.max(0, (clusterH - box1.h) / 2)
+    const clusterOffset = Math.max(0, (box1.h - clusterH) / 2)
+
+    const mainImage = catalogImages[0]
+      ? { image: catalogImages[0], width: box1.w, height: box1.h }
+      : this.emptyImageBox(box1.w)
+
+    return {
+      width: '70%',
+      columns: [
+        { stack: [mainImage], width: 'auto', margin: [0, mainOffset, 16, 0] },
+        { stack: cluster.rows, width: 'auto', margin: [0, clusterOffset, 0, 0] }
+      ]
+    }
+  }
+
+  // A·3 — original 3-image layout (230 + 135 + 135), unchanged output for legacy catalogs.
+  buildThreeImageRightColumn(catalogImages, ratios, dim1, dim2, dim3) {
     const img1 = catalogImages[0]
     const img2 = catalogImages[1]
     const img3 = catalogImages[2]
 
-    // img1 large left
-    const img1Stack = []
-    if (img1) {
-      img1Stack.push({ image: img1, fit: [230, 230] })
-    } else {
-      img1Stack.push({
-        canvas: [{ type: 'rect', x: 0, y: 0, w: 230, h: 230, lineColor: '#dddddd', lineWidth: 0.5 }]
-      })
-      img1Stack.push({ text: '[รูป 1]', fontSize: 10, color: '#cccccc', alignment: 'center', margin: [0, -125, 0, 0] })
-    }
+    const img1Block = img1 ? { image: img1, fit: [230, 230] } : this.emptyImageBox(230)
 
     // img2 + img3 right cluster with dimension lines
     // Uses fixed-width columns (no negative margin) for precise alignment.
     // IMG=135, DIMTXT_W=36, VLINE_W=10 → spacer = 46 = DIMTXT_W + VLINE_W
     // Row A: horizontal measure line (width IMG) starts exactly at left edge of img2 column
     // Row B: vertical measure line canvas (height IMG) starts at same top as img2 → exact symmetry
-
     const IMG = 135
-    const DIMTXT_W = 36
-    const VLINE_W = 10
 
-    const ratios = item.catalogImageRatios || [1, 1, 1]
     const box2 = img2 ? this.fitBox(ratios[1], IMG) : { w: IMG, h: IMG }
 
     const img2ClusterRows = []
@@ -456,17 +603,11 @@ export class ProductCatalogPdfBuilder {
         ]
       })
     } else {
-      // placeholder for img2
+      // placeholder for img2 (defensive — count>=3 normally guarantees img2 is present)
       img2ClusterRows.push({
         columns: [
           { width: DIMTXT_W + VLINE_W, text: '' },
-          {
-            width: IMG,
-            stack: [
-              { canvas: [{ type: 'rect', x: 0, y: 0, w: IMG, h: IMG, lineColor: '#dddddd', lineWidth: 0.5 }] },
-              { text: '[รูป 2]', fontSize: 9, color: '#cccccc', alignment: 'center', margin: [0, -73, 0, 0] }
-            ]
-          }
+          { width: IMG, ...this.emptyImageBox(IMG) }
         ]
       })
     }
@@ -488,42 +629,37 @@ export class ProductCatalogPdfBuilder {
         ]
       })
     } else {
+      // placeholder for img3 (defensive — count>=3 normally guarantees img3 is present)
       img2ClusterRows.push({
         columns: [
           { width: DIMTXT_W + VLINE_W, text: '' },
           {
             width: IMG,
-            stack: [
-              { canvas: [{ type: 'rect', x: 0, y: 0, w: IMG, h: IMG, lineColor: '#dddddd', lineWidth: 0.5 }], margin: [0, 8, 0, 0] },
-              { text: '[รูป 3]', fontSize: 9, color: '#cccccc', alignment: 'center', margin: [0, -73, 0, 0] }
-            ]
+            stack: [{ ...this.emptyImageBox(IMG), margin: [0, 8, 0, 0] }]
           }
         ]
       })
     }
 
-    const rightCol = {
+    return {
       width: '70%',
       columns: [
-        { stack: [img1Stack[0], ...(img1Stack.slice(1))], width: 'auto', margin: [0, 0, 16, 0] },
+        { stack: [img1Block], width: 'auto', margin: [0, 0, 16, 0] },
         { stack: img2ClusterRows, width: '*' }
       ]
     }
+  }
 
-    const bodyRow = {
-      columns: [leftCol, rightCol],
-      margin: [0, 0, 0, 10]
+  // 0 images — single dashed placeholder box, no text, centred in the right column.
+  buildEmptyRightColumn() {
+    return {
+      width: '70%',
+      columns: [
+        { width: '*', text: '' },
+        { width: 'auto', ...this.emptyImageBox(230) },
+        { width: '*', text: '' }
+      ]
     }
-
-    const pageContent = {
-      stack: [headerBand, divider, bodyRow]
-    }
-
-    if (!isLast) {
-      pageContent.pageBreak = 'after'
-    }
-
-    return pageContent
   }
 
   // ---------- footer ----------

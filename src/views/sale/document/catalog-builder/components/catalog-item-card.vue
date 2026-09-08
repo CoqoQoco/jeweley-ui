@@ -39,37 +39,91 @@
         </div>
       </div>
 
-      <div class="images-row">
-        <div v-for="(imgSlot, imgIdx) in 3" :key="imgIdx" class="image-slot">
-          <span class="title-text">{{ $t('view.sale.document.imageLabel') }} {{ imgIdx + 1 }}</span>
-          <div class="image-upload-area">
-            <div v-if="getImagePreview(imgIdx)" class="image-preview-wrap">
-              <img :src="getImagePreview(imgIdx)" class="image-preview" :alt="`${$t('view.sale.document.imageLabel')} ${imgIdx + 1}`" />
-              <button class="btn btn-sm btn-red btn-clear-img" @click="clearImage(imgIdx)" type="button" :title="$t('view.sale.document.removeImage')">
-                <i class="bi bi-x"></i>
-              </button>
-            </div>
-            <label v-else class="upload-label" :for="`img-${index}-${imgIdx}`">
-              <i class="bi bi-camera"></i>
-              <span>{{ $t('view.sale.document.selectImage') }}</span>
-              <input
-                :id="`img-${index}-${imgIdx}`"
-                type="file"
-                accept="image/*"
-                class="d-none"
-                @change="onFileChange($event, imgIdx)"
-              />
-            </label>
-          </div>
-          <div class="mt-1">
-            <span class="title-text">{{ $t('view.sale.document.tagSize') }}</span>
+      <div class="size-group mb-3">
+        <span class="title-text d-block mb-2">{{ $t('view.sale.document.productSize') }}</span>
+        <div class="form-row two-col">
+          <div class="form-field">
+            <span class="title-text">{{ $t('view.sale.document.dimensionHeight') }}</span>
             <input
               class="form-control"
               type="text"
-              :value="getDimension(imgIdx)"
-              @input="updateDimension(imgIdx, $event.target.value)"
+              :value="item.dimension1"
+              @input="updateField('dimension1', $event.target.value)"
               :placeholder="$t('view.sale.document.placeholder.size')"
             />
+          </div>
+          <div class="form-field">
+            <span class="title-text">{{ $t('view.sale.document.dimensionWidth') }}</span>
+            <input
+              class="form-control"
+              type="text"
+              :value="item.dimension2"
+              @input="updateField('dimension2', $event.target.value)"
+              :placeholder="$t('view.sale.document.placeholder.size')"
+            />
+          </div>
+        </div>
+        <p class="size-hint mb-0 mt-1">{{ $t('view.sale.document.imageHint') }}</p>
+      </div>
+
+      <div class="images-row">
+        <div v-for="(preview, imgIdx) in imagePreviews" :key="imgIdx" class="image-slot">
+          <div class="image-upload-area">
+            <div class="image-preview-wrap">
+              <img v-if="preview" :src="preview" class="image-preview" :alt="`${$t('view.sale.document.imageLabel')} ${imgIdx + 1}`" />
+              <div v-else class="image-placeholder">
+                <i class="bi bi-image"></i>
+                <span>{{ $t('view.sale.document.imageLoading') }}</span>
+              </div>
+              <ButtonGeneric
+                variant="red"
+                icon="bi-x"
+                class="btn-clear-img"
+                :title="$t('view.sale.document.removeImage')"
+                @click="removeImageAt(imgIdx)"
+              />
+            </div>
+          </div>
+          <div v-if="imagePreviews.length > 1" class="image-nav">
+            <ButtonGeneric
+              v-if="imgIdx > 0"
+              variant="outline"
+              icon="bi-chevron-left"
+              :title="$t('view.sale.document.moveImageLeft')"
+              @click="moveImage(imgIdx, -1)"
+            />
+            <ButtonGeneric
+              v-if="imgIdx < imagePreviews.length - 1"
+              variant="outline"
+              icon="bi-chevron-right"
+              :title="$t('view.sale.document.moveImageRight')"
+              @click="moveImage(imgIdx, 1)"
+            />
+          </div>
+          <div v-if="imgIdx === imagePreviews.length - 1 && imagePreviews.length >= 2" class="mt-1">
+            <span class="title-text">{{ $t('view.sale.document.imageCaption') }}</span>
+            <input
+              class="form-control"
+              type="text"
+              :value="item.dimension3"
+              @input="updateField('dimension3', $event.target.value)"
+            />
+          </div>
+        </div>
+
+        <div v-if="imagePreviews.length < 3" class="image-slot add-slot">
+          <div class="image-upload-area">
+            <label class="upload-label" :for="`img-${index}-add`">
+              <i class="bi bi-plus-circle"></i>
+              <span>{{ $t('view.sale.document.addImage') }}</span>
+              <input
+                :id="`img-${index}-add`"
+                type="file"
+                accept="image/*"
+                class="d-none"
+                @change="onFileChange($event, imagePreviews.length)"
+              />
+            </label>
           </div>
         </div>
       </div>
@@ -78,8 +132,12 @@
 </template>
 
 <script>
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
 export default {
   name: 'CatalogItemCard',
+
+  components: { ButtonGeneric },
 
   props: {
     item: {
@@ -100,7 +158,7 @@ export default {
 
   computed: {
     imagePreviews() {
-      return this.item.imagePreviews || [null, null, null]
+      return this.item.imagePreviews || []
     }
   },
 
@@ -109,38 +167,34 @@ export default {
       this.$emit('update:item', { ...this.item, [field]: value })
     },
 
-    getDimension(idx) {
-      const key = `dimension${idx + 1}`
-      return this.item[key] || ''
+    removeImageAt(imgIdx) {
+      const previews = [...(this.item.imagePreviews || [])]
+      const blobPaths = [...(this.item.imageBlobPaths || [])]
+      previews.splice(imgIdx, 1)
+      blobPaths.splice(imgIdx, 1)
+      this.$emit('update:item', { ...this.item, imagePreviews: previews, imageBlobPaths: blobPaths })
     },
 
-    updateDimension(idx, value) {
-      const key = `dimension${idx + 1}`
-      this.$emit('update:item', { ...this.item, [key]: value })
+    moveImage(imgIdx, direction) {
+      const targetIdx = imgIdx + direction
+      const previews = [...(this.item.imagePreviews || [])]
+      const blobPaths = [...(this.item.imageBlobPaths || [])]
+      if (targetIdx < 0 || targetIdx >= previews.length) return
+
+      ;[previews[imgIdx], previews[targetIdx]] = [previews[targetIdx], previews[imgIdx]]
+      ;[blobPaths[imgIdx], blobPaths[targetIdx]] = [blobPaths[targetIdx], blobPaths[imgIdx]]
+      this.$emit('update:item', { ...this.item, imagePreviews: previews, imageBlobPaths: blobPaths })
     },
 
-    getImagePreview(idx) {
-      const previews = this.item.imagePreviews || []
-      return previews[idx] || null
-    },
-
-    async onFileChange(event, imgIdx) {
+    async onFileChange(event, appendIdx) {
       const file = event.target.files?.[0]
       if (!file) return
       if (!file.type.startsWith('image/')) return
 
       const previewUrl = URL.createObjectURL(file)
-      this.$emit('upload-image', { index: this.index, imgIdx, file, previewUrl })
+      this.$emit('upload-image', { index: this.index, imgIdx: appendIdx, file, previewUrl })
 
       event.target.value = ''
-    },
-
-    clearImage(imgIdx) {
-      const previews = [...(this.item.imagePreviews || [null, null, null])]
-      previews[imgIdx] = null
-      const blobPaths = [...(this.item.imageBlobPaths || [null, null, null])]
-      blobPaths[imgIdx] = null
-      this.$emit('update:item', { ...this.item, imagePreviews: previews, imageBlobPaths: blobPaths })
     }
   }
 }
@@ -198,19 +252,27 @@ input.form-control {
   }
 }
 
-.images-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+.size-hint {
+  font-size: 0.8rem;
+  color: #888;
+}
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+.images-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
 }
 
 .image-slot {
   display: flex;
   flex-direction: column;
+  flex: 1 1 200px;
+  max-width: 260px;
+
+  @media (max-width: 768px) {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
 }
 
 .image-upload-area {
@@ -251,6 +313,22 @@ input.form-control {
   height: 100%;
 }
 
+.image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #aaa;
+  gap: 6px;
+  font-size: 0.85rem;
+
+  i {
+    font-size: 1.5rem;
+  }
+}
+
 .image-preview {
   width: 100%;
   height: 100%;
@@ -266,5 +344,17 @@ input.form-control {
   font-size: 0.75rem;
   line-height: 1.4;
   opacity: 0.85;
+}
+
+.image-nav {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xs);
+
+  :deep(.btn) {
+    padding: 2px 8px;
+    font-size: 0.75rem;
+  }
 }
 </style>

@@ -130,11 +130,9 @@ export default {
 
       const items = res.items || []
       this.catalogItems = items.map((item, idx) => {
-        const slots = [null, null, null]
-        ;(item.images || []).forEach((img) => {
-          const slotIdx = img.sortOrder ?? 0
-          if (slotIdx >= 0 && slotIdx < 3) slots[slotIdx] = img.blobPath
-        })
+        const blobPaths = [...(item.images || [])]
+          .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+          .map((img) => img.blobPath)
         return {
           _key: `item-${Date.now()}-${idx}`,
           productNumber: item.productNumber || '',
@@ -144,8 +142,8 @@ export default {
           dimension2: item.dimension2 || '',
           dimension3: item.dimension3 || '',
           sortOrder: item.sortOrder ?? idx,
-          imageBlobPaths: slots,
-          imagePreviews: [null, null, null]
+          imageBlobPaths: blobPaths,
+          imagePreviews: new Array(blobPaths.length).fill(null)
         }
       })
 
@@ -171,6 +169,10 @@ export default {
       return true
     },
 
+    hasItemWithoutImage() {
+      return this.catalogItems.some((item) => !(item.imageBlobPaths && item.imageBlobPaths.length))
+    },
+
     buildSavePayload(status) {
       return {
         id: this.savedId || null,
@@ -189,7 +191,7 @@ export default {
           dimension2: item.dimension2,
           dimension3: item.dimension3,
           sortOrder: idx,
-          imageBlobPaths: (item.imageBlobPaths || []).filter(Boolean)
+          imageBlobPaths: item.imageBlobPaths || []
         }))
       }
     },
@@ -215,6 +217,14 @@ export default {
 
     async onPreviewPDF() {
       if (!this.validateForm()) return
+      if (this.hasItemWithoutImage()) {
+        warning(this.$t('view.sale.document.validation.itemWithoutImage'), this.$t('common.label.incompleteData'), () => this.generatePreviewPDF())
+        return
+      }
+      await this.generatePreviewPDF()
+    },
+
+    async generatePreviewPDF() {
       const builder = new ProductCatalogPdfBuilder(this.docForm, this.catalogItems)
       await builder.preparePDF()
       builder.openPDF()
@@ -222,6 +232,14 @@ export default {
 
     async onDownloadPDF() {
       if (!this.validateForm()) return
+      if (this.hasItemWithoutImage()) {
+        warning(this.$t('view.sale.document.validation.itemWithoutImage'), this.$t('common.label.incompleteData'), () => this.generateDownloadPDF())
+        return
+      }
+      await this.generateDownloadPDF()
+    },
+
+    async generateDownloadPDF() {
       const builder = new ProductCatalogPdfBuilder(this.docForm, this.catalogItems)
       await builder.preparePDF()
       const filename = `${this.docForm.headerLabel || 'catalog'}_${this.docForm.documentMonth}_${this.docForm.documentYear}.pdf`
@@ -238,8 +256,8 @@ export default {
         dimension2: '',
         dimension3: '',
         sortOrder: this.catalogItems.length,
-        imageBlobPaths: [null, null, null],
-        imagePreviews: [null, null, null]
+        imageBlobPaths: [],
+        imagePreviews: []
       }
       this.catalogItems = [...this.catalogItems, newItem]
       this.isShowStockPicker = false
@@ -255,10 +273,16 @@ export default {
       const items = [...this.catalogItems]
       const item = { ...items[index] }
 
-      const blobPaths = [...(item.imageBlobPaths || [null, null, null])]
-      const previews = [...(item.imagePreviews || [null, null, null])]
-      blobPaths[imgIdx] = blobPath
-      previews[imgIdx] = previewUrl
+      const blobPaths = [...(item.imageBlobPaths || [])]
+      const previews = [...(item.imagePreviews || [])]
+
+      if (imgIdx < blobPaths.length) {
+        blobPaths[imgIdx] = blobPath
+        previews[imgIdx] = previewUrl
+      } else {
+        blobPaths.push(blobPath)
+        previews.push(previewUrl)
+      }
 
       item.imageBlobPaths = blobPaths
       item.imagePreviews = previews
